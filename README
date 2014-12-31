@@ -1,0 +1,77 @@
+GNU Astronomy Utilities (AstrUtils)
+===================================
+
+AstrUtils is a set of utilities that enable you to do astronomical
+data analysis directly from the command line. Using the most basic
+shell features. It includes several packages which do various
+operations on FITS files. The FITS standard is the data storage
+standard in astronomy.
+
+Although the existing software for astronomical analysis are mostly
+available under GPL, but they mostly lack the GNU standards in terms
+of building, user interaction (command line options) and Texinfo
+manual. This makes using such software for newcommers to astronomy
+very hard. The GNU astronomy utilities were made to provide the
+community with a set of tools that will provide the astronomers with
+the quality standard of GNU.
+
+The packages that are currently included in AstrUtils are listed
+below.  After the name of the package, the name of the executable is
+provided which can be run after installation from the commandline.
+
+Image Crop      (gauimcrop):   Crop from one or multiple images.
+Image Stats     (gauimstat):   Statistics of an image.
+Elliptical Mask (gauelmask):   Make elliptical mask from catalog.
+FITS to JPG        (gauf2j):   Convert a FITS image to a JPEG image.
+JPG to FITS        (gauj2f):   Covert a JPEG image to a FITS image.
+Mock Galaxies     (gaumock):   Make mock galaxies in an image.
+
+More programs will be added as the community of developers grow.
+
+AstrUtils comes with a complete manual in various formats (plain text,
+info, docbook, PDF and HTML). You can get any of the formats from the
+GNU Astronomical Utilities webpage.
+
+
+
+
+
+Requirements
+------------
+
+To successfully get installed on your sytem, AstrUtils requires the
+following packages to be already installed:
+
+GSL:             The GNU Scientific Library.
+CFITSIO:         The standard tool for manipulating FITS files.
+WCSLIB:          The standard tool for reading WCS coordinates.
+LIBJPEG:         To manipulate JPEG images.
+FFTW3:           C subroutines for discrete Fourier transform.
+
+All of these programs can be easily installed with the standard GNU
+build system.
+
+
+
+
+
+Installing and running:
+------------
+
+To install AstrUtils, after downloading or cloning it, all you have to
+do is to run the standard configuring, compiling and installing
+commands that are common to all GNU applications. In the downloaded
+directory (`$` as user and `#` as root):
+
+    $ ./configure
+    $ make
+    $ make check
+    # make install
+
+See `./INSTALL` for a standard review of the GNU build and install
+methods.
+
+All the programs of AstrUtils use the standard GNU/Linux commandline
+options for configuration, run any of the executables with the
+`--help` option for a complete list of options and a short explanation
+of each.

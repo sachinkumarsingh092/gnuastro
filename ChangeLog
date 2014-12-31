@@ -1,0 +1,34 @@
+2014-12-30  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* tests/basicchecks.sh: New file (common tests for all tests).
+
+	* tests/Makefile.am (AM_TESTS_ENVIRONMENT): Corrected test
+	environment.
+
+	* src/imgcrop/ui.c (setparams): Moved all similar actions to the
+	CHECKSETDEFAULTS macro in defaults.h
+
+	* src/imgcrop/Makefile.am (AM_CPPFLAGS): New (previously in
+	AM_CFLAGS).
+
+	* lib/defaults.c (addhomedir): Now returns char *.
+	(writelocaldefaultstop): Informs the user of how to make the
+	needed directory with `make -p`.
+
+	* include/defaults.h (SAVE_LOCAL_DEFAULTS): changed addhomedir.
+	(CHECKSETDEFAULTS): A new macro to read defaults.
+	(END_OF_NOTSET_REPORT): Added some extra information.
+
+	* doc/astrutils.texi: A lot of updates in the text! Listing them
+	all would be too much!
+
+	* configure.ac: `--with-numthreads` and `--enable-progname` were
+	created along with all their necessary checks.
+
+	* Makefile.am: Set conditional subdirectories. Added
+	`basicchecks.sh` to the files to be distributed.
+
+2014-12-28  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	GNU Astronomical Utilities created with the ImageCrop as the first
+	package. Other packages will be added in the next few days.

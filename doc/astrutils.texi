@@ -1,0 +1,3976 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename astrutils.info
+@settitle GNU Astronomy Utilities
+@documentencoding UTF-8
+@allowcodebreaks false
+@c@afourpaper
+
+@c %**end of header
+@include version.texi
+@include subpackageversions.texi
+
+@c Use section titles in cross references, not node titles.
+@xrefautomaticsectiontitle on
+
+@c For the indexes:
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex pg cp
+
+@c Copyright information:
+@copying
+This manual documents version @value{VERSION} of the GNU Astronomy
+Utilities, providing various individual tools with similar user
+interface for astronomical data manipulation and  analysis.
+
+Copyright @copyright{} 2013-2014 Free Software Foundation, Inc.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end quotation
+@end copying
+
+@c To include in the info directory.
+@dircategory Astronomy
+@direntry
+* AstrUtils: (astrutils).       GNU astronomy utilities.
+* ImageCrop: (astrutils)ImageCrop. Crop region(s) from image(s).
+* astrimgcrop: (astrutils)Invoking astrimgcrop. Options to ImageCrop.
+@end direntry
+
+@c Version of all the subpackages:
+@macro printversions
+@noindent
+Utilities documented in this manual:
+@*ImageCrop (@command{astrimgcrop}) @value{IMGCROP_VERSION}
+@end macro
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@c Print title information:
+@titlepage
+@title GNU Astronomy Utilities (AstrUtils)
+@subtitle Astronomical data manipulation and analysis
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Mohammad Akhlaghi
+
+@page
+@printversions
+@vskip 0pt plus 1filll
+@insertcopying
+
+@page
+@quotation
+What in operation is most useful, that in knowledge is most true.
+@author Francis Bacon, New organon, 1620.
+@end quotation
+@quotation
+@*
+@*
+@*
+@*
+@*
+@*
+@*
+@*
+@*
+For myself, I am interested in science and in philosophy only because
+I want to learn something about the riddle of the world in which we
+live, and the riddle of man’s knowledge of that world. And I believe
+that only a revival of interest in these riddles can save the sciences
+and philosophy from narrow specialization and from an obscurantist
+faith in the expert’s special skill, and in his personal knowledge and
+authority; a faith that so well fits our ‘post-rationalist’ and
+‘post-critical’ age, proudly dedicated to the destruction of the
+tradition of rational philosophy, and of rational thought itself.
+@author Karl Popper. The logic of scientific discovery. 1959.
+@end quotation
+
+@end titlepage
+@contents
+
+
+
+
+
+
+
+
+
+
+@c Online version top information.
+@ifnottex
+@node Top, Introduction, (dir), (dir)
+@top GNU AstrUtils
+
+@insertcopying
+
+@ifhtml
+To navigate easily in this web page, you can use the @code{Next},
+@code{Previous}, @code{Up} and @code{Contents} links in the top and
+bottom of each page. @code{Next} and @code{Previous} will take you to
+the next or previous topic in the same level, for example from chapter
+1 to chapter 2 or vice versa. To go to the sections or subsections,
+you have to click on the menu entries that are there when ever a
+sub-component to a title is present.
+@end ifhtml
+
+@printversions
+
+@end ifnottex
+
+@menu
+* Introduction::                General introduction.
+* Installation::                Requirements and installation.
+* Common behavior::             Common behaviour in all programs.
+* Header manipulation::         Tools to Read/Write Headers
+* Image manipulation::          Tools for basic image manipulation.
+* Image analysis::              Analyze images.
+* Modelling and fittings::      Make and fit models.
+* Table manipulation::          Read/Write tables.
+* Developing::                  The development environment.
+* Future updates::              Future updates.
+* GNU Free Documentation License::  Full FDL text.
+* Index::                       Index of terms
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Introduction
+
+* Quick start::                 A quick start to installation.
+* Science and software::        The importance of software in science.
+* Why C::                       Why we chose the C?
+* Your rights::                 User rights.
+* Design philosophy::           How we have designed AstrUtils.
+* Version numbering::           Understanding version numbers.
+* New to GNU/Linux?::           Suggested GNU/Linux distribution.
+
+Version numbering
+
+* AstrUtils 1.0::               Our aim in the current phase.
+
+Installation
+
+* Requirements::                AstrUtils requirements
+* Installing AstrUtils::        Installing AstrUtils
+
+Requirements
+
+* CFITSIO::                     Standard library for FITS I/O.
+* WCSLIB::                      Library for world coordinate systems.
+* libjpeg::                     Library for JPEG image manipulation.
+* FFTW::                        Fast Fourier transform library.
+* SAO ds9::                     SAO ds9 for viewing FITS images.
+
+WCSLIB
+
+* PGPLOT::                      Installing PGPLOT (can be needed by WCSLIB).
+
+SAO ds9
+
+* Viewing multiextension FITS::  Configure SAO ds9 for multiextension images.
+
+Installing AstrUtils
+
+* Configuring::                 Configure AstrUtils
+* Tests::                       Run tests to see if it is working.
+* Print manual::                Customize the print manual.
+
+Configuring
+
+* AstrUtils configure options::  Configure options particular to AstrUtils.
+* Installation directory::      Specify the directory to install.
+* Executable names::            Changing executable names.
+
+Common behavior
+
+* Command line::                How to use the command line.
+* Threads in AstrUtils::        How threads are managed in AstrUtils.
+* Default values::              Using, and changing default values.
+* Automatic output::            About automatic output names.
+* Getting help::                Getting more information on the go.
+* Output headers::              Common headers to all FITS outputs.
+
+Command line
+
+* Arguments and options::       Basics of options and arguments.
+* Arguments::                   Treatment of arguments.
+* Option basics::               How to use GNU style options.
+* Common options::              Common options to all AstrUtils programs.
+
+Common options
+
+* Input output::                Common input/output options.
+* Operating modes::             Common operating mode options.
+
+Threads in AstrUtils
+
+* A note on threads::           Caution and suggestion on using threads.
+
+Getting help
+
+* --usage::                     Only view option names and value formats.
+* --help::                      List all options with description.
+* Man pages::                   Man pages generated from --help.
+* --printparams::               Print values to be used.
+* Info::                        View complete manual in terminal.
+
+Image manipulation
+
+* ImageCrop::                   Crop region(s) from FITS image(s).
+* ImageTransform::              Transform (flip, rotate) an image.
+* EllipMask::                   Place elliptical masks on an image.
+* Image conversion::            Convert an image to and from other formats.
+
+ImageCrop
+
+* ImageCrop modes::             Basic ImageCrop modes.
+* Crop section syntax::         How to define a section to crop.
+* Blank pixels::                Pixels with no value.
+* Invoking astrimgcrop::        Calling ImageCrop on the command line
+* ImageCrop future::            Future updates to ImageCrop.
+
+Invoking ImageCrop
+
+* astrimgcrop options::         A list of all the options with explanation.
+* astrimgcrop output::          The outputs of ImageCrop.
+
+Image conversion
+
+* FitstoJpeg::                  Convert a FITS image to a Jpeg image.
+* JpegtoFits::                  Convert a Jpeg image to a FITS image.
+
+Image analysis
+
+* ImageStat::                   Basic statstics of image pixels
+* SubtractSky::                 Subtract the sky level from the image.
+* NoiseChisel::                 Detect and segment objects in noise.
+
+Modelling and fitting
+
+* MockGals::
+
+Developing
+
+* Version controlled source::   How to get and prepare the VCSed code.
+* Internal libraries::          Internal static (not installed) libraries.
+* Headers::                     Library and common headers.
+* Program source::              Conventions for the code.
+* Test scripts::                Understanding the test scripts.
+* Building::                    Explanations on building.
+
+Version controlled source
+
+* Standards::
+
+Future updates
+
+* Future programs::             Programs to be added to AstrUtils
+* Existing future::
+
+Future of existing programs
+
+* FitstoJpeg future::           Future work for FitstoJpeg
+
+@end detailmenu
+@end menu
+
+@node Introduction, Installation, Top, Top
+@chapter Introduction
+
+The GNU Astronomy Utilities (AstrUtils) are a set of separate programs
+to facilitate the manipulation and analysis of astronomical data. All
+the various utilities share the same basic command line user interface
+for the comfort of both the users and developers. AstrUtils is written
+to comply fully with the GNU coding standards so it integrates finely
+with the GNU/Linux operating system. This also enables astronomers to
+expect a fully familiar experience in the source code, building,
+installing and command line user interaction that they have seen in
+all the other GNU software that they use.
+
+For users who are new to the GNU/Linux environment, we would like to
+mention that unless otherwise specified most of the topics in chapters
+2 and 3 are common to all GNU software, for example installation,
+managing command line options or getting help. So if you are new to
+this environment, we encourage you to go through these chapters
+carefully before learning more from each program's own manuals to
+enjoy this wonderful environment. We have tried our best to write this
+manual so someone who is completely new to GNU/Linux can get going
+very soon.
+
+Finally it must be mentioned that in AstrUtils, no change to any
+program will be released before it has been fully documented in this
+manual first. As discussed in @ref{Science and software} this is the
+founding basis of AstrUtils.
+
+@menu
+* Quick start::                 A quick start to installation.
+* Science and software::        The importance of software in science.
+* Why C::                       Why we chose the C?
+* Your rights::                 User rights.
+* Design philosophy::           How we have designed AstrUtils.
+* Version numbering::           Understanding version numbers.
+* New to GNU/Linux?::           Suggested GNU/Linux distribution.
+@end menu
+
+@node Quick start, Science and software, Introduction, Introduction
+@section Quick start
+
+@cindex Uncompress source
+@cindex Source, uncompress
+@cindex Build
+@cindex Compile
+@cindex Check
+@cindex Test
+Lets assume you have just downloaded the
+@file{astrutils-@value{VERSION}.tar.gz} in the @file{DOWLD}
+directory. Running the following commands will unpack, compile, check
+and install AstrUtils so you can use it anywhere in your system. Note
+lines starting with @command{$} should be run as a user and those with
+@command{#} as root. In either case, these two characters should not
+be typed in the command line (they should already be there!).
+
+@example
+$ cd DOWLD
+$ tar -zxvf astrutils-@value{VERSION}.tar.gz
+$ cd astrutils-@value{VERSION}
+$ ./configure
+$ make
+$ make check
+$ su
+# make install
+# exit
+$ cd ../
+$ rm -rf astrutils-@value{VERSION} astrutils-@value{VERSION}.tar.gz
+@end example
+
+@noindent
+If @command{$ ./configure} complains about a requirement, see
+@ref{Requirements}. After running @command{$ make check}, a few tests
+will be done on the built product. They shouldn't fail, if they do
+please file a bug report. When you get successful results for the
+tests, you are ready to install. You can also make lots of
+customizations (for example installing when you don't have root
+access), see @ref{Configuring}.
+
+@node Science and software, Why C, Quick start, Introduction
+@section Science and its software
+@cindex Transparent software
+@cindex Approximations in science
+@cindex Simplifications in science
+@cindex Software in Science
+@cindex Science and software
+History of science is evidence that no interpretation, model or
+technique is perfect. There are always inevitably unseen faults,
+hidden assumptions, simplifications and approximations in all our
+theoretical models and data aquisition and analysis techniques. It is
+precisely these that will ultimately allow future generations to
+advance the existing experimental and theoretical knowledge through
+their new solutions and corrections. Therefore for the advance of
+science, it is imperative that we be as explicit as possible about
+such approximations and simplifications.
+
+Both theoretical modeling and experimental methods are today becoming
+more and more dependent on software. Therefore, by keeping software
+free and transparent for all scientists, through readable code and an
+up to date manual, we can most accurately convey our experiences to
+other scientists who can build on those or find their shortcomings,
+hence facilitating the progress of science. In the past, scientists
+would gather data and process them individually to achieve an
+analysis, today scientists mainly leave the first two steps to
+pre-written software libraries, therefore distancing themselves from
+the intracacies of reducing raw observational data in experimentation
+or of bringing the theoretical models to life in simulations.
+
+@cindex Anscombe, F.J
+@quotation
+Unfortunately, most persons who have recourse to a computer for
+statistical analysis of data are not much interested either in
+computer programming or in statistical method, being primarily
+concerned with their own proper business. Hence the common use of
+library programs and various statistical packages. Most of these
+originated in the pre-visual era. The user is not showered with
+graphical displays. He can get them only with trouble, cunning and a
+fighting spirit. It's time that was changed.
+@author F. J. Anscombe. The American Statistician, Vol. 27, No. 1. 1973
+@end quotation
+
+@cindex Good statistical analysis
+@cindex Anscombe quartet
+@cindex Obscure software
+Anscombe argues that ``Good statistical analysis is not a purely
+routine matter, and generally calls for more than one pass through the
+computer''. Through the Anscombe's
+quartet@footnote{@url{http://en.wikipedia.org/wiki/Anscombe%27s_quartet}}
+he demonstrated how four data sets with widely different shapes (when
+plotted) give nearly identical output from standard regression
+techniques. Thus he showed how wrong it is to only rely on outputs of
+standard methods to interpret the data. Although we have much better
+graphic displays today, unfortunately the general situation has not
+changed too much from Anscombe's time.  Obscure software is certainly
+one of the main culprits. By obscure (not transparent) software we
+mean:
+
+@itemize
+
+@item
+Closed source. Software that is only distributed in compiled
+format. The users of such software are forced to view it as a black
+box.
+
+@item
+Open source, but with complex programming constructs that require a
+lot of time to learn to use and understand.
+
+@item
+Software with an outdated or weakly written manual.
+
+@end itemize
+
+Even if a software is released under the GNU public license (GPL), the
+latter two issues force an interested scientist to think twice before
+trying to understand the inner workings of the software she uses. When
+the audience admits ignorance to the inner workings of a software
+(most non-scientific software), this is fine. But no scientist, using
+a scientific software for their scientific research would want to be
+considered ignorant.
+
+The users of a software cannot claim to understand how it works only
+based on the experience they have gained by frequently using it. This
+kind of subjective experience is prone to very serious
+mis-understandings about what it really does behind the scenes. It
+only helps in producing dogmas and an ``obscurantist faith in the
+expert's special skill''.  Unfortunately in the commonly used
+astronomical software packages at least, most are not transparent as
+defined above. The scientific results that are deduced from such
+software are thus not objective, because scientists have to, or are
+forced to, look at it as a black box and trust its results on faith or
+their subjective experience.
+
+The wide use of free and transparent software is the clear solution to
+these problems. A software package that uses a sufficiently low-level
+programming paradigm (which is easier for the human to inquire into
+and for the computer to run) and comes with an up-to-date and
+accessible manual and a standard user interface may be one step in a
+larger scheme to save the sciences from the ``obscurantist faith in
+the expert’s special skill, and in his personal knowledge and
+authority'' (quote from Karl Popper, for full quote see the beginning
+of the PDF version of this manual).
+
+It is certainly time consuming for the author of a software to write
+clean codes and keep an updated manual. But if our greater common
+experience is considered, that time, is a time very well
+invested. Through sharing of these fundamental ideas and
+techniques, that define all our scientific results, and keeping them
+open to criticism, we can make them more robust and thus take larger
+steps in our common goal to tackle the riddles of nature.
+
+There are lots of separate software currently avaiable that do the
+majority of what the astronomical community desires separately. Most
+of them are also distributed under the GPL. Added with the mostly free
+raw data from major telescopes, this seems like a scientist's
+Utopia. However, as described above, a free distribution with the GPL
+is not enough. In Richard Stallman's words, the software should be
+``free as in free speech not free beer''. No matter how much a society
+values ``free speech'', if the people do not use that freedom, they
+are not free. They only live in its illusion.
+
+The same goes for software, even though in theory you can go and read
+all the code of all GPL programs, in practice a scientist whose
+primary goal is the scientific analysis (and not software engineering
+per se) cannot easily invest enough time and energy to understand the
+coding that can be in various languages and in various programming
+paradigms in all the software she has to use. We hope that AstrUtils
+can provide a sufficiently simple and useful infra-structure for all
+astronomers to actively participare in actually using the freedom
+granted to them by the GPL and not simply work in an illusion of it.
+
+Bjarne Stroustrup (creator of the C++ language) says: ``Without
+understanding software, you are reduced to believing in magic''.  Ken
+Thomson (the designer or the Unix operating system) says ``I abhor a
+system designed for the ``user'' if that word is a coded pejorative
+meaning ``stupid and unsophisticated''.'' No scientist would want to
+be considered as ``stupid and unsophisticated'', so both these cases
+naturally apply much more seriously to programs written for scientific
+applications and as scientists we should be loyal to such principles
+if we want to remain critical and be objective.
+
+
+
+
+@node Why C, Your rights, Science and software, Introduction
+@section Why C programming language?
+Currently the programming language that is most commonly used in
+scientific applications is C++, and more recently Python. One of the
+main reasons behind this choice is that through the Object oriented
+programming paradigm, they offer a much higher level of
+abstraction. However, we have chosen the C programming language to
+write AstrUtils. The reasons can be summarized with simplicity and
+speed. Both are extremely important in a scientific software.
+
+A simple comparison of the main books of C++ and C can act as a
+guide. The ``C programming language'' book, written by the authors of
+C, is only 286 pages and covers a very good fraction of the language,
+it has also remained unchanged from 1988 and there is no plan of any
+significant update. The most recent ``C++ programming language'' book,
+also written by its author, on the other hand has 1366 pages and its
+fourth edition came out in 2013! As discussed in @ref{Science and
+software}, it is very important for other scientists to be able to
+readily read the code of a program at their will with minimum
+requirements.
+
+In C++, inheriting objects and their internal functions make the code
+very easy to write for the programmer who is deeply invested in those
+objects and understands all their relations well. But it
+simultaneously makes reading the program for a first time reader (a
+curious scientist who wants to know only how a small step was done)
+extremely hard. Before understanding the methods, the scientist has to
+invest a lot of time in understanding those objects and their
+relations. But in C, if only simple structures are used, as we have
+here, all variables can be given as the basic language types for
+example @code{int}s or @code{float}s and their pointers to define
+arrays. So when an outside reader is only interested in one part of
+the program, that part is all they have to understand.
+
+Recently it is also becoming common to write scientific software in
+Python, or a combination of it with C++. Python is a high level
+scripting language which doesn't need compilation. It is very useful
+when you want to do something on the go and don't want to be halted by
+the troubles of compiling, linking, memory checking, etc. When the
+data sets are small and the job is temporary, this ability of Python
+is great and is highly encouraged. A very good example might be
+plotting, in which Python is undoubtably one of the best.
+
+But as the data sets increase in size and the processing becomes very
+complicated, the speed of Python scripts significantly decrease. So
+when the program doesn't change too often and is widely used in a
+large community mostly on large data sets (like astronomical images),
+using Python will waste a lot of valuable research-hours.
+
+Like C++, python is object oriented, so as explained above, it needs a
+high level of experience with that particular program to fully
+understand its inner workings. To make things worse, since it is
+mainly for fast and on the go programming, it constantly undergoes
+significant changes, such that Python 2.x and Python 3.x are not
+compatible. Lots of research teams that invested heavily in Python 2.x
+cannot benefit from Python 3.x or future versions any more. Some
+converters are available, but since they are automatic, lots of
+complications might arise in the conversion. Thus, re-writing all the
+changes would be the only truely reliable option. This is why most
+teams that made that choice are forced to remain with Python 2.x. If a
+research project begins using Python 3.x today, there is no telling
+how compatible their investments will be when Python 4.x or 5.x will
+come out. This stems from the core principles of Python, which are
+very useful when you look in the ``on the go'' basis as described
+before and not future usage.
+
+@cindex Low level programming
+@cindex Programming, low level
+Being a very low level (closer to the hardware) language, C is much
+less complex for both the human reader and the computer. It thus
+allows for closer relation between the programmer (program) and the
+actual data we have in our disposal. This is contrary to the illusion
+of abstractions that the higher level languages provide. The GNU
+coding standards@footnote{@url{http://www.gnu.org/prep/standards/}}
+also encourage the use of C over all other languages when generality
+of usage and ``high speed'' is desired.
+
+
+
+
+
+@node Your rights, Design philosophy, Why C, Introduction
+@section Your rights
+
+The paragraphs below, in this section, belong to the GNU Texinfo
+manual and are not written by us! We have just changed the name
+``Texinfo'' to ``AstrUtils'' because they are released under the same
+licenses and it is beautifully written to inform you of your rights.
+
+@cindex Free software
+GNU AstrUtils is ``free software''; this means that everyone is free
+to use it and free to redistribute it on certain conditions. AstrUtils
+is not in the public domain; it is copyrighted and there are
+restrictions on its distribution, but these restrictions are designed
+to permit everything that a good cooperating citizen would want to do.
+What is not allowed is to try to prevent others from further sharing
+any version of AstrUtils that they might get from you.
+
+Specifically, we want to make sure that you have the right to give
+away copies of the programs that relate to AstrUtils, that you receive
+the source code or else can get it if you want it, that you can change these
+programs or use pieces of them in new free programs, and that you know
+you can do these things.
+
+To make sure that everyone has such rights, we have to forbid you to
+deprive anyone else of these rights.  For example, if you distribute
+copies of the AstrUtils related programs, you must give the recipients
+all the rights that you have.  You must make sure that they, too,
+receive or can get the source code.  And you must tell them their
+rights.
+
+Also, for our own protection, we must make certain that everyone finds
+out that there is no warranty for the programs that relate to AstrUtils.
+If these programs are modified by someone else and passed on, we want
+their recipients to know that what they have is not what we distributed,
+so that any problems introduced by others will not reflect on our
+reputation.
+
+The precise conditions of the licenses for the programs currently
+being distributed that relate to AstrUtils are found in the
+@url{http://www.gnu.org/copyleft/gpl.html, GNU General Public license}
+that accompany them.  This manual is covered by the
+@url{http://www.gnu.org/copyleft/fdl.html, GNU Free Documentation
+License}.
+
+
+
+
+
+@node Design philosophy, Version numbering, Your rights, Introduction
+@section Design philosophy
+
+Based on the ideas in the above three sections, AstrUtils is desiged
+such that the only basic requirement for a scientist to understand the
+most intricate detail of any step in AstrUtils is a knowledge of the C
+programming language as defied in Kernighan and Ritchie's 1989 book,
+which is commonly known as K&R and is the definition book for the ISO
+C standard of 1990. As explained above, with less than 300 pages, this
+book is very concize and basic. Even within the confines of K&R, the
+code can become quite complex, therefore all AstrUtils programs are
+written with code readibility as the primary goal.
+
+We do make lots of use of the GNU additions to the C language in the
+GNU C library, but they are mainly in the user interface functions
+(reading your inputs and preparing them prior to or after the
+analysis). The actual algorithms, which most scientists would be more
+interested in, are much more closer to ISO C90. For this reason, the
+source files containing user interface code and those containing
+actual processing code are clearly separated. If any thing particular
+to the GNU C library is used, in those functions, it is explained in
+the comments in the code.
+
+In @ref{Developing} we have explained all the details of the core
+programming ideas behind AstrUtils. Reading that chapter should be
+enough for you to begin going through the codes of an existing package
+or creating a new one for your needs using the infra-structure
+provided. We hope that with this infra-structure we can extend what
+GNU did for the software community in the early 1980s to the
+Astronomical community.
+
+Similar to GNU Coreutils, all the programs provided with AstrUtils,
+provide very low level operations. This enables you to use the GNU
+Bash scripting language (which is the default in most GNU/Linux
+operating systems) to operate on a large number of files or do very
+complex things through the creative combinations of these tools that
+the authors had never dreamed of.
+
+For example all the analysis output is provided as ASCII tables which
+you can feed into your favorite plotting program to inspect
+visually. Python's Matplotlib is very useful for fast plotting of the
+tables to immediately check your results. If you want to include the
+plots in a document, you can use the PGFplots package within
+@LaTeX{}. We make no attempt to include such operations in
+AstrUtils. In short, Bash can act as a glue to connect the inputs and
+outputs of all these various programs in any fashion you please. If
+you are not already familiar with Bash we strongly encourage you to go
+through this beautifully explained webpage:
+@url{http://linuxcommand.org/}. This will not only benefit you for
+your scientific work with AstrUtils, but also anything that is related
+to GNU/Linux.
+
+
+
+@node Version numbering, New to GNU/Linux?, Design philosophy, Introduction
+@section Version numbering
+
+The general AstrUtils package has a version number. It contains
+various programs and each of those also has its own version
+number. The version numbers for both are two numbers with a point
+(@file{.}) between them. The left number is the major version number
+while the right one is the minor version number. Note that the numbers
+are not decimals, so version 2.34 of a program is much more recent
+than version 2.5.
+
+The current version of AstrUtils is @value{VERSION} and the version
+numbers of its various components are shown on the second page in the
+PDF manual and on the top node or page in the other formats (Info and
+HTML for example). To see the version of a program you are using, you
+can use the @option{--version} option, see @ref{Common options}.
+
+AstrUtils and all programs within it start with version number
+0.1. For the programs, the minor version number is increased with any
+few bug fixes or small improvements which the developers decide is
+significant for a public release. So minor releases can be viewed as
+ad-hoc improvements. The major version number is set by a major goal
+which is defined by the developers of that particular program before
+hand.
+
+For AstrUtils, its minor version number increases by 1 on every
+release (which contains an arbitary number of updated version numbers
+for the programs). So you can tell that at least one package has been
+updated at least once. You can see the details from the @file{NEWS}
+file that comes with that distribution and is also available online to
+view before you download.
+
+@menu
+* AstrUtils 1.0::               Our aim in the current phase.
+@end menu
+
+@node AstrUtils 1.0,  , Version numbering, Version numbering
+@subsection AstrUtils 1.0
+
+The major version number of AstrUtils is increased similar to that of
+each program. Currently (prior to AstrUtils 1.0), the aim is to have a
+complete system for data manipulation and analysis at least similar to
+IRAF@footnote{@url{http://iraf.noao.edu/}}. So an astronomer can take
+all the standard data analysis steps (starting from raw data to the
+final reduced product and standard post-reduction tools) with the
+various programs in AstrUtils.
+
+The maintainers of each camera or detector on a telescope can provide
+a completely transparent shell script to the observer for data
+analysis. This script can set the correct local default values for all
+the required programs to work with that particular camera. The script
+can then run the proper programs in the proper sequence. The
+user/observer can easily follow the standard shell script to
+understand (and modify) each step and the parameters used easily. Bash
+(or other modern GNU/Linux shell scripts) are very powerful and made
+for this gluing job. This will simultaneously improve preformance and
+transparency.
+
+In order to achieve this and allow maximal creativity with the shell,
+the various programs have to be very low level programs and completely
+independent. Something like the GNU coreutils.
+
+@node New to GNU/Linux?,  , Version numbering, Introduction
+@section New to GNU/Linux?
+
+Most astronomers initially install and use the GNU/Linux operating
+systems because their research software can only be run in this
+environment. This is how the founder of AstrUtils started using
+GNU/Linux at least! If this is also the case for you, we have a few
+suggestions here. If not, you can skip it.
+
+The Wikipedia pages on ``Linux distribution'' and ``GNU'' and
+``Linux'' will provide you with a wealth of information. In general,
+AstrUtils can be built and installed on most (if not all) of the
+distributions with no problem. You might just have to install all the
+possibly missing requirements. There is no ``best'' distribution for
+GNU/Linux for everyone, it is mainly a matter of taste for general
+usage.
+
+But based on the principles mentioned in this introduction (which can
+be summarized with simplicity and transparency), we believe we can
+make some objective suggestions for critical scientists: Gentoo Linux
+or Arch Linux. Most other distributions of GNU/Linux prepare
+everything for you in a collection of software that comes with the
+distribution, this results in you (as the user) not really
+understanding how all the separate packages interact and work
+together. Like before, in theory, you can go and read about each
+package separately, but this is easier said than done.
+
+In short, with the more popular distributions like Ubuntu or Fedora,
+you get the packages that the people in those distributions decided
+are best for you in a black box. This results in a very simple to
+install environment reminiscent of the saying ``ignorance is
+bliss''. However, distributions like those mentioned are ``build it
+your self'' types of GNU/Linux which provide you only with the minimum
+set of tools on which you can choose to build which ever type of
+system you want, including the graphic user interface. Since the
+operating system is not forced to manage any extra packages, these
+distribtuions are also significantly more faster.
+
+To enable you to do this, these distributions have very well written
+hand book and wiki page which teach and demonstrate how to install and
+use the different components nicely. This is because the distributors
+of these distributions can spend less time (or no time) on
+configuring/modifying each package and more time on informing you
+instead, enabling you to build your dream machine.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Installation, Common behavior, Introduction, Top
+@chapter Installation
+
+To successfully install AstrUtils you have to have the requirements
+already installed on your system. They are very basic for most
+astronomical programs and you might already have them installed. To
+check try running the @command{$ ./configure} script. If you get no
+errors, then you already have them and you can skip
+@ref{Requirements}. You can do much more than the simple set of
+scripts in @ref{Quick start}, see @ref{Installing AstrUtils}.
+
+
+
+@menu
+* Requirements::                AstrUtils requirements
+* Installing AstrUtils::        Installing AstrUtils
+@end menu
+
+@node Requirements, Installing AstrUtils, Installation, Installation
+@section Requirements
+
+@cindex Dependencies, AstrUtils
+AstrUtils @value{VERSION} has several dependencies, they all follow
+the same basic GNU based build system, so even if you don't have them,
+installing them should be pretty streightforward. In this section we
+explain each program and any specific note that might be necessary in
+the installation.
+
+These packages might already be available by your distribution's
+package management system. But as explained for each package,
+AstrUtils might require certain configuration options that the your
+distribution's package managers didn't add for you. The most basic
+choice is to build the packages from source your self instead of
+relying on your distribution's pre-built packages.
+
+The problem with building from souce manually is that the package will
+be left out of the list of installed packages in your package
+manager. So for example when you want to do a system-wide update, it
+will not check for the packages you manually built. However, if your
+distribution has a configurable build system (for example the Arch
+Build
+System@footnote{@url{https://wiki.archlinux.org/index.php/Arch_Build_System}}
+in Arch Linux), you can configure the build options of specific
+packages your self. When an update comes, it will only warn you
+instead of installing the pre-built package so you can build it with
+your own particular options.
+
+
+@menu
+* CFITSIO::                     Standard library for FITS I/O.
+* WCSLIB::                      Library for world coordinate systems.
+* libjpeg::                     Library for JPEG image manipulation.
+* FFTW::                        Fast Fourier transform library.
+* SAO ds9::                     SAO ds9 for viewing FITS images.
+@end menu
+
+@node CFITSIO, WCSLIB, Requirements, Requirements
+@subsection CFITSIO
+
+@cindex CFITSIO
+CFITSIO is the closest you can get to the pixels in a FITS image while
+remaining faithful to the FITS standard
+@footnote{@url{http://fits.gsfc.nasa.gov/fits_standard.html}}. It is
+written by William Pence, the author of the FITS
+standard@footnote{Pence, W.D. et al. Definition of the Flexible Image
+Transport System (FITS), version 3.0. (2010) Astronomy and
+Astrophysics, Volume 524, id.A42, 40 pp.}, and is regularly
+updated. Setting the definitions for all other software packages using
+FITS images.
+
+Some GNU/Linux distributions have CFITSIO in their package managers
+(for example Arch Linux), if it is available and updated, you can use
+it. One problem that might occur is that CFITSIO might not be
+configured with the @option{--enable-reentrant} option by the
+distribution. This option allows CFITSIO to open a file in multiple
+threads. If so, upon running, any program which needs this capability
+will warn you and abort if you ask for multiple threads. In such cases
+you can take the following step.
+
+The best way is that you can install it from source. You can download
+the latest version of the source code and manual from its
+webpage@footnote{@url{http://heasarc.gsfc.nasa.gov/fitsio/fitsio.html}}.
+We strongly recommend that you have a look through Chapter 2 (Creating
+the CFITSIO library) of the the CFITSIO manual and understand the
+options you can pass to @command{$ ./configure} (they aren't too
+much). This is a very basic package for most astronomical software and
+it is best that you configure it nicely with your system. Once you
+download the source and unpack it, the following configure script
+should be enough for most purposes. Don't forget to read chapter two
+of the manual though, for example the second option is only for 64bit
+systems. The manual also explains how to check if it has been
+installed correctly.
+@example
+$ tar -vxzf cfitsio_latest.tar.gz
+$ cd cfitsio
+$ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
+$ make
+$ su
+# make install
+@end example
+
+
+
+
+
+@node WCSLIB, libjpeg, CFITSIO, Requirements
+@subsection WCSLIB
+WCSLIB is also written and maintained by one of the authors of the
+World Coordiante System (WCS) definition in the FITS
+standard@footnote{Greisen E.W., Calabretta M.R. (2002) Representation
+of world coordinates in FITS. Astronomy and Astrophysics, 395,
+1061-1075.}, Mark Calabretta. It might be already built and ready in
+your distribution's package management system you can give it a check.
+Here we explain how to install from source.
+
+To install WCSLIB you will need to have the CFITSIO already
+installed. WCSLIB also has plotting capabilities which use PGPLOT (a
+plotting library for C). However, if you will not be using its
+plotting functions, you can configure it such that pgplot is not
+required.
+
+If you do want to make plots with WCSLIB, there is an explanation on
+the following, see @ref{PGPLOT}. To disable the dependency on PGPLOT,
+you have to add the @option{--without-pgplot} option to the configure
+script as you can see below. You can get the most recent source code
+from its
+webpage@footnote{@url{http://www.atnf.csiro.au/people/mcalabre/WCS/}}.
+In the directory where you have downloaded the compressed file, you
+can take the following steps (the x.xx represents the version number):
+@example
+$ tar -jxvf wcslib.tar.bz2
+$ cd wcslib-x.xx
+$ ./configure --without-pgplot
+$ gmake
+$ gmake check
+$ su
+# gmake install
+@end example
+
+
+
+
+
+@menu
+* PGPLOT::                      Installing PGPLOT (can be needed by WCSLIB).
+@end menu
+
+@node PGPLOT,  , WCSLIB, WCSLIB
+@subsubsection PGPLOT
+PGPLOT is a package for making plots in C. It is not directly needed
+by AstrUtils, but can be used by WCSLIB, see @ref{WCSLIB}. As
+explained in @ref{WCSLIB}, you can install WCSLIB without it too. It
+is very old (the most recent version was released early 2001!), but
+remains one of the main packages for plotting directly in C. WCSLIB
+uses this package to make plots if you want it to make plots. If you
+are interested you can also use it for your own purposes.
+
+If you want your plotting codes in between your C program, PGPLOT is
+currently one of your best options. The recommended alternative to
+this method is to get the raw data for the plots in text files and
+input them into any of the various more modern and capable plotting
+tools separtely, for example the matplotlib library in Python. Lets
+get back to PGPLOT for the sake of WCSLIB. Installing it is a little
+tricky (mainly because it is so old!).
+
+You can download the most recent version from the FTP link in its
+webpage@footnote{@url{http://www.astro.caltech.edu/~tjp/pgplot/}}. You
+can unpack it with the @command{tar -vxzf} command. Lets assume the
+directory you have unpacked it to is @file{PGPLOT}, most probably it
+is: @file{/home/username/Downloads/pgplot/}.  open the
+@file{drivers.list} file:
+@example
+$ gedit drivers.list
+@end example
+@noindent
+Remove the @code{!} for the following lines and save the file in the
+end:
+@example
+PSDRIV 1 /PS
+PSDRIV 2 /VPS
+PSDRIV 3 /CPS
+PSDRIV 4 /VCPS
+XWDRIV 1 /XWINDOW
+XWDRIV 2 /XSERVE
+@end example
+@noindent
+Don't choose GIF or VGIF, there is a problem in their codes.
+
+Open the @file{PGPLOT/sys_linux/g77_gcc.conf} file:
+@example
+$ gedit PGPLOT/sys_linux/g77_gcc.conf
+@end example
+@noindent
+change the line saying: @code{FCOMPL="g77"} to
+@code{FCOMPL="gfortran"}, and save it. This is a very important step
+during the compilation of the code if you are in linux. You now have
+to create a folder in @file{/usr/local}, don't forget to replace
+@file{PGPLOT} with your unpacked address:
+@example
+$ su
+# mkdir /usr/local/pgplot
+# cd /usr/local/pgplot
+# cp PGPLOT/drivers.list ./
+@end example
+To make the Makefile, type the following command:
+@example
+# PGPLOT/makemake PGPLOT linux g77_gcc
+@end example
+@noindent
+It should finish by saying: @command{Determining object file
+dependencies}. You have done the hard part! The rest is easy: run
+these three commands in order:
+@example
+# make
+# make clean
+# make cpg
+@end example
+
+Finally you have to place the position of this directory you just made
+into the @command{LD_LIBRARY_PATH} environment variable and define the
+environment variable @command{PGPLOT_DIR}. To do that, you have to
+edit your @file{.bashrc} file:
+@example
+$ cd ~
+$ gedit .bashrc
+@end example
+@noindent
+Copy these lines into the text editor and save it:
+@example
+PGPLOT_DIR="/usr/local/pgplot/"; export PGPLOT_DIR
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/pgplot/
+export LD_LIBRARY_PATH
+@end example
+@noindent
+You need to log out and log back in again so these definitions take
+effect. After you logged back in, you want to see the result of all
+this labor, right? Tim Pearson has done that for you, create a
+temporary folder in your home directory and copy all the demonstration
+files in it:
+@example
+$ cd ~
+$ mkdir temp
+$ cd temp
+$ cp /usr/local/pgplot/pgdemo* ./
+$ ls
+@end example
+You will see a lot of pgdemoXX files, where XX is a number. In order
+to execute them type the following command and drink your coffee while
+looking at all the beautiful plots! You are now ready to create your
+own.
+@example
+$ ./pgdemoXX
+@end example
+
+
+
+
+
+@node libjpeg, FFTW, WCSLIB, Requirements
+@subsection libjpeg
+
+libjpeg is needed for the conversion programs like FitstoJpeg or
+JpegtoFits. @url{http://www.ijg.org/, libjpeg} is a very basic library
+that provides tools to read and write JPEG images, most of the
+GNU/Linux graphic programs and libraries use it. Therefore you most
+probably already have it installed.
+@url{http://libjpeg-turbo.virtualgl.org/, libjpeg-turbo} is an
+alternative to libjpeg. It uses SIMD instructions for ARM based
+systems that significantly decreases the processing time of JPEG
+compression and decompression algorithms.
+
+If @command{$ ./configure} fails to find libjpeg, then you have to
+install one of the two libraries above. They should be available
+within your distribution's package management tools, for example
+
+@cindex Package managers
+@itemize
+
+@item
+@command{# pacman -S libjpeg} in Arch Linux (which installs
+libjpeg-turbo).
+
+@item
+@command{# apt-get install libjpeg} in Ubuntu.
+
+@item
+@command{# yum install libjpeg} in Fedora, CentOS, Scientific linux or
+generally any Red Hat based GNU/Linux.
+
+@end itemize
+
+
+
+
+
+@node FFTW, SAO ds9, libjpeg, Requirements
+@subsection FFTW
+
+The ``Fastest Fourier Transform in the West'' or
+FFTW@footnote{@url{http://www.fftw.org/}}, is used for convoling the
+actual profiles of the stars and galaxies with the PSF in the
+production of mock galaxies in MockGals. Like other packages above, it
+is probably already available on your distribution's package
+management system. But there are some configuration options which can
+be helpful to AstrUtils.
+
+The options are to enable multi-threaded operation and also to enable
+operation on @code{float} data (by default only the @code{double} type
+is supported). Both of these can significantly reduce the running
+time. You can download the source code from its webpage and run the
+following commands in the directory you saved the compressed file
+(@code{X.X.X} stands for the version number):
+@example
+$ tar -vxzf fftw-X.X.X.tar.gz
+$ cd fftw.X.X.X
+$ ./configure --enable-threads --enable-float
+$ make
+$ su
+# make install
+@end example
+
+
+
+
+
+@node SAO ds9,  , FFTW, Requirements
+@subsection SAO ds9
+
+SAO ds9@footnote{@url{http://ds9.si.edu/, SAOImage ds9}} is not a
+requirement of AstrUtils, it is a FITS image viewer. So to check your
+inputs and outputs, it is one of the best options. Like the other
+packages, it might already be available in your distribution's
+repositories. It is already pre-compiled in the download section of
+its webpage. Once you download it you can unpack and intall (move it
+to a system recognized directory) with the following commands
+(@code{x.x.x} is the version number):
+
+@example
+$ tar -zxvf ds9.linux64.x.x.x.tar.gz
+$ su
+# mv ds9 /usr/local/bin
+@end example
+
+Once you run it, there might be a complaint about the Xss library,
+which you can find in your distribution package management system. You
+might also get an @command{XPA} related error. In this case, you have
+to add the following line to your @file{~/.bashrc} or
+@file{~/.profile} file if you are using SAO ds9 on the command line or
+from the graphic user interface (you will have to log out and back in
+again for the latter):
+
+@example
+export XPA_METHOD=local
+@end example
+
+
+@menu
+* Viewing multiextension FITS::  Configure SAO ds9 for multiextension images.
+@end menu
+
+@node Viewing multiextension FITS,  , SAO ds9, SAO ds9
+@subsubsection Viewing multiextension FITS images
+
+@cindex Multiextention FITS
+@pindex ds9
+@cindex Opening multiextention FITS
+The FITS definition allows for multiple extensions inside a FITS file,
+each extension can have a completely independent data set inside of
+it. If you ordinarily open a multi-extension FITS file with SOA ds9,
+for example by double clicking on the file or running @command{$ds9
+foo.fits}, SAO ds9 will only show you the first extension. To be able
+to switch between the extensions you have to follow these menus in the
+SAO ds9 window: @clicksequence{File@click{}Open Other@click{}Open
+Multi Ext Cube} and then choose the Multi extension FITS file in your
+computer's file structure.
+
+@findex ds9 -mecube
+The method above is a little tedious to do every time you want view a
+multi-extension FITS file. Fortunately SAO ds9 also provides options
+that you can use to specify a particular behavior. One of those
+options is @option{-mecube} which opens a FITS image as a
+multi-extension data cube. So on the command line, if you run
+@command{$ds9 -mecube foo.fits} a small window will also be opened,
+which allows you to switch between the image extensions that
+@file{foo.fits} might have. If @file{foo.fits} only consists of one
+extension, then SAO ds9 will open as usual.
+
+Just to avoid confusion, note that SAO ds9 does not follow the GNU
+style of separating long and short options as explained in
+@ref{Arguments and options}. In the GNU style, this ``long'' option
+should have been called like @option{--mecube}, but SAO ds9 does
+follow those conventions and has its own.
+
+It is really convenient if you set ds9 to always run with the
+@option{-mecube} option on your graphical display. On GNOME 3 (the
+most popular graphic user interface for GNU/Linux systems) you can do
+this by taking the following steps:
+
+@itemize
+
+@item
+Open your favorite text editor and put the following text in a file
+that ends with @file{.desktop}, for example @file{saods9.desktop}. The
+file is very descriptive.
+@example
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=SAO ds9
+Comment=View FITS images
+Exec=ds9 -mecube %f
+Terminal=false
+Categories=Graphic;FITS;
+@end example
+
+@item
+Copy this file into your local (user) applications directory:
+@example
+$ cp saods9.desktop ~/.local/share/applications/
+@end example
+In case you don't have the directory, you can make it your self:
+
+@example
+$ mkdir -p ~/.local/share/applications/
+@end example
+
+@item
+The steps above will add SAO ds9 as one of your applications. To make
+it default for every time you click on a FITS file. Right click on a
+FITS file and select ``Open With'', then go into ``Other
+Application...'' and choose ``SAO ds9''.
+@end itemize
+
+In case you are using GNOME 2 you can take the following steps: right
+click on a FITS file and choose @clicksequence{Properties@click{}Open
+With@click{}Add} button. A list of applications will show up, ds9
+might already be present in the list, but don't choose it because it
+will run with no options. Below the list is an option ``Use a custom
+command''. Click on it and write the following command: @command{ds9
+-mecube} in the box and click ``Add''. Then finally choose the command
+you just added as the default and click the ``Close'' button.
+
+
+
+
+
+@node Installing AstrUtils,  , Requirements, Installation
+@section Installing AstrUtils
+
+This section is basically a longer explanation to the sequence of
+commands given in @ref{Quick start}. If you want to have all the
+programs of AstrUtils installed in your system, you don't want to
+change the executable names during or after installation, you have
+root access to install the programs in a system wide directoy, the
+Letter paper size of the print manual is fine for you or as a summary
+you don't feel like going into the details when everything is working
+seamlessly, you can safely skip this section. If you have any of the
+above problems or you want to understand the the details for a better
+control over your build and install, read along.
+
+In the following we will assume that you have downloaded the
+compressed source file, @file{astrutils-@value{VERSION}.tar.gz}, to
+the @file{DOWLD} (short for download) directory, replace this name
+with the directory that you want to run the installation in. Note that
+after installation, if you don't plan to re-install you no longer need
+this file or the uncompressed directory, so you can safely delete
+both. The first three steps in @ref{Quick start} need no extra
+explanation so in the following we also assume they are done. Once you
+uncompress the source file the directory
+@file{DOWLD/astrutils-@value{VERSION}} will be created.
+
+
+@menu
+* Configuring::                 Configure AstrUtils
+* Tests::                       Run tests to see if it is working.
+* Print manual::                Customize the print manual.
+@end menu
+
+
+
+
+
+@node Configuring, Tests, Installing AstrUtils, Installing AstrUtils
+@subsection Configuring
+
+The @command{$ ./configure} step is the most important step in the
+build process. All the required packages, libraries, headers and
+environment variables are checked in this step. The behaviors of make
+and make install can also be set through command line options to this
+command.
+
+The configure script accepts various arguments and options which
+enable the final user to highly customize whatever she is
+building. The options to configure are generally very similar to
+normal program options explained in @ref{Arguments and
+options}. Similar to all GNU programs, you can get a full list of the
+options along with a short explantion by running
+
+@example
+$ ./configure --help
+@end example
+
+@noindent
+A complete explanation is also included in the
+@file{astrutils-@value{VERSION}/INSTALL} file in plain text that comes
+with the AstrUtils source. Note that this file was written by the
+authors of GNU Autoconf and is common for all programs which use the
+@command{$ ./configure} script for building and installing. Here we
+will try to review the most common general usages (not only
+AstrUtils): when you don't have super-user access to the system and
+changing the executbale names. But before that we will first review
+the options to contigure that are particular to AstrUtils.
+
+@menu
+* AstrUtils configure options::  Configure options particular to AstrUtils.
+* Installation directory::      Specify the directory to install.
+* Executable names::            Changing executable names.
+@end menu
+
+@node AstrUtils configure options, Installation directory, Configuring, Configuring
+@subsubsection AstrUtils configure options
+
+Most of the options to configure (which are to do with building) are
+similar for every program which uses this script. Here we will discuss
+the options that are particular to AstrUtils, the next topics explain
+the usage of other configure options which can be applied to any
+program using the GNU build system (through the configure script).
+
+@vtable @option
+
+@item --with-numthreads
+(=@code{INT}) If this option is given an integer value, that value
+will be used for the default number of threads to use. If it is not
+given, then the total number of threads will be read from the system,
+see @ref{Threads in AstrUtils}. Specifying
+@option{--with-numthreads=no} or @option{--without-numthreads} is
+equivalent to not calling this option it at all.
+
+@item --enable-progname
+Only build and install @file{progname} along with any other program
+that is enabled in this fashion. @file{progname} is the name of the
+executable without the @file{astr}, for example @file{imgcrop} for
+ImageCrop (with the executable name of @file{astrimgcrop}). If this
+option is called for any of the programs in AstrUtils, any program
+which is not explicitly enabled will not be built or installed.
+
+@item --disable-progname
+@itemx --enable-progname=no
+Do not build or install the program named @file{progname}. This is
+very similar to the @option{--enable-progname}, but will build and
+install all the other programs except this one.
+
+@end vtable
+
+@cartouche
+@noindent
+@strong{Note:} If some programs are enabled and some are disabled, it
+is equivalent to simply enabling those that were enabled. Listing the
+disabled programs is redundant.
+@end cartouche
+
+
+
+
+
+@node Installation directory, Executable names, AstrUtils configure options, Configuring
+@subsubsection Installation directory
+@cindex root, not possible
+@cindex Superuser, not possible
+
+One of the most commonly used options to configure is the directory
+that will host all the files which require installing: the actual
+executable files for the program, the documentation, the shared data
+and so on. This is done through the @option{--prefix} option. Here we
+will use the scenrio where you don't have root access to the computer
+you are using to demonstrate its applicability.
+
+In case you do not have super user or root access to the system, you
+can't take the installation steps of the command sequence in
+@ref{Quick start}. To be able to access the AstrUtils executable files
+from anywhere, you have to specify a special directory in the
+directories you have write access in. Note that this explanation can
+apply to all the requirements in @ref{Requirements} in case the system
+lacks them or the system wide install was not built with the proper
+configuration options.
+
+The standard directory where you can keep such files for your own user
+is the @file{$HOME/.local/}. You can check the value of the
+@command{HOME} environment variable by running
+
+@example
+$ echo $HOME
+@end example
+
+@noindent
+You can use this directory for installing all the programs, libraries,
+manuals and shared data that you need. Lets call the directory you
+have chosen with @file{USRDIR} since the standard is just a
+suggestion. Please replace it with any directory name you choose. To
+install any program without root privileges, you can add the following
+option to the configure script. You can then run @command{$ make
+install} without any root access.
+
+@cindex Install directory
+@cindex Directory, install
+@example
+$ ./configure --prefix=USRDIR
+@end example
+
+Ofcourse, to be able to run the program executables in your chosen
+directory from anywhere, you also need to include @file{USRDIR/bin}
+(the subdirectory where the executables are installed, as you will see
+below there are many more things that get installed) in your
+@command{PATH} environment variable by placing the following command
+in your @file{$HOME/.bashrc} file.
+
+@example
+export PATH=$PATH:USRDIR/bin
+@end example
+
+In case you install libraries (like the requirements of AstrUtils)
+with this method locally, you also have to notify the system to search
+for libraries in your installed directory. To do that add
+@file{USRDIR/lib} to your @command{LDPATH} environment variable
+similar to the example above for @command{PATH}. If you also want to
+access the Info and man pages documentations add the
+@file{USRDIR/share/info} and @file{USRDIR/share/man} to your
+@command{INFODIR} and @command{MANPATH} environment variables.
+
+A final note is that order matters in the directores that are
+searched. In the example above, we added the new directory after the
+system specified directories. So if the program, library or manuals
+are found in the system wide directories, the user directory is no
+longer searched. If you want to search your local installation first,
+put the new directory before the already existing list like the
+example below.
+
+@example
+export PATH=USRDIR/bin:$PATH
+@end example
+
+@noindent
+This is good when a library for example CFITSIO is already present on
+the system but wasn't installed with the correct configuration flags
+discussed above. Since you can't re-install, with this order, the
+system will first find the one you installed with the correct
+configuration flags. However there are security problems, because all
+system wide programs and libraries can be replaced by non-secure
+versions if they also exist in @file{USRDIR}. So if you choose this
+order, be sure to keep it clean from executables with the same names
+as important system programs.
+
+
+
+
+
+@node Executable names,  , Installation directory, Configuring
+@subsubsection Executable names
+
+At first sight, the names of the executables for each program might
+seem to be uncommonly long, for example @command{astrnoisechisel} or
+@command{astrimgtojpeg}. We could have chosen terse (and cryptic)
+names like most programs do. We chose this complete naming convention
+(something like the commands in @TeX{}) so you don't have to spend too
+much time remembering what the name of a specific program was. Such
+complete names also enable you to easily search for the programs.
+
+To facilitate typing the names in, we suggest using the shell
+autocomplete. With this facility you can find the executable you want
+very easily. It is very similar to file name completion in the
+shell. For example, simply by typing the letters bellow (where
+@key{[TAB]} stands for the Tab key on your keyboard)
+
+@example
+$ astr[TAB][TAB]
+@end example
+
+@noindent
+you will get the list of all the available executables that start with
+@command{astr} in your @command{PATH} environment variable
+directories. So, all the AstrUtils executables installed on your
+system will be listed. Typing the next letter for the specific program
+you want along with a Tab, will limit this list until you get to your
+desired program.
+
+In case all of this does not convince you and you still want to type
+short names, some suggestions are given below. You should have in mind
+though, that if you are writing a shell script that you might want to
+pass on to others, it is best to use the standard name because other
+users might not have adopted the same customizations. The long names
+also serve as a form of documentation in such scripts. A similar
+reasoning can be given for option names in scripts: it is good
+practice to always use the long formats of the options in shell
+scripts, see @ref{Option basics}.
+
+The simplest solution is making a symbolic link to the actual
+executable. For example lets assume you want to type @file{ic} to run
+ImageCrop instead of @file{astrimgcrop}. Assuming you installed
+AstrUtils executables in @file{/usr/local/bin} (default) you can do
+this simply by running the following command as root:
+
+@example
+# ln -s /usr/local/bin/astrimgcrop /usr/local/bin/ic
+@end example
+
+@noindent
+In case you update AstrUtils and a new version of ImageCrop is
+installed, the default executable name is the same, so your custom
+symbolic link still works.
+
+The installed executable names can also be set using options to
+@command{$ ./configure}, see @ref{Configuring}. GNU Autoconf (which
+configures AstrUtils for your particular system), allows the builder
+to change the name of programs with the three options
+@option{--program-prefix}, @option{--program-suffix} and
+@option{--program-transform-name}. The first two are for adding a
+fixed prefix or suffix to all the programs that will be installed.
+This will actually make all the names longer!  You can use it to add
+versions of program names to the programs in order to simulataneously
+have two executable versions of a program.
+
+The third configure option allows you to set the executable name at
+install time using the SED utility. SED is a very useful ``stream
+editor''. There are various resources on the internet to use it
+effectively. However, we should caution that using configure options
+will change the actual executable name of the installed program and on
+every re-install (an update for example), you have to also add this
+option to keep the old executable name updated. Also note that the
+documentation or default files do not change from their standard names
+either.
+
+For example, lets assume that typing @file{astr} on every invokation
+of every program is really annoying you! You can remove this prefix
+from all the executables at configure time by adding this option:
+
+@example
+$ configure --program-transform-name='s/astr/ /'
+@end example
+
+
+
+@node Tests, Print manual, Configuring, Installing AstrUtils
+@subsection Tests
+
+@cindex @command{make check}
+@cindex @file{mock.fits}
+@cindex Tests, running
+@cindex Checking tests
+After successfully building (compiling) the programs with the
+@command{$ make} command you can check the installation before
+installing. To run the tests on your newly build utilities, run
+
+@example
+$ make check
+@end example
+
+For every program we have designed some tests to check nearly all the
+possible operations. Running the command above will run those tests
+and give you a final report. If everything is ok, all the tests should
+pass. In case any of the tests fail, please contact us because it is a
+bug. Prior to releasing every distribution all these tests are
+checked. If you have a rasonably modern terminal, the outputs of the
+successful tests will be colored green and the failed ones will be
+colored red.
+
+These scripts can also act as a good set of examples for you to see
+how the programs are run. All the tests are in the
+@file{astrutils-@value{VERSION}/tests} directory. The tests for each
+program are shell scripts (ending with @file{.sh}) in a subdirectory
+of this directory with the same name as the program. See @ref{Test
+scripts} for more detailed information about these scripts incase you
+want to inspect them.
+
+
+
+
+
+
+@node Print manual,  , Tests, Installing AstrUtils
+@subsection Print manual
+
+@cindex Print manual
+@cindex Modifying print manual
+@cindex A4 paper size
+@cindex US letter paper size
+@cindex Paper size, A4
+@cindex Paper size, US letter
+The default print manual is provided in the letter paper size. If you
+would like to have the print version of this manual on paper and you
+are living in a country which uses A4, then you can rebuild the
+manual. The great thing about the GNU build system is that the manual
+source code which is in Texinfo is also distributed with the program
+source code, enabling you to do such customizations (hacking).
+
+In order to change the paper size, you will need to have @TeX{}
+installed. For simplicity, lets assume @file{SRCdir} is equivalent to
+@file{DOWLD/astrutils-@value{VERSION}}. Open
+@file{SRCdir/doc/astrutils.texi} with any text editor. This is the
+source file that created this manual. In the first few lines you will
+see this line:
+
+@example
+@@c@@afourpaper
+@end example
+
+@noindent
+In Texinfo, a line is commented with @code{@@c}. Therefore, uncomment
+this line by deleting the first two characters such that it changes
+to:
+
+@example
+@@afourpaper
+@end example
+
+@noindent
+Save the file and close it. You can now run
+
+@example
+$ cd SRCdir
+$ make pdf
+@end example
+
+@noindent
+and the new PDF manual will be available in
+@file{SRCdir/doc/astrutils.pdf}. By changing the @command{pdf} in
+@command{$ make pdf} to @command{ps} or @command{dvi} you can have the
+manual in those formats. Note that you can do this for any manual that
+is in Texinfo format. Note that they might not have
+@code{@@afourpaper} line, so you can add it close to the top of the
+Texinfo source file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Common behavior, Header manipulation, Installation, Top
+@chapter Common behavior
+
+There are some facts that are common to all the programs in AstrUtils
+which are mainly to do with user interaction. In this chapter we will
+review all these aspects. The most basic are the command line options
+which are common in all the programs for a unified user
+experience. All AstrUtils programs keep default values so you don't
+have to specify all the parameters on the command line each time you
+run a program. The manner of setting, checking and using the default
+values at various levels are also explained. Finally we discuss how
+you can get immediate and distraction-less help (without taking your
+hands off the keyboard!) on the command line.
+
+@menu
+* Command line::                How to use the command line.
+* Threads in AstrUtils::        How threads are managed in AstrUtils.
+* Default values::              Using, and changing default values.
+* Automatic output::            About automatic output names.
+* Getting help::                Getting more information on the go.
+* Output headers::              Common headers to all FITS outputs.
+@end menu
+
+@node Command line, Threads in AstrUtils, Common behavior, Common behavior
+@section Command line
+
+All the programs in AstrUtils are customized through the standard GNU
+style command line options. In this section we first provide a general
+outline of how to make best use of these options and finally we list
+the options that are common to all the programs in AstrUtils.
+
+Your full command line text is passed onto the shell as a string of
+characters. That string is then broken up into separate ``words'' by
+any ``metacharacters'' (like space, tab, @command{|}, @command{>} or
+@command{;}) that might exist in the text. @xref{Definitions,
+``metacharacters'' and ``words'', Definitions, bash.info, the Bash
+manual}, for the complete list of meta-characters and other Bash
+definitions. @xref{Shell Operation, ,Shell Operation, bash.info, the
+Bash manual}, for a short summary of the steps the shell takes before
+passing the commands to the program you called.
+
+@menu
+* Arguments and options::       Basics of options and arguments.
+* Arguments::                   Treatment of arguments.
+* Option basics::               How to use GNU style options.
+* Common options::              Common options to all AstrUtils programs.
+@end menu
+
+@node Arguments and options, Arguments, Command line, Command line
+@subsection Arguments and options
+On the command line, the first thing you enter is the name of the
+program you want to run. After that you can specify two types of
+input: @emph{arguments} and @emph{options}.  Arguments are those
+tokens that are not preceded by any hyphens (@command{-}), the program
+is suppose to understand what they are without any help from the
+user.
+
+Arguments can be both mandatory and optional and since there is no
+help from you, their order might also matter (for example in
+@command{cp} which is used for copying). The outputs of
+@option{--usage} and @option{--help} shows which arguments are
+optional and which are mandatory, see @ref{--usage}. As their name
+suggests, @emph{options} are only optional and you never have to worry
+about what order you specify them in.
+
+In case your arguments or option values contain any of the shell's
+meta-characters, you have to quote them. If there is only one such
+character, you can use a backslash (@command{\}) before it. If there
+are multiple, it might be easier to simply put your whole argument or
+option value inside of double quotes (@command{"}). In such cases,
+everything inside the double quotes will be seen as one ``word''.
+
+For example lets say you want to specify the Header data unit (HDU) of
+your FITS file using a complex expression like @command{3;
+images(exposure > 100)}. If you simply add these after the
+@option{--hdu} (@option{-h}) option, the programs in AstrUtils will
+read the value to the HDU option as @command{3} and run. Then, Bash
+will attempt to run a separate command @command{images(exposure >
+100)} and complain about a syntax error. This is because the semicolon
+(@command{;}) is an ``end of command'' character in Bash. To solve
+this problem you can simply put double quotes around the whole string
+you want to pass as seen below:
+@example
+$ astrimgcrop --hdu="3; images(exposure > 100)" FITSimage.fits
+@end example
+Alternatively you can put a @command{\} before every metacharacter in
+this string, but probably you will agree with us that the double
+quotes are much more easier, elegant and readable.
+
+
+
+
+@node Arguments, Option basics, Arguments and options, Command line
+@subsection Arguments
+In AstrUtils, the names of the input data files and ASCII tables are
+always specified as arguments, you can generally specify them in any
+order unless other wise stated for a particular program. Everything
+particular about the how a program treats arguments, is explained
+under the ``Invoking ProgramName'' section for that program.
+
+Generally, if there is a standard file name extension for a particular
+format, that filename extension is used to separate the kinds of
+arguments. The list below shows how arguments are classfied based on
+their file name endings. Any file that doesn't end with the specified
+extentions below is considered to be a text file (usually catalogs).
+
+@table @asis
+
+@item Astronomical data file (image or table)
+The recognized astronomical data files are listed below.
+@itemize
+
+@item
+@file{.fits}: The standard file name ending of a FITS image.
+
+@item
+@file{.fits.Z}: A FITS image compressed with @command{compress}.
+
+@item
+@file{.fits.gz}: A FITS image compressed with GNU zip (gzip).
+
+@item
+@file{.imh}: IRAF format image file.
+
+@end itemize
+
+Through out this manual and in the command line outputs, when ever we
+want to generalize all such astronomical data formats in a text place
+holder, we will use @file{ASTRdata}, we will assume that the extension
+is also part of this name. Any file ending with these names is
+directly passed on to CFITSIO to read. Therefore you don't necessarily
+have to have these files on your computer, they can also be located on
+an FTP or HTTP server too, see the CFITSIO manual for more
+information.
+
+CFITSIO has its own error reporting techniques, if your input file(s)
+cannot be opened, or read, those errors will be printed prior to the
+final error by AstrUtils.
+
+@item JPEG image
+The programs that deal with JPEG images will recognize any argument
+ending like the following list as a JPEG file name.
+@itemize
+
+@item
+@file{.jpg}
+@item
+@file{.jpeg}
+@item
+@file{.JPG}
+@item
+@file{.JPEG}
+@end itemize
+
+@end table
+
+@node Option basics, Common options, Arguments, Command line
+@subsection Options
+
+The following conventions are used to configure the behaviour of a
+program in all GNU/Linux applications each time you run it. Each
+option can be called in two ways: @emph{short} or @emph{long}. In the
+list of options provided in @ref{Common options} or those for each
+program, both formats are shown for those which support both. First
+the short is shown then the long. Short options are only one character
+and only have one hyphen (for example @option{-h}) while long options
+have two hyphens an can have many characters (for example
+@option{--hdu}).
+
+Usually, the short options are for when you are writing on the command
+line and want to save keystrokes and time. The long options are good
+for shell scripts, where you don't usually have a rush and they
+provide a level of documentation, since they are less cryptic. Usually
+after a few months of not running a program, the short options will be
+forgotten and reading your previously written script will not be easy.
+
+Some options need to be given a value if they are called and some
+don't. You can think of the latter type of options as an on/off
+option. These two types of options can be distinguished using the
+output of the @option{--help} and @option{--usage} options, which are
+common to all GNU software, see @ref{Getting help}. In AstrUtils, we
+have the following convension for the formats of the values:
+
+@vtable @option
+
+@item INT
+The value is read as an integer. If a float or a string is provided
+the program will warn you and abort. In most cases, integers are used
+for counting variables, so if they are negative the program will also
+abort.
+
+@item 4or8
+Either the value 4 or 8, any other integer will give a
+warning and abort.
+
+@item FLT
+The value is read as a float. There are generally two types, depending
+on the context. If they are for fractions, they will have to be less
+than or equal to unity.
+
+@item STR
+The value is read as a string of characters (for example a file name)
+or other paritcular settings (for example color space in the JPEG
+format).
+
+@end vtable
+
+@noindent
+To specify a value in the short format, simply put the value after the
+option. Note that since the short options are only one character long,
+you don't have to type anything between the option and its value. For
+the long option you either need white space or an @option{=} sign, for
+example @option{-h2}, @option{-h 2}, @option{--hdu 2} or
+@option{--hdu=2} are all equivalent.
+
+Short options with no values can be concatenated for example these two
+hypothetical sequences of options are equivalent: @option{-a -b -c4}
+and @option{-abc4}. In the long format, you don't have to write the
+full option name, only long enough for the option to be unambiguously
+identified. If it is ambiguous, the program will warn you and provide
+you with suggestions.  As an example, consider the following command
+to run ImageCrop:
+@example
+$ astrimgcrop -Dr3 --wwidth 3 catalog.txt --deccol=4 ASTRdata
+@end example
+@noindent
+The @command{$} is the shell prompt, @command{astrimgcrop} is the
+program name. There are two arguments (@command{catalog.txt} and
+@command{ASTRdata}) and four options, two of them given in short
+format (@option{-D}, @option{-r}) and two in long format
+(@option{--width} and @option{--deccol}). Three of them require a
+value and one (@option{-D}) is an on/off option.
+
+When you don't call an option that requires a value, all the programs
+in AstrUtils will assign them default values. To learn more about how
+folder, user and system wide default values can be set, please see
+@ref{Default values}. Another factor that is particular to AstrUtils
+is that it will check the value you have given for each option to see
+if it is reasonable. For example you might mistakenly give a negative,
+float or string value for a FITS image extension or column number. As
+another example, you might give a value larger than unity for an
+option that only accepts fractions (which are always less than unity
+and positive).
+
+@cartouche
+@noindent
+@strong{CAUTION:} When you want to specify file names as values for those
+options that accept @option{STR} and you want to use shell expansions
+like (@command{~} or @command{*}), leave at least one space between
+the option name and your value. For example use @command{-o ~/test} or
+@command{--output ~/test}. Calling them with @command{-o~/test} or
+@command{--output=~/test} will disable shell expansion.
+@end cartouche
+@cartouche
+@noindent
+@strong{CAUTION:} If you forget to specify a value for an option which
+requires one, and that option is the last one, AstrUtils will warn
+you. But if it is in the middle of the command, it will take the text
+of the next option or argument as the value which will can cause
+undefined behaviour.
+@end cartouche
+@cartouche
+@noindent
+@strong{NOTE:} All counting in AstrUtils starts from 0 not 1. So for
+example the first FITS image extension or column in a table are noted
+by 0, not 1. This is the standard in C and all languages that are
+based on it (for example C++, Java and Python).
+@end cartouche
+
+@node Common options,  , Option basics, Command line
+@subsection Common options
+
+To facilitate the job of the users and developers, all the programs in
+AstrUtils share some basic command line options for the same
+operations where they are relevant. The list of options is provided
+below. It is noteworthy that these similar options are hard-wired into
+the programming of all of AstrUtils programs using GNU C library's
+argument parser merging ability.
+
+@menu
+* Input output::                Common input/output options.
+* Operating modes::             Common operating mode options.
+@end menu
+
+@node Input output, Operating modes, Common options, Common options
+@subsubsection Input/Output options
+
+These options are to do with the input and outputs of the various
+programs.
+
+@vtable @option
+
+@item -h
+@itemx --hdu
+(@option{=STR}) The number or name of the desired Header Data Unit or
+HDU in the input FITS image or images. A FITS file can store multiple
+HDUs or extensions, each with either an image or a table or nothing at
+all (only a header). Note that counting of the extensions starts from
+0(zero), not 1(one). When specifying the name, case is not important
+so @command{IMAGE}, @command{image} or @command{ImAgE} are equivalent.
+
+A @code{#} is appended to the string you specify for the
+HDU@footnote{With the @code{#} character, CFITSIO will only read the
+desired HDU into your memory, not all the existing HDUs in the fits
+file.} and the result is put in square brackets and appended to the
+FITS file name before calling CFITSIO to read the contents of the HDU
+for all the programs in AstrUtils. CFITSIO has many capabilities to
+help you find the extension you want, far beyond the simple extension
+number and name. See CFITSIO manual's ``HDU Location Specification''
+section for a very complete explanation with several examples.
+
+@item -o
+@itemx --output
+(@option{=STR}) The name of the output file or directory. With this
+option the automatic output names explained in @ref{Automatic output}
+are ignored.
+
+@item -D
+@itemx --dontdelete
+By default, if the output file already exists, it will be silently
+replaced with the output of this run of all AstrUtils programs. By
+calling this option, if the output file already exists, the programs
+will warn you and abort.
+
+@item -K
+@itemx --keepinputdir
+In automatic output names, don't remove the directory information of
+the input file names. As explained in @ref{Automatic output}, if no
+output name is specified, then the an output name will be made in the
+existing directory. If you call this option, the directory information
+will be kept and the output will be in the same directory as the
+input. Note that his is only relevant if you are running the program
+from another directory!
+
+@end vtable
+
+@node Operating modes,  , Input output, Common options
+@subsubsection Operating modes
+
+Another group of options that are common to all the programs in
+AstrUtils are those to do with the general operation of the
+programs. The explanation for those that are not only limited to
+AstrUtils but can be called in all GNU programs start with (GNU
+option).
+
+@vtable @option
+
+@item --usage
+(GNU option) Only print the options and arguments. This is very useful
+for when you know the what the options do, you have just forgot their
+names. See @ref{--usage}.
+
+@item -?
+@itemx --help
+(GNU option) Print all options and an explanation. Adding this option
+will print all the options in their short and long formats, also
+displaying which ones need a value if they are called (with an
+@option{=} after the long format). A short explanation is also given
+for what the option is for. The program will quit immediately after
+the message is printed and will not do any form of processing. See
+@ref{--help}.
+
+@item -V
+@itemx --version
+(GNU option) Print a short message, showing the full name, version and
+copyright information. On the first line it will print the official
+name (not executable name) and version number of the program. It will
+also print the version of the AstrUtils that the program was built
+with. Following this is a blank line and a copyright information. The
+program will not run.
+
+@item -q
+@itemx --quiet
+Don't report steps. All the programs in AstrUtils that usually take
+more than a fraction of a second to run will report their steps for
+you to follow while they are operating. If you do not want to see
+these reports, you can call this option and only error messages will
+be printed if the program is aborted.
+
+@item -P
+@itemx --printparams
+Print the final values used for all the parameters and abort. See
+@ref{--printparams} for more details.
+
+@item -S
+@itemx --dirdefaults
+Set current directory default values and quit. Your command line
+options (with your given values) are added to the default file in the
+current directory. This is the recommended method to set the default
+values for all future calls to one of the AstrUtils programs in a
+folder. It will internally check if your values are in the correct
+range and format. Any command line options that you specify along with
+this option will be added to the file keeping the defaults for this
+directory, see @ref{Default values}. If the default file or folder
+doesn't exist, it will be created. If it exists but has different
+values for those options, they will be given the new values. In any
+case, the program will not run, but the contents of its updated
+default file are printed for you to inspect.
+
+@item -U
+@itemx --userdefaults
+Set the user default values and quit. The parameters (with their
+values) given on the command line are read along with the default
+parameters in the current directory. Those values are then written in
+the user default file of the current user. So if you just want your
+command line options to be set in the user default file, make sure to
+run it in a directory that has no default values. The rest is similar
+to @option{--dirdefaults}.
+
+@item -N
+@itemx --numthreads
+(@option{=INT}) Set the number of CPU threads to use. See @ref{Threads
+in AstrUtils}.
+
+@end vtable
+
+
+
+
+
+
+
+
+
+
+@node Threads in AstrUtils, Default values, Command line, Common behavior
+@section Threads in AstrUtils
+Some of the programs benefit significantly when you use all the cores
+your computer's CPU has to offer. In general, when you run an
+application, the whole process is done only on one core. AstrUtils
+uses the POSIX threads library (pthreads) for spinning off threads
+when the user asks for it.
+
+You can find the number of cores available to your system with the
+command @command{$ nproc}, which is part of GNU Coreutils. If not
+specified as an option at configure time, AstrUtils finds the number
+of cores available to your system (and reports it along with all those
+other things it checks!). It is saved internally for all the programs
+to use by default. To specify the number of threads at configure time,
+use the @option{--with-numthreads} option, see @ref{AstrUtils
+configure options}.
+
+The number of threads is the only parameter in AstrUtils, which is
+stored internally at configure time. The implication is that the only
+option with a value that doesn't have to be in any of the default
+files (see @ref{Default values}) is this. Note that if you do specify
+it, the value you provided in the most immediate default file will be
+used, not the internal value, see @ref{Default values}.
+
+
+
+@menu
+* A note on threads::           Caution and suggestion on using threads.
+@end menu
+
+@node A note on threads,  , Threads in AstrUtils, Threads in AstrUtils
+@subsection A note on threads
+
+Spinning off threads internally is not necessarily always the most
+efficient way to run an application. It is most useful when the input
+data are fixed and you want the same operation to be done on parts of
+it. For example one input image to ImageCrop and multiple crops from
+various parts of it. In this fashion, the image is loaded into memory
+once, all the crops are divided between the number of threads
+internally and each thread cuts out those parts which are assigned to
+it from the same image. On the other hand, if you have multiple images
+and you want to crop the same region out of all of them, it is much
+more efficient to set @option{--numthreads=1} (so no threads will be
+spinned off) and run ImageCrop multiple times simultaneously.
+
+The best method to run multiple instances of a command on different
+threads is to use GNU parallel. Supprizingly GNU Parallel is one of
+the few GNU packages that has no Info documentation but only a Man
+page, see @ref{Info}. So to see the documentation after installing it
+please run
+
+@example
+$ man parallel
+@end example
+
+As an example, lets assume we want to crop a region fixed on the
+pixels (500, 600) with the default width from all the FITS images in
+the @file{./data} directory ending with @file{sci.fits} to the current
+directory. To do this, you can run:
+
+@example
+$ parallel astrimgcrop --numthreads=1 --xc=500 --yc=600 ::: \
+  ./data/*sci.fits
+@end example
+
+@noindent
+For absolute beginners: the backslash (@command{\}) is only a line
+breaker to fit nicely in the page. If you type the whole command in
+one line, you should remove it.
+
+
+
+@node Default values, Automatic output, Threads in AstrUtils, Common behavior
+@section Default values
+
+Each program needs a certain number of parameters to run. Supplying
+all the necessary parameters each time you run the program is very
+frustrating and prone to errors. Therefore all the programs read the
+values for the necessary options you have not given in the command
+line from at one of several plain text files (which you can view and
+edit with any text editor).
+
+The thing to have in mind is that none of the programs in AstrUtils
+keeps any internal default value. All the values must either be stored
+in one of the default files or explicitly called in the command
+line. In case the necessary parameters are not given through any of
+these methods, the program will list the missing necessay parameters
+and abort. As explained in @ref{Operating modes}, the only exception
+to this is @option{--numthreads}, whose default value is set at
+@command{$ ./configure} time internally, see @ref{AstrUtils configure
+options}. Ofcourse, you can still provide a default value at any of
+the levels below, but if you don't, the program will not abort.
+
+The parameter values in all the programs of AstrUtils will be filled
+in the following order. Such that if a parameter is assigned a value
+in an earlier step, any value for that parameter in a later step will
+be ignored.
+
+@enumerate
+@item
+Command line, for this paricular execution.
+
+@item
+Current directory, for all executions in this directory
+(@file{./.astrutils/}).
+
+@item
+The user's home directory, for all the executions of a particular
+user:@*(@file{$HOME/.local/share/astrutils}, see below).
+
+@item
+In a system wide directory for any user on that computer
+(@file{prefix/share/astrutils/}, see @ref{Installation directory} for
+the value of @file{prefix}).
+@end enumerate
+@noindent
+
+The basic idea behind setting this progressive state of checking for
+default values is that separate users of a computer or separate
+folders in a user's file system might need different values for some
+parameters and the same values for others. For example raw telescope
+images usually have their main image extension in the second FITS
+extension, while processed FITS images usually only have one
+extension. If your system wide default input extension is 0 (the
+first), then when you want to work with the former group of data you
+have to explicitly mention it to the programs every time. With this
+progressive state of default values to check, you can set different
+default values for the different directories that you would like to
+run AstrUtils in for your different purposes, so you won't have to
+worry about this issue any more.
+
+The files keeping the default values have the standard program name
+along with a @file{.def} postfix. When you download the source code,
+you can see find them in the same directory as the source code of each
+program, see @ref{Program source}. Each program has such a file with
+the same name as the executable of that program. When you install
+AstrUtils, All of them are copied into the (possibly system wide)
+@file{prefix/share/astrutils/} directory. See @ref{Configuring} for
+more detils on @file{prefix} (by default it is:
+@file{/usr/local}). This directory is the final place (with the lowest
+priority) that the programs in AstrUtils will check to retrieve
+default values. If you remove a parameter and its value from the files
+in this directory, you either have to specify it in more immediate
+default files or set it each time in the command line. Recall that
+none of the programs in AstrUtils keep any internal default values and
+will abort if they don't find a value for the necessary parameters
+(except the number of threads). So even though you might never use a
+parameter, it still has to be at least available in this system-wide
+default file.
+
+The user default values are stored in the directory
+@file{$HOME/.local/share/astrutils}. Unless you have changed it, the
+@file{$HOME} environment variable should point to your home
+directory. You can check it by running @command{$ echo $HOME}. Each
+time you run any of the programs in AstrUtils, this environment
+variable is read and placed in the above address. So if you suddenly
+see that your home default values are not being read, probably you (or
+some other program) has changed the value of this environment
+variable. However, this dependence on the environment variable does
+enable you to temporarily use a different directory as your home
+directory. This can come in handy in complicated situations. You can
+write the default values to this file by using the
+@option{--userdefault} option, see @ref{Operating modes}.
+
+For the current directory, default files are stored in a hidden
+sub-directory named @file{.astrutils/}. You can build the directory
+and the default files your self using any text editor.  However, it is
+recommended to use the @option{--dirdefaults} option to set default
+values for the current directory, see @ref{Operating modes}. With this
+option, the values you give will be checked as explained in
+@ref{Option basics} before writing in the current directory's default
+file. It will also print a set of commented lines guiding the reader
+and will also classify the options based on their context and write
+them in their logical order to be more understandable.
+
+The default files are formatted in the following manner. Any line
+whose first non-white character is a @key{#} is considered to be a
+comment and is ignored. The same goes for an empty line. The name of
+the parameter is the same as the long format of the command line
+option for that parameter. The parameter name and parameter value have
+to be separated by any number of the following characters: space,
+comma (@key{,}), equal sign (@key{=}), or colon (@key{:}). By default
+only the first (several space characters) is used, but if you feel the
+need, you can use the others too. Any text after the first two words
+(separated by the above delimiters) in a line is ignored. If an option
+is not recognized in the default file, the name of the file and
+unrecognized option will be reported and the program will abort.
+
+Note that if a parameter is repeated more more than once in the
+default files and it is not set on the command line, then only the
+first value will be used, the rest will be ignored.
+
+
+
+
+
+@node Automatic output, Getting help, Default values, Common behavior
+@section Automatic output
+
+All the programs in AstrUtils are designed such that specifying an
+output file or directory (based on the program context) is optional.
+The outputs of most programs are automatically found based on the
+input and what the program does. For example when you are converting a
+FITS image named @file{FITSimage.fits} to a JPEG image, the JPEG image
+will be saved in @file{FITSimage.jpg}.
+
+Another very important part of the automatic output generation is that
+all the directory information of the input file name is stripped off
+of it. This is done, because astronomical data are usually very large
+and organized specially with special file names. In some cases, the
+user might not have write permissions in those directories. Infact,
+even if the data is stored on your own computer, it is advised to only
+grant write permissions to the super user or root. This way, you won't
+accidentally delete or modify your valuable data!
+
+Lets assume that we are working on a report and want to process the
+FITS images from two projects (ABC and DEF), which are stored in the
+sub-directories named @file{ABCproject/} and @file{DEFproject/} of our
+top data directory (@file{/mnt/data}). The following shell commands
+show how one image from the former is first converted to a JPEG image
+through ImagetoJpeg (which has one output JPEG file) and then the
+objects from an image in the latter project are detected using
+NoiseChisel (which by default has two text catalog files and one
+multi-extension FITS detection map file). The text after the
+@command{#} sign are comments (not typed!).
+
+@example
+$ pwd                                               # Current location
+/home/usrname/research/report
+$ ls                                                # List contents
+ABC001.jpg
+$ ls /mnt/data/ABCproject                           # Archive No.1
+ABC001.fits ABC002.fits ABC003.fits
+$ ls /mnt/data/DEFproject                           # Archive No.2
+DEF001.fits DEF002.fits DEF003.fits
+$ astrimgtojpeg /mnt/data/ABCproject/ABC002.fits   # Program 1
+$ ls                                                # List contents
+ABC001.jpg ABC002.jpg
+$ astrnoisechisel /mnt/data/DEFproject/DEF001.fits  # Program 2
+$ ls                                                # List contents
+ABC001.jpg ABC002.jpg DEF001_c.txt DEF001_map.fits DEF001_o.txt
+@end example
+
+
+
+
+@node Getting help, Output headers, Automatic output, Common behavior
+@section Getting help
+
+Probably the first time you read this manual, it is either in the PDF
+or HTML formats. These two formats are very convenient for when you
+are not actually working, but when you are only reading. Later on,
+when you start to use the programs and you are deep in the middle of
+your work, some of the details will inevitably be forgotten (the
+option names or default values in particular). Going to find the PDF
+file (printed or digital) or the HTML webpage is a major
+distraction.
+
+GNU software have a very unique set of tools for aiding your memory on
+the command line, where you are working, depending how much of it you
+need to remember. In the past, such command line help was known as
+``online'' help, because they were literally provided to you ``on''
+the command ``line''. However, nowadays the word ``online'' refers to
+something on the internet, so we will not use that term. In this
+manner, you will not be distracted and can resume your exciting
+research without taking your hands off the keyboard.
+
+Another major advantage of such command line based help routines is
+that they are installed with the software in your computer, therefore
+they are always in sync with the executable you are actually
+running. You don't have to worry about the version of the manual or
+program. If you rely on other forms of help (a PDF in your personal
+print or digital archive or HTML from the official webpage) you have
+to check to see if their versions fit with your installed program. But
+these command line help routines are always in sync with the program
+version you are actually running. Three of them are actually part of
+the executable.
+
+If it is only the short or long names of the options, @option{--usage}
+is advised. If it is what the options do, then @option{--help} is a
+great tool. Man pages are also provided for those who are use to this
+older system of documentation. However, man pages are automatically
+created from the output of @option{--help} and @option{--version}, so
+you might as well just use @option{--help}! This full manual is also
+available to you on the command line in Info format. AstrUtils also
+provides the @option{--printparams} (@option{-P}) option to show you
+the values that will be used after reading the command line and
+default values. In the subsections below each of these methods are
+reviewed.
+
+
+@menu
+* --usage::                     Only view option names and value formats.
+* --help::                      List all options with description.
+* Man pages::                   Man pages generated from --help.
+* --printparams::               Print values to be used.
+* Info::                        View complete manual in terminal.
+@end menu
+
+@node --usage, --help, Getting help, Getting help
+@subsection @option{--usage}
+If you give this option, the program will not run. It will only print
+a very concize message showing the options and arguments. Everything
+within square brackets (@option{[]}) is optional. For example here are
+the first and last two lines when we run ImageCrop with
+@option{--usage}:
+
+@example
+$ astrimgcrop --usage
+Usage: astrimgcrop [-Do?IPqSVW] [-d INT] [-h INT] [-r INT] [-w INT]
+            [-x INT] [-y INT] [-c INT] [-p STR] [-N INT] [--deccol=INT]
+            ....
+            [--setdefaults] [--usage] [--version] [--wcsmode]
+            [ASCIIcatalog] FITSimage(s).fits
+@end example
+
+There are no explanations on the options, just their short and long
+names shown separately. After the program name, the short format of
+all the options that don't require a value (on/off options) is
+displayed. Those that do require a value then follow in separate
+brackets, each displaying the format of the input they want, see
+@ref{Option basics}. Since all options are optional, they are shown in
+square brackets, but arguments can also be optional. For example in
+this example, a catalog name is optional and is only required in some
+modes. This is a standard method of displaying optional arguements for
+all GNU software.
+
+@node --help, Man pages, --usage, Getting help
+@subsection @option{--help}
+
+If the command line includes this option, the program will not be
+run. It will print a complete list of all available options along with
+a short explanation. The options are also grouped by their
+context. Within each context, the options are sorted
+alphabetically. Since the options are shown in detail afterwards, the
+first line of the @option{--help} output shows the arguments and if
+they are optional or not, similar to @ref{--usage}.
+
+In the @option{--help} output of all programs in AstrUtils, the
+options for each program are classified based on context. The first
+two contexts are always options to do with the input and output
+respectively. For example input image extensions or supplimentary
+input files for the inputs. The last class of options is also fixed in
+all of AstrUtils, it shows operating mode options. Most of these
+options are already explained in @ref{Operating modes}.
+
+The help message will sometimes be longer than the vertical size of
+your terminal. If you are using a graphical user interface terminal
+emulator, you can scroll the terminal with your mouse, but we promised
+no mice distractions! So here are our suggestions:
+
+@itemize
+@item
+@key{Shift + PageUP} to scroll up and @key{Shift + PageDown} to scroll
+down. For most help output this should be enough. The problem is that
+it is limited by the number of lines that your terminal keeps in
+memory and that you can't scroll by lines, only by whole screens.
+
+@item
+Pipe to @command{less}. The @command{less} tool in Unix-like systems
+was made exactly for such outputs of any length. You can pipe
+(@command{|}) the output of any program that is longer than the screen
+to it and then you can scroll through (up and down) with its many
+tools. For example:
+@example
+$ astrnoisechisel --help | less
+@end example
+@noindent
+Once you have gone through the text, you can quit @command{less} by
+pressing the @key{q} key.
+
+
+@item
+Save to file. This is a less convenient way, because you will then
+have to open the file in a text editor! You can do this with the shell
+redirection tool (@command{>}):
+@example
+$ astrnoisechisel --help > filename.txt
+@end example
+@end itemize
+
+In case you have a special keyword you are looking for in the help,
+you don't have to go through the full list. GNU Grep is made for this
+job. For example if you only want the list of options whose
+@option{--help} output contains the word ``axis'' in ImageCrop, you
+can run the following command:
+
+@example
+$ astrimgcrop --help | grep axis
+@end example
+
+If the output of this option does not fit nicely within the confines
+of your terminal, GNU does enable you to customize its output through
+the environment variable @code{ARGP_HELP_FMT}, you can set various
+parameters which specify the formatting of the help messages. For
+example if your terminals are wider than 70 spaces (say 100) and you
+feel there is too much empty space between the long options and the
+short explanation, you can change these formattings by giving values
+to this environment variable before running the program with the
+@option{--help} output. You can define this environment variable in
+this manner:
+@example
+$ export ARGP_HELP_FMT=rmargin=100,opt-doc-col=20
+@end example
+This will affect all GNU programs using GNU C library's @file{argp.h}
+facilities as long as the environment variable is in memory. You can
+see the full list of these formatting parameters in the ``Argp User
+Customization'' part of the GNU C library manual. If you are more
+comfortable to read the @option{--help} outputs of all GNU software in
+your customized format, you can add your customizations (similar to
+the line above, without the @command{$} sign) to your
+@file{/home/username/.bashrc} file. This is a standard option for all
+GNU software.
+
+@node Man pages, --printparams, --help, Getting help
+@subsection Man pages
+Man pages were the Unix method of providing command line documentation
+to a program. With GNU Info, see @ref{Info} the usage of this method
+of documentation is highly discouraged. This is because Info provides
+a much more easier to navigate and read environment.
+
+However, some operating systems require a man page for packages that
+are installed and some people are still used to this method of command
+line help. So the programs in AstrUtils also have Man pages which are
+automatically generated from the outputs of @option{--version} and
+@option{--help} using the GNU help2man program. So if you run
+@example
+$ man programname
+@end example
+@noindent
+You will be provided with a man page listing the options in the
+standard manner.
+
+@node --printparams, Info, Man pages, Getting help
+@subsection @option{--printparams}
+
+Given that there are several layers of default parameters, it often
+happens that before running a program on a certain data set, you want
+to see the values for the parameters that the program will use after
+it has read your command line options and all the default values. You
+might also want to save the list with the output so you can reproduce
+the same results at a later time, this is very important when you want
+to use your results in a report or paper.
+
+If you call this option, all AstrUtils programs will read your command
+line parameters and all the default parameters files, but immediately
+before actually running, the programs will print the full list of
+paramter names and values sorted and grouped by context and quit. They
+will also report their version number and configure date. So for
+example, you can give your full command line options and even the
+input and output file names and finally just add @option{-P} to check
+if all the parameters are finely set. If everything is ok, you can
+just run the same command (easily retrieved from the bash history,
+with the top arrow key) and simply remove the last two characters that
+showed this option.
+
+In case you want to store the list of parameters for later
+reproduction of the same results, you can do so with the GNU Bash
+re-direction tool. For example after you have produced the results you
+want to store, you can save all the parameters that were used in a
+file named @file{parameters.txt} in the following manner. Using the
+bash history you can retrieve the last command you entered and simply
+add @command{-P > parameters.txt} to it, for example:
+
+@example
+$ astrimgcrop --racol=2 --deccol=3 IN.fits cat.txt -P > parameters.txt
+@end example
+
+@noindent
+All the parameters along with the version number of the program and
+the date and time that it was configured on your computer will be
+stored in that plain text file.
+
+@node Info,  , --printparams, Getting help
+@subsection Info
+
+Info is the standard documentation format for all GNU software. It is
+a very useful command line document viewing format, fully equipted
+with links between the various pages and menus and search
+capabilities. As explained before, the best thing about it is that it
+is available for you the moment you need to refresh your memory on any
+command line tool in the middle of your work without having to take
+your hands off the keyboard. This complete manual is available in Info
+format and can be accessed from anywhere on the command line.
+
+To open the info format of any installed programs or library on your
+system which has an Info format manual, you can simply run the command
+below (change @command{executablename} to the executable name of the
+program or library):
+
+@example
+$ info executablename
+@end example
+
+@noindent
+In case you are not already familiar with it, go and fill your cup of
+coffee or green tea and and run @command{$ info info}. It does a
+fantastic job in explaining all its capabilities its self. It is very
+short and you will become sufficiently fluent in about half an
+hour. Since all GNU software documentation is also provided in info,
+your whole GNU/Linux life will significantly improve.
+
+Once you've become an efficient navigator in Info, you can go to any
+part of this manual or any other GNU software or library manual, no
+matter how long it is, in a matter of seconds. It also blends nicely
+with GNU Emacs (a text editor) and you can search manuals while you
+are writing your document or programs without taking your hands off
+the keyboard, this is most useful for libraries like the GNU C
+library. To be able to access all the info manuals installed in your
+GNU/Linux within Emacs, type @key{Ctrl-H + i}.
+
+To see this whole manual from the beginning in Info, you can run
+
+@example
+$ info astrutils
+@end example
+
+@noindent
+If you run Info with the particular program executable name, for
+example @file{astrimgcrop} or @file{astrnoisechisel}:
+
+@example
+$ info astrprogramname
+@end example
+
+@noindent
+you will be taken to the section titled ``Invoking ProgramName'' which
+explains the inputs and outputs along with the command line options
+for that program. Finally, if you run Info with the official program
+name, for exmaple ImageCrop or NoiseChisel:
+
+@example
+$ info ProgramName
+@end example
+
+@noindent
+you will be taken to the top section which introduces the
+program. Note that in all cases, Info is not case sensitive.
+
+@node Output headers,  , Getting help, Common behavior
+@section Output headers
+
+The output FITS files created by AstrUtils will have the following two
+keywords: @command{DATE} and @command{CFITSIO}. The first specifies
+the time in UT of the file being created and the second specifies the
+version of CFITSIO that was used to make the file. Some basic
+information about AstrUtils is also printed. The example below shows
+the last few keywords of one of the outputs of ImageCrop.
+
+@example
+              / ImageCrop (GNU AstrUtils 0.1) 0.2:
+DATE    = ' ... '       / file creation date (YYYY-MM-DDThh:mm:ss UT)
+CFITSIO = '3.37    '    / Version of CFITSIO used.
+COMMENT GNU AstrUtils 0.1
+COMMENT http://www.gnu.org/software/astrutils/
+COMMENT Copyright (C) 2013-2014, Free Software Foundation.
+COMMENT License GPLv3+: GNU General public license version 3 or later.
+END
+@end example
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Header manipulation, Image manipulation, Common behavior, Top
+@chapter Header manipulation
+
+The FITS standard requires each extension of a FITS file to have a
+header, giving basic information about what is in that extension. Each
+line in the header is for one keyword, specifying its name, value and
+a short comment string. Besides the basic information, the headers
+also contain vital information about the data, how they were
+processed, the instrument specifications that took the image and also
+the World Coordinate System that is used to translate pixel
+coordinates to sky or spectrum coordinates on the image or table.
+
+With the set of tools in this section you can view the contents of any
+extension in a FITS file. You can also add keywords and values and
+comments to a FITS header or remove them if you like.
+
+Programs for this section will soon be added....
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Image manipulation, Image analysis, Header manipulation, Top
+@chapter Image manipulation
+
+One of the data formats that can be contained in a FITS file extension
+is an image with one value per pixel (or grey scale). The programs
+specified in this chapter provide the tools to manipulate those
+images, for example to crop a small region of them or to convert them
+to other formats.
+
+@menu
+* ImageCrop::                   Crop region(s) from FITS image(s).
+* ImageTransform::              Transform (flip, rotate) an image.
+* EllipMask::                   Place elliptical masks on an image.
+* Image conversion::            Convert an image to and from other formats.
+@end menu
+
+@node ImageCrop, ImageTransform, Image manipulation, Image manipulation
+@section ImageCrop
+
+Astronomical images are often very large, filled with thousands of
+galaxies. It often happens that you only want a section of the image,
+or you have a catalog of sources and you want to visualy analyze them
+in small postage stamps. ImageCrop is made to do all these
+things. When more than one crop is required, ImageCrop will divide the
+crops between multiple threads to significantly reduce the run time.
+
+One of the main problems in achieving this goal is that astronomical
+surveys are usually extermely large. So large infact, that the whole
+survey will not fit into a reasonably sized file. Because of this
+surveys usually cut the final image into separate tiles and store each
+tile in a file. For example the COSMOS survey's Hubble space
+telescope, ACS F814W image consists of 81 separate FITS images, with
+each one having a volume of 1.7 Giga bytes.
+
+Even though the tile sizes are chosen to be large enough that too many
+galaxies don't fall on the edges of the tiles, inevitably some do and
+if you simply crop the image of the galaxy from that one tile, you
+will miss a large area of the surrouding sky (which is essential in
+estimating the noise). Therefore in its WCS mode, ImageCrop will
+stitch parts of the tiles that are relevant for a target (with the
+given width) from all the input images that cover that region into the
+output. Ofcourse, the tiles have to be present in the list of input
+files.
+
+@menu
+* ImageCrop modes::             Basic ImageCrop modes.
+* Crop section syntax::         How to define a section to crop.
+* Blank pixels::                Pixels with no value.
+* Invoking astrimgcrop::        Calling ImageCrop on the command line
+* ImageCrop future::            Future updates to ImageCrop.
+@end menu
+
+@node ImageCrop modes, Crop section syntax, ImageCrop, ImageCrop
+@subsection ImageCrop modes
+In order to be as comprehensive as possible, ImageCrop has two major
+modes of operation listed below.
+
+@table @asis
+@item Image
+(High priority) The image mode uses the pixel coordinates. Depending on
+your command line options, this mode consists of three sub-modes. In
+image mode, only one image may be input.
+@itemize
+
+@item
+Catalog (multiple crops). Coordinates are read from a text file. The
+@option{--xcol} and @option{--ycol} columns in the catalog are
+interpretted as the center of a square crop box whose width is
+specified with the @option{--iwidth} option in pixels. Since the given
+pixel has to be on the center, the width has to be an odd number, so
+if you give an even number for the width, it will be added by one. If
+a catalog file name is provided (with @option{--imagemode} activated
+ofcourse) this mode will be used.
+
+@item
+Center (one crop). The box center is given on the command line with
+the @option{--xc} and @option{--yc} parameters. The image width is
+similar to above.
+
+@item
+Section (one crop). You can specify the section of pixels along each
+axis in the image which you want to be cropped with the
+@option{--section} option. See @ref{Crop section syntax} for a full
+explanation on the syntax of specifying the desired region.
+@end itemize
+
+The latter two cases will only have one crop box. In both cases,
+ImageCrop will go into the image mode, irrespective of calling
+@option{--wcsmode} or the default mode. In the first two cases, since
+you specify a central pixel, the crop box will be a square with an odd
+number of pixels on the side, so your desired pixel sits right in the
+center, see @ref{Blank pixels} on how to disable this for cases when
+the box exceeds the image size.
+
+@item WCS
+The Right ascension (RA) and Declination (Dec) of the objects in a
+catalog is used to define the central position of each postage
+stamp. In this mode, the width (@option{--wwidth}) is read in units of
+arc seconds and multiple images (tiles in a survey) can be input. If
+the objects are closer to the edge of the image than half the required
+width, other tiles (if they are present in the input files) are used
+to fill the empty space. The square output cropped box will have an
+odd number of pixels on the side.
+
+In this mode, the input images do not necessarily have to be the same
+size, each individual tile can even be smaller than the final crop. In
+any case, any part of any of the input images which overlaps with the
+desired region will be used in the crop. Note that if there is an over
+lap, the pixels from the last input image read are going to be
+used. The input images all just have to be aligned with the celestial
+coordinates, see the caution note below.
+
+Similar to the image mode, there are two sub-modes:
+
+@itemize
+
+@item
+Catalog (multiple crops). Similar to catalog mode in image mode. The
+RA and Dec column should be specified in the catalog (@option{--racol}
+and @option{--deccol}).
+
+@item
+Center (one crop). You can specify the center of only one crop box (no
+matter how many input images there are) with the options @option{--ra}
+and @option{--dec}. If it exists in the input images, it will be
+cropped similar to the catalog mode. If automatic output is triggered
+(you don't specify a file name for @option{--output}) and several of
+the input images are used to stitch and crop the region around the
+central point, the name of the first input will be used in automatic
+output, see @ref{Automatic output}.
+
+@end itemize
+
+@cartouche
+@noindent
+@strong{CAUTION:} In WCS mode, the image has to be aligned with the
+celestial coordinates, such that the first FITS axis is parallel
+(opposite direction) to the Right Ascension (RA) while the second FITS
+axis is parallel to the declination. If these conditions aren't met
+for an image, ImageCrop will warn you and abort. You have to use other
+tools to transform the image to the correct directions.
+@end cartouche
+
+@end table
+
+In short, if you don't specify a catalog, you have to specify box
+coordinates manually on the command line. When you do specify a
+catalog, ImageCrop has to be in one of the two major modes
+(@option{--imgmode} or @option{--wcsmode}). Note that the single crop
+box parameters specified in the sub-modes will not be written to or
+read from the default file, they have to be specified on each
+execution.
+
+
+@node Crop section syntax, Blank pixels, ImageCrop modes, ImageCrop
+@subsection Crop section sytax
+When in image mode, one of the methods to crop only one box from the
+input image is to define a section. Instead of defining four
+parameters for you to specify the corners of your section, ImageCrop
+has a powerful syntax to read the box parameters from a string of
+characters. If you leave certain parts of the string to be empty,
+ImageCrop can fill them for you based on the input image sizes.
+
+To define a box, you need the coordinates of two points: the first
+pixel in the box at (@code{X1}, @code{Y1}) and the pixel which is
+immediately outside of the box (@code{X2, @code{Y2}}), for coordiantes
+in total. The four coordinates can be specified with one string:
+@command{X1:X2,Y1:Y2} which is given to the @option{--section}
+option. Therefore, the pixels along the first axis that are
+@math{\geq}@command{X1} and <@command{X2} will be included in the
+cropped image. The same goes for the second axis. Note that each
+different term will be read as an integer, not a float (we don't have
+sub-pixels). Also, following the FITS standard, pixel indexs along
+each axis starts from unity(1) not zero(0).
+
+You can omit any of the values and they will be filled automatically.
+The left hand side of the colon (@command{:}) will be filled with
+@command{1}, and the right side with the image size. So, @command{2:,:}
+will include the full range of pixels along the second axis and only
+those with a first axis index larger than @command{2} in the first
+axis. If the colon is ommited for a dimension, then the full range is
+automatically used. So the same string is also equal to @command{2:,}
+or @command{2:} or even @command{2}. If you want such a case for the
+second axis, you should set it to: @command{,2}.
+
+If you specify a negative value, it will be seen as before the indexes
+of the image which are outside the image along the bottom or left
+sides when viewed in SAO ds9. In case you want to count from the top
+or right sides of the image, you can use a star (@option{*}). When
+confronted with a @option{*}, ImageCrop will replace it with the
+maximum length of the image in that dimention. So
+@command{*-10:*+10,*-20:*+20} will mean that the crop box will be
+@math{20\times40} pixels in size and only include the top corner of
+the input image with 3/4 of the image being covered by blank pixels,
+see @ref{Blank pixels}.
+
+If you feel more comfortable with space characters between the values,
+you can use as many space characters as you wish, just be careful to
+put your value in double quotes, for example @command{-s"5:200,
+123:854"}. If you forget, anything after the first space will not be
+seen by @option{--section}, because the unquoted space character is
+one of the characters that separates options on the command line.
+
+
+
+@node Blank pixels, Invoking astrimgcrop, Crop section syntax, ImageCrop
+@subsection Blank pixels
+The cropped box can potentially include pixels that are beyond the
+image range. For example when a tarrget in the input catalog was very
+near the edge of the input image. The parts of the cropped image that
+were not in the input image will be filled with the following two
+values depending on the data type of the image. In both cases, SAO ds9
+will not color code those pixels.
+@itemize
+@item
+If the data type of the image is a floating point type (float or
+double), IEEE NaN (Not a number) will be used.
+@item
+For integer types, pixels out of the image will be filled with the
+value of the @command{BLANK} keyword in the cropped image header. The
+value assigned to it is the lowest value possible for that type, so
+you will probably never need it any way. Only for the unsigned
+character type (@command{BITPIX=8} in the FITS header), the maximum
+value is used because it is unsigned, the smallest value is zero which
+is often meaningful.
+@end itemize
+You can ask for such blank regions to not be included in the output
+crop image using the @option{--noblank} option. In such cases, there
+is no guarantee that the image size of your outputs are what you asked
+for.
+
+In some survey images, unfortunately they do not use the
+@command{BLANK} FITS keyword. Instead they just give all pixels
+outside of the survey area a value of zero. So by default, when
+dealing with float or double image types, any values that are 0.0 are
+also regarded as blank regions. This can be turned off with the
+@option{--zeroisnotblank} option.
+
+
+@node Invoking astrimgcrop, ImageCrop future, Blank pixels, ImageCrop
+@subsection Invoking ImageCrop
+
+ImageCrop is run with the following general template:
+
+@example
+astrimgcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
+@end example
+
+@noindent
+ImageCrop has one mandatory argument which is the input image name(s),
+shown above with @file{ASTRdata ...}. You can use shell expansions,
+for example @command{*} for this if you have lots of images in WCS
+mode. If the crop box centers are in a catalog, you also have to
+provide the catalog name as an argument. Alternatively, you have to
+provide the crop box parameters with command line options.
+
+When in catalog mode, ImageCrop will run using any number of threads
+that you have specified with the @option{--numthreads} option, see
+@ref{Common options}. Note that when multiple threads are being used,
+in verbose mode, the outputs will not be in order. This is because the
+threads asynchronous and are not started in order. When the box
+coordinates are given on the command line, no threads will be created.
+
+@menu
+* astrimgcrop options::         A list of all the options with explanation.
+* astrimgcrop output::          The outputs of ImageCrop.
+@end menu
+
+@node astrimgcrop options, astrimgcrop output, Invoking astrimgcrop, Invoking astrimgcrop
+@subsubsection ImageCrop options
+
+The options can be classified into the following contexts: Input,
+Output and operating mode options. Options that are common to all
+AstrUtils program are listed in @ref{Common options} and will not be
+repeated here.
+
+@cartouche
+@noindent
+@strong{NOTE:} The coordinates are in the FITS format. So the first
+axis is the horizontal axis when viewed in SAO ds9 and the second axis
+is the vertical. Also in the FITS standard, counting begins from 1
+(one) not 0 (zero).
+@end cartouche
+
+@noindent
+Crop box parameters:
+@table @option
+
+@item -x
+@itemx --xc
+(@option{=FLT}) The first FITS axis value of central position of the
+crop box in single image mode.
+
+@item -y
+@itemx --yc
+(@option{=FLT}) The second FITS axis value of the central position of
+the crop box in single image mode.
+
+@item -s
+@itemx --section
+(@option{=STR}) Section of the input image which you want to be
+cropped. See @ref{Crop section syntax} for a complete explanation on
+the syntax required for this input.
+
+@item -r
+@itemx --ra
+(@option{=FLT}) The first FITS axis value of central position of the
+crop box in single image mode.
+
+@item -d
+@itemx --dec
+(@option{=FLT}) The second FITS axis value of the central position of
+the crop box in single image mode.
+
+@item -i
+@itemx --xcol
+(@option{=INT}) Column number of the first FITS axis position of the
+box center, starting from zero. In SAO ds9, the first FITS axis is the
+horizontal axis.
+
+@item -j
+@itemx --ycol
+(@option{=INT}) Column number of the second FITS axis position of the
+box center, starting from zero. In SAO ds9, the second FITS axis is
+the vertical axis.
+
+@item -a
+@itemx --iwidth
+(@option{=INT}) Width the square box to crop in image mode in units of
+pixels. In order for the chosen central pixel to be in the center of
+the cropped image, the final width has to be an odd number, therefore
+if the width
+
+@item -f
+@itemx --racol
+(@option{=INT}) Column number of Right Ascension (RA) in the input
+catalog, starting from zero.
+
+@item -g
+@itemx --deccol
+(@option{=INT}) Column number of declination in the input catalog,
+starting from zero.
+
+@item -w
+@itemx --wwidth
+(@option{=FLT}) The width of the crop box in WCS mode in units of
+arc-seconds.
+
+@end table
+
+@noindent
+Output options:
+@table @option
+
+@item -c
+@itemx --checkcenter
+(@option{=INT}) Box size of region in the center of the image to check
+in units of pixels. This is only used in WCS mode. Because surveys
+don't often have a clean square or rectangle shape, some of the pixles
+on the sides of the surveys don't have any data and are commonly
+filled with zero valued pixels.
+
+If the RA and Dec of any of the targets specified in the catalog fall
+in such regions, that cropped image will be useless! Therefore with
+this option, you can specify a width of a small box (3 pixels is often
+good enough) around the central pixel of the cropped image. If all the
+pixels in this small box have the value of zero, no cropped image will
+be created and this object will be flagged in the final log file.
+
+@item -p
+@itemx --suffix
+(@option{=STR}) The suffix (or postfix) of the output files for when
+you want all the cropped images to have a special ending. One case
+where this might be helpful is when besides the science images, you
+want the weight images (or exposure maps, which are also distributed
+with survey images) of the cropped regions too. So in one run, you can
+set the input images to the science images and
+@option{--suffix=_s.fits}. In the next run you can set the weight
+images as input and @option{--suffix=_w.fits}.
+
+@item -b
+@itemx --noblank
+Pixels outside of the input image that are in the crop box will not be
+used. By default they are filled with blank values (depending on
+type), see @ref{Blank pixels}.
+
+@item -z
+@itemx --zeroisnotblank
+In float or double images, it is common to give the value of zero to
+blank pixels. If the input image type is one of these two types, such
+pixels will also be considered as blank. You can disable this behavior
+with this option, see @ref{Blank pixels}.
+
+@end table
+
+@noindent
+Operating mode options:
+@table @option
+
+@item -I
+@itemx --imgmode
+Operate in Image mode as described above. This option is only useful
+when catalog is being provided. If coordinates are given on the
+command line, the mode is automatically set based on them.
+
+@item -W
+@itemx --wcsmode
+Operate in WCS mode. See explanations for @option{--imgmode}.
+
+@end table
+
+
+
+
+
+@node astrimgcrop output,  , astrimgcrop options, Invoking astrimgcrop
+@subsubsection ImageCrop output
+When a catalog is given, the value of @option{--output} (see
+@ref{Common options}) will be seen as the directory to store the
+output cropped images. In such cases, the outputs will consist of two
+parts: a variable part (the row number of each target starting from 1)
+along with a fixed string which you can set with the
+@option{--postfix} option. Note that in catalog mode, only one image
+can be input.
+
+When the crop box is specified on the command line, the value to
+@option{--output} will be used as a file name. If no output is
+specified or if it is a directory, the output file name will follow
+the automatic output names of AstrUtils, see @ref{Automatic output}
+for the input image.
+
+The header of each output cropped image will contain the names of the
+input image(s) it was cut from. If a name is longer than the 70
+character space that the FITS standard allows for header keyword
+values, the name will be cut into several keywords from the nearest
+slash (@key{/}). The keywords have the following format:
+@command{ICFn_m}. Where @command{n} is the number of the image used in
+this crop and @command{m} is the part of the name. Following the name
+is another keyword named @command{ICFnPIX} which shows the pixel range
+from that input image in the same syntax as @ref{Crop section syntax}.
+
+Once done, a log file will be created in the current directory named
+@file{astrimgcrop.log}. This file will keep the names of all the
+outputs along with the number of images that were used in them and
+also whether the central pixels of the cropped image are full. There
+are also comments on the top explaining basic information about the
+run. If the log file cannot be created (for example you don't have
+write permission in the directory you are running ImageCrop in) it
+will not be created. You can see the same results in verbose mode on
+the command line in such cases.
+
+@node ImageCrop future,  , Invoking astrimgcrop, ImageCrop
+@subsection ImageCrop future updates
+Currently we have these updated in mind for ImageCrop:
+
+@itemize
+@item
+Add an option to save/read the required meta-data of each input image
+in an ASCII (or maybe but hopefully not a binary) file. Such that all
+the information in the @code{inputimgs} structure (in @file{main.h})
+is included in it. Such a file can become important when the images
+are always the same and there are lots of requests. The reason a
+binary might be necessary is that it includes the @code{wcsprm}
+structure of WCSLIB. We certainly don't want to run the WCSLIB
+settings each time (they are not thread safe and can be slow). The
+good thing with an ASCII file is that it is transparent.
+
+@item
+Add checks and conditions so if the input image or crop box cover the
+celestial poles, the overlaps can still be found. Currently if either
+the crop box or input image pass the equator, there is no problem.
+
+@item
+Find a better search method in WCS mode. Currently, for each target,
+the region of every image is checked, which makes the job a little
+slow when there are a lot of input images. If a specific organization
+is defined for the @code{inputimgs} array where the images are ordered
+some how so images far from a crop are not searched it would make it
+much more efficient. There are also much faster search strategies.
+@end itemize
+
+
+
+
+
+
+@node ImageTransform, EllipMask, ImageCrop, Image manipulation
+@section ImageTransform
+Sometimes it is required that the image be trasformed (flipped,
+rotated, sheared or ...) This program will do that.
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node EllipMask, Image conversion, ImageTransform, Image manipulation
+@section EllipMask
+
+EllipMask will mask some of the pixels in the image based on
+elliptical parameters that are specified through an ASCII catalog.
+
+@node Image conversion,  , EllipMask, Image manipulation
+@section Image conversion
+
+The tools in this section are provided to convert a FITS image into
+and from other formats which might be more suitable in certain
+applications, for example to include an image or a spectrum in a
+report, we need to convert to more common image formats.
+
+@menu
+* FitstoJpeg::                  Convert a FITS image to a Jpeg image.
+* JpegtoFits::                  Convert a Jpeg image to a FITS image.
+@end menu
+
+@node FitstoJpeg, JpegtoFits, Image conversion, Image conversion
+@subsection FITStoJpeg
+
+Convert a FITS image to a Jpeg image.
+
+@node JpegtoFits,  , FitstoJpeg, Image conversion
+@subsection JpegtoFits
+Convert each color channel of a Jpeg image into an extension of a FITS
+image.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Image analysis, Modelling and fittings, Image manipulation, Top
+@chapter Image analysis
+
+Astronomical images contain very valuable information, the tools in
+this section can help in extracting and quantifying that information.
+
+@menu
+* ImageStat::                   Basic statstics of image pixels
+* SubtractSky::                 Subtract the sky level from the image.
+* NoiseChisel::                 Detect and segment objects in noise.
+@end menu
+
+@node ImageStat, SubtractSky, Image analysis, Image analysis
+@section ImageStat
+Image stat is a tool to extract basic pixel statistics from an image
+or part of it. It will also output the histogram, cumultiave frequency
+and sigma-clipping results.
+
+@node SubtractSky, NoiseChisel, ImageStat, Image analysis
+@section SubtractSky
+
+In any noisy image, the level that noise fluctuates around is the most
+vital statistic. Since it directly determins all subsequent
+measurements on the data. Subtract Sky will find that level in an
+image which might potentially have strong gradients and subtract it.
+
+@node NoiseChisel,  , SubtractSky, Image analysis
+@section NoiseChisel
+
+NoiseChisel is the tool that started AstrUtils! It is a new noise
+based algorithm to detect extremely faint and amorphous objects in
+noise. Galaxies apparently have a very rich dynamic history and we
+cannot image them in their full 3D glory, these resulting in a
+multitude of shapes when they are imaged.
+
+Using a noise based approach to detect signal and its substructure in
+noise, NoiseChisel will detect and catalog all the galaxies and their
+substructure in an image irrespective of their shape.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Modelling and fittings, Table manipulation, Image analysis, Top
+@chapter Modelling and fitting
+
+In order to fully understand our observations after initial analysis
+on the image, it is very important to compare them with the existing
+models to be able to further understand both our models and the
+data. The tools in this chapter create model galaxies and will provide
+2D fittings to be able to understand our detections.
+
+@menu
+* MockGals::
+@end menu
+
+@node MockGals,  , Modelling and fittings, Modelling and fittings
+@section MockGals
+
+MockGals will create mock galaxy images in an image with the ability
+to store the image prior to convolving with a PSF and prior to adding
+noise along with a final noised image.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Table manipulation, Developing, Modelling and fittings, Top
+@chapter Table manipulation
+
+The FITS standard also specifies tables as a form of data that can be
+stored in the extensions of a FITS file. These tabels can be ASCII
+tables or binary tables. The utilities in this section provide the
+tools to directly read and write to FITS tables.
+
+The software for this section have to be added ....
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Developing, Future updates, Table manipulation, Top
+@chapter Developing
+
+The basic idea of AstrUtils is for an interested astronomer to be able
+to easily understand the code of any of the programs, be able to
+modify the code if she feels there is an improvement and finally, to
+be able to add new programs to the existing utilities for their own
+benefit, and the larger community if they are willing to share it. In
+short, we hope that at least from the software point of view, we can
+break the ``obscurantist faith in the expert's special skill and in
+his personal knowledge and authority'', see @ref{Science and
+software}. The following software architecture can be one of the most
+basic and easy to understand for any interested inquirer.
+
+The source code for AstrUtils, this manual and the tests are divided
+in the following sub-directories of the top directory. Their names are
+standard and descriptive enough, but we will give a short summary
+here:
+
+@table @file
+
+@item doc
+The Texinfo source files for this manual.
+
+@item include
+The header files of the internal static libraries and also some other
+header files that are used by more than one program.
+
+@item lib
+The internal static libraries (only their @file{.c} files) are stored
+here. These libraries hold functions that are used by more than one
+program, they will not be installed.
+
+@item src
+This directory contains a subdirectory for every program in this
+version of AstrUtils. The source code for each program is placed
+inside each of these subdirectories to be easily separable.
+
+@item tests
+This directory keeps all the tests (checks) which are executed when
+@command{make check} is run.
+
+@end table
+
+Other than these directories, there are lots of other scripts and
+files in the top directory. Most of these files were created
+automatically by GNU Autoconf and GNU Automake. First we will review
+the libraries and headers in their respective directories, then we
+will discuss the basic conventions for managing the code in each
+program. Finally some notes on the building process are given.
+
+
+@menu
+* Version controlled source::   How to get and prepare the VCSed code.
+* Internal libraries::          Internal static (not installed) libraries.
+* Headers::                     Library and common headers.
+* Program source::              Conventions for the code.
+* Test scripts::                Understanding the test scripts.
+* Building::                    Explanations on building.
+@end menu
+
+
+
+
+
+@node Version controlled source, Internal libraries, Developing, Developing
+@section Version controlled source
+
+The source code that is publicly distributed does not contain the
+revision history, it is only the final snapshot of a stable release,
+ready to be configured and built. To be able to develop successfully
+the revision history of the code can be very useful, also some updates
+that are not yet released might be in it.
+
+We use Git for the verion control of AstrUtils. For those who are not
+familiar, we suggest the Pro Git
+book@footnote{@url{http://git-scm.com/book/en/v2}}, it is publicly
+available for online reading and downloading. To clone the latest
+version you can run
+
+@example
+$ git clone git://git.sv.gnu.org/astrutils
+@end example
+
+@noindent
+This version of the source code, lacks the files that are
+automatically built (and included in the distributed
+@file{astrutils-@value{VERSION}.tar.gz}) for configuration and
+building. To create those files you have to run the following command
+in the cloned directory which will generate those automatic
+files. @command{autoreconf} is part of GNU Autoconf and also requires
+GNU Automake to be installed, see @ref{Building}.
+
+@example
+$ autoreconf --install
+@end example
+
+@noindent
+Now you can easily configure, build and start hacking into the code
+and you have the full revision history under your figures.
+
+
+@menu
+* Standards::
+@end menu
+
+@node Standards,  , Version controlled source, Version controlled source
+@subsection Standards
+
+We strive to follow the version control guidelines of the Git project
+as our base, until AstrUtils grows large enough to define its own. You
+can find it in the git project's submitting patches
+guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}. In
+order to achieve these standards, here are some suggestions:
+
+@itemize
+
+@item
+It is very important for there to be no trailing white space in a
+line. In order to achieve this, if you are using GNU Emacs, you can
+add the following hook to your @file{~/.emacs} file, so every time you
+save a file, all trailing white spaces are removed.
+
+@example
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+@end example
+
+@end itemize
+
+
+
+@node Internal libraries, Headers, Version controlled source, Developing
+@section Internal libraries
+Libraries are binary (compiled) files which are not executable them
+selves, but once linked with other binary files, they form the
+building blocks of larger programs. Several functions are commonly
+used by all or several of the programs in AstrUtils. Therefore they
+are written as separate libraries so we don't have to keep duplicate
+code. They are mosly to do with interaction with the outside world (of
+the program), for example setting up the defaults directory, reading
+text catalogs or wrappers for CFITSIO and WCSLIB to facilitate reading
+and writing of FITS files.
+
+Below is a short description of each source code. Note that the
+headers of these libraries are in the @file{include} directory.
+
+@table @code
+
+@item arraymanip.c
+As the name suggests, this library provdies functions with
+manipulating an array. For example, there are functions here to copy
+an array, initialize all its members to a fixed value or to convert
+the values of an array.
+
+@item astrthreads.c
+Functions for dividing the jobs between various threads in
+multi-threaded programs.
+
+@item checkset.c
+The functions and macros in these two files do all the name and file
+checkings of your inputs. For example to check if a given file is
+actually a file name or a directory, or to build the automatic output,
+see @ref{Automatic output}. These functions are used by all the
+programs.
+
+@item defaults.c
+The functions to find the default file for each program and macros
+that help in reading and setting the default values in their
+particular files are defined here.
+
+@item fitsarrayvv.c
+The functions in this library are essentially a wrapper for CFITSIO
+and WCSLIB. Since the functions these two libraries provide are very
+low level, we have defined wrapper functions in these source files to
+faciliate the job.
+
+@item linkedlist.c
+The various programs in AstrUtils will need linked lists for various
+purposes, for example to keep the names of an unknown number of input
+files (string linked lists) or to parse an initially unknown number of
+neighbouring pixels within an image. The functions in these source
+files provide various types of linked list and functions that are
+necessary to easily manipulate them.
+
+@item stats.c
+Statistical functions like finding the minimum and maximum or the
+mean, median and standard deviation along with more complicated
+functions like sigma clipping are defined in these source files.
+
+@item timing.c
+These source files are mainly for verbatim mode, where the time it
+took for each step to operate is reported.
+
+@item txtarrayvv.c
+The functions in this file read and write an input text catalog to and
+from a C array.
+
+@end table
+
+Currently these libraries are not installed along with AstrUtils, they
+are only staticlly linked to any program needing them in the build
+directory and remain or are deleted from there. Note that in a static
+link, the contents of the library are megered with the executable, so
+they are no longer needed after the linking.
+
+In the future if need be, we can also make them installable so you can
+use them in your own personal programs. But for the time being, if you
+feel these libararies can be useful for your own programs, you can
+simply copy the compiled version (@file{.a} files, which are created
+after running @command{$ make}) along with the header of the library
+(which is in @file{include}) inside your own source code and link to
+it with the link flag of your compiler.
+
+@node Headers, Program source, Internal libraries, Developing
+@section Headers
+
+Besides the headers for the libraries listed above, there are also
+several header-only files in the @file{include} directory. Below is a
+short explanation of thier purpose.
+
+@table @code
+
+@item commonargs.h
+All the programs have a common set of options, see @ref{Common
+options}. Instead of definding them and making sure they are identical
+in the implementation of each program, we have used GNU C library's
+ability to merge independent argument parsers with Argp. This ensures
+that they are identical in all programs with only one file to work
+on. The common options and the function to parse them are thus defined
+in this header file. All the argument parsers in various programs are
+merged with this argument parser to read your input.
+
+@item commonparams.h
+The structure that keeps the values of the common arguments and
+whether they have been set or not is defined in this header file.
+
+@item fixedstringmacros.h
+Some strings are fixed in all the programs, only the relevant names of
+the packages must be put in them. The various names for each package
+are defined in their @file{main.h} source file with macros of fixed
+names. For example the copyright notice, or parts of the top
+information in the @option{--help} output.
+
+@end table
+
+
+@node Program source, Test scripts, Headers, Developing
+@section Program source
+
+Besides the fact that all the programs share some functions that were
+explained in @ref{Internal libraries}, everything else about each
+program is completely independent. Some programs might need lots of
+source files and if there is no fixed convention, navigating them for
+a specific function or to generally understand their programming steps
+can become very hard for a new inquirer into the code. In this section
+we have explained the conventions used in all the programs. To easily
+understand the explainations in this section, it is good to open the
+source files of one or several of the programs in AstrUtils and
+inspect them as you read along.
+
+@vtable @file
+
+@item main.c
+Each executable has a @code{main()} function, which is located in
+@file{main.c}. Therefore this file in any program's source code will
+be the starting point. No actual processing functions are to be
+defined in this file, the function(s) in this file are only meant to
+connect the most high level steps of each program, most generally,
+they will first call the top user interface function to read user
+input and make all the preparations. Then they will pass control to
+the top processing function for that program. The functions to do both
+these jobs must be defined in other source files.
+
+@item main.h
+All the major parameters which will be used in the program must be
+stored in a structure which is defined in @file{main.h}. The name of
+this structure is usually @code{prognameparams}, for example
+@code{imgcropparams}. So @code{#include "main.h"} will be a staple in
+all the source codes of the program and most of the functions. Keeping
+all the major parameters of a progam in this structure has the major
+benefit that most functions will only need one argument: a pointer to
+this structure. This will significantly facilitate the job of the
+programmer, the inquirer and the computer. All the programs in
+AstrUtils are designed to be small and independent parts, so this
+structure should not get too large.
+
+With this basic root structure, source code of functions can
+potentially become full of structure dereference operators
+(@command{->}) which can make the code very un-readable. In order to
+avoid this, whenever a parameter is used more than a couple of times
+in a function, we suggest to define a parameter of the same type and
+with the same name as the desired parameter and put the value of the
+root structure inside of it in definition time.
+
+The main root structure of a program contains atleast two other
+structures: a structure only keeping parameters for user interface
+functions, which is also defined in @file{main.h} and the
+@code{commonparams} structure which is defined in
+@file{commonparams.h}, see @ref{Headers}. The former can become very
+large and since the programmer and inquirer often don't need to be
+confused with these parameters mixed with the actual processing
+parameters, they are conveniently defined in another structure which
+is named @code{uiparams} and is also defined in @file{main.h}. It
+could be defined in @file{ui.h} (see below) so the main functions
+remain completely ignorant to it, but its parameters might be needed
+for reporting input conditions, so we have included it as part of the
+main program structure.
+
+This top root structure is conveniently called @code{p} (short for
+parameters) by all the programs. The @code{uiparams} structure is
+called @code{up} (for user parameters) and the @code{commonparams}
+structure is called @code{cp}. With this convention any reader can
+immediately understand where to look for the definition of one
+parameter.
+
+@item args.h
+The argument parser structures (which are used by GNU C library's
+Argp) for each program are defined in @file{args.h}. They are separate
+global variables and function definitions that will be used by
+Argp. We recommend going through the appropriate section in GNU C
+library to understand their exact meaning, although they should be
+descriptive and understandable enough by looking at a few of the
+programs.
+
+@item ui.c, ui.h
+The user interface functions are also a unique set of functions in all
+the programs, so they are particularly named @file{ui.c} and
+@file{ui.h} in all the programs. Everything related to reading the
+user input arguments and options, checking the default values and
+checking the consistency of the input parameters before the actual
+program is run should be done in this file. Since most functions are
+the same, with only the interal checks and structure parameters
+differing, we recommend going through several of the examples and
+structuring your @file{ui.c} in a similar fashion with the rest of the
+programs.
+
+The most high-level function in @file{ui.c} should be named
+@code{setparams} which accepts @code{int argc, char *argv[]} and a
+pointer to the root structure for that program, see below. This is the
+function that @code{main} calls. The basic idea of the functions in
+this file is that the processing functions should need a minimum
+number of such checks. With this convention we facilitate reading by
+an inquirer who only wants to understand one part (mostly the
+processing part and not user input details) of the code. It also makes
+all the errors related to input appear before the processing begins
+which is more convenient for the user.
+
+@item progname.c
+The main processing functions in each program which keep the
+function(s) that @code{main()} will call are in a file named
+@file{progname.c}, for example @file{imgcrop.c} or
+@file{noisechisel.c}. The function within these files which
+@code{main()} calls is also named after the program, for example
+
+@example
+void
+imgcrop(struct imgcropparams *p)
+@end example
+
+@noindent
+or
+
+@example
+void
+noisechisel(struct noisechiselparams *p)
+@end example
+
+@noindent
+In this manner, if an inquirer is interested the processing steps,
+they can immediately come and check this file for the first processing
+step without having to go through @file{main.c} first. In most
+situations, any failure in any step of the programs will result in an
+informative error message and an immediate abort in the program. So
+there is no need for return values. Under more complicated situations
+where a return value might be necessary, @code{void} will be replaced
+with an @code{int} in the examples above.
+
+@end vtable
+
+
+@node Test scripts, Building, Program source, Developing
+@section Test scripts
+
+As explained in @ref{Tests}, for every program we have written some
+simple tests checking the various independent features of the
+program. All the tests are placed in the
+@file{astrutils-@value{VERSION}/tests} directory, lets call it
+@file{TESTdir}. There is one script (@file{basicchecks.sh}) in this
+folder and several @file{Makefile}s. The script is a common check for
+all the programs to check if the program has been created and also if
+a local default file exists.
+
+For each program, the tests are placed inside directories with the
+program name. Each test is written as a shell script. The last line of
+this script is the test which runs the program with certain
+parameters. The return value of this script determines the fate of the
+test, see the ``Support for test suites'' chapter of the Automake
+manual for a very nice and complete explanation.
+
+In every script, two variables are defined at first: @code{prog} and
+@code{execname}. The first specifies the program name and the second
+the location of the executable. Then they include the contents of
+@file{basicchecks.sh} explained above.
+
+The most important thing to have in mind about all the test scripts is
+that they are run from inside the @file{TESTdir} directory in the
+``build tree''. Which can be different from the directory they are
+stored in (known as the ``source tree''). This distinction is made by
+GNU Autoconf and Automake (which configure, build and install
+AstrUtils) so that you can install the program even if you don't have
+write access to the directory keeping the source files. See the
+``Parallel build trees (a.k.a VPATH builds)'' in the Automake manual
+for a nice explanation.
+
+Because of this, any possible data that was not generated by other
+tests (and is thus in the build tree), for example the catalogs in
+ImageCrop tests, has a @command{$topsrc} prefix instead of
+@command{../} for the build three. This @command{$topsrc} variable
+points to the source tree where the script can find the source data
+(it is defined in @file{TESTdir/Makefile.am}). The executables and
+other test products were built in the build tree (where they are being
+run), so they don't need to be prefixed with that variable. This is
+also true for images or files that were produced by other tests.
+
+
+
+
+
+@node Building,  , Test scripts, Developing
+@section Building
+To build the various programs in AstrUtils, we use GNU Autoconf and
+GNU Automake. They provide a very portable system to check the
+environment a program is to be installed on prior to compiling and set
+the compilation conditions based on the particular user. They also
+make installing everything in their standard places very easy for the
+programmer. Most of the small caps files that you see in the top
+@file{astrutils-@value{VERSION}/} directory are created by these
+tools.
+
+By default all the programs are compiled with optimization flags for
+increased speed. A side effect is that valuable debugging information
+is lost. To compile with the debugging flag set on (and no
+optimization) you can add the following options to configure:
+
+@example
+$ configure CFLAGS="-g -O0"
+@end example
+
+In order to understand the building process, you can go through the
+Autoconf and Automake manuals, like all GNU manuals they provide both
+a great tutorial and technical documentation. The ``A small Hello
+World'' section in Automake's manual (in chapter 2) can be a good
+starting guide after you have read the introductions of both.
+
+
+
+
+
+
+
+
+
+
+
+@node Future updates, GNU Free Documentation License, Developing, Top
+@chapter Future updates
+There are many things to do, this is the current to-do list. If you
+feel these updates, or other updates can be useful for your work,
+please contact us so we can move them up our priority list. If you are
+familiar enough with the C programming language, it would be great if
+you could also contribute so it can be done faster, see
+@ref{Developing}. Of course, all contributions will be respectfully
+acknowledged.
+
+@menu
+* Future programs::             Programs to be added to AstrUtils
+* Existing future::
+@end menu
+
+
+
+
+
+
+
+
+
+
+@node Future programs, Existing future, Future updates, Future updates
+@section Future programs
+This is a short list of programs we plan to add in the future, it will
+be updated with new programs and programs that are made will be
+removed. Please feel free to suggest new tools to be added. There are
+certainly mainy tools that can be added.
+
+@itemize
+
+@item
+Manipulate (read/write) FITS headers
+
+@item
+Do arithmetical operations on images. So for example the user can give
+some FITS image names and be able to do any form of arithmetic on
+them. Something like Numpy arrays in python, but on the command line
+in a non-interactive method.
+
+@item
+Read/write FITS tables (both in ascii and binary format).
+
+@item
+Using detected objects in an image, correct their world coordinate
+system to be on the same basis (with out touching the pixels, only on
+the header information).
+
+@item
+This is not at all a high priority future update, but if it could be
+checked that AstrUtils is able to run in the Mac OS or Windows
+environments (possibly with GNUlib), it would be great.
+
+@end itemize
+
+
+
+
+@node Existing future,  , Future programs, Future updates
+@section Future of existing programs
+
+There are also lots of plans to extend the abilities of the existing
+tools, they can be listed as:
+
+@menu
+* FitstoJpeg future::           Future work for FitstoJpeg
+@end menu
+
+
+@node FitstoJpeg future,  , Existing future, Existing future
+@subsection FitstoJpeg
+@itemize
+
+@item
+Use three or four FITS images to make an RGB or CMYK colored JPEG
+image.
+
+@item
+Use image statistics for flux threshold instead of absolute values,
+for example quantiles or a multiple of the average and standard
+deviation.
+
+@end itemize
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node GNU Free Documentation License, Index, Future updates, Top
+@appendix GNU Free Documentation License
+
+@include fdl.texi
+
+
+
+
+
+@c Print the index and finish:
+@node Index,  , GNU Free Documentation License, Top
+@unnumbered Index
+@printindex cp
+
+@bye
