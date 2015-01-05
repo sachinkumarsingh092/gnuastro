@@ -1,3 +1,38 @@
+2015-01-05  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* doc/formath.texi: Added. A set of macros to write equations
+	nicely in TeX, HTML (using MathJax).
+
+	* src/imgcrop/astrimgcrop.def: renamed to
+	src/imgcrop/astrimgcrop.conf.
+
+	* lib/defaults.c: renamed to include/configfiles.c.
+
+	* lib/checkset.c (stringhasspace): Function added.
+
+	* include/fixedstringmacros.h (SHORTCOPYRIGHT): 2015 added.
+	(MOREHELPINFO): Corrected info explanation in help output.
+
+	* include/defaults.h: renamed to include/configfiles.h
+
+	* include/commonparams.h (commonparams): Similar to the change in
+	commonargs.h.
+
+	* include/commonargs.h (argp_option): `--dirdefaults` and
+	`--userdefaults` changed to `--setdirconf` and `--setusrconf`.
+
+	* doc/astrutils.texi: Included formath.texi to display math
+	equations, updates to the text.
+
+	* doc/Makefile.am (headers): Used a shell '*' instead of calling
+	each program separately. This was enabled with the new file
+	structure.
+
+	* configure.ac: Changed all default names to configure for a
+	configuration file, not a default file (only name).
+
+	* Makefile.am: MockGals conditional compilation added.
+
 2014-12-30  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* tests/basicchecks.sh: New file (common tests for all tests).

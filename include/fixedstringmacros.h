@@ -21,7 +21,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #ifndef COPYRIGHT_H
 #define COPYRIGHT_H
 
-#define SHORTCOPYRIGHT "Copyright (C) 2013-2014, Free Software Foundation."
+#define SHORTCOPYRIGHT "Copyright (C) 2013-2015, Free Software Foundation."
 #define SHORTLICENSE   "License GPLv3+: GNU General public license version 3 or later."
 
 
@@ -32,14 +32,13 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #define TOPHELPINFO   "\n"SPACK_NAME" is part of "PACKAGE_STRING".\n"
 
 /* This is fixed for all the packages. */
-#define MOREHELPINFO   "\nFor more information, please run (not "	\
-  "case sensitive):\n"							\
-  "  info "SPACK"\t # `Invoking "SPACK_NAME"' section of the "	\
-  "manual.\n"								\
-  "  info "SPACK_NAME"\t # The full "SPACK_NAME" section of "	\
-  "the manual.\n"							\
-  "  info "PACKAGE_TARNAME"\t # The full "PACKAGE_NAME		\
-  " manual.\n\n"							\
+#define MOREHELPINFO   "\nFor more information, please run any of the "	\
+  "following commands. They will respectively show you the `invoking "	\
+  SPACK_NAME"` section of the manual, the full "SPACK_NAME" section "	\
+  "of the manual, and the full "PACKAGE_NAME" manual.\n\n"		\
+  "  info "SPACK"\n"							\
+  "  info "SPACK_NAME"\n"						\
+  "  info "PACKAGE_TARNAME"\n\n"					\
   SPACK_NAME" was configured on this system at "CONFIGDATE", "		\
   CONFIGTIME".\n\n"							\
   "Options:"								\

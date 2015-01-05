@@ -8,6 +8,7 @@
 
 @c %**end of header
 @include version.texi
+@include formath.texi
 @include subpackageversions.texi
 
 @c Use section titles in cross references, not node titles.
@@ -24,7 +25,7 @@ This manual documents version @value{VERSION} of the GNU Astronomy
 Utilities, providing various individual tools with similar user
 interface for astronomical data manipulation and  analysis.
 
-Copyright @copyright{} 2013-2014 Free Software Foundation, Inc.
+Copyright @copyright{} 2013-2015 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -40,14 +41,19 @@ Free Documentation License''.
 @dircategory Astronomy
 @direntry
 * AstrUtils: (astrutils).       GNU astronomy utilities.
+
 * ImageCrop: (astrutils)ImageCrop. Crop region(s) from image(s).
 * astrimgcrop: (astrutils)Invoking astrimgcrop. Options to ImageCrop.
+
+* MockGals: (astrutils)MockGals. Make mock galaxies and stars in an image.
+* astrmockgals: (astrutils)Invoking astrmockgals. Options to MockGals.
+
 @end direntry
 
 @c Version of all the subpackages:
 @macro printversions
 @noindent
-Utilities documented in this manual:
+@*MockGals (@command{astrmockgals}) @value{MOCKGALS_VERSION}
 @*ImageCrop (@command{astrimgcrop}) @value{IMGCROP_VERSION}
 @end macro
 
@@ -110,7 +116,9 @@ tradition of rational philosophy, and of rational thought itself.
 @end quotation
 
 @end titlepage
+@shortcontents
 @contents
+
 
 
 
@@ -210,7 +218,7 @@ Common behavior
 
 * Command line::                How to use the command line.
 * Threads in AstrUtils::        How threads are managed in AstrUtils.
-* Default values::              Using, and changing default values.
+* Configuration files::         Values for unspecified variables.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
@@ -231,6 +239,13 @@ Threads in AstrUtils
 
 * A note on threads::           Caution and suggestion on using threads.
 
+Configuration files
+
+* Configuration file format::   ASCII format of configuration file.
+* Configuration file precedence::  Precedence of configuration files.
+* Current directory and User wide::  Local and user configuration files.
+* System wide::                 System wide configuration files.
+
 Getting help
 
 * --usage::                     Only view option names and value formats.
@@ -243,6 +258,7 @@ Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * ImageTransform::              Transform (flip, rotate) an image.
+* ImageArith::
 * EllipMask::                   Place elliptical masks on an image.
 * Image conversion::            Convert an image to and from other formats.
 
@@ -272,7 +288,18 @@ Image analysis
 
 Modelling and fitting
 
-* MockGals::
+* MockGals::                    Making mock galaxies and stars.
+
+MockGals
+
+* Defining an ellipse::         Defining an ellipse in 2D.
+* PSF::                         Radial profiles for the PSF.
+* Stars::                       Making mock star profiles.
+* Galaxies::                    Radial profiles for galaxies.
+* Sampling from a function::    Sample a function on a pixelated canvas.
+* Adding Noise::                What the noise is and how it is calculated.
+* Invoking astrmockgals::       Input, options and output of MockGals.
+* MockGals future updates::     Plans for the future of MockGals.
 
 Developing
 
@@ -286,6 +313,10 @@ Developing
 Version controlled source
 
 * Standards::
+
+Program source
+
+* Coding conventions::          Conventions used for coding
 
 Future updates
 
@@ -376,6 +407,11 @@ please file a bug report. When you get successful results for the
 tests, you are ready to install. You can also make lots of
 customizations (for example installing when you don't have root
 access), see @ref{Configuring}.
+
+The commands above will delete the source code after installing the
+programs and the documentation. In case you want to study the code, we
+recommend getting the source code with revision history, see
+@ref{Version controlled source}.
 
 @node Science and software, Why C, Quick start, Introduction
 @section Science and its software
@@ -714,7 +750,7 @@ number. The version numbers for both are two numbers with a point
 (@file{.}) between them. The left number is the major version number
 while the right one is the minor version number. Note that the numbers
 are not decimals, so version 2.34 of a program is much more recent
-than version 2.5.
+than version 2.5, which is not equal to 2.50!
 
 The current version of AstrUtils is @value{VERSION} and the version
 numbers of its various components are shown on the second page in the
@@ -754,14 +790,13 @@ various programs in AstrUtils.
 
 The maintainers of each camera or detector on a telescope can provide
 a completely transparent shell script to the observer for data
-analysis. This script can set the correct local default values for all
-the required programs to work with that particular camera. The script
-can then run the proper programs in the proper sequence. The
-user/observer can easily follow the standard shell script to
-understand (and modify) each step and the parameters used easily. Bash
-(or other modern GNU/Linux shell scripts) are very powerful and made
-for this gluing job. This will simultaneously improve preformance and
-transparency.
+analysis. This script can set configuration files for all the required
+programs to work with that particular camera. The script can then run
+the proper programs in the proper sequence. The user/observer can
+easily follow the standard shell script to understand (and modify)
+each step and the parameters used easily. Bash (or other modern
+GNU/Linux shell scripts) are very powerful and made for this gluing
+job. This will simultaneously improve preformance and transparency.
 
 In order to achieve this and allow maximal creativity with the shell,
 the various programs have to be very low level programs and completely
@@ -839,8 +874,8 @@ already installed on your system. They are very basic for most
 astronomical programs and you might already have them installed. To
 check try running the @command{$ ./configure} script. If you get no
 errors, then you already have them and you can skip
-@ref{Requirements}. You can do much more than the simple set of
-scripts in @ref{Quick start}, see @ref{Installing AstrUtils}.
+@ref{Requirements}. You can heavily customize your install of
+AstrUtils, to learn more about them, see @ref{Installing AstrUtils}.
 
 
 
@@ -901,14 +936,14 @@ Astrophysics, Volume 524, id.A42, 40 pp.}, and is regularly
 updated. Setting the definitions for all other software packages using
 FITS images.
 
-Some GNU/Linux distributions have CFITSIO in their package managers
-(for example Arch Linux), if it is available and updated, you can use
-it. One problem that might occur is that CFITSIO might not be
-configured with the @option{--enable-reentrant} option by the
-distribution. This option allows CFITSIO to open a file in multiple
-threads. If so, upon running, any program which needs this capability
-will warn you and abort if you ask for multiple threads. In such cases
-you can take the following step.
+Some GNU/Linux distributions have CFITSIO in their package managers,
+if it is available and updated, you can use it. One problem that might
+occur is that CFITSIO might not be configured with the
+@option{--enable-reentrant} option by the distribution. This option
+allows CFITSIO to open a file in multiple threads. If so, upon
+running, any program which needs this capability will warn you and
+abort if you ask for multiple threads. In such cases you can take the
+following step.
 
 The best way is that you can install it from source. You can download
 the latest version of the source code and manual from its
@@ -943,8 +978,8 @@ World Coordiante System (WCS) definition in the FITS
 standard@footnote{Greisen E.W., Calabretta M.R. (2002) Representation
 of world coordinates in FITS. Astronomy and Astrophysics, 395,
 1061-1075.}, Mark Calabretta. It might be already built and ready in
-your distribution's package management system you can give it a check.
-Here we explain how to install from source.
+your distribution's package management system. Here we explain how to
+install from source.
 
 To install WCSLIB you will need to have the CFITSIO already
 installed. WCSLIB also has plotting capabilities which use PGPLOT (a
@@ -1559,8 +1594,8 @@ effectively. However, we should caution that using configure options
 will change the actual executable name of the installed program and on
 every re-install (an update for example), you have to also add this
 option to keep the old executable name updated. Also note that the
-documentation or default files do not change from their standard names
-either.
+documentation or configuration files do not change from their standard
+names either.
 
 For example, lets assume that typing @file{astr} on every invokation
 of every program is really annoying you! You can remove this prefix
@@ -1688,17 +1723,17 @@ There are some facts that are common to all the programs in AstrUtils
 which are mainly to do with user interaction. In this chapter we will
 review all these aspects. The most basic are the command line options
 which are common in all the programs for a unified user
-experience. All AstrUtils programs keep default values so you don't
-have to specify all the parameters on the command line each time you
-run a program. The manner of setting, checking and using the default
-values at various levels are also explained. Finally we discuss how
-you can get immediate and distraction-less help (without taking your
-hands off the keyboard!) on the command line.
+experience. All AstrUtils programs can use configuration files so you
+don't have to specify all the parameters on the command line each time
+you run a program. The manner of setting, checking and using the these
+files at various levels are also explained. Finally we discuss how you
+can get immediate and distraction-less help (without taking your hands
+off the keyboard!) on the command line.
 
 @menu
 * Command line::                How to use the command line.
 * Threads in AstrUtils::        How threads are managed in AstrUtils.
-* Default values::              Using, and changing default values.
+* Configuration files::         Values for unspecified variables.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
@@ -1915,15 +1950,16 @@ format (@option{-D}, @option{-r}) and two in long format
 value and one (@option{-D}) is an on/off option.
 
 When you don't call an option that requires a value, all the programs
-in AstrUtils will assign them default values. To learn more about how
-folder, user and system wide default values can be set, please see
-@ref{Default values}. Another factor that is particular to AstrUtils
-is that it will check the value you have given for each option to see
-if it is reasonable. For example you might mistakenly give a negative,
-float or string value for a FITS image extension or column number. As
-another example, you might give a value larger than unity for an
-option that only accepts fractions (which are always less than unity
-and positive).
+in AstrUtils will check configuration files to find a value for that
+parameter. To learn more about how folder, user and system wide
+configuration files can be set, please see @ref{Configuration
+files}. Another factor that is particular to AstrUtils is that it will
+check the value you have given for each option to see if it is
+reasonable. For example you might mistakenly give a negative, float or
+string value for a FITS image extension or column number. As another
+example, you might give a value larger than unity for an option that
+only accepts fractions (which are always less than unity and
+positive).
 
 @cartouche
 @noindent
@@ -2066,29 +2102,26 @@ Print the final values used for all the parameters and abort. See
 @ref{--printparams} for more details.
 
 @item -S
-@itemx --dirdefaults
-Set current directory default values and quit. Your command line
-options (with your given values) are added to the default file in the
-current directory. This is the recommended method to set the default
-values for all future calls to one of the AstrUtils programs in a
-folder. It will internally check if your values are in the correct
-range and format. Any command line options that you specify along with
-this option will be added to the file keeping the defaults for this
-directory, see @ref{Default values}. If the default file or folder
-doesn't exist, it will be created. If it exists but has different
-values for those options, they will be given the new values. In any
-case, the program will not run, but the contents of its updated
-default file are printed for you to inspect.
+@itemx --setdirconf
+Update the current directory configuration file from the given command
+line options and quit, see @ref{Configuration files}. The values of
+your options are added to the configuration file in the current
+directory. If the configuration file or folder doesn't exist, it will
+be created. If it exists but has different values for those options,
+they will be given the new values. In any case, the program will not
+run, but the contents of its updated configuration file are printed
+for you to inspect.
+
+This is the recommended method to fill the configuration file for all
+future calls to one of the AstrUtils programs in a folder. It will
+internally check if your values are in the correct range and type and
+save them according to the configuration file format, see
+@ref{Configuration file format}.
 
 @item -U
-@itemx --userdefaults
-Set the user default values and quit. The parameters (with their
-values) given on the command line are read along with the default
-parameters in the current directory. Those values are then written in
-the user default file of the current user. So if you just want your
-command line options to be set in the user default file, make sure to
-run it in a directory that has no default values. The rest is similar
-to @option{--dirdefaults}.
+@itemx --setusrconf
+Update the user configuration file from the command line options and
+quit. See explanation under @option{--setdirconf} for more details.
 
 @item -N
 @itemx --numthreads
@@ -2106,7 +2139,7 @@ in AstrUtils}.
 
 
 
-@node Threads in AstrUtils, Default values, Command line, Common behavior
+@node Threads in AstrUtils, Configuration files, Command line, Common behavior
 @section Threads in AstrUtils
 Some of the programs benefit significantly when you use all the cores
 your computer's CPU has to offer. In general, when you run an
@@ -2125,10 +2158,10 @@ configure options}.
 
 The number of threads is the only parameter in AstrUtils, which is
 stored internally at configure time. The implication is that the only
-option with a value that doesn't have to be in any of the default
-files (see @ref{Default values}) is this. Note that if you do specify
-it, the value you provided in the most immediate default file will be
-used, not the internal value, see @ref{Default values}.
+option with a value that doesn't have to be in any of the
+configuration files (see @ref{Configuration files}) is this. Note that
+if you do specify it, the value you provided in the most immediate
+configuration file will be used, not the internal value.
 
 
 
@@ -2172,33 +2205,88 @@ $ parallel astrimgcrop --numthreads=1 --xc=500 --yc=600 ::: \
 @end example
 
 @noindent
-For absolute beginners: the backslash (@command{\}) is only a line
-breaker to fit nicely in the page. If you type the whole command in
-one line, you should remove it.
+GNU Parallel can help in many more conditions, this is one of the
+simplest, see the man page for lots of other examples. For absolute
+beginners: the backslash (@command{\}) is only a line breaker to fit
+nicely in the page. If you type the whole command in one line, you
+should remove it.
 
 
 
-@node Default values, Automatic output, Threads in AstrUtils, Common behavior
-@section Default values
+@node Configuration files, Automatic output, Threads in AstrUtils, Common behavior
+@section Configuration files
 
 Each program needs a certain number of parameters to run. Supplying
 all the necessary parameters each time you run the program is very
 frustrating and prone to errors. Therefore all the programs read the
 values for the necessary options you have not given in the command
-line from at one of several plain text files (which you can view and
-edit with any text editor).
+line from one of several plain text files (which you can view and edit
+with any text editor). These files are known as configuration files
+and are usually kept in a directory named @file{etc/} according to the
+filesystem hierarchy
+standard@footnote{@url{http://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard}}.
 
 The thing to have in mind is that none of the programs in AstrUtils
-keeps any internal default value. All the values must either be stored
-in one of the default files or explicitly called in the command
+keep any internal default value. All the values must either be stored
+in one of the configuration files or explicitly called in the command
 line. In case the necessary parameters are not given through any of
 these methods, the program will list the missing necessay parameters
 and abort. As explained in @ref{Operating modes}, the only exception
 to this is @option{--numthreads}, whose default value is set at
 @command{$ ./configure} time internally, see @ref{AstrUtils configure
-options}. Ofcourse, you can still provide a default value at any of
-the levels below, but if you don't, the program will not abort.
+options}. Ofcourse, you can still provide a default value for the
+number of threads at any of the levels below, but if you don't, the
+program will not abort.
 
+
+
+@menu
+* Configuration file format::   ASCII format of configuration file.
+* Configuration file precedence::  Precedence of configuration files.
+* Current directory and User wide::  Local and user configuration files.
+* System wide::                 System wide configuration files.
+@end menu
+
+@node Configuration file format, Configuration file precedence, Configuration files, Configuration files
+@subsection Configuration file format
+
+The configuration files for each program have the standard program
+executable name with a @file{.conf} suffix. When you download the
+source code, you can find them in the same directory as the source
+code of each program, see @ref{Program source}.
+
+Any line in the configuration file whose first non-white character is
+a @key{#} is considered to be a comment and is ignored. The same goes
+for an empty line. The name of the parameter is the same as the long
+format of the command line option for that parameter. The parameter
+name and parameter value have to be separated by any number of
+``whitespace'' characters: space, tab or vertical tab. By default
+several space characters are used. If the value of an option has space
+characters (most commonly for the @option{hdu} option), then double
+quotes can be used to specify the full value.
+
+Any text after the first two words (separated by the above delimiters)
+in a line is ignored. If an option is not recognized in the
+configuration file, the name of the file and unrecognized option will
+be reported and the program will abort.  If a parameter is repeated
+more more than once in the configuration files and it is not set on
+the command line, then only the first value will be used, the rest
+will be ignored.
+
+You can build any of the directories and the configuration files your
+self using any text editor.  However, it is recommended to use the
+@option{--setdirconf} and @option{--setusrconf} options to set default
+values for the current directory or this user, see @ref{Operating
+modes}. With these options, the values you give will be checked as
+explained in @ref{Option basics} before writing in the current
+directory's configuration file. They will also print a set of
+commented lines guiding the reader and will also classify the options
+based on their context and write them in their logical order to be
+more understandable.
+
+
+@node Configuration file precedence, Current directory and User wide, Configuration file format, Configuration files
+@subsection Configuration file precedence
 The parameter values in all the programs of AstrUtils will be filled
 in the following order. Such that if a parameter is assigned a value
 in an earlier step, any value for that parameter in a later step will
@@ -2206,7 +2294,7 @@ be ignored.
 
 @enumerate
 @item
-Command line, for this paricular execution.
+Command line options, for this paricular execution.
 
 @item
 Current directory, for all executions in this directory
@@ -2214,17 +2302,17 @@ Current directory, for all executions in this directory
 
 @item
 The user's home directory, for all the executions of a particular
-user:@*(@file{$HOME/.local/share/astrutils}, see below).
+user:@*(@file{$HOME/.local/etc/}, see below).
 
 @item
 In a system wide directory for any user on that computer
-(@file{prefix/share/astrutils/}, see @ref{Installation directory} for
+(@file{prefix/etc/}, see @ref{Installation directory} for
 the value of @file{prefix}).
 @end enumerate
 @noindent
 
 The basic idea behind setting this progressive state of checking for
-default values is that separate users of a computer or separate
+parameter values is that separate users of a computer or separate
 folders in a user's file system might need different values for some
 parameters and the same values for others. For example raw telescope
 images usually have their main image extension in the second FITS
@@ -2237,72 +2325,60 @@ default values for the different directories that you would like to
 run AstrUtils in for your different purposes, so you won't have to
 worry about this issue any more.
 
-The files keeping the default values have the standard program name
-along with a @file{.def} postfix. When you download the source code,
-you can see find them in the same directory as the source code of each
-program, see @ref{Program source}. Each program has such a file with
-the same name as the executable of that program. When you install
-AstrUtils, All of them are copied into the (possibly system wide)
-@file{prefix/share/astrutils/} directory. See @ref{Configuring} for
-more detils on @file{prefix} (by default it is:
-@file{/usr/local}). This directory is the final place (with the lowest
-priority) that the programs in AstrUtils will check to retrieve
-default values. If you remove a parameter and its value from the files
-in this directory, you either have to specify it in more immediate
-default files or set it each time in the command line. Recall that
-none of the programs in AstrUtils keep any internal default values and
-will abort if they don't find a value for the necessary parameters
-(except the number of threads). So even though you might never use a
-parameter, it still has to be at least available in this system-wide
-default file.
 
-The user default values are stored in the directory
-@file{$HOME/.local/share/astrutils}. Unless you have changed it, the
-@file{$HOME} environment variable should point to your home
+@node Current directory and User wide, System wide, Configuration file precedence, Configuration files
+@subsection Current directory and User wide
+
+For these two directories, the configuration files are stored in a
+hidden sub-directory named @file{./.astrutils/} and
+@file{$HOME/.local/etc/} respectively. Unless you have changed it, the
+@file{HOME} environment variable should point to your home
 directory. You can check it by running @command{$ echo $HOME}. Each
 time you run any of the programs in AstrUtils, this environment
 variable is read and placed in the above address. So if you suddenly
-see that your home default values are not being read, probably you (or
-some other program) has changed the value of this environment
-variable. However, this dependence on the environment variable does
-enable you to temporarily use a different directory as your home
-directory. This can come in handy in complicated situations. You can
-write the default values to this file by using the
-@option{--userdefault} option, see @ref{Operating modes}.
+see that your home configuration files are not being read, probably
+you (or some other program) has changed the value of this environment
+variable.
 
-For the current directory, default files are stored in a hidden
-sub-directory named @file{.astrutils/}. You can build the directory
-and the default files your self using any text editor.  However, it is
-recommended to use the @option{--dirdefaults} option to set default
-values for the current directory, see @ref{Operating modes}. With this
-option, the values you give will be checked as explained in
-@ref{Option basics} before writing in the current directory's default
-file. It will also print a set of commented lines guiding the reader
-and will also classify the options based on their context and write
-them in their logical order to be more understandable.
-
-The default files are formatted in the following manner. Any line
-whose first non-white character is a @key{#} is considered to be a
-comment and is ignored. The same goes for an empty line. The name of
-the parameter is the same as the long format of the command line
-option for that parameter. The parameter name and parameter value have
-to be separated by any number of the following characters: space,
-comma (@key{,}), equal sign (@key{=}), or colon (@key{:}). By default
-only the first (several space characters) is used, but if you feel the
-need, you can use the others too. Any text after the first two words
-(separated by the above delimiters) in a line is ignored. If an option
-is not recognized in the default file, the name of the file and
-unrecognized option will be reported and the program will abort.
-
-Note that if a parameter is repeated more more than once in the
-default files and it is not set on the command line, then only the
-first value will be used, the rest will be ignored.
+Although it might cause confusions like above, this dependence on the
+@file{HOME} environment variable enables you to temporarily use a
+different directory as your home directory. This can come in handy in
+complicated situations. To set the user or current directory
+configuration files based on your command line input, you can use the
+@option{--setdirconf} or @option{--setusrconf}, see @ref{Operating
+modes}
 
 
 
+@node System wide,  , Current directory and User wide, Configuration files
+@subsection System wide
+When AstrUtils is installed, the configuration files that are shipped
+with the distribution are copied into the (possibly system wide)
+@file{prefix/etc/} directory. See @ref{Configuring} for more
+detils on @file{prefix} (by default it is: @file{/usr/local}). This
+directory is the final place (with the lowest priority) that the
+programs in AstrUtils will check to retrieve parameter values.
+
+If you remove a parameter and its value from the files in this system
+wide directory, you either have to specify it in more immediate
+configuration files or set it each time in the command line. Recall
+that none of the programs in AstrUtils keep any internal default
+values and will abort if they don't find a value for the necessary
+parameters (except the number of threads). So even though you might
+never use a parameter, it still has to be at least available in this
+system-wide configuration file.
+
+In case you install AstrUtils from your destribution's repositories,
+@file{prefix} will either be set to @file{/} (the root directory) or
+@file{/usr}, so you can find the system wide configuration variables
+in @file{/etc/} or @file{/usr/etc/}. The prefix of @file{/usr/local/}
+is conventionally used for programs you install from source by your
+self.
 
 
-@node Automatic output, Getting help, Default values, Common behavior
+
+
+@node Automatic output, Getting help, Configuration files, Common behavior
 @section Automatic output
 
 All the programs in AstrUtils are designed such that specifying an
@@ -2418,7 +2494,7 @@ $ astrimgcrop --usage
 Usage: astrimgcrop [-Do?IPqSVW] [-d INT] [-h INT] [-r INT] [-w INT]
             [-x INT] [-y INT] [-c INT] [-p STR] [-N INT] [--deccol=INT]
             ....
-            [--setdefaults] [--usage] [--version] [--wcsmode]
+            [--setusrconf] [--usage] [--version] [--wcsmode]
             [ASCIIcatalog] FITSimage(s).fits
 @end example
 
@@ -2542,16 +2618,17 @@ standard manner.
 @node --printparams, Info, Man pages, Getting help
 @subsection @option{--printparams}
 
-Given that there are several layers of default parameters, it often
-happens that before running a program on a certain data set, you want
-to see the values for the parameters that the program will use after
-it has read your command line options and all the default values. You
-might also want to save the list with the output so you can reproduce
-the same results at a later time, this is very important when you want
-to use your results in a report or paper.
+Given that there are several layers of configuration files (see
+@ref{Configuration files}), it often happens that before running a
+program on a certain data set, you want to see the values for the
+parameters that the program will use after it has read your command
+line options and all the configuration files. You might also want to
+save the list with the output so you can reproduce the same results at
+a later time, this is very important when you want to use your results
+in a report or paper.
 
 If you call this option, all AstrUtils programs will read your command
-line parameters and all the default parameters files, but immediately
+line parameters and all the configuration files, but immediately
 before actually running, the programs will print the full list of
 paramter names and values sorted and grouped by context and quit. They
 will also report their version number and configure date. So for
@@ -2576,8 +2653,28 @@ $ astrimgcrop --racol=2 --deccol=3 IN.fits cat.txt -P > parameters.txt
 
 @noindent
 All the parameters along with the version number of the program and
-the date and time that it was configured on your computer will be
-stored in that plain text file.
+the date and time that it was configured on your computer and the date
+and time that the file was created will be stored in that plain text
+file. The output of @option{--printparams} conforms with the
+configuration file formats@footnote{They are both written by the same
+function.}. By taking the following steps, you can use this file as a
+configuration file to reproduce your results at a later time.
+
+@enumerate
+@item
+Set the file name based on the standard configuration file names, see
+@ref{Configuration file format}.
+
+@item
+Later on (when ever you want to re-produce your results), copy the
+file in the @file{./.astrutils/} directory of your current
+directory.
+@end enumerate
+
+@noindent
+In this manner, this file will be read as a current directory
+configuration file and since all the parameters are defined in it, no
+other configuration file value will be used.
 
 @node Info,  , --printparams, Getting help
 @subsection Info
@@ -2730,6 +2827,7 @@ to other formats.
 @menu
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * ImageTransform::              Transform (flip, rotate) an image.
+* ImageArith::
 * EllipMask::                   Place elliptical masks on an image.
 * Image conversion::            Convert an image to and from other formats.
 @end menu
@@ -2868,7 +2966,7 @@ coordinates manually on the command line. When you do specify a
 catalog, ImageCrop has to be in one of the two major modes
 (@option{--imgmode} or @option{--wcsmode}). Note that the single crop
 box parameters specified in the sub-modes will not be written to or
-read from the default file, they have to be specified on each
+read from the configuration file, they have to be specified on each
 execution.
 
 
@@ -3139,9 +3237,8 @@ When a catalog is given, the value of @option{--output} (see
 @ref{Common options}) will be seen as the directory to store the
 output cropped images. In such cases, the outputs will consist of two
 parts: a variable part (the row number of each target starting from 1)
-along with a fixed string which you can set with the
-@option{--postfix} option. Note that in catalog mode, only one image
-can be input.
+along with a fixed string which you can set with the @option{--suffix}
+option. Note that in catalog mode, only one image can be input.
 
 When the crop box is specified on the command line, the value to
 @option{--output} will be used as a file name. If no output is
@@ -3204,7 +3301,7 @@ much more efficient. There are also much faster search strategies.
 
 
 
-@node ImageTransform, EllipMask, ImageCrop, Image manipulation
+@node ImageTransform, ImageArith, ImageCrop, Image manipulation
 @section ImageTransform
 Sometimes it is required that the image be trasformed (flipped,
 rotated, sheared or ...) This program will do that.
@@ -3212,6 +3309,11 @@ rotated, sheared or ...) This program will do that.
 
 
 
+@node ImageArith, EllipMask, ImageTransform, Image manipulation
+@section ImageArith
+By arithmetic on images, we mean applying various arithmetic
+operations on all the pixels of several images, for example adding all
+the pixels in one image with another.
 
 
 
@@ -3221,11 +3323,18 @@ rotated, sheared or ...) This program will do that.
 
 
 
-@node EllipMask, Image conversion, ImageTransform, Image manipulation
+
+
+
+
+@node EllipMask, Image conversion, ImageArith, Image manipulation
 @section EllipMask
 
 EllipMask will mask some of the pixels in the image based on
 elliptical parameters that are specified through an ASCII catalog.
+
+
+
 
 @node Image conversion,  , EllipMask, Image manipulation
 @section Image conversion
@@ -3335,7 +3444,7 @@ data. The tools in this chapter create model galaxies and will provide
 2D fittings to be able to understand our detections.
 
 @menu
-* MockGals::
+* MockGals::                    Making mock galaxies and stars.
 @end menu
 
 @node MockGals,  , Modelling and fittings, Modelling and fittings
@@ -3343,13 +3452,522 @@ data. The tools in this chapter create model galaxies and will provide
 
 MockGals will create mock galaxy images in an image with the ability
 to store the image prior to convolving with a PSF and prior to adding
-noise along with a final noised image.
+noise along with a final noised image. Making mock galaxies is a very
+impotant step both in data analysis and in model fitting. The
+importance of simulations in the latter is obvious.
+
+In data analysis, making a mock image can act like a calibration tool,
+through which you can test how successfully your detection technique
+is able to detect a known set of objects. There are commonly two
+aspects to detecting: the detection of the fainter parts of bright
+objects (which in the case of galaxies fade into the noise very
+slowly) or the complete detection of an over-all faint object. Making
+mock galaxies is the most accurate (and idealistic) way these two
+aspects of a detection algorithm can be tested.
+
+Note that since the Poisson noise variance is relative to the mean of
+the destribution, making mock (convolved with the PSF) images and
+embedding them in a real image will result in an underestimation of
+the noise on the mock galaxies. Therefore we do not support the option
+to build mock galaxies on an input image. However, if you still feel
+the urge to do so, you can use the convolved image output (without any
+noise) and add that to any input image your self. Just beware that the
+completeness values you will obtain will be over-estimated.
+
+In the sections below we will first review some very basic information
+about the basic concepts behind simulating a real image. If you are
+already sufficiently familiar with these concepts you can skip this
+section. After that we will discuss the input, options and output of
+MockGals and finally we list out plans for future work on MockGals.
+
+MockGals was built for extra galactic studies, so currently the only
+astronomical objects it can produce are stars and galaxies. We welcome
+the simulation of any other astronomical object. In this section we
+review how an ellipse with a certain functional form is created and in
+the following sections we discuss how the functional radial profiles
+used for the PSF, stars and galaxies are mathematicly defined. Finally
+we dicuss how noise is added.
+
+
+@menu
+* Defining an ellipse::         Defining an ellipse in 2D.
+* PSF::                         Radial profiles for the PSF.
+* Stars::                       Making mock star profiles.
+* Galaxies::                    Radial profiles for galaxies.
+* Sampling from a function::    Sample a function on a pixelated canvas.
+* Adding Noise::                What the noise is and how it is calculated.
+* Invoking astrmockgals::       Input, options and output of MockGals.
+* MockGals future updates::     Plans for the future of MockGals.
+@end menu
+
+
+@node Defining an ellipse, PSF, MockGals, MockGals
+@subsection Defining an ellipse
+
+The PSF, see @ref{PSF}, and galaxy radial profiles are generally
+defined on an ellipse so in this section we will first review how an
+ellipse can be defined on a pixelated 2D surface. Labeling the major
+axis of an ellipse @mymath{a}, and its minor axis with @mymath{b}, the
+axis ratio is defined as: @mymath{q\equiv b/a}. The major axis of an
+ellipse can be aligned in any direction, we therefore define the angle
+of the major axis to the horizontal axis of the image as the position
+angle of the ellipse and in this manual, we show it with
+@mymath{\theta}.
+
+Our aim is to put a radial profile of any functional form @mymath{f(r)}
+over an ellipse. Lets define the radial distance @mymath{r_{el}} as the
+distance on the major axis to the center of the ellipse which is
+located at @mymath{x_c} and @mymath{y_c}. We want to find the elliptical
+distance of a point located at @mymath{(i,j)}, in the image coordiate
+system, from the center of the ellipse. First we rotate the coordinate
+system by @mymath{\theta} to get the new rotated coordiantes of that point
+@mymath{(i_r,j_r)}:
+
+@dispmath{i_r(i,j)=(i_c-i)\cos(\theta)+(j_c-j)\sin(\theta)}
+@dispmath{j_r(i,j)=(j_c-j)\cos(\theta)-(i_c-i)\sin(\theta)}
+
+@noindent The elliptical distance of a point located at @mymath{(i,j)}
+can now be defined as: @mymath{r_{el}^2=\sqrt{i_r^2+j_r^2/q^2} }. To
+place the radial profiles explained below over an ellipse, we simply
+calculate @mymath{f(r_{el}(i,j))} based on the functional radial profile
+desired.
+
+The way MockGals builds the profile is that the nearest pixel in the
+image to the given profile center is found and the profile value is
+calcuated for it, see @ref{Sampling from a function}. The next pixel
+which the profile value is calculated on is the next nearest neighbor
+of the initial pixel to the profile center (as defined by
+@mymath{r_{el}}). This is done fairly efficiently using a breadth
+first parsing
+strategy@footnote{@url{http://en.wikipedia.org/wiki/Breadth-first_search}}
+which is implemented through an ordered linked list.
+
+Using this approch, we only go over one layer of pixels on the
+circumference of the profile to build the profile. Not one more extra
+pixel has to be checked. Another consequence of this strategy is that
+extending MockGals to three dimensions becomes very simple: only the
+neighbours of each pixel have to be changed. Everything else after
+that (when the pixel index and its radial profile have entered the
+linked list) is the same, not matter what number of dimensions we are
+dealing with.
+
+
+
+@node PSF, Stars, Defining an ellipse, MockGals
+@subsection Point Spread function
+
+Assume we have a ``point'' source. When we take an image of it, it
+will ``spread'' over an area. To quantify that spread, we can define a
+``function''. This is how we define the point spread function or the
+PSF of the image. This ``spread'' can have various causes, for example
+in ground based astronomy, due to the atmosphere. In practice we can
+never surpass the ``spread'' due to the diffraction of our lens
+aperture. Vairous other effects can also be quantified through a PSF.
+For example, the simple fact that we are sampling in a discrete space,
+namely the pixels, also produces a very small ``spread'' in the image
+we take.
+
+We want the total flux of an object to remain unchanged after applying
+the ``spread'' by convolution. Therefore, it is important that the sum
+of all the pixels of the PSF be unity. The image also has to have an
+odd number of pixels on its sides so one pixel can be defined as the
+center. In MockGals, the PSF can be set by the two methods explained
+below.
+
+@table @asis
+
+@item Parametric functions
+A known mathematical function is used to make the PSF. In this case,
+only the paramaters to define the functions are necessary and MockGals
+will make a PSF based on the given parameters for each function. In
+both cases, the center of the profile has to be exactly in the middle
+of the central pixel of the PSF (which is automatically done by
+MockGals). When talking about the PSF, usually, the full width at half
+maximum or FWHM is used as a scale of the width of the PSF.
+
+@table @cite
+@item Gaussian
+In the older papers, and to a lesser extent even today, some
+researchers use the 2D gaussian function to approximate the PSF of
+ground based images. In its most general form, a Gaussian function can
+be written as:
+
+@dispmath{f(r)=a \exp \left( -(x-\mu)^2 \over 2\sigma^2 \right)+d}
+
+Since the center of the profile is pre-defined, @mymath{\mu} and
+@mymath{d} are constrained. @mymath{a} can also be found because we want
+the function to be normalized. So the only important parameter for
+MockGals is the @mymath{\sigma}. In the Gaussian function we have this
+relation between the FWHM and @mymath{\sigma}:
+
+@cindex Gaussian FWHM
+@dispmath{\rm{FWHM}_g=2\sqrt{2\ln{2}}\sigma \approx 2.35482\sigma}
+
+@cindex Moffat function
+@item Moffat
+The Gaussian profile is much sharper than the images taken from stars
+on photographic plates or CCDs. Therefore in 1969, Moffat proposed
+this functional form for the image of stars:
+
+@dispmath{f(r)=a \left[ 1+\left( r\over \alpha \right)^2 \right]^{-\beta}}
+
+@cindex Moffat @mymath{\beta}
+Again, @mymath{a} is constrained by the normalization, therefore two
+paramters define the shape of the Moffat function: @mymath{\alpha} and
+@mymath{\beta}. The radial parameter is @mymath{\alpha} which is related
+to the FWHM by
+
+@cindex Moffat FWHM
+@dispmath{\rm{FWHM}_m=2\alpha\sqrt{2^{1/\beta}-1}}
+
+@noindent
+Comparing with the PSF predicted from atmospheric turbulence theory
+with a Moffat function, Trujillo et al.@footnote{Trujillo, I.,
+J. A. L. Aguerri, J. Cepa, and C. M. Gutierrez (2001). ``The effects
+of seeing on S@'ersic profiles - II. The Moffat PSF''. In: MNRAS 328,
+pp. 977---985.} claim that @mymath{\beta} should be 4.765. They also
+show how the Moffat PSF contains the Gaussian PSF as a limiting case
+when @mymath{\beta\to\infty}.
+
+@end table
+
+@item An input FITS image
+An input image can also be specified to be used as a PSF.
+@end table
+
+
+While the Gaussian is only dependent on the FWHM, the Moffat function
+is also dependant on @mymath{\beta}. Comparing these two functions
+with a fixed FWHM gives the following results:
+
+@itemize
+@item
+Within the FWHM, the functions don't have significant differences.
+@item
+For a fixed FWHM, as @mymath{\beta} increases, the Moffat function
+becomes sharper.
+@item
+The Gaussian function is much sharper than the Moffat functions, even
+when @mymath{\beta} is large.
+@end itemize
+
+
+
+
+@node Stars, Galaxies, PSF, MockGals
+@subsection Star Profiles
+
+In MockGals, we generally consider stars to be a point source. This is
+usually the case for extra galactic studies, were nearby stars are
+also in the field. Since a star is only a point source, we assume that
+it only fills one pixel prior to convolution. Infact, exactly for this
+reason, in astronomical images the light profiles of stars are one of
+the best methods to understand the shape of the PSF and a very large
+fraction of scientific research is preformed by assuming the shapes of
+stars to be the PSF of the image.
+
+
+
+
+
+@node Galaxies, Sampling from a function, Stars, MockGals
+@subsection Galaxies
+
+Today, most practitioners agree that galaxy profiles can be modeled
+with one or a few generalized de Vaucouleur's (or S@'ersic) profiles.
+
+@dispmath{I(r) = I_e exp \left ( -b_n \left[ \left( r \over r_e \right)^{1/n} -1 \right] \right )}
+
+G@'erard de Vaucouleurs (1918-1995) was first to show in 1948 that
+this function best fits the galaxy light profiles, with the only
+difference that he held @mymath{n} fixed to a value of 4. 20 years
+later in 1968, J. L. S@'ersic showed that @mymath{n} can have a
+variety of values and does not necessarily have to be 4.
+
+This profile depends on the effective radius (@mymath{r_e}) which is
+defined as the radius which contains half of the total brightness of
+the object. The total brightness is defined as the integration of the
+profile to infinity. @mymath{I_e} is the surface brightness at the
+effective radius.  The S@'ersic index @mymath{n} is used to define the
+concentration of the profile within @mymath{r_e} and @mymath{b_n} is a
+constant dependent on @mymath{n}. MacArthur et al.@footnote{MacArthur,
+L. A., S. Courteau, and J. A. Holtzman (2003). ``Structure of
+Disk-dominated Galaxies. I. Bulge/Disk Param- eters, Simulations, and
+Secular Evolution''. In: ApJ 582, pp. 689---722.} show that for
+@mymath{n>0.35}, @mymath{b_n} can be accurately approximated using
+this equation:
+
+@dispmath{b_n=2n - {1\over 3} + {4\over 405n} + {46\over 25515n^2} + {131\over 1148175n^3}-{2194697\over 30690717750n^4}}
+
+
+
+
+
+@node Sampling from a function, Adding Noise, Galaxies, MockGals
+@subsection Sampling from a function
+
+A pixel is the ultimate level of accuracy we have to gather data,
+can't get any more accurate in one image. We call this sampling. But
+the mathematical profiles that we define have infinite
+accuracy. Generally, the variation in the profiles over the area of
+one pixel is not too significant. If so, we can simply use the
+elliptical radius of the center of the pixel and assign that as the
+final value of the pixel.
+
+Unfortunately, as you saw above, some galaxy profiles can become very
+sharp as we approach their center. This sharpness increases with
+smaller effective radius and larger S@'ersic values. This sharp change
+in the radial profile will produce a strong gradient over the central
+few pixels of the object. Thus rendering the central value extremely
+inaccruate.
+
+The first method that comes to mind for solving this problem is
+integration, we can integrate the functional form of the profile over
+the pixel area in a 2D integration process. In MockGals we use the
+Gauss-Kronrod-Patterson abscissae as provided in the GNU scientific
+library. This is certainly far more accurate than the central value
+but unfortunately numerical integration techniques also have their
+limitations and when such sharp profiles are needed they become
+extremely inaccurate.
+
+The most accurate method to try to sample a continuous profile on a
+discrete space (sampling) is by choosing a large number of random
+points within the boundaries of the pixel and taking their average
+value. This is also, generally speaking, what happens in practice with
+the photons on the CCD. The problem is this: how many random points
+should be chosen? In order to find out, lets look at an extremely
+sharp S@'ersic profile with @mymath{\theta=22}, @mymath{q=0.3},
+@mymath{n=10} and @mymath{r_e=1} pixel. Although such a sharp profile
+is very rarely found in nature, we have to be prepared. For simplicity
+we will position it exactly in the center of a pixel.
+
+Let @mymath{I_r} represent the flux from the average of a large number
+of randomly positioned points and @mymath{I_i} to be the value after
+integrating the profile over the pixel area. We define the relative
+difference as: @mymath{|I_r-I_i|/I_r}. We then tested this difference
+with @mymath{10^3}, @mymath{10^4}, @mymath{10^5}, @mymath{10^6},
+@mymath{10^7} and @mymath{10^8} random points over the pixel area. The
+differneces were @mymath{580701}, @mymath{525220}, @mymath{500575},
+@mymath{511167}, @mymath{509204} and @mymath{508288}
+respectively. Since this profile is so sharp, only the central pixel
+has such a huge difference, for the rest of the pixels, the
+differences are smaller than 0.01.
+
+If the center of the profile was off of the center of a pixel, these
+values would change and be shared by the neighboring pixels.  The
+differences between random points and integration is extremely large,
+but we see that the difference between @mymath{10^4} random points and
+@mymath{10^8} random points is only about @mymath{3} percent, while
+the CPU burden, or operation time, is 10,000 times less! Therefore it
+seems reasonable to choose @mymath{10^4} random points to test
+integration.
+
+In MockGals, the building of the profile begins from its central pixel
+and continues outwards, see @ref{Defining an ellipse}. It would be
+perfectly ideal if we could use the @mymath{10^4} or even larger
+number of random points, to fill all the pixels, to be more accurate
+and also to be closer to what really happens. But unfortunately, such
+a process would be extremely time and CPU consuming. But in order to
+not loose too much accuracy, in MockGals, we build the profile using
+all the three methods explained above.
+
+We begin building a profile from the pixel in the image that is
+closest to the center. First we try @mymath{10^4} random points and
+integration over the same pixel, if the difference (as defined above)
+with integration is tollerable, MockGals will stop using random points
+and only use integration. As we go to farther regions in the profile,
+the difference between integration and using the central value will
+also go below a tolerance level and beyond that point we only use the
+central value.
+
+
+
+
+@node Adding Noise, Invoking astrmockgals, Sampling from a function, MockGals
+@subsection Noise
+@cindex Image noise
+@cindex Noise
+Deep astronomical images, like those used in extra galactic studies
+seriously suffer from noise in the data. Generally speaking, the
+sources of noise in an astronomical image are:
+
+@table @asis
+@item Photon counting noise
+Thanks to the very accurate electronics used in today's CCDs, this
+type of noise is the main cause of concern for extra galactic studies.
+It can generally be associate with the counting error that is known to
+have a Poissonian distribution. The Poisson distribution is about
+counting. But counting is a discrete operation with only positive
+values, for examle we can't count @mymath{3.2} or @mymath{-2} of
+anything. We only count @mymath{0}, @mymath{1}, @mymath{2}, @mymath{3}
+and so on. Therefore the Poisson distribution is also a discrete
+distribution, only applying to whole positive integers.
+
+Lets assume that we know the mean value of counting something, in this
+case, the number of electrons that are produced by photons in the CCD,
+is @mymath{\lambda}.  Lets take @mymath{k} to represent the result of
+counting in one particular time we attempt to count. The probability
+denstity function of @mymath{k} can be written as:
+
+@cindex Poisson distribution
+@dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in \{0, 1, 2,
+3, \dots \}}
+
+@cindex Skewed poisson distribution
+Because the Poisson distribution is only applicable to positive
+values, it is by nature very skewed when @mymath{\lambda} is near
+zero. One qualitative way to imagine it is that there simply aren't
+enough integers smaller than @mymath{\lambda}, than there are larger
+integers. Therefore to accomodate all possibilities, it has to be
+skewed when @mymath{\lambda} is small.
+
+But as @mymath{\lambda} becomes larger and larger, the distribution
+becomes more and more symmetric. One very useful property of the
+Poisson distribution is that the mean value is also its variance.
+When @mymath{\lambda} is very large, say @mymath{\lambda>1000}, then
+the normal (Gaussian) distribution, see @ref{PSF}, is an excellent
+approximation of the poisson distribution with mean
+@mymath{\mu=\lambda} and standard deviation
+@mymath{\sigma=\sqrt{\lambda}}.
+
+We see that the variance or dispersion of the distribution depends on
+the mean value, and when it is large we can approximate it with a
+Gaussian that only has one free parameter (@mymath{\mu=\lambda} and
+@mymath{\sigma=\sqrt{\lambda}}) instead of two that it originally
+has.
+
+The astronomical objects after convolution with the PSF of the
+instrument, lie above a certain background flux. This background flux
+is defined to be the average flux of a region in the image that has
+absolutely no objects. The physical origin of this background value is
+the brightness of the atmosphere. It is thus an ideal definition,
+because in practice, we never know what lies deep in the noise far
+lower than our detection criteria@footnote{See the section on sky in
+Akhlaghi M. Ichikawa. T. 2015...}. However, in a real image, a
+relatively large number of very faint objects can been fully buried in
+the noise. These undetected objects will bias our background
+measurement to slightly larger values. We therefore define the sky
+value to be the average of the undetected regions in the image, so in
+an ideal case where we have successfully detected all the objects, the
+sky value and background value are the same.
+
+As we go to longer wavelengths, the background value becomes more
+significant and also varies over a wide image field. Such variations
+are not currently implemented in MockGals, but will be in the
+future. In a mock image, we have the luxuary of setting the background
+value.
+
+In each pixel of the canvas of pixels we have made to build the
+galaxies, we might have contributions from various sources. Also the
+image has been convolved prior to adding noise. Lets name this flux of
+the convolved sum of possibly overlapping objects, @mymath{I_{nn}}.
+@mymath{nn} representing ``no noise''. For now, lets assume the
+background is constant and represented by @mymath{B}. In practice the
+background values are larger than 10,000 counts. Then the flux after
+adding noise is a radom value taken from a Gaussian distribution with
+@mymath{\mu=B+I_{nn}} and @mymath{\sigma=\sqrt{B+I_{nn}}}.
+
+@item Readout noise
+This is noise that is produced by the electronics in the CCD that
+attempt to read the amount of flux that was recorded. In deep
+extra-galactic studies this kind of noise is not a significant source
+of the final noise in the image. Currently MockGals does not simulate
+this type of noise, but it is planned to be simulated in future
+verisons.
+
+@item Shot noise on dark current
+While taking images with a CCD, a dark current is fed to the pixels,
+the variation of the value of this dark current over the pixels, also
+adds to the final image noise. Although, for deep observations, like
+those used for extra galactic studies, this is not the dominant source
+of noise. Currently MockGals does not simulate this source of noise, but
+it is planned to be added.
+@end table
+
+In MockGals noise is added to the image after convolving the produced
+profiles with the PSF. Now that the sources of noise have been
+discussed we can define the signal-to-noise (S/N or SN are also
+used). Since noise is defined on a per-pixel basis, S/N is also
+defined on a per-pixel basis. Lets assume the object has a total
+signal of @mymath{T} and an area @mymath{A} pixels. Then the average
+flux of the object per pixel is defined as: @mymath{a=T/A}.
+
+The noise term is defined as the RMS of all noise sources. Since the
+background was calculated indpendently of the average flux in the
+object, the signal to noise becomes:
+
+@dispmath{\rm{S/N}={a \over \sqrt{a+B^2}}}
+
+Note that the average flux of a profile seriously depends on the
+profile sharpness, so two S@'ersic profiles with all parameters
+(including their total flux) equal except the S@'ersic index will have
+very different SN values.
+
+
+
+
+
+@node Invoking astrmockgals, MockGals future updates, Adding Noise, MockGals
+@subsection Invoking MockGals
+
+The general template to run MockGals is:
+
+@example
+astrmockgals [OPTION ...] [PSFimg] Catalog
+@end example
+
+@noindent
+The catalog (which stores the parameters for each mock profile) is the
+mandatory argument. If an image data file is given as an argument (see
+@ref{Arguments}), it is assumed to be the PSF, otherwise, the PSF is
+built using the given functional parameters.
 
 
 
 
 
 
+@node MockGals future updates,  , Invoking astrmockgals, MockGals
+@subsection MockGals future updates
+
+@itemize
+
+@item
+Currently the whole profile has to have only one mathematical
+function, this can easily be extended such that each galaxy has
+separate profiles or different ellipticities.
+
+@item
+Currently MockGals makes mock profiles on a 2D surface, but due to the
+particular way it builds the mock profiles, the infra-structure is
+there to make the profiles on a 3D volume and find a real projection
+of a real 3D object. This is also a future upgrade we plan to apply.
+
+@item
+Allow other sources of noise to also participate, currently it is only
+Poisson noise.
+
+@item
+Allow for a gradient in the background value over the image. Maybe
+using an input image which specifies the background value for each
+pixel.
+
+@item
+MockGals currently uses only one thread, we should test how it is
+possible to extend it to multiple threads so the preformance
+improves. The problem is that multiple threads are asynchronous, so if
+two profiles overlap, we cannot be sure if they are not built
+simultaneously and fail to super-impose on each other. Defining a
+mutex for each pixel is also absurd!
+
+Currently I am thinking that we can maybe divide the image into meshes
+and give some meshs to each thread. We can also check which profile
+overlaps with which mesh and only build those profiles for each mesh
+of each thread. However, this very process its self along with the
+cost of spinning of threads might hamper the performance. But I
+haven't had the time to do an accurate check yet.
+
+@end itemize
 
 
 
@@ -3437,12 +4055,12 @@ This directory keeps all the tests (checks) which are executed when
 
 @end table
 
-Other than these directories, there are lots of other scripts and
-files in the top directory. Most of these files were created
-automatically by GNU Autoconf and GNU Automake. First we will review
-the libraries and headers in their respective directories, then we
-will discuss the basic conventions for managing the code in each
-program. Finally some notes on the building process are given.
+Below, we will first review how to obtain the version controlled
+source. The libraries and headers in their respective directories are
+then explained. Later we will discuss the basic conventions for
+managing the code in each program to facilitate reading the code by an
+outside inquirer. Finally some notes on the building process are
+given.
 
 
 @menu
@@ -3468,10 +4086,10 @@ the revision history of the code can be very useful, also some updates
 that are not yet released might be in it.
 
 We use Git for the verion control of AstrUtils. For those who are not
-familiar, we suggest the Pro Git
+familiar with it, we suggest the Pro Git
 book@footnote{@url{http://git-scm.com/book/en/v2}}, it is publicly
 available for online reading and downloading. To clone the latest
-version you can run
+version of AstrUtils you can run
 
 @example
 $ git clone git://git.sv.gnu.org/astrutils
@@ -3484,7 +4102,7 @@ automatically built (and included in the distributed
 building. To create those files you have to run the following command
 in the cloned directory which will generate those automatic
 files. @command{autoreconf} is part of GNU Autoconf and also requires
-GNU Automake to be installed, see @ref{Building}.
+GNU Automake to create all the necessary files, see @ref{Building}.
 
 @example
 $ autoreconf --install
@@ -3532,7 +4150,7 @@ building blocks of larger programs. Several functions are commonly
 used by all or several of the programs in AstrUtils. Therefore they
 are written as separate libraries so we don't have to keep duplicate
 code. They are mosly to do with interaction with the outside world (of
-the program), for example setting up the defaults directory, reading
+the program), for example setting up the configuration files, reading
 text catalogs or wrappers for CFITSIO and WCSLIB to facilitate reading
 and writing of FITS files.
 
@@ -3558,9 +4176,9 @@ actually a file name or a directory, or to build the automatic output,
 see @ref{Automatic output}. These functions are used by all the
 programs.
 
-@item defaults.c
-The functions to find the default file for each program and macros
-that help in reading and setting the default values in their
+@item configfiles.c
+The functions to find the configuration file for each program and
+macros that help in reading and setting the default values in their
 particular files are defined here.
 
 @item fitsarrayvv.c
@@ -3721,7 +4339,7 @@ programs.
 The user interface functions are also a unique set of functions in all
 the programs, so they are particularly named @file{ui.c} and
 @file{ui.h} in all the programs. Everything related to reading the
-user input arguments and options, checking the default values and
+user input arguments and options, checking the configuration files and
 checking the consistency of the input parameters before the actual
 program is run should be done in this file. Since most functions are
 the same, with only the interal checks and structure parameters
@@ -3772,6 +4390,40 @@ with an @code{int} in the examples above.
 
 @end vtable
 
+@menu
+* Coding conventions::          Conventions used for coding
+@end menu
+
+@node Coding conventions,  , Program source, Program source
+@subsection Coding conventions
+
+Generally we try our best to follow the GNU coding standards, besides
+those we have kept the following conventions until now. If new code is
+also added in the same manner, it would be much more easily readable
+by any interested astronomer (who will become familiar with it after
+reading once).
+
+@itemize
+
+@item
+All similar functions should be are separated by 5 blank lines to be
+easily seen to be related in a group when parsing the source code by
+eye. In Emacs you can use @key{CTRL-u 5 CTRL-o}.
+
+@item
+One group of functions is separated from another with 20 blank
+lines. In Emacs you can use @key{CTRL-u 20 CTRL-o}. Each group of
+functions has short descriptive title of the functions in that group
+in the form:
+
+@example
+/******************************************************/
+/***********        Sample title       ****************/
+/******************************************************/
+@end example
+
+@end itemize
+
 
 @node Test scripts, Building, Program source, Developing
 @section Test scripts
@@ -3783,7 +4435,7 @@ program. All the tests are placed in the
 @file{TESTdir}. There is one script (@file{basicchecks.sh}) in this
 folder and several @file{Makefile}s. The script is a common check for
 all the programs to check if the program has been created and also if
-a local default file exists.
+a local configuration file exists.
 
 For each program, the tests are placed inside directories with the
 program name. Each test is written as a shell script. The last line of
@@ -3817,6 +4469,18 @@ other test products were built in the build tree (where they are being
 run), so they don't need to be prefixed with that variable. This is
 also true for images or files that were produced by other tests.
 
+After you have saved your changes/additions, it is very good to run
+
+@example
+$ make distcheck
+@end example
+
+@noindent
+This command will create a distribution @file{.tar.gz} file and try to
+compile it in the most general cases, then it will run the tests on
+what it has built. If your change passes this check, then you are safe
+to send your changes to us to implement or for your own purposes.
+
 
 
 
@@ -3846,8 +4510,6 @@ Autoconf and Automake manuals, like all GNU manuals they provide both
 a great tutorial and technical documentation. The ``A small Hello
 World'' section in Automake's manual (in chapter 2) can be a good
 starting guide after you have read the introductions of both.
-
-
 
 
 

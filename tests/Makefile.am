@@ -18,4 +18,4 @@ imgcrop/imgcat.sh imgcrop/radec.sh imgcrop/wcscat.sh
 
 EXTRA_DIST= $(TESTS)
 
-CLEANFILES = *.log *.fits .astrutils/*.def .astrutils
+CLEANFILES = *.log *.fits .astrutils/*.conf .astrutils

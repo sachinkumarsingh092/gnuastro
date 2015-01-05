@@ -12,19 +12,21 @@
 ## http://astr.tohoku.ac.jp/~akhlaghi/
 
 
+
 # Flags for all programs:
 AM_CFLAGS = -Wall -Ofast
-AM_CPPFLAGS = -DSYSDATA_DIR=\"$(pkgdatadir)\" -I$(top_srcdir)/include
+
+AM_CPPFLAGS = -DSYSDATA_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include
 
 
 ## Make libraries of the files that are shared between all the
 ## programs:
-noinst_LIBRARIES = libdefaults.a libfitsarrayvv.a libtxtarrayvv.a	\
+noinst_LIBRARIES = libconfigfiles.a libfitsarrayvv.a libtxtarrayvv.a	\
 libcheckset.a liblinkedlist.a libtiming.a libastrthreads.a
 
 libastrthreads_a_SOURCES = astrthreads.c
 
-libdefaults_a_SOURCES = defaults.c
+libconfigfiles_a_SOURCES = configfiles.c
 
 libfitsarrayvv_a_SOURCES = fitsarrayvv.c
 

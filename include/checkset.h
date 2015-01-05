@@ -89,6 +89,9 @@ anydouble(char *optarg, double *var, char *lo, char so, char *spack,
 /**************************************************************/
 /**********          My String functions:          ************/
 /**************************************************************/
+int
+stringhasspace(char *in);
+
 char *
 malloccat(char *inname, char *toappend);
 

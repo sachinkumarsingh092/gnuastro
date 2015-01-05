@@ -128,11 +128,13 @@ AS_IF([test "x$with_numthreads" != xno],
 
 
 # Set the one general parameters:
-AC_DEFINE_UNQUOTED([DEFAULT_POSTFIX], [".def"], [Default post fix.])
-AC_DEFINE_UNQUOTED([CURDIRDATA_DIR], ["./.AC_PACKAGE_TARNAME/"], [Local data dir.])
-AC_DEFINE_UNQUOTED([USERDATA_DIR], ["/.local/share/AC_PACKAGE_TARNAME/"],
+AC_DEFINE_UNQUOTED([CONF_POSTFIX], [".conf"], [Configuration file post fix.])
+AC_DEFINE_UNQUOTED([CURDIRCONFIG_DIR], [".AC_PACKAGE_TARNAME/"],
+                   [Local data dir.])
+AC_DEFINE_UNQUOTED([USERCONFIG_DIR], ["/.local/etc/"],
                    [User data dir.])
-AC_DEFINE_UNQUOTED([DEFAULT_SHOWFMT], [" %-15s"], [Format of default output.])
+AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
+                   [Configuration file name format.])
 
 
 
@@ -192,7 +194,8 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
 		 tests/Makefile
-		 src/imgcrop/Makefile])
+		 src/imgcrop/Makefile
+		 src/mockgals/Makefile])
 
 
 

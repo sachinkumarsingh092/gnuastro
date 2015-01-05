@@ -12,10 +12,13 @@
 
 ## Directories to check:
 ## =====================
+if COND_MOCKGALS
+  MAYBE_MOCKGALS = src/mockgals
+endif
 if COND_IMGCROP
   MAYBE_IMGCROP = src/imgcrop
 endif
-SUBDIRS = lib $(MAYBE_IMGCROP) doc tests
+SUBDIRS = lib $(MAYBE_MOCKGALS) $(MAYBE_IMGCROP) doc tests
 
 
 
@@ -52,7 +55,7 @@ dist_doc_DATA = README
 ##   makerandomcat.py.
 EXTRA_DIST = include/arraymanip.h include/astrthreads.h			\
  include/checkset.h include/commonargs.h include/commonparams.h		\
- include/defaults.h include/fitsarrayvv.h include/fixedstringmacros.h	\
+ include/configfiles.h include/fitsarrayvv.h include/fixedstringmacros.h	\
  include/linkedlist.h include/stats.h include/timing.h			\
  include/txtarrayvv.h doc/findversions.sh				\
  tests/imgcrop/makerandomcat.py tests/imgcrop/randcat.txt		\

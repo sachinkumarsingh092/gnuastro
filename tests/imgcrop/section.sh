@@ -12,8 +12,8 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=astrimgcrop
-execname=../src/imgcrop/$prog
+prog=imgcrop
+execname=../src/$prog/astr$prog
 source $topsrc/tests/basicchecks.sh
 
 

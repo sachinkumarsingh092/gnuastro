@@ -1,0 +1,63 @@
+@ignore
+Some macros to be able to show math nicely in HTML and TeX.  The
+problem is that when you use braces in the TeX commands, Texinfo will
+complain for other formats and when you quote the braces with the at
+sign, e.g. @{, then TeX will not see the brace properly.
+
+So I made two macro functions: mymath{} and dispmath{}.  The first is
+for inline math and the second is for display math where the equation
+has a line of its own.
+
+For the other formats, everything is normal, except the display math
+equations that don't have any proper solution, so I have just put a $$
+$$ around the math.
+@end ignore
+
+@c HTML:
+@ifhtml
+@macro mymath{arg}
+@inlineraw{html,\\(\arg\\\)}
+@end macro
+
+@macro dispmath{arg}
+@inlineraw{html,$$\arg\$$}
+@end macro
+@end ifhtml
+
+
+@c Docbook
+@ifdocbook
+@macro mymath{arg}
+@math{\arg\}
+@end macro
+
+@macro dispmath{arg}
+@center@inlineraw{docbook,$$\arg\$$}
+@end macro
+@end ifdocbook
+
+
+@c info and plaintext
+@ifinfo
+@macro mymath{arg}
+@inlineraw{info,$\arg\$}
+@end macro
+
+@macro dispmath{arg}
+@center@inlineraw{info,$$\arg\$$}
+@end macro
+@end ifinfo
+
+
+@c TeX
+@iftex
+@macro mymath{arg}
+@math{\arg\}
+@end macro
+
+@macro dispmath{arg}
+@tex
+$$\arg\$$
+@end tex
+@end macro
+@end iftex

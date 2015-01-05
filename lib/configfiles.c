@@ -1,5 +1,5 @@
 /*********************************************************************
-defaults -- Similar functions for defaults in all utilities.
+configfiles -- Read configuration files for each program.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
 Copyright (C) 2013-2014 Mohammad Akhlaghi
@@ -30,8 +30,8 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include <sys/stat.h>		/* For mkdir permission flags. */
 
 #include "config.h"
-#include "defaults.h"
 #include "checkset.h"
+#include "configfiles.h"
 
 
 
@@ -55,9 +55,92 @@ addhomedir(char *dir)
 
 
 
+
+void
+readnamevalue(char *line, char *filename, size_t lineno,
+	      char **name, char **value)
+{
+  int notyetfinished=1, inword=0, inquote=0;
+
+  /* Initialize name and value: */
+  *name=NULL;
+  *value=NULL;
+
+  /* Go through the characters and set the values: */
+  do
+    switch(*line)
+      {
+      case ' ': case '\t': case '\v': case '\n': case '\r':
+	if(inword) /* Only considered in a word, not in a quote*/
+	  {
+	    inword=0;
+	    *line='\0';
+	    if(*value && inquote==0)
+	      notyetfinished=0;
+	  }
+	break;
+      case '#':
+	notyetfinished=0;
+	break;
+      case '"':
+	if(inword)
+	  error_at_line(EXIT_FAILURE, 0, filename, lineno,
+			"Quotes have to be surrounded by whitespace "
+			"characters (space, tab, new line, etc).");
+	if(inquote)
+	  {
+	    *line='\0';
+	    inquote=0;
+	    notyetfinished=0;
+	  }
+	else
+	  {
+	    if(*name==NULL)
+	      error_at_line(EXIT_FAILURE, 0, filename, lineno,
+			    "Parameter name should not start with "
+			    "double quotes (\").");
+	    inquote=1;
+	    *value=line+1;
+	  }
+	break;
+      default:
+	if(inword==0 && inquote==0)
+	  {
+	    if(*name==NULL)
+	      *name=line;
+	    else  /* name is set, now assign *value. */
+	      *value=line;
+	    inword=1;
+	  }
+	break;
+      }
+  while(*(++line)!='\0' && notyetfinished);
+
+  /* In the last line of the file, there is no new line to be
+     converted to a '\0' character! So if value has been assigned, we
+     are not in a quote and the line has finished, it means the given
+     value has also finished. */
+  if(*line=='\0' && *value && inquote==0)
+    notyetfinished=0;
+
+  /* This was a blank line: */
+  if(*name==NULL && *value==NULL)
+    return;
+
+  /* Name or value were set but not yet finished. */
+  if(notyetfinished)
+    error_at_line(EXIT_FAILURE, 0, filename, lineno,
+		  "line finished before parameter name and "
+		  "value could be read.");
+}
+
+
+
+
+
 FILE *
-writelocaldefaultstop(char *indir, char *filename, char *spack,
-		      char *spack_name, char **outfilename)
+writelocalconfigstop(char *indir, char *filename, char *spack,
+		     char *spack_name, char **outfilename)
 {
   DIR *dp;
   FILE *fp;
@@ -75,7 +158,7 @@ writelocaldefaultstop(char *indir, char *filename, char *spack,
 	  errno=0;
 	  if(mkdir(indir, S_IRWXU)==-1)
 	    error(EXIT_FAILURE, errno, "%s: Could not be created. Try "
-		  "running `mkdir -p %s` to built it and run your "
+		  "running:\n\n    mkdir -p %s\n\nto built it and run your "
 		  "previous command again.", indir, indir);
 	}
       else

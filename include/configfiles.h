@@ -1,5 +1,5 @@
 /*********************************************************************
-forall_defaults -- Similar functions for defaults in all utilities.
+configfiles -- Read configuration files for each program.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
 Copyright (C) 2013-2014 Mohammad Akhlaghi
@@ -19,8 +19,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef FORALL_DEFAULTS_H
-#define FORALL_DEFAULTS_H
+#ifndef CONFIGFILES_H
+#define CONFIGFILES_H
 
 
 
@@ -28,29 +28,33 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 /************               Macros                *************/
 /**************************************************************/
 /* Simple macros: */
-#define DEFAULT_DELIMITERS " ,=:\t\n"
+#define CONFIG_DELIMITERS " ,=:\t\n"
 
+
+
+#define STARTREADINGLINE {						\
+  ++lineno;								\
+  if(*line=='#') continue;						\
+  else readnamevalue(line, filename, lineno, &name, &value);		\
+  if(name==NULL && value==NULL) continue;				\
+}
 
 
 
 /* Functional macros: These are not actual functions, because they
    depend on functions that are different for different programs. So
    they have to be written into the functions with a macro. */
-#define SAVE_LOCAL_DEFAULTS(INDIR) {					\
+#define SAVE_LOCAL_CONFIG(INDIR) {					\
     FILE *fp;								\
-    int freeindir=0;							\
-    char *indir=(INDIR), *outfilename, *command;			\
-    if(strcmp(indir, CURDIRDATA_DIR))					\
-      {freeindir=1; indir=addhomedir(INDIR);}				\
-    fp=writelocaldefaultstop(indir, DEFAULT_FILE, SPACK,		\
+    char *outfilename, *command;		 			\
+    fp=writelocalconfigstop(INDIR, CONFIG_FILE, SPACK,			\
 			     SPACK_NAME, &outfilename);			\
-    if(freeindir) free(indir);						\
     printvalues(fp, p);							\
     errno=0;								\
     if(fclose(fp)==-1)							\
       error(EXIT_FAILURE, errno, outfilename);				\
     command=malloccat("cat ", outfilename);				\
-    printf("Default values saved in %s:\n\n", outfilename);		\
+    printf("Values saved in %s:\n\n", outfilename);			\
     system(command);							\
     free(outfilename);							\
     free(command);							\
@@ -61,22 +65,31 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define CHECKSETDEFAULTS {				                \
-    char *userdata_dir, *userdefault_file;				\
-									\
-    readdefaults(CURDIRDEFAULT_FILE, p);				\
-    if(cp->dirdefaults)							\
-      SAVE_LOCAL_DEFAULTS(CURDIRDATA_DIR);				\
-									\
-    userdata_dir=addhomedir(USERDATA_DIR);				\
-    userdefault_file=addhomedir(USERDEFAULT_FILEEND);			\
-    readdefaults(userdefault_file, p);					\
-    if(cp->userdefaults)						\
-      SAVE_LOCAL_DEFAULTS(userdata_dir);				\
-    free(userdefault_file);						\
-    free(userdata_dir);							\
-    									\
-    readdefaults(SYSDEFAULT_FILE, p);					\
+#define CHECKSETCONFIG {				                \
+    char *userconfig_dir, *userconfig_file;				\
+    userconfig_dir=addhomedir(USERCONFIG_DIR);				\
+    userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
+    if(cp->setdirconf || cp->setusrconf)				\
+      {									\
+	if(cp->setdirconf)						\
+	  {								\
+	    readconfig(CURDIRCONFIG_FILE, p);				\
+	    SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);			\
+	  }								\
+	if(cp->setusrconf)						\
+	  {								\
+	    readconfig(userconfig_file, p);				\
+	    SAVE_LOCAL_CONFIG(userconfig_dir);				\
+	  }								\
+      }									\
+    else								\
+      {									\
+	readconfig(CURDIRCONFIG_FILE, p);			        \
+	readconfig(userconfig_file, p);					\
+	readconfig(SYSCONFIG_FILE, p);					\
+      }									\
+    free(userconfig_file);						\
+    free(userconfig_dir);						\
   }
 
 
@@ -102,24 +115,25 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #define END_OF_NOTSET_REPORT {			                        \
     if(intro)								\
       {									\
-	char *userdefault_file;						\
+	char *userconfig_file;						\
 	fprintf(stderr, ".\n\n");					\
 	fprintf(stderr, "You can assign values in the local, user or "	\
 		"system wide default files. Otherwise you have to "	\
 		"explicitly call them each time. See `"SPACK" --help` "	\
 		"or `info "SPACK"` for more information.\n\n");		\
-	userdefault_file=addhomedir(USERDEFAULT_FILEEND);		\
+	userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
 	fprintf(stderr, "Default files checked (existing or not):\n"	\
-		"   %s\n   %s\n   %s\n", CURDIRDEFAULT_FILE,		\
-		userdefault_file, SYSDEFAULT_FILE);			\
-	free(userdefault_file);						\
+		"   %s\n   %s\n   %s\n", CURDIRCONFIG_FILE,		\
+		userconfig_file, SYSCONFIG_FILE);			\
+	free(userconfig_file);						\
 	exit(EXIT_FAILURE);						\
       }									\
   }
 
 #define REPORT_PARAMETERS_SET {			                        \
-    fprintf(stdout, SPACK_STRING"\n");				\
-    fprintf(stdout, "Configured on "CONFIGDATE" at "CONFIGTIME"\n");	\
+    fprintf(stdout, "# "SPACK_STRING"\n");				\
+    fprintf(stdout, "# Configured on "CONFIGDATE" at "CONFIGTIME"\n");	\
+    fprintf(stdout, "# Written on %s", ctime(&p->rawtime));	        \
     printvalues(stdout, p);						\
     exit(EXIT_SUCCESS);							\
   }
@@ -138,8 +152,12 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 char *
 addhomedir(char *dir);
 
+void
+readnamevalue(char *line, char *filename, size_t lineno,
+	      char **name, char **value);
+
 FILE *
-writelocaldefaultstop(char *indir, char *filename, char *spack,
-		      char *spack_name, char **outfilename);
+writelocalconfigstop(char *indir, char *filename, char *spack,
+		     char *spack_name, char **outfilename);
 
 #endif

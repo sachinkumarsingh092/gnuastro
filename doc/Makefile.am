@@ -15,18 +15,18 @@
 ## Tohoku University Astronomical Institute, Sendai, Japan.
 ## http://astr.tohoku.ac.jp/~akhlaghi/
 
-
 ## Add the version numbers of the separate programs:
 ## ================================================= List the header
 ## files in this string with a space character between them, don't
 ## forget to add `$(top_srcdir}/src/` before them like the ones
 ## already there.
-headers=${top_srcdir}/src/imgcrop/main.h
 
+SHELL=/bin/bash
+headers=${top_srcdir}/src/*/main.h
 
 ## Commands to make the texinfo tools:
 info_TEXINFOS = astrutils.texi
-astrutils_TEXINFOS = fdl.texi subpackageversions.texi
+astrutils_TEXINFOS = fdl.texi subpackageversions.texi formath.texi
 
 subpackageversions.texi: ${headers}
 	./findversions.sh ${headers}

@@ -50,7 +50,6 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
    You can use this above list to set short options for the different
    utilities.
-
  */
 static struct argp_option coptions[] =
   {
@@ -72,7 +71,7 @@ static struct argp_option coptions[] =
       -1
     },
     {
-      "dirdefaults",
+      "setdirconf",
       'S',
       0,
       0,
@@ -80,7 +79,7 @@ static struct argp_option coptions[] =
       -1
     },
     {
-      "userdefaults",
+      "setusrconf",
       'U',
       0,
       0,
@@ -106,7 +105,7 @@ static struct argp_option coptions[] =
       'h',
       "STR",
       0,
-      "Extension name or number of input image(s).",
+      "Extension name or number of input data.",
       1
     },
 
@@ -182,10 +181,10 @@ cparse_opt(int key, char *arg, struct argp_state *state)
       cp->printparams=1;
       break;
     case 'S':
-      cp->dirdefaults=1;
+      cp->setdirconf=1;
       break;
     case 'U':
-      cp->userdefaults=1;
+      cp->setusrconf=1;
       break;
     case 'N':
       sizetlzero(arg, &cp->numthreads, "numthreads", key, cp->spack, NULL, 0);

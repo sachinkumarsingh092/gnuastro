@@ -5,7 +5,7 @@
 # This file is not run by its self.
 
 
-
+echo `pwd`
 
 
 # If the executable was not made (the user chose to not install this
@@ -21,8 +21,8 @@ fi
 # Check if the defaults directory has been correctly made, if not,
 # make it and put the appropriate default file in it.
 if [ ! -d .astrutils ]; then
-    mkdir -p .astrutils
+    mkdir .astrutils
 fi
-if [ ! -f .astrutils/$prog.def ]; then
-    cp $topsrc/src/imgcrop/$prog.def .astrutils/
+if [ ! -f .astrutils/astr$prog.conf ]; then
+    cp $topsrc/src/$prog/astr$prog.conf .astrutils/
 fi

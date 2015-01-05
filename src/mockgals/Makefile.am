@@ -12,9 +12,6 @@
 ## http://astr.tohoku.ac.jp/~akhlaghi/
 
 
-
-
-
 # Flags:
 AM_CFLAGS = -Wall -Ofast
 
@@ -26,28 +23,25 @@ AM_LDFLAGS = -lcfitsio -lwcs -pthread -lm -L$(top_builddir)/lib
 
 
 
-## ImageCrop:
-bin_PROGRAMS = astrimgcrop
+## ImageCrop, .astrutils is for testing
+bin_PROGRAMS = astrmockgals
 
-astrimgcrop_SOURCES = main.c main.h ui.c ui.h args.h imgcrop.c	\
-imgcrop.h wcsmode.c wcsmode.h crop.c crop.h
+astrmockgals_SOURCES = main.c main.h ui.c ui.h mockgals.c mockgals.h args.h
 
-astrimgcrop_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
--lcheckset -llinkedlist -ltiming -lastrthreads
-
-
+astrmockgals_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
+-lcheckset -llinkedlist -ltiming
 
 
 
 # To destribute the defaults file.
-dist_sysconf_DATA = astrimgcrop.conf
+dist_sysconf_DATA = astrmockgals.conf
 
 
 
 
 
 ## Generally for the man pages:
-dist_man_MANS = astrimgcrop.1
+dist_man_MANS = astrmockgals.1
 
-astrimgcrop.1: args.h $(top_srcdir)/include/commonargs.h
-	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astrimgcrop
+astrmockgals.1: args.h $(top_srcdir)/include/commonargs.h
+	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astrmockgals

@@ -27,10 +27,10 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include <fitsio.h>
 
 #include "timing.h"	/* Includes time.h and sys/time.h   */
-#include "defaults.h"
 #include "checkset.h"
 #include "txtarrayvv.h"
 #include "commonargs.h"
+#include "configfiles.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
@@ -43,10 +43,10 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
 /* Set the file names of the places where the default parameters are
    put. */
-#define DEFAULT_FILE SPACK DEFAULT_POSTFIX
-#define SYSDEFAULT_FILE SYSDATA_DIR DEFAULT_FILE
-#define USERDEFAULT_FILEEND USERDATA_DIR DEFAULT_FILE
-#define CURDIRDEFAULT_FILE CURDIRDATA_DIR DEFAULT_FILE
+#define CONFIG_FILE SPACK CONF_POSTFIX
+#define SYSCONFIG_FILE SYSCONFIG_DIR CONFIG_FILE
+#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
+#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
 
 
 
@@ -61,7 +61,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 /**************       Options and parameters    ***************/
 /**************************************************************/
 void
-readdefaults(char *filename, struct imgcropparams *p)
+readconfig(char *filename, struct imgcropparams *p)
 {
   FILE *fp;
   int zeroorone;
@@ -71,6 +71,8 @@ readdefaults(char *filename, struct imgcropparams *p)
   struct commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
   int imgmodeset=0, wcsmodeset=0; /* For unambiguous default file checking. */
+
+  printf("\n\n%s\n\n", filename);
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -92,33 +94,10 @@ readdefaults(char *filename, struct imgcropparams *p)
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
     {
-      /* Get the line number: */
-      ++lineno;
+      /* Prepare the "name" and "value" strings, also set lineno. */
+      STARTREADINGLINE;
 
-      /* Read the first token: */
-      name=strtok(line, DEFAULT_DELIMITERS);
-
-      /* If there are no non-delimters in the line (can happen if the
-	 line is a blank line in the end of the file). */
-      if(name==NULL) continue;
-
-      /* Check if it is a comment or new line character: */
-      if(name[0]=='#')
-	continue;
-
-      /* Read the value (remove any new line character) and save the
-	 prameter if not already set. The possible new lines are
-	 removed, because unline the options, if they exist,
-	 strlen(tailptr) in the checkset.c functions will not
-	 be zero.*/
-      value=strtok(NULL, DEFAULT_DELIMITERS);
-      if(value==NULL)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "no value for `%s`.", name);
-
-
-
-
+      printf("\n\n%s--%s--%s--\n\n", line, name, value);
 
       /* Operating modes: */
       if(strcmp(name, "imgmode")==0)
@@ -280,41 +259,46 @@ printvalues(FILE *fp, struct imgcropparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    fprintf(fp, DEFAULT_SHOWFMT"%s\n", "hdu", cp->hdu);
+    {
+      if(stringhasspace(cp->hdu))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
+    }
 
 
   fprintf(fp, "\n# Output parameters:\n");
   if(up->checkcenterset)
-    fprintf(fp, DEFAULT_SHOWFMT"%lu\n", "checkcenter", p->checkcenter);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "checkcenter", p->checkcenter);
   if(cp->outputset)
-    fprintf(fp, DEFAULT_SHOWFMT"%s\n", "output", cp->output);
+    fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
   if(up->suffixset)
-    fprintf(fp, DEFAULT_SHOWFMT"%s\n", "suffix", p->suffix);
+    fprintf(fp, CONF_SHOWFMT"%s\n", "suffix", p->suffix);
 
 
   fprintf(fp, "\n# Crop parameters:\n");
   if(up->xcolset)
-    fprintf(fp, DEFAULT_SHOWFMT"%lu\n", "xcol", p->xcol);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "xcol", p->xcol);
   if(up->ycolset)
-    fprintf(fp, DEFAULT_SHOWFMT"%lu\n", "ycol", p->ycol);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "ycol", p->ycol);
   if(up->iwidthset)
-    fprintf(fp, DEFAULT_SHOWFMT"%lu\n", "iwidth", p->iwidth);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "iwidth", p->iwidth);
   if(up->racolset)
-    fprintf(fp, DEFAULT_SHOWFMT"%lu\n", "racol", p->racol);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "racol", p->racol);
   if(up->deccolset)
-    fprintf(fp, DEFAULT_SHOWFMT"%lu\n", "deccol", p->deccol);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "deccol", p->deccol);
   if(up->wwidthset)
-    fprintf(fp, DEFAULT_SHOWFMT"%.3f\n", "wwidth", p->wwidth);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "wwidth", p->wwidth);
 
 
   fprintf(fp, "\n# Operating mode:\n");
   if(up->imgmodeset)
-    fprintf(fp, DEFAULT_SHOWFMT"%d\n", "imgmode", p->imgmode);
+    fprintf(fp, CONF_SHOWFMT"%d\n", "imgmode", p->imgmode);
   if(up->wcsmodeset)
-    fprintf(fp, DEFAULT_SHOWFMT"%d\n", "wcsmode", p->wcsmode);
+    fprintf(fp, CONF_SHOWFMT"%d\n", "wcsmode", p->wcsmode);
   /* Number of threads doesn't need to be checked, it is set by
      default */
-  fprintf(fp, DEFAULT_SHOWFMT"%lu\n", "numthreads", cp->numthreads);
+  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", cp->numthreads);
 }
 
 
@@ -353,7 +337,7 @@ checkifset(struct imgcropparams *p)
     REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
     REPORT_NOTSET("checkcenter");
-  END_OF_NOTSET_REPORT
+  END_OF_NOTSET_REPORT;
 }
 
 
@@ -726,7 +710,7 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETDEFAULTS;
+  CHECKSETCONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
@@ -747,7 +731,7 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
-    printf(SPACK_NAME" started on %s",ctime(&p->rawtime));
+    printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
 
   /* Make the array of input images. */
   preparearrays(p);

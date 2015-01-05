@@ -40,8 +40,8 @@ struct commonparams
   /* Operating modes: */
   int           verb;  /* ==1: report steps. ==0 don't.                 */
   int    printparams;  /* Only print the used values.                   */
-  int    dirdefaults;  /* ==1: Set the current directory default values.*/
-  int   userdefaults;  /* ==1: Set the user default values.             */
+  int     setdirconf;  /* ==1: Set the current directory default values.*/
+  int     setusrconf;  /* ==1: Set the user default values.             */
   size_t  numthreads;  /* Number of threads to use.                     */
 
   /* Check: */

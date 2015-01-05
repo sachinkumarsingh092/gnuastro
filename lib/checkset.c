@@ -58,7 +58,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
  *****************      Check the numbers    ********************
  ****************************************************************/
 void
-intzeroorone(char *optarg, int *var, char *lo, char so, char* spack,
+intzeroorone(char *optarg, int *var, char *lo, char so, char *spack,
 	     char *filename, size_t lineno)
 {
   long tmp;
@@ -83,7 +83,7 @@ intzeroorone(char *optarg, int *var, char *lo, char so, char* spack,
 
 
 void
-intelzero(char *optarg, int *var, char *lo, char so, char* spack,
+intelzero(char *optarg, int *var, char *lo, char so, char *spack,
 	  char *filename, size_t lineno)
 {
   long tmp;
@@ -107,7 +107,7 @@ intelzero(char *optarg, int *var, char *lo, char so, char* spack,
 
 
 void
-intlzero(char *optarg, int *var, char *lo, char so, char* spack,
+intlzero(char *optarg, int *var, char *lo, char so, char *spack,
 	 char *filename, size_t lineno)
 {
   long tmp;
@@ -131,7 +131,7 @@ intlzero(char *optarg, int *var, char *lo, char so, char* spack,
 
 
 void
-int4or8(char *optarg, int *var, char *lo, char so, char* spack,
+int4or8(char *optarg, int *var, char *lo, char so, char *spack,
 	char *filename, size_t lineno)
 {
   long tmp;
@@ -337,6 +337,23 @@ anydouble(char *optarg, double *var, char *lo, char so, char *spack,
 /**************************************************************/
 /**********          My String functions:          ************/
 /**************************************************************/
+int
+stringhasspace(char *in)
+{
+  do
+    switch(*in)
+      {
+      case ' ': case '\t': case '\v':
+	return 1;
+      }
+  while(*(++in)!='\0');
+  return 0;
+}
+
+
+
+
+
 char *
 malloccat(char *inname, char *toappend)
 {
