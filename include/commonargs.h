@@ -213,6 +213,15 @@ cparse_opt(int key, char *arg, struct argp_state *state)
       cp->removedirinfo=0;
       break;
 
+
+    /* Once finished: */
+    case ARGP_KEY_END:
+      if(cp->setdirconf && cp->setusrconf)
+	error(EXIT_FAILURE, 0, "Only one of `--setusrconf` or "
+	      "`--setdirconf` may be set in each run. You have asked "
+	      "for both.");
+      break;
+
     /* If the argument is not known. */
     default:
       return ARGP_ERR_UNKNOWN;

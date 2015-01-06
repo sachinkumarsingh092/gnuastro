@@ -423,11 +423,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* The command line options and arguments are finished. */
     case ARGP_KEY_END:
-      if(p->cp.setdirconf && p->cp.setusrconf)
-	error(EXIT_FAILURE, 0, "Only one of `--setusrconf` or "
-	      "`--setdirconf` may be set in each run. You have asked "
-	      "for both.");
-
       if(p->cp.setdirconf==0 && p->cp.setusrconf==0
 	 && p->cp.printparams==0)
 	{

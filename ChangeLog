@@ -1,3 +1,12 @@
+2015-01-06  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/mockgals/args.h (parse_opt): Removed the check below.
+
+	* src/imgcrop/args.h (parse_opt): Removed the check below.
+
+	* include/commonargs.h (cparse_opt): Added check for not calling
+	`--setdirconf` and `--setusrconf` together.
+
 2015-01-05  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* doc/formath.texi: Added. A set of macros to write equations
