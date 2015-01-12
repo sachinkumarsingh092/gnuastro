@@ -2,7 +2,7 @@
 Argument parsing for options that are common to all programs.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -119,7 +119,7 @@ static struct argp_option coptions[] =
       'o',
       "STR",
       0,
-      "Directory for output images.",
+      "Output file or directory name.",
       2
     },
     {
@@ -135,7 +135,7 @@ static struct argp_option coptions[] =
       'K',
       0,
       0,
-      "Do not remove input image dir info for output.",
+      "Do not remove input's dir info for output.",
       2
     },
 

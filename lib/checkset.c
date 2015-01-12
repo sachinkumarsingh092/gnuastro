@@ -2,7 +2,7 @@
 Functions to check and set command line argument values and files.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -401,9 +401,8 @@ checkfile(char *filename)
   FILE *tmpfile;
   errno=0;
   tmpfile = fopen(filename, "r");
-  if(tmpfile)
+  if(tmpfile)			/* The file opened. */
     {
-      errno=0;
       if(fclose(tmpfile)==EOF)
 	error(EXIT_FAILURE, errno, filename);
     }
@@ -427,7 +426,7 @@ checkremovefile(char *filename, int dontdelete)
      `r+`. */
   errno=0;
   tmpfile=fopen(filename, "r+");
-  if (tmpfile)
+  if (tmpfile)			/* The file opened. */
     {
       /* Close the file and make sure that it should be deleted. */
       errno=0;
@@ -454,21 +453,41 @@ checkremovefile(char *filename, int dontdelete)
 
 
 
-/* Question that will be answered: is this name, the name of a
-   potential (maybe non-existant) file or is it a directory? If it is
-   neither, it will abort and tell the user. */
+/* Check output file name: If a file exists and can be written to,
+   this function will return 1. If not (for example it is a directory)
+   it will return 0. Finally, if it exists but cannot be deleted,
+   report an error and abort. */
 int
-nameisafile(char *name, int dontdelete)
+nameisawritablefile(char *name, int dontdelete)
 {
+  FILE *tmpfile;
   struct stat nameinfo;
+
+  if(name==NULL)
+    error(EXIT_FAILURE, 0, "A bug! The input to the nameisawritablefile "
+	  "function in checkset.c should not be NULL. Please contact us "
+	  "to see what went wrong.");
 
   errno=0;
   if(stat(name, &nameinfo)!=0)
     {
       if(errno==ENOENT)	/* ENOENT: No such file or directory. */
 	{/* Make the file temporarily and see if everything is ok. */
-	  checkremovefile(name, dontdelete);
-	  return 1;		/* It will be a file, GOOD */
+	  errno=0;
+	  tmpfile=fopen(name, "w");
+	  if (tmpfile)
+	    {
+	      fprintf(tmpfile, "Only to test write access.");
+	      errno=0;
+	      if(fclose(tmpfile))
+		error(EXIT_FAILURE, errno, name);
+	      errno=0;
+	      if(unlink(name))
+		error(EXIT_FAILURE, errno, name);
+	    }
+	  else
+	    error(EXIT_FAILURE, errno, name);
+	  return 1;		/* It is a file name, GOOD */
 	}
       else			/* Some strange condition, ABORT */
 	error(EXIT_FAILURE, errno, name);
@@ -478,19 +497,15 @@ nameisafile(char *name, int dontdelete)
     return 0;
   else if (S_ISREG(nameinfo.st_mode)) /* It is a file, GOOD. */
     {
-      /* Delete the file if it should be deleted. */
-      if(dontdelete)
-	error(EXIT_FAILURE, 0, "%s already exists and you have "
-	      "asked to not remove it with the `--dontdelete` "
-	      "(`-D`) option.", name);
-      errno=0;
-      if(unlink(name))
-	error(EXIT_FAILURE, errno, "%s", name);
+      checkremovefile(name, dontdelete);
       return 1;
     }
   else 				/* Not a file or a dir, ABORT */
     error(EXIT_FAILURE, 0, "%s not a file or a directory.", name);
 
+  error(EXIT_FAILURE, 0, "A bug! In nameisawritablefile, (in checkset.c) "
+	"The process should not reach the end of the function! Please "
+	"contact us so we can fix this problem.");
   return 0;
 }
 
@@ -498,11 +513,11 @@ nameisafile(char *name, int dontdelete)
 
 
 
-/* Change the ending of a name. If the name has a `.ext` postfix, then
-   it will be changed to the string in `append`. If it doesn't,
-   append will be added to the name. */
+/* Allocate space and write the output name (outname) based on a given
+   input name (inname). The suffix of the input name (if present) will
+   be removed and the given suffix will be put in the end. */
 void
-automaticoutput(char *inname, char *postfix, int removedirinfo,
+automaticoutput(char *inname, char *suffix, int removedirinfo,
 		int dontdelete, char **outname)
 {
   char *out;
@@ -511,15 +526,17 @@ automaticoutput(char *inname, char *postfix, int removedirinfo,
   /* Check if the input file is actually a readable file or not! */
   checkfile(inname);
 
-  /* Allocate space for the output name. It has been allocated before
-     (it was either read from the command line or a default file), so
-     free the space it already has.*/
-  if(*outname) free(*outname);
-  *outname=out=malloccat(inname, postfix);
+  /* Allocate space for the output name. If it has been allocated
+     before free it. If it hasn't been allocated before it should be
+     NULL in which case, free will not complain. Note that we are just
+     using malloccat here to allocate the right space! The contents of
+     the allocated space will be changed after this.*/
+  free(*outname);
+  *outname=out=malloccat(inname, suffix);
 
   /* Put the input in the space and remove all elements including and
      after '.'. Note that if there is no '.' in the name, malloccat
-     has already appended inname and postfix.*/
+     has already appended inname and suffix.*/
   l=strlen(inname);
   strcpy(out, inname);
   for(i=l;i!=0;--i)
@@ -531,7 +548,7 @@ automaticoutput(char *inname, char *postfix, int removedirinfo,
       else if(out[i]=='.')
 	{
 	  out[i]='\0';
-	  strcat(out, postfix);
+	  strcat(out, suffix);
 	  break;
 	}
     }
@@ -551,7 +568,7 @@ automaticoutput(char *inname, char *postfix, int removedirinfo,
 	  out[i-offset]=out[i]; /* '\0' character in the string too. */
     }
 
-  /* Remove the output file if it already exits. */
+  /* Remove the created filename if it already exits. */
   checkremovefile(out, dontdelete);
 }
 

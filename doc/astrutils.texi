@@ -45,15 +45,15 @@ Free Documentation License''.
 * ImageCrop: (astrutils)ImageCrop. Crop region(s) from image(s).
 * astrimgcrop: (astrutils)Invoking astrimgcrop. Options to ImageCrop.
 
-* MockGals: (astrutils)MockGals. Make mock galaxies and stars in an image.
-* astrmockgals: (astrutils)Invoking astrmockgals. Options to MockGals.
+* MakeProfiles: (astrutils)MakeProfiles. Make mock profiles (galaxy, PSF, star...).
+* astrmkprof: (astrutils)Invoking astrmkprof. Options to MakeProfiles.
 
 @end direntry
 
 @c Version of all the subpackages:
 @macro printversions
 @noindent
-@*MockGals (@command{astrmockgals}) @value{MOCKGALS_VERSION}
+@*MakeProfiles (@command{astrmkprof}) @value{MKPROF_VERSION}
 @*ImageCrop (@command{astrimgcrop}) @value{IMGCROP_VERSION}
 @end macro
 
@@ -157,7 +157,7 @@ sub-component to a title is present.
 * Header manipulation::         Tools to Read/Write Headers
 * Image manipulation::          Tools for basic image manipulation.
 * Image analysis::              Analyze images.
-* Modelling and fittings::      Make and fit models.
+* Modeling and fittings::       Make and fit models.
 * Table manipulation::          Read/Write tables.
 * Developing::                  The development environment.
 * Future updates::              Future updates.
@@ -180,6 +180,11 @@ Introduction
 Version numbering
 
 * AstrUtils 1.0::               Our aim in the current phase.
+
+New to GNU/Linux?
+
+* Commnand line user interface::  Introduction to the CLI.
+* Suggested Distributions::     Suggested GNU/Linux distributions.
 
 Installation
 
@@ -217,8 +222,9 @@ Configuring
 Common behavior
 
 * Command line::                How to use the command line.
-* Threads in AstrUtils::        How threads are managed in AstrUtils.
 * Configuration files::         Values for unspecified variables.
+* Threads in AstrUtils::        How threads are managed in AstrUtils.
+* Final parameter values::
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
@@ -235,10 +241,6 @@ Common options
 * Input output::                Common input/output options.
 * Operating modes::             Common operating mode options.
 
-Threads in AstrUtils
-
-* A note on threads::           Caution and suggestion on using threads.
-
 Configuration files
 
 * Configuration file format::   ASCII format of configuration file.
@@ -246,19 +248,22 @@ Configuration files
 * Current directory and User wide::  Local and user configuration files.
 * System wide::                 System wide configuration files.
 
+Threads in AstrUtils
+
+* A note on threads::           Caution and suggestion on using threads.
+
 Getting help
 
 * --usage::                     Only view option names and value formats.
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
-* --printparams::               Print values to be used.
 * Info::                        View complete manual in terminal.
 
 Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * ImageTransform::              Transform (flip, rotate) an image.
-* ImageArith::
+* ImageArith::                  Apply arithmetics on image(s).
 * EllipMask::                   Place elliptical masks on an image.
 * Image conversion::            Convert an image to and from other formats.
 
@@ -286,20 +291,36 @@ Image analysis
 * SubtractSky::                 Subtract the sky level from the image.
 * NoiseChisel::                 Detect and segment objects in noise.
 
-Modelling and fitting
+Modeling and fitting
 
-* MockGals::                    Making mock galaxies and stars.
+* Modeling basics::             Astronomical modeling basics.
+* MakeProfiles::                Making mock galaxies and stars.
 
-MockGals
+Modeling basics
 
 * Defining an ellipse::         Defining an ellipse in 2D.
 * PSF::                         Radial profiles for the PSF.
 * Stars::                       Making mock star profiles.
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
-* Adding Noise::                What the noise is and how it is calculated.
-* Invoking astrmockgals::       Input, options and output of MockGals.
-* MockGals future updates::     Plans for the future of MockGals.
+* Oversampling::                Oversampling the model.
+* Adding noise::                What the noise is and how it is
+
+Adding noise
+
+* Photon counting noise::       Poisson noise
+* Instrumental noise::          Readout, dark current and other sources.
+* Final noised pixel value::    How the final noised value is calculated.
+
+MakeProfiles
+
+* Invoking astrmockgals::       Input, options and output of MakeProfiles.
+* MakeProfiles future updates::  Plans for the future of MakeProfiles.
+
+Invoking MakeProfiles
+
+* MakeProfiles options::        MakeProfiles specific options.
+* MakeProfiles output::         Outputs of MakeProfiles.
 
 Developing
 
@@ -309,6 +330,7 @@ Developing
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
+* After making changes::        Run `make distcheck` after making changes.
 
 Version controlled source
 
@@ -534,16 +556,6 @@ is not enough. In Richard Stallman's words, the software should be
 ``free as in free speech not free beer''. No matter how much a society
 values ``free speech'', if the people do not use that freedom, they
 are not free. They only live in its illusion.
-
-The same goes for software, even though in theory you can go and read
-all the code of all GPL programs, in practice a scientist whose
-primary goal is the scientific analysis (and not software engineering
-per se) cannot easily invest enough time and energy to understand the
-coding that can be in various languages and in various programming
-paradigms in all the software she has to use. We hope that AstrUtils
-can provide a sufficiently simple and useful infra-structure for all
-astronomers to actively participare in actually using the freedom
-granted to them by the GPL and not simply work in an illusion of it.
 
 Bjarne Stroustrup (creator of the C++ language) says: ``Without
 understanding software, you are reduced to believing in magic''.  Ken
@@ -802,6 +814,10 @@ In order to achieve this and allow maximal creativity with the shell,
 the various programs have to be very low level programs and completely
 independent. Something like the GNU coreutils.
 
+
+
+
+
 @node New to GNU/Linux?,  , Version numbering, Introduction
 @section New to GNU/Linux?
 
@@ -809,8 +825,73 @@ Most astronomers initially install and use the GNU/Linux operating
 systems because their research software can only be run in this
 environment. This is how the founder of AstrUtils started using
 GNU/Linux at least! If this is also the case for you, we have a few
-suggestions here. If not, you can skip it.
+suggestions here.
 
+@menu
+* Commnand line user interface::  Introduction to the CLI.
+* Suggested Distributions::     Suggested GNU/Linux distributions.
+@end menu
+
+@node Commnand line user interface, Suggested Distributions, New to GNU/Linux?, New to GNU/Linux?
+@subsection Command line user interface
+Although with GNOME 3@footnote{@url{http://www.gnome.org/}}, most
+GNU/Linux based operating systems now have a very advanced and useful
+graphic user interface (GUI), still most of the work of any GNU/Linux
+user will be on the command line user interface (CLI) or in the
+``shell'' as it is better known in the Unix-like systems. This is
+contrary to what you might have experienced in proprietry operating
+systems and adapting to it might not be easy. Since the GUI was
+created long after the command line, some wrongly consider it
+obsolete.
+
+You can think of the GUI as a veneer over the CLI to facilitate a
+small subset of all the possible CLI operations. Each click you do on
+the GUI, can be thought of as internally running a different
+command. So assymptotically (if a good designer can design a GUI which
+is able to show you all the possibilites to click on) the GUI is only
+as powerful as the command line. In practice, such designers are very
+hard to come by for every program, so the GUI operations are always a
+subset of the internal CLI commands. For programs that are only made
+for the GUI, this results in not including lots of potentially useful
+operations. It also reasults in ``interface design'' to be a crutially
+important part of any GUI program.
+
+For those operations with a GUI, one action on the GUI might be more
+efficient.However, if you have to repeat that same action more than
+once, it will soon become very frustrating and prone to errors. Unless
+the designers of a particular program decided to design such a system
+for a particular GUI action, there is no general way to run everything
+automatically on the GUI.
+
+On the command line, with one command you can run numerous actions
+which can come from various CLI capable programs you have decided your
+self in any possible permutation with one command@footnote{By writing
+a shell script and running it.}. This allows for much more creativity
+than that offered to a GUI user. For technical and scientific
+operations, where the same operation (using various programs) has to
+be done on a large set of data files, this is crucially important. It
+also allows exact reproducability which is a foundation principle for
+scientific results. The most common CLI (which is also known as a
+shell) in GNU/Linux is GNU Bash, we suggest you go through this
+webpage to become aquainted with it: @url{http://linuxcommand.org/}.
+
+Since the operations in the GUI are very limited and they are visible,
+reading a manual is not that important in the GUI (most programs don't
+even have any!). However, to give you the creative power explained
+above, with a CLI program, it is best if you first read the manual of
+any program you are using. Once you have understood the concepts and
+the general operation, there are more easier ways to remember a
+particular option, see @ref{Getting help}.
+
+For an entertaining conclusion, let us finish nice quote from Master
+Foo@footnote{@url{http://catb.org/esr/writings/unix-koans/}}: ``There
+is more Unix-nature in one line of shell script than there is in ten
+thousand lines of C''. Also see Master Foo's discource with the GUI
+programmer@footnote{@url{http://catb.org/esr/writings/unix-koans/gui-programmer.html}}.
+
+
+@node Suggested Distributions,  , Commnand line user interface, New to GNU/Linux?
+@subsection Suggested distributions
 The Wikipedia pages on ``Linux distribution'' and ``GNU'' and
 ``Linux'' will provide you with a wealth of information. In general,
 AstrUtils can be built and installed on most (if not all) of the
@@ -821,31 +902,56 @@ usage.
 
 But based on the principles mentioned in this introduction (which can
 be summarized with simplicity and transparency), we believe we can
-make some objective suggestions for critical scientists: Gentoo Linux
-or Arch Linux. Most other distributions of GNU/Linux prepare
-everything for you in a collection of software that comes with the
-distribution, this results in you (as the user) not really
-understanding how all the separate packages interact and work
-together. Like before, in theory, you can go and read about each
-package separately, but this is easier said than done.
+make some objective suggestions for critical scientists (from easy and
+fast to time consuming but basic): Arch
+Linux@footnote{@url{https://www.archlinux.org/}},
+Gentoo@footnote{@url{https://www.gentoo.org/}} and Linux from
+scratch@footnote{@url{http://www.linuxfromscratch.org/}}@footnote{There
+are also several other similar distributions like Crux
+(@url{https://crux.nu/}), Slackware
+(@url{http://www.slackware.com/})}. Most other distributions of
+GNU/Linux prepare everything for you in a collection of software that
+comes with the distribution, this results in you (as the user) not
+practically understanding how all the separate packages interact and
+work together.
 
 In short, with the more popular distributions like Ubuntu or Fedora,
 you get the packages that the people in those distributions decided
 are best for you in a black box. This results in a very simple to
 install environment reminiscent of the saying ``ignorance is
-bliss''. However, distributions like those mentioned are ``build it
-your self'' types of GNU/Linux which provide you only with the minimum
-set of tools on which you can choose to build which ever type of
-system you want, including the graphic user interface. Since the
+bliss''. However, distributions like those suggested here are ``build
+it your self'' types of GNU/Linux which provide you only with the
+minimum set of tools on which you can choose to build which ever type
+of system you want, including the graphic user interface. Since the
 operating system is not forced to manage any extra packages, these
-distribtuions are also significantly more faster.
+customized distribtuions are also significantly more faster.
 
 To enable you to do this, these distributions have very well written
-hand book and wiki page which teach and demonstrate how to install and
-use the different components nicely. This is because the distributors
-of these distributions can spend less time (or no time) on
-configuring/modifying each package and more time on informing you
-instead, enabling you to build your dream machine.
+hand books and wiki pages which teach and demonstrate how to install
+and use the different components. This is because the distributors of
+these distributions can spend less time (or no time) on
+configuring/modifying each package to fit their desired combination
+and more time on informing you instead, enabling you to build your
+dream machine.
+
+After all, as astronomers, how can we claim to be fighting ignorance
+in our understanding of the universe when we surrender to ignorance
+regarding the tool that does all our processing (the operating
+system)?  Just imagine if Galileo did not have the technical knowledge
+to build a telescope. Before he actually saw the moons of Jupiter, the
+mountains or the Moon or the crescent of Venus, he was an
+anti-copernican and was ``evasive'' to kepler@footnote{Galileo
+G. (Translated by Maurice A. Finocchiaro), Hackett publishing company,
+first edition, 2008.}. Science is not independent of its tools.
+
+Today we have a wealth of raw telescope images ready (mostly for free)
+at the finger tips of anyone who is interested with a fast enough
+internet connection. The only thing lacking is new ways to analyze
+them and dig out the treasure that has laid hidden in them to existing
+methods and techniques. Therefore this investment, to atleast learn to
+build your system your self instead of ignorantly using what others
+have prepared for you, is only the first step for any aspiring
+critical scientist.
 
 
 
@@ -1167,7 +1273,7 @@ generally any Red Hat based GNU/Linux.
 The ``Fastest Fourier Transform in the West'' or
 FFTW@footnote{@url{http://www.fftw.org/}}, is used for convoling the
 actual profiles of the stars and galaxies with the PSF in the
-production of mock galaxies in MockGals. Like other packages above, it
+production of mock galaxies in MakeProfiles. Like other packages above, it
 is probably already available on your distribution's package
 management system. But there are some configuration options which can
 be helpful to AstrUtils.
@@ -1732,14 +1838,15 @@ off the keyboard!) on the command line.
 
 @menu
 * Command line::                How to use the command line.
-* Threads in AstrUtils::        How threads are managed in AstrUtils.
 * Configuration files::         Values for unspecified variables.
+* Threads in AstrUtils::        How threads are managed in AstrUtils.
+* Final parameter values::
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
 @end menu
 
-@node Command line, Threads in AstrUtils, Common behavior, Common behavior
+@node Command line, Configuration files, Common behavior, Common behavior
 @section Command line
 
 All the programs in AstrUtils are customized through the standard GNU
@@ -1897,7 +2004,7 @@ don't. You can think of the latter type of options as an on/off
 option. These two types of options can be distinguished using the
 output of the @option{--help} and @option{--usage} options, which are
 common to all GNU software, see @ref{Getting help}. In AstrUtils, we
-have the following convension for the formats of the values:
+have the following convention for the formats of the values:
 
 @vtable @option
 
@@ -1949,6 +2056,15 @@ format (@option{-D}, @option{-r}) and two in long format
 (@option{--width} and @option{--deccol}). Three of them require a
 value and one (@option{-D}) is an on/off option.
 
+If an abbreviation is unique between all the options of a program, the
+long option names can be abbreviated. For example, instead of typing
+@option{--printparams}, typing @option{--print} or even @option{--pri}
+will be enough, if there are conflicts, the program will warn you and
+show you the alternatives. Finally, if you want the argument parser to
+stop parsing arguments beyond a certain point, you can use two dashes:
+@option{--}. No text on the commandline beyond these two dashes will
+be parsed.
+
 When you don't call an option that requires a value, all the programs
 in AstrUtils will check configuration files to find a value for that
 parameter. To learn more about how folder, user and system wide
@@ -1995,6 +2111,12 @@ operations where they are relevant. The list of options is provided
 below. It is noteworthy that these similar options are hard-wired into
 the programming of all of AstrUtils programs using GNU C library's
 argument parser merging ability.
+
+For some programs, some of the options, might be irrelevant for
+example MakeProfiles creates FITS images based on a given
+catalog. Therefore no input images (and thus HDUs) are necessary for
+it. In such cases, the option is still listed and if a value is given
+for it, it is completely ignored.
 
 @menu
 * Input output::                Common input/output options.
@@ -2099,7 +2221,7 @@ be printed if the program is aborted.
 @item -P
 @itemx --printparams
 Print the final values used for all the parameters and abort. See
-@ref{--printparams} for more details.
+@ref{Final parameter values} for more details.
 
 @item -S
 @itemx --setdirconf
@@ -2118,6 +2240,10 @@ internally check if your values are in the correct range and type and
 save them according to the configuration file format, see
 @ref{Configuration file format}.
 
+When this option is called, the otherwise mandatory arguments, for
+example input image or catalog file(s), are no longer mandatory (since
+the program will not run).
+
 @item -U
 @itemx --setusrconf
 Update the user configuration file from the command line options and
@@ -2135,85 +2261,7 @@ in AstrUtils}.
 
 
 
-
-
-
-
-@node Threads in AstrUtils, Configuration files, Command line, Common behavior
-@section Threads in AstrUtils
-Some of the programs benefit significantly when you use all the cores
-your computer's CPU has to offer. In general, when you run an
-application, the whole process is done only on one core. AstrUtils
-uses the POSIX threads library (pthreads) for spinning off threads
-when the user asks for it.
-
-You can find the number of cores available to your system with the
-command @command{$ nproc}, which is part of GNU Coreutils. If not
-specified as an option at configure time, AstrUtils finds the number
-of cores available to your system (and reports it along with all those
-other things it checks!). It is saved internally for all the programs
-to use by default. To specify the number of threads at configure time,
-use the @option{--with-numthreads} option, see @ref{AstrUtils
-configure options}.
-
-The number of threads is the only parameter in AstrUtils, which is
-stored internally at configure time. The implication is that the only
-option with a value that doesn't have to be in any of the
-configuration files (see @ref{Configuration files}) is this. Note that
-if you do specify it, the value you provided in the most immediate
-configuration file will be used, not the internal value.
-
-
-
-@menu
-* A note on threads::           Caution and suggestion on using threads.
-@end menu
-
-@node A note on threads,  , Threads in AstrUtils, Threads in AstrUtils
-@subsection A note on threads
-
-Spinning off threads internally is not necessarily always the most
-efficient way to run an application. It is most useful when the input
-data are fixed and you want the same operation to be done on parts of
-it. For example one input image to ImageCrop and multiple crops from
-various parts of it. In this fashion, the image is loaded into memory
-once, all the crops are divided between the number of threads
-internally and each thread cuts out those parts which are assigned to
-it from the same image. On the other hand, if you have multiple images
-and you want to crop the same region out of all of them, it is much
-more efficient to set @option{--numthreads=1} (so no threads will be
-spinned off) and run ImageCrop multiple times simultaneously.
-
-The best method to run multiple instances of a command on different
-threads is to use GNU parallel. Supprizingly GNU Parallel is one of
-the few GNU packages that has no Info documentation but only a Man
-page, see @ref{Info}. So to see the documentation after installing it
-please run
-
-@example
-$ man parallel
-@end example
-
-As an example, lets assume we want to crop a region fixed on the
-pixels (500, 600) with the default width from all the FITS images in
-the @file{./data} directory ending with @file{sci.fits} to the current
-directory. To do this, you can run:
-
-@example
-$ parallel astrimgcrop --numthreads=1 --xc=500 --yc=600 ::: \
-  ./data/*sci.fits
-@end example
-
-@noindent
-GNU Parallel can help in many more conditions, this is one of the
-simplest, see the man page for lots of other examples. For absolute
-beginners: the backslash (@command{\}) is only a line breaker to fit
-nicely in the page. If you type the whole command in one line, you
-should remove it.
-
-
-
-@node Configuration files, Automatic output, Threads in AstrUtils, Common behavior
+@node Configuration files, Threads in AstrUtils, Command line, Common behavior
 @section Configuration files
 
 Each program needs a certain number of parameters to run. Supplying
@@ -2378,7 +2426,157 @@ self.
 
 
 
-@node Automatic output, Getting help, Configuration files, Common behavior
+
+@node Threads in AstrUtils, Final parameter values, Configuration files, Common behavior
+@section Threads in AstrUtils
+Some of the programs benefit significantly when you use all the cores
+your computer's CPU has to offer. In general, when you run an
+application, the whole process is done only on one core. AstrUtils
+uses the POSIX threads library (pthreads) for spinning off threads
+when the user asks for it.
+
+You can find the number of cores available to your system with the
+command @command{$ nproc}, which is part of GNU Coreutils. If not
+specified as an option at configure time, AstrUtils finds the number
+of cores available to your system (and reports it along with all those
+other things it checks!). It is saved internally for all the programs
+to use by default. To specify the number of threads at configure time,
+use the @option{--with-numthreads} option, see @ref{AstrUtils
+configure options}.
+
+The number of threads is the only parameter in AstrUtils, which is
+stored internally at configure time. The implication is that the only
+option with a value that doesn't have to be in any of the
+configuration files (see @ref{Configuration files}) is this. Note that
+if you do specify it, the value you provided in the most immediate
+configuration file will be used, not the internal value.
+
+@menu
+* A note on threads::           Caution and suggestion on using threads.
+@end menu
+
+@node A note on threads,  , Threads in AstrUtils, Threads in AstrUtils
+@subsection A note on threads
+
+Spinning off threads internally is not necessarily always the most
+efficient way to run an application. It is most useful when the input
+data are fixed and you want the same operation to be done on parts of
+it. For example one input image to ImageCrop and multiple crops from
+various parts of it. In this fashion, the image is loaded into memory
+once, all the crops are divided between the number of threads
+internally and each thread cuts out those parts which are assigned to
+it from the same image. On the other hand, if you have multiple images
+and you want to crop the same region out of all of them, it is much
+more efficient to set @option{--numthreads=1} (so no threads will be
+spinned off) and run ImageCrop multiple times simultaneously.
+
+The best method to run multiple instances of a command on different
+threads is to use GNU parallel. Supprizingly GNU Parallel is one of
+the few GNU packages that has no Info documentation but only a Man
+page, see @ref{Info}. So to see the documentation after installing it
+please run
+
+@example
+$ man parallel
+@end example
+
+As an example, lets assume we want to crop a region fixed on the
+pixels (500, 600) with the default width from all the FITS images in
+the @file{./data} directory ending with @file{sci.fits} to the current
+directory. To do this, you can run:
+
+@example
+$ parallel astrimgcrop --numthreads=1 --xc=500 --yc=600 ::: \
+  ./data/*sci.fits
+@end example
+
+@noindent
+GNU Parallel can help in many more conditions, this is one of the
+simplest, see the man page for lots of other examples. For absolute
+beginners: the backslash (@command{\}) is only a line breaker to fit
+nicely in the page. If you type the whole command in one line, you
+should remove it.
+
+
+
+
+
+@node Final parameter values, Automatic output, Threads in AstrUtils, Common behavior
+@section Final parameter values
+
+The input parameters can be specified in many places, either on the
+command line or in at least one of several configuration files, see
+@ref{Configuration files}. Therefore, it often happens that before
+running a program on a certain data set, you want to see the values
+for the parameters that the program will use after it has read your
+command line options and all the configuration files in their correct
+order. You might also want to save the list with the output so you can
+reproduce the same results at a later time, this is very important
+when you want to use your results in a report or paper.
+
+If you call the @option{--printparams} option, all AstrUtils programs
+will read your command line parameters and all the configuration
+files. If there is no problem (like a missing parameter or a value in
+the wrong format) and immediately before actually running, the
+programs will print the full list of paramter names and values sorted
+and grouped by context and quit. They will also report their version
+number, the date they were configured on your system and the time they
+were reported.
+
+As an example, you can give your full command line options and even
+the input and output file names and finally just add @option{-P} to
+check if all the parameters are finely set. If everything is ok, you
+can just run the same command (easily retrieved from the bash history,
+with the top arrow key) and simply remove the last two characters that
+showed this option.
+
+Since no progarm will actually start its processing when this option
+is called, the otherwise mandatory arguments for each program (for
+example input image or catalog files) are no longer required when you
+call this option.
+
+In case you want to store the list of parameters for later
+reproduction of the same results, you can do so with the GNU Bash
+re-direction tool. For example after you have produced the results you
+want to store, you can save all the parameters that were used in a
+file named @file{parameters.txt} in the following manner. Using the
+bash history you can retrieve the last command you entered and simply
+add @command{-P > parameters.txt} to it, for example:
+
+@example
+$ astrimgcrop --racol=2 --deccol=3 IN.fits cat.txt -P > parameters.txt
+@end example
+
+@noindent
+All the parameters along with the extra data explained before will be
+stored in the plain text @file{parameters.txt} file. The output of
+@option{--printparams} conforms with the configuration file
+formats@footnote{They are both written by the same function.}. By
+taking the following steps, you can use this file as a configuration
+file to reproduce your results at a later time.
+
+@enumerate
+@item
+Set the file name based on the standard configuration file names, see
+@ref{Configuration file format}.
+
+@item
+Later on (when ever you want to re-produce your results), copy the
+file in the @file{./.astrutils/} directory of your current
+directory.
+@end enumerate
+
+@noindent
+In this manner, this file will be read as a current directory
+configuration file and since all the parameters are defined in it, no
+other configuration file value will be used.
+
+
+
+
+
+
+@node Automatic output, Getting help, Final parameter values, Common behavior
 @section Automatic output
 
 All the programs in AstrUtils are designed such that specifying an
@@ -2435,9 +2633,8 @@ Probably the first time you read this manual, it is either in the PDF
 or HTML formats. These two formats are very convenient for when you
 are not actually working, but when you are only reading. Later on,
 when you start to use the programs and you are deep in the middle of
-your work, some of the details will inevitably be forgotten (the
-option names or default values in particular). Going to find the PDF
-file (printed or digital) or the HTML webpage is a major
+your work, some of the details will inevitably be forgotten. Going to
+find the PDF file (printed or digital) or the HTML webpage is a major
 distraction.
 
 GNU software have a very unique set of tools for aiding your memory on
@@ -2445,39 +2642,31 @@ the command line, where you are working, depending how much of it you
 need to remember. In the past, such command line help was known as
 ``online'' help, because they were literally provided to you ``on''
 the command ``line''. However, nowadays the word ``online'' refers to
-something on the internet, so we will not use that term. In this
-manner, you will not be distracted and can resume your exciting
-research without taking your hands off the keyboard.
+something on the internet, so we will not use that term. With this
+type of help, you can resume your exciting research without taking
+your hands off the keyboard.
 
 Another major advantage of such command line based help routines is
 that they are installed with the software in your computer, therefore
 they are always in sync with the executable you are actually
-running. You don't have to worry about the version of the manual or
-program. If you rely on other forms of help (a PDF in your personal
-print or digital archive or HTML from the official webpage) you have
-to check to see if their versions fit with your installed program. But
-these command line help routines are always in sync with the program
-version you are actually running. Three of them are actually part of
-the executable.
+running. Three of them are actually part of the executable. You don't
+have to worry about the version of the manual or program. If you rely
+on external help (a PDF in your personal print or digital archive or
+HTML from the official webpage) you have to check to see if their
+versions fit with your installed program.
 
 If it is only the short or long names of the options, @option{--usage}
 is advised. If it is what the options do, then @option{--help} is a
 great tool. Man pages are also provided for those who are use to this
-older system of documentation. However, man pages are automatically
-created from the output of @option{--help} and @option{--version}, so
-you might as well just use @option{--help}! This full manual is also
-available to you on the command line in Info format. AstrUtils also
-provides the @option{--printparams} (@option{-P}) option to show you
-the values that will be used after reading the command line and
-default values. In the subsections below each of these methods are
-reviewed.
+older system of documentation. This full manual is also available to
+you on the command line in Info format. In the subsections below each
+of these methods are reviewed.
 
 
 @menu
 * --usage::                     Only view option names and value formats.
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
-* --printparams::               Print values to be used.
 * Info::                        View complete manual in terminal.
 @end menu
 
@@ -2596,7 +2785,7 @@ the line above, without the @command{$} sign) to your
 @file{/home/username/.bashrc} file. This is a standard option for all
 GNU software.
 
-@node Man pages, --printparams, --help, Getting help
+@node Man pages, Info, --help, Getting help
 @subsection Man pages
 Man pages were the Unix method of providing command line documentation
 to a program. With GNU Info, see @ref{Info} the usage of this method
@@ -2615,68 +2804,11 @@ $ man programname
 You will be provided with a man page listing the options in the
 standard manner.
 
-@node --printparams, Info, Man pages, Getting help
-@subsection @option{--printparams}
 
-Given that there are several layers of configuration files (see
-@ref{Configuration files}), it often happens that before running a
-program on a certain data set, you want to see the values for the
-parameters that the program will use after it has read your command
-line options and all the configuration files. You might also want to
-save the list with the output so you can reproduce the same results at
-a later time, this is very important when you want to use your results
-in a report or paper.
 
-If you call this option, all AstrUtils programs will read your command
-line parameters and all the configuration files, but immediately
-before actually running, the programs will print the full list of
-paramter names and values sorted and grouped by context and quit. They
-will also report their version number and configure date. So for
-example, you can give your full command line options and even the
-input and output file names and finally just add @option{-P} to check
-if all the parameters are finely set. If everything is ok, you can
-just run the same command (easily retrieved from the bash history,
-with the top arrow key) and simply remove the last two characters that
-showed this option.
 
-In case you want to store the list of parameters for later
-reproduction of the same results, you can do so with the GNU Bash
-re-direction tool. For example after you have produced the results you
-want to store, you can save all the parameters that were used in a
-file named @file{parameters.txt} in the following manner. Using the
-bash history you can retrieve the last command you entered and simply
-add @command{-P > parameters.txt} to it, for example:
 
-@example
-$ astrimgcrop --racol=2 --deccol=3 IN.fits cat.txt -P > parameters.txt
-@end example
-
-@noindent
-All the parameters along with the version number of the program and
-the date and time that it was configured on your computer and the date
-and time that the file was created will be stored in that plain text
-file. The output of @option{--printparams} conforms with the
-configuration file formats@footnote{They are both written by the same
-function.}. By taking the following steps, you can use this file as a
-configuration file to reproduce your results at a later time.
-
-@enumerate
-@item
-Set the file name based on the standard configuration file names, see
-@ref{Configuration file format}.
-
-@item
-Later on (when ever you want to re-produce your results), copy the
-file in the @file{./.astrutils/} directory of your current
-directory.
-@end enumerate
-
-@noindent
-In this manner, this file will be read as a current directory
-configuration file and since all the parameters are defined in it, no
-other configuration file value will be used.
-
-@node Info,  , --printparams, Getting help
+@node Info,  , Man pages, Getting help
 @subsection Info
 
 Info is the standard documentation format for all GNU software. It is
@@ -2758,7 +2890,7 @@ DATE    = ' ... '       / file creation date (YYYY-MM-DDThh:mm:ss UT)
 CFITSIO = '3.37    '    / Version of CFITSIO used.
 COMMENT GNU AstrUtils 0.1
 COMMENT http://www.gnu.org/software/astrutils/
-COMMENT Copyright (C) 2013-2014, Free Software Foundation.
+COMMENT Copyright (C) 2013-2015, Free Software Foundation.
 COMMENT License GPLv3+: GNU General public license version 3 or later.
 END
 @end example
@@ -2827,7 +2959,7 @@ to other formats.
 @menu
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * ImageTransform::              Transform (flip, rotate) an image.
-* ImageArith::
+* ImageArith::                  Apply arithmetics on image(s).
 * EllipMask::                   Place elliptical masks on an image.
 * Image conversion::            Convert an image to and from other formats.
 @end menu
@@ -3024,7 +3156,7 @@ one of the characters that separates options on the command line.
 @node Blank pixels, Invoking astrimgcrop, Crop section syntax, ImageCrop
 @subsection Blank pixels
 The cropped box can potentially include pixels that are beyond the
-image range. For example when a tarrget in the input catalog was very
+image range. For example when a target in the input catalog was very
 near the edge of the input image. The parts of the cropped image that
 were not in the input image will be filled with the following two
 values depending on the data type of the image. In both cases, SAO ds9
@@ -3376,7 +3508,7 @@ image.
 
 
 
-@node Image analysis, Modelling and fittings, Image manipulation, Top
+@node Image analysis, Modeling and fittings, Image manipulation, Top
 @chapter Image analysis
 
 Astronomical images contain very valuable information, the tools in
@@ -3434,8 +3566,8 @@ substructure in an image irrespective of their shape.
 
 
 
-@node Modelling and fittings, Table manipulation, Image analysis, Top
-@chapter Modelling and fitting
+@node Modeling and fittings, Table manipulation, Image analysis, Top
+@chapter Modeling and fitting
 
 In order to fully understand our observations after initial analysis
 on the image, it is very important to compare them with the existing
@@ -3444,50 +3576,18 @@ data. The tools in this chapter create model galaxies and will provide
 2D fittings to be able to understand our detections.
 
 @menu
-* MockGals::                    Making mock galaxies and stars.
+* Modeling basics::             Astronomical modeling basics.
+* MakeProfiles::                Making mock galaxies and stars.
 @end menu
 
-@node MockGals,  , Modelling and fittings, Modelling and fittings
-@section MockGals
 
-MockGals will create mock galaxy images in an image with the ability
-to store the image prior to convolving with a PSF and prior to adding
-noise along with a final noised image. Making mock galaxies is a very
-impotant step both in data analysis and in model fitting. The
-importance of simulations in the latter is obvious.
+@node Modeling basics, MakeProfiles, Modeling and fittings, Modeling and fittings
+@section Modeling basics
 
-In data analysis, making a mock image can act like a calibration tool,
-through which you can test how successfully your detection technique
-is able to detect a known set of objects. There are commonly two
-aspects to detecting: the detection of the fainter parts of bright
-objects (which in the case of galaxies fade into the noise very
-slowly) or the complete detection of an over-all faint object. Making
-mock galaxies is the most accurate (and idealistic) way these two
-aspects of a detection algorithm can be tested.
-
-Note that since the Poisson noise variance is relative to the mean of
-the destribution, making mock (convolved with the PSF) images and
-embedding them in a real image will result in an underestimation of
-the noise on the mock galaxies. Therefore we do not support the option
-to build mock galaxies on an input image. However, if you still feel
-the urge to do so, you can use the convolved image output (without any
-noise) and add that to any input image your self. Just beware that the
-completeness values you will obtain will be over-estimated.
-
-In the sections below we will first review some very basic information
-about the basic concepts behind simulating a real image. If you are
-already sufficiently familiar with these concepts you can skip this
-section. After that we will discuss the input, options and output of
-MockGals and finally we list out plans for future work on MockGals.
-
-MockGals was built for extra galactic studies, so currently the only
-astronomical objects it can produce are stars and galaxies. We welcome
-the simulation of any other astronomical object. In this section we
-review how an ellipse with a certain functional form is created and in
-the following sections we discuss how the functional radial profiles
-used for the PSF, stars and galaxies are mathematicly defined. Finally
-we dicuss how noise is added.
-
+In the subsections below we will first review some very basic
+information and the basic concepts behind modeling a real astronomical
+image. You can skip this subsection if you are already sufficiently
+familiar with these concepts.
 
 @menu
 * Defining an ellipse::         Defining an ellipse in 2D.
@@ -3495,13 +3595,11 @@ we dicuss how noise is added.
 * Stars::                       Making mock star profiles.
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
-* Adding Noise::                What the noise is and how it is calculated.
-* Invoking astrmockgals::       Input, options and output of MockGals.
-* MockGals future updates::     Plans for the future of MockGals.
+* Oversampling::                Oversampling the model.
+* Adding noise::                What the noise is and how it is
 @end menu
 
-
-@node Defining an ellipse, PSF, MockGals, MockGals
+@node Defining an ellipse, PSF, Modeling basics, Modeling basics
 @subsection Defining an ellipse
 
 The PSF, see @ref{PSF}, and galaxy radial profiles are generally
@@ -3532,7 +3630,7 @@ place the radial profiles explained below over an ellipse, we simply
 calculate @mymath{f(r_{el}(i,j))} based on the functional radial profile
 desired.
 
-The way MockGals builds the profile is that the nearest pixel in the
+The way MakeProfiles builds the profile is that the nearest pixel in the
 image to the given profile center is found and the profile value is
 calcuated for it, see @ref{Sampling from a function}. The next pixel
 which the profile value is calculated on is the next nearest neighbor
@@ -3545,7 +3643,7 @@ which is implemented through an ordered linked list.
 Using this approch, we only go over one layer of pixels on the
 circumference of the profile to build the profile. Not one more extra
 pixel has to be checked. Another consequence of this strategy is that
-extending MockGals to three dimensions becomes very simple: only the
+extending MakeProfiles to three dimensions becomes very simple: only the
 neighbours of each pixel have to be changed. Everything else after
 that (when the pixel index and its radial profile have entered the
 linked list) is the same, not matter what number of dimensions we are
@@ -3553,7 +3651,7 @@ dealing with.
 
 
 
-@node PSF, Stars, Defining an ellipse, MockGals
+@node PSF, Stars, Defining an ellipse, Modeling basics
 @subsection Point Spread function
 
 Assume we have a ``point'' source. When we take an image of it, it
@@ -3571,18 +3669,18 @@ We want the total flux of an object to remain unchanged after applying
 the ``spread'' by convolution. Therefore, it is important that the sum
 of all the pixels of the PSF be unity. The image also has to have an
 odd number of pixels on its sides so one pixel can be defined as the
-center. In MockGals, the PSF can be set by the two methods explained
+center. In MakeProfiles, the PSF can be set by the two methods explained
 below.
 
 @table @asis
 
 @item Parametric functions
 A known mathematical function is used to make the PSF. In this case,
-only the paramaters to define the functions are necessary and MockGals
+only the paramaters to define the functions are necessary and MakeProfiles
 will make a PSF based on the given parameters for each function. In
 both cases, the center of the profile has to be exactly in the middle
 of the central pixel of the PSF (which is automatically done by
-MockGals). When talking about the PSF, usually, the full width at half
+MakeProfiles). When talking about the PSF, usually, the full width at half
 maximum or FWHM is used as a scale of the width of the PSF.
 
 @table @cite
@@ -3597,7 +3695,7 @@ be written as:
 Since the center of the profile is pre-defined, @mymath{\mu} and
 @mymath{d} are constrained. @mymath{a} can also be found because we want
 the function to be normalized. So the only important parameter for
-MockGals is the @mymath{\sigma}. In the Gaussian function we have this
+MakeProfiles is the @mymath{\sigma}. In the Gaussian function we have this
 relation between the FWHM and @mymath{\sigma}:
 
 @cindex Gaussian FWHM
@@ -3654,10 +3752,10 @@ when @mymath{\beta} is large.
 
 
 
-@node Stars, Galaxies, PSF, MockGals
-@subsection Star Profiles
+@node Stars, Galaxies, PSF, Modeling basics
+@subsection Stars
 
-In MockGals, we generally consider stars to be a point source. This is
+In MakeProfiles, we generally consider stars to be a point source. This is
 usually the case for extra galactic studies, were nearby stars are
 also in the field. Since a star is only a point source, we assume that
 it only fills one pixel prior to convolution. Infact, exactly for this
@@ -3670,7 +3768,7 @@ stars to be the PSF of the image.
 
 
 
-@node Galaxies, Sampling from a function, Stars, MockGals
+@node Galaxies, Sampling from a function, Stars, Modeling basics
 @subsection Galaxies
 
 Today, most practitioners agree that galaxy profiles can be modeled
@@ -3703,96 +3801,122 @@ this equation:
 
 
 
-@node Sampling from a function, Adding Noise, Galaxies, MockGals
+@node Sampling from a function, Oversampling, Galaxies, Modeling basics
 @subsection Sampling from a function
 
-A pixel is the ultimate level of accuracy we have to gather data,
-can't get any more accurate in one image. We call this sampling. But
-the mathematical profiles that we define have infinite
-accuracy. Generally, the variation in the profiles over the area of
-one pixel is not too significant. If so, we can simply use the
-elliptical radius of the center of the pixel and assign that as the
-final value of the pixel.
+A pixel is the ultimate level of accuracy we have to gather data, we
+can't get any more accurate in one image. We call this
+sampling. However, the mathematical profiles which we describe our
+models have infinite accuracy. Over a large fraction of the area of
+astrophysically interesting profiles (for example galaxies or PSFs),
+the variation of the profile over the area of one pixel is not too
+significant. In such cases, we can simply use the elliptical radius
+(@mymath{r_{el}}, see @ref{Defining an ellipse}), of the center of the
+pixel and assign that as the final value of the pixel.
 
-Unfortunately, as you saw above, some galaxy profiles can become very
-sharp as we approach their center. This sharpness increases with
-smaller effective radius and larger S@'ersic values. This sharp change
-in the radial profile will produce a strong gradient over the central
-few pixels of the object. Thus rendering the central value extremely
-inaccruate.
+As you approach their center, some galaxies become very sharp (their
+value significantly changes over one pixel's area). This sharpness
+increases with smaller effective radius and larger S@'ersic values.
+Thus rendering the central value extremely inaccruate.
 
 The first method that comes to mind for solving this problem is
 integration, we can integrate the functional form of the profile over
-the pixel area in a 2D integration process. In MockGals we use the
-Gauss-Kronrod-Patterson abscissae as provided in the GNU scientific
-library. This is certainly far more accurate than the central value
-but unfortunately numerical integration techniques also have their
-limitations and when such sharp profiles are needed they become
-extremely inaccurate.
+the pixel area in a 2D integration process. In the utilities of this
+section we use the Gauss-Kronrod-Patterson abscissae as provided in
+the GNU scientific library. This is certainly far more accurate than
+the central value but unfortunately numerical integration techniques
+also have their limitations and when such sharp profiles are needed
+they can become extremely inaccurate.
 
 The most accurate method to try to sample a continuous profile on a
 discrete space (sampling) is by choosing a large number of random
 points within the boundaries of the pixel and taking their average
-value. This is also, generally speaking, what happens in practice with
-the photons on the CCD. The problem is this: how many random points
-should be chosen? In order to find out, lets look at an extremely
-sharp S@'ersic profile with @mymath{\theta=22}, @mymath{q=0.3},
-@mymath{n=10} and @mymath{r_e=1} pixel. Although such a sharp profile
-is very rarely found in nature, we have to be prepared. For simplicity
-we will position it exactly in the center of a pixel.
+value (or Monte Carlo integration). This is also, generally speaking,
+what happens in practice with the photons on the CCD. Here we use
+@mymath{10^4} random points within the pixel area.
 
-Let @mymath{I_r} represent the flux from the average of a large number
-of randomly positioned points and @mymath{I_i} to be the value after
-integrating the profile over the pixel area. We define the relative
-difference as: @mymath{|I_r-I_i|/I_r}. We then tested this difference
-with @mymath{10^3}, @mymath{10^4}, @mymath{10^5}, @mymath{10^6},
-@mymath{10^7} and @mymath{10^8} random points over the pixel area. The
-differneces were @mymath{580701}, @mymath{525220}, @mymath{500575},
-@mymath{511167}, @mymath{509204} and @mymath{508288}
-respectively. Since this profile is so sharp, only the central pixel
-has such a huge difference, for the rest of the pixels, the
-differences are smaller than 0.01.
-
-If the center of the profile was off of the center of a pixel, these
-values would change and be shared by the neighboring pixels.  The
-differences between random points and integration is extremely large,
-but we see that the difference between @mymath{10^4} random points and
-@mymath{10^8} random points is only about @mymath{3} percent, while
-the CPU burden, or operation time, is 10,000 times less! Therefore it
-seems reasonable to choose @mymath{10^4} random points to test
-integration.
-
-In MockGals, the building of the profile begins from its central pixel
-and continues outwards, see @ref{Defining an ellipse}. It would be
-perfectly ideal if we could use the @mymath{10^4} or even larger
+It would be ideal if we could use the @mymath{10^4} or even larger
 number of random points, to fill all the pixels, to be more accurate
 and also to be closer to what really happens. But unfortunately, such
-a process would be extremely time and CPU consuming. But in order to
-not loose too much accuracy, in MockGals, we build the profile using
-all the three methods explained above.
+a process would be extremely time and CPU consuming. In order to not
+loose too much accuracy, in MakeProfiles, we build the profile using all
+the three methods explained above.
 
-We begin building a profile from the pixel in the image that is
-closest to the center. First we try @mymath{10^4} random points and
-integration over the same pixel, if the difference (as defined above)
-with integration is tollerable, MockGals will stop using random points
+The building of the profile begins from its central pixel and
+continues outwards. First we try both @mymath{10^4} random points
+(which yields @mymath{F_r}) and integration (@mymath{F_i}) over the
+same pixel. If the fractional difference (@mymath{|F_r-F_i|/F_r}) is
+lower than a given tolerance level we will stop using random points
 and only use integration. As we go to farther regions in the profile,
-the difference between integration and using the central value will
-also go below a tolerance level and beyond that point we only use the
-central value.
+the difference between integration and using the central value
+(@mymath{F_c}) will also go below the same tolerance level and beyond
+that point we only use the central value.
+
+This inside-out construction is done based on
+@mymath{r=\sqrt{(i_c-i)^2+(j_c-j)^2}}, not @mymath{r_{el}}, see
+@ref{Defining an ellipse}. When the axis ratios are large (near one)
+this is fine. But when they are small and the object is highly
+elliptical, it might seem more reasonable to follow @mymath{r_{el}}
+not @mymath{r}. The problem is that the gradient is stronger in pixels
+with smaller @mymath{r} (and larger @mymath{r_{el}}) than those with
+smaller @mymath{r_{el}}. In other words, the gradient is strongest
+along the minor axis. So if we follow the pixels based on distance, we
+will reach the tolerance level sooner and miss lots of pixels with
+large difference between the more accurate and less acurate sampling
+methods.
 
 
 
 
-@node Adding Noise, Invoking astrmockgals, Sampling from a function, MockGals
-@subsection Noise
+
+
+@node Oversampling, Adding noise, Sampling from a function, Modeling basics
+@subsection Oversampling
+
+The steps explained in @ref{Sampling from a function} do give an
+accurate representation of a profile prior to convolution. However, we
+should have in mind, that in an actual observation, the image is first
+convolved with or blurred by the atmospheric and instrument PSF in a
+continuous space and then it is sampled on the discrete pixels of the
+camera.
+
+In order to more accurately simulate this process, we make the
+unconvoved image and the PSF on a finer pixel grid than what you have
+asked for. In other words, the output image is a certain odd-integer
+multiple of the desired size, we can call this ``oversampling''. The
+user can specify this multiple as a command line option. The reason
+this has to be an odd number is that the PSF has to be centered on the
+center of its image. An image with an even number of pixels on each
+side does not have a centeral pixel.
+
+The image can then then be convolved with the PSF (which should also
+be oversampled on the same scale). Various realistic transformations
+can be applied to the image at this point to simulate the real imaging
+conditions. Finally, image can be subsampled to get to the initial
+desired pixel size of the output image. After this, MakeProfiles can be
+used to add mock noise as explained in the next section. This is
+because unlike the PSF, the noise occurs in each output pixel, not on
+a continues space like all the prior steps.
+
+
+
+
+@node Adding noise,  , Oversampling, Modeling basics
+@subsection Adding noise
 @cindex Image noise
 @cindex Noise
 Deep astronomical images, like those used in extra galactic studies
 seriously suffer from noise in the data. Generally speaking, the
 sources of noise in an astronomical image are:
 
-@table @asis
-@item Photon counting noise
+@menu
+* Photon counting noise::       Poisson noise
+* Instrumental noise::          Readout, dark current and other sources.
+* Final noised pixel value::    How the final noised value is calculated.
+@end menu
+
+@node Photon counting noise, Instrumental noise, Adding noise, Adding noise
+@subsubsection Photon counting noise
 Thanks to the very accurate electronics used in today's CCDs, this
 type of noise is the main cause of concern for extra galactic studies.
 It can generally be associate with the counting error that is known to
@@ -3853,7 +3977,7 @@ sky value and background value are the same.
 
 As we go to longer wavelengths, the background value becomes more
 significant and also varies over a wide image field. Such variations
-are not currently implemented in MockGals, but will be in the
+are not currently implemented in MakeProfiles, but will be in the
 future. In a mock image, we have the luxuary of setting the background
 value.
 
@@ -3863,54 +3987,74 @@ image has been convolved prior to adding noise. Lets name this flux of
 the convolved sum of possibly overlapping objects, @mymath{I_{nn}}.
 @mymath{nn} representing ``no noise''. For now, lets assume the
 background is constant and represented by @mymath{B}. In practice the
-background values are larger than 10,000 counts. Then the flux after
-adding noise is a radom value taken from a Gaussian distribution with
-@mymath{\mu=B+I_{nn}} and @mymath{\sigma=\sqrt{B+I_{nn}}}.
+background values are larger than @mymath{\sim1,000} counts. Then the
+flux after adding noise is a radom value taken from a Gaussian
+distribution with the following mean (@mymath{\mu}) and standard
+deviation (@mymath{\sigma}):
 
-@item Readout noise
-This is noise that is produced by the electronics in the CCD that
+@dispmath{\mu=B+I_{nn} \quad \sigma=\sqrt{B+I_{nn}}}
+
+@node Instrumental noise, Final noised pixel value, Photon counting noise, Adding noise
+@subsubsection Instrumental noise
+While taking images with a camera, a dark current is fed to the
+pixels, the variation of the value of this dark current over the
+pixels, also adds to the final image noise. Another source of noise is
+the readout noise that is produced by the electronics in the CCD that
 attempt to read the amount of flux that was recorded. In deep
-extra-galactic studies this kind of noise is not a significant source
-of the final noise in the image. Currently MockGals does not simulate
-this type of noise, but it is planned to be simulated in future
-verisons.
+extra-galactic studies these sources of noise are not as significant
+as the noise of the background sky. Let @mymath{C} represent the
+combined standard deviation of all these sources of noise. If we only
+have this source of noise, the noised pixel value would be a random
+value chosen from a Gaussian distribution with
 
-@item Shot noise on dark current
-While taking images with a CCD, a dark current is fed to the pixels,
-the variation of the value of this dark current over the pixels, also
-adds to the final image noise. Although, for deep observations, like
-those used for extra galactic studies, this is not the dominant source
-of noise. Currently MockGals does not simulate this source of noise, but
-it is planned to be added.
-@end table
-
-In MockGals noise is added to the image after convolving the produced
-profiles with the PSF. Now that the sources of noise have been
-discussed we can define the signal-to-noise (S/N or SN are also
-used). Since noise is defined on a per-pixel basis, S/N is also
-defined on a per-pixel basis. Lets assume the object has a total
-signal of @mymath{T} and an area @mymath{A} pixels. Then the average
-flux of the object per pixel is defined as: @mymath{a=T/A}.
-
-The noise term is defined as the RMS of all noise sources. Since the
-background was calculated indpendently of the average flux in the
-object, the signal to noise becomes:
-
-@dispmath{\rm{S/N}={a \over \sqrt{a+B^2}}}
-
-Note that the average flux of a profile seriously depends on the
-profile sharpness, so two S@'ersic profiles with all parameters
-(including their total flux) equal except the S@'ersic index will have
-very different SN values.
+@dispmath{\mu=I_{nn} \quad \sigma=\sqrt{C^2+I_{nn}}}
 
 
+@node Final noised pixel value,  , Instrumental noise, Adding noise
+@subsubsection Final noised pixel value
+Depending on the values you specify for @mymath{B} and @mymath{C} from
+the above, the final noised value for each pixel is a random value
+chosen from a Gaussian distribution with
+
+@dispmath{\mu=B+I_{nn} \quad \sigma=\sqrt{C^2+B+I_{nn}}}
+
+@node MakeProfiles,  , Modeling basics, Modeling and fittings
+@section MakeProfiles
+
+MakeProfiles will create mock astronomical profiles from a catalog,
+either individually or together in one output image. Making mock
+galaxies is a very impotant step both in data analysis and in model
+fitting. The importance of simulations in the latter is obvious.
+
+In data analysis, making a mock image can act like a calibration tool,
+through which you can test how successfully your detection technique
+is able to detect a known set of objects. There are commonly two
+aspects to detecting: the detection of the fainter parts of bright
+objects (which in the case of galaxies fade into the noise very
+slowly) or the complete detection of an over-all faint object. Making
+mock galaxies is the most accurate (and idealistic) way these two
+aspects of a detection algorithm can be tested. You also need mock
+profiles in fitting known functional profiles with observations.
+
+MakeProfiles was built for extra galactic studies, so currently the
+only astronomical objects it can produce are stars and galaxies. We
+welcome the simulation of any other astronomical object.
+
+
+@menu
+* Invoking astrmockgals::       Input, options and output of MakeProfiles.
+* MakeProfiles future updates::  Plans for the future of MakeProfiles.
+@end menu
 
 
 
-@node Invoking astrmockgals, MockGals future updates, Adding Noise, MockGals
-@subsection Invoking MockGals
 
-The general template to run MockGals is:
+
+
+@node Invoking astrmockgals, MakeProfiles future updates, MakeProfiles, MakeProfiles
+@subsection Invoking MakeProfiles
+
+The general template to run MakeProfiles is:
 
 @example
 astrmockgals [OPTION ...] [PSFimg] Catalog
@@ -3918,17 +4062,217 @@ astrmockgals [OPTION ...] [PSFimg] Catalog
 
 @noindent
 The catalog (which stores the parameters for each mock profile) is the
-mandatory argument. If an image data file is given as an argument (see
-@ref{Arguments}), it is assumed to be the PSF, otherwise, the PSF is
-built using the given functional parameters.
+mandatory argument if mockgals processing is to be started. The input
+catalog has to be a text file formatted in a table with columns
+separated by space, tab or comma (@key{,}) characters. See @ref{Common
+behavior} for a complete explanation of some common behaviour and
+options in all AstrUtils programs including MakeProfiles.
+
+If an astronomical image file is given as an argument then it will be
+interpreted as an input PSF and all PSF functional paramters will be
+ignored. The following operations will be internally done on the image
+if they are needed.
+
+@itemize
+@item
+No matter what its initial type (@code{BITPIX} in the header) is, the
+input PSF will be internally converted to a @code{float}
+(@code{BITPIX=-32}) array.
+
+@item
+Any blank pixels in the PSF image will be set to zero, see @ref{Blank
+pixels}.
+
+@item
+If the sum of the pixels in this image is not unity (1), all the
+pixels will be multiplied by the inverse of the sum, see @ref{PSF}.
+@end itemize
+
+The value for the profile center in the catalog (in the
+@option{--xcol} and @option{--ycol} columns) can be a floating point
+number so the profile center can be on any sub-pixel position. Note
+that pixel positions in the FITS standard start from 1 and an integer
+is the pixel center. So a 2D image actually starts from the position
+(0.5, 0.5). In MakeProfiles profile centers do not have to be in the
+image.  Even if only one pixel of the profile within the truncation
+radius (after convolution) is within the output image, that pixel is
+included in the image. Profiles that are completely out of the image
+will not be created. You can use the output log file to see which
+profiles were within the image.
+
+
+
+@menu
+* MakeProfiles options::        MakeProfiles specific options.
+* MakeProfiles output::         Outputs of MakeProfiles.
+@end menu
+
+@node MakeProfiles options, MakeProfiles output, Invoking astrmockgals, Invoking astrmockgals
+@subsubsection MakeProfiles options
+
+The common options that are shared by AstrUtils progarms, are fully
+explained in @ref{Common options} and are not repeated here. The
+@option{--hdu} option is here interpreted as the hdu number or name of
+the input PSF image file (if given). The options can be classified
+into the following categories: PSF, output, profiles, catalog and
+operating mode. Below we will review each one.
+
+@noindent
+PSF:
+@table @option
+@item -f
+@itemx --psffunction
+(@option{=STR}) The function to be used for the PSF. Currently there
+are two possible values: @command{moffat} or @command{gaussian}, for
+more details on their functional form, see @ref{PSF}.
+
+@item -w
+@itemx --fwhm
+(@option{=FLT}) The FWHM of the point spread function. The units of
+the specified value are in pixels. For the Gaussian functional form,
+this is the only parameter to specify the function.
+
+@item -B
+@itemx --moffatbeta
+(@option{=FLT}) In the Moffat function, besides the FWHM, we also need
+a @mymath{\beta} value which can be specified with this option.
+
+@item -r
+@itemx --psftrunc
+(@option{=FLT}) The truncation radius of the PSF. Ideally we would
+want the PSF to extend to infinity, but that is not possible! So we
+have to specify a truncation radius. Any pixel that is farther than
+this distance to the PSF center is not filled in the PSF array (given
+a value of 0.0).
+
+@end table
+
+
+@noindent
+Output:
+
+@table @option
+
+@item -x
+@itemx --naxis1
+(@option{=INT}) The number of pixels in the output image along the
+first FITS axis (horizontal when viewed in SAO ds9).
+
+@item -y
+@itemx --naxis2
+(@option{=INT}) The number of pixels in the output image along the
+second FITS axis (vertical when viewed in SAO ds9).
+
+@item -O
+@itemx --noconv
+Save the created image prior to convolution or adding noise in a FITS
+image extension of the output FITS file. By default only the final
+(convolved and noised) image is output.
+
+@item -C
+@itemx --conv
+Save the created image prior to adding noise and after convolution in
+a FITS image extension of the output FITS file. By default only the
+final (convolved and noised) image is output.
+
+@end table
+
+@noindent
+Profiles and noise:
+
+@table @option
+
+@item -l
+@itemx --tolerance
+(@option{=FLT}) The tolerance to switch to a less accurate profile
+sampling method for an extended (not a point source) profile, see
+@ref{Sampling from a function}. This same tolerance is used to
+construct the PSF if it is to be created internally.
+
+@item -t
+@itemx --truncation
+(@option{=FLT}) The truncation radius of the profiles in units of the
+profile effective radius. Any pixel whose center is more distant than
+this distance from the profile center will not be given a falue from
+this profile.
+
+@item -b
+@itemx --background
+(@option{=FLT}) The background of the image in units of counts. This
+specifies the amplitude of noise in regions of the image where there
+is no profiles and also adds with the un-noised pixel to specify the
+error (noise) on that pixel, see @ref{Adding noise}.
+
+@item -z
+@itemx --zeropoint
+(@option{=FLT}) The zeropoint magnitude of the image. Added with the
+magnitude of the profile that is given in the catalog, this value is
+used to find the total flux that the (truncated) profile should have.
+
+@end table
+
+@noindent
+Catalog: The value to all of these options is considered to be a
+column number, where counting starts from zero.
+
+@table @option
+
+@item --fcol
+(@option{=INT}) The functional form of the profile, the two modes for
+this are currently 0 for S@'eric profile and 3 for a point source
+(star).
+
+@item --xcol
+(@option{=INT}) The center of the profiles along the first FITS axis
+(horizontal when viewed in SAO ds9).
+
+@item --ycol
+(@option{=INT}) The center of the profiles along the second FITS axis
+(vertical when viewed in SAO ds9).
+
+@item --rcol
+(@option{=INT}) The effective radius of the profiles if not a point
+source in units of pixels.
+
+@item --ncol
+(@option{=INT}) The S@'ersic index of the profiles.
+
+@item --pcol
+(@option{=INT}) The position angle of the profiles relative to the
+first FITS axis (horizontal when viewed in SAO ds9).
+
+@item --qcol
+(@option{=INT}) The axis ratio of the profiles (minor axis divided by
+the major axis).
+
+@item --mcol
+(@option{=INT}) The total magniude of the profiles.
+
+
+@end table
+
+@noindent
+Operating modes:
+
+@table @option
+@item -g
+@itemx --onlypsf
+Only make the PSF in a file and abort. In this mode a catalog argument
+is also not mandatory. The PSF will be either named @file{PSF.fits} or
+what ever name you specify with the @option{--output} option.
+@end table
 
 
 
 
 
 
-@node MockGals future updates,  , Invoking astrmockgals, MockGals
-@subsection MockGals future updates
+@node MakeProfiles output,  , MakeProfiles options, Invoking astrmockgals
+@subsubsection MakeProfiles output
+
+
+@node MakeProfiles future updates,  , Invoking astrmockgals, MakeProfiles
+@subsection MakeProfiles future updates
 
 @itemize
 
@@ -3938,7 +4282,7 @@ function, this can easily be extended such that each galaxy has
 separate profiles or different ellipticities.
 
 @item
-Currently MockGals makes mock profiles on a 2D surface, but due to the
+Currently MakeProfiles makes mock profiles on a 2D surface, but due to the
 particular way it builds the mock profiles, the infra-structure is
 there to make the profiles on a 3D volume and find a real projection
 of a real 3D object. This is also a future upgrade we plan to apply.
@@ -3952,20 +4296,6 @@ Allow for a gradient in the background value over the image. Maybe
 using an input image which specifies the background value for each
 pixel.
 
-@item
-MockGals currently uses only one thread, we should test how it is
-possible to extend it to multiple threads so the preformance
-improves. The problem is that multiple threads are asynchronous, so if
-two profiles overlap, we cannot be sure if they are not built
-simultaneously and fail to super-impose on each other. Defining a
-mutex for each pixel is also absurd!
-
-Currently I am thinking that we can maybe divide the image into meshes
-and give some meshs to each thread. We can also check which profile
-overlaps with which mesh and only build those profiles for each mesh
-of each thread. However, this very process its self along with the
-cost of spinning of threads might hamper the performance. But I
-haven't had the time to do an accurate check yet.
 
 @end itemize
 
@@ -3982,7 +4312,7 @@ haven't had the time to do an accurate check yet.
 
 
 
-@node Table manipulation, Developing, Modelling and fittings, Top
+@node Table manipulation, Developing, Modeling and fittings, Top
 @chapter Table manipulation
 
 The FITS standard also specifies tables as a form of data that can be
@@ -4070,6 +4400,7 @@ given.
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
+* After making changes::        Run `make distcheck` after making changes.
 @end menu
 
 
@@ -4418,7 +4749,7 @@ in the form:
 
 @example
 /******************************************************/
-/***********        Sample title       ****************/
+/****************     Sample title     ****************/
 /******************************************************/
 @end example
 
@@ -4469,23 +4800,11 @@ other test products were built in the build tree (where they are being
 run), so they don't need to be prefixed with that variable. This is
 also true for images or files that were produced by other tests.
 
-After you have saved your changes/additions, it is very good to run
-
-@example
-$ make distcheck
-@end example
-
-@noindent
-This command will create a distribution @file{.tar.gz} file and try to
-compile it in the most general cases, then it will run the tests on
-what it has built. If your change passes this check, then you are safe
-to send your changes to us to implement or for your own purposes.
 
 
 
 
-
-@node Building,  , Test scripts, Developing
+@node Building, After making changes, Test scripts, Developing
 @section Building
 To build the various programs in AstrUtils, we use GNU Autoconf and
 GNU Automake. They provide a very portable system to check the
@@ -4513,6 +4832,33 @@ starting guide after you have read the introductions of both.
 
 
 
+
+@node After making changes,  , Building, Developing
+@section After making changes
+After you have saved your changes/additions, it is strongly
+recommended to run
+
+@example
+$ make distcheck
+@end example
+
+@noindent
+This command will create a distribution file (ending with
+@file{.tar.gz}) and try to compile it in the most general cases, then
+it will run the tests on what it has built in its own
+mini-environment. If your change (and the added tests) passes this
+check, then you are safe to send your changes to us to implement or
+for your own purposes.
+
+@cartouche
+@noindent
+@strong{CAUTION:} Documentation is part of AstrUtils, it is not
+considered a separate project. So, no change is considered valid for
+implementation unless the respective parts of the manual have been
+updated also. Also don't forget to update the @file{NEWS} and
+@file{ChangeLog} files too.
+
+@end cartouche
 
 
 

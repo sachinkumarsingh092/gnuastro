@@ -13,8 +13,8 @@
 *.tar.gz
 Makefile
 
+astrmkprof
 astrimgcrop
-astrmockgals
 
 .deps
 ar-lib

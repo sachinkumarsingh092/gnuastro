@@ -1,8 +1,8 @@
 /*********************************************************************
-MockGals - Create mock galaxies and stars in a noisy image.
-MockGals is part of GNU Astronomy Utilities (AstrUtils) package.
+mkprof (MakeProfiles) - Create mock astronomical profiles.
+MakeProfiles is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -53,10 +53,9 @@ const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
   SPACK_NAME" will create a FITS image containing any number of mock "
-  "galaxies or stars based on the input catalog. The PSF can either be "
-  "given as a FITS file or with Moffat or Gaussian parameters. All the "
-  "profiles will be built from the center outwards. First by 10000 "
-  "random points, then by integration and finally central pixel "
+  "astronomical profiles based on an input catalog. All the profiles "
+  "will be built from the center outwards. First by 10000 random "
+  "points, then by integration and finally central pixel "
   "position. The tolerance level specifies when to switch to a less "
   "accurate method.\n"
   MOREHELPINFO
@@ -71,8 +70,10 @@ const char doc[] =
 /*
    Available letters (-V which is used by GNU is also removed):
 
-   a c d e i j k m n p s u v
-   A E F G H I J L M Q R T U W X Y Z
+   a c d e f g j k l m r u v w
+   A B C E F G H I J L M O Q R T U W X Y Z
+
+   Maximum integer used so far: 509.
 */
 static struct argp_option options[] =
   {
@@ -81,55 +82,18 @@ static struct argp_option options[] =
       "Operating modes:",
       -1
     },
-    {
-      "onlypsf",
-      'g',
-      0,
-      0,
-      "Only make the PSF and abort.",
-      -1
-    },
 
 
-    /* I am forced to put the PSF here, because we want the hdu
-       option that comes from commonargs.h. */
+
+
+
     {
       0, 0, 0, 0,
-      "PSF:",
+      "Input:",
       1
     },
-    {
-      "psffunction",
-      'f',
-      "STR",
-      0,
-      "PSF function: `moffat` or `gaussian`.",
-      1
-    },
-    {
-      "fwhm",
-      'w',
-      "FLT",
-      0,
-      "FWHM of PSF in units of pixels.",
-      1
-    },
-    {
-      "moffatbeta",
-      'B',
-      "FLT",
-      0,
-      "Moffat function's beta value.",
-      1
-    },
-    {
-      "psftrunc",
-      'r',
-      "FLT",
-      0,
-      "PSF truncation in units of FWHM/2.",
-      1
-    },
+
+
 
 
 
@@ -155,19 +119,27 @@ static struct argp_option options[] =
       2
     },
     {
-      "noconv",
-      'O',
+      "oversample",
+      's',
+      "INT",
       0,
-      0,
-      "Save image prior to convolution.",
+      "Scale of oversampling.",
       2
     },
     {
-      "conv",
-      'C',
+      "psfprofsinimg",
+      509,
       0,
       0,
-      "Save image after convolution, prior to noise.",
+      "Gaussian and Moffat profiles with all in image.",
+      2
+    },
+    {
+      "individual",
+      'i',
+      0,
+      0,
+      "Build all profiles separately.",
       2
     },
 
@@ -177,31 +149,15 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Profiles and Noise:",
-      3
-    },
-    {
-      "truncation",
-      't',
-      "FLT",
-      0,
-      "Profile truncation distance, multiple of radius.",
+      "Profiles:",
       3
     },
     {
       "tolerance",
-      'l',
+      't',
       "FLT",
       0,
       "Tolerance to switch to less accurate method.",
-      3
-    },
-    {
-      "background",
-      'b',
-      "FLT",
-      0,
-      "Image background (amplitude of noise).",
       3
     },
     {
@@ -212,6 +168,14 @@ static struct argp_option options[] =
       "Magnitude zero point.",
       3
     },
+    {
+      "tunitinp",
+      'p',
+      "STR",
+      0,
+      "Truncation is in units of pixels, not radius.",
+      3
+    },
 
 
 
@@ -219,20 +183,12 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Profile catalog (column number, starting from zero):",
-      4
-    },
-    {
-      "fcol",
-      500,
-      "INT",
-      0,
-      "Function: Sersic (0), Point (3).",
+      "Catalog (column number, starting from zero):",
       4
     },
     {
       "xcol",
-      501,
+      500,
       "INT",
       0,
       "Center along first FITS axis (horizontal).",
@@ -240,10 +196,18 @@ static struct argp_option options[] =
     },
     {
       "ycol",
-      502,
+      501,
       "INT",
       0,
       "Center along second FITS axis (vertical).",
+      4
+    },
+    {
+      "fcol",
+      502,
+      "INT",
+      0,
+      "Sersic (0), Moffat (1), Gaussian(2), Point (3).",
       4
     },
     {
@@ -251,7 +215,7 @@ static struct argp_option options[] =
       503,
       "INT",
       0,
-      "Effective radius in pixels.",
+      "Effective radius or FWHM in pixels.",
       4
     },
     {
@@ -259,7 +223,7 @@ static struct argp_option options[] =
       504,
       "INT",
       0,
-      "Sersic index.",
+      "Sersic index or Moffat beta.",
       4
     },
     {
@@ -284,6 +248,14 @@ static struct argp_option options[] =
       "INT",
       0,
       "Magnitude.",
+      4
+    },
+    {
+      "tcol",
+      508,
+      "INT",
+      0,
+      "Truncation in units of --rcol, unless --tunitinp.",
       4
     },
 
@@ -317,7 +289,7 @@ static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
-  struct mockgalsparams *p = state->input;
+  struct mkprofparams *p = state->input;
 
   /* Set the pointer to the common parameters for all programs
      here: */
@@ -338,18 +310,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
   switch(key)
     {
 
-    /* Operating modes: */
-    case 'g':
-      p->up.onlypsf=1;
+    /* Operating modes:  */
+    case 509:
+      p->psfprofsinimg=1;
       break;
-
-    /* Input */
-    case 'h':	    /* Because we redefined the explanation. */
-      errno=0;
-      p->cp.hdu=malloc(strlen(arg)+1);
-      if(p->cp.hdu==NULL) error(EXIT_FAILURE, 0, NULL);
-      strcpy(p->cp.hdu, arg);
-      p->cp.hduset=1;
+    case 'i':
+      p->individual=1;
       break;
 
     /* Output: */
@@ -361,49 +327,15 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetlzero(arg, &p->s0, "naxis2", key, p->cp.spack, NULL, 0);
       p->up.naxis2set=1;
       break;
-    case 'O':
-      p->noconv=1;
-      break;
-    case 'C':
-      p->conv=1;
-      break;
-
-    /* PSF: */
-    case 'f':
-      if(strcmp(arg, "moffat")==0)
-	p->psffunction=1;
-      else if(strcmp(arg, "gaussian")==0)
-	p->psffunction=2;
-      else
-	argp_error(state, "The value of the `--psffunction` (`-f`) option "
-		   "should be either `moffat` or `gaussian`.");
-      p->up.psffunctionset=1;
-      break;
-    case 'w':
-      floatl0(arg, &p->psf_p1, "fwhm", key, p->cp.spack, NULL, 0);
-      p->up.fwhmset=1;
-      break;
-    case 'B':
-      floatl0(arg, &p->psf_p2, "moffatbeta", key, p->cp.spack, NULL, 0);
-      p->up.moffatbetaset=1;
-      break;
-    case 'r':
-      floatl0(arg, &p->psf_t, "psftrunc", key, p->cp.spack, NULL, 0);
-      p->up.psftruncset=1;
+    case 's':
+      sizetlzero(arg, &p->oversample, "oversample", key, p->cp.spack, NULL, 0);
+      p->up.oversampleset=1;
       break;
 
     /* Profiles and noise: */
-    case 't':
-      floatl0(arg, &p->truncation, "truncation", key, p->cp.spack, NULL, 0);
-      p->up.truncationset=1;
-      break;
     case 'l':
       floatl0(arg, &p->tolerance, "tolerance", key, p->cp.spack, NULL, 0);
       p->up.toleranceset=1;
-      break;
-    case 'b':
-      floatl0(arg, &p->background, "background", key, p->cp.spack, NULL, 0);
-      p->up.backgroundset=1;
       break;
     case 'z':
       floatl0(arg, &p->zeropoint, "zeropoint", key, p->cp.spack, NULL, 0);
@@ -412,16 +344,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
    /* Catalog */
     case 500:
-      sizetelzero(arg, &p->fcol, "fcol", ' ', p->cp.spack, NULL, 0);
-      p->up.fcolset=1;
-      break;
-    case 501:
       sizetelzero(arg, &p->xcol, "xcol", ' ', p->cp.spack, NULL, 0);
       p->up.xcolset=1;
       break;
-    case 502:
+    case 501:
       sizetelzero(arg, &p->ycol, "ycol", ' ', p->cp.spack, NULL, 0);
       p->up.ycolset=1;
+      break;
+    case 502:
+      sizetelzero(arg, &p->fcol, "fcol", ' ', p->cp.spack, NULL, 0);
+      p->up.fcolset=1;
       break;
     case 503:
       sizetelzero(arg, &p->rcol, "rcol", ' ', p->cp.spack, NULL, 0);
@@ -442,6 +374,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 507:
       sizetelzero(arg, &p->mcol, "mcol", ' ', p->cp.spack, NULL, 0);
       p->up.mcolset=1;
+      break;
+    case 508:
+      sizetelzero(arg, &p->tcol, "tcol", ' ', p->cp.spack, NULL, 0);
+      p->up.tcolset=1;
       break;
 
 
@@ -481,7 +417,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 	{
 	  if(state->arg_num==0)
 	    argp_error(state, "No argument given!");
-	  if(p->up.catname==NULL && p->up.onlypsf==0)
+	  if(p->up.catname==NULL)
 	    argp_error(state, "No catalog provided!");
 	}
       break;

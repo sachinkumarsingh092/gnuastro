@@ -2,7 +2,7 @@
 txtarrayvv -- Convert a text file table to a C array.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -30,10 +30,9 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Simple macros: */
-#define NOTNUMBER     - DBL_MAX
 #define FMTLENGTH     50
 #define DELIMITERS    " ,\t\n"
-#define ARRAYTOTXTLOG "arraytotxt.log"
+#define TXTARRAYVVLOG "txtarrayvv.log"
 
 
 

@@ -146,14 +146,14 @@ AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
 # have given by setting them to "yes" if they are not "no". These
 # options don't accept arguments.
 ayes=false
-AC_ARG_ENABLE([mockgals],
-              [AS_HELP_STRING([--enable-mockgals],
-  	            [Install MockGals and other enabled packages only.])],
-	      [AS_IF([test "x$enable_mockgals" != xno],
-                     [enable_mockgals=yes; ayes=true])],
-              [enable_mockgals=notset])
+AC_ARG_ENABLE([mkprof],
+              [AS_HELP_STRING([--enable-mkprof],
+  	            [Install MakeMock and other enabled packages only.])],
+	      [AS_IF([test "x$enable_mkprof" != xno],
+                     [enable_mkprof=yes; ayes=true])],
+              [enable_mkprof=notset])
 AC_ARG_ENABLE([imgcrop],
-              [AS_HELP_STRING([--enable-imagecrop],
+              [AS_HELP_STRING([--enable-imgcrop],
   	            [Install ImageCrop and other enabled packages only.])],
 	      [AS_IF([test "x$enable_imgcrop" != xno],
                      [enable_imgcrop=yes; ayes=true])],
@@ -173,10 +173,10 @@ AC_ARG_ENABLE([imgcrop],
 #    every "notset"  becomes yes.       fi
 # fi
 AS_IF([test $ayes = true ],
-      [AS_IF([test $enable_mockgals = notset], [enable_mockgals=no])
+      [AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])],
 
-      [AS_IF([test $enable_mockgals = notset], [enable_mockgals=yes])
+      [AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])]
      )
 
@@ -185,7 +185,7 @@ AS_IF([test $ayes = true ],
 
 
 # Make the enable_package values available for the Makefile:
-AM_CONDITIONAL([COND_MOCKGALS], [test $enable_mockgals = yes])
+AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
 
 
@@ -195,7 +195,7 @@ AC_CONFIG_FILES([Makefile
                  lib/Makefile
 		 tests/Makefile
 		 src/imgcrop/Makefile
-		 src/mockgals/Makefile])
+		 src/mkprof/Makefile])
 
 
 

@@ -2,7 +2,7 @@
 Image Crop - Crop a given size from one or multiple images.
 Image Crop is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -72,8 +72,6 @@ readconfig(char *filename, struct imgcropparams *p)
   char key='a';	/* Not used, just a place holder. */
   int imgmodeset=0, wcsmodeset=0; /* For unambiguous default file checking. */
 
-  printf("\n\n%s\n\n", filename);
-
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
      missing, it will be reported after all defaults are read. */
@@ -96,8 +94,6 @@ readconfig(char *filename, struct imgcropparams *p)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
       STARTREADINGLINE;
-
-      printf("\n\n%s--%s--%s--\n\n", line, name, value);
 
       /* Operating modes: */
       if(strcmp(name, "imgmode")==0)
@@ -366,7 +362,6 @@ checkifset(struct imgcropparams *p)
 void
 sanitycheck(struct imgcropparams *p)
 {
-  size_t i;
   int checksum;
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
@@ -457,8 +452,7 @@ sanitycheck(struct imgcropparams *p)
 	      "%s%s%s simultaneously!", t1?t1:"", t2?t2:"", t3?t3:"");
 
       /* Check if the value for --output is a file or a directory? */
-      if(nameisafile(cp->output, cp->dontdelete))
-	p->outnameisfile=1;
+      p->outnameisfile=nameisawritablefile(cp->output, cp->dontdelete);
 
       /* When there is only one output, only one thread is needed. */
       cp->numthreads=1;
@@ -503,49 +497,14 @@ sanitycheck(struct imgcropparams *p)
 	 columns: */
       if(p->imgmode)
 	{
-	  if(p->xcol>=p->cs1)
-	    error(EXIT_FAILURE, 0, "%s only has %lu columns while you "
-		  "have requested column %lu (counting from zero) for "
-		  "`--xcol`.", up->catname, p->cs1, p->xcol);
-	  else if(p->ycol>=p->cs1)
-	    error(EXIT_FAILURE, 0, "%s only has %lu columns while you "
-		  "have requested column %lu (counting from zero) for "
-		  "`--ycol`.", up->catname, p->cs1, p->ycol);
-	  for(i=0;i<p->cs0;++i)
-	    {
-	      if(p->cat[i*p->cs1+p->xcol]==NOTNUMBER)
-		error(EXIT_FAILURE, 0, "Column %lu (--xcol) in row %lu "
-		      "of %s could not be read as a number.", p->xcol,
-		      i, up->catname);
-	      if(p->cat[i*p->cs1+p->ycol]==NOTNUMBER)
-		error(EXIT_FAILURE, 0, "Column %lu (--ycol) in row %lu "
-		      "of %s could not be read as a number.", p->ycol,
-		      i, up->catname);
-	    }
+	  CHECKCOLINCAT(p->xcol, "xcol");
+	  CHECKCOLINCAT(p->ycol, "ycol");
 	}
       else
 	{
-	  if(p->racol>=p->cs1)
-	    error(EXIT_FAILURE, 0, "%s only has %lu columns while you "
-		  "have requested column %lu (counting from zero) for "
-		  "`--racol`.", up->catname, p->cs1, p->racol);
-	  else if(p->deccol>=p->cs1)
-	    error(EXIT_FAILURE, 0, "%s only has %lu columns while you "
-		  "have requested column %lu (counting from zero) for "
-		  "`--deccol`.", up->catname, p->cs1, p->deccol);
-	  for(i=0;i<p->cs0;++i)
-	    {
-	      if(p->cat[i*p->cs1+p->racol]==NOTNUMBER)
-		error(EXIT_FAILURE, 0, "Column %lu (--racol) in row %lu "
-		      "of %s could not be read as a number.", p->racol,
-		      i, up->catname);
-	      if(p->cat[i*p->cs1+p->deccol]==NOTNUMBER)
-		error(EXIT_FAILURE, 0, "Column %lu (--deccol) in row %lu "
-		      "of %s could not be read as a number.", p->deccol,
-		      i, up->catname);
-	    }
+	  CHECKCOLINCAT(p->racol, "racol");
+	  CHECKCOLINCAT(p->deccol, "deccol");
 	}
-
     }
 
 
@@ -721,13 +680,11 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
 
   /* Read catalog if given. */
   if(p->up.catname)
-    {
-      txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
-      checkremovefile(ARRAYTOTXTLOG, 0);
-    }
+    txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
 
   /* Do a sanity check. */
   sanitycheck(p);
+  checkremovefile(TXTARRAYVVLOG, 0);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)

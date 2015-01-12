@@ -2,7 +2,7 @@
 Functions to check and set command line argument values and files.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -22,8 +22,46 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #ifndef CHECKSET_H
 #define CHECKSET_H
 
-
+#include <math.h>
 #include <fitsio.h>
+
+
+/**************************************************************/
+/*********                 Macros                **************/
+/**************************************************************/
+#define CHECKCOLINCAT(INCOL,NAME) {					\
+    size_t i;								\
+    									\
+    if( (INCOL) >= p->cs1 )						\
+      error(EXIT_FAILURE, 0, "%s only has %lu columns while you "	\
+	    "have requested column %lu (counting from zero) for "	\
+	    "`--%s`.", p->up.catname, p->cs1, (INCOL), (NAME));		\
+									\
+    for(i=0;i<p->cs0;++i)						\
+      if( isnan(p->cat[i*p->cs1+(INCOL)]) )				\
+	error(EXIT_FAILURE, 0, "%s: Column %lu (--%s) in row %lu "	\
+	      "could not be read as a number. See %s. Note that "	\
+	      "counting starts from zero.",				\
+	      p->up.catname, (INCOL), (NAME), i, TXTARRAYVVLOG);	\
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**************************************************************/
@@ -114,10 +152,10 @@ void
 checkremovefile(char *filename, int dontdelete);
 
 int
-nameisafile(char *name, int dontdelete);
+nameisawritablefile(char *name, int dontdelete);
 
 void
-automaticoutput(char *inname, char *postfix, int removedirinfo,
+automaticoutput(char *inname, char *suffix, int removedirinfo,
 		int dontdelete, char **outname);
 
 void

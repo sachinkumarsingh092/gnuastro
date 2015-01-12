@@ -2,7 +2,7 @@
 txtarrayvv -- Convert a text file table to a C array.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -117,18 +117,19 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
   else				/* Not yet created.          */
     {
       errno=0;
-      *log=fopen(ARRAYTOTXTLOG, "w");
+      *log=fopen(TXTARRAYVVLOG, "w");
       if(*log==NULL)
 	error(EXIT_FAILURE, errno, filename);
       fprintf(*log, "# Elements in %s which could not be read as a \n"
-	      "# number. They are saved as %g in the array.\n"
+	      "# number. They are saved as nan in the array.\n"
 	      "# The columns in the table below are:\n"
 	      "# 0: Line number in file.\n"
 	      "# 1: Row number in table (without commented or blank lines).\n"
 	      "# 2: Column number in table.\n"
-	      "# 3: The string that could not be converted to a number.\n",
-	      filename, NOTNUMBER);
-      fprintf(*log, "%-10lu%-10lu%-10lu%s\n", lineno, s0, s1, token);
+	      "# 3: The string that could not be converted to a number.\n"
+	      "# Note that counting starts from zero.\n",
+	      filename);
+      fprintf(*log, "%-10lu%-10lu%-10lu%s\n", lineno-1, s0, s1, token);
     }
 }
 
@@ -145,7 +146,7 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
   if(*tailptr!='\0')							\
     {									\
       savetolog(&log, filename, lineno, ts0, ts1, token);		\
-      array[ts0*s1+ts1]=NOTNUMBER;					\
+      array[ts0*s1+ts1]=NAN;						\
     }									\
   ++ts1;								\
   }
@@ -224,7 +225,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
     {
       errno=0;
       if(fclose(log)==EOF)
-	error(EXIT_FAILURE, errno, ARRAYTOTXTLOG);
+	error(EXIT_FAILURE, errno, TXTARRAYVVLOG);
     }
 }
 

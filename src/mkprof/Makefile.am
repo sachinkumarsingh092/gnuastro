@@ -24,24 +24,24 @@ AM_LDFLAGS = -lcfitsio -lwcs -pthread -lm -L$(top_builddir)/lib
 
 
 ## ImageCrop, .astrutils is for testing
-bin_PROGRAMS = astrmockgals
+bin_PROGRAMS = astrmkprof
 
-astrmockgals_SOURCES = main.c main.h ui.c ui.h mockgals.c mockgals.h args.h
+astrmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h
 
-astrmockgals_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
+astrmkprof_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
 -lcheckset -llinkedlist -ltiming
 
 
 
 # To destribute the defaults file.
-dist_sysconf_DATA = astrmockgals.conf
+dist_sysconf_DATA = astrmkprof.conf
 
 
 
 
 
 ## Generally for the man pages:
-dist_man_MANS = astrmockgals.1
+dist_man_MANS = astrmkprof.1
 
-astrmockgals.1: args.h $(top_srcdir)/include/commonargs.h
-	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astrmockgals
+astrmkprof.1: args.h $(top_srcdir)/include/commonargs.h
+	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astrmkprof

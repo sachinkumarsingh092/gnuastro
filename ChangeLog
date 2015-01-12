@@ -1,3 +1,37 @@
+2015-01-12  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/imgcrop/imgcrop.c: Using pthread_barrier_wait for
+	synchronizing threads instead of the mutexes and conditional
+	variables before.
+
+	* lib/txtarrayvv.c: When the value couldn't be read as a number,
+	it would be saved as the lowest possible double value. Now it will
+	be saved as a NaN.
+
+	* lib/fitsarrayvv.c (nultovalue): Convert blank values in images
+	to a given values.
+	(changetype): Change the type of an image.
+
+	* lib/checkset.c (nameisawritablefile): Corrected to accurately
+	check if the given name is usable as output.
+
+	* lib/arraymanip.c (converttofloat): Removed conversion
+	functions. These were mainly for converting a FITS image type to
+	the desired type. Now there is one function in fitsarrayvv.c which
+	will do the conversion.
+
+	* include/checkset.h (CHECKCOLINCAT): Added to check column number
+	and all values within a column.
+
+	* doc/astrutils.texi: Updated the text, changing names and
+	explanations.
+
+	* configure.ac: Changed MockGals, mockgals, name to MakeProfiles,
+	mkprof.
+
+	* Makefile.am (EXTRA_DIST): Moved the library header files to the
+	Makefile.am in lib/.
+
 2015-01-06  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/mockgals/args.h (parse_opt): Removed the check below.

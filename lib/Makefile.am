@@ -11,8 +11,6 @@
 ## Tohoku University Astronomical Institute, Sendai, Japan.
 ## http://astr.tohoku.ac.jp/~akhlaghi/
 
-
-
 # Flags for all programs:
 AM_CFLAGS = -Wall -Ofast
 
@@ -24,16 +22,16 @@ AM_CPPFLAGS = -DSYSDATA_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include
 noinst_LIBRARIES = libconfigfiles.a libfitsarrayvv.a libtxtarrayvv.a	\
 libcheckset.a liblinkedlist.a libtiming.a libastrthreads.a
 
-libastrthreads_a_SOURCES = astrthreads.c
+libastrthreads_a_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
 
-libconfigfiles_a_SOURCES = configfiles.c
+libconfigfiles_a_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
 
-libfitsarrayvv_a_SOURCES = fitsarrayvv.c
+libfitsarrayvv_a_SOURCES = fitsarrayvv.c $(top_srcdir)/include/fitsarrayvv.h
 
-libtxtarrayvv_a_SOURCES = txtarrayvv.c
+libtxtarrayvv_a_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
 
-libcheckset_a_SOURCES = checkset.c
+libcheckset_a_SOURCES = checkset.c $(top_srcdir)/include/checkset.h
 
-liblinkedlist_a_SOURCES = linkedlist.c
+liblinkedlist_a_SOURCES = linkedlist.c $(top_srcdir)/include/linkedlist.h
 
-libtiming_a_SOURCES = timing.c
+libtiming_a_SOURCES = timing.c $(top_srcdir)/include/timing.h

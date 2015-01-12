@@ -1,8 +1,8 @@
 /*********************************************************************
-MockGals - Create mock galaxies and stars in a noisy image.
-MockGals is part of GNU Astronomy Utilities (AstrUtils) package.
+mkprof (MakeProfiles) - Create mock astronomical profiles.
+MakeProfiles is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -19,18 +19,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <errno.h>
-#include <error.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-
-
-#include "main.h"
-
+#ifndef UI_H
+#define UI_H
 
 void
-mockgals(struct mockgalsparams *p)
-{
+setparams(int argc, char *argv[], struct mkprofparams *p);
 
-}
+void
+freeandreport(struct mkprofparams *p, struct timeval *t1);
+
+#endif

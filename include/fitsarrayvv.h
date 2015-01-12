@@ -2,7 +2,7 @@
 Functions to convert a FITS array to a C array and vice versa.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -99,6 +99,9 @@ copyrightandend(fitsfile *fptr, char *spack_string);
 void *
 bitpixnull(int bitpix);
 
+void
+convertnul(void *array, int bitpix, size_t size, void *value);
+
 int
 bitpixtodtype(int bitpix);
 
@@ -112,11 +115,14 @@ void *
 bitpixalloc(size_t size, int bitpix);
 
 void
-readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs);
+changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix);
 
 void
-fitsimgtoarray(char *filename, char *ext, int *bitpix, void **array,
-	       size_t *s0, size_t *s1);
+readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs);
+
+int
+fitsimgtoarray(char *filename, char *hdu, void *bitnul, int *bitpix,
+	       void **array, size_t *s0, size_t *s1);
 
 void
 arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,

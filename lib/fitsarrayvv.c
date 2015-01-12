@@ -2,7 +2,7 @@
 Functions to convert a FITS array to a C array and vice versa.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -277,6 +277,217 @@ bitpixalloc(size_t size, int bitpix)
 
 
 
+void
+nultovalue(void *array, int bitpix, size_t size, void *value)
+{
+  uint8_t *b, *bf, bv=*(uint8_t *) value; /* Value will only be read from */
+  int16_t *s, *sf, sv=*(int16_t *) value; /* one of these based on bitpix.*/
+  int32_t *l, *lf, lv=*(int32_t *) value; /* Which the caller assigned.   */
+  int64_t *L, *Lf, Lv=*(int64_t *) value; /* If there is any problem, it  */
+  float   *f, *ff, fv=*(float   *) value; /* is their responsability, not */
+  double  *d, *df, dv=*(double  *) value; /* this functions :-D.          */
+
+  switch(bitpix)
+    {
+    case BYTE_IMG:
+      bf=(b=array)+size;
+      do if(*b==FITSBYTENUL) *b=bv; while(++b<bf);
+      break;
+
+    case SHORT_IMG:
+      sf=(s=array)+size;
+      do if(*s==FITSSHORTNUL) *s=sv; while(++s<sf);
+      break;
+
+    case LONG_IMG:
+      lf=(l=array)+size;
+      do if(*l==FITSLONGNUL) *l=lv; while(++l<lf);
+      break;
+
+    case LONGLONG_IMG:
+      Lf=(L=array)+size;
+      do if(*L==FITSLLONGNUL) *L=Lv; while(++L<Lf);
+      break;
+
+    case FLOAT_IMG:
+      ff=(f=array)+size;
+      do if(*f==FITSFLOATNUL) *f=fv; while(++f<ff);
+      break;
+
+    case DOUBLE_IMG:
+      df=(d=array)+size;
+      do if(*d==FITSFLOATNUL) *d=dv; while(++d<df);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "A bug! Bitpix value of %d not recognized. "
+	    "This should not happen here (convertnul in fitsarrayvv.c). "
+	    "Please contact us to see how this happened.", bitpix);
+    }
+}
+
+
+
+
+
+void
+changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
+{
+  uint8_t *b, *bf, *ob=in;
+  int16_t *s, *sf, *os=in;
+  int32_t *l, *lf, *ol=in;
+  int64_t *L, *Lf, *oL=in;
+  float *f, *ff, *of=in;
+  double *d, *df, *od=in;
+
+  /* Allocate space for the output and start filling it. */
+  *out=bitpixalloc(size, outbitpix);
+  switch(outbitpix)
+    {
+    case BYTE_IMG:
+      switch(inbitpix)
+	{
+	case BYTE_IMG:
+	  bf=(b=*out)+size; do *b=*ob++; while(++b<bf); return;
+	case SHORT_IMG:
+	  sf=(s=*out)+size; do *s=*ob++; while(++s<sf); return;
+	case LONG_IMG:
+	  lf=(l=*out)+size; do *l=*ob++; while(++l<lf); return;
+	case LONGLONG_IMG:
+	  Lf=(L=*out)+size; do *L=*ob++; while(++L<Lf); return;
+	case FLOAT_IMG:
+	  ff=(f=*out)+size; do *f=*ob++; while(++f<ff); return;
+	case DOUBLE_IMG:
+	  df=(d=*out)+size; do *d=*ob++; while(++d<df); return;
+	default:
+	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
+		"BITPIX=%d of input not recognized. Please contact us so "
+		"we can fix it.", inbitpix);
+	}
+      break;
+
+    case SHORT_IMG:
+      switch(inbitpix)
+	{
+	case BYTE_IMG:
+	  bf=(b=*out)+size; do *b=*os++; while(++b<bf); return;
+	case SHORT_IMG:
+	  sf=(s=*out)+size; do *s=*os++; while(++s<sf); return;
+	case LONG_IMG:
+	  lf=(l=*out)+size; do *l=*os++; while(++l<lf); return;
+	case LONGLONG_IMG:
+	  Lf=(L=*out)+size; do *L=*os++; while(++L<Lf); return;
+	case FLOAT_IMG:
+	  ff=(f=*out)+size; do *f=*os++; while(++f<ff); return;
+	case DOUBLE_IMG:
+	  df=(d=*out)+size; do *d=*os++; while(++d<df); return;
+	default:
+	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
+		"BITPIX=%d of input not recognized. Please contact us so "
+		"we can fix it.", inbitpix);
+	}
+      break;
+
+    case LONG_IMG:
+      switch(inbitpix)
+	{
+	case BYTE_IMG:
+	  bf=(b=*out)+size; do *b=*ol++; while(++b<bf); return;
+	case SHORT_IMG:
+	  sf=(s=*out)+size; do *s=*ol++; while(++s<sf); return;
+	case LONG_IMG:
+	  lf=(l=*out)+size; do *l=*ol++; while(++l<lf); return;
+	case LONGLONG_IMG:
+	  Lf=(L=*out)+size; do *L=*ol++; while(++L<Lf); return;
+	case FLOAT_IMG:
+	  ff=(f=*out)+size; do *f=*ol++; while(++f<ff); return;
+	case DOUBLE_IMG:
+	  df=(d=*out)+size; do *d=*ol++; while(++d<df); return;
+	default:
+	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
+		"BITPIX=%d of input not recognized. Please contact us so "
+		"we can fix it.", inbitpix);
+	}
+      break;
+
+    case LONGLONG_IMG:
+      switch(inbitpix)
+	{
+	case BYTE_IMG:
+	  bf=(b=*out)+size; do *b=*oL++; while(++b<bf); return;
+	case SHORT_IMG:
+	  sf=(s=*out)+size; do *s=*oL++; while(++s<sf); return;
+	case LONG_IMG:
+	  lf=(l=*out)+size; do *l=*oL++; while(++l<lf); return;
+	case LONGLONG_IMG:
+	  Lf=(L=*out)+size; do *L=*oL++; while(++L<Lf); return;
+	case FLOAT_IMG:
+	  ff=(f=*out)+size; do *f=*oL++; while(++f<ff); return;
+	case DOUBLE_IMG:
+	  df=(d=*out)+size; do *d=*oL++; while(++d<df); return;
+	default:
+	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
+		"BITPIX=%d of input not recognized. Please contact us so "
+		"we can fix it.", inbitpix);
+	}
+      break;
+
+    case FLOAT_IMG:
+      switch(inbitpix)
+	{
+	case BYTE_IMG:
+	  bf=(b=*out)+size; do *b=*of++; while(++b<bf); return;
+	case SHORT_IMG:
+	  sf=(s=*out)+size; do *s=*of++; while(++s<sf); return;
+	case LONG_IMG:
+	  lf=(l=*out)+size; do *l=*of++; while(++l<lf); return;
+	case LONGLONG_IMG:
+	  Lf=(L=*out)+size; do *L=*of++; while(++L<Lf); return;
+	case FLOAT_IMG:
+	  ff=(f=*out)+size; do *f=*of++; while(++f<ff); return;
+	case DOUBLE_IMG:
+	  df=(d=*out)+size; do *d=*of++; while(++d<df); return;
+	default:
+	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
+		"BITPIX=%d of input not recognized. Please contact us so "
+		"we can fix it.", inbitpix);
+	}
+      break;
+
+    case DOUBLE_IMG:
+      switch(inbitpix)
+	{
+	case BYTE_IMG:
+	  bf=(b=*out)+size; do *b=*od++; while(++b<bf); return;
+	case SHORT_IMG:
+	  sf=(s=*out)+size; do *s=*od++; while(++s<sf); return;
+	case LONG_IMG:
+	  lf=(l=*out)+size; do *l=*od++; while(++l<lf); return;
+	case LONGLONG_IMG:
+	  Lf=(L=*out)+size; do *L=*od++; while(++L<Lf); return;
+	case FLOAT_IMG:
+	  ff=(f=*out)+size; do *f=*od++; while(++f<ff); return;
+	case DOUBLE_IMG:
+	  df=(d=*out)+size; do *d=*od++; while(++d<df); return;
+	default:
+	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
+		"BITPIX=%d of input not recognized. Please contact us so "
+		"we can fix it.", inbitpix);
+	}
+      break;
+
+
+    default:
+      error(EXIT_FAILURE, 0, "A bug! Output Bitpix value of %d is not "
+	    "recognized. This should not happen here (changetype in "
+	    "fitsarrayvv.c). Please contact us to see how this happened.",
+	    outbitpix);
+    }
+}
+
+
+
+
 
 
 
@@ -389,111 +600,6 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
 	  hdutypestring(desiredtype));
 
   free(ffname);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************************************************************
- ***********         FITS to array functions:      ***********
- *************************************************************/
-/* Read the WCS information from the header. Unfortunately, WCS lib is
-   not thread safe, so it needs a mutex. In case you are not using
-   multiple threads, just pass a NULL pointer as the mutex.
-
-   After you finish with this WCS, you should free the space with:
-
-   status = wcsvfree(&nwcs,&wcs);
-
-   ===================================
-   WARNING: wcspih IS NOT THREAD SAFE!
-   ===================================
-   Don't call this function within a thread or use a mutex.
-*/
-void
-readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
-{
-  /* Declaratins: */
-  char *fullheader;
-  int nkeys=0, status=0;
-  int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
-  int ctrl     = 0;          /* Don't report why a keyword wasn't used. */
-  int nreject  = 0;          /* Number of keywords rejected for syntax. */
-
-  /* CFITSIO function: */
-  if( fits_hdr2str(fptr, 1, NULL, 0, &fullheader, &nkeys, &status) )
-    fitsioerror(status, NULL);
-
-  /* WCSlib function */
-  if (wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs) )
-    error(EXIT_FAILURE, 0, "wcspih ERROR %d: %s.",
-	  status, wcs_errmsg[status]);
-
-  /* Set the internal structure: */
-  if (wcsset(*wcs))
-    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.",
-	  status, wcs_errmsg[status]);
-
-  /* Initialize the wcsprm struct
-  if ((status = wcsset(*wcs)))
-    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.\n", status,
-	  wcs_errmsg[status]);
-  */
-  free(fullheader);
-}
-
-
-
-
-
-/* Read a FITS image into an array corresponding to fitstype and also
-   save the size of the array.  */
-void
-fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
-	       size_t *s0, size_t *s1)
-{
-  void *bitnul;
-  fitsfile *fptr;
-  int status=0, anynul=0;
-  long naxes[2], fpixel[]={1,1};
-
-  /* Check HDU for realistic conditions: */
-  readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
-
-  /* Get the bitpix and size of the image: */
-  imgbitpixsize(fptr, bitpix, naxes);
-  *s0=naxes[1];
-  *s1=naxes[0];
-
-  /* Write the sizes of the array into the output values and allocate
-     space for the array. */
-  *array=bitpixalloc(*s0 * *s1, *bitpix);
-
-  /* Read the image into the allocated array: */
-  bitnul=bitpixnull(*bitpix);
-  if ( fits_read_pix(fptr, bitpixtodtype(*bitpix), fpixel, *s0 * *s1,
-		     bitnul, *array, &anynul, &status) )
-    fitsioerror(status, NULL);
-  free(bitnul);
-
-  /* Close the FITS file: */
-  fits_close_file(fptr, &status);
-  fitsioerror(status, NULL);
 }
 
 
@@ -757,6 +863,117 @@ copyrightandend(fitsfile *fptr, char *spack_string)
   fits_write_comment(fptr, SHORTLICENSE, &status);
   fitsioerror(status, NULL);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ ***********         FITS to array functions:      ***********
+ *************************************************************/
+/* Read the WCS information from the header. Unfortunately, WCS lib is
+   not thread safe, so it needs a mutex. In case you are not using
+   multiple threads, just pass a NULL pointer as the mutex.
+
+   After you finish with this WCS, you should free the space with:
+
+   status = wcsvfree(&nwcs,&wcs);
+
+   ===================================
+   WARNING: wcspih IS NOT THREAD SAFE!
+   ===================================
+   Don't call this function within a thread or use a mutex.
+*/
+void
+readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
+{
+  /* Declaratins: */
+  char *fullheader;
+  int nkeys=0, status=0;
+  int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
+  int ctrl     = 0;          /* Don't report why a keyword wasn't used. */
+  int nreject  = 0;          /* Number of keywords rejected for syntax. */
+
+  /* CFITSIO function: */
+  if( fits_hdr2str(fptr, 1, NULL, 0, &fullheader, &nkeys, &status) )
+    fitsioerror(status, NULL);
+
+  /* WCSlib function */
+  if (wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs) )
+    error(EXIT_FAILURE, 0, "wcspih ERROR %d: %s.",
+	  status, wcs_errmsg[status]);
+
+  /* Set the internal structure: */
+  if (wcsset(*wcs))
+    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.",
+	  status, wcs_errmsg[status]);
+
+  /* Initialize the wcsprm struct
+  if ((status = wcsset(*wcs)))
+    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.\n", status,
+	  wcs_errmsg[status]);
+  */
+  free(fullheader);
+}
+
+
+
+
+
+/* Read a FITS image into an array corresponding to fitstype and also
+   save the size of the array. If the image has any null pixels, their
+   number is returned by this function. */
+int
+fitsimgtoarray(char *filename, char *hdu, void *bitnul, int *bitpix,
+	       void **array, size_t *s0, size_t *s1)
+{
+  fitsfile *fptr;
+  long naxes[2], fpixel[]={1,1};
+  int status=0, anynul=0, freebitnul=0;
+
+  /* Check HDU for realistic conditions: */
+  readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
+
+  /* Get the bitpix and size of the image: */
+  imgbitpixsize(fptr, bitpix, naxes);
+  *s0=naxes[1];
+  *s1=naxes[0];
+
+  /* Allocate space for the array. */
+  *array=bitpixalloc(*s0 * *s1, *bitpix);
+
+  /* Read the image into the allocated array: */
+  if(bitnul==NULL)
+    {
+      bitnul=bitpixnull(*bitpix);
+      freebitnul=1;
+    }
+  if ( fits_read_pix(fptr, bitpixtodtype(*bitpix), fpixel, *s0 * *s1,
+		     bitnul, *array, &anynul, &status) )
+    fitsioerror(status, NULL);
+  if(freebitnul) free(bitnul);
+
+  /* Close the FITS file: */
+  fits_close_file(fptr, &status);
+  fitsioerror(status, NULL);
+
+  /* Return the number of "blank" pixels. */
+  return anynul;
+}
+
 
 
 

@@ -2,7 +2,7 @@
 Image Crop - Crop a given size from one or multiple images.
 Image Crop is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -49,9 +49,7 @@ struct cropparams
 
   /* Thread parameters. */
   size_t         *indexs;  /* Indexs to be used in this thread.        */
-  size_t           *done;  /* Number of threads done so far.           */
-  pthread_cond_t      *c;  /* Conditional pthread structure.           */
-  pthread_mutex_t     *m;  /* Pthread mutex.                           */
+  pthread_barrier_t   *b;  /* pthread barrier to keep threads waiting. */
 };
 
 void

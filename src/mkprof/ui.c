@@ -1,8 +1,8 @@
 /*********************************************************************
-MockGals - Create mock galaxies and stars in a noisy image.
-MockGals is part of GNU Astronomy Utilities (AstrUtils) package.
+mkprof (MakeProfiles) - Create mock astronomical profiles.
+MakeProfiles is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -55,7 +55,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 /**************       Options and parameters    ***************/
 /**************************************************************/
 void
-readconfig(char *filename, struct mockgalsparams *p)
+readconfig(char *filename, struct mkprofparams *p)
 {
   FILE *fp;
   size_t lineno=0, len=200;
@@ -87,71 +87,12 @@ readconfig(char *filename, struct mockgalsparams *p)
       /* Prepare the "name" and "value" strings, also set lineno. */
       STARTREADINGLINE;
 
-      /* PSF: */
-      if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hdu) continue;
-	  errno=0;
-
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL) error(EXIT_FAILURE, 0, NULL);
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
-      else if(strcmp(name, "psffunction")==0)
-	{
-	  if(up->psffunctionset) continue;
-	  if(strcmp(value, "moffat")==0)
-	    p->psffunction=1;
-	  else if(strcmp(value, "gaussian")==0)
-	    p->psffunction=2;
-	  else
-	    error_at_line(EXIT_FAILURE, 0, filename, lineno,
-			  "The value to `psffunction` should be "
-			  "`moffat` or `gaussian`. But it is: %s.",
-			  value);
-	  up->psffunctionset=1;
-	}
-      else if(strcmp(name, "fwhm")==0)
-	{
-	  if(up->fwhmset) continue;
-	  floatl0(value, &p->psf_p1, name, key, SPACK, filename, lineno);
-	  up->fwhmset=1;
-	}
-      else if(strcmp(name, "moffatbeta")==0)
-	{
-	  if(up->moffatbetaset) continue;
-	  floatl0(value, &p->psf_p2, name, key, SPACK, filename, lineno);
-	  up->moffatbetaset=1;
-	}
-      else if(strcmp(name, "psftrunc")==0)
-	{
-	  if(up->psftruncset) continue;
-	  floatl0(value, &p->psf_t, name, key, SPACK, filename, lineno);
-	  up->psftruncset=1;
-	}
-
-
-
-
-      /* Profiles and noise: */
-      else if(strcmp(name, "truncation")==0)
-	{
-	  if(up->truncationset) continue;
-	  floatl0(value, &p->truncation, name, key, SPACK, filename, lineno);
-	  up->truncationset=1;
-	}
-      else if(strcmp(name, "tolerance")==0)
+      /* Input: */
+      if(strcmp(name, "tolerance")==0)
 	{
 	  if(up->toleranceset) continue;
 	  floatl0(value, &p->tolerance, name, key, SPACK, filename, lineno);
 	  up->toleranceset=1;
-	}
-      else if(strcmp(name, "background")==0)
-	{
-	  if(up->backgroundset) continue;
-	  floatl0(value, &p->background, name, key, SPACK, filename, lineno);
-	  up->backgroundset=1;
 	}
       else if(strcmp(name, "zeropoint")==0)
 	{
@@ -164,12 +105,6 @@ readconfig(char *filename, struct mockgalsparams *p)
 
 
       /* Catalog: */
-      else if(strcmp(name, "fcol")==0)
-	{
-	  if(up->fcolset) continue;
-	  sizetelzero(value, &p->fcol, name, key, SPACK, filename, lineno);
-	  up->fcolset=1;
-	}
       else if(strcmp(name, "xcol")==0)
 	{
 	  if(up->xcolset) continue;
@@ -181,6 +116,12 @@ readconfig(char *filename, struct mockgalsparams *p)
 	  if(up->ycolset) continue;
 	  sizetelzero(value, &p->ycol, name, key, SPACK, filename, lineno);
 	  up->ycolset=1;
+	}
+      else if(strcmp(name, "fcol")==0)
+	{
+	  if(up->fcolset) continue;
+	  sizetelzero(value, &p->fcol, name, key, SPACK, filename, lineno);
+	  up->fcolset=1;
 	}
       else if(strcmp(name, "rcol")==0)
 	{
@@ -212,6 +153,12 @@ readconfig(char *filename, struct mockgalsparams *p)
 	  sizetelzero(value, &p->mcol, name, key, SPACK, filename, lineno);
 	  up->mcolset=1;
 	}
+      else if(strcmp(name, "tcol")==0)
+	{
+	  if(up->tcolset) continue;
+	  sizetelzero(value, &p->tcol, name, key, SPACK, filename, lineno);
+	  up->tcolset=1;
+	}
 
 
 
@@ -238,6 +185,15 @@ readconfig(char *filename, struct mockgalsparams *p)
 	  sizetlzero(value, &p->s0, name, key, SPACK, filename, lineno);
 	  up->naxis2set=1;
 	}
+      else if(strcmp(name, "oversample")==0)
+	{
+	  if(up->oversampleset) continue;
+	  sizetlzero(value, &p->oversample, name, key, SPACK,
+		     filename, lineno);
+	  up->oversampleset=1;
+	}
+
+
       else
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,
 		      "`%s` not recognized.\n", name);
@@ -253,58 +209,25 @@ readconfig(char *filename, struct mockgalsparams *p)
 
 
 void
-printvalues(FILE *fp, struct mockgalsparams *p)
+printvalues(FILE *fp, struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
-
-  /* Print all the options that are set. Separate each group with a
-     commented line explaining the options in that group. */
-  fprintf(fp, "\n# PSF:\n");
-  if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
-  if(up->psffunctionset)
-    {
-      if(p->psffunction==1)
-	fprintf(fp, CONF_SHOWFMT"%s\n", "psffunction", "moffat");
-      else if(p->psffunction==2)
-	fprintf(fp, CONF_SHOWFMT"%s\n", "psffunction", "gaussian");
-      else
-	error(EXIT_FAILURE, 0, "A Bug! In printvalues (ui.c), "
-	      "p->psffunction has a value other than 1 or 2! Please "
-	      "contact us so we find how this was caused!");
-    }
-  if(up->fwhmset)
-    fprintf(fp, CONF_SHOWFMT"%.2f\n", "fwhm", p->psf_p1);
-  if(up->moffatbetaset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "moffatbeta", p->psf_p2);
-  if(up->psftruncset)
-    fprintf(fp, CONF_SHOWFMT"%.2f\n", "psftrunc", p->psf_t);
 
 
   fprintf(fp, "\n# Input profiles:\n");
-  if(up->truncationset)
-    fprintf(fp, CONF_SHOWFMT"%.2f\n", "truncation", p->truncation);
   if(up->toleranceset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "tolerance", p->tolerance);
-  if(up->backgroundset)
-    fprintf(fp, CONF_SHOWFMT"%.2f\n", "background", p->background);
   if(up->zeropointset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "zeropoint", p->zeropoint);
 
 
   fprintf(fp, "\n# Catalog:\n");
-  if(up->fcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "fcol", p->fcol);
   if(up->xcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "xcol", p->xcol);
   if(up->ycolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "ycol", p->ycol);
+  if(up->fcolset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "fcol", p->fcol);
   if(up->rcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "rcol", p->rcol);
   if(up->ncolset)
@@ -315,12 +238,16 @@ printvalues(FILE *fp, struct mockgalsparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "qcol", p->qcol);
   if(up->mcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "mcol", p->mcol);
+  if(up->mcolset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "tcol", p->tcol);
 
   fprintf(fp, "\n# Output:\n");
   if(up->naxis1set)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->s1);
   if(up->naxis2set)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->s0);
+  if(up->oversampleset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
 }
 
 
@@ -328,7 +255,7 @@ printvalues(FILE *fp, struct mockgalsparams *p)
 
 
 void
-checkifset(struct mockgalsparams *p)
+checkifset(struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
@@ -350,12 +277,12 @@ checkifset(struct mockgalsparams *p)
     REPORT_NOTSET("background");
   if(up->zeropointset==0)
     REPORT_NOTSET("zeropoint");
-  if(up->fcolset==0)
-    REPORT_NOTSET("fcol");
   if(up->xcolset==0)
     REPORT_NOTSET("xcol");
   if(up->ycolset==0)
     REPORT_NOTSET("ycol");
+  if(up->fcolset==0)
+    REPORT_NOTSET("fcol");
   if(up->rcolset==0)
     REPORT_NOTSET("rcol");
   if(up->ncolset==0)
@@ -370,6 +297,8 @@ checkifset(struct mockgalsparams *p)
     REPORT_NOTSET("naxis1");
   if(up->naxis2set==0)
     REPORT_NOTSET("naxis2");
+  if(up->oversampleset==0)
+    REPORT_NOTSET("oversample");
   END_OF_NOTSET_REPORT;
 }
 
@@ -396,10 +325,46 @@ checkifset(struct mockgalsparams *p)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 void
-sanitycheck(struct mockgalsparams *p)
+sanitycheck(struct mkprofparams *p)
 {
+  size_t i, j, columns[8];
+  struct commonparams *cp=&p->cp;
 
+  /* If the column numbers are not equal. */
+  columns[0]=p->xcol; columns[1]=p->ycol; columns[2]=p->fcol;
+  columns[3]=p->rcol; columns[4]=p->ncol; columns[5]=p->pcol;
+  columns[6]=p->qcol; columns[7]=p->mcol;
+  for(i=0;i<8;++i)
+    for(j=0;j<8;++j)
+      if(i!=j && columns[i]==columns[j])
+	error(EXIT_FAILURE, 0, "At least two of the specified columns "
+	      "are set to %lu! By adding the `-P` or `--printparams` "
+	      "option you can check the final column numbers. They "
+	      "all have to be different.", columns[i]);
+
+  /* If all the columns are within the catalog: */
+  CHECKCOLINCAT(p->xcol, "xcol");
+  CHECKCOLINCAT(p->ycol, "ycol");
+  CHECKCOLINCAT(p->fcol, "fcol");
+  CHECKCOLINCAT(p->rcol, "rcol");
+  CHECKCOLINCAT(p->ncol, "ncol");
+  CHECKCOLINCAT(p->pcol, "pcol");
+  CHECKCOLINCAT(p->qcol, "qcol");
+  CHECKCOLINCAT(p->pcol, "pcol");
+
+  /* Set the output name if not set, if set, make sure it doesn't
+     exist and we have write access there. */
+  if(cp->output)
+    nameisawritablefile(cp->output, cp->dontdelete);
+  else
+    automaticoutput(p->up.catname, ".fits", cp->removedirinfo,
+		    cp->dontdelete, &cp->output);
 }
+
+
+
+
+
 
 
 
@@ -419,7 +384,7 @@ sanitycheck(struct mockgalsparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 void
-setparams(int argc, char *argv[], struct mockgalsparams *p)
+setparams(int argc, char *argv[], struct mkprofparams *p)
 {
   struct commonparams *cp=&p->cp;
 
@@ -447,11 +412,16 @@ setparams(int argc, char *argv[], struct mockgalsparams *p)
 
   /* Read catalog if given. */
   if(p->up.catname)
-    {
-      txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
-      checkremovefile(ARRAYTOTXTLOG, 0);
-    }
-  exit(0);
+    txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
+
+  /* Do a sanity check, then remove the possibly existing log file
+     created by txttoarray. */
+  sanitycheck(p);
+  checkremovefile(TXTARRAYVVLOG, 0);
+
+  /* Everything is ready, notify the user of the program starting. */
+  if(cp->verb)
+    printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
 }
 
 
@@ -477,8 +447,13 @@ setparams(int argc, char *argv[], struct mockgalsparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct mockgalsparams *p, struct timeval *t1)
+freeandreport(struct mkprofparams *p, struct timeval *t1)
 {
+  /* Free all the allocated arrays. */
+  free(p->cat);
   free(p->cp.hdu);
-  if(p->cp.output) free(p->cp.output);
+  free(p->cp.output); /* If not set, it is NULL, and free is OK with NULL */
+
+  /* Print the final message. */
+  reporttiming(t1, SPACK_NAME" finished in: ", 0);
 }

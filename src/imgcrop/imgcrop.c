@@ -2,7 +2,7 @@
 Image Crop - Crop a given size from one or multiple images.
 Image Crop is part of GNU Astronomy Utilities (AstrUtils) package.
 
-Copyright (C) 2013-2014 Mohammad Akhlaghi
+Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
 http://astr.tohoku.ac.jp/~akhlaghi/
 
@@ -112,15 +112,9 @@ imgmodecrop(void *inparam)
     fitsioerror(status, "imgmode.c: imgcroponthreads could "
 		"not close FITS file.");
 
-  /* Increment the `done` counter and return if more than one thread
-     was desired. */
+  /* Wait until all other threads finish. */
   if(cp->numthreads>1)
-    {
-      pthread_mutex_lock(crp->m);
-      ++(*crp->done);
-      pthread_cond_signal(crp->c);
-      pthread_mutex_unlock(crp->m);
-    }
+    pthread_barrier_wait(crp->b);
 
   return NULL;
 }
@@ -216,15 +210,9 @@ wcsmodecrop(void *inparam)
 	}
     }
 
-  /* Increment the `done` counter and return if more than one thread
-     was desired. */
+  /* Wait until all other threads finish. */
   if(p->cp.numthreads>1)
-    {
-      pthread_mutex_lock(crp->m);
-      ++(*crp->done);
-      pthread_cond_signal(crp->c);
-      pthread_mutex_unlock(crp->m);
-    }
+    pthread_barrier_wait(crp->b);
 
   return NULL;
 }
@@ -260,13 +248,12 @@ imgcrop(struct imgcropparams *p)
 {
   /* Parameters for parallel processing: */
   int err;
-  pthread_t *t;
-  pthread_cond_t cv;
+  pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
-  pthread_mutex_t mtx;
+  pthread_barrier_t b;
   struct cropparams *crp;
+  size_t nt=p->cp.numthreads;
   void *(*modefunction)(void *);
-  size_t nt=p->cp.numthreads, done;
   size_t i, *indexs, thrdcols, numactive;
 
 
@@ -315,27 +302,15 @@ imgcrop(struct imgcropparams *p)
     }
   else
     {
-      /* Allocate the threads array. */
-      errno=0;
-      t=malloc(nt*sizeof *t);
-      if(t==NULL)
-	error(EXIT_FAILURE, errno,
-	      "%lu bytes in imgmodecatalog for t", nt*sizeof *t);
-
-      /* Initialize all the thread parameters: */
-      done=numactive=0;
+      /* Initialize thread attributes. Notice that the main thread
+	 calling all the other threads is also a thread that has to
+	 wait behind the barrier, so the counter is nt+1. */
       err=pthread_attr_init(&attr);
-      if(err) error(EXIT_FAILURE, 0,
-		    "Couldn't initialize thread attribute.");
-      err=pthread_cond_init(&cv, NULL);
-      if(err) error(EXIT_FAILURE, 0,
-		    "Couldn't initialize conditional for threads.");
-      err=pthread_mutex_init(&mtx, NULL);
-      if(err) error(EXIT_FAILURE, 0,
-		    "Couldn't initialize the threads mutex.");
+      if(err) error(EXIT_FAILURE, 0, "Thread attr not initialized.");
       err=pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-      if(err) error(EXIT_FAILURE, 0,
-		    "Couldn't set the thread attributes to detached.");
+      if(err) error(EXIT_FAILURE, 0, "Thread attr not detached.");
+      err=pthread_barrier_init(&b, NULL, nt+1);
+      if(err) error(EXIT_FAILURE, 0, "Thread barrier not initialized.");
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
@@ -343,23 +318,20 @@ imgcrop(struct imgcropparams *p)
 	  {
 	    crp[i].p=p;
 	    ++numactive;
+	    crp[i].b=&b;
 	    crp[i].outlen=crp[0].outlen;
 	    crp[i].indexs=&indexs[i*thrdcols];
-	    crp[i].c=&cv; crp[i].m=&mtx; crp[i].done=&done;
-	    err=pthread_create(&t[i], &attr, modefunction, &crp[i]);
+	    err=pthread_create(&t, &attr, modefunction, &crp[i]);
 	    if(err)
 	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
 	  }
 
       /* Wait for all threads to finish: */
-      pthread_mutex_lock(&mtx);
-      while(done<numactive)
-	pthread_cond_wait(&cv, &mtx);
-      pthread_mutex_unlock(&mtx);
+      pthread_barrier_wait(&b);
 
-      /* Free the allocate spaces: */
-      free(t);
+      /* Free the initializations: */
       pthread_attr_destroy(&attr);
+      pthread_barrier_destroy(&b);
     }
 
 
