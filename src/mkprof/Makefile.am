@@ -26,10 +26,11 @@ AM_LDFLAGS = -lcfitsio -lwcs -pthread -lm -L$(top_builddir)/lib
 ## ImageCrop, .astrutils is for testing
 bin_PROGRAMS = astrmkprof
 
-astrmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h
+astrmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h	\
+ellipse.c ellipse.h
 
 astrmkprof_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
--lcheckset -llinkedlist -ltiming
+-lcheckset -llinkedlist -ltiming -lastrthreads
 
 
 

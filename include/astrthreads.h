@@ -24,8 +24,14 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
 #define NONTHRDINDEX (size_t)(-1)
 
+
+
 void
 distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
 	      size_t *outthrdcols);
+
+void
+attrbarrierinit(pthread_attr_t *attr, pthread_barrier_t *b,
+		size_t numthreads);
 
 #endif

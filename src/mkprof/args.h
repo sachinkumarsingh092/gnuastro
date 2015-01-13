@@ -70,8 +70,8 @@ const char doc[] =
 /*
    Available letters (-V which is used by GNU is also removed):
 
-   a c d e f g j k l m r u v w
-   A B C E F G H I J L M O Q R T U W X Y Z
+   a d e f g j k l m r u v w
+   A B C E F G H I J L M O Q R T U W Z
 
    Maximum integer used so far: 509.
 */
@@ -127,11 +127,11 @@ static struct argp_option options[] =
       2
     },
     {
-      "psfprofsinimg",
+      "mginimg",
       509,
       0,
       0,
-      "Gaussian and Moffat profiles with all in image.",
+      "Moffat & Gaussian made with all in output image.",
       2
     },
     {
@@ -161,6 +161,38 @@ static struct argp_option options[] =
       3
     },
     {
+      "tunitinp",
+      'p',
+      0,
+      0,
+      "Truncation is in units of pixels, not radius.",
+      3
+    },
+    {
+      "xshift",
+      'X',
+      "FLT",
+      0,
+      "Shift profile centers and enlarge image, X axis.",
+      3
+    },
+    {
+      "yshift",
+      'Y',
+      "FLT",
+      0,
+      "Shift profile centers and enlarge image, Y axis.",
+      3
+    },
+    {
+      "prepforconv",
+      'c',
+      0,
+      0,
+      "Shift and expand output based on first PSF in catalog.",
+      3
+    },
+    {
       "zeropoint",
       'z',
       "FLT",
@@ -168,14 +200,7 @@ static struct argp_option options[] =
       "Magnitude zero point.",
       3
     },
-    {
-      "tunitinp",
-      'p',
-      "STR",
-      0,
-      "Truncation is in units of pixels, not radius.",
-      3
-    },
+
 
 
 
@@ -312,7 +337,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Operating modes:  */
     case 509:
-      p->psfprofsinimg=1;
+      p->mginimg=1;
       break;
     case 'i':
       p->individual=1;
@@ -328,7 +353,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.naxis2set=1;
       break;
     case 's':
-      sizetlzero(arg, &p->oversample, "oversample", key, p->cp.spack, NULL, 0);
+      sizetlzero(arg, &p->oversample, "oversample", key,
+		 p->cp.spack, NULL, 0);
       p->up.oversampleset=1;
       break;
 
@@ -340,6 +366,22 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'z':
       floatl0(arg, &p->zeropoint, "zeropoint", key, p->cp.spack, NULL, 0);
       p->up.zeropointset=1;
+      break;
+    case 'p':
+      p->up.tunitinp=1;
+      p->up.tunitinpset=1;
+      break;
+    case 'c':
+      p->up.prepforconv=1;
+      p->up.prepforconvset=1;
+      break;
+    case 'X':
+      sizetelzero(arg, &p->up.xshift, "xshift", key, p->cp.spack, NULL, 0);
+      p->up.xshiftset=1;
+      break;
+    case 'Y':
+      sizetelzero(arg, &p->up.yshift, "yshift", key, p->cp.spack, NULL, 0);
+      p->up.yshiftset=1;
       break;
 
    /* Catalog */

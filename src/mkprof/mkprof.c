@@ -25,10 +25,11 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include "checkset.h"
+#include "astrthreads.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
-
+#include "mkprof.h"
 
 
 
@@ -39,17 +40,6 @@ Basic Strategy
 ==============
 
 N: Number of threads.
-
-QUEUE
------
-
-Queue of profiles that are built and ready to be added to the final
-image. Each with 5 members: a pointer to the array, the position (in
-the final output image of where the array should start) and the
-position it should end.
-
-The queue should be two way (with each element having a pointer to its
-next and previous elements).
 
 
 BUILDER THREADS
@@ -99,6 +89,79 @@ done.
 
 
 
+/**************************************************************/
+/************            The builders             *************/
+/**************************************************************/
+/* Several threads (one minus the total number of threads) will call
+   this function. It will build the profiles that are listed in its
+   indexs parameter. */
+void *
+build(void *inparam)
+{
+  struct mkonthread *mkp=(struct mkonthread *)inparam;
+  struct mkprofparams *p=mkp->p;
+
+  size_t i;
+
+  /* Make each profile that was specified for this thread. */
+  for(i=0;mkp->indexs[i]!=NONTHRDINDEX;++i)
+    {
+
+    }
+
+  /* Wait until all other threads finish. */
+  if(p->cp.numthreads>1)
+    pthread_barrier_wait(mkp->b);
+
+  return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************              The writer             *************/
+/**************************************************************/
+void
+write(struct mkprofparams *p)
+{
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**************************************************************/
 /************           Outside function          *************/
@@ -106,5 +169,78 @@ done.
 void
 mkprof(struct mkprofparams *p)
 {
+  int err;
+  pthread_t t;		 /* Thread id not used, all are saved here. */
+  pthread_attr_t attr;
+  pthread_barrier_t b;
+  struct mkonthread *mkp;
+  size_t nt=p->cp.numthreads;
+  size_t i, *indexs, thrdcols;
 
+
+  /* Allocate the arrays to keep the thread and parameters for each
+     thread. Note that we only want nt-1 threads to do the
+     building. */
+  errno=0;
+  mkp=malloc((nt-1)*sizeof *mkp);
+  if(mkp==NULL)
+    error(EXIT_FAILURE, errno,
+	  "%lu bytes in mkprof (mkprof.c) for mkp", (nt-1)*sizeof *mkp);
+
+
+  /* Distribute the different profiles for different threads. Note
+     that one thread is left out for writing, while nt-1 are left
+     for building. */
+  distinthreads(p->cs0, nt-1, &indexs, &thrdcols);
+
+
+  /* Build the profiles: */
+  if(nt==1)
+    {
+      mkp[0].p=p;
+      mkp[0].indexs=indexs;
+      build(&mkp[0]);
+    }
+  else
+    {
+      /* Initialize the attributes. Note that we want to build on nt-1
+	 threads and write the arrays on one thread (this one that
+	 spins off the nt-1 builder threads). So in total, the barrier
+	 should stop nt threads. */
+      attrbarrierinit(&attr, &b, nt);
+
+      /* Initialize the condition variable and mutex. */
+      err=pthread_mutex_init(&p->qlock, NULL);
+      if(err) error(EXIT_FAILURE, 0, "Mutex not initialized.");
+      err=pthread_cond_init(&p->qready, NULL);
+      if(err) error(EXIT_FAILURE, 0, "Condition variable not initialized.");
+
+      /* Spin off the threads: */
+      for(i=0;i<nt-1;++i)
+	if(indexs[i*thrdcols]!=NONTHRDINDEX)
+	  {
+	    mkp[i].p=p;
+	    mkp[i].b=&b;
+	    mkp[i].indexs=&indexs[i*thrdcols];
+	    err=pthread_create(&t, &attr, build, &mkp[i]);
+	    if(err)
+	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	  }
+    }
+
+
+  /* Write the created arrays into the image. */
+  write(p);
+
+
+  /* If numthreads>1, then wait for all the jobs to finish and destroy
+     the attribute and barrier. */
+  if(nt>1)
+    {
+      pthread_barrier_wait(&b);
+      pthread_attr_destroy(&attr);
+      pthread_barrier_destroy(&b);
+      pthread_cond_destroy(&p->qready);
+      pthread_mutex_destroy(&p->qlock);
+    }
 }

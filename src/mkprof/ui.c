@@ -33,6 +33,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include "fitsarrayvv.h"
 
 #include "main.h"
+#include "ellipse.h"
 
 #include "ui.h"			/* Needs main.h.                  */
 #include "args.h"		/* Needs main.h, includes argp.h. */
@@ -87,8 +88,15 @@ readconfig(char *filename, struct mkprofparams *p)
       /* Prepare the "name" and "value" strings, also set lineno. */
       STARTREADINGLINE;
 
-      /* Input: */
-      if(strcmp(name, "tolerance")==0)
+      /* Profiles: */
+      if(strcmp(name, "tunitinp")==0)
+	{
+	  if(up->tunitinpset) continue;
+	  intzeroorone(value, &p->up.tunitinp, name, key, SPACK,
+		       filename, lineno);
+	  up->tunitinpset=1;
+	}
+      else if(strcmp(name, "tolerance")==0)
 	{
 	  if(up->toleranceset) continue;
 	  floatl0(value, &p->tolerance, name, key, SPACK, filename, lineno);
@@ -99,6 +107,27 @@ readconfig(char *filename, struct mkprofparams *p)
 	  if(up->zeropointset) continue;
 	  floatl0(value, &p->zeropoint, name, key, SPACK, filename, lineno);
 	  up->zeropointset=1;
+	}
+      else if(strcmp(name, "prepforconv")==0)
+	{
+	  if(up->prepforconvset) continue;
+	  intzeroorone(value, &p->up.prepforconv, name, key, SPACK,
+		       filename, lineno);
+	  up->prepforconvset=1;
+	}
+      else if(strcmp(name, "xshift")==0)
+	{
+	  if(up->xshiftset) continue;
+	  sizetelzero(value, &p->up.xshift, name, key, SPACK,
+		      filename, lineno);
+	  up->xshiftset=1;
+	}
+      else if(strcmp(name, "yshift")==0)
+	{
+	  if(up->yshiftset) continue;
+	  sizetelzero(value, &p->up.yshift, name, key, SPACK,
+		      filename, lineno);
+	  up->yshiftset=1;
 	}
 
 
@@ -194,6 +223,18 @@ readconfig(char *filename, struct mkprofparams *p)
 	}
 
 
+
+
+      /* Operating modes: */
+      else if(strcmp(name, "numthreads")==0)
+	{
+	  if(cp->numthreadsset) continue;
+	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
+		     filename, lineno);
+	  cp->numthreadsset=1;
+	}
+
+
       else
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,
 		      "`%s` not recognized.\n", name);
@@ -213,13 +254,13 @@ printvalues(FILE *fp, struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
 
-
-  fprintf(fp, "\n# Input profiles:\n");
+  fprintf(fp, "\n# Profiles:\n");
+  if(up->tunitinpset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "tunitinp", p->up.tunitinp);
   if(up->toleranceset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "tolerance", p->tolerance);
   if(up->zeropointset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "zeropoint", p->zeropoint);
-
 
   fprintf(fp, "\n# Catalog:\n");
   if(up->xcolset)
@@ -242,12 +283,19 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "tcol", p->tcol);
 
   fprintf(fp, "\n# Output:\n");
+  if(p->cp.outputset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "output", p->cp.output);
   if(up->naxis1set)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->s1);
   if(up->naxis2set)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->s0);
   if(up->oversampleset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
+
+  fprintf(fp, "\n# Operating modes:\n");
+  /* Number of threads doesn't need to be checked, it is set by
+     default */
+  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads);
 }
 
 
@@ -261,20 +309,10 @@ checkifset(struct mkprofparams *p)
   struct commonparams *cp=&p->cp;
 
   int intro=0;
-  if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
-  if(up->fwhmset==0)
-    REPORT_NOTSET("fwhm");
-  if(up->moffatbetaset==0)
-    REPORT_NOTSET("moffatbeta");
-  if(up->psftruncset==0)
-    REPORT_NOTSET("psftrunc");
-  if(up->truncationset==0)
-    REPORT_NOTSET("truncation");
+  if(up->tunitinpset==0)
+    REPORT_NOTSET("tunitinp");
   if(up->toleranceset==0)
     REPORT_NOTSET("tolerance");
-  if(up->backgroundset==0)
-    REPORT_NOTSET("background");
   if(up->zeropointset==0)
     REPORT_NOTSET("zeropoint");
   if(up->xcolset==0)
@@ -293,6 +331,8 @@ checkifset(struct mkprofparams *p)
     REPORT_NOTSET("qcol");
   if(up->mcolset==0)
     REPORT_NOTSET("mcol");
+  if(cp->outputset==0)
+    REPORT_NOTSET("output");
   if(up->naxis1set==0)
     REPORT_NOTSET("naxis1");
   if(up->naxis2set==0)
@@ -327,15 +367,20 @@ checkifset(struct mkprofparams *p)
 void
 sanitycheck(struct mkprofparams *p)
 {
-  size_t i, j, columns[8];
-  struct commonparams *cp=&p->cp;
+  double trunc;
+  size_t i, j, columns[9], sum;
+
+  /* Check if over-sampling is an odd number, then convert the
+     oversampling rate into the double type. */
+  if(p->oversample%2==0) ++p->oversample;
+  p->dos=p->oversample;
 
   /* If the column numbers are not equal. */
   columns[0]=p->xcol; columns[1]=p->ycol; columns[2]=p->fcol;
   columns[3]=p->rcol; columns[4]=p->ncol; columns[5]=p->pcol;
-  columns[6]=p->qcol; columns[7]=p->mcol;
-  for(i=0;i<8;++i)
-    for(j=0;j<8;++j)
+  columns[6]=p->qcol; columns[7]=p->mcol; columns[8]=p->tcol;
+  for(i=0;i<9;++i)
+    for(j=0;j<9;++j)
       if(i!=j && columns[i]==columns[j])
 	error(EXIT_FAILURE, 0, "At least two of the specified columns "
 	      "are set to %lu! By adding the `-P` or `--printparams` "
@@ -350,17 +395,107 @@ sanitycheck(struct mkprofparams *p)
   CHECKCOLINCAT(p->ncol, "ncol");
   CHECKCOLINCAT(p->pcol, "pcol");
   CHECKCOLINCAT(p->qcol, "qcol");
-  CHECKCOLINCAT(p->pcol, "pcol");
+  CHECKCOLINCAT(p->mcol, "mcol");
+  CHECKCOLINCAT(p->tcol, "tcol");
 
-  /* Set the output name if not set, if set, make sure it doesn't
-     exist and we have write access there. */
-  if(cp->output)
-    nameisawritablefile(cp->output, cp->dontdelete);
-  else
-    automaticoutput(p->up.catname, ".fits", cp->removedirinfo,
-		    cp->dontdelete, &cp->output);
+  /* If prepforconv is called, then xshift and yshift should be zero. Also
+     a Moffat or Gaussian profile should exist in the image. */
+  if( (p->up.xshift==0 && p->up.yshift==0) && p->up.prepforconv)
+    {
+      /* Make sure there is at least one Moffat or Gaussian profile. */
+      j=0;
+      for(i=0;i<p->cs0;++i)
+	if(p->cat[i*p->cs1+p->fcol]==1 || p->cat[i*p->cs1+p->fcol]==2)
+	  {
+	    j=i;
+	    break;
+	  }
+
+      /* If there is no PSF in the catalog, then you can ignore
+	 prepforconv. */
+      if(i<p->cs0)
+	{
+	  /* Find the correct xshift and yshift using the first Moffat
+	     or Gaussian profile (in row 'j'). Note that the output of
+	     encloseellipse will be the total width, we only want half
+	     of it for the shift.*/
+	  if(p->up.tunitinp)
+	    trunc=p->dos*p->cat[j*p->cs1+p->tcol];
+	  else
+	    trunc=p->dos*p->cat[j*p->cs1+p->tcol]*p->cat[j*p->cs1+p->rcol]/2;
+	  encloseellipse(trunc, p->cat[j*p->cs1+p->qcol]*trunc,
+			 p->cat[j*p->cs1+p->pcol], &p->up.yshift,
+			 &p->up.xshift);
+	  p->up.xshift/=2;
+	  p->up.yshift/=2;
+	}
+    }
+
+  /* If any of xshift or yshift is non-zero, the other should be too!
+     Note that conditional operators return 1 if true and 0 if false,
+     so if one is non-zero while the other is zero, then sum will be
+     1. Otherwise the sum will either be 0 or 2.*/
+  sum = (p->up.xshift!=0) + (p->up.yshift!=0);
+  if(sum==1)
+    error(EXIT_FAILURE, 0, "At least one of `--xshift` (`-X`) or "
+	  "`--yshift` (`-Y`) are zero! ");
+
+
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/***************       Preparations         *******************/
+/**************************************************************/
+void
+preparearrays(struct mkprofparams *p)
+{
+  double *cat=p->cat;
+  size_t i, cs1=p->cs1;
+  struct uiparams *up=&p->up;
+
+  /* Allocate space for the log file: */
+  p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
+  if(p->log==NULL)
+    error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
+	  p->cs0*LOGNUMCOLS*sizeof *p->log);
+
+  /* Correct the X and Y positions and set the truncation radius in
+     units of pixels. Note that in sanity check we checked that X and
+     Y shifts are either both zero or both non-zero. So we don't need
+     to check for y shift*/
+  if(up->xshift || up->tunitinp==0)
+    for(i=0;i<p->cs0;++i)
+      {
+	cat[i*cs1+p->xcol]+=up->xshift;
+	cat[i*cs1+p->ycol]+=up->yshift;
+	if(up->tunitinp==0)
+	  cat[i*cs1+p->tcol]*=cat[i*cs1+p->rcol];
+      }
+
+  /* Correct the output image size based on the x and y shifts. Note
+     the difference between the FITS and C axises. */
+  p->s0+=2*up->yshift;
+  p->s1+=2*up->xshift;
+}
 
 
 
@@ -392,7 +527,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
      have a zero value for all elements. */
   cp->spack         = SPACK;
   cp->verb          = 1;
-  cp->numthreads    = 1;
+  cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
 
   /* Read the arguments. */
@@ -418,6 +553,9 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
      created by txttoarray. */
   sanitycheck(p);
   checkremovefile(TXTARRAYVVLOG, 0);
+
+  /* Prepare the necessary arrays: */
+  preparearrays(p);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)

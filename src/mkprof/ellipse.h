@@ -19,22 +19,11 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef MOCKGALS_H
-#define MOCKGALS_H
-
-
-struct mkonthread
-{
-  struct mkprofparams  *p;	/* Pointer to the main.h structure. */
-  size_t          *indexs;	/* Indexs to build on this thread.  */
-  pthread_barrier_t    *b;	/* Pthread barrier pointer.         */
-};
-
-
-
-
+#ifndef ELLIPSE_H
+#define ELLIPSE_H
 
 void
-mkprof(struct mkprofparams *p);
+encloseellipse(double a, double b, double theta_rad,
+	       size_t *x_w, size_t *y_w);
 
 #endif

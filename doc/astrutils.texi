@@ -45,7 +45,7 @@ Free Documentation License''.
 * ImageCrop: (astrutils)ImageCrop. Crop region(s) from image(s).
 * astrimgcrop: (astrutils)Invoking astrimgcrop. Options to ImageCrop.
 
-* MakeProfiles: (astrutils)MakeProfiles. Make mock profiles (galaxy, PSF, star...).
+* MakeProfiles: (astrutils)MakeProfiles. Make mock profiles.
 * astrmkprof: (astrutils)Invoking astrmkprof. Options to MakeProfiles.
 
 @end direntry
@@ -183,7 +183,7 @@ Version numbering
 
 New to GNU/Linux?
 
-* Commnand line user interface::  Introduction to the CLI.
+* Command line user interface::  Introduction to the CLI.
 * Suggested Distributions::     Suggested GNU/Linux distributions.
 
 Installation
@@ -193,6 +193,7 @@ Installation
 
 Requirements
 
+* GNU Scientific Library::      Installing GSL.
 * CFITSIO::                     Standard library for FITS I/O.
 * WCSLIB::                      Library for world coordinate systems.
 * libjpeg::                     Library for JPEG image manipulation.
@@ -314,13 +315,10 @@ Adding noise
 
 MakeProfiles
 
-* Invoking astrmockgals::       Input, options and output of MakeProfiles.
+* If convolving afterwards::    Considerations for convolving afterwards.
+* Profile total magnitude::     Definition of total profile magnitude.
+* Invoking astrmkprof::         Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
-
-Invoking MakeProfiles
-
-* MakeProfiles options::        MakeProfiles specific options.
-* MakeProfiles output::         Outputs of MakeProfiles.
 
 Developing
 
@@ -339,6 +337,7 @@ Version controlled source
 Program source
 
 * Coding conventions::          Conventions used for coding
+* Multithreaded programming::
 
 Future updates
 
@@ -402,10 +401,7 @@ founding basis of AstrUtils.
 Lets assume you have just downloaded the
 @file{astrutils-@value{VERSION}.tar.gz} in the @file{DOWLD}
 directory. Running the following commands will unpack, compile, check
-and install AstrUtils so you can use it anywhere in your system. Note
-lines starting with @command{$} should be run as a user and those with
-@command{#} as root. In either case, these two characters should not
-be typed in the command line (they should already be there!).
+and install AstrUtils so you can use it anywhere in your system.
 
 @example
 $ cd DOWLD
@@ -414,9 +410,7 @@ $ cd astrutils-@value{VERSION}
 $ ./configure
 $ make
 $ make check
-$ su
-# make install
-# exit
+$ sudo make install
 $ cd ../
 $ rm -rf astrutils-@value{VERSION} astrutils-@value{VERSION}.tar.gz
 @end example
@@ -425,14 +419,18 @@ $ rm -rf astrutils-@value{VERSION} astrutils-@value{VERSION}.tar.gz
 If @command{$ ./configure} complains about a requirement, see
 @ref{Requirements}. After running @command{$ make check}, a few tests
 will be done on the built product. They shouldn't fail, if they do
-please file a bug report. When you get successful results for the
-tests, you are ready to install. You can also make lots of
-customizations (for example installing when you don't have root
-access), see @ref{Configuring}.
+please file a bug report. You can also make lots of customizations,
+for example installing when you don't have root access, only a subset
+of the utilities or modifying their names, see @ref{Configuring}.
 
-The commands above will delete the source code after installing the
-programs and the documentation. In case you want to study the code, we
-recommend getting the source code with revision history, see
+In this manual we have tried to explain concepts thoroughly for a new
+GNU/Linux user or astronomy data analyzer. In case you are already
+familiar with both, you just have to check the ``Invoking
+ProgramName'' section for the program you want to use by running
+@command{info astrprogname} on the command line. The commands above
+will delete the source code after installing the programs,
+configuration files and documentation. In case you want to study the
+code, we recommend getting the version controlled source code, see
 @ref{Version controlled source}.
 
 @node Science and software, Why C, Quick start, Introduction
@@ -828,11 +826,11 @@ GNU/Linux at least! If this is also the case for you, we have a few
 suggestions here.
 
 @menu
-* Commnand line user interface::  Introduction to the CLI.
+* Command line user interface::  Introduction to the CLI.
 * Suggested Distributions::     Suggested GNU/Linux distributions.
 @end menu
 
-@node Commnand line user interface, Suggested Distributions, New to GNU/Linux?, New to GNU/Linux?
+@node Command line user interface, Suggested Distributions, New to GNU/Linux?, New to GNU/Linux?
 @subsection Command line user interface
 Although with GNOME 3@footnote{@url{http://www.gnome.org/}}, most
 GNU/Linux based operating systems now have a very advanced and useful
@@ -842,7 +840,9 @@ user will be on the command line user interface (CLI) or in the
 contrary to what you might have experienced in proprietry operating
 systems and adapting to it might not be easy. Since the GUI was
 created long after the command line, some wrongly consider it
-obsolete.
+obsolete. Both interfaces are very useful for different tasks and
+should not be regarded as rivals, here we will outline how the CLI can
+be useful in scientific programs.
 
 You can think of the GUI as a veneer over the CLI to facilitate a
 small subset of all the possible CLI operations. Each click you do on
@@ -854,10 +854,12 @@ hard to come by for every program, so the GUI operations are always a
 subset of the internal CLI commands. For programs that are only made
 for the GUI, this results in not including lots of potentially useful
 operations. It also reasults in ``interface design'' to be a crutially
-important part of any GUI program.
+important part of any GUI program. Scientists don't usually have
+enough resources to hire a graphical designer, also the complexity of
+the GUI code is far more than CLI code.
 
 For those operations with a GUI, one action on the GUI might be more
-efficient.However, if you have to repeat that same action more than
+efficient. However, if you have to repeat that same action more than
 once, it will soon become very frustrating and prone to errors. Unless
 the designers of a particular program decided to design such a system
 for a particular GUI action, there is no general way to run everything
@@ -883,14 +885,28 @@ any program you are using. Once you have understood the concepts and
 the general operation, there are more easier ways to remember a
 particular option, see @ref{Getting help}.
 
-For an entertaining conclusion, let us finish nice quote from Master
-Foo@footnote{@url{http://catb.org/esr/writings/unix-koans/}}: ``There
-is more Unix-nature in one line of shell script than there is in ten
-thousand lines of C''. Also see Master Foo's discource with the GUI
-programmer@footnote{@url{http://catb.org/esr/writings/unix-koans/gui-programmer.html}}.
+To experience the command line in its full glory and not in the GUI
+terminal emulator, press the following keys together:
+@key{CTRL+ALT+F4}@footnote{Instead of @key{F4}, you can use any of the
+keys from @key{F2} to @key{F6} for different virtual consoles. You can
+also run a separate GUI from within this console.} to access the
+virtual console. To return back to your GUI, press the same keys above
+replacing @key{F4} with @key{F1}. In the virtual console, the GUI,
+with all its distracting colors and information, is gone. Enabling you
+to focus more accurately on your CLI work. For operations that use a
+lot of your system's resources (processing a large number of large
+astronomical images for example), the virtual console is the place to
+run them. This is because the GUI is not competing with your
+processing for your system's RAM and CPU.
+
+Since it uses far less system resources, the CLI is also very
+convenient for remote access to your computer. Using secure shell
+(SSH) you can login securely to your system (similar to the virtual
+console) from anywhere even if the connection speeds are slow. There
+are apps for smartphones and tablets which allow you to do this.
 
 
-@node Suggested Distributions,  , Commnand line user interface, New to GNU/Linux?
+@node Suggested Distributions,  , Command line user interface, New to GNU/Linux?
 @subsection Suggested distributions
 The Wikipedia pages on ``Linux distribution'' and ``GNU'' and
 ``Linux'' will provide you with a wealth of information. In general,
@@ -934,24 +950,30 @@ configuring/modifying each package to fit their desired combination
 and more time on informing you instead, enabling you to build your
 dream machine.
 
-After all, as astronomers, how can we claim to be fighting ignorance
-in our understanding of the universe when we surrender to ignorance
-regarding the tool that does all our processing (the operating
-system)?  Just imagine if Galileo did not have the technical knowledge
-to build a telescope. Before he actually saw the moons of Jupiter, the
-mountains or the Moon or the crescent of Venus, he was an
-anti-copernican and was ``evasive'' to kepler@footnote{Galileo
-G. (Translated by Maurice A. Finocchiaro), Hackett publishing company,
-first edition, 2008.}. Science is not independent of its tools.
+As astronomers (or scientists in general), how can we claim to be
+fighting ignorance in our understanding of the universe when we
+surrender to ignorance regarding the tool that does all our processing
+(the operating system)? Just imagine if Galileo did not have the
+technical knowledge to build a telescope. Astronomical objects could
+not be seen with the Dutch military design of the telescope. Before he
+actually saw the moons of Jupiter, the mountains or the Moon or the
+crescent of Venus, he was an anti-copernican and was ``evasive'' to
+kepler@footnote{Galileo G. (Translated by Maurice A. Finocchiaro),
+Hackett publishing company, first edition, 2008.}.
+
+If Galileo had not got his hands dirty on the technical aspect of
+designing the correct optical system to view astronomical objects, he
+could never make the contributions he made to science in general and
+astronomy in particular. Science is not independent of its tools.
 
 Today we have a wealth of raw telescope images ready (mostly for free)
 at the finger tips of anyone who is interested with a fast enough
-internet connection. The only thing lacking is new ways to analyze
-them and dig out the treasure that has laid hidden in them to existing
-methods and techniques. Therefore this investment, to atleast learn to
-build your system your self instead of ignorantly using what others
-have prepared for you, is only the first step for any aspiring
-critical scientist.
+internet connection to download them. The only thing lacking is new
+ways to analyze them and dig out the treasure that is lying hidden in
+them to existing methods and techniques. Therefore this investment, to
+atleast learn to build your operating system and learn to use it most
+efficiently, is only the first step for any aspiring critical
+scientist.
 
 
 
@@ -1021,6 +1043,7 @@ your own particular options.
 
 
 @menu
+* GNU Scientific Library::      Installing GSL.
 * CFITSIO::                     Standard library for FITS I/O.
 * WCSLIB::                      Library for world coordinate systems.
 * libjpeg::                     Library for JPEG image manipulation.
@@ -1028,7 +1051,25 @@ your own particular options.
 * SAO ds9::                     SAO ds9 for viewing FITS images.
 @end menu
 
-@node CFITSIO, WCSLIB, Requirements, Requirements
+@node GNU Scientific Library, CFITSIO, Requirements, Requirements
+@subsection GNU Scientific library
+
+The GNU Scientific library is probably already present in your
+distribution's package management system. To install it from source,
+you can run the following commands after you have
+downloaded@footnote{@url{http://www.gnu.org/software/gsl/}}
+@file{gsl-X.X.tar.gz}:
+
+@example
+$ tar -zxvf gsl-X.X.tar.gz
+$ cd gsl-X.X
+$ ./configure
+$ make
+$ make check
+$ sudo make install
+@end example
+
+@node CFITSIO, WCSLIB, GNU Scientific Library, Requirements
 @subsection CFITSIO
 
 @cindex CFITSIO
@@ -1069,8 +1110,7 @@ $ tar -vxzf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
-$ su
-# make install
+$ sudo make install
 @end example
 
 
@@ -1107,8 +1147,7 @@ $ cd wcslib-x.xx
 $ ./configure --without-pgplot
 $ gmake
 $ gmake check
-$ su
-# gmake install
+$ sudo gmake install
 @end example
 
 
@@ -1289,8 +1328,7 @@ $ tar -vxzf fftw-X.X.X.tar.gz
 $ cd fftw.X.X.X
 $ ./configure --enable-threads --enable-float
 $ make
-$ su
-# make install
+$ sudo make install
 @end example
 
 
@@ -1300,28 +1338,26 @@ $ su
 @node SAO ds9,  , FFTW, Requirements
 @subsection SAO ds9
 
-SAO ds9@footnote{@url{http://ds9.si.edu/, SAOImage ds9}} is not a
-requirement of AstrUtils, it is a FITS image viewer. So to check your
-inputs and outputs, it is one of the best options. Like the other
-packages, it might already be available in your distribution's
-repositories. It is already pre-compiled in the download section of
-its webpage. Once you download it you can unpack and intall (move it
-to a system recognized directory) with the following commands
-(@code{x.x.x} is the version number):
+SAO ds9@footnote{@url{http://ds9.si.edu/}} is not a requirement of
+AstrUtils, it is a FITS image viewer. So to check your inputs and
+outputs, it is one of the best options. Like the other packages, it
+might already be available in your distribution's repositories. It is
+already pre-compiled in the download section of its webpage. Once you
+download it you can unpack and install (move it to a system recognized
+directory) with the following commands (@code{x.x.x} is the version
+number):
 
 @example
 $ tar -zxvf ds9.linux64.x.x.x.tar.gz
-$ su
-# mv ds9 /usr/local/bin
+$ sudo mv ds9 /usr/local/bin
 @end example
 
 Once you run it, there might be a complaint about the Xss library,
 which you can find in your distribution package management system. You
 might also get an @command{XPA} related error. In this case, you have
-to add the following line to your @file{~/.bashrc} or
-@file{~/.profile} file if you are using SAO ds9 on the command line or
-from the graphic user interface (you will have to log out and back in
-again for the latter):
+to add the following line to your @file{~/.bashrc} and
+@file{~/.profile} file (you will have to log out and back in again for
+the latter):
 
 @example
 export XPA_METHOD=local
@@ -2314,12 +2350,14 @@ characters (most commonly for the @option{hdu} option), then double
 quotes can be used to specify the full value.
 
 Any text after the first two words (separated by the above delimiters)
-in a line is ignored. If an option is not recognized in the
-configuration file, the name of the file and unrecognized option will
-be reported and the program will abort.  If a parameter is repeated
-more more than once in the configuration files and it is not set on
-the command line, then only the first value will be used, the rest
-will be ignored.
+in a line is ignored. If it is an option without a value in the
+@option{--help} output (on/off option), then the value should be
+@option{1} if it is to be ``on'' and @option{0} otherwise. If an
+option is not recognized in the configuration file, the name of the
+file and unrecognized option will be reported and the program will
+abort.  If a parameter is repeated more more than once in the
+configuration files and it is not set on the command line, then only
+the first value will be used, the rest will be ignored.
 
 You can build any of the directories and the configuration files your
 self using any text editor.  However, it is recommended to use the
@@ -3992,7 +4030,7 @@ flux after adding noise is a radom value taken from a Gaussian
 distribution with the following mean (@mymath{\mu}) and standard
 deviation (@mymath{\sigma}):
 
-@dispmath{\mu=B+I_{nn} \quad \sigma=\sqrt{B+I_{nn}}}
+@dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
 
 @node Instrumental noise, Final noised pixel value, Photon counting noise, Adding noise
 @subsubsection Instrumental noise
@@ -4007,7 +4045,7 @@ combined standard deviation of all these sources of noise. If we only
 have this source of noise, the noised pixel value would be a random
 value chosen from a Gaussian distribution with
 
-@dispmath{\mu=I_{nn} \quad \sigma=\sqrt{C^2+I_{nn}}}
+@dispmath{\mu=I_{nn}, \quad \sigma=\sqrt{C^2+I_{nn}}}
 
 
 @node Final noised pixel value,  , Instrumental noise, Adding noise
@@ -4016,77 +4054,125 @@ Depending on the values you specify for @mymath{B} and @mymath{C} from
 the above, the final noised value for each pixel is a random value
 chosen from a Gaussian distribution with
 
-@dispmath{\mu=B+I_{nn} \quad \sigma=\sqrt{C^2+B+I_{nn}}}
+@dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{C^2+B+I_{nn}}}
+
+
+
+
 
 @node MakeProfiles,  , Modeling basics, Modeling and fittings
 @section MakeProfiles
 
 MakeProfiles will create mock astronomical profiles from a catalog,
-either individually or together in one output image. Making mock
-galaxies is a very impotant step both in data analysis and in model
-fitting. The importance of simulations in the latter is obvious.
+either individually or together in one output image. In data analysis,
+making a mock image can act like a calibration tool, through which you
+can test how successfully your detection technique is able to detect a
+known set of objects. There are commonly two aspects to detecting: the
+detection of the fainter parts of bright objects (which in the case of
+galaxies fade into the noise very slowly) or the complete detection of
+an over-all faint object. Making mock galaxies is the most accurate
+(and idealistic) way these two aspects of a detection algorithm can be
+tested. You also need mock profiles in fitting known functional
+profiles with observations.
 
-In data analysis, making a mock image can act like a calibration tool,
-through which you can test how successfully your detection technique
-is able to detect a known set of objects. There are commonly two
-aspects to detecting: the detection of the fainter parts of bright
-objects (which in the case of galaxies fade into the noise very
-slowly) or the complete detection of an over-all faint object. Making
-mock galaxies is the most accurate (and idealistic) way these two
-aspects of a detection algorithm can be tested. You also need mock
-profiles in fitting known functional profiles with observations.
-
-MakeProfiles was built for extra galactic studies, so currently the
-only astronomical objects it can produce are stars and galaxies. We
-welcome the simulation of any other astronomical object.
+MakeProfiles was initially built for extra galactic studies, so
+currently the only astronomical objects it can produce are stars and
+galaxies. We welcome the simulation of any other astronomical object.
 
 
 @menu
-* Invoking astrmockgals::       Input, options and output of MakeProfiles.
+* If convolving afterwards::    Considerations for convolving afterwards.
+* Profile total magnitude::     Definition of total profile magnitude.
+* Invoking astrmkprof::         Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
 @end menu
 
 
 
+@node If convolving afterwards, Profile total magnitude, MakeProfiles, MakeProfiles
+@subsection If convolving afterwards
+In case you want to convolve the image later with a given point spread
+function, make sure to use a larger image size. After convolution, the
+profiles become larger and a profile that is normally completely
+outside of the image might fall within it. For example on the first
+axis, if you want your final (convolved) image to be @mymath{m} pixels
+and your PSF is @mymath{2n+1} pixels wide, then when calling
+MockProfiles, set @option{--naxis1} to @mymath{m+2n}, not @mymath{m}.
+
+You will also have to shift all the positions on the first axis by
+@mymath{n} pixels to the positive in the example above. After
+convolution, you can crop the outer @mymath{n} pixels with the section
+crop box specification of ImageCrop: @option{--section=n:*-n,n:*-n}
+assuming your PSF is a square, see @ref{Crop section syntax}. This
+will also remove all discrete Fourier transform artifacts (blurred
+sides) from the final image. To facilitate this shift, MakeProfiles
+has the options @option{--xshift}, @option{--yshift} and
+@option{--prepforconv}, see @ref{Invoking astrmkprof}.
 
 
+@node Profile total magnitude, Invoking astrmkprof, If convolving afterwards, MakeProfiles
+@subsection Profile total magnitude
+It is customary to use the 2D integration to infinity of a profile as
+the total magnitude of a profile. However, in MakeProfile, we do not
+follow this idealistic approach and apply a more realistic method to
+find the total magnitude: the sum of all the pixels belonging to a
+profile within its truncation radius. Note that if the truncation
+radius is not large enough, this can be significantly different from
+the total integrated light to infinity.
 
-@node Invoking astrmockgals, MakeProfiles future updates, MakeProfiles, MakeProfiles
+An integration to infinity is not a realistic condition because no
+galaxy extends indefinitely (important for high S@'ersic index
+profiles), pixelation can also cause a significant difference between
+the actual total pixel sum value of the profile and that of
+integration to infinity, especially in small and high S@'ersic index
+profiles. To be safe, you can specify a large enough truncation radius
+for such compact high S@'ersic index profiles.
+
+If oversampling is used then the total flux is calculated using the
+over-sampled image, see @ref{Oversampling} which is much more
+accurate. We first build the profile in an array completely bounding
+it with a normalization constant of unity. Taking @mymath{F} to be the
+desired total flux and @mymath{S} to be the sum of the pixels in the
+created profile, every pixel is then multiplied by @mymath{F/S} so the
+sum is exactly @mymath{F}.
+
+If the @option{--individual} option is called, this same array is
+written to a FITS file. If not, only the overlaping pixels of this
+array and the output image are kept and added to the output array.
+
+The total brightness of the object is not specified in units of flux,
+but in magnitudes. The magnitude scale is a relative measure of
+brightness. When a reference object has magnitude @mymath{m_r} with
+flux @mymath{F_r}, then the magnitude of an object with a flux of
+@mymath{F} is calculated by:
+
+@dispmath{m-m_r=-2.5\log_{10} \left( F \over F_r \right)}
+
+We define the ``zeropoint'' magnitude (@mymath{m_z}) as the magnitude
+in which @mymath{F_r=1}. So when you specify the magnitude of your
+desired object in the @option{--mcol} of your input catalog, then it
+will have a total flux of:
+
+@dispmath{\log_{10}F={m_z-m \over 2.5} \rightarrow
+          F=10^{m_z-m \over 2.5}}
+
+
+@node Invoking astrmkprof, MakeProfiles future updates, Profile total magnitude, MakeProfiles
 @subsection Invoking MakeProfiles
 
 The general template to run MakeProfiles is:
 
 @example
-astrmockgals [OPTION ...] [PSFimg] Catalog
+astrmkprof [OPTION ...] Catalog
 @end example
 
 @noindent
 The catalog (which stores the parameters for each mock profile) is the
-mandatory argument if mockgals processing is to be started. The input
-catalog has to be a text file formatted in a table with columns
-separated by space, tab or comma (@key{,}) characters. See @ref{Common
-behavior} for a complete explanation of some common behaviour and
-options in all AstrUtils programs including MakeProfiles.
-
-If an astronomical image file is given as an argument then it will be
-interpreted as an input PSF and all PSF functional paramters will be
-ignored. The following operations will be internally done on the image
-if they are needed.
-
-@itemize
-@item
-No matter what its initial type (@code{BITPIX} in the header) is, the
-input PSF will be internally converted to a @code{float}
-(@code{BITPIX=-32}) array.
-
-@item
-Any blank pixels in the PSF image will be set to zero, see @ref{Blank
-pixels}.
-
-@item
-If the sum of the pixels in this image is not unity (1), all the
-pixels will be multiplied by the inverse of the sum, see @ref{PSF}.
-@end itemize
+mandatory argument. The input catalog has to be a text file formatted
+in a table with columns separated by space, tab or comma (@key{,})
+characters. See @ref{Common behavior} for a complete explanation of
+some common behaviour and options in all AstrUtils programs including
+MakeProfiles.
 
 The value for the profile center in the catalog (in the
 @option{--xcol} and @option{--ycol} columns) can be a floating point
@@ -4095,58 +4181,16 @@ that pixel positions in the FITS standard start from 1 and an integer
 is the pixel center. So a 2D image actually starts from the position
 (0.5, 0.5). In MakeProfiles profile centers do not have to be in the
 image.  Even if only one pixel of the profile within the truncation
-radius (after convolution) is within the output image, that pixel is
-included in the image. Profiles that are completely out of the image
-will not be created. You can use the output log file to see which
-profiles were within the image.
-
-
-
-@menu
-* MakeProfiles options::        MakeProfiles specific options.
-* MakeProfiles output::         Outputs of MakeProfiles.
-@end menu
-
-@node MakeProfiles options, MakeProfiles output, Invoking astrmockgals, Invoking astrmockgals
-@subsubsection MakeProfiles options
+radius is within the output image, that pixel is included in the
+image. Profiles that are completely out of the image will not be
+created. You can use the output log file to see which profiles were
+within the image.
 
 The common options that are shared by AstrUtils progarms, are fully
-explained in @ref{Common options} and are not repeated here. The
-@option{--hdu} option is here interpreted as the hdu number or name of
-the input PSF image file (if given). The options can be classified
-into the following categories: PSF, output, profiles, catalog and
-operating mode. Below we will review each one.
-
-@noindent
-PSF:
-@table @option
-@item -f
-@itemx --psffunction
-(@option{=STR}) The function to be used for the PSF. Currently there
-are two possible values: @command{moffat} or @command{gaussian}, for
-more details on their functional form, see @ref{PSF}.
-
-@item -w
-@itemx --fwhm
-(@option{=FLT}) The FWHM of the point spread function. The units of
-the specified value are in pixels. For the Gaussian functional form,
-this is the only parameter to specify the function.
-
-@item -B
-@itemx --moffatbeta
-(@option{=FLT}) In the Moffat function, besides the FWHM, we also need
-a @mymath{\beta} value which can be specified with this option.
-
-@item -r
-@itemx --psftrunc
-(@option{=FLT}) The truncation radius of the PSF. Ideally we would
-want the PSF to extend to infinity, but that is not possible! So we
-have to specify a truncation radius. Any pixel that is farther than
-this distance to the PSF center is not filled in the PSF array (given
-a value of 0.0).
-
-@end table
-
+explained in @ref{Common options} and are not repeated here. Since
+there are no image inputs, the@option{--hdu} option is ignored. The
+options can be classified into the following categories: Output,
+Profiles, Catalog. Below we will review each one.
 
 @noindent
 Output:
@@ -4163,51 +4207,76 @@ first FITS axis (horizontal when viewed in SAO ds9).
 (@option{=INT}) The number of pixels in the output image along the
 second FITS axis (vertical when viewed in SAO ds9).
 
-@item -O
-@itemx --noconv
-Save the created image prior to convolution or adding noise in a FITS
-image extension of the output FITS file. By default only the final
-(convolved and noised) image is output.
+@item -s
+@itemx --oversample
+(@option{=INT}) The scale to over-sample the profiles, see
+@ref{Oversampling}.
 
-@item -C
-@itemx --conv
-Save the created image prior to adding noise and after convolution in
-a FITS image extension of the output FITS file. By default only the
-final (convolved and noised) image is output.
+@item --mginimg
+By default, if Moffat or Gaussian profiles are in the catalog, they
+are assumed to be a PSF and created separately. If this option is
+called, these two profiles are built into the final image similar to
+point sources and galaxies.
+
+@item -i
+@itemx --individual
+If this option is called, the profiles are not put into one output
+image, instead, each profile is created in a separate FITS image named
+with the row number of the profile in the catalog. In this case, only
+the subpixel position of the profile center is important. The output
+will have an odd number of pixels.
+
+In case the shift paramters are set with @option{--xshift},
+@option{--yshift} or @option{--prepforconv} this image is also
+enlarged with the same parameters. This is useful for individual
+modeling in the fitting procedures.
 
 @end table
 
 @noindent
-Profiles and noise:
+Profiles:
 
 @table @option
 
-@item -l
+@item -t
 @itemx --tolerance
 (@option{=FLT}) The tolerance to switch to a less accurate profile
 sampling method for an extended (not a point source) profile, see
 @ref{Sampling from a function}. This same tolerance is used to
 construct the PSF if it is to be created internally.
 
-@item -t
-@itemx --truncation
-(@option{=FLT}) The truncation radius of the profiles in units of the
-profile effective radius. Any pixel whose center is more distant than
-this distance from the profile center will not be given a falue from
-this profile.
+@item -p
+@itemx --tunitinp
+The truncation column of the catalog is in units of pixels. By
+default, the truncation column is considered to be in units of the
+radial paramters of the profile (@option{--rcol}). Read it as
+``t-unit-in-p'' for ``truncation unit in pixels''.
 
-@item -b
-@itemx --background
-(@option{=FLT}) The background of the image in units of counts. This
-specifies the amplitude of noise in regions of the image where there
-is no profiles and also adds with the un-noised pixel to specify the
-error (noise) on that pixel, see @ref{Adding noise}.
+@item -X
+@itemx --xshift
+(@option{=INT}) Shift all the profiles and enlarge the image along the
+first FITS axis, @mymath{n} in @ref{If convolving afterwards}. This is
+useful when you want to convolve with an externally created PSF
+afterwards. Don't forget to oversample the external PSF to the same
+scale used for creating the mock images.
+
+@item -Y
+@itemx --yshift
+(@option{=INT}) Similar to @option{--xshift} for the the second FITS
+axis.
+
+@item -c
+@itemx --prepforconv
+Shift all the profiles and enlarge the image based on half the width
+of the first Moffat or Gaussian profile in the catalog, considering
+any possible oversampling see @ref{If convolving
+afterwards}. @option{--prepforconv} is only checked and possibly
+activated if @option{--xshift} and @option{--yshift} are both zero
+(after reading the command line and configuration files).
 
 @item -z
 @itemx --zeropoint
-(@option{=FLT}) The zeropoint magnitude of the image. Added with the
-magnitude of the profile that is given in the catalog, this value is
-used to find the total flux that the (truncated) profile should have.
+(@option{=FLT}) The zeropoint magnitude of the image.
 
 @end table
 
@@ -4218,9 +4287,18 @@ column number, where counting starts from zero.
 @table @option
 
 @item --fcol
-(@option{=INT}) The functional form of the profile, the two modes for
-this are currently 0 for S@'eric profile and 3 for a point source
-(star).
+(@option{=INT}) The functional form of the profile:
+
+@itemize
+@item
+0: S@'ersic.
+@item
+1: Moffat.
+@item
+2: Gaussian.
+@item
+3: Point source (a star).
+@end itemize
 
 @item --xcol
 (@option{=INT}) The center of the profiles along the first FITS axis
@@ -4231,11 +4309,12 @@ this are currently 0 for S@'eric profile and 3 for a point source
 (vertical when viewed in SAO ds9).
 
 @item --rcol
-(@option{=INT}) The effective radius of the profiles if not a point
-source in units of pixels.
+(@option{=INT}) The radius parameter of the profiles. Effective radius
+(@mymath{r_e}) if S@'ersic, FWHM if Moffat or Gaussian.
 
 @item --ncol
-(@option{=INT}) The S@'ersic index of the profiles.
+(@option{=INT}) The S@'ersic index (@mymath{n}) or Moffat
+@mymath{\beta}.
 
 @item --pcol
 (@option{=INT}) The position angle of the profiles relative to the
@@ -4246,32 +4325,20 @@ first FITS axis (horizontal when viewed in SAO ds9).
 the major axis).
 
 @item --mcol
-(@option{=INT}) The total magniude of the profiles.
+(@option{=INT}) The total pixelated magniude of the profile within the
+truncation radius, see @ref{Profile total magnitude}.
 
+@item --tcol
+(@option{=INT}) The truncation radius of this profile. By default it
+is in units of the radial parameter of the profile (the value in the
+@option{--rcol} of the catalog). If @option{--tunitinp} is given, this
+value is interpretted
 
-@end table
-
-@noindent
-Operating modes:
-
-@table @option
-@item -g
-@itemx --onlypsf
-Only make the PSF in a file and abort. In this mode a catalog argument
-is also not mandatory. The PSF will be either named @file{PSF.fits} or
-what ever name you specify with the @option{--output} option.
 @end table
 
 
 
-
-
-
-@node MakeProfiles output,  , MakeProfiles options, Invoking astrmockgals
-@subsubsection MakeProfiles output
-
-
-@node MakeProfiles future updates,  , Invoking astrmockgals, MakeProfiles
+@node MakeProfiles future updates,  , Invoking astrmkprof, MakeProfiles
 @subsection MakeProfiles future updates
 
 @itemize
@@ -4286,15 +4353,6 @@ Currently MakeProfiles makes mock profiles on a 2D surface, but due to the
 particular way it builds the mock profiles, the infra-structure is
 there to make the profiles on a 3D volume and find a real projection
 of a real 3D object. This is also a future upgrade we plan to apply.
-
-@item
-Allow other sources of noise to also participate, currently it is only
-Poisson noise.
-
-@item
-Allow for a gradient in the background value over the image. Maybe
-using an input image which specifies the background value for each
-pixel.
 
 
 @end itemize
@@ -4412,7 +4470,7 @@ given.
 
 The source code that is publicly distributed does not contain the
 revision history, it is only the final snapshot of a stable release,
-ready to be configured and built. To be able to develop successfully
+ready to be configured and built. To be able to develop successfully,
 the revision history of the code can be very useful, also some updates
 that are not yet released might be in it.
 
@@ -4427,13 +4485,14 @@ $ git clone git://git.sv.gnu.org/astrutils
 @end example
 
 @noindent
-This version of the source code, lacks the files that are
-automatically built (and included in the distributed
+This version of the source code lacks the files that are automatically
+built (and included in the distributed
 @file{astrutils-@value{VERSION}.tar.gz}) for configuration and
 building. To create those files you have to run the following command
 in the cloned directory which will generate those automatic
 files. @command{autoreconf} is part of GNU Autoconf and also requires
-GNU Automake to create all the necessary files, see @ref{Building}.
+GNU Automake and GNU Texinfo to create all the necessary files, see
+@ref{Building}.
 
 @example
 $ autoreconf --install
@@ -4723,9 +4782,10 @@ with an @code{int} in the examples above.
 
 @menu
 * Coding conventions::          Conventions used for coding
+* Multithreaded programming::
 @end menu
 
-@node Coding conventions,  , Program source, Program source
+@node Coding conventions, Multithreaded programming, Program source, Program source
 @subsection Coding conventions
 
 Generally we try our best to follow the GNU coding standards, besides
@@ -4754,6 +4814,37 @@ in the form:
 @end example
 
 @end itemize
+
+
+@node Multithreaded programming,  , Coding conventions, Program source
+@subsection Multithreaded programming
+
+Most of the programs in AstrUtils utilize multi-threaded programming
+for the CPU intensive processing steps. This can potentially lead to a
+significant decrease in the running time of a program, see @ref{A note
+on threads}. In terms of reading the code, you don't need to know
+anything about multithreaded programming. You can simply follow the
+case where only one thread is to be used. In these cases, threads are
+not used and can be completely ignored.
+
+At the time K&R's book was written, using threads was not common. We
+use POSIX threads for multithreaded programming, defined in the
+@file{pthread.h} system wide header. There are various resources for
+learning to use POSIX threads, we recommend the excellent tutorial
+from Lawrence Livermore National
+Laboratory@footnote{@url{https://computing.llnl.gov/tutorials/pthreads/}}.
+The book ``Advanced programming in the unix environment'', by Richard
+Stevens and Stephen Rago, Addison-Wesley, 2013 (Third edition) also
+has two chapters explaining the POSIX thread constructs which can be
+very helpful.
+
+An alternative was to use OpenMP, but POSIX threads are low level,
+allowing much more control, while being easier to understand, see
+@ref{Why C}. All the situations we use threads in are completely
+independent with no need of coordination between the threads, also
+known as ``embarrassingly parallel'' problems. This is the simplest
+way to use threads, see the LLNL turorial. Therefore, there is no need
+for the higher level capabilities of OpenMP.
 
 
 @node Test scripts, Building, Program source, Developing

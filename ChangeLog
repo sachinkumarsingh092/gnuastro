@@ -1,3 +1,22 @@
+2015-01-13  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/mkprof/ui.c (preparearrays): Added.
+	(setparams): numthreads initialized to configured value.
+
+	* src/mkprof/mkprof.c (build): Added.
+	(write): Added.
+	(mkprof): Parallel jobs configured.
+
+	* src/mkprof/ellipse.c: Added
+
+	* src/mkprof/args.h (argp_option): Changed psfprofsinimg to mginimg.
+
+	* src/imgcrop/imgcrop.c (imgcrop): Used attrbarrierinit.
+
+	* lib/astrthreads.c (attrbarrierinit): Added.
+
+	* doc/astrutils.texi: Updated.
+
 2015-01-12  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/imgcrop/imgcrop.c: Using pthread_barrier_wait for

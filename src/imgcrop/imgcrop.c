@@ -246,15 +246,14 @@ wcsmodecrop(void *inparam)
 void
 imgcrop(struct imgcropparams *p)
 {
-  /* Parameters for parallel processing: */
   int err;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct cropparams *crp;
   size_t nt=p->cp.numthreads;
+  size_t i, *indexs, thrdcols;
   void *(*modefunction)(void *);
-  size_t i, *indexs, thrdcols, numactive;
 
 
   /* Set the function to run: */
@@ -274,7 +273,7 @@ imgcrop(struct imgcropparams *p)
   crp=malloc(nt*sizeof *crp);
   if(crp==NULL)
     error(EXIT_FAILURE, errno,
-	  "%lu bytes in imgmodecatalog for crp", nt*sizeof *crp);
+	  "%lu bytes in imgcrop (imgcrop.c) for crp", nt*sizeof *crp);
 
 
   /* Get the length of the output, no reasonable integer can have more
@@ -284,7 +283,7 @@ imgcrop(struct imgcropparams *p)
 
 
   /* Distribute the indexs into the threads (this is needed even if we
-     only have one thread): */
+     only have one object where p->cs0 is not defined): */
   if(p->up.catset)
     distinthreads(p->cs0, nt, &indexs, &thrdcols);
   else
@@ -302,22 +301,16 @@ imgcrop(struct imgcropparams *p)
     }
   else
     {
-      /* Initialize thread attributes. Notice that the main thread
-	 calling all the other threads is also a thread that has to
-	 wait behind the barrier, so the counter is nt+1. */
-      err=pthread_attr_init(&attr);
-      if(err) error(EXIT_FAILURE, 0, "Thread attr not initialized.");
-      err=pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-      if(err) error(EXIT_FAILURE, 0, "Thread attr not detached.");
-      err=pthread_barrier_init(&b, NULL, nt+1);
-      if(err) error(EXIT_FAILURE, 0, "Thread barrier not initialized.");
+      /* Initialize the attributes. Note that this running thread
+	 (that spinns off the nt threads) is also a thread, so the
+	 number the barrier should reach nt+1 to continue. */
+      attrbarrierinit(&attr, &b, nt+1);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
 	if(indexs[i*thrdcols]!=NONTHRDINDEX)
 	  {
 	    crp[i].p=p;
-	    ++numactive;
 	    crp[i].b=&b;
 	    crp[i].outlen=crp[0].outlen;
 	    crp[i].indexs=&indexs[i*thrdcols];
@@ -326,10 +319,8 @@ imgcrop(struct imgcropparams *p)
 	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
 	  }
 
-      /* Wait for all threads to finish: */
+      /* Wait for all threads to finish and free the spaces. */
       pthread_barrier_wait(&b);
-
-      /* Free the initializations: */
       pthread_attr_destroy(&attr);
       pthread_barrier_destroy(&b);
     }

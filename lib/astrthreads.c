@@ -20,9 +20,10 @@ You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <error.h>
+#include <stdlib.h>
+#include <pthread.h>
 
 #include "astrthreads.h"
 
@@ -77,4 +78,22 @@ distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
     }
   exit(0);
   */
+}
+
+
+
+
+
+void
+attrbarrierinit(pthread_attr_t *attr, pthread_barrier_t *b,
+		size_t numthreads)
+{
+  int err;
+
+  err=pthread_attr_init(attr);
+  if(err) error(EXIT_FAILURE, 0, "Thread attr not initialized.");
+  err=pthread_attr_setdetachstate(attr, PTHREAD_CREATE_DETACHED);
+  if(err) error(EXIT_FAILURE, 0, "Thread attr not detached.");
+  err=pthread_barrier_init(b, NULL, numthreads);
+  if(err) error(EXIT_FAILURE, 0, "Thread barrier not initialized.");
 }
