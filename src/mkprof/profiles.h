@@ -19,11 +19,34 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef ELLIPSE_H
-#define ELLIPSE_H
+#ifndef PROFILES_H
+#define PROFILES_H
 
-void
-encloseellipse(double a, double b, double theta_rad,
-	       size_t *x_w, size_t *y_w);
+double
+Gaussian(struct mkonthread *mkp);
+
+double
+totgaussian(double q);
+
+double
+Moffat(struct mkonthread *mkp);
+
+double
+moffat_alpha(double fwhm, double beta);
+
+double
+totmoffat(double alpha, double beta, double q);
+
+double
+Sersic(struct mkonthread *mkp);
+
+double
+sersic_b(double n);
+
+double
+totsersic(double n, double re, double b, double q);
+
+double
+Point(struct mkonthread *mkp);
 
 #endif

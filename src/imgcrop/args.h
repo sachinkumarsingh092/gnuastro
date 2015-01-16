@@ -277,6 +277,9 @@ static struct argp_option options[] =
 static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
+  /* A temporary variable. */
+  size_t tmp;
+
   /* Save the arguments structure: */
   struct imgcropparams *p = state->input;
 
@@ -376,7 +379,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.ycset=1;		/* Using FITS standard, not C. */
       break;
     case 'a':
-      sizetlzero(arg, &p->iwidth, "iwidth", key, SPACK, NULL, 0);
+      sizetlzero(arg, &tmp, "iwidth", key, SPACK, NULL, 0);
+      p->iwidth[0]=p->iwidth[1]=tmp;
       p->up.iwidthset=1;
       break;
     case 'w':

@@ -1,5 +1,5 @@
 /*********************************************************************
-Functions for simple statistical analysis.
+Statistical functions.
 This is part of GNU Astronomy Utilities (AstrUtils) package.
 
 Copyright (C) 2013-2015 Mohammad Akhlaghi
@@ -19,13 +19,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef STATS_H
-#define STATS_H
-
-#define MINFD -1e30
-#define MAXFD 1e30
+#ifndef STATISTICS_H
+#define STATISTICS_H
 
 
+/****************************************************************
+ *****************    Mininum and Maximum    ********************
+ ****************************************************************/
 void
 floatmin(float *in, size_t size, float *min);
 
@@ -60,7 +60,9 @@ fmin_withindex(float *in, size_t size, float *min, size_t *index);
 
 
 
-
+/****************************************************************
+ *****************            Sum            ********************
+ ****************************************************************/
 float
 floatsum(float *in, size_t size);
 
@@ -71,12 +73,10 @@ float
 floatsummask(float *in, unsigned char *mask, size_t size, size_t *nsize);
 
 float
-floatsummaskl(float *in, long *mask,
-        size_t size, size_t *nsize);
+floatsummaskl(float *in, long *mask, size_t size, size_t *nsize);
 
 float
-floatsumsquaredmask(float *in, unsigned char *mask, size_t size,
-		    size_t *nsize);
+floatsumsquaredmask(float *in, unsigned char *mask, size_t size, size_t *nsize);
 
 float
 floatsumsquaredmaskl(float *in, long *mask, size_t size, size_t *nsize);
@@ -85,7 +85,10 @@ floatsumsquaredmaskl(float *in, long *mask, size_t size, size_t *nsize);
 
 
 
-
+/****************************************************************
+ *****************      Average and          ********************
+ ****************    Standard deviation      ********************
+ ****************************************************************/
 void
 fave(float *in, size_t size, float *ave, unsigned char *mask);
 
@@ -93,106 +96,21 @@ void
 favel(float *in, size_t size, float *ave, long *mask);
 
 void
-favestd(float *in, size_t size, float *ave, float *std,
-    unsigned char *mask);
+favestd(float *in, size_t size, float *ave, float *std, unsigned char *mask);
 
 void
-favestdl(float *in, size_t size, float *ave, float *std,
-    long *mask);
+favestdl(float *in, size_t size, float *ave, float *std, long *mask);
+
 void
 floatavestdmaskbyt0inregion(float *in, unsigned char *byt,
 			    unsigned char *mask, size_t startind,
 			    size_t s0, size_t s1, size_t is1,
 			    float *ave, float *std);
+
 void
 floatavestdmaskbyt0inregionsclip(float *in, unsigned char *byt,
 				 unsigned char *mask, size_t startind,
 				 size_t s0, size_t s1, size_t is1,
 				 size_t numback, float *ave, float *std);
-
-
-
-void
-setbins(float *sorted, size_t size, size_t numbins, float min,
-	float max, int binonzero, float quant, float **obins);
-
-void
-histogram(float *sorted, size_t size, float *bins, size_t numbins,
-	  int normhist, int maxhistone);
-
-void
-cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
-	     int normcfp);
-
-void
-savehist(float *sorted, size_t size, size_t numbins,
-	 char *filename, char *histname, size_t id);
-
-
-
-
-
-
-void
-removeoutliers_flatcdf(float *arr, size_t *outsize);
-
-
-
-
-
-
-int
-sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
-		   float sigma_multiple, float accuracy,
-		   float *outave, float *outmed, float *outstd);
-
-int
-sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
-		     float sigma_multiple, size_t numtimes,
-		     float *outave, float *outmed, float *outstd);
-
-
-
-
-
-
-
-
-
-
-
-
-size_t
-indexfromquantile(size_t size, float quant);
-
-void
-valuefromquantile(float *data, size_t size, float quant, float *quantflux,
-		  unsigned char *mask);
-
-void
-multivaluefromquantile(float *data, size_t size, float *quants,
-		       float *quantfluxs, size_t numquants,
-		       unsigned char *mask);
-
-void
-valuefromquantile_nocopy(float *data, size_t size, float quant,
-			 float *quantflux, unsigned char *mask);
-
-void
-valuefromquantile_sortednocopy(float *data, size_t size, float quant,
-			       float *quantflux, unsigned char *mask);
-
-void
-quantilefromvalue(float *data, size_t size, float *quant, float quantflux,
-		  unsigned char *mask);
-
-
-void
-quantilefromvalue_nocopy(float *data, size_t size, float *quant,
-			 float quantflux, unsigned char *mask);
-
-void
-quantilefromvalue_sorted(float *sorted, size_t size,
-			 float *quant, float quantflux);
 
 #endif

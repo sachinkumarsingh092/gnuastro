@@ -32,7 +32,11 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "checkset.h"
 #include "commonparams.h"
+#include "fixedstringmacros.h"
 
+/* These are separate in each package. */
+#include "main.h"
+#include "cite.h"
 
 
 
@@ -47,6 +51,8 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
    a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
+
+   Numbers: 1000
 
    You can use this above list to set short options for the different
    utilities.
@@ -91,7 +97,15 @@ static struct argp_option coptions[] =
       'N',
       "INT",
       0,
-      "Number of CPU threads (Not activated).",
+      "Number of CPU threads to use.",
+      -1
+    },
+    {
+      "cite",
+      1000,
+      0,
+      0,
+      "BibTeX citation for "SPACK_NAME".",
       -1
     },
 
@@ -189,6 +203,9 @@ cparse_opt(int key, char *arg, struct argp_state *state)
     case 'N':
       sizetlzero(arg, &cp->numthreads, "numthreads", key, cp->spack, NULL, 0);
       cp->numthreadsset=1;
+      break;
+    case 1000:
+      PRINTCITEABORT;
       break;
 
     /* Input/output: */

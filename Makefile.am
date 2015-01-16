@@ -53,7 +53,7 @@ dist_doc_DATA = README
 ##
 ## tests/imgcrop/randcat.txt: The random catalog that was created by
 ##   makerandomcat.py.
-EXTRA_DIST = include/commonargs.h include/commonparams.h	\
- include/fixedstringmacros.h doc/findversions.sh		\
- tests/imgcrop/makerandomcat.py tests/imgcrop/randcat.txt	\
+EXTRA_DIST = include/commonargs.h include/commonparams.h		\
+ include/fixedstringmacros.h include/neighbors.h doc/findversions.sh	\
+ tests/imgcrop/makerandomcat.py tests/imgcrop/randcat.txt		\
  tests/basicchecks.sh

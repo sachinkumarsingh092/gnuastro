@@ -17,7 +17,8 @@ AM_CFLAGS = -Wall -Ofast
 
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)/\" -I$(top_srcdir)/include
 
-AM_LDFLAGS = -lcfitsio -lwcs -pthread -lm -L$(top_builddir)/lib
+AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -pthread -lm	\
+-L$(top_builddir)/lib
 
 
 
@@ -27,10 +28,11 @@ AM_LDFLAGS = -lcfitsio -lwcs -pthread -lm -L$(top_builddir)/lib
 bin_PROGRAMS = astrmkprof
 
 astrmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h	\
-ellipse.c ellipse.h
+oneprofile.c oneprofile.h profiles.c profiles.h cite.h
 
-astrmkprof_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
--lcheckset -llinkedlist -ltiming -lastrthreads
+astrmkprof_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv		\
+-lcheckset -llinkedlist -ltiming -lastrthreads -lbox -lstatistics	\
+-larraymanip
 
 
 

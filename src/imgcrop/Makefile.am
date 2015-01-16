@@ -30,10 +30,10 @@ AM_LDFLAGS = -lcfitsio -lwcs -pthread -lm -L$(top_builddir)/lib
 bin_PROGRAMS = astrimgcrop
 
 astrimgcrop_SOURCES = main.c main.h ui.c ui.h args.h imgcrop.c	\
-imgcrop.h wcsmode.c wcsmode.h crop.c crop.h
+imgcrop.h wcsmode.c wcsmode.h crop.c crop.h cite.h
 
 astrimgcrop_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
--lcheckset -llinkedlist -ltiming -lastrthreads
+-lcheckset -llinkedlist -ltiming -lastrthreads -lbox
 
 
 

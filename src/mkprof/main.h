@@ -24,6 +24,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
 #include <pthread.h>
 
+#include "config.h"
 #include "commonparams.h"
 
 
@@ -34,23 +35,35 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #define SPACK_NAME      "MakeProfiles"     /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION
 #define LOGFILENAME     SPACK".log"
-#define PSFOUTNAME      "PSF.fits"
-#define LOGNUMCOLS      3
+#define LOGNUMCOLS      6
+
+#define DEGREESTORADIANS M_PI/180.0f
+
+#define SERSICCODE      0
+#define MOFFATCODE      1
+#define GAUSSIANCODE    2
+#define POINTCODE       3
+#define MAXIMUMCODE     3
+
+/* Log columns:
+
+   0: ID.
+   1: Overlap flux.
+   2: Overlap first pixel (first axis) fpixel_o[0].
+   3: Overlap first pixel (second axis) fpixel_o[1].
+   4: Overlap second pixel (first axis) lpixel_o[0].
+   5: Overlap second pixel (second axis) lpixel_o[1].
+ */
 
 
-
-
-
-struct built
+struct builtqueue
 {
-  size_t              id;	/* ID of this profile in catalog. */
-  float               *a;	/* Array of this profile's image. */
-  double      overlapmag;	/* Magnitude in overlap.          */
-  long       fpixel_m[2];	/* First overlap pixel on mock.   */
-  long       lpixel_m[2];	/* Last overlap pixel on mock.    */
-  long       fpixel_o[2];	/* First overlap pixel on output. */
-  long       lpixel_o[2];	/* Last overlap pixel on output.  */
-  struct built     *next;	/* Pointer to next element.       */
+  size_t               id;	/* ID of this object.             */
+  float              *img;	/* Array of this profile's image. */
+  long        fpixel_i[2];	/* First pixel in output image.   */
+  long        lpixel_i[2];      /* Last pixel in output image.    */
+  long        fpixel_o[2];	/* First pixel in this array.     */
+  struct builtqueue *next;	/* Pointer to next element.       */
 };
 
 
@@ -59,14 +72,9 @@ struct built
 
 struct uiparams
 {
-  char          *psfname;      /* Name of PSF FITS name.             */
-  char          *catname;      /* Name of catalog of parameters.     */
-
-  int           tunitinp;  /* ==1: Truncation unit is in pixels.     */
-                           /* ==0: It is in radial parameter.        */
-  int        prepforconv;  /* Shift and expand by size of first psf. */
-  size_t          xshift;  /* Shift x position of profiles.          */
-  size_t          yshift;  /* Shift y position of profiles.          */
+  char          *psfname;      /* Name of PSF FITS name.               */
+  char          *catname;      /* Name of catalog of parameters.       */
+  int        prepforconv;  /* Shift and expand by size of first psf.   */
 
   /* Check if all parameters are read (use .def file for
      comparison). The non optional parameters (like the catalog and
@@ -74,6 +82,7 @@ struct uiparams
      checked in the args.h files. */
 
   int        tunitinpset;
+  int       numrandomset;
   int       toleranceset;
   int       zeropointset;
   int          xshiftset;
@@ -102,43 +111,46 @@ struct uiparams
 struct mkprofparams
 {
   /* Other structures: */
-  struct uiparams     up;  /* User interface parameters.             */
-  struct commonparams cp;  /* Common parameters.                     */
+  struct uiparams     up;  /* User interface parameters.               */
+  struct commonparams cp;  /* Common parameters.                       */
 
   /* Operating modes: */
-  int            mginimg;  /* ==1: Build Mof and Gaus in image.      */
-  int         individual;  /* ==1: Build all catalog separately.     */
+  int           psfinimg;  /* ==1: Build PSF profiles in image.        */
+  int         individual;  /* ==1: Build all catalog separately.       */
 
   /* Profiles and noise */
-  float        tolerance;  /* Accuracy to stop integration.          */
-  float        zeropoint;  /* Magnitude of zero point flux.          */
-
+  size_t       numrandom;  /* Number of radom points for integration.  */
+  float        tolerance;  /* Accuracy to stop integration.            */
+  float        zeropoint;  /* Magnitude of zero point flux.            */
+  int           tunitinp;  /* ==1: Truncation unit is in pixels.       */
+                           /* ==0: It is in radial parameter.          */
   /* Catalog */
-  size_t            fcol;  /* Column specifying profile function.    */
-  size_t            xcol;  /* X column of profile center.            */
-  size_t            ycol;  /* Y column of profile center.            */
-  size_t            rcol;  /* Effective radius of profile.           */
-  size_t            ncol;  /* Sersic index column of profile.        */
-  size_t            pcol;  /* Position angle column of profile.      */
-  size_t            qcol;  /* Axis ratio column of profile.          */
-  size_t            mcol;  /* Magnitude column.                      */
-  size_t            tcol;  /* Truncation of the profiles.            */
+  size_t            fcol;  /* Column specifying profile function.      */
+  size_t            xcol;  /* X column of profile center.              */
+  size_t            ycol;  /* Y column of profile center.              */
+  size_t            rcol;  /* Effective radius of profile.             */
+  size_t            ncol;  /* Sersic index column of profile.          */
+  size_t            pcol;  /* Position angle column of profile.        */
+  size_t            qcol;  /* Axis ratio column of profile.            */
+  size_t            mcol;  /* Magnitude column.                        */
+  size_t            tcol;  /* Truncation of the profiles.              */
 
   /* Output */
-  size_t              s0;  /* C standard axis 0 size.                */
-  size_t              s1;  /* C standard axis 1 size.                */
-  size_t      oversample;  /* Oversampling scale.                    */
+  long          naxes[2];  /* Size of the output image.                */
+  long          shift[2];  /* Shift along axeses position of profiles. */
+  size_t      oversample;  /* Oversampling scale.                      */
 
   /* Internal parameters: */
-  double             dos;  /* Oversampling in double type.           */
-  time_t         rawtime;  /* Starting time of the program.          */
-  double            *cat;  /* Input catalog.                         */
-  size_t             cs0;  /* Number of rows in input catalog.       */
-  size_t             cs1;  /* Number of columns in input catalog.    */
-  double            *log;  /* Log data to be printed.                */
-  struct built   *builtq;  /* Bottom (first) elem of build queue.    */
-  pthread_cond_t  qready;  /* builtq is ready to be written.         */
-  pthread_mutex_t  qlock;  /* Mutex lock to change builtq.           */
+  time_t         rawtime;  /* Starting time of the program.            */
+  double            *cat;  /* Input catalog.                           */
+  size_t             cs0;  /* Number of rows in input catalog.         */
+  size_t             cs1;  /* Number of columns in input catalog.      */
+  double            *log;  /* Log data to be printed.                  */
+  int          dir0file1;  /* Output is: ==0: a Dir. ==1: a file.      */
+  struct builtqueue  *bq;  /* Top (last) elem of build queue.          */
+  pthread_cond_t  qready;  /* bq is ready to be written.               */
+  pthread_mutex_t  qlock;  /* Mutex lock to change builtq.             */
+  double       halfpixel;  /* Half pixel in oversampled image.         */
 };
 
 #endif

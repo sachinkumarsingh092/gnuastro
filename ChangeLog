@@ -1,3 +1,44 @@
+2015-01-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/mkprof/mkprof.c (builtqueue_addempty): Added.
+	(saveindividual): Added.
+	(build): Is working until the profile is built.
+
+	* src/mkprof/ellipse.h: Function taken to `box.h`.
+
+	* src/mkprof/ellipse.c: Function taken to `box.c`.
+
+	* src/mkprof/args.h (argp_option): added `--numrandom`, changed
+	`mginimg` to `psfinimg`.
+
+	* src/imgcrop/main.h (imgcropparams): iwidth is now a 2 element
+	array.
+
+	* src/imgcrop/crop.c: Removed `borderfromcenter` and
+	`correctflpixels` to `lib/box.c`.
+
+	* lib/stats.h: Changed to `statistics.h`, all non-used functions
+	removed.
+
+	* lib/arraymanip.c: Removed all non-used functions.
+
+	* include/stats.h: Changed to `statistics.h` and all non-used
+	functions removed.
+
+	* include/fixedstringmacros.h (ASTRUTILSBIBTEX): Added.
+
+	* include/commonargs.h (argp_option): Added `--cite` option and
+	added the `main.h` and `cite.h` header for each program to use
+	their names.
+
+	* include/checkset.h: function name `nameiswritable` is changed to
+	dir0file1 which is much more descriptive.
+
+	* include/arraymanip.h: Removed all the non-used functions from
+	the past. New functions will be added as they are needed.
+
+	* doc/astrutils.texi: Updated.
+
 2015-01-13  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/mkprof/ui.c (preparearrays): Added.

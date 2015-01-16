@@ -65,9 +65,9 @@ readconfig(char *filename, struct imgcropparams *p)
 {
   FILE *fp;
   int zeroorone;
-  size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
+  size_t lineno=0, len=200, tmp;
   struct commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
   int imgmodeset=0, wcsmodeset=0; /* For unambiguous default file checking. */
@@ -188,8 +188,9 @@ readconfig(char *filename, struct imgcropparams *p)
       else if(strcmp(name, "iwidth")==0)
 	{
 	  if(up->iwidthset) continue;
-	  sizetlzero(value, &p->iwidth, name, key, SPACK,
+	  sizetlzero(value, &tmp, name, key, SPACK,
 		     filename, lineno);
+	  p->iwidth[0]=p->iwidth[1]=tmp;
 	  up->iwidthset=1;
 	}
       else if(strcmp(name, "wwidth")==0)
@@ -278,7 +279,7 @@ printvalues(FILE *fp, struct imgcropparams *p)
   if(up->ycolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "ycol", p->ycol);
   if(up->iwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "iwidth", p->iwidth);
+    fprintf(fp, CONF_SHOWFMT"%ld\n", "iwidth", p->iwidth[0]);
   if(up->racolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "racol", p->racol);
   if(up->deccolset)
@@ -389,10 +390,11 @@ sanitycheck(struct imgcropparams *p)
 
 
   /* Width and checkcenter are odd */
-  if(p->iwidth<3)
+  if(p->iwidth[0]<3)
     error(EXIT_FAILURE, 0, "--iwidth has to be >3 pixels.");
-  else if(p->iwidth%2==0)
-    p->iwidth+=1;
+  else if(p->iwidth[0]%2==0)
+      p->iwidth[0]+=1;
+  p->iwidth[1]=p->iwidth[0];
   if(p->checkcenter<3)
     error(EXIT_FAILURE, 0, "--checkcenter has to be >3 pixels.");
   else if(p->checkcenter%2==0)
@@ -452,7 +454,7 @@ sanitycheck(struct imgcropparams *p)
 	      "%s%s%s simultaneously!", t1?t1:"", t2?t2:"", t3?t3:"");
 
       /* Check if the value for --output is a file or a directory? */
-      p->outnameisfile=nameisawritablefile(cp->output, cp->dontdelete);
+      p->outnameisfile=dir0file1(cp->output, cp->dontdelete);
 
       /* When there is only one output, only one thread is needed. */
       cp->numthreads=1;

@@ -22,11 +22,8 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-
-#include "fixedstringmacros.h"
 #include "commonargs.h"
-
-
+#include "fixedstringmacros.h"
 
 
 
@@ -70,7 +67,7 @@ const char doc[] =
 /*
    Available letters (-V which is used by GNU is also removed):
 
-   a d e f g j k l m r u v w
+   a d e f g j k l m u v w
    A B C E F G H I J L M O Q R T U W Z
 
    Maximum integer used so far: 509.
@@ -127,11 +124,11 @@ static struct argp_option options[] =
       2
     },
     {
-      "mginimg",
+      "psfinimg",
       509,
       0,
       0,
-      "Moffat & Gaussian made with all in output image.",
+      "PSF profiles made with all in output image.",
       2
     },
     {
@@ -150,6 +147,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Profiles:",
+      3
+    },
+    {
+      "numrandom",
+      'r',
+      "INT",
+      0,
+      "No. of random points in Monte Carlo integration.",
       3
     },
     {
@@ -189,7 +194,7 @@ static struct argp_option options[] =
       'c',
       0,
       0,
-      "Shift and expand output based on first PSF in catalog.",
+      "Shift and expand based on first catalog PSF.",
       3
     },
     {
@@ -313,6 +318,8 @@ static struct argp_option options[] =
 static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
+  size_t tmp;
+
   /* Save the arguments structure: */
   struct mkprofparams *p = state->input;
 
@@ -337,7 +344,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Operating modes:  */
     case 509:
-      p->mginimg=1;
+      p->psfinimg=1;
       break;
     case 'i':
       p->individual=1;
@@ -345,11 +352,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output: */
     case 'x':
-      sizetlzero(arg, &p->s1, "naxis1", key, p->cp.spack, NULL, 0);
+      sizetlzero(arg, &tmp, "naxis1", key, p->cp.spack, NULL, 0);
+      p->naxes[0]=tmp;
       p->up.naxis1set=1;
       break;
     case 'y':
-      sizetlzero(arg, &p->s0, "naxis2", key, p->cp.spack, NULL, 0);
+      sizetlzero(arg, &tmp, "naxis2", key, p->cp.spack, NULL, 0);
+      p->naxes[1]=tmp;
       p->up.naxis2set=1;
       break;
     case 's':
@@ -358,7 +367,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.oversampleset=1;
       break;
 
-    /* Profiles and noise: */
+    /* Profiles: */
+    case 'r':
+      sizetlzero(arg, &p->numrandom, "numrandom", key, p->cp.spack, NULL, 0);
+      p->up.numrandomset=1;
+      break;
     case 'l':
       floatl0(arg, &p->tolerance, "tolerance", key, p->cp.spack, NULL, 0);
       p->up.toleranceset=1;
@@ -368,7 +381,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.zeropointset=1;
       break;
     case 'p':
-      p->up.tunitinp=1;
+      p->tunitinp=1;
       p->up.tunitinpset=1;
       break;
     case 'c':
@@ -376,11 +389,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.prepforconvset=1;
       break;
     case 'X':
-      sizetelzero(arg, &p->up.xshift, "xshift", key, p->cp.spack, NULL, 0);
+      sizetelzero(arg, &tmp, "xshift", key, p->cp.spack, NULL, 0);
+      p->shift[0]=tmp;
       p->up.xshiftset=1;
       break;
     case 'Y':
-      sizetelzero(arg, &p->up.yshift, "yshift", key, p->cp.spack, NULL, 0);
+      sizetelzero(arg, &tmp, "yshift", key, p->cp.spack, NULL, 0);
+      p->shift[1]=tmp;
       p->up.yshiftset=1;
       break;
 

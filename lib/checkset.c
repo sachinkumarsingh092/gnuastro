@@ -458,7 +458,7 @@ checkremovefile(char *filename, int dontdelete)
    it will return 0. Finally, if it exists but cannot be deleted,
    report an error and abort. */
 int
-nameisawritablefile(char *name, int dontdelete)
+dir0file1(char *name, int dontdelete)
 {
   FILE *tmpfile;
   struct stat nameinfo;
@@ -583,7 +583,7 @@ void
 checkdirwriteaddslash(char **dirname)
 {
   int file_d;
-  char *tmpname, *indir=*dirname, buf[]="A test file.";
+  char *tmpname, *indir=*dirname/*, buf[]="A test"*/;
 
   /* Set the template for the temporary file: */
   if(indir[strlen(indir)-1]=='/')
@@ -597,14 +597,23 @@ checkdirwriteaddslash(char **dirname)
   if(file_d==-1)
     error(EXIT_FAILURE, errno, "Cannot write output in the directory %s",
 	  indir);
-  write(file_d, buf, strlen(buf));
-  close(file_d);
+  /*
+  errno=0;
+  printf("\n\n%s\n\n", tmpname);
+  if( write(file_d, buf, strlen(buf)) == -1 )
+    error(EXIT_FAILURE, errno, "%s: Writing to this temporary file to "
+	  "check the given `%s` directory", tmpname, indir);
+  */
+  errno=0;
+  if( close(file_d) == -1 )
+    error(EXIT_FAILURE, errno, "%s: Closing this temporary file to check "
+	  "the given `%s` directory", tmpname, indir);
 
   /* Delete the temporary file: */
   errno=0;
   if(unlink(tmpname)==-1)
-    error(EXIT_FAILURE, errno, "Temporary file name made for testing "
-	  "the %s directory (%s) could not be deleted", indir, tmpname);
+    error(EXIT_FAILURE, errno, "%s: Removing this temporary file made "
+	  "to check the given `%s directory`", tmpname, indir);
 
   /* Remove the extra characters that were added for the random name. */
   tmpname[strlen(tmpname)-15]='\0';

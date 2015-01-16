@@ -19,12 +19,14 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
+#include <math.h>
 #include <time.h>
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "box.h"
 #include "timing.h"	        /* Includes time.h and sys/time.h */
 #include "checkset.h"
 #include "txtarrayvv.h"
@@ -33,7 +35,6 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include "fitsarrayvv.h"
 
 #include "main.h"
-#include "ellipse.h"
 
 #include "ui.h"			/* Needs main.h.                  */
 #include "args.h"		/* Needs main.h, includes argp.h. */
@@ -59,9 +60,9 @@ void
 readconfig(char *filename, struct mkprofparams *p)
 {
   FILE *fp;
-  size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
+  size_t lineno=0, len=200, tmp;
   struct commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
@@ -92,9 +93,16 @@ readconfig(char *filename, struct mkprofparams *p)
       if(strcmp(name, "tunitinp")==0)
 	{
 	  if(up->tunitinpset) continue;
-	  intzeroorone(value, &p->up.tunitinp, name, key, SPACK,
+	  intzeroorone(value, &p->tunitinp, name, key, SPACK,
 		       filename, lineno);
 	  up->tunitinpset=1;
+	}
+      else if(strcmp(name, "numrandom")==0)
+	{
+	  if(up->numrandomset) continue;
+	  sizetlzero(value, &p->numrandom, name, key, SPACK,
+		     filename, lineno);
+	  up->numrandomset=1;
 	}
       else if(strcmp(name, "tolerance")==0)
 	{
@@ -118,15 +126,17 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "xshift")==0)
 	{
 	  if(up->xshiftset) continue;
-	  sizetelzero(value, &p->up.xshift, name, key, SPACK,
+	  sizetelzero(value, &tmp, name, key, SPACK,
 		      filename, lineno);
+	  p->shift[0]=tmp;
 	  up->xshiftset=1;
 	}
       else if(strcmp(name, "yshift")==0)
 	{
 	  if(up->yshiftset) continue;
-	  sizetelzero(value, &p->up.yshift, name, key, SPACK,
+	  sizetelzero(value, &tmp, name, key, SPACK,
 		      filename, lineno);
+	  p->shift[1]=tmp;
 	  up->yshiftset=1;
 	}
 
@@ -205,13 +215,15 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "naxis1")==0)
 	{
 	  if(up->naxis1set) continue;
-	  sizetlzero(value, &p->s1, name, key, SPACK, filename, lineno);
+	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
+	  p->naxes[0]=tmp;
 	  up->naxis1set=1;
 	}
       else if(strcmp(name, "naxis2")==0)
 	{
 	  if(up->naxis2set) continue;
-	  sizetlzero(value, &p->s0, name, key, SPACK, filename, lineno);
+	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
+	  p->naxes[1]=tmp;
 	  up->naxis2set=1;
 	}
       else if(strcmp(name, "oversample")==0)
@@ -256,7 +268,9 @@ printvalues(FILE *fp, struct mkprofparams *p)
 
   fprintf(fp, "\n# Profiles:\n");
   if(up->tunitinpset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "tunitinp", p->up.tunitinp);
+    fprintf(fp, CONF_SHOWFMT"%d\n", "tunitinp", p->tunitinp);
+  if(up->numrandomset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "numrandom", p->numrandom);
   if(up->toleranceset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "tolerance", p->tolerance);
   if(up->zeropointset)
@@ -286,9 +300,9 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(p->cp.outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", p->cp.output);
   if(up->naxis1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->s1);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->naxes[0]);
   if(up->naxis2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->s0);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->naxes[1]);
   if(up->oversampleset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
 
@@ -311,6 +325,8 @@ checkifset(struct mkprofparams *p)
   int intro=0;
   if(up->tunitinpset==0)
     REPORT_NOTSET("tunitinp");
+  if(up->numrandomset==0)
+    REPORT_NOTSET("numrandom");
   if(up->toleranceset==0)
     REPORT_NOTSET("tolerance");
   if(up->zeropointset==0)
@@ -367,13 +383,14 @@ checkifset(struct mkprofparams *p)
 void
 sanitycheck(struct mkprofparams *p)
 {
-  double trunc;
-  size_t i, j, columns[9], sum;
+  long width[2]={1,1};
+  double trunc, *cat=p->cat;
+  size_t i, j, columns[9], cs1=p->cs1;
 
   /* Check if over-sampling is an odd number, then convert the
      oversampling rate into the double type. */
   if(p->oversample%2==0) ++p->oversample;
-  p->dos=p->oversample;
+  p->halfpixel=0.5f/p->oversample;
 
   /* If the column numbers are not equal. */
   columns[0]=p->xcol; columns[1]=p->ycol; columns[2]=p->fcol;
@@ -398,49 +415,71 @@ sanitycheck(struct mkprofparams *p)
   CHECKCOLINCAT(p->mcol, "mcol");
   CHECKCOLINCAT(p->tcol, "tcol");
 
-  /* If prepforconv is called, then xshift and yshift should be zero. Also
-     a Moffat or Gaussian profile should exist in the image. */
-  if( (p->up.xshift==0 && p->up.yshift==0) && p->up.prepforconv)
-    {
-      /* Make sure there is at least one Moffat or Gaussian profile. */
-      j=0;
-      for(i=0;i<p->cs0;++i)
-	if(p->cat[i*p->cs1+p->fcol]==1 || p->cat[i*p->cs1+p->fcol]==2)
-	  {
-	    j=i;
-	    break;
-	  }
-
-      /* If there is no PSF in the catalog, then you can ignore
-	 prepforconv. */
-      if(i<p->cs0)
-	{
-	  /* Find the correct xshift and yshift using the first Moffat
-	     or Gaussian profile (in row 'j'). Note that the output of
-	     encloseellipse will be the total width, we only want half
-	     of it for the shift.*/
-	  if(p->up.tunitinp)
-	    trunc=p->dos*p->cat[j*p->cs1+p->tcol];
-	  else
-	    trunc=p->dos*p->cat[j*p->cs1+p->tcol]*p->cat[j*p->cs1+p->rcol]/2;
-	  encloseellipse(trunc, p->cat[j*p->cs1+p->qcol]*trunc,
-			 p->cat[j*p->cs1+p->pcol], &p->up.yshift,
-			 &p->up.xshift);
-	  p->up.xshift/=2;
-	  p->up.yshift/=2;
-	}
-    }
+  /* Check if all the profile codes are within the desired range: */
+  for(i=0;i<p->cs0;++i)
+    if(cat[i*cs1+p->fcol]<0 || cat[i*cs1+p->fcol]>MAXIMUMCODE)
+      error(EXIT_FAILURE, 0, "%s: In row %lu, the function code should"
+	    "be positive and smaller or equal to %d.",
+	    p->up.catname, i+1, MAXIMUMCODE);
 
   /* If any of xshift or yshift is non-zero, the other should be too!
      Note that conditional operators return 1 if true and 0 if false,
      so if one is non-zero while the other is zero, then sum will be
      1. Otherwise the sum will either be 0 or 2.*/
-  sum = (p->up.xshift!=0) + (p->up.yshift!=0);
-  if(sum==1)
-    error(EXIT_FAILURE, 0, "At least one of `--xshift` (`-X`) or "
-	  "`--yshift` (`-Y`) are zero! ");
+  switch ( (p->shift[0]!=0) + (p->shift[1]!=0) )
+    {
+      /* If prepforconv is called, then xshift and yshift should be zero. Also
+	 a Moffat or Gaussian profile should exist in the image. */
+    case 0:
+      if(p->up.prepforconv)
+	{
+	  /* Check if there is at least one Moffat or Gaussian profile. */
+	  j=0;
+	  for(i=0;i<p->cs0;++i)
+	    if(cat[i*cs1+p->fcol]==1 || cat[i*cs1+p->fcol]==2)
+	      {
+		j=i;
+		break;
+	      }
 
+	  /* If there is no PSF in the catalog, then you can ignore
+	     prepforconv. */
+	  if(i<p->cs0)
+	    {
+	      /* Find the correct xshift and yshift using the first Moffat
+		 or Gaussian profile (in row 'j'). Note that the output of
+		 encloseellipse will be the total width, we only want half
+		 of it for the shift.*/
+	      trunc = ( cat[j*cs1+p->tcol]
+			* (p->tunitinp ? 1 : cat[j*cs1+p->rcol]/2) );
+	      ellipseinbox(trunc, cat[j*cs1+p->qcol]*trunc,
+			   cat[j*cs1+p->pcol]*DEGREESTORADIANS, width);
+	    }
+	  p->naxes[0] += (width[0]-1)*p->oversample;
+	  p->naxes[1] += (width[1]-1)*p->oversample;
+	  p->shift[0]  = (width[0]/2)*p->oversample;
+	  p->shift[1]  = (width[1]/2)*p->oversample;
+	}
+      break;
 
+    case 1:
+      error(EXIT_FAILURE, 0, "At least one of `--xshift` (`-X`) or "
+	    "`--yshift` (`-Y`) are zero! ");
+      break;
+
+    case 2:
+      p->naxes[0] += 2*p->shift[0]*p->oversample;
+      p->naxes[1] += 2*p->shift[1]*p->oversample;
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "A bug in sanitycheck (ui.c)! In checks "
+	    "for shifts. Please contact us so we can fix it.");
+    }
+
+  /* Check the output name: */
+  p->dir0file1=dir0file1(p->cp.output, p->cp.dontdelete);
+  if(p->dir0file1==0) checkdirwriteaddslash(&p->cp.output);
 }
 
 
@@ -468,33 +507,14 @@ sanitycheck(struct mkprofparams *p)
 void
 preparearrays(struct mkprofparams *p)
 {
-  double *cat=p->cat;
-  size_t i, cs1=p->cs1;
-  struct uiparams *up=&p->up;
-
-  /* Allocate space for the log file: */
-  p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
-  if(p->log==NULL)
-    error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
-	  p->cs0*LOGNUMCOLS*sizeof *p->log);
-
-  /* Correct the X and Y positions and set the truncation radius in
-     units of pixels. Note that in sanity check we checked that X and
-     Y shifts are either both zero or both non-zero. So we don't need
-     to check for y shift*/
-  if(up->xshift || up->tunitinp==0)
-    for(i=0;i<p->cs0;++i)
-      {
-	cat[i*cs1+p->xcol]+=up->xshift;
-	cat[i*cs1+p->ycol]+=up->yshift;
-	if(up->tunitinp==0)
-	  cat[i*cs1+p->tcol]*=cat[i*cs1+p->rcol];
-      }
-
-  /* Correct the output image size based on the x and y shifts. Note
-     the difference between the FITS and C axises. */
-  p->s0+=2*up->yshift;
-  p->s1+=2*up->xshift;
+  if(p->individual==0)
+    {
+      /* Allocate space for the log file: */
+      p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
+      if(p->log==NULL)
+	error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
+	      p->cs0*LOGNUMCOLS*sizeof *p->log);
+    }
 }
 
 
@@ -521,6 +541,8 @@ preparearrays(struct mkprofparams *p)
 void
 setparams(int argc, char *argv[], struct mkprofparams *p)
 {
+  char *jobname;
+  struct timeval t1;
   struct commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
@@ -551,6 +573,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 
   /* Do a sanity check, then remove the possibly existing log file
      created by txttoarray. */
+  gettimeofday(&t1, NULL);
   sanitycheck(p);
   checkremovefile(TXTARRAYVVLOG, 0);
 
@@ -559,7 +582,16 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
-    printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+    {
+      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+      errno=0;
+      jobname=malloc(strlen(p->up.catname)+100*sizeof *jobname);
+      if(jobname==NULL)	error(EXIT_FAILURE, errno, "jobname in ui.c");
+      sprintf(jobname, "%lu profile%sread from %s", p->cs0,
+	      p->cs0>1?"s ":" ", p->up.catname);
+      reporttiming(&t1, jobname, 1);
+      free(jobname);
+    }
 }
 
 
@@ -590,7 +622,8 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
   /* Free all the allocated arrays. */
   free(p->cat);
   free(p->cp.hdu);
-  free(p->cp.output); /* If not set, it is NULL, and free is OK with NULL */
+  free(p->cp.output);
+  if(p->individual==0) free(p->log);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

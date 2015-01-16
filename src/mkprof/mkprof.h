@@ -22,12 +22,47 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MOCKGALS_H
 #define MOCKGALS_H
 
+#define EPSREL_FOR_INTEG 2
 
 struct mkonthread
 {
-  struct mkprofparams  *p;	/* Pointer to the main.h structure. */
-  size_t          *indexs;	/* Indexs to build on this thread.  */
-  pthread_barrier_t    *b;	/* Pthread barrier pointer.         */
+  /* General parameters: */
+  int               ispsf;    /* This is a PSF profile.              */
+  double                r;    /* Elliptical radius at this point.    */
+  double                x;    /* x value of this point.              */
+  double               xl;    /* lower  x boundary                   */
+  double               xh;    /* higher x boundary.                  */
+  double                y;    /* y value when integrating over x.    */
+  double               yl;    /* lower  y boundary.                  */
+  double               yh;    /* higher y boundary.                  */
+  double                c;    /* Cosine of the position angle.       */
+  double                s;    /* Sine of the position angle.         */
+  double                q;    /* axis ratio of the position angle.   */
+  double               xc;    /* Center in C of created(oversampled).*/
+  double               yc;    /* Center in C of created(oversampled).*/
+  double (*profile)(struct mkonthread *); /* Function to use.        */
+  double           truncr;    /* Truncation radius in pixels.        */
+  long           width[2];    /* The width of the enclosing box.     */
+  float           totflux;    /* The total flux of the profile.      */
+  int                type;    /* The type of the profile.            */
+
+  /* Profile specific parameters: */
+  double        sersic_re;    /* r/re in Sersic profile.             */
+  double     sersic_inv_n;    /* Sersic index of Sersic profile.     */
+  double        sersic_nb;    /* Negative of b(n) constant.          */
+
+  double   moffat_alphasq;    /* r divided by alpha in Moffat.       */
+  double        moffat_nb;    /* Negative beta in the Moffat.        */
+
+  double       gaussian_c;    /* Constant value in Gaussian.         */
+
+  double          point_v;    /* Value of a point source.            */
+
+  /* General parameters */
+  struct mkprofparams  *p;    /* Pointer to the main.h structure.    */
+  size_t          *indexs;    /* Indexs to build on this thread.     */
+  pthread_barrier_t    *b;    /* Pthread barrier pointer.            */
+  struct builtqueue  *ibq;    /* Internally built queue.             */
 };
 
 

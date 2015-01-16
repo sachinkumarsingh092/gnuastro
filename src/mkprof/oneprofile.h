@@ -1,6 +1,6 @@
-/*********************************************************************
-Functions to manipulate arrays.
-This is part of GNU Astronomy Utilities (AstrUtils) package.
+/********************************************************************
+mkprof (MakeProfiles) - Create mock astronomical profiles.
+MakeProfiles is part of GNU Astronomy Utilities (AstrUtils) package.
 
 Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
@@ -19,45 +19,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <pthread.h>
-
-#include "arraymanip.h"
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************
- **********************   Multiply or Sum with  **********************
- *********************************************************************/
-void
-fmultipconst(float *in, size_t size, float a)
-{
-  float *fpt;
-  fpt=in+size;
-  do
-    *in *= a;
-  while(++in<fpt);
-}
-
-
-
-
+#ifndef ONEPROFILE_H
+#define ONEPROFILE_H
 
 void
-fsumconst(float *in, size_t size, float a)
-{
-  float *fpt;
-  fpt=in+size;
-  do
-    *in += a;
-  while(++in<fpt);
-}
+setprofparams(struct mkonthread *mkp);
+
+void
+makeoneprofile(struct mkonthread *mkp);
+
+#endif

@@ -152,7 +152,7 @@ void
 checkremovefile(char *filename, int dontdelete);
 
 int
-nameisawritablefile(char *name, int dontdelete);
+dir0file1(char *name, int dontdelete);
 
 void
 automaticoutput(char *inname, char *suffix, int removedirinfo,

@@ -56,10 +56,6 @@ void
 sectionparser(char *section, long *naxes, long *fpixel, long *lpixel);
 
 void
-borderfromcenter(double xc, double yc, long width, long *fpixel,
-		 long *lpixel);
-
-void
 cropname(struct cropparams *crp);
 
 void

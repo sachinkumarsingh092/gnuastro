@@ -32,8 +32,8 @@ Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
+Texts.  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
 @end quotation
 @end copying
 
@@ -819,7 +819,7 @@ independent. Something like the GNU coreutils.
 @node New to GNU/Linux?,  , Version numbering, Introduction
 @section New to GNU/Linux?
 
-Most astronomers initially install and use the GNU/Linux operating
+Some astronomers initially install and use the GNU/Linux operating
 systems because their research software can only be run in this
 environment. This is how the founder of AstrUtils started using
 GNU/Linux at least! If this is also the case for you, we have a few
@@ -2115,11 +2115,11 @@ positive).
 
 @cartouche
 @noindent
-@strong{CAUTION:} When you want to specify file names as values for those
-options that accept @option{STR} and you want to use shell expansions
-like (@command{~} or @command{*}), leave at least one space between
-the option name and your value. For example use @command{-o ~/test} or
-@command{--output ~/test}. Calling them with @command{-o~/test} or
+@strong{CAUTION:} In specifying a file address, if you want to use the
+shell's tilde expansion (@command{~}) to specify your home directory,
+leave at least one space between the option name and your value. For
+example use @command{-o ~/test}, @command{--output ~/test} or
+@command{--output= ~/test}. Calling them with @command{-o~/test} or
 @command{--output=~/test} will disable shell expansion.
 @end cartouche
 @cartouche
@@ -2253,6 +2253,22 @@ more than a fraction of a second to run will report their steps for
 you to follow while they are operating. If you do not want to see
 these reports, you can call this option and only error messages will
 be printed if the program is aborted.
+
+@item --cite
+Print the Bib@TeX{} entry for AstrUtils and the particular program (if
+that program comes with a separate paper) and abort. Citations are
+vital for the continued work on AstrUtils. AstrUtils started and is
+continued based on separate research projects. So if you find any of
+the tools offered in AstrUtils to be useful in your research, please
+use the output of this command to cite the program and AstrUtils in
+your research paper. Thank you.
+
+AstrUtils is still new, there is no separate paper only devoted to
+AstrUtils yet. Therefore currently the paper to cite for AstrUtils is
+the paper for NoiseChisel which is the first published paper
+introducing AstrUtils to the astronomical community. Upon reaching a
+certain point, we will publish a paper completely devoted to
+AstrUtils, see @ref{AstrUtils 1.0}.
 
 @item -P
 @itemx --printparams
@@ -2474,13 +2490,14 @@ uses the POSIX threads library (pthreads) for spinning off threads
 when the user asks for it.
 
 You can find the number of cores available to your system with the
-command @command{$ nproc}, which is part of GNU Coreutils. If not
-specified as an option at configure time, AstrUtils finds the number
-of cores available to your system (and reports it along with all those
-other things it checks!). It is saved internally for all the programs
-to use by default. To specify the number of threads at configure time,
-use the @option{--with-numthreads} option, see @ref{AstrUtils
-configure options}.
+command @command{$ nproc}, which is part of GNU Coreutils and is most
+probably already available on your system. If not specified as an
+option at configure time, AstrUtils finds the number of cores
+available to your system (and reports it along with all those other
+things it checks!). It is saved internally for all the programs to use
+by default. To specify the number of threads at configure time, use
+the @option{--with-numthreads} option, see @ref{AstrUtils configure
+options}.
 
 The number of threads is the only parameter in AstrUtils, which is
 stored internally at configure time. The implication is that the only
@@ -3433,8 +3450,9 @@ also whether the central pixels of the cropped image are full. There
 are also comments on the top explaining basic information about the
 run. If the log file cannot be created (for example you don't have
 write permission in the directory you are running ImageCrop in) it
-will not be created. You can see the same results in verbose mode on
-the command line in such cases.
+will not be created (unless @option{--individual} is called). You can
+see the same results in verbose mode on the command line in such
+cases.
 
 @node ImageCrop future,  , Invoking astrimgcrop, ImageCrop
 @subsection ImageCrop future updates
@@ -4077,8 +4095,36 @@ profiles with observations.
 
 MakeProfiles was initially built for extra galactic studies, so
 currently the only astronomical objects it can produce are stars and
-galaxies. We welcome the simulation of any other astronomical object.
+galaxies. We welcome the simulation of any other astronomical
+object. The general outline of the steps that MakeProfiles takes are
+the following:
 
+@itemize
+
+@item
+Build the full profile out to its truncation radius in a possibly
+oversampled array.
+
+@item
+Multiply all the elements by a fixed constant so its total magnitude
+equals the desired total magnitude.
+
+@item
+If @option{--individual} is called, save the array for each profile to
+a FITS file and abort.
+
+@item
+Add the overlapping pixels of all the created profiles to the output
+image and abort.
+
+@end itemize
+
+For a simple test on a set of mock galaxies in one image, there is no
+need for the third step. However in complicated simulations like weak
+lensing simulations, where each galaxy undergoes various types of
+individual transformations, those transformations can be applied to
+the different individual images with other programs, then added to the
+final image before convolving and adding noise.
 
 @menu
 * If convolving afterwards::    Considerations for convolving afterwards.
@@ -4167,12 +4213,12 @@ astrmkprof [OPTION ...] Catalog
 @end example
 
 @noindent
-The catalog (which stores the parameters for each mock profile) is the
-mandatory argument. The input catalog has to be a text file formatted
-in a table with columns separated by space, tab or comma (@key{,})
-characters. See @ref{Common behavior} for a complete explanation of
-some common behaviour and options in all AstrUtils programs including
-MakeProfiles.
+If mock galaxies are to be made, the catalog (which stores the
+parameters for each mock profile) is the mandatory argument. The input
+catalog has to be a text file formatted in a table with columns
+separated by space, tab or comma (@key{,}) characters. See @ref{Common
+behavior} for a complete explanation of some common behaviour and
+options in all AstrUtils programs including MakeProfiles.
 
 The value for the profile center in the catalog (in the
 @option{--xcol} and @option{--ycol} columns) can be a floating point
@@ -4185,6 +4231,20 @@ radius is within the output image, that pixel is included in the
 image. Profiles that are completely out of the image will not be
 created. You can use the output log file to see which profiles were
 within the image.
+
+If PSF profiles (Moffat or Gaussian) are in the catalog and the
+profiles are to be built in one image (when @option{--individual} is
+not used), it is assumed they are the PSF(s) you want to convolve your
+created image with. So by default, they will not be built in the
+output image but as seperate files. The total flux of these separate
+files will also be set to unity (1) so you are ready to convolve. As a
+summary, their position and magnitude will be ignored. This behaviour
+can be disabled with the @option{--psfinimg} option. If you want to
+create all the profiles separately (with @option{--individual}) and
+you want the total flux of your PSF profiles to be unity, you have to
+set their magnitudes in the catalog to the zeropoint magnitude and be
+sure that the central positions of the profiles don't have any
+fractional part (the PSF center has to be in the center of the pixel).
 
 The common options that are shared by AstrUtils progarms, are fully
 explained in @ref{Common options} and are not repeated here. Since
@@ -4212,11 +4272,11 @@ second FITS axis (vertical when viewed in SAO ds9).
 (@option{=INT}) The scale to over-sample the profiles, see
 @ref{Oversampling}.
 
-@item --mginimg
-By default, if Moffat or Gaussian profiles are in the catalog, they
-are assumed to be a PSF and created separately. If this option is
-called, these two profiles are built into the final image similar to
-point sources and galaxies.
+@item --psfinimg
+Build the possibly existing PSF profiles (Moffat or Gaussian) in the
+catalog into the final image. By default they are built separately so
+you can convolve your images with them, thus their magnitude and
+positions are ignored.
 
 @item -i
 @itemx --individual
@@ -4287,7 +4347,10 @@ column number, where counting starts from zero.
 @table @option
 
 @item --fcol
-(@option{=INT}) The functional form of the profile:
+(@option{=INT}) The functional form of the profile with one of the
+values below. Note that this value will be converted to an integer
+before analysis using the internal type conversion of C. So for
+example 2.80 will be converted to 2.
 
 @itemize
 @item
@@ -4317,8 +4380,8 @@ column number, where counting starts from zero.
 @mymath{\beta}.
 
 @item --pcol
-(@option{=INT}) The position angle of the profiles relative to the
-first FITS axis (horizontal when viewed in SAO ds9).
+(@option{=INT}) The position angle (in degrees) of the profiles
+relative to the first FITS axis (horizontal when viewed in SAO ds9).
 
 @item --qcol
 (@option{=INT}) The axis ratio of the profiles (minor axis divided by
@@ -4354,7 +4417,17 @@ particular way it builds the mock profiles, the infra-structure is
 there to make the profiles on a 3D volume and find a real projection
 of a real 3D object. This is also a future upgrade we plan to apply.
 
+@item
+The profiles are built on separate threads, their total magnitude is
+set and then they are all given to one thread to write and free the
+space. To avoid race, the built profiles are temporarily put on a
+queue. So if too many large profiles are requested with a large
+over-sampling, MakeProfiles can easy fill up the whole memory of the
+system and the operating system will kill it.
 
+Find a good way to manage memory, such that it would be possible to
+work with any initial memory. Ofcourse the output speed will decrease,
+but that is acceptable in this case.
 @end itemize
 
 
@@ -4838,13 +4911,14 @@ Stevens and Stephen Rago, Addison-Wesley, 2013 (Third edition) also
 has two chapters explaining the POSIX thread constructs which can be
 very helpful.
 
-An alternative was to use OpenMP, but POSIX threads are low level,
-allowing much more control, while being easier to understand, see
-@ref{Why C}. All the situations we use threads in are completely
-independent with no need of coordination between the threads, also
-known as ``embarrassingly parallel'' problems. This is the simplest
-way to use threads, see the LLNL turorial. Therefore, there is no need
-for the higher level capabilities of OpenMP.
+An alternative to POSIX threads was OpenMP, but POSIX threads are low
+level, allowing much more control, while being easier to understand,
+see @ref{Why C}. All the situations we use threads in are completely
+independent with minimal need of coordination between the threads.
+Such problems are known as ``embarrassingly parallel'' problems. They
+are some of the simplest problems to solve with threads and also the
+ones that benefit most from threads, see the LLNL
+introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
 
 
 @node Test scripts, Building, Program source, Developing

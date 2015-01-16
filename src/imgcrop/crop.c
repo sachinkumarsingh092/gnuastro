@@ -26,6 +26,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include "box.h"
 #include "timing.h"
 #include "checkset.h"
 #include "fitsarrayvv.h"
@@ -157,128 +158,6 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
 
 
 
-/* We have the central pixel and box size of the crop box, find the
-   starting and ending pixels: */
-void
-borderfromcenter(double xc, double yc, long width, long *fpixel,
-		 long *lpixel)
-{
-  long lxc, lyc;
-
-  /* Round the double values in a the long values: */
-  lxc=(long)xc; if (xc-lxc>0.5) ++lxc;
-  lyc=(long)yc; if (yc-lyc>0.5) ++lyc;
-
-  /* Set the initial values for the actual image: */
-  fpixel[0]=lxc-width/2;      fpixel[1]=lyc-width/2;
-  lpixel[0]=lxc+width/2;      lpixel[1]=lyc+width/2;
-}
-
-
-
-
-
-/* Problem to solve: We have set the first and last pixels in the
-   input image, based on the user's input (either on the command line
-   or from a catlog). But those first and last pixels don't
-   necessarily have to lie within the image, they can be outside of
-   it. So the job of this function is to correct those such that they
-   remain inside the complete image.
-
-   They will also give the coordinates of the corrected first and last
-   pixel in the new cropped array (in fpixel_c[] and lpixel_c[]). So
-   you know which region of the cropped image has to be filled by the
-   corrected fpixel_i[] and lpixel_i[] pixels.
-
-   So in short the arrays we are dealing with here are:
-
-   fpixel_i:    Coordinates of the first pixel in input image.
-   lpixel_i:    Coordinates of the last pixel in input image.
-   fpixel_c:    Coordinates of the first pixel in output(cropped) image.
-   lpixel_c:    Coordinates of the last pixel in output(cropped) image.
-*/
-void
-correctflpixels(long *naxes, long *fpixel_i, long *lpixel_i,
-		long *fpixel_c, long *lpixel_c)
-{
-  long width[2];
-
-  /* In case you want to see how things are going:
-  printf("\n\nImage size: [%ld,  %ld]\n", naxes[0], naxes[1]);
-  printf("Input image: (%ld, %ld) -- (%ld, %ld)\n", fpixel_i[0],
-	 fpixel_i[1], lpixel_i[0], lpixel_i[1]);
-  */
-
-  width[0]=lpixel_i[0]-fpixel_i[0]+1;
-  width[1]=lpixel_i[1]-fpixel_i[1]+1;
-
-  /* Set the initial values for the cropped array: */
-  fpixel_c[0]=1;          fpixel_c[1]=1;
-  lpixel_c[0]=width[0];   lpixel_c[1]=width[1];
-
-
-  /* Check the four corners to see if they should be adjusted: To
-     understand the first, look at this, suppose | separates pixels
-     and the * shows where the image actually begins.
-
-     |-2|-1| 0* 1| 2| 3| 4|        (survey image)
-     *1 | 2| 3| 4| 5| 6| 7|        (crop image)
-
-     So when fpixel_i is negative, e.g., fpixel_i=-2, then the index
-     of the pixel in the cropped image we want to begin with, that
-     corresponds to 1 in the survey image is: fpixel_c= 4 = 2 +
-     -1*fpixel_i.*/
-  if(fpixel_i[0]<1)
-    {
-      fpixel_c[0]=-1*fpixel_i[0]+2;
-      fpixel_i[0]=1;
-    }
-  if(fpixel_i[1]<1)
-    {
-      fpixel_c[1]=-1*fpixel_i[1]+2;
-      fpixel_i[1]=1;
-    }
-
-
-  /*The same principle applies to the end of an image. Take "s"
-    is the maximum size along a specific axis in the survey image
-    and "c" is the size along the same axis on the cropped image.
-    Assume the the cropped region's last pixel in that axis will
-    be 2 pixels larger than s:
-
-    |s-1|   s* s+1| s+2|           (survey image)
-    |c-3| c-2| c-1|   c*           (crop image)
-
-    So you see that if the outer pixel is n pixels away then in
-    the cropped image we should only fill upto c-n.*/
-  if (lpixel_i[0]>naxes[0])
-    {
-      lpixel_c[0]=width[0]-(lpixel_i[0]-naxes[0]);
-      lpixel_i[0]=naxes[0];
-    }
-  if (lpixel_i[1]>naxes[1])
-    {
-      lpixel_c[1]=width[1]-(lpixel_i[1]-naxes[1]);
-      lpixel_i[1]=naxes[1];
-    }
-
-  /* In case you wish to see the results.  The +1 in the final size
-     section is because of the cfitsio standard. An array of size 3
-     will have elements {1,2,3}, but the last element subtracted from
-     the first is 3-1=2, which doesn't show the number of pixels in
-     it, it has to be increased by a unit!
-  printf("\nAfter correction:\n");
-  printf("Input image: (%ld, %ld) -- (%ld, %ld)\n", fpixel_i[0],
-	 fpixel_i[1], lpixel_i[0], lpixel_i[1]);
-  printf("output image:(%ld, %ld) -- (%ld, %ld)\n\n\n", fpixel_c[0],
-	 fpixel_c[1], lpixel_c[0], lpixel_c[1]);
-  */
-}
-
-
-
-
-
 
 
 
@@ -370,6 +249,8 @@ cropname(struct cropparams *crp)
 
 
 
+/* Find the first and last pixel of a crop from its center point (in
+   image mode or WCS mode). */
 void
 cropflpixel(struct cropparams *crp)
 {
@@ -413,6 +294,7 @@ cropflpixel(struct cropparams *crp)
 	  "neither imgmode or wcsmode are set. Please contact us so "
 	  "we can see how it got to this impossible place.");
 }
+
 
 
 
@@ -526,13 +408,12 @@ onecrop(struct cropparams *crp)
 
   void *array;
   size_t cropsize;
-  long *naxes=img->naxes;
   char basename[FLEN_KEYWORD];
   long fpixel_i[2] , lpixel_i[2];
   fitsfile *ifp=crp->infits, *ofp;
   struct fitsheaderll *headers=NULL;
   int status=0, anynul=0, bitpix=p->bitpix;
-  long fpixel_c[2], lpixel_c[2], inc[2]={1,1};
+  long fpixel_o[2], lpixel_o[2], inc[2]={1,1};
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
 
 
@@ -543,67 +424,59 @@ onecrop(struct cropparams *crp)
   lpixel_i[0]=crp->lpixel[0];      lpixel_i[1]=crp->lpixel[1];
 
 
-  /* Correct the sizes if they are out of the image */
-  correctflpixels(naxes, fpixel_i, lpixel_i, fpixel_c, lpixel_c);
+  /* Find the overlap and apply it if there is any overlap. */
+  if( overlap(img->naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o) )
+    {
+      /* Make the output FITS image and initialize it with an array of
+	 NaN or BLANK values. Note that for FLOAT_IMG and DOUBLE_IMG,
+	 it will automatically fill them with the NaN value.*/
+      if(crp->outfits==NULL)
+	firstcropmakearray(crp, fpixel_i, lpixel_i, fpixel_o, lpixel_o);
+      ofp=crp->outfits;
 
 
-  /* In correctflpixels, we checked the fpixels if they are below the
-     image range and we checked lpixels to see if they are out of
-     it. However, if lpixel is smaller than the image pixel range or
-     fpixel is larger, then the whole box is out of the image.*/
-  if(fpixel_i[0]>naxes[0] || fpixel_i[1]>naxes[1]
-     || lpixel_i[0]<1 || lpixel_i[1]<1)
-    return;
+      /* Read the desired part of the image, then write it into this
+	 array. */
+      cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
+      array=bitpixalloc(cropsize, bitpix);
+      status=0;
+      if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
+			  p->bitnul, array, &anynul, &status))
+	fitsioerror(status, NULL);
 
 
-  /* Make the output FITS image and initialize it with an array of NaN
-     or BLANK values. Note that for FLOAT_IMG and DOUBLE_IMG, it will
-     automatically fill them with the NaN value.*/
-  if(crp->outfits==NULL)
-    firstcropmakearray(crp, fpixel_i, lpixel_i, fpixel_c, lpixel_c);
-  ofp=crp->outfits;
+      /* If we have a floating point or double image, pixels with zero
+	 value should actually be a NaN. Unless the user specificly
+	 asks for it, make the conversion.*/
+      if(p->zeroisnotblank==0
+	 && (bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG) )
+	changezerotonan(array, cropsize, bitpix);
 
 
-  /* Read the desired part of the image, then write it into this
-     array. */
-  cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
-  array=bitpixalloc(cropsize, bitpix);
-  status=0;
-  if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
-		      p->bitnul, array, &anynul, &status))
-    fitsioerror(status, NULL);
+      /* Write the array into the image. */
+      status=0;
+      if( fits_write_subset(ofp, p->datatype, fpixel_o, lpixel_o,
+			    array, &status) )
+	fitsioerror(status, NULL);
 
 
-  /* If we have a floating point or double image, pixels with zero
-     value should actually be a NaN. Unless the user specificly asks
-     for it, make the conversion.*/
-  if(p->zeroisnotblank==0
-     && (bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG) )
-    changezerotonan(array, cropsize, bitpix);
+      /* A section has been added to the cropped image from this input
+	 image, so increment crp->imgcount and save the information of
+	 this image. */
+      sprintf(basename, "ICF%lu", ++p->log[crp->outindex].numimg);
+      filenameinkeywords(basename, img->name, &headers);
+      sprintf(regionkey, "%sPIX", basename);
+      sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
+	      fpixel_i[1], lpixel_i[1]+1);
+      add_to_fitsheaderllend(&headers, TSTRING, regionkey, 0, region, 0,
+			     "Range of pixels used for this output.",
+			     0, NULL);
+      updatekeys(ofp, &headers);
 
 
-  /* Write the array into the image. */
-  status=0;
-  if( fits_write_subset(ofp, p->datatype, fpixel_c, lpixel_c,
-			array, &status) )
-    fitsioerror(status, NULL);
-
-
-  /* A section has been added to the cropped image from this input
-     image, so increment crp->imgcount and save the information of
-     this image. */
-  sprintf(basename, "ICF%lu", ++p->log[crp->outindex].numimg);
-  filenameinkeywords(basename, img->name, &headers);
-  sprintf(regionkey, "%sPIX", basename);
-  sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
-	  fpixel_i[1], lpixel_i[1]+1);
-  add_to_fitsheaderllend(&headers, TSTRING, regionkey, 0, region, 0,
-			 "Range of pixels used for this output.", 0, NULL);
-  updatekeys(ofp, &headers);
-
-
-  /* Free the allocated array. */
-  free(array);
+      /* Free the allocated array. */
+      free(array);
+    }
   return;
 }
 

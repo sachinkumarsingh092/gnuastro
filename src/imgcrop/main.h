@@ -126,7 +126,7 @@ struct imgcropparams
   char          *section;  /* Section string.            */
   double              xc;  /* The center point, one crop (FITS stnrd). */
   double              yc;  /* The center point, one crop (FITS stnrd). */
-  size_t          iwidth;  /* Image mode width (in pixels).            */
+  long         iwidth[2];  /* Image mode width (in pixels).            */
   size_t           racol;  /* Catalog RA column                        */
   size_t          deccol;  /* Catalog Dec column                       */
   double              ra;  /* RA of one crop box center.               */

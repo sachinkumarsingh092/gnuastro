@@ -22,6 +22,8 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #define COPYRIGHT_H
 
 #define SHORTCOPYRIGHT "Copyright (C) 2013-2015, Free Software Foundation."
+
+
 #define SHORTLICENSE   "License GPLv3+: GNU General public license version 3 or later."
 
 
@@ -29,7 +31,10 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
   "This is free software: you are free to change and redistribute it.\n" \
   "There is NO WARRANTY, to the extent permitted by law."		\
 
+
 #define TOPHELPINFO   "\n"SPACK_NAME" is part of "PACKAGE_STRING".\n"
+
+
 
 /* This is fixed for all the packages. */
 #define MOREHELPINFO   "\nFor more information, please run any of the "	\
@@ -42,5 +47,25 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
   SPACK_NAME" was configured on this system at "CONFIGDATE", "		\
   CONFIGTIME".\n\n"							\
   "Options:"								\
+
+
+
+#define ASTRUTILSBIBTEX 						\
+    "@ARTICLE{AstrUtils,\n"						\
+    "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"		\
+    "    title = \"{Noise based detection and segmentation of amorphous" \
+    "  signal}\"\n"							\
+    "  journal = {\\apjs},\n"						\
+    " keywords = {galaxies: irregular, galaxies: photometry, galaxies: " \
+    "structure, methods: data analysis, techniques: image processing, "	\
+    "techniques: photometric},\n"					\
+    "     year = 2015,\n"						\
+    "    month = XXX,\n"						\
+    "   volume = XXX,\n"						\
+    "      eid = {XX},\n"						\
+    "    pages = {XX},\n"						\
+    "      doi = {XXXXXXXXX},\n"					\
+    "   adsurl = {XXXXXXXXXXXXXXXXXXXXXX},\n"				\
+    "}"									\
 
 #endif

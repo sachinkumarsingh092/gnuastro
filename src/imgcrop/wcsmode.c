@@ -92,12 +92,13 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 	error(EXIT_FAILURE, 0, "--wwidth = %f (arcseconds) translates "
 	      "to %.0f pixels in scale of input image(s). This is probably "
 	      "not what you want!", p->wwidth*3600, twidth);
-      p->iwidth = (twidth-(long)twidth)>0.5 ? twidth+1 : twidth;
-      if(p->iwidth%2==0)
+      p->iwidth[0] = (twidth-(long)twidth)>0.5 ? twidth+1 : twidth;
+      if(p->iwidth[0]%2==0)
 	{
-	  ++p->iwidth;
+	  p->iwidth[0]+=1;
 	  p->wwidth+=p->res;
 	}
+      p->iwidth[1]=p->iwidth[0];
     }
   else
     if(p->res!=wcs->pc[3])
