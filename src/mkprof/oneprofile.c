@@ -241,6 +241,7 @@ makepixbypix(struct mkonthread *mkp)
   unsigned char *byt;
   int use_rand_points=1;
   float *img=mkp->ibq->img;
+  struct builtqueue *ibq=mkp->ibq;
   size_t is1=mkp->width[0], is0=mkp->width[1];
   size_t p, ngb[4], *ind=&p, numngb, *n, *nf, x, y;
   double tolerance=mkp->p->tolerance, pixfrac, junk;
@@ -266,7 +267,7 @@ makepixbypix(struct mkonthread *mkp)
   byt=calloc(is0*is1, sizeof *byt);
   if(byt==NULL)
     error(EXIT_FAILURE, 0, "%lu bytes for map of object in row %lu of "
-	  "data in %s.", is0*is1*sizeof *byt, mkp->ibq->id,
+	  "data in %s.", is0*is1*sizeof *byt, ibq->id,
 	  mkp->p->up.catname);
 
   /* Start filling the queue. */
@@ -304,6 +305,11 @@ makepixbypix(struct mkonthread *mkp)
       approx=profile(mkp);
       if (fabs(img[p]-approx)/img[p] < tolerance)
 	use_rand_points=0;
+
+      /* For the log file: */
+      ++ibq->numaccu;
+      ibq->accufrac+=img[p];
+
       /*
       printf("\tac: %f, ap: %f, frac: %f\n", img[p], approx,
 	     fabs(img[p]-approx)/img[p]);
@@ -396,19 +402,19 @@ setprofparams(struct mkonthread *mkp)
 
   /* Fill in the profile independant parameters. */
   cat=&p->cat[mkp->ibq->id*p->cs1];
-  cat[p->xcol] += p->shift[0];
-  cat[p->ycol] += p->shift[1];
-  mkp->c        = cos((90-cat[p->pcol])*DEGREESTORADIANS);
-  mkp->s        = sin((90-cat[p->pcol])*DEGREESTORADIANS);
-  mkp->q        = cat[p->qcol];
-  mkp->totflux  = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
-  mkp->type     = cat[p->fcol];
+  cat[p->xcol]   += p->shift[0];
+  cat[p->ycol]   += p->shift[1];
+  mkp->c          = cos((90-cat[p->pcol])*DEGREESTORADIANS);
+  mkp->s          = sin((90-cat[p->pcol])*DEGREESTORADIANS);
+  mkp->q          = cat[p->qcol];
+  mkp->totflux    = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
+  mkp->type       = cat[p->fcol];
 
   /* Fill the profile dependent parameters. */
   switch (mkp->type)
     {
     case SERSICCODE:
-      mkp->ispsf            = 0;
+      mkp->ibq->ispsf       = 0;
       mkp->profile          = &Sersic;
       mkp->sersic_re        = cat[rcol];
       mkp->sersic_inv_n     = 1.0f/cat[p->ncol];
@@ -417,7 +423,7 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     case MOFFATCODE:
-      mkp->ispsf            = 1;
+      mkp->ibq->ispsf       = 1;
       mkp->profile          = &Moffat;
       mkp->moffat_nb        = -1.0f*cat[p->ncol];
       mkp->moffat_alphasq   = moffat_alpha(cat[rcol], cat[p->ncol]);
@@ -428,7 +434,7 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     case GAUSSIANCODE:
-      mkp->ispsf            = 1;
+      mkp->ibq->ispsf       = 1;
       mkp->profile          = &Gaussian;
       sigma                 = cat[rcol]/2.35482f;
       mkp->gaussian_c       = -1.0f/(2.0f*sigma*sigma);
@@ -438,7 +444,7 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     case POINTCODE:
-      mkp->ispsf            = 0;
+      mkp->ibq->ispsf       = 0;
       mkp->profile          = &Point;
       mkp->point_v          = 1;
       break;
@@ -485,6 +491,7 @@ makeoneprofile(struct mkonthread *mkp)
      onversampling). */
   mkp->width[0] *= mkp->p->oversample;
   mkp->width[1] *= mkp->p->oversample;
+  mkp->ibq->imgwidth = mkp->width[0];
 
 
   /* Allocate the array and build it. */
@@ -502,6 +509,7 @@ makeoneprofile(struct mkonthread *mkp)
 
   /* Correct the sum of pixels in it. */
   sum=floatsum(mkp->ibq->img, size);
+  mkp->ibq->accufrac/=sum;
   fmultipconst(mkp->ibq->img, size, mkp->totflux/sum);
 
 

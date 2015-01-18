@@ -31,6 +31,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include "checkset.h"
 #include "statistics.h"
 #include "arraymanip.h"
+#include "txtarrayvv.h"
 #include "astrthreads.h"
 #include "fitsarrayvv.h"
 
@@ -70,7 +71,12 @@ builtqueue_addempty(struct builtqueue **bq)
   if(tbq==NULL)
     error(EXIT_FAILURE, 0, "%lu byte element in builtqueue_addempty.",
 	  sizeof *tbq);
+
+  /* Initialize some of the values. */
   tbq->img=NULL;
+  tbq->numaccu=0;
+  tbq->accufrac=0.0f;
+  tbq->indivcreated=0;
 
   /* Set its next element to the input bq and re-set the input bq. */
   tbq->next=*bq;
@@ -105,10 +111,11 @@ saveindividual(struct mkonthread *mkp)
 {
   size_t len;
   char *jobname;
-  char *outname, *outdir=mkp->p->cp.output;
+  struct mkprofparams *p=mkp->p;
+  char *outname, *outdir=p->cp.output;
 
   /* Save the array to an image. */
-  if(mkp->p->dir0file1==0)
+  if(p->dir0file1==0)
     len=strlen(outdir)+NUMBERNAMESTRLEN;
   else
     {
@@ -122,31 +129,28 @@ saveindividual(struct mkonthread *mkp)
   if(outname==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for name of object in "
 	  "row %lu of %s", len*sizeof *outname, mkp->ibq->id,
-	  mkp->p->up.catname);
+	  p->up.catname);
 
   /* Write the name and save the FITS image: */
   sprintf(outname, "%s%lu.fits", outdir, mkp->ibq->id+1);
-  checkremovefile(outname, mkp->p->cp.dontdelete);
+  checkremovefile(outname, p->cp.dontdelete);
   arraytofitsimg(outname, "MockImg", FLOAT_IMG, mkp->ibq->img,
-		 mkp->p->oversample*mkp->width[1],
-		 mkp->p->oversample*mkp->width[0],
+		 p->oversample*mkp->width[1],
+		 p->oversample*mkp->width[0],
 		 NULL, SPACK_STRING);
+  mkp->ibq->indivcreated=1;
 
   /* Report if in verbose mode. */
-  if(mkp->p->cp.verb)
+  if(p->cp.verb)
     {
       errno=0;
-      jobname=malloc(len+100*sizeof *jobname);
+      jobname=malloc((len+100)*sizeof *jobname);
       if(jobname==NULL)	error(EXIT_FAILURE, errno, "jobname in mkprof.c");
       sprintf(jobname, "%s created.", outname);
       reporttiming(NULL, jobname, 2);
       free(jobname);
     }
   free(outname);
-
-  /* Free the image array. */
-  free(mkp->ibq->img);
-  mkp->ibq->img=NULL;
 }
 
 
@@ -207,7 +211,7 @@ build(void *inparam)
   size_t i;
   int lockresult;
   double *cat, pixfrac, junk;
-  struct builtqueue *fbq=NULL;
+  struct builtqueue *ibq, *fbq=NULL;
   pthread_mutex_t *qlock=&p->qlock;
   pthread_cond_t *qready=&p->qready;
   long os=p->oversample, lpixel_o[2];
@@ -222,9 +226,10 @@ build(void *inparam)
 	 fbq->next==NULL. So to add ibq to p->bq, we just have to set
 	 fbq->next=p->bq and then set p->bq to ibq.*/
       builtqueue_addempty(&mkp->ibq);
-      mkp->ibq->id=mkp->indexs[i];
-      if(fbq==NULL) fbq=mkp->ibq;
-      cat=&p->cat[mkp->ibq->id*p->cs1];
+      ibq=mkp->ibq;
+      ibq->id=mkp->indexs[i];
+      if(fbq==NULL) fbq=ibq;
+      cat=&p->cat[ibq->id*p->cs1];
 
 
       /* Prepare the parameter for building the profile.*/
@@ -247,25 +252,31 @@ build(void *inparam)
 		  + (pixfrac<0.50f ? os/2 : -1*os/2-1) );
       mkp->yc = round(mkp->yc*100)/100;
 
-      pixfrac = modf(fabs(cat[p->ycol]), &junk);;
+      pixfrac = modf(fabs(cat[p->ycol]), &junk);
       mkp->xc = ( os*(mkp->width[1]/2 + pixfrac)
 		  + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
       mkp->xc = round(mkp->xc*100)/100;
 
+
       /* Get the overlapping pixels using the starting points. */
       borderfromcenter(cat[p->xcol], cat[p->ycol], mkp->width,
-		       mkp->ibq->fpixel_i, mkp->ibq->lpixel_i);
-      if(p->individual
-	 || overlap(p->naxes, mkp->ibq->fpixel_i, mkp->ibq->lpixel_i,
-		    mkp->ibq->fpixel_o, lpixel_o))
-	makeoneprofile(mkp);
+		       ibq->fpixel_i, ibq->lpixel_i);
+      ibq->overlaps = overlap(p->naxes, ibq->fpixel_i, ibq->lpixel_i,
+			      ibq->fpixel_o, lpixel_o);
+      if(ibq->overlaps || p->individual || (ibq->ispsf && p->psfinimg==0))
+	{
+	  makeoneprofile(mkp);
+	  if( p->individual || (ibq->ispsf && p->psfinimg==0))
+	    {
+	      saveindividual(mkp);
+	      if(ibq->ispsf && p->psfinimg==0)
+		/* write function won't write to image. */
+		ibq->overlaps=0;
+	    }
+	}
 
 
-      /* For individually built images. */
-      if( p->individual || (mkp->ispsf && p->psfinimg==0) )
-	saveindividual(mkp);
-
-      /* Add ibq to bq. */
+      /* Add ibq to bq if you can lock the mutex. */
       if(p->cp.numthreads>1)
 	{
 	  /* Try locking the mutex so no thread can change the value
@@ -275,11 +286,11 @@ build(void *inparam)
 	     the next profiles) until you find a chance to lock the
 	     mutex. */
 	  lockresult=pthread_mutex_trylock(qlock);
-	  if(lockresult==0)		/* Mutex was successfully locked. */
+	  if(lockresult==0)     /* Mutex was successfully locked. */
 	    {
 	      /* Add this internal queue to system queue. */
 	      fbq->next=p->bq;
-	      p->bq=mkp->ibq;
+	      p->bq=ibq;
 
 	      /* If the list was empty when you locked the mutex, then
 		 either `write` is waiting behind a condition variable
@@ -333,12 +344,52 @@ build(void *inparam)
 /************              The writer             *************/
 /**************************************************************/
 void
+writelog(struct mkprofparams *p)
+{
+  char comments[1000];
+  int space[]={6, 10, 15}, prec[]={3, 6};
+  int int_cols[]={0, 2, 4, -1}, accu_cols[]={-1};
+
+  sprintf(comments, "# Log file for "SPACK_STRING".\n"
+	  "# Run on %s"
+	  "# Column 0: Row number in catalog (starting from zero).\n"
+	  "# Column 1: Overlap magnitude with final image "
+	  "(zeropoint: %.3f).\n"
+	  "# Column 2: Number of Monte Carlo integration pixels.\n"
+	  "# Column 3: Fraction of flux in Monte Carlo integration pixels.\n"
+	  "# Column 4: An individual image was created.\n",
+	  ctime(&p->rawtime), p->zeropoint);
+
+
+  arraytotxt(p->log, p->cs0, LOGNUMCOLS, comments, int_cols,
+	     accu_cols, space, prec, 'f', LOGFILENAME);
+}
+
+
+
+
+
+void
 write(struct mkprofparams *p)
 {
-  size_t complete=0;
+  char *jobname;
+  double sum, *log;
+  struct timeval t1;
+  int verb=p->cp.verb;
+  long os=p->oversample;
   struct builtqueue *ibq=NULL, *tbq;
+  size_t i, j, iw, jw, ii, jj, w, ow;
+  size_t complete=0, cs0=p->cs0, size;
+  float *img, *to, *from, *colend, *rowend;
 
   /* Allocate the output array. */
+  errno=0;
+  w=p->naxes[0]*p->oversample;
+  size=p->naxes[0]*p->naxes[1]*p->oversample*p->oversample;
+  img=calloc(size, sizeof *img);
+  if(img==NULL)
+    error(EXIT_FAILURE, 0, "%lu bytes for output image", size*sizeof *img);
+
 
   /* Write each image into the output array. */
   while(complete<p->cs0)
@@ -358,9 +409,71 @@ write(struct mkprofparams *p)
 	      pthread_mutex_unlock(&p->qlock);
 	    }
 	}
+      sum=0.0f;
 
-      /* Write the array pointed to by ibq into the output image and
-	 also fill the log. */
+      /* Write the array pointed to by ibq into the output image. Note
+	 that the FITS and C arrays have opposite axis orders and FITS
+	 counting starts from 1, not zero. Also fpixel is the first
+	 (inclusive) pixel and so is lpixel (it is inclusive). */
+      if(ibq->overlaps && p->nomerged==0)
+	{
+	  /* Set the starting and ending points in the complete image. */
+	  i  = os * (ibq->fpixel_i[1]-1);
+	  j  = os * (ibq->fpixel_i[0]-1);
+
+	  /* Set the starting and ending points in the overlapping
+	     image. Note that oversampling has already been taken
+	     into account in ibq->imgwidth. */
+	  ow = ibq->imgwidth;
+	  ii = os * (ibq->fpixel_o[1]-1);
+	  jj = os * (ibq->fpixel_o[0]-1);
+
+	  /* Find the width of the overlapping region: */
+	  iw = os*(ibq->lpixel_i[1]-ibq->fpixel_i[1]+1);
+	  jw = os*(ibq->lpixel_i[0]-ibq->fpixel_i[0]+1);
+
+	  /* Write the overlap to the actual image. Instead of writing
+	     two for loops and summing all the row and column indexs
+	     for every pixel and each image, we use pointer arithmetic
+	     which is much more efficient. Just think of one pointer
+	     that is advancing over the final image (*to) and one that
+	     is advancing over the overlap image (*from). Since we
+	     know the images overlap, iw and jw are both smaller than
+	     the two image number of columns and number of rows, so
+	     w-jw and ow-jw will always be positive. */
+	  to=img+i*w+j;
+	  from=ibq->img+ii*ow+jj;
+	  rowend=to+iw*w;
+	  do
+	    {
+	      colend=to+jw;
+	      do {sum+=*from; *to+=*from++;} while(++to<colend);
+	      to+=w-jw; from+=ow-jw;		     /* Go to next row. */
+	    }
+	  while(to<rowend);
+	}
+
+      /* Fill the log array. */
+      log=&p->log[ibq->id*LOGNUMCOLS];
+      log[0] = ibq->id;
+      log[1] = sum>0.0f ? -2.5f*log10(sum)+p->zeropoint : NAN;
+      log[2] = ibq->numaccu;
+      log[3] = ibq->accufrac;
+      log[4] = ibq->indivcreated;
+
+      /* Report if in verbose mode. */
+      ++complete;
+      if(verb && p->nomerged==0)
+	{
+	  errno=0;
+	  jobname=malloc(100*sizeof *jobname);
+	  if(jobname==NULL)
+	    error(EXIT_FAILURE, errno, "jobname in mkprof.c");
+	  sprintf(jobname, "Row %lu complete, %lu left to go.",
+		  ibq->id, cs0-complete);
+	  reporttiming(NULL, jobname, 2);
+	  free(jobname);
+	}
 
       /* Free the array and the queue element and change it to the
 	 next one and increment complete. Note that there is no
@@ -370,10 +483,26 @@ write(struct mkprofparams *p)
       tbq=ibq->next;
       free(ibq);
       ibq=tbq;
-      ++complete;
     }
 
   /* Write the final array to the final FITS image. */
+  if(p->nomerged==0)
+    {
+      if(verb) gettimeofday(&t1, NULL);
+      arraytofitsimg(p->mergedimgname, "MockImg", FLOAT_IMG, img,
+		     p->oversample*p->naxes[1], p->oversample*p->naxes[0],
+		     NULL, SPACK_STRING);
+      if(verb)
+	{
+	  errno=0;
+	  jobname=malloc((strlen(p->mergedimgname)+100)*sizeof *jobname);
+	  if(jobname==NULL)
+	    error(EXIT_FAILURE, errno, "final report in mkprof.c");
+	  sprintf(jobname, "%s created.", p->mergedimgname);
+	  reporttiming(&t1, jobname, 1);
+	  free(jobname);
+	}
+    }
 }
 
 
@@ -464,7 +593,7 @@ mkprof(struct mkprofparams *p)
 
   /* Write the created arrays into the image. */
   write(p);
-
+  writelog(p);
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy
      the attribute and barrier. */

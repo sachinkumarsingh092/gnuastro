@@ -35,7 +35,7 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #define SPACK_NAME      "MakeProfiles"     /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION
 #define LOGFILENAME     SPACK".log"
-#define LOGNUMCOLS      6
+#define LOGNUMCOLS      5
 
 #define DEGREESTORADIANS M_PI/180.0f
 
@@ -48,22 +48,29 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 /* Log columns:
 
    0: ID.
-   1: Overlap flux.
-   2: Overlap first pixel (first axis) fpixel_o[0].
-   3: Overlap first pixel (second axis) fpixel_o[1].
-   4: Overlap second pixel (first axis) lpixel_o[0].
-   5: Overlap second pixel (second axis) lpixel_o[1].
+   1: Overlap magnitude.
+   2: Number of accurate pixels.
+   3: Fraction of accurate values.
+   4: Is individual file created?
  */
 
 
 struct builtqueue
 {
-  size_t               id;	/* ID of this object.             */
-  float              *img;	/* Array of this profile's image. */
-  long        fpixel_i[2];	/* First pixel in output image.   */
-  long        lpixel_i[2];      /* Last pixel in output image.    */
-  long        fpixel_o[2];	/* First pixel in this array.     */
-  struct builtqueue *next;	/* Pointer to next element.       */
+  size_t               id;    /* ID of this object.                  */
+  int               ispsf;    /* This is a PSF profile.              */
+  int            overlaps;    /* ==1: Overlaps with the image.       */
+  float              *img;    /* Array of this profile's image.      */
+  size_t         imgwidth;    /* Width of *img.                      */
+  long        fpixel_i[2];    /* First pixel in output image.        */
+  long        lpixel_i[2];    /* Last pixel in output image.         */
+  long        fpixel_o[2];    /* First pixel in this array.          */
+
+  int        indivcreated;    /* ==1: an individual file is created. */
+  size_t          numaccu;    /* Number of accurate pixels.          */
+  double         accufrac;    /* Difference of accurate values.      */
+
+  struct builtqueue *next;    /* Pointer to next element.            */
 };
 
 
@@ -136,6 +143,7 @@ struct mkprofparams
   size_t            tcol;  /* Truncation of the profiles.              */
 
   /* Output */
+  int           nomerged;  /* ==1: Don't make a merged image of all.   */
   long          naxes[2];  /* Size of the output image.                */
   long          shift[2];  /* Shift along axeses position of profiles. */
   size_t      oversample;  /* Oversampling scale.                      */
@@ -151,6 +159,7 @@ struct mkprofparams
   pthread_cond_t  qready;  /* bq is ready to be written.               */
   pthread_mutex_t  qlock;  /* Mutex lock to change builtq.             */
   double       halfpixel;  /* Half pixel in oversampled image.         */
+  char    *mergedimgname;  /* Name of merged image.                    */
 };
 
 #endif

@@ -27,7 +27,6 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 struct mkonthread
 {
   /* General parameters: */
-  int               ispsf;    /* This is a PSF profile.              */
   double                r;    /* Elliptical radius at this point.    */
   double                x;    /* x value of this point.              */
   double               xl;    /* lower  x boundary                   */

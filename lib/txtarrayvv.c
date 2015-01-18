@@ -274,7 +274,7 @@ txttoarray(char *filename, double **array, size_t *s0, size_t *s1)
    is suitable for printing.  */
 void
 doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
-	     int *space, int *prec)
+	     int *space, int *prec, char forg)
 {
   int i,j, found=0;
 
@@ -295,7 +295,7 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
 	  if (int_cols[j]<0) break;
 	  if (i==int_cols[j])
             {
-	      sprintf(fmt[i], "%%-%d.0g", space[0]);
+	      sprintf(fmt[i], "%%-%d.0%c", space[0], forg);
 	      found=1;break;
             }
         }
@@ -308,14 +308,14 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
 	  if (accu_cols[j]<0) break;
 	  if (i==accu_cols[j])
             {
-	      sprintf(fmt[i], "%%-%d.%dg", space[2], prec[1]);
+	      sprintf(fmt[i], "%%-%d.%d%c", space[2], prec[1], forg);
 	      found=1;break;
             }
         }
       if (found==1) continue;
 
       /* It is neither of the above, so it is a normal precision column. */
-      sprintf(fmt[i], "%%-%d.%dg", space[1], prec[0]);
+      sprintf(fmt[i], "%%-%d.%d%c", space[1], prec[0], forg);
     }
 }
 
@@ -349,7 +349,7 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
 void
 arraytotxt(double *array, size_t s0, size_t s1, char *comments,
 	   int *int_cols, int *accu_cols, int *space, int *prec,
-	   const char *filename)
+	   char forg, const char *filename)
 {
   int i,j;
   FILE *fp;
@@ -381,7 +381,7 @@ arraytotxt(double *array, size_t s0, size_t s1, char *comments,
 	  "column with %lu elements", s1);
 
   /* Prepare the formatting for each column */
-  doformatting(s1, fmt, int_cols, accu_cols, space, prec);
+  doformatting(s1, fmt, int_cols, accu_cols, space, prec, forg);
 
   /* Open the output file: */
   errno=0;

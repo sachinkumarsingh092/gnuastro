@@ -97,6 +97,11 @@ borderfromcenter(double xc, double yc, long *width,
   /* Set the initial values for the actual image: */
   fpixel[0]=lxc-width[0]/2;      fpixel[1]=lyc-width[1]/2;
   lpixel[0]=lxc+width[0]/2;      lpixel[1]=lyc+width[1]/2;
+
+  /*
+  printf("(%ld, %ld) -- (%ld, %ld)\n", fpixel[0],
+	 fpixel[1], lpixel[0], lpixel[1]);
+  */
 }
 
 
@@ -234,11 +239,7 @@ overlap(long *naxes, long *fpixel_i, long *lpixel_i,
       lpixel_i[1]=naxes[1];
     }
 
-  /* In case you wish to see the results.  The +1 in the final size
-     section is because of the cfitsio standard. An array of size 3
-     will have elements {1,2,3}, but the last element subtracted from
-     the first is 3-1=2, which doesn't show the number of pixels in
-     it, it has to be increased by a unit!
+  /* In case you wish to see the results.
   printf("\nAfter correction:\n");
   printf("Input image: (%ld, %ld) -- (%ld, %ld)\n", fpixel_i[0],
 	 fpixel_i[1], lpixel_i[0], lpixel_i[1]);

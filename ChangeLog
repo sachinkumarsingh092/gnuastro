@@ -1,3 +1,13 @@
+2015-01-18  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/mkprof/mkprof.c (writelog): Added.
+	(write): Completed.
+
+	* src/mkprof/args.h (arg_option): Added `--nomerged`.
+
+	* lib/txtarrayvv.c (doformatting): Added option to use `f` in
+	printf or `g`.
+
 2015-01-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/mkprof/mkprof.c (builtqueue_addempty): Added.

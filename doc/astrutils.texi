@@ -305,9 +305,9 @@ Modeling basics
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
 * Oversampling::                Oversampling the model.
-* Adding noise::                What the noise is and how it is
+* Noise::
 
-Adding noise
+Noise
 
 * Photon counting noise::       Poisson noise
 * Instrumental noise::          Readout, dark current and other sources.
@@ -3652,7 +3652,7 @@ familiar with these concepts.
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
 * Oversampling::                Oversampling the model.
-* Adding noise::                What the noise is and how it is
+* Noise::                       The basics of noise.
 @end menu
 
 @node Defining an ellipse, PSF, Modeling basics, Modeling basics
@@ -3873,42 +3873,31 @@ pixel and assign that as the final value of the pixel.
 As you approach their center, some galaxies become very sharp (their
 value significantly changes over one pixel's area). This sharpness
 increases with smaller effective radius and larger S@'ersic values.
-Thus rendering the central value extremely inaccruate.
-
-The first method that comes to mind for solving this problem is
-integration, we can integrate the functional form of the profile over
-the pixel area in a 2D integration process. In the utilities of this
-section we use the Gauss-Kronrod-Patterson abscissae as provided in
-the GNU scientific library. This is certainly far more accurate than
-the central value but unfortunately numerical integration techniques
-also have their limitations and when such sharp profiles are needed
-they can become extremely inaccurate.
+Thus rendering the central value extremely inaccruate. The first
+method that comes to mind for solving this problem is integration, we
+can integrate the functional form of the profile over the pixel area
+in a 2D integration process. However, unfortunately numerical
+integration techniques also have their limitations and when such sharp
+profiles are needed they can become extremely inaccurate.
 
 The most accurate method to try to sample a continuous profile on a
 discrete space (sampling) is by choosing a large number of random
 points within the boundaries of the pixel and taking their average
 value (or Monte Carlo integration). This is also, generally speaking,
-what happens in practice with the photons on the CCD. Here we use
-@mymath{10^4} random points within the pixel area.
+what happens in practice with the photons on the pixel. The number of
+random points can be set with @option{--numrandom}.
 
-It would be ideal if we could use the @mymath{10^4} or even larger
-number of random points, to fill all the pixels, to be more accurate
-and also to be closer to what really happens. But unfortunately, such
-a process would be extremely time and CPU consuming. In order to not
-loose too much accuracy, in MakeProfiles, we build the profile using all
-the three methods explained above.
+Unfortunately, repeating this MonteCarlo process would be extremely
+time and CPU consuming if it is to be applied to every pixel. In order
+to not loose too much accuracy, in MakeProfiles, we build the profile
+using both methods explained above. The building of the profile
+begins from its central pixel and continues outwards. We try Monte
+Carlo integration (which yields @mymath{F_r}) and central pixel value
+(@mymath{F_c}) on the same pixel. If the fractional difference
+(@mymath{|F_r-F_c|/F_r}) is lower than a given tolerance level we will
+stop using random points and only use the central pixel value.
 
-The building of the profile begins from its central pixel and
-continues outwards. First we try both @mymath{10^4} random points
-(which yields @mymath{F_r}) and integration (@mymath{F_i}) over the
-same pixel. If the fractional difference (@mymath{|F_r-F_i|/F_r}) is
-lower than a given tolerance level we will stop using random points
-and only use integration. As we go to farther regions in the profile,
-the difference between integration and using the central value
-(@mymath{F_c}) will also go below the same tolerance level and beyond
-that point we only use the central value.
-
-This inside-out construction is done based on
+The ordering of the pixels in this inside-out construction is based on
 @mymath{r=\sqrt{(i_c-i)^2+(j_c-j)^2}}, not @mymath{r_{el}}, see
 @ref{Defining an ellipse}. When the axis ratios are large (near one)
 this is fine. But when they are small and the object is highly
@@ -3916,17 +3905,17 @@ elliptical, it might seem more reasonable to follow @mymath{r_{el}}
 not @mymath{r}. The problem is that the gradient is stronger in pixels
 with smaller @mymath{r} (and larger @mymath{r_{el}}) than those with
 smaller @mymath{r_{el}}. In other words, the gradient is strongest
-along the minor axis. So if we follow the pixels based on distance, we
-will reach the tolerance level sooner and miss lots of pixels with
-large difference between the more accurate and less acurate sampling
-methods.
+along the minor axis. So if we follow the pixels based on
+@mymath{r_{el}}, we will reach the tolerance level sooner and miss
+lots of pixels with large difference between the more accurate and
+less acurate sampling methods.
 
 
 
 
 
 
-@node Oversampling, Adding noise, Sampling from a function, Modeling basics
+@node Oversampling, Noise, Sampling from a function, Modeling basics
 @subsection Oversampling
 
 The steps explained in @ref{Sampling from a function} do give an
@@ -3957,8 +3946,8 @@ a continues space like all the prior steps.
 
 
 
-@node Adding noise,  , Oversampling, Modeling basics
-@subsection Adding noise
+@node Noise,  , Oversampling, Modeling basics
+@subsection Noise
 @cindex Image noise
 @cindex Noise
 Deep astronomical images, like those used in extra galactic studies
@@ -3971,7 +3960,7 @@ sources of noise in an astronomical image are:
 * Final noised pixel value::    How the final noised value is calculated.
 @end menu
 
-@node Photon counting noise, Instrumental noise, Adding noise, Adding noise
+@node Photon counting noise, Instrumental noise, Noise, Noise
 @subsubsection Photon counting noise
 Thanks to the very accurate electronics used in today's CCDs, this
 type of noise is the main cause of concern for extra galactic studies.
@@ -4050,7 +4039,7 @@ deviation (@mymath{\sigma}):
 
 @dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
 
-@node Instrumental noise, Final noised pixel value, Photon counting noise, Adding noise
+@node Instrumental noise, Final noised pixel value, Photon counting noise, Noise
 @subsubsection Instrumental noise
 While taking images with a camera, a dark current is fed to the
 pixels, the variation of the value of this dark current over the
@@ -4066,7 +4055,7 @@ value chosen from a Gaussian distribution with
 @dispmath{\mu=I_{nn}, \quad \sigma=\sqrt{C^2+I_{nn}}}
 
 
-@node Final noised pixel value,  , Instrumental noise, Adding noise
+@node Final noised pixel value,  , Instrumental noise, Noise
 @subsubsection Final noised pixel value
 Depending on the values you specify for @mymath{B} and @mymath{C} from
 the above, the final noised value for each pixel is a random value
@@ -4280,16 +4269,27 @@ positions are ignored.
 
 @item -i
 @itemx --individual
-If this option is called, the profiles are not put into one output
-image, instead, each profile is created in a separate FITS image named
-with the row number of the profile in the catalog. In this case, only
-the subpixel position of the profile center is important. The output
-will have an odd number of pixels.
+If this option is called, each profile is created in a separate FITS
+image named with the row number of the profile in the catalog. In this
+case, only the subpixel position of the profile center is
+important.
 
-In case the shift paramters are set with @option{--xshift},
-@option{--yshift} or @option{--prepforconv} this image is also
-enlarged with the same parameters. This is useful for individual
-modeling in the fitting procedures.
+The output will have an odd number of pixels. If there is no
+oversampling, the central pixel will contain the profile center. If
+the value to @option{--oversample} is larger than unity, then the
+profile center is on any of the central @option{--oversample}'d pixels
+depending on the fractional value of the profile center.
+
+If the fractional value is larger than half, it is on the bottom half
+of the central region. This is due to the FITS definition of a real
+number position: The center of a pixel has fractional value
+@mymath{0.00} so the image begins from 0.50 and 0.50.
+
+@item -m
+@itemx --nomerged
+Don't make a merged image. By default after making the profiles, they
+are added to a final image with sides of @option{--naxis1} and
+@option{--naxis2} if they overlap with it.
 
 @end table
 
@@ -4297,6 +4297,11 @@ modeling in the fitting procedures.
 Profiles:
 
 @table @option
+
+@item -r
+@itemx --numrandom
+The number of random points used in the centeral regions of the
+profile, see @ref{Sampling from a function}.
 
 @item -t
 @itemx --tolerance
@@ -4412,22 +4417,18 @@ function, this can easily be extended such that each galaxy has
 separate profiles or different ellipticities.
 
 @item
-Currently MakeProfiles makes mock profiles on a 2D surface, but due to the
-particular way it builds the mock profiles, the infra-structure is
+Currently MakeProfiles makes mock profiles on a 2D surface, but due to
+the particular way it builds the mock profiles, the infra-structure is
 there to make the profiles on a 3D volume and find a real projection
-of a real 3D object. This is also a future upgrade we plan to apply.
+of a real 3D object. Or more generally, make 3D profiles.
 
 @item
-The profiles are built on separate threads, their total magnitude is
-set and then they are all given to one thread to write and free the
-space. To avoid race, the built profiles are temporarily put on a
-queue. So if too many large profiles are requested with a large
-over-sampling, MakeProfiles can easy fill up the whole memory of the
-system and the operating system will kill it.
+Add more progressive states of accuracy: For example the user
+specifies the most accurate, number of points, then each time it is
+compared with 1/10th of that number and so on until a minimum number
+is reached. You don't have to specify two random sets, only one set,
+but stop adding to one sum earlier.
 
-Find a good way to manage memory, such that it would be possible to
-work with any initial memory. Ofcourse the output speed will decrease,
-but that is acceptable in this case.
 @end itemize
 
 

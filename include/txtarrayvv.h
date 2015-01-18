@@ -50,6 +50,6 @@ txttoarray(char *filename, double **array, size_t *s0, size_t *s1);
 void
 arraytotxt(double *array, size_t s0, size_t s1, char *comments,
 	   int *int_cols, int *accu_cols, int *space, int *prec,
-	   const char *filename);
+	   char forg, const char *filename);
 
 #endif

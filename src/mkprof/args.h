@@ -67,7 +67,7 @@ const char doc[] =
 /*
    Available letters (-V which is used by GNU is also removed):
 
-   a d e f g j k l m u v w
+   a d e f g j k l u v w
    A B C E F G H I J L M O Q R T U W Z
 
    Maximum integer used so far: 509.
@@ -139,6 +139,15 @@ static struct argp_option options[] =
       "Build all profiles separately.",
       2
     },
+    {
+      "nomerged",
+      'm',
+      0,
+      0,
+      "Do not create a merged image of all profiles.",
+      2
+    },
+
 
 
 
@@ -365,6 +374,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetlzero(arg, &p->oversample, "oversample", key,
 		 p->cp.spack, NULL, 0);
       p->up.oversampleset=1;
+      break;
+    case 'm':
+      p->nomerged=1;
       break;
 
     /* Profiles: */

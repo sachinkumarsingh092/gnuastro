@@ -479,7 +479,15 @@ sanitycheck(struct mkprofparams *p)
 
   /* Check the output name: */
   p->dir0file1=dir0file1(p->cp.output, p->cp.dontdelete);
-  if(p->dir0file1==0) checkdirwriteaddslash(&p->cp.output);
+  if(p->dir0file1)		/* --output is a file name. */
+    p->mergedimgname=p->cp.output;
+  else				/* --output is a directory name. */
+    {
+      if(p->individual || p->psfinimg==0)
+	checkdirwriteaddslash(&p->cp.output);
+      automaticoutput(p->up.catname, ".fits", p->cp.removedirinfo,
+		      p->cp.dontdelete, &p->mergedimgname);
+    }
 }
 
 
@@ -507,14 +515,11 @@ sanitycheck(struct mkprofparams *p)
 void
 preparearrays(struct mkprofparams *p)
 {
-  if(p->individual==0)
-    {
-      /* Allocate space for the log file: */
-      p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
-      if(p->log==NULL)
-	error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
-	      p->cs0*LOGNUMCOLS*sizeof *p->log);
-    }
+  /* Allocate space for the log file: */
+  p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
+  if(p->log==NULL)
+    error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
+	  p->cs0*LOGNUMCOLS*sizeof *p->log);
 }
 
 
@@ -622,8 +627,15 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
   /* Free all the allocated arrays. */
   free(p->cat);
   free(p->cp.hdu);
-  free(p->cp.output);
   if(p->individual==0) free(p->log);
+
+  /* p->cp.output might be equal to p->mergedimgname. In this case, if
+     we simply free them after each other, there will be a double free
+     error. So after freeing output, we set it to NULL since
+     free(NULL) is ok.*/
+  free(p->cp.output);
+  p->cp.output=NULL;
+  free(p->mergedimgname);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);
