@@ -88,6 +88,10 @@ struct uiparams
      input FITS images that come in from arguments, not options) are
      checked in the args.h files. */
 
+  int          naxis1set;
+  int          naxis2set;
+  int      oversampleset;
+
   int        tunitinpset;
   int       numrandomset;
   int       toleranceset;
@@ -106,9 +110,11 @@ struct uiparams
   int            mcolset;
   int            tcolset;
 
-  int          naxis1set;
-  int          naxis2set;
-  int      oversampleset;
+  int          crpix1set;
+  int          crpix2set;
+  int          crval1set;
+  int          crval2set;
+  int      resolutionset;
 };
 
 
@@ -148,6 +154,11 @@ struct mkprofparams
   long          shift[2];  /* Shift along axeses position of profiles. */
   size_t      oversample;  /* Oversampling scale.                      */
 
+  /* WCS: */
+  double        crpix[2];  /* CRPIX FITS header keywords.              */
+  double        crval[2];  /* CRVAL FITS header keywords.              */
+  float       resolution;  /* PC1_1 and PC2_2 FITS header keywords.    */
+
   /* Internal parameters: */
   time_t         rawtime;  /* Starting time of the program.            */
   double            *cat;  /* Input catalog.                           */
@@ -159,6 +170,8 @@ struct mkprofparams
   pthread_cond_t  qready;  /* bq is ready to be written.               */
   pthread_mutex_t  qlock;  /* Mutex lock to change builtq.             */
   double       halfpixel;  /* Half pixel in oversampled image.         */
+  char        *wcsheader;  /* The WCS header information for main img. */
+  int         wcsnkeyrec;  /* The number of keywords in the WCS header.*/
   char    *mergedimgname;  /* Name of merged image.                    */
 };
 

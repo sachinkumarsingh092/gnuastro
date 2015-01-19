@@ -97,7 +97,7 @@ sizetlzero(char *optarg, size_t *var, char *lo, char so, char *spack,
 
 void
 floatl0(char *optarg, float *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
+	char *filename, size_t lineno);
 
 void
 floatl0s1(char *optarg, float *var, char *lo, char so, char *spack,

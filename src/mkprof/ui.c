@@ -35,9 +35,11 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #include "fitsarrayvv.h"
 
 #include "main.h"
+#include "mkprof.h"
 
 #include "ui.h"			/* Needs main.h.                  */
 #include "args.h"		/* Needs main.h, includes argp.h. */
+#include "oneprofile.h"		/* Needs main.h and mkprof.h.     */
 
 
 /* Set the file names of the places where the default parameters are
@@ -89,8 +91,45 @@ readconfig(char *filename, struct mkprofparams *p)
       /* Prepare the "name" and "value" strings, also set lineno. */
       STARTREADINGLINE;
 
+
+      /* Outputs: */
+      if(strcmp(name, "output")==0)
+	{
+	  if(cp->outputset) continue;
+	  errno=0;
+	  cp->output=malloc(strlen(value)+1);
+	  if(cp->output==NULL)
+	    error(EXIT_FAILURE, errno, "Space for output");
+	  strcpy(cp->output, value);
+	  cp->outputset=1;
+	}
+      else if(strcmp(name, "naxis1")==0)
+	{
+	  if(up->naxis1set) continue;
+	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
+	  p->naxes[0]=tmp;
+	  up->naxis1set=1;
+	}
+      else if(strcmp(name, "naxis2")==0)
+	{
+	  if(up->naxis2set) continue;
+	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
+	  p->naxes[1]=tmp;
+	  up->naxis2set=1;
+	}
+      else if(strcmp(name, "oversample")==0)
+	{
+	  if(up->oversampleset) continue;
+	  sizetlzero(value, &p->oversample, name, key, SPACK,
+		     filename, lineno);
+	  up->oversampleset=1;
+	}
+
+
+
+
       /* Profiles: */
-      if(strcmp(name, "tunitinp")==0)
+      else if(strcmp(name, "tunitinp")==0)
 	{
 	  if(up->tunitinpset) continue;
 	  intzeroorone(value, &p->tunitinp, name, key, SPACK,
@@ -201,39 +240,44 @@ readconfig(char *filename, struct mkprofparams *p)
 
 
 
-      /* Outputs: */
-      else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
-      else if(strcmp(name, "naxis1")==0)
-	{
-	  if(up->naxis1set) continue;
-	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
-	  p->naxes[0]=tmp;
-	  up->naxis1set=1;
-	}
-      else if(strcmp(name, "naxis2")==0)
-	{
-	  if(up->naxis2set) continue;
-	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
-	  p->naxes[1]=tmp;
-	  up->naxis2set=1;
-	}
-      else if(strcmp(name, "oversample")==0)
-	{
-	  if(up->oversampleset) continue;
-	  sizetlzero(value, &p->oversample, name, key, SPACK,
-		     filename, lineno);
-	  up->oversampleset=1;
-	}
 
+
+      /* WCS: */
+      else if(strcmp(name, "crpix1")==0)
+	{
+	  if(up->crpix1set) continue;
+	  anydouble(value, &p->crpix[0], name, key, SPACK,
+		   filename, lineno);
+	  up->crpix1set=1;
+	}
+      else if(strcmp(name, "crpix2")==0)
+	{
+	  if(up->crpix2set) continue;
+	  anydouble(value, &p->crpix[1], name, key, SPACK,
+		   filename, lineno);
+	  up->crpix2set=1;
+	}
+      else if(strcmp(name, "crval1")==0)
+	{
+	  if(up->crval1set) continue;
+	  anydouble(value, &p->crval[0], name, key, SPACK,
+		   filename, lineno);
+	  up->crval1set=1;
+	}
+      else if(strcmp(name, "crval2")==0)
+	{
+	  if(up->crval2set) continue;
+	  anydouble(value, &p->crval[1], name, key, SPACK,
+		   filename, lineno);
+	  up->crval2set=1;
+	}
+      else if(strcmp(name, "resolution")==0)
+	{
+	  if(up->resolutionset) continue;
+	  anyfloat(value, &p->resolution, name, key, SPACK,
+		   filename, lineno);
+	  up->resolutionset=1;
+	}
 
 
 
@@ -266,6 +310,16 @@ printvalues(FILE *fp, struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
 
+  fprintf(fp, "\n# Output:\n");
+  if(p->cp.outputset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "output", p->cp.output);
+  if(up->naxis1set)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->naxes[0]);
+  if(up->naxis2set)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->naxes[1]);
+  if(up->oversampleset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
+
   fprintf(fp, "\n# Profiles:\n");
   if(up->tunitinpset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "tunitinp", p->tunitinp);
@@ -296,15 +350,18 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(up->mcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "tcol", p->tcol);
 
-  fprintf(fp, "\n# Output:\n");
-  if(p->cp.outputset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "output", p->cp.output);
-  if(up->naxis1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->naxes[0]);
-  if(up->naxis2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->naxes[1]);
-  if(up->oversampleset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
+  fprintf(fp, "\n# WCS:\n");
+  if(up->crpix1set)
+    fprintf(fp, CONF_SHOWFMT"%g\n", "crpix1", p->crpix[0]);
+  if(up->crpix2set)
+    fprintf(fp, CONF_SHOWFMT"%g\n", "crpix2", p->crpix[1]);
+  if(up->crval1set)
+    fprintf(fp, CONF_SHOWFMT"%g\n", "crval1", p->crval[0]);
+  if(up->crval2set)
+    fprintf(fp, CONF_SHOWFMT"%g\n", "crval2", p->crval[1]);
+  if(up->resolutionset)
+    fprintf(fp, CONF_SHOWFMT"%g\n", "resolution", p->resolution);
+
 
   fprintf(fp, "\n# Operating modes:\n");
   /* Number of threads doesn't need to be checked, it is set by
@@ -355,6 +412,16 @@ checkifset(struct mkprofparams *p)
     REPORT_NOTSET("naxis2");
   if(up->oversampleset==0)
     REPORT_NOTSET("oversample");
+  if(up->crpix1set==0)
+    REPORT_NOTSET("crpix1");
+  if(up->crpix2set==0)
+    REPORT_NOTSET("crpix2");
+  if(up->crval1set==0)
+    REPORT_NOTSET("crval1");
+  if(up->crval2set==0)
+    REPORT_NOTSET("crval2");
+  if(up->resolutionset==0)
+    REPORT_NOTSET("resolution");
   END_OF_NOTSET_REPORT;
 }
 
@@ -384,13 +451,17 @@ void
 sanitycheck(struct mkprofparams *p)
 {
   long width[2]={1,1};
-  double trunc, *cat=p->cat;
+  double truncr, *cat=p->cat, *row;
   size_t i, j, columns[9], cs1=p->cs1;
+
 
   /* Check if over-sampling is an odd number, then convert the
      oversampling rate into the double type. */
   if(p->oversample%2==0) ++p->oversample;
-  p->halfpixel=0.5f/p->oversample;
+  p->halfpixel = 0.5f/p->oversample;
+  p->naxes[0] *= p->oversample;
+  p->naxes[1] *= p->oversample;
+
 
   /* If the column numbers are not equal. */
   columns[0]=p->xcol; columns[1]=p->ycol; columns[2]=p->fcol;
@@ -404,6 +475,7 @@ sanitycheck(struct mkprofparams *p)
 	      "option you can check the final column numbers. They "
 	      "all have to be different.", columns[i]);
 
+
   /* If all the columns are within the catalog: */
   CHECKCOLINCAT(p->xcol, "xcol");
   CHECKCOLINCAT(p->ycol, "ycol");
@@ -415,12 +487,14 @@ sanitycheck(struct mkprofparams *p)
   CHECKCOLINCAT(p->mcol, "mcol");
   CHECKCOLINCAT(p->tcol, "tcol");
 
+
   /* Check if all the profile codes are within the desired range: */
   for(i=0;i<p->cs0;++i)
     if(cat[i*cs1+p->fcol]<0 || cat[i*cs1+p->fcol]>MAXIMUMCODE)
       error(EXIT_FAILURE, 0, "%s: In row %lu, the function code should"
 	    "be positive and smaller or equal to %d.",
 	    p->up.catname, i+1, MAXIMUMCODE);
+
 
   /* If any of xshift or yshift is non-zero, the other should be too!
      Note that conditional operators return 1 if true and 0 if false,
@@ -436,7 +510,7 @@ sanitycheck(struct mkprofparams *p)
 	  /* Check if there is at least one Moffat or Gaussian profile. */
 	  j=0;
 	  for(i=0;i<p->cs0;++i)
-	    if(cat[i*cs1+p->fcol]==1 || cat[i*cs1+p->fcol]==2)
+	    if(ispsf(cat[i*cs1+p->fcol]))
 	      {
 		j=i;
 		break;
@@ -446,19 +520,20 @@ sanitycheck(struct mkprofparams *p)
 	     prepforconv. */
 	  if(i<p->cs0)
 	    {
+	      /* Set the row, to simplify: */
+	      row=&cat[j*cs1];
+
 	      /* Find the correct xshift and yshift using the first Moffat
 		 or Gaussian profile (in row 'j'). Note that the output of
 		 encloseellipse will be the total width, we only want half
 		 of it for the shift.*/
-	      trunc = ( cat[j*cs1+p->tcol]
-			* (p->tunitinp ? 1 : cat[j*cs1+p->rcol]/2) );
-	      ellipseinbox(trunc, cat[j*cs1+p->qcol]*trunc,
-			   cat[j*cs1+p->pcol]*DEGREESTORADIANS, width);
+	      truncr = ( p->tunitinp ? row[p->tcol] :
+			 row[p->tcol] * row[p->rcol]/2);
+	      ellipseinbox(truncr, row[p->qcol]*truncr,
+			   row[p->pcol]*DEGREESTORADIANS, width);
+	      p->shift[0]  = (width[0]/2)*p->oversample;
+	      p->shift[1]  = (width[1]/2)*p->oversample;
 	    }
-	  p->naxes[0] += (width[0]-1)*p->oversample;
-	  p->naxes[1] += (width[1]-1)*p->oversample;
-	  p->shift[0]  = (width[0]/2)*p->oversample;
-	  p->shift[1]  = (width[1]/2)*p->oversample;
 	}
       break;
 
@@ -468,14 +543,17 @@ sanitycheck(struct mkprofparams *p)
       break;
 
     case 2:
-      p->naxes[0] += 2*p->shift[0]*p->oversample;
-      p->naxes[1] += 2*p->shift[1]*p->oversample;
+      p->shift[0] *= p->oversample;
+      p->shift[1] *= p->oversample;
       break;
 
     default:
       error(EXIT_FAILURE, 0, "A bug in sanitycheck (ui.c)! In checks "
 	    "for shifts. Please contact us so we can fix it.");
     }
+  p->naxes[0] += 2*p->shift[0];
+  p->naxes[1] += 2*p->shift[1];
+
 
   /* Check the output name: */
   p->dir0file1=dir0file1(p->cp.output, p->cp.dontdelete);

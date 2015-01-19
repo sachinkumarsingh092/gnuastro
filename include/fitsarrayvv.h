@@ -80,8 +80,9 @@ add_to_fitsheaderllend(struct fitsheaderll **list, int datatype,
 void
 filenameinkeywords(char *keynamebase, char *filename,
 		   struct fitsheaderll **list);
+
 void
-addwcstoheader(fitsfile *fptr, struct wcsprm *wcs);
+addwcstoheader(fitsfile *fptr, char *wcsheader, int nkeyrec);
 
 void
 updatekeys(fitsfile *fptr, struct fitsheaderll **keylist);
@@ -128,6 +129,11 @@ void
 arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
 	       size_t s0, size_t s1, struct wcsprm *wcs,
 	       char *spack_string);
+
+void
+atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
+	       size_t s0, size_t s1, char *wcsheader, int wcsnkeyrec,
+	       double *crpix, char *spack_string);
 
 
 #endif

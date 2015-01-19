@@ -251,9 +251,9 @@ imgcrop(struct imgcropparams *p)
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct cropparams *crp;
-  size_t nt=p->cp.numthreads;
   size_t i, *indexs, thrdcols;
   void *(*modefunction)(void *);
+  size_t nt=p->cp.numthreads, nb;
 
 
   /* Set the function to run: */
@@ -303,8 +303,11 @@ imgcrop(struct imgcropparams *p)
     {
       /* Initialize the attributes. Note that this running thread
 	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should reach nt+1 to continue. */
-      attrbarrierinit(&attr, &b, nt+1);
+	 number the barrier should be one more than the number of
+	 threads spinned off. */
+      if(p->cs0<nt) nb=p->cs0+1;
+      else nb=nt+1;
+      attrbarrierinit(&attr, &b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)

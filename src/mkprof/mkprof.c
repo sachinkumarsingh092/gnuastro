@@ -55,6 +55,75 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/**************************************************************/
+/************        Prepare WCS parameters       *************/
+/**************************************************************/
+void
+preparewcs(struct mkprofparams *p)
+{
+  int status;
+  struct wcsprm wcs;
+  long os=p->oversample;
+
+  /* Initialize the structure (allocate all the arrays). */
+  wcs.flag=-1;
+  if( (status=wcsini(1, 2, &wcs)) )
+    error(EXIT_FAILURE, 0, "wcsinit error %d: %s.",
+	  status, wcs_errmsg[status]);
+
+  /* Correct the CRPIX values. */
+  p->crpix[0]=p->crpix[0]*os+p->shift[0]-os/2;
+  p->crpix[1]=p->crpix[1]*os+p->shift[1]-os/2;
+
+  /* Fill in all the important input array values. */
+  wcs.equinox=2000.0f;
+  wcs.crpix[0]=p->crpix[0];
+  wcs.crpix[1]=p->crpix[1];
+  wcs.crval[0]=p->crval[0];
+  wcs.crval[1]=p->crval[1];
+  wcs.pc[0]=-1.0f*p->resolution/3600/p->oversample;
+  wcs.pc[3]=p->resolution/3600/p->oversample;
+  wcs.pc[1]=wcs.pc[2]=0.0f;
+  wcs.cdelt[0]=wcs.cdelt[1]=1.0f;
+  strcpy(wcs.cunit[0], "deg");
+  strcpy(wcs.cunit[1], "deg");
+  strcpy(wcs.ctype[0], "RA---TAN");
+  strcpy(wcs.ctype[1], "DEC--TAN");
+
+  /* Set up the wcs structure: */
+  if( (status=wcsset(&wcs)) )
+    error(EXIT_FAILURE, 0, "wcsset error %d: %s.", status,
+	  wcs_errmsg[status]);
+
+  /* Write the WCS structure to a header string. */
+  if( (status=wcshdo(WCSHDO_safe, &wcs, &p->wcsnkeyrec, &p->wcsheader)) )
+    error(EXIT_FAILURE, 0, "wcshdo error %d: %s.", status,
+	  wcs_errmsg[status]);
+
+  /* Free the allocated spaces by wcsini/wcsset: */
+  if( (status=wcsfree(&wcs)) )
+    error(EXIT_FAILURE, 0, "wcsfree error %d: %s.", status,
+	  wcs_errmsg[status]);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**************************************************************/
 /************        builtqueue linked list       *************/
@@ -109,9 +178,13 @@ builtqueue_addempty(struct builtqueue **bq)
 void
 saveindividual(struct mkonthread *mkp)
 {
+  struct mkprofparams *p=mkp->p;
+
   size_t len;
   char *jobname;
-  struct mkprofparams *p=mkp->p;
+  double crpix[2];
+  long os=p->oversample;
+  struct builtqueue *ibq=mkp->ibq;
   char *outname, *outdir=p->cp.output;
 
   /* Save the array to an image. */
@@ -128,17 +201,27 @@ saveindividual(struct mkonthread *mkp)
   outname=malloc(len*sizeof *outname);
   if(outname==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for name of object in "
-	  "row %lu of %s", len*sizeof *outname, mkp->ibq->id,
+	  "row %lu of %s", len*sizeof *outname, ibq->id,
 	  p->up.catname);
 
+  /* Save the correct CRPIX values: */
+  crpix[0] = p->crpix[0] - os*(mkp->fpixel_i[0]-1);
+  crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
+
   /* Write the name and save the FITS image: */
-  sprintf(outname, "%s%lu.fits", outdir, mkp->ibq->id+1);
+  sprintf(outname, "%s%lu.fits", outdir, ibq->id);
   checkremovefile(outname, p->cp.dontdelete);
-  arraytofitsimg(outname, "MockImg", FLOAT_IMG, mkp->ibq->img,
-		 p->oversample*mkp->width[1],
-		 p->oversample*mkp->width[0],
-		 NULL, SPACK_STRING);
-  mkp->ibq->indivcreated=1;
+
+  /* Write the array to file (A separately built PSF doesn't need WCS
+     coordinates): */
+  if(ibq->ispsf && p->psfinimg==0)
+    arraytofitsimg(outname, "MockImg", FLOAT_IMG, ibq->img,
+		   mkp->width[1], mkp->width[0], NULL, SPACK_STRING);
+  else
+    atofcorrectwcs(outname, "MockImg", FLOAT_IMG, ibq->img,
+		   mkp->width[1], mkp->width[0], p->wcsheader,
+		   p->wcsnkeyrec, crpix, SPACK_STRING);
+  ibq->indivcreated=1;
 
   /* Report if in verbose mode. */
   if(p->cp.verb)
@@ -209,12 +292,12 @@ build(void *inparam)
   struct mkprofparams *p=mkp->p;
 
   size_t i;
+  double *cat;
   int lockresult;
-  double *cat, pixfrac, junk;
-  struct builtqueue *ibq, *fbq=NULL;
+  long lpixel_o[2];
   pthread_mutex_t *qlock=&p->qlock;
+  struct builtqueue *ibq, *fbq=NULL;
   pthread_cond_t *qready=&p->qready;
-  long os=p->oversample, lpixel_o[2];
 
   /* Make each profile that was specified for this thread. */
   for(i=0;mkp->indexs[i]!=NONTHRDINDEX;++i)
@@ -236,7 +319,7 @@ build(void *inparam)
       setprofparams(mkp);
 
 
-      /* Find the bounding box size. */
+      /* Find the bounding box size (NOT oversampled). */
       if((int)cat[p->fcol]==POINTCODE)
 	mkp->width[0]=mkp->width[1]=1;
       else
@@ -244,33 +327,26 @@ build(void *inparam)
 		     cat[p->pcol]*DEGREESTORADIANS, mkp->width);
 
 
-      /* Based on the width, set the central positions of this profile
-	 in the array that will be built, see the comments above for a
-	 full explanation.*/
-      pixfrac = modf(fabs(cat[p->xcol]), &junk);
-      mkp->yc = ( os * (mkp->width[0]/2 + pixfrac)
-		  + (pixfrac<0.50f ? os/2 : -1*os/2-1) );
-      mkp->yc = round(mkp->yc*100)/100;
-
-      pixfrac = modf(fabs(cat[p->ycol]), &junk);
-      mkp->xc = ( os*(mkp->width[1]/2 + pixfrac)
-		  + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
-      mkp->xc = round(mkp->xc*100)/100;
-
-
-      /* Get the overlapping pixels using the starting points. */
+      /* Get the overlapping pixels using the starting points (NOT
+	 oversampled). */
       borderfromcenter(cat[p->xcol], cat[p->ycol], mkp->width,
 		       ibq->fpixel_i, ibq->lpixel_i);
-      ibq->overlaps = overlap(p->naxes, ibq->fpixel_i, ibq->lpixel_i,
+      mkp->fpixel_i[0]=ibq->fpixel_i[0];
+      mkp->fpixel_i[1]=ibq->fpixel_i[1];
+      ibq->overlaps = overlap(mkp->onaxes, ibq->fpixel_i, ibq->lpixel_i,
 			      ibq->fpixel_o, lpixel_o);
+
+
+      /* Build the profile if necessary, After this, the width is
+	 oversampled. */
       if(ibq->overlaps || p->individual || (ibq->ispsf && p->psfinimg==0))
 	{
+
 	  makeoneprofile(mkp);
 	  if( p->individual || (ibq->ispsf && p->psfinimg==0))
 	    {
 	      saveindividual(mkp);
 	      if(ibq->ispsf && p->psfinimg==0)
-		/* write function won't write to image. */
 		ibq->overlaps=0;
 	    }
 	}
@@ -377,18 +453,18 @@ write(struct mkprofparams *p)
   struct timeval t1;
   int verb=p->cp.verb;
   long os=p->oversample;
+  size_t complete=0, cs0=p->cs0;
   struct builtqueue *ibq=NULL, *tbq;
-  size_t i, j, iw, jw, ii, jj, w, ow;
-  size_t complete=0, cs0=p->cs0, size;
   float *img, *to, *from, *colend, *rowend;
+  size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
+
 
   /* Allocate the output array. */
   errno=0;
-  w=p->naxes[0]*p->oversample;
-  size=p->naxes[0]*p->naxes[1]*p->oversample*p->oversample;
-  img=calloc(size, sizeof *img);
+  img=calloc(p->naxes[0]*p->naxes[1], sizeof *img);
   if(img==NULL)
-    error(EXIT_FAILURE, 0, "%lu bytes for output image", size*sizeof *img);
+    error(EXIT_FAILURE, 0, "%lu bytes for output image",
+	  p->naxes[0]*p->naxes[1]*sizeof *img);
 
 
   /* Write each image into the output array. */
@@ -423,7 +499,7 @@ write(struct mkprofparams *p)
 
 	  /* Set the starting and ending points in the overlapping
 	     image. Note that oversampling has already been taken
-	     into account in ibq->imgwidth. */
+	     into account in ibq->width. */
 	  ow = ibq->imgwidth;
 	  ii = os * (ibq->fpixel_o[1]-1);
 	  jj = os * (ibq->fpixel_o[0]-1);
@@ -489,9 +565,9 @@ write(struct mkprofparams *p)
   if(p->nomerged==0)
     {
       if(verb) gettimeofday(&t1, NULL);
-      arraytofitsimg(p->mergedimgname, "MockImg", FLOAT_IMG, img,
-		     p->oversample*p->naxes[1], p->oversample*p->naxes[0],
-		     NULL, SPACK_STRING);
+      atofcorrectwcs(p->mergedimgname, "MockImg", FLOAT_IMG, img,
+		     p->naxes[1], p->naxes[0], p->wcsheader,
+		     p->wcsnkeyrec, NULL, SPACK_STRING);
       if(verb)
 	{
 	  errno=0;
@@ -531,16 +607,17 @@ void
 mkprof(struct mkprofparams *p)
 {
   int err;
-  size_t nt;
   pthread_t t;		 /* Thread id not used, all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct mkonthread *mkp;
   size_t i, *indexs, thrdcols;
+  size_t nt=p->cp.numthreads, nb;
+  long onaxes[2], os=p->oversample;
 
-  /* Set the number of threads. In the multi-threaded case, we want to
-     use numthreads-1 to built and one (this main one) to write. */
-  nt = p->cp.numthreads==1 ? 1 : p->cp.numthreads-1;
+  /* Get the WCS header strings ready to put into the FITS
+     image(s). */
+  preparewcs(p);
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. Note that we only want nt-1 threads to do the
@@ -556,19 +633,26 @@ mkprof(struct mkprofparams *p)
      for building. */
   distinthreads(p->cs0, nt, &indexs, &thrdcols);
 
+  /* onaxes are sides of the image without over-sampling. */
+  onaxes[0] = (p->naxes[0]-2*p->shift[0])/os + 2*p->shift[0]/os;
+  onaxes[1] = (p->naxes[1]-2*p->shift[1])/os + 2*p->shift[1]/os;
+
   /* Build the profiles: */
   if(nt==1)
     {
       mkp[0].p=p;
+      mkp[0].onaxes=onaxes;
       mkp[0].indexs=indexs;
       build(&mkp[0]);
     }
   else
     {
-      /* Initialize the attributes. Note that nt was set to the number
-	 of builder threads. This main thread will write the results,
-	 so we need nt+1 threads to finish. */
-      attrbarrierinit(&attr, &b, nt+1);
+      /* Initialize the attributes. Note that this main thread will
+	 also have to be kept behind the barrier, so we need nt+1
+	 barrier stops. */
+      if(p->cs0<nt) nb=p->cs0+1;
+      else nb=nt+1;
+      attrbarrierinit(&attr, &b, nb);
 
       /* Initialize the condition variable and mutex. */
       err=pthread_mutex_init(&p->qlock, NULL);
@@ -583,6 +667,7 @@ mkprof(struct mkprofparams *p)
 	    mkp[i].p=p;
 	    mkp[i].b=&b;
 	    mkp[i].ibq=NULL;
+	    mkp[i].onaxes=onaxes;
 	    mkp[i].indexs=&indexs[i*thrdcols];
 	    err=pthread_create(&t, &attr, build, &mkp[i]);
 	    if(err)
@@ -605,5 +690,8 @@ mkprof(struct mkprofparams *p)
       pthread_cond_destroy(&p->qready);
       pthread_mutex_destroy(&p->qlock);
     }
+
+  /* Free the allocated spaces. */
   free(mkp);
+  free(p->wcsheader);
 }

@@ -391,6 +391,20 @@ makepixbypix(struct mkonthread *mkp)
 /**************************************************************/
 /************        Set profile parameters       *************/
 /**************************************************************/
+int
+ispsf(double fcolvalue)
+{
+  int f=fcolvalue;
+  if(f==MOFFATCODE || f==GAUSSIANCODE)
+    return 1;
+  else return 0;
+}
+
+
+
+
+
+/* About the shifts on the X column and y column:*/
 void
 setprofparams(struct mkonthread *mkp)
 {
@@ -402,19 +416,20 @@ setprofparams(struct mkonthread *mkp)
 
   /* Fill in the profile independant parameters. */
   cat=&p->cat[mkp->ibq->id*p->cs1];
-  cat[p->xcol]   += p->shift[0];
-  cat[p->ycol]   += p->shift[1];
+  cat[p->xcol]   += p->shift[0]/p->oversample;
+  cat[p->ycol]   += p->shift[1]/p->oversample;
   mkp->c          = cos((90-cat[p->pcol])*DEGREESTORADIANS);
   mkp->s          = sin((90-cat[p->pcol])*DEGREESTORADIANS);
   mkp->q          = cat[p->qcol];
   mkp->totflux    = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
+  mkp->ibq->ispsf = ispsf(cat[p->fcol]);
   mkp->type       = cat[p->fcol];
+
 
   /* Fill the profile dependent parameters. */
   switch (mkp->type)
     {
     case SERSICCODE:
-      mkp->ibq->ispsf       = 0;
       mkp->profile          = &Sersic;
       mkp->sersic_re        = cat[rcol];
       mkp->sersic_inv_n     = 1.0f/cat[p->ncol];
@@ -423,7 +438,6 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     case MOFFATCODE:
-      mkp->ibq->ispsf       = 1;
       mkp->profile          = &Moffat;
       mkp->moffat_nb        = -1.0f*cat[p->ncol];
       mkp->moffat_alphasq   = moffat_alpha(cat[rcol], cat[p->ncol]);
@@ -434,7 +448,6 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     case GAUSSIANCODE:
-      mkp->ibq->ispsf       = 1;
       mkp->profile          = &Gaussian;
       sigma                 = cat[rcol]/2.35482f;
       mkp->gaussian_c       = -1.0f/(2.0f*sigma*sigma);
@@ -444,7 +457,6 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     case POINTCODE:
-      mkp->ibq->ispsf       = 0;
       mkp->profile          = &Point;
       mkp->point_v          = 1;
       break;
@@ -483,15 +495,33 @@ setprofparams(struct mkonthread *mkp)
 void
 makeoneprofile(struct mkonthread *mkp)
 {
+  struct mkprofparams *p=mkp->p;
+
   float sum;
   size_t size;
+  double pixfrac, intpart;
+  long os=p->oversample;
+  double *cat=&p->cat[ mkp->ibq->id*p->cs1 ];
 
 
-  /* From this point on, the widths are the actual pixel widths (with
-     onversampling). */
-  mkp->width[0] *= mkp->p->oversample;
-  mkp->width[1] *= mkp->p->oversample;
-  mkp->ibq->imgwidth = mkp->width[0];
+  /* Find the profile center (see comments above). mkp->width
+     is in the non-oversampled scale.*/
+  pixfrac = modf(fabs(cat[p->xcol]), &intpart);
+  mkp->yc = ( os * (mkp->width[0]/2 + pixfrac)
+	      + (pixfrac<0.50f ? os/2 : -1*os/2-1) );
+  mkp->yc = round(mkp->yc*100)/100;
+
+  pixfrac = modf(fabs(cat[p->ycol]), &intpart);
+  mkp->xc = ( os*(mkp->width[1]/2 + pixfrac)
+	      + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
+  mkp->xc = round(mkp->xc*100)/100;
+
+
+  /* From this point on, the widths are the actual pixel
+     widths (with onversampling). */
+  mkp->width[0] *= os;
+  mkp->width[1] *= os;
+  mkp->ibq->imgwidth=mkp->width[0];
 
 
   /* Allocate the array and build it. */
@@ -511,9 +541,4 @@ makeoneprofile(struct mkonthread *mkp)
   sum=floatsum(mkp->ibq->img, size);
   mkp->ibq->accufrac/=sum;
   fmultipconst(mkp->ibq->img, size, mkp->totflux/sum);
-
-
-  /* Return the widths back to the un-oversampled size: */
-  mkp->width[0] /= mkp->p->oversample;
-  mkp->width[1] /= mkp->p->oversample;
 }

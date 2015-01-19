@@ -22,6 +22,9 @@ along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ONEPROFILE_H
 #define ONEPROFILE_H
 
+int
+ispsf(double fcolvalue);
+
 void
 setprofparams(struct mkonthread *mkp);
 

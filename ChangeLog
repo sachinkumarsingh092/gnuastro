@@ -1,3 +1,28 @@
+2015-01-19  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/mkprof/ui.c: Steps for reading and checking WCS parameters
+	added.
+
+	* src/mkprof/oneprofile.c (ispsf): Added for a fixed place to
+	check if a profile is a PSF.
+	(makeoneprofile): Finding mkp->xc and mkp->yc moved here.
+
+	* src/mkprof/mkprof.c (preparewcs): Added.
+	(build): Removed finding mkp->xc and mkp->yc.
+
+	* src/mkprof/args.h (argp_option): Added WCS related options.
+
+	* src/imgcrop/imgcrop.c (imgcrop): Number of barriers, corrected
+	for when the number of jobs was less than the number of threads.
+
+	* lib/fitsarrayvv.c (addwcstoheader): Changed the WCS structure to
+	the WCS header string as input.
+	(arraytofitsimg): Convert the WCS structure and remove the
+	comments CFITSIO in here.
+	(atofcorrectwcs): Added.
+
+	* doc/astrutils.texi: Updated.
+
 2015-01-18  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/mkprof/mkprof.c (writelog): Added.

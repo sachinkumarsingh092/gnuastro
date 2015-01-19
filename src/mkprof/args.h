@@ -70,7 +70,7 @@ const char doc[] =
    a d e f g j k l u v w
    A B C E F G H I J L M O Q R T U W Z
 
-   Maximum integer used so far: 509.
+   Maximum integer used so far: 514.
 */
 static struct argp_option options[] =
   {
@@ -302,6 +302,53 @@ static struct argp_option options[] =
 
 
 
+    {
+      0, 0, 0, 0,
+      "WCS parameters:",
+      5
+    },
+    {
+      "crpix1",
+      510,
+      "FLT",
+      0,
+      "Pixel coordinate of reference point (axis 1).",
+      5
+    },
+    {
+      "crpix2",
+      511,
+      "FLT",
+      0,
+      "Pixel coordinate of reference point (axis 2).",
+      5
+    },
+    {
+      "crval1",
+      512,
+      "FLT",
+      0,
+      "Right ascension at reference point (degrees).",
+      5
+    },
+    {
+      "crval2",
+      513,
+      "FLT",
+      0,
+      "Declination at reference point (degrees).",
+      5
+    },
+    {
+      "resolution",
+      514,
+      "FLT",
+      0,
+      "Resolution of image (arcseconds/pixel).",
+      5
+    },
+
+
     {0}
   };
 
@@ -448,6 +495,31 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetelzero(arg, &p->tcol, "tcol", ' ', p->cp.spack, NULL, 0);
       p->up.tcolset=1;
       break;
+
+
+
+    /* WCS parameters: */
+    case 510:
+      anydouble(arg, &p->crpix[0], "crpix1", key, p->cp.spack, NULL, 0);
+      p->up.crpix1set=1;
+      break;
+    case 511:
+      anydouble(arg, &p->crpix[1], "crpix2", key, p->cp.spack, NULL, 0);
+      p->up.crpix2set=1;
+      break;
+    case 512:
+      anydouble(arg, &p->crval[0], "crval1", key, p->cp.spack, NULL, 0);
+      p->up.crval1set=1;
+      break;
+    case 513:
+      anydouble(arg, &p->crval[1], "crval2", key, p->cp.spack, NULL, 0);
+      p->up.crval2set=1;
+      break;
+    case 514:
+      floatl0(arg, &p->resolution, "resolution", key, p->cp.spack, NULL, 0);
+      p->up.resolutionset=1;
+      break;
+
 
 
 

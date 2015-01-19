@@ -44,6 +44,8 @@ struct mkonthread
   long           width[2];    /* The width of the enclosing box.     */
   float           totflux;    /* The total flux of the profile.      */
   int                type;    /* The type of the profile.            */
+  long            *onaxes;    /* Sides of the unover-sampled image.  */
+  long        fpixel_i[2];    /* fpixel_i before running overlap.    */
 
   /* Profile specific parameters: */
   double        sersic_re;    /* r/re in Sersic profile.             */

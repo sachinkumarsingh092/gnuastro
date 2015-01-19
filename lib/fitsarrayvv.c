@@ -738,19 +738,12 @@ filenameinkeywords(char *keynamebase, char *filename,
 /* Write the WCS and begin the part on this particular program's
    key words. */
 void
-addwcstoheader(fitsfile *fptr, struct wcsprm *wcs)
+addwcstoheader(fitsfile *fptr, char *wcsheader, int nkeyrec)
 {
   size_t i;
+  int h, status=0;
   char startblank[]="                      / ";
-  int nkeyrec=1, h, status=0;
-  char *wcsheader, *cp, *cpf, blankrec[80], titlerec[80];
-
-  /* Delete the comments that CFITSIO puts immediately after making
-     the file, we will add the CFITSIO version in the end so the user
-     can be assured that everything was done with CFITSIO whcih: */
-  fits_delete_key(fptr, "COMMENT", &status);
-  fits_delete_key(fptr, "COMMENT", &status);
-  fitsioerror(status, NULL);
+  char *cp, *cpf, blankrec[80], titlerec[80];
 
   /* Set the last element of the blank array. */
   cpf=blankrec+79;
@@ -767,17 +760,10 @@ addwcstoheader(fitsfile *fptr, struct wcsprm *wcs)
   if(fits_write_record(fptr, titlerec, &status))
     fitsioerror(status, NULL);
 
-  /* Convert the WCS information to text. */
-  status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsheader);
-  if(status)
-    error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
-	  wcs_errmsg[status]);
-
   /* Write the keywords one by one: */
   for(h=0;h<nkeyrec-1;++h)
     fits_write_record(fptr, &wcsheader[h*80], &status);
   fitsioerror(status, NULL);
-  free(wcsheader);
 }
 
 
@@ -1001,6 +987,57 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
 	       size_t s0, size_t s1, struct wcsprm *wcs,
 	       char *spack_string)
 {
+  int nkeyrec;
+  fitsfile *fptr;
+  char *wcsheader;
+  int status=0, datatype;
+  long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
+
+  datatype=bitpixtodtype(bitpix);
+  nelements=naxes[0]*naxes[1];
+
+  if(access(filename,F_OK) != -1 )
+    fits_open_file(&fptr,filename, READWRITE, &status);
+  else
+    fits_create_file(&fptr, filename, &status);
+
+  fits_create_img(fptr, bitpix, naxis, naxes, &status);
+  fits_write_img(fptr, datatype, fpixel, nelements, array, &status);
+
+  fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
+  fitsioerror(status, NULL);
+
+  /* Delete the comments that CFITSIO puts immediately after making
+     the file, we will add the CFITSIO version in the end so the user
+     can be assured that everything was done with CFITSIO whcih: */
+  fits_delete_key(fptr, "COMMENT", &status);
+  fits_delete_key(fptr, "COMMENT", &status);
+  fitsioerror(status, NULL);
+
+  if(wcs)
+    {
+      /* Convert the WCS information to text. */
+      status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsheader);
+      if(status)
+	error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
+	      wcs_errmsg[status]);
+      addwcstoheader(fptr, wcsheader, nkeyrec);
+    }
+  copyrightandend(fptr, spack_string);
+
+  fits_close_file(fptr, &status);
+  fitsioerror(status, NULL);
+}
+
+
+
+
+
+void
+atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
+	       size_t s0, size_t s1, char *wcsheader, int wcsnkeyrec,
+	       double *crpix, char *spack_string)
+{
   fitsfile *fptr;
   int status=0, datatype;
   long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
@@ -1019,8 +1056,21 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
   fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
   fitsioerror(status, NULL);
 
-  if(wcs)
-    addwcstoheader(fptr, wcs);
+  fits_delete_key(fptr, "COMMENT", &status);
+  fits_delete_key(fptr, "COMMENT", &status);
+  fitsioerror(status, NULL);
+
+  if(wcsheader)
+    {
+      addwcstoheader(fptr, wcsheader, wcsnkeyrec);
+      if(crpix)
+	{
+	  fits_update_key(fptr, TDOUBLE, "CRPIX1", &crpix[0], NULL, &status);
+	  fits_update_key(fptr, TDOUBLE, "CRPIX2", &crpix[1], NULL, &status);
+	  fitsioerror(status, NULL);
+	}
+    }
+
   copyrightandend(fptr, spack_string);
 
   fits_close_file(fptr, &status);

@@ -305,7 +305,7 @@ Modeling basics
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
 * Oversampling::                Oversampling the model.
-* Noise::
+* Noise::                       The basics of noise.
 
 Noise
 
@@ -319,6 +319,12 @@ MakeProfiles
 * Profile total magnitude::     Definition of total profile magnitude.
 * Invoking astrmkprof::         Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
+
+Invoking MakeProfiles
+
+* MakeProfiles catalog::        Required catalog properties.
+* MakeProfiles options::        Full list of MakeProfiles options.
+* MakeProfiles output::         The generated outputs.
 
 Developing
 
@@ -3925,21 +3931,19 @@ convolved with or blurred by the atmospheric and instrument PSF in a
 continuous space and then it is sampled on the discrete pixels of the
 camera.
 
-In order to more accurately simulate this process, we make the
-unconvoved image and the PSF on a finer pixel grid than what you have
-asked for. In other words, the output image is a certain odd-integer
-multiple of the desired size, we can call this ``oversampling''. The
-user can specify this multiple as a command line option. The reason
-this has to be an odd number is that the PSF has to be centered on the
-center of its image. An image with an even number of pixels on each
-side does not have a centeral pixel.
+In order to more accurately simulate this process, we can make the
+unconvoved image and the PSF on a finer pixel grid. In other words,
+the output image is a certain odd-integer multiple of the desired
+size, we can call this ``oversampling''. The user can specify this
+multiple as a command line option. The reason this has to be an odd
+number is that the PSF has to be centered on the center of its
+image. An image with an even number of pixels on each side does not
+have a central pixel.
 
 The image can then then be convolved with the PSF (which should also
-be oversampled on the same scale). Various realistic transformations
-can be applied to the image at this point to simulate the real imaging
-conditions. Finally, image can be subsampled to get to the initial
-desired pixel size of the output image. After this, MakeProfiles can be
-used to add mock noise as explained in the next section. This is
+be oversampled on the same scale). Finally, image can be subsampled to
+get to the initial desired pixel size of the output image. After this,
+mock noise can be added as explained in the next section. This is
 because unlike the PSF, the noise occurs in each output pixel, not on
 a continues space like all the prior steps.
 
@@ -4088,7 +4092,7 @@ galaxies. We welcome the simulation of any other astronomical
 object. The general outline of the steps that MakeProfiles takes are
 the following:
 
-@itemize
+@enumerate
 
 @item
 Build the full profile out to its truncation radius in a possibly
@@ -4100,20 +4104,26 @@ equals the desired total magnitude.
 
 @item
 If @option{--individual} is called, save the array for each profile to
-a FITS file and abort.
+a FITS file.
 
 @item
-Add the overlapping pixels of all the created profiles to the output
-image and abort.
+If @option{--nomerged} is not called, add the overlapping pixels of
+all the created profiles to the output image and abort.
 
-@end itemize
+@end enumerate
 
-For a simple test on a set of mock galaxies in one image, there is no
-need for the third step. However in complicated simulations like weak
-lensing simulations, where each galaxy undergoes various types of
-individual transformations, those transformations can be applied to
-the different individual images with other programs, then added to the
-final image before convolving and adding noise.
+Using input values, MakeProfiles adds the World Coordinate System
+(WCS) headers of the FITS standard to all its outputs (except PSF
+images!). For a simple test on a set of mock galaxies in one image,
+there is no need for the third step or the WCS information.
+
+However in complicated simulations like weak lensing simulations,
+where each galaxy undergoes various types of individual
+transformations based on their position, those transformations can be
+applied to the different individual images with other programs. After
+all the transformations are applied, using the WCS information in each
+individual profile image, they can be merged into one output image for
+convolution and adding noise.
 
 @menu
 * If convolving afterwards::    Considerations for convolving afterwards.
@@ -4129,31 +4139,33 @@ final image before convolving and adding noise.
 In case you want to convolve the image later with a given point spread
 function, make sure to use a larger image size. After convolution, the
 profiles become larger and a profile that is normally completely
-outside of the image might fall within it. For example on the first
-axis, if you want your final (convolved) image to be @mymath{m} pixels
-and your PSF is @mymath{2n+1} pixels wide, then when calling
-MockProfiles, set @option{--naxis1} to @mymath{m+2n}, not @mymath{m}.
+outside of the image might fall within it.
 
-You will also have to shift all the positions on the first axis by
-@mymath{n} pixels to the positive in the example above. After
-convolution, you can crop the outer @mymath{n} pixels with the section
-crop box specification of ImageCrop: @option{--section=n:*-n,n:*-n}
-assuming your PSF is a square, see @ref{Crop section syntax}. This
-will also remove all discrete Fourier transform artifacts (blurred
-sides) from the final image. To facilitate this shift, MakeProfiles
-has the options @option{--xshift}, @option{--yshift} and
-@option{--prepforconv}, see @ref{Invoking astrmkprof}.
+On one axis, if you want your final (convolved) image to be @mymath{m}
+pixels and your PSF is @mymath{2n+1} pixels wide, then when calling
+MockProfiles, set the axis size to @mymath{m+2n}, not @mymath{m}. You
+also have to shift all the pixel positions of the profile centers on
+the that axis by @mymath{n} pixels to the positive.
+
+After convolution, you can crop the outer @mymath{n} pixels with the
+section crop box specification of ImageCrop:
+@option{--section=n:*-n,n:*-n} assuming your PSF is a square, see
+@ref{Crop section syntax}. This will also remove all discrete Fourier
+transform artifacts (blurred sides) from the final image. To
+facilitate this shift, MakeProfiles has the options @option{--xshift},
+@option{--yshift} and @option{--prepforconv}, see @ref{Invoking
+astrmkprof}.
 
 
 @node Profile total magnitude, Invoking astrmkprof, If convolving afterwards, MakeProfiles
 @subsection Profile total magnitude
 It is customary to use the 2D integration to infinity of a profile as
-the total magnitude of a profile. However, in MakeProfile, we do not
-follow this idealistic approach and apply a more realistic method to
-find the total magnitude: the sum of all the pixels belonging to a
-profile within its truncation radius. Note that if the truncation
-radius is not large enough, this can be significantly different from
-the total integrated light to infinity.
+its total magnitude. However, in MakeProfile, we do not follow this
+idealistic approach and apply a more realistic method to find the
+total magnitude: the sum of all the pixels belonging to a profile
+within its truncation radius. Note that if the truncation radius is
+not large enough, this can be significantly different from the total
+integrated light to infinity.
 
 An integration to infinity is not a realistic condition because no
 galaxy extends indefinitely (important for high S@'ersic index
@@ -4209,6 +4221,21 @@ separated by space, tab or comma (@key{,}) characters. See @ref{Common
 behavior} for a complete explanation of some common behaviour and
 options in all AstrUtils programs including MakeProfiles.
 
+
+@menu
+* MakeProfiles catalog::        Required catalog properties.
+* MakeProfiles options::        Full list of MakeProfiles options.
+* MakeProfiles output::         The generated outputs.
+@end menu
+
+@node MakeProfiles catalog, MakeProfiles options, Invoking astrmkprof, Invoking astrmkprof
+@subsubsection MakeProfiles catalog
+The catalog is a text file table. Its columns can be ordered in any
+desired manner, you can specify which columns belong to which
+parameters using the set of options ending with @option{col}, for
+example @option{--xcol} or @option{--rcol}, see @ref{MakeProfiles
+options}.
+
 The value for the profile center in the catalog (in the
 @option{--xcol} and @option{--ycol} columns) can be a floating point
 number so the profile center can be on any sub-pixel position. Note
@@ -4235,11 +4262,14 @@ set their magnitudes in the catalog to the zeropoint magnitude and be
 sure that the central positions of the profiles don't have any
 fractional part (the PSF center has to be in the center of the pixel).
 
+
+@node MakeProfiles options, MakeProfiles output, MakeProfiles catalog, Invoking astrmkprof
+@subsubsection MakeProfiles options
 The common options that are shared by AstrUtils progarms, are fully
 explained in @ref{Common options} and are not repeated here. Since
 there are no image inputs, the@option{--hdu} option is ignored. The
 options can be classified into the following categories: Output,
-Profiles, Catalog. Below we will review each one.
+Profiles, Catalog and WCS. Below we will review each one.
 
 @noindent
 Output:
@@ -4249,23 +4279,32 @@ Output:
 @item -x
 @itemx --naxis1
 (@option{=INT}) The number of pixels in the output image along the
-first FITS axis (horizontal when viewed in SAO ds9).
+first FITS axis (horizontal when viewed in SAO ds9). This is before
+over-sampling. For example if you call MakeProfiles with
+@option{--naxis1=100 --oversample=5} (assuming no shift due for later
+convolution), then the final image size along the first axis will be
+500.
 
 @item -y
 @itemx --naxis2
 (@option{=INT}) The number of pixels in the output image along the
-second FITS axis (vertical when viewed in SAO ds9).
+second FITS axis (vertical when viewed in SAO ds9), see the
+explanation for @option{--naxis1}.
 
 @item -s
 @itemx --oversample
-(@option{=INT}) The scale to over-sample the profiles, see
+(@option{=INT}) The scale to over-sample the profiles and final
+image. If not an odd number, will be added by one, see
 @ref{Oversampling}.
 
 @item --psfinimg
 Build the possibly existing PSF profiles (Moffat or Gaussian) in the
 catalog into the final image. By default they are built separately so
 you can convolve your images with them, thus their magnitude and
-positions are ignored.
+positions are ignored. With this option, they will be built in the
+final image like every other galaxy profile. To have a final PSF in
+your image, make a point profile where you want the PSF and after
+convolution it will be the PSF.
 
 @item -i
 @itemx --individual
@@ -4283,7 +4322,8 @@ depending on the fractional value of the profile center.
 If the fractional value is larger than half, it is on the bottom half
 of the central region. This is due to the FITS definition of a real
 number position: The center of a pixel has fractional value
-@mymath{0.00} so the image begins from 0.50 and 0.50.
+@mymath{0.00} so each pixel contains these fractions: .5 -- .75 -- .00
+(pixel center) -- .25 -- .5.
 
 @item -m
 @itemx --nomerged
@@ -4305,10 +4345,8 @@ profile, see @ref{Sampling from a function}.
 
 @item -t
 @itemx --tolerance
-(@option{=FLT}) The tolerance to switch to a less accurate profile
-sampling method for an extended (not a point source) profile, see
-@ref{Sampling from a function}. This same tolerance is used to
-construct the PSF if it is to be created internally.
+(@option{=FLT}) The tolerance to switch from Monte Carlo integration
+to the central pixel value, see @ref{Sampling from a function}.
 
 @item -p
 @itemx --tunitinp
@@ -4320,10 +4358,10 @@ radial paramters of the profile (@option{--rcol}). Read it as
 @item -X
 @itemx --xshift
 (@option{=INT}) Shift all the profiles and enlarge the image along the
-first FITS axis, @mymath{n} in @ref{If convolving afterwards}. This is
-useful when you want to convolve with an externally created PSF
-afterwards. Don't forget to oversample the external PSF to the same
-scale used for creating the mock images.
+first FITS axis, see @mymath{n} in @ref{If convolving
+afterwards}. This is useful when you want to convolve the image
+afterwards. If you are using an external PSF, be sure to oversample it
+to the same scale used for creating the mock images.
 
 @item -Y
 @itemx --yshift
@@ -4400,11 +4438,62 @@ truncation radius, see @ref{Profile total magnitude}.
 (@option{=INT}) The truncation radius of this profile. By default it
 is in units of the radial parameter of the profile (the value in the
 @option{--rcol} of the catalog). If @option{--tunitinp} is given, this
-value is interpretted
+value is interpreted in units of pixels (prior to oversampling)
+irrespective of the profile.
 
 @end table
 
+@noindent
+WCS:
 
+@table @option
+
+@item --crpix1
+(@option{=FLT}) The pixel coordinates of the WCS reference point on
+the first (horizontal) FITS axis (counting from 1).
+
+@item --crpix2
+(@option{=FLT}) The pixel coordinates of the WCS reference point on
+the second (vertical) FITS axis (counting from 1).
+
+@item --crval1
+(@option{=FLT}) The Right Ascension (RA) of the reference point.
+
+@item --crval2
+(@option{=FLT}) The Declination of the reference point.
+
+@item --resolution
+(@option{=FLT}) The resolution of the non-oversampled image in units
+of arcseconds/pixel.
+
+@end table
+
+@node MakeProfiles output,  , MakeProfiles options, Invoking astrmkprof
+@subsubsection MakeProfiles output
+
+Besides the final merged image of all the profiles or individual
+profiles that can be built based on the input options, MakeProfiles
+will also create a log file in the current directory (where you run
+MockProfiles). The values for each column are explained in the first
+few commented (starting with @command{#} character). The log file
+includes the following information:
+
+@itemize
+@item
+The total magnitude of the profile in the image. This will be
+different from your input magnitude if the profile was not completely
+in the image.
+
+@item
+The number of pixels (in the oversampled image) which used Monte Carlo
+integration and not the central pixel value.
+
+@item
+The fraction of flux in the Monte Carlo integrated pixels.
+
+@item
+If an individual image was created or not.
+@end itemize
 
 @node MakeProfiles future updates,  , Invoking astrmkprof, MakeProfiles
 @subsection MakeProfiles future updates
