@@ -22,6 +22,6 @@ source $topsrc/tests/basicchecks.sh
 
 # Actual test script:
 #####################
-img=$HOME/Desktop/data/*_sci.fits
-cat=$topsrc/tests/imgcrop/randcat.txt
-$execname $cat $img --suffix=_wcscat.fits
+img=mkprofcat*.fits
+cat=$topsrc/tests/$prog/cat.txt
+$execname $cat $img --suffix=_wcscat.fits --zeroisnotblank

@@ -28,5 +28,7 @@ headers=${top_srcdir}/src/*/main.h
 info_TEXINFOS = astrutils.texi
 astrutils_TEXINFOS = fdl.texi subpackageversions.texi formath.texi
 
+EXTRA_DIST = findversions.sh
+
 subpackageversions.texi: ${headers}
 	./findversions.sh ${headers}

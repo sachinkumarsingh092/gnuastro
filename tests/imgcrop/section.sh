@@ -22,5 +22,5 @@ source $topsrc/tests/basicchecks.sh
 
 # Actual test script:
 #####################
-img=~/Desktop/data/acs_I_030mas_042_sci.fits
-$execname $img --section=-10:*+10,:50 --output=imgcrop_section.fits
+img=mkprofcat1.fits
+$execname $img --section=-10:*+10,:250 --output=imgcrop_section.fits

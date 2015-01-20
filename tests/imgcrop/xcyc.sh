@@ -22,5 +22,5 @@ source $topsrc/tests/basicchecks.sh
 
 # Actual test script:
 #####################
-img=$HOME/Desktop/data/acs_I_030mas_042_sci.fits
-$execname $img --xc=20 --yc=20 --output=imgcrop_xcyc.fits
+img=mkprofcat1.fits
+$execname $img --xc=251 --yc=251 --output=imgcrop_xcyc.fits

@@ -34,26 +34,5 @@ dist_doc_DATA = README
 
 ## Files that are only distributed:
 ## ================================
-##
-## include/: This directory keeps all the internal library headers
-##   and the other header files that all the programs will need.
-##
-## doc/findversion.sh: This is a small script that will go through all
-##   the header files of all the programs to read their version
-##   numbers. It will then save them in a subpackageversions.texi file
-##   that will be read by astrutils.texi to give the most uptodate
-##   versions for each program.
-##
-## tests/basicchecks.sh: Some checks to determine if the tests should
-##   be skipped (the executable was not made) or if the default file
-##   should be put here for the use of the program.
-##
-## tests/imgcrop/makerandomcat.py: A python script which will make a
-##   random catalog within the range of the input image to crop.
-##
-## tests/imgcrop/randcat.txt: The random catalog that was created by
-##   makerandomcat.py.
-EXTRA_DIST = include/commonargs.h include/commonparams.h		\
- include/fixedstringmacros.h include/neighbors.h doc/findversions.sh	\
- tests/imgcrop/makerandomcat.py tests/imgcrop/randcat.txt		\
- tests/basicchecks.sh
+EXTRA_DIST = include/commonargs.h include/commonparams.h	\
+ include/fixedstringmacros.h include/neighbors.h

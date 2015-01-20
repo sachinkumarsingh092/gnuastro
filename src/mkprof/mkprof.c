@@ -315,7 +315,7 @@ build(void *inparam)
       cat=&p->cat[ibq->id*p->cs1];
 
 
-      /* Prepare the parameter for building the profile.*/
+      /* Write the necessary parameters for this profile into mkp.*/
       setprofparams(mkp);
 
 

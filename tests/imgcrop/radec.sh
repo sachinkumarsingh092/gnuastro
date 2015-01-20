@@ -22,5 +22,5 @@ source $topsrc/tests/basicchecks.sh
 
 # Actual test script:
 #####################
-img=$HOME/Desktop/data/*sci.fits
-$execname $img --ra=150.06261 --dec=1.7911417 --output=imgcrop_radec.fits
+img=mkprofcat*.fits
+$execname $img --ra=0.99917157 --dec=1.0008283 --wwidth=0.3 --output=imgcrop_radec.fits

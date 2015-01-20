@@ -1,3 +1,16 @@
+2015-01-20  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* tests/imgcrop/makerandomcat.py: Removed, because now the points
+	are very specific.
+
+	* tests/imgcrop/*.sh: Corrected the inputs to the outputs of
+	MakeProfiles tests.
+
+	* tests/Makefile.am (TESTS): Added tests for MakeProfiles.
+
+	* Makefile.am (EXTRA_DIST): Moved the distribution files for each
+	folder to the Makefile.am in that folder.
+
 2015-01-19  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/mkprof/ui.c: Steps for reading and checking WCS parameters

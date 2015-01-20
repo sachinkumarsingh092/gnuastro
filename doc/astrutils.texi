@@ -2676,7 +2676,7 @@ $ ls /mnt/data/ABCproject                           # Archive No.1
 ABC001.fits ABC002.fits ABC003.fits
 $ ls /mnt/data/DEFproject                           # Archive No.2
 DEF001.fits DEF002.fits DEF003.fits
-$ astrimgtojpeg /mnt/data/ABCproject/ABC002.fits   # Program 1
+$ astrimgtojpeg /mnt/data/ABCproject/ABC002.fits    # Program 1
 $ ls                                                # List contents
 ABC001.jpg ABC002.jpg
 $ astrnoisechisel /mnt/data/DEFproject/DEF001.fits  # Program 2
@@ -4501,6 +4501,11 @@ If an individual image was created or not.
 @itemize
 
 @item
+Add options to read the RA and Dec of profiles from a catalog instead
+of their central position in image coordiantes. In this manner one
+catalog can be used to create several mock images.
+
+@item
 Currently the whole profile has to have only one mathematical
 function, this can easily be extended such that each galaxy has
 separate profiles or different ellipticities.
@@ -4663,7 +4668,7 @@ $ autoreconf --install
 
 @noindent
 Now you can easily configure, build and start hacking into the code
-and you have the full revision history under your figures.
+and you have the full revision history under your fingers.
 
 
 @menu
@@ -4707,7 +4712,7 @@ the program), for example setting up the configuration files, reading
 text catalogs or wrappers for CFITSIO and WCSLIB to facilitate reading
 and writing of FITS files.
 
-Below is a short description of each source code. Note that the
+Below is a short description of some of these libraries. Note that the
 headers of these libraries are in the @file{include} directory.
 
 @table @code
@@ -4721,6 +4726,11 @@ the values of an array.
 @item astrthreads.c
 Functions for dividing the jobs between various threads in
 multi-threaded programs.
+
+@item box.c
+Functions that deal with regions (boxes) in an image, for example to
+find the box surrounding an ellipse or to find the possible overlap of
+two boxes.
 
 @item checkset.c
 The functions and macros in these two files do all the name and file
@@ -4748,7 +4758,7 @@ neighbouring pixels within an image. The functions in these source
 files provide various types of linked list and functions that are
 necessary to easily manipulate them.
 
-@item stats.c
+@item statistics.c
 Statistical functions like finding the minimum and maximum or the
 mean, median and standard deviation along with more complicated
 functions like sigma clipping are defined in these source files.
@@ -4767,7 +4777,8 @@ Currently these libraries are not installed along with AstrUtils, they
 are only staticlly linked to any program needing them in the build
 directory and remain or are deleted from there. Note that in a static
 link, the contents of the library are megered with the executable, so
-they are no longer needed after the linking.
+they are no longer needed after the linking (you can safely delete
+them after installing the executable).
 
 In the future if need be, we can also make them installable so you can
 use them in your own personal programs. But for the time being, if you
@@ -4940,6 +4951,10 @@ informative error message and an immediate abort in the program. So
 there is no need for return values. Under more complicated situations
 where a return value might be necessary, @code{void} will be replaced
 with an @code{int} in the examples above.
+
+@item cite.h
+This file keeps the function to be called if the user runs any of the
+programs with @option{--cite}, see @ref{Operating modes}.
 
 @end vtable
 

@@ -89,18 +89,23 @@ borderfromcenter(double xc, double yc, long *width,
 		 long *fpixel, long *lpixel)
 {
   long lxc, lyc;
+  double intpart;
 
   /* Round the double values in a the long values: */
-  lxc=(long)xc; if (xc-lxc>0.5) ++lxc;
-  lyc=(long)yc; if (yc-lyc>0.5) ++lyc;
+  lxc=xc;
+  if (fabs(modf(xc, &intpart))>=0.5)
+    ++lxc;
+  lyc=yc;
+  if (fabs(modf(yc, &intpart))>=0.5)
+    ++lyc;
 
   /* Set the initial values for the actual image: */
   fpixel[0]=lxc-width[0]/2;      fpixel[1]=lyc-width[1]/2;
   lpixel[0]=lxc+width[0]/2;      lpixel[1]=lyc+width[1]/2;
-
   /*
-  printf("(%ld, %ld) -- (%ld, %ld)\n", fpixel[0],
-	 fpixel[1], lpixel[0], lpixel[1]);
+  printf("\n\nCenter is on: %ld, %ld\n", lxc, lyc);
+  printf("Starting and ending pixels: (%ld, %ld) -- (%ld, %ld)\n\n\n",
+	 fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
   */
 }
 
@@ -183,7 +188,7 @@ overlap(long *naxes, long *fpixel_i, long *lpixel_i,
   /* In case you want to see how things are going:
   printf("\n\nImage size: [%ld,  %ld]\n", naxes[0], naxes[1]);
   printf("fpixel_i -- lpixel_i: (%ld, %ld) -- (%ld, %ld)\n", fpixel_i[0],
-	 fpixel_i[1], lpixel_i[0], lpixel_i[1]);
+         fpixel_i[1], lpixel_i[0], lpixel_i[1]);
   */
 
   width[0]=lpixel_i[0]-fpixel_i[0]+1;
