@@ -181,11 +181,6 @@ Version numbering
 
 * AstrUtils 1.0::               Our aim in the current phase.
 
-New to GNU/Linux?
-
-* Command line user interface::  Introduction to the CLI.
-* Suggested Distributions::     Suggested GNU/Linux distributions.
-
 Installation
 
 * Requirements::                AstrUtils requirements
@@ -426,8 +421,9 @@ If @command{$ ./configure} complains about a requirement, see
 @ref{Requirements}. After running @command{$ make check}, a few tests
 will be done on the built product. They shouldn't fail, if they do
 please file a bug report. You can also make lots of customizations,
-for example installing when you don't have root access, only a subset
-of the utilities or modifying their names, see @ref{Configuring}.
+for example installing when you don't have root access, building and
+installing only a subset of the utilities or modifying their names,
+see @ref{Configuring}.
 
 In this manual we have tried to explain concepts thoroughly for a new
 GNU/Linux user or astronomy data analyzer. In case you are already
@@ -500,13 +496,19 @@ mean:
 @itemize
 
 @item
-Closed source. Software that is only distributed in compiled
+Proprietary software that is only distributed in a compiled
 format. The users of such software are forced to view it as a black
 box.
 
 @item
-Open source, but with complex programming constructs that require a
-lot of time to learn to use and understand.
+Software with restrictive licenses. For example when no license is
+specified, also "Academic-use Only" licenses. In such software, the
+users cannot modify the code.
+
+@item
+Software with its source code available, but with complex programming
+constructs that require a lot of time to learn for correct usage and
+understanding.
 
 @item
 Software with an outdated or weakly written manual.
@@ -737,9 +739,9 @@ Astronomical community.
 Similar to GNU Coreutils, all the programs provided with AstrUtils,
 provide very low level operations. This enables you to use the GNU
 Bash scripting language (which is the default in most GNU/Linux
-operating systems) to operate on a large number of files or do very
-complex things through the creative combinations of these tools that
-the authors had never dreamed of.
+operating systems) or any other shell you might be using to operate on
+a large number of files or do very complex things through the creative
+combinations of these tools that the authors had never dreamed of.
 
 For example all the analysis output is provided as ASCII tables which
 you can feed into your favorite plotting program to inspect
@@ -816,7 +818,7 @@ job. This will simultaneously improve preformance and transparency.
 
 In order to achieve this and allow maximal creativity with the shell,
 the various programs have to be very low level programs and completely
-independent. Something like the GNU coreutils.
+independent. Something like the GNU Coreutils.
 
 
 
@@ -828,27 +830,47 @@ independent. Something like the GNU coreutils.
 Some astronomers initially install and use the GNU/Linux operating
 systems because their research software can only be run in this
 environment. This is how the founder of AstrUtils started using
-GNU/Linux at least! If this is also the case for you, we have a few
-suggestions here.
+GNU/Linux at least! If this is not the case for you, you can skip the
+following.
 
-@menu
-* Command line user interface::  Introduction to the CLI.
-* Suggested Distributions::     Suggested GNU/Linux distributions.
-@end menu
+You might have already noticed that we are not using the name
+``Linux'', but ``GNU/Linux''. Please take the time to have a look at
+the following essays and FAQs for a complete understanding of this
+very important distinction.
 
-@node Command line user interface, Suggested Distributions, New to GNU/Linux?, New to GNU/Linux?
-@subsection Command line user interface
+@itemize
+
+@item
+@url{https://www.gnu.org/gnu/gnu-users-never-heard-of-gnu.html}
+
+@item
+@url{https://www.gnu.org/gnu/linux-and-gnu.html}
+
+@item
+@url{https://www.gnu.org/gnu/why-gnu-linux.html}
+
+@item
+@url{https://www.gnu.org/gnu/gnu-linux-faq.html}
+
+@end itemize
+
+Another thing you will notice is that AstrUtils only has a command
+line user interface (CLI). This might be contrary to your mosly
+graphical user interface (GUI) experience with proprietary operating
+systems. To a first time user, the command line does appear much more
+complicated and adapting to it might not be easy. So in the following
+we give a brief introduction and comparion of these two major types of
+user interaction in a program and which are best for what kind of
+operations.
+
 Although with GNOME 3@footnote{@url{http://www.gnome.org/}}, most
 GNU/Linux based operating systems now have a very advanced and useful
-graphic user interface (GUI), still most of the work of any GNU/Linux
-user will be on the command line user interface (CLI) or in the
-``shell'' as it is better known in the Unix-like systems. This is
-contrary to what you might have experienced in proprietry operating
-systems and adapting to it might not be easy. Since the GUI was
-created long after the command line, some wrongly consider it
-obsolete. Both interfaces are very useful for different tasks and
-should not be regarded as rivals, here we will outline how the CLI can
-be useful in scientific programs.
+GUI, still most of the work of any GNU/Linux user will be on the CLI
+or in the ``shell'' as it is better known in the Unix-like
+systems. Since the GUI was created long after the command line, some
+wrongly consider the command line to be obsolete. Both interfaces are
+very useful for different tasks and should not be regarded as rivals,
+here we will outline how the CLI can be useful in scientific programs.
 
 You can think of the GUI as a veneer over the CLI to facilitate a
 small subset of all the possible CLI operations. Each click you do on
@@ -899,11 +921,15 @@ also run a separate GUI from within this console.} to access the
 virtual console. To return back to your GUI, press the same keys above
 replacing @key{F4} with @key{F1}. In the virtual console, the GUI,
 with all its distracting colors and information, is gone. Enabling you
-to focus more accurately on your CLI work. For operations that use a
-lot of your system's resources (processing a large number of large
-astronomical images for example), the virtual console is the place to
-run them. This is because the GUI is not competing with your
-processing for your system's RAM and CPU.
+to focus more accurately on your actual work.
+
+For operations that use a lot of your system's resources (processing a
+large number of large astronomical images for example), the virtual
+console is the place to run them. This is because the GUI is not
+competing with your processing for your system's RAM and CPU. Since
+the virtual consoles are completely independent, you can even log out
+of your GUI environment to give more of your hardware resources to the
+programs you are running and thus reduce the operating time.
 
 Since it uses far less system resources, the CLI is also very
 convenient for remote access to your computer. Using secure shell
@@ -912,74 +938,7 @@ console) from anywhere even if the connection speeds are slow. There
 are apps for smartphones and tablets which allow you to do this.
 
 
-@node Suggested Distributions,  , Command line user interface, New to GNU/Linux?
-@subsection Suggested distributions
-The Wikipedia pages on ``Linux distribution'' and ``GNU'' and
-``Linux'' will provide you with a wealth of information. In general,
-AstrUtils can be built and installed on most (if not all) of the
-distributions with no problem. You might just have to install all the
-possibly missing requirements. There is no ``best'' distribution for
-GNU/Linux for everyone, it is mainly a matter of taste for general
-usage.
 
-But based on the principles mentioned in this introduction (which can
-be summarized with simplicity and transparency), we believe we can
-make some objective suggestions for critical scientists (from easy and
-fast to time consuming but basic): Arch
-Linux@footnote{@url{https://www.archlinux.org/}},
-Gentoo@footnote{@url{https://www.gentoo.org/}} and Linux from
-scratch@footnote{@url{http://www.linuxfromscratch.org/}}@footnote{There
-are also several other similar distributions like Crux
-(@url{https://crux.nu/}), Slackware
-(@url{http://www.slackware.com/})}. Most other distributions of
-GNU/Linux prepare everything for you in a collection of software that
-comes with the distribution, this results in you (as the user) not
-practically understanding how all the separate packages interact and
-work together.
-
-In short, with the more popular distributions like Ubuntu or Fedora,
-you get the packages that the people in those distributions decided
-are best for you in a black box. This results in a very simple to
-install environment reminiscent of the saying ``ignorance is
-bliss''. However, distributions like those suggested here are ``build
-it your self'' types of GNU/Linux which provide you only with the
-minimum set of tools on which you can choose to build which ever type
-of system you want, including the graphic user interface. Since the
-operating system is not forced to manage any extra packages, these
-customized distribtuions are also significantly more faster.
-
-To enable you to do this, these distributions have very well written
-hand books and wiki pages which teach and demonstrate how to install
-and use the different components. This is because the distributors of
-these distributions can spend less time (or no time) on
-configuring/modifying each package to fit their desired combination
-and more time on informing you instead, enabling you to build your
-dream machine.
-
-As astronomers (or scientists in general), how can we claim to be
-fighting ignorance in our understanding of the universe when we
-surrender to ignorance regarding the tool that does all our processing
-(the operating system)? Just imagine if Galileo did not have the
-technical knowledge to build a telescope. Astronomical objects could
-not be seen with the Dutch military design of the telescope. Before he
-actually saw the moons of Jupiter, the mountains or the Moon or the
-crescent of Venus, he was an anti-copernican and was ``evasive'' to
-kepler@footnote{Galileo G. (Translated by Maurice A. Finocchiaro),
-Hackett publishing company, first edition, 2008.}.
-
-If Galileo had not got his hands dirty on the technical aspect of
-designing the correct optical system to view astronomical objects, he
-could never make the contributions he made to science in general and
-astronomy in particular. Science is not independent of its tools.
-
-Today we have a wealth of raw telescope images ready (mostly for free)
-at the finger tips of anyone who is interested with a fast enough
-internet connection to download them. The only thing lacking is new
-ways to analyze them and dig out the treasure that is lying hidden in
-them to existing methods and techniques. Therefore this investment, to
-atleast learn to build your operating system and learn to use it most
-efficiently, is only the first step for any aspiring critical
-scientist.
 
 
 
@@ -1146,7 +1105,8 @@ script as you can see below. You can get the most recent source code
 from its
 webpage@footnote{@url{http://www.atnf.csiro.au/people/mcalabre/WCS/}}.
 In the directory where you have downloaded the compressed file, you
-can take the following steps (the x.xx represents the version number):
+can take the following steps (the @code{x.xx} represents the version
+number):
 @example
 $ tar -jxvf wcslib.tar.bz2
 $ cd wcslib-x.xx
@@ -1278,8 +1238,8 @@ $ ./pgdemoXX
 @node libjpeg, FFTW, WCSLIB, Requirements
 @subsection libjpeg
 
-libjpeg is needed for the conversion programs like FitstoJpeg or
-JpegtoFits. @url{http://www.ijg.org/, libjpeg} is a very basic library
+As its name suggests, libjpeg is needed for reading and writing JPEG
+images. @url{http://www.ijg.org/, libjpeg} is a very basic library
 that provides tools to read and write JPEG images, most of the
 GNU/Linux graphic programs and libraries use it. Therefore you most
 probably already have it installed.
@@ -1467,7 +1427,7 @@ This section is basically a longer explanation to the sequence of
 commands given in @ref{Quick start}. If you want to have all the
 programs of AstrUtils installed in your system, you don't want to
 change the executable names during or after installation, you have
-root access to install the programs in a system wide directoy, the
+root access to install the programs in a system wide directory, the
 Letter paper size of the print manual is fine for you or as a summary
 you don't feel like going into the details when everything is working
 seamlessly, you can safely skip this section. If you have any of the
@@ -1575,7 +1535,15 @@ is equivalent to simply enabling those that were enabled. Listing the
 disabled programs is redundant.
 @end cartouche
 
-
+Note that the tests of some programs might require other programs to
+have been installed and tested. For example MakeProfiles is the first
+program to be tested when you run @command{$ make check}, it provides
+the inputs to all the other tests. So if you don't install
+MakeProfiles, then the tests for all the other programs will be
+skipped or fail. To avoid this, in one run, you can install all the
+packages and run the tests but not install. If everything is working
+correctly, you can run configure again with only the packages you want
+but not run the tests and directly install after building.
 
 
 
@@ -1585,11 +1553,11 @@ disabled programs is redundant.
 @cindex Superuser, not possible
 
 One of the most commonly used options to configure is the directory
-that will host all the files which require installing: the actual
-executable files for the program, the documentation, the shared data
-and so on. This is done through the @option{--prefix} option. Here we
-will use the scenrio where you don't have root access to the computer
-you are using to demonstrate its applicability.
+that will host all the files which require installing, for example the
+actual executable files for the program, the documentation,
+configuration files. This is done through the @option{--prefix}
+option. Here we will use the scenrio where you don't have root access
+to the computer you are using to demonstrate its applicability.
 
 In case you do not have super user or root access to the system, you
 can't take the installation steps of the command sequence in
@@ -1625,10 +1593,11 @@ $ ./configure --prefix=USRDIR
 
 Ofcourse, to be able to run the program executables in your chosen
 directory from anywhere, you also need to include @file{USRDIR/bin}
-(the subdirectory where the executables are installed, as you will see
-below there are many more things that get installed) in your
+(the subdirectory where the executables are installed) in your
 @command{PATH} environment variable by placing the following command
-in your @file{$HOME/.bashrc} file.
+in your @file{$HOME/.bashrc} file. The directories listed in
+@command{$PATH} specifies the locations that the system will check to
+find the executable name you have asked for.
 
 @example
 export PATH=$PATH:USRDIR/bin
@@ -1772,12 +1741,14 @@ $ make check
 
 For every program we have designed some tests to check nearly all the
 possible operations. Running the command above will run those tests
-and give you a final report. If everything is ok, all the tests should
-pass. In case any of the tests fail, please contact us because it is a
-bug. Prior to releasing every distribution all these tests are
-checked. If you have a rasonably modern terminal, the outputs of the
-successful tests will be colored green and the failed ones will be
-colored red.
+and give you a final report. If everything is ok and you have built
+all the programs, all the tests should pass. In case any of the tests
+fail, please contact us because it is a bug. Note that the tests of
+some programs depend on the outputs of other program's tests, so if
+you have not installed them they might be skipped or fail. Prior to
+releasing every distribution all these tests are checked. If you have
+a reasonably modern terminal, the outputs of the successful tests will
+be colored green and the failed ones will be colored red.
 
 These scripts can also act as a good set of examples for you to see
 how the programs are run. All the tests are in the
@@ -1832,7 +1803,6 @@ to:
 Save the file and close it. You can now run
 
 @example
-$ cd SRCdir
 $ make pdf
 @end example
 
@@ -1841,9 +1811,8 @@ and the new PDF manual will be available in
 @file{SRCdir/doc/astrutils.pdf}. By changing the @command{pdf} in
 @command{$ make pdf} to @command{ps} or @command{dvi} you can have the
 manual in those formats. Note that you can do this for any manual that
-is in Texinfo format. Note that they might not have
-@code{@@afourpaper} line, so you can add it close to the top of the
-Texinfo source file.
+is in Texinfo format, they might not have @code{@@afourpaper} line, so
+you can add it close to the top of the Texinfo source file.
 
 
 
@@ -1875,8 +1844,8 @@ experience. All AstrUtils programs can use configuration files so you
 don't have to specify all the parameters on the command line each time
 you run a program. The manner of setting, checking and using the these
 files at various levels are also explained. Finally we discuss how you
-can get immediate and distraction-less help (without taking your hands
-off the keyboard!) on the command line.
+can get immediate and distraction-free (without taking your hands off
+the keyboard!) help on the command line.
 
 @menu
 * Command line::                How to use the command line.
@@ -1927,8 +1896,8 @@ help from you, their order might also matter (for example in
 @command{cp} which is used for copying). The outputs of
 @option{--usage} and @option{--help} shows which arguments are
 optional and which are mandatory, see @ref{--usage}. As their name
-suggests, @emph{options} are only optional and you never have to worry
-about what order you specify them in.
+suggests, @emph{options} are only optional and most of the time you
+don't have to worry about what order you specify them in.
 
 In case your arguments or option values contain any of the shell's
 meta-characters, you have to quote them. If there is only one such
@@ -1961,7 +1930,7 @@ quotes are much more easier, elegant and readable.
 @subsection Arguments
 In AstrUtils, the names of the input data files and ASCII tables are
 always specified as arguments, you can generally specify them in any
-order unless other wise stated for a particular program. Everything
+order unless otherwise stated for a particular program. Everything
 particular about the how a program treats arguments, is explained
 under the ``Invoking ProgramName'' section for that program.
 
@@ -1991,7 +1960,7 @@ The recognized astronomical data files are listed below.
 
 @end itemize
 
-Through out this manual and in the command line outputs, when ever we
+Through out this manual and in the command line outputs, whenever we
 want to generalize all such astronomical data formats in a text place
 holder, we will use @file{ASTRdata}, we will assume that the extension
 is also part of this name. Any file ending with these names is
@@ -2133,8 +2102,8 @@ example use @command{-o ~/test}, @command{--output ~/test} or
 @strong{CAUTION:} If you forget to specify a value for an option which
 requires one, and that option is the last one, AstrUtils will warn
 you. But if it is in the middle of the command, it will take the text
-of the next option or argument as the value which will can cause
-undefined behaviour.
+of the next option or argument as the value which can cause undefined
+behaviour.
 @end cartouche
 @cartouche
 @noindent
@@ -2245,20 +2214,22 @@ the message is printed and will not do any form of processing. See
 
 @item -V
 @itemx --version
-(GNU option) Print a short message, showing the full name, version and
-copyright information. On the first line it will print the official
-name (not executable name) and version number of the program. It will
-also print the version of the AstrUtils that the program was built
-with. Following this is a blank line and a copyright information. The
-program will not run.
+(GNU option) Print a short message, showing the full name, version,
+copyright information and program authors. On the first line it will
+print the official name (not executable name) and version number of
+the program. It will also print the version of the AstrUtils that the
+program was built with. Following this is a blank line and a copyright
+information. The program will not run.
 
 @item -q
 @itemx --quiet
-Don't report steps. All the programs in AstrUtils that usually take
-more than a fraction of a second to run will report their steps for
-you to follow while they are operating. If you do not want to see
-these reports, you can call this option and only error messages will
-be printed if the program is aborted.
+Don't report steps. All the programs in AstrUtils that have multiple
+major steps will report their steps for you to follow while they are
+operating. If you do not want to see these reports, you can call this
+option and only error messages will be printed if the program is
+aborted. If the steps are done very fast (depending on the properties
+of your input) disabling these reports will also decrease running
+time.
 
 @item --cite
 Print the Bib@TeX{} entry for AstrUtils and the particular program (if
@@ -2462,10 +2433,10 @@ modes}
 @subsection System wide
 When AstrUtils is installed, the configuration files that are shipped
 with the distribution are copied into the (possibly system wide)
-@file{prefix/etc/} directory. See @ref{Configuring} for more
-detils on @file{prefix} (by default it is: @file{/usr/local}). This
-directory is the final place (with the lowest priority) that the
-programs in AstrUtils will check to retrieve parameter values.
+@file{prefix/etc/} directory. See @ref{Configuring} for more details
+on @file{prefix} (by default it is: @file{/usr/local}). This directory
+is the final place (with the lowest priority) that the programs in
+AstrUtils will check to retrieve parameter values.
 
 If you remove a parameter and its value from the files in this system
 wide directory, you either have to specify it in more immediate
@@ -4818,6 +4789,10 @@ are defined in their @file{main.h} source file with macros of fixed
 names. For example the copyright notice, or parts of the top
 information in the @option{--help} output.
 
+@item neighbors.h
+The macros in this header find the neighbors of a pixel index using
+four or eight connectivity in a region of an image or the whole image.
+
 @end table
 
 
@@ -5033,22 +5008,21 @@ As explained in @ref{Tests}, for every program we have written some
 simple tests checking the various independent features of the
 program. All the tests are placed in the
 @file{astrutils-@value{VERSION}/tests} directory, lets call it
-@file{TESTdir}. There is one script (@file{basicchecks.sh}) in this
-folder and several @file{Makefile}s. The script is a common check for
-all the programs to check if the program has been created and also if
-a local configuration file exists.
+@file{TESTdir}. There is one script (@file{prepconf.sh}) in this
+folder and several @file{Makefile}s. The script is the first ``test''
+that will be run. It will copy all the configuration files from the
+various directories to a @file{.astrutils} directory which it will
+make so the various tests can set the default values.
 
 For each program, the tests are placed inside directories with the
 program name. Each test is written as a shell script. The last line of
 this script is the test which runs the program with certain
 parameters. The return value of this script determines the fate of the
 test, see the ``Support for test suites'' chapter of the Automake
-manual for a very nice and complete explanation.
-
-In every script, two variables are defined at first: @code{prog} and
-@code{execname}. The first specifies the program name and the second
-the location of the executable. Then they include the contents of
-@file{basicchecks.sh} explained above.
+manual for a very nice and complete explanation. In every script, two
+variables are defined at first: @code{prog} and @code{execname}. The
+first specifies the program name and the second the location of the
+executable.
 
 The most important thing to have in mind about all the test scripts is
 that they are run from inside the @file{TESTdir} directory in the

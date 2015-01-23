@@ -13,12 +13,12 @@
 
 AM_TESTS_ENVIRONMENT = export topsrc=$(top_srcdir);
 
-TESTS = mkprof/mosaic1.sh mkprof/mosaic2.sh mkprof/mosaic3.sh		\
-mkprof/mosaic4.sh imgcrop/imgcat.sh imgcrop/wcscat.sh imgcrop/xcyc.sh	\
-imgcrop/xcycnoblank.sh imgcrop/section.sh imgcrop/radec.sh
+TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh		\
+mkprof/mosaic3.sh mkprof/mosaic4.sh imgcrop/imgcat.sh		\
+imgcrop/wcscat.sh imgcrop/xcyc.sh imgcrop/xcycnoblank.sh	\
+imgcrop/section.sh imgcrop/radec.sh
 
-EXTRA_DIST = $(TESTS) basicchecks.sh mkprof/mkprofcat1.txt		\
-mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt	\
-imgcrop/cat.txt
+EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt mkprof/mkprofcat2.txt	\
+mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt imgcrop/cat.txt
 
 CLEANFILES = *.log *.fits .astrutils/*.conf .astrutils

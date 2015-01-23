@@ -1,0 +1,23 @@
+# This is not actually a test of any of the programs, it just brings
+# in all the configuration files into a locally created .astrutils
+# directory for all the tests to use.
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+
+# Make the .astrutils directory if not already created.
+if [ ! -d .astrutils ]; then
+    mkdir .astrutils
+fi
+
+
+#For each program bring in the configuration file:
+for prog in imgcrop mkprof
+do
+    if [ ! -f .astrutils/astr$prog.conf ]; then
+	cp $topsrc/src/$prog/astr$prog.conf .astrutils/
+    fi
+done
