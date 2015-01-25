@@ -1,27 +1,25 @@
-## Process this file with automake to produce Makefile.in
+## Process this file with automake to produce Makefile.inx
 ##
-## Hand written file: used as input into Autotools.
-##
-## This file will be called by the Makefile.am in the top directory,
-## so this file does not need to be called directly by automake to
-## make the full GNU Astronomy Utilities (Astrutils)
+## This is part of GNU Astronomy Utilities (gnuastro). It will be
+## called by the Makefile.am in the top directory.
 ##
 ## Copyright (C) 2013-2015 Mohammad Akhlaghi
 ## Tohoku University Astronomical Institute, Sendai, Japan.
 ## http://astr.tohoku.ac.jp/~akhlaghi/
 ##
-## AstrUtils is free software: you can redistribute it and/or modify it
-## under the terms of the GNU General Public License as published by the
-## Free Software Foundation, either version 3 of the License, or (at your
-## option) any later version.
+## GNU Astronomy Utilities is free software: you can redistribute it
+## and/or modify it under the terms of the GNU General Public License
+## as published by the Free Software Foundation, either version 3 of
+## the License, or (at your option) any later version.
 ##
-## AstrUtils is distributed in the hope that it will be useful, but
-## WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
+## GNU Astronomy Utilities is distributed in the hope that it will be
+## useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+## of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
+## along with GNU Astronomy Utilities. If not, see
+## <http://www.gnu.org/licenses/>.
 
 ## Add the version numbers of the separate programs:
 ## ================================================= List the header
@@ -33,8 +31,8 @@ SHELL=/bin/bash
 headers=${top_srcdir}/src/*/main.h
 
 ## Commands to make the texinfo tools:
-info_TEXINFOS = astrutils.texi
-astrutils_TEXINFOS = fdl.texi subpackageversions.texi formath.texi
+info_TEXINFOS = gnuastro.texi
+gnuastro_TEXINFOS = fdl.texi subpackageversions.texi formath.texi
 
 EXTRA_DIST = findversions.sh
 

@@ -1,5 +1,5 @@
 # This is not actually a test of any of the programs, it just brings
-# in all the configuration files into a locally created .astrutils
+# in all the configuration files into a locally created .gnuastro
 # directory for all the tests to use.
 #
 # Copying and distribution of this file, with or without modification,
@@ -8,16 +8,16 @@
 # without any warranty.
 
 
-# Make the .astrutils directory if not already created.
-if [ ! -d .astrutils ]; then
-    mkdir .astrutils
+# Make the .gnuastro directory if not already created.
+if [ ! -d .gnuastro ]; then
+    mkdir .gnuastro
 fi
 
 
 #For each program bring in the configuration file:
 for prog in imgcrop mkprof
 do
-    if [ ! -f .astrutils/astr$prog.conf ]; then
-	cp $topsrc/src/$prog/astr$prog.conf .astrutils/
+    if [ ! -f .gnuastro/ast$prog.conf ]; then
+	cp $topsrc/src/$prog/ast$prog.conf .gnuastro/
     fi
 done

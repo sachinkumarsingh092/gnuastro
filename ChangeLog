@@ -1,3 +1,8 @@
+2015-01-25  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* ./*: In all files, the name `AstrUtils` was changed to
+	`gnuastro` and the `astr` prefix was changed to `ast`.
+
 2015-01-20  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* tests/imgcrop/makerandomcat.py: Removed, because now the points

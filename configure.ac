@@ -1,28 +1,29 @@
 # Process this file with autoconf to produce a configure script.
 #
 # Hand written file: used as input into GNU Autotools (autoconf).
+# This is part of GNU Astronomy Utilities (gnuastro) package.
 #
 # Copyright (C) 2013-2015 Mohammad Akhlaghi
 # Tohoku University Astronomical Institute, Sendai, Japan.
 # http://astr.tohoku.ac.jp/~akhlaghi/
 #
-# AstrUtils is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or (at your
-# option) any later version.
+# gnuastro is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# AstrUtils is distributed in the hope that it will be useful, but
+# gnuastro is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with AstrUtils. If not, see <http://www.gnu.org/licenses/>.
+# along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 # Definitions:
 AC_PREREQ([2.69])
-AC_INIT([GNU AstrUtils], [0.1], [makhlaghi@gmail.com],
-        [astrutils], [http://www.gnu.org/software/astrutils/])
+AC_INIT([GNU Astronomy Utilities], [0.1], [makhlaghi@gmail.com],
+        [gnuastro], [http://www.gnu.org/software/gnuastro/])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
 AC_CONFIG_HEADERS([config.h])
@@ -219,12 +220,12 @@ AC_OUTPUT
 
 # Print a bye-bye message.
 AS_ECHO([])
-AS_ECHO([=====================================])
+AS_ECHO([==========================================])
 AS_ECHO(["AC_PACKAGE_STRING is configured."])
 AS_ECHO([])
 AS_ECHO(["Ready to build, check and install:"])
 AS_ECHO(["    make"])
 AS_ECHO(["    make check"])
 AS_ECHO(["    make install"])
-AS_ECHO([=====================================])
+AS_ECHO([==========================================])
 AS_ECHO([])

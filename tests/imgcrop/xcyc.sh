@@ -1,7 +1,7 @@
 # Crop a box based on --xc and --yc.
 #
 # See the Tests subsection of the manual for a complete explanation
-# (in the Installing AstrUtils section).
+# (in the Installing gnuastro section).
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
@@ -18,7 +18,7 @@
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
 prog=imgcrop
-execname=../src/$prog/astr$prog
+execname=../src/$prog/ast$prog
 
 
 

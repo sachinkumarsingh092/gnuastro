@@ -48,9 +48,9 @@ do
     b=${a[2]}   # Save the second token (word):
     c=${b#\"}   # Remove the initial "
     d=${c%\"}   # Remove the final "
-    progname=${d#astr} # Remove the initial "astr"
+    progname=${d#ast} # Remove the initial "ast"
 
-    echo astr$progname $progversion
+    echo ast$progname $progversion
 
     # Save the result to a file:
     echo @set ${progname^^}_VERSION $progversion >> $tmp

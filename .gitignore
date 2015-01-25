@@ -13,8 +13,8 @@
 *.tar.gz
 Makefile
 
-astrmkprof
-astrimgcrop
+astmkprof
+astimgcrop
 
 .deps
 ar-lib
@@ -29,11 +29,11 @@ configure
 runtest.sh
 install-sh
 aclocal.m4
-.astrutils
+.gnuastro
 test-driver
 config.h.in
 doc/mdate-sh
-astrutils.t2p
+gnuastro.t2p
 config.status
 doc/stamp-vti
 autom4te.cache
