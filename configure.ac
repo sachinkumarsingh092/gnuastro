@@ -162,6 +162,12 @@ AC_ARG_ENABLE([mkprof],
 	      [AS_IF([test "x$enable_mkprof" != xno],
                      [enable_mkprof=yes; ayes=true])],
               [enable_mkprof=notset])
+AC_ARG_ENABLE([convertt],
+              [AS_HELP_STRING([--enable-convertt],
+  	            [Install ConvertType and other enabled packages only.])],
+	      [AS_IF([test "x$enable_convertt" != xno],
+                     [enable_convertt=yes; ayes=true])],
+              [enable_convertt=notset])
 AC_ARG_ENABLE([imgcrop],
               [AS_HELP_STRING([--enable-imgcrop],
   	            [Install ImageCrop and other enabled packages only.])],
@@ -184,9 +190,11 @@ AC_ARG_ENABLE([imgcrop],
 # fi
 AS_IF([test $ayes = true ],
       [AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
+       AS_IF([test $enable_convertt = notset], [enable_convertt=no])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])],
 
       [AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
+       AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])]
      )
 
@@ -196,6 +204,7 @@ AS_IF([test $ayes = true ],
 
 # Make the enable_package values available for the Makefile:
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
+AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
 
 
@@ -204,8 +213,9 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
 		 tests/Makefile
-		 src/imgcrop/Makefile
-		 src/mkprof/Makefile])
+                 src/mkprof/Makefile
+                 src/convertt/Makefile
+		 src/imgcrop/Makefile])
 
 
 

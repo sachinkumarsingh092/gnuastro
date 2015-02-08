@@ -155,6 +155,30 @@ int4or8(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
+intsmallerequalto(char *optarg, int *var, char *lo, char so, char *spack,
+                  char *filename, size_t lineno, long maxvalue)
+{
+  long tmp;
+  char *tailptr;
+  *var=tmp=strtol(optarg, &tailptr, 0);
+
+  CHECKFULLNUMBER;
+  if(tmp>maxvalue)
+    {
+      if(filename)
+	error_at_line(EXIT_FAILURE, 0, filename, lineno,
+		      FIXEDFORFILE" "NOTEMSG_4OR8, lo, optarg);
+      else
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_4OR8,
+	      lo, so, optarg);
+    }
+}
+
+
+
+
+
+void
 anylong(char *optarg, long *var, char *lo, char so, char *spack,
 	char *filename, size_t lineno)
 {

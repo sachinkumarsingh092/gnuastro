@@ -1,6 +1,6 @@
 /*********************************************************************
-MakeProfiles - Create mock astronomical profiles.
-MakeProfiles is part of GNU Astronomy Utilities (gnuastro) package.
+ConvertType - Convert between various types of files.
+ConvertType is part of GNU Astronomy Utilities (gnuastro) package.
 
 Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
@@ -21,33 +21,33 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "timing.h"   	        /* Includes time.h and sys/time.h */
 
-#include "main.h"
-#include "mkprof.h"
 
-#include "ui.h"		        /* needs main.h.                  */
 
+
+
+
+
+
+/*************************************************************
+ **************      Acceptable JPEG names      ***************
+ *************************************************************/
 int
-main (int argc, char *argv[])
+nameisjpeg(char *name)
 {
-  struct timeval t1;
-  struct mkprofparams p={{0}, {0}, 0};
-
-  /* Set the starting time.*/
-  time(&p.rawtime);
-  gettimeofday(&t1, NULL);
-
-  /* Read the input parameters. */
-  setparams(argc, argv, &p);
-
-  /* Run Image Crop */
-  mkprof(&p);
-
-  /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
-
-  /* Return successfully.*/
-  return EXIT_SUCCESS;
+  size_t len;
+  len=strlen(name);
+  if (strcmp(&name[len-4], ".jpg") == 0
+      || strcmp(&name[len-4], ".JPG") == 0
+      || strcmp(&name[len-4], ".jpeg") == 0
+      || strcmp(&name[len-5], ".JPEG") == 0
+      || strcmp(&name[len-5], ".jpe") == 0
+      || strcmp(&name[len-5], ".jif") == 0
+      || strcmp(&name[len-5], ".jfif") == 0
+      || strcmp(&name[len-5], ".jfi") == 0)
+    return 1;
+  else
+    return 0;
 }

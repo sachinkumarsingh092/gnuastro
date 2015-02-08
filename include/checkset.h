@@ -84,6 +84,10 @@ int4or8(char *optarg, int *var, char *lo, char so, char *spack,
 	 char *filename, size_t lineno);
 
 void
+intsmallerequalto(char *optarg, int *var, char *lo, char so, char *spack,
+                  char *filename, size_t lineno, long maxvalue);
+
+void
 anylong(char *optarg, long *var, char *lo, char so, char *spack,
 	char *filename, size_t lineno);
 

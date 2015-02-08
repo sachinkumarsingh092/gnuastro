@@ -1,6 +1,6 @@
 /*********************************************************************
-MakeProfiles - Create mock astronomical profiles.
-MakeProfiles is part of GNU Astronomy Utilities (gnuastro) package.
+ConvertType - Convert between various types of files.
+ConvertType is part of GNU Astronomy Utilities (gnuastro) package.
 
 Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
@@ -25,28 +25,22 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"   	        /* Includes time.h and sys/time.h */
 
 #include "main.h"
-#include "mkprof.h"
 
 #include "ui.h"		        /* needs main.h.                  */
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
-  struct timeval t1;
-  struct mkprofparams p={{0}, {0}, 0};
+  struct converttparams p={{0}, {0}, 0};
 
-  /* Set the starting time.*/
-  time(&p.rawtime);
-  gettimeofday(&t1, NULL);
-
-  /* Read the input parameters. */
+  /* Read the input parameters.*/
   setparams(argc, argv, &p);
 
-  /* Run Image Crop */
-  mkprof(&p);
-
+  /* Run Convert
+  convertt(&p);
+  */
   /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
+  freeandreport(&p);
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

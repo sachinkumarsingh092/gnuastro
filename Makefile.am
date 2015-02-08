@@ -25,10 +25,13 @@
 if COND_MKPROF
   MAYBE_MKPROF = src/mkprof
 endif
+if COND_CONVERTT
+  MAYBE_CONVERTT = src/convertt
+endif
 if COND_IMGCROP
   MAYBE_IMGCROP = src/imgcrop
 endif
-SUBDIRS = lib $(MAYBE_MKPROF) $(MAYBE_IMGCROP) doc tests
+SUBDIRS = lib $(MAYBE_MKPROF) $(MAYBE_IMGCROP) $(MAYBE_CONVERTT) doc tests
 
 
 

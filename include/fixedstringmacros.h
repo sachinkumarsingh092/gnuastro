@@ -45,8 +45,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "  info "SPACK"\n"							\
   "  info "SPACK_NAME"\n"						\
   "  info "PACKAGE_TARNAME"\n\n"					\
-  SPACK_NAME" was configured on this system at "CONFIGDATE", "		\
-  CONFIGTIME".\n\n"							\
   "Options:"								\
 
 
@@ -54,8 +52,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define ASTRUTILSBIBTEX 						\
     "@ARTICLE{gnuastro,\n"						\
     "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"		\
-    "    title = \"{Noise based detection and segmentation of amorphous" \
-    "  signal}\"\n"							\
+    "    title = \"{Noise based detection and segmentation of nebulous" \
+    " objects}\"\n"							\
     "  journal = {\\apjs},\n"						\
     " keywords = {galaxies: irregular, galaxies: photometry, galaxies: " \
     "structure, methods: data analysis, techniques: image processing, "	\

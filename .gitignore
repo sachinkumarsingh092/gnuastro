@@ -15,6 +15,7 @@ Makefile
 
 astmkprof
 astimgcrop
+astconvertt
 
 .deps
 ar-lib

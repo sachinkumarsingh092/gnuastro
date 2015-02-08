@@ -29,13 +29,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/**************************************************************/
-/**************        argp.h definitions       ***************/
-/**************************************************************/
-
-
-
-
 /* Definition parameters for the argp: */
 const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";

@@ -48,6 +48,6 @@ main (int argc, char *argv[])
   /* Free all non-freed allocations. */
   freeandreport(&p, &t1);
 
-  /* Return 0 for success.*/
-  return 0;
+  /* Return successfully.*/
+  return EXIT_SUCCESS;
 }

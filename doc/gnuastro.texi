@@ -25,8 +25,6 @@ This manual documents version @value{VERSION} of the GNU Astronomy
 Utilities, providing various individual tools with similar user
 interface for astronomical data manipulation and  analysis.
 
-Copyright @copyright{} 2013-2015 Mohammad Akhlaghi.
-
 Copyright @copyright{} 2015 Free Software Foundation, Inc.
 
 @quotation
@@ -55,8 +53,9 @@ Texts.  A copy of the license is included in the section entitled
 @c Version of all the subpackages:
 @macro printversions
 @noindent
-@*MakeProfiles (@command{astmkprof}) @value{MKPROF_VERSION}
+@*ConvertType (@command{astconvertt}) @value{CONVERTT_VERSION}
 @*ImageCrop (@command{astimgcrop}) @value{IMGCROP_VERSION}
+@*MakeProfiles (@command{astmkprof}) @value{MKPROF_VERSION}
 @end macro
 
 
@@ -175,18 +174,18 @@ Introduction
 * Science and software::        The importance of software in science.
 * Why C::                       Why we chose the C?
 * Your rights::                 User rights.
-* Design philosophy::           Design philosophy.
+* Design philosophy::           How we have designed gnuastro.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
 
 Version numbering
 
-* gnuastro 1.0::               Our aim in the current phase.
+* gnuastro 1.0::                Our aim in the current phase.
 
 Installation
 
-* Requirements::                Required libraries.
-* Installing gnuastro::        Installing GNU Astronomy Utilities.
+* Requirements::                gnuastro requirements
+* Installing gnuastro::         Installing gnuastro
 
 Requirements
 
@@ -205,7 +204,7 @@ SAO ds9
 
 * Viewing multiextension FITS::  Configure SAO ds9 for multiextension images.
 
-Installing gnuastro
+Installing GNU Astronomy Utilities
 
 * Configuring::                 Configure gnuastro
 * Tests::                       Run tests to see if it is working.
@@ -221,7 +220,7 @@ Common behavior
 
 * Command line::                How to use the command line.
 * Configuration files::         Values for unspecified variables.
-* Threads in gnuastro::        How threads are managed in gnuastro.
+* Threads in gnuastro::         How threads are managed in gnuastro.
 * Final parameter values::
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
@@ -263,25 +262,20 @@ Image manipulation
 * ImageTransform::              Transform (flip, rotate) an image.
 * ImageArith::                  Apply arithmetics on image(s).
 * EllipMask::                   Place elliptical masks on an image.
-* Image conversion::            Convert an image to and from other formats.
+* ConvertType::                 Convert to and from other formats.
 
 ImageCrop
 
 * ImageCrop modes::             Basic ImageCrop modes.
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
-* Invoking astimgcrop::        Calling ImageCrop on the command line
+* Invoking astimgcrop::         Calling ImageCrop on the command line
 * ImageCrop future::            Future updates to ImageCrop.
 
 Invoking ImageCrop
 
-* astimgcrop options::         A list of all the options with explanation.
-* astimgcrop output::          The outputs of ImageCrop.
-
-Image conversion
-
-* FitstoJpeg::                  Convert a FITS image to a Jpeg image.
-* JpegtoFits::                  Convert a Jpeg image to a FITS image.
+* astimgcrop options::          A list of all the options with explanation.
+* astimgcrop output::           The outputs of ImageCrop.
 
 Image analysis
 
@@ -314,7 +308,7 @@ MakeProfiles
 
 * If convolving afterwards::    Considerations for convolving afterwards.
 * Profile total magnitude::     Definition of total profile magnitude.
-* Invoking astmkprof::         Inputs and Options for MakeProfiles.
+* Invoking astmkprof::          Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
 
 Invoking MakeProfiles
@@ -756,11 +750,13 @@ plots in a document, you can use the PGFplots package within
 @LaTeX{}. We make no attempt to include such operations in
 gnuastro. In short, Bash can act as a glue to connect the inputs and
 outputs of all these various programs in any fashion you please. If
-you are not already familiar with Bash we strongly encourage you to go
-through this beautifully explained webpage:
-@url{http://linuxcommand.org/}. This will not only benefit you for
-your scientific work with gnuastro, but also anything that is related
-to GNU/Linux.
+you are not already familiar with the command line or don't fully feel
+comfortable with it, we strongly encourage you to put aside several
+hours and go through this beautifully explained webpage:
+@url{https://flossmanuals.net/command-line/}. You don't need to read
+the whole thing, only the first few chapters are enough to get you
+going. This will not only benefit you for your scientific work with
+gnuastro, but also anything that is related to GNU/Linux.
 
 
 
@@ -797,7 +793,7 @@ file that comes with that distribution and is also available online to
 view before you download.
 
 @menu
-* gnuastro 1.0::               Our aim in the current phase.
+* gnuastro 1.0::                Our aim in the current phase.
 @end menu
 
 @node gnuastro 1.0,  , Version numbering, Version numbering
@@ -910,7 +906,8 @@ be done on a large set of data files, this is crucially important. It
 also allows exact reproducability which is a foundation principle for
 scientific results. The most common CLI (which is also known as a
 shell) in GNU/Linux is GNU Bash, we suggest you go through this
-webpage to become aquainted with it: @url{http://linuxcommand.org/}.
+webpage to become aquainted with it:
+@url{https://flossmanuals.net/command-line/}.
 
 Since the operations in the GUI are very limited and they are visible,
 reading a manual is not that important in the GUI (most programs don't
@@ -981,7 +978,7 @@ gnuastro, to learn more about them, see @ref{Installing gnuastro}.
 
 @menu
 * Requirements::                gnuastro requirements
-* Installing gnuastro::        Installing gnuastro
+* Installing gnuastro::         Installing gnuastro
 @end menu
 
 @node Requirements, Installing gnuastro, Installation, Installation
@@ -1008,10 +1005,10 @@ will not check for the packages you manually built. However, if your
 distribution has a configurable build system (for example the Arch
 Build
 System@footnote{@url{https://wiki.archlinux.org/index.php/Arch_Build_System}}
-in Arch Linux), you can configure the build options of specific
-packages your self. When an update comes, it will only warn you
-instead of installing the pre-built package so you can build it with
-your own particular options.
+in the Parabola or Arch GNU/Linux distributions), you can configure
+the build options of specific packages your self. When an update
+comes, it will only warn you instead of installing the pre-built
+package so you can build it with your own particular options.
 
 
 @menu
@@ -1118,9 +1115,9 @@ number):
 $ tar -jxvf wcslib.tar.bz2
 $ cd wcslib-x.xx
 $ ./configure --without-pgplot
-$ gmake
-$ gmake check
-$ sudo gmake install
+$ make
+$ make check
+$ sudo make install
 @end example
 
 
@@ -1256,24 +1253,8 @@ systems that significantly decreases the processing time of JPEG
 compression and decompression algorithms.
 
 If @command{$ ./configure} fails to find libjpeg, then you have to
-install one of the two libraries above. They should be available
-within your distribution's package management tools, for example
-
-@cindex Package managers
-@itemize
-
-@item
-@command{# pacman -S libjpeg} in Arch Linux (which installs
-libjpeg-turbo).
-
-@item
-@command{# apt-get install libjpeg} in Ubuntu.
-
-@item
-@command{# yum install libjpeg} in Fedora, CentOS, Scientific linux or
-generally any Red Hat based GNU/Linux.
-
-@end itemize
+install one of the two libraries above. It should be available within
+your distribution's package management tools as @command{libjpeg}..
 
 
 
@@ -1428,7 +1409,7 @@ you just added as the default and click the ``Close'' button.
 
 
 @node Installing gnuastro,  , Requirements, Installation
-@section Installing gnuastro
+@section Installing GNU Astronomy Utilities
 
 This section is basically a longer explanation to the sequence of
 commands given in @ref{Quick start}. If you want to have all the
@@ -1857,8 +1838,8 @@ the keyboard!) help on the command line.
 @menu
 * Command line::                How to use the command line.
 * Configuration files::         Values for unspecified variables.
-* Threads in gnuastro::        How threads are managed in gnuastro.
-* Final parameter values::
+* Threads in gnuastro::         How threads are managed in gnuastro.
+* Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
@@ -2076,12 +2057,12 @@ value and one (@option{-D}) is an on/off option.
 
 If an abbreviation is unique between all the options of a program, the
 long option names can be abbreviated. For example, instead of typing
-@option{--printparams}, typing @option{--print} or even @option{--pri}
-will be enough, if there are conflicts, the program will warn you and
-show you the alternatives. Finally, if you want the argument parser to
-stop parsing arguments beyond a certain point, you can use two dashes:
-@option{--}. No text on the commandline beyond these two dashes will
-be parsed.
+@option{--printparams}, typing @option{--print} or maybe even
+@option{--pri} will be enough, if there are conflicts, the program
+will warn you and show you the alternatives. Finally, if you want the
+argument parser to stop parsing arguments beyond a certain point, you
+can use two dashes: @option{--}. No text on the commandline beyond
+these two dashes will be parsed.
 
 When you don't call an option that requires a value, all the programs
 in gnuastro will check configuration files to find a value for that
@@ -2185,11 +2166,11 @@ will warn you and abort.
 @itemx --keepinputdir
 In automatic output names, don't remove the directory information of
 the input file names. As explained in @ref{Automatic output}, if no
-output name is specified, then the an output name will be made in the
-existing directory. If you call this option, the directory information
-will be kept and the output will be in the same directory as the
-input. Note that his is only relevant if you are running the program
-from another directory!
+output name is specified, then the output name will be made in the
+existing directory based on your input. If you call this option, the
+directory information of the input will be kept and the output will be
+in the same directory as the input. Note that his is only relevant if
+you are running the program from another directory!
 
 @end vtable
 
@@ -2203,6 +2184,16 @@ gnuastro but can be called in all GNU programs start with (GNU
 option).
 
 @vtable @option
+
+@item --
+(GNU option) Stop parsing the command line. This option can be useful
+in scripts or when using the shell history. Assume you have a long
+list options, and want to see if removing some of them (and using the
+default values) can give a better result. If the ones you want to
+remove are the last ones on the command line, you don't have to delete
+them, you can just add @option{--} before them and if you don't get
+what you want, you can remove the @option{--} and get the same initial
+result.
 
 @item --usage
 (GNU option) Only print the options and arguments. This is very useful
@@ -3000,7 +2991,7 @@ to other formats.
 * ImageTransform::              Transform (flip, rotate) an image.
 * ImageArith::                  Apply arithmetics on image(s).
 * EllipMask::                   Place elliptical masks on an image.
-* Image conversion::            Convert an image to and from other formats.
+* ConvertType::                 Convert to and from other formats.
 @end menu
 
 @node ImageCrop, ImageTransform, Image manipulation, Image manipulation
@@ -3035,7 +3026,7 @@ files.
 * ImageCrop modes::             Basic ImageCrop modes.
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
-* Invoking astimgcrop::        Calling ImageCrop on the command line
+* Invoking astimgcrop::         Calling ImageCrop on the command line
 * ImageCrop future::            Future updates to ImageCrop.
 @end menu
 
@@ -3251,8 +3242,8 @@ threads asynchronous and are not started in order. When the box
 coordinates are given on the command line, no threads will be created.
 
 @menu
-* astimgcrop options::         A list of all the options with explanation.
-* astimgcrop output::          The outputs of ImageCrop.
+* astimgcrop options::          A list of all the options with explanation.
+* astimgcrop output::           The outputs of ImageCrop.
 @end menu
 
 @node astimgcrop options, astimgcrop output, Invoking astimgcrop, Invoking astimgcrop
@@ -3499,7 +3490,7 @@ the pixels in one image with another.
 
 
 
-@node EllipMask, Image conversion, ImageArith, Image manipulation
+@node EllipMask, ConvertType, ImageArith, Image manipulation
 @section EllipMask
 
 EllipMask will mask some of the pixels in the image based on
@@ -3508,28 +3499,16 @@ elliptical parameters that are specified through an ASCII catalog.
 
 
 
-@node Image conversion,  , EllipMask, Image manipulation
-@section Image conversion
+@node ConvertType,  , EllipMask, Image manipulation
+@section ConvertType
 
-The tools in this section are provided to convert a FITS image into
-and from other formats which might be more suitable in certain
-applications, for example to include an image or a spectrum in a
-report, we need to convert to more common image formats.
-
-@menu
-* FitstoJpeg::                  Convert a FITS image to a Jpeg image.
-* JpegtoFits::                  Convert a Jpeg image to a FITS image.
-@end menu
-
-@node FitstoJpeg, JpegtoFits, Image conversion, Image conversion
-@subsection FITStoJpeg
-
-Convert a FITS image to a Jpeg image.
-
-@node JpegtoFits,  , FitstoJpeg, Image conversion
-@subsection JpegtoFits
-Convert each color channel of a Jpeg image into an extension of a FITS
-image.
+The formats to store and operate on astronomical data were defined
+mainly for actual processing. In other situations, the data might be
+useful in other formats. For example, when you are writing a report,
+you can't use a FITS image, other more standard image formats should
+be used, for example JPEG or EPS. ConvertType is created exactly for
+such purposes. The various types will increase with future updates and
+base on need.
 
 
 
@@ -4106,7 +4085,7 @@ convolution and adding noise.
 @menu
 * If convolving afterwards::    Considerations for convolving afterwards.
 * Profile total magnitude::     Definition of total profile magnitude.
-* Invoking astmkprof::         Inputs and Options for MakeProfiles.
+* Invoking astmkprof::          Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
 @end menu
 
@@ -4548,7 +4527,7 @@ The software for this section have to be added ....
 @node Developing, Future updates, Table manipulation, Top
 @chapter Developing
 
-The basic idea of GNu Astronomy Utilities is for an interested
+The basic idea of GNU Astronomy Utilities is for an interested
 astronomer to be able to easily understand the code of any of the
 programs, be able to modify the code if she feels there is an
 improvement and finally, to be able to add new programs to the
@@ -4660,22 +4639,9 @@ and you have the full revision history under your fingers.
 We strive to follow the version control guidelines of the Git project
 as our base, until gnuastro grows large enough to define its own. You
 can find it in the git project's submitting patches
-guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}. In
-order to achieve these standards, here are some suggestions:
+guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}.
 
-@itemize
 
-@item
-It is very important for there to be no trailing white space in a
-line. In order to achieve this, if you are using GNU Emacs, you can
-add the following hook to your @file{~/.emacs} file, so every time you
-save a file, all trailing white spaces are removed.
-
-@example
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
-@end example
-
-@end itemize
 
 
 
@@ -4956,6 +4922,21 @@ by any interested astronomer (who will become familiar with it after
 reading once).
 
 @itemize
+
+@item
+There should be be no trailing white space in a line. To do this
+automatically every time you save a file in Emacs, add the following
+line to your @file{~/.emacs} file.
+@example
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+@end example
+
+@item
+There should be no tabs in the indentation. Add the line below to your
+@file{~/.emacs} file to do this automatically:
+@example
+(setq-default indent-tabs-mode nil)
+@end example
 
 @item
 All similar functions should be are separated by 5 blank lines to be
