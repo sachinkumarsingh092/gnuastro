@@ -49,6 +49,14 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct uiparams
 {
+  char         *h2;              /* Header for second FITS image.   */
+  char         *h3;              /* Header for third FITS image.    */
+  char         *h4;              /* Header for fourth FITS image.   */
+
+  int        h2set;
+  int        h3set;
+  int        h4set;
+
   int   qualityset;
   int widthincmset;
   int   kincmykset;
@@ -65,32 +73,39 @@ struct uiparams
 struct converttparams
 {
   /* Before actual program: */
-  struct commonparams  cp;      /* Common parameters.               */
-  struct     uiparams  up;      /* User interface parameters.       */
+  struct commonparams  cp;      /* Common parameters.                  */
+  struct     uiparams  up;      /* User interface parameters.          */
 
   /* Input: */
-  struct stll *inputnames;      /* The names of input files.        */
-  size_t        numinputs;      /* Number of input files.           */
-  int           inputtype;      /* The type of the input file.      */
+  struct stll *inputnames;      /* The names of input files.           */
+  size_t        numinputs;      /* Number of input files.              */
+  int           inputtype;      /* The type of the input file.         */
 
   /* Output: */
-  int          outputtype;      /* The type of the output file.     */
-  int             kincmyk;      /* ==1: Only input is K in CMYK.    */
-  int             quality;      /* Quality of JPEG image.           */
-  float         widthincm;      /* Width in centimeters.            */
+  int          outputtype;      /* The type of the output file.        */
+  int             kincmyk;      /* ==1: Only input is K in CMYK.       */
+  int             quality;      /* Quality of JPEG image.              */
+  float         widthincm;      /* Width in centimeters.               */
 
   /* Flux: */
-  float           fluxlow;      /* Lower flux truncation value.     */
-  float          fluxhigh;      /* Higher flux truncation value.    */
-  uint8_t         maxbyte;      /* Maximum byte value.              */
-  int           flminbyte;      /* fluxlow is minimum byte.         */
-  int           fhmaxbyte;      /* fluxhigh is maximum byte.        */
-  char           *convert;      /* The value conversion string.     */
-  int           convfirst;      /* First convert, then truncate.    */
-  int                 log;      /* ==1: Save input in log scale.    */
-  int              invert;      /* ==1: Invert the image.           */
+  float           fluxlow;      /* Lower flux truncation value.        */
+  float          fluxhigh;      /* Higher flux truncation value.       */
+  uint8_t         maxbyte;      /* Maximum byte value.                 */
+  int           flminbyte;      /* fluxlow is minimum byte.            */
+  int           fhmaxbyte;      /* fluxhigh is maximum byte.           */
+  char           *convert;      /* The value conversion string.        */
+  int           convfirst;      /* First convert, then truncate.       */
+  int                 log;      /* ==1: Save input in log scale.       */
+  int              invert;      /* ==1: Invert the image.              */
 
   /* INTERNAL PARAMETERS: */
+  time_t          rawtime;      /* Starting time of the program.       */
+
+  /* Input channels: */
+  size_t            numch;      /* Current Channel.                    */
+  double           *ch[4];      /* Data for each channel.              */
+  size_t            s0[4];      /* First C axis size for each channel. */
+  size_t            s1[4];      /* Second C axis size for each channel.*/
 };
 
 

@@ -25,9 +25,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "commonargs.h"
 #include "fixedstringmacros.h"
 
-#include "eps.h"
-#include "jpeg.h"
-
 
 /* Definition parameters for the argp: */
 const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
@@ -59,7 +56,7 @@ const char doc[] =
    b d e f g j p r s t v w x y z
    A B E F G I J M O Q R T U W X Y Z
 
-   Free numbers: 500
+   Free numbers: 503
 */
 static struct argp_option options[] =
   {
@@ -76,6 +73,30 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Input:",
+      1
+    },
+    {
+      "h2",
+      500,
+      0,
+      0,
+      "HDU of second input FITS image.",
+      1
+    },
+    {
+      "h3",
+      501,
+      0,
+      0,
+      "HDU of third input FITS image.",
+      1
+    },
+    {
+      "h4",
+      502,
+      0,
+      0,
+      "HDU of fourth input FITS image.",
       1
     },
 
@@ -237,7 +258,28 @@ parse_opt(int key, char *arg, struct argp_state *state)
   switch(key)
     {
 
-    /* Operating modes:  */
+    /* Input:  */
+    case 500:
+      errno=0;
+      p->up.h2=malloc(strlen(arg)+1);
+      if(p->up.h2==NULL) error(EXIT_FAILURE, 0, "Space for h2");
+      strcpy(p->up.h2, arg);
+      p->up.h2set=1;
+      break;
+    case 501:
+      errno=0;
+      p->up.h3=malloc(strlen(arg)+1);
+      if(p->up.h3==NULL) error(EXIT_FAILURE, 0, "Space for h3");
+      strcpy(p->up.h3, arg);
+      p->up.h3set=1;
+      break;
+    case 502:
+      errno=0;
+      p->up.h4=malloc(strlen(arg)+1);
+      if(p->up.h4==NULL) error(EXIT_FAILURE, 0, "Space for h4");
+      strcpy(p->up.h4, arg);
+      p->up.h4set=1;
+      break;
 
 
     /* Output: */
@@ -255,6 +297,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       floatl0(arg, &p->widthincm, "widthincm", key, p->cp.spack, NULL, 0);
       p->up.widthincmset=1;
       break;
+
 
 
     /* Flux: */

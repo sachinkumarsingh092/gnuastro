@@ -33,6 +33,9 @@ main(int argc, char *argv[])
 {
   struct converttparams p={{0}, {0}, 0};
 
+  /* Set the starting time.*/
+  time(&p.rawtime);
+
   /* Read the input parameters.*/
   setparams(argc, argv, &p);
 
@@ -41,6 +44,8 @@ main(int argc, char *argv[])
   */
   /* Free all non-freed allocations. */
   freeandreport(&p);
+
+  printf("\n\nFinished\n\n");
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

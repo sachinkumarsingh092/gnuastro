@@ -116,14 +116,15 @@ void *
 bitpixalloc(size_t size, int bitpix);
 
 void
-changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix);
+changetype(void *in, int inbitpix, size_t size, size_t numnul,
+           void **out, int outbitpix);
 
 void
 readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs);
 
-int
-fitsimgtoarray(char *filename, char *hdu, void *bitnul, int *bitpix,
-	       void **array, size_t *s0, size_t *s1);
+size_t
+fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
+               size_t *s0, size_t *s1);
 
 void
 arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,

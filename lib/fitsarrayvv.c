@@ -167,7 +167,6 @@ bitpixnull(int bitpix)
   double *d;
 
   errno=0;
-
   switch(bitpix)
     {
     case BYTE_IMG:
@@ -251,13 +250,17 @@ bitpixalloc(size_t size, int bitpix)
 
     case FLOAT_IMG:
       if(sizeof(float)!=4)
-	error(EXIT_FAILURE, 0, "`float` is not 32bits on this machine.");
+	error(EXIT_FAILURE, 0,
+              "`float` is not 32bits on this machine. The FITS standard "
+              "Requires this size.");
       size*=sizeof(float);
       break;
 
     case DOUBLE_IMG:
-      if(sizeof(float)!=8)
-	error(EXIT_FAILURE, 0, "`double` is not 64bits on this machine.");
+      if(sizeof(double)!=8)
+	error(EXIT_FAILURE, 0,
+              "`double` is not 64bits on this machine. The FITS standard "
+              "requires this size.");
       size*=sizeof(double);
       break;
 
@@ -331,14 +334,16 @@ nultovalue(void *array, int bitpix, size_t size, void *value)
 
 
 void
-changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
+changetype(void *in, int inbitpix, size_t size, size_t numnul,
+           void **out, int outbitpix)
 {
-  uint8_t *b, *bf, *ob=in;
-  int16_t *s, *sf, *os=in;
-  int32_t *l, *lf, *ol=in;
-  int64_t *L, *Lf, *oL=in;
-  float *f, *ff, *of=in;
-  double *d, *df, *od=in;
+  size_t i=0;
+  uint8_t *b, *bf, *ob=in, *oob=in;
+  int16_t *s, *sf, *os=in, *oos=in;
+  int32_t *l, *lf, *ol=in, *ool=in;
+  int64_t *L, *Lf, *oL=in, *ooL=in;
+  float *f, *ff, *of=in, *oof=in;
+  double *d, *df, *od=in, *ood=in;
 
   /* Allocate space for the output and start filling it. */
   *out=bitpixalloc(size, outbitpix);
@@ -350,15 +355,35 @@ changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
 	case BYTE_IMG:
 	  bf=(b=*out)+size; do *b=*ob++; while(++b<bf); return;
 	case SHORT_IMG:
-	  sf=(s=*out)+size; do *s=*ob++; while(++s<sf); return;
+	  sf=(s=*out)+size; do *s=*ob++; while(++s<sf);
+          if(numnul)
+            {s=*out; do {s[i]=(oob[i]==FITSBYTENUL)?FITSSHORTNUL:s[i];}
+              while(++i!=size);}
+          return;
 	case LONG_IMG:
-	  lf=(l=*out)+size; do *l=*ob++; while(++l<lf); return;
+	  lf=(l=*out)+size; do *l=*ob++; while(++l<lf);
+          if(numnul)
+            {l=*out; do {l[i]=(oob[i]==FITSBYTENUL)?FITSLONGNUL:l[i];}
+              while(++i!=size);}
+          return;
 	case LONGLONG_IMG:
-	  Lf=(L=*out)+size; do *L=*ob++; while(++L<Lf); return;
+	  Lf=(L=*out)+size; do *L=*ob++; while(++L<Lf);
+          if(numnul)
+            {L=*out; do {L[i]=(oob[i]==FITSBYTENUL)?FITSLLONGNUL:L[i];}
+              while(++i!=size);}
+          return;
 	case FLOAT_IMG:
-	  ff=(f=*out)+size; do *f=*ob++; while(++f<ff); return;
+	  ff=(f=*out)+size; do *f=*ob++; while(++f<ff);
+          if(numnul)
+            {f=*out; do {f[i]=(oob[i]==FITSBYTENUL)?FITSFLOATNUL:f[i];}
+              while(++i!=size);}
+          return;
 	case DOUBLE_IMG:
-	  df=(d=*out)+size; do *d=*ob++; while(++d<df); return;
+	  df=(d=*out)+size; do *d=*ob++; while(++d<df);
+          if(numnul)
+            {d=*out; do {d[i]=(oob[i]==FITSBYTENUL)?FITSFLOATNUL:d[i];}
+              while(++i!=size);}
+          return;
 	default:
 	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
 		"BITPIX=%d of input not recognized. Please contact us so "
@@ -370,17 +395,37 @@ changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
       switch(inbitpix)
 	{
 	case BYTE_IMG:
-	  bf=(b=*out)+size; do *b=*os++; while(++b<bf); return;
+	  bf=(b=*out)+size; do *b=*os++; while(++b<bf);
+          if(numnul)
+            {b=*out; do {b[i]=(oos[i]==FITSSHORTNUL)?FITSBYTENUL:b[i];}
+              while(++i!=size);}
+          return;
 	case SHORT_IMG:
 	  sf=(s=*out)+size; do *s=*os++; while(++s<sf); return;
 	case LONG_IMG:
-	  lf=(l=*out)+size; do *l=*os++; while(++l<lf); return;
+	  lf=(l=*out)+size; do *l=*os++; while(++l<lf);
+          if(numnul)
+            {l=*out; do {l[i]=(oos[i]==FITSSHORTNUL)?FITSLONGNUL:l[i];}
+              while(++i!=size);}
+          return;
 	case LONGLONG_IMG:
-	  Lf=(L=*out)+size; do *L=*os++; while(++L<Lf); return;
+	  Lf=(L=*out)+size; do *L=*os++; while(++L<Lf);
+          if(numnul)
+            {L=*out; do {L[i]=(oos[i]==FITSSHORTNUL)?FITSLLONGNUL:L[i];}
+              while(++i!=size);}
+          return;
 	case FLOAT_IMG:
-	  ff=(f=*out)+size; do *f=*os++; while(++f<ff); return;
+	  ff=(f=*out)+size; do *f=*os++; while(++f<ff);
+          if(numnul)
+            {f=*out; do {f[i]=(oos[i]==FITSSHORTNUL)?FITSFLOATNUL:f[i];}
+              while(++i!=size);}
+          return;
 	case DOUBLE_IMG:
-	  df=(d=*out)+size; do *d=*os++; while(++d<df); return;
+	  df=(d=*out)+size; do *d=*os++; while(++d<df);
+          if(numnul)
+            {d=*out; do {d[i]=(oos[i]==FITSSHORTNUL)?FITSFLOATNUL:d[i];}
+              while(++i!=size);}
+          return;
 	default:
 	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
 		"BITPIX=%d of input not recognized. Please contact us so "
@@ -392,17 +437,37 @@ changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
       switch(inbitpix)
 	{
 	case BYTE_IMG:
-	  bf=(b=*out)+size; do *b=*ol++; while(++b<bf); return;
+	  bf=(b=*out)+size; do *b=*ol++; while(++b<bf);
+          if(numnul)
+            {b=*out; do {b[i]=(ool[i]==FITSLONGNUL)?FITSBYTENUL:b[i];}
+              while(++i!=size);}
+          return;
 	case SHORT_IMG:
-	  sf=(s=*out)+size; do *s=*ol++; while(++s<sf); return;
+	  sf=(s=*out)+size; do *s=*ol++; while(++s<sf);
+          if(numnul)
+            {s=*out; do {s[i]=(ool[i]==FITSLONGNUL)?FITSSHORTNUL:s[i];}
+              while(++i!=size);}
+          return;
 	case LONG_IMG:
 	  lf=(l=*out)+size; do *l=*ol++; while(++l<lf); return;
 	case LONGLONG_IMG:
-	  Lf=(L=*out)+size; do *L=*ol++; while(++L<Lf); return;
+	  Lf=(L=*out)+size; do *L=*ol++; while(++L<Lf);
+          if(numnul)
+            {L=*out; do {L[i]=(ool[i]==FITSLONGNUL)?FITSLLONGNUL:L[i];}
+              while(++i!=size);}
+          return;
 	case FLOAT_IMG:
-	  ff=(f=*out)+size; do *f=*ol++; while(++f<ff); return;
+	  ff=(f=*out)+size; do *f=*ol++; while(++f<ff);
+          if(numnul)
+            {f=*out; do {f[i]=(ool[i]==FITSLONGNUL)?FITSFLOATNUL:f[i];}
+              while(++i!=size);}
+          return;
 	case DOUBLE_IMG:
-	  df=(d=*out)+size; do *d=*ol++; while(++d<df); return;
+	  df=(d=*out)+size; do *d=*ol++; while(++d<df);
+          if(numnul)
+            {d=*out; do {d[i]=(ool[i]==FITSLONGNUL)?FITSFLOATNUL:d[i];}
+              while(++i!=size);}
+          return;
 	default:
 	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
 		"BITPIX=%d of input not recognized. Please contact us so "
@@ -414,17 +479,37 @@ changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
       switch(inbitpix)
 	{
 	case BYTE_IMG:
-	  bf=(b=*out)+size; do *b=*oL++; while(++b<bf); return;
+	  bf=(b=*out)+size; do *b=*oL++; while(++b<bf);
+          if(numnul)
+            {b=*out; do {b[i]=(ooL[i]==FITSLLONGNUL)?FITSBYTENUL:b[i];}
+              while(++i!=size);}
+          return;
 	case SHORT_IMG:
 	  sf=(s=*out)+size; do *s=*oL++; while(++s<sf); return;
+          if(numnul)
+            {s=*out; do {s[i]=(ooL[i]==FITSLLONGNUL)?FITSSHORTNUL:s[i];}
+              while(++i!=size);}
+          return;
 	case LONG_IMG:
-	  lf=(l=*out)+size; do *l=*oL++; while(++l<lf); return;
+	  lf=(l=*out)+size; do *l=*oL++; while(++l<lf);
+          if(numnul)
+            {l=*out; do {l[i]=(ooL[i]==FITSLLONGNUL)?FITSLONGNUL:l[i];}
+              while(++i!=size);}
+          return;
 	case LONGLONG_IMG:
 	  Lf=(L=*out)+size; do *L=*oL++; while(++L<Lf); return;
 	case FLOAT_IMG:
-	  ff=(f=*out)+size; do *f=*oL++; while(++f<ff); return;
+	  ff=(f=*out)+size; do *f=*oL++; while(++f<ff);
+          if(numnul)
+            {f=*out; do {f[i]=(ooL[i]==FITSLLONGNUL)?FITSFLOATNUL:f[i];}
+              while(++i!=size);}
+          return;
 	case DOUBLE_IMG:
-	  df=(d=*out)+size; do *d=*oL++; while(++d<df); return;
+	  df=(d=*out)+size; do *d=*oL++; while(++d<df);
+          if(numnul)
+            {d=*out; do {d[i]=(ooL[i]==FITSLLONGNUL)?FITSFLOATNUL:d[i];}
+              while(++i!=size);}
+          return;
 	default:
 	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
 		"BITPIX=%d of input not recognized. Please contact us so "
@@ -436,13 +521,29 @@ changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
       switch(inbitpix)
 	{
 	case BYTE_IMG:
-	  bf=(b=*out)+size; do *b=*of++; while(++b<bf); return;
+	  bf=(b=*out)+size; do *b=*of++; while(++b<bf);
+          if(numnul)
+            {b=*out; do {b[i]=isnan(oof[i])?FITSBYTENUL:b[i];}
+              while(++i!=size);}
+          return;
 	case SHORT_IMG:
-	  sf=(s=*out)+size; do *s=*of++; while(++s<sf); return;
+	  sf=(s=*out)+size; do *s=*of++; while(++s<sf);
+          if(numnul)
+            {s=*out; do {s[i]=isnan(oof[i])?FITSSHORTNUL:s[i];}
+              while(++i!=size);}
+          return;
 	case LONG_IMG:
-	  lf=(l=*out)+size; do *l=*of++; while(++l<lf); return;
+	  lf=(l=*out)+size; do *l=*of++; while(++l<lf);
+          if(numnul)
+            {l=*out; do {l[i]=isnan(oof[i])?FITSLONGNUL:l[i];}
+              while(++i!=size);}
+          return;
 	case LONGLONG_IMG:
-	  Lf=(L=*out)+size; do *L=*of++; while(++L<Lf); return;
+	  Lf=(L=*out)+size; do *L=*of++; while(++L<Lf);
+          if(numnul)
+            {L=*out; do {L[i]=isnan(oof[i])?FITSLLONGNUL:L[i];}
+              while(++i!=size);}
+          return;
 	case FLOAT_IMG:
 	  ff=(f=*out)+size; do *f=*of++; while(++f<ff); return;
 	case DOUBLE_IMG:
@@ -458,13 +559,29 @@ changetype(void *in, int inbitpix, size_t size, void **out, int outbitpix)
       switch(inbitpix)
 	{
 	case BYTE_IMG:
-	  bf=(b=*out)+size; do *b=*od++; while(++b<bf); return;
+	  bf=(b=*out)+size; do *b=*od++; while(++b<bf);
+          if(numnul)
+            {b=*out; do {b[i]=isnan(ood[i])?FITSBYTENUL:b[i];}
+              while(++i!=size);}
+          return;
 	case SHORT_IMG:
-	  sf=(s=*out)+size; do *s=*od++; while(++s<sf); return;
+	  sf=(s=*out)+size; do *s=*od++; while(++s<sf);
+          if(numnul)
+            {s=*out; do {s[i]=isnan(ood[i])?FITSSHORTNUL:s[i];}
+              while(++i!=size);}
+          return;
 	case LONG_IMG:
-	  lf=(l=*out)+size; do *l=*od++; while(++l<lf); return;
+	  lf=(l=*out)+size; do *l=*od++; while(++l<lf);
+          if(numnul)
+            {l=*out; do {l[i]=isnan(ood[i])?FITSLONGNUL:l[i];}
+              while(++i!=size);}
+          return;
 	case LONGLONG_IMG:
-	  Lf=(L=*out)+size; do *L=*od++; while(++L<Lf); return;
+	  Lf=(L=*out)+size; do *L=*od++; while(++L<Lf);
+          if(numnul)
+            {L=*out; do {L[i]=isnan(ood[i])?FITSLLONGNUL:L[i];}
+              while(++i!=size);}
+          return;
 	case FLOAT_IMG:
 	  ff=(f=*out)+size; do *f=*od++; while(++f<ff); return;
 	case DOUBLE_IMG:
@@ -920,15 +1037,19 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
 
 
 /* Read a FITS image into an array corresponding to fitstype and also
-   save the size of the array. If the image has any null pixels, their
-   number is returned by this function. */
-int
-fitsimgtoarray(char *filename, char *hdu, void *bitnul, int *bitpix,
-	       void **array, size_t *s0, size_t *s1)
+   save the size of the array.
+
+   If the image has any null pixels, their number is returned by this
+   function. The value that is placed for those pixels is defined by
+   the macros in fitsarrayvv.h and depends on the type of the data.*/
+size_t
+fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
+               size_t *s0, size_t *s1)
 {
+  void *bitnul;
   fitsfile *fptr;
+  int status=0, anynul=0;
   long naxes[2], fpixel[]={1,1};
-  int status=0, anynul=0, freebitnul=0;
 
   /* Check HDU for realistic conditions: */
   readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
@@ -942,22 +1063,18 @@ fitsimgtoarray(char *filename, char *hdu, void *bitnul, int *bitpix,
   *array=bitpixalloc(*s0 * *s1, *bitpix);
 
   /* Read the image into the allocated array: */
-  if(bitnul==NULL)
-    {
-      bitnul=bitpixnull(*bitpix);
-      freebitnul=1;
-    }
+  bitnul=bitpixnull(*bitpix);
   if ( fits_read_pix(fptr, bitpixtodtype(*bitpix), fpixel, *s0 * *s1,
 		     bitnul, *array, &anynul, &status) )
     fitsioerror(status, NULL);
-  if(freebitnul) free(bitnul);
+  free(bitnul);
 
   /* Close the FITS file: */
   fits_close_file(fptr, &status);
   fitsioerror(status, NULL);
 
-  /* Return the number of "blank" pixels. */
-  return anynul;
+  /* Return the number of nul pixels: */
+  return (size_t)anynul;
 }
 
 

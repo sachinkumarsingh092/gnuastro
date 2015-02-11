@@ -42,6 +42,9 @@ Texts.  A copy of the license is included in the section entitled
 @direntry
 * gnuastro: (gnuastro).       GNU Astronomy Utilities.
 
+* ConvertType: (gnuastro)ConvertType. Convert different file types.
+* astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
+
 * ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
 * astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
 
@@ -155,7 +158,8 @@ sub-component to a title is present.
 * Introduction::                General introduction.
 * Installation::                Requirements and installation.
 * Common behavior::             Common behaviour in all programs.
-* Header manipulation::         Tools to Read/Write Headers
+* Files::                       File information and type conversion.
+* Header manipulation::         Tools to Read/Write Headers.
 * Image manipulation::          Tools for basic image manipulation.
 * Image analysis::              Analyze images.
 * Modeling and fittings::       Make and fit models.
@@ -180,7 +184,7 @@ Introduction
 
 Version numbering
 
-* gnuastro 1.0::                Our aim in the current phase.
+* GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
 
 Installation
 
@@ -221,7 +225,7 @@ Common behavior
 * Command line::                How to use the command line.
 * Configuration files::         Values for unspecified variables.
 * Threads in gnuastro::         How threads are managed in gnuastro.
-* Final parameter values::
+* Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
@@ -256,13 +260,24 @@ Getting help
 * Man pages::                   Man pages generated from --help.
 * Info::                        View complete manual in terminal.
 
+Files
+
+* FileInfo::                    List all the extensions in a file.
+* ConvertType::                 Convert data to various formats.
+
+ConvertType
+
+* Recognized file types::       Recognized file types
+* Color::                       Some explanations on color.
+* Invoking astconvertt::        Options and arguments to ConvertType.
+* ConvertType future updates::  Plans for future updates.
+
 Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * ImageTransform::              Transform (flip, rotate) an image.
 * ImageArith::                  Apply arithmetics on image(s).
 * EllipMask::                   Place elliptical masks on an image.
-* ConvertType::                 Convert to and from other formats.
 
 ImageCrop
 
@@ -751,12 +766,7 @@ plots in a document, you can use the PGFplots package within
 gnuastro. In short, Bash can act as a glue to connect the inputs and
 outputs of all these various programs in any fashion you please. If
 you are not already familiar with the command line or don't fully feel
-comfortable with it, we strongly encourage you to put aside several
-hours and go through this beautifully explained webpage:
-@url{https://flossmanuals.net/command-line/}. You don't need to read
-the whole thing, only the first few chapters are enough to get you
-going. This will not only benefit you for your scientific work with
-gnuastro, but also anything that is related to GNU/Linux.
+comfortable with it please see @ref{New to GNU/Linux?}.
 
 
 
@@ -793,11 +803,11 @@ file that comes with that distribution and is also available online to
 view before you download.
 
 @menu
-* gnuastro 1.0::                Our aim in the current phase.
+* GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
 @end menu
 
-@node gnuastro 1.0,  , Version numbering, Version numbering
-@subsection gnuastro 1.0
+@node GNU Astronomy Utilities 1.0,  , Version numbering, Version numbering
+@subsection GNU Astronomy Utilities 1.0
 
 The major version number of gnuastro is increased similar to that of
 each program. Currently (prior to gnuastro 1.0), the aim is to have a
@@ -905,9 +915,11 @@ operations, where the same operation (using various programs) has to
 be done on a large set of data files, this is crucially important. It
 also allows exact reproducability which is a foundation principle for
 scientific results. The most common CLI (which is also known as a
-shell) in GNU/Linux is GNU Bash, we suggest you go through this
-webpage to become aquainted with it:
-@url{https://flossmanuals.net/command-line/}.
+shell) in GNU/Linux is GNU Bash, we strongly encourage you to put
+aside several hours and go through this beautifully explained webpage:
+@url{https://flossmanuals.net/command-line/}. You don't need to read
+the whole thing, only the first few chapters are enough to get you
+going.
 
 Since the operations in the GUI are very limited and they are visible,
 reading a manual is not that important in the GUI (most programs don't
@@ -1176,8 +1188,8 @@ $ gedit PGPLOT/sys_linux/g77_gcc.conf
 @noindent
 change the line saying: @code{FCOMPL="g77"} to
 @code{FCOMPL="gfortran"}, and save it. This is a very important step
-during the compilation of the code if you are in linux. You now have
-to create a folder in @file{/usr/local}, don't forget to replace
+during the compilation of the code if you are in GNU/Linux. You now
+have to create a folder in @file{/usr/local}, don't forget to replace
 @file{PGPLOT} with your unpacked address:
 @example
 $ su
@@ -1821,7 +1833,7 @@ you can add it close to the top of the Texinfo source file.
 
 
 
-@node Common behavior, Header manipulation, Installation, Top
+@node Common behavior, Files, Installation, Top
 @chapter Common behavior
 
 There are some facts that are common to all the programs in gnuastro
@@ -1916,22 +1928,22 @@ quotes are much more easier, elegant and readable.
 
 @node Arguments, Option basics, Arguments and options, Command line
 @subsection Arguments
-In gnuastro, the names of the input data files and ASCII tables are
-always specified as arguments, you can generally specify them in any
-order unless otherwise stated for a particular program. Everything
-particular about the how a program treats arguments, is explained
-under the ``Invoking ProgramName'' section for that program.
+In Astronomy Utilities, the names of the input data files and ASCII
+tables are always specified as arguments, you can generally specify
+them in any order unless otherwise stated for a particular
+program. Everything particular about the how a program treats
+arguments, is explained under the ``Invoking ProgramName'' section for
+that program.
 
 Generally, if there is a standard file name extension for a particular
 format, that filename extension is used to separate the kinds of
-arguments. The list below shows how arguments are classfied based on
-their file name endings. Any file that doesn't end with the specified
-extentions below is considered to be a text file (usually catalogs).
+arguments. The list below shows what astronomical data formats are
+recognized based on their file name endings. If the program doesn't
+accept any other data format, any other argument that doesn't end with
+the specified extentions below is considered to be a text file
+(usually catalogs). For example @ref{ConvertType} accepts other data
+formats.
 
-@table @asis
-
-@item Astronomical data file (image or table)
-The recognized astronomical data files are listed below.
 @itemize
 
 @item
@@ -1961,22 +1973,7 @@ CFITSIO has its own error reporting techniques, if your input file(s)
 cannot be opened, or read, those errors will be printed prior to the
 final error by gnuastro.
 
-@item JPEG image
-The programs that deal with JPEG images will recognize any argument
-ending like the following list as a JPEG file name.
-@itemize
 
-@item
-@file{.jpg}
-@item
-@file{.jpeg}
-@item
-@file{.JPG}
-@item
-@file{.JPEG}
-@end itemize
-
-@end table
 
 @node Option basics, Common options, Arguments, Command line
 @subsection Options
@@ -2243,7 +2240,7 @@ gnuastro yet. Therefore currently the paper to cite for gnuastro is
 the paper for NoiseChisel which is the first published paper
 introducing gnuastro to the astronomical community. Upon reaching a
 certain point, we will publish a paper completely devoted to
-gnuastro, see @ref{gnuastro 1.0}.
+gnuastro, see @ref{GNU Astronomy Utilities 1.0}.
 
 @item -P
 @itemx --printparams
@@ -2938,9 +2935,264 @@ END
 
 
 
+@node Files, Header manipulation, Common behavior, Top
+@chapter Files
+
+This chapter documents the programs in gnuastro that are provided for
+getting information on the contents of a data file or converting a
+file format. Before working on a FITS file, it is commonly the case
+that you are not sure how many extensions it has within it and also
+what each extension is (image, table or blank). In other cases you
+want to use the data in a FITS file in other programs (for example in
+reports) that don't recognize the FITS format.
+
+@menu
+* FileInfo::                    List all the extensions in a file.
+* ConvertType::                 Convert data to various formats.
+@end menu
+
+@node FileInfo, ConvertType, Files, Files
+@section FileInfo
+
+The FITS file format allows for multiple extensions and each can have
+a completely indepent header that possibly contains data, which is
+either in the form of a table or image. FileInfo will list all the
+extensions in the given FITS file and also give some basic information
+about the form of data that is in that extension, for example image
+size and data type.
 
 
-@node Header manipulation, Image manipulation, Common behavior, Top
+
+
+
+@node ConvertType,  , FileInfo, Files
+@section ConvertType
+
+The formats to store and operate on astronomical data were defined
+mainly for archiving and processing. In other situations, the data
+might be useful in other formats. For example, when you are writing a
+paper or report or if you are making slides for a talk, you can't use
+a FITS image. Other image formats should be used. In other cases you
+might want your pixel values in a table format as plain text for input
+to other programs that don't recognize FITS, or to include as a table
+in your report. ConvertType is created for such situations. The
+various types will increase with future updates and based on need.
+
+The conversion is not only one way (from FITS to other formats), but
+two ways (except for EPS format). So you can convert a JPEG image or
+text file into a FITS image. Basically, other than EPS, you can use
+any of the recognized formats as different color channel inputs to get
+any of the recognized outputs. So before explaining the options and
+arguments, first a short description of the recognized files types
+will be given followed a short introduction to digital color.
+
+@menu
+* Recognized file types::       Recognized file types
+* Color::                       Some explanations on color.
+* Invoking astconvertt::        Options and arguments to ConvertType.
+* ConvertType future updates::  Plans for future updates.
+@end menu
+
+@node Recognized file types, Color, ConvertType, ConvertType
+@subsection Recognized file types
+
+The various standards and the file name extensions recognized by
+ConvertType are listed below.
+
+@table @asis
+@item FITS or IMH
+Astronomical data are commonly stored in the FITS format (and in older
+data sets in IRAF @file{.imh} format), a list of file name suffixes
+which indicate that the file is in this format is given in
+@ref{Arguments}.
+
+Each extension of a FITS image only has one value per pixel, so when
+used as input, each input FITS image contributes as one color
+channel. If you want multiple extensions in one FITS file for
+different color channels, you have to repeat the file name multiple
+times and use the @option{--hdu}, @option{--h2}, @option{--h3} or
+@option{--h4} options to specify the different extensions.
+
+@item JPEG
+The JPEG standard was created by the ``joint photographic experts
+group''. It is currently one of the most commonly used image
+formats. Its major advantage is the compression algorithm that is
+defined by the standard. Like the FITS standard, this is a raster
+graphics format, which means that it is pixelated.
+
+A JPEG file can have 1 (for grayscale), 3 (for RGB) and 4 (for CMYK)
+color channels. If you only want to convert one JPEG image into other
+formats, there is no problem, however, if you want to use it in
+combination with other input files, make sure that the final number of
+color channels does not exceed four. If it does, then ConvertType will
+abort and notify you.
+
+The file name endings that are recognized as a JPEG file for input
+are: @file{.jpg}, @file{.JPG}, @file{.jpeg}, @file{.JPEG},
+@file{.jpe}, @file{.jif}, @file{.jfif} and @file{.jfi}.
+
+@item EPS
+The Encapsulated PostScript (EPS) format is essentially a one page
+PostScript file which has a specified size. PostScript also includes
+non-image data, for example lines and texts. It is a fully functional
+programming language to describe a document. Therefore in ConvertType,
+EPS is only an output format and cannot be used as input. Contrary to
+the FITS or JPEG formats, PostScript is not a raster format, but is
+categorized as vector graphics.
+
+The Portable Document Format (PDF) is currently the most common format
+for documents. Some believe that PDF has replaced PostScript and that
+PostScript is now obsolete. This view is wrong, a PostScript file is
+an actual plain text file that can be edited like any program source
+with any text editor. To be able to display its programmed content or
+print, it needs to pass through a processor known as Raster image
+processor. A PDF file can be thought of as the processed output of the
+Raster image processor on an input PostScript file. PostScript, EPS
+and PDF were created by Adobe Systems.
+
+With these features in mind, you can see that when you are compiling a
+document with @TeX{} or @LaTeX{}, using an EPS file is much more low
+level than a JPEG and thus you have much greater control and thus
+quality. Since it also includes vector graphic lines we also use such
+lines to make a thin border around the image to make its appearence in
+the document much better. No matter the resolution of the display or
+printer, these lines will always be clear and not pixelated. In the
+future we might include addition of text (for example labels or object
+IDs) on the EPS output, although this can be done better with tools
+within @TeX{} or @LaTeX{} such as
+PGF/Tikz@footnote{@url{http://sourceforge.net/projects/pgf/}}.
+
+The standard formats for an EPS file are @file{.eps}, @file{.EPS},
+@file{.epsf} and @file{.epsi}. The EPS outputs of ConvertType have the
+@file{.eps} suffix.
+
+@item Plain text
+Plain text files have the advantage that they can be viewed with any
+text editor or on the command line. Most programs also support input
+as plain text files. In ConvertType, if the input arguments do not
+have any of the extensions listed above for other formats, the input
+is assumed to be a text file. For output, all text output are going to
+have the the @file{.txt} suffix.
+
+@end table
+
+@node Color, Invoking astconvertt, Recognized file types, ConvertType
+@subsection Color
+
+@cindex RGB
+@cindex CMYK
+@cindex Image
+@cindex Grayscale
+@cindex Colorspace
+@cindex Primary colors
+@cindex Colorspace, grayscale
+An image is a two dimensional array of 2 dimensional elements called
+pixels. If each pixel only has one value, the image is known as a
+grayscale image and no color is defined. The range of values in the
+image can be interpreted as shades of any color, it is customary to
+use shades of black or grayscale. However, to produce the color
+spectrum in the digital world, we need to mix several primary
+colors. Therefore in a color image, each pixel has several values
+depending on how many primary colors we choose. For example on the
+digital monitor or color digital cameras, all colors are built by
+mixing the three colors of Red-Green-Blue (RGB) with various
+proportions. However, for printing on paper, standard printers use the
+Cyan-Magenta-Yellow-Key (CMYK, Key=black) color space. Therefore when
+printing an RGB image, usually a transformation of color spaces will
+be necessary.
+
+In a colored digital camera, a color image is produced by dividing the
+pixel's area between three colors (filters). However in astronomy due
+to the intrinsic faintness of most of our targets, the collecting area
+of the pixel is very important for us. Hence the full area of the
+pixel is used and one value is stored for that pixel in the end. One
+color filter is used for the whole image. Thus a FITS image is
+inherently a grayscale image and no color can be defined for it.
+
+@cindex Colorspace, transformation
+One way to represent a grayscale image in different color spaces is to
+use the same proportions of the primary colors in each pixel. This is
+the common way most FITS image converters work: they fill all the
+channels with the same values. The downside is two fold:
+
+@itemize
+
+@item
+Three (for RGB) or four (for CMYK) values have to be stored for every
+pixel, this makes the output file very heavy (in terms of bytes).
+
+@item
+If printing, the printing errors of each color channel can make the
+printed image slightly more blurred than it actually is.
+
+@end itemize
+
+@cindex Single channel CMYK
+To solve both these problems, the best way is to save the FITS image
+into the black channel of the CMYK color space. In the RGB color space
+all three channels have to be used. The JPEG standard is the only
+common standard that accepts CMYK color space, that is why we chose
+the JPEG standard and not the PNG standard for example.
+
+@cindex 8-bit
+@cindex 12-bit
+The JPEG and EPS standards set two sizes for the number of bits in
+each channel: 8-bit and 12-bit. The former is by far the most common
+and is what we use in ConvertType. Therefore, each channel should have
+values between 0 to @math{2^8-1=255}. From this we see how each pixel
+in a grayscale image is one byte (8 bits) long, in an RGB image, it is
+3bytes long and in CMYK it is 4bytes long. But thanks to the JPEG
+compression algorithms, when all the pixels of one channel have the
+same value, that channel is compressed to one pixel. Therefore a
+Grayscale image and a CMYK image that has only the K-channel filled
+are approximately the same file size.
+
+
+@node Invoking astconvertt, ConvertType future updates, Color, ConvertType
+@subsection Invoking ConvertType
+
+CovertType can be used with the following general template:
+
+@example
+astconvertt [OPTION...] InputFile [InputFile2] ... [InputFile4]
+@end example
+
+@noindent
+The file type of the output will be specified with the file name given
+to the @option{--output} option (see @ref{Common options}), which can
+either be given on the command line or in any of the configuration
+files (see @ref{Configuration files}). Note that if the output suffix
+is not recognized, it will default to plain text format, see
+@ref{Recognized file types}.
+
+@node ConvertType future updates,  , Invoking astconvertt, ConvertType
+@subsection ConvertType future updates
+
+@itemize
+
+@item
+Currently ConvertType only operates on a FITS image, not table. Add
+functionality for tables too.
+
+@end itemize
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Header manipulation, Image manipulation, Files, Top
 @chapter Header manipulation
 
 The FITS standard requires each extension of a FITS file to have a
@@ -2991,7 +3243,6 @@ to other formats.
 * ImageTransform::              Transform (flip, rotate) an image.
 * ImageArith::                  Apply arithmetics on image(s).
 * EllipMask::                   Place elliptical masks on an image.
-* ConvertType::                 Convert to and from other formats.
 @end menu
 
 @node ImageCrop, ImageTransform, Image manipulation, Image manipulation
@@ -3464,6 +3715,16 @@ much more efficient. There are also much faster search strategies.
 
 
 
+
+
+
+
+
+
+
+
+
+
 @node ImageTransform, ImageArith, ImageCrop, Image manipulation
 @section ImageTransform
 Sometimes it is required that the image be trasformed (flipped,
@@ -3490,25 +3751,11 @@ the pixels in one image with another.
 
 
 
-@node EllipMask, ConvertType, ImageArith, Image manipulation
+@node EllipMask,  , ImageArith, Image manipulation
 @section EllipMask
 
 EllipMask will mask some of the pixels in the image based on
 elliptical parameters that are specified through an ASCII catalog.
-
-
-
-
-@node ConvertType,  , EllipMask, Image manipulation
-@section ConvertType
-
-The formats to store and operate on astronomical data were defined
-mainly for actual processing. In other situations, the data might be
-useful in other formats. For example, when you are writing a report,
-you can't use a FITS image, other more standard image formats should
-be used, for example JPEG or EPS. ConvertType is created exactly for
-such purposes. The various types will increase with future updates and
-base on need.
 
 
 

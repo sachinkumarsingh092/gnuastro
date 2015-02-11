@@ -212,14 +212,14 @@ cparse_opt(int key, char *arg, struct argp_state *state)
     case 'h':
       errno=0;
       cp->hdu=malloc(strlen(arg)+1);
-      if(cp->hdu==NULL) error(EXIT_FAILURE, 0, NULL);
+      if(cp->hdu==NULL) error(EXIT_FAILURE, 0, "Space for hdu");
       strcpy(cp->hdu, arg);
       cp->hduset=1;
       break;
     case 'o':
       errno=0;
       cp->output=malloc(strlen(arg)+1);
-      if(cp->output==NULL) error(EXIT_FAILURE, 0, NULL);
+      if(cp->output==NULL) error(EXIT_FAILURE, 0, "Space for output");
       strcpy(cp->output, arg); /* This allocation is done so cp->output */
       cp->outputset=1;	       /* Can always be freed when set, because */
       break;		       /* It usually needs modifications.       */
