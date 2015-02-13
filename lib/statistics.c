@@ -71,6 +71,35 @@ floatmax(float *in, size_t size, float *max)
 
 
 void
+doublemin(double *in, size_t size, double *min)
+{
+  double tmin=FLT_MAX, *fpt;
+  fpt=in+size;
+  do
+    if(*in<tmin) tmin=*in;
+  while(++in<fpt);
+  *min=tmin;
+}
+
+
+
+
+
+void
+doublemax(double *in, size_t size, double *max)
+{
+  double tmax=-FLT_MAX, *fpt;
+  fpt=in+size;
+  do
+    if(*in>tmax) tmax=*in;
+  while(++in<fpt);
+  *max=tmax;
+}
+
+
+
+
+void
 floatmaxmasked(float *in, unsigned char *mask, size_t size, float *max)
 {
   float tmax=-FLT_MAX, *fpt;
@@ -145,6 +174,24 @@ fminmax(float *in, size_t size, float *min, float *max)
   *min=tmin;
 }
 
+
+
+
+
+void
+dminmax(double *in, size_t size, double *min, double *max)
+{
+  double tmin=FLT_MAX, tmax=-FLT_MAX, *fpt;
+  fpt=in+size;
+  do
+    {
+      if     (*in>tmax) tmax=*in;
+      else if(*in<tmin) tmin=*in;
+    }
+  while(++in<fpt);
+  *max=tmax;
+  *min=tmin;
+}
 
 
 

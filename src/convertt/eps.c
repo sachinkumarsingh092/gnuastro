@@ -23,7 +23,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
-
+#include "main.h"
 
 
 
@@ -38,11 +38,55 @@ nameiseps(char *name)
 {
   size_t len;
   len=strlen(name);
-  if (strcmp(&name[len-4], ".eps") == 0
-      || strcmp(&name[len-4], ".EPS") == 0
-      || strcmp(&name[len-5], ".epsf") == 0
-      || strcmp(&name[len-5], ".epsi") == 0)
+  if (strcmp(&name[len-3], "eps") == 0
+      || strcmp(&name[len-3], "EPS") == 0
+      || strcmp(&name[len-4], "epsf") == 0
+      || strcmp(&name[len-4], "epsi") == 0)
     return 1;
   else
     return 0;
+}
+
+
+
+
+
+int
+nameisepssuffix(char *name)
+{
+  if (strcmp(name, "eps") == 0 || strcmp(name, ".eps") == 0
+      || strcmp(name, "EPS") == 0 || strcmp(name, ".EPS") == 0
+      || strcmp(name, "epsf") == 0 || strcmp(name, ".epsf") == 0
+      || strcmp(name, "epsi") == 0 || strcmp(name, ".epsi") == 0)
+    return 1;
+  else
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ **************       Write an EPS image        **************
+ *************************************************************/
+void
+saveeps(struct converttparams *p)
+{
+
 }

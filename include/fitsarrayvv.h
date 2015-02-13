@@ -49,6 +49,9 @@ fitsioerror(int status, char *message);
 int
 nameisfits(char *name);
 
+int
+nameisfitssuffix(char *name);
+
 void
 numhduensions(char *filename, int *numhdu);
 

@@ -27,6 +27,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "ui.h"		        /* needs main.h.                  */
+#include "convertt.h"
 
 int
 main(int argc, char *argv[])
@@ -39,13 +40,11 @@ main(int argc, char *argv[])
   /* Read the input parameters.*/
   setparams(argc, argv, &p);
 
-  /* Run Convert
+  /* Run Convert. */
   convertt(&p);
-  */
+
   /* Free all non-freed allocations. */
   freeandreport(&p);
-
-  printf("\n\nFinished\n\n");
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

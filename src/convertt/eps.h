@@ -25,4 +25,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 nameiseps(char *name);
 
+int
+nameisepssuffix(char *name);
+
+void
+saveeps(struct converttparams *p);
+
 #endif

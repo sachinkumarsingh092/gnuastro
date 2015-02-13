@@ -25,7 +25,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 nameisjpeg(char *name);
 
+int
+nameisjpegsuffix(char *name);
+
 void
 preparejpeg(struct converttparams *p, char *filename);
+
+void
+savejpeg(struct converttparams *p);
 
 #endif

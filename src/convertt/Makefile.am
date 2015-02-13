@@ -39,10 +39,10 @@ AM_LDFLAGS = -lcfitsio -lwcs -lm -ljpeg -L$(top_builddir)/lib
 bin_PROGRAMS = astconvertt
 
 astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h jpeg.c	\
-jpeg.h eps.c eps.h
+jpeg.h eps.c eps.h convertt.c convertt.h
 
 astconvertt_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
--lcheckset -ltiming -llinkedlist
+-lcheckset -ltiming -llinkedlist -lstatistics
 
 
 

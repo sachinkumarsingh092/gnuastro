@@ -100,35 +100,35 @@ readconfig(char *filename, struct converttparams *p)
 	  strcpy(cp->hdu, value);
 	  cp->hduset=1;
 	}
-      else if(strcmp(name, "h2")==0)
+      else if(strcmp(name, "hdu2")==0)
 	{
-	  if(up->h2set) continue;
+	  if(up->hdu2set) continue;
 	  errno=0;
-	  up->h2=malloc(strlen(value)+1);
-	  if(up->h2==NULL)
-	    error(EXIT_FAILURE, errno, "Space for h2.");
-	  strcpy(up->h2, value);
-	  up->h2set=1;
+	  up->hdu2=malloc(strlen(value)+1);
+	  if(up->hdu2==NULL)
+	    error(EXIT_FAILURE, errno, "Space for hdu2.");
+	  strcpy(up->hdu2, value);
+	  up->hdu2set=1;
 	}
-      else if(strcmp(name, "h3")==0)
+      else if(strcmp(name, "hdu3")==0)
 	{
-	  if(up->h3set) continue;
+	  if(up->hdu3set) continue;
 	  errno=0;
-	  up->h3=malloc(strlen(value)+1);
-	  if(up->h3==NULL)
-	    error(EXIT_FAILURE, errno, "Space for h3.");
-	  strcpy(up->h3, value);
-	  up->h3set=1;
+	  up->hdu3=malloc(strlen(value)+1);
+	  if(up->hdu3==NULL)
+	    error(EXIT_FAILURE, errno, "Space for hdu3.");
+	  strcpy(up->hdu3, value);
+	  up->hdu3set=1;
 	}
-      else if(strcmp(name, "h4")==0)
+      else if(strcmp(name, "hdu4")==0)
 	{
-	  if(up->h4set) continue;
+	  if(up->hdu4set) continue;
 	  errno=0;
-	  up->h4=malloc(strlen(value)+1);
-	  if(up->h4==NULL)
-	    error(EXIT_FAILURE, errno, "Space for h4.");
-	  strcpy(up->h4, value);
-	  up->h4set=1;
+	  up->hdu4=malloc(strlen(value)+1);
+	  if(up->hdu4==NULL)
+	    error(EXIT_FAILURE, errno, "Space for hdu4.");
+	  strcpy(up->hdu4, value);
+	  up->hdu4set=1;
 	}
 
 
@@ -155,13 +155,6 @@ readconfig(char *filename, struct converttparams *p)
             error(EXIT_FAILURE, 0, "The quality option should be positive.");
 	  up->qualityset=1;
 	}
-      else if(strcmp(name, "kincmyk")==0)
-	{
-	  if(up->kincmykset) continue;
-          intzeroorone(value, &p->kincmyk, name, key, SPACK,
-                       filename, lineno);
-	  up->kincmykset=1;
-	}
       else if(strcmp(name, "widthincm")==0)
 	{
 	  if(up->widthincmset) continue;
@@ -177,14 +170,14 @@ readconfig(char *filename, struct converttparams *p)
       else if(strcmp(name, "fluxlow")==0)
 	{
 	  if(up->fluxlowset) continue;
-          anyfloat(value, &p->fluxlow, name, key, p->cp.spack,
+          anydouble(value, &p->fluxlow, name, key, p->cp.spack,
                    filename, lineno);
           up->fluxlowset=1;
 	}
       else if(strcmp(name, "fluxhigh")==0)
 	{
 	  if(up->fluxhighset) continue;
-          anyfloat(value, &p->fluxhigh, name, key, p->cp.spack,
+          anydouble(value, &p->fluxhigh, name, key, p->cp.spack,
                    filename, lineno);
           up->fluxhighset=1;
 	}
@@ -240,26 +233,26 @@ printvalues(FILE *fp, struct converttparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
     }
-  if(up->h2set)
+  if(up->hdu2set)
     {
-      if(stringhasspace(up->h2))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "h2", up->h2);
+      if(stringhasspace(up->hdu2))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu2", up->hdu2);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "h2", up->h2);
+	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu2", up->hdu2);
     }
-  if(up->h3set)
+  if(up->hdu3set)
     {
-      if(stringhasspace(up->h3))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "h3", up->h3);
+      if(stringhasspace(up->hdu3))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu3", up->hdu3);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "h3", up->h3);
+	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu3", up->hdu3);
     }
-  if(up->h4set)
+  if(up->hdu4set)
     {
-      if(stringhasspace(up->h4))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "h4", up->h4);
+      if(stringhasspace(up->hdu4))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu4", up->hdu4);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "h4", up->h4);
+	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu4", up->hdu4);
     }
 
 
@@ -268,8 +261,6 @@ printvalues(FILE *fp, struct converttparams *p)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
   if(up->qualityset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "quality", p->quality);
-  if(up->kincmykset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "kincmyk", p->kincmyk);
   if(up->widthincmset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "widthincm", p->widthincm);
 
@@ -298,20 +289,18 @@ checkifset(struct converttparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
-  if(up->h2set==0)
-    REPORT_NOTSET("h2");
-  if(up->h3set==0)
-    REPORT_NOTSET("h3");
-  if(up->h4set==0)
-    REPORT_NOTSET("h4");
+  if(up->hdu2set==0)
+    REPORT_NOTSET("hdu2");
+  if(up->hdu3set==0)
+    REPORT_NOTSET("hdu3");
+  if(up->hdu4set==0)
+    REPORT_NOTSET("hdu4");
   if(cp->outputset==0)
     REPORT_NOTSET("output");
   if(up->qualityset==0)
     REPORT_NOTSET("quality");
   if(up->widthincmset==0)
     REPORT_NOTSET("widthincm");
-  if(up->kincmykset==0)
-    REPORT_NOTSET("kincmyk");
   if(up->fluxlowset==0)
     REPORT_NOTSET("fluxlow");
   if(up->fluxhighset==0)
@@ -340,20 +329,215 @@ checkifset(struct converttparams *p)
 
 
 
+/****************************************************************
+ *****************   Read convert values:    ********************
+ ****************************************************************/
+struct change *
+makechangestruct(char *arg)
+{
+  char *p=arg;
+  struct change *out=NULL, *c;
+
+  while(*p!='\0')
+    {
+      while(*p==' ') {++p; continue;} /* Skip all space characters. */
+      errno=0;
+      c=malloc(sizeof *c);
+      if(c==NULL) error(EXIT_FAILURE, 0, "%lu bytes for struct change",
+                        sizeof *c);
+      c->from=strtof(p, &p);
+      while(*p==' ') {++p; continue;}
+      if(*p==':') ++p;
+      else
+	{
+	  fprintf(stderr, PACKAGE": In the conversion option, [from] "
+		  "and [to] values should be separated by a ':'. You "
+		  "have given a '%c': %s\n", *p, arg);
+	  exit(EXIT_FAILURE);
+	}
+      c->to=strtof(p, &p);
+      while(*p==' ') {++p; continue;}
+      if(*p==',') p++;
+      else if(*p!='\0')
+	{
+	  fprintf(stderr, PACKAGE": In the conversion option, [from] "
+		  "and [to] pairs should be separated by a ','. You have "
+		  "provided a '%c': %s\n", *p, arg);
+	  exit(EXIT_FAILURE);
+	}
+      c->next=out;
+      out=c;
+    }
+  /*
+  {
+    struct change *tmp;
+    for(tmp=out;tmp!=NULL;tmp=tmp->next)
+      printf("%f --> %f\n", tmp->from, tmp->to);
+  }
+  */
+  return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+/* We know cp->output is a known suffix, we just don't know if it has
+   a `.` before it or not. If it doesn't one will be added to it an
+   the output name will be set. */
+void
+adddotautomaticoutput(struct converttparams *p)
+{
+  size_t i;
+  struct commonparams *cp=&p->cp;
+  char *tmp, *basename="output.txt";
+
+  /* Find the first file name in the input(s). */
+  for(i=0;i<p->numinputs;++i)
+    if(strcmp(p->names[i], BLANKCHANNELNAME))
+      {
+        basename=p->names[i];
+        break;
+      }
+
+  /* If the suffix does not start with a `.`, put one there. */
+  if(cp->output[0]!='.')
+    {
+      errno=0;
+      tmp=malloc(strlen(cp->output)+10*sizeof *tmp);
+      if(tmp==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for suffix name.",
+              strlen(cp->output)+10*sizeof *tmp);
+      sprintf(tmp, ".%s", cp->output);
+      free(cp->output);
+      cp->output=tmp;
+    }
+
+  /* Set the automatic output and make sure we have write access. */
+  automaticoutput(basename, cp->output, cp->removedirinfo,
+                  cp->dontdelete, &cp->output);
+  if( dir0file1(cp->output, cp->dontdelete)==0 )
+    error(EXIT_FAILURE, 0, "%s is a directory.", cp->output);
+}
+
+
+
+
+
 void
 sanitycheck(struct converttparams *p)
 {
+  size_t i, j;
+  struct commonparams *cp=&p->cp;
+
+  /* The flux range: */
+  if(p->fluxlow>p->fluxhigh)
+    error(EXIT_FAILURE, 0, "The value of `--fluxlow` (`-L`, %.3f) is "
+          "larger than `--fluxhigh` (`-H`, %.3f).", p->fluxlow, p->fluxhigh);
+
   /* Make sure there are 1 (for grayscale), 3 (for RGB) or 4 (for
-     CMYK) input images. */
-  if(p->numinputs!=1 && p->numinputs!=3 && p->numinputs!=4)
-    error(EXIT_FAILURE, 0, "The number of input images has to be 1 (for "
-          "non image data, grayscale or only K channel in CMYK), 3 (for "
-          "RGB) and 4 (for CMYK). You have given %lu input images.",
-          p->numinputs);
+     CMYK) color channels. */
+  if(p->numch!=1 && p->numch!=3 && p->numch!=4)
+    error(EXIT_FAILURE, 0, "The number of input color channels has to be "
+          "1 (for non image data, grayscale or only K channel in CMYK), "
+          "3 (for RGB) and 4 (for CMYK). You have given %lu color channels. "
+          "Note that some file formats (for example JPEG) can contain more "
+          "than one color channel.", p->numch);
+
+  /* Make sure that there is atleast one input file (not only blank)
+     and set the sizes of the blank channels to the first non-blank
+     value. */
+  for(i=0;i<p->numch;++i)
+    if(p->isblank[i]==0) break;
+  if(i==p->numch)
+    error(EXIT_FAILURE, 0, "All the input(s) are of type blank!");
+  for(j=0;j<p->numch;++j)
+    if(p->isblank[j])
+      {
+        p->s0[j]=p->s0[i];
+        p->s1[j]=p->s1[i];
+      }
+
+  /* Check if all the input sources have the same size: */
+  if(p->numch>1)
+    {
+      for(i=1;i<p->numch;++i)
+        if(p->s0[i]!=p->s0[0] || p->s1[i]!=p->s1[0])
+          break;
+      if(i!=p->numch)
+        {
+          for(i=0;i<p->numch;++i)
+            fprintf(stderr, "Channel %lu is %lu x %lu pixels.\n", i,
+                    p->s1[i], p->s0[i]);
+          error(EXIT_FAILURE, 0, "The input color channels have different "
+                "sizes.");
+        }
+    }
+
+  /* Allocate space for the blank channels and set them to zero: */
+  for(i=0;i<p->numch;++i)
+    if(p->isblank[i])
+      {
+        errno=0;
+        p->ch[i]=calloc(p->s0[0]*p->s1[0], sizeof *p->ch[i]);
+        if(p->ch[i]==NULL)
+          error(EXIT_FAILURE, errno, "Allocating %lu bytes for the blank "
+                "channel %lu", p->s0[0]*p->s1[0]*sizeof *p->ch[i], i);
+      }
+
+  /* The output file name. First find the first non-blank file name: */
+  if(nameisfits(cp->output))
+    {
+      p->outputtype=FITSFORMAT;
+      if( nameisfitssuffix(cp->output) )
+        adddotautomaticoutput(p);
+    }
+  else if(nameisjpeg(cp->output))
+    {
+      p->outputtype=JPEGFORMAT;
+      if( nameisjpegsuffix(cp->output) )
+        adddotautomaticoutput(p);
+    }
+  else if(nameiseps(cp->output))
+    {
+      p->outputtype=EPSFORMAT;
+      if( nameisepssuffix(cp->output) )
+        adddotautomaticoutput(p);
+    }
+  else
+    {
+      p->outputtype=TXTFORMAT;
+
+      /* If output type is not an image, there should only be one color
+         channel: */
+      if(p->numch>1)
+        error(EXIT_FAILURE, 0, "Text output (`--output=%s`) can only be "
+              "completed with one input color channel. You have given %lu. "
+              "Note that some formats (for example JPEG) can have more than "
+              "one color channel in each file. You can first convert the "
+              "file to FITS, then convert the desired channel to text by "
+              "specifying the HDU.",
+              cp->output, p->numch);
+    }
+
 }
 
 
@@ -381,12 +565,11 @@ sanitycheck(struct converttparams *p)
 void
 preparearrays(struct converttparams *p)
 {
-  int bitpix;
+  size_t i;
   void *array;
   double *d, *df;
-  size_t i, numnul;
   struct stll *tmp;
-  char *hdu, *names[4];
+  char *hdu, **names=p->names;
 
   /* Put the names in the correct order. */
   i=p->numinputs-1;
@@ -407,20 +590,20 @@ preparearrays(struct converttparams *p)
         {
           switch(p->numch) /* Get the HDU value for this channel. */
             {
-            case 0: hdu=p->cp.hdu; break;  case 1: hdu=p->up.h2; break;
-            case 2: hdu=p->up.h3; break;   case 3: hdu=p->up.h4; break;
+            case 0: hdu=p->cp.hdu; break;   case 1: hdu=p->up.hdu2; break;
+            case 2: hdu=p->up.hdu3; break;  case 3: hdu=p->up.hdu4; break;
             default: error(EXIT_FAILURE, 0, "A bug! In parsing the input "
                            "FITS files, it has gone beyond four! Please "
                            "contact us so we can see what caused this "
                            "problem and fix it.");
             }
-          numnul=fitsimgtoarray(names[i], hdu, &bitpix, &array,
-                                &p->s0[p->numch],
-                                &p->s1[p->numch]);
-          changetype(array, bitpix,
-                     p->s0[p->numch]*p->s1[p->numch],
-                     numnul, (void **)(&p->ch[p->numch]),
-                     DOUBLE_IMG);
+          p->numnul[p->numch]=fitsimgtoarray(names[i], hdu,
+                                             &p->bitpixs[p->numch], &array,
+                                             &p->s0[p->numch],
+                                             &p->s1[p->numch]);
+          changetype(array, p->bitpixs[p->numch],
+                     p->s0[p->numch]*p->s1[p->numch], p->numnul[p->numch],
+                     (void **)(&p->ch[p->numch]), DOUBLE_IMG);
           free(array);
           ++p->numch;
         }
@@ -430,6 +613,16 @@ preparearrays(struct converttparams *p)
       /* JPEG: */
       else if ( nameisjpeg(names[i]) )
         preparejpeg(p, names[i]);
+
+
+
+      /* Blank: */
+      else if(strcmp(names[i], BLANKCHANNELNAME)==0)
+        {
+          p->isblank[p->numch]=1;
+          p->bitpixs[p->numch]=BYTE_IMG;
+          ++p->numch;
+        }
 
 
 
@@ -453,26 +646,10 @@ preparearrays(struct converttparams *p)
           else
             error(EXIT_FAILURE, 0, "%s contains non-numeric data, see %s.",
                   names[i], TXTARRAYVVLOG);
+          p->bitpixs[p->numch]=DOUBLE_IMG;
           ++p->numch;
         }
     }
-
-  /* Check if all the input sources have the same size: */
-  if(p->numch>1)
-    {
-      for(i=1;i<p->numch;++i)
-        if(p->s0[i]!=p->s0[0] || p->s1[i]!=p->s1[0])
-          break;
-      if(i!=p->numch)
-        {
-          for(i=0;i<p->numch;++i)
-            fprintf(stderr, "Channel %lu is %lu x %lu pixels.\n", i,
-                    p->s1[i], p->s0[i]);
-          error(EXIT_FAILURE, 0, "The input color channels have different "
-                "sizes.");
-        }
-    }
-
 }
 
 
@@ -523,11 +700,11 @@ setparams(int argc, char *argv[], struct converttparams *p)
   if(cp->printparams)
     REPORT_PARAMETERS_SET;
 
-  /* Do a sanity check.
-  sanitycheck(p);
-  */
   /* Prepare the arrays: */
   preparearrays(p);
+
+  /* Do a sanity check. */
+  sanitycheck(p);
 }
 
 

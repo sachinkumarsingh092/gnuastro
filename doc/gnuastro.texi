@@ -165,7 +165,6 @@ sub-component to a title is present.
 * Modeling and fittings::       Make and fit models.
 * Table manipulation::          Read/Write tables.
 * Developing::                  The development environment.
-* Future updates::              Future updates.
 * GNU Free Documentation License::  Full FDL text.
 * Index::                       Index of terms
 
@@ -350,15 +349,6 @@ Program source
 
 * Coding conventions::          Conventions used for coding
 * Multithreaded programming::
-
-Future updates
-
-* Future programs::             Programs to be added to gnuastro
-* Existing future::
-
-Future of existing programs
-
-* FitstoJpeg future::           Future work for FitstoJpeg
 
 @end detailmenu
 @end menu
@@ -623,7 +613,7 @@ arrays. So when an outside reader is only interested in one part of
 the program, that part is all they have to understand.
 
 Recently it is also becoming common to write scientific software in
-Python, or a combination of it with C++. Python is a high level
+Python, or a combination of it with C or C++. Python is a high level
 scripting language which doesn't need compilation. It is very useful
 when you want to do something on the go and don't want to be halted by
 the troubles of compiling, linking, memory checking, etc. When the
@@ -730,7 +720,8 @@ which is commonly known as K&R and is the definition book for the ISO
 C standard of 1990. As explained above, with less than 300 pages, this
 book is very concize and basic. Even within the confines of K&R, the
 code can become quite complex, therefore all gnuastro programs are
-written with code readibility as the primary goal.
+written with code readibility (particularly though lots of comments
+within the code) as the primary goal.
 
 We do make lots of use of the GNU additions to the C language in the
 GNU C library, but they are mainly in the user interface functions
@@ -897,7 +888,8 @@ for the GUI, this results in not including lots of potentially useful
 operations. It also reasults in ``interface design'' to be a crutially
 important part of any GUI program. Scientists don't usually have
 enough resources to hire a graphical designer, also the complexity of
-the GUI code is far more than CLI code.
+the GUI code is far more than CLI code, which is harmful for a
+scientific software, see @ref{Science and software}.
 
 For those operations with a GUI, one action on the GUI might be more
 efficient. However, if you have to repeat that same action more than
@@ -925,9 +917,10 @@ Since the operations in the GUI are very limited and they are visible,
 reading a manual is not that important in the GUI (most programs don't
 even have any!). However, to give you the creative power explained
 above, with a CLI program, it is best if you first read the manual of
-any program you are using. Once you have understood the concepts and
-the general operation, there are more easier ways to remember a
-particular option, see @ref{Getting help}.
+any program you are using. You don't need to memorize any details,
+only an understanding of the generalities is needed. Once you start
+working, there are more easier ways to remember a particular option or
+operation detail, see @ref{Getting help}.
 
 To experience the command line in its full glory and not in the GUI
 terminal emulator, press the following keys together:
@@ -1515,7 +1508,7 @@ equivalent to not calling this option it at all.
 @item --enable-progname
 Only build and install @file{progname} along with any other program
 that is enabled in this fashion. @file{progname} is the name of the
-executable without the @file{astr}, for example @file{imgcrop} for
+executable without the @file{ast}, for example @file{imgcrop} for
 ImageCrop (with the executable name of @file{astimgcrop}). If this
 option is called for any of the programs in gnuastro, any program
 which is not explicitly enabled will not be built or installed.
@@ -1714,7 +1707,7 @@ option to keep the old executable name updated. Also note that the
 documentation or configuration files do not change from their standard
 names either.
 
-For example, lets assume that typing @file{astr} on every invokation
+For example, lets assume that typing @file{ast} on every invokation
 of every program is really annoying you! You can remove this prefix
 from all the executables at configure time by adding this option:
 
@@ -1928,9 +1921,9 @@ quotes are much more easier, elegant and readable.
 
 @node Arguments, Option basics, Arguments and options, Command line
 @subsection Arguments
-In Astronomy Utilities, the names of the input data files and ASCII
-tables are always specified as arguments, you can generally specify
-them in any order unless otherwise stated for a particular
+In GNU Astronomy Utilities, the names of the input data files and
+ASCII tables are mostly specified as arguments, you can generally
+specify them in any order unless otherwise stated for a particular
 program. Everything particular about the how a program treats
 arguments, is explained under the ``Invoking ProgramName'' section for
 that program.
@@ -2529,7 +2522,7 @@ should remove it.
 
 
 @node Final parameter values, Automatic output, Threads in gnuastro, Common behavior
-@section Final parameter values
+@section Final parameter values, reproduce previous results
 
 The input parameters can be specified in many places, either on the
 command line or in at least one of several configuration files, see
@@ -2557,7 +2550,7 @@ can just run the same command (easily retrieved from the bash history,
 with the top arrow key) and simply remove the last two characters that
 showed this option.
 
-Since no progarm will actually start its processing when this option
+Since no program will actually start its processing when this option
 is called, the otherwise mandatory arguments for each program (for
 example input image or catalog files) are no longer required when you
 call this option.
@@ -2615,39 +2608,40 @@ will be saved in @file{FITSimage.jpg}.
 
 Another very important part of the automatic output generation is that
 all the directory information of the input file name is stripped off
-of it. This is done, because astronomical data are usually very large
-and organized specially with special file names. In some cases, the
-user might not have write permissions in those directories. Infact,
-even if the data is stored on your own computer, it is advised to only
-grant write permissions to the super user or root. This way, you won't
-accidentally delete or modify your valuable data!
+of it. This feature can be disabled with the @option{--keepinputdir}
+option, see @ref{Common options}. It is the default because
+astronomical data are usually very large and organized specially with
+special file names. In some cases, the user might not have write
+permissions in those directories. Infact, even if the data is stored
+on your own computer, it is advised to only grant write permissions to
+the super user or root. This way, you won't accidentally delete or
+modify your valuable data!
 
 Lets assume that we are working on a report and want to process the
 FITS images from two projects (ABC and DEF), which are stored in the
 sub-directories named @file{ABCproject/} and @file{DEFproject/} of our
 top data directory (@file{/mnt/data}). The following shell commands
 show how one image from the former is first converted to a JPEG image
-through ImagetoJpeg (which has one output JPEG file) and then the
-objects from an image in the latter project are detected using
-NoiseChisel (which by default has two text catalog files and one
-multi-extension FITS detection map file). The text after the
-@command{#} sign are comments (not typed!).
+through ConvertType and then the objects from an image in the latter
+project are detected using NoiseChisel (which by default has two text
+catalog files and one multi-extension FITS detection map file). The
+text after the @command{#} sign are comments (not typed!).
 
 @example
 $ pwd                                               # Current location
 /home/usrname/research/report
-$ ls                                                # List contents
-ABC001.jpg
-$ ls /mnt/data/ABCproject                           # Archive No.1
-ABC001.fits ABC002.fits ABC003.fits
-$ ls /mnt/data/DEFproject                           # Archive No.2
-DEF001.fits DEF002.fits DEF003.fits
-$ astimgtojpeg /mnt/data/ABCproject/ABC002.fits    # Program 1
-$ ls                                                # List contents
-ABC001.jpg ABC002.jpg
-$ astnoisechisel /mnt/data/DEFproject/DEF001.fits  # Program 2
-$ ls                                                # List contents
-ABC001.jpg ABC002.jpg DEF001_c.txt DEF001_map.fits DEF001_o.txt
+$ ls                                         # List directory contents
+ABC01.jpg
+$ ls /mnt/data/ABCproject                                  # Archive 1
+ABC01.fits ABC02.fits ABC03.fits
+$ ls /mnt/data/DEFproject                                  # Archive 2
+DEF01.fits DEF02.fits DEF03.fits
+$ astconvertt /mnt/data/ABCproject/ABC02.fits --output=jpg    # Prog 1
+$ ls
+ABC01.jpg ABC02.jpg
+$ astnoisechisel /mnt/data/DEFproject/DEF01.fits              # Prog 2
+$ ls
+ABC01.jpg ABC02.jpg DEF01_c.txt DEF01_map.fits DEF01_o.txt
 @end example
 
 
@@ -2682,12 +2676,12 @@ on external help (a PDF in your personal print or digital archive or
 HTML from the official webpage) you have to check to see if their
 versions fit with your installed program.
 
-If it is only the short or long names of the options, @option{--usage}
-is advised. If it is what the options do, then @option{--help} is a
-great tool. Man pages are also provided for those who are use to this
-older system of documentation. This full manual is also available to
-you on the command line in Info format. In the subsections below each
-of these methods are reviewed.
+If you only need to remember the short or long names of the options,
+@option{--usage} is advised. If it is what the options do, then
+@option{--help} is a great tool. Man pages are also provided for those
+who are use to this older system of documentation. This full manual is
+also available to you on the command line in Info format. In the
+subsections below each of these methods are reviewed.
 
 
 @menu
@@ -2847,7 +2841,7 @@ command line tool in the middle of your work without having to take
 your hands off the keyboard. This complete manual is available in Info
 format and can be accessed from anywhere on the command line.
 
-To open the info format of any installed programs or library on your
+To open the Info format of any installed programs or library on your
 system which has an Info format manual, you can simply run the command
 below (change @command{executablename} to the executable name of the
 program or library):
@@ -2861,7 +2855,7 @@ In case you are not already familiar with it, go and fill your cup of
 coffee or green tea and and run @command{$ info info}. It does a
 fantastic job in explaining all its capabilities its self. It is very
 short and you will become sufficiently fluent in about half an
-hour. Since all GNU software documentation is also provided in info,
+hour. Since all GNU software documentation is also provided in Info,
 your whole GNU/Linux life will significantly improve.
 
 Once you've become an efficient navigator in Info, you can go to any
@@ -2870,7 +2864,7 @@ matter how long it is, in a matter of seconds. It also blends nicely
 with GNU Emacs (a text editor) and you can search manuals while you
 are writing your document or programs without taking your hands off
 the keyboard, this is most useful for libraries like the GNU C
-library. To be able to access all the info manuals installed in your
+library. To be able to access all the Info manuals installed in your
 GNU/Linux within Emacs, type @key{Ctrl-H + i}.
 
 To see this whole manual from the beginning in Info, you can run
@@ -2968,15 +2962,15 @@ size and data type.
 @node ConvertType,  , FileInfo, Files
 @section ConvertType
 
-The formats to store and operate on astronomical data were defined
-mainly for archiving and processing. In other situations, the data
-might be useful in other formats. For example, when you are writing a
-paper or report or if you are making slides for a talk, you can't use
-a FITS image. Other image formats should be used. In other cases you
-might want your pixel values in a table format as plain text for input
-to other programs that don't recognize FITS, or to include as a table
-in your report. ConvertType is created for such situations. The
-various types will increase with future updates and based on need.
+The formats of astronomical data were defined mainly for archiving and
+processing. In other situations, the data might be useful in other
+formats. For example, when you are writing a paper or report or if you
+are making slides for a talk, you can't use a FITS image. Other image
+formats should be used. In other cases you might want your pixel
+values in a table format as plain text for input to other programs
+that don't recognize FITS, or to include as a table in your
+report. ConvertType is created for such situations. The various types
+will increase with future updates and based on need.
 
 The conversion is not only one way (from FITS to other formats), but
 two ways (except for EPS format). So you can convert a JPEG image or
@@ -3066,13 +3060,23 @@ The standard formats for an EPS file are @file{.eps}, @file{.EPS},
 @file{.epsf} and @file{.epsi}. The EPS outputs of ConvertType have the
 @file{.eps} suffix.
 
+@item @option{blank}
+This is not actually a file type! But can be used to fill one color
+channel with a blank value. If this argument is given for any color
+channel, that channel will not be used in the output.
+
 @item Plain text
 Plain text files have the advantage that they can be viewed with any
 text editor or on the command line. Most programs also support input
 as plain text files. In ConvertType, if the input arguments do not
 have any of the extensions listed above for other formats, the input
-is assumed to be a text file. For output, all text output are going to
-have the the @file{.txt} suffix.
+is assumed to be a text file. Each plain text file is considered to
+contain one color channel.
+
+If converting an image to plain text, consider the fact that if the
+image is large the number of columns in each line and the number of
+lines will become very large making it very hard to open in a text
+editor.
 
 @end table
 
@@ -3131,8 +3135,9 @@ printed image slightly more blurred than it actually is.
 To solve both these problems, the best way is to save the FITS image
 into the black channel of the CMYK color space. In the RGB color space
 all three channels have to be used. The JPEG standard is the only
-common standard that accepts CMYK color space, that is why we chose
-the JPEG standard and not the PNG standard for example.
+common standard that accepts CMYK color space, that is why currently
+only the JPEG standard is included and not the PNG standard for
+example.
 
 @cindex 8-bit
 @cindex 12-bit
@@ -3158,12 +3163,167 @@ astconvertt [OPTION...] InputFile [InputFile2] ... [InputFile4]
 @end example
 
 @noindent
-The file type of the output will be specified with the file name given
-to the @option{--output} option (see @ref{Common options}), which can
+The file type of the output will be specified with the (possibly
+complete) file name given to the @option{--output} option, which can
 either be given on the command line or in any of the configuration
 files (see @ref{Configuration files}). Note that if the output suffix
 is not recognized, it will default to plain text format, see
 @ref{Recognized file types}.
+
+The order of multiple input files is important. After reading the
+input file(s) the number of color channels will be used to define
+which color space is being used and how each color channel is
+interpretted. Note that one file might have more than one color
+channel (for example in the JPEG format). If there are three input
+color channels they are respectively considered to be the red, green
+and blue color channels and if there are four color channels they are
+respectively considered to be cyan, magenta, yellow and black.
+
+The value to @option{--output} can be either a full file name or just
+the suffix of the desired output format. In the former case, that same
+name will be used for the output. In the latter case, the name of the
+output file will be set based on the automatic output guidelines, see
+@ref{Automatic output}. Note that the suffix name can optionally start
+a @file{.} (dot), so for example @option{--output=.jpg} and
+@option{--output=jpg} are equivalent. Be careful that if you want your
+output in plain text, you have to give the full file name. So if
+@option{-otxt} or @option{--output=.txt} are given, the output file
+will be named @file{txt} or @file{.txt} (the latter will be a hidden
+file!).
+
+Besides the common set of options explained in @ref{Common options},
+the options to ConvertType can be classified into input, output and
+flux related options. The majority of the options are to do with the
+flux range. Astronomical data usually have a very large dynamic range
+(difference between maximum and minimum value) and different subjects
+might be better demonstrated with a limited flux range.
+
+@noindent
+Input and output:
+@table @option
+@item --hdu2
+If the second input file is a FITS file, the value to this option will
+be used to specify which HDU will be used. Note that for the first
+file, the (@option{--hdu} or @option{-h} in the common options is
+used)
+
+@item --hdu3
+The HDU of the third input FITS file.
+
+@item --hdu4
+The HDU of the fourth input FITS file.
+
+@item -u
+@itemx --quality
+(@option{=INT}) The quality (compression) of the output JPEG file with
+values from 0 to 100 (inclusive). For other formats the value to this
+option is ignored. Note that only in grayscale (when one input color
+channel is given) will this actually be the exact quality (each pixel
+will correspond to one input value). If it is in color mode, some
+degradation will occur. While the JPEG standard does support lossless
+graphics, it is not commonly supported.
+
+@end table
+
+@noindent
+Flux range:
+
+@table @option
+
+@item -c
+@itemx --change
+(@option{=STR}) Change pixel values with the following format
+@option{"from1:to1, from2:to2,..."}. This option is very useful in
+displaing labeled pixels (not actual data images which have noise)
+like segmentation maps. In labeled images, usually a group of pixels
+have a fixed integer value. With this option, you can manipulate the
+labels before the image is displayed to get a better output for print
+or to emphasize on a particular set of labels and ignore the rest. The
+labels in the images will be changed in the same order given. By
+default first the pixel values will be converted then the pixel values
+will be truncated (see @option{--fluxlow} and @option{--fluxhigh}).
+
+You can use any number for the values irrespective of your final
+output, your given values are stored and used in the double precision
+floating point format. So for example if your input image has labels
+from 1 to 20000 and you only want to display those with labels 957 and
+11342 then you can run ConvertType with these options:
+
+@example
+$ astconvertt --change=957:50000,11342:50001 \\
+  --fluxlow=50000 segmentationmap.fits --output=jpg
+@end example
+
+@noindent
+While the output JPEG format is only 8 bit, this operation is done in
+an intermediate step which is stored in double precision floating
+point. The pixel values are converted to 8-bit after all operations on
+the input fluxs have been complete. By placing the value in double
+quotes you can use as many spaces as you like for better readability.
+
+@item -C
+@itemx --convaftertrunc
+Change pixel values (with @option{--change}) after truncation of the
+flux values, by default it is the opposite.
+
+@item -L
+@itemx --fluxlow
+(@option{=FLT}) The minimum flux (pixel value) to display in the
+output image, any pixel value below this value will be set to this
+value in the output. If the value to this option is the same as
+@option{--fluxmax}, then no flux truncation will be applied. Note that
+when multiple channels are given, this value is used for all the color
+channels.
+
+@item -H
+@itemx --fluxhigh
+(@option{=FLT}) The maximum flux (pixel value) to display in the
+output image, see @option{--fluxlow}.
+
+@item -m
+@itemx --maxbyte
+(@option{=INT}) This is only used for the JPEG and EPS output formats
+which have an 8-bit space for each channel of each pixel. The maximum
+value in each pixel can therefore be @mymath{2^8-1=255}. With this
+option you can change (decrease) the maximum value. By doing so you
+will decrease the dynamic range. It can be useful if you plan to use
+those values for other purposes.
+
+@item -i
+@itemx --flminbyte
+(@option{=INT}) If the lowest pixel value in the input channels is
+larger than the value to @option{--fluxlow}, then that input value
+will be redundant. In some situations it might be necessary to set the
+minimum byte value (0) to correspond to that flux even if the data do
+not reach that value. With this option you can do this. Note that if
+the minimum pixel value is smaller than @option{--fluxlow}, then this
+option is redundant.
+
+@item -a
+@itemx --fhmaxbyte
+(@option{=INT}) See @option{--flminbyte}.
+
+@item -l
+@itemx --log
+Display the logarithm of the input data. This is done after the
+conversion and flux truncation steps, see above.
+
+@item -n
+@itemx --noinvert
+For 8-bit output types (JPEG and EPS for example) the final value that
+is stored is inverted so white becomes black and vice versa. The
+reason for this is that astronomical images usually have a very large
+area of blank sky in them. The result will be that a large are of the
+image will be black. Therefore, by default the 8-bit values are
+inverted so the images blend in better with the text in a document.
+
+Note that this behaviour is ideal for grayscale images, if you want a
+color image, the colors are going to be mixed up. For color images it
+is best to call this option so the image is not inverted.
+
+@end table
+
+
 
 @node ConvertType future updates,  , Invoking astconvertt, ConvertType
 @subsection ConvertType future updates
@@ -3173,6 +3333,14 @@ is not recognized, it will default to plain text format, see
 @item
 Currently ConvertType only operates on a FITS image, not table. Add
 functionality for tables too.
+
+@item
+Use image statistics for flux threshold instead of absolute values,
+for example quantiles or a multiple of the average and standard
+deviation.
+
+@item
+Invert color images with meaningful colors.
 
 @end itemize
 
@@ -3288,9 +3456,9 @@ modes of operation listed below.
 
 @table @asis
 @item Image
-(High priority) The image mode uses the pixel coordinates. Depending on
-your command line options, this mode consists of three sub-modes. In
-image mode, only one image may be input.
+The image mode uses the pixel coordinates. Depending on your command
+line options, this mode consists of three sub-modes. In image mode,
+only one image may be input.
 @itemize
 
 @item
@@ -4771,7 +4939,7 @@ The software for this section have to be added ....
 
 
 
-@node Developing, Future updates, Table manipulation, Top
+@node Developing, GNU Free Documentation License, Table manipulation, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested
@@ -5336,7 +5504,7 @@ for your own purposes.
 Utilities, it is not considered a separate project. So, no change is
 considered valid for implementation unless the respective parts of the
 manual have been updated also. Also don't forget to update the
-@file{NEWS} and @file{ChangeLog} files too.
+@file{ChangeLog} file too.
 
 @end cartouche
 
@@ -5345,91 +5513,6 @@ manual have been updated also. Also don't forget to update the
 
 
 
-@node Future updates, GNU Free Documentation License, Developing, Top
-@chapter Future updates
-There are many things to do, this is the current to-do list. If you
-feel these updates, or other updates can be useful for your work,
-please contact us so we can move them up our priority list. If you are
-familiar enough with the C programming language, it would be great if
-you could also contribute so it can be done faster, see
-@ref{Developing}. Of course, all contributions will be respectfully
-acknowledged.
-
-@menu
-* Future programs::             Programs to be added to gnuastro
-* Existing future::
-@end menu
-
-
-
-
-
-
-
-
-
-
-@node Future programs, Existing future, Future updates, Future updates
-@section Future programs
-This is a short list of programs we plan to add in the future, it will
-be updated with new programs and programs that are made will be
-removed. Please feel free to suggest new tools to be added. There are
-certainly mainy tools that can be added.
-
-@itemize
-
-@item
-Manipulate (read/write) FITS headers
-
-@item
-Do arithmetical operations on images. So for example the user can give
-some FITS image names and be able to do any form of arithmetic on
-them. Something like Numpy arrays in python, but on the command line
-in a non-interactive method.
-
-@item
-Read/write FITS tables (both in ascii and binary format).
-
-@item
-Using detected objects in an image, correct their world coordinate
-system to be on the same basis (with out touching the pixels, only on
-the header information).
-
-@item
-This is not at all a high priority future update, but if it could be
-checked that gnuastro is able to run in the Mac OS or Windows
-environments (possibly with GNUlib), it would be great.
-
-@end itemize
-
-
-
-
-@node Existing future,  , Future programs, Future updates
-@section Future of existing programs
-
-There are also lots of plans to extend the abilities of the existing
-tools, they can be listed as:
-
-@menu
-* FitstoJpeg future::           Future work for FitstoJpeg
-@end menu
-
-
-@node FitstoJpeg future,  , Existing future, Existing future
-@subsection FitstoJpeg
-@itemize
-
-@item
-Use three or four FITS images to make an RGB or CMYK colored JPEG
-image.
-
-@item
-Use image statistics for flux threshold instead of absolute values,
-for example quantiles or a multiple of the average and standard
-deviation.
-
-@end itemize
 
 
 
@@ -5442,12 +5525,7 @@ deviation.
 
 
 
-
-
-
-
-
-@node GNU Free Documentation License, Index, Future updates, Top
+@node GNU Free Documentation License, Index, Developing, Top
 @appendix GNU Free Documentation License
 
 @include fdl.texi

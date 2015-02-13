@@ -33,6 +33,12 @@ void
 floatmax(float *in, size_t size, float *max);
 
 void
+doublemin(double *in, size_t size, double *min);
+
+void
+doublemax(double *in, size_t size, double *max);
+
+void
 floatmaxmasked(float *in, unsigned char *mask, size_t size, float *max);
 
 void
@@ -43,6 +49,9 @@ floatsecondmin(float *in, size_t size, float *secondmin);
 
 void
 fminmax(float *in, size_t size, float *min, float *max);
+
+void
+dminmax(double *in, size_t size, double *min, double *max);
 
 void
 dmax_withindex(double *in, size_t size, double *max, size_t *index);

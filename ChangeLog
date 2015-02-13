@@ -1,3 +1,27 @@
+2015-02-13  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/convertt/args.h (argp_options): `convert` changed to
+	`change`. Since the program name is also convert this could cause
+	confusions.
+
+	* doc/gnuastro.texi (Invoking astconvertt): Option explanations.
+
+	* src/convertt/jpeg.c (savejpeg): Corrected the pixel ordering.
+
+	* src/convertt/convertt.c (doubleto8bit): Find minimum and maximum
+	for all colors to set the scale, not just one color.
+
+	* lib/fitsarrayvv.c (arraytofitsimg): Will not remove comments.
+
+	* include/fixedstringmacros.h (SHORTCOPYRIGHT): Corrected year.
+
+	* lib/fitsarrayvv.c (nameisfits): Dot no longer included.
+	(nameisfitssuffix): Added.
+	(changetype): Corrected input and output pointers.
+
+	* doc/gnuastro.texi (ConvertType): Added explanations.
+	(Future updates): Chapter removed.
+
 2015-02-11  Mohammad Akhlaghi  <mohammad@akbari>
 
 	* src/convertt/ui.c (preparearrays): Added.

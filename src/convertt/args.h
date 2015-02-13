@@ -22,6 +22,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
+#include "ui.h"
 #include "commonargs.h"
 #include "fixedstringmacros.h"
 
@@ -53,7 +54,7 @@ const char doc[] =
 
 /* Free letters for options:
 
-   b d e f g j p r s t v w x y z
+   b d e f g j k p r s t v w x y z
    A B E F G I J M O Q R T U W X Y Z
 
    Free numbers: 503
@@ -76,25 +77,25 @@ static struct argp_option options[] =
       1
     },
     {
-      "h2",
+      "hdu2",
       500,
-      0,
+      "STR",
       0,
       "HDU of second input FITS image.",
       1
     },
     {
-      "h3",
+      "hdu3",
       501,
-      0,
+      "STR",
       0,
       "HDU of third input FITS image.",
       1
     },
     {
-      "h4",
+      "hdu4",
       502,
-      0,
+      "STR",
       0,
       "HDU of fourth input FITS image.",
       1
@@ -106,14 +107,6 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
-      2
-    },
-    {
-      "kincmyk",
-      'k',
-      0,
-      0,
-      "Only input is K channel in CMYK not grayscale.",
       2
     },
     {
@@ -175,19 +168,19 @@ static struct argp_option options[] =
       3
     },
     {
-      "convert",
+      "change",
       'c',
       "STR",
       0,
-      "Convert pixel values `from_2:to_2,from_1:to_1`.",
+      "Change pixel values `from_1:to_1,from_2:to_2`.",
       3
     },
     {
-      "convfirst",
+      "changeaftertrunc",
       'C',
       0,
       0,
-      "First convert pixel values, then truncate flux.",
+      "First truncate then change pixel values.",
       3
     },
     {
@@ -261,31 +254,28 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Input:  */
     case 500:
       errno=0;
-      p->up.h2=malloc(strlen(arg)+1);
-      if(p->up.h2==NULL) error(EXIT_FAILURE, 0, "Space for h2");
-      strcpy(p->up.h2, arg);
-      p->up.h2set=1;
+      p->up.hdu2=malloc(strlen(arg)+1);
+      if(p->up.hdu2==NULL) error(EXIT_FAILURE, 0, "Space for hdu2");
+      strcpy(p->up.hdu2, arg);
+      p->up.hdu2set=1;
       break;
     case 501:
       errno=0;
-      p->up.h3=malloc(strlen(arg)+1);
-      if(p->up.h3==NULL) error(EXIT_FAILURE, 0, "Space for h3");
-      strcpy(p->up.h3, arg);
-      p->up.h3set=1;
+      p->up.hdu3=malloc(strlen(arg)+1);
+      if(p->up.hdu3==NULL) error(EXIT_FAILURE, 0, "Space for hdu3");
+      strcpy(p->up.hdu3, arg);
+      p->up.hdu3set=1;
       break;
     case 502:
       errno=0;
-      p->up.h4=malloc(strlen(arg)+1);
-      if(p->up.h4==NULL) error(EXIT_FAILURE, 0, "Space for h4");
-      strcpy(p->up.h4, arg);
-      p->up.h4set=1;
+      p->up.hdu4=malloc(strlen(arg)+1);
+      if(p->up.hdu4==NULL) error(EXIT_FAILURE, 0, "Space for hdu4");
+      strcpy(p->up.hdu4, arg);
+      p->up.hdu4set=1;
       break;
 
 
     /* Output: */
-    case 'k':
-      p->kincmyk=1;
-      break;
     case 'u':
       intsmallerequalto(arg, &p->quality, "quality", key,
                         p->cp.spack, NULL, 0, 100);
@@ -302,11 +292,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Flux: */
     case 'L':
-      anyfloat(arg, &p->fluxlow, "fluxlow", key, p->cp.spack, NULL, 0);
+      anydouble(arg, &p->fluxlow, "fluxlow", key, p->cp.spack, NULL, 0);
       p->up.fluxlowset=1;
       break;
     case 'H':
-      anyfloat(arg, &p->fluxhigh, "fluxhigh", key, p->cp.spack, NULL, 0);
+      anydouble(arg, &p->fluxhigh, "fluxhigh", key, p->cp.spack, NULL, 0);
       p->up.fluxhighset=1;
       break;
     case 'm':
@@ -323,10 +313,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->fhmaxbyte=1;
       break;
     case 'c':
-      p->convert=arg;
+      p->change=makechangestruct(arg);
       break;
     case 'C':
-      p->convfirst=1;
+      p->changeaftertrunc=1;
       break;
     case 'l':
       p->log=1;

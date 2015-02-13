@@ -19,16 +19,10 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef UI_H
-#define UI_H
-
-struct change *
-makechangestruct(char *arg);
+#ifndef CONVERTT_H
+#define CONVERTT_H
 
 void
-setparams(int argc, char *argv[], struct converttparams *p);
-
-void
-freeandreport(struct converttparams *p);
+convertt(struct converttparams *p);
 
 #endif

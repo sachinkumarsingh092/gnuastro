@@ -550,13 +550,10 @@ automaticoutput(char *inname, char *suffix, int removedirinfo,
   /* Check if the input file is actually a readable file or not! */
   checkfile(inname);
 
-  /* Allocate space for the output name. If it has been allocated
-     before free it. If it hasn't been allocated before it should be
-     NULL in which case, free will not complain. Note that we are just
-     using malloccat here to allocate the right space! The contents of
-     the allocated space will be changed after this.*/
-  free(*outname);
-  *outname=out=malloccat(inname, suffix);
+  /* Note that we are just using malloccat here to allocate the right
+     space! The contents of the allocated space will be changed after
+     this.*/
+  out=malloccat(inname, suffix);
 
   /* Put the input in the space and remove all elements including and
      after '.'. Note that if there is no '.' in the name, malloccat
@@ -594,6 +591,10 @@ automaticoutput(char *inname, char *suffix, int removedirinfo,
 
   /* Remove the created filename if it already exits. */
   checkremovefile(out, dontdelete);
+
+  /* Free the outname if it was already allocated before. */
+  free(*outname);
+  *outname=out;
 }
 
 
