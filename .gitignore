@@ -7,6 +7,8 @@
 *.log
 *.trs
 *.pdf
+*.jpg
+*.txt
 *.info
 *.fits
 *.[1ao]

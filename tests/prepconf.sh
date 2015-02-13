@@ -15,7 +15,7 @@ fi
 
 
 #For each program bring in the configuration file:
-for prog in imgcrop mkprof
+for prog in imgcrop mkprof convertt
 do
     if [ ! -f .gnuastro/ast$prog.conf ]; then
 	cp $topsrc/src/$prog/ast$prog.conf .gnuastro/
