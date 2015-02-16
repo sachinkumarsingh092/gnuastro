@@ -54,7 +54,7 @@ const char doc[] =
 
 /* Free letters for options:
 
-   b d e f g j k p r s t v w x y z
+   d e f g j k p r s t v x y z
    A B E F G I J M O Q R T U W X Y Z
 
    Free numbers: 503
@@ -115,6 +115,22 @@ static struct argp_option options[] =
       "INT",
       0,
       "Quality of output JPEG image (1 to 100).",
+      2
+    },
+    {
+      "widthincm",
+      'w',
+      "FLT",
+      0,
+      "Width in units of centimeters.",
+      2
+    },
+    {
+      "borderwidth",
+      'b',
+      "FLT",
+      0,
+      "Border width (EPS, PDF) in units of 1/72 inch.",
       2
     },
 
@@ -276,16 +292,21 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
+    case 'w':
+      floatl0(arg, &p->widthincm, "widthincm", key, p->cp.spack, NULL, 0);
+      p->up.widthincmset=1;
+      break;
+    case 'b':
+      intelzero(arg, &p->borderwidth, "borderwidth", key,
+                p->cp.spack, NULL, 0);
+      p->up.borderwidthset=1;
+      break;
     case 'u':
       intsmallerequalto(arg, &p->quality, "quality", key,
                         p->cp.spack, NULL, 0, 100);
       if(p->quality<0)
         error(EXIT_FAILURE, 0, "The quality option should be positive.");
       p->up.qualityset=1;
-      break;
-    case 'w':
-      floatl0(arg, &p->widthincm, "widthincm", key, p->cp.spack, NULL, 0);
-      p->up.widthincmset=1;
       break;
 
 

@@ -256,8 +256,8 @@ void
 doubleto8bit(struct converttparams *p)
 {
   size_t i, size, numch=p->numch;
-  double *d, m, tmin, tmax, min=0.0f, max=0.0f; /* min and max will change. */
   uint8_t *u, *fu, **ech=p->ech, maxbyte=p->maxbyte;
+  double *d, m, tmin, tmax, min=FLT_MAX, max=-FLT_MAX;
 
   /* Allocate space for all the channels. */
   size=p->s0[0]*p->s1[0];
@@ -278,12 +278,10 @@ doubleto8bit(struct converttparams *p)
         {
           if(tmin<min) min=tmin;
           if(tmax>max) max=tmax;
+          continue;
         }
-      else
-        {
-          min=tmin;
-          max=tmax;
-        }
+      min=tmin;
+      max=tmax;
     }
 
   /* Change the minimum and maximum if desired, Note that this
@@ -316,12 +314,26 @@ doubleto8bit(struct converttparams *p)
           d=p->ch[i];
           fu=(u=ech[i])+size;
           if(p->invert)
-            do *u=maxbyte-(*d++-min)*m; while(++u<fu);
+            {
+              do
+                {
+                  *u = isnan(*d) ? maxbyte : maxbyte-(*d-min)*m;
+                  ++d;
+                }
+              while(++u<fu);
+            }
           else
-            do *u=(*d++-min)*m; while(++u<fu);
+            {
+              do
+                {
+                  *u = isnan(*d) ? 0 : (*d-min)*m;
+                  ++d;
+                }
+              while(++u<fu);
+            }
         }
     }
-  /*
+  /* Check all channels (practical for a small input file).
   {
     size_t j;
     for(j=0;j<size;++j)
@@ -388,9 +400,9 @@ convertt(struct converttparams *p)
       doubleto8bit(p);
       savejpeg(p);
       break;
-    case EPSFORMAT:
+    case EPSFORMAT: case PDFFORMAT:
       doubleto8bit(p);
-      saveeps(p);
+      saveepsorpdf(p);
       break;
     default:
       error(EXIT_FAILURE, 0, "A bug! The internal type of the output is "

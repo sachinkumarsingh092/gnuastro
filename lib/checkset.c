@@ -477,10 +477,10 @@ checkremovefile(char *filename, int dontdelete)
 
 
 
-/* Check output file name: If a file exists and can be written to,
-   this function will return 1. If not (for example it is a directory)
-   it will return 0. Finally, if it exists but cannot be deleted,
-   report an error and abort. */
+/* Check output file name: If a file exists or can exist and can be
+   written to, this function will return 1. If not (for example it is
+   a directory) it will return 0. Finally, if it exists but cannot be
+   deleted, report an error and abort. */
 int
 dir0file1(char *name, int dontdelete)
 {

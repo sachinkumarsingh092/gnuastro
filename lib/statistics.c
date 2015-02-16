@@ -162,14 +162,40 @@ floatsecondmin(float *in, size_t size, float *secondmin)
 void
 fminmax(float *in, size_t size, float *min, float *max)
 {
-  float tmin=FLT_MAX, tmax=-FLT_MAX, *fpt;
-  fpt=in+size;
+  float tmin=FLT_MAX, tmax=-FLT_MAX, *f, *fpt;
+
+  fpt=(f=in)+size;
   do
     {
-      if     (*in>tmax) tmax=*in;
-      else if(*in<tmin) tmin=*in;
+      if (*f>tmax) tmax=*f;
+      if (*f<tmin) tmin=*f;
     }
-  while(++in<fpt);
+  while(++f<fpt);
+
+
+  /* In case there was at least one NAN value */
+  if(isnan(tmin) || isnan(tmax))
+    {
+      tmin=FLT_MAX;
+      tmax=-FLT_MAX;
+      fpt=(f=in)+size;
+      do
+        if(isnan(*f)==0)
+          {
+            if (*f>tmax) tmax=*f;
+            if (*f<tmin) tmin=*f;
+          }
+      while(++f<fpt);
+    }
+
+  if(tmin==FLT_MAX || tmax==-FLT_MAX)
+    *min=*max=NAN;
+  else
+    {
+      *max=tmax;
+      *min=tmin;
+    }
+
   *max=tmax;
   *min=tmin;
 }
@@ -181,14 +207,40 @@ fminmax(float *in, size_t size, float *min, float *max)
 void
 dminmax(double *in, size_t size, double *min, double *max)
 {
-  double tmin=FLT_MAX, tmax=-FLT_MAX, *fpt;
-  fpt=in+size;
+  double tmin=FLT_MAX, tmax=-FLT_MAX, *d, *dpt;
+
+  dpt=(d=in)+size;
   do
     {
-      if     (*in>tmax) tmax=*in;
-      else if(*in<tmin) tmin=*in;
+      if (*d>tmax) tmax=*d;
+      if (*d<tmin) tmin=*d;
     }
-  while(++in<fpt);
+  while(++d<dpt);
+
+
+  /* In case there was at least one NAN value */
+  if(isnan(tmin) || isnan(tmax))
+    {
+      tmin=FLT_MAX;
+      tmax=-FLT_MAX;
+      dpt=(d=in)+size;
+      do
+        if(isnan(*d)==0)
+          {
+            if (*d>tmax) tmax=*d;
+            if (*d<tmin) tmin=*d;
+          }
+      while(++d<dpt);
+    }
+
+  if(tmin==FLT_MAX || tmax==-FLT_MAX)
+    *min=*max=NAN;
+  else
+    {
+      *max=tmax;
+      *min=tmin;
+    }
+
   *max=tmax;
   *min=tmin;
 }

@@ -44,12 +44,12 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
 /* Format codes: */
 #define TXTFORMAT     -1
 #define FITSFORMAT     1
 #define JPEGFORMAT     2
 #define EPSFORMAT      3
+#define PDFFORMAT      4
 
 
 
@@ -69,20 +69,21 @@ struct change
 
 struct uiparams
 {
-  char       *hdu2;              /* Header for second FITS image.   */
-  char       *hdu3;              /* Header for third FITS image.    */
-  char       *hdu4;              /* Header for fourth FITS image.   */
+  char         *hdu2;            /* Header for second FITS image.   */
+  char         *hdu3;            /* Header for third FITS image.    */
+  char         *hdu4;            /* Header for fourth FITS image.   */
 
-  int      hdu2set;
-  int      hdu3set;
-  int      hdu4set;
+  int        hdu2set;
+  int        hdu3set;
+  int        hdu4set;
 
-  int   qualityset;
-  int widthincmset;
+  int     qualityset;
+  int   widthincmset;
+  int borderwidthset;
 
-  int   fluxlowset;
-  int  fluxhighset;
-  int   maxbyteset;
+  int     fluxlowset;
+  int    fluxhighset;
+  int     maxbyteset;
 };
 
 
@@ -92,43 +93,44 @@ struct uiparams
 struct converttparams
 {
   /* Before actual program: */
-  struct   commonparams  cp;    /* Common parameters.                  */
-  struct       uiparams  up;    /* User interface parameters.          */
+  struct   commonparams  cp;  /* Common parameters.                    */
+  struct       uiparams  up;  /* User interface parameters.            */
 
   /* Input: */
-  struct stll   *inputnames;    /* The names of input files.           */
-  size_t          numinputs;    /* Number of input files.              */
-  int             inputtype;    /* The type of the input file.         */
+  struct stll   *inputnames;  /* The names of input files.             */
+  size_t          numinputs;  /* Number of input files.                */
+  int             inputtype;  /* The type of the input file.           */
 
   /* Output: */
-  int            outputtype;    /* The type of the output file.        */
-  int               quality;    /* Quality of JPEG image.              */
-  float           widthincm;    /* Width in centimeters.               */
+  int            outputtype;  /* The type of the output file.          */
+  int               quality;  /* Quality of JPEG image.                */
+  float           widthincm;  /* Width in centimeters.                 */
+  int           borderwidth;  /* Width of border in PostScript points. */
 
   /* Flux: */
-  double            fluxlow;    /* Lower flux truncation value.        */
-  double           fluxhigh;    /* Higher flux truncation value.       */
-  uint8_t           maxbyte;    /* Maximum byte value.                 */
-  int             flminbyte;    /* fluxlow is minimum byte.            */
-  int             fhmaxbyte;    /* fluxhigh is maximum byte.           */
-  struct change     *change;    /* The value conversion string.        */
-  int      changeaftertrunc;    /* First convert, then truncate.       */
-  int                   log;    /* ==1: Save input in log scale.       */
-  int                invert;    /* ==1: Invert the image.              */
+  double            fluxlow;  /* Lower flux truncation value.          */
+  double           fluxhigh;  /* Higher flux truncation value.         */
+  uint8_t           maxbyte;  /* Maximum byte value.                   */
+  int             flminbyte;  /* fluxlow is minimum byte.              */
+  int             fhmaxbyte;  /* fluxhigh is maximum byte.             */
+  struct change     *change;  /* The value conversion string.          */
+  int      changeaftertrunc;  /* First convert, then truncate.         */
+  int                   log;  /* ==1: Save input in log scale.         */
+  int                invert;  /* ==1: Invert the image.                */
 
   /* INTERNAL PARAMETERS: */
-  time_t            rawtime;    /* Starting time of the program.       */
+  time_t            rawtime;  /* Starting time of the program.         */
 
   /* Input channels: */
-  char            *names[4];    /* File names in input order.          */
-  size_t              numch;    /* Current Channel.                    */
-  int            isblank[4];    /* ==1: this channel is blank.         */
-  int            bitpixs[4];    /* Bitpix values for each channel.     */
-  int             numnul[4];    /* Number of NUL in each channel.      */
-  double             *ch[4];    /* Data for each channel.              */
-  uint8_t           *ech[4];    /* 8-bit color channels.               */
-  size_t              s0[4];    /* First C axis size for each channel. */
-  size_t              s1[4];    /* Second C axis size for each channel.*/
+  char            *names[4];  /* File names in input order.            */
+  size_t              numch;  /* Current Channel.                      */
+  int            isblank[4];  /* ==1: this channel is blank or fill.   */
+  int            bitpixs[4];  /* Bitpix values for each channel.       */
+  int             numnul[4];  /* Number of NUL in each channel.        */
+  double             *ch[4];  /* Data for each channel.                */
+  uint8_t           *ech[4];  /* 8-bit color channels.                 */
+  size_t              s0[4];  /* First C axis size for each channel.   */
+  size_t              s1[4];  /* Second C axis size for each channel.  */
 };
 
 

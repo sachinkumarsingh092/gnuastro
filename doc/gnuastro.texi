@@ -196,6 +196,7 @@ Requirements
 * CFITSIO::                     Standard library for FITS I/O.
 * WCSLIB::                      Library for world coordinate systems.
 * libjpeg::                     Library for JPEG image manipulation.
+* GPL GhostScript::             To create PDF images.
 * FFTW::                        Fast Fourier transform library.
 * SAO ds9::                     SAO ds9 for viewing FITS images.
 
@@ -248,7 +249,7 @@ Configuration files
 * Current directory and User wide::  Local and user configuration files.
 * System wide::                 System wide configuration files.
 
-Threads in gnuastro
+Threads in GNU Astronomy Utilities
 
 * A note on threads::           Caution and suggestion on using threads.
 
@@ -1021,6 +1022,7 @@ package so you can build it with your own particular options.
 * CFITSIO::                     Standard library for FITS I/O.
 * WCSLIB::                      Library for world coordinate systems.
 * libjpeg::                     Library for JPEG image manipulation.
+* GPL GhostScript::             To create PDF images.
 * FFTW::                        Fast Fourier transform library.
 * SAO ds9::                     SAO ds9 for viewing FITS images.
 @end menu
@@ -1244,7 +1246,7 @@ $ ./pgdemoXX
 
 
 
-@node libjpeg, FFTW, WCSLIB, Requirements
+@node libjpeg, GPL GhostScript, WCSLIB, Requirements
 @subsection libjpeg
 
 As its name suggests, libjpeg is needed for reading and writing JPEG
@@ -1259,13 +1261,22 @@ compression and decompression algorithms.
 
 If @command{$ ./configure} fails to find libjpeg, then you have to
 install one of the two libraries above. It should be available within
-your distribution's package management tools as @command{libjpeg}..
+your distribution's package management tools as @command{libjpeg}.
+
+@node GPL GhostScript, FFTW, libjpeg, Requirements
+@subsection GPL GhostScript
+
+GPL GhostScript is only used by ConvertType to create a PDF output,
+see @ref{ConvertType}. With a very high probability you already have
+it in your GNU/Linux distribution. Unfortunately it does not follow
+the standard GNU build style so installing it is very hard. It is best
+to rely on your distribution's package managers for this.
 
 
 
 
 
-@node FFTW, SAO ds9, libjpeg, Requirements
+@node FFTW, SAO ds9, GPL GhostScript, Requirements
 @subsection FFTW
 
 The ``Fastest Fourier Transform in the West'' or
@@ -2014,8 +2025,7 @@ than or equal to unity.
 
 @item STR
 The value is read as a string of characters (for example a file name)
-or other paritcular settings (for example color space in the JPEG
-format).
+or other paritcular settings like a HDU name, see below.
 
 @end vtable
 
@@ -2029,11 +2039,8 @@ example @option{-h2}, @option{-h 2}, @option{--hdu 2} or
 
 Short options with no values can be concatenated for example these two
 hypothetical sequences of options are equivalent: @option{-a -b -c4}
-and @option{-abc4}. In the long format, you don't have to write the
-full option name, only long enough for the option to be unambiguously
-identified. If it is ambiguous, the program will warn you and provide
-you with suggestions.  As an example, consider the following command
-to run ImageCrop:
+and @option{-abc4}.  As an example, consider the following command to
+run ImageCrop:
 @example
 $ astimgcrop -Dr3 --wwidth 3 catalog.txt --deccol=4 ASTRdata
 @end example
@@ -2177,9 +2184,9 @@ option).
 
 @item --
 (GNU option) Stop parsing the command line. This option can be useful
-in scripts or when using the shell history. Assume you have a long
-list options, and want to see if removing some of them (and using the
-default values) can give a better result. If the ones you want to
+in scripts or when using the shell history. Suppose you have a long
+list of options, and want to see if removing some of them (and using
+the default values) can give a better result. If the ones you want to
 remove are the last ones on the command line, you don't have to delete
 them, you can just add @option{--} before them and if you don't get
 what you want, you can remove the @option{--} and get the same initial
@@ -2228,12 +2235,12 @@ the tools offered in gnuastro to be useful in your research, please
 use the output of this command to cite the program and gnuastro in
 your research paper. Thank you.
 
-gnuastro is still new, there is no separate paper only devoted to
-gnuastro yet. Therefore currently the paper to cite for gnuastro is
-the paper for NoiseChisel which is the first published paper
-introducing gnuastro to the astronomical community. Upon reaching a
-certain point, we will publish a paper completely devoted to
-gnuastro, see @ref{GNU Astronomy Utilities 1.0}.
+GNU Astronomy Utilities is still new, there is no separate paper only
+devoted to gnuastro yet. Therefore currently the paper to cite for
+gnuastro is the paper for NoiseChisel which is the first published
+paper introducing gnuastro to the astronomical community. Upon
+reaching a certain point, we will publish a paper completely devoted
+to gnuastro, see @ref{GNU Astronomy Utilities 1.0}.
 
 @item -P
 @itemx --printparams
@@ -2447,12 +2454,13 @@ self.
 
 
 @node Threads in gnuastro, Final parameter values, Configuration files, Common behavior
-@section Threads in gnuastro
+@section Threads in GNU Astronomy Utilities
 Some of the programs benefit significantly when you use all the cores
 your computer's CPU has to offer. In general, when you run an
-application, the whole process is done only on one core. gnuastro
-uses the POSIX threads library (pthreads) for spinning off threads
-when the user asks for it.
+application, the whole process is done only on one core. GNU Astronomy
+Utilities uses the POSIX threads library (pthreads) for spinning off
+threads when the user asks for it, see @ref{Multithreaded programming}
+if you want more details.
 
 You can find the number of cores available to your system with the
 command @command{$ nproc}, which is part of GNU Coreutils and is most
@@ -2973,12 +2981,13 @@ report. ConvertType is created for such situations. The various types
 will increase with future updates and based on need.
 
 The conversion is not only one way (from FITS to other formats), but
-two ways (except for EPS format). So you can convert a JPEG image or
-text file into a FITS image. Basically, other than EPS, you can use
-any of the recognized formats as different color channel inputs to get
-any of the recognized outputs. So before explaining the options and
-arguments, first a short description of the recognized files types
-will be given followed a short introduction to digital color.
+two ways (except the EPS and PDF formats). So you can convert a JPEG
+image or text file into a FITS image. Basically, other than EPS, you
+can use any of the recognized formats as different color channel
+inputs to get any of the recognized outputs. So before explaining the
+options and arguments, first a short description of the recognized
+files types will be given followed a short introduction to digital
+color.
 
 @menu
 * Recognized file types::       Recognized file types
@@ -3004,8 +3013,8 @@ Each extension of a FITS image only has one value per pixel, so when
 used as input, each input FITS image contributes as one color
 channel. If you want multiple extensions in one FITS file for
 different color channels, you have to repeat the file name multiple
-times and use the @option{--hdu}, @option{--h2}, @option{--h3} or
-@option{--h4} options to specify the different extensions.
+times and use the @option{--hdu}, @option{--hdu2}, @option{--hdu3} or
+@option{--hdu4} options to specify the different extensions.
 
 @item JPEG
 The JPEG standard was created by the ``joint photographic experts
@@ -3060,6 +3069,14 @@ The standard formats for an EPS file are @file{.eps}, @file{.EPS},
 @file{.epsf} and @file{.epsi}. The EPS outputs of ConvertType have the
 @file{.eps} suffix.
 
+@item @option{PDF}
+As explained above, a PDF document is a static document description
+format, viewing its result is therefore much faster and more efficient
+than PostScript. To create a PDF output, ConvertType will make a
+PostScript page description and convert that to PDF using GPL
+GhostScript. The suffixes recognized for a PDF file are: @file{.pdf},
+@file{.PDF}, while the outputs will have the former suffix.
+
 @item @option{blank}
 This is not actually a file type! But can be used to fill one color
 channel with a blank value. If this argument is given for any color
@@ -3071,12 +3088,17 @@ text editor or on the command line. Most programs also support input
 as plain text files. In ConvertType, if the input arguments do not
 have any of the extensions listed above for other formats, the input
 is assumed to be a text file. Each plain text file is considered to
-contain one color channel.
+contain one color channel. There is no standard output for plain text
+files.
 
-If converting an image to plain text, consider the fact that if the
-image is large the number of columns in each line and the number of
-lines will become very large making it very hard to open in a text
-editor.
+In of mis-spelling one of the extension above, this will result in the
+output becoming a plain text file with that (short) name. If this
+happens, ConvertType will warn you and write the output as a plain
+text file. If you don't want that warning, set your plain text output
+file names longer than 5 characters. When converting an image to plain
+text, consider the fact that if the image is large the number of
+columns in each line will become very large, possibly making it very
+hard to open in some text editors.
 
 @end table
 
@@ -3199,7 +3221,7 @@ flux range. Astronomical data usually have a very large dynamic range
 might be better demonstrated with a limited flux range.
 
 @noindent
-Input and output:
+Input:
 @table @option
 @item --hdu2
 If the second input file is a FITS file, the value to this option will
@@ -3212,6 +3234,41 @@ The HDU of the third input FITS file.
 
 @item --hdu4
 The HDU of the fourth input FITS file.
+@end table
+
+@noindent
+Output:
+@table @option
+
+@item -w
+@itemx --widthincm
+(@option{=FLT}) The width of the output in centimeters. This is only
+relevant for those formats that accept such a width (not plain text
+for example). For most digital purposes, the number of pixels is far
+more important than the value to this parameter because you can adjust
+the absolute width (in inches or centimeters) in your document
+preparation program.
+
+@item -b
+@itemx --borderwidth
+(@option{=INT}) The width of the border to be put around the EPS and
+PDF outputs in units of PostScript points. There are 72 or 28.35
+PostScript points in an inch or centimeter respectively. In other
+words, there are roughly 3 PostScript points in every millimeter. If
+you are planning on adding a border, its significance is highly
+correlated with the value you give to the @option{--widthincm}
+parameter.
+
+Unfortunately in the document structuring convention of the PostScript
+language the ``bounding box'' has to be in units of PostScript points
+with no fractions allowed. So the border values only have to be
+specified in integers. To have a final border that is thinner than one
+PostScript point in your document, you can ask for a larger width in
+ConvertType and then scale down the output EPS or PDF file in your
+document preparation program. For example by setting @command{width}
+in your @command{includegraphics} command in @TeX{} or @LaTeX{}. Since
+it is vector graphics, the changes of size have no effect on the
+quality of your output quality (pixels don't get different values).
 
 @item -u
 @itemx --quality
@@ -3338,6 +3395,24 @@ functionality for tables too.
 Use image statistics for flux threshold instead of absolute values,
 for example quantiles or a multiple of the average and standard
 deviation.
+
+@item
+Until now the emphasis has been mainly on grayscale images since FITS
+images where the primary input, using simple channel data colors do
+work fine, however there is still a lot of work that needs to be done
+to have color images as input. For example when converting a JPEG
+image to PDF, the colors not displayed nicely. Another example is when
+you ask to only fill the black channel of CMYK in PDF format, the
+inversion has to be the opposite. We still need to work on such
+cases. Please inform us if you have such problems so we add it to the
+list of checks we can do to find the solution.
+
+@item
+Add a @file{fill} argument (like @file{blank}) too to fill the
+respective channel with a given value.
+
+@item
+Add Hue-Saturation-Lightness and Hue-Saturation-Value color spaces.
 
 @item
 Invert color images with meaningful colors.

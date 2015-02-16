@@ -28,7 +28,13 @@ nameiseps(char *name);
 int
 nameisepssuffix(char *name);
 
+int
+nameispdf(char *name);
+
+int
+nameispdfsuffix(char *name);
+
 void
-saveeps(struct converttparams *p);
+saveepsorpdf(struct converttparams *p);
 
 #endif

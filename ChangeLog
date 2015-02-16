@@ -1,3 +1,10 @@
+2015-02-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* lib/statistics.c (dminmax): Works with NAN values too.
+	(fminmax): Similar to dminmax.
+
+	* doc/gnuastro.texi (ConvertType): Updated.
+
 2015-02-13  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/convertt/args.h (argp_options): `convert` changed to

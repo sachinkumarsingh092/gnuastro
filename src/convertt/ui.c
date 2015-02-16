@@ -161,6 +161,13 @@ readconfig(char *filename, struct converttparams *p)
           floatl0(value, &p->widthincm, name, key, SPACK, filename, lineno);
 	  up->widthincmset=1;
 	}
+      else if(strcmp(name, "borderwidth")==0)
+	{
+	  if(up->borderwidthset) continue;
+          intelzero(value, &p->borderwidth, name, key, SPACK,
+                    filename, lineno);
+	  up->borderwidthset=1;
+	}
 
 
 
@@ -263,6 +270,8 @@ printvalues(FILE *fp, struct converttparams *p)
     fprintf(fp, CONF_SHOWFMT"%d\n", "quality", p->quality);
   if(up->widthincmset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "widthincm", p->widthincm);
+  if(up->borderwidthset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "borderwidth", p->borderwidth);
 
 
   fprintf(fp, "\n# Output flux display:\n");
@@ -301,6 +310,8 @@ checkifset(struct converttparams *p)
     REPORT_NOTSET("quality");
   if(up->widthincmset==0)
     REPORT_NOTSET("widthincm");
+  if(up->borderwidthset==0)
+    REPORT_NOTSET("borderwidth");
   if(up->fluxlowset==0)
     REPORT_NOTSET("fluxlow");
   if(up->fluxhighset==0)
@@ -522,8 +533,23 @@ sanitycheck(struct converttparams *p)
       if( nameisepssuffix(cp->output) )
         adddotautomaticoutput(p);
     }
+  else if(nameispdf(cp->output))
+    {
+      p->outputtype=PDFFORMAT;
+      if( nameispdfsuffix(cp->output) )
+        adddotautomaticoutput(p);
+    }
   else
     {
+      /* If the length of the name is shorter than 4 characters, it is
+         most probably a mis-spelled extension, warn the user. */
+      if(strlen(cp->output)<=5)
+        fprintf(stderr, SPACK": (Warning) Your output file name is `%s`, "
+                "based on its length, it might be a mis-spelled extension. "
+                "Your input is converted to a plain text format file with "
+                "That name.",
+                cp->output);
+
       p->outputtype=TXTFORMAT;
 
       /* If output type is not an image, there should only be one color
@@ -632,6 +658,13 @@ preparearrays(struct converttparams *p)
               "EPS files are not raster graphics, they are only used as "
               "output.");
 
+
+
+      /* PDF:  */
+      else if ( nameispdf(names[i]) )
+        error(EXIT_FAILURE, 0, "PDF files cannot be used as input. Since "
+              "PDF files are not raster graphics, they are only used as "
+              "output.");
 
 
       /* Text: */
