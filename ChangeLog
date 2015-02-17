@@ -1,3 +1,14 @@
+2015-02-17  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/convertt/eps.c: Functions for binary image added.
+
+	* lib/fitsarrayvv.c (nameisfits): Check length.
+
+	* doc/gnuastro.texi (Internal libraries): Removed details of
+	libraries.
+
+	* README: Details removed.
+
 2015-02-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* lib/statistics.c (dminmax): Works with NAN values too.

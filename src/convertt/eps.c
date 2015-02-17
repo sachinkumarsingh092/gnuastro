@@ -43,10 +43,10 @@ nameiseps(char *name)
 {
   size_t len;
   len=strlen(name);
-  if (strcmp(&name[len-3], "eps") == 0
-      || strcmp(&name[len-3], "EPS") == 0
-      || strcmp(&name[len-4], "epsf") == 0
-      || strcmp(&name[len-4], "epsi") == 0)
+  if ( ( len>=3 && strcmp(&name[len-3], "eps") == 0 )
+       || ( len>=3 && strcmp(&name[len-3], "EPS") == 0 )
+       || ( len>=4 && strcmp(&name[len-4], "epsf") == 0 )
+       || ( len>=4 && strcmp(&name[len-4], "epsi") == 0 ) )
     return 1;
   else
     return 0;
@@ -119,16 +119,104 @@ nameispdfsuffix(char *name)
 /*************************************************************
  **************       Write an EPS image        **************
  *************************************************************/
+int
+onlytwovalues(struct converttparams *p)
+{
+  uint8_t *i, *fi;
+
+  fi=(i=p->ech[0])+p->s0[0]*p->s1[0];
+  do
+    if(*i!=UINT8_MAX && *i!=0) break;
+  while(++i<fi);
+
+  if(i==fi) return 1;
+  else      return 0;
+}
+
+
+
+
+
+/* Show the bit values in a uint8_t variable. It is included here as a
+   test in debugging problems with blackandwhite. To test it use a
+   very small valued input to make the outputs reasonable. For example
+   I am now testing it with an input text array of 12 elements (while
+   calling the --noinvert option):
+
+   1 0 1 0 0 0
+   0 0 0 1 0 1
+*/
 void
-channelsinhex(struct converttparams *p, FILE *fp)
+showbits(uint8_t x)
+{
+  int i;
+
+  for(i=(sizeof(uint8_t)*8)-1; i>=0; i--)
+    (x&(1<<i))?putchar('1'):putchar('0');
+  putchar('\n');
+}
+
+
+
+
+
+
+/* Convert p->ech[0] into a 0 and 1 bit stream since it only has two
+   values. NOTE: each row has to have an integer number of bytes. */
+size_t
+blackandwhite(struct converttparams *p)
+{
+  size_t i, j, k;
+  uint8_t *bits, byte, curbit, *ech=p->ech[0];
+  size_t s0=p->s0[0], s1=p->s1[0], bytesinrow, bytesinimg;
+
+  /* Find the size values: */
+  if(p->s1[0]%8) bytesinrow = s1/8 + 1;
+  else           bytesinrow = s1/8;
+  bytesinimg=bytesinrow*s0;
+
+  /* Allocate the array. */
+  errno=0;
+  bits=calloc(bytesinimg, sizeof *bits);
+  if(bits==NULL)
+    error(EXIT_FAILURE, errno, "Allocating %lu bytes in blackandwhite",
+          bytesinimg);
+
+  for(i=0;i<s0;++i)
+    {
+      for(j=0;j<bytesinrow;++j)
+        {                  /* i*s0+j is the byte, not bit position. */
+          byte=0;          /* Set the 8 bits to zero.               */
+          curbit=0x80;     /* Current bit position, starting at:    */
+          for(k=0;k<8;++k)
+            {
+              if( j*8+k < s1 )
+                {
+                  if(ech[i*s1+j*8+k])
+                    byte |= curbit;
+                  curbit >>= 1;
+                }
+              else break;
+            }
+          showbits(byte);
+          bits[i*bytesinrow+j]=byte;
+        }
+    }
+  free(p->ech[0]);
+  p->ech[0]=bits;
+  return bytesinimg;
+}
+
+
+
+
+
+void
+channelsinhex(struct converttparams *p, FILE *fp, size_t size)
 {
   uint8_t *ech;
-  size_t i, j, size, numelem=35;
-  /*
-  p->ech[0][0]=255;
-  printf("\n\n%d: %02X\n\n", (int)p->ech[0][0], p->ech[0][0]);
-  */
-  size=p->s0[0]*p->s1[0];
+  size_t i, j, numelem=35;
+
   for(i=0;i<p->numch;++i)
     {
       if(p->isblank[i])
@@ -152,13 +240,53 @@ channelsinhex(struct converttparams *p, FILE *fp)
 
 
 void
+writeepsimage(struct converttparams *p, FILE *fp)
+{
+  int bpc=8;
+  size_t i, size;
+
+  /* Set the number of bits per component. */
+  if( p->numch==1 && onlytwovalues(p) )
+    {
+      bpc=1;
+      size=blackandwhite(p);
+    }
+  else size=p->s0[0]*p->s1[0];
+
+  if(p->numch==1)      fprintf(fp, "/DeviceGray setcolorspace\n");
+  else if(p->numch==3) fprintf(fp, "/DeviceRGB setcolorspace\n");
+  else if(p->numch==4) fprintf(fp, "/DeviceCMYK setcolorspace\n");
+  else
+    error(EXIT_FAILURE, 0, "A bug! In saveepsorpdf the number of channels "
+          "is not 1, 3 or 4. Please contact us so we can find the issue "
+          "and fix it.");
+  fprintf(fp, "<<\n");
+  fprintf(fp, "  /ImageType 1\n");
+  fprintf(fp, "  /Width %lu\n", p->s1[0]);
+  fprintf(fp, "  /Height %lu\n", p->s0[0]);
+  fprintf(fp, "  /ImageMatrix [ %lu 0 0 %lu 0 0 ]\n", p->s1[0], p->s0[0]);
+  fprintf(fp, "  /MultipleDataSources true\n");
+  fprintf(fp, "  /BitsPerComponent %d\n", bpc);
+  fprintf(fp, "  /Decode[");
+  for(i=0;i<p->numch;++i) fprintf(fp, " 0 1"); fprintf(fp, " ]\n");
+  fprintf(fp, "  /Interpolate false\n");
+  fprintf(fp, "  /DataSource [\n");
+  channelsinhex(p, fp, size);
+  fprintf(fp, "  ]\n");
+  fprintf(fp, ">>\n");
+  fprintf(fp, "image\n\n");
+}
+
+
+
+
+void
 saveepsorpdf(struct converttparams *p)
 {
   FILE *fp;
   float hbw;
-  size_t i, winpt, hinpt;
-  char command[20000], *epsfilename;
-
+  size_t winpt, hinpt;
+  char command[20000], *epsfilename=NULL;
 
 
   /* EPS filename */
@@ -224,33 +352,9 @@ saveepsorpdf(struct converttparams *p)
 
   /* Write the image: */
   fprintf(fp, "%% Draw the image:\n");
-  if(p->numch==1)
-    fprintf(fp, "/DeviceGray setcolorspace\n");
-  else if(p->numch==3)
-    fprintf(fp, "/DeviceRGB setcolorspace\n");
-  else if(p->numch==4)
-    fprintf(fp, "/DeviceCMYK setcolorspace\n");
-  else
-    error(EXIT_FAILURE, 0, "A bug! In saveepsorpdf the number of channels "
-          "is not 1, 3 or 4. Please contact us so we can find the issue "
-          "and fix it.");
   fprintf(fp, "%d %d translate\n", p->borderwidth, p->borderwidth);
   fprintf(fp, "%lu %lu scale\n", winpt, hinpt);
-  fprintf(fp, "<<\n");
-  fprintf(fp, "  /ImageType 1\n");
-  fprintf(fp, "  /Width %lu\n", p->s1[0]);
-  fprintf(fp, "  /Height %lu\n", p->s0[0]);
-  fprintf(fp, "  /ImageMatrix [ %lu 0 0 %lu 0 0 ]\n", p->s1[0], p->s0[0]);
-  fprintf(fp, "  /MultipleDataSources true\n");
-  fprintf(fp, "  /BitsPerComponent 8\n");
-  fprintf(fp, "  /Decode[");
-  for(i=0;i<p->numch;++i) fprintf(fp, " 0 1"); fprintf(fp, " ]\n");
-  fprintf(fp, "  /Interpolate false\n");
-  fprintf(fp, "  /DataSource [\n");
-  channelsinhex(p, fp);
-  fprintf(fp, "  ]\n");
-  fprintf(fp, ">>\n");
-  fprintf(fp, "image\n\n");
+  writeepsimage(p, fp);
 
 
 
@@ -270,8 +374,10 @@ saveepsorpdf(struct converttparams *p)
               "-dDEVICEHEIGHTPOINTS=%lu -dPDFFitPage %s", p->cp.output,
               winpt+2*p->borderwidth, hinpt+2*p->borderwidth, epsfilename);
       system(command);
+      /*
       sprintf(command, "rm %s", epsfilename);
       system(command);
+      */
       free(epsfilename);
     }
 }

@@ -766,8 +766,21 @@ void
 freeandreport(struct converttparams *p)
 {
   size_t i;
+  struct stll *tmp, *ttmp;
 
   free(p->cp.hdu);
+  free(p->up.hdu2);
+  free(p->up.hdu3);
+  free(p->up.hdu4);
   free(p->cp.output);
   for(i=0;i<4;++i) free(p->ch[i]);
+
+  /* Free the input file names: */
+  tmp=p->inputnames;
+  while(tmp!=NULL)
+    {
+      ttmp=tmp->next;
+      free(tmp);
+      tmp=ttmp;
+    }
 }

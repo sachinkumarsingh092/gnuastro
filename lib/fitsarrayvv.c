@@ -78,10 +78,10 @@ nameisfits(char *name)
 {
   size_t len;
   len=strlen(name);
-  if (strcmp(&name[len-4], "fits") == 0
-      || strcmp(&name[len-7], "fits.gz") == 0
-      || strcmp(&name[len-6], "fits.Z") == 0
-      || strcmp(&name[len-3], "imh") == 0)
+  if ( ( len>=4 && strcmp(&name[len-4], "fits") == 0 )
+       || ( len>=7 && strcmp(&name[len-7], "fits.gz") == 0 )
+       || ( len>=6 && strcmp(&name[len-6], "fits.Z") == 0 )
+       || ( len>=3 && strcmp(&name[len-3], "imh") == 0 ) )
     return 1;
   else
     return 0;

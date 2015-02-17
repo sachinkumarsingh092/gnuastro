@@ -357,15 +357,16 @@ Program source
 @node Introduction, Installation, Top, Top
 @chapter Introduction
 
-The GNU Astronomy Utilities (gnuastro) are a set of separate programs
-to facilitate the manipulation and analysis of astronomical data. All
-the various utilities share the same basic command line user interface
-for the comfort of both the users and developers. GNU Astronomy
-Utilities is written to comply fully with the GNU coding standards so
-it integrates finely with the GNU/Linux operating system. This also
-enables astronomers to expect a fully familiar experience in the
-source code, building, installing and command line user interaction
-that they have seen in all the other GNU software that they use.
+The GNU Astronomy Utilities (gnuastro) is an official GNU package
+consisting of separate programs to facilitate the manipulation and
+analysis of astronomical data. All the various utilities share the
+same basic command line user interface for the comfort of both the
+users and developers. GNU Astronomy Utilities is written to comply
+fully with the GNU coding standards so it integrates finely with the
+GNU/Linux operating system. This also enables astronomers to expect a
+fully familiar experience in the source code, building, installing and
+command line user interaction that they have seen in all the other GNU
+software that they use.
 
 For users who are new to the GNU/Linux environment, we would like to
 mention that unless otherwise specified most of the topics in chapters
@@ -3055,7 +3056,7 @@ and PDF were created by Adobe Systems.
 
 With these features in mind, you can see that when you are compiling a
 document with @TeX{} or @LaTeX{}, using an EPS file is much more low
-level than a JPEG and thus you have much greater control and thus
+level than a JPEG and thus you have much greater control and therefore
 quality. Since it also includes vector graphic lines we also use such
 lines to make a thin border around the image to make its appearence in
 the document much better. No matter the resolution of the display or
@@ -3064,6 +3065,14 @@ future we might include addition of text (for example labels or object
 IDs) on the EPS output, although this can be done better with tools
 within @TeX{} or @LaTeX{} such as
 PGF/Tikz@footnote{@url{http://sourceforge.net/projects/pgf/}}.
+
+If the final input image (possibly after all operations on the flux
+explained below) is a binary image or only has two values (in
+segmentation maps for example), then PostScript has another great
+advantage compared to other formats. It allows for 1 bit pixels
+(pixels with a value of 0 or 1), this can decrease the output file
+size by 8 times. So if a grayscale image is binary, ConvertType will
+expoit this property in the EPS and PDF (see below) outputs.
 
 The standard formats for an EPS file are @file{.eps}, @file{.EPS},
 @file{.epsf} and @file{.epsi}. The EPS outputs of ConvertType have the
@@ -3075,7 +3084,7 @@ format, viewing its result is therefore much faster and more efficient
 than PostScript. To create a PDF output, ConvertType will make a
 PostScript page description and convert that to PDF using GPL
 GhostScript. The suffixes recognized for a PDF file are: @file{.pdf},
-@file{.PDF}, while the outputs will have the former suffix.
+@file{.PDF}.
 
 @item @option{blank}
 This is not actually a file type! But can be used to fill one color
@@ -5092,9 +5101,9 @@ that are not yet released might be in it.
 
 We use Git for the verion control of gnuastro. For those who are not
 familiar with it, we suggest the Pro Git
-book@footnote{@url{http://git-scm.com/book/en/v2}}, it is publicly
-available for online reading and downloading. To clone the latest
-version of gnuastro you can run
+book@footnote{@url{http://git-scm.com/book/en/v2}}. The whole book is
+publicly available for online reading and downloading. To clone the
+latest version of gnuastro you can run
 
 @example
 $ git clone git://git.sv.gnu.org/gnuastro
@@ -5140,73 +5149,13 @@ guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/Sub
 Libraries are binary (compiled) files which are not executable them
 selves, but once linked with other binary files, they form the
 building blocks of larger programs. Several functions are commonly
-used by all or several of the programs in gnuastro. Therefore they
-are written as separate libraries so we don't have to keep duplicate
+used by all or several of the programs in gnuastro. Therefore they are
+written as separate libraries so we don't have to keep duplicate
 code. They are mosly to do with interaction with the outside world (of
 the program), for example setting up the configuration files, reading
 text catalogs or wrappers for CFITSIO and WCSLIB to facilitate reading
-and writing of FITS files.
-
-Below is a short description of some of these libraries. Note that the
-headers of these libraries are in the @file{include} directory.
-
-@table @code
-
-@item arraymanip.c
-As the name suggests, this library provdies functions with
-manipulating an array. For example, there are functions here to copy
-an array, initialize all its members to a fixed value or to convert
-the values of an array.
-
-@item astrthreads.c
-Functions for dividing the jobs between various threads in
-multi-threaded programs.
-
-@item box.c
-Functions that deal with regions (boxes) in an image, for example to
-find the box surrounding an ellipse or to find the possible overlap of
-two boxes.
-
-@item checkset.c
-The functions and macros in these two files do all the name and file
-checkings of your inputs. For example to check if a given file is
-actually a file name or a directory, or to build the automatic output,
-see @ref{Automatic output}. These functions are used by all the
-programs.
-
-@item configfiles.c
-The functions to find the configuration file for each program and
-macros that help in reading and setting the default values in their
-particular files are defined here.
-
-@item fitsarrayvv.c
-The functions in this library are essentially a wrapper for CFITSIO
-and WCSLIB. Since the functions these two libraries provide are very
-low level, we have defined wrapper functions in these source files to
-faciliate the job.
-
-@item linkedlist.c
-The various programs in gnuastro will need linked lists for various
-purposes, for example to keep the names of an unknown number of input
-files (string linked lists) or to parse an initially unknown number of
-neighbouring pixels within an image. The functions in these source
-files provide various types of linked list and functions that are
-necessary to easily manipulate them.
-
-@item statistics.c
-Statistical functions like finding the minimum and maximum or the
-mean, median and standard deviation along with more complicated
-functions like sigma clipping are defined in these source files.
-
-@item timing.c
-These source files are mainly for verbatim mode, where the time it
-took for each step to operate is reported.
-
-@item txtarrayvv.c
-The functions in this file read and write an input text catalog to and
-from a C array.
-
-@end table
+and writing of FITS files. The names of the libraries are usually
+discriptive enough on the kind of functions they keep.
 
 Currently these libraries are not installed along with gnuastro, they
 are only staticlly linked to any program needing them in the build
@@ -5220,13 +5169,14 @@ use them in your own personal programs. But for the time being, if you
 feel these libararies can be useful for your own programs, you can
 simply copy the compiled version (@file{.a} files, which are created
 after running @command{$ make}) along with the header of the library
-(which is in @file{include}) inside your own source code and link to
-it with the link flag of your compiler.
+(which is in the @file{include} directory) inside your own source code
+and link to it with the link flag of your compiler (@option{-l} in
+GCC).
 
 @node Headers, Program source, Internal libraries, Developing
 @section Headers
 
-Besides the headers for the libraries listed above, there are also
+Besides the headers for the libraries explained above, there are also
 several header-only files in the @file{include} directory. Below is a
 short explanation of thier purpose.
 
@@ -5297,30 +5247,22 @@ all the major parameters of a progam in this structure has the major
 benefit that most functions will only need one argument: a pointer to
 this structure. This will significantly facilitate the job of the
 programmer, the inquirer and the computer. All the programs in
-gnuastro are designed to be small and independent parts, so this
-structure should not get too large.
-
-With this basic root structure, source code of functions can
-potentially become full of structure dereference operators
-(@command{->}) which can make the code very un-readable. In order to
-avoid this, whenever a parameter is used more than a couple of times
-in a function, we suggest to define a parameter of the same type and
-with the same name as the desired parameter and put the value of the
-root structure inside of it in definition time.
+gnuastro are designed to be low-level, small and independent parts, so
+this structure should not get too large.
 
 The main root structure of a program contains atleast two other
 structures: a structure only keeping parameters for user interface
 functions, which is also defined in @file{main.h} and the
 @code{commonparams} structure which is defined in
-@file{commonparams.h}, see @ref{Headers}. The former can become very
-large and since the programmer and inquirer often don't need to be
-confused with these parameters mixed with the actual processing
-parameters, they are conveniently defined in another structure which
-is named @code{uiparams} and is also defined in @file{main.h}. It
-could be defined in @file{ui.h} (see below) so the main functions
-remain completely ignorant to it, but its parameters might be needed
-for reporting input conditions, so we have included it as part of the
-main program structure.
+@file{commonparams.h}, see @ref{Headers}. The main structure can
+become very large and since the programmer and inquirer often don't
+need to be confused with these parameters mixed with the actual
+processing parameters, they are conveniently defined in another
+structure which is named @code{uiparams} and is also defined in
+@file{main.h}. It could be defined in @file{ui.h} (see below) so the
+main functions remain completely ignorant to it, but its parameters
+might be needed for reporting input conditions, so we have included it
+as part of the main program structure.
 
 This top root structure is conveniently called @code{p} (short for
 parameters) by all the programs. The @code{uiparams} structure is
@@ -5328,6 +5270,20 @@ called @code{up} (for user parameters) and the @code{commonparams}
 structure is called @code{cp}. With this convention any reader can
 immediately understand where to look for the definition of one
 parameter.
+
+With this basic root structure, source code of functions can
+potentially become full of structure dereference operators
+(@command{->}) which can make the code very un-readable. In order to
+avoid this, whenever a parameter is used more than a couple of times
+in a function, we suggest to define a parameter of the same type and
+with the same name (so it can be searched) as the desired parameter
+and put the value of the root structure inside of it in definition
+time. For example
+
+@example
+char *hdu=p->hdu;
+int verb=p->cp.verb;
+@end example
 
 @item args.h
 The argument parser structures (which are used by GNU C library's

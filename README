@@ -1,64 +1,38 @@
 GNU Astronomy Utilities (gnuastro)
 ===================================
 
-GNU Astronomy Utilities are a set of utilities that enable you to do
-astronomical data analysis directly from the command line in a system
-that integrates fully with the GNU operating system.
+GNU Astronomy Utilities is an official GNU program. It consists of a
+set of utilities for astronomical data analysis directly from the
+command line in a system that integrates fully with the GNU operating
+system.
 
-Although the existing software for astronomical analysis are mostly
-available under GPL, but they mostly lack the GNU standards in terms
-of building, user interaction and a complete and uptodate manual. This
-makes using such software for newcommers to astronomy very hard. GNU
-Astronomy Utilities were made to provide the community with a set of
-tools that will provide the astronomers with the quality standard of
-GNU.
+All the various utilities share the same basic command line user
+interface for the comfort of both the users and developers. GNU
+Astronomy Utilities is written to comply fully with the GNU coding
+standards so it integrates finely with the GNU/Linux operating
+system. This also enables astronomers to expect a fully familiar
+experience in the source code, building, installing and command line
+user interaction that they have seen in all the other GNU software
+that they use.
 
-The packages that are currently included in gnuastro are listed below.
-After the name of the package, the name of the executable is provided
-which can be run after installation from the commandline.
-
-ImageCrop      (astimcrop):   Crop from one or multiple images.
-MakeProfiles   (astmkprof):   Make mock profiles.
-
-More programs will be added as the community of developers grow.
-
-GNU Astronomy Utilities comes with a complete manual in various
-formats (plain text, info, docbook, PDF and HTML). You can get any of
-the formats from the GNU Astronomical Utilities webpage. If you have
-already installed gnuastro, you can see the manual by running:
+GNU Astronomy Utilities comes with a complete and detailed
+tutorial/manual in various formats (plain text, info, docbook, PDF and
+HTML). You can get any of the formats from the GNU Astronomical
+Utilities webpage. If you have already installed gnuastro, you can see
+the manual by running:
 
     $ info gnuastro
-
-
-
-
-
-Requirements
-------------
-
-To successfully get installed on your sytem, gnuastro requires the
-following packages to be already installed:
-
-GSL:             The GNU Scientific Library.
-CFITSIO:         The standard tool for manipulating FITS files.
-WCSLIB:          The standard tool for reading WCS coordinates.
-LIBJPEG:         To manipulate JPEG images.
-FFTW3:           C subroutines for discrete Fourier transform.
-
-All of these programs can be easily installed with the standard GNU
-build system.
-
-
 
 
 
 Installing and running:
 ------------
 
-To install gnuastro, after downloading or cloning it, all you have to
-do is to run the standard configuring, compiling and installing
-commands that are common to all GNU applications. In the downloaded
-directory (`$` as user and `#` as root):
+The list of gnuastro requirements are fully explained in the
+manual. To install gnuastro, after downloading or cloning it, all you
+have to do is to run the standard configuring, compiling and
+installing commands that are common to all GNU applications. In the
+downloaded directory (`$` as user and `#` as root):
 
     $ ./configure
     $ make
