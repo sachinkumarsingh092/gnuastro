@@ -28,26 +28,28 @@ AM_CPPFLAGS = -DSYSDATA_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include
 
 ## Make libraries of the files that are shared between all the
 ## programs:
-noinst_LIBRARIES = libconfigfiles.a libfitsarrayvv.a libtxtarrayvv.a	\
-libcheckset.a liblinkedlist.a libtiming.a libastrthreads.a libbox.a	\
-libarraymanip.a libstatistics.a
+noinst_LTLIBRARIES = libconfigfiles.la libfitsarrayvv.la	\
+libtxtarrayvv.la libcheckset.la liblinkedlist.la libtiming.la	\
+libastrthreads.la libbox.la libarraymanip.la libstatistics.la
 
-libbox_a_SOURCES = box.c $(top_srcdir)/include/box.h
+libbox_la_SOURCES = box.c $(top_srcdir)/include/box.h
+libbox_la_LIBADD = -lm
 
-libtiming_a_SOURCES = timing.c $(top_srcdir)/include/timing.h
+libtiming_la_SOURCES = timing.c $(top_srcdir)/include/timing.h
 
-libcheckset_a_SOURCES = checkset.c $(top_srcdir)/include/checkset.h
+libcheckset_la_SOURCES = checkset.c $(top_srcdir)/include/checkset.h
 
-liblinkedlist_a_SOURCES = linkedlist.c $(top_srcdir)/include/linkedlist.h
+liblinkedlist_la_SOURCES = linkedlist.c $(top_srcdir)/include/linkedlist.h
 
-libstatistics_a_SOURCES = statistics.c $(top_srcdir)/include/statistics.h
+libstatistics_la_SOURCES = statistics.c $(top_srcdir)/include/statistics.h
 
-libarraymanip_a_SOURCES = arraymanip.c $(top_srcdir)/include/arraymanip.h
+libarraymanip_la_SOURCES = arraymanip.c $(top_srcdir)/include/arraymanip.h
 
-libtxtarrayvv_a_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
+libtxtarrayvv_la_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
 
-libastrthreads_a_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
+libastrthreads_la_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
 
-libconfigfiles_a_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
+libconfigfiles_la_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
 
-libfitsarrayvv_a_SOURCES = fitsarrayvv.c $(top_srcdir)/include/fitsarrayvv.h
+libfitsarrayvv_la_SOURCES = fitsarrayvv.c $(top_srcdir)/include/fitsarrayvv.h
+libfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lpthread -lm

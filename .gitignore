@@ -3,9 +3,12 @@
 #
 
 *~
+*.la
+*.lo
 *.in
 *.log
 *.trs
+*.eps
 *.pdf
 *.jpg
 *.txt
@@ -15,6 +18,7 @@
 *.tar.gz
 Makefile
 
+m4
 astmkprof
 astimgcrop
 astconvertt
@@ -25,18 +29,22 @@ missing
 compile
 depcomp
 INSTALL
+libtool
 config.h
 stamp-h1
+ltmain.sh
 .dirstamp
 configure
+.gnuastro
+config.sub
 runtest.sh
 install-sh
 aclocal.m4
-.gnuastro
 test-driver
 config.h.in
 doc/mdate-sh
 gnuastro.t2p
+config.guess
 config.status
 doc/stamp-vti
 autom4te.cache

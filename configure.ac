@@ -27,7 +27,7 @@ AC_INIT([GNU Astronomy Utilities], [0.1], [makhlaghi@gmail.com],
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
 AC_CONFIG_HEADERS([config.h])
-
+AC_CONFIG_MACRO_DIRS([m4])
 
 
 
@@ -35,9 +35,8 @@ AC_CONFIG_HEADERS([config.h])
 # Checks for programs.
 : ${CFLAGS=""}
 AC_PROG_CC
-AC_PROG_RANLIB
 AM_PROG_AR
-
+LT_INIT
 
 
 
@@ -51,13 +50,11 @@ AC_CHECK_LIB([m], [sqrt], [absolutejunk=1],
 AC_CHECK_LIB([pthread], [pthread_attr_init], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])])
 AC_CHECK_LIB([cfitsio], [ffopen], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])])
+             [AC_MSG_ERROR([Cannot continue.])], [-lpthread -lm])
 AC_CHECK_LIB([wcs], [wcspih], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])])
+             [AC_MSG_ERROR([Cannot continue.])], [-lcfitsio -lpthread -lm])
 AC_CHECK_LIB([jpeg], [jpeg_stdio_dest], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])])
-AC_CHECK_LIB([fftw3f], [fftwf_plan_dft_c2r_2d], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])])
+             [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([gslcblas], [cblas_sdsdot], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([gsl], [gsl_integration_qng], [absolutejunk=1],

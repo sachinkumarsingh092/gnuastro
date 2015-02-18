@@ -1,4 +1,4 @@
-\input texinfo @c -*-texinfo-*-
+  \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename gnuastro.info
 @settitle GNU Astronomy Utilities
@@ -94,10 +94,6 @@ Texts.  A copy of the license is included in the section entitled
 
 @page
 @quotation
-What in operation is most useful, that in knowledge is most true.
-@author Francis Bacon, New organon, 1620.
-@end quotation
-@quotation
 @*
 @*
 @*
@@ -192,13 +188,12 @@ Installation
 
 Requirements
 
-* GNU Scientific Library::      Installing GSL.
-* CFITSIO::                     Standard library for FITS I/O.
-* WCSLIB::                      Library for world coordinate systems.
+* GNU Scientific Library::      Installing GSL.  CFITSIO:: Standard library
+* CFITSIO::                     C interface to the FITS standard.
+* WCSLIB::                      C interface to the WCS standard of FITS.
 * libjpeg::                     Library for JPEG image manipulation.
-* GPL GhostScript::             To create PDF images.
-* FFTW::                        Fast Fourier transform library.
-* SAO ds9::                     SAO ds9 for viewing FITS images.
+* GPL GhostScript::             Used to create PDF images.
+* SAO ds9::                     To view FITS images.
 
 WCSLIB
 
@@ -1005,27 +1000,42 @@ distribution's package managers didn't add for you. The most basic
 choice is to build the packages from source your self instead of
 relying on your distribution's pre-built packages.
 
-The problem with building from souce manually is that the package will
-be left out of the list of installed packages in your package
-manager. So for example when you want to do a system-wide update, it
-will not check for the packages you manually built. However, if your
-distribution has a configurable build system (for example the Arch
-Build
-System@footnote{@url{https://wiki.archlinux.org/index.php/Arch_Build_System}}
-in the Parabola or Arch GNU/Linux distributions), you can configure
-the build options of specific packages your self. When an update
-comes, it will only warn you instead of installing the pre-built
-package so you can build it with your own particular options.
+@cartouche
+@noindent
+@strong{NOTE:} While @file{/usr/local/lib} is considered by most
+distributions to be the standard place for third party libraries, some
+distributions do not adhere to this policy. So if you install the
+libraries below from source and get an error complaining about not
+finding shared libraries, add this directory to your
+@command{LD_LIBRARY_PATH}, see @ref{Installation directory}.
+
+Also note that if you have not built anything before on your operating
+system you might also need very basic tools like the GNU compiler
+collection (GCC). The @file{./configure} script of gnuastro or any of
+these libraries will warn you if they are not available.
+@end cartouche
+
+@cartouche
+@noindent
+@strong{NOTE:} If you build the packages from your distribution's
+package mangement system consider the fact that some distributions
+separate the header files of the library from the library its self. In
+such cases you will have to install the ``development packages''
+too. Commonly the development packages have the same name as the
+library but followed by a @command{-dev} or @command{-devel}. So for
+example you need to install both @command{gsl} and @command{gsl-devel}
+(or @command{gsl-dev}) using your package manger.
+@end cartouche
+
 
 
 @menu
-* GNU Scientific Library::      Installing GSL.
-* CFITSIO::                     Standard library for FITS I/O.
-* WCSLIB::                      Library for world coordinate systems.
+* GNU Scientific Library::      Installing GSL.  CFITSIO:: Standard library
+* CFITSIO::                     C interface to the FITS standard.
+* WCSLIB::                      C interface to the WCS standard of FITS.
 * libjpeg::                     Library for JPEG image manipulation.
-* GPL GhostScript::             To create PDF images.
-* FFTW::                        Fast Fourier transform library.
-* SAO ds9::                     SAO ds9 for viewing FITS images.
+* GPL GhostScript::             Used to create PDF images.
+* SAO ds9::                     To view FITS images.
 @end menu
 
 @node GNU Scientific Library, CFITSIO, Requirements, Requirements
@@ -1102,19 +1112,16 @@ standard@footnote{Greisen E.W., Calabretta M.R. (2002) Representation
 of world coordinates in FITS. Astronomy and Astrophysics, 395,
 1061-1075.}, Mark Calabretta. It might be already built and ready in
 your distribution's package management system. Here we explain how to
-install from source.
+install from source. To install WCSLIB you will need to have the
+CFITSIO already installed. WCSLIB also has plotting capabilities which
+use PGPLOT (a plotting library for C). However, if you will not be
+using its plotting functions, you can configure it such that pgplot is
+not required.
 
-To install WCSLIB you will need to have the CFITSIO already
-installed. WCSLIB also has plotting capabilities which use PGPLOT (a
-plotting library for C). However, if you will not be using its
-plotting functions, you can configure it such that pgplot is not
-required.
-
-If you do want to make plots with WCSLIB, there is an explanation on
-the following, see @ref{PGPLOT}. To disable the dependency on PGPLOT,
-you have to add the @option{--without-pgplot} option to the configure
-script as you can see below. You can get the most recent source code
-from its
+If you do want to make plots with WCSLIB, there is an explanation in
+@ref{PGPLOT}. To disable the dependency on PGPLOT, you have to add the
+@option{--without-pgplot} option to the configure script as you can
+see below. You can get the most recent source code from the WCSLIB
 webpage@footnote{@url{http://www.atnf.csiro.au/people/mcalabre/WCS/}}.
 In the directory where you have downloaded the compressed file, you
 can take the following steps (the @code{x.xx} represents the version
@@ -1122,13 +1129,11 @@ number):
 @example
 $ tar -jxvf wcslib.tar.bz2
 $ cd wcslib-x.xx
-$ ./configure --without-pgplot
+$ ./configure --without-pgplot LIBS="-pthread -lm"
 $ make
 $ make check
 $ sudo make install
 @end example
-
-
 
 
 
@@ -1264,49 +1269,21 @@ If @command{$ ./configure} fails to find libjpeg, then you have to
 install one of the two libraries above. It should be available within
 your distribution's package management tools as @command{libjpeg}.
 
-@node GPL GhostScript, FFTW, libjpeg, Requirements
+@node GPL GhostScript, SAO ds9, libjpeg, Requirements
 @subsection GPL GhostScript
 
 GPL GhostScript is only used by ConvertType to create a PDF output,
-see @ref{ConvertType}. With a very high probability you already have
-it in your GNU/Linux distribution. Unfortunately it does not follow
-the standard GNU build style so installing it is very hard. It is best
-to rely on your distribution's package managers for this.
+see @ref{ConvertType}. Therefore its headers are not needed. With a
+very high probability you already have it in your GNU/Linux
+distribution. Unfortunately it does not follow the standard GNU build
+style so installing it is very hard. It is best to rely on your
+distribution's package managers for this.
 
 
 
 
 
-@node FFTW, SAO ds9, GPL GhostScript, Requirements
-@subsection FFTW
-
-The ``Fastest Fourier Transform in the West'' or
-FFTW@footnote{@url{http://www.fftw.org/}}, is used for convoling the
-actual profiles of the stars and galaxies with the PSF in the
-production of mock galaxies in MakeProfiles. Like other packages above, it
-is probably already available on your distribution's package
-management system. But there are some configuration options which can
-be helpful to gnuastro.
-
-The options are to enable multi-threaded operation and also to enable
-operation on @code{float} data (by default only the @code{double} type
-is supported). Both of these can significantly reduce the running
-time. You can download the source code from its webpage and run the
-following commands in the directory you saved the compressed file
-(@code{X.X.X} stands for the version number):
-@example
-$ tar -vxzf fftw-X.X.X.tar.gz
-$ cd fftw.X.X.X
-$ ./configure --enable-threads --enable-float
-$ make
-$ sudo make install
-@end example
-
-
-
-
-
-@node SAO ds9,  , FFTW, Requirements
+@node SAO ds9,  , GPL GhostScript, Requirements
 @subsection SAO ds9
 
 SAO ds9@footnote{@url{http://ds9.si.edu/}} is not a requirement of

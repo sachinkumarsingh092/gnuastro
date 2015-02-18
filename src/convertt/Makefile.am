@@ -26,10 +26,8 @@
 
 # Flags:
 AM_CFLAGS = -Wall -Ofast
-
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)/\" -I$(top_srcdir)/include
-
 AM_LDFLAGS = -lcfitsio -lwcs -lm -ljpeg -L$(top_builddir)/lib
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)/\" -I$(top_srcdir)/include
 
 
 

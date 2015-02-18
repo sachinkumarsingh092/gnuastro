@@ -34,7 +34,7 @@ endif
 SUBDIRS = lib $(MAYBE_MKPROF) $(MAYBE_IMGCROP) $(MAYBE_CONVERTT) doc tests
 
 
-
+ACLOCAL_AMFLAGS = -I m4
 
 
 ## Files that are installed (and distributed)

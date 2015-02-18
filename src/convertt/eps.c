@@ -151,8 +151,8 @@ showbits(uint8_t x)
 {
   int i;
 
-  for(i=(sizeof(uint8_t)*8)-1; i>=0; i--)
-    (x&(1<<i))?putchar('1'):putchar('0');
+  for(i=7;i>=0;--i)
+    (x&(1<<i)) ? putchar('1') : putchar('0');
   putchar('\n');
 }
 

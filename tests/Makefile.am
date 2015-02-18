@@ -33,4 +33,5 @@ convertt/fitstopdf.sh
 EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt mkprof/mkprofcat2.txt	\
 mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt imgcrop/cat.txt
 
-CLEANFILES = *.log *.txt *.jpg *.fits *.pdf .gnuastro/*.conf .gnuastro
+CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps .gnuastro/*.conf	\
+.gnuastro

@@ -1,3 +1,13 @@
+2015-02-18  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* lib/Makefile.am: Changed all static libraries to libtool static
+	libraries.
+
+	* doc/gnuastro.texi: Updated.
+
+	* configure.ac: Added Libtool checks. Corrected cfitsio and wcslib
+	dependencies and removed FFTW as a dependency.
+
 2015-02-17  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/convertt/eps.c: Functions for binary image added.
