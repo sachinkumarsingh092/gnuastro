@@ -45,9 +45,9 @@ fitsioerror(int status, char *message)
     {
       fits_report_error(stderr, status);
       if(message)
-	error(EXIT_FAILURE, 0, message);
+	error(EXIT_FAILURE, 0, "%s", message);
       else
-	error(EXIT_FAILURE, 0, defmessage);
+	error(EXIT_FAILURE, 0, "%s", defmessage);
     }
 }
 

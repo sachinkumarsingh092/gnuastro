@@ -20,9 +20,8 @@
 ## You should have received a copy of the GNU General Public License
 ## along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
-# Flags for all programs:
-AM_CFLAGS = -Wall -Ofast
-
+# Flags:
+AM_CFLAGS = -Wall -O3
 AM_CPPFLAGS = -DSYSDATA_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include
 
 

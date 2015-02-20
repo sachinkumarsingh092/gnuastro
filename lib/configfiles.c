@@ -158,17 +158,17 @@ writelocalconfigstop(char *indir, char *filename, char *spack,
 	  errno=0;
 	  if(mkdir(indir, S_IRWXU)==-1)
 	    error(EXIT_FAILURE, errno, "%s: Could not be created. Try "
-		  "running:\n\n    mkdir -p %s\n\nto built it and run your "
-		  "previous command again.", indir, indir);
+		  "running:\n\n    mkdir -p %s\n\nto built it and run "
+                  "your previous command again.", indir, indir);
 	}
       else
-	error(EXIT_FAILURE, errno, indir);
+	error(EXIT_FAILURE, errno, "%s", indir);
     }
   else
     {
       errno=0;
       if (closedir(dp)==-1)
-	error(EXIT_FAILURE, errno, indir);
+	error(EXIT_FAILURE, errno, "%s", indir);
     }
 
 
@@ -180,7 +180,7 @@ writelocalconfigstop(char *indir, char *filename, char *spack,
   errno=0;
   fp=fopen(*outfilename, "w");
   if (fp==NULL)
-    error(EXIT_FAILURE, errno, *outfilename);
+    error(EXIT_FAILURE, errno, "%s", *outfilename);
 
   /* write the comments: */
   fprintf(fp, "# Default parameters for %s (%s).\n"

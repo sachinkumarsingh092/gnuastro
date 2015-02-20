@@ -298,11 +298,13 @@ saveepsorpdf(struct converttparams *p)
          doesn't exist now. But automaticoutput is based on an input
          (which must exist), so temporarily make the file. */
       sprintf(command, "touch %s", p->cp.output);
-      system(command);
-      automaticoutput(p->cp.output, ".eps", 0, p->cp.dontdelete,
+      if(system(command))
+        error(EXIT_FAILURE, 0, "The command `%s` could not be run!", command);
+      automaticoutput(p->cp.output, ".ps", 0, p->cp.dontdelete,
                       &epsfilename);
       sprintf(command, "rm %s", p->cp.output);
-      system(command);
+      if(system(command))
+        error(EXIT_FAILURE, 0, "The command `%s` could not be run!", command);
     }
   else
     error(EXIT_FAILURE, 0, "A bug! In `saveeps`, for outputtype is "
@@ -321,7 +323,7 @@ saveepsorpdf(struct converttparams *p)
   errno=0;
   fp=fopen(epsfilename, "w");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, p->cp.output);
+    error(EXIT_FAILURE, errno, "%s", p->cp.output);
   fprintf(fp, "%%!PS-Adobe-3.0 EPSF-3.0\n");
   fprintf(fp, "%%%%BoundingBox: 0 0 %lu %lu\n", winpt+2*p->borderwidth,
           hinpt+2*p->borderwidth);
@@ -373,11 +375,16 @@ saveepsorpdf(struct converttparams *p)
       sprintf(command, "gs -o %s -sDEVICE=pdfwrite -dDEVICEWIDTHPOINTS=%lu "
               "-dDEVICEHEIGHTPOINTS=%lu -dPDFFitPage %s", p->cp.output,
               winpt+2*p->borderwidth, hinpt+2*p->borderwidth, epsfilename);
-      system(command);
-      /*
+      if(system(command))
+        error(EXIT_FAILURE, 0, "The command to conert a PostScript file to "
+              "PDF (%s) was not successful! The PostScript file (%s) is left "
+              "if you want to covert or use it through any other means.",
+              command, epsfilename);
       sprintf(command, "rm %s", epsfilename);
-      system(command);
-      */
+      if(system(command))
+        error(EXIT_FAILURE, 0, "The PDF output (%s) was created, but the "
+              "PostScript file which was used to make it (%s) could not be"
+              "removed.", p->cp.output, epsfilename);
       free(epsfilename);
     }
 }

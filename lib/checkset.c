@@ -428,10 +428,10 @@ checkfile(char *filename)
   if(tmpfile)			/* The file opened. */
     {
       if(fclose(tmpfile)==EOF)
-	error(EXIT_FAILURE, errno, filename);
+	error(EXIT_FAILURE, errno, "%s", filename);
     }
   else
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
 }
 
 
@@ -455,7 +455,7 @@ checkremovefile(char *filename, int dontdelete)
       /* Close the file and make sure that it should be deleted. */
       errno=0;
       if(fclose(tmpfile))
-	error(EXIT_FAILURE, errno, filename);
+	error(EXIT_FAILURE, errno, "%s", filename);
       if(dontdelete)
 	error(EXIT_FAILURE, 0, "%s already exists and you have "
 	      "asked to not remove it with the `--dontdelete` "
@@ -464,13 +464,13 @@ checkremovefile(char *filename, int dontdelete)
       /* Delete the file: */
       errno=0;
       if(unlink(filename))
-	error(EXIT_FAILURE, errno, filename);
+	error(EXIT_FAILURE, errno, "%s", filename);
     }
   /* If the file doesn't exist, there is no problem, we wanted to
      remove it any way! Any other kind of error should not be
      tolerated! */
   else if(errno!=ENOENT)
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
 }
 
 
@@ -504,17 +504,17 @@ dir0file1(char *name, int dontdelete)
 	      fprintf(tmpfile, "Only to test write access.");
 	      errno=0;
 	      if(fclose(tmpfile))
-		error(EXIT_FAILURE, errno, name);
+		error(EXIT_FAILURE, errno, "%s", name);
 	      errno=0;
 	      if(unlink(name))
-		error(EXIT_FAILURE, errno, name);
+		error(EXIT_FAILURE, errno, "%s", name);
 	    }
 	  else
-	    error(EXIT_FAILURE, errno, name);
+	    error(EXIT_FAILURE, errno, "%s", name);
 	  return 1;		/* It is a file name, GOOD */
 	}
       else			/* Some strange condition, ABORT */
-	error(EXIT_FAILURE, errno, name);
+	error(EXIT_FAILURE, errno, "%s", name);
     }
 
   if(S_ISDIR(nameinfo.st_mode))	/* It is a directory, BAD */

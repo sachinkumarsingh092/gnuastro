@@ -66,7 +66,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
   errno=0;
   fp=fopen(filename, "r");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
 
   while( getline(&line, &len, fp) != -1 )
     {
@@ -95,7 +95,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
 
   errno=0;
   if(fclose(fp)==EOF)
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
 
   if(s0==0 && s1==0)
     error(EXIT_FAILURE, 0, "No table could be read in %s.", filename);
@@ -119,12 +119,13 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
       errno=0;
       *log=fopen(TXTARRAYVVLOG, "w");
       if(*log==NULL)
-	error(EXIT_FAILURE, errno, filename);
+	error(EXIT_FAILURE, errno, "%s", filename);
       fprintf(*log, "# Elements in %s which could not be read as a \n"
 	      "# number. They are saved as nan in the array.\n"
 	      "# The columns in the table below are:\n"
 	      "# 0: Line number in file.\n"
-	      "# 1: Row number in table (without commented or blank lines).\n"
+	      "# 1: Row number in table (without commented or blank "
+              "lines).\n"
 	      "# 2: Column number in table.\n"
 	      "# 3: The string that could not be converted to a number.\n"
 	      "# Note that counting starts from zero.\n",
@@ -142,7 +143,7 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
   errno=0; tailptr=NULL;						\
   array[ts0*s1+ts1]=strtod(token, &tailptr);				\
   if(errno)								\
-    error_at_line(EXIT_FAILURE, errno, filename, lineno, token);	\
+    error_at_line(EXIT_FAILURE, errno, "%s", lineno, token, filename);  \
   if(*tailptr!='\0')							\
     {									\
       savetolog(&log, filename, lineno, ts0, ts1, token);		\
@@ -166,7 +167,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
   errno=0;
   fp=fopen(filename, "r");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
 
   /* Allocate some space for `line` with `len` elements so it can
      easily be freed later on. The value of `len` is arbitarary at
@@ -220,12 +221,12 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
 
   errno=0;
   if(fclose(fp)==EOF)
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
   if(log)
     {
       errno=0;
       if(fclose(log)==EOF)
-	error(EXIT_FAILURE, errno, TXTARRAYVVLOG);
+	error(EXIT_FAILURE, errno, "%s", TXTARRAYVVLOG);
     }
 }
 
@@ -387,7 +388,7 @@ arraytotxt(double *array, size_t s0, size_t s1, char *comments,
   errno=0;
   fp=fopen(filename, "w");
   if (fp==NULL)
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
 
   /* Print the headers to file: */
   fprintf(fp, "%s\n", comments);
@@ -403,7 +404,7 @@ arraytotxt(double *array, size_t s0, size_t s1, char *comments,
   /* Close the file and free all pointers: */
   errno=0;
   if( fclose(fp) == EOF )
-    error(EXIT_FAILURE, errno, filename);
+    error(EXIT_FAILURE, errno, "%s", filename);
   for(i=0;i<s1;++i) free(fmt[i]);
   free(fmt);
 }

@@ -673,12 +673,12 @@ printlog(struct imgcropparams *p)
 	{
 	  sprintf(msg, "%lu images created.", numfiles);
 	  reporttiming(NULL, msg, 1);
-	  sprintf(msg, "%lu were filled in the center.",
+	  sprintf(msg, "%lu filled in the center.",
 		  numcentfilled);
 	  reporttiming(NULL, msg, 1);
 	  if(numstitched)
 	    {
-	      sprintf(msg, "%lu were stiched from more than one image.",
+	      sprintf(msg, "%lu used more than one input.",
 		      numstitched);
 	      reporttiming(NULL, msg, 1);
 	    }

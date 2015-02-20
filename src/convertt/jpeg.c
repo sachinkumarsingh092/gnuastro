@@ -168,7 +168,7 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
   /* Open the input file */
   errno=0;
   if ((infile = fopen(inname, "rb")) == NULL)
-    error(EXIT_FAILURE, errno, inname);
+    error(EXIT_FAILURE, errno, "%s", inname);
 
   /* Set up the error and decompressing (reading) functions. */
   cinfo.err = jpeg_std_error(&jerr.pub);
@@ -304,7 +304,7 @@ writejpeg(JSAMPLE *jsr, struct converttparams *p)
 
   errno=0;
   if ((outfile = fopen(p->cp.output, "wb")) == NULL)
-    error(EXIT_FAILURE, errno, p->cp.output);
+    error(EXIT_FAILURE, errno, "%s", p->cp.output);
   jpeg_stdio_dest(&cinfo, outfile);
 
   cinfo.image_width  = s1;

@@ -90,7 +90,7 @@ imgmodecrop(void *inparam)
 	    {
 	      errno=0;
 	      if(unlink(log->name))
-		error(EXIT_FAILURE, errno, log->name);
+		error(EXIT_FAILURE, errno, "%s", log->name);
 	    }
 	}
       else log->centerfilled=0;
@@ -184,7 +184,7 @@ wcsmodecrop(void *inparam)
 	    {
 	      errno=0;
 	      if(unlink(log->name))
-		error(EXIT_FAILURE, errno, log->name);
+		error(EXIT_FAILURE, errno, "%s", log->name);
 	    }
 	}
       else

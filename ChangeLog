@@ -1,3 +1,18 @@
+2015-02-20  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* doc/gnuastro.texi: Removed list of programs at first, added a
+	programs index. Added an examples chapter along with some one line
+	examples of each program. Moved the Why C and design philosophy
+	subsections to the Developing chapters.
+
+	* src: All 'error' functions are now called with a string literal
+	and not a string variable. Also all 'system' function calls now
+	check the return value.
+
+	* lib: Similar to above.
+
+	* include: similar to above.
+
 2015-02-18  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* lib/Makefile.am: Changed all static libraries to libtool static

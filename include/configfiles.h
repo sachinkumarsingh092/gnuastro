@@ -52,10 +52,12 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
     printvalues(fp, p);							\
     errno=0;								\
     if(fclose(fp)==-1)							\
-      error(EXIT_FAILURE, errno, outfilename);				\
+      error(EXIT_FAILURE, errno, "%s", outfilename);                    \
     command=malloccat("cat ", outfilename);				\
     printf("Values saved in %s:\n\n", outfilename);			\
-    system(command);							\
+    if(system(command))                                                 \
+      error(EXIT_FAILURE, 0, "The `%s` command could not be run or "    \
+            "failed.", command);                                        \
     free(outfilename);							\
     free(command);							\
     exit(EXIT_SUCCESS);							\

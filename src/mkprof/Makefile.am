@@ -22,7 +22,7 @@
 
 
 # Flags:
-AM_CFLAGS = -Wall -Ofast
+AM_CFLAGS = -Wall -O3
 AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -pthread -lm	\
              -L$(top_builddir)/lib
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)/\" -I$(top_srcdir)/include

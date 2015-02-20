@@ -17,7 +17,6 @@
 @c For the indexes:
 @syncodeindex fn cp
 @syncodeindex vr cp
-@syncodeindex pg cp
 
 @c Copyright information:
 @copying
@@ -53,14 +52,6 @@ Texts.  A copy of the license is included in the section entitled
 
 @end direntry
 
-@c Version of all the subpackages:
-@macro printversions
-@noindent
-@*ConvertType (@command{astconvertt}) @value{CONVERTT_VERSION}
-@*ImageCrop (@command{astimgcrop}) @value{IMGCROP_VERSION}
-@*MakeProfiles (@command{astmkprof}) @value{MKPROF_VERSION}
-@end macro
-
 
 
 
@@ -88,7 +79,6 @@ Texts.  A copy of the license is included in the section entitled
 @author Mohammad Akhlaghi
 
 @page
-@printversions
 @vskip 0pt plus 1filll
 @insertcopying
 
@@ -146,8 +136,6 @@ you have to click on the menu entries that are there when ever a
 sub-component to a title is present.
 @end ifhtml
 
-@printversions
-
 @end ifnottex
 
 @menu
@@ -161,8 +149,10 @@ sub-component to a title is present.
 * Modeling and fittings::       Make and fit models.
 * Table manipulation::          Read/Write tables.
 * Developing::                  The development environment.
+* Examples::                    Example applications.
 * GNU Free Documentation License::  Full FDL text.
-* Index::                       Index of terms
+* Concept Index::
+* Program names index::
 
 @detailmenu
  --- The Detailed Node Listing ---
@@ -171,9 +161,7 @@ Introduction
 
 * Quick start::                 A quick start to installation.
 * Science and software::        The importance of software in science.
-* Why C::                       Why we chose the C?
 * Your rights::                 User rights.
-* Design philosophy::           How we have designed gnuastro.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
 
@@ -207,6 +195,7 @@ Installing GNU Astronomy Utilities
 
 * Configuring::                 Configure gnuastro
 * Tests::                       Run tests to see if it is working.
+* Known issues::
 * Print manual::                Customize the print manual.
 
 Configuring
@@ -329,6 +318,8 @@ Invoking MakeProfiles
 
 Developing
 
+* Why C::                       Why gnuastro is designed in C.
+* Design philosophy::           General ideas behind the package structure.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
 * Headers::                     Library and common headers.
@@ -344,7 +335,11 @@ Version controlled source
 Program source
 
 * Coding conventions::          Conventions used for coding
-* Multithreaded programming::
+* Multithreaded programming::   gnuastro uses POSIX threads.
+
+Examples
+
+* Viewing a catalog's targets in JPEG::
 
 @end detailmenu
 @end menu
@@ -381,9 +376,7 @@ founding basis of the GNU Astronomy Utilities.
 @menu
 * Quick start::                 A quick start to installation.
 * Science and software::        The importance of software in science.
-* Why C::                       Why we chose the C?
 * Your rights::                 User rights.
-* Design philosophy::           How we have designed gnuastro.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
 @end menu
@@ -416,25 +409,28 @@ $ rm -rf gnuastro-@value{VERSION} gnuastro-@value{VERSION}.tar.gz
 @end example
 
 @noindent
-If @command{$ ./configure} complains about a requirement, see
-@ref{Requirements}. After running @command{$ make check}, a few tests
-will be done on the built product. They shouldn't fail, if they do
-please file a bug report. You can also make lots of customizations,
-for example installing when you don't have root access, building and
-installing only a subset of the utilities or modifying their names,
-see @ref{Configuring}.
 
-In this manual we have tried to explain concepts thoroughly for a new
-GNU/Linux user or astronomy data analyzer. In case you are already
-familiar with both, you just have to check the ``Invoking
-ProgramName'' section for the program you want to use by running
-@command{info astprogname} on the command line. The commands above
-will delete the source code after installing the programs,
-configuration files and documentation. In case you want to study the
-code, we recommend getting the version controlled source code, see
-@ref{Version controlled source}.
+See @ref{Known issues} if you confront any complications. Each utility
+has an official name which consists of two words printed with no
+space, for example NoiseChisel or ImageCrop. On the command line, you
+can run them with their executable names which start with an
+@file{ast} and might be an abbreviation of the official name, for
+example @file{astnoisechisel} or @file{astimgcrop}. In this manual we
+will use ProgramName for a generic official program name and
+@file{astprogname} for a generic executable name. The utilities that
+are installed on your system with this package are listed immediately
+after the title page in the PDF manual or on the top page of the other
+manual formats.
 
-@node Science and software, Why C, Quick start, Introduction
+For each program there is an ``Invoke ProgramName'' sub-section in
+this manual which explains how the programs should be run on the
+command line. It can be read on the command line by running the
+command @command{$ info astprogname}, see @ref{Getting help}. This
+sub-section starts with a few examples of each program and goes on to
+explain the invocation details. In @ref{Examples} we also give some
+real life examples of how these programs might be used.
+
+@node Science and software, Your rights, Quick start, Introduction
 @section Science and its software
 @cindex Transparent software
 @cindex Approximations in science
@@ -515,7 +511,8 @@ Software with an outdated or weakly written manual.
 @end itemize
 
 Even if a software is released under the GNU public license (GPL), the
-latter two issues force an interested scientist to think twice before
+latter two issues force an interested scientist (who generally has no
+deep computer science or engineering background) to think twice before
 trying to understand the inner workings of the software she uses. When
 the audience admits ignorance to the inner workings of a software
 (most non-scientific software), this is fine. But no scientist, using
@@ -575,88 +572,9 @@ if we want to remain critical and be objective.
 
 
 
-@node Why C, Your rights, Science and software, Introduction
-@section Why C programming language?
-Currently the programming language that is most commonly used in
-scientific applications is C++, and more recently Python. One of the
-main reasons behind this choice is that through the Object oriented
-programming paradigm, they offer a much higher level of
-abstraction. However, we have chosen the C programming language to
-write gnuastro. The reasons can be summarized with simplicity and
-speed. Both are extremely important in a scientific software.
-
-A simple comparison of the main books of C++ and C can act as a
-guide. The ``C programming language'' book, written by the authors of
-C, is only 286 pages and covers a very good fraction of the language,
-it has also remained unchanged from 1988 and there is no plan of any
-significant update. The most recent ``C++ programming language'' book,
-also written by its author, on the other hand has 1366 pages and its
-fourth edition came out in 2013! As discussed in @ref{Science and
-software}, it is very important for other scientists to be able to
-readily read the code of a program at their will with minimum
-requirements.
-
-In C++, inheriting objects and their internal functions make the code
-very easy to write for the programmer who is deeply invested in those
-objects and understands all their relations well. But it
-simultaneously makes reading the program for a first time reader (a
-curious scientist who wants to know only how a small step was done)
-extremely hard. Before understanding the methods, the scientist has to
-invest a lot of time in understanding those objects and their
-relations. But in C, if only simple structures are used, as we have
-here, all variables can be given as the basic language types for
-example @code{int}s or @code{float}s and their pointers to define
-arrays. So when an outside reader is only interested in one part of
-the program, that part is all they have to understand.
-
-Recently it is also becoming common to write scientific software in
-Python, or a combination of it with C or C++. Python is a high level
-scripting language which doesn't need compilation. It is very useful
-when you want to do something on the go and don't want to be halted by
-the troubles of compiling, linking, memory checking, etc. When the
-data sets are small and the job is temporary, this ability of Python
-is great and is highly encouraged. A very good example might be
-plotting, in which Python is undoubtably one of the best.
-
-But as the data sets increase in size and the processing becomes very
-complicated, the speed of Python scripts significantly decrease. So
-when the program doesn't change too often and is widely used in a
-large community mostly on large data sets (like astronomical images),
-using Python will waste a lot of valuable research-hours.
-
-Like C++, python is object oriented, so as explained above, it needs a
-high level of experience with that particular program to fully
-understand its inner workings. To make things worse, since it is
-mainly for fast and on the go programming, it constantly undergoes
-significant changes, such that Python 2.x and Python 3.x are not
-compatible. Lots of research teams that invested heavily in Python 2.x
-cannot benefit from Python 3.x or future versions any more. Some
-converters are available, but since they are automatic, lots of
-complications might arise in the conversion. Thus, re-writing all the
-changes would be the only truely reliable option. This is why most
-teams that made that choice are forced to remain with Python 2.x. If a
-research project begins using Python 3.x today, there is no telling
-how compatible their investments will be when Python 4.x or 5.x will
-come out. This stems from the core principles of Python, which are
-very useful when you look in the ``on the go'' basis as described
-before and not future usage.
-
-@cindex Low level programming
-@cindex Programming, low level
-Being a very low level (closer to the hardware) language, C is much
-less complex for both the human reader and the computer. It thus
-allows for closer relation between the programmer (program) and the
-actual data we have in our disposal. This is contrary to the illusion
-of abstractions that the higher level languages provide. The GNU
-coding standards@footnote{@url{http://www.gnu.org/prep/standards/}}
-also encourage the use of C over all other languages when generality
-of usage and ``high speed'' is desired.
 
 
-
-
-
-@node Your rights, Design philosophy, Why C, Introduction
+@node Your rights, Version numbering, Science and software, Introduction
 @section Your rights
 
 The paragraphs below, in this section, belong to the GNU Texinfo
@@ -704,61 +622,7 @@ License}.
 
 
 
-
-
-@node Design philosophy, Version numbering, Your rights, Introduction
-@section Design philosophy
-
-Based on the ideas in the above three sections, gnuastro is desiged
-such that the only basic requirement for a scientist to understand the
-most intricate detail of any step in gnuastro is a knowledge of the C
-programming language as defied in Kernighan and Ritchie's 1989 book,
-which is commonly known as K&R and is the definition book for the ISO
-C standard of 1990. As explained above, with less than 300 pages, this
-book is very concize and basic. Even within the confines of K&R, the
-code can become quite complex, therefore all gnuastro programs are
-written with code readibility (particularly though lots of comments
-within the code) as the primary goal.
-
-We do make lots of use of the GNU additions to the C language in the
-GNU C library, but they are mainly in the user interface functions
-(reading your inputs and preparing them prior to or after the
-analysis). The actual algorithms, which most scientists would be more
-interested in, are much more closer to ISO C90. For this reason, the
-source files containing user interface code and those containing
-actual processing code are clearly separated. If any thing particular
-to the GNU C library is used, in those functions, it is explained in
-the comments in the code.
-
-In @ref{Developing} we have explained all the details of the core
-programming ideas behind gnuastro. Reading that chapter should be
-enough for you to begin going through the codes of an existing package
-or creating a new one for your needs using the infra-structure
-provided. We hope that with this infra-structure we can extend what
-GNU did for the software community in the early 1980s to the
-Astronomical community.
-
-Similar to GNU Coreutils, all the programs provided with gnuastro,
-provide very low level operations. This enables you to use the GNU
-Bash scripting language (which is the default in most GNU/Linux
-operating systems) or any other shell you might be using to operate on
-a large number of files or do very complex things through the creative
-combinations of these tools that the authors had never dreamed of.
-
-For example all the analysis output is provided as ASCII tables which
-you can feed into your favorite plotting program to inspect
-visually. Python's Matplotlib is very useful for fast plotting of the
-tables to immediately check your results. If you want to include the
-plots in a document, you can use the PGFplots package within
-@LaTeX{}. We make no attempt to include such operations in
-gnuastro. In short, Bash can act as a glue to connect the inputs and
-outputs of all these various programs in any fashion you please. If
-you are not already familiar with the command line or don't fully feel
-comfortable with it please see @ref{New to GNU/Linux?}.
-
-
-
-@node Version numbering, New to GNU/Linux?, Design philosophy, Introduction
+@node Version numbering, New to GNU/Linux?, Your rights, Introduction
 @section Version numbering
 
 The general gnuastro package has a version number. It contains
@@ -1012,7 +876,8 @@ finding shared libraries, add this directory to your
 Also note that if you have not built anything before on your operating
 system you might also need very basic tools like the GNU compiler
 collection (GCC). The @file{./configure} script of gnuastro or any of
-these libraries will warn you if they are not available.
+these libraries will warn you if they are not available. It is easiest
+to install such tools using your distribution's package manager.
 @end cartouche
 
 @cartouche
@@ -1320,7 +1185,7 @@ export XPA_METHOD=local
 @subsubsection Viewing multiextension FITS images
 
 @cindex Multiextention FITS
-@pindex ds9
+@cindex SAO ds9
 @cindex Opening multiextention FITS
 The FITS definition allows for multiple extensions inside a FITS file,
 each extension can have a completely independent data set inside of
@@ -1431,6 +1296,7 @@ uncompress the source file the directory
 @menu
 * Configuring::                 Configure gnuastro
 * Tests::                       Run tests to see if it is working.
+* Known issues::
 * Print manual::                Customize the print manual.
 @end menu
 
@@ -1706,7 +1572,7 @@ $ configure --program-transform-name='s/astr/ /'
 
 
 
-@node Tests, Print manual, Configuring, Installing gnuastro
+@node Tests, Known issues, Configuring, Installing gnuastro
 @subsection Tests
 
 @cindex @command{make check}
@@ -1744,8 +1610,35 @@ want to inspect them.
 
 
 
+@node Known issues, Print manual, Tests, Installing gnuastro
+@subsection Known issues
 
-@node Print manual,  , Tests, Installing gnuastro
+Depending on your GNU/Linux distribution and the version of the
+compiler you are using, you might confront some known problems during
+the @command{$ make} (compilation or buidling) and @command{$ make
+check} (tests) steps. Here we will discuss their solutions.
+
+@itemize
+
+@item
+In the tests, if only one test passes, then most probably your
+distribution does look into the @file{/usr/local/lib} directory when
+searching for shared libraries. To make sure it is added to the list
+of directories, run the following command and restart your terminal:
+(you can ignore the @command{\} and extra space in typing). See
+@ref{Installation directory} for more details.
+@example
+echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' \
+     >> .bashrc
+@end example
+
+
+
+@end itemize
+
+
+
+@node Print manual,  , Known issues, Installing gnuastro
 @subsection Print manual
 
 @cindex Print manual
@@ -2948,6 +2841,7 @@ size and data type.
 @node ConvertType,  , FileInfo, Files
 @section ConvertType
 
+@pindex @r{ConvertType @value{CONVERTT_VERSION} (}astconvertt@r{)}
 The formats of astronomical data were defined mainly for archiving and
 processing. In other situations, the data might be useful in other
 formats. For example, when you are writing a paper or report or if you
@@ -3164,10 +3058,22 @@ are approximately the same file size.
 @node Invoking astconvertt, ConvertType future updates, Color, ConvertType
 @subsection Invoking ConvertType
 
-CovertType can be used with the following general template:
+ConvertType will convert any recognized input file type to any
+specified output type. The executable name is @file{astconvertt} with
+the following general template
 
 @example
-astconvertt [OPTION...] InputFile [InputFile2] ... [InputFile4]
+$ astconvertt [OPTION...] InputFile [InputFile2] ... [InputFile4]
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astconvertt M31.fits --output=pdf
+$ astconvertt galaxy.jpg -ogalaxy.fits
+$ astconvertt f1.txt f2.txt f3.fits -ojpg
+$ astconvertt M31_r.fits M31_g.fits blank -oeps
 @end example
 
 @noindent
@@ -3179,25 +3085,27 @@ is not recognized, it will default to plain text format, see
 @ref{Recognized file types}.
 
 The order of multiple input files is important. After reading the
-input file(s) the number of color channels will be used to define
-which color space is being used and how each color channel is
-interpretted. Note that one file might have more than one color
-channel (for example in the JPEG format). If there are three input
-color channels they are respectively considered to be the red, green
-and blue color channels and if there are four color channels they are
-respectively considered to be cyan, magenta, yellow and black.
+input file(s) the number of color channels in all the inputs will be
+used to define which color space is being used for the outputs and how
+each color channel is interpretted. Note that one file might have more
+than one color channel (for example in the JPEG format). If there is
+one color channel the output is grayscale, if three input color
+channels are given they are respectively considered to be the red,
+green and blue color channels and if there are four color channels
+they are respectively considered to be cyan, magenta, yellow and
+black.
 
-The value to @option{--output} can be either a full file name or just
-the suffix of the desired output format. In the former case, that same
-name will be used for the output. In the latter case, the name of the
-output file will be set based on the automatic output guidelines, see
-@ref{Automatic output}. Note that the suffix name can optionally start
-a @file{.} (dot), so for example @option{--output=.jpg} and
-@option{--output=jpg} are equivalent. Be careful that if you want your
-output in plain text, you have to give the full file name. So if
-@option{-otxt} or @option{--output=.txt} are given, the output file
-will be named @file{txt} or @file{.txt} (the latter will be a hidden
-file!).
+The value to @option{--output} (or @option{-o}) can be either a full
+file name or just the suffix of the desired output format. In the
+former case, that same name will be used for the output. In the latter
+case, the name of the output file will be set based on the automatic
+output guidelines, see @ref{Automatic output}. Note that the suffix
+name can optionally start a @file{.} (dot), so for example
+@option{--output=.jpg} and @option{--output=jpg} are equivalent. Be
+careful that if you want your output in plain text, you have to give
+the full file name. So if @option{-otxt} or @option{--output=.txt} are
+given, the output file will be named @file{txt} or @file{.txt} (the
+latter will be a hidden file!).
 
 Besides the common set of options explained in @ref{Common options},
 the options to ConvertType can be classified into input, output and
@@ -3293,7 +3201,7 @@ from 1 to 20000 and you only want to display those with labels 957 and
 11342 then you can run ConvertType with these options:
 
 @example
-$ astconvertt --change=957:50000,11342:50001 \\
+$ astconvertt --change=957:50000,11342:50001  \
   --fluxlow=50000 segmentationmap.fits --output=jpg
 @end example
 
@@ -3477,6 +3385,7 @@ to other formats.
 @node ImageCrop, ImageTransform, Image manipulation, Image manipulation
 @section ImageCrop
 
+@pindex @r{ImageCrop @value{IMGCROP_VERSION} (}astimgcrop@r{)}
 Astronomical images are often very large, filled with thousands of
 galaxies. It often happens that you only want a section of the image,
 or you have a catalog of sources and you want to visualy analyze them
@@ -3700,10 +3609,25 @@ also regarded as blank regions. This can be turned off with the
 @node Invoking astimgcrop, ImageCrop future, Blank pixels, ImageCrop
 @subsection Invoking ImageCrop
 
-ImageCrop is run with the following general template:
+ImageCrop will crop a region from an image. If in WCS mode, it will
+also stich parts from separate images in the input files. The
+executable name is @file{astimgcrop} with the following general
+template
 
 @example
-astimgcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
+$ astimgcrop [OPTION...] [ASCIIcatalog] ASTRdata ...
+@end example
+
+
+@noindent
+One line examples:
+
+@example
+$ astimgcrop -I catalog.txt image.fits
+$ astimgcrop -W catalog.txt /mnt/data/COSMOS/*_drz.fits
+$ astimgcrop --section=10:*-10,10:*-10 --hdu=2 image.fits
+$ astimgcrop --ra=189.16704 --dec=62.218203 goodsnorth.fits
+$ astimgcrop --xc=568.342 --yc=2091.719 --iwidth=200 image.fits
 @end example
 
 @noindent
@@ -4507,6 +4431,7 @@ chosen from a Gaussian distribution with
 @node MakeProfiles,  , Modeling basics, Modeling and fittings
 @section MakeProfiles
 
+@pindex @r{MakeProfiles @value{MKPROF_VERSION} (}astmkprof@r{)}
 MakeProfiles will create mock astronomical profiles from a catalog,
 either individually or together in one output image. In data analysis,
 making a mock image can act like a calibration tool, through which you
@@ -4640,10 +4565,20 @@ will have a total flux of:
 @node Invoking astmkprof, MakeProfiles future updates, Profile total magnitude, MakeProfiles
 @subsection Invoking MakeProfiles
 
-The general template to run MakeProfiles is:
+MakeProfiles will make any number of profiles specified in a catalog
+either individually or in one image. The executable name is
+@file{astmkprof} with the following general template
 
 @example
-astmkprof [OPTION ...] Catalog
+$ astmkprof [OPTION ...] Catalog
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astmkprof --xcol=0 --ycol=1 catalog.txt
+$ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 @end example
 
 @noindent
@@ -5000,7 +4935,7 @@ The software for this section have to be added ....
 
 
 
-@node Developing, GNU Free Documentation License, Table manipulation, Top
+@node Developing, Examples, Table manipulation, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested
@@ -5054,6 +4989,8 @@ given.
 
 
 @menu
+* Why C::                       Why gnuastro is designed in C.
+* Design philosophy::           General ideas behind the package structure.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
 * Headers::                     Library and common headers.
@@ -5066,8 +5003,140 @@ given.
 
 
 
+@node Why C, Design philosophy, Developing, Developing
+@section Why C programming language?
+Currently the programming language that is most commonly used in
+scientific applications is C++, and more recently Python. One of the
+main reasons behind this choice is that through the Object oriented
+programming paradigm, they offer a much higher level of
+abstraction. However, we have chosen the C programming language to
+write gnuastro. The reasons can be summarized with simplicity and
+speed. Both are extremely important in a scientific software.
 
-@node Version controlled source, Internal libraries, Developing, Developing
+A simple comparison of the main books of C++ and C can act as a
+guide. The ``C programming language'' book, written by the authors of
+C, is only 286 pages and covers a very good fraction of the language,
+it has also remained unchanged from 1988 and there is no plan of any
+significant update. The most recent ``C++ programming language'' book,
+also written by its author, on the other hand has 1366 pages and its
+fourth edition came out in 2013! As discussed in @ref{Science and
+software}, it is very important for other scientists to be able to
+readily read the code of a program at their will with minimum
+requirements.
+
+In C++, inheriting objects and their internal functions make the code
+very easy to write for the programmer who is deeply invested in those
+objects and understands all their relations well. But it
+simultaneously makes reading the program for a first time reader (a
+curious scientist who wants to know only how a small step was done)
+extremely hard. Before understanding the methods, the scientist has to
+invest a lot of time in understanding those objects and their
+relations. But in C, if only simple structures are used, as we have
+here, all variables can be given as the basic language types for
+example @code{int}s or @code{float}s and their pointers to define
+arrays. So when an outside reader is only interested in one part of
+the program, that part is all they have to understand.
+
+Recently it is also becoming common to write scientific software in
+Python, or a combination of it with C or C++. Python is a high level
+scripting language which doesn't need compilation. It is very useful
+when you want to do something on the go and don't want to be halted by
+the troubles of compiling, linking, memory checking, etc. When the
+data sets are small and the job is temporary, this ability of Python
+is great and is highly encouraged. A very good example might be
+plotting, in which Python is undoubtably one of the best.
+
+But as the data sets increase in size and the processing becomes very
+complicated, the speed of Python scripts significantly decrease. So
+when the program doesn't change too often and is widely used in a
+large community mostly on large data sets (like astronomical images),
+using Python will waste a lot of valuable research-hours.
+
+Like C++, python is object oriented, so as explained above, it needs a
+high level of experience with that particular program to fully
+understand its inner workings. To make things worse, since it is
+mainly for fast and on the go programming, it constantly undergoes
+significant changes, such that Python 2.x and Python 3.x are not
+compatible. Lots of research teams that invested heavily in Python 2.x
+cannot benefit from Python 3.x or future versions any more. Some
+converters are available, but since they are automatic, lots of
+complications might arise in the conversion. Thus, re-writing all the
+changes would be the only truely reliable option. This is why most
+teams that made that choice are forced to remain with Python 2.x. If a
+research project begins using Python 3.x today, there is no telling
+how compatible their investments will be when Python 4.x or 5.x will
+come out. This stems from the core principles of Python, which are
+very useful when you look in the ``on the go'' basis as described
+before and not future usage.
+
+@cindex Low level programming
+@cindex Programming, low level
+Being a very low level (closer to the hardware) language, C is much
+less complex for both the human reader and the computer. It thus
+allows for closer relation between the programmer (program) and the
+actual data we have in our disposal. This is contrary to the illusion
+of abstractions that the higher level languages provide. The GNU
+coding standards@footnote{@url{http://www.gnu.org/prep/standards/}}
+also encourage the use of C over all other languages when generality
+of usage and ``high speed'' is desired.
+
+
+
+
+
+@node Design philosophy, Version controlled source, Why C, Developing
+@section Design philosophy
+
+Based on the ideas in the above three sections, gnuastro is desiged
+such that the only basic requirement for a scientist to understand the
+most intricate detail of any step in gnuastro is a knowledge of the C
+programming language as defied in Kernighan and Ritchie's 1989 book,
+which is commonly known as K&R and is the definition book for the ISO
+C standard of 1990. As explained above, with less than 300 pages, this
+book is very concize and basic. Even within the confines of K&R, the
+code can become quite complex, therefore all gnuastro programs are
+written with code readibility (particularly though lots of comments
+within the code) as the primary goal.
+
+We do make lots of use of the GNU additions to the C language in the
+GNU C library, but they are mainly in the user interface functions
+(reading your inputs and preparing them prior to or after the
+analysis). The actual algorithms, which most scientists would be more
+interested in, are much more closer to ISO C90. For this reason, the
+source files containing user interface code and those containing
+actual processing code are clearly separated. If any thing particular
+to the GNU C library is used, in those functions, it is explained in
+the comments in the code.
+
+In @ref{Developing} we have explained all the details of the core
+programming ideas behind gnuastro. Reading that chapter should be
+enough for you to begin going through the codes of an existing package
+or creating a new one for your needs using the infra-structure
+provided. We hope that with this infra-structure we can extend what
+GNU did for the software community in the early 1980s to the
+Astronomical community.
+
+Similar to GNU Coreutils, all the programs provided with gnuastro,
+provide very low level operations. This enables you to use the GNU
+Bash scripting language (which is the default in most GNU/Linux
+operating systems) or any other shell you might be using to operate on
+a large number of files or do very complex things through the creative
+combinations of these tools that the authors had never dreamed of.
+
+For example all the analysis output is provided as ASCII tables which
+you can feed into your favorite plotting program to inspect
+visually. Python's Matplotlib is very useful for fast plotting of the
+tables to immediately check your results. If you want to include the
+plots in a document, you can use the PGFplots package within
+@LaTeX{}. We make no attempt to include such operations in
+gnuastro. In short, Bash can act as a glue to connect the inputs and
+outputs of all these various programs in any fashion you please.
+
+
+
+
+
+@node Version controlled source, Internal libraries, Design philosophy, Developing
 @section Version controlled source
 
 The source code that is publicly distributed does not contain the
@@ -5142,13 +5211,10 @@ they are no longer needed after the linking (you can safely delete
 them after installing the executable).
 
 In the future if need be, we can also make them installable so you can
-use them in your own personal programs. But for the time being, if you
-feel these libararies can be useful for your own programs, you can
-simply copy the compiled version (@file{.a} files, which are created
-after running @command{$ make}) along with the header of the library
-(which is in the @file{include} directory) inside your own source code
-and link to it with the link flag of your compiler (@option{-l} in
-GCC).
+use them in your own personal programs. If you want to use them in
+your library, you no longer need to link with CFITSIO or other
+libraries, you just need to use GNU Libtool (which was used to make
+them).
 
 @node Headers, Program source, Internal libraries, Developing
 @section Headers
@@ -5332,7 +5398,7 @@ programs with @option{--cite}, see @ref{Operating modes}.
 
 @menu
 * Coding conventions::          Conventions used for coding
-* Multithreaded programming::
+* Multithreaded programming::   gnuastro uses POSIX threads.
 @end menu
 
 @node Coding conventions, Multithreaded programming, Program source, Program source
@@ -5533,7 +5599,99 @@ manual have been updated also. Also don't forget to update the
 
 
 
-@node GNU Free Documentation License, Index, Developing, Top
+@node Examples, GNU Free Documentation License, Developing, Top
+@appendix Examples
+
+This chapter inclues some shell scripts showing how the outputs of the
+various programs can be used as input into others for doing some
+example jobs. Note that if the command becomes larger than the page
+width we have inserted a @command{\} in the code. If you are typing
+the code by hand on the command line, you don't need to use multiple
+lines or add the extra space characters, so you can ommit them and
+simply continue.
+
+@menu
+* Viewing a catalog's targets in JPEG::
+@end menu
+
+@node Viewing a catalog's targets in JPEG,  , Examples, Examples
+@section Viewing a catalog's targets in JPEG
+
+Suppose you have a catalog of 200 objects that you want to use in your
+research. The right ascension of each target is stored in column 0 and
+the declination in column 1. Lets assume you created the catalog using
+a detection program (for example NoiseChisel) on one image
+(@file{image.fits}). Doing your science process (for example fittings
+or etc) on the large input image is impractical for most applications,
+so you need cutouts. A reasonable scientist would also want to
+visually check all or a random sample of them first. But doing so with
+SAO ds9 will be too slow, this is where ConvertType comes in handy.
+
+All the targets can be cut out from the larger image(s) using
+ImageCrop. Lets assume you are content with the default ImageCrop
+parameter values. At first you have an empty folder with the image and
+NoiseChisel object catalog:
+@example
+$ ls
+image.fits image_o.txt
+@end example
+
+@noindent
+You can then run astimgcrop with the following parameters:
+@example
+$ astimgcrop --racol=0 --deccol=1 image_o.txt image.fits
+ImageCrop started on AAA BBB CC DD:EE:FF GGGG
+  ---- ./4_crop.fits                  1 1
+  ---- ./2_crop.fits                  1 1
+  ---- ./1_crop.fits                  1 1
+[[[ Truncated rest of list ]]]
+  ---- ./198_crop.fits                1 1
+  ---- ./195_crop.fits                1 1
+  - 200 images created.
+  - 200 were filled in the center.
+  - 0 were stiched from more than one image.
+ImageCrop finished in:  AA.BBBBBB (seconds)
+$ ls
+1_crop.fits 2_crop.fits ... 200_crop.fits catalog.txt image.fits
+@end example
+
+@noindent
+The thread allocation of the CPUs is asynchronous, so each time you
+run it the order of which job gets done first differs. For ImageCrop
+the order of outputs is irrelevant since each crop is indendent of the
+rest. This is why the crops are not necessarily created in the same
+input order. From the output of @command{ls} you see that in the end
+all the 200 objects have been cropped out.
+
+Converting all the images to JPEG can be done very fast using GNU
+Parallel (which will run ConvertType simultaneously on all your
+available cores to speed up the job):
+@example
+$ parallel astconvertt -ojpg ::: *_crop.fits
+@end example
+
+Now that you have the different JPEG images you can go through them
+very fast with the default GNOME image viewer (Eye of GNOME), you can
+open the first one with
+@example
+$ eog 1_crop.jpg
+@end example
+
+Simply by pressing the @key{Enter} key, you can go onto the next image
+and check all the results in the catalog very fast. You can also use
+the JPEG images and an automated script to make an automatic webpage
+to display all the images side by side in one screen for a faster
+check. You can then delete all the JPEG files with the command.
+@example
+$ rm *.jpg
+@end example
+
+After you have used the cutouts and your research is complete, you can
+convert the crops to EPS or PDF to include in the end of your paper or
+report.
+
+
+@node GNU Free Documentation License, Concept Index, Examples, Top
 @appendix GNU Free Documentation License
 
 @include fdl.texi
@@ -5543,8 +5701,12 @@ manual have been updated also. Also don't forget to update the
 
 
 @c Print the index and finish:
-@node Index,  , GNU Free Documentation License, Top
-@unnumbered Index
+@node Concept Index, Program names index, GNU Free Documentation License, Top
+@unnumbered Concept index
 @printindex cp
+
+@node Program names index,  , Concept Index, Top
+@unnumbered Program names index
+@printindex pg
 
 @bye
