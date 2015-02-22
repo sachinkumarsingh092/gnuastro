@@ -1,3 +1,8 @@
+2015-02-22  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* doc/gnuastro.texi: Added index, changed "Science and its
+	software".
+
 2015-02-20  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* doc/gnuastro.texi: Removed list of programs at first, added a
