@@ -174,10 +174,10 @@ bitpixtodtype(int bitpix)
 void *
 bitpixnull(int bitpix)
 {
-  uint8_t *b;
-  int16_t *s;
-  int32_t *l;
-  int64_t *L;
+  unsigned char *b;
+  short *s;
+  long *l;
+  LONGLONG *L;
   float *f;
   double *d;
 
@@ -185,30 +185,30 @@ bitpixnull(int bitpix)
   switch(bitpix)
     {
     case BYTE_IMG:
-      b=malloc(sizeof(uint8_t));
+      b=malloc(sizeof(unsigned char));
       if(b==NULL)
-	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(uint8_t));
+	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(unsigned char));
       *b=FITSBYTENUL;
       return b;
 
     case SHORT_IMG:
-      s=malloc(sizeof(uint16_t));
+      s=malloc(sizeof(short));
       if(s==NULL)
-	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(int16_t));
+	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(short));
       *s=FITSSHORTNUL;
       return s;
 
     case LONG_IMG:
-      l=malloc(sizeof(uint32_t));
+      l=malloc(sizeof(long));
       if(l==NULL)
-	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(int32_t));
+	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(long));
       *l=FITSLONGNUL;
       return l;
 
     case LONGLONG_IMG:
-      L=malloc(sizeof(uint64_t));
+      L=malloc(sizeof(LONGLONG));
       if(L==NULL)
-	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(int64_t));
+	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(LONGLONG));
       *L=FITSLLONGNUL;
       return L;
 
@@ -248,19 +248,19 @@ bitpixalloc(size_t size, int bitpix)
   switch(bitpix)
     {
     case BYTE_IMG:
-      size*=sizeof(uint8_t);
+      size*=sizeof(unsigned char);
       break;
 
     case SHORT_IMG:
-      size*=sizeof(int16_t);
+      size*=sizeof(short);
       break;
 
     case LONG_IMG:
-      size*=sizeof(int32_t);
+      size*=sizeof(long);
       break;
 
     case LONGLONG_IMG:
-      size*=sizeof(int64_t);
+      size*=sizeof(LONGLONG);
       break;
 
     case FLOAT_IMG:
@@ -298,10 +298,10 @@ bitpixalloc(size_t size, int bitpix)
 void
 nultovalue(void *array, int bitpix, size_t size, void *value)
 {
-  uint8_t *b, *bf, bv=*(uint8_t *) value; /* Value will only be read from */
-  int16_t *s, *sf, sv=*(int16_t *) value; /* one of these based on bitpix.*/
-  int32_t *l, *lf, lv=*(int32_t *) value; /* Which the caller assigned.   */
-  int64_t *L, *Lf, Lv=*(int64_t *) value; /* If there is any problem, it  */
+  unsigned char *b, *bf, bv=*(uint8_t *) value; /* Value will only be read*/
+  short *s, *sf, sv=*(int16_t *) value;   /* from one of these based on    */
+  long *l, *lf, lv=*(int32_t *) value; /* bitpix. Which the caller assigned.*/
+  LONGLONG *L, *Lf, Lv=*(int64_t *) value; /* If there is any problem, it  */
   float   *f, *ff, fv=*(float   *) value; /* is their responsability, not */
   double  *d, *df, dv=*(double  *) value; /* this functions :-D.          */
 
@@ -353,10 +353,10 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
            void **out, int outbitpix)
 {
   size_t i=0;
-  uint8_t *b, *bf, *ib=in, *iib=in;
-  int16_t *s, *sf, *is=in, *iis=in;
-  int32_t *l, *lf, *il=in, *iil=in;
-  int64_t *L, *Lf, *iL=in, *iiL=in;
+  unsigned char *b, *bf, *ib=in, *iib=in;
+  short *s, *sf, *is=in, *iis=in;
+  long *l, *lf, *il=in, *iil=in;
+  LONGLONG *L, *Lf, *iL=in, *iiL=in;
   float *f, *ff, *iif=in, *iiif=in;
   double *d, *df, *id=in, *iid=in;
 
@@ -1075,13 +1075,13 @@ fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
   *s1=naxes[0];
 
   /* Allocate space for the array. */
+  bitnul=bitpixnull(*bitpix);
   *array=bitpixalloc(*s0 * *s1, *bitpix);
 
   /* Read the image into the allocated array: */
-  bitnul=bitpixnull(*bitpix);
-  if ( fits_read_pix(fptr, bitpixtodtype(*bitpix), fpixel, *s0 * *s1,
-		     bitnul, *array, &anynul, &status) )
-    fitsioerror(status, NULL);
+  fits_read_pix(fptr, bitpixtodtype(*bitpix), fpixel, *s0 * *s1,
+		bitnul, *array, &anynul, &status);
+  if(status) fitsioerror(status, NULL);
   free(bitnul);
 
   /* Close the FITS file: */

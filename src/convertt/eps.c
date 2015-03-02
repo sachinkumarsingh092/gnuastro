@@ -198,7 +198,7 @@ blackandwhite(struct converttparams *p)
                 }
               else break;
             }
-          showbits(byte);
+          /*showbits(byte);*/
           bits[i*bytesinrow+j]=byte;
         }
     }
@@ -372,8 +372,8 @@ saveepsorpdf(struct converttparams *p)
 
   if(p->outputtype==PDFFORMAT)
     {
-      sprintf(command, "gs -o %s -sDEVICE=pdfwrite -dDEVICEWIDTHPOINTS=%lu "
-              "-dDEVICEHEIGHTPOINTS=%lu -dPDFFitPage %s", p->cp.output,
+      sprintf(command, "gs -q -o %s -sDEVICE=pdfwrite -dDEVICEWIDTHPOINTS=%lu"
+              " -dDEVICEHEIGHTPOINTS=%lu -dPDFFitPage %s", p->cp.output,
               winpt+2*p->borderwidth, hinpt+2*p->borderwidth, epsfilename);
       if(system(command))
         error(EXIT_FAILURE, 0, "The command to conert a PostScript file to "

@@ -31,13 +31,31 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcsfix.h>
 #include <wcslib/wcs.h>
 
-#define FITSBYTENUL     UINT8_MAX	/* 0 is often meaningful here! */
+#define FITSBYTENUL     UCHAR_MAX	/* 0 is often meaningful here! */
 #define FITSSHORTNUL    INT16_MIN
 #define FITSLONGNUL     INT32_MIN
 #define FITSLLONGNUL    INT64_MIN
 #define FITSFLOATNUL    NAN
 
 
+
+
+/*
+
+For some reason, CFITSIO does not use the standard stdint fixed size
+types! It uses the subjective 'short', 'int' and 'long' variables
+which can differ in size from system to system!!!!!!!!!!!!!!!
+
+In the 32bit systems that 'long' was 32 bits or 4 bytes, has passed
+but the names have stuck! The FITS standard defines LONG_IMG as a
+32bit signed type, but CFITSIO converts it to a local 'long' which is
+64 bits on a modern (64 bit) system!!!! This is simply absurd and very
+confusing!!!! It should have stuck to the standard, not the name of
+the variable!
+
+Because of this we have to stick to this wrong convention too.
+
+ */
 
 
 /*************************************************************

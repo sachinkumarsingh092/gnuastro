@@ -490,24 +490,18 @@ demonstrates how four data sets with widely different shapes (when
 plotted) give nearly identical output from standard regression
 techniques.  Anscombe argues that ``Good statistical analysis is not a
 purely routine matter, and generally calls for more than one pass
-through the computer''. The users of a software cannot claim to
-understand how it works only based on the experience they have gained
-by frequently using it. This kind of subjective experience is prone to
-very serious mis-understandings about what it really does behind the
-scenes and can be misleading. It only helps in producing dogmas and an
+through the computer''. Anscombe's quartet can be generalized to say
+that users of a software cannot claim to understand how it works only
+based on the experience they have gained by frequently using it. This
+kind of subjective experience is prone to very serious
+mis-understandings about what it really does behind the scenes and can
+be misleading. This attitude is further encouraged through non-free
+software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}. This
+approach to scientific software only helps in producing dogmas and an
 ``obscurantist faith in the expert’s special skill, and in his
 personal knowledge and authority''@footnote{Karl Popper. The logic of
 scientific discovery. 1959. Larger quote is given at the start of the
 PDF manual.}.
-
-@cindex Ken Thomson
-@cindex Stroustrup, Bjarne
-Bjarne Stroustrup (creator of the C++ language) says: ``Without
-understanding software, you are reduced to believing in magic''.  Ken
-Thomson (the designer or the Unix operating system) says ``I abhor a
-system designed for the `user' if that word is a coded pejorative
-meaning `stupid and unsophisticated'.'' Certainly no scientist (user
-of a scientific software) would want to be considered as such.
 
 It is obviously impossible for any one human being to gain the
 intricate knowledge explained above for their scientific analysis. On
@@ -517,65 +511,13 @@ efficient algorithms. To make things worse, natural scientists have
 generally not been trained in the advanced software techniques,
 paradigms and architecture that is taught in computer science or
 engineering courses and thus used in most software. The GNU Astronomy
-Utilities are an effort to tackle this issue.
-
-@cindex Scientific software
-@cindex Software, scientific
-It is certainly not reasonable to expect every scientist to know every
-step of a program they use. However this is not an excuse for the
-author of a program to not assume so. Different people can become
-interested in different parts. We believe that an integral part of
-``scientific'' software is that users have the ability to read and
-modify and therefore @emph{understand any part} of the algorithms with
-minimum requirements @emph{at their will}. Note that we used
-@emph{understand}, not `check'. The authors of a software have
-probably already made lots of checks and tests. So `correctness' or
-`validity', although very important, are not the primary concern
-here. When a scientist `understands' a code, they can make realistic
-interpretations, modify it for their own purposes and most
-importantly, they are empowered to write a new approach or define a
-new paradigm. In other words, instead of fiddling on the details of
-the existing answer to the existing question, they are can change the
-question.
-
-@quotation
-@cindex Jaynes E. T.
-New data that we insist on analyzing in terms of old ideas (that is,
-old models which are not questioned) cannot lead us out of the old
-ideas. However many data we record and analyze, we may just keep
-repeating the same old errors, missing the same crucially important
-things that the experiment was competent to find.
-@author E. T. Jaynes, Probability theory, the logic of science. 2003.
-@end quotation
-
-@cindex Programming, low level
-@cindex Low level programming
-@cindex Abstractions
-@cindex Software architecture
-@cindex Architecture, software
-The GNU Astronomy Utilities are therefore written using a low-level
-(no abstractions) programming language and very simple software
-architecture, see @ref{Why C} and @ref{Design philosophy}. Having less
-abstractions, a low-level language is by definition much simpler than
-high level ones, thus sufficient proficiency can be obtained very
-easily. It also undergoes much less change and finally, it is much
-easier (and thus faster) for the computer to process. In terms of
-architecture the simplest possible is used: each utility or program
-has a completely independent start and finish and does a very
-low-level job. A very simple and unified code and file structuring
-convention is defined that completely separates user interface
-functions from scientific analysis functions so an interested
-scientist can find the analysis steps of each program very easily, see
-@ref{Program source}.
-
-Due to the volume of the data that is processed with these utilities,
-the algorithms might become complicated. In such cases, they are
-heavily commented for easy understanding. Once any astronomer has read
-@ref{Developing}, they should be able to navigate and understand the
-algorithms sufficiently easily. The low-level nature of the programs
-does not mean that high-level analysis cannot be done. Through the
-GNU/Linux shell, you can define a sequence of programs to run and make
-any high-level analysis, we have put some examples in @ref{Examples}.
+Utilities are an effort to tackle this issue. GNU Astronomy Utilities
+are built on the basis of the GNU general public license (GPL) and
+enforce the further requirement that an astronomer (who is not
+necessarily trained in computer science or engineering) will need
+minimal requirements and preparations to understand and modify any
+step if they feel the need to do so, see @ref{Why C} and @ref{Design
+philosophy}.
 
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
@@ -590,25 +532,37 @@ A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing
 company, first edition, 2008.}. Science is not independent of its
 tools.
 
+@cindex Ken Thomson
+@cindex Stroustrup, Bjarne
+Bjarne Stroustrup (creator of the C++ language) says: ``Without
+understanding software, you are reduced to believing in magic''.  Ken
+Thomson (the designer or the Unix operating system) says ``I abhor a
+system designed for the `user' if that word is a coded pejorative
+meaning `stupid and unsophisticated'.'' Certainly no scientist (user
+of a scientific software) would want to be considered as such.
+
 @cindex Puzzle solving scientist
 @cindex Scientist, puzzle solver
-If a scientist as more than a mere ``puzzle solver''@footnote{Thomas
-S. Kuhn. @emph{The Structure of Scientific Revolutions}, University of
-Chicago Press, 1962.}, she cannot just passively sit back and wait for
-others to build the tools that form the basis of all her
-interpretations. Today there is a wealth of raw telescope images ready
-(mostly for free) at the finger tips of anyone who is interested with
-a fast enough internet connection to download them.  The only thing
-lacking is new ways to analyze them and dig out the treasure that is
-lying hidden in them to existing methods and techniques.
+If scientists are considered to be more than mere ``puzzle
+solvers''@footnote{Thomas S. Kuhn. @emph{The Structure of Scientific
+Revolutions}, University of Chicago Press, 1962.}, they cannot just
+passively sit back and wait for others to build the tools that form
+the basis of all their interpretations and working paradigms. Today
+there is a wealth of raw telescope images ready (mostly for free) at
+the finger tips of anyone who is interested with a fast enough
+internet connection to download them.  The only thing lacking is new
+ways to analyze them and dig out the treasure that is lying hidden in
+them to existing methods and techniques.
 
-@cartouche
-@noindent
-@strong{SUMMARY:} Besides being useful, the GNU Astronomy Utilities
-were written for you to read the code (as you read a paper), modify it
-and find better solutions and corrections and share them. Science
-needs ``active'' users for a meaningful progress.
-@end cartouche
+@quotation
+@cindex Jaynes E. T.
+New data that we insist on analyzing in terms of old ideas (that is,
+old models which are not questioned) cannot lead us out of the old
+ideas. However many data we record and analyze, we may just keep
+repeating the same old errors, missing the same crucially important
+things that the experiment was competent to find.
+@author E. T. Jaynes, Probability theory, the logic of science. 2003.
+@end quotation
 
 
 
@@ -1247,39 +1201,103 @@ but not run the tests and directly install after building.
 @cindex Install with no super-user access
 One of the most commonly used options to configure is the directory
 that will host all the files which require installing, for example the
-actual executable files for the program, the documentation,
+actual executable files for the program, the documentation and
 configuration files. This is done through the @option{--prefix}
 option. To demonstrate its applicability, let's assume you don't have
-root access to the computer you are using.
+root access to the computer you are using which is one of the most
+common usage cases.
 
-In case you do not have super user or root access to the system, you
+In case you don't have super user or root access to the system, you
 can't take the installation steps of the command sequence in
 @ref{Quick start}. To be able to access the gnuastro executable files
 from anywhere, you have to specify a special directory in the
-directories you have write access in. Note that this explanation can
-apply to all the requirements in @ref{Requirements} in case the system
-lacks them or the system wide install was not built with the proper
-configuration options.
+directories you have write access in, through the shell's environment
+variables. Note that this explanation can apply to all the
+requirements in @ref{Requirements} in case the system lacks them or
+the system wide install was not built with the proper configuration
+options. We will start with a short introduction to the shell
+variables.
+
+@cindex Shell variables
+@cindex Environment variable
+Shell variable values are basically treated as strings of
+characters. You can define a variable and a value for it by running
+@command{$ myvariable=a test value} on the command line. Then you can
+see the value in the with the command @command{$ echo $myvariable}. If
+a variable has no value, this command will only print an empty
+line. This variable will be known as long as this shell or terminal is
+running. Other terminals will have no idea it existed.  The main
+advantage of shell variables is that if they are exported@footnote{By
+running @command{$ export myvariable=a test value} instead of the
+simpler case in the text} subsequent programs in that shell can access
+their value. So by setting them to any desired value, you can change
+the ``environment'' of the program. The shell variables which are
+accessed by programs are therefore known as ``environment
+variables''@footnote{You can use shell variables for other actions
+too, for example to temporarily keep some names or run loops on some
+files.}. You can see the full list of the environment variables that
+your shell currently recognizes by running:
+@example
+$ printenv
+@end example
+
+@vindex PATH
+@cindex @file{./configure}
+@cindex Setting @code{PATH}
+@cindex Default executable search directory
+@cindex Search directory for executables
+One of the most commonly used environment variables is @file{PATH}, it
+is a list of directories to search for executable names.  The most
+basic way to run an executable is to explicitly type the full file
+name (including all the directory information) and run it. This is
+useful for simple shell scripts or programs that you don't use too
+often. However, when the program (an executable) is to be used a lot,
+specifying all those directories will become a significant burden. The
+@file{PATH} environment variable keeps the address of all the
+directories to be searched if directory information is not explicitly
+given@footnote{This is why in the sequence of commands in @ref{Quick
+start} only @command{$ ./configure} has directory information. By
+giving a specific directory (the current directory or @file{./}), we
+are explicitly telling the shell to look in the current directory for
+an executable named @file{configure} not in the directories listed in
+@file{PATH}.}. When you don't have root access, you need to specify a
+directory for your self and add that to the @file{PATH} environment
+variable.
+
+@cindex GNU Bash
+@cindex Startup scripts
+@cindex Scripts, startup
+Adding your specified directory to the @file{PATH} environment
+variable each time you want to run your program is again very
+troubling and will not be much of an improvement compared to
+explicitely calling the executbale with directory information. So
+there are standard ``startup files'' defined by your shell.  The
+commands in these files are run each time you start your system
+(@file{/etc/profile} and all scripts in @file{/etc/profile.d/}), when
+you log in (@file{~/.bash_profile}) or on each invocation of the shell
+(the terminal, @file{~/.bashrc})@footnote{These directories are the
+standard in GNU Bash, other shells might have different startup
+files.}.
 
 @cindex @file{HOME}
 @cindex @file{HOME/.local/}
 @cindex Environment variable, @code{HOME}
-The standard directory where you can keep such files for your own user
-is the @file{$HOME/.local/}. You can check the value of the
-@command{HOME} environment variable by running
+@file{HOME} is another commonly used environment variable, it is any
+user's (the one that is logged in) top directory. It is used so often
+that Bash has a special expansion for it: @file{~}, whenever you see
+file names starting with the tilde sign, it actually represents the
+value to the @file{HOME} environment variable. The standard directory
+where you can keep installed files for your own user is the
+@file{~/.local/}.  You can use this directory as the top directory for
+installing all the programs (executables), libraries, manuals and
+shared data that you need.
 
-@example
-$ echo $HOME
-@end example
-
-@noindent
-You can use this directory for installing all the programs, libraries,
-manuals and shared data that you need. Let's call the directory you
-have chosen with @file{USRDIR} since the standard is just a
-suggestion. Please replace it with any directory name you choose. To
-install any program without root privileges, you can add the following
-option to the configure script. You can then run @command{$ make
-install} without any root access.
+Let's call the directory you have chosen with @file{USRDIR} since the
+standard is just a suggestion. Please replace it with any directory
+name you choose. To notify the build system of the program to install
+the files in this directory, you can add the following option to the
+configure script. When you subsequently run @command{$ make install}
+all the installable files will be put there.
 
 @cindex Install directory
 @cindex Directory, install
@@ -1287,34 +1305,33 @@ install} without any root access.
 $ ./configure --prefix=USRDIR
 @end example
 
-@vindex PATH
+
 @cindex @file{.bashrc}
-@cindex Setting @code{PATH}
-@cindex Default executable search directory
-@cindex Search directory for executables
-Of course, to be able to run the program executables in your chosen
-directory from anywhere, you also need to include @file{USRDIR/bin}
-(the sub-directory where the executables are installed) in your
+The @file{USRDIR/bin} directory is the place where the executables (or
+binary files) are installed. So you have to add that to your
 @command{PATH} environment variable by placing the following command
-in your @file{$HOME/.bashrc} file. The directories listed in
-@command{$PATH} specifies the locations that the system will check to
-find the executable name you have asked for.
+in the @file{$HOME/.bashrc} file or any of the startup files discussed
+above. The directories listed in @command{$PATH} specify the locations
+that the system will check to find the executable name you have asked
+for. Each directory is separated by a colon (@file{:}). So through the
+command below you will concatenate your directory to the already
+existing list.
 
 @example
 export PATH=$PATH:USRDIR/bin
 @end example
 
-@cindex @file{LDPATH}
 @cindex @file{INFODIR}
 @cindex @file{MANPATH}
+@cindex @file{LD_LIBRARY_PATH}
 @cindex Library search directory
 @cindex Default library search directory
-In case you install libraries (like the requirements of gnuastro)
-with this method locally, you also have to notify the system to search
-for libraries in your installed directory. To do that add
-@file{USRDIR/lib} to your @command{LDPATH} environment variable
-similar to the example above for @command{PATH}. If you also want to
-access the Info and man pages documentations add the
+In case you install libraries (like the requirements of gnuastro) with
+this method locally, you also have to notify the system to search for
+shared libraries in your installed directory. To do that add
+@file{USRDIR/lib} to your @command{LD_LIBRARY_PATH} environment
+variable similar to the example above for @command{PATH}. If you also
+want to access the Info and man pages documentations add the
 @file{USRDIR/share/info} and @file{USRDIR/share/man} to your
 @command{INFODIR} and @command{MANPATH} environment variables.
 
@@ -1488,8 +1505,8 @@ want to inspect them.
 
 Depending on your GNU/Linux distribution and the version of the
 compiler you are using, you might confront some known problems during
-the configuration @command{$ ./configure}, compilation (@command{$
-make} and tests (@command{$ make check}). Here, their solutions are
+the configuration (@command{$ ./configure}), compilation (@command{$
+make}) and tests (@command{$ make check}). Here, their solutions are
 discussed.
 
 @itemize
@@ -1502,7 +1519,7 @@ probably this is because your distribution has separated the header
 files of a library from the library parts. Please also install the
 ``development'' packages for those libraries too. Just add a
 @file{-dev} or @file{-devel} to the end of the package name and re-run
-you package manager. This will not happen if you install the libraries
+the package manager. This will not happen if you install the libraries
 from source. When installed from source, the headers are also
 installed.
 
@@ -1518,8 +1535,8 @@ the following command and restart your terminal: (you can ignore the
 you copy and paste). See @ref{Installation directory} for more
 details.
 @example
-echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' \
-     >> .bashrc
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' \
+     >> ~/.bashrc
 @end example
 
 
@@ -3264,8 +3281,8 @@ from 1 to 20000 and you only want to display those with labels 957 and
 11342 then you can run ConvertType with these options:
 
 @example
-$ astconvertt --change=957:50000,11342:50001  \
-  --fluxlow=50000 segmentationmap.fits --output=jpg
+$ astconvertt --change=957:50000,11342:50001 --fluxlow=5e4 \
+   --fluxhigh=1e5 segmentationmap.fits --output=jpg
 @end example
 
 @noindent
@@ -3276,7 +3293,7 @@ the input fluxes have been complete. By placing the value in double
 quotes you can use as many spaces as you like for better readability.
 
 @item -C
-@itemx --convaftertrunc
+@itemx --changeaftertrunc
 Change pixel values (with @option{--change}) after truncation of the
 flux values, by default it is the opposite.
 
@@ -4238,7 +4255,7 @@ this functional form for the image of stars:
 
 @dispmath{f(r)=a \left[ 1+\left( r\over \alpha \right)^2 \right]^{-\beta}}
 
-@cindex Moffat @mymath{@beta}
+@cindex Moffat beta
 Again, @mymath{a} is constrained by the normalization, therefore two
 parameters define the shape of the Moffat function: @mymath{\alpha} and
 @mymath{\beta}. The radial parameter is @mymath{\alpha} which is related
@@ -5185,9 +5202,9 @@ Currently the programming language that is most commonly used in
 scientific applications is C++, and more recently Python. One of the
 main reasons behind this choice is that through the Object oriented
 programming paradigm, they offer a much higher level of
-abstraction. However, we have chosen the C programming language to
-write gnuastro. The reasons can be summarized with simplicity and
-speed. Both are extremely important in a scientific software.
+abstraction. However, GNU Astronomy Utilities are written in the C
+programming language. The reasons can be summarized with simplicity
+and speed. Both are extremely important in a scientific software.
 
 @cindex ANSI C
 @cindex ISO C90

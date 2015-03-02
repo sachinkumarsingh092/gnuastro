@@ -1,3 +1,8 @@
+2015-03-02  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* lib/fitsarrayvv.c: Changed array types from intXX_t to short,
+	long and LONGLONG. Unfortuantely this is how CFITSIO works.
+
 2015-02-22  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* doc/gnuastro.texi: Added index, changed "Science and its

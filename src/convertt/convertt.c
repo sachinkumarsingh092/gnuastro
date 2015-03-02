@@ -41,7 +41,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************      Modifying pixel values     ***************/
 /**************************************************************/
 void
-convert(struct converttparams *p)
+changevalue(struct converttparams *p)
 {
   struct change *tmp, *ttmp;
   size_t numchange=0, i, j, size;
@@ -76,11 +76,11 @@ convert(struct converttparams *p)
   for(i=0;i<p->numch;++i)
     {
       if(p->isblank[i]) continue;
-      df=(d=ch[i])+size;
       for(j=0;j<numchange;++j)
         {
           f=from[j]; t=to[j];
-          do if(*d==f) *d=t; while(++d<df);
+          df=(d=ch[i])+size;
+          do *d = (*d==f) ? t : *d; while(++d<df);
         }
     }
 
@@ -376,11 +376,11 @@ convertt(struct converttparams *p)
   if(p->changeaftertrunc)
     {
       truncateflux(p);
-      convert(p);
+      changevalue(p);
     }
   else
     {
-      convert(p);
+      changevalue(p);
       truncateflux(p);
     }
   if(p->log) takelog(p);
