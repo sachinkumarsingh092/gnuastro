@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageCrop - Crop a given size from one or multiple images.
-ImageCrop is part of GNU Astronomy Utilities (gnuastro) package.
+Convolve - Convolve input data with a given kernel.
+Convolve is part of GNU Astronomy Utilities (gnuastro) package.
 
 Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
@@ -26,14 +26,14 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "imgcrop.h"
-#include "ui.h"		        /* needs main.h.                  */
+#include "convolve.h"
+#include "ui.h"                 /* Needs convolveparams in main.h */
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
   struct timeval t1;
-  struct imgcropparams p={{0}, {0}, 0};
+  struct convolveparams p={{0}, {0}, 0};
 
   /* Set the starting time.*/
   time(&p.rawtime);
@@ -43,11 +43,11 @@ main (int argc, char *argv[])
   setparams(argc, argv, &p);
 
   /* Run Image Crop */
-  imgcrop(&p);
+  convolve(&p);
 
   /* Free all non-freed allocations. */
   freeandreport(&p, &t1);
 
-  /* Return successfully.*/
+  /* Return successfully. */
   return EXIT_SUCCESS;
 }

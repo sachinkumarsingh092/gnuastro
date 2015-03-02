@@ -22,16 +22,20 @@
 
 ## Directories to check:
 ## =====================
-if COND_MKPROF
-  MAYBE_MKPROF = src/mkprof
-endif
 if COND_CONVERTT
   MAYBE_CONVERTT = src/convertt
+endif
+if COND_CONVOLVE
+  MAYBE_CONVOLVE = src/convolve
 endif
 if COND_IMGCROP
   MAYBE_IMGCROP = src/imgcrop
 endif
-SUBDIRS = lib $(MAYBE_MKPROF) $(MAYBE_IMGCROP) $(MAYBE_CONVERTT) doc tests
+if COND_MKPROF
+  MAYBE_MKPROF = src/mkprof
+endif
+SUBDIRS = lib $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_IMGCROP)	\
+$(MAYBE_MKPROF) doc tests
 
 
 ACLOCAL_AMFLAGS = -I m4

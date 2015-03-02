@@ -153,24 +153,30 @@ AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
 # have given by setting them to "yes" if they are not "no". These
 # options don't accept arguments.
 ayes=false
-AC_ARG_ENABLE([mkprof],
-              [AS_HELP_STRING([--enable-mkprof],
-  	            [Install MakeMock and other enabled packages only.])],
-	      [AS_IF([test "x$enable_mkprof" != xno],
-                     [enable_mkprof=yes; ayes=true])],
-              [enable_mkprof=notset])
 AC_ARG_ENABLE([convertt],
               [AS_HELP_STRING([--enable-convertt],
   	            [Install ConvertType and other enabled packages only.])],
 	      [AS_IF([test "x$enable_convertt" != xno],
                      [enable_convertt=yes; ayes=true])],
               [enable_convertt=notset])
+AC_ARG_ENABLE([convolve],
+              [AS_HELP_STRING([--enable-convolve],
+  	            [Install Convolve and other enabled packages only.])],
+	      [AS_IF([test "x$enable_convolve" != xno],
+                     [enable_convolve=yes; ayes=true])],
+              [enable_convolve=notset])
 AC_ARG_ENABLE([imgcrop],
               [AS_HELP_STRING([--enable-imgcrop],
   	            [Install ImageCrop and other enabled packages only.])],
 	      [AS_IF([test "x$enable_imgcrop" != xno],
                      [enable_imgcrop=yes; ayes=true])],
               [enable_imgcrop=notset])
+AC_ARG_ENABLE([mkprof],
+              [AS_HELP_STRING([--enable-mkprof],
+  	            [Install MakeMock and other enabled packages only.])],
+	      [AS_IF([test "x$enable_mkprof" != xno],
+                     [enable_mkprof=yes; ayes=true])],
+              [enable_mkprof=notset])
 
 
 
@@ -186,13 +192,15 @@ AC_ARG_ENABLE([imgcrop],
 #    every "notset"  becomes yes.       fi
 # fi
 AS_IF([test $ayes = true ],
-      [AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
-       AS_IF([test $enable_convertt = notset], [enable_convertt=no])
-       AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])],
+      [AS_IF([test $enable_convertt = notset], [enable_convertt=no])
+       AS_IF([test $enable_convolve = notset], [enable_convolve=no])
+       AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
+       AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])],
 
-      [AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
-       AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
-       AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])]
+      [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
+       AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
+       AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
+       AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])]
      )
 
 
@@ -200,9 +208,10 @@ AS_IF([test $ayes = true ],
 
 
 # Make the enable_package values available for the Makefile:
-AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
+AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
+AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 
 
 # Tell autoconf what to work on:
@@ -210,9 +219,10 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
 		 tests/Makefile
-                 src/mkprof/Makefile
                  src/convertt/Makefile
-		 src/imgcrop/Makefile])
+                 src/convolve/Makefile
+		 src/imgcrop/Makefile
+                 src/mkprof/Makefile])
 
 
 

@@ -22,8 +22,10 @@ m4
 astmkprof
 astimgcrop
 astconvertt
+astconvolve
 
 .deps
+.sync
 ar-lib
 missing
 compile
