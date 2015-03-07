@@ -22,8 +22,10 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
+LDADD = gnulib/lib/libgnu.a
 AM_LDFLAGS = -lcfitsio -lwcs -lm -ljpeg -L$(top_builddir)/lib
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)/\" -I$(top_srcdir)/include
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
+-I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
 
 
 

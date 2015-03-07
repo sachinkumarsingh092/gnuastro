@@ -34,8 +34,11 @@ endif
 if COND_MKPROF
   MAYBE_MKPROF = src/mkprof
 endif
-SUBDIRS = lib $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_IMGCROP)	\
-$(MAYBE_MKPROF) doc tests
+if COND_GNULIBCHECK
+  MAYBE_GNULIBCHECK = gnulib/tests
+endif
+SUBDIRS = gnulib/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)	\
+$(MAYBE_CONVOLVE) $(MAYBE_IMGCROP) $(MAYBE_MKPROF) doc tests
 
 
 ACLOCAL_AMFLAGS = -I m4
@@ -51,5 +54,6 @@ dist_doc_DATA = README
 
 ## Files that are only distributed:
 ## ================================
-EXTRA_DIST = include/commonargs.h include/commonparams.h	\
- include/fixedstringmacros.h include/neighbors.h
+EXTRA_DIST = m4/gnulib-cache.m4 include/commonargs.h	\
+ include/commonparams.h include/fixedstringmacros.h	\
+ include/neighbors.h

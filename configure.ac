@@ -35,6 +35,7 @@ AC_CONFIG_MACRO_DIRS([m4])
 # Checks for programs.
 : ${CFLAGS=""}
 AC_PROG_CC
+gl_EARLY
 AM_PROG_AR
 LT_INIT
 
@@ -63,31 +64,12 @@ AC_CHECK_LIB([gsl], [gsl_integration_qng], [absolutejunk=1],
 
 
 
-
+#Gnulib checks:
+gl_INIT
 # Checks for header files.
-AC_CHECK_HEADERS([argp.h error.h float.h stdlib.h stdint.h string.h sys/time.h unistd.h],
-                 [], [AC_MSG_ERROR([Cannot continue.])])
+#AC_CHECK_HEADERS([argp.h error.h float.h stdlib.h stdint.h string.h sys/time.h unistd.h],
+#                 [], [AC_MSG_ERROR([Cannot continue.])])
 
-
-
-
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_SIZE_T
-AC_TYPE_UINT8_T
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_INT64_T
-
-
-
-
-
-# Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_FUNC_STRTOD
-AC_CHECK_FUNCS([gettimeofday memset sqrt strtol mkdir strchr])
 
 
 
@@ -129,6 +111,16 @@ AS_IF([test "x$with_numthreads" != xno],
        AC_DEFINE_UNQUOTED([DP_NUMTHREADS], [`nproc`])
        AC_MSG_RESULT([$(nproc)])]
      )
+
+
+
+
+# Check if Gnulib tests should be done:
+AC_ARG_ENABLE([gnulibcheck],
+              [AS_HELP_STRING([--enable-gnulibcheck],
+  	            [In `make check', also test GNU Gnulib.])],
+	      [enable_gnulibcheck=yes], [enable_gnulibcheck=no])
+AM_CONDITIONAL([COND_GNULIBCHECK], [test $enable_gnulibcheck = yes])
 
 
 
@@ -219,10 +211,13 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
 		 tests/Makefile
+                 gnulib/lib/Makefile
+                 src/mkprof/Makefile
+		 src/imgcrop/Makefile
+                 gnulib/tests/Makefile
                  src/convertt/Makefile
                  src/convolve/Makefile
-		 src/imgcrop/Makefile
-                 src/mkprof/Makefile])
+                 ])
 
 
 

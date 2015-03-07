@@ -23,7 +23,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 
-#include "config.h"
 #include "linkedlist.h"
 #include "fitsarrayvv.h"
 #include "commonparams.h"

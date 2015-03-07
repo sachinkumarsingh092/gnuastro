@@ -19,6 +19,8 @@
 Makefile
 
 m4
+gnulib
+snippet
 astmkprof
 astimgcrop
 astconvertt

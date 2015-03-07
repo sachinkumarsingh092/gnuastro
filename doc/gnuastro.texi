@@ -155,7 +155,6 @@ sub-component to a title is present.
 * Modeling and fittings::       Make and fit models.
 * Table manipulation::          Read/Write tables.
 * Developing::                  The development environment.
-* GNU Astronomy Utilities list::  List of installed applications.
 * Other useful software::       Installing other useful software.
 * GNU Free Documentation License::  Full FDL text.
 * Index::                       Index of terms
@@ -167,11 +166,13 @@ Introduction
 
 * Naming convention::
 * Quick start::                 A quick start to installation.
+* GNU Astronomy Utilities list::  List of program in gnuastro.
 * Science and its tools::       Some philosophy and history.
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
-* Conventions::
+* Conventions::                 Conventions used in this manual.
+* Acknowledgments::             People who helped in the production.
 
 Version numbering
 
@@ -203,7 +204,7 @@ Installing GNU Astronomy Utilities
 
 Configuring
 
-* gnuastro configure options::  Configure options particular to gnuastro.
+* GNU Astronomy Utilities configure options::  Configure options particular to gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
 
@@ -388,11 +389,13 @@ founding basis of the GNU Astronomy Utilities.
 @menu
 * Naming convention::
 * Quick start::                 A quick start to installation.
+* GNU Astronomy Utilities list::  List of program in gnuastro.
 * Science and its tools::       Some philosophy and history.
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
 * Conventions::                 Conventions used in this manual.
+* Acknowledgments::             People who helped in the production.
 @end menu
 
 @node Naming convention, Quick start, Introduction, Introduction
@@ -418,7 +421,7 @@ your system with this installation are given in @ref{GNU Astronomy
 Utilities list}. That list also contains the executable names and
 version numbers along with a one line description.
 
-@node Quick start, Science and its tools, Naming convention, Introduction
+@node Quick start, GNU Astronomy Utilities list, Naming convention, Introduction
 @section Quick start
 
 @cindex Uncompress source
@@ -460,7 +463,37 @@ programs might be used is given.
 
 
 
-@node Science and its tools, Your rights, Quick start, Introduction
+@node GNU Astronomy Utilities list, Science and its tools, Quick start, Introduction
+@section GNU Astronomy Utilities list
+
+GNU Astronomy Utilities @value{VERSION}, contains the following
+programs. They are sorted in alphabetical order and followed by their
+executable names along with a short description, see @ref{Naming
+convention}. In this manual they are discussed based on their context,
+please see the manual contents.
+
+@itemize
+
+@item
+ConvertType @value{CONVERTT_VERSION} (@file{astconvertt}): Convert
+files to and from different formats.
+@item
+Convolve @value{CONVOLVE_VERSION} (@file{astconvolve}): Convolve
+(blur) data with a kernel.
+@item
+ImageCrop @value{IMGCROP_VERSION} (@file{astconvertt}): Crop region(s)
+from image(s).
+@item
+MakeProfiles @value{MKPROF_VERSION} (@file{astmkprof}): Make mock
+profiles individually or in one output.
+
+@end itemize
+
+
+
+
+
+@node Science and its tools, Your rights, GNU Astronomy Utilities list, Introduction
 @section Science and its tools
 
 History of science indicates that there are always inevitably unseen
@@ -514,18 +547,18 @@ personal knowledge and authority''@footnote{Karl Popper. The logic of
 scientific discovery. 1959. Larger quote is given at the start of the
 PDF manual.}.
 
-It is obviously impossible for any one human being to gain the
-intricate knowledge explained above for their scientific analysis. On
-the other hand, scientific data can be very large and numerous, for
-example images produced by telescopes in astronomy. This requires very
-efficient algorithms. To make things worse, natural scientists have
-generally not been trained in the advanced software techniques,
-paradigms and architecture that is taught in computer science or
-engineering courses and thus used in most software. The GNU Astronomy
-Utilities are an effort to tackle this issue. GNU Astronomy Utilities
-are built on the basis of the GNU general public license (GPL) and
-enforce the further requirement that an astronomer (who is not
-necessarily trained in computer science or engineering) will need
+It is obviously impractical for any one human being to gain the
+intricate knowledge explained above for every step of their scientific
+analysis. On the other hand, scientific data can be very large and
+numerous, for example images produced by telescopes in astronomy. This
+requires very efficient algorithms. To make things worse, natural
+scientists have generally not been trained in the advanced software
+techniques, paradigms and architecture that is taught in computer
+science or engineering courses and thus used in most software. The GNU
+Astronomy Utilities are an effort to tackle this issue. GNU Astronomy
+Utilities are built on the basis of the GNU general public license
+(GPL) and enforce the further requirement that an astronomer (who is
+not necessarily trained in computer science or engineering) will need
 minimal requirements and preparations to understand and modify any
 step if they feel the need to do so, see @ref{Why C} and @ref{Design
 philosophy}.
@@ -835,7 +868,7 @@ convenient for remote access to your computer. Using secure shell
 console) from anywhere even if the connection speeds are low. There
 are apps for smart phones and tablets which allow you to do this.
 
-@node Conventions,  , New to GNU/Linux?, Introduction
+@node Conventions, Acknowledgments, New to GNU/Linux?, Introduction
 @section Conventions
 In this manual we have the following conventions:
 
@@ -864,6 +897,26 @@ character, enabling you to use multiple lines to write your commands.
 
 @end itemize
 
+@node Acknowledgments,  , Conventions, Introduction
+@section Acknowledgments
+
+GNU Astronomy Utilities has benefited alot for the help and support of
+various people, a complete list is distributed along with the source
+code in the file named @file{THANKS} (it is a plain text
+file). Professor Takashi Ichikawa has been instrumental in the
+evolution of the various small programs that were the predecessors of
+gnuastro, his very critical view points were very useful if creating
+the algorithms of MakeProfiles and NoiseChisel.
+
+Mohammad-reza Khellat and Alan Lefor kindly studied the manual
+multiple times and provided very useful suggestions. Alan also helped
+in testing gnuastro on other operating systems. Brandon Invergo, Karl
+Berry and Richard Stallman from GNU also provided very useful
+suggestions during the evaluation process. At first we wanted to
+submit the programs as independent and individual small programs, but
+thanks to their suggestions and ideas in the evalution process, all
+the separate programs were merged into the complete system that is now
+available.
 
 
 
@@ -1283,15 +1336,15 @@ the options to configure that are particular to gnuastro are
 discussed.
 
 @menu
-* gnuastro configure options::  Configure options particular to gnuastro.
+* GNU Astronomy Utilities configure options::  Configure options particular to gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
 @end menu
 
-@node gnuastro configure options, Installation directory, Configuring, Configuring
-@subsubsection gnuastro configure options
+@node GNU Astronomy Utilities configure options, Installation directory, Configuring, Configuring
+@subsubsection GNU Astronomy Utilities configure options
 
-@cindex gnuastro configure options
+@cindex GNU Astronomy Utilities configure options
 @cindex Configure options particular to gnuastro
 Most of the options to configure (which are to do with building) are
 similar for every program which uses this script. Here the options
@@ -1323,6 +1376,22 @@ Do not build or install the program named @file{progname}. This is
 very similar to the @option{--enable-progname}, but will build and
 install all the other programs except this one.
 
+@item --enable-gnulibcheck
+@cindex GNU C library
+@cindex GNU Portability Library
+Enable checks on the GNU Portability Library (Gnulib). Gnulib is used
+by gnuastro to enable users of non-GNU based operating systems (that
+don't use GNU C library or glibc) to compile and use the advanced
+features that this library provides. We make extensive use of such
+functions. If you give this option to @command{$ ./configure}, when
+you run @command{$ make check}, first the functions in Gnulib will be
+tested, then the gnuastro executables. If your operating system does
+not support glibc or has an older version of it and you have problems
+in the build process (@command{$ make}), you can give this flag to
+configure to see if the problem is caused by Gnulib not supporting
+your operating system or gnuastro, see @ref{Known issues}.
+
+
 @end vtable
 
 @cartouche
@@ -1344,7 +1413,7 @@ but not run the tests and directly install after building.
 
 
 
-@node Installation directory, Executable names, gnuastro configure options, Configuring
+@node Installation directory, Executable names, GNU Astronomy Utilities configure options, Configuring
 @subsubsection Installation directory
 
 @vindex --prefix
@@ -1675,6 +1744,19 @@ files of a library from the library parts. Please also install the
 the package manager. This will not happen if you install the libraries
 from source. When installed from source, the headers are also
 installed.
+
+@item
+@cindex GNU Portability Library
+(Compilation) @emph{Complaints about an unknown function on a non-GNU
+based operating system.} In this case, please run @command{$
+./configure} with the @option{--enable-gnulibcheck} option to see if
+the problem is from the GNU Portability Library (Gnulib) not
+supporting your system or if there is a problem in gnuastro, see
+@ref{GNU Astronomy Utilities configure options}. If the problem is not
+in Gnulib, then please contact us. The cause is probably that a
+function that we have used is not supported by your operating system
+and we didn't included it along with the source tar ball. If the
+function is available in Gnulib, it can be fixed immediately.
 
 @cindex Tests, only one passes
 @cindex @file{LD_LIBRARY_PATH}
@@ -2280,10 +2362,10 @@ line. In case the necessary parameters are not given through any of
 these methods, the program will list the missing necessary parameters
 and abort. As explained in @ref{Operating modes}, the only exception
 to this is @option{--numthreads}, whose default value is set at
-@command{$ ./configure} time internally, see @ref{gnuastro configure
-options}. Of course, you can still provide a default value for the
-number of threads at any of the levels below, but if you don't, the
-program will not abort.
+@command{$ ./configure} time internally, see @ref{GNU Astronomy
+Utilities configure options}. Of course, you can still provide a
+default value for the number of threads at any of the levels below,
+but if you don't, the program will not abort.
 
 
 
@@ -2469,12 +2551,12 @@ if you want more details.
 You can find the number of cores available to your system with the
 command @command{$ nproc}, which is part of GNU Coreutils and is most
 probably already available on your system. If not specified as an
-option at configure time, gnuastro finds the number of cores
-available to your system (and reports it along with all those other
-things it checks!). It is saved internally for all the programs to use
-by default. To specify the number of threads at configure time, use
-the @option{--with-numthreads} option, see @ref{gnuastro configure
-options}.
+option at configure time, gnuastro finds the number of cores available
+to your system (and reports it along with all those other things it
+checks!). It is saved internally for all the programs to use by
+default. To specify the number of threads at configure time, use the
+@option{--with-numthreads} option, see @ref{GNU Astronomy Utilities
+configure options}.
 
 @cindex Internally stored option value
 The number of threads is the only parameter in gnuastro, which is
@@ -2837,10 +2919,9 @@ can run the following command:
 $ astimgcrop --help | grep axis
 @end example
 
-@cindex Argp customization
 @cindex @code{ARGP_HELP_FMT}
+@cindex Argp argument parser
 @cindex Customize @option{--help} output
-@cindex GNU C library, Argp argument parser
 @cindex @option{--help} output customization
 If the output of this option does not fit nicely within the confines
 of your terminal, GNU does enable you to customize its output through
@@ -5454,7 +5535,7 @@ The software for this section have to be added ....
 
 
 
-@node Developing, GNU Astronomy Utilities list, Table manipulation, Top
+@node Developing, Other useful software, Table manipulation, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested
@@ -5468,37 +5549,6 @@ special skill and in his personal knowledge and authority'' can be
 broken, see @ref{Science and its tools}. The following software
 architecture can be one of the most basic and easy to understand for
 any interested inquirer.
-
-The source code for gnuastro, this manual and the tests are divided in
-the following sub-directories of the top directory. Their names are
-standard and descriptive enough, but a short summary is given here:
-
-@cindex Top source code directories
-@cindex Directories in gnuastro source
-@table @file
-
-@item doc
-The Texinfo source files for this manual.
-
-@item include
-The header files of the internal static libraries and also some other
-header files that are used by more than one program.
-
-@item lib
-The internal static libraries (only their @file{.c} files) are stored
-here. These libraries hold functions that are used by more than one
-program, they will not be installed.
-
-@item src
-This directory contains a subdirectory for every program in this
-version of gnuastro. The source code for each program is placed
-inside each of these sub-directories to be easily separable.
-
-@item tests
-This directory keeps all the tests (checks) which are executed when
-@command{make check} is run.
-
-@end table
 
 First some general design choices are tackled. It is followed by a
 short explanation of the version controlled source. The libraries and
@@ -5665,37 +5715,68 @@ various programs (and other programs) in any fashion you please.
 @node Version controlled source, Internal libraries, Design philosophy, Developing
 @section Version controlled source
 
+@cindex Git
 @cindex Version control
 The source code that is publicly distributed does not contain the
 revision history, it is only the final snapshot of a stable release,
 ready to be configured and built. To be able to develop successfully,
 the revision history of the code can be very useful, also some updates
-that are not yet released might be in it.
-
-@cindex Git
-We use Git for the version control of gnuastro. For those who are not
-familiar with it, we suggest the Pro Git
+that are not yet released might be in it.  We use Git for the version
+control of gnuastro. For those who are not familiar with it, we
+suggest the Pro Git
 book@footnote{@url{http://git-scm.com/book/en/v2}}. The whole book is
-publicly available for online reading and downloading. The latest version of gnuastro can be cloned by running
+publicly available for online reading and downloading. The latest
+version of gnuastro can be cloned by running
 
 @example
-$ git clone git://git.sv.gnu.org/gnuastro
+$ git clone git://git.sv.gnu.org/gnuastro.git
+@end example
+
+@cindex GNU C library
+@cindex GNU Portability Library
+@cindex Automatically created build files
+@noindent
+The version controlled source code lacks the files that are
+automatically built (and included in the distributed
+@file{gnuastro-@value{VERSION}.tar.gz}) for configuration and
+building. To ensure portability for a wider range of operating systems
+(those that don't include GNU C library, namely glibc), we have used
+the GNU Portability Library (Gnulib). Gnulib keeps a copy of all the
+functions in glibc and you can include them in the source code to
+replace system wide functions on other compilers. To get the Gnulib,
+just run this command in any directory (lets assume you are in your
+home directory):
+
+@example
+$ pwd
+/home/yourusername
+$ git clone git://git.sv.gnu.org/gnulib.git
+@end example
+
+This will download the full Gnulib version controlled source in a
+directory named @file{gnulib}. To include all the necessary packages,
+run the following command from within the cloned @file{gnuastro}
+directory@footnote{Note that the @file{gnulib-tool} script has to be
+run from within the cloned Gnulib directory, it is not installed.}:
+
+@example
+$ ~/gnulib/gnulib-tool --import --source-base=gnulib/lib    \
+  --with-tests --tests-base=gnulib/tests --no-vc-files      \
+  argp pthread error
 @end example
 
 @cindex GNU Texinfo
 @cindex GNU Libtool
 @cindex GNU Autoconf
 @cindex GNU Automake
-@cindex Automatically created build files
-@noindent
-This version of the source code lacks the files that are automatically
-built (and included in the distributed
-@file{gnuastro-@value{VERSION}.tar.gz}) for configuration and
-building. To create those files you have to run the following command
-in the cloned directory which will generate those automatic
-files. @command{autoreconf} is part of GNU Autoconf and also requires
-GNU Automake, GNU Libtool and GNU Texinfo to create all the necessary
-files, see @ref{Building}.
+@cindex GNU build system
+All the necessary glibc functions are now available. Another set of
+automatically generated files are those used to build the system using
+the GNU build system. To generate those files you have to run the
+following command in the cloned @file{gnuastro}
+directory. @command{autoreconf} is part of GNU Autoconf and also
+requires GNU Automake, GNU Libtool and GNU Texinfo to create all the
+necessary files, see @ref{Building}.
 
 @example
 $ autoreconf --install
@@ -5705,11 +5786,42 @@ $ autoreconf --install
 Now you can easily configure, build and start hacking into the code
 and you have the full revision history under your fingers.
 
+The hand-written (that is version controlled) code for gnuastro, this
+manual and the tests are divided in the following sub-directories of
+the top directory. Their names are standard and descriptive enough,
+but a short summary is given here:
+
+@cindex Top source code directories
+@cindex Directories in gnuastro source
+@table @file
+
+@item doc
+The Texinfo source files for this manual.
+
+@item include
+The header files of the internal static libraries and also some other
+header files that are used by more than one program.
+
+@item lib
+The internal static libraries (only their @file{.c} files) are stored
+here. These libraries hold functions that are used by more than one
+program, they will not be installed.
+
+@item src
+This directory contains a subdirectory for every program in this
+version of gnuastro. The source code for each program is placed
+inside each of these sub-directories to be easily separable.
+
+@item tests
+This directory keeps all the tests (checks) which are executed when
+@command{make check} is run.
+
+@end table
+
 Until gnuastro grows large enough to define its own, we strive to
 follow the version control guidelines of the Git project as our
-base. You can find it in the git project's submitting patches
+base. You can find it in the Git project's submitting patches
 guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}.
-
 
 
 
@@ -5875,7 +5987,7 @@ int verb=p->cp.verb;
 @end example
 
 @item args.h
-@cindex GNU C library, Argp argument parser
+@cindex Argp argument parser
 The argument parser structures (which are used by GNU C library's
 Argp) for each program are defined in @file{args.h}. They are separate
 global variables and function definitions that will be used by
@@ -6178,51 +6290,10 @@ manual have been updated also. Also don't forget to update the
 
 
 
-@node GNU Astronomy Utilities list, Other useful software, Developing, Top
-@appendix GNU Astronomy Utilities list
-
-GNU Astronomy Utilities @value{VERSION}, contains the following
-programs. They are sorted in alphabetical order and followed by their
-executable names along with a short description, see @ref{Naming
-convention}.
-
-@itemize
-
-@item
-ConvertType @value{CONVERTT_VERSION} (@file{astconvertt}): Convert
-files to and from different formats.
-@item
-Convolve @value{CONVOLVE_VERSION} (@file{astconvolve}): Convolve
-(blur) data with a kernel.
-@item
-ImageCrop @value{IMGCROP_VERSION} (@file{astconvertt}): Crop region(s)
-from image(s).
-@item
-MakeProfiles @value{MKPROF_VERSION} (@file{astmkprof}): Make mock
-profiles individually or in one output.
-
-@end itemize
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@node Other useful software, GNU Free Documentation License, GNU Astronomy Utilities list, Top
+@node Other useful software, GNU Free Documentation License, Developing, Top
 @appendix Other useful software
 
 In this appendix the installation of programs and libraries that are

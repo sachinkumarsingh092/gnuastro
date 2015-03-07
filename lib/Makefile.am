@@ -22,7 +22,9 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
-AM_CPPFLAGS = -DSYSDATA_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include
+LDADD = gnulib/lib/libgnu.a
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
+-I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
 
 
 ## Make libraries of the files that are shared between all the
@@ -47,6 +49,7 @@ libarraymanip_la_SOURCES = arraymanip.c $(top_srcdir)/include/arraymanip.h
 libtxtarrayvv_la_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
 
 libastrthreads_la_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
+libastrthreads_la_LDFLAGS = $(LIB_PTHREAD)
 
 libconfigfiles_la_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
 
