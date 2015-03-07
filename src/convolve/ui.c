@@ -240,6 +240,94 @@ checkifset(struct convolveparams *p)
 
 
 /**************************************************************/
+/************         Prepare the arrays          *************/
+/**************************************************************/
+void
+preparearrays(struct convolveparams *p)
+{
+  int bitpix;
+  void *array;
+  double sum=0.0f;
+  size_t numnul, i, size;
+  struct uiparams *up=&p->up;
+  float *f, *fp, tmp, *kernel;
+  struct commonparams *cp=&p->cp;
+
+  /* First read the input image: */
+  numnul=fitsimgtoarray(up->inputname, cp->hdu, &bitpix, &array,
+                        &p->is0, &p->is1);
+  if(numnul) p->inputhasnul=1;
+  if(bitpix!=FLOAT_IMG)
+    {
+      changetype(array, bitpix, p->is0*p->is1, numnul, (void **)(&p->input),
+                 FLOAT_IMG);
+      free(array);
+    }
+
+  /* Now read the kernel: */
+  numnul=fitsimgtoarray(up->kernelname, up->khdu, &bitpix, &array,
+                        &p->ks0, &p->ks1);
+  if(p->ks0%2==0 || p->ks1%2==0)
+    error(EXIT_FAILURE, 0, "The kernel used for convolution has to have an "
+          "odd number of pixels on all sides, %s is %lux%lu.",
+          up->kernelname, p->ks1, p->ks0);
+  if(bitpix!=FLOAT_IMG)
+    {
+      /* Convert the kernel to a float image: */
+      size=p->ks0*p->ks1;
+      changetype(array, bitpix, size, numnul, (void **)&p->kernel, FLOAT_IMG);
+      kernel=p->kernel;
+      free(array);
+
+      /* Convert Nul values to zero: */
+      if(numnul)
+        {
+          fp=(f=kernel)+size;
+          do *f = isnan(*f) ? 0 : *f; while(++f<fp);
+        }
+
+      /* Normalize the kernel: */
+      if(p->kernelflip)
+        {
+          fp=(f=kernel)+size;
+          do sum+=*f++; while(f<fp);
+          fp=(f=kernel)+size;
+          do *f++/=sum; while(f<fp);
+        }
+
+      /* Flip the kernel: */
+      if(p->kernelflip)
+        {
+          for(i=0;i<size/2;++i)
+            {
+              tmp=kernel[i];
+              kernel[i]=kernel[size-i];
+              kernel[size-i]=tmp;
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
 void
@@ -253,6 +341,10 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   cp->verb          = 1;
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
+
+  /* Convert options: */
+  p->kernelflip     = 1;
+  p->kernelnorm     = 1;
 
   /* Read the arguments. */
   errno=0;
@@ -269,13 +361,14 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   if(cp->printparams)
     REPORT_PARAMETERS_SET;
 
+  /* Prepare the necessary arrays: */
+  preparearrays(p);
+
   /* Do a sanity check, then remove the possibly existing log file
      created by txttoarray.
   sanitycheck(p);
   */
-  /* Prepare the necessary arrays:
-  preparearrays(p);
-  */
+
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
     printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
@@ -306,6 +399,8 @@ setparams(int argc, char *argv[], struct convolveparams *p)
 void
 freeandreport(struct convolveparams *p, struct timeval *t1)
 {
+  free(p->input);
+  free(p->kernel);
   free(p->cp.hdu);
   free(p->up.khdu);
   free(p->cp.output);

@@ -60,6 +60,13 @@ struct convolveparams
   /* Inputs: */
   float           *input;   /* Input image array.                     */
   float          *kernel;   /* Input Kernel array.                    */
+  size_t             is0;   /* Input image size along C's first axis. */
+  size_t             is1;   /* Input image size along C's second axis.*/
+  size_t             ks0;   /* Kernel size along C's first axis.      */
+  size_t             ks1;   /* Kernel size along C's second axis.     */
+  int        inputhasnul;   /* ==1: The input image has nul pixels.   */
+  int         kernelflip;   /* ==1: Flip the kernel.                  */
+  int         kernelnorm;   /* ==1: Normalize the kernel.             */
 
   /* Internal: */
   time_t         rawtime;   /* Starting time of the program.          */

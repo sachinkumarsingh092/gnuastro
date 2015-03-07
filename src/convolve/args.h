@@ -57,7 +57,7 @@ const char doc[] =
    a b c d e f g i j l m n p r s t u v w x y z
    A B C E F G I J L M O Q R T U W X Y Z
 
-   Free numbers: 500
+   Free numbers: >=502
 */
 static struct argp_option options[] =
   {
@@ -90,6 +90,22 @@ static struct argp_option options[] =
       "STR",
       0,
       "HDU of kernel file.",
+      1
+    },
+    {
+      "nokernelflip",
+      500,
+      0,
+      0,
+      "Do not flip the kernel image.",
+      1
+    },
+    {
+      "nokernelnorm",
+      501,
+      0,
+      0,
+      "Do not normalize the kernel image.",
       1
     },
 
@@ -159,6 +175,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'H':
       p->up.khdu=arg;
+      break;
+    case 500:
+      p->kernelflip=0;
+      break;
+    case 501:
+      p->kernelnorm=0;
       break;
 
 

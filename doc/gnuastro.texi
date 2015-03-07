@@ -45,6 +45,9 @@ Texts.  A copy of the license is included in the section entitled
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
 
+* Convolve: (gnuastro)Convolve. Convolve an input file with kernel.
+* astconvolve: (gnuastro)Invoking astconvolve. Options to Convolve.
+
 * ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
 * astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
 
@@ -142,6 +145,7 @@ sub-component to a title is present.
 
 @menu
 * Introduction::                General introduction.
+* Tutorial::                    Some tutorial example applications.
 * Installation::                Requirements and installation.
 * Common behavior::             Common behavior in all programs.
 * Files::                       File information and type conversion.
@@ -152,7 +156,6 @@ sub-component to a title is present.
 * Table manipulation::          Read/Write tables.
 * Developing::                  The development environment.
 * GNU Astronomy Utilities list::  List of installed applications.
-* Examples::                    Example applications.
 * Other useful software::       Installing other useful software.
 * GNU Free Documentation License::  Full FDL text.
 * Index::                       Index of terms
@@ -168,10 +171,15 @@ Introduction
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
+* Conventions::
 
 Version numbering
 
 * GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
+
+Tutorial
+
+* Viewing a catalog's targets in JPEG::
 
 Installation
 
@@ -254,6 +262,7 @@ ConvertType
 Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
+* Convolve::                    Convolve an image with a kernel.
 * ImageTransform::              Transform (flip, rotate) an image.
 * ImageArith::                  Apply arithmetic on image(s).
 * EllipMask::                   Place elliptical masks on an image.
@@ -270,6 +279,11 @@ Invoking ImageCrop
 
 * astimgcrop options::          A list of all the options with explanation.
 * astimgcrop output::           The outputs of ImageCrop.
+
+Convolve
+
+* Convolution kernel::          Properties of the convolution kernel.
+* Invoking astconvolve::        Options and arguments to Convolve.
 
 Image analysis
 
@@ -328,10 +342,6 @@ Program source
 * Coding conventions::          Conventions used for coding
 * Multithreaded programming::   gnuastro uses POSIX threads.
 
-Examples
-
-* Viewing a catalog's targets in JPEG::
-
 Other useful software
 
 * SAO ds9::                     Viewing FITS images.
@@ -344,7 +354,7 @@ SAO ds9
 @end detailmenu
 @end menu
 
-@node Introduction, Installation, Top, Top
+@node Introduction, Tutorial, Top, Top
 @chapter Introduction
 
 @cindex GNU coding standards
@@ -382,6 +392,7 @@ founding basis of the GNU Astronomy Utilities.
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
+* Conventions::                 Conventions used in this manual.
 @end menu
 
 @node Naming convention, Quick start, Introduction, Introduction
@@ -442,7 +453,7 @@ which explains how the programs should be run on the command line. It
 can be read on the command line by running the command @command{$ info
 astprogname}, see @ref{Getting help}. This sub-section starts with a
 few examples of each program and goes on to explain the invocation
-details. In @ref{Examples} some real life examples of how these
+details. In @ref{Tutorial} some real life examples of how these
 programs might be used is given.
 
 
@@ -691,7 +702,7 @@ independent. Something like the GNU Coreutils.
 
 
 
-@node New to GNU/Linux?,  , Version numbering, Introduction
+@node New to GNU/Linux?, Conventions, Version numbering, Introduction
 @section New to GNU/Linux?
 
 Some astronomers initially install and use the GNU/Linux operating
@@ -824,6 +835,34 @@ convenient for remote access to your computer. Using secure shell
 console) from anywhere even if the connection speeds are low. There
 are apps for smart phones and tablets which allow you to do this.
 
+@node Conventions,  , New to GNU/Linux?, Introduction
+@section Conventions
+In this manual we have the following conventions:
+
+@itemize
+
+@item
+All commands that are to be run on the shell (command line) prompt as
+the user start with a @command{$}. In case they must be run as a
+super-user or system administrator, they will start with a
+@command{#}.
+
+@item
+If the command becomes larger than the page width a @key{\} is
+inserted in the code. If you are typing the code by hand on the
+command line, you don't need to use multiple lines or add the extra
+space characters, so you can omit them. If you want to copy and paste
+these examples (highly discouraged!) then the @key{\} should stay.
+
+The @key{\} character is a shell escape character which is used
+commonly to make characters which have special meaning for the shell
+loose that special place (the shell will not treat them specially if
+there is a @key{\} behind them). When it is a last character in a line
+(the next character is a new-line charactor) the new-line character
+looses its meaning an the shell sees it as a simple white-space
+character, enabling you to use multiple lines to write your commands.
+
+@end itemize
 
 
 
@@ -845,8 +884,122 @@ are apps for smart phones and tablets which allow you to do this.
 
 
 
+@node Tutorial, Installation, Introduction, Top
+@chapter Tutorial
 
-@node Installation, Common behavior, Introduction, Top
+Before going into details about the installation, common behaviour and
+the particular aspects of each program, we will first give some
+general outlines of the most common use cases for the various
+utilities in GNU Astronomy Utilities. To get more information about a
+particular program, you can visit the section with the same name as
+the program in this manual. To see only an explanation of the options
+and arguments of any program, see the section titled `Invoking
+ProgramName'.
+
+@menu
+* Viewing a catalog's targets in JPEG::
+@end menu
+
+@node Viewing a catalog's targets in JPEG,  , Tutorial, Tutorial
+@section Viewing a catalog's targets in JPEG
+
+Suppose you have a catalog of 200 objects that you want to use in your
+research. The right ascension of each target is stored in column 0 and
+the declination in column 1. Let's assume you created the catalog using
+a detection program (for example NoiseChisel) on one image
+(@file{image.fits}). Doing your science process (for example fittings
+or etc) on the large input image is impractical for most applications,
+so you need cutouts. A reasonable scientist would also want to
+visually check all or a random sample of them first. But doing so with
+SAO ds9 will be too slow, this is where ConvertType comes in handy.
+
+All the targets can be cut out from the larger image(s) using
+ImageCrop. Let's assume you are content with the default ImageCrop
+parameter values. At first you have an empty folder with the image and
+NoiseChisel object catalog:
+@example
+$ ls
+image.fits image_o.txt
+@end example
+
+@noindent
+You can then run astimgcrop with the following parameters:
+@example
+$ astimgcrop --racol=0 --deccol=1 image_o.txt image.fits
+ImageCrop started on AAA BBB CC DD:EE:FF GGGG
+  ---- ./4_crop.fits                  1 1
+  ---- ./2_crop.fits                  1 1
+  ---- ./1_crop.fits                  1 1
+[[[ Truncated rest of list ]]]
+  ---- ./198_crop.fits                1 1
+  ---- ./195_crop.fits                1 1
+  - 200 images created.
+  - 200 were filled in the center.
+  - 0 used more than one input.
+ImageCrop finished in:  AA.BBBBBB (seconds)
+$ ls
+1_crop.fits 2_crop.fits ... 200_crop.fits catalog.txt image.fits
+@end example
+
+@cindex Asynchronous thread allocation
+@noindent
+The thread allocation of the CPUs is asynchronous, so each time you
+run it the order of which job gets done first differs. For ImageCrop
+the order of outputs is irrelevant since each crop is independent of the
+rest. This is why the crops are not necessarily created in the same
+input order. From the output of @command{ls} you see that in the end
+all the 200 objects have been cropped out.
+
+@cindex GNU Parallel
+Converting all the images to JPEG can be done very fast using GNU
+Parallel (which will run ConvertType simultaneously on all your
+available cores to speed up the job):
+@example
+$ parallel astconvertt -ojpg ::: *_crop.fits
+@end example
+
+@pindex eog
+@cindex Eye of GNOME
+Now that you have the different JPEG images you can go through them
+very fast with the default GNOME image viewer (Eye of GNOME), you can
+open the first one with
+@example
+$ eog 1_crop.jpg
+@end example
+
+Simply by pressing the @key{Enter} key, you can go onto the next image
+and check all the results in the catalog very fast. You can also use
+the JPEG images and an automated script to make an automatic webpage
+to display all the images side by side in one screen for a faster
+check. You can then delete all the JPEG files with the command.
+@example
+$ rm *.jpg
+@end example
+
+After you have used the cutouts and your research is complete, you can
+convert the crops to EPS or PDF to include in the end of your paper or
+report.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Installation, Common behavior, Tutorial, Top
 @chapter Installation
 
 @cindex Installation
@@ -3453,20 +3606,21 @@ Programs for this section will soon be added....
 @node Image manipulation, Image analysis, Header manipulation, Top
 @chapter Image manipulation
 
-One of the data formats that can be contained in a FITS file extension
-is an image with one value per pixel (or grayscale). The programs
-specified in this chapter provide the tools to manipulate those
-images, for example to crop a small region of them or to convert them
-to other formats.
+Images are one of the major formats of data that is used in
+astronomy. The functions in this chapter explain the GNU Astronomy
+Utilities which are provided for their manipulaton. For example
+cropping out a part of a larger image or convolving the image with a
+given kernel or applying a transformation to it.
 
 @menu
 * ImageCrop::                   Crop region(s) from FITS image(s).
+* Convolve::                    Convolve an image with a kernel.
 * ImageTransform::              Transform (flip, rotate) an image.
 * ImageArith::                  Apply arithmetic on image(s).
 * EllipMask::                   Place elliptical masks on an image.
 @end menu
 
-@node ImageCrop, ImageTransform, Image manipulation, Image manipulation
+@node ImageCrop, Convolve, Image manipulation, Image manipulation
 @section ImageCrop
 
 @cindex Section of an image
@@ -3980,7 +4134,183 @@ much more efficient. There are also much faster search strategies.
 
 
 
-@node ImageTransform, ImageArith, ImageCrop, Image manipulation
+
+
+
+
+@node Convolve, ImageTransform, ImageCrop, Image manipulation
+@section Convolve
+
+@cindex Convolution
+@cindex Neighborhood
+@cindex Weighted average
+@cindex Average, weighted
+@cindex Kernel, convolution
+Convolution is a general mathematical procedure of the operation of
+one function on another. To be more specific, it is the process of
+changing the value of one pixel to the weighted average of all the
+pixels in its neighborhood. We define the neighbourhood of each pixel
+(how many pixels in which directions) and the weight function (How
+much each neighbouring pixel should contribute) through a second image
+which is known as the kernel@footnote{Also known as filter, here we
+will user `kernel'.}.
+
+@cindex Detection
+@cindex Atmosphere
+@cindex Blur image
+@cindex Cosmic rays
+Convolution of an image will generally result in blurring the
+image. In other words, if the image has sharp differences in
+neighbouring pixel values@footnote{In astronomy, the only major time
+we confront such sharp borders in signal are cosmic rays. All other
+sources of signal in an image are already blurred by the atmosphere or
+the optics of the instrument.}, those sharp differences will become
+smoother. This has very good consequences in detection for example,
+because in an actual observed image, the variation in neighbouring
+pixel values due to noise can be very high. But after convolution,
+those variations will decrease and we have a better hope in detecting
+the possible underlying signal. Another case where convolution is
+extensively used is in mock images and modelling in general,
+convolution can be used to simulate the effect of the atmosphere or
+the optical system on the mock profiles that we created, see
+@ref{PSF}.
+
+@cindex Spatial domain
+@cindex Frequency domain
+Convolution is a very interesting and important topic in any form of
+signal analysis (including astronomical observations). So we strongly
+recommend going through any good image processing book to get a good
+understanding of it@footnote{Our main reference for this chapter was:
+Gonzalez, R. C., Woods, R. E., 2008, Digital image processing (third
+edition), Pearson Prentice Hall.}. We will just have a fast summary
+here.  In discussing convolution, understanding the spatial and
+frequency domains is the key. An image viewed in the spatial domain is
+the same image you are observing: each pixel has a certain flux value
+and the pixel (which has a fixed spatial position) with the highest
+flux value can be seen first@footnote{Assuming that the highest flux
+is the easiest to see}. In the frequency domain, the spatial change of
+flux values is emphasized, with the lowest frequencies in the center
+and higher frequencies extending outwards@footnote{In the frequency
+domain of a real image, we will actually be dealing with complex pixel
+values we can view either the amplitude or phase.}.  Removing
+(filtering) certain frequency ranges is the source of the term
+filtering@footnote{For example ``low pass filtering'' which refers to
+removing small frequencies}.
+
+@menu
+* Convolution kernel::          Properties of the convolution kernel.
+* Invoking astconvolve::        Options and arguments to Convolve.
+@end menu
+
+@node Convolution kernel, Invoking astconvolve, Convolve, Convolve
+@subsection Convolution kernel
+
+In convolution, the kernel specifies the weight and positions of the
+neighbours of each pixel. Visualizing convolution in the spatial
+domain might be easier. To find the convolved value of a pixel, the
+central pixel of the kernel is placed on that pixel. The value of each
+overlapping pixel in the kernel and image are multiplied by each other
+and summed for all the kernel pixels. To have one pixel in the center,
+the sides of the convolution kernel have to be an odd number. This
+process effectively mixes the pixel values of each pixel with its
+neighbors, resulting in a blurred image compared to the sharper input
+image.
+
+Formally, convolution is one kind of `spatial filtering' in image
+processing texts. If we assume that the kernel has @mymath{2a+1} and
+@mymath{2b+1} pixels on each side, the convolved value of a pixel
+placed at @mymath{x} and @mymath{y} (@mymath{C_{x,y}}) can be
+calculated from the neighbouring pixel values in the input image
+(@mymath{I}) and the kernel (@mymath{K}) from
+
+@dispmath{C_{x,y}=\sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t}.}
+
+Any pixel coordinate that is outside of the image in the equation
+above will be considered to be zero. When the kernel is symmetric
+about its center the blurred image has the same orientation as the
+original image. However, if the kernel is not symmetric, the image
+will be affected in the opposite manner, this is a natural consequence
+of the definition of spatial filtering. In order to avoid this we can
+flip the kernel so the convolution can have the same original
+orentation.
+
+To be a weighted average, the sum of the weights (the pixels in the
+kernel) have to be unity. This will have the consequence that the
+convolved image of an object and unconvolved object will have the same
+total flux, which is natural, because convolution should not eat up
+the object photons, it only disperses them.
+
+@node Invoking astconvolve,  , Convolution kernel, Convolve
+@subsection Invoking Convolve
+
+Convolve an input image with a known kernel. The general template for
+convolve is:
+
+@example
+$ astconvolve [OPTION...] ASTRdata
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astconvolve --kernel=psf.fits mockimg.fits
+@end example
+
+The only argument accepted by Convolve is an input image file. For the
+full list of options to all gnuastro programs, please see @ref{Common
+options}, here we will only explain the options particular to
+Convolve:
+
+@table @option
+
+@item -k
+@itemx --kernel
+The input kernel image filename. It should have an odd number of
+pixels and any blank pixel value in the image will be changed to
+zero. Prior to convolution several operations will be done on the
+image, see @ref{Convolution kernel} for an explanation of the reason
+for the last two.
+@itemize
+
+@item
+Whatever its initial type, it will be converted to a floating point
+array for analysis.
+
+@item
+Any blank or Nan pixel in the kernel will be given a value of zero.
+
+@item
+The kernel will be flipped immediately after reading it, can be disabled with the @option{--nokernelflip}
+
+@item
+The kernel will be normalized (such that the sum of its pixels will be
+unity), can be disabled with @option{--nokernelnorm}.
+@end itemize
+
+@item -H
+@itemx --khdu
+The input kernel image HDU name or number.
+
+@item --nokernelflip
+Do not flip the kernel after reading it. This can be useful if the
+flipping has already been applied to the kernel or it is not desired.
+
+@item --nokernelnorm
+Do not normalize the kernel after reading it, such that the sum of its
+pixels is unity.
+
+@end table
+
+
+
+
+
+
+
+
+
+@node ImageTransform, ImageArith, Convolve, Image manipulation
 @section ImageTransform
 Sometimes it is required that the image be transformed (flipped,
 rotated, sheared or ...) This program will do that.
@@ -5848,7 +6178,7 @@ manual have been updated also. Also don't forget to update the
 
 
 
-@node GNU Astronomy Utilities list, Examples, Developing, Top
+@node GNU Astronomy Utilities list, Other useful software, Developing, Top
 @appendix GNU Astronomy Utilities list
 
 GNU Astronomy Utilities @value{VERSION}, contains the following
@@ -5861,6 +6191,9 @@ convention}.
 @item
 ConvertType @value{CONVERTT_VERSION} (@file{astconvertt}): Convert
 files to and from different formats.
+@item
+Convolve @value{CONVOLVE_VERSION} (@file{astconvolve}): Convolve
+(blur) data with a kernel.
 @item
 ImageCrop @value{IMGCROP_VERSION} (@file{astconvertt}): Crop region(s)
 from image(s).
@@ -5889,121 +6222,7 @@ profiles individually or in one output.
 
 
 
-@node Examples, Other useful software, GNU Astronomy Utilities list, Top
-@appendix Examples
-
-This chapter includes some shell scripts showing how the outputs of
-the various programs can be used as input into others for doing some
-example jobs. Note that if the command becomes larger than the page
-width a @key{\} is inserted in the code. If you are typing the code by
-hand on the command line, you don't need to use multiple lines or add
-the extra space characters, so you can omit them. If you want to copy
-and paste these examples (highly discouraged!) then the @key{\} should
-stay.
-
-@menu
-* Viewing a catalog's targets in JPEG::
-@end menu
-
-@node Viewing a catalog's targets in JPEG,  , Examples, Examples
-@section Viewing a catalog's targets in JPEG
-
-Suppose you have a catalog of 200 objects that you want to use in your
-research. The right ascension of each target is stored in column 0 and
-the declination in column 1. Let's assume you created the catalog using
-a detection program (for example NoiseChisel) on one image
-(@file{image.fits}). Doing your science process (for example fittings
-or etc) on the large input image is impractical for most applications,
-so you need cutouts. A reasonable scientist would also want to
-visually check all or a random sample of them first. But doing so with
-SAO ds9 will be too slow, this is where ConvertType comes in handy.
-
-All the targets can be cut out from the larger image(s) using
-ImageCrop. Let's assume you are content with the default ImageCrop
-parameter values. At first you have an empty folder with the image and
-NoiseChisel object catalog:
-@example
-$ ls
-image.fits image_o.txt
-@end example
-
-@noindent
-You can then run astimgcrop with the following parameters:
-@example
-$ astimgcrop --racol=0 --deccol=1 image_o.txt image.fits
-ImageCrop started on AAA BBB CC DD:EE:FF GGGG
-  ---- ./4_crop.fits                  1 1
-  ---- ./2_crop.fits                  1 1
-  ---- ./1_crop.fits                  1 1
-[[[ Truncated rest of list ]]]
-  ---- ./198_crop.fits                1 1
-  ---- ./195_crop.fits                1 1
-  - 200 images created.
-  - 200 were filled in the center.
-  - 0 used more than one input.
-ImageCrop finished in:  AA.BBBBBB (seconds)
-$ ls
-1_crop.fits 2_crop.fits ... 200_crop.fits catalog.txt image.fits
-@end example
-
-@cindex Asynchronous thread allocation
-@noindent
-The thread allocation of the CPUs is asynchronous, so each time you
-run it the order of which job gets done first differs. For ImageCrop
-the order of outputs is irrelevant since each crop is independent of the
-rest. This is why the crops are not necessarily created in the same
-input order. From the output of @command{ls} you see that in the end
-all the 200 objects have been cropped out.
-
-@cindex GNU Parallel
-Converting all the images to JPEG can be done very fast using GNU
-Parallel (which will run ConvertType simultaneously on all your
-available cores to speed up the job):
-@example
-$ parallel astconvertt -ojpg ::: *_crop.fits
-@end example
-
-@pindex eog
-@cindex Eye of GNOME
-Now that you have the different JPEG images you can go through them
-very fast with the default GNOME image viewer (Eye of GNOME), you can
-open the first one with
-@example
-$ eog 1_crop.jpg
-@end example
-
-Simply by pressing the @key{Enter} key, you can go onto the next image
-and check all the results in the catalog very fast. You can also use
-the JPEG images and an automated script to make an automatic webpage
-to display all the images side by side in one screen for a faster
-check. You can then delete all the JPEG files with the command.
-@example
-$ rm *.jpg
-@end example
-
-After you have used the cutouts and your research is complete, you can
-convert the crops to EPS or PDF to include in the end of your paper or
-report.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@node Other useful software, GNU Free Documentation License, Examples, Top
+@node Other useful software, GNU Free Documentation License, GNU Astronomy Utilities list, Top
 @appendix Other useful software
 
 In this appendix the installation of programs and libraries that are
