@@ -2545,7 +2545,9 @@ Utilities uses the POSIX threads library (pthreads) for spinning off
 threads when the user asks for it, see @ref{Multithreaded programming}
 if you want more details.
 
+@pindex nproc
 @vindex --numthreads
+@cindex GNU Coreutils
 @cindex Number of threads available
 @cindex Available number of threads
 You can find the number of cores available to your system with the
@@ -2556,13 +2558,15 @@ to your system (and reports it along with all those other things it
 checks!). It is saved internally for all the programs to use by
 default. To specify the number of threads at configure time, use the
 @option{--with-numthreads} option, see @ref{GNU Astronomy Utilities
-configure options}.
+configure options}. In case your system does not have GNU Coreutils,
+the only way to proceed is to manually specify the number of threads
+through this option.
 
 @cindex Internally stored option value
-The number of threads is the only parameter in gnuastro, which is
+The number of threads is the only parameter in gnuastro which is
 stored internally at configure time. The implication is that the only
 option with a value that doesn't have to be in any of the
-configuration files (see @ref{Configuration files}) is this. Note that
+configuration files is this, see @ref{Configuration files}. Note that
 if you do specify it, the value you provided in the most immediate
 configuration file will be used, not the internal value.
 
@@ -5762,7 +5766,7 @@ run from within the cloned Gnulib directory, it is not installed.}:
 @example
 $ ~/gnulib/gnulib-tool --import --source-base=gnulib/lib    \
   --with-tests --tests-base=gnulib/tests --no-vc-files      \
-  argp pthread error
+  argp error
 @end example
 
 @cindex GNU Texinfo

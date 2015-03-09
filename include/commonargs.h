@@ -29,7 +29,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <fitsio.h>
 
-#include "config.h"
 #include "checkset.h"
 #include "commonparams.h"
 #include "fixedstringmacros.h"

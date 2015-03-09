@@ -1,3 +1,13 @@
+2015-03-09  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* include/astrthreads.h: Added a temporary function so the
+	pthread_barrier type and functions can be run on systems that
+	don't support it. I have contacted the author and it will only
+	remain if he clarifies the license. I have also asked the Gnulib
+	people to try to include it so this issue can be completely fixed.
+
+	* configure.ac: Added checks for nproc and gs along with warnings.
+
 2015-03-02  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/convolve/: Work started on Convolve.

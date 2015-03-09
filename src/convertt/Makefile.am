@@ -22,7 +22,6 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
-LDADD = gnulib/lib/libgnu.a
 AM_LDFLAGS = -lcfitsio -lwcs -lm -ljpeg -L$(top_builddir)/lib
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 -I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
@@ -37,8 +36,9 @@ bin_PROGRAMS = astconvertt
 astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h jpeg.c	\
 jpeg.h eps.c eps.h convertt.c convertt.h
 
-astconvertt_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
--lcheckset -ltiming -llinkedlist -lstatistics
+astconvertt_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
+-lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -llinkedlist		\
+-lstatistics
 
 
 

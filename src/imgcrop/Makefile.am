@@ -22,7 +22,6 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
-LDADD = gnulib/lib/libgnu.a
 AM_LDFLAGS = -lcfitsio -lwcs $(LIB_PTHREAD) -lm -L$(top_builddir)/lib
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 -I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
@@ -37,8 +36,9 @@ bin_PROGRAMS = astimgcrop
 astimgcrop_SOURCES = main.c main.h ui.c ui.h args.h imgcrop.c	\
 imgcrop.h wcsmode.c wcsmode.h crop.c crop.h cite.h
 
-astimgcrop_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv	\
--lcheckset -llinkedlist -ltiming -lastrthreads -lbox
+astimgcrop_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
+-lfitsarrayvv -ltxtarrayvv -lcheckset -llinkedlist -ltiming		\
+-lastrthreads -lbox
 
 
 

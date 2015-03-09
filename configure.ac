@@ -106,11 +106,24 @@ AH_TEMPLATE([DP_NUMTHREADS], [Number of threads to use.])
 AS_IF([test "x$with_numthreads" != xno],
       [AS_IF([ [[[ $with_numthreads =~ ^[1-9]+$ ]]] ],
              [AC_DEFINE_UNQUOTED([DP_NUMTHREADS], [$with_numthreads])],
-             [AC_MSG_FAILURE([Value to --with-readline ($with_numthreads) is not a valid number])])],
-      [AC_MSG_CHECKING([for number of available threads])
+             [AC_MSG_FAILURE([Value to --with-numthreads ($with_numthreads) is not a valid number])])],
+      [
+       AC_PATH_PROG(has_nproc, nproc, [no])
+       AS_IF([test "x$has_nproc" = xno],
+             [AS_ECHO([])
+              AS_ECHO([])
+              AC_MSG_FAILURE([The executable `nproc' was not found on your system. It is part of GNU Coreutils and specifies the number of CPU threads available for programs on your system. You can either install GNU Coreutils or simply run configure again with the option: `--with-numthreads=NUMBER-OF-THREADS' (replace NUMBER-OF-THREADS with any positive integer you like, ideally, it is double the number of physical CPU cores on your system). All the programs in GNU Astronomy Utilities will then use NUMBER-OF-THREADS if they need to run on multiple threads. Please see the manual for more information.])
+              ])
+       AC_MSG_CHECKING([for number of available threads])
        AC_DEFINE_UNQUOTED([DP_NUMTHREADS], [`nproc`])
-       AC_MSG_RESULT([$(nproc)])]
+       AC_MSG_RESULT([$(nproc)])
+      ]
      )
+
+#Check necessary program(s):
+anywarnings=no
+AC_PATH_PROG(has_ghostscript, gs, [no])
+AS_IF([test "x$has_ghostscript" = xno], anywarnings=yes)
 
 
 
@@ -231,13 +244,29 @@ AC_OUTPUT
 
 
 # Print a bye-bye message.
+PACKAGE_FULL_NAME="AC_PACKAGE_NAME (AC_PACKAGE_TARNAME) AC_PACKAGE_VERSION"
 AS_ECHO([])
-AS_ECHO([==========================================])
-AS_ECHO(["AC_PACKAGE_STRING is configured."])
+AS_ECHO([===================================================================])
+AS_ECHO([===================================================================])
+AS_ECHO(["$PACKAGE_FULL_NAME, is configured."])
 AS_ECHO([])
-AS_ECHO(["Ready to build, check and install:"])
+AS_IF([test "x$anywarnings" = xyes],
+      [
+        AS_ECHO([Warnings:])
+        AS_IF([test "x$has_ghostscript" = xno],
+              [AS_ECHO(["  - GPL GhostScript, with the executable name \`gs' was not found"])
+               AS_ECHO(["      in your PATH environment variable. If PDF outputs are desired"])
+               AS_ECHO(["      from ConvertType, it will stop at the EPS output and cannot "])
+               AS_ECHO(["      proceed to generate the PDF."])])
+        AS_ECHO([])
+        AS_ECHO([])
+      ]
+     )
+AS_ECHO(["Please run the following commands to build, test"])
+AS_ECHO(["and install AC_PACKAGE_TARNAME AC_PACKAGE_VERSION in your machine."])
 AS_ECHO(["    make"])
 AS_ECHO(["    make check"])
 AS_ECHO(["    make install"])
-AS_ECHO([==========================================])
+AS_ECHO([===================================================================])
+AS_ECHO([===================================================================])
 AS_ECHO([])

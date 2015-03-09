@@ -37,8 +37,9 @@ bin_PROGRAMS = astmkprof
 astmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h	\
 oneprofile.c oneprofile.h profiles.c profiles.h cite.h
 
-astmkprof_LDADD = -lconfigfiles -lfitsarrayvv -ltxtarrayvv -lcheckset	\
--llinkedlist -ltiming -lastrthreads -lbox -lstatistics -larraymanip
+astmkprof_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
+-lfitsarrayvv -ltxtarrayvv -lcheckset -llinkedlist -ltiming		\
+-lastrthreads -lbox -lstatistics -larraymanip
 
 
 
