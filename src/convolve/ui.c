@@ -42,7 +42,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Set the file names of the places where the default parameters are
    put. */
 #define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR CONFIG_FILE
+#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
 #define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
 #define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
 
@@ -269,48 +269,72 @@ preparearrays(struct convolveparams *p)
   /* Now read the kernel: */
   numnul=fitsimgtoarray(up->kernelname, up->khdu, &bitpix, &array,
                         &p->ks0, &p->ks1);
-  if(p->ks0%2==0 || p->ks1%2==0)
-    error(EXIT_FAILURE, 0, "The kernel used for convolution has to have an "
-          "odd number of pixels on all sides, %s is %lux%lu.",
-          up->kernelname, p->ks1, p->ks0);
-  if(bitpix!=FLOAT_IMG)
+
+  /* Convert the kernel to a float image: */
+  size=p->ks0*p->ks1;
+  if(bitpix==FLOAT_IMG)
+    p->kernel=array;
+  else
     {
-      /* Convert the kernel to a float image: */
-      size=p->ks0*p->ks1;
       changetype(array, bitpix, size, numnul, (void **)&p->kernel, FLOAT_IMG);
-      kernel=p->kernel;
       free(array);
+    }
+  kernel=p->kernel;
 
-      /* Convert Nul values to zero: */
-      if(numnul)
-        {
-          fp=(f=kernel)+size;
-          do *f = isnan(*f) ? 0 : *f; while(++f<fp);
-        }
+  /* Convert Nul values to zero: */
+  if(numnul)
+    { fp=(f=kernel)+size; do *f = isnan(*f) ? 0 : *f; while(++f<fp); }
 
-      /* Normalize the kernel: */
-      if(p->kernelflip)
-        {
-          fp=(f=kernel)+size;
-          do sum+=*f++; while(f<fp);
-          fp=(f=kernel)+size;
-          do *f++/=sum; while(f<fp);
-        }
+  /* Normalize the kernel: */
+  if(p->kernelflip)
+    {
+      fp=(f=kernel)+size; do sum+=*f++; while(f<fp);
+      fp=(f=kernel)+size; do *f++/=sum; while(f<fp);
+    }
 
-      /* Flip the kernel: */
-      if(p->kernelflip)
+  /* Flip the kernel: */
+  if(p->kernelflip)
+    {
+      for(i=0;i<size/2;++i)
         {
-          for(i=0;i<size/2;++i)
-            {
-              tmp=kernel[i];
-              kernel[i]=kernel[size-i];
-              kernel[size-i]=tmp;
-            }
+          tmp=kernel[i];
+          kernel[i]=kernel[size-i];
+          kernel[size-i]=tmp;
         }
     }
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************         Prepare the arrays          *************/
+/**************************************************************/
+void
+sanitycheck(struct convolveparams *p)
+{
+  /* Check if the kernel has an odd number of pixels: */
+  if(p->ks0%2==0 || p->ks1%2==0)
+    error(EXIT_FAILURE, 0, "The kernel used for convolution has to have an "
+          "odd number of pixels on all sides, %s is %lux%lu.",
+          p->up.kernelname, p->ks1, p->ks0);
+}
 
 
 
@@ -367,9 +391,8 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   preparearrays(p);
 
   /* Do a sanity check, then remove the possibly existing log file
-     created by txttoarray.
+     created by txttoarray. */
   sanitycheck(p);
-  */
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)

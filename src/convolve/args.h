@@ -172,9 +172,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Inputs: */
     case 'k':
       p->up.kernelname=arg;
+      p->up.kernelnameset=1;
       break;
     case 'H':
       p->up.khdu=arg;
+      p->up.khduset=1;
       break;
     case 500:
       p->kernelflip=0;

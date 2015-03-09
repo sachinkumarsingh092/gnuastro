@@ -47,7 +47,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Set the file names of the places where the default parameters are
    put. */
 #define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR CONFIG_FILE
+#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
 #define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
 #define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
 
