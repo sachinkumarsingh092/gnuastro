@@ -36,5 +36,10 @@ fi
 
 # Actual test script:
 #####################
+
+# The number of threads is one so if CFITSIO does is not configured to
+# enable multithreaded access to files, the tests pass. It is the
+# users choice to enable this feature.
+
 img=mkprofcat*.fits
-$execname $img --ra=0.99917157 --dec=1.0008283 --wwidth=0.3 --output=imgcrop_radec.fits
+$execname $img --ra=0.99917157 --dec=1.0008283 --wwidth=0.3 --output=imgcrop_radec.fits --numthreads=1

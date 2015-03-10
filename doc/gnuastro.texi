@@ -193,7 +193,7 @@ Requirements
 * CFITSIO::                     C interface to the FITS standard.
 * WCSLIB::                      C interface to the WCS standard of FITS.
 * libjpeg::                     Library for JPEG image manipulation.
-* GPL GhostScript::             Used to create PDF images.
+* GPL Ghostscript::             Used to create PDF images.
 
 Installing GNU Astronomy Utilities
 
@@ -404,11 +404,12 @@ founding basis of the GNU Astronomy Utilities.
 @cindex Names, programs
 @cindex Program names
 GNU Astronomy Utilities is a package of independent utilities or
-programs. Each utility has an official name which consists of two
-words printed with no space, for example NoiseChisel or ImageCrop. On
-the command line, you can run them with their executable names which
-start with an @file{ast} and might be an abbreviation of the official
-name, for example @file{astnoisechisel} or @file{astimgcrop}, see
+programs. Each utility has an official name which consists of one or
+two words, describing what they do, the latter are printed with no
+space, for example NoiseChisel or ImageCrop. On the command line, you
+can run them with their executable names which start with an
+@file{ast} and might be an abbreviation of the official name, for
+example @file{astnoisechisel} or @file{astimgcrop}, see
 @ref{Executable names}.
 
 @pindex ProgramName
@@ -1107,6 +1108,10 @@ They might not be the most recent release.
 For each package, gnuastro might require certain configuration options
 that the your distribution's package managers didn't add for
 you. Those configuration options are explained below.
+
+@item
+For the libraries, they might separate the binary file from the header
+files, see @ref{Known issues}.
 @end enumerate
 
 
@@ -1116,7 +1121,7 @@ you. Those configuration options are explained below.
 * CFITSIO::                     C interface to the FITS standard.
 * WCSLIB::                      C interface to the WCS standard of FITS.
 * libjpeg::                     Library for JPEG image manipulation.
-* GPL GhostScript::             Used to create PDF images.
+* GPL Ghostscript::             Used to create PDF images.
 @end menu
 
 @node GNU Scientific Library, CFITSIO, Requirements, Requirements
@@ -1230,7 +1235,7 @@ $ sudo make install
 
 
 
-@node libjpeg, GPL GhostScript, WCSLIB, Requirements
+@node libjpeg, GPL Ghostscript, WCSLIB, Requirements
 @subsection libjpeg
 
 @pindex libjpeg
@@ -1245,11 +1250,11 @@ alternative to libjpeg. It uses SIMD instructions for ARM based
 systems that significantly decreases the processing time of JPEG
 compression and decompression algorithms.
 
-@node GPL GhostScript,  , libjpeg, Requirements
-@subsection GPL GhostScript
+@node GPL Ghostscript,  , libjpeg, Requirements
+@subsection GPL Ghostscript
 
 @cindex GPL Ghostscript
-GPL GhostScript is only used by ConvertType to create a PDF output,
+GPL Ghostscript is only used by ConvertType to create a PDF output,
 see @ref{ConvertType}. Therefore its headers are not needed. With a
 very high probability you already have it in your GNU/Linux
 distribution. Unfortunately it does not follow the standard GNU build
@@ -1703,12 +1708,16 @@ For every program some tests are designed to check some possible
 operations. Running the command above will run those tests and give
 you a final report. If everything is ok and you have built all the
 programs, all the tests should pass. In case any of the tests fail,
-please contact us because it is a bug. Note that the tests of some
-programs depend on the outputs of other program's tests, so if you
-have not installed them they might be skipped or fail. Prior to
-releasing every distribution all these tests are checked. If you have
-a reasonably modern terminal, the outputs of the successful tests will
-be colored green and the failed ones will be colored red.
+please have a look at @ref{Known issues} and if that still doesn't fix
+your problem, look that the @file{./tests/test-suite.log} file to see
+if the source of the error is something particular to your system or
+more general. If you feel it is general, please contact us because it
+might be a bug. Note that the tests of some programs depend on the
+outputs of other program's tests, so if you have not installed them
+they might be skipped or fail. Prior to releasing every distribution
+all these tests are checked. If you have a reasonably modern terminal,
+the outputs of the successful tests will be colored green and the
+failed ones will be colored red.
 
 These scripts can also act as a good set of examples for you to see
 how the programs are run. All the tests are in the
@@ -1773,6 +1782,17 @@ details.
 echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' \
      >> ~/.bashrc
 @end example
+
+@cindex GPL Ghostscript
+@item
+(Tests) @emph{The tests relying on external programs (for example
+@file{fitstopdf.sh} fail.}) This is probably due to the fact that the
+version number of the external programs is too old for the tests we
+have preformed. Please update the program to a more recent
+version. For example to create a PDF image, you will need GPL
+Ghostscript, but older versions do not work, we have successfully
+tested it on version 9.15. Older versions might cause a failure in the
+test result.
 
 
 
@@ -3256,12 +3276,12 @@ The standard formats for an EPS file are @file{.eps}, @file{.EPS},
 
 @item @option{PDF}
 @cindex Suffixes, PDF format
-@cindex GPL GhostScript
+@cindex GPL Ghostscript
 As explained above, a PDF document is a static document description
 format, viewing its result is therefore much faster and more efficient
 than PostScript. To create a PDF output, ConvertType will make a
 PostScript page description and convert that to PDF using GPL
-GhostScript. The suffixes recognized for a PDF file are: @file{.pdf},
+Ghostscript. The suffixes recognized for a PDF file are: @file{.pdf},
 @file{.PDF}. If GPL Ghostscript cannot be run on the PostScript file,
 it will remain and a warning will be printed.
 
@@ -5766,7 +5786,7 @@ run from within the cloned Gnulib directory, it is not installed.}:
 @example
 $ ~/gnulib/gnulib-tool --import --source-base=gnulib/lib    \
   --with-tests --tests-base=gnulib/tests --no-vc-files      \
-  argp error
+  argp error progname
 @end example
 
 @cindex GNU Texinfo

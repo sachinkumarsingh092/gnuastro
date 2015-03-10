@@ -27,10 +27,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <gsl/gsl_sf_gamma.h>	 /* For total Sersic flux. */
+#include <gsl/gsl_sf_gamma.h>	/* For total Sersic flux. */
 
 #include "main.h"
-#include "mkprof.h"
+#include "mkprof.h"             /* Needs main.h, astrthreads.h */
 #include "profiles.h"
 
 

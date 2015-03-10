@@ -22,7 +22,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MOCKGALS_H
 #define MOCKGALS_H
 
-#define EPSREL_FOR_INTEG 2
+#include "astrthreads.h"
+
+#include "main.h"
 
 struct mkonthread
 {

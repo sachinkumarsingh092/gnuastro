@@ -39,7 +39,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "fitsarrayvv.h"
 
 #include "main.h"
-#include "mkprof.h"
+
+#include "mkprof.h"              /* Needs main.h and astrthreads.h */
 #include "profiles.h"
 #include "oneprofile.h"
 

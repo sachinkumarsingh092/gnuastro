@@ -22,7 +22,7 @@
 
 # Definitions:
 AC_PREREQ([2.69])
-AC_INIT([GNU Astronomy Utilities], [0.1], [makhlaghi@gmail.com],
+AC_INIT([GNU Astronomy Utilities], [0.1], [bug-gnuastro@gnu.org],
         [gnuastro], [http://www.gnu.org/software/gnuastro/])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
@@ -60,6 +60,9 @@ AC_CHECK_LIB([gslcblas], [cblas_sdsdot], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([gsl], [gsl_integration_qng], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lgslcblas -lm])
+
+AC_CHECK_LIB([pthread], [pthread_barrier_wait],
+             [AC_DEFINE([HAVE_PTHREAD_BARRIER], [1], [Has pthread_barrier])])
 
 
 
@@ -120,10 +123,15 @@ AS_IF([test "x$with_numthreads" != xno],
       ]
      )
 
+
+
+
+
 #Check necessary program(s):
 anywarnings=no
-AC_PATH_PROG(has_ghostscript, gs, [no])
-AS_IF([test "x$has_ghostscript" = xno], anywarnings=yes)
+AC_CHECK_PROG(has_ghostscript, gs, [yes], [no])
+AS_IF([test "x$has_ghostscript" = "xno"], anywarnings=yes)
+AM_CONDITIONAL([COND_HASGHOSTSCRIPT], [test "x$has_ghostscript" = "xyes"])
 
 
 

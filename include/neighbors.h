@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #ifndef NEIGHBORS_H
-#define NEIGHBOURS_H
+#define NEIGHBORS_H
 
 
 /* These macros can be put any where you want to know the neighbors of

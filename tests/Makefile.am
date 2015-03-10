@@ -20,7 +20,13 @@
 ## You should have received a copy of the GNU General Public License
 ## along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
-AM_TESTS_ENVIRONMENT = export topsrc=$(top_srcdir);
+if COND_HASGHOSTSCRIPT
+  MAYBE_HASGHOSTSCRIPT = "yes"
+endif
+
+AM_TESTS_ENVIRONMENT = \
+export topsrc=$(top_srcdir); \
+export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
 TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh			\
 mkprof/mosaic3.sh mkprof/mosaic4.sh imgcrop/imgcat.sh			\

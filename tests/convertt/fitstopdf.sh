@@ -33,6 +33,14 @@ fi
 
 
 
+#If GPL GhostScript is not installed skip this test.
+if [ "x$hasghostscript" != "xyes" ]; then
+    exit 77
+fi
+
+
+
+
 
 # Actual test script:
 #####################

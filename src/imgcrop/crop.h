@@ -22,8 +22,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef CROP_H
 #define CROP_H
 
-#include "main.h"
+#include "astrthreads.h"
 
+#include "main.h"
 
 struct cropparams
 {

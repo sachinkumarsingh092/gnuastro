@@ -27,7 +27,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "commonparams.h"
 
 
-
 /* Progarm name macros: */
 #define SPACK_VERSION   "0.1"
 #define SPACK           "astmkprof" /* Subpackage executable name. */
@@ -43,6 +42,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define GAUSSIANCODE    2
 #define POINTCODE       3
 #define MAXIMUMCODE     3
+
+#define EPSREL_FOR_INTEG 2
 
 /* Log columns:
 

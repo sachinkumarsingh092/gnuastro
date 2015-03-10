@@ -1,3 +1,19 @@
+2015-03-10  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* tests/imgcrop/*.sh: Set --numthreads=1 for all the tests so if
+	CFITSIO is not installed with reentrancy, there is no failures.
+
+	* tests/Makefile.am: Made the fitstopdf result conditional on if
+	GPL GhostScript is installed.
+
+	* include/astrthreads.c: Removed the old function and structure
+	for replacing the pthread_barrier type and functions that was copy
+	and pasted from another webpage and replaced it with my own
+	implementation.
+
+	* configure.ac: bug report email set. pthread_barrier checked. GPL
+	GhostScript checked.
+
 2015-03-09  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* include/astrthreads.h: Added a temporary function so the

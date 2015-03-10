@@ -25,9 +25,102 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdlib.h>
-#include <pthread.h>
 
 #include "astrthreads.h"
+
+
+
+
+
+
+
+/*****************************************************************/
+/*********    Implementation of pthread_barrier    ***************/
+/*****************************************************************/
+/* Re-implementation of the example code given in:
+http://blog.albertarmea.com/post/47089939939/using-pthread-barrier-on-mac-os-x
+ */
+#ifndef HAVE_PTHREAD_BARRIER
+int
+pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
+                     unsigned int count)
+{
+  int err, junk=*attr;
+
+  /* Sanity check: */
+  junk=junk+1;               /* So there is no unused variable warning. */
+  if(count==0)
+    {
+      errno = EINVAL;
+      error(EXIT_FAILURE, errno, "in pthread_barrier_init, count is zero");
+    }
+
+  /* Initialize the mutex: */
+  err=pthread_mutex_init(&b->mutex, 0);
+  if(err)
+    error(EXIT_FAILURE, err, "Inializing mutex in pthread_barrier_init");
+
+  /* Initialize the condition variable: */
+  err=pthread_cond_init(&b->cond, 0);
+  if(err)
+    {
+      pthread_mutex_destroy(&b->mutex);
+      error(EXIT_FAILURE, err, "Inializing cond in pthread_barrier_init");
+    }
+
+  /* set the values: */
+  b->tripCount=count;
+  b->count=0;
+
+  return 0;
+}
+
+
+
+
+
+int
+pthread_barrier_destroy(pthread_barrier_t *b)
+{
+  pthread_cond_destroy(&b->cond);
+  pthread_mutex_destroy(&b->mutex);
+  return 0;
+}
+
+
+
+
+
+int
+pthread_barrier_wait(pthread_barrier_t *b)
+{
+  pthread_mutex_lock(&b->mutex);
+  ++(b->count);
+  if(b->count >= b->tripCount)
+    {
+      b->count = 0;
+      pthread_cond_broadcast(&b->cond);
+      pthread_mutex_unlock(&b->mutex);
+      return 1;
+    }
+  else
+    {
+      pthread_cond_wait(&b->cond, &(b->mutex));
+      pthread_mutex_unlock(&b->mutex);
+      return 0;
+    }
+}
+#endif
+
+
+
+
+
+
+
+
+
+
 
 
 
