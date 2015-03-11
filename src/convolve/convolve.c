@@ -26,6 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include "astrthreads.h"
+#include "fitsarrayvv.h"
 #include "spatialconvolve.h"
 
 #include "main.h"
@@ -37,7 +38,11 @@ convolve(struct convolveparams *p)
 
   /* Do the convolution. */
   spatialconvolve(p->input, p->is0, p->is1, p->kernel, p->ks0,
-                  p->ks1, p->cp.numthreads, &convolved);
+                  p->ks1, p->cp.numthreads, p->blankweight,
+                  p->inputhasnan, &convolved);
+
+  arraytofitsimg(p->cp.output, "Convolved", FLOAT_IMG, convolved,
+                 p->is0, p->is1, p->wcs, SPACK_STRING);
 
   /* Free the output array: */
   free(convolved);

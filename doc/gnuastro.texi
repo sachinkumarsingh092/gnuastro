@@ -283,7 +283,8 @@ Invoking ImageCrop
 
 Convolve
 
-* Convolution kernel::          Properties of the convolution kernel.
+* Convolution process::         More basic explanations.
+* Convolution on the edges::    Dealing with the edges of an image.
 * Invoking astconvolve::        Options and arguments to Convolve.
 
 Image analysis
@@ -452,7 +453,7 @@ $ rm -rf gnuastro-@value{VERSION} gnuastro-@value{VERSION}.tar.gz
 @noindent
 
 See @ref{Known issues} if you confront any complications.  For each
-program there is an ``Invoke ProgramName'' sub-section in this manual
+program there is an `Invoke ProgramName' sub-section in this manual
 which explains how the programs should be run on the command line. It
 can be read on the command line by running the command @command{$ info
 astprogname}, see @ref{Getting help}. This sub-section starts with a
@@ -511,7 +512,7 @@ required little (if any) simulations to compare with the data. Today
 both methods are becoming increasingly more dependent on pre-written
 software. Scientists are dissociating themselves from the intricacies
 of reducing raw observational data in experimentation or from bringing
-the theoretical models to life in simulations. These ``intricacies''
+the theoretical models to life in simulations. These `intricacies'
 are precisely those unseen faults, hidden assumptions, simplifications
 and approximations that define scientific progress.
 
@@ -768,13 +769,13 @@ very important distinction.
 
 @end itemize
 
-@cindex shell
+@cindex Shell
 @cindex Graphic user interface
 @cindex Command line user interface
 @cindex GUI: graphic user interface
 @cindex CLI: command line user interface
 Another thing you will notice is that gnuastro only has a command line
-user interface (CLI) or the ``shell'' as it is referred to in
+user interface (CLI) or the `shell' as it is referred to in
 Unix-like systems. This might be contrary to your mostly graphical
 user interface (GUI) experience with proprietary operating systems. To
 a first time user, the command line does appear much more complicated
@@ -799,7 +800,7 @@ as powerful as the command line. In practice, such designers are very
 hard to come by for every program, so the GUI operations are always a
 subset of the internal CLI commands. For programs that are only made
 for the GUI, this results in not including lots of potentially useful
-operations. It also results in ``interface design'' to be a crucially
+operations. It also results in `interface design' to be a crucially
 important part of any GUI program. Scientists don't usually have
 enough resources to hire a graphical designer, also the complexity of
 the GUI code is far more than CLI code, which is harmful for a
@@ -1458,9 +1459,9 @@ advantage of shell variables is that if they are exported@footnote{By
 running @command{$ export myvariable=a test value} instead of the
 simpler case in the text} subsequent programs in that shell can access
 their value. So by setting them to any desired value, you can change
-the ``environment'' of the program. The shell variables which are
-accessed by programs are therefore known as ``environment
-variables''@footnote{You can use shell variables for other actions
+the `environment' of the program. The shell variables which are
+accessed by programs are therefore known as `environment
+variables'@footnote{You can use shell variables for other actions
 too, for example to temporarily keep some names or run loops on some
 files.}. You can see the full list of the environment variables that
 your shell currently recognizes by running:
@@ -1498,7 +1499,7 @@ Adding your specified directory to the @file{PATH} environment
 variable each time you want to run your program is again very
 troubling and will not be much of an improvement compared to
 explicitely calling the executbale with directory information. So
-there are standard ``startup files'' defined by your shell.  The
+there are standard `startup files' defined by your shell.  The
 commands in these files are run each time you start your system
 (@file{/etc/profile} and all scripts in @file{/etc/profile.d/}), when
 you log in (@file{~/.bash_profile}) or on each invocation of the shell
@@ -1669,8 +1670,8 @@ have two executable versions of a program.
 @cindex SED, stream editor
 @cindex Stream editor, SED
 The third configure option allows you to set the executable name at
-install time using the SED utility. SED is a very useful ``stream
-editor''. There are various resources on the internet to use it
+install time using the SED utility. SED is a very useful `stream
+editor'. There are various resources on the internet to use it
 effectively. However, we should caution that using configure options
 will change the actual executable name of the installed program and on
 every re-install (an update for example), you have to also add this
@@ -1748,7 +1749,7 @@ discussed.
 even though you have installed it using your package manager.} Most
 probably this is because your distribution has separated the header
 files of a library from the library parts. Please also install the
-``development'' packages for those libraries too. Just add a
+`development' packages for those libraries too. Just add a
 @file{-dev} or @file{-devel} to the end of the package name and re-run
 the package manager. This will not happen if you install the libraries
 from source. When installed from source, the headers are also
@@ -1907,10 +1908,10 @@ options that are common to all the programs in gnuastro are listed.
 @cindex Command line token separation
 @cindex Separating tokens on the command line
 Your full command line text is passed onto the shell as a string of
-characters. That string is then broken up into separate ``words'' by
-any ``metacharacters'' (like space, tab, @command{|}, @command{>} or
+characters. That string is then broken up into separate `words' by
+any `metacharacters' (like space, tab, @command{|}, @command{>} or
 @command{;}) that might exist in the text. @xref{Definitions,
-``metacharacters'' and ``words'', Definitions, bash.info, the Bash
+`metacharacters' and `words', Definitions, bash.info, the Bash
 manual}, for the complete list of meta-characters and other Bash
 definitions. @xref{Shell Operation, ,Shell Operation, bash.info, the
 Bash manual}, for a short summary of the steps the shell takes before
@@ -1954,7 +1955,7 @@ meta-characters, you have to quote them. If there is only one such
 character, you can use a backslash (@command{\}) before it. If there
 are multiple, it might be easier to simply put your whole argument or
 option value inside of double quotes (@command{"}). In such cases,
-everything inside the double quotes will be seen as one ``word''.
+everything inside the double quotes will be seen as one `word'.
 
 @cindex HDU
 @cindex Header data unit
@@ -1965,7 +1966,7 @@ images(exposure > 100)}. If you simply add these after the
 read the value to the HDU option as @command{3} and run. Then, Bash
 will attempt to run a separate command @command{images(exposure >
 100)} and complain about a syntax error. This is because the semicolon
-(@command{;}) is an ``end of command'' character in Bash. To solve
+(@command{;}) is an `end of command' character in Bash. To solve
 this problem you can simply put double quotes around the whole string
 you want to pass as seen below:
 @example
@@ -2412,7 +2413,7 @@ a @key{#} is considered to be a comment and is ignored. The same goes
 for an empty line. The name of the parameter is the same as the long
 format of the command line option for that parameter. The parameter
 name and parameter value have to be separated by any number of
-``white-space'' characters: space, tab or vertical tab. By default
+`white-space' characters: space, tab or vertical tab. By default
 several space characters are used. If the value of an option has space
 characters (most commonly for the @option{hdu} option), then double
 quotes can be used to specify the full value.
@@ -2420,7 +2421,7 @@ quotes can be used to specify the full value.
 Any text after the first two words (separated by the above delimiters)
 in a line is ignored. If it is an option without a value in the
 @option{--help} output (on/off option), then the value should be
-@option{1} if it is to be ``on'' and @option{0} otherwise. If an
+@option{1} if it is to be `on' and @option{0} otherwise. If an
 option is not recognized in the configuration file, the name of the
 file and unrecognized option will be reported and the program will
 abort.  If a parameter is repeated more more than once in the
@@ -2803,8 +2804,8 @@ distraction.
 GNU software have a very unique set of tools for aiding your memory on
 the command line, where you are working, depending how much of it you
 need to remember. In the past, such command line help was known as
-``online'' help, because they were literally provided to you ``on''
-the command ``line''. However, nowadays the word ``online'' refers to
+``online'' help, because they were literally provided to you `on'
+the command `line'. However, nowadays the word ``online'' refers to
 something on the internet, so that term will not be used. With this
 type of help, you can resume your exciting research without taking
 your hands off the keyboard.
@@ -3197,8 +3198,8 @@ times and use the @option{--hdu}, @option{--hdu2}, @option{--hdu3} or
 @cindex JPEG format
 @cindex Raster graphics
 @cindex Pixelated graphics
-The JPEG standard was created by the ``Joint photographic experts
-group''. It is currently one of the most commonly used image
+The JPEG standard was created by the Joint photographic experts
+group. It is currently one of the most commonly used image
 formats. Its major advantage is the compression algorithm that is
 defined by the standard. Like the FITS standard, this is a raster
 graphics format, which means that it is pixelated.
@@ -3488,7 +3489,7 @@ correlated with the value you give to the @option{--widthincm}
 parameter.
 
 Unfortunately in the document structuring convention of the PostScript
-language the ``bounding box'' has to be in units of PostScript points
+language, the ``bounding box'' has to be in units of PostScript points
 with no fractions allowed. So the border values only have to be
 specified in integers. To have a final border that is thinner than one
 PostScript point in your document, you can ask for a larger width in
@@ -4251,14 +4252,16 @@ much more efficient. There are also much faster search strategies.
 @cindex Weighted average
 @cindex Average, weighted
 @cindex Kernel, convolution
-Convolution is a general mathematical procedure of the operation of
-one function on another. To be more specific, it is the process of
-changing the value of one pixel to the weighted average of all the
-pixels in its neighborhood. We define the neighbourhood of each pixel
-(how many pixels in which directions) and the weight function (How
-much each neighbouring pixel should contribute) through a second image
-which is known as the kernel@footnote{Also known as filter, here we
-will user `kernel'.}.
+Convolution is the process of changing the value of one pixel to the
+@emph{weighted} average of all the pixels in its
+@emph{neighborhood}@footnote{The definition here is the specific
+definition that is most commonly used in image processing and
+astronomy. Mathematically speaking, convolution is a far more general
+process of merging two functions.}. We define the `neighbourhood' of
+each pixel (how many pixels) and the `weight' function (How much each
+neighbouring pixel should contribute depending on its position)
+through a second image which is known as a spatial
+kernel@footnote{Also known as filter, here we will use `kernel'.}.
 
 @cindex Detection
 @cindex Atmosphere
@@ -4277,8 +4280,7 @@ those variations will decrease and we have a better hope in detecting
 the possible underlying signal. Another case where convolution is
 extensively used is in mock images and modelling in general,
 convolution can be used to simulate the effect of the atmosphere or
-the optical system on the mock profiles that we created, see
-@ref{PSF}.
+the optical system on the mock profiles that we create, see @ref{PSF}.
 
 @cindex Spatial domain
 @cindex Frequency domain
@@ -4303,17 +4305,18 @@ filtering@footnote{For example ``low pass filtering'' which refers to
 removing small frequencies}.
 
 @menu
-* Convolution kernel::          Properties of the convolution kernel.
+* Convolution process::         More basic explanations.
+* Convolution on the edges::    Dealing with the edges of an image.
 * Invoking astconvolve::        Options and arguments to Convolve.
 @end menu
 
-@node Convolution kernel, Invoking astconvolve, Convolve, Convolve
-@subsection Convolution kernel
+@node Convolution process, Convolution on the edges, Convolve, Convolve
+@subsection Convolution process
 
 In convolution, the kernel specifies the weight and positions of the
-neighbours of each pixel. Visualizing convolution in the spatial
-domain might be easier. To find the convolved value of a pixel, the
-central pixel of the kernel is placed on that pixel. The value of each
+neighbors of each pixel. Visualizing convolution in the spatial domain
+might be easier. To find the convolved value of a pixel, the central
+pixel of the kernel is placed on that pixel. The values of each
 overlapping pixel in the kernel and image are multiplied by each other
 and summed for all the kernel pixels. To have one pixel in the center,
 the sides of the convolution kernel have to be an odd number. This
@@ -4321,15 +4324,18 @@ process effectively mixes the pixel values of each pixel with its
 neighbors, resulting in a blurred image compared to the sharper input
 image.
 
-Formally, convolution is one kind of `spatial filtering' in image
-processing texts. If we assume that the kernel has @mymath{2a+1} and
-@mymath{2b+1} pixels on each side, the convolved value of a pixel
+@cindex Linear spatial filtering
+Formally, convolution is one kind of linear `spatial filtering' in
+image processing texts. If we assume that the kernel has @mymath{2a+1}
+and @mymath{2b+1} pixels on each side, the convolved value of a pixel
 placed at @mymath{x} and @mymath{y} (@mymath{C_{x,y}}) can be
-calculated from the neighbouring pixel values in the input image
+calculated from the neighboring pixel values in the input image
 (@mymath{I}) and the kernel (@mymath{K}) from
 
 @dispmath{C_{x,y}=\sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t}.}
 
+@cindex Correlation
+@cindex Convolution
 Any pixel coordinate that is outside of the image in the equation
 above will be considered to be zero. When the kernel is symmetric
 about its center the blurred image has the same orientation as the
@@ -4337,7 +4343,8 @@ original image. However, if the kernel is not symmetric, the image
 will be affected in the opposite manner, this is a natural consequence
 of the definition of spatial filtering. In order to avoid this we can
 flip the kernel so the convolution can have the same original
-orentation.
+orentation. If the kernel is flipped the process is known
+@emph{Convolution} and if it isn't we call it @emph{Correlation}.
 
 To be a weighted average, the sum of the weights (the pixels in the
 kernel) have to be unity. This will have the consequence that the
@@ -4345,7 +4352,28 @@ convolved image of an object and unconvolved object will have the same
 total flux, which is natural, because convolution should not eat up
 the object photons, it only disperses them.
 
-@node Invoking astconvolve,  , Convolution kernel, Convolve
+
+
+
+
+@node Convolution on the edges, Invoking astconvolve, Convolution process, Convolve
+@subsection Convolution on the edges
+
+In a purely `linear' spatial filtering (convolution), we are going to
+have some problems on the edges of the input image. Explaining the
+problem in the spatial domain is easier@footnote{Once a good
+understanding of the frequency domain is achieved the reason in that
+domain is also very illuminating, see any image processing book for a
+good explanation.}. The problem originates with the fact that on the
+edges, in practice@footnote{Because we assumed the overlapping pixels
+outside the input image have a value of zero.}  the sum of the weights
+we use on the actual image pixels is not unity.
+
+
+
+
+
+@node Invoking astconvolve,  , Convolution on the edges, Convolve
 @subsection Invoking Convolve
 
 Convolve an input image with a known kernel. The general template for
@@ -4374,7 +4402,7 @@ Convolve:
 The input kernel image filename. It should have an odd number of
 pixels and any blank pixel value in the image will be changed to
 zero. Prior to convolution several operations will be done on the
-image, see @ref{Convolution kernel} for an explanation of the reason
+image, see @ref{Convolution process} for an explanation of the reason
 for the last two.
 @itemize
 
@@ -4624,23 +4652,23 @@ dealing with.
 @cindex Diffraction limited
 @cindex Point Spread Function
 @cindex Spread of a point source
-Assume we have a ``point'' source, or a source that is far smaller
+Assume we have a `point' source, or a source that is far smaller
 than the maxium resolution (a pixel). When we take an image of it, it
-will ``spread'' over an area. To quantify that spread, we can define a
-``function''. This is how the point spread function or the PSF of an
-image is defined. This ``spread'' can have various causes, for example
+will `spread' over an area. To quantify that spread, we can define a
+`function'. This is how the point spread function or the PSF of an
+image is defined. This `spread' can have various causes, for example
 in ground based astronomy, due to the atmosphere. In practice we can
-never surpass the ``spread'' due to the diffraction of the lens
+never surpass the `spread' due to the diffraction of the lens
 aperture. Various other effects can also be quantified through a PSF.
 For example, the simple fact that we are sampling in a discrete space,
-namely the pixels, also produces a very small ``spread'' in the image.
+namely the pixels, also produces a very small `spread' in the image.
 
 @cindex Blur image
 @cindex Convolution
 @cindex Image blurring
 @cindex PSF image size
 Convolution is the mathematical process by which we can apply a
-``spread'' to an image, or in other words blur the image. The total
+`spread' to an image, or in other words blur the image. The total
 flux of an object should remain unchanged after
 convolution. Therefore, it is important that the sum of all the pixels
 of the PSF be unity. The image also has to have an odd number of
@@ -4878,7 +4906,7 @@ is sampled on the discrete pixels of the camera.
 In order to more accurately simulate this process, the unconvolved
 image and the PSF are created on a finer pixel grid. In other words,
 the output image is a certain odd-integer multiple of the desired
-size, we can call this ``oversampling''. The user can specify this
+size, we can call this `oversampling'. The user can specify this
 multiple as a command line option. The reason this has to be an odd
 number is that the PSF has to be centered on the center of its
 image. An image with an even number of pixels on each side does not
@@ -4991,7 +5019,7 @@ value.
 In each pixel of the canvas of pixels the flux is the sum of
 contributions from various sources after convolution. Let's name this
 flux of the convolved sum of possibly overlapping objects,
-@mymath{I_{nn}}.  @mymath{nn} representing ``no noise''. For now,
+@mymath{I_{nn}}.  @mymath{nn} representing `no noise'. For now,
 let's assume the background is constant and represented by
 @mymath{B}. In practice the background values are larger than
 @mymath{\sim1,000} counts. Then the flux after adding noise is a
@@ -5172,7 +5200,7 @@ flux @mymath{F_r}, then the magnitude of an object with a flux of
 @dispmath{m-m_r=-2.5\log_{10} \left( F \over F_r \right)}
 
 @cindex Zero-point magnitude
-The ``zero-point'' magnitude (@mymath{m_z}) is defined as the
+The @emph{zero-point} magnitude (@mymath{m_z}) is defined as the
 magnitude in which @mymath{F_r=1}. So when you specify the magnitude
 of your desired object in the @option{--mcol} of your input catalog,
 then it will have a total flux of:
@@ -5343,7 +5371,7 @@ to the central pixel value, see @ref{Sampling from a function}.
 The truncation column of the catalog is in units of pixels. By
 default, the truncation column is considered to be in units of the
 radial parameters of the profile (@option{--rcol}). Read it as
-``t-unit-in-p'' for ``truncation unit in pixels''.
+`t-unit-in-p' for `truncation unit in pixels'.
 
 @item -X
 @itemx --xshift
@@ -5678,7 +5706,7 @@ changes would be the only truly reliable option. If a research
 project begins using Python 3.x today, there is no telling how
 compatible their investments will be when Python 4.x or 5.x will come
 out. This stems from the core principles of Python, which are very
-useful when you look in the ``on the go'' basis as described before
+useful when you look in the `on the go' basis as described before
 and not future usage.
 
 @cindex Low level programming
@@ -5690,7 +5718,7 @@ actual data in our disposal. This is contrary to the illusion of
 abstractions that the higher level languages provide. The GNU coding
 standards@footnote{@url{http://www.gnu.org/prep/standards/}} also
 encourage the use of C over all other languages when generality of
-usage and ``high speed'' is desired.
+usage and `high speed' is desired.
 
 
 
@@ -5786,7 +5814,7 @@ run from within the cloned Gnulib directory, it is not installed.}:
 @example
 $ ~/gnulib/gnulib-tool --import --source-base=gnulib/lib    \
   --with-tests --tests-base=gnulib/tests --no-vc-files      \
-  argp error progname
+  argp error progname math
 @end example
 
 @cindex GNU Texinfo
@@ -6161,8 +6189,8 @@ use POSIX threads for multi-threaded programming, defined in the
 learning to use POSIX threads, the excellent tutorial from Lawrence
 Livermore National
 Laboratory@footnote{@url{https://computing.llnl.gov/tutorials/pthreads/}}
-is a very good start.  The book ``Advanced programming in the Unix
-environment''@footnote{Don't let the title scare you! The two chapters
+is a very good start.  The book `Advanced programming in the Unix
+environment'@footnote{Don't let the title scare you! The two chapters
 on Multi-threaded programming are very self sufficient and don't need
 any more knowledge than K&R.}, by Richard Stevens and Stephen Rago,
 Addison-Wesley, 2013 (Third edition) also has two chapters explaining
@@ -6189,7 +6217,7 @@ written to check the various independent features of the program. All
 the tests are placed in the @file{gnuastro-@value{VERSION}/tests}
 directory, let's call it @file{TESTdir}. There is one script
 (@file{prepconf.sh}) in this folder and several @file{Makefile}s. The
-script is the first ``test'' that will be run. It will copy all the
+script is the first `test' that will be run. It will copy all the
 configuration files from the various directories to a @file{.gnuastro}
 directory which it will make so the various tests can set the default
 values.
@@ -6392,7 +6420,7 @@ extension, then SAO ds9 will open as usual.
 
 Just to avoid confusion, note that SAO ds9 does not follow the GNU
 style of separating long and short options as explained in
-@ref{Arguments and options}. In the GNU style, this ``long'' option
+@ref{Arguments and options}. In the GNU style, this `long' option
 should have been called like @option{--mecube}, but SAO ds9 does
 follow those conventions and has its own.
 

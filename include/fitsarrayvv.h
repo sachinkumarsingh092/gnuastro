@@ -144,6 +144,9 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
 void
 readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs);
 
+void
+readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs);
+
 size_t
 fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
                size_t *s0, size_t *s1);

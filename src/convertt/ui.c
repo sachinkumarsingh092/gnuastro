@@ -598,7 +598,7 @@ preparearrays(struct converttparams *p)
   void *array;
   double *d, *df;
   struct stll *tmp;
-  char *hdu, **names=p->names;
+  char *hdu=NULL, **names=p->names;
 
   /* Put the names in the correct order. */
   i=p->numinputs-1;

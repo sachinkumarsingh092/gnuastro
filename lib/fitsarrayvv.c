@@ -1054,6 +1054,28 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
 
 
 
+void
+readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs)
+{
+  int status=0;
+  fitsfile *fptr;
+
+  /* Check HDU for realistic conditions: */
+  readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
+
+  /* Read the WCS information: */
+  readwcs(fptr, nwcs, wcs);
+
+  /* Close the FITS file: */
+  fits_close_file(fptr, &status);
+  fitsioerror(status, NULL);
+}
+
+
+
+
+
+
 /* Read a FITS image into an array corresponding to fitstype and also
    save the size of the array.
 

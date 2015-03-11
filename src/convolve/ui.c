@@ -136,6 +136,13 @@ readconfig(char *filename, struct convolveparams *p)
 	  strcpy(cp->output, value);
 	  cp->outputset=1;
 	}
+      else if(strcmp(name, "blankweight")==0)
+	{
+	  if(up->blankweightset) continue;
+          floatl0s1(value, &p->blankweight, "blankweight", key, SPACK,
+                    filename, lineno);
+	  up->blankweightset=1;
+	}
 
 
 
@@ -189,6 +196,8 @@ printvalues(FILE *fp, struct convolveparams *p)
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
+  if(up->blankweightset)
+    fprintf(fp, CONF_SHOWFMT"%.4f\n", "blankweight", p->blankweight);
 
 
 
@@ -219,6 +228,8 @@ checkifset(struct convolveparams *p)
 
   if(cp->outputset==0)
     REPORT_NOTSET("output");
+  if(up->blankweightset==0)
+    REPORT_NOTSET("blankweight");
 
   END_OF_NOTSET_REPORT;
 }
@@ -259,8 +270,11 @@ preparearrays(struct convolveparams *p)
   /* First read the input image: */
   numnul=fitsimgtoarray(up->inputname, cp->hdu, &bitpix, &array,
                         &p->is0, &p->is1);
-  if(numnul) p->inputhasnul=1;
-  if(bitpix!=FLOAT_IMG)
+  readfitswcs(up->inputname, cp->hdu, &p->nwcs, &p->wcs);
+  if(numnul) p->inputhasnan=1;
+  if(bitpix==FLOAT_IMG)
+    p->input=array;
+  else
     {
       changetype(array, bitpix, p->is0*p->is1, numnul, (void **)(&p->input),
                  FLOAT_IMG);
@@ -335,6 +349,11 @@ sanitycheck(struct convolveparams *p)
     error(EXIT_FAILURE, 0, "The kernel used for convolution has to have an "
           "odd number of pixels on all sides, %s is %lux%lu.",
           p->up.kernelname, p->ks1, p->ks0);
+
+  /* Check the output file name: */
+  if( dir0file1(p->cp.output, p->cp.dontdelete) == 0 )
+    error(EXIT_FAILURE, 0, "Your output name (%s) is a directory.",
+          p->cp.output);
 }
 
 
@@ -430,7 +449,7 @@ freeandreport(struct convolveparams *p, struct timeval *t1)
   free(p->cp.hdu);
   free(p->up.khdu);
   free(p->cp.output);
-  free(p->up.kernelname);
+  wcsvfree(&p->nwcs, &p->wcs);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

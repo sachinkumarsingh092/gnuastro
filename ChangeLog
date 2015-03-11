@@ -1,5 +1,7 @@
 2015-03-11  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
+	* src/convolve/: Adding new functions and steps.
+
 	* ./: Copyright transferred to the FSF. Copyright notices in all
 	files changed.
 

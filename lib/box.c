@@ -128,14 +128,14 @@ borderfromcenter(double xc, double yc, long *width,
    fpixel_i might be outside of the image, in this function we find
    the fpixel_o[2] and lpixel_o[2] in the overlap image coordinates
    that overlap with the input image. So the values of all four points
-   might change after this function. The example below shows the
-
-   lpixel is the last pixel in the image (not outside of it).
+   might change after this function.
 
    Before:
    =======
 
-   fpixel_o and lpixel_o are not used.
+   fpixel_o and lpixel_o are not shown. fpixel_o and lpixel_o point
+   to the same place as fpixel_i and lpixel_i, But in the coordinates
+   of the overlap image.
 
                                  -----------------lpixel_i
                                  |  overlap      |
@@ -152,9 +152,6 @@ borderfromcenter(double xc, double yc, long *width,
 
    After
    =====
-
-   fpixel_o and lpixel_o point to the same place as fpixel_i and
-   lpixel_i, But in the coordinates of the overlap image.
 
                                  -----------------
                                  |  overlap      |
@@ -176,6 +173,13 @@ borderfromcenter(double xc, double yc, long *width,
    lpixel_i:    Coordinates of the last pixel in input image.
    fpixel_o:    Coordinates of the first pixel in overlap image.
    lpixel_o:    Coordinates of the last pixel in overlap image.
+
+   NOTES:
+   ======
+
+     - lpixel is the last pixel in the image (not outside of it).
+
+     - The coordinates are in the FITS format.
 
    Return value:
    =============

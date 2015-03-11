@@ -55,7 +55,7 @@ const char doc[] =
 
 /* Free letters for options:
 
-   a b c d e f g i j l m n p r s t u v w x y z
+   a b c d e f g i j l m n p r s t u v x y z
    A B C E F G I J L M O Q R T U W X Y Z
 
    Free numbers: >=502
@@ -116,6 +116,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
+      2
+    },
+    {
+      "blankweight",
+      'w',
+      "FLT",
+      0,
+      "Maximum acceptable weight of blank pixels.",
       2
     },
 
@@ -184,6 +192,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 501:
       p->kernelnorm=0;
+      break;
+
+
+    /* Output: */
+    case 'w':
+      floatl0s1(arg, &p->blankweight, "blankweight", key, SPACK, NULL, 0);
+      p->up.blankweightset=1;
       break;
 
 

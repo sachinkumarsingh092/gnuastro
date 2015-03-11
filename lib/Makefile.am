@@ -60,4 +60,4 @@ libfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lpthread -lm
 # Dependent libraries:
 libspatialconvolve_la_SOURCES = spatialconvolve.c	\
 $(top_srcdir)/include/spatialconvolve.h
-libspatialconvolve_la_LDFLAGS = -lastrthreads
+libspatialconvolve_la_LDFLAGS = -lastrthreads -lbox

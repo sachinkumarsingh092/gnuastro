@@ -47,6 +47,7 @@ struct uiparams
 
   int      kernelnameset;
   int            khduset;
+  int     blankweightset;
 };
 
 
@@ -65,11 +66,16 @@ struct convolveparams
   size_t             is1;   /* Input image size along C's second axis.*/
   size_t             ks0;   /* Kernel size along C's first axis.      */
   size_t             ks1;   /* Kernel size along C's second axis.     */
-  int        inputhasnul;   /* ==1: The input image has nul pixels.   */
+  int        inputhasnan;   /* ==1: The input image has nan pixels.   */
   int         kernelflip;   /* ==1: Flip the kernel.                  */
   int         kernelnorm;   /* ==1: Normalize the kernel.             */
+  int               nwcs;   /* Number of WCS headers.                 */
+  struct wcsprm     *wcs;   /* WCS structure.                         */
 
-  /* Internal: */
+  /* Outputs: */
+  float      blankweight;   /* Maximum weight of blank pixels.        */
+
+  /* internal: */
   time_t         rawtime;   /* Starting time of the program.          */
 };
 
