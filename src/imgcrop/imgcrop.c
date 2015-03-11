@@ -27,7 +27,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <pthread.h>
 
 #include "timing.h"
 #include "checkset.h"

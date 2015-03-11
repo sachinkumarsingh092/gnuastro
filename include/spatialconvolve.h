@@ -1,6 +1,6 @@
 /*********************************************************************
-Convolve - Convolve input data with a given kernel.
-Convolve is part of GNU Astronomy Utilities (gnuastro) package.
+SpatialConvolve - Convolve an image in the spatial domain.
+This is part of GNU Astronomy Utilities (gnuastro) package.
 
 Copyright (C) 2013-2015 Mohammad Akhlaghi
 Tohoku University Astronomical Institute, Sendai, Japan.
@@ -19,25 +19,12 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <config.h>
+#ifndef SPATIALCONVOLVE_H
+#define SPATIALCONVOLVE_H
 
-#include <stdio.h>
-#include <stdlib.h>
+int
+spatialconvolve(float *input, size_t is0, size_t is1,
+                float *kernel, size_t kso, size_t ks1,
+                size_t numthreads, float **out);
 
-#include "astrthreads.h"
-#include "spatialconvolve.h"
-
-#include "main.h"
-
-void
-convolve(struct convolveparams *p)
-{
-  float *convolved;
-
-  /* Do the convolution. */
-  spatialconvolve(p->input, p->is0, p->is1, p->kernel, p->ks0,
-                  p->ks1, p->cp.numthreads, &convolved);
-
-  /* Free the output array: */
-  free(convolved);
-}
+#endif
