@@ -1,3 +1,8 @@
+2015-03-11  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* ./: Copyright transferred to the FSF. Copyright notices in all
+	files changed.
+
 2015-03-10  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* tests/imgcrop/*.sh: Set --numthreads=1 for all the tests so if

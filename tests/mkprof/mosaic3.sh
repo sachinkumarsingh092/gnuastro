@@ -8,6 +8,10 @@
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
 #
+# Original author:
+#     Mohammad Akhlaghi <akhlaghi@gnu.org>
+# Contributing author(s):
+#
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved.  This file is offered as-is,

@@ -2,6 +2,10 @@
 # in all the configuration files into a locally created .gnuastro
 # directory for all the tests to use.
 #
+# Original author:
+#     Mohammad Akhlaghi <akhlaghi@gnu.org>
+# Contributing author(s):
+#
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved.  This file is offered as-is,
