@@ -1,3 +1,22 @@
+2015-03-12  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/mkprof/ui.c (setparams): Added condition for no output given.
+
+	* src/mkprof/astmkprof.conf: Removed output.
+
+	* src/imgcrop/ui.c (sanitycheck): Moved check of reentrancy in
+	cfitsio to the end so if numthreads is set to 1, there is no
+	problem.
+
+	* src/convertt/ui.c (sanitycheck): Added check if output is not set.
+
+	* src/convertt/astconvertt.conf: Removed output.
+
+	* lib/spatialconvolve.c: First version complete.
+
+	* configure.ac: Removed sqrt and pthread tests (they are done by
+	Gnulib). Added the AX_PTHREAD macro from Autoconf archives.
+
 2015-03-11  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/convolve/: Adding new functions and steps.

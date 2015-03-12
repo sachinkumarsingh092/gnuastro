@@ -64,6 +64,7 @@ readconfig(char *filename, struct convolveparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
+  int zeroorone, spatialset=0, frequencyset=0;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -136,19 +137,50 @@ readconfig(char *filename, struct convolveparams *p)
 	  strcpy(cp->output, value);
 	  cp->outputset=1;
 	}
-      else if(strcmp(name, "blankweight")==0)
-	{
-	  if(up->blankweightset) continue;
-          floatl0s1(value, &p->blankweight, "blankweight", key, SPACK,
-                    filename, lineno);
-	  up->blankweightset=1;
-	}
 
 
 
 
 
       /* Operating modes: */
+      else if(strcmp(name, "spatial")==0)
+	{
+	  intzeroorone(value, &zeroorone, name, key, SPACK,
+		       filename, lineno);
+	  if(zeroorone)
+	    {
+	      spatialset=1;
+	      if(frequencyset)
+		error_at_line(EXIT_FAILURE, 0, filename, lineno,
+			      "Spatial and frequency modes cannot be called "
+			      "together. It is ambiguous.");
+	      if(up->spatialset==0)
+		{
+		  p->spatial=1;
+		  p->frequency=0;
+		  up->spatialset=up->frequencyset=1;
+		}
+	    }
+	}
+      else if(strcmp(name, "frequency")==0)
+	{
+	  intzeroorone(value, &zeroorone, name, key, SPACK,
+		       filename, lineno);
+	  if(zeroorone)
+	    {
+	      frequencyset=1;
+	      if(spatialset)
+		error_at_line(EXIT_FAILURE, 0, filename, lineno,
+			      "Spatial and frequency modes cannot be called "
+			      "together. It is ambiguous.");
+	      if(up->frequencyset==0)
+		{
+		  p->spatial=0;
+		  p->frequency=1;
+		  up->spatialset=up->frequencyset=1;
+		}
+	    }
+	}
       else if(strcmp(name, "numthreads")==0)
 	{
 	  if(cp->numthreadsset) continue;
@@ -196,12 +228,14 @@ printvalues(FILE *fp, struct convolveparams *p)
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
-  if(up->blankweightset)
-    fprintf(fp, CONF_SHOWFMT"%.4f\n", "blankweight", p->blankweight);
 
 
 
   fprintf(fp, "\n# Operating modes:\n");
+  if(up->spatialset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "spatial", p->spatial);
+  if(up->frequencyset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "frequency", p->frequency);
   /* Number of threads doesn't need to be checked, it is set by
      default */
   fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads);
@@ -219,17 +253,14 @@ checkifset(struct convolveparams *p)
 
   int intro=0;
 
+  if(up->spatialset==0 && up->frequencyset==0)
+    REPORT_NOTSET("spatial or frequency");
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
   if(up->kernelnameset==0)
     REPORT_NOTSET("kernel");
   if(up->khduset==0)
     REPORT_NOTSET("khdu");
-
-  if(cp->outputset==0)
-    REPORT_NOTSET("output");
-  if(up->blankweightset==0)
-    REPORT_NOTSET("blankweight");
 
   END_OF_NOTSET_REPORT;
 }
@@ -271,7 +302,6 @@ preparearrays(struct convolveparams *p)
   numnul=fitsimgtoarray(up->inputname, cp->hdu, &bitpix, &array,
                         &p->is0, &p->is1);
   readfitswcs(up->inputname, cp->hdu, &p->nwcs, &p->wcs);
-  if(numnul) p->inputhasnan=1;
   if(bitpix==FLOAT_IMG)
     p->input=array;
   else
@@ -351,9 +381,18 @@ sanitycheck(struct convolveparams *p)
           p->up.kernelname, p->ks1, p->ks0);
 
   /* Check the output file name: */
-  if( dir0file1(p->cp.output, p->cp.dontdelete) == 0 )
-    error(EXIT_FAILURE, 0, "Your output name (%s) is a directory.",
-          p->cp.output);
+  if(p->cp.outputset)
+    {
+      if( dir0file1(p->cp.output, p->cp.dontdelete) == 0 )
+        error(EXIT_FAILURE, 0, "Your output name (%s) is a directory.",
+              p->cp.output);
+    }
+  else
+    {
+      automaticoutput(p->up.inputname, "_convolved.fits",
+                      p->cp.removedirinfo, p->cp.dontdelete, &p->cp.output);
+      p->cp.outputset=1;
+    }
 }
 
 
@@ -391,6 +430,7 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   /* Convert options: */
   p->kernelflip     = 1;
   p->kernelnorm     = 1;
+  p->edgecorrection = 1;
 
   /* Read the arguments. */
   errno=0;

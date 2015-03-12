@@ -296,7 +296,7 @@ writejpeg(JSAMPLE *jsr, struct converttparams *p)
 {
   JSAMPROW r[1];
   FILE * outfile;
-  int row_stride, c;
+  int row_stride=0, c;
   struct jpeg_error_mgr jerr;
   size_t s0=p->s0[0], s1=p->s1[0];
   struct jpeg_compress_struct cinfo;

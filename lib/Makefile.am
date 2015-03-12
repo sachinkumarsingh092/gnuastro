@@ -48,12 +48,11 @@ libarraymanip_la_SOURCES = arraymanip.c $(top_srcdir)/include/arraymanip.h
 libtxtarrayvv_la_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
 
 libastrthreads_la_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
-libastrthreads_la_LDFLAGS = $(LIB_PTHREAD)
 
 libconfigfiles_la_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
 
 libfitsarrayvv_la_SOURCES = fitsarrayvv.c $(top_srcdir)/include/fitsarrayvv.h
-libfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lpthread -lm
+libfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lm
 
 
 

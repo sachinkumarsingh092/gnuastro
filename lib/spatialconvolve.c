@@ -26,6 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "box.h"
@@ -35,24 +36,28 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /*******************************************************************/
 /**************           Input structure           ****************/
+/***********   It is internal so it isn't in the header.   *********/
 /*******************************************************************/
 struct sconvparams
 {
   /* General input parameters: */
-  float           *input;     /* Input image array.               */
-  float          *kernel;     /* Kernel image array.              */
-  float             *out;     /* Output image.                    */
-  size_t             is0;     /* Image size along first C axis.   */
-  size_t             is1;     /* Image size along second C axis.  */
-  size_t             ks0;     /* Kernel size along first C axis.  */
-  size_t             ks1;     /* Kernel size along second C axis. */
-  float      blankweight;     /* Maximum blank pixel weight.      */
-  int        inputhasnan;     /* Input image has NAN pixels.      */
+  float           *input;     /* Input image array.                    */
+  float          *kernel;     /* Kernel array.                         */
+  float             *out;     /* Output image.                         */
+  size_t             is0;     /* Image size along first C axis.        */
+  size_t             is1;     /* Image size along second C axis.       */
+  size_t             ks0;     /* Kernel size along first C axis.       */
+  size_t             ks1;     /* Kernel size along second C axis.      */
+  int     edgecorrection;     /* Correct the edges of the image.       */
+  long       fpixel_i[2];     /* First pixel in input image.           */
+  long       lpixel_i[2];     /* Last pixel in input image.            */
+  long       fpixel_o[2];     /* First pixel in kernel.                */
+  long       lpixel_o[2];     /* Last pixel in kernel.                 */
 
   /* Thread parameters. */
-  size_t      numthreads;     /* Number of threads.               */
-  size_t         *indexs;     /* Indexs to be used in this thread.*/
-  pthread_barrier_t   *b;     /* Barrier to keep threads waiting. */
+  size_t      numthreads;     /* Number of threads.                    */
+  size_t         *indexs;     /* Indexs to be used in this thread.     */
+  pthread_barrier_t   *b;     /* Barrier to keep threads waiting.      */
 };
 
 
@@ -78,10 +83,23 @@ struct sconvparams
 /**************             Each thread             ****************/
 /*******************************************************************/
 void
-nonusedpixels(struct sconvparams *scp)
+scpparams(float *input, size_t is0, size_t is1, float *kernel, size_t ks0,
+          size_t ks1, size_t nt, int edgecorrection, float *out,
+          size_t *indexs, struct sconvparams *scp)
 {
-
+  /* Put the simple values in: */
+  scp->is0=is0;
+  scp->is1=is1;
+  scp->ks0=ks0;
+  scp->ks1=ks1;
+  scp->out=out;
+  scp->input=input;
+  scp->kernel=kernel;
+  scp->indexs=indexs;
+  scp->numthreads=nt;
+  scp->edgecorrection=edgecorrection;
 }
+
 
 
 
@@ -92,16 +110,15 @@ sconvonthread(void *inparam)
 {
   struct sconvparams *scp=(struct sconvparams *)inparam;
 
-  double sum;
-  size_t numrows;
-  int inputhasnan=scp->inputhasnan;
+  double sum, ksum;
   long naxes[2]={scp->is1, scp->is0};
-  float blankweight, *istart, *kstart;
-  float *f, *fp, *k, maxbw=scp->blankweight;
-  size_t i, j, os1, ind, *indexs=scp->indexs;
+  float *f, *fp, *k, *istart, *kstart;
   size_t is1=scp->is1, ks0=scp->ks0, ks1=scp->ks1;
-  long fpixel_i[2], lpixel_i[2], fpixel_o[2], lpixel_o[2];
+  size_t i, j, os1, ind, *indexs=scp->indexs, numrows;
+  long *fpixel_i=scp->fpixel_i, *lpixel_i=scp->lpixel_i;
+  long *fpixel_o=scp->fpixel_o, *lpixel_o=scp->lpixel_o;
   float *input=scp->input, *kernel=scp->kernel, *out=scp->out;
+  int edgecorrection=scp->edgecorrection;
 
   /* Go over all the pixels associated with this thread. */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
@@ -118,8 +135,8 @@ sconvonthread(void *inparam)
       /* fpixels and lpixels now point to the overlap's starting and
          ending both on the image and on the kernel. */
       sum=0.0f;
-      blankweight=0.0f;
       os1=lpixel_i[0]-fpixel_i[0];
+      ksum = edgecorrection ? 0.0f : 1.0f;
       numrows=lpixel_i[1]-fpixel_i[1]+1; /* fpixel is inside the box */
       istart= &input[ (fpixel_i[1]-1) * is1 + fpixel_i[0]-1 ];
       kstart=&kernel[ (fpixel_o[1]-1) * ks1 + fpixel_o[0]-1 ];
@@ -129,22 +146,15 @@ sconvonthread(void *inparam)
           fp = ( f=istart+j*is1 ) + os1;
           do
             {
-              if( inputhasnan && isnan(*f) )
+              if( isnan(*f)==0 )
                 {
-                  blankweight+=*k;
-                  if(blankweight>maxbw)
-                    {
-                      out[ind]=NAN;
-                      break;
-                    }
+                  sum += *k * *f;
+                  if(edgecorrection) ksum+=*k;
                 }
-              else
-                sum += *k * *f;
               ++k;
             }
           while(++f<fp);
-          if isnan(out[ind]) break;
-          out[ind]=sum;
+          out[ind]=sum/ksum;
         }
     }
 
@@ -179,8 +189,7 @@ sconvonthread(void *inparam)
 void
 spatialconvolve(float *input, size_t is0, size_t is1,
                 float *kernel, size_t ks0, size_t ks1,
-                size_t nt, float blankweight, int inputhasnan,
-                float **out)
+                size_t nt, int edgecorrection, float **out)
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
@@ -210,12 +219,11 @@ spatialconvolve(float *input, size_t is0, size_t is1,
   /* Distribute the image pixels into the threads: */
   distinthreads(is0*is1, nt, &indexs, &thrdcols);
 
+  /* Start the convolution. */
   if(nt==1)
     {
-      scp[0].input=input; scp[0].kernel=kernel; scp[0].out=*out;
-      scp[0].is0=is0; scp[0].is1=is1; scp[0].ks0=ks0;
-      scp[0].ks1=ks1; scp[0].indexs=indexs; scp[0].numthreads=nt;
-      scp[0].blankweight=blankweight; scp[0].inputhasnan=inputhasnan;
+      scpparams(input, is0, is1, kernel, ks0, ks1, nt,
+                edgecorrection, *out, indexs, &scp[0]);
       sconvonthread(&scp[0]);
     }
   else
@@ -233,12 +241,8 @@ spatialconvolve(float *input, size_t is0, size_t is1,
         if(indexs[i*thrdcols]!=NONTHRDINDEX)
           {
             scp[i].b=&b;
-            scp[i].inputhasnan=inputhasnan;
-            scp[i].blankweight=blankweight;
-            scp[i].indexs=&indexs[i*thrdcols];
-            scp[i].input=input; scp[i].kernel=kernel;
-            scp[i].out=*out; scp[i].is0=is0; scp[i].is1=is1;
-            scp[i].ks0=ks0; scp[i].ks1=ks1; scp[i].numthreads=nt;
+            scpparams(input, is0, is1, kernel, ks0, ks1, nt,
+                      edgecorrection, *out, &indexs[i*thrdcols], &scp[i]);
 	    err=pthread_create(&t, &attr, sconvonthread, &scp[i]);
 	    if(err)
 	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);

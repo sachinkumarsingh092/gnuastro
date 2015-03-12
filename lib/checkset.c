@@ -491,9 +491,10 @@ dir0file1(char *name, int dontdelete)
   struct stat nameinfo;
 
   if(name==NULL)
-    error(EXIT_FAILURE, 0, "A bug! The input to the nameisawritablefile "
-	  "function in checkset.c should not be NULL. Please contact us "
-	  "to see what went wrong.");
+    error(EXIT_FAILURE, 0, "A bug! The input to the dir0file1 function in "
+          "checkset.c should not be NULL. Please contact us at "
+          PACKAGE_BUGREPORT" so we can see what went wrong and fix it in "
+          "future updates.");
 
   errno=0;
   if(stat(name, &nameinfo)!=0)
@@ -530,9 +531,10 @@ dir0file1(char *name, int dontdelete)
   else 				/* Not a file or a dir, ABORT */
     error(EXIT_FAILURE, 0, "%s not a file or a directory.", name);
 
-  error(EXIT_FAILURE, 0, "A bug! In nameisawritablefile, (in checkset.c) "
+  error(EXIT_FAILURE, 0, "A bug! In dir0file1, (in checkset.c) "
 	"The process should not reach the end of the function! Please "
-	"contact us so we can fix this problem.");
+        "contact us at "PACKAGE_BUGREPORT" so we can see what went wrong "
+        "and fix it in future updates.");
   return 0;
 }
 

@@ -41,20 +41,22 @@ AM_PROG_AR
 LT_INIT
 
 
+m4_include([m4/ax_pthread.m4])
+AX_PTHREAD([],[AC_MSG_ERROR([AC_PACKAGE_NAME Needs POSIX Threads (pthread)])])
+CLIBS="$PTHREAD_LIBS $LIBS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+LDFLAGS="$LDFLAGS $PTHREAD_CFLAGS"
+CC="$PTHREAD_CC"
 
 
 # Checks for libraries. The `absolutejunk=1` is put here so it doesn't
 # automatically add the library to the LIBS variable that will be
 # appended to all programs, some libraries will not be needed in some
 # programs.
-AC_CHECK_LIB([m], [sqrt], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])])
-AC_CHECK_LIB([pthread], [pthread_attr_init], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])])
 AC_CHECK_LIB([cfitsio], [ffopen], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])], [-lpthread -lm])
+             [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([wcs], [wcspih], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])], [-lcfitsio -lpthread -lm])
+             [AC_MSG_ERROR([Cannot continue.])], [-lcfitsio -lm])
 AC_CHECK_LIB([jpeg], [jpeg_stdio_dest], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([gslcblas], [cblas_sdsdot], [absolutejunk=1],
@@ -68,11 +70,10 @@ AC_CHECK_LIB([pthread], [pthread_barrier_wait],
 
 
 
+
+
 #Gnulib checks:
 gl_INIT
-# Checks for header files.
-#AC_CHECK_HEADERS([argp.h error.h float.h stdlib.h stdint.h string.h sys/time.h unistd.h],
-#                 [], [AC_MSG_ERROR([Cannot continue.])])
 
 
 

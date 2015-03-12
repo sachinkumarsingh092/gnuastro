@@ -32,7 +32,8 @@ imgcrop/wcscat.sh imgcrop/xcyc.sh imgcrop/xcycnoblank.sh		\
 imgcrop/section.sh imgcrop/radec.sh convertt/fitstotxt.sh		\
 convertt/fitstojpeg.sh convertt/blankch.sh convertt/jpegtotxt.sh	\
 convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh			\
-convertt/fitstopdf.sh
+convertt/fitstopdf.sh convolve/spatial.sh				\
+convolve/spatial_noedgecorr.sh
 
 EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt mkprof/mkprofcat2.txt	\
 mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt imgcrop/cat.txt

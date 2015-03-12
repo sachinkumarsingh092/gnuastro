@@ -41,9 +41,8 @@ static char args_doc[] = "InputFile1 [InputFile2] ... [InputFile4]";
 const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
-  SPACK_NAME" will convert any of the known input formats to any other "
-  "of the known formats. The output file will have the same number of "
-  "pixels.\n"
+  SPACK_NAME" will convolve an input image with a given spatial kernel "
+  "(image) in the spatial domain (edge-corrected) or frequency domain.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -55,8 +54,8 @@ const char doc[] =
 
 /* Free letters for options:
 
-   a b c d e f g i j l m n p r s t u v x y z
-   A B C E F G I J L M O Q R T U W X Y Z
+   a b c d e g i j l m n p r t u v w x y z
+   A B E F G I J L M O Q R T U W X Y Z
 
    Free numbers: >=502
 */
@@ -119,15 +118,34 @@ static struct argp_option options[] =
       2
     },
     {
-      "blankweight",
-      'w',
-      "FLT",
+      "noedgecorrection",
+      'C',
       0,
-      "Maximum acceptable weight of blank pixels.",
+      0,
+      "Do not correct the edges in the spatial domain.",
       2
     },
 
 
+
+
+
+    {
+      "spatial",
+      's',
+      0,
+      0,
+      "Spatial domain convolution.",
+      -1
+    },
+    {
+      "frequency",
+      'f',
+      0,
+      0,
+      "Frequency domain convolution.",
+      -1
+    },
 
     {0}
   };
@@ -196,9 +214,27 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
-    case 'w':
-      floatl0s1(arg, &p->blankweight, "blankweight", key, SPACK, NULL, 0);
-      p->up.blankweightset=1;
+    case 'C':
+      p->edgecorrection=0;
+      break;
+
+
+   /* Operating mode: */
+    case 's':
+      if(p->up.spatialset)
+	argp_error(state, "Only one of spatial or frequency domain "
+                   "convolution modes may be chosen.");
+      p->spatial=1;
+      p->frequency=0;
+      p->up.spatialset=p->up.frequencyset=1;
+      break;
+    case 'f':
+      if(p->up.spatialset)
+	argp_error(state, "Only one of spatial or frequency domain "
+                   "convolution modes may be chosen.");
+      p->spatial=0;
+      p->frequency=1;
+      p->up.spatialset=p->up.frequencyset=1;
       break;
 
 

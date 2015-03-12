@@ -254,8 +254,8 @@ imgcrop(struct imgcropparams *p)
   pthread_barrier_t b;
   struct cropparams *crp;
   size_t i, *indexs, thrdcols;
-  void *(*modefunction)(void *);
   size_t nt=p->cp.numthreads, nb;
+  void *(*modefunction)(void *)=NULL;
 
 
   /* Set the function to run: */

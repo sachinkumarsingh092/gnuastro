@@ -199,8 +199,8 @@ Installing GNU Astronomy Utilities
 
 * Configuring::                 Configure gnuastro
 * Tests::                       Run tests to see if it is working.
+* A4 print manual::             Customize the print manual.
 * Known issues::                Issues you might encounter.
-* Print manual::                Customize the print manual.
 
 Configuring
 
@@ -212,7 +212,7 @@ Common behavior
 
 * Command line::                How to use the command line.
 * Configuration files::         Values for unspecified variables.
-* Threads in gnuastro::         How threads are managed in gnuastro.
+* Threads in GNU Astronomy Utilities::  How threads are managed in gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
@@ -907,7 +907,7 @@ various people, a complete list is distributed along with the source
 code in the file named @file{THANKS} (it is a plain text
 file). Professor Takashi Ichikawa has been instrumental in the
 evolution of the various small programs that were the predecessors of
-gnuastro, his very critical view points were very useful if creating
+gnuastro, his very critical view points were very useful in creating
 the algorithms of MakeProfiles and NoiseChisel.
 
 Mohammad-reza Khellat and Alan Lefor kindly studied the manual
@@ -1296,8 +1296,8 @@ explanation. Once you uncompress the source file the directory
 @menu
 * Configuring::                 Configure gnuastro
 * Tests::                       Run tests to see if it is working.
+* A4 print manual::             Customize the print manual.
 * Known issues::                Issues you might encounter.
-* Print manual::                Customize the print manual.
 @end menu
 
 
@@ -1350,7 +1350,7 @@ discussed.
 @node GNU Astronomy Utilities configure options, Installation directory, Configuring, Configuring
 @subsubsection GNU Astronomy Utilities configure options
 
-@cindex GNU Astronomy Utilities configure options
+@cindex @command{./configure} options
 @cindex Configure options particular to gnuastro
 Most of the options to configure (which are to do with building) are
 similar for every program which uses this script. Here the options
@@ -1364,7 +1364,7 @@ program using the GNU build system (through the configure script).
 (=@code{INT}) If this option is given an integer value, that value
 will be used for the default number of threads to use. If it is not
 given, then the total number of threads will be read from the system,
-see @ref{Threads in gnuastro}. Specifying
+see @ref{Threads in GNU Astronomy Utilities}. Specifying
 @option{--with-numthreads=no} or @option{--without-numthreads} is
 equivalent to not calling this option it at all.
 
@@ -1470,7 +1470,7 @@ $ printenv
 @end example
 
 @vindex PATH
-@cindex @file{./configure}
+@pindex ./configure
 @cindex Setting @code{PATH}
 @cindex Default executable search directory
 @cindex Search directory for executables
@@ -1690,7 +1690,7 @@ $ configure --program-transform-name='s/ast/ /'
 
 
 
-@node Tests, Known issues, Configuring, Installing gnuastro
+@node Tests, A4 print manual, Configuring, Installing gnuastro
 @subsection Tests
 
 @cindex @command{make check}
@@ -1731,80 +1731,10 @@ want to inspect them.
 
 
 
+@node A4 print manual, Known issues, Tests, Installing gnuastro
+@subsection A4 print manual
 
-@node Known issues, Print manual, Tests, Installing gnuastro
-@subsection Known issues
-
-Depending on your GNU/Linux distribution and the version of the
-compiler you are using, you might confront some known problems during
-the configuration (@command{$ ./configure}), compilation (@command{$
-make}) and tests (@command{$ make check}). Here, their solutions are
-discussed.
-
-@itemize
-@cindex Configuration, not finding library
-@cindex Development packages
-@item
-(Configuration) @emph{Configure complains about not finding a library
-even though you have installed it using your package manager.} Most
-probably this is because your distribution has separated the header
-files of a library from the library parts. Please also install the
-`development' packages for those libraries too. Just add a
-@file{-dev} or @file{-devel} to the end of the package name and re-run
-the package manager. This will not happen if you install the libraries
-from source. When installed from source, the headers are also
-installed.
-
-@item
-@cindex GNU Portability Library
-(Compilation) @emph{Complaints about an unknown function on a non-GNU
-based operating system.} In this case, please run @command{$
-./configure} with the @option{--enable-gnulibcheck} option to see if
-the problem is from the GNU Portability Library (Gnulib) not
-supporting your system or if there is a problem in gnuastro, see
-@ref{GNU Astronomy Utilities configure options}. If the problem is not
-in Gnulib, then please contact us. The cause is probably that a
-function that we have used is not supported by your operating system
-and we didn't included it along with the source tar ball. If the
-function is available in Gnulib, it can be fixed immediately.
-
-@cindex Tests, only one passes
-@cindex @file{LD_LIBRARY_PATH}
-@item
-(Tests) @emph{Only one (the first) test passes, all the rest fail.}
-It is highly likely that your distribution doesn't look into the
-@file{/usr/local/lib} directory when searching for shared
-libraries. To make sure it is added to the list of directories, run
-the following command and restart your terminal: (you can ignore the
-@command{\} and extra space if you type it, it is only necessary if
-you copy and paste). See @ref{Installation directory} for more
-details.
-@example
-echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' \
-     >> ~/.bashrc
-@end example
-
-@cindex GPL Ghostscript
-@item
-(Tests) @emph{The tests relying on external programs (for example
-@file{fitstopdf.sh} fail.}) This is probably due to the fact that the
-version number of the external programs is too old for the tests we
-have preformed. Please update the program to a more recent
-version. For example to create a PDF image, you will need GPL
-Ghostscript, but older versions do not work, we have successfully
-tested it on version 9.15. Older versions might cause a failure in the
-test result.
-
-
-
-@end itemize
-
-
-
-@node Print manual,  , Known issues, Installing gnuastro
-@subsection Print manual
-
-@cindex Print manual
+@cindex A4 print manual
 @cindex Modifying print manual
 @cindex A4 paper size
 @cindex US letter paper size
@@ -1817,7 +1747,8 @@ manual. The great thing about the GNU build system is that the manual
 source code which is in Texinfo is also distributed with the program
 source code, enabling you to do such customizations (hacking).
 
-In order to change the paper size, you will need to have @TeX{}
+@cindex GNU Texinfo
+In order to change the paper size, you will need to have GNU Texinfo
 installed. For simplicity, let's assume @file{SRCdir} is equivalent to
 @file{DOWLD/gnuastro-@value{VERSION}}. Open
 @file{SRCdir/doc/gnuastro.texi} with any text editor. This is the
@@ -1855,6 +1786,112 @@ you can add it close to the top of the Texinfo source file.
 
 
 
+@node Known issues,  , A4 print manual, Installing gnuastro
+@subsection Known issues
+
+Depending on your operating system and the version of the compiler you
+are using, you might confront some known problems during the
+configuration (@command{$ ./configure}), compilation (@command{$
+make}) and tests (@command{$ make check}). Here, their solutions are
+discussed.
+
+@itemize
+@cindex Configuration, not finding library
+@cindex Development packages
+@item
+@command{$ ./configure}: @emph{Configure complains about not finding a
+library even though you have installed it.} The possible solution is
+based on how you installed the package:
+
+@itemize
+@item
+From your distribution's package manager. Most probably this is
+because your distribution has separated the header files of a library
+from the library parts. Please also install the `development' packages
+for those libraries too. Just add a @file{-dev} or @file{-devel} to
+the end of the package name and re-run the package manager. This will
+not happen if you install the libraries from source. When installed
+from source, the headers are also installed.
+
+@item
+@cindex @command{LDFLAGS}
+From source. Then your linker is not looking where you installed the
+library. If you followed the instructions in this chapter, all the
+libraries will be installed in @file{/usr/local/lib}. So you have to
+tell your linker to look in this directory. To do so, add
+@command{LDFLAGS=-L/usr/local/lib} to the gnuastro configure
+script. If you want to use the libraries for your other programming
+projects, then export this environment variable similar to the case
+for @file{LD_LIBRARY_PATH} explained below.
+
+@end itemize
+
+@item
+@cindex GNU Portability Library
+@vindex --enable-gnulibcheck
+@command{$ make}: @emph{Complains about an unknown function on a
+non-GNU based operating system.} In this case, please run @command{$
+./configure} with the @option{--enable-gnulibcheck} option to see if
+the problem is from the GNU Portability Library (Gnulib) not
+supporting your system or if there is a problem in gnuastro, see
+@ref{GNU Astronomy Utilities configure options}. If the problem is not
+in Gnulib
+and after all its tests you get the same complaint from
+@command{make}, then please contact us at
+@file{bug-gnuastro@@gnu.org}. The cause is probably that a function
+that we have used is not supported by your operating system and we
+didn't included it along with the source tar ball. If the function is
+available in Gnulib, it can be fixed immediately.
+
+@item
+@cindex @command{CPPFLAGS}
+@command{$ make}: @emph{Can't find the headers (.h files) of libraries
+installed from source.} Similar to the case for @file{LDFLAGS}
+(above), your compiler is not looking in the right place, add
+@command{CPPFLAGS=-I/usr/local/include} to @command{./configure} to
+re-configure gnuastro, then re-run make.
+
+@cindex Tests, only one passes
+@cindex @file{LD_LIBRARY_PATH}
+@item
+@command{$ make check}: @emph{Only one (the first) test passes, all the
+rest fail.}  It is highly likely that your distribution doesn't look
+into the @file{/usr/local/lib} directory when searching for shared
+libraries. To make sure it is added to the list of directories, run
+the following command and restart your terminal: (you can ignore the
+@command{\} and extra space if you type it, it is only necessary if
+you copy and paste). See @ref{Installation directory} for more
+details.
+@example
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' \
+     >> ~/.bashrc
+@end example
+
+@cindex GPL Ghostscript
+@item
+@command{$ make check}: @emph{The tests relying on external programs
+(for example @file{fitstopdf.sh} fail.}) This is probably due to the
+fact that the version number of the external programs is too old for
+the tests we have preformed. Please update the program to a more
+recent version. For example to create a PDF image, you will need GPL
+Ghostscript, but older versions do not work, we have successfully
+tested it on version 9.15. Older versions might cause a failure in the
+test result.
+
+@item
+@cindex @TeX{}
+@cindex GNU Texinfo
+@command{$ make pdf}: @emph{The PDF manual cannot be made.} To make a
+PDF manual, you need to have the GNU Texinfo program (like any
+program, the more recent the better). A working @TeX{} program is also
+necessary, which you can get from Tex
+Live@footnote{@url{https://www.tug.org/texlive/}}.
+
+@end itemize
+
+
+
+
 
 
 
@@ -1888,7 +1925,7 @@ the keyboard!) help on the command line.
 @menu
 * Command line::                How to use the command line.
 * Configuration files::         Values for unspecified variables.
-* Threads in gnuastro::         How threads are managed in gnuastro.
+* Threads in GNU Astronomy Utilities::  How threads are managed in gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
@@ -2347,7 +2384,7 @@ quit. See explanation under @option{--setdirconf} for more details.
 @item -N
 @itemx --numthreads
 (@option{=INT}) Set the number of CPU threads to use. See @ref{Threads
-in gnuastro}.
+in GNU Astronomy Utilities}.
 
 @end vtable
 
@@ -2356,7 +2393,7 @@ in gnuastro}.
 
 
 
-@node Configuration files, Threads in gnuastro, Command line, Common behavior
+@node Configuration files, Threads in GNU Astronomy Utilities, Command line, Common behavior
 @section Configuration files
 
 @cindex @file{etc}
@@ -2374,6 +2411,7 @@ and are usually kept in a directory named @file{etc/} according to the
 file system hierarchy
 standard@footnote{@url{http://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard}}.
 
+@vindex --output
 @vindex --numthreads
 @cindex Internal default value
 The thing to have in mind is that none of the programs in gnuastro
@@ -2381,12 +2419,19 @@ keep any internal default value. All the values must either be stored
 in one of the configuration files or explicitly called in the command
 line. In case the necessary parameters are not given through any of
 these methods, the program will list the missing necessary parameters
-and abort. As explained in @ref{Operating modes}, the only exception
-to this is @option{--numthreads}, whose default value is set at
-@command{$ ./configure} time internally, see @ref{GNU Astronomy
-Utilities configure options}. Of course, you can still provide a
-default value for the number of threads at any of the levels below,
-but if you don't, the program will not abort.
+and abort. The only exception to this is @option{--numthreads}, whose
+default value is set at @command{$ ./configure} time internally, see
+@ref{Threads in GNU Astronomy Utilities}. Of course, you can still
+provide a default value for the number of threads at any of the levels
+below, but if you don't, the program will not abort. Also note that
+through automatic output name genertion, the value to the
+@option{--output} option is also not mandatory on the command line or
+in the configuration files for all programs which don't rely on that
+value as an input@footnote{One example of a program which uses the
+value given to @option{--output} as an input is ConvertType, this
+value specifies the type of the output through the value to
+@option{--output}, see @ref{Invoking astconvertt}.}, see
+@ref{Automatic output}.
 
 
 
@@ -2431,13 +2476,13 @@ the first value will be used, the rest will be ignored.
 @cindex Writing configuration files
 @cindex Automatic configuration file writing
 @cindex Configuration files, writing
-You can build any of the directories and the configuration files your
-self using any text editor.  However, it is recommended to use the
-@option{--setdirconf} and @option{--setusrconf} options to set default
-values for the current directory or this user, see @ref{Operating
-modes}. With these options, the values you give will be checked as
-explained in @ref{Option basics} before writing in the current
-directory's configuration file. They will also print a set of
+You can build or edit any of the directories and the configuration
+files your self using any text editor.  However, it is recommended to
+use the @option{--setdirconf} and @option{--setusrconf} options to set
+default values for the current directory or this user, see
+@ref{Operating modes}. With these options, the values you give will be
+checked as explained in @ref{Option basics} before writing in the
+current directory's configuration file. They will also print a set of
 commented lines guiding the reader and will also classify the options
 based on their context and write them in their logical order to be
 more understandable.
@@ -2550,7 +2595,7 @@ self.
 
 
 
-@node Threads in gnuastro, Final parameter values, Configuration files, Common behavior
+@node Threads in GNU Astronomy Utilities, Final parameter values, Configuration files, Common behavior
 @section Threads in GNU Astronomy Utilities
 
 @cindex pthread
@@ -2573,15 +2618,15 @@ if you want more details.
 @cindex Available number of threads
 You can find the number of cores available to your system with the
 command @command{$ nproc}, which is part of GNU Coreutils and is most
-probably already available on your system. If not specified as an
-option at configure time, gnuastro finds the number of cores available
-to your system (and reports it along with all those other things it
-checks!). It is saved internally for all the programs to use by
-default. To specify the number of threads at configure time, use the
-@option{--with-numthreads} option, see @ref{GNU Astronomy Utilities
-configure options}. In case your system does not have GNU Coreutils,
-the only way to proceed is to manually specify the number of threads
-through this option.
+probably already available on your GNU/Linux system. If not specified
+as an option at configure time, gnuastro finds the number of cores
+available to your system (and reports it along with all those other
+things it checks!). It is saved internally for all the programs to use
+by default. To specify the number of threads at configure time, use
+the @option{--with-numthreads} option, see @ref{GNU Astronomy
+Utilities configure options}. In case your system does not have GNU
+Coreutils, currently the only way to proceed is to manually specify
+the number of threads through this option through this option.
 
 @cindex Internally stored option value
 The number of threads is the only parameter in gnuastro which is
@@ -2595,7 +2640,7 @@ configuration file will be used, not the internal value.
 * A note on threads::           Caution and suggestion on using threads.
 @end menu
 
-@node A note on threads,  , Threads in gnuastro, Threads in gnuastro
+@node A note on threads,  , Threads in GNU Astronomy Utilities, Threads in GNU Astronomy Utilities
 @subsection A note on threads
 
 @cindex Using multiple threads
@@ -2645,7 +2690,7 @@ should remove it.
 
 
 
-@node Final parameter values, Automatic output, Threads in gnuastro, Common behavior
+@node Final parameter values, Automatic output, Threads in GNU Astronomy Utilities, Common behavior
 @section Final parameter values, reproduce previous results
 
 @vindex -P
@@ -3406,7 +3451,7 @@ One line examples:
 @example
 $ astconvertt M31.fits --output=pdf
 $ astconvertt galaxy.jpg -ogalaxy.fits
-$ astconvertt f1.txt f2.txt f3.fits -ojpg
+$ astconvertt f1.txt f2.txt f3.fits -o.jpg
 $ astconvertt M31_r.fits M31_g.fits blank -oeps
 @end example
 
@@ -4359,15 +4404,54 @@ the object photons, it only disperses them.
 @node Convolution on the edges, Invoking astconvolve, Convolution process, Convolve
 @subsection Convolution on the edges
 
-In a purely `linear' spatial filtering (convolution), we are going to
-have some problems on the edges of the input image. Explaining the
-problem in the spatial domain is easier@footnote{Once a good
-understanding of the frequency domain is achieved the reason in that
-domain is also very illuminating, see any image processing book for a
-good explanation.}. The problem originates with the fact that on the
-edges, in practice@footnote{Because we assumed the overlapping pixels
-outside the input image have a value of zero.}  the sum of the weights
-we use on the actual image pixels is not unity.
+In purely `linear' spatial filtering (convolution), there are problems
+on the edges of the input image. Explaining the problem in the spatial
+domain might be easier@footnote{Once a good understanding of the
+frequency domain is achieved the reason in that domain is also very
+enlightening, see any image processing book for a good
+explanation.}. The problem originates from the fact that on the edges,
+in practice@footnote{Because we assumed the overlapping pixels outside
+the input image have a value of zero.}, the sum of the weights we use
+on the actual image pixels is not unity. For example, as discussed
+above, a profile in the center of an image will have the same total
+flux before and after convolution. However, for a profile on the side
+of the image, the total flux (sum of its pixels within the image) will
+not be equal, some flux is going to be `eaten' by the edges.
+
+If you have ran @command{$ make check} when you built gnuastro, you
+can see the this effect in the @file{./tests/} directory in the image
+ending with @file{sconvolve_nec.fits}@footnote{The unconvolved input
+image has a similar starting name.}. In Convolve, any blank pixel in
+the image will not be used in the convolution, see @ref{Blank pixels},
+so the problem explained above will also occur on the sides of blank
+regions (which might be masked for example). The solution to this
+(only in the spatial domain) is to not assume that the sum of the
+kernel pixels is unity, so taking @mymath{W} as the sum of the kernel
+pixels that used image pixels, the equation in @ref{Convolution
+process} will become:
+
+@dispmath{C_{x,y}= { \sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t} \over W}.}
+
+@noindent
+In this manner, objects which are near the sides of the image or blank
+pixels will also have the same flux (within the image) before and
+after convolution. This correction is applied by default in Convolve
+when convolving in the spatial domain. To disable it, you can use the
+@option{--noedgecorrection} option. In the frequency domain, there is
+no way to avoid this loss of flux near the edges of the image.
+
+Note that the edge effect discussed here is different from the one in
+@ref{If convolving afterwards}. In making mock images we want to
+simulate a real observation. In a real observation the images of the
+galaxies on the sides of the CCD are first blurred by the atmosphere,
+then imaged. So those parts of a galaxy which are outside the CCD will
+affect those parts which are within it. Therefore in modeling the
+observation, we have to convolve an image that is larger than the
+input image by exactly half of the convolution kernel. We can hence
+conclude that this correction for the edges is only useful when
+working on actual observed images (where we don't have any more data
+on the edges) and not in modeling.
+
 
 
 
@@ -4432,6 +4516,11 @@ flipping has already been applied to the kernel or it is not desired.
 @item --nokernelnorm
 Do not normalize the kernel after reading it, such that the sum of its
 pixels is unity.
+
+@item C
+@itemx --noedgecorrection
+Do not apply edge correction when convolving in the spatial domain,
+see @ref{Convolution on the edges}.
 
 @end table
 
@@ -5785,36 +5874,56 @@ $ git clone git://git.sv.gnu.org/gnuastro.git
 @end example
 
 @cindex GNU C library
+@cindex GNU Autoconf Archive
 @cindex GNU Portability Library
 @cindex Automatically created build files
 @noindent
-The version controlled source code lacks the files that are
-automatically built (and included in the distributed
-@file{gnuastro-@value{VERSION}.tar.gz}) for configuration and
-building. To ensure portability for a wider range of operating systems
+The version controlled source code lacks the source files that we have
+not written or are automatically built (and included in the
+distributed @file{gnuastro-@value{VERSION}.tar.gz}) for configuration
+and building. There are two types of files that we have not
+written. To ensure portability for a wider range of operating systems
 (those that don't include GNU C library, namely glibc), we have used
 the GNU Portability Library (Gnulib). Gnulib keeps a copy of all the
 functions in glibc and you can include them in the source code to
-replace system wide functions on other compilers. To get the Gnulib,
-just run this command in any directory (lets assume you are in your
-home directory):
+replace system wide functions on other compilers. To test for various
+system architectures and compiler configurations we make use of the
+various GNU Autoconf macros in the GNU Autoconf
+archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
+
+To get the Gnulib and the Autoconf archives, just run this command in
+any directory (lets assume you are in @file{~/Development} directory):
 
 @example
 $ pwd
-/home/yourusername
+/home/yourusername/Development
 $ git clone git://git.sv.gnu.org/gnulib.git
+$ git clone git://git.sv.gnu.org/autoconf-archive.git
 @end example
 
-This will download the full Gnulib version controlled source in a
-directory named @file{gnulib}. To include all the necessary packages,
-run the following command from within the cloned @file{gnuastro}
-directory@footnote{Note that the @file{gnulib-tool} script has to be
-run from within the cloned Gnulib directory, it is not installed.}:
+@noindent
+This will download the full version controlled source of the two in
+separate directories. Both these packages are regularly updated, so
+every once and a while you can run @command{$ git pull} within them to
+get any possible updates. To include all the necessary packages from
+Gnulib, run the following command from within the cloned
+@file{gnuastro} directory@footnote{Note that the @file{gnulib-tool}
+script has to be run from within the cloned Gnulib directory, it is
+not installed.}:
 
 @example
-$ ~/gnulib/gnulib-tool --import --source-base=gnulib/lib    \
-  --with-tests --tests-base=gnulib/tests --no-vc-files      \
-  argp error progname math
+$ ~/Development/gnulib/gnulib-tool --import --source-base=gnulib/lib \
+  --with-tests --tests-base=gnulib/tests --no-vc-files math argp \
+  error progname
+@end example
+
+@noindent
+One of the directores made after running @file{gnulib-tool} is
+@file{m4/}. We can now add the necessary Autoconf checks from the
+Autoconf archives to this directory:
+
+@example
+$ cp ~/Development/autoconf-archive/m4/ax_pthread.m4 ./m4/
 @end example
 
 @cindex GNU Texinfo
@@ -5822,10 +5931,11 @@ $ ~/gnulib/gnulib-tool --import --source-base=gnulib/lib    \
 @cindex GNU Autoconf
 @cindex GNU Automake
 @cindex GNU build system
-All the necessary glibc functions are now available. Another set of
-automatically generated files are those used to build the system using
-the GNU build system. To generate those files you have to run the
-following command in the cloned @file{gnuastro}
+@noindent
+All the necessary GNU C library functions and Autoconf macros are now
+available. Now you can add the automatically generated files used to
+build gnuastro using the GNU build system. To generate those files you
+have to run the following command in the cloned @file{gnuastro}
 directory. @command{autoreconf} is part of GNU Autoconf and also
 requires GNU Automake, GNU Libtool and GNU Texinfo to create all the
 necessary files, see @ref{Building}.

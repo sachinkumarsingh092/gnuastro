@@ -380,7 +380,6 @@ void
 checkifset(struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
 
   int intro=0;
   if(up->tunitinpset==0)
@@ -407,8 +406,6 @@ checkifset(struct mkprofparams *p)
     REPORT_NOTSET("qcol");
   if(up->mcolset==0)
     REPORT_NOTSET("mcol");
-  if(cp->outputset==0)
-    REPORT_NOTSET("output");
   if(up->naxis1set==0)
     REPORT_NOTSET("naxis1");
   if(up->naxis2set==0)
@@ -656,6 +653,18 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   /* Read catalog if given. */
   if(p->up.catname)
     txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
+
+  /* If cp->output was not specified on the command line or in any of
+     the configuration files, then automatic output should be used, in
+     which case, cp->output should be the current directory. */
+  if(p->cp.outputset==0)
+    {
+      p->cp.output=malloc(2+1); /* 2 is length of "./" */
+      if(p->cp.output==NULL)
+        error(EXIT_FAILURE, errno, "Space for output");
+      strcpy(p->cp.output, "./");
+      p->cp.outputset=1;
+    }
 
   /* Do a sanity check, then remove the possibly existing log file
      created by txttoarray. */

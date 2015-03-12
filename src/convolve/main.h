@@ -39,44 +39,49 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* User interface parameters structure */
 struct uiparams
 {
-  char        *inputname;   /* Name of input file.                   */
-  char       *kernelname;   /* Name of kernel file.                  */
-  char             *khdu;   /* HDU of input Kernel.                  */
+  char        *inputname;   /* Name of input file.       */
+  char       *kernelname;   /* Name of kernel file.      */
+  char             *khdu;   /* HDU of input Kernel.      */
 
+  int         spatialset;
+  int       frequencyset;
   int      kernelnameset;
   int            khduset;
-  int     blankweightset;
 };
 
 
 
 
-
+/* Processing parameters structure */
 struct convolveparams
 {
-  struct uiparams     up;   /* Pointer to user interface structure.   */
-  struct commonparams cp;   /* Pointer to the commonparams structure. */
+  struct uiparams     up;   /* Pointer to user interface structure.     */
+  struct commonparams cp;   /* Pointer to the commonparams structure.   */
 
   /* Inputs: */
-  float           *input;   /* Input image array.                     */
-  float          *kernel;   /* Input Kernel array.                    */
-  size_t             is0;   /* Input image size along C's first axis. */
-  size_t             is1;   /* Input image size along C's second axis.*/
-  size_t             ks0;   /* Kernel size along C's first axis.      */
-  size_t             ks1;   /* Kernel size along C's second axis.     */
-  int        inputhasnan;   /* ==1: The input image has nan pixels.   */
-  int         kernelflip;   /* ==1: Flip the kernel.                  */
-  int         kernelnorm;   /* ==1: Normalize the kernel.             */
-  int               nwcs;   /* Number of WCS headers.                 */
-  struct wcsprm     *wcs;   /* WCS structure.                         */
+  float           *input;   /* Input image array.                       */
+  float          *kernel;   /* Input Kernel array.                      */
+  size_t             is0;   /* Input image size along C's first axis.   */
+  size_t             is1;   /* Input image size along C's second axis.  */
+  size_t             ks0;   /* Kernel size along C's first axis.        */
+  size_t             ks1;   /* Kernel size along C's second axis.       */
+  int         kernelflip;   /* ==1: Flip the kernel.                    */
+  int         kernelnorm;   /* ==1: Normalize the kernel.               */
+  int     edgecorrection;   /* Correct for the edges in spatial domain. */
+  int               nwcs;   /* Number of WCS headers.                   */
+  struct wcsprm     *wcs;   /* WCS structure.                           */
 
   /* Outputs: */
-  float      blankweight;   /* Maximum weight of blank pixels.        */
+
+  /* Operating modes: */
+  int            spatial;   /* Convolve using spatial domain.           */
+  int          frequency;   /* Convolve using frequency domain.         */
 
   /* internal: */
-  time_t         rawtime;   /* Starting time of the program.          */
+  time_t         rawtime;   /* Starting time of the program.            */
 };
 
 #endif

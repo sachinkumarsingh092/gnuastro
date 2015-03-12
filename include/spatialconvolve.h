@@ -26,7 +26,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 spatialconvolve(float *input, size_t is0, size_t is1,
                 float *kernel, size_t ks0, size_t ks1,
-                size_t nt, float blankweight, int inputhasnan,
-                float **out);
+                size_t nt, int edgecorrection, float **out);
 
 #endif

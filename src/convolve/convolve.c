@@ -32,17 +32,48 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 void
+frequencyconvolve()
+{
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void
 convolve(struct convolveparams *p)
 {
   float *convolved;
 
   /* Do the convolution. */
-  spatialconvolve(p->input, p->is0, p->is1, p->kernel, p->ks0,
-                  p->ks1, p->cp.numthreads, p->blankweight,
-                  p->inputhasnan, &convolved);
 
-  arraytofitsimg(p->cp.output, "Convolved", FLOAT_IMG, convolved,
-                 p->is0, p->is1, p->wcs, SPACK_STRING);
+  if(p->spatial)
+    spatialconvolve(p->input, p->is0, p->is1, p->kernel, p->ks0,
+                    p->ks1, p->cp.numthreads, p->edgecorrection,
+                    &convolved);
+  else
+    frequencyconvolve();
+
+  if(p->spatial)  /* TEMPORARY: until the frequency domain is completed,
+                     this condition is temporary. */
+    arraytofitsimg(p->cp.output, "Convolved", FLOAT_IMG, convolved,
+                   p->is0, p->is1, p->wcs, SPACK_STRING);
 
   /* Free the output array: */
   free(convolved);

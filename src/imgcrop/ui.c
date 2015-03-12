@@ -331,8 +331,6 @@ checkifset(struct imgcropparams *p)
     REPORT_NOTSET("deccol");
   if(up->wwidthset==0)
     REPORT_NOTSET("wwidth");
-  if(cp->outputset==0)
-    REPORT_NOTSET("output");
   if(up->suffixset==0)
     REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
@@ -370,19 +368,6 @@ sanitycheck(struct imgcropparams *p)
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
   char *t1=NULL, *t2=NULL, *t3=NULL, *boxparam;
-
-
-
-  /* Check that if multiple threads are beeing requested, CFITSIO is
-     configured with the `--enable-reentrant` option. */
-  if(cp->numthreads>1 && fits_is_reentrant()==0)
-    error(EXIT_FAILURE, 0, "CFITSIO was not configured with the "
-	  "`--enable-reentrant` option but you have asked to operate "
-	  "on %lu threads. Please configure, make and install CFITSIO "
-	  "again with this flag to use multiple threads, run `info %s "
-	  "CFITSIO` for more information. Alternatively you can set "
-	  "the number of threads to 1 by adding the `--numthreads=1` "
-	  "or `-N1` options.", cp->numthreads, PACKAGE);
 
 
 
@@ -526,6 +511,21 @@ sanitycheck(struct imgcropparams *p)
   if(p->wcsmode && p->noblank)
     error(EXIT_FAILURE, 0, "`--noblanks` (`-b`) is only for image mode. "
 	  "You have called it with WCS mode.");
+
+
+
+
+  /* Check that if multiple threads are beeing requested, CFITSIO is
+     configured with the `--enable-reentrant` option. This is put here
+     because the number of threads may change above. */
+  if(cp->numthreads>1 && fits_is_reentrant()==0)
+    error(EXIT_FAILURE, 0, "CFITSIO was not configured with the "
+	  "`--enable-reentrant` option but you have asked to operate "
+	  "on %lu threads. Please configure, make and install CFITSIO "
+	  "again with this flag to use multiple threads, run `info %s "
+	  "CFITSIO` for more information. Alternatively you can set "
+	  "the number of threads to 1 by adding the `--numthreads=1` "
+	  "or `-N1` options.", cp->numthreads, PACKAGE);
 }
 
 
@@ -686,6 +686,18 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
   /* Read catalog if given. */
   if(p->up.catname)
     txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
+
+  /* If cp->output was not specified on the command line or in any of
+     the configuration files, then automatic output should be used, in
+     which case, cp->output should be the current directory. */
+  if(p->cp.outputset==0)
+    {
+      p->cp.output=malloc(2+1); /* 2 is length of "./" */
+      if(p->cp.output==NULL)
+        error(EXIT_FAILURE, errno, "Space for output");
+      strcpy(p->cp.output, "./");
+      p->cp.outputset=1;
+    }
 
   /* Do a sanity check. */
   sanitycheck(p);

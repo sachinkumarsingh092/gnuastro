@@ -307,8 +307,6 @@ checkifset(struct converttparams *p)
     REPORT_NOTSET("hdu3");
   if(up->hdu4set==0)
     REPORT_NOTSET("hdu4");
-  if(cp->outputset==0)
-    REPORT_NOTSET("output");
   if(up->qualityset==0)
     REPORT_NOTSET("quality");
   if(up->widthincmset==0)
@@ -518,55 +516,65 @@ sanitycheck(struct converttparams *p)
       }
 
   /* The output file name. First find the first non-blank file name: */
-  if(nameisfits(cp->output))
+  if(cp->outputset)
     {
-      p->outputtype=FITSFORMAT;
-      if( nameisfitssuffix(cp->output) )
-        adddotautomaticoutput(p);
-    }
-  else if(nameisjpeg(cp->output))
-    {
-      p->outputtype=JPEGFORMAT;
-      if( nameisjpegsuffix(cp->output) )
-        adddotautomaticoutput(p);
-    }
-  else if(nameiseps(cp->output))
-    {
-      p->outputtype=EPSFORMAT;
-      if( nameisepssuffix(cp->output) )
-        adddotautomaticoutput(p);
-    }
-  else if(nameispdf(cp->output))
-    {
-      p->outputtype=PDFFORMAT;
-      if( nameispdfsuffix(cp->output) )
-        adddotautomaticoutput(p);
+      if(nameisfits(cp->output))
+        {
+          p->outputtype=FITSFORMAT;
+          if( nameisfitssuffix(cp->output) )
+            adddotautomaticoutput(p);
+        }
+      else if(nameisjpeg(cp->output))
+        {
+          p->outputtype=JPEGFORMAT;
+          if( nameisjpegsuffix(cp->output) )
+            adddotautomaticoutput(p);
+        }
+      else if(nameiseps(cp->output))
+        {
+          p->outputtype=EPSFORMAT;
+          if( nameisepssuffix(cp->output) )
+            adddotautomaticoutput(p);
+        }
+      else if(nameispdf(cp->output))
+        {
+          p->outputtype=PDFFORMAT;
+          if( nameispdfsuffix(cp->output) )
+            adddotautomaticoutput(p);
+        }
+      else
+        {
+          /* If the length of the name is shorter than 4 characters, it is
+             most probably a mis-spelled extension, warn the user. */
+          if(strlen(cp->output)<=5)
+            error(EXIT_FAILURE, 0, ": (Warning) Your output file name is "
+                    "`%s`, based on its length, it might be a mis-spelled "
+                    "extension. Your input is converted to a plain text "
+                    "format file with That name.",
+                    cp->output);
+
+          p->outputtype=TXTFORMAT;
+
+          /* If output type is not an image, there should only be one color
+             channel: */
+          if(p->numch>1)
+            error(EXIT_FAILURE, 0, "Text output (`--output=%s`) can only be "
+                  "completed with one input color channel. You have given "
+                  "%lu. Note that some formats (for example JPEG) can have "
+                  "more than one color channel in each file. You can first "
+                  "convert the file to FITS, then convert the desired "
+                  "channel to text by specifying the HDU.",
+                  cp->output, p->numch);
+        }
     }
   else
-    {
-      /* If the length of the name is shorter than 4 characters, it is
-         most probably a mis-spelled extension, warn the user. */
-      if(strlen(cp->output)<=5)
-        fprintf(stderr, SPACK": (Warning) Your output file name is `%s`, "
-                "based on its length, it might be a mis-spelled extension. "
-                "Your input is converted to a plain text format file with "
-                "That name.",
-                cp->output);
-
-      p->outputtype=TXTFORMAT;
-
-      /* If output type is not an image, there should only be one color
-         channel: */
-      if(p->numch>1)
-        error(EXIT_FAILURE, 0, "Text output (`--output=%s`) can only be "
-              "completed with one input color channel. You have given %lu. "
-              "Note that some formats (for example JPEG) can have more than "
-              "one color channel in each file. You can first convert the "
-              "file to FITS, then convert the desired channel to text by "
-              "specifying the HDU.",
-              cp->output, p->numch);
-    }
-
+    error(EXIT_FAILURE, 0, "No ouput file name or extension is specified, "
+          "Please run "SPACK" again with the `--output' or `-o' option.\n\n"
+          "The value to this option doesn't have to be a file name, you "
+          "can also only give an extension (in which case your input file"
+          "name will be used for the base name of the output. For example "
+          "running `"SPACK" filename.fits -ojpg') will produce the output "
+          "file `filename.jpg').");
 }
 
 

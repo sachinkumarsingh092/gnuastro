@@ -19,7 +19,7 @@ fi
 
 
 #For each program bring in the configuration file:
-for prog in imgcrop mkprof convertt
+for prog in imgcrop mkprof convertt convolve
 do
     if [ ! -f .gnuastro/ast$prog.conf ]; then
 	cp $topsrc/src/$prog/ast$prog.conf .gnuastro/

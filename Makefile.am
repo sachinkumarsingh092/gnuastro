@@ -23,6 +23,11 @@
 
 ## Directories to check:
 ## =====================
+##
+## Gnulib is intentionally compiled and tested prior to the gnuastro
+## progams. With this configuration, the user can confirm if the
+## problem is internal to gnulib or still persists after all the
+## Gnulib tests have been done.
 if COND_CONVERTT
   MAYBE_CONVERTT = src/convertt
 endif
