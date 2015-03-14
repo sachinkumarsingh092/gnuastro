@@ -285,6 +285,7 @@ Convolve
 
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
+* Spatial vs. Frequency domain::
 * Invoking astconvolve::        Options and arguments to Convolve.
 
 Image analysis
@@ -550,20 +551,21 @@ scientific discovery. 1959. Larger quote is given at the start of the
 PDF manual.}.
 
 It is obviously impractical for any one human being to gain the
-intricate knowledge explained above for every step of their scientific
-analysis. On the other hand, scientific data can be very large and
-numerous, for example images produced by telescopes in astronomy. This
-requires very efficient algorithms. To make things worse, natural
-scientists have generally not been trained in the advanced software
-techniques, paradigms and architecture that is taught in computer
-science or engineering courses and thus used in most software. The GNU
-Astronomy Utilities are an effort to tackle this issue. GNU Astronomy
-Utilities are built on the basis of the GNU general public license
-(GPL) and enforce the further requirement that an astronomer (who is
-not necessarily trained in computer science or engineering) will need
-minimal requirements and preparations to understand and modify any
-step if they feel the need to do so, see @ref{Why C} and @ref{Design
-philosophy}.
+intricate knowledge explained above for every step of an analysis. On
+the other hand, scientific data can be very large and numerous, for
+example images produced by telescopes in astronomy. This requires very
+efficient algorithms. To make things worse, natural scientists have
+generally not been trained in the advanced software techniques,
+paradigms and architecture that is taught in computer science or
+engineering courses and thus used in most software. The GNU Astronomy
+Utilities are an effort to tackle this issue. GNU Astronomy Utilities
+are built on the basis of the GNU general public license (GPL), giving
+the users complete ``freedom'' over them, see @ref{Your rights}. We
+further add the requirement (on the programmers of gnuastro) that an
+astronomer, who is not necessarily trained in computer science or
+engineering, will need minimal requirements and preparations to
+understand and modify any step if they feel the need to do so, see
+@ref{Why C} and @ref{Design philosophy}.
 
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
@@ -585,7 +587,24 @@ understanding software, you are reduced to believing in magic''.  Ken
 Thomson (the designer or the Unix operating system) says ``I abhor a
 system designed for the `user' if that word is a coded pejorative
 meaning `stupid and unsophisticated'.'' Certainly no scientist (user
-of a scientific software) would want to be considered as such.
+of a scientific software) would want to be considered as such. Roughly
+5 years before special relativity and about two decades before quantum
+mechanics fundamentally changed Physics, Kelvin is quoted as
+saying@footnote{Another such quote is from Albert. A. Michelson's
+speech at the dedication of Ryerson Physics Lab, U. of Chicago 1894
+saying: ``The more important fundamental laws and facts of physical
+science have all been discovered, and these are now so firmly
+established that the possibility of their ever being supplanted in
+consequence of new discoveries is exceedingly remote.... Our future
+discoveries must be looked for in the sixth place of decimals.''.}:
+
+@quotation
+@cindex Lord Kelvin
+@cindex William Thomson
+There is nothing new to be discovered in physics now. All that remains
+is more and more precise measurement.
+@author William Thomson (Lord Kelvin), 1900
+@end quotation
 
 @cindex Puzzle solving scientist
 @cindex Scientist, puzzle solver
@@ -620,10 +639,9 @@ things that the experiment was competent to find.
 The paragraphs below, in this section, belong to the GNU
 Texinfo@footnote{Texinfo is the GNU documentation system. It is used
 to create this manual in all the various formats.} manual and are not
-written by us! Just changed the name ``Texinfo'' is changed to ``GNU
-Astronomy Utilities'' or ``gnuastro'' because they are released under
-the same licenses and it is beautifully written to inform you of your
-rights.
+written by us! The name ``Texinfo'' is just changed to ``GNU Astronomy
+Utilities'' or ``gnuastro'' because they are released under the same
+licenses and it is beautifully written to inform you of your rights.
 
 @cindex Free software
 @cindex Copyright
@@ -4306,7 +4324,10 @@ process of merging two functions.}. We define the `neighbourhood' of
 each pixel (how many pixels) and the `weight' function (How much each
 neighbouring pixel should contribute depending on its position)
 through a second image which is known as a spatial
-kernel@footnote{Also known as filter, here we will use `kernel'.}.
+kernel@footnote{Also known as filter, here we will use `kernel'.}. A
+nice and fully illustrated introduction to convolution has been
+provided by
+ImageMagick@footnote{@url{http://www.imagemagick.org/Usage/convolve/}}.
 
 @cindex Detection
 @cindex Atmosphere
@@ -4341,10 +4362,15 @@ the same image you are observing: each pixel has a certain flux value
 and the pixel (which has a fixed spatial position) with the highest
 flux value can be seen first@footnote{Assuming that the highest flux
 is the easiest to see}. In the frequency domain, the spatial change of
-flux values is emphasized, with the lowest frequencies in the center
-and higher frequencies extending outwards@footnote{In the frequency
-domain of a real image, we will actually be dealing with complex pixel
-values we can view either the amplitude or phase.}.  Removing
+flux values is emphasized, with the lowest frequency (related to the
+sum of the pixels in the image) occupying the first pixel (in FITS on
+the bottom left of the image) and higher frequencies extending
+outwards@footnote{In the frequency domain of a real image, we will
+actually be dealing with complex pixel values we can view either the
+amplitude or phase.}@footnote{Chapter 4 of Gonzalez and woods (2008)
+introduces the concepts of sampling and the frequency domain very
+nicely. The nicely illustrated guide by ImageMagick is also very
+educative: @url{http://www.imagemagick.org/Usage/fourier/}}.  Removing
 (filtering) certain frequency ranges is the source of the term
 filtering@footnote{For example ``low pass filtering'' which refers to
 removing small frequencies}.
@@ -4352,6 +4378,7 @@ removing small frequencies}.
 @menu
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
+* Spatial vs. Frequency domain::
 * Invoking astconvolve::        Options and arguments to Convolve.
 @end menu
 
@@ -4387,9 +4414,10 @@ about its center the blurred image has the same orientation as the
 original image. However, if the kernel is not symmetric, the image
 will be affected in the opposite manner, this is a natural consequence
 of the definition of spatial filtering. In order to avoid this we can
-flip the kernel so the convolution can have the same original
-orentation. If the kernel is flipped the process is known
-@emph{Convolution} and if it isn't we call it @emph{Correlation}.
+rotate the kernel about its center by 180 degrees so convolution can
+have the same original orentation. Technically speaking, only if the
+kernel is flipped the process is known @emph{Convolution}. If it isn't
+it is known as @emph{Correlation}.
 
 To be a weighted average, the sum of the weights (the pixels in the
 kernel) have to be unity. This will have the consequence that the
@@ -4397,11 +4425,23 @@ convolved image of an object and unconvolved object will have the same
 total flux, which is natural, because convolution should not eat up
 the object photons, it only disperses them.
 
+@cindex Fast Fourier Transform
+@cindex GNU Scientific Library
+In the frequency domain, the two images have to be padded with zero
+valued pixels such that the number of pixels on the sides of the two
+images are identical. The sides of the padded image have to be at
+least equal to the sum of the sides of each image minus one. The speed
+of the algorithms for Fast Fourier Transform (FFT) depend on the size
+of the paded images. If the final sides are a factor or 2, 3, 4, 5, 6,
+7 the GNU Scientific Library provides efficient algorithms for the
+fourier transform. In case the size is not a multiple of any of these,
+then it will fall back to the standard Discrete Fourier Transform.
 
 
 
 
-@node Convolution on the edges, Invoking astconvolve, Convolution process, Convolve
+
+@node Convolution on the edges, Spatial vs. Frequency domain, Convolution process, Convolve
 @subsection Convolution on the edges
 
 In purely `linear' spatial filtering (convolution), there are problems
@@ -4418,17 +4458,17 @@ flux before and after convolution. However, for a profile on the side
 of the image, the total flux (sum of its pixels within the image) will
 not be equal, some flux is going to be `eaten' by the edges.
 
-If you have ran @command{$ make check} when you built gnuastro, you
-can see the this effect in the @file{./tests/} directory in the image
-ending with @file{sconvolve_nec.fits}@footnote{The unconvolved input
-image has a similar starting name.}. In Convolve, any blank pixel in
-the image will not be used in the convolution, see @ref{Blank pixels},
-so the problem explained above will also occur on the sides of blank
+If you ran @command{$ make check} when you built gnuastro and you
+still have them, you can see the this effect by comparing the
+@file{convolve_frequency.fits} with @file{convolve_spatial.fits} in
+the @file{./tests/} directory. In Convolve, any blank pixel in the
+image will not be used in the convolution, see @ref{Blank pixels}, so
+the problem explained above will also occur on the sides of blank
 regions (which might be masked for example). The solution to this
 (only in the spatial domain) is to not assume that the sum of the
 kernel pixels is unity, so taking @mymath{W} as the sum of the kernel
-pixels that used image pixels, the equation in @ref{Convolution
-process} will become:
+pixels that used non-blank image pixels, the equation in
+@ref{Convolution process} will become:
 
 @dispmath{C_{x,y}= { \sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t} \over W}.}
 
@@ -4443,21 +4483,62 @@ no way to avoid this loss of flux near the edges of the image.
 Note that the edge effect discussed here is different from the one in
 @ref{If convolving afterwards}. In making mock images we want to
 simulate a real observation. In a real observation the images of the
-galaxies on the sides of the CCD are first blurred by the atmosphere,
-then imaged. So those parts of a galaxy which are outside the CCD will
-affect those parts which are within it. Therefore in modeling the
-observation, we have to convolve an image that is larger than the
-input image by exactly half of the convolution kernel. We can hence
-conclude that this correction for the edges is only useful when
-working on actual observed images (where we don't have any more data
-on the edges) and not in modeling.
+galaxies on the sides of the CCD are first blurred by the atmosphere
+and instrument, then imaged. So light from the parts of a galaxy which
+are immediately outside the CCD will affect the parts of the galaxy
+which are covered by the CCD. Therefore in modeling the observation,
+we have to convolve an image that is larger than the input image by
+exactly half of the convolution kernel. We can hence Conclude that
+this correction for the edges is only useful when working on actual
+observed images (where we don't have any more data on the edges) and
+not in modeling.
 
 
+@node Spatial vs. Frequency domain, Invoking astconvolve, Convolution on the edges, Convolve
+@subsection Spatial vs. Frequency domain
+
+With the discussions above it might not be clear when to choose the
+spatial domain and when to choose the frequency domain. Here we will
+try to list the benefits of each.
+
+@noindent
+The spatial domain,
+@itemize
+@item
+Can correct for the edge effects of convolution, see @ref{Convolution
+on the edges}.
+
+@item
+Can operate on blank pixels.
+
+@item
+Can be faster than frequency domain when the image or kernel are small
+(in terms of the number of pixels on the side).
+@end itemize
+
+@noindent
+The frequency domain,
+@itemize
+@item
+Will be much faster when the image and kernel are both large.
+@end itemize
+
+@noindent
+As a general rule of thumb, when working on an image of modelled
+profiles use the frequency domain and when working on an image of real
+(observed) objects use the spatial domain (corrected for the
+edges). The reason is that if you apply a frequency domain convolution
+to a real image, you are going to loose information on the edges and
+generally you don't want large kernels. But when you have made the
+profiles in the image your self, you can just make a larger input
+image and crop the central parts to completely remove the edge effect,
+see @ref{If convolving afterwards}. Also due to oversampling, both the
+kernels and the images can become very large and the speed boost of
+frequency domain convolution will significantly improve the processing
+time, see @ref{Oversampling}.
 
 
-
-
-@node Invoking astconvolve,  , Convolution on the edges, Convolve
+@node Invoking astconvolve,  , Spatial vs. Frequency domain, Convolve
 @subsection Invoking Convolve
 
 Convolve an input image with a known kernel. The general template for
@@ -4495,7 +4576,10 @@ Whatever its initial type, it will be converted to a floating point
 array for analysis.
 
 @item
-Any blank or Nan pixel in the kernel will be given a value of zero.
+@cindex NaN
+@cindex Blank pixels in FITS
+Any blank or NaN (not a number) pixel in the kernel will be given a
+value of zero.
 
 @item
 The kernel will be flipped immediately after reading it, can be disabled with the @option{--nokernelflip}
@@ -4517,11 +4601,81 @@ flipping has already been applied to the kernel or it is not desired.
 Do not normalize the kernel after reading it, such that the sum of its
 pixels is unity.
 
-@item C
+@item -C
 @itemx --noedgecorrection
 Do not apply edge correction when convolving in the spatial domain,
 see @ref{Convolution on the edges}.
 
+@item -f
+@itemx --frequency
+@cindex Discrete fourier transform
+Convolve using discrete fourier transform in the frequency domain: The
+fourier transform of both arrays is first calculated and
+multiplied. Then the inverse fourier transform is applied to the
+product to give the final convolved image.
+
+For large images, this process will be more efficient than convolving
+in the spatial domain. However, the edges of the image will loose some
+flux, see @ref{Convolution on the edges}.
+
+@item -s
+@itemx --spatial
+Convolve in the spatial domain, see @ref{Convolution process}.
+
+
+@item --viewfreqsteps
+With this option a file with the initial name of the output file will
+be created that is suffixed with @file{_freqsteps.fits}, all the steps
+done to arrive at the final convolved image are saved as extensions in
+this file. The extensions in order are:
+
+@enumerate
+@item
+The padded input image. In frequency domain convolution the two images
+(input and convolved) have to be the same size and both should be
+padded by zeros.
+
+@item
+The padded kernel, similar to the above.
+
+@item
+@cindex Phase angle
+@cindex Complex numbers
+@cindex Numbers, complex
+@cindex Fourier spectrum
+@cindex Spectrum, Fourier
+The Fourier spectrum of the forward Fourier transform of the input
+image. Note that the fourier transform is a complex operation (and not
+viewable in one image!)  So we either have to show the `Fourier
+spectrum' or the `Phase angle'. For the complex number
+@mymath{a+ib}, the Fourier spectrum is defined as
+@mymath{\sqrt{a^2+b^2}} while the phase angle is defined as
+@mymath{arctan(b/a)}.
+
+@item
+The Fourier spectrum of the forward Fourier transform of the kernel
+image.
+
+@item
+The Fourier spectrum of the multiplied (through complex arithmetic)
+transformed images.
+
+@item
+@cindex Round-off error
+@cindex Floating point round-off error
+@cindex Error, floating point round-off
+The inverse Fourier transform of the multiplied image. If you open it,
+you will see that the convolved image is now in the center, not on one
+side of the image as it started with (in the padded image of the first
+extension). If you are working on a mock image which originally had
+pixels of precisely 0.0, you will notice that in those parts that your
+convolved profile(s) did not conver, the values are now
+@mymath{\sim10^{-18}}, this is due to floating-point round off
+errors. Therefore in the final step (when cropping the central parts
+of the image), we also remove any pixel with a value less than
+@mymath{10^{-17}}.
+
+@end enumerate
 @end table
 
 

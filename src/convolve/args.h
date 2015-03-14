@@ -54,7 +54,7 @@ const char doc[] =
 
 /* Free letters for options:
 
-   a b c d e g i j l m n p r t u v w x y z
+   a b c d e g i j l m n p r t u w x y z
    A B E F G I J L M O Q R T U W X Y Z
 
    Free numbers: >=502
@@ -123,6 +123,14 @@ static struct argp_option options[] =
       0,
       0,
       "Do not correct the edges in the spatial domain.",
+      2
+    },
+    {
+      "viewfreqsteps",
+      'v',
+      0,
+      0,
+      "View the steps in the frequency domain.",
       2
     },
 
@@ -235,6 +243,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->spatial=0;
       p->frequency=1;
       p->up.spatialset=p->up.frequencyset=1;
+      break;
+    case 'v':
+      p->viewfreqsteps=1;
       break;
 
 

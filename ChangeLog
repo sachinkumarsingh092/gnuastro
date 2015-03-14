@@ -1,3 +1,7 @@
+2015-03-14  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/convolve/convolve.c: Added frequency domain convolution.
+
 2015-03-12  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/mkprof/ui.c (setparams): Added condition for no output given.

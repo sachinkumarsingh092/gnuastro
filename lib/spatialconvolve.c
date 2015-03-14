@@ -113,12 +113,12 @@ sconvonthread(void *inparam)
   double sum, ksum;
   long naxes[2]={scp->is1, scp->is0};
   float *f, *fp, *k, *istart, *kstart;
+  int edgecorrection=scp->edgecorrection;
   size_t is1=scp->is1, ks0=scp->ks0, ks1=scp->ks1;
-  size_t i, j, os1, ind, *indexs=scp->indexs, numrows;
   long *fpixel_i=scp->fpixel_i, *lpixel_i=scp->lpixel_i;
   long *fpixel_o=scp->fpixel_o, *lpixel_o=scp->lpixel_o;
+  size_t i, j, ind, *indexs=scp->indexs, numrows, numcols;
   float *input=scp->input, *kernel=scp->kernel, *out=scp->out;
-  int edgecorrection=scp->edgecorrection;
 
   /* Go over all the pixels associated with this thread. */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
@@ -135,15 +135,15 @@ sconvonthread(void *inparam)
       /* fpixels and lpixels now point to the overlap's starting and
          ending both on the image and on the kernel. */
       sum=0.0f;
-      os1=lpixel_i[0]-fpixel_i[0];
+      numcols=lpixel_i[0]-fpixel_i[0]+1; /* lpixel is inside the box. */
+      numrows=lpixel_i[1]-fpixel_i[1]+1; /* lpixel is inside the box. */
       ksum = edgecorrection ? 0.0f : 1.0f;
-      numrows=lpixel_i[1]-fpixel_i[1]+1; /* fpixel is inside the box */
       istart= &input[ (fpixel_i[1]-1) * is1 + fpixel_i[0]-1 ];
       kstart=&kernel[ (fpixel_o[1]-1) * ks1 + fpixel_o[0]-1 ];
       for(j=0;j<numrows;++j)
         {
           k=kstart+j*ks1;
-          fp = ( f=istart+j*is1 ) + os1;
+          fp = ( f=istart+j*is1 ) + numcols;
           do
             {
               if( isnan(*f)==0 )

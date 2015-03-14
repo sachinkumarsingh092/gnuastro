@@ -24,6 +24,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 
+#include <gsl/gsl_fft_complex.h>
 
 
 #include "commonparams.h"
@@ -42,9 +43,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* User interface parameters structure */
 struct uiparams
 {
-  char        *inputname;   /* Name of input file.       */
-  char       *kernelname;   /* Name of kernel file.      */
-  char             *khdu;   /* HDU of input Kernel.      */
+  char        *inputname;   /* Name of input file.           */
+  char       *kernelname;   /* Name of kernel file.          */
+  char             *khdu;   /* HDU of input Kernel.          */
+  char    *freqstepsname;   /* Name of frequency steps file. */
 
   int         spatialset;
   int       frequencyset;
@@ -79,9 +81,14 @@ struct convolveparams
   /* Operating modes: */
   int            spatial;   /* Convolve using spatial domain.           */
   int          frequency;   /* Convolve using frequency domain.         */
+  int      viewfreqsteps;   /* View the frequency domain steps.         */
 
   /* internal: */
   time_t         rawtime;   /* Starting time of the program.            */
+  double           *pimg;   /* Padded image array.                      */
+  double           *pker;   /* Padded kernel array.                     */
+  size_t             ps0;   /* Padded size along first C axis.          */
+  size_t             ps1;   /* Padded size along second C axis.         */
 };
 
 #endif

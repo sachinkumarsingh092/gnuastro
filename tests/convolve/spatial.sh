@@ -42,4 +42,4 @@ fi
 #####################
 psf=psf.fits
 img=mkprofcat1.fits
-$execname $img --kernel=$psf --spatial --output=mkprofcat1_sconvolve.fits
+$execname $img --kernel=$psf --spatial --output=convolve_spatial.fits

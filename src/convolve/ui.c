@@ -390,9 +390,14 @@ sanitycheck(struct convolveparams *p)
   else
     {
       automaticoutput(p->up.inputname, "_convolved.fits",
-                      p->cp.removedirinfo, p->cp.dontdelete, &p->cp.output);
+                      p->cp.removedirinfo, p->cp.dontdelete,
+                      &p->cp.output);
       p->cp.outputset=1;
     }
+  if(p->frequency && p->viewfreqsteps)
+    automaticoutput(p->up.inputname, "_freqsteps.fits",
+                    p->cp.removedirinfo, p->cp.dontdelete,
+                    &p->up.freqstepsname);
 }
 
 
@@ -456,7 +461,14 @@ setparams(int argc, char *argv[], struct convolveparams *p)
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
-    printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+    {
+      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+      printf("Convolving %s (hdu: %s)\n"
+             " with the kernel %s (hdu: %s).\n"
+             " using %lu CPU threads in the %s domain.\n",
+             p->up.inputname, cp->hdu, p->up.kernelname, p->up.khdu,
+             cp->numthreads, p->spatial?"spatial":"frequency");
+    }
 }
 
 

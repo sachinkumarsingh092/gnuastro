@@ -1,4 +1,4 @@
-# Convolve an image in the spatial domain without edge correction.
+# Convolve an image in the frequency domain.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -42,5 +42,4 @@ fi
 #####################
 psf=psf.fits
 img=mkprofcat1.fits
-$execname $img --kernel=$psf --spatial \
-          --output=mkprofcat1_sconvolve_nec.fits --noedgecorrection
+$execname $img --kernel=$psf --frequency --output=convolve_frequency.fits
