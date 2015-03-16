@@ -1,3 +1,11 @@
+2015-03-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* src/convolve/ui.c (preparearrays): The flip parts was missing a
+	-1.
+
+	* doc/gnuastro.texi: Changed all `gnuastro' occurrences in the
+	text to `Gnuastro'.
+
 2015-03-14  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/convolve/convolve.c: Added frequency domain convolution.

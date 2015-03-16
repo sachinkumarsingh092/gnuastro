@@ -40,7 +40,7 @@ Texts.  A copy of the license is included in the section entitled
 @c To include in the info directory.
 @dircategory Astronomy
 @direntry
-* gnuastro: (gnuastro).       GNU Astronomy Utilities.
+* Gnuastro: (gnuastro).       GNU Astronomy Utilities.
 
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
@@ -166,7 +166,7 @@ Introduction
 
 * Naming convention::
 * Quick start::                 A quick start to installation.
-* GNU Astronomy Utilities list::  List of program in gnuastro.
+* GNU Astronomy Utilities list::  List of program in Gnuastro.
 * Science and its tools::       Some philosophy and history.
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
@@ -184,8 +184,8 @@ Tutorial
 
 Installation
 
-* Requirements::                gnuastro requirements
-* Installing gnuastro::         Installing gnuastro
+* Requirements::                Gnuastro requirements
+* Installing Gnuastro::         Installing Gnuastro
 
 Requirements
 
@@ -197,14 +197,14 @@ Requirements
 
 Installing GNU Astronomy Utilities
 
-* Configuring::                 Configure gnuastro
+* Configuring::                 Configure Gnuastro
 * Tests::                       Run tests to see if it is working.
 * A4 print manual::             Customize the print manual.
 * Known issues::                Issues you might encounter.
 
 Configuring
 
-* GNU Astronomy Utilities configure options::  Configure options particular to gnuastro.
+* GNU Astronomy Utilities configure options::  Configure options particular to Gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
 
@@ -212,7 +212,7 @@ Common behavior
 
 * Command line::                How to use the command line.
 * Configuration files::         Values for unspecified variables.
-* Threads in GNU Astronomy Utilities::  How threads are managed in gnuastro.
+* Threads in GNU Astronomy Utilities::  How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
@@ -223,7 +223,7 @@ Command line
 * Arguments and options::       Basics of options and arguments.
 * Arguments::                   Treatment of arguments.
 * Option basics::               How to use GNU style options.
-* Common options::              Common options to all gnuastro programs.
+* Common options::              Common options to all Gnuastro programs.
 
 Common options
 
@@ -251,6 +251,7 @@ Getting help
 Files
 
 * FileInfo::                    List all the extensions in a file.
+* FileExtensions::              Manipulate data extensions in a file.
 * ConvertType::                 Convert data to various formats.
 
 ConvertType
@@ -330,7 +331,7 @@ Invoking MakeProfiles
 
 Developing
 
-* Why C::                       Why gnuastro is designed in C.
+* Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
@@ -343,7 +344,7 @@ Developing
 Program source
 
 * Coding conventions::          Conventions used for coding
-* Multithreaded programming::   gnuastro uses POSIX threads.
+* Multithreaded programming::   Gnuastro uses POSIX threads.
 
 Other useful software
 
@@ -361,8 +362,8 @@ SAO ds9
 @chapter Introduction
 
 @cindex GNU coding standards
-@cindex GNU Astronomy Utilities (gnuastro) @value{VERSION}
-The GNU Astronomy Utilities (gnuastro) is an official GNU package
+@cindex GNU Astronomy Utilities (Gnuastro) @value{VERSION}
+The GNU Astronomy Utilities (Gnuastro) is an official GNU package
 consisting of separate programs for the manipulation and analysis of
 astronomical data. All the various utilities share the same basic
 command line user interface for the comfort of both the users and
@@ -381,9 +382,9 @@ to go through these chapters carefully. They can be a starting point
 from which you can continue to learn more from each program's own
 manual and fully enjoy this wonderful environment. This manual is
 written so someone who is completely new to GNU/Linux can get going
-very soon.
+very soon, see @ref{New to GNU/Linux?}.
 
-Finally it must be mentioned that in gnuastro, no change to any
+Finally it must be mentioned that in Gnuastro, no change to any
 program will be released before it has been fully documented in this
 manual first. As discussed in @ref{Science and its tools} this is the
 founding basis of the GNU Astronomy Utilities.
@@ -391,7 +392,7 @@ founding basis of the GNU Astronomy Utilities.
 @menu
 * Naming convention::
 * Quick start::                 A quick start to installation.
-* GNU Astronomy Utilities list::  List of program in gnuastro.
+* GNU Astronomy Utilities list::  List of program in Gnuastro.
 * Science and its tools::       Some philosophy and history.
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
@@ -407,7 +408,7 @@ founding basis of the GNU Astronomy Utilities.
 @cindex Program names
 GNU Astronomy Utilities is a package of independent utilities or
 programs. Each utility has an official name which consists of one or
-two words, describing what they do, the latter are printed with no
+two words, describing what they do. The latter are printed with no
 space, for example NoiseChisel or ImageCrop. On the command line, you
 can run them with their executable names which start with an
 @file{ast} and might be an abbreviation of the official name, for
@@ -416,7 +417,7 @@ example @file{astnoisechisel} or @file{astimgcrop}, see
 
 @pindex ProgramName
 @pindex @file{astprogname}
-We will use ProgramName for a generic official program name and
+We will use ``ProgramName'' for a generic official program name and
 @file{astprogname} for a generic executable name. In this manual, the
 programs are classified based on what they do and thoroughly
 explained. An alphabetical list of the utilities that are installed on
@@ -561,7 +562,7 @@ engineering courses and thus used in most software. The GNU Astronomy
 Utilities are an effort to tackle this issue. GNU Astronomy Utilities
 are built on the basis of the GNU general public license (GPL), giving
 the users complete ``freedom'' over them, see @ref{Your rights}. We
-further add the requirement (on the programmers of gnuastro) that an
+further add the requirement (on the authors of Gnuastro) that an
 astronomer, who is not necessarily trained in computer science or
 engineering, will need minimal requirements and preparations to
 understand and modify any step if they feel the need to do so, see
@@ -640,7 +641,7 @@ The paragraphs below, in this section, belong to the GNU
 Texinfo@footnote{Texinfo is the GNU documentation system. It is used
 to create this manual in all the various formats.} manual and are not
 written by us! The name ``Texinfo'' is just changed to ``GNU Astronomy
-Utilities'' or ``gnuastro'' because they are released under the same
+Utilities'' or ``Gnuastro'' because they are released under the same
 licenses and it is beautifully written to inform you of your rights.
 
 @cindex Free software
@@ -648,28 +649,28 @@ licenses and it is beautifully written to inform you of your rights.
 @cindex Public domain
 GNU Astronomy Utilities is ``free software''; this means that everyone
 is free to use it and free to redistribute it on certain
-conditions. GNU Astronomy Utilities is not in the public domain; it is
-copyrighted and there are restrictions on its distribution, but these
-restrictions are designed to permit everything that a good cooperating
-citizen would want to do.  What is not allowed is to try to prevent
-others from further sharing any version of gnuastro that they might
-get from you.
+conditions. Gnuastro is not in the public domain; it is copyrighted
+and there are restrictions on its distribution, but these restrictions
+are designed to permit everything that a good cooperating citizen
+would want to do.  What is not allowed is to try to prevent others
+from further sharing any version of Gnuastro that they might get from
+you.
 
 Specifically, we want to make sure that you have the right to give
-away copies of the programs that relate to gnuastro, that you receive
+away copies of the programs that relate to Gnuastro, that you receive
 the source code or else can get it if you want it, that you can change
 these programs or use pieces of them in new free programs, and that
 you know you can do these things.
 
 To make sure that everyone has such rights, we have to forbid you to
 deprive anyone else of these rights.  For example, if you distribute
-copies of the gnuastro related programs, you must give the recipients
+copies of the Gnuastro related programs, you must give the recipients
 all the rights that you have.  You must make sure that they, too,
 receive or can get the source code.  And you must tell them their
 rights.
 
 Also, for our own protection, we must make certain that everyone finds
-out that there is no warranty for the programs that relate to gnuastro.
+out that there is no warranty for the programs that relate to Gnuastro.
 If these programs are modified by someone else and passed on, we want
 their recipients to know that what they have is not what we distributed,
 so that any problems introduced by others will not reflect on our
@@ -678,7 +679,7 @@ reputation.
 @cindex GNU General Public License
 @cindex GNU Free Documentation License
 The precise conditions of the licenses for the programs currently
-being distributed that relate to gnuastro are found in the
+being distributed that relate to Gnuastro are found in the
 @url{http://www.gnu.org/copyleft/gpl.html, GNU General Public license}
 that accompany them.  This manual is covered by the
 @url{http://www.gnu.org/copyleft/fdl.html, GNU Free Documentation
@@ -693,7 +694,7 @@ License}.
 @cindex Number, version
 @cindex Major version number
 @cindex Minor version number
-The general gnuastro package has a version number. It contains
+The general Gnuastro package has a version number. It contains
 various programs and each of those also has its own version
 number. The version numbers for both are two numbers with a point
 (@file{.}) between them. The left number is the major version number
@@ -701,7 +702,7 @@ while the right one is the minor version number. Note that the numbers
 are not decimals, so version 2.34 of a program is much more recent
 than version 2.5, which is not equal to 2.50!
 
-The current version of gnuastro is @value{VERSION} and the version
+The current version of Gnuastro is @value{VERSION} and the version
 numbers of its various components are shown in @ref{GNU Astronomy
 Utilities list}. To see the version of a program you are using, you
 can use the @option{--version} option, see @ref{Common options}.
@@ -714,12 +715,11 @@ viewed as ad-hoc improvements. The major version number is set by a
 major goal which is defined by the developers of that particular
 program before hand.
 
-For gnuastro, its minor version number increases by 1 on every
-release (which contains an arbitrary number of updated version numbers
-for the programs). So you can tell that at least one package has been
-updated at least once. You can see the details from the @file{NEWS}
-file that comes with that distribution and is also available online to
-view before you download.
+For Gnuastro, its minor version number increases by 1 on every release
+(which contains an arbitrary number of updated version numbers for the
+programs or the general package). You can see the details from the
+@file{NEWS} file that comes with that distribution and is also
+available online to view before you download.
 
 @menu
 * GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
@@ -727,14 +727,14 @@ view before you download.
 
 @node GNU Astronomy Utilities 1.0,  , Version numbering, Version numbering
 @subsection GNU Astronomy Utilities 1.0
-@cindex gnuastro major version number
-The major version number of gnuastro is increased similar to that of
-each program. Currently (prior to gnuastro 1.0), the aim is to have a
+@cindex Gnuastro major version number
+The major version number of Gnuastro is increased similar to that of
+each program. Currently (prior to Gnuastro 1.0), the aim is to have a
 complete system for data manipulation and analysis at least similar to
 IRAF@footnote{@url{http://iraf.noao.edu/}}. So an astronomer can take
 all the standard data analysis steps (starting from raw data to the
 final reduced product and standard post-reduction tools) with the
-various programs in gnuastro.
+various programs in Gnuastro.
 
 @cindex Shell script
 The maintainers of each camera or detector on a telescope can provide
@@ -760,7 +760,7 @@ independent. Something like the GNU Coreutils.
 
 Some astronomers initially install and use the GNU/Linux operating
 systems because their research software can only be run in this
-environment. This is how the founder of gnuastro started using
+environment. This is how the founder of Gnuastro started using
 GNU/Linux at least! If this is not the case for you, you can skip the
 following.
 
@@ -792,7 +792,7 @@ very important distinction.
 @cindex Command line user interface
 @cindex GUI: graphic user interface
 @cindex CLI: command line user interface
-Another thing you will notice is that gnuastro only has a command line
+Another thing you will notice is that Gnuastro only has a command line
 user interface (CLI) or the `shell' as it is referred to in
 Unix-like systems. This might be contrary to your mostly graphical
 user interface (GUI) experience with proprietary operating systems. To
@@ -925,12 +925,12 @@ various people, a complete list is distributed along with the source
 code in the file named @file{THANKS} (it is a plain text
 file). Professor Takashi Ichikawa has been instrumental in the
 evolution of the various small programs that were the predecessors of
-gnuastro, his very critical view points were very useful in creating
+Gnuastro, his very critical view points were very useful in creating
 the algorithms of MakeProfiles and NoiseChisel.
 
 Mohammad-reza Khellat and Alan Lefor kindly studied the manual
 multiple times and provided very useful suggestions. Alan also helped
-in testing gnuastro on other operating systems. Brandon Invergo, Karl
+in testing Gnuastro on other operating systems. Brandon Invergo, Karl
 Berry and Richard Stallman from GNU also provided very useful
 suggestions during the evaluation process. At first we wanted to
 submit the programs as independent and individual small programs, but
@@ -1076,30 +1076,30 @@ report.
 @chapter Installation
 
 @cindex Installation
-To successfully install gnuastro you have to have the requirements
+To successfully install Gnuastro you have to have the requirements
 already installed on your system. They are very basic for most
 astronomical programs and you might already have them installed. To
 check, try running the @command{$ ./configure} script. If you get no
 errors, then you already have them and you can skip
 @ref{Requirements}. You can heavily customize your install of
-gnuastro, to learn more about them, see @ref{Installing gnuastro}. If
+Gnuastro, to learn more about them, see @ref{Installing Gnuastro}. If
 you encounter any problems in the installation process, it is probably
 already explained in @ref{Known issues}. In @ref{Other useful
 software} the installation and usage of some other free software that
-are not directly required by gnuastro but might be useful in
+are not directly required by Gnuastro but might be useful in
 conjunction with it is discussed.
 
 
 
 @menu
-* Requirements::                gnuastro requirements
-* Installing gnuastro::         Installing gnuastro
+* Requirements::                Gnuastro requirements
+* Installing Gnuastro::         Installing Gnuastro
 @end menu
 
-@node Requirements, Installing gnuastro, Installation, Installation
+@node Requirements, Installing Gnuastro, Installation, Installation
 @section Requirements
 
-@cindex Dependencies, gnuastro
+@cindex Dependencies, Gnuastro
 @cindex GNU build system
 GNU Astronomy Utilities @value{VERSION} have several dependencies,
 they all follow the same basic GNU based build system (like that shown
@@ -1124,7 +1124,7 @@ issues:
 They might not be the most recent release.
 
 @item
-For each package, gnuastro might require certain configuration options
+For each package, Gnuastro might require certain configuration options
 that the your distribution's package managers didn't add for
 you. Those configuration options are explained below.
 
@@ -1286,12 +1286,12 @@ distribution's package managers for this.
 
 
 
-@node Installing gnuastro,  , Requirements, Installation
+@node Installing Gnuastro,  , Requirements, Installation
 @section Installing GNU Astronomy Utilities
 
 This section is basically a longer explanation to the sequence of
 commands given in @ref{Quick start}. If you want to have all the
-programs of gnuastro installed in your system, you don't want to
+programs of Gnuastro installed in your system, you don't want to
 change the executable names during or after installation, you have
 root access to install the programs in a system wide directory, the
 Letter paper size of the print manual is fine for you or as a summary
@@ -1312,7 +1312,7 @@ explanation. Once you uncompress the source file the directory
 
 
 @menu
-* Configuring::                 Configure gnuastro
+* Configuring::                 Configure Gnuastro
 * Tests::                       Run tests to see if it is working.
 * A4 print manual::             Customize the print manual.
 * Known issues::                Issues you might encounter.
@@ -1322,7 +1322,7 @@ explanation. Once you uncompress the source file the directory
 
 
 
-@node Configuring, Tests, Installing gnuastro, Installing gnuastro
+@node Configuring, Tests, Installing Gnuastro, Installing Gnuastro
 @subsection Configuring
 
 @pindex ./configure
@@ -1350,17 +1350,17 @@ $ ./configure --help
 @noindent
 A complete explanation is also included in the
 @file{gnuastro-@value{VERSION}/INSTALL} file in plain text that comes
-with the gnuastro source. Note that this file was written by the
+with the Gnuastro source. Note that this file was written by the
 authors of GNU Autoconf and is common for all programs which use the
 @command{$ ./configure} script for building and installing (there is a
 lot of such programs). Here the most common general usages (not only
-gnuastro) are explained: when you don't have super-user access to the
+Gnuastro) are explained: when you don't have super-user access to the
 system and changing the executable names. But before that a review of
-the options to configure that are particular to gnuastro are
+the options to configure that are particular to Gnuastro are
 discussed.
 
 @menu
-* GNU Astronomy Utilities configure options::  Configure options particular to gnuastro.
+* GNU Astronomy Utilities configure options::  Configure options particular to Gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
 @end menu
@@ -1369,10 +1369,10 @@ discussed.
 @subsubsection GNU Astronomy Utilities configure options
 
 @cindex @command{./configure} options
-@cindex Configure options particular to gnuastro
+@cindex Configure options particular to Gnuastro
 Most of the options to configure (which are to do with building) are
 similar for every program which uses this script. Here the options
-that are particular to gnuastro are discussed. The next topics explain
+that are particular to Gnuastro are discussed. The next topics explain
 the usage of other configure options which can be applied to any
 program using the GNU build system (through the configure script).
 
@@ -1391,7 +1391,7 @@ Only build and install @file{progname} along with any other program
 that is enabled in this fashion. @file{progname} is the name of the
 executable without the @file{ast}, for example @file{imgcrop} for
 ImageCrop (with the executable name of @file{astimgcrop}). If this
-option is called for any of the programs in gnuastro, any program
+option is called for any of the programs in Gnuastro, any program
 which is not explicitly enabled will not be built or installed.
 
 @item --disable-progname
@@ -1404,16 +1404,16 @@ install all the other programs except this one.
 @cindex GNU C library
 @cindex GNU Portability Library
 Enable checks on the GNU Portability Library (Gnulib). Gnulib is used
-by gnuastro to enable users of non-GNU based operating systems (that
+by Gnuastro to enable users of non-GNU based operating systems (that
 don't use GNU C library or glibc) to compile and use the advanced
 features that this library provides. We make extensive use of such
 functions. If you give this option to @command{$ ./configure}, when
 you run @command{$ make check}, first the functions in Gnulib will be
-tested, then the gnuastro executables. If your operating system does
+tested, then the Gnuastro executables. If your operating system does
 not support glibc or has an older version of it and you have problems
 in the build process (@command{$ make}), you can give this flag to
 configure to see if the problem is caused by Gnulib not supporting
-your operating system or gnuastro, see @ref{Known issues}.
+your operating system or Gnuastro, see @ref{Known issues}.
 
 
 @end vtable
@@ -1455,7 +1455,7 @@ common usage cases.
 
 In case you don't have super user or root access to the system, you
 can't take the installation steps of the command sequence in
-@ref{Quick start}. To be able to access the gnuastro executable files
+@ref{Quick start}. To be able to access the Gnuastro executable files
 from anywhere, you have to specify a special directory in the
 directories you have write access in, through the shell's environment
 variables. Note that this explanation can apply to all the
@@ -1572,7 +1572,7 @@ export PATH=$PATH:USRDIR/bin
 @cindex @file{LD_LIBRARY_PATH}
 @cindex Library search directory
 @cindex Default library search directory
-In case you install libraries (like the requirements of gnuastro) with
+In case you install libraries (like the requirements of Gnuastro) with
 this method locally, you also have to notify the system to search for
 shared libraries in your installed directory. To do that add
 @file{USRDIR/lib} to your @command{LD_LIBRARY_PATH} environment
@@ -1638,7 +1638,7 @@ $ ast[TAB][TAB]
 @noindent
 you will get the list of all the available executables that start with
 @command{ast} in your @command{PATH} environment variable
-directories. So, all the gnuastro executables installed on your system
+directories. So, all the Gnuastro executables installed on your system
 will be listed. Typing the next letter for the specific program you
 want along with a Tab, will limit this list until you get to your
 desired program.
@@ -1659,7 +1659,7 @@ scripts, see @ref{Option basics}.
 The simplest solution is making a symbolic link to the actual
 executable. For example let's assume you want to type @file{ic} to run
 ImageCrop instead of @file{astimgcrop}. Assuming you installed
-gnuastro executables in @file{/usr/local/bin} (default) you can do
+Gnuastro executables in @file{/usr/local/bin} (default) you can do
 this simply by running the following command as root:
 
 @example
@@ -1667,7 +1667,7 @@ this simply by running the following command as root:
 @end example
 
 @noindent
-In case you update gnuastro and a new version of ImageCrop is
+In case you update Gnuastro and a new version of ImageCrop is
 installed, the default executable name is the same, so your custom
 symbolic link still works.
 
@@ -1676,7 +1676,7 @@ symbolic link still works.
 @vindex --program-transform-name
 The installed executable names can also be set using options to
 @command{$ ./configure}, see @ref{Configuring}. GNU Autoconf (which
-configures gnuastro for your particular system), allows the builder
+configures Gnuastro for your particular system), allows the builder
 to change the name of programs with the three options
 @option{--program-prefix}, @option{--program-suffix} and
 @option{--program-transform-name}. The first two are for adding a
@@ -1708,7 +1708,7 @@ $ configure --program-transform-name='s/ast/ /'
 
 
 
-@node Tests, A4 print manual, Configuring, Installing gnuastro
+@node Tests, A4 print manual, Configuring, Installing Gnuastro
 @subsection Tests
 
 @cindex @command{make check}
@@ -1749,7 +1749,7 @@ want to inspect them.
 
 
 
-@node A4 print manual, Known issues, Tests, Installing gnuastro
+@node A4 print manual, Known issues, Tests, Installing Gnuastro
 @subsection A4 print manual
 
 @cindex A4 print manual
@@ -1804,7 +1804,7 @@ you can add it close to the top of the Texinfo source file.
 
 
 
-@node Known issues,  , A4 print manual, Installing gnuastro
+@node Known issues,  , A4 print manual, Installing Gnuastro
 @subsection Known issues
 
 Depending on your operating system and the version of the compiler you
@@ -1837,7 +1837,7 @@ From source. Then your linker is not looking where you installed the
 library. If you followed the instructions in this chapter, all the
 libraries will be installed in @file{/usr/local/lib}. So you have to
 tell your linker to look in this directory. To do so, add
-@command{LDFLAGS=-L/usr/local/lib} to the gnuastro configure
+@command{LDFLAGS=-L/usr/local/lib} to the Gnuastro configure
 script. If you want to use the libraries for your other programming
 projects, then export this environment variable similar to the case
 for @file{LD_LIBRARY_PATH} explained below.
@@ -1851,7 +1851,7 @@ for @file{LD_LIBRARY_PATH} explained below.
 non-GNU based operating system.} In this case, please run @command{$
 ./configure} with the @option{--enable-gnulibcheck} option to see if
 the problem is from the GNU Portability Library (Gnulib) not
-supporting your system or if there is a problem in gnuastro, see
+supporting your system or if there is a problem in Gnuastro, see
 @ref{GNU Astronomy Utilities configure options}. If the problem is not
 in Gnulib
 and after all its tests you get the same complaint from
@@ -1867,7 +1867,7 @@ available in Gnulib, it can be fixed immediately.
 installed from source.} Similar to the case for @file{LDFLAGS}
 (above), your compiler is not looking in the right place, add
 @command{CPPFLAGS=-I/usr/local/include} to @command{./configure} to
-re-configure gnuastro, then re-run make.
+re-configure Gnuastro, then re-run make.
 
 @cindex Tests, only one passes
 @cindex @file{LD_LIBRARY_PATH}
@@ -1929,11 +1929,11 @@ Live@footnote{@url{https://www.tug.org/texlive/}}.
 @node Common behavior, Files, Installation, Top
 @chapter Common behavior
 
-There are some facts that are common to all the programs in gnuastro
+There are some facts that are common to all the programs in Gnuastro
 which are mainly to do with user interaction. In this chapter these
 aspects are discussed. The most basic are the command line options
 which are common in all the programs for a unified user
-experience. All gnuastro programs can use configuration files so you
+experience. All Gnuastro programs can use configuration files so you
 don't have to specify all the parameters on the command line each time
 you run a program. The manner of setting, checking and using the these
 files at various levels are also explained. Finally we discuss how you
@@ -1943,7 +1943,7 @@ the keyboard!) help on the command line.
 @menu
 * Command line::                How to use the command line.
 * Configuration files::         Values for unspecified variables.
-* Threads in GNU Astronomy Utilities::  How threads are managed in gnuastro.
+* Threads in GNU Astronomy Utilities::  How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
@@ -1956,7 +1956,7 @@ the keyboard!) help on the command line.
 All the programs in GNU Astronomy Utilities are customized through the
 standard GNU style command line options. First a general outline of
 how to make best use of these options is discussed and finally the
-options that are common to all the programs in gnuastro are listed.
+options that are common to all the programs in Gnuastro are listed.
 
 @cindex Metacharacters
 @cindex Token separation
@@ -1976,7 +1976,7 @@ passing the commands to the program you called.
 * Arguments and options::       Basics of options and arguments.
 * Arguments::                   Treatment of arguments.
 * Option basics::               How to use GNU style options.
-* Common options::              Common options to all gnuastro programs.
+* Common options::              Common options to all Gnuastro programs.
 @end menu
 
 @node Arguments and options, Arguments, Command line, Command line
@@ -2017,7 +2017,7 @@ everything inside the double quotes will be seen as one `word'.
 For example let's say you want to specify the Header data unit (HDU) of
 your FITS file using a complex expression like @command{3;
 images(exposure > 100)}. If you simply add these after the
-@option{--hdu} (@option{-h}) option, the programs in gnuastro will
+@option{--hdu} (@option{-h}) option, the programs in Gnuastro will
 read the value to the HDU option as @command{3} and run. Then, Bash
 will attempt to run a separate command @command{images(exposure >
 100)} and complain about a syntax error. This is because the semicolon
@@ -2081,7 +2081,7 @@ information.
 
 CFITSIO has its own error reporting techniques, if your input file(s)
 cannot be opened, or read, those errors will be printed prior to the
-final error by gnuastro.
+final error by Gnuastro.
 
 
 
@@ -2115,7 +2115,7 @@ don't. You can think of the latter type of options as an on/off
 option. These two types of options can be distinguished using the
 output of the @option{--help} and @option{--usage} options, which are
 common to all GNU software, see @ref{Getting help}. The following
-convention is used for the formats of the values in gnuastro:
+convention is used for the formats of the values in Gnuastro:
 
 @vtable @option
 
@@ -2180,10 +2180,10 @@ these two dashes will be parsed.
 @cindex Configuration files
 @cindex Default option values
 When you don't call an option that requires a value, all the programs
-in gnuastro will check configuration files to find a value for that
+in Gnuastro will check configuration files to find a value for that
 parameter. To learn more about how folder, user and system wide
 configuration files can be set, please see @ref{Configuration
-files}. Another factor that is particular to gnuastro is that it will
+files}. Another factor that is particular to Gnuastro is that it will
 check the value you have given for each option to see if it is
 reasonable. For example you might mistakenly give a negative, float or
 string value for a FITS image extension or column number. As another
@@ -2204,7 +2204,7 @@ example use @command{-o ~/test}, @command{--output ~/test} or
 @cartouche
 @noindent
 @strong{CAUTION:} If you forget to specify a value for an option which
-requires one, and that option is the last one, gnuastro will warn
+requires one, and that option is the last one, Gnuastro will warn
 you. But if it is in the middle of the command, it will take the text
 of the next option or argument as the value which can cause undefined
 behaviour.
@@ -2212,7 +2212,7 @@ behaviour.
 @cartouche
 @noindent
 @cindex Counting from zero.
-@strong{NOTE:} All counting in gnuastro starts from 0 not 1. So for
+@strong{NOTE:} All counting in Gnuastro starts from 0 not 1. So for
 example the first FITS image extension or column in a table are noted
 by 0, not 1. This is the standard in C and all languages that are
 based on it (for example C++, Java and Python).
@@ -2222,12 +2222,12 @@ based on it (for example C++, Java and Python).
 @subsection Common options
 
 @cindex Options common to all utilities
-@cindex gnuastro common options
+@cindex Gnuastro common options
 To facilitate the job of the users and developers, all the programs in
-gnuastro share some basic command line options for the same
+Gnuastro share some basic command line options for the same
 operations where they are relevant. The list of options is provided
 below. It is noteworthy that these similar options are hard-wired into
-the programming of all of gnuastro programs using GNU C library's
+the programming of all of Gnuastro programs using GNU C library's
 argument parser merging ability.
 
 @cindex Irrelevant options
@@ -2267,7 +2267,7 @@ HDU@footnote{With the @code{#} character, CFITSIO will only read the
 desired HDU into your memory, not all the existing HDUs in the fits
 file.} and the result is put in square brackets and appended to the
 FITS file name before calling CFITSIO to read the contents of the HDU
-for all the programs in gnuastro. CFITSIO has many capabilities to
+for all the programs in Gnuastro. CFITSIO has many capabilities to
 help you find the extension you want, far beyond the simple extension
 number and name. See CFITSIO manual's ``HDU Location Specification''
 section for a very complete explanation with several examples.
@@ -2281,7 +2281,7 @@ are ignored.
 @item -D
 @itemx --dontdelete
 By default, if the output file already exists, it will be silently
-replaced with the output of this run of all gnuastro programs. By
+replaced with the output of this run of all Gnuastro programs. By
 calling this option, if the output file already exists, the programs
 will warn you and abort.
 
@@ -2301,9 +2301,9 @@ you are running the program from another directory!
 @subsubsection Operating modes
 
 Another group of options that are common to all the programs in
-gnuastro are those to do with the general operation of the
+Gnuastro are those to do with the general operation of the
 programs. The explanation for those that are not only limited to
-gnuastro but can be called in all GNU programs start with (GNU
+Gnuastro but can be called in all GNU programs start with (GNU
 option).
 
 @vtable @option
@@ -2338,13 +2338,13 @@ the message is printed and will not do any form of processing. See
 (GNU option) Print a short message, showing the full name, version,
 copyright information and program authors. On the first line it will
 print the official name (not executable name) and version number of
-the program. It will also print the version of the gnuastro that the
+the program. It will also print the version of the Gnuastro that the
 program was built with. Following this is a blank line and a copyright
 information. The program will not run.
 
 @item -q
 @itemx --quiet
-Don't report steps. All the programs in gnuastro that have multiple
+Don't report steps. All the programs in Gnuastro that have multiple
 major steps will report their steps for you to follow while they are
 operating. If you do not want to see these reports, you can call this
 option and only error messages will be printed if the program is
@@ -2353,19 +2353,19 @@ of your input) disabling these reports will also decrease running
 time.
 
 @item --cite
-Print the Bib@TeX{} entry for gnuastro and the particular program (if
+Print the Bib@TeX{} entry for Gnuastro and the particular program (if
 that program comes with a separate paper) and abort. Citations are
-vital for the continued work on gnuastro. gnuastro started and is
+vital for the continued work on Gnuastro. Gnuastro started and is
 continued based on separate research projects. So if you find any of
-the tools offered in gnuastro to be useful in your research, please
-use the output of this command to cite the program and gnuastro in
+the tools offered in Gnuastro to be useful in your research, please
+use the output of this command to cite the program and Gnuastro in
 your research paper. Thank you.
 
 GNU Astronomy Utilities is still new, there is no separate paper only
-devoted to gnuastro yet. Therefore currently the paper to cite for
-gnuastro is the paper for NoiseChisel which is the first published
-paper introducing gnuastro to the astronomical community. Upon
-reaching a certain point, a paper completely devoted to gnuastro will
+devoted to Gnuastro yet. Therefore currently the paper to cite for
+Gnuastro is the paper for NoiseChisel which is the first published
+paper introducing Gnuastro to the astronomical community. Upon
+reaching a certain point, a paper completely devoted to Gnuastro will
 be published, see @ref{GNU Astronomy Utilities 1.0}.
 
 @item -P
@@ -2385,7 +2385,7 @@ run, but the contents of its updated configuration file are printed
 for you to inspect.
 
 This is the recommended method to fill the configuration file for all
-future calls to one of the gnuastro programs in a folder. It will
+future calls to one of the Gnuastro programs in a folder. It will
 internally check if your values are in the correct range and type and
 save them according to the configuration file format, see
 @ref{Configuration file format}.
@@ -2432,7 +2432,7 @@ standard@footnote{@url{http://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standar
 @vindex --output
 @vindex --numthreads
 @cindex Internal default value
-The thing to have in mind is that none of the programs in gnuastro
+The thing to have in mind is that none of the programs in Gnuastro
 keep any internal default value. All the values must either be stored
 in one of the configuration files or explicitly called in the command
 line. In case the necessary parameters are not given through any of
@@ -2512,7 +2512,7 @@ more understandable.
 @cindex Configuration file precedence
 @cindex Configuration file directories
 @cindex Precedence, configuration files
-The parameter values in all the programs of gnuastro will be filled
+The parameter values in all the programs of Gnuastro will be filled
 in the following order. Such that if a parameter is assigned a value
 in an earlier step, any value for that parameter in a later step will
 be ignored.
@@ -2547,7 +2547,7 @@ first), then when you want to work with the former group of data you
 have to explicitly mention it to the programs every time. With this
 progressive state of default values to check, you can set different
 default values for the different directories that you would like to
-run gnuastro in for your different purposes, so you won't have to
+run Gnuastro in for your different purposes, so you won't have to
 worry about this issue any more.
 
 
@@ -2562,7 +2562,7 @@ hidden sub-directory named @file{./.gnuastro/} and
 @file{HOME/.local/etc/} respectively. Unless you have changed it, the
 @file{HOME} environment variable should point to your home
 directory. You can check it by running @command{$ echo $HOME}. Each
-time you run any of the programs in gnuastro, this environment
+time you run any of the programs in Gnuastro, this environment
 variable is read and placed in the above address. So if you suddenly
 see that your home configuration files are not being read, probably
 you (or some other program) has changed the value of this environment
@@ -2586,23 +2586,23 @@ modes}
 @cindex @file{prefix/etc/}
 @cindex System wide configuration files
 @cindex Configuration files, system wide
-When gnuastro is installed, the configuration files that are shipped
+When Gnuastro is installed, the configuration files that are shipped
 with the distribution are copied into the (possibly system wide)
 @file{prefix/etc/} directory. See @ref{Configuring} for more details
 on @file{prefix} (by default it is: @file{/usr/local}). This directory
 is the final place (with the lowest priority) that the programs in
-gnuastro will check to retrieve parameter values.
+Gnuastro will check to retrieve parameter values.
 
 If you remove a parameter and its value from the files in this system
 wide directory, you either have to specify it in more immediate
 configuration files or set it each time in the command line. Recall
-that none of the programs in gnuastro keep any internal default
+that none of the programs in Gnuastro keep any internal default
 values and will abort if they don't find a value for the necessary
 parameters (except the number of threads). So even though you might
 never use a parameter, it still has to be at least available in this
 system-wide configuration file.
 
-In case you install gnuastro from your distribution's repositories,
+In case you install Gnuastro from your distribution's repositories,
 @file{prefix} will either be set to @file{/} (the root directory) or
 @file{/usr}, so you can find the system wide configuration variables
 in @file{/etc/} or @file{/usr/etc/}. The prefix of @file{/usr/local/}
@@ -2637,7 +2637,7 @@ if you want more details.
 You can find the number of cores available to your system with the
 command @command{$ nproc}, which is part of GNU Coreutils and is most
 probably already available on your GNU/Linux system. If not specified
-as an option at configure time, gnuastro finds the number of cores
+as an option at configure time, Gnuastro finds the number of cores
 available to your system (and reports it along with all those other
 things it checks!). It is saved internally for all the programs to use
 by default. To specify the number of threads at configure time, use
@@ -2647,7 +2647,7 @@ Coreutils, currently the only way to proceed is to manually specify
 the number of threads through this option through this option.
 
 @cindex Internally stored option value
-The number of threads is the only parameter in gnuastro which is
+The number of threads is the only parameter in Gnuastro which is
 stored internally at configure time. The implication is that the only
 option with a value that doesn't have to be in any of the
 configuration files is this, see @ref{Configuration files}. Note that
@@ -2725,7 +2725,7 @@ order. You might also want to save the list with the output so you can
 reproduce the same results at a later time, this is very important
 when you want to use your results in a report or paper.
 
-If you call the @option{--printparams} option, all gnuastro programs
+If you call the @option{--printparams} option, all Gnuastro programs
 will read your command line parameters and all the configuration
 files. If there is no problem (like a missing parameter or a value in
 the wrong format) and immediately before actually running, the
@@ -2798,7 +2798,7 @@ other configuration file value will be used.
 @cindex Automatic output file names
 @cindex Output file names, automatic
 @cindex Setting output file names automatically
-All the programs in gnuastro are designed such that specifying an
+All the programs in Gnuastro are designed such that specifying an
 output file or directory (based on the program context) is optional.
 The outputs of most programs are automatically found based on the
 input and what the program does. For example when you are converting a
@@ -2941,12 +2941,12 @@ alphabetically. Since the options are shown in detail afterwards, the
 first line of the @option{--help} output shows the arguments and if
 they are optional or not, similar to @ref{--usage}.
 
-In the @option{--help} output of all programs in gnuastro, the
+In the @option{--help} output of all programs in Gnuastro, the
 options for each program are classified based on context. The first
 two contexts are always options to do with the input and output
 respectively. For example input image extensions or supplementary
 input files for the inputs. The last class of options is also fixed in
-all of gnuastro, it shows operating mode options. Most of these
+all of Gnuastro, it shows operating mode options. Most of these
 options are already explained in @ref{Operating modes}.
 
 @cindex Long outputs
@@ -3044,7 +3044,7 @@ a much more easier to navigate and read environment.
 
 However, some operating systems require a man page for packages that
 are installed and some people are still used to this method of command
-line help. So the programs in gnuastro also have Man pages which are
+line help. So the programs in Gnuastro also have Man pages which are
 automatically generated from the outputs of @option{--version} and
 @option{--help} using the GNU help2man program. So if you run
 @example
@@ -3135,12 +3135,12 @@ program. Note that in all cases, Info is not case sensitive.
 
 @cindex Output FITS headers
 @cindex CFITSIO version on outputs
-The output FITS files created by gnuastro will have the following two
+The output FITS files created by Gnuastro will have the following two
 keywords: @command{DATE} and @command{CFITSIO}. The first specifies
 the time in UT of the file being created and the second specifies the
 version of CFITSIO that was used to make the file. We are not aware if
 WCSLIB has this capability (to give its version number), therefore it
-is not included. Some basic information about gnuastro is also
+is not included. Some basic information about Gnuastro is also
 printed. The example below shows the last few keywords of one of the
 outputs of ImageCrop.
 
@@ -3174,7 +3174,7 @@ END
 @cindex File operations
 @cindex Operations on files
 @cindex General file operations
-This chapter documents the programs in gnuastro that are provided for
+This chapter documents the programs in Gnuastro that are provided for
 getting information on the contents of a data file or converting a
 file format. Before working on a FITS file, it is commonly the case
 that you are not sure how many extensions it has within it and also
@@ -3184,13 +3184,14 @@ reports) that don't recognize the FITS format.
 
 @menu
 * FileInfo::                    List all the extensions in a file.
+* FileExtensions::              Manipulate data extensions in a file.
 * ConvertType::                 Convert data to various formats.
 @end menu
 
-@node FileInfo, ConvertType, Files, Files
+@node FileInfo, FileExtensions, Files, Files
 @section FileInfo
 
-@cindex Basic data file information
+@cindex File information
 The FITS file format allows for multiple extensions and each can have
 a completely independent header that possibly contains data, which is
 either in the form of a table or image. FileInfo will list all the
@@ -3198,11 +3199,17 @@ extensions in the given FITS file and also give some basic information
 about the form of data that is in that extension, for example image
 size and data type.
 
+@node FileExtensions, ConvertType, FileInfo, Files
+@section FileExtensions
+The FITS standard allows for multiple extensions, using this tool you
+can manipute the extensions, for example merge all the extensions of
+two FITS files, or remove any number of the extensions in a file.
 
 
 
 
-@node ConvertType,  , FileInfo, Files
+
+@node ConvertType,  , FileExtensions, Files
 @section ConvertType
 
 @cindex Data format conversion
@@ -4079,7 +4086,7 @@ coordinates are given on the command line, no threads will be created.
 
 The options can be classified into the following contexts: Input,
 Output and operating mode options. Options that are common to all
-gnuastro program are listed in @ref{Common options} and will not be
+Gnuastro program are listed in @ref{Common options} and will not be
 repeated here.
 
 @cartouche
@@ -4234,7 +4241,7 @@ option. Note that in catalog mode, only one image can be input.
 When the crop box is specified on the command line, the value to
 @option{--output} will be used as a file name. If no output is
 specified or if it is a directory, the output file name will follow
-the automatic output names of gnuastro, see @ref{Automatic output}
+the automatic output names of Gnuastro, see @ref{Automatic output}
 for the input image.
 
 The header of each output cropped image will contain the names of the
@@ -4427,15 +4434,16 @@ the object photons, it only disperses them.
 
 @cindex Fast Fourier Transform
 @cindex GNU Scientific Library
-In the frequency domain, the two images have to be padded with zero
-valued pixels such that the number of pixels on the sides of the two
-images are identical. The sides of the padded image have to be at
-least equal to the sum of the sides of each image minus one. The speed
-of the algorithms for Fast Fourier Transform (FFT) depend on the size
-of the paded images. If the final sides are a factor or 2, 3, 4, 5, 6,
-7 the GNU Scientific Library provides efficient algorithms for the
-fourier transform. In case the size is not a multiple of any of these,
-then it will fall back to the standard Discrete Fourier Transform.
+In the frequency domain, no rotating is necessary. The two images have
+to be padded with zero valued pixels such that the number of pixels on
+the sides of the two images are identical. The sides of the padded
+image have to be at least equal to the sum of the sides of each image
+minus one. The speed of the algorithms for Fast Fourier Transform
+(FFT) depend on the size of the paded images. If the final sides are a
+factor of 2, 3, 4, 5, 6, 7 the GNU Scientific Library provides
+efficient algorithms for the fourier transform. In case the size is
+not a multiple of any of these, then it will fall back to the standard
+Discrete Fourier Transform which will be slower.
 
 
 
@@ -4458,17 +4466,17 @@ flux before and after convolution. However, for a profile on the side
 of the image, the total flux (sum of its pixels within the image) will
 not be equal, some flux is going to be `eaten' by the edges.
 
-If you ran @command{$ make check} when you built gnuastro and you
-still have them, you can see the this effect by comparing the
+If you ran @command{$ make check} on the source files of Gnuastro, you
+can see the this effect by comparing the
 @file{convolve_frequency.fits} with @file{convolve_spatial.fits} in
-the @file{./tests/} directory. In Convolve, any blank pixel in the
-image will not be used in the convolution, see @ref{Blank pixels}, so
-the problem explained above will also occur on the sides of blank
-regions (which might be masked for example). The solution to this
-(only in the spatial domain) is to not assume that the sum of the
-kernel pixels is unity, so taking @mymath{W} as the sum of the kernel
-pixels that used non-blank image pixels, the equation in
-@ref{Convolution process} will become:
+the @file{./tests/} directory. In the spatial domain, any blank pixel
+in the image will not be used in the convolution, see @ref{Blank
+pixels}, so the problem explained above will also occur on the sides
+of blank regions (which might be masked for example). The solution to
+this edge effect problem (only in the spatial domain) is to not assume
+that the sum of the kernel pixels is unity, so taking @mymath{W} as
+the sum of the kernel pixels that used non-blank image pixels, the
+equation in @ref{Convolution process} will become:
 
 @dispmath{C_{x,y}= { \sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t} \over W}.}
 
@@ -4512,8 +4520,8 @@ on the edges}.
 Can operate on blank pixels.
 
 @item
-Can be faster than frequency domain when the image or kernel are small
-(in terms of the number of pixels on the side).
+Can be faster than frequency domain when the kernel is small (in terms
+of the number of pixels on the sides).
 @end itemize
 
 @noindent
@@ -4556,7 +4564,7 @@ $ astconvolve --kernel=psf.fits mockimg.fits
 @end example
 
 The only argument accepted by Convolve is an input image file. For the
-full list of options to all gnuastro programs, please see @ref{Common
+full list of options to all Gnuastro programs, please see @ref{Common
 options}, here we will only explain the options particular to
 Convolve:
 
@@ -4594,8 +4602,9 @@ unity), can be disabled with @option{--nokernelnorm}.
 The input kernel image HDU name or number.
 
 @item --nokernelflip
-Do not flip the kernel after reading it. This can be useful if the
-flipping has already been applied to the kernel or it is not desired.
+Do not flip the kernel after reading it the spatial domain
+convolution. This can be useful if the flipping has already been
+applied to the kernel.
 
 @item --nokernelnorm
 Do not normalize the kernel after reading it, such that the sum of its
@@ -4764,7 +4773,7 @@ image which might potentially have strong gradients and subtract it.
 @node NoiseChisel,  , SubtractSky, Image analysis
 @section NoiseChisel
 
-NoiseChisel is the tool that started gnuastro! It is a new noise
+NoiseChisel is the tool that started Gnuastro! It is a new noise
 based algorithm to detect extremely faint and amorphous objects in
 noise. Galaxies apparently have a very rich dynamic history and we
 cannot image them in their full 3D glory, these resulting in a
@@ -5477,7 +5486,7 @@ parameters for each mock profile) is the mandatory argument. The input
 catalog has to be a text file formatted in a table with columns
 separated by space, tab or comma (@key{,}) characters. See @ref{Common
 behavior} for a complete explanation of some common behaviour and
-options in all gnuastro programs including MakeProfiles.
+options in all Gnuastro programs including MakeProfiles.
 
 
 @menu
@@ -5523,7 +5532,7 @@ fractional part (the PSF center has to be in the center of the pixel).
 
 @node MakeProfiles options, MakeProfiles output, MakeProfiles catalog, Invoking astmkprof
 @subsubsection MakeProfiles options
-The common options that are shared by gnuastro programs, are fully
+The common options that are shared by Gnuastro programs, are fully
 explained in @ref{Common options} and are not repeated here. Since
 there are no image inputs, the@option{--hdu} option is ignored. The
 options can be classified into the following categories: Output,
@@ -5854,7 +5863,7 @@ discussed. Finally some notes on the building process are given.
 
 
 @menu
-* Why C::                       Why gnuastro is designed in C.
+* Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
@@ -5983,7 +5992,7 @@ particular to the GNU C library is used in the processing functions,
 it is explained in the comments in between the code.
 
 @cindex GNU Coreutils
-Similar to GNU Coreutils, all the programs provided with gnuastro,
+Similar to GNU Coreutils, all the programs provided with Gnuastro,
 provide very low level operations. This enables you to use the GNU
 Bash scripting language (which is the default in most GNU/Linux
 operating systems) or any other shell you might be using to operate on
@@ -5999,7 +6008,7 @@ you can feed into your favorite plotting program to inspect
 visually. Python's Matplotlib is very useful for fast plotting of the
 tables to immediately check your results. If you want to include the
 plots in a document, you can use the PGFplots package within @LaTeX{},
-no attempt is made to include such operations in gnuastro. In short,
+no attempt is made to include such operations in Gnuastro. In short,
 Bash can act as a glue to connect the inputs and outputs of all these
 various programs (and other programs) in any fashion you please.
 
@@ -6017,11 +6026,11 @@ revision history, it is only the final snapshot of a stable release,
 ready to be configured and built. To be able to develop successfully,
 the revision history of the code can be very useful, also some updates
 that are not yet released might be in it.  We use Git for the version
-control of gnuastro. For those who are not familiar with it, we
+control of Gnuastro. For those who are not familiar with it, we
 suggest the Pro Git
 book@footnote{@url{http://git-scm.com/book/en/v2}}. The whole book is
 publicly available for online reading and downloading. The latest
-version of gnuastro can be cloned by running
+version of Gnuastro can be cloned by running
 
 @example
 $ git clone git://git.sv.gnu.org/gnuastro.git
@@ -6088,7 +6097,7 @@ $ cp ~/Development/autoconf-archive/m4/ax_pthread.m4 ./m4/
 @noindent
 All the necessary GNU C library functions and Autoconf macros are now
 available. Now you can add the automatically generated files used to
-build gnuastro using the GNU build system. To generate those files you
+build Gnuastro using the GNU build system. To generate those files you
 have to run the following command in the cloned @file{gnuastro}
 directory. @command{autoreconf} is part of GNU Autoconf and also
 requires GNU Automake, GNU Libtool and GNU Texinfo to create all the
@@ -6102,13 +6111,13 @@ $ autoreconf --install
 Now you can easily configure, build and start hacking into the code
 and you have the full revision history under your fingers.
 
-The hand-written (that is version controlled) code for gnuastro, this
+The hand-written (that is version controlled) code for Gnuastro, this
 manual and the tests are divided in the following sub-directories of
 the top directory. Their names are standard and descriptive enough,
 but a short summary is given here:
 
 @cindex Top source code directories
-@cindex Directories in gnuastro source
+@cindex Directories in Gnuastro source
 @table @file
 
 @item doc
@@ -6125,7 +6134,7 @@ program, they will not be installed.
 
 @item src
 This directory contains a subdirectory for every program in this
-version of gnuastro. The source code for each program is placed
+version of Gnuastro. The source code for each program is placed
 inside each of these sub-directories to be easily separable.
 
 @item tests
@@ -6134,7 +6143,7 @@ This directory keeps all the tests (checks) which are executed when
 
 @end table
 
-Until gnuastro grows large enough to define its own, we strive to
+Until Gnuastro grows large enough to define its own, we strive to
 follow the version control guidelines of the Git project as our
 base. You can find it in the Git project's submitting patches
 guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}.
@@ -6152,7 +6161,7 @@ guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/Sub
 Libraries are binary (compiled) files which are not executable them
 selves, but once linked with other binary files, they form the
 building blocks of larger programs. Several functions are commonly
-used by all or several of the programs in gnuastro. Therefore they are
+used by all or several of the programs in Gnuastro. Therefore they are
 written as separate libraries so we don't have to maintain duplicate
 code. Such libraries are commonly referred to as convenience
 libraries. They are mostly to do with interaction with the outside
@@ -6162,7 +6171,7 @@ facilitate reading and writing of FITS files. The names of the
 libraries are usually descriptive enough on the kind of functions they
 keep.
 
-Currently these libraries are not installed along with gnuastro, they
+Currently these libraries are not installed along with Gnuastro, they
 are only statically linked to any program needing them in the build
 directory and remain or are deleted from there. Note that in a static
 link, the contents of the library are merged with the executable, so
@@ -6221,7 +6230,7 @@ four or eight connectivity in a region of an image or the whole image.
 @cindex Navigating source files
 @cindex Program structure convention
 @cindex Convention for program source
-@cindex gnuastro program structure convention
+@cindex Gnuastro program structure convention
 Besides the fact that all the programs share some functions that were
 explained in @ref{Internal libraries}, everything else about each
 program is completely independent. Some programs might need lots of
@@ -6230,7 +6239,7 @@ a specific function or to generally understand their programming steps
 can become very hard for a new inquirer into the code. In this section
 the conventions used in all the programs is explained. To easily
 understand the explanations in this section, it is good to open the
-source files of one or several of the programs in gnuastro and inspect
+source files of one or several of the programs in Gnuastro and inspect
 them as you read along.
 
 @vtable @file
@@ -6261,7 +6270,7 @@ all the major parameters of a program in this structure has the major
 benefit that most functions will only need one argument: a pointer to
 this structure. This will significantly facilitate the job of the
 programmer, the inquirer and the computer. All the programs in
-gnuastro are designed to be low-level, small and independent parts, so
+Gnuastro are designed to be low-level, small and independent parts, so
 this structure should not get too large.
 
 The main root structure of a program contains at least two other
@@ -6378,14 +6387,14 @@ programs with @option{--cite}, see @ref{Operating modes}.
 
 @menu
 * Coding conventions::          Conventions used for coding
-* Multithreaded programming::   gnuastro uses POSIX threads.
+* Multithreaded programming::   Gnuastro uses POSIX threads.
 @end menu
 
 @node Coding conventions, Multithreaded programming, Program source, Program source
 @subsection Coding conventions
 
 @cindex GNU coding standards
-@cindex gnuastro coding convention
+@cindex Gnuastro coding convention
 Generally we try our best to follow the GNU coding standards, besides
 those the following conventions are adhered to until now. If new code
 is also added in the same manner, it would be much more easily
@@ -6437,7 +6446,7 @@ in the form:
 @subsection Multithreaded programming
 
 @cindex Multithreaded programming
-Most of the programs in gnuastro utilize multi-threaded programming
+Most of the programs in Gnuastro utilize multi-threaded programming
 for the CPU intensive processing steps. This can potentially lead to a
 significant decrease in the running time of a program, see @ref{A note
 on threads}. In terms of reading the code, you don't need to know
@@ -6475,7 +6484,7 @@ introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}
 @section Test scripts
 
 @cindex Test scripts
-@cindex gnuastro test scripts
+@cindex Gnuastro test scripts
 As explained in @ref{Tests}, for every program some simple tests are
 written to check the various independent features of the program. All
 the tests are placed in the @file{gnuastro-@value{VERSION}/tests}
@@ -6503,7 +6512,7 @@ that they are run from inside the @file{TESTdir} directory in the
 ``build tree''. Which can be different from the directory they are
 stored in (known as the ``source tree''). This distinction is made by
 GNU Autoconf and Automake (which configure, build and install
-gnuastro) so that you can install the program even if you don't have
+Gnuastro) so that you can install the program even if you don't have
 write access to the directory keeping the source files. See the
 ``Parallel build trees (a.k.a VPATH builds)'' in the Automake manual
 for a nice explanation.
@@ -6529,7 +6538,7 @@ also true for images or files that were produced by other tests.
 @cindex GNU Autoconf
 @cindex GNU Automake
 @cindex GNU build system
-To build the various programs and libraries in gnuastro, the GNU build
+To build the various programs and libraries in Gnuastro, the GNU build
 system is used. It consists of GNU Autoconf and GNU Automake and GNU
 Libtool which are collectively known as GNU Autotools. They provide a
 very portable system to check the environment a program is to be
@@ -6613,8 +6622,8 @@ manual have been updated also. Also don't forget to update the
 @appendix Other useful software
 
 In this appendix the installation of programs and libraries that are
-not direct gnuastro dependencies are discussed. However they can be
-useful for working with gnuastro.
+not direct Gnuastro dependencies are discussed. However they can be
+useful for working with Gnuastro.
 
 @menu
 * SAO ds9::                     Viewing FITS images.
@@ -6627,7 +6636,7 @@ useful for working with gnuastro.
 @cindex SAO ds9
 @cindex FITS image viewer
 SAO ds9@footnote{@url{http://ds9.si.edu/}} is not a requirement of
-gnuastro, it is a FITS image viewer. So to check your inputs and
+Gnuastro, it is a FITS image viewer. So to check your inputs and
 outputs, it is one of the best options. Like the other packages, it
 might already be available in your distribution's repositories. It is
 already pre-compiled in the download section of its webpage. Once you
@@ -6751,7 +6760,7 @@ you just added as the default and click the ``Close'' button.
 @cindex C, plotting
 @cindex Plotting directly in C
 PGPLOT is a package for making plots in C. It is not directly needed
-by gnuastro, but can be used by WCSLIB, see @ref{WCSLIB}. As
+by Gnuastro, but can be used by WCSLIB, see @ref{WCSLIB}. As
 explained in @ref{WCSLIB}, you can install WCSLIB without it too. It
 is very old (the most recent version was released early 2001!), but
 remains one of the main packages for plotting directly in C. WCSLIB

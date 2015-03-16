@@ -24,9 +24,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 
-#include <gsl/gsl_fft_complex.h>
 
-
+#include "astrthreads.h"
 #include "commonparams.h"
 
 

@@ -338,13 +338,13 @@ preparearrays(struct convolveparams *p)
     }
 
   /* Flip the kernel: */
-  if(p->kernelflip)
+  if(p->spatial && p->kernelflip)
     {
       for(i=0;i<size/2;++i)
         {
           tmp=kernel[i];
-          kernel[i]=kernel[size-i];
-          kernel[size-i]=tmp;
+          kernel[i]=kernel[size-i-1];
+          kernel[size-i-1]=tmp;
         }
     }
 }

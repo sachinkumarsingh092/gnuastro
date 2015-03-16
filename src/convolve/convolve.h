@@ -23,6 +23,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef CONVOLVE_H
 #define CONVOLVE_H
 
+#include <gsl/gsl_fft_complex.h>
+
 struct fftonthreadparams
 {
   /* Operating info: */
