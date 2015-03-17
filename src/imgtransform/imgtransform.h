@@ -1,6 +1,6 @@
 /*********************************************************************
-MakeProfiles - Create mock astronomical profiles.
-MakeProfiles is part of GNU Astronomy Utilities (gnuastro) package.
+ImageTransform - Transform images (e.g., rotate, scale, sheer and ...)
+ImageTransform is part of GNU Astronomy Utilities (gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -20,41 +20,10 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <config.h>
+#ifndef IMGTRANSFORM_H
+#define IMGTRANSFORM_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <progname.h>
+void
+imgtransform(struct imgtransformparams *p);
 
-#include "timing.h"   	        /* Includes time.h and sys/time.h */
-
-#include "main.h"
-#include "mkprof.h"
-
-#include "ui.h"		        /* needs main.h.                  */
-
-int
-main (int argc, char *argv[])
-{
-  struct timeval t1;
-  struct mkprofparams p={{0}, {0}, 0};
-
-  /* Set the starting time.*/
-  time(&p.rawtime);
-  gettimeofday(&t1, NULL);
-
-  /* Set the program name (needed by non-gnu operating systems): */
-  set_program_name (argv[0]);
-
-  /* Read the input parameters. */
-  setparams(argc, argv, &p);
-
-  /* Run MakeProfiles */
-  mkprof(&p);
-
-  /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
-
-  /* Return successfully.*/
-  return EXIT_SUCCESS;
-}
+#endif

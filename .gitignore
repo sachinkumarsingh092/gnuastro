@@ -25,6 +25,7 @@ astmkprof
 astimgcrop
 astconvertt
 astconvolve
+astimgtransform
 
 .deps
 .sync

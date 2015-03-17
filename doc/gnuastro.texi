@@ -2644,7 +2644,7 @@ by default. To specify the number of threads at configure time, use
 the @option{--with-numthreads} option, see @ref{GNU Astronomy
 Utilities configure options}. In case your system does not have GNU
 Coreutils, currently the only way to proceed is to manually specify
-the number of threads through this option through this option.
+the number of threads through this option.
 
 @cindex Internally stored option value
 The number of threads is the only parameter in Gnuastro which is
@@ -6404,6 +6404,7 @@ it after reading once).
 @itemize
 
 @item
+@cindex GNU Emacs
 @cindex Trailing space
 There should be no trailing white space in a line. To do this
 automatically every time you save a file in Emacs, add the following
@@ -6421,11 +6422,12 @@ There should be no tabs in the indentation. Add the line below to your
 @end example
 
 @item
+@cindex GNU Emacs
 @cindex Function groups
 @cindex Groups of similar functions
-All similar functions should be are separated by 5 blank lines to be
-easily seen to be related in a group when parsing the source code by
-eye. In Emacs you can use @key{CTRL-u 5 CTRL-o}.
+All similar functions are separated by 5 blank lines to be easily seen
+to be related in a group when parsing the source code by eye. In Emacs
+you can use @key{CTRL-u 5 CTRL-o}.
 
 @item
 One group of functions is separated from another with 20 blank
