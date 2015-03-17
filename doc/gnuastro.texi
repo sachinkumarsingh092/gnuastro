@@ -184,16 +184,20 @@ Tutorial
 
 Installation
 
-* Requirements::                Gnuastro requirements
-* Installing Gnuastro::         Installing Gnuastro
+* Requirements::                Gnuastro requirements.
+* Optional requirements::       Optional Gnuastro requirements.
+* Installing Gnuastro::         Installing Gnuastro.
 
 Requirements
 
 * GNU Scientific Library::      Installing GSL.
 * CFITSIO::                     C interface to the FITS standard.
 * WCSLIB::                      C interface to the WCS standard of FITS.
-* libjpeg::                     Library for JPEG image manipulation.
-* GPL Ghostscript::             Used to create PDF images.
+
+Optional requirements
+
+* libjpeg::                     Used for JPEG image input/output.
+* GPL Ghostscript::             Used for compiling PDF images.
 
 Installing GNU Astronomy Utilities
 
@@ -435,10 +439,11 @@ version numbers along with a one line description.
 @cindex Check
 @cindex Test
 Let's assume you have just downloaded the
-@file{gnuastro-@value{VERSION}.tar.gz} in the @file{DOWLD}
-directory. Running the following commands will unpack, compile, check
-and install all the GNU Astronomy Utilities so you can use them
-anywhere in your system.
+@file{gnuastro-@value{VERSION}.tar.gz} in the @file{DOWLD} directory
+and you already have the requirements (see
+@ref{Requirements}). Running the following commands will unpack,
+compile, check and install all the GNU Astronomy Utilities so you can
+use them anywhere in your system.
 
 @example
 $ cd DOWLD
@@ -1092,11 +1097,12 @@ conjunction with it is discussed.
 
 
 @menu
-* Requirements::                Gnuastro requirements
-* Installing Gnuastro::         Installing Gnuastro
+* Requirements::                Gnuastro requirements.
+* Optional requirements::       Optional Gnuastro requirements.
+* Installing Gnuastro::         Installing Gnuastro.
 @end menu
 
-@node Requirements, Installing Gnuastro, Installation, Installation
+@node Requirements, Optional requirements, Installation, Installation
 @section Requirements
 
 @cindex Dependencies, Gnuastro
@@ -1139,8 +1145,6 @@ files, see @ref{Known issues}.
 * GNU Scientific Library::      Installing GSL.
 * CFITSIO::                     C interface to the FITS standard.
 * WCSLIB::                      C interface to the WCS standard of FITS.
-* libjpeg::                     Library for JPEG image manipulation.
-* GPL Ghostscript::             Used to create PDF images.
 @end menu
 
 @node GNU Scientific Library, CFITSIO, Requirements, Requirements
@@ -1214,7 +1218,7 @@ $ sudo make install
 
 
 
-@node WCSLIB, libjpeg, CFITSIO, Requirements
+@node WCSLIB,  , CFITSIO, Requirements
 @subsection WCSLIB
 
 @cindex WCS
@@ -1253,13 +1257,40 @@ $ sudo make install
 
 
 
+@node Optional requirements, Installing Gnuastro, Requirements, Installation
+@section Optional requirements
 
-@node libjpeg, GPL Ghostscript, WCSLIB, Requirements
+Most of the programs in Gnuastro make use of the libraries in
+@ref{Requirements}, therefore if they are not available, the configure
+script will complain and compiling the Gnuastro is not possible. The
+libraries listed in this section are only used for very specific
+applications, therefore if you don't want these operations, they do
+not need to be present.
+
+@cindex GPL Ghostscript
+If the @command{./configure} script can't find these requirements, it
+will warn you that they are not present and notify you of the
+operation(s) you can't do due to not having them. If the output you
+request from a program requires a missing library, that program is
+going to warn you and abort. In the case of executables like GPL
+GhostScript, if you install them at a later time, the program will
+run. This is because if required libraries are not present at build
+time, the executables cannot be built, but an executable is called by
+the built program at run time so if it becomes available, will be
+used. If you do install an optional library later, you will have to
+rebuild Gnuastro and reinstall it for it to take effect.
+
+@menu
+* libjpeg::                     Used for JPEG image input/output.
+* GPL Ghostscript::             Used for compiling PDF images.
+@end menu
+
+@node libjpeg, GPL Ghostscript, Optional requirements, Optional requirements
 @subsection libjpeg
 
 @pindex libjpeg
 @cindex JPEG format
-As its name suggests, libjpeg is needed for reading and writing JPEG
+libjpeg is only used by ConvertType to read from and write to JPEG
 images. @url{http://www.ijg.org/, libjpeg} is a very basic library
 that provides tools to read and write JPEG images, most of the
 GNU/Linux graphic programs and libraries use it. Therefore you most
@@ -1269,16 +1300,17 @@ alternative to libjpeg. It uses SIMD instructions for ARM based
 systems that significantly decreases the processing time of JPEG
 compression and decompression algorithms.
 
-@node GPL Ghostscript,  , libjpeg, Requirements
+@node GPL Ghostscript,  , libjpeg, Optional requirements
 @subsection GPL Ghostscript
 
 @cindex GPL Ghostscript
-GPL Ghostscript is only used by ConvertType to create a PDF output,
-see @ref{ConvertType}. Therefore its headers are not needed. With a
-very high probability you already have it in your GNU/Linux
-distribution. Unfortunately it does not follow the standard GNU build
-style so installing it is very hard. It is best to rely on your
-distribution's package managers for this.
+GPL Ghostscript's executable (@command{gs}) is called used by
+ConvertType to compile a PDF file from a source PostScript file, see
+@ref{ConvertType}. Therefore its headers (and libraries) are not
+needed. With a very high probability you already have it in your
+GNU/Linux distribution. Unfortunately it does not follow the standard
+GNU build style so installing it is very hard. It is best to rely on
+your distribution's package managers for this.
 
 
 
@@ -1286,7 +1318,7 @@ distribution's package managers for this.
 
 
 
-@node Installing Gnuastro,  , Requirements, Installation
+@node Installing Gnuastro,  , Optional requirements, Installation
 @section Installing GNU Astronomy Utilities
 
 This section is basically a longer explanation to the sequence of
@@ -3345,7 +3377,7 @@ The standard formats for an EPS file are @file{.eps}, @file{.EPS},
 @file{.epsf} and @file{.epsi}. The EPS outputs of ConvertType have the
 @file{.eps} suffix.
 
-@item @option{PDF}
+@item PDF
 @cindex Suffixes, PDF format
 @cindex GPL Ghostscript
 As explained above, a PDF document is a static document description
@@ -6012,7 +6044,18 @@ no attempt is made to include such operations in Gnuastro. In short,
 Bash can act as a glue to connect the inputs and outputs of all these
 various programs (and other programs) in any fashion you please.
 
-
+The advantage of this architecture is that the programs become small
+and transparent: the starting and finishing point of every program is
+clearly demarcated. For nearly all operations on a modern computer,
+the read/write speed is very insignificant compared to the actual
+processing a program does. Therefore the complexity which arises from
+sharing memory in a large application is simply not worth the speed
+gain. This basic design is influenced by Eric Raymond's ``The Art of
+Unix Programming''@footnote{Eric S. Raymond, 2004, @emph{The Art of
+Unix Programming}, Addison-Wesley Professional Computing Series.}
+which beautifully describes the design philosophy and practice which
+lead to the success of Unix-based operating
+systems@footnote{KISS principle: Keep It Simple, Stupid!}.
 
 
 
@@ -6081,7 +6124,7 @@ $ ~/Development/gnulib/gnulib-tool --import --source-base=gnulib/lib \
 @end example
 
 @noindent
-One of the directores made after running @file{gnulib-tool} is
+One of the directories made after running @file{gnulib-tool} is
 @file{m4/}. We can now add the necessary Autoconf checks from the
 Autoconf archives to this directory:
 

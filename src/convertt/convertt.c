@@ -401,7 +401,15 @@ convertt(struct converttparams *p)
       break;
     case JPEGFORMAT:
       doubleto8bit(p);
+#ifdef HAS_LIBJPEG
       savejpeg(p);
+#else
+      error(EXIT_FAILURE, 0, "You have asked for a JPEG output, however, "
+            "when %s was configured libjpeg was not available. To write "
+            "to JPEG files, libjpeg is required. Please install it and "
+            "configure, make and install %s again.", PACKAGE_STRING,
+            PACKAGE_STRING);
+#endif
       break;
     case EPSFORMAT: case PDFFORMAT:
       doubleto8bit(p);

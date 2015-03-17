@@ -37,6 +37,13 @@ fi
 
 
 
+#If libjpeg is not installed skip this test.
+if [ "x$haslibjpeg" != "xyes" ]; then
+    exit 77
+fi
+
+
+
 
 # Actual test script:
 #####################

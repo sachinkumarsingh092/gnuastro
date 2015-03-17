@@ -39,8 +39,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "eps.h"
-#include "jpeg.h"
 #include "args.h"
+#include "jpeg.h"
 
 
 
@@ -526,9 +526,17 @@ sanitycheck(struct converttparams *p)
         }
       else if(nameisjpeg(cp->output))
         {
+#ifndef HAS_LIBJPEG
+          error(EXIT_FAILURE, 0, "You have asked for a JPEG output, however, "
+                "when %s was configured libjpeg was not available. To write "
+                "to JPEG files, libjpeg is required. Please install it and "
+                "configure, make and install %s again.", PACKAGE_STRING,
+                PACKAGE_STRING);
+#else
           p->outputtype=JPEGFORMAT;
           if( nameisjpegsuffix(cp->output) )
             adddotautomaticoutput(p);
+#endif
         }
       else if(nameiseps(cp->output))
         {
@@ -649,7 +657,17 @@ preparearrays(struct converttparams *p)
 
       /* JPEG: */
       else if ( nameisjpeg(names[i]) )
-        preparejpeg(p, names[i]);
+        {
+#ifndef HAS_LIBJPEG
+          error(EXIT_FAILURE, 0, "You are giving a JPEG input, however, "
+                "when %s was configured libjpeg was not available. To read "
+                "from JPEG files, libjpeg is required. Please install it and "
+                "configure, make and install %s again.", PACKAGE_STRING,
+                PACKAGE_STRING);
+#else
+          preparejpeg(p, names[i]);
+#endif
+        }
 
 
 

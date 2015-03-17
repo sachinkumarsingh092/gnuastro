@@ -18,9 +18,13 @@
 ## You should have received a copy of the GNU General Public License
 ## along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
+if COND_HASLIBJPEG
+   MAYBE_HASLIBJPEG = -ljpeg
+endif
+
 # Flags:
 AM_CFLAGS = -Wall -O3
-AM_LDFLAGS = -lcfitsio -lwcs -lm -ljpeg -L$(top_builddir)/lib
+AM_LDFLAGS = -lcfitsio -lwcs -lm $(MAYBE_HASLIBJPEG) -L$(top_builddir)/lib
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 -I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
 
@@ -28,11 +32,12 @@ AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 
 
 
-## ImageCrop:
+## ConvertType:
+
 bin_PROGRAMS = astconvertt
 
-astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h jpeg.c	\
-jpeg.h eps.c eps.h convertt.c convertt.h
+astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h eps.c	\
+eps.h jpeg.c jpeg.h convertt.c convertt.h
 
 astconvertt_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
 -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -llinkedlist		\

@@ -57,8 +57,6 @@ AC_CHECK_LIB([cfitsio], [ffopen], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([wcs], [wcspih], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lcfitsio -lm])
-AC_CHECK_LIB([jpeg], [jpeg_stdio_dest], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([gslcblas], [cblas_sdsdot], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([gsl], [gsl_integration_qng], [absolutejunk=1],
@@ -129,11 +127,22 @@ AS_IF([test "x$with_numthreads" != xno],
 
 
 
+
+
 #Check necessary program(s):
 anywarnings=no
+AC_CHECK_LIB([jpeg], [jpeg_stdio_dest],
+             [has_libjpeg=yes], [has_libjpeg=no], [-lm])
+AS_IF([test "x$has_libjpeg" = "xno"], [anywarnings=yes])
+AS_IF([test "x$has_libjpeg" = "xyes"],
+      [AC_DEFINE([HAS_LIBJPEG], [], [Has libjpeg])])
+AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
+
 AC_CHECK_PROG(has_ghostscript, gs, [yes], [no])
 AS_IF([test "x$has_ghostscript" = "xno"], anywarnings=yes)
 AM_CONDITIONAL([COND_HASGHOSTSCRIPT], [test "x$has_ghostscript" = "xyes"])
+
+
 
 
 
@@ -273,11 +282,16 @@ AS_ECHO([])
 AS_IF([test "x$anywarnings" = xyes],
       [
         AS_ECHO([Warnings:])
-        AS_IF([test "x$has_ghostscript" = xno],
+        AS_IF([test "x$has_libjpeg" = "xno"],
+              [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])
+               AS_ECHO(["      If JPEG outputs are desired from ConvertType, it will warn"])
+               AS_ECHO(["      you and abort with an error."])])
+        AS_IF([test "x$has_ghostscript" = "xno"],
               [AS_ECHO(["  - GPL GhostScript, with the executable name \`gs' was not found"])
                AS_ECHO(["      in your PATH environment variable. If PDF outputs are desired"])
                AS_ECHO(["      from ConvertType, it will stop at the EPS output and cannot "])
                AS_ECHO(["      proceed to generate the PDF."])])
+        AS_ECHO(["  All checks related to the above warnings will be skipped."])
         AS_ECHO([])
         AS_ECHO([])
       ]

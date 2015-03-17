@@ -1,3 +1,13 @@
+2015-03-17  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+
+	* tests/convertt/: If libjpeg is not present, the tests will be
+	skipped.
+
+	* src/convertt/: libjpeg is now optional.
+
+	* configure.ac: Changed libjpeg to an optional requirement. So if
+	it is not available, Gnuastro can still be built.
+
 2015-03-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
 
 	* src/convolve/ui.c (preparearrays): The flip parts was missing a

@@ -21,9 +21,13 @@
 if COND_HASGHOSTSCRIPT
   MAYBE_HASGHOSTSCRIPT = "yes"
 endif
+if COND_HASLIBJPEG
+  MAYBE_HASLIBJPEG = "yes"
+endif
 
-AM_TESTS_ENVIRONMENT = \
-export topsrc=$(top_srcdir); \
+AM_TESTS_ENVIRONMENT =                              \
+export topsrc=$(top_srcdir);                        \
+export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
 TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh			\
