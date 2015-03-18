@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageTransform - Transform images (e.g., rotate, scale, sheer and ...)
-ImageTransform is part of GNU Astronomy Utilities (gnuastro) package.
+ImageWarp - Warp images using projective mapping.
+ImageWarp is part of GNU Astronomy Utilities (gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -30,8 +30,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Progarm name macros: */
 #define SPACK_VERSION   "0.1"
-#define SPACK           "astimgtransform" /* Subpackage executable name. */
-#define SPACK_NAME      "ImageTransform"  /* Subpackage full name.       */
+#define SPACK           "astimgwarp" /* Subpackage executable name. */
+#define SPACK_NAME      "ImageWarp"  /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION
 #define LOGFILENAME     SPACK".log"
 
@@ -44,17 +44,17 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct uiparams
 {
   char        *inputname;  /* Name of input file.                      */
-  char    *transformname;  /* Name of transform file.                  */
-  char  *transformstring;  /* String containing transform elements.    */
+  char       *matrixname;  /* Name of transform file.                  */
+  char     *matrixstring;  /* String containing transform elements.    */
 
-  int transformstringset;
+  int    matrixstringset;
 };
 
 
 
 
 
-struct imgtransformparams
+struct imgwarpparams
 {
   /* Other structures: */
   struct uiparams     up;  /* User interface parameters.               */
@@ -62,9 +62,11 @@ struct imgtransformparams
 
   /* Input: */
   float            *input;  /* Name of input FITS file.                */
-  double       *transform;  /* Name of input transformation.           */
-  size_t              ts0;  /* Transform number of rows.               */
-  size_t              ts1;  /* Transform number of columns.            */
+  double          *matrix;  /* Warp/Transformation matrix.             */
+  size_t              is0;  /* Number of rows in input image.          */
+  size_t              is1;  /* Number of columns in input image.       */
+  size_t              ms0;  /* Matrix number of rows.                  */
+  size_t              ms1;  /* Matrix number of columns.               */
 
   /* Internal parameters: */
   time_t         rawtime;  /* Starting time of the program.            */

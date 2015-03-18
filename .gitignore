@@ -23,9 +23,9 @@ gnulib
 snippet
 astmkprof
 astimgcrop
+astimgwarp
 astconvertt
 astconvolve
-astimgtransform
 
 .deps
 .sync

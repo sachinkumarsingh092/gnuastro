@@ -51,6 +51,9 @@ Texts.  A copy of the license is included in the section entitled
 * ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
 * astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
 
+* ImageWarp: (gnuastro)ImageWarp. Warp an image to a new grid.
+* astimgwarp: (gnuastro)Invoking astimgwarp. Options to ImageWarp.
+
 * MakeProfiles: (gnuastro)MakeProfiles. Make mock profiles.
 * astmkprof: (gnuastro)Invoking astmkprof. Options to MakeProfiles.
 
@@ -269,7 +272,7 @@ Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * Convolve::                    Convolve an image with a kernel.
-* ImageTransform::              Transform (flip, rotate) an image.
+* ImageWarp::                   Warp/Transform an image to a different grid.
 * ImageArith::                  Apply arithmetic on image(s).
 * EllipMask::                   Place elliptical masks on an image.
 
@@ -290,8 +293,12 @@ Convolve
 
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
-* Spatial vs. Frequency domain::
+* Spatial vs. Frequency domain::  Comparison of the two domains.
 * Invoking astconvolve::        Options and arguments to Convolve.
+
+ImageWarp
+
+* Invoking astimgwarp::         Arguments and options for ImageWarp.
 
 Image analysis
 
@@ -463,10 +470,11 @@ See @ref{Known issues} if you confront any complications.  For each
 program there is an `Invoke ProgramName' sub-section in this manual
 which explains how the programs should be run on the command line. It
 can be read on the command line by running the command @command{$ info
-astprogname}, see @ref{Getting help}. This sub-section starts with a
-few examples of each program and goes on to explain the invocation
-details. In @ref{Tutorial} some real life examples of how these
-programs might be used is given.
+astprogname}, see @ref{Naming convention} and @ref{Getting help}. The
+`Invoke ProgramName' sub-section starts with a few examples of each
+program and goes on to explain the invocation details. In
+@ref{Tutorial} some real life examples of how these programs might be
+used is given.
 
 
 
@@ -484,17 +492,20 @@ please see the manual contents.
 @itemize
 
 @item
-ConvertType @value{CONVERTT_VERSION} (@file{astconvertt}): Convert
-files to and from different formats.
+@ref{ConvertType} (@file{astconvertt}) @value{CONVERTT_VERSION}:
+Convert data files.
 @item
-Convolve @value{CONVOLVE_VERSION} (@file{astconvolve}): Convolve
+@ref{Convolve} (@file{astconvolve}) @value{CONVOLVE_VERSION}: Convolve
 (blur) data with a kernel.
 @item
-ImageCrop @value{IMGCROP_VERSION} (@file{astconvertt}): Crop region(s)
+@ref{ImageCrop} (@file{astimgcrop}) @value{IMGCROP_VERSION}: Crop region(s)
 from image(s).
 @item
-MakeProfiles @value{MKPROF_VERSION} (@file{astmkprof}): Make mock
-profiles individually or in one output.
+@ref{ImageWarp} (@file{astimgwarp}) @value{IMGWARP_VERSION}: Warp
+image to new pixel grid.
+@item
+@ref{MakeProfiles} (@file{astmkprof}) @value{MKPROF_VERSION}: Make
+mock profiles in image.
 
 @end itemize
 
@@ -3823,7 +3834,7 @@ given kernel or applying a transformation to it.
 @menu
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * Convolve::                    Convolve an image with a kernel.
-* ImageTransform::              Transform (flip, rotate) an image.
+* ImageWarp::                   Warp/Transform an image to a different grid.
 * ImageArith::                  Apply arithmetic on image(s).
 * EllipMask::                   Place elliptical masks on an image.
 @end menu
@@ -4346,7 +4357,7 @@ much more efficient. There are also much faster search strategies.
 
 
 
-@node Convolve, ImageTransform, ImageCrop, Image manipulation
+@node Convolve, ImageWarp, ImageCrop, Image manipulation
 @section Convolve
 
 @cindex Convolution
@@ -4417,7 +4428,7 @@ removing small frequencies}.
 @menu
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
-* Spatial vs. Frequency domain::
+* Spatial vs. Frequency domain::  Comparison of the two domains.
 * Invoking astconvolve::        Options and arguments to Convolve.
 @end menu
 
@@ -4727,15 +4738,77 @@ of the image), we also remove any pixel with a value less than
 
 
 
-@node ImageTransform, ImageArith, Convolve, Image manipulation
-@section ImageTransform
-Sometimes it is required that the image be transformed (flipped,
-rotated, sheared or ...) This program will do that.
+
+@node ImageWarp, ImageArith, Convolve, Image manipulation
+@section ImageWarp
+@cindex ACS
+@cindex CCD
+@cindex WFC3
+@cindex Wide field camera 3
+@cindex Charge-coupled device
+@cindex Hubble Space Telescope
+@cindex Advanced camera for surveys
+Image warpring is the process of mapping the pixels of one image onto
+a new pixel grid. This process is sometimes known as transformation,
+how ever following the discussion of Heckbert 1989@footnote{Paul
+S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
+Warping}, Master's thesis at University of California, Berkely.} we
+will not be using that term because it can be confused with pixel
+value or flux transformations. Here we specifically mean the pixel
+grid transformation which is better conveyed with `warp'.
+
+Image wrapping is a very important step in astronomy, both in
+observational data analysis and in simulating modeled
+images. Observations of one field of the sky are much more effective
+if they are imaged with rotated frames of references. This allows for
+a better resolution when adding the images. Also in some cases (like
+the Hubble Space Telescope ACS and WFC3), the CCD might be tilted
+compared to the focal plane, therefore the recorded CCD pixels have to
+be mapped onto the focal plane before further analysis. In modelling,
+warping images is necessary when we want to apply grid transformations
+to the initial models, for example in simulating gravitational
+lensing.
+
+@menu
+* Invoking astimgwarp::         Arguments and options for ImageWarp.
+@end menu
+
+@node Invoking astimgwarp,  , ImageWarp, ImageWarp
+@subsection Invoking ImageWarp
+
+The general template for invoking ImageWarp is:
+
+@example
+$ astimgwarp [OPTIONS...] [matrix.txt] InputImage
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astimgwarp matrix.txt image.fits
+$ astimgwarp --matrix=2,0,0,2 image.fits
+@end example
+
+ImageWarp can accept two arguments, one (the input image) is mandatory
+if any processing is to be done. An optional argument is a plain text
+file that will keep a matrix keeping the warp/transform parameters
+(how the two spatial coordinates of the output image should be
+calculated from the input image). There is also the @option{--matrix}
+option from which the matrix can be literally specified on the command
+line. If both are present when calling ImageWarp, the contents of the
+plain text file have higher precedence.
 
 
 
 
-@node ImageArith, EllipMask, ImageTransform, Image manipulation
+
+
+
+
+
+
+@node ImageArith, EllipMask, ImageWarp, Image manipulation
 @section ImageArith
 By arithmetic on images, we mean applying various arithmetic
 operations on all the pixels of several images, for example adding all

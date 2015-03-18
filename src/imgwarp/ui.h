@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageTransform - Transform images (e.g., rotate, scale, sheer and ...)
-ImageTransform is part of GNU Astronomy Utilities (gnuastro) package.
+ImageWarp - Warp images using projective mapping.
+ImageWarp is part of GNU Astronomy Utilities (gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -20,16 +20,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <config.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "main.h"
-#include "imgtransform.h"
+#ifndef IMCROPUI_H
+#define IMCROPUI_H
 
 void
-imgtransform(struct imgtransformparams *p)
-{
+setparams(int argc, char *argv[], struct imgwarpparams *p);
 
-}
+void
+freeandreport(struct imgwarpparams *p, struct timeval *t1);
+
+#endif

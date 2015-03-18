@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageTransform - Transform images (e.g., rotate, scale, sheer and ...)
-ImageTransform is part of GNU Astronomy Utilities (gnuastro) package.
+ImageWarp - Warp images using projective mapping.
+ImageWarp is part of GNU Astronomy Utilities (gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -57,11 +57,9 @@ static char args_doc[] = "[ASCIIcatalog] ASTRdata ...";
 const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
-  SPACK_NAME" will create cutouts, thumbnails, postage stamps or crops of "
-  "region(s) from input image(s) using image or celestial coordinates. "
-  "If muliple crops are desired, a catalog must be provided. When in WCS "
-  "mode, if the cut out covers more than one input image, all overlapping "
-  "input images will be stitched in the output.\n"
+  SPACK_NAME" will warp/transform the input image using an input coordinate "
+  "matrix. Currently it accepts any general projective mapping (which "
+  "includes affine mappings as a subset). \n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -73,7 +71,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g i j k l m n p r s u v w x y z
+   a b c d e f g i j k l n p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
@@ -100,15 +98,21 @@ static struct argp_option options[] =
       2
     },
     {
-      "transform",
-      't',
+      "matrix",
+      'm',
       "STR",
       0,
-      "Transform matrix elements.",
+      "Warp/Transform matrix elements.",
       2
     },
 
 
+
+    {
+      0, 0, 0, 0,
+      "Operating modes:",
+      -1
+    },
 
 
     {0}
@@ -123,7 +127,7 @@ static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
-  struct imgtransformparams *p = state->input;
+  struct imgwarpparams *p = state->input;
 
   /* Set the pointer to the common parameters for all programs
      here: */
@@ -147,8 +151,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output: */
     case 't':
-      p->up.transformstring=arg;
-      p->up.transformstringset=1;
+      p->up.matrixstring=arg;
+      p->up.matrixstringset=1;
       break;
 
 
@@ -168,11 +172,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
 	}
       else
 	{
-	  if(p->up.transformname)
-	    argp_error(state, "Only one transformation matrix "
+	  if(p->up.matrixname)
+	    argp_error(state, "Only one warp/transformation matrix "
                        "should be given.");
 	  else
-            p->up.transformname=arg;
+            p->up.matrixname=arg;
 	}
       break;
 

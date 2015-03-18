@@ -195,12 +195,12 @@ AC_ARG_ENABLE([imgcrop],
 	      [AS_IF([test "x$enable_imgcrop" != xno],
                      [enable_imgcrop=yes; ayes=true])],
               [enable_imgcrop=notset])
-AC_ARG_ENABLE([imgtransform],
-              [AS_HELP_STRING([--enable-imgtransform],
+AC_ARG_ENABLE([imgwarp],
+              [AS_HELP_STRING([--enable-imgwarp],
   	            [Install ImageTransform and other enabled packages only.])],
-	      [AS_IF([test "x$enable_imgtransform" != xno],
-                     [enable_imgtransform=yes; ayes=true])],
-              [enable_imgtransform=notset])
+	      [AS_IF([test "x$enable_imgwarp" != xno],
+                     [enable_imgwarp=yes; ayes=true])],
+              [enable_imgwarp=notset])
 AC_ARG_ENABLE([mkprof],
               [AS_HELP_STRING([--enable-mkprof],
   	            [Install MakeMock and other enabled packages only.])],
@@ -225,13 +225,13 @@ AS_IF([test $ayes = true ],
       [AS_IF([test $enable_convertt = notset], [enable_convertt=no])
        AS_IF([test $enable_convolve = notset], [enable_convolve=no])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
-       AS_IF([test $enable_imgtransform = notset], [enable_imgtransform=no])
+       AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])],
 
       [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
-       AS_IF([test $enable_imgtransform = notset], [enable_imgtransform=yes])
+       AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])]
      )
 
@@ -243,7 +243,7 @@ AS_IF([test $ayes = true ],
 AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
-AM_CONDITIONAL([COND_IMGTRANSFORM], [test $enable_imgtransform = yes])
+AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 
 
@@ -255,10 +255,10 @@ AC_CONFIG_FILES([Makefile
                  gnulib/lib/Makefile
                  src/mkprof/Makefile
 		 src/imgcrop/Makefile
+       		 src/imgwarp/Makefile
                  gnulib/tests/Makefile
                  src/convertt/Makefile
                  src/convolve/Makefile
-		 src/imgtransform/Makefile
                  ])
 
 

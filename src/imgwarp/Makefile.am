@@ -29,12 +29,12 @@ AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 
 
 ## ImageCrop:
-bin_PROGRAMS = astimgtransform
+bin_PROGRAMS = astimgwarp
 
-astimgtransform_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-imgtransform.c imgtransform.h
+astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
+imgwarp.c imgwarp.h
 
-astimgtransform_LDADD = $(top_builddir)/gnulib/lib/libgnu.a	\
+astimgwarp_LDADD = $(top_builddir)/gnulib/lib/libgnu.a	\
 -lconfigfiles -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming	\
 -lastrthreads
 
@@ -43,14 +43,14 @@ astimgtransform_LDADD = $(top_builddir)/gnulib/lib/libgnu.a	\
 
 
 # To destribute the defaults file.
-dist_sysconf_DATA = astimgtransform.conf
+dist_sysconf_DATA = astimgwarp.conf
 
 
 
 
 
 ## Generally for the man pages:
-dist_man_MANS = astimgtransform.1
+dist_man_MANS = astimgwarp.1
 
-astimgtransform.1: args.h $(top_srcdir)/include/commonargs.h
-	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astimgtransform
+astimgwarp.1: args.h $(top_srcdir)/include/commonargs.h
+	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astimgwarp

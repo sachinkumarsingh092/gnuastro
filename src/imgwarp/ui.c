@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageTransform - Transform images (e.g., rotate, scale, sheer and ...)
-ImageTransform is part of GNU Astronomy Utilities (gnuastro) package.
+ImageWarp - Warp images using projective mapping.
+ImageWarp is part of GNU Astronomy Utilities (gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -62,7 +62,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************       Options and parameters    ***************/
 /**************************************************************/
 void
-readconfig(char *filename, struct imgtransformparams *p)
+readconfig(char *filename, struct imgwarpparams *p)
 {
   FILE *fp;
   size_t lineno=0, len=200;
@@ -114,15 +114,15 @@ readconfig(char *filename, struct imgtransformparams *p)
 
 
       /* Outputs */
-      else if(strcmp(name, "transform")==0)
+      else if(strcmp(name, "matrix")==0)
 	{
-	  if(up->transformstringset) continue;
+	  if(up->matrixstringset) continue;
 	  errno=0;
-	  up->transformstring=malloc(strlen(value)+1);
-	  if(up->transformstring==NULL)
-	    error(EXIT_FAILURE, errno, "Space for transformstring");
-	  strcpy(up->transformstring, value);
-	  up->transformstringset=1;
+	  up->matrixstring=malloc(strlen(value)+1);
+	  if(up->matrixstring==NULL)
+	    error(EXIT_FAILURE, errno, "Space for matrixstring");
+	  strcpy(up->matrixstring, value);
+	  up->matrixstringset=1;
 	}
       else if(strcmp(name, "output")==0)
 	{
@@ -162,7 +162,7 @@ readconfig(char *filename, struct imgtransformparams *p)
 
 
 void
-printvalues(FILE *fp, struct imgtransformparams *p)
+printvalues(FILE *fp, struct imgwarpparams *p)
 {
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
@@ -180,12 +180,12 @@ printvalues(FILE *fp, struct imgtransformparams *p)
 
 
   fprintf(fp, "\n# Output parameters:\n");
-  if(up->transformstringset)
+  if(up->matrixstringset)
     {
-      if(stringhasspace(up->transformstring))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "transform", up->transformstring);
+      if(stringhasspace(up->matrixstring))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "matrix", up->matrixstring);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "transform", up->transformstring);
+	fprintf(fp, CONF_SHOWFMT"%s\n", "matrix", up->matrixstring);
     }
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
@@ -205,7 +205,7 @@ printvalues(FILE *fp, struct imgtransformparams *p)
 /* Note that numthreads will be used automatically based on the
    configure time. */
 void
-checkifset(struct imgtransformparams *p)
+checkifset(struct imgwarpparams *p)
 {
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
@@ -213,8 +213,8 @@ checkifset(struct imgtransformparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
-  if(up->transformstringset==0)
-    REPORT_NOTSET("transform");
+  if(up->matrixstringset==0)
+    REPORT_NOTSET("matrix");
 
   END_OF_NOTSET_REPORT;
 }
@@ -243,11 +243,11 @@ checkifset(struct imgtransformparams *p)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 void
-sanitycheck(struct imgtransformparams *p)
+sanitycheck(struct imgwarpparams *p)
 {
   if(p->cp.outputset==0)
     {
-      automaticoutput(p->up.inputname, "_transform.fits", p->cp.removedirinfo,
+      automaticoutput(p->up.inputname, "_warped.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->cp.output);
       p->cp.outputset=1;
     }
@@ -278,7 +278,7 @@ sanitycheck(struct imgtransformparams *p)
 /* It is important that the image names are stored in an array (for
    WCS mode in particular). We do that here. */
 void
-preparearrays(struct imgtransformparams *p)
+preparearrays(struct imgwarpparams *p)
 {
 
 }
@@ -305,7 +305,7 @@ preparearrays(struct imgtransformparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 void
-setparams(int argc, char *argv[], struct imgtransformparams *p)
+setparams(int argc, char *argv[], struct imgwarpparams *p)
 {
   struct commonparams *cp=&p->cp;
 
@@ -332,8 +332,8 @@ setparams(int argc, char *argv[], struct imgtransformparams *p)
     REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
-  if(p->up.transformname)
-    txttoarray(p->up.transformname, &p->transform, &p->ts0, &p->ts1);
+  if(p->up.matrixname)
+    txttoarray(p->up.matrixname, &p->matrix, &p->ms0, &p->ms1);
 
   /* Do a sanity check. */
   sanitycheck(p);
@@ -370,7 +370,7 @@ setparams(int argc, char *argv[], struct imgtransformparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct imgtransformparams *p, struct timeval *t1)
+freeandreport(struct imgwarpparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->cp.output);
