@@ -83,8 +83,12 @@ struct imgwarpparams
   double          *output;  /* Warped image array.                       */
   size_t              os0;  /* Output number of rows.                    */
   size_t              os1;  /* Output number of columns.                 */
+  size_t              ks0;  /* Kernel number of rows.                    */
+  size_t              ks1;  /* Kernel number of rows.                    */
   double         *inverse;  /* Inverse of the input matrix.              */
   time_t          rawtime;  /* Starting time of the program.             */
+  size_t       extinds[4];  /* Indexs of the minimum and maximum values. */
+
   size_t     oplygncrn[5];  /* Ordered PoLYGon CoRNers after inverse.    */
                             /* See explanation in orderedpolygoncorners. */
   double    outfpixval[2];  /* Value at bottom left position of output's */

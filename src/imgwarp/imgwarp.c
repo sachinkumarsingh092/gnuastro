@@ -30,6 +30,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <gsl/gsl_sort.h>
 
+#include "fitsarrayvv.h"
+
 #include "main.h"
 #include "imgwarp.h"
 
@@ -150,20 +152,21 @@ orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
 void
 imgwarppreparations(struct imgwarpparams *p)
 {
-  size_t i;
   long brd[4];
   double *d, *df, output[8];
+  size_t i, *extinds=p->extinds;
   double ocrn[8]={0,0,1,0,0,1,1,1}, icrn[8]={0,0,0,0,0,0,0,0};
   double xmin=DBL_MAX, xmax=-DBL_MAX, ymin=DBL_MAX, ymax=-DBL_MAX;
   double input[8]={0.0f, 0.0f, p->is1, 0.0f, 0.0f, p->is0, p->is1, p->is0};
 
+  /* Find the range of pixels of the input image. */
   for(i=0;i<4;++i)
     {
       mappoint(&input[i*2], p->matrix, &output[i*2]);
-      if(output[i*2]<xmin) xmin=output[i*2];
-      if(output[i*2]>xmax) xmax=output[i*2];
-      if(output[i*2+1]<ymin) ymin=output[i*2+1];
-      if(output[i*2+1]>ymax) ymax=output[i*2+1];
+      if(output[i*2]<xmin)     xmin = output[i*2];
+      if(output[i*2]>xmax)     xmax = output[i*2];
+      if(output[i*2+1]<ymin)   ymin = output[i*2+1];
+      if(output[i*2+1]>ymax)   ymax = output[i*2+1];
     }
   /* For a check:
   for(i=0;i<4;++i)
@@ -173,24 +176,28 @@ imgwarppreparations(struct imgwarpparams *p)
          xmin, xmax, ymin, ymax);
   */
 
-  /* integer range of output image. If the maximum values have no
-     fractional parts, then the last pixel should be used. */
-  brd[0]=floor(xmin);
-  brd[1] = floor(xmax)==ceil(xmax) ? floor(xmax)-1 : floor(xmax);
-  brd[2]=floor(ymin);
-  brd[3] = floor(ymax)==ceil(ymax) ? floor(ymax)-1 : floor(ymax);
-  /* For a test:
+  /* integer range of output image. If any of the points have a
+     fraction, they should be rounded to the next (away from zero)
+     integer. */
+  brd[0] = xmin==round(xmin) ? xmin : xmin>0?xmin+1:xmin-1;
+  brd[1] = xmax==round(xmax) ? xmax : xmax>0?xmax+1:xmax-1;
+  brd[2] = ymin==round(ymin) ? ymin : ymin>0?ymin+1:ymin-1;
+  brd[3] = ymax==round(ymax) ? ymax : ymax>0?ymax+1:ymax-1;
+  /* For a check:
   for(i=0;i<4;++i) printf("%ld, ", brd[i]); printf("\n");
   */
 
-  /* Set the final size of the image. */
-  p->os0=brd[1]-brd[0]+1;
-  p->os1=brd[3]-brd[2]+1;
+  /* Set the final size of the image. The X axis is horizontal. we are
+     using the bottom left corner, that is why we are adding a 1. */
+  p->os0=brd[3]-brd[2];
+  p->os1=brd[1]-brd[0];
   p->outfpixval[0]=brd[0];
   p->outfpixval[1]=brd[2];
-  /* For a test:
-  printf("os0: %lu, os1: %lu\n\n", p->os0, p->os1);
+  /* For a check:
+  printf("os1: %lu\nos0: %lu\noutfpixval=(%.3f,%.3f)\n",
+         p->os1, p->os0, p->outfpixval[0], p->outfpixval[1]);
   */
+
 
   /* In case there is translation, then (in the x axis) either xmin
      will be larger than zero or xmax will be smaller than zero. The
@@ -198,11 +205,11 @@ imgwarppreparations(struct imgwarpparams *p)
 
      NOTE: The integer value of a pixel is its bottom left side.
      NOTE II: brd[3] and brd[1] are negative when used here.
-  */
-  if(brd[0]>=0) { p->os0 += brd[0];    p->outfpixval[0] -= brd[0]; }
+
+  if(brd[0]>0) { p->os0 += brd[0];    p->outfpixval[0] -= brd[0]; }
   if(brd[1]<0)    p->os0 += -1*brd[1];
-  if(brd[2]>=0) { p->os1 += brd[2];    p->outfpixval[1] -= brd[2]; }
-  if(brd[3]<0)    p->os1 += -1*brd[2];
+  if(brd[2]>0) { p->os1 += brd[2];    p->outfpixval[1] -= brd[2]; }
+  if(brd[3]<0)    p->os1 += -1*brd[2];*/
   /* For a test:
   printf("os0: %lu\nos1: %lu\n\n", p->os0, p->os1);
   */
@@ -222,10 +229,23 @@ imgwarppreparations(struct imgwarpparams *p)
      output to the input) in an anti-clockwise transformation. In a
      general homographic transform, the scales of the output pixels
      may change, but the relative positions of the corners will
-     not. */
-  for(i=0;i<4;++i)
-    mappoint(&ocrn[i*2], p->inverse, &icrn[i*2]);
+     not.  */
+  for(i=0;i<4;++i) mappoint(&ocrn[i*2], p->inverse, &icrn[i*2]);
   orderedpolygoncorners(icrn, 4, p->oplygncrn);
+
+
+  /* Find which index after transformation will have the minimum and
+     maximum positions along the two axises. We can't use the starting
+     loop because that is based on the input image which can be
+     not-a-square! So we do it here where pixels are squares. */
+  xmin=DBL_MAX; xmax=-DBL_MAX; ymin=DBL_MAX; ymax=-DBL_MAX;
+  for(i=0;i<4;++i)
+    {
+      if(icrn[i*2]<xmin)   { xmin=icrn[i*2];   extinds[0]=i*2;   }
+      if(icrn[i*2]>xmax)   { xmax=icrn[i*2];   extinds[1]=i*2;   }
+      if(icrn[i*2+1]<ymin) { ymin=icrn[i*2+1]; extinds[2]=i*2+1; }
+      if(icrn[i*2+1]>ymax) { ymax=icrn[i*2+1]; extinds[3]=i*2+1; }
+    }
 }
 
 
@@ -256,6 +276,46 @@ imgwarponthread(void *inparam)
   struct iwpparams *iwp=(struct iwpparams*)inparam;
   struct imgwarpparams *p=iwp->p;
 
+  size_t is0=p->is0, is1=p->is1;
+  double *outfpixval=p->outfpixval;
+  double ocrn[8], icrn[8], *output=p->output;
+  size_t i, j, ind, os1=p->os1, *extinds=p->extinds;
+
+  for(i=0;(ind=iwp->indexs[i])!=NONTHRDINDEX;++i)
+    {
+      /* Set the corners of this output pixel. */
+      ocrn[0]=ind%os1+outfpixval[0];     ocrn[1]=ind/os1+outfpixval[1];
+      ocrn[2]=ind%os1+1+outfpixval[0];   ocrn[3]=ind/os1+outfpixval[1];
+      ocrn[4]=ind%os1+outfpixval[0];     ocrn[5]=ind/os1+1+outfpixval[1];
+      ocrn[6]=ind%os1+1+outfpixval[0];   ocrn[7]=ind/os1+1+outfpixval[1];
+
+      /* Transform the four corners to the input image */
+      for(j=0;j<4;++j) mappoint(&ocrn[j*2], p->inverse, &icrn[j*2]);
+
+      /* For a check:
+      printf("\n\n\n%lu\n", ind);
+      for(j=0;j<4;++j) printf("%f, %f\n", icrn[j*2], icrn[j*2+1]);
+      printf("%f, %f, %f, %f.\n", icrn[extinds[0]], icrn[extinds[1]],
+             icrn[extinds[2]], icrn[extinds[3]]);
+      */
+
+      /* In case the four extremes of this output pixel are outside
+         the range of the input image, then go onto the next pixel. To
+         be completely outside the image all four corners have to be
+         outside the image range. */
+      if( icrn[extinds[0]]>is0 || icrn[extinds[1]]<=0
+          || icrn[extinds[2]]>is1 || icrn[extinds[3]]<=0 )
+        continue;
+      /* For a test: */
+      else
+        output[ind]=1.0f;
+
+
+
+      /* Find the borders of the pixels which are to be used. */
+
+
+    }
 
 
 
@@ -349,6 +409,10 @@ imgwarp(struct imgwarpparams *p)
       pthread_attr_destroy(&attr);
       pthread_barrier_destroy(&b);
     }
+
+  /* Save the output: */
+  arraytofitsimg(p->cp.output, "Warped", DOUBLE_IMG, p->output, p->os0,
+                 p->os1, NULL, SPACK_STRING);
 
   /* Free the allocated spaces: */
   free(iwp);

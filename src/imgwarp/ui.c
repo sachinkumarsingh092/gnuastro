@@ -368,6 +368,8 @@ sanitycheck(struct imgwarpparams *p)
       free(p->matrix);
       m=p->matrix=tmp;
     }
+
+  /* Check if the transformation is spatially invariant */
 }
 
 
@@ -404,7 +406,9 @@ preparearrays(struct imgwarpparams *p)
   /* Read in the input image: */
   numnul=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
                         &array, &p->is0, &p->is1);
-  if(p->inputbitpix!=DOUBLE_IMG)
+  if(p->inputbitpix==DOUBLE_IMG)
+    p->input=array;
+  else
     {
       changetype(array, p->inputbitpix, p->is0*p->is1, numnul,
                  (void **)&p->input, DOUBLE_IMG);
