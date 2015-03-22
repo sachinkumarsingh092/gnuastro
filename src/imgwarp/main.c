@@ -29,8 +29,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"   	        /* Includes time.h and sys/time.h */
 
 #include "main.h"
-#include "imgwarp.h"       /* Needs main.h.                  */
-#include "ui.h"		        /* Needs main.h.                  */
+#include "ui.h"                 /* Needs main.h.                  */
+#include "imgwarp.h"            /* Needs main.h.                  */
 
 int
 main (int argc, char *argv[])

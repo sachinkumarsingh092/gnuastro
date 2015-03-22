@@ -28,6 +28,16 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "commonparams.h"
 
 
+
+/* IMPORTANT NOTE:
+
+Unlike most other programs, in ImageWarp, we will assume the
+coordinate (0.0f, 0.0f) is on the bottom left corner of the first
+image, not in the center of it.
+
+*/
+
+
 /* Progarm name macros: */
 #define SPACK_VERSION   "0.1"
 #define SPACK           "astimgwarp" /* Subpackage executable name. */
@@ -57,19 +67,27 @@ struct uiparams
 struct imgwarpparams
 {
   /* Other structures: */
-  struct uiparams     up;  /* User interface parameters.               */
-  struct commonparams cp;  /* Common parameters.                       */
+  struct uiparams     up;  /* User interface parameters.                 */
+  struct commonparams cp;  /* Common parameters.                         */
 
   /* Input: */
-  float            *input;  /* Name of input FITS file.                */
-  double          *matrix;  /* Warp/Transformation matrix.             */
-  size_t              is0;  /* Number of rows in input image.          */
-  size_t              is1;  /* Number of columns in input image.       */
-  size_t              ms0;  /* Matrix number of rows.                  */
-  size_t              ms1;  /* Matrix number of columns.               */
+  double           *input;  /* Name of input FITS file.                  */
+  double          *matrix;  /* Warp/Transformation matrix.               */
+  size_t              is0;  /* Number of rows in input image.            */
+  size_t              is1;  /* Number of columns in input image.         */
+  size_t              ms0;  /* Matrix number of rows.                    */
+  size_t              ms1;  /* Matrix number of columns.                 */
+  int         inputbitpix;  /* The type of the input array.              */
 
   /* Internal parameters: */
-  time_t         rawtime;  /* Starting time of the program.            */
-};
+  double          *output;  /* Warped image array.                       */
+  size_t              os0;  /* Output number of rows.                    */
+  size_t              os1;  /* Output number of columns.                 */
+  double         *inverse;  /* Inverse of the input matrix.              */
+  time_t          rawtime;  /* Starting time of the program.             */
+  size_t     oplygncrn[5];  /* Ordered PoLYGon CoRNers after inverse.    */
+                            /* See explanation in orderedpolygoncorners. */
+  double    outfpixval[2];  /* Value at bottom left position of output's */
+};                          /* first pixel in output coordinates.        */
 
 #endif

@@ -199,8 +199,7 @@ spatialconvolve(float *input, size_t is0, size_t is1,
   size_t i, nb, *indexs, thrdcols;
 
 
-  /* Allocate the arrays to keep the thread and parameters for each
-     thread. */
+  /* Array keeping thread parameters for each thread. */
   errno=0;
   scp=malloc(nt*sizeof *scp);
   if(scp==NULL)

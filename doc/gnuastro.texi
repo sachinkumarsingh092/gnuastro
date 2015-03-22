@@ -229,7 +229,7 @@ Command line
 
 * Arguments and options::       Basics of options and arguments.
 * Arguments::                   Treatment of arguments.
-* Option basics::               How to use GNU style options.
+* Options::               How to use GNU style options.
 * Common options::              Common options to all Gnuastro programs.
 
 Common options
@@ -298,7 +298,9 @@ Convolve
 
 ImageWarp
 
+* Warping basics::              Basics of coordinate transformation.
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
+* ImageWarp future updates::    Plans for ImageWarp's future.
 
 Image analysis
 
@@ -1050,8 +1052,11 @@ $ parallel astconvertt -ojpg ::: *_crop.fits
 @pindex eog
 @cindex Eye of GNOME
 Now that you have the different JPEG images you can go through them
-very fast with the default GNOME image viewer (Eye of GNOME), you can
-open the first one with
+very fast with the default GNOME image viewer@footnote{This is only
+for users fo the GNOME graphical desktop environment which is the
+default in most GNU/Linux distributions. If you use another graphical
+desktop environment, replace @command{eog} with any other image
+viewer.} (Eye of GNOME), you can open the first one with
 @example
 $ eog 1_crop.jpg
 @end example
@@ -1696,7 +1701,7 @@ users might not have adopted the same customizations. The long names
 also serve as a form of documentation in such scripts. A similar
 reasoning can be given for option names in scripts: it is good
 practice to always use the long formats of the options in shell
-scripts, see @ref{Option basics}.
+scripts, see @ref{Options}.
 
 @cindex Symbolic link
 The simplest solution is making a symbolic link to the actual
@@ -2018,7 +2023,7 @@ passing the commands to the program you called.
 @menu
 * Arguments and options::       Basics of options and arguments.
 * Arguments::                   Treatment of arguments.
-* Option basics::               How to use GNU style options.
+* Options::               How to use GNU style options.
 * Common options::              Common options to all Gnuastro programs.
 @end menu
 
@@ -2077,7 +2082,7 @@ quotes are much more easier, elegant and readable.
 
 
 
-@node Arguments, Option basics, Arguments and options, Command line
+@node Arguments, Options, Arguments and options, Command line
 @subsection Arguments
 In GNU Astronomy Utilities, the names of the input data files and
 ASCII tables are mostly specified as arguments, you can generally
@@ -2128,21 +2133,21 @@ final error by Gnuastro.
 
 
 
-@node Option basics, Common options, Arguments, Command line
+@node Options, Common options, Arguments, Command line
 @subsection Options
 
 @cindex GNU style options
 @cindex Options, GNU style
 @cindex Options, short (@option{-}) and long (@option{--})
-The following conventions are used to configure the behaviour of a
-program in all GNU/Linux applications each time you run it. Each
-option can be called in two ways: @emph{short} or @emph{long}. In the
-list of options provided in @ref{Common options} or those for each
-program, both formats are shown for those which support both. First
-the short is shown then the long. Short options are only one character
-and only have one hyphen (for example @option{-h}) while long options
-have two hyphens an can have many characters (for example
-@option{--hdu}).
+Command line options allow configuring the behaviour of a program in
+all GNU/Linux applications for each particular execution. Most options
+can be called in two ways: @emph{short} or @emph{long} a small number
+of options in some programs only have the latter type. In the list of
+options provided in @ref{Common options} or those for each program,
+both formats are shown for those which support both. First the short
+is shown then the long. Short options are only one character and only
+have one hyphen (for example @option{-h}) while long options have two
+hyphens an can have many characters (for example @option{--hdu}).
 
 Usually, the short options are for when you are writing on the command
 line and want to save keystrokes and time. The long options are good
@@ -2154,8 +2159,8 @@ forgotten and reading your previously written script will not be easy.
 @cindex On/Off options
 @cindex Options, on/off
 Some options need to be given a value if they are called and some
-don't. You can think of the latter type of options as an on/off
-option. These two types of options can be distinguished using the
+don't. You can think of the latter type of options as on/off
+options. These two types of options can be distinguished using the
 output of the @option{--help} and @option{--usage} options, which are
 common to all GNU software, see @ref{Getting help}. The following
 convention is used for the formats of the values in Gnuastro:
@@ -2193,10 +2198,10 @@ the long option you either need white space or an @option{=} sign, for
 example @option{-h2}, @option{-h 2}, @option{--hdu 2} or
 @option{--hdu=2} are all equivalent.
 
-Short options with no values can be concatenated for example these two
-hypothetical sequences of options are equivalent: @option{-a -b -c4}
-and @option{-abc4}.  As an example, consider the following command to
-run ImageCrop:
+The short format of on/off options (those that don't need values) can
+be concatenated for example these two hypothetical sequences of
+options are equivalent: @option{-a -b -c4} and @option{-abc4}.  As an
+example, consider the following command to run ImageCrop:
 @example
 $ astimgcrop -Dr3 --wwidth 3 catalog.txt --deccol=4 ASTRdata
 @end example
@@ -2219,6 +2224,21 @@ will warn you and show you the alternatives. Finally, if you want the
 argument parser to stop parsing arguments beyond a certain point, you
 can use two dashes: @option{--}. No text on the command line beyond
 these two dashes will be parsed.
+
+@cindex Repeated options
+@cindex Options, repeated
+If an option with a value is repeated or called more than once, the
+value of the last time it was called will be assigned to it. This very
+useful in complicated sitations, for example in scripts. Let's say you
+want to make a small modification to one option value. You can simply
+type the option with a new value in the end of the command and see how
+the script works. If you are satisfied with the change, you can remove
+the original option. If the change wasn't satsifactory, you can remove
+the one you just added and not worry about saving the original
+value. Without this capability, you would have to memorize or save the
+original value somewhere else, run the command and then change the
+value again which is not at all convenient and is potentially cause
+lots of bugs.
 
 @cindex Configuration files
 @cindex Default option values
@@ -2261,7 +2281,7 @@ by 0, not 1. This is the standard in C and all languages that are
 based on it (for example C++, Java and Python).
 @end cartouche
 
-@node Common options,  , Option basics, Command line
+@node Common options,  , Options, Command line
 @subsection Common options
 
 @cindex Options common to all utilities
@@ -2542,7 +2562,7 @@ files your self using any text editor.  However, it is recommended to
 use the @option{--setdirconf} and @option{--setusrconf} options to set
 default values for the current directory or this user, see
 @ref{Operating modes}. With these options, the values you give will be
-checked as explained in @ref{Option basics} before writing in the
+checked as explained in @ref{Options} before writing in the
 current directory's configuration file. They will also print a set of
 commented lines guiding the reader and will also classify the options
 based on their context and write them in their logical order to be
@@ -2966,7 +2986,7 @@ names shown separately. After the program name, the short format of
 all the options that don't require a value (on/off options) is
 displayed. Those that do require a value then follow in separate
 brackets, each displaying the format of the input they want, see
-@ref{Option basics}. Since all options are optional, they are shown in
+@ref{Options}. Since all options are optional, they are shown in
 square brackets, but arguments can also be optional. For example in
 this example, a catalog name is optional and is only required in some
 modes. This is a standard method of displaying optional arguments for
@@ -3854,8 +3874,9 @@ in small postage stamps. ImageCrop is made to do all these
 things. When more than one crop is required, ImageCrop will divide the
 crops between multiple threads to significantly reduce the run time.
 
+@cindex Mosaicing
 @cindex Image tiles
-@cindex Image Mosaics
+@cindex Image mosaic
 @cindex COSMOS survey
 @cindex Imaging surveys
 @cindex Hubble Space Telescope
@@ -4741,39 +4762,206 @@ of the image), we also remove any pixel with a value less than
 
 @node ImageWarp, ImageArith, Convolve, Image manipulation
 @section ImageWarp
+Image warpring is the process of mapping the pixels of one image onto
+a new pixel grid. This process is sometimes known as transformation,
+however following the discussion of Heckbert 1989@footnote{Paul
+S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
+Warping}, Master's thesis at University of California, Berkely.} we
+will not be using that term because it can be confused with only pixel
+value or flux transformations. Here we specifically mean the pixel
+grid transformation which is better conveyed with `warp'.
+
 @cindex ACS
 @cindex CCD
 @cindex WFC3
+@cindex Mosaicing
+@cindex Image mosaic
 @cindex Wide field camera 3
 @cindex Charge-coupled device
 @cindex Hubble Space Telescope
 @cindex Advanced camera for surveys
-Image warpring is the process of mapping the pixels of one image onto
-a new pixel grid. This process is sometimes known as transformation,
-how ever following the discussion of Heckbert 1989@footnote{Paul
-S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
-Warping}, Master's thesis at University of California, Berkely.} we
-will not be using that term because it can be confused with pixel
-value or flux transformations. Here we specifically mean the pixel
-grid transformation which is better conveyed with `warp'.
-
 Image wrapping is a very important step in astronomy, both in
 observational data analysis and in simulating modeled
 images. Observations of one field of the sky are much more effective
 if they are imaged with rotated frames of references. This allows for
 a better resolution when adding the images. Also in some cases (like
-the Hubble Space Telescope ACS and WFC3), the CCD might be tilted
-compared to the focal plane, therefore the recorded CCD pixels have to
-be mapped onto the focal plane before further analysis. In modelling,
-warping images is necessary when we want to apply grid transformations
-to the initial models, for example in simulating gravitational
-lensing.
+the Hubble Space Telescope ACS and WFC3 cameras), the CCD might be
+tilted compared to the focal plane, therefore the recorded CCD pixels
+have to be projected onto the focal plane before further analysis. In
+modelling, warping an image is necessary when we want to apply grid
+transformations to the initial models, for example in simulating
+gravitational lensing.
 
 @menu
+* Warping basics::              Basics of coordinate transformation.
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
+* ImageWarp future updates::    Plans for ImageWarp's future.
 @end menu
 
-@node Invoking astimgwarp,  , ImageWarp, ImageWarp
+@node Warping basics, Invoking astimgwarp, ImageWarp, ImageWarp
+@subsection Warping basics
+
+@cindex Scaling
+@cindex Coordinate transformation
+Lets take @mymath{\left[\matrix{u&v}\right]} as the coordinates of
+a point in the input image and @mymath{\left[\matrix{x&y}\right]} as the
+coordinates of that same point in the output image@footnote{These can
+be any real number, we are not necessarily talking about integer
+pixels here.}. The simplest form of coordinate transformation (or
+warping) is the scaling of the coordinates, lets assume we want to
+scale the first axis by @mymath{M} and the second by @mymath{N}, the
+output coordinates of that point can be calculated by
+
+@dispmath{\left[\matrix{x\cr y}\right]=
+          \left[\matrix{Mu\cr Nv}\right]=
+          \left[\matrix{M&0\cr0&N}\right]\left[\matrix{u\cr v}\right]}
+
+@cindex Matrix
+@cindex Multiplication, Matrix
+@cindex Rotation of coordinates
+@noindent
+Note that these are matrix multiplications. We thus see that we can
+represent any such grid warping as a matrix. Another thing we can do
+with this @mymath{2\times2} matrix is to rotate the output coordinate
+around the common center of both coordinates. If the output is rotated
+anticlockwise by @mymath{\theta} degrees from the positive (to the
+right) horizontal axis, then the warping matrix should become:
+
+@dispmath{\left[\matrix{x\cr y}\right]=
+   \left[\matrix{ucos\theta-vsin\theta\cr usin\theta+vcos\theta}\right]=
+   \left[\matrix{cos\theta&-sin\theta\cr sin\theta&cos\theta}\right]
+   \left[\matrix{u\cr v}\right]
+   }
+
+@cindex Flip coordinates
+@noindent
+We can also flip the coordinates around the first axis, the second
+axis and the coordinate center with the following three matrices
+respectively:
+
+@dispmath{\left[\matrix{1&0\cr0&-1}\right]\quad\quad
+          \left[\matrix{-1&0\cr0&1}\right]\quad\quad
+          \left[\matrix{-1&0\cr0&-1}\right]}
+
+@cindex Shear
+@noindent
+The final thing we can do with this definition of a @mymath{2\times2}
+warping matrix is shear. If we want the output to be sheared along the
+first axis with @mymath{A} and along the second with @mymath{B}, then
+we can use the matrix:
+
+@dispmath{\left[\matrix{1&A\cr B&1}\right]}
+
+@noindent
+To have one matrix representing any combination of these steps, you
+have to multiply the matrixes (matrix multiplication).  So any
+combinations of these transformations can be displayed with one
+@mymath{2\times2} matrix:
+
+@dispmath{\left[\matrix{a&b\cr c&d}\right]}
+
+@cindex Wide Field Camera 3
+@cindex Hubble Space Telescope
+@cindex Advanced Camera for Surveys
+The transformations above can cover a lot of the needs of most
+coordinate transformations. However they are limited to mapping the
+point @mymath{[\matrix{0&0}]} to @mymath{[\matrix{0&0}]}. Therefore
+they are useless if you want one coordinate to be shifted compared to
+the other one. They are also space invariant, meaning that all the
+coordinates in the image will recieve the same transformation. In
+other words, all the pixels in the output image will have the same
+area if placed over the input image. So transformations which require
+varying output pixel sizes like projections cannot be applied through
+this @mymath{2\times2} matrix either(for example for the tilted ACS
+and WFC3 camera CCDs on board the Hubble space telescope).
+
+@cindex M@"obius, August. F.
+@cindex Homogeneous coordinates
+@cindex Coordinates, homogeneous
+To add these further capabilities, namely translation and projection,
+we use the homogeneous coordinates. They were defined about 200 years
+ago by August Ferdinand M@"obius (1790 -- 1868). For simplicity, we
+will only discuss points on a 2D plane and avoid the complexities of
+higher dimensions. We cannot provide a deep mathematical introduction
+here, interested readers can get a more detailed explanation from
+Wikipedia@footnote{@url{http://en.wikipedia.org/wiki/Homogeneous_coordinates}}
+and the references therein.
+
+By adding an extra coordinate to a point we can add the flexibility we
+need. The point @mymath{[\matrix{x&y}]} can be represented as
+@mymath{[\matrix{xZ&yZ&Z}]} in homogeneous coordinates. Therefore
+multiplying all the coordinates of a point in the homogenous
+coordinates with a constant will give the same point. Put another way,
+the point @mymath{[\matrix{x&y&Z}]} corresponds to the point
+@mymath{[\matrix{x/Z&y/Z}]} on the constant @mymath{Z} plane. Setting
+@mymath{Z=1}, we get the input image plane, so
+@mymath{[\matrix{u&v&1}]} corresponds to @mymath{[\matrix{u&v}]}. With
+this definition, the transformations above can be generally written
+as:
+
+@dispmath{\left[\matrix{x\cr y\cr 1}\right]=
+          \left[\matrix{a&b&0\cr c&d&0\cr 0&0&1}\right]
+          \left[\matrix{u\cr v\cr 1}\right]}
+
+@noindent
+@cindex Affine Transformation
+@cindex Transformation, affine
+We thus acquired 4 extra degrees of freedom. By giving non-zero values
+to the zero valued elements of the last column we can have translation
+(try the matrix multiplication!). In general, any coordinate
+transformation that is represented by the matrix below is known as an
+affine transformation@footnote{See
+@url{http://en.wikipedia.org/wiki/Affine_transformation}. Note that
+the matrix in Wikipedia is a transpose of the one displayed here
+because they display vectors vertically while we use horizontal
+vectors.}:
+
+@dispmath{\left[\matrix{a&b&c\cr d&e&f\cr 0&0&1}\right]}
+
+@cindex Homography
+@cindex Projective transformation
+@cindex Transformation, projective
+We can now consider translation, but the affine transform is still
+spatially invariant. Giving non-zero values to the other two elements
+in the matrix above gives us the projective transformation or
+Homography@footnote{@url{http://en.wikipedia.org/wiki/Homography}}
+which is the most general type of transformation with the
+@mymath{3\times3} matrix:
+
+@dispmath{\left[\matrix{x'\cr y'\cr w}\right]=
+          \left[\matrix{a&b&c\cr d&e&f\cr g&h&1}\right]
+          \left[\matrix{u\cr v\cr 1}\right]}
+
+@noindent
+So the output coordinates can be calculated from:
+
+@dispmath{x={x' \over w}={au+bv+c \over gu+hv+1}\quad\quad\quad\quad
+          y={y' \over w}={du+ev+f \over gu+hv+1}}
+
+Thus with homography we can change the sizes of the output pixels on
+the input plane, giving a `perspective'-like visual impression. This
+can be quantitatively seen in the two equations above. When
+@mymath{g=h=0}, the denominator is independent of @mymath{u} or
+@mymath{v} and thus we have spatial invariance. Homography preserves
+lines at all orientations. A very useful fact about homography is that
+its inverse is also a homography. These two properties play a very
+important role in the implementation of this transformation. A short
+but instructive and illustrated review of affine, projective and also
+bilinear mappings is provided in Heckbert 1989@footnote{Paul
+S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
+Warping}, Master's thesis at University of California, Berkely.}.
+
+As an example for merging a few transforms into one matrix, the matrix
+which will represent the rotation of an image about a point
+@mymath{[\matrix{U&V}]} anticlockwise from the horizontal axis by an
+angle of @mymath{\theta} can be calculated through the matrix
+multiplication of these three matrices:
+
+@dispmath{\left[\matrix{1&0&U\cr0&1&V\cr{}0&0&1}\right]
+          \left[\matrix{cos\theta&-sin\theta&0\cr sin\theta&cos\theta&0\cr                0&0&1}\right]
+          \left[\matrix{1&0&-U\cr0&1&-V\cr{}0&0&1}\right]}
+
+@node Invoking astimgwarp, ImageWarp future updates, Warping basics, ImageWarp
 @subsection Invoking ImageWarp
 
 The general template for invoking ImageWarp is:
@@ -4787,19 +4975,56 @@ One line examples:
 
 @example
 $ astimgwarp matrix.txt image.fits
-$ astimgwarp --matrix=2,0,0,2 image.fits
+$ astimgwarp --matrix="0.5 0   0 0.5" image.fits
+$ astimgwarp --matrix=2,0,0,0,2,0,5,5,1 image.fits
 @end example
 
 ImageWarp can accept two arguments, one (the input image) is mandatory
 if any processing is to be done. An optional argument is a plain text
-file that will keep a matrix keeping the warp/transform parameters
-(how the two spatial coordinates of the output image should be
-calculated from the input image). There is also the @option{--matrix}
-option from which the matrix can be literally specified on the command
-line. If both are present when calling ImageWarp, the contents of the
-plain text file have higher precedence.
+file that will keep the warp/transform matrix, see @ref{Warping
+basics}. There is also the @option{--matrix} option from which the
+matrix can be literally specified on the command line. If both are
+present when calling ImageWarp, the contents of the plain text file
+have higher precedence. The general options to all Gnuastro programs
+can be seen in @ref{Common options}.
+
+@table @option
+
+@item -m
+@itemx --matrix
+The warp/transformation matrix. All the elements in this matrix must
+be separated by any number of space, tab or comma (@key{,})
+characters. If you want to use the first two, then be sure to wrap the
+matrix within double quotation marks (@key{"}) so they are not
+confused with other arguments on the command line, see
+@ref{Options}. This also applies to values in the configuration files,
+see @ref{Configuration file format}.  The transformation matrix can be
+either 2 by 2 or 3 by 3 array, see @ref{Warping basics}.
+
+@cindex NaN
+The determinant of the matrix has to be non-zero and it must not
+contain any non-number values (for example infinities or NaNs). The
+elements of the matrix have to be written in a column-first order. So
+for the general homography matrix of @ref{Warping basics}, it should
+be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
+
+@end table
 
 
+@node ImageWarp future updates,  , Invoking astimgwarp, ImageWarp
+@subsection ImageWarp future updates
+
+@itemize
+
+@item
+Add options to read all the warp parameters separately (for example
+translate by @mymath{X}, then rotate by @mymath{\theta} and scale by
+@mymath{4} times) and build matrices and multiply them internally. So
+the user doesn't have to calculate the final matrix prior to running
+the program. Currently ImageWarp can only accept the final
+matrix. This can be useful in scripts.
+
+@end itemize
 
 
 

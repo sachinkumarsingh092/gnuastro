@@ -86,7 +86,14 @@ static struct argp_option options[] =
       "Input:",
       1
     },
-
+    {
+      "matrix",
+      'm',
+      "STR",
+      0,
+      "Warp/Transform matrix elements.",
+      1
+    },
 
 
 
@@ -95,14 +102,6 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
-      2
-    },
-    {
-      "matrix",
-      'm',
-      "STR",
-      0,
-      "Warp/Transform matrix elements.",
       2
     },
 
@@ -150,7 +149,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
-    case 't':
+    case 'm':
       p->up.matrixstring=arg;
       p->up.matrixstringset=1;
       break;
