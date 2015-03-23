@@ -229,7 +229,7 @@ Command line
 
 * Arguments and options::       Basics of options and arguments.
 * Arguments::                   Treatment of arguments.
-* Options::               How to use GNU style options.
+* Options::                     How to use GNU style options.
 * Common options::              Common options to all Gnuastro programs.
 
 Common options
@@ -299,6 +299,7 @@ Convolve
 ImageWarp
 
 * Warping basics::              Basics of coordinate transformation.
+* Merging multiple warpings::
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
 * ImageWarp future updates::    Plans for ImageWarp's future.
 
@@ -2023,7 +2024,7 @@ passing the commands to the program you called.
 @menu
 * Arguments and options::       Basics of options and arguments.
 * Arguments::                   Treatment of arguments.
-* Options::               How to use GNU style options.
+* Options::                     How to use GNU style options.
 * Common options::              Common options to all Gnuastro programs.
 @end menu
 
@@ -4794,11 +4795,12 @@ gravitational lensing.
 
 @menu
 * Warping basics::              Basics of coordinate transformation.
+* Merging multiple warpings::
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
 * ImageWarp future updates::    Plans for ImageWarp's future.
 @end menu
 
-@node Warping basics, Invoking astimgwarp, ImageWarp, ImageWarp
+@node Warping basics, Merging multiple warpings, ImageWarp, ImageWarp
 @subsection Warping basics
 
 @cindex Scaling
@@ -4951,17 +4953,37 @@ bilinear mappings is provided in Heckbert 1989@footnote{Paul
 S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
 Warping}, Master's thesis at University of California, Berkely.}.
 
-As an example for merging a few transforms into one matrix, the matrix
-which will represent the rotation of an image about a point
+@node Merging multiple warpings, Invoking astimgwarp, Warping basics, ImageWarp
+@subsection Merging multiple warpings
+
+@cindex Commutative property
+@cindex Matrix multiplication
+@cindex Multiplication, matrix
+@cindex Non-commutative operations
+@cindex Operations, non-commutative
+In @ref{Warping basics} we saw how one basic warping/transformation
+can be represented with a 3 by 3 matrix. To make more complex warpings
+these matrices have to be multiplied through matrix
+multiplication. However matrix multiplication is not commutative, so
+the order of the set of matrices you use for the multiplication is
+going to be very important.
+
+The first warping should be placed as the left-most matrix. The second
+warping to the right of that and so on. The second transformation is
+going to occur on the warped coordinates of the first.  As an example
+for merging a few transforms into one matrix, the multiplication below
+represents the rotation of an image about a point
 @mymath{[\matrix{U&V}]} anticlockwise from the horizontal axis by an
-angle of @mymath{\theta} can be calculated through the matrix
-multiplication of these three matrices:
+angle of @mymath{\theta}. To do this, first we take the origin to
+@mymath{[\matrix{U&V}]} through translation. Then we rotate the image,
+then we translate it back to where it was initially. These three
+operations can be seen in the steps below.
 
 @dispmath{\left[\matrix{1&0&U\cr0&1&V\cr{}0&0&1}\right]
           \left[\matrix{cos\theta&-sin\theta&0\cr sin\theta&cos\theta&0\cr                0&0&1}\right]
           \left[\matrix{1&0&-U\cr0&1&-V\cr{}0&0&1}\right]}
 
-@node Invoking astimgwarp, ImageWarp future updates, Warping basics, ImageWarp
+@node Invoking astimgwarp, ImageWarp future updates, Merging multiple warpings, ImageWarp
 @subsection Invoking ImageWarp
 
 The general template for invoking ImageWarp is:
@@ -5007,6 +5029,14 @@ contain any non-number values (for example infinities or NaNs). The
 elements of the matrix have to be written in a column-first order. So
 for the general homography matrix of @ref{Warping basics}, it should
 be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
+
+@item -w
+@itemx --wrap
+Wrap only the warped/transformed pixels in the output image. The
+output image will only be big enough to keep all the warped
+pixels. Any rows or columns in the output that are completely blank
+(don't cover any input pixels) will therefore not be included in the
+output. Note that sub-pixel translations are still considered.
 
 @end table
 

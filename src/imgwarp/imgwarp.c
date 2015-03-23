@@ -152,7 +152,6 @@ orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
 void
 imgwarppreparations(struct imgwarpparams *p)
 {
-  long brd[4];
   double *d, *df, output[8];
   size_t i, *extinds=p->extinds;
   double ocrn[8]={0,0,1,0,0,1,1,1}, icrn[8]={0,0,0,0,0,0,0,0};
@@ -176,42 +175,38 @@ imgwarppreparations(struct imgwarpparams *p)
          xmin, xmax, ymin, ymax);
   */
 
-  /* integer range of output image. If any of the points have a
-     fraction, they should be rounded to the next (away from zero)
-     integer. */
-  brd[0] = xmin==round(xmin) ? xmin : xmin>0?xmin+1:xmin-1;
-  brd[1] = xmax==round(xmax) ? xmax : xmax>0?xmax+1:xmax-1;
-  brd[2] = ymin==round(ymin) ? ymin : ymin>0?ymin+1:ymin-1;
-  brd[3] = ymax==round(ymax) ? ymax : ymax>0?ymax+1:ymax-1;
-  /* For a check:
-  for(i=0;i<4;++i) printf("%ld, ", brd[i]); printf("\n");
-  */
-
   /* Set the final size of the image. The X axis is horizontal. we are
      using the bottom left corner, that is why we are adding a 1. */
-  p->os0=brd[3]-brd[2];
-  p->os1=brd[1]-brd[0];
-  p->outfpixval[0]=brd[0];
-  p->outfpixval[1]=brd[2];
+  p->outfpixval[0]=floor(xmin);
+  p->outfpixval[1]=floor(ymin);
+  p->os0=(long)ymax-(long)ymin+1;
+  p->os1=(long)xmax-(long)xmin+1;
+  if(ymin*ymax<0.0f) ++p->os0;
+  if(xmin*xmax<0.0f) ++p->os1;
   /* For a check:
-  printf("os1: %lu\nos0: %lu\noutfpixval=(%.3f,%.3f)\n",
+  printf("Wrapped:\n");printf("os1: %lu\nos0: %lu\noutfpixval=(%.3f,%.3f)\n",
          p->os1, p->os0, p->outfpixval[0], p->outfpixval[1]);
   */
 
+  /* In case the point (0.0f, 0.0f) has moved and the user has asked
+     to incorporte that shift (by not calling the --wrap option), then
+     change the relevant parameters.
 
-  /* In case there is translation, then (in the x axis) either xmin
-     will be larger than zero or xmax will be smaller than zero. The
-     same goes for the y axis.
+     output[0], output[1] show the coordinates of the new origin.
 
-     NOTE: The integer value of a pixel is its bottom left side.
-     NOTE II: brd[3] and brd[1] are negative when used here.
-
-  if(brd[0]>0) { p->os0 += brd[0];    p->outfpixval[0] -= brd[0]; }
-  if(brd[1]<0)    p->os0 += -1*brd[1];
-  if(brd[2]>0) { p->os1 += brd[2];    p->outfpixval[1] -= brd[2]; }
-  if(brd[3]<0)    p->os1 += -1*brd[2];*/
-  /* For a test:
-  printf("os0: %lu\nos1: %lu\n\n", p->os0, p->os1);
+     NOTE: To incorporate non-integer shifts, the borders of the
+     output pixels have to have no fractional values.
+  */
+  if(p->wrap==0)
+    for(i=0;i<2;++i)
+    {
+      if(output[i]>0.0f) p->outfpixval[i]-=(long)output[i];
+      if(i==0) p->os1+=labs(output[i]);
+      else     p->os0+=labs(output[i]);
+    }
+  /* For a check:
+  printf("Corrected:\nos1: %lu\nos0: %lu\noutfpixval=(%.3f,%.3f)\n",
+         p->os1, p->os0, p->outfpixval[0], p->outfpixval[1]);
   */
 
   /* We now know the size of the output and the starting and ending
@@ -293,18 +288,18 @@ imgwarponthread(void *inparam)
       for(j=0;j<4;++j) mappoint(&ocrn[j*2], p->inverse, &icrn[j*2]);
 
       /* For a check:
-      printf("\n\n\n%lu\n", ind);
+      printf("\n\n\n%lu, %lu:\n", ind%os1+1, ind/os1+1);
       for(j=0;j<4;++j) printf("%f, %f\n", icrn[j*2], icrn[j*2+1]);
-      printf("%f, %f, %f, %f.\n", icrn[extinds[0]], icrn[extinds[1]],
-             icrn[extinds[2]], icrn[extinds[3]]);
+      printf("%.16f, %.16f, %.16f, %.16f.\n", icrn[extinds[0]],
+             icrn[extinds[1]], icrn[extinds[2]], icrn[extinds[3]]);
       */
 
       /* In case the four extremes of this output pixel are outside
          the range of the input image, then go onto the next pixel. To
          be completely outside the image all four corners have to be
          outside the image range. */
-      if( icrn[extinds[0]]>is0 || icrn[extinds[1]]<=0
-          || icrn[extinds[2]]>is1 || icrn[extinds[3]]<=0 )
+      if( icrn[extinds[0]]>is0 || icrn[extinds[1]]<=1e-10
+          || icrn[extinds[2]]>is1 || icrn[extinds[3]]<=1e-10 )
         continue;
       /* For a test: */
       else

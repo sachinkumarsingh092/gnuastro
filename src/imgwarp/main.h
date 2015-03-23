@@ -79,6 +79,9 @@ struct imgwarpparams
   size_t              ms1;  /* Matrix number of columns.                 */
   int         inputbitpix;  /* The type of the input array.              */
 
+  /* Output: */
+  int                wrap;  /* Wrap the warped/transfomed pixels.        */
+
   /* Internal parameters: */
   double          *output;  /* Warped image array.                       */
   size_t              os0;  /* Output number of rows.                    */
