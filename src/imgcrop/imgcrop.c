@@ -73,6 +73,7 @@ imgmodecrop(void *inparam)
       log->numimg=0;
       cropname(crp);
 
+
       /* Crop the image. */
       onecrop(crp);
 
@@ -256,7 +257,6 @@ imgcrop(struct imgcropparams *p)
   size_t i, *indexs, thrdcols;
   size_t nt=p->cp.numthreads, nb;
   void *(*modefunction)(void *)=NULL;
-
 
   /* Set the function to run: */
   if(p->imgmode)

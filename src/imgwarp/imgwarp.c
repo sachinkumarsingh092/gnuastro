@@ -35,41 +35,116 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 #include "imgwarp.h"
 
+
+
+/***************************************************************/
+/**************            MACROS             ******************/
+/***************************************************************/
+/* Multiply a 2 element vector with a transformation matrix and put
+   the result in the 2 element output array. It is assumed that the
+   input is from a flat coordinate systemy. */
+#define mappoint(V, T, O)                                       \
+  {                                                             \
+    (O)[0]=( ( (T)[0]*(V)[0] + (T)[1]*(V)[1] + (T)[2] )         \
+             / ( (T)[6]*(V)[0] + (T)[7]*(V)[1] + (T)[8] ) );    \
+    (O)[1]=( ( (T)[3]*(V)[0] + (T)[4]*(V)[1] + (T)[5] )         \
+             / ( (T)[6]*(V)[0] + (T)[7]*(V)[1] + (T)[8] ) );    \
+  }                                                             \
+
+
+
+
+
+/* The cross product of two points from the center. */
+#define crossproduct(A, B) ( (A)[0]*(B)[1] - (B)[0]*(A)[1] )
+
+
+
+
+/* Find the cross product (2*area) between three points. Each point is
+   assumed to be a pointer that has atleast two values within it. */
+#define tricrossproduct(A, B, C)                  \
+  ( ( (B)[0]-(A)[0] ) * ( (C)[1]-(A)[1] ) -       \
+    ( (C)[0]-(A)[0] ) * ( (B)[1]-(A)[1] ) )       \
+
+
+
+
+
+/* We have the line A-B. We want to see if C is to the left of this
+   line or to its right. This function will return 1 if it is to the
+   left. It uses the basic property of vector multiplication: If the
+   three points are anti-clockwise (the point is to the left), then
+   the vector multiplication is positive, if it is negative, then it
+   is clockwise (c is to the right).
+
+   Ofcourse it is very important that A be below or equal to B in both
+   the X and Y directions. The rounding error might give
+   -0.0000000000001 (I didn't count the number of zeros!!) instead of
+   zero for the area. Zero would indicate that they are on the same
+   line in this case this should give a true result.
+*/
+#define pleftofline(A, B, C)                            \
+  tricrossproduct((A), (B), (C))<-ROUNDERR ? 0 : 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /***************************************************************/
 /**************       Basic operations        ******************/
 /***************************************************************/
 
-/* We have a polygon and we want to order its corners in a counter an
-   anticlockwise fashion. This is necessary for finding its area
-   later. Depending on the transformation, the corners can have
+/* We have a simple polygon (that can result from projection, so its
+   edges don't collide or it doesn't have holes) and we want to order
+   its corners in a counter an anticlockwise fashion. This is
+   necessary for finding its area later and for checking if a pixel is
+   within it. Depending on the transformation, the corners can have
    practically any order even if before the transformation, they were
    ordered.
 
    The input is an array containing the coordinates (two values) of
    each corner. `n' is the number of corners. So the length of the
-   input should be 2*n. The output `ordinds' (ordered indexs) array
-   should already be allocated (or defined) outside and should have
-   `n+1' elements. There is one extra element because we want to close
-   the polygon by coming back to its first element in the end. It will
-   keep the index of the corners so that when they are called in the
-   following fashion, the input corners will be ordered in a
-   counter-clockwise fashion and finish where they started. (for a
-   four-cornered polygon for example):
+   input should be 2*n. After this function the sides are going to be
+   sorted in an anti-clockwise fashion.
 
-   in[ ordinds[0] * 2 ] --> x of first coordinate(unchanged)
-   in[ ordinds[1] * 2 ] --> x of next counter clockwise corner.
-   in[ ordinds[2] * 2 ] --> x of next counter clockwise corner.
-   in[ ordinds[3] * 2 ] --> x of next counter clockwise corner.
-   in[ ordinds[4] * 2 ] --> x of starting point.
+   This is very similar to the Graham scan in finding the Convex
+   Hull. However, in projection we will never have the left condition
+   below (where this algorithm will get to E before D), we will always
+   have the right case or E won't exist!
 
-   The same for the "y"s, just add a +1.
+                  D --------C          D------------- C
+                    \      |         E /            |
+                     \E    |           \            |
+                     /     |            \           |
+                   A--------B             A ---------B
 
-   The input array will not be changed, it will only be read from.
+   This is because we are always going to be calculating the area of
+   the overlap between a quadrilateral and the pixel grid or the
+   quadrilaterral its self.
+
+   MAXPOLYGONCORNERS is defined so there will be no need to allocate
+   these temporary arrays seprately.
 */
 void
-orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
+orderedpolygoncorners(double *in, size_t n)
 {
-  double angles[MAXPOLYGONCORNERS];
+  size_t ordinds[MAXPOLYGONCORNERS];
+  double angles[MAXPOLYGONCORNERS], ordvalues[2*MAXPOLYGONCORNERS];
   size_t i, tmp, aindexs[MAXPOLYGONCORNERS], tindexs[MAXPOLYGONCORNERS];
 
   if(n>MAXPOLYGONCORNERS)
@@ -80,8 +155,8 @@ orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
           PACKAGE_BUGREPORT" so we can solve this problem.",
           MAXPOLYGONCORNERS);
 
-  /* Just a check:
-  printf("\n\nInitial values:\n");
+  /* For a check:
+  printf("\n\nBefore sorting:\n");
   for(i=0;i<n;++i)
     printf("%lu: %.3f, %.3f\n", i, in[i*2], in[i*2+1]);
   printf("\n");
@@ -122,12 +197,19 @@ orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
   for(i=0;i<n-1;++i) tindexs[i]=ordinds[aindexs[i]+1];
   for(i=0;i<n-1;++i) ordinds[i+1]=tindexs[i];
 
-  /* Set the last element: */
-  ordinds[n]=ordinds[0];
+  /* Put the values in the correct order: */
+  for(i=0;i<n;++i)
+    {
+      ordvalues[i*2]=in[ordinds[i]*2];
+      ordvalues[i*2+1]=in[ordinds[i]*2+1];
+    }
+  for(i=0;i<2*n;++i) in[i]=ordvalues[i];
+
 
   /* For a check:
   printf("\nAfter sorting:\n");
-  for(i=0;i<n+1;++i) printf("%lu\n", ordinds[i]);
+  for(i=0;i<n;++i)
+    printf("%lu: %.3f, %.3f\n", ordinds[i], in[i*2], in[i*2+1]);
   printf("\n");
   */
 }
@@ -136,6 +218,164 @@ orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
 
 
 
+/* The area of a polygon is the sum of the vector products of all the
+   vertices in a counterclockwise order. See the Wikipedia page for
+   Polygon for more information.
+
+   `v' points to an array of doubles which keep the positions of the
+   vertices such that v[0] and v[1] are the positions of the first
+   corner to be considered.
+
+   We will start from the edge connecting the last pixel to the first
+   pixel for the first step of the loop, for the rest, j is always
+   going to be one less than i.
+ */
+double
+polygonarea(double *v, size_t n)
+{
+  double sum=0.0f;
+  size_t i=0, j=n-1;
+
+  while(i<n)
+    {
+      sum+=crossproduct(v+j*2, v+i*2);
+      j=i++;
+    }
+  return sum/2.0f;
+}
+
+
+
+
+
+/* We have a quadrilateral (polygon with four sides) whose vertices
+   are in the array `v'. Such that v[0], v[1] are the two coordinates
+   of the first vertice. The vertices also have to be sorted in a
+   counter clockwise fashion. We also have a point (with coordinates
+   p[0], p[1]) and we want to see if it is inside the polygon or
+   not.
+
+   If the point is inside the polygon, it will always be to the left
+   of the edge connecting the two vertices when the vertices are
+   traversed in order. See the comments above `polygonarea' for an
+   explanation about i and j and the loop.*/
+int
+pinquadrilateral(double *v, double *p)
+{
+  size_t i=0, j=3;
+
+  while(i<4)
+    {
+      if( pleftofline(v+j*2, v+i*2, p) ) j=i++;
+      else return 0;
+    }
+  return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***************************************************************/
+/**************      Processing function      ******************/
+/***************************************************************/
+void *
+imgwarponthread(void *inparam)
+{
+  struct iwpparams *iwp=(struct iwpparams*)inparam;
+  struct imgwarpparams *p=iwp->p;
+
+  size_t is0=p->is0, is1=p->is1;
+  double *outfpixval=p->outfpixval;
+  double ocrn[8], icrn[8], *output=p->output;
+  size_t i, j, ind, os1=p->os1, *extinds=p->extinds;
+
+  for(i=0;(ind=iwp->indexs[i])!=NONTHRDINDEX;++i)
+    {
+      /* Set the corners of this output pixel. */
+      ocrn[0]=ind%os1+outfpixval[0];     ocrn[1]=ind/os1+outfpixval[1];
+      ocrn[2]=ind%os1+1+outfpixval[0];   ocrn[3]=ind/os1+outfpixval[1];
+      ocrn[4]=ind%os1+outfpixval[0];     ocrn[5]=ind/os1+1+outfpixval[1];
+      ocrn[6]=ind%os1+1+outfpixval[0];   ocrn[7]=ind/os1+1+outfpixval[1];
+
+      /* Transform the four corners to the input image */
+      for(j=0;j<4;++j) mappoint(&ocrn[j*2], p->inverse, &icrn[j*2]);
+
+      /* For a check:
+      printf("\n\n\n%lu, %lu:\n", ind%os1+1, ind/os1+1);
+      for(j=0;j<4;++j) printf("%f, %f\n", icrn[j*2], icrn[j*2+1]);
+      printf("%.16f, %.16f, %.16f, %.16f.\n", icrn[extinds[0]],
+             icrn[extinds[1]], icrn[extinds[2]], icrn[extinds[3]]);
+      */
+
+      /* In case the four extremes of this output pixel are outside
+         the range of the input image, then go onto the next pixel. To
+         be completely outside the image all four corners have to be
+         outside the image range.
+
+         Rounding error might cause the maximum values to be
+         0.00000000001 (I haven't counted the zeros!!!). So the
+         maximum points are closer than ROUNDERR to zero and still
+         postive, consider them to be negative.
+      */
+      if( icrn[extinds[0]]>is0 || icrn[extinds[1]]<=ROUNDERR
+          || icrn[extinds[2]]>is1 || icrn[extinds[3]]<=ROUNDERR )
+        continue;
+      /* For a test: */
+      else
+        output[ind]=1.0f;
+
+
+
+      /* Find the borders of the pixels which are to be used. */
+
+
+    }
+
+
+
+  /* Wait until all other threads finish. */
+  if(p->cp.numthreads>1)
+    pthread_barrier_wait(iwp->b);
+
+  return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***************************************************************/
+/**************          Preparations         ******************/
+/***************************************************************/
 /* Do all the preparations.
 
    Make the output array. We transform the four corners of the image
@@ -226,7 +466,7 @@ imgwarppreparations(struct imgwarpparams *p)
      may change, but the relative positions of the corners will
      not.  */
   for(i=0;i<4;++i) mappoint(&ocrn[i*2], p->inverse, &icrn[i*2]);
-  orderedpolygoncorners(icrn, 4, p->oplygncrn);
+  orderedpolygoncorners(icrn, 4);
 
 
   /* Find which index after transformation will have the minimum and
@@ -241,85 +481,10 @@ imgwarppreparations(struct imgwarpparams *p)
       if(icrn[i*2+1]<ymin) { ymin=icrn[i*2+1]; extinds[2]=i*2+1; }
       if(icrn[i*2+1]>ymax) { ymax=icrn[i*2+1]; extinds[3]=i*2+1; }
     }
+
+  printf("\n%f\n", polygonarea(icrn, 4));
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***************************************************************/
-/**************      Processing function      ******************/
-/***************************************************************/
-void *
-imgwarponthread(void *inparam)
-{
-  struct iwpparams *iwp=(struct iwpparams*)inparam;
-  struct imgwarpparams *p=iwp->p;
-
-  size_t is0=p->is0, is1=p->is1;
-  double *outfpixval=p->outfpixval;
-  double ocrn[8], icrn[8], *output=p->output;
-  size_t i, j, ind, os1=p->os1, *extinds=p->extinds;
-
-  for(i=0;(ind=iwp->indexs[i])!=NONTHRDINDEX;++i)
-    {
-      /* Set the corners of this output pixel. */
-      ocrn[0]=ind%os1+outfpixval[0];     ocrn[1]=ind/os1+outfpixval[1];
-      ocrn[2]=ind%os1+1+outfpixval[0];   ocrn[3]=ind/os1+outfpixval[1];
-      ocrn[4]=ind%os1+outfpixval[0];     ocrn[5]=ind/os1+1+outfpixval[1];
-      ocrn[6]=ind%os1+1+outfpixval[0];   ocrn[7]=ind/os1+1+outfpixval[1];
-
-      /* Transform the four corners to the input image */
-      for(j=0;j<4;++j) mappoint(&ocrn[j*2], p->inverse, &icrn[j*2]);
-
-      /* For a check:
-      printf("\n\n\n%lu, %lu:\n", ind%os1+1, ind/os1+1);
-      for(j=0;j<4;++j) printf("%f, %f\n", icrn[j*2], icrn[j*2+1]);
-      printf("%.16f, %.16f, %.16f, %.16f.\n", icrn[extinds[0]],
-             icrn[extinds[1]], icrn[extinds[2]], icrn[extinds[3]]);
-      */
-
-      /* In case the four extremes of this output pixel are outside
-         the range of the input image, then go onto the next pixel. To
-         be completely outside the image all four corners have to be
-         outside the image range. */
-      if( icrn[extinds[0]]>is0 || icrn[extinds[1]]<=1e-10
-          || icrn[extinds[2]]>is1 || icrn[extinds[3]]<=1e-10 )
-        continue;
-      /* For a test: */
-      else
-        output[ind]=1.0f;
-
-
-
-      /* Find the borders of the pixels which are to be used. */
-
-
-    }
-
-
-
-  /* Wait until all other threads finish. */
-  if(p->cp.numthreads>1)
-    pthread_barrier_wait(iwp->b);
-
-  return NULL;
-}
 
 
 

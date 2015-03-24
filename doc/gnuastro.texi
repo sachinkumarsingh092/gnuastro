@@ -4856,7 +4856,7 @@ we can use the matrix:
 
 @noindent
 To have one matrix representing any combination of these steps, you
-have to multiply the matrixes (matrix multiplication).  So any
+use matrix multiplication, see @ref{Merging multiple warpings}. So any
 combinations of these transformations can be displayed with one
 @mymath{2\times2} matrix:
 

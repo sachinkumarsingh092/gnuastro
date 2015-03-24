@@ -578,6 +578,7 @@ preparearrays(struct imgcropparams *p)
   p->imgs=malloc(size);
   if(p->imgs==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes for p->imgs", size);
+
   for(i=p->numimg-1;i>=0;--i)
     {
       /* Get the image properties. */
@@ -587,10 +588,20 @@ preparearrays(struct imgcropparams *p)
       readfitshdu(img->name, p->cp.hdu, IMAGE_HDU, &tmpfits);
       imgbitpixsize(tmpfits, &p->bitpix, img->naxes);
       readwcs(tmpfits, &img->nwcs, &img->wcs);
-      status=wcshdo(WCSHDO_safe, img->wcs, &img->nwcskeys, &img->wcstxt);
-      if(status)
-	error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
-	      wcs_errmsg[status]);
+      if(img->wcs)
+        {
+          status=wcshdo(WCSHDO_safe, img->wcs, &img->nwcskeys, &img->wcstxt);
+          if(status)
+            error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
+                  wcs_errmsg[status]);
+        }
+      else
+        if(p->wcsmode)
+          error(EXIT_FAILURE, 0, "The WCS structure of %s (hdu: %s) "
+                "image is not recognized. So RA and Dec cannot be used "
+                "as input. You can try with pixel coordinates in the "
+                "Image Mode (note that the crops will lack WCS "
+                "header information).", img->name, p->cp.hdu);
       fits_close_file(tmpfits, &status);
       fitsioerror(status, NULL);
 
@@ -752,13 +763,14 @@ freeandreport(struct imgcropparams *p, struct timeval *t1)
 
   /* Free the allocated WCS parameters: */
   for(i=0;i<p->numimg;++i)
-    {
-      free(p->imgs[i].wcstxt);
-      status=wcsvfree(&p->imgs[i].nwcs, &p->imgs[i].wcs);
-      if(status)
-	error(EXIT_FAILURE, 0, "wcsvfree ERROR %d: %s.", status,
-	      wcs_errmsg[status]);
-    }
+    if(p->imgs[i].wcs)
+      {
+        free(p->imgs[i].wcstxt);
+        status=wcsvfree(&p->imgs[i].nwcs, &p->imgs[i].wcs);
+        if(status)
+          error(EXIT_FAILURE, 0, "wcsvfree ERROR %d: %s.", status,
+                wcs_errmsg[status]);
+      }
   free(p->imgs);
 
   /* Free the log array: */

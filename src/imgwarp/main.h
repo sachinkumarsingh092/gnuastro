@@ -91,9 +91,6 @@ struct imgwarpparams
   double         *inverse;  /* Inverse of the input matrix.              */
   time_t          rawtime;  /* Starting time of the program.             */
   size_t       extinds[4];  /* Indexs of the minimum and maximum values. */
-
-  size_t     oplygncrn[5];  /* Ordered PoLYGon CoRNers after inverse.    */
-                            /* See explanation in orderedpolygoncorners. */
   double    outfpixval[2];  /* Value at bottom left position of output's */
 };                          /* first pixel in output coordinates.        */
 

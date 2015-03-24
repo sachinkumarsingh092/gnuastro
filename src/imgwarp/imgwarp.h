@@ -26,17 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "astrthreads.h"
 
 #define MAXPOLYGONCORNERS 50
-
-/* A function-like macro to multiply a 2 element vector with a
-   transformation matrix and put the result in the 2 element output
-   array. It is assumed that the input is flat. */
-#define mappoint(V, T, O)                                       \
-  {                                                             \
-    (O)[0]=( ( (T)[0]*(V)[0] + (T)[1]*(V)[1] + (T)[2] )         \
-             / ( (T)[6]*(V)[0] + (T)[7]*(V)[1] + (T)[8] ) );    \
-    (O)[1]=( ( (T)[3]*(V)[0] + (T)[4]*(V)[1] + (T)[5] )         \
-             / ( (T)[6]*(V)[0] + (T)[7]*(V)[1] + (T)[8] ) );    \
-  }
+#define ROUNDERR          1e-10
 
 struct iwpparams
 {

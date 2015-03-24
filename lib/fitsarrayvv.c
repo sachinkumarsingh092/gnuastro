@@ -136,8 +136,8 @@ imgbitpixsize(fitsfile *fptr, int *bitpix, long *naxes)
     fitsioerror(status, NULL);
 
   if(naxis!=2)
-    error(EXIT_FAILURE, 0, "Currently only a 2 dimentional image array "
-	  "is supported. Your array is %d dimention(s). %s", naxis,
+    error(EXIT_FAILURE, 0, "Currently only a 2 dimensional image array "
+	  "is supported. Your array is %d dimension(s). %s", naxis,
 	  naxis ? "Please contact us to add this feature." : "");
 }
 
@@ -1013,6 +1013,10 @@ copyrightandend(fitsfile *fptr, char *spack_string)
 
    status = wcsvfree(&nwcs,&wcs);
 
+   If the WCS structure is not recognized, then this function will
+   return a NULL pointer for the wcsprm structure and a zero for
+   nwcs. It will also report the fact to the user in stderr.
+
    ===================================
    WARNING: wcspih IS NOT THREAD SAFE!
    ===================================
@@ -1033,21 +1037,33 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
     fitsioerror(status, NULL);
 
   /* WCSlib function */
-  if (wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs) )
-    error(EXIT_FAILURE, 0, "wcspih ERROR %d: %s.",
-	  status, wcs_errmsg[status]);
+  status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs);
+  free(fullheader);
+  if(status)
+    {
+      fprintf(stderr, "\n##################\n"
+              "WCSLIB Warning: wcspih ERROR %d: %s.\n"
+              "##################\n",
+              status, wcs_errmsg[status]);
+      *wcs=NULL; *nwcs=0;
+    }
 
   /* Set the internal structure: */
-  if (wcsset(*wcs))
-    error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.",
-	  status, wcs_errmsg[status]);
+  status=wcsset(*wcs);
+  if(status)
+    {
+      fprintf(stderr, "\n##################\n"
+              "WCSLIB Warning: wcsset ERROR %d: %s.\n"
+              "##################\n",
+            status, wcs_errmsg[status]);
+      *wcs=NULL; *nwcs=0;
+    }
 
   /* Initialize the wcsprm struct
   if ((status = wcsset(*wcs)))
     error(EXIT_FAILURE, 0, "wcsset ERROR %d: %s.\n", status,
 	  wcs_errmsg[status]);
   */
-  free(fullheader);
 }
 
 

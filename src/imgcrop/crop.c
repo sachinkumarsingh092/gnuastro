@@ -368,19 +368,22 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
 
   /* Write the WCS header keywords in the output FITS image, then
      update the header keywords. */
-  crpix0 = img->wcs->crpix[0] - (fpixel_i[0]-1) + (fpixel_c[0]-1);
-  crpix1 = img->wcs->crpix[1] - (fpixel_i[1]-1) + (fpixel_c[1]-1);
-  if(fits_write_record(ofp, blankrec, &status))
-    fitsioerror(status, NULL);
-  sprintf(titlerec, "%sWCS information", startblank);
-  for(i=strlen(titlerec);i<79;++i)
-    titlerec[i]=' ';
-  fits_write_record(ofp, titlerec, &status);
-  for(i=0;i<img->nwcskeys-1;++i)
-    fits_write_record(ofp, &img->wcstxt[i*80], &status);
-  fits_update_key(ofp, TDOUBLE, "CRPIX1", &crpix0, NULL, &status);
-  fits_update_key(ofp, TDOUBLE, "CRPIX2", &crpix1, NULL, &status);
-  fitsioerror(status, NULL);
+  if(img->wcs)
+    {
+      crpix0 = img->wcs->crpix[0] - (fpixel_i[0]-1) + (fpixel_c[0]-1);
+      crpix1 = img->wcs->crpix[1] - (fpixel_i[1]-1) + (fpixel_c[1]-1);
+      if(fits_write_record(ofp, blankrec, &status))
+        fitsioerror(status, NULL);
+      sprintf(titlerec, "%sWCS information", startblank);
+      for(i=strlen(titlerec);i<79;++i)
+        titlerec[i]=' ';
+      fits_write_record(ofp, titlerec, &status);
+      for(i=0;i<img->nwcskeys-1;++i)
+        fits_write_record(ofp, &img->wcstxt[i*80], &status);
+      fits_update_key(ofp, TDOUBLE, "CRPIX1", &crpix0, NULL, &status);
+      fits_update_key(ofp, TDOUBLE, "CRPIX2", &crpix1, NULL, &status);
+      fitsioerror(status, NULL);
+    }
 
 
   /* Add the Crop information. */

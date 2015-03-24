@@ -1,4 +1,15 @@
-2015-03-17  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/imgcrop/ui.c (preparearrays): Aborts if in WCS mode and the
+	wcsprm structure could not be started.
+
+	* src/imgcrop/crop.c (firstcropmakearray): Only adds WCS headers
+	if the wcsprm structure is defined.
+
+	* lib/fitsarrayvv.c (readwcs): If any error occurs, a warning
+	message will be printed and the returned pointer will be NULL.
+
+2015-03-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* tests/convertt/: If libjpeg is not present, the tests will be
 	skipped.
@@ -8,7 +19,7 @@
 	* configure.ac: Changed libjpeg to an optional requirement. So if
 	it is not available, Gnuastro can still be built.
 
-2015-03-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/ui.c (preparearrays): The flip parts was missing a
 	-1.
@@ -16,11 +27,11 @@
 	* doc/gnuastro.texi: Changed all `gnuastro' occurrences in the
 	text to `Gnuastro'.
 
-2015-03-14  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-14  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/convolve.c: Added frequency domain convolution.
 
-2015-03-12  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-12  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/ui.c (setparams): Added condition for no output given.
 
@@ -39,14 +50,14 @@
 	* configure.ac: Removed sqrt and pthread tests (they are done by
 	Gnulib). Added the AX_PTHREAD macro from Autoconf archives.
 
-2015-03-11  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/: Adding new functions and steps.
 
 	* ./: Copyright transferred to the FSF. Copyright notices in all
 	files changed.
 
-2015-03-10  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-10  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* tests/imgcrop/*.sh: Set --numthreads=1 for all the tests so if
 	CFITSIO is not installed with reentrancy, there is no failures.
@@ -62,7 +73,7 @@
 	* configure.ac: bug report email set. pthread_barrier checked. GPL
 	GhostScript checked.
 
-2015-03-09  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-09  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* include/astrthreads.h: Added a temporary function so the
 	pthread_barrier type and functions can be run on systems that
@@ -72,19 +83,19 @@
 
 	* configure.ac: Added checks for nproc and gs along with warnings.
 
-2015-03-02  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-03-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/: Work started on Convolve.
 
 	* lib/fitsarrayvv.c: Changed array types from intXX_t to short,
 	long and LONGLONG. Unfortuantely this is how CFITSIO works.
 
-2015-02-22  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-02-22  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* doc/gnuastro.texi: Added index, changed "Science and its
 	software".
 
-2015-02-20  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-02-20  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* doc/gnuastro.texi: Removed list of programs at first, added a
 	programs index. Added an examples chapter along with some one line
@@ -99,7 +110,7 @@
 
 	* include: similar to above.
 
-2015-02-18  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-02-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/Makefile.am: Changed all static libraries to libtool static
 	libraries.
@@ -109,7 +120,7 @@
 	* configure.ac: Added Libtool checks. Corrected cfitsio and wcslib
 	dependencies and removed FFTW as a dependency.
 
-2015-02-17  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-02-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convertt/eps.c: Functions for binary image added.
 
@@ -120,14 +131,14 @@
 
 	* README: Details removed.
 
-2015-02-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-02-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/statistics.c (dminmax): Works with NAN values too.
 	(fminmax): Similar to dminmax.
 
 	* doc/gnuastro.texi (ConvertType): Updated.
 
-2015-02-13  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-02-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convertt/args.h (argp_options): `convert` changed to
 	`change`. Since the program name is also convert this could cause
@@ -161,7 +172,7 @@
 	(ConvertType): Added section
 	(FileInfo): Added section
 
-2015-02-08  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-02-08  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convertt: Started working on ConvertType.
 
@@ -172,12 +183,12 @@
 
 	* include/checkset.h: Added intsmallerequalto.
 
-2015-01-25  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* ./*: In all files, the name `AstrUtils` was changed to
 	`gnuastro` and the `astr` prefix was changed to `ast`.
 
-2015-01-20  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-20  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* tests/imgcrop/makerandomcat.py: Removed, because now the points
 	are very specific.
@@ -190,7 +201,7 @@
 	* Makefile.am (EXTRA_DIST): Moved the distribution files for each
 	folder to the Makefile.am in that folder.
 
-2015-01-19  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-19  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/ui.c: Steps for reading and checking WCS parameters
 	added.
@@ -215,7 +226,7 @@
 
 	* doc/astrutils.texi: Updated.
 
-2015-01-18  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/mkprof.c (writelog): Added.
 	(write): Completed.
@@ -225,7 +236,7 @@
 	* lib/txtarrayvv.c (doformatting): Added option to use `f` in
 	printf or `g`.
 
-2015-01-16  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/mkprof.c (builtqueue_addempty): Added.
 	(saveindividual): Added.
@@ -266,7 +277,7 @@
 
 	* doc/astrutils.texi: Updated.
 
-2015-01-13  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/ui.c (preparearrays): Added.
 	(setparams): numthreads initialized to configured value.
@@ -285,7 +296,7 @@
 
 	* doc/astrutils.texi: Updated.
 
-2015-01-12  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-12  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/imgcrop/imgcrop.c: Using pthread_barrier_wait for
 	synchronizing threads instead of the mutexes and conditional
@@ -319,7 +330,7 @@
 	* Makefile.am (EXTRA_DIST): Moved the library header files to the
 	Makefile.am in lib/.
 
-2015-01-06  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mockgals/args.h (parse_opt): Removed the check below.
 
@@ -328,7 +339,7 @@
 	* include/commonargs.h (cparse_opt): Added check for not calling
 	`--setdirconf` and `--setusrconf` together.
 
-2015-01-05  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2015-01-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* doc/formath.texi: Added. A set of macros to write equations
 	nicely in TeX, HTML (using MathJax).
@@ -363,7 +374,7 @@
 
 	* Makefile.am: MockGals conditional compilation added.
 
-2014-12-30  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2014-12-30  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* tests/basicchecks.sh: New file (common tests for all tests).
 
@@ -393,7 +404,7 @@
 	* Makefile.am: Set conditional subdirectories. Added
 	`basicchecks.sh` to the files to be distributed.
 
-2014-12-28  Mohammad Akhlaghi  <makhlaghi@gmail.com>
+2014-12-28  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	GNU Astronomical Utilities created with the ImageCrop as the first
 	package. Other packages will be added in the next few days.
