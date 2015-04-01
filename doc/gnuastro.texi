@@ -299,7 +299,8 @@ Convolve
 ImageWarp
 
 * Warping basics::              Basics of coordinate transformation.
-* Merging multiple warpings::
+* Merging multiple warpings::   How to merge multiple matrices.
+* Resampling::                  Warping an image is re-sampling it.
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
 * ImageWarp future updates::    Plans for ImageWarp's future.
 
@@ -1214,15 +1215,14 @@ The best way is that you can install CFITSIO from source. You can
 download the latest version of the source code and manual from its
 webpage@footnote{@url{http://heasarc.gsfc.nasa.gov/fitsio/fitsio.html}}.
 We strongly recommend that you have a look through Chapter 2 (Creating
-the CFITSIO library) of the the CFITSIO manual and understand the
-options you can pass to @command{$ ./configure} (they aren't too
-much). This is a very basic package for most astronomical software and
-it is best that you configure it nicely with your system. Once you
-download the source and unpack it, the following configure script
-should be enough for most purposes. Don't forget to read chapter two
-of the manual though, for example the second option is only for 64bit
-systems. The manual also explains how to check if it has been
-installed correctly.
+the CFITSIO library) of the CFITSIO manual and understand the options
+you can pass to @command{$ ./configure} (they aren't too much). This
+is a very basic package for most astronomical software and it is best
+that you configure it nicely with your system. Once you download the
+source and unpack it, the following configure script should be enough
+for most purposes. Don't forget to read chapter two of the manual
+though, for example the second option is only for 64bit systems. The
+manual also explains how to check if it has been installed correctly.
 @example
 $ tar -vxzf cfitsio_latest.tar.gz
 $ cd cfitsio
@@ -1346,7 +1346,7 @@ root access to install the programs in a system wide directory, the
 Letter paper size of the print manual is fine for you or as a summary
 you don't feel like going into the details when everything is working
 seamlessly, you can safely skip this section. If you have any of the
-above problems or you want to understand the the details for a better
+above problems or you want to understand the details for a better
 control over your build and install, read along.
 
 In the following it is assumed that you have downloaded the compressed
@@ -4393,7 +4393,7 @@ Convolution is the process of changing the value of one pixel to the
 definition that is most commonly used in image processing and
 astronomy. Mathematically speaking, convolution is a far more general
 process of merging two functions.}. We define the `neighbourhood' of
-each pixel (how many pixels) and the `weight' function (How much each
+each pixel (how many pixels) and the `weight' function (how much each
 neighbouring pixel should contribute depending on its position)
 through a second image which is known as a spatial
 kernel@footnote{Also known as filter, here we will use `kernel'.}. A
@@ -4405,20 +4405,23 @@ ImageMagick@footnote{@url{http://www.imagemagick.org/Usage/convolve/}}.
 @cindex Atmosphere
 @cindex Blur image
 @cindex Cosmic rays
-Convolution of an image will generally result in blurring the
-image. In other words, if the image has sharp differences in
-neighbouring pixel values@footnote{In astronomy, the only major time
-we confront such sharp borders in signal are cosmic rays. All other
-sources of signal in an image are already blurred by the atmosphere or
-the optics of the instrument.}, those sharp differences will become
-smoother. This has very good consequences in detection for example,
-because in an actual observed image, the variation in neighbouring
-pixel values due to noise can be very high. But after convolution,
-those variations will decrease and we have a better hope in detecting
-the possible underlying signal. Another case where convolution is
-extensively used is in mock images and modelling in general,
-convolution can be used to simulate the effect of the atmosphere or
-the optical system on the mock profiles that we create, see @ref{PSF}.
+@cindex Pixel mixing
+@cindex Mixing pixel values
+Convolution of an image will generally result in blurring the image
+because it mixes pixel values. In other words, if the image has sharp
+differences in neighbouring pixel values@footnote{In astronomy, the
+only major time we confront such sharp borders in signal are cosmic
+rays. All other sources of signal in an image are already blurred by
+the atmosphere or the optics of the instrument.}, those sharp
+differences will become smoother. This has very good consequences in
+detection for example, because in an actual observed image, the
+variation in neighbouring pixel values due to noise can be very
+high. But after convolution, those variations will decrease and we
+have a better hope in detecting the possible underlying
+signal. Another case where convolution is extensively used is in mock
+images and modelling in general, convolution can be used to simulate
+the effect of the atmosphere or the optical system on the mock
+profiles that we create, see @ref{PSF}.
 
 @cindex Spatial domain
 @cindex Frequency domain
@@ -4561,7 +4564,7 @@ and instrument, then imaged. So light from the parts of a galaxy which
 are immediately outside the CCD will affect the parts of the galaxy
 which are covered by the CCD. Therefore in modeling the observation,
 we have to convolve an image that is larger than the input image by
-exactly half of the convolution kernel. We can hence Conclude that
+exactly half of the convolution kernel. We can hence conclude that
 this correction for the edges is only useful when working on actual
 observed images (where we don't have any more data on the edges) and
 not in modeling.
@@ -4772,30 +4775,80 @@ will not be using that term because it can be confused with only pixel
 value or flux transformations. Here we specifically mean the pixel
 grid transformation which is better conveyed with `warp'.
 
+@cindex Gravitational lensing
+Image wrapping is a very important step in astronomy, both in
+observational data analysis and in simulating modeled images. In
+modelling, warping an image is necessary when we want to apply grid
+transformations to the initial models, for example in simulating
+gravitational lensing. Observational reasons for warping an image are
+listed below:
+
+@itemize
+
+@cindex Signal-to-noise ratio
+@item
+@strong{Noise:} Most scientifically interesting targets are inherently
+faint (have a very low Signal-to-noise ratio). Therefore one short
+exposure is not enough to detect such objects that are drowned deeply
+in the noise. We need multiple exposures so we can add them together
+and increase the objects' signal-to-noise ratio. Keeping the telescope
+fixed on one field of the sky is practically impossible. Therefore
+very deep observations have to put into the same grid before adding
+them.
+
+@cindex Mosaicing
+@cindex Image mosaic
+@item
+@strong{Resolution:} If we have multiple images of one patch of the
+sky (hopefully at multiple orientations) we can warp them to the same
+grid. The multiple orientations will allow us to `guess' the values of
+pixels on an output pixel grid that has smaller pixel sizes and thus
+increase the resolution of the output. This process of merging
+multiple observations is known as Mosaicing.
+
+@cindex Cosmic rays
+@item
+@strong{Cosmic rays:} Cosmic rays can randomly fall on any part of an
+image. If they collide vertically with the camera, they are going to
+create a very sharp and bright spot that in most cases can be separted
+easily@footnote{All astronomical targets are blurred with the PSF, see
+@ref{PSF}, however a cosmic ray is not and so it is very sharp (it
+suddenly stops at one pixel).}. However, depending on the depth of the
+camera pixels, and the angle that a cosmic rays collides with it, it
+can cover a line-like larger area on the CCD which makes the detection
+using their sharp edges very hard and error prone. One of the best
+methods to remove cosmic rays is to compare multiple images of the
+same field. To do that, we need all the images to be on the same pixel
+grid.
+
+@cindex Optical distortion
+@cindex Distortion, optical
+@item
+@strong{Optical distortion:} In wide field images, the optical
+distortion that occurs on the outer parts of the focal plane will make
+accurate comparison of the objects at various locations impossible. It
+is therefore necessary to warp the image and correct for those
+distortions prior to the analysis.
+
 @cindex ACS
 @cindex CCD
 @cindex WFC3
-@cindex Mosaicing
-@cindex Image mosaic
-@cindex Wide field camera 3
+@cindex Wide Field Camera 3
 @cindex Charge-coupled device
 @cindex Hubble Space Telescope
 @cindex Advanced camera for surveys
-Image wrapping is a very important step in astronomy, both in
-observational data analysis and in simulating modeled
-images. Observations of one field of the sky are much more effective
-if they are imaged with rotated frames of references. This allows for
-a better resolution when adding the images. Also in some cases (like
-the Hubble Space Telescope ACS and WFC3 cameras), the CCD might be
-tilted compared to the focal plane, therefore the recorded CCD pixels
-have to be projected onto the focal plane before further analysis. In
-modelling, warping an image is necessary when we want to apply grid
-transformations to the initial models, for example in simulating
-gravitational lensing.
+@item
+@strong{Imager not on focal plane:} In some cases (like the Hubble
+Space Telescope ACS and WFC3 cameras), the CCD might be tilted
+compared to the focal plane, therefore the recorded CCD pixels have to
+be projected onto the focal plane before further analysis.
+
+@end itemize
 
 @menu
 * Warping basics::              Basics of coordinate transformation.
-* Merging multiple warpings::
+* Merging multiple warpings::   How to merge multiple matrices.
+* Resampling::                  Warping an image is re-sampling it.
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
 * ImageWarp future updates::    Plans for ImageWarp's future.
 @end menu
@@ -4874,8 +4927,8 @@ coordinates in the image will recieve the same transformation. In
 other words, all the pixels in the output image will have the same
 area if placed over the input image. So transformations which require
 varying output pixel sizes like projections cannot be applied through
-this @mymath{2\times2} matrix either(for example for the tilted ACS
-and WFC3 camera CCDs on board the Hubble space telescope).
+this @mymath{2\times2} matrix either (for example for the tilted ACS
+and WFC3 camera detectors on board the Hubble space telescope).
 
 @cindex M@"obius, August. F.
 @cindex Homogeneous coordinates
@@ -4912,11 +4965,8 @@ We thus acquired 4 extra degrees of freedom. By giving non-zero values
 to the zero valued elements of the last column we can have translation
 (try the matrix multiplication!). In general, any coordinate
 transformation that is represented by the matrix below is known as an
-affine transformation@footnote{See
-@url{http://en.wikipedia.org/wiki/Affine_transformation}. Note that
-the matrix in Wikipedia is a transpose of the one displayed here
-because they display vectors vertically while we use horizontal
-vectors.}:
+affine
+transformation@footnote{@url{http://en.wikipedia.org/wiki/Affine_transformation}}:
 
 @dispmath{\left[\matrix{a&b&c\cr d&e&f\cr 0&0&1}\right]}
 
@@ -4951,9 +5001,11 @@ important role in the implementation of this transformation. A short
 but instructive and illustrated review of affine, projective and also
 bilinear mappings is provided in Heckbert 1989@footnote{Paul
 S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
-Warping}, Master's thesis at University of California, Berkely.}.
+Warping}, Master's thesis at University of California, Berkely. Note
+that since points are defined as row vectors there, the matrix is the
+transpose of the one discussed here.}.
 
-@node Merging multiple warpings, Invoking astimgwarp, Warping basics, ImageWarp
+@node Merging multiple warpings, Resampling, Warping basics, ImageWarp
 @subsection Merging multiple warpings
 
 @cindex Commutative property
@@ -4977,13 +5029,102 @@ represents the rotation of an image about a point
 angle of @mymath{\theta}. To do this, first we take the origin to
 @mymath{[\matrix{U&V}]} through translation. Then we rotate the image,
 then we translate it back to where it was initially. These three
-operations can be seen in the steps below.
+operations can be merged in one operation by calculating the matrix
+multiplication below:
 
 @dispmath{\left[\matrix{1&0&U\cr0&1&V\cr{}0&0&1}\right]
           \left[\matrix{cos\theta&-sin\theta&0\cr sin\theta&cos\theta&0\cr                0&0&1}\right]
           \left[\matrix{1&0&-U\cr0&1&-V\cr{}0&0&1}\right]}
 
-@node Invoking astimgwarp, ImageWarp future updates, Merging multiple warpings, ImageWarp
+
+
+
+
+@node Resampling, Invoking astimgwarp, Merging multiple warpings, ImageWarp
+@subsection Resampling
+
+@cindex Pixel
+@cindex Resampling
+@cindex Pixel mixing
+@cindex Photoelectrons
+@cindex Picture element
+@cindex Mixing pixel values
+A digital image is composed of descrete `picture elements' or
+`pixels'. When a real image is created from a camera, each pixel's
+area is used to store the number of photoelectrons that were created
+when the incident photon collided with that pixel's surface. When we
+change the pixel grid of an image or warp it as we defined in
+@ref{Warping basics}, we have to `guess' the flux value of each pixel
+on the new grid based on the old grid. Thus any form of warping on the
+data is going to degrade the image and mix the original pixel values
+with each other. So if an analysis can be done on an un-warped data
+image, it is best to leave the image untouched and pursue the
+analysis. However as discussed in @ref{ImageWarp} this is not possible
+most of the times, so we have to accept the problem and re-sample the
+image.
+
+@cindex Point pixels
+@cindex Interpolation
+@cindex Bicubic interpolation
+@cindex Signal-to-noise ratio
+@cindex Bilinear interpolation
+@cindex Interpolation, bicubic
+@cindex Interpolation, bilinear
+In most applications of image processing, it is sufficient to consider
+each pixel to be a point and not an area. This assumption can
+significantly speed up the processing of an image and also the
+simplicity of the code. It is a fine assumption when the
+signal-to-noise ratio of the objects are very large. The question will
+then be one of interpolation because you have multiple points
+distributed over the output image and you want to find the values at
+the pixel centers. To increase the accuracy, you might also sample
+more than one point from within a pixel giving you more points for a
+more accurate interpolation in the output grid.
+
+@cindex Image edges
+@cindex Edges, image
+However, interpolation has several problems. The first one is that it
+will depend on the type of function you want to assume for the
+interpolation. For example you choose a bi-linear or bi-cubic (the
+`bi's are for the 2 dimentional nature of the data). For the latter
+there are various ways to set the constants@footnote{see
+@url{http://entropymine.com/imageworsener/bicubic/} for a nice
+introduction.}. Such functional interpolation functions can fail
+seriously on the edges of an image. They will also need normalization
+so that the flux of the objects before and after the warpings are
+comparable. Because of these reasons we will not be using such
+interpolation techniques.
+
+@cindex Drizzle
+@cindex Pixel mixing
+@cindex Exact area resampling
+ImageWarp will do interpolation based on ``pixel mixing''@footnote{For
+a graphic demonstration see
+@url{http://entropymine.com/imageworsener/pixelmixing/}.}  or ``area
+resampling''. This is also what the Hubble Space Telescope pipeline
+calles
+``Drizzling''@footnote{@url{http://en.wikipedia.org/wiki/Drizzle_(image_processing)}}. This
+technique requires no functions, it is thus non-parametric. The basic
+idea is that you reverse-transform each output pixel to find which
+pixels of the input image it covers and what fraction of the area of
+the input pixels are covered. You then simply sum the value of each
+input pixel covered with the overlap fraction (between 0 to
+1). Through this process, pixels are treated as an area not as a
+point, also the total flux of an object will be left completely
+unchanged.
+
+If there are very high spatial-frequency signals in the image (for
+example fringes) which vary on a scale smaller than your output image
+pixel size, pixel mixing can cause
+ailiasing@footnote{@url{http://en.wikipedia.org/wiki/Aliasing}}. So if
+the input image has fringes, they have to be calculated and removed
+(which would naturally be done in any astronomical
+application). Because of the PSF no astronomical target has a sharp
+change in the signal so this issue is less important for astronoimcal
+applications, see @ref{PSF}.
+
+
+@node Invoking astimgwarp, ImageWarp future updates, Resampling, ImageWarp
 @subsection Invoking ImageWarp
 
 The general template for invoking ImageWarp is:
@@ -4997,7 +5138,7 @@ One line examples:
 
 @example
 $ astimgwarp matrix.txt image.fits
-$ astimgwarp --matrix="0.5 0   0 0.5" image.fits
+$ astimgwarp --matrix="0.5,0   0,0.5" image.fits
 $ astimgwarp --matrix=2,0,0,0,2,0,5,5,1 image.fits
 @end example
 
@@ -5009,6 +5150,17 @@ matrix can be literally specified on the command line. If both are
 present when calling ImageWarp, the contents of the plain text file
 have higher precedence. The general options to all Gnuastro programs
 can be seen in @ref{Common options}.
+
+@cartouche
+@noindent
+@strong{Coordinates of pixel center}: Based on the FITS standard,
+integer values are assigned to the center of a pixel, the coordinate
+[0.0, 0.0] is the center of the bottom left image pixel. If you want
+to warp the image relative to the bottom left vertice of the bottom
+left pixel, then you have to shift the warping center by [-0.5, -0.5],
+apply your transform then shift back by [0.5, 0.5]. Similar to the
+example in see @ref{Merging multiple warpings}.
+@end cartouche
 
 @table @option
 
@@ -5030,14 +5182,6 @@ elements of the matrix have to be written in a column-first order. So
 for the general homography matrix of @ref{Warping basics}, it should
 be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
-@item -w
-@itemx --wrap
-Wrap only the warped/transformed pixels in the output image. The
-output image will only be big enough to keep all the warped
-pixels. Any rows or columns in the output that are completely blank
-(don't cover any input pixels) will therefore not be included in the
-output. Note that sub-pixel translations are still considered.
-
 @end table
 
 
@@ -5053,6 +5197,20 @@ translate by @mymath{X}, then rotate by @mymath{\theta} and scale by
 the user doesn't have to calculate the final matrix prior to running
 the program. Currently ImageWarp can only accept the final
 matrix. This can be useful in scripts.
+
+@item
+When the final matrix is just a simple scaling which is a multiple of
+the width and height of the image, or it is just a flipping, there is
+no need to go through all the area calculations and waste time. Write
+some simple functions to do these jobs and avoid the polygon clipping
+calculations.
+
+@item
+For all Affine transformations (which are spatially invariant), after
+a certain number of pixels along the first and second axis, the
+fractions of area for each neighbour will be identical and it will
+repeat. Allow the program to calculate this repetition and avoid going
+through all the weight calculations for each pixel separately.
 
 @end itemize
 
@@ -5995,8 +6153,7 @@ to the same scale used for creating the mock images.
 
 @item -Y
 @itemx --yshift
-(@option{=INT}) Similar to @option{--xshift} for the the second FITS
-axis.
+(@option{=INT}) Similar to @option{--xshift} for the second FITS axis.
 
 @item -c
 @itemx --prepforconv

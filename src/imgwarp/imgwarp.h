@@ -25,9 +25,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "astrthreads.h"
 
-#define MAXPOLYGONCORNERS 50
-#define ROUNDERR          1e-10
-
 struct iwpparams
 {
   /* General input parameters: */

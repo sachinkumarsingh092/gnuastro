@@ -29,13 +29,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* IMPORTANT NOTE:
-
-Unlike most other programs, in ImageWarp, we will assume the
-coordinate (0.0f, 0.0f) is on the bottom left corner of the first
-image, not in the center of it.
-
-*/
 
 
 /* Progarm name macros: */
@@ -84,14 +77,13 @@ struct imgwarpparams
 
   /* Internal parameters: */
   double          *output;  /* Warped image array.                       */
-  size_t              os0;  /* Output number of rows.                    */
-  size_t              os1;  /* Output number of columns.                 */
-  size_t              ks0;  /* Kernel number of rows.                    */
-  size_t              ks1;  /* Kernel number of rows.                    */
+  size_t        onaxes[2];  /* Output image size                         */
+  size_t        knaxes[2];  /* Output image size                         */
   double         *inverse;  /* Inverse of the input matrix.              */
   time_t          rawtime;  /* Starting time of the program.             */
   size_t       extinds[4];  /* Indexs of the minimum and maximum values. */
-  double    outfpixval[2];  /* Value at bottom left position of output's */
-};                          /* first pixel in output coordinates.        */
+  size_t       ordinds[4];  /* Indexs of anticlockwise vertices.         */
+  double    outfpixval[2];  /* Pixel value of first output pixel.        */
+};
 
 #endif

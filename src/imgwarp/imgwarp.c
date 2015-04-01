@@ -22,18 +22,21 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
 #include <float.h>
 #include <stdlib.h>
-#include <gsl/gsl_sort.h>
 
 #include "fitsarrayvv.h"
 
 #include "main.h"
+#include "polygon.h"
 #include "imgwarp.h"
+
+
+
+
 
 
 
@@ -55,222 +58,34 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* The cross product of two points from the center. */
-#define crossproduct(A, B) ( (A)[0]*(B)[1] - (B)[0]*(A)[1] )
+/* A pixel's center is an integer value. This function will give the
+   integer value that is nearest to a floating point number. Works for
+   both positive and negative values and includes floating point
+   errors.
 
-
-
-
-/* Find the cross product (2*area) between three points. Each point is
-   assumed to be a pointer that has atleast two values within it. */
-#define tricrossproduct(A, B, C)                  \
-  ( ( (B)[0]-(A)[0] ) * ( (C)[1]-(A)[1] ) -       \
-    ( (C)[0]-(A)[0] ) * ( (B)[1]-(A)[1] ) )       \
-
-
-
-
-
-/* We have the line A-B. We want to see if C is to the left of this
-   line or to its right. This function will return 1 if it is to the
-   left. It uses the basic property of vector multiplication: If the
-   three points are anti-clockwise (the point is to the left), then
-   the vector multiplication is positive, if it is negative, then it
-   is clockwise (c is to the right).
-
-   Ofcourse it is very important that A be below or equal to B in both
-   the X and Y directions. The rounding error might give
-   -0.0000000000001 (I didn't count the number of zeros!!) instead of
-   zero for the area. Zero would indicate that they are on the same
-   line in this case this should give a true result.
+   nearestint_halfhigher(0.5f) --> 1.0f
 */
-#define pleftofline(A, B, C)                            \
-  tricrossproduct((A), (B), (C))<-ROUNDERR ? 0 : 1
+#define nearestint_halfhigher(D)                                        \
+  ( ceil((D)) - (D) > 0.5f + ROUNDERR ? ceil((D))-1.0f : ceil((D)) )
 
 
 
 
 
+/* Similar to `nearestint_halflower' but:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***************************************************************/
-/**************       Basic operations        ******************/
-/***************************************************************/
-
-/* We have a simple polygon (that can result from projection, so its
-   edges don't collide or it doesn't have holes) and we want to order
-   its corners in a counter an anticlockwise fashion. This is
-   necessary for finding its area later and for checking if a pixel is
-   within it. Depending on the transformation, the corners can have
-   practically any order even if before the transformation, they were
-   ordered.
-
-   The input is an array containing the coordinates (two values) of
-   each corner. `n' is the number of corners. So the length of the
-   input should be 2*n. After this function the sides are going to be
-   sorted in an anti-clockwise fashion.
-
-   This is very similar to the Graham scan in finding the Convex
-   Hull. However, in projection we will never have the left condition
-   below (where this algorithm will get to E before D), we will always
-   have the right case or E won't exist!
-
-                  D --------C          D------------- C
-                    \      |         E /            |
-                     \E    |           \            |
-                     /     |            \           |
-                   A--------B             A ---------B
-
-   This is because we are always going to be calculating the area of
-   the overlap between a quadrilateral and the pixel grid or the
-   quadrilaterral its self.
-
-   MAXPOLYGONCORNERS is defined so there will be no need to allocate
-   these temporary arrays seprately.
-*/
-void
-orderedpolygoncorners(double *in, size_t n)
-{
-  size_t ordinds[MAXPOLYGONCORNERS];
-  double angles[MAXPOLYGONCORNERS], ordvalues[2*MAXPOLYGONCORNERS];
-  size_t i, tmp, aindexs[MAXPOLYGONCORNERS], tindexs[MAXPOLYGONCORNERS];
-
-  if(n>MAXPOLYGONCORNERS)
-    error(EXIT_FAILURE, 0, "Most probably a bug! The number of corners "
-          "given to `orderedpolygoncorners' is more than %d. This is an "
-          "internal value and cannot be set from the outside. Most probably "
-          "Some bug has caused this un-normal value. Please contact us at "
-          PACKAGE_BUGREPORT" so we can solve this problem.",
-          MAXPOLYGONCORNERS);
-
-  /* For a check:
-  printf("\n\nBefore sorting:\n");
-  for(i=0;i<n;++i)
-    printf("%lu: %.3f, %.3f\n", i, in[i*2], in[i*2+1]);
-  printf("\n");
-  */
-
-  /* Find the point with the smallest Y (if there is two of them, the
-     one with the smallest X too.). This is necessary because if the
-     angles are not found relative to this point, the ordering of the
-     corners might not be correct in non-trivial cases. The number of
-     points is usually very small (less than 10), so this is
-     insignificant in the grand scheme of processes that have to take
-     place in warping the image. */
-  gsl_sort_index(ordinds, in+1, 2, n);
-  if( in[ ordinds[0]*2+1 ] == in[ ordinds[1]*2+1 ]
-     && in[ ordinds[0]*2] > in[ ordinds[1]*2 ])
-    {
-      tmp=ordinds[0];
-      ordinds[0]=ordinds[1];
-      ordinds[1]=tmp;
-    }
-
-
-  /* We only have `n-1' more elements to sort, use the angle of the
-     line between the three remaining points and the first point. */
-  for(i=0;i<n-1;++i)
-    angles[i]=atan2( in[ ordinds[i+1]*2+1 ] - in[ ordinds[0]*2+1 ],
-                     in[ ordinds[i+1]*2 ]   - in[ ordinds[0]*2   ] );
-  /* For a check:
-  for(i=0;i<n-1;++i)
-    printf("%lu: %.3f degrees\n", ordinds[i+1], angles[i]*180/M_PI);
-  printf("\n");
-  */
-
-  /* Sort the angles into the correct order, we need an extra array to
-     temporarily keep the newly angle-ordered indexs. Without it we
-     are going to loose half of the ordinds indexs! */
-  gsl_sort_index(aindexs, angles, 1, n-1);
-  for(i=0;i<n-1;++i) tindexs[i]=ordinds[aindexs[i]+1];
-  for(i=0;i<n-1;++i) ordinds[i+1]=tindexs[i];
-
-  /* Put the values in the correct order: */
-  for(i=0;i<n;++i)
-    {
-      ordvalues[i*2]=in[ordinds[i]*2];
-      ordvalues[i*2+1]=in[ordinds[i]*2+1];
-    }
-  for(i=0;i<2*n;++i) in[i]=ordvalues[i];
-
-
-  /* For a check:
-  printf("\nAfter sorting:\n");
-  for(i=0;i<n;++i)
-    printf("%lu: %.3f, %.3f\n", ordinds[i], in[i*2], in[i*2+1]);
-  printf("\n");
-  */
-}
-
-
-
-
-
-/* The area of a polygon is the sum of the vector products of all the
-   vertices in a counterclockwise order. See the Wikipedia page for
-   Polygon for more information.
-
-   `v' points to an array of doubles which keep the positions of the
-   vertices such that v[0] and v[1] are the positions of the first
-   corner to be considered.
-
-   We will start from the edge connecting the last pixel to the first
-   pixel for the first step of the loop, for the rest, j is always
-   going to be one less than i.
+   nearestint_halflower(0.5f) --> 0.0f;
  */
-double
-polygonarea(double *v, size_t n)
-{
-  double sum=0.0f;
-  size_t i=0, j=n-1;
-
-  while(i<n)
-    {
-      sum+=crossproduct(v+j*2, v+i*2);
-      j=i++;
-    }
-  return sum/2.0f;
-}
+#define nearestint_halflower(D)                                        \
+  ( ceil((D)) - (D) > 0.5f - ROUNDERR ? ceil((D))-1.0f : ceil((D)) )
 
 
 
 
 
-/* We have a quadrilateral (polygon with four sides) whose vertices
-   are in the array `v'. Such that v[0], v[1] are the two coordinates
-   of the first vertice. The vertices also have to be sorted in a
-   counter clockwise fashion. We also have a point (with coordinates
-   p[0], p[1]) and we want to see if it is inside the polygon or
-   not.
-
-   If the point is inside the polygon, it will always be to the left
-   of the edge connecting the two vertices when the vertices are
-   traversed in order. See the comments above `polygonarea' for an
-   explanation about i and j and the loop.*/
-int
-pinquadrilateral(double *v, double *p)
-{
-  size_t i=0, j=3;
-
-  while(i<4)
-    {
-      if( pleftofline(v+j*2, v+i*2, p) ) j=i++;
-      else return 0;
-    }
-  return 1;
-}
+#define ceilwitherr(D)                          \
+  ( fabs( nearbyint((D)) - (D) ) < ROUNDERR     \
+    ? nearbyint((D)) : nearbyint((D))+1  )
 
 
 
@@ -300,51 +115,96 @@ imgwarponthread(void *inparam)
   struct iwpparams *iwp=(struct iwpparams*)inparam;
   struct imgwarpparams *p=iwp->p;
 
-  size_t is0=p->is0, is1=p->is1;
-  double *outfpixval=p->outfpixval;
-  double ocrn[8], icrn[8], *output=p->output;
-  size_t i, j, ind, os1=p->os1, *extinds=p->extinds;
+  double *input=p->input;
+  long is0=p->is0, is1=p->is1;
+  size_t i, j, ind, os1=p->onaxes[0], numcrn;
+  size_t *extinds=p->extinds, *ordinds=p->ordinds;
+  double ocrn[8], icrn_base[8], icrn[8], *output=p->output;
+  long x, y, xstart, xend, ystart, yend; /* Might be negative */
+  double pcrn[8], *outfpixval=p->outfpixval, ccrn[MAXPOLYGONCORNERS];
 
   for(i=0;(ind=iwp->indexs[i])!=NONTHRDINDEX;++i)
     {
-      /* Set the corners of this output pixel. */
-      ocrn[0]=ind%os1+outfpixval[0];     ocrn[1]=ind/os1+outfpixval[1];
-      ocrn[2]=ind%os1+1+outfpixval[0];   ocrn[3]=ind/os1+outfpixval[1];
-      ocrn[4]=ind%os1+outfpixval[0];     ocrn[5]=ind/os1+1+outfpixval[1];
-      ocrn[6]=ind%os1+1+outfpixval[0];   ocrn[7]=ind/os1+1+outfpixval[1];
+      /* Initialize the output pixel value: */
+      output[ind]=0.0f;
 
-      /* Transform the four corners to the input image */
-      for(j=0;j<4;++j) mappoint(&ocrn[j*2], p->inverse, &icrn[j*2]);
+      /* Set the corners of this output pixel. */
+      ocrn[0]=(double)(ind%os1)-0.5f+outfpixval[0];
+      ocrn[1]=(double)(ind/os1)-0.5f+outfpixval[1];
+      ocrn[2]=(double)(ind%os1)+0.5f+outfpixval[0];
+      ocrn[3]=(double)(ind/os1)-0.5f+outfpixval[1];
+      ocrn[4]=(double)(ind%os1)-0.5f+outfpixval[0];
+      ocrn[5]=(double)(ind/os1)+0.5f+outfpixval[1];
+      ocrn[6]=(double)(ind%os1)+0.5f+outfpixval[0];
+      ocrn[7]=(double)(ind/os1)+0.5f+outfpixval[1];
+
+
+      /* Transform the four corners of the output pixel to the input
+         image coordinates. */
+      for(j=0;j<4;++j) mappoint(&ocrn[j*2], p->inverse, &icrn_base[j*2]);
+
+      /* Using the known relationships between the vertice locations,
+         put everything in the right place: */
+      xstart = nearestint_halfhigher( icrn_base[extinds[0]] );
+      xend   = nearestint_halflower(  icrn_base[extinds[1]] ) + 1;
+      ystart = nearestint_halfhigher( icrn_base[extinds[2]] );
+      yend   = nearestint_halflower(  icrn_base[extinds[3]] ) + 1;
+      icrn[0]=icrn_base[ordinds[0]*2]; icrn[1]=icrn_base[ordinds[0]*2+1];
+      icrn[2]=icrn_base[ordinds[1]*2]; icrn[3]=icrn_base[ordinds[1]*2+1];
+      icrn[4]=icrn_base[ordinds[2]*2]; icrn[5]=icrn_base[ordinds[2]*2+1];
+      icrn[6]=icrn_base[ordinds[3]*2]; icrn[7]=icrn_base[ordinds[3]*2+1];
+
 
       /* For a check:
       printf("\n\n\n%lu, %lu:\n", ind%os1+1, ind/os1+1);
-      for(j=0;j<4;++j) printf("%f, %f\n", icrn[j*2], icrn[j*2+1]);
-      printf("%.16f, %.16f, %.16f, %.16f.\n", icrn[extinds[0]],
-             icrn[extinds[1]], icrn[extinds[2]], icrn[extinds[3]]);
+      for(j=0;j<4;++j) printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
+               ocrn[j*2], ocrn[j*2+1], icrn_base[j*2], icrn_base[j*2+1]);
+      printf("------- Ordered -------\n");
+      for(j=0;j<4;++j) printf("(%.3f, %.3f)\n", icrn[j*2], icrn[j*2+1]);
+      printf("------- Start and ending pixels -------\n");
+      printf("X: %ld -- %ld\n", xstart, xend);
+      printf("Y: %ld -- %ld\n", ystart, yend);
       */
 
-      /* In case the four extremes of this output pixel are outside
-         the range of the input image, then go onto the next pixel. To
-         be completely outside the image all four corners have to be
-         outside the image range.
+      /* Go over all the input pixels that are covered. Note that x
+         and y are the centers of the pixel. */
+      for(y=ystart;y<yend;++y)
+        {
+          /* If the pixel isn't in the image, contine to next. Note
+             that the pixel polygon should be counter clockwise. */
+          if( y<0 || y>=is0 ) continue;
+          pcrn[1]=y-0.5f;      pcrn[3]=y-0.5f;
+          pcrn[5]=y+0.5f;      pcrn[7]=y+0.5f;
+          for(x=xstart;x<xend;++x)
+            {
+              if( x<0 || x>=is1 ) continue;
+              pcrn[0]=x-0.5f;          pcrn[2]=x+0.5f;
+              pcrn[4]=x+0.5f;          pcrn[6]=x-0.5f;
 
-         Rounding error might cause the maximum values to be
-         0.00000000001 (I haven't counted the zeros!!!). So the
-         maximum points are closer than ROUNDERR to zero and still
-         postive, consider them to be negative.
-      */
-      if( icrn[extinds[0]]>is0 || icrn[extinds[1]]<=ROUNDERR
-          || icrn[extinds[2]]>is1 || icrn[extinds[3]]<=ROUNDERR )
-        continue;
-      /* For a test: */
-      else
-        output[ind]=1.0f;
+              /* Find the overlapping (clipped) polygon: */
+              polygonclip(icrn, 4, pcrn, 4, ccrn, &numcrn);
 
+              /* For a check:
+              printf("%lu -- (%ld, %ld):\n", ind, x, y);
+              printf("icrn:\n");
+              for(j=0;j<4;++j)
+                printf("\t%.3f, %.3f\n", icrn[j*2], icrn[j*2+1]);
+              printf("pcrn:\n");
+              for(j=0;j<4;++j)
+                printf("\t%.3f, %.3f\n", pcrn[j*2], pcrn[j*2+1]);
+              printf("ccrn:\n");
+              for(j=0;j<numcrn;++j)
+                printf("\t%.3f, %.3f\n", ccrn[j*2], ccrn[j*2+1]);
+              */
 
-
-      /* Find the borders of the pixels which are to be used. */
-
-
+              /* Add the fractional value of this pixel: */
+              output[ind]+=input[y*is1+x]*polygonarea(ccrn, numcrn);
+              /*
+              printf("[%lu]: %.3f of [%ld, %ld]: %f\n", ind,
+                     polygonarea(ccrn, numcrn), x+1, y+1, input[y*is1+x]);
+              */
+            }
+        }
     }
 
 
@@ -392,13 +252,17 @@ imgwarponthread(void *inparam)
 void
 imgwarppreparations(struct imgwarpparams *p)
 {
-  double *d, *df, output[8];
-  size_t i, *extinds=p->extinds;
-  double ocrn[8]={0,0,1,0,0,1,1,1}, icrn[8]={0,0,0,0,0,0,0,0};
+  double output[8];
+  double icrn[8]={0,0,0,0,0,0,0,0};
+  size_t i, *extinds=p->extinds, size;
   double xmin=DBL_MAX, xmax=-DBL_MAX, ymin=DBL_MAX, ymax=-DBL_MAX;
-  double input[8]={0.0f, 0.0f, p->is1, 0.0f, 0.0f, p->is0, p->is1, p->is0};
+  double ocrn[8]={-0.5f,-0.5f,  0.5f,-0.5f, -0.5f,0.5f,   0.5f, 0.5f};
+  double input[8]={-0.5f,-0.5f,             p->is1-0.5f, -0.5f,
+                   -0.5f, p->is0-0.5f,      p->is1-0.5f, p->is0-0.5f};
 
-  /* Find the range of pixels of the input image. */
+  /* Find the range of pixels of the input image. All the input
+     positions are moved to the negative by half a pixel since the
+     center of the pixel is an integer value.*/
   for(i=0;i<4;++i)
     {
       mappoint(&input[i*2], p->matrix, &output[i*2]);
@@ -410,54 +274,36 @@ imgwarppreparations(struct imgwarpparams *p)
   /* For a check:
   for(i=0;i<4;++i)
       printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
-             input[i*2], input[i*2+1], output[i*2], output[i*2+1]);
+             input[i*2], input[i*2+1],
+             output[i*2], output[i*2+1]);
   printf("xmin: %.3f\nxmax: %.3f\nymin: %.3f\nymax: %.3f\n",
          xmin, xmax, ymin, ymax);
   */
 
-  /* Set the final size of the image. The X axis is horizontal. we are
-     using the bottom left corner, that is why we are adding a 1. */
-  p->outfpixval[0]=floor(xmin);
-  p->outfpixval[1]=floor(ymin);
-  p->os0=(long)ymax-(long)ymin+1;
-  p->os1=(long)xmax-(long)xmin+1;
-  if(ymin*ymax<0.0f) ++p->os0;
-  if(xmin*xmax<0.0f) ++p->os1;
+  /* Set the final size of the image. The X axis is horizontal. The
+     reason we are using the halflower variation of `nearestint' for
+     the maximums is that these points are the farthest extremes of
+     the input image. If they are half a pixel value, they should
+     point to the pixel before. */
+  p->onaxes[0]=nearestint_halflower(xmax)-nearestint_halfhigher(xmin)+1;
+  p->onaxes[1]=nearestint_halflower(ymax)-nearestint_halfhigher(ymin)+1;
+  p->outfpixval[0]=nearestint_halfhigher(xmin);
+  p->outfpixval[1]=nearestint_halfhigher(ymin);
   /* For a check:
-  printf("Wrapped:\n");printf("os1: %lu\nos0: %lu\noutfpixval=(%.3f,%.3f)\n",
-         p->os1, p->os0, p->outfpixval[0], p->outfpixval[1]);
-  */
-
-  /* In case the point (0.0f, 0.0f) has moved and the user has asked
-     to incorporte that shift (by not calling the --wrap option), then
-     change the relevant parameters.
-
-     output[0], output[1] show the coordinates of the new origin.
-
-     NOTE: To incorporate non-integer shifts, the borders of the
-     output pixels have to have no fractional values.
-  */
-  if(p->wrap==0)
-    for(i=0;i<2;++i)
-    {
-      if(output[i]>0.0f) p->outfpixval[i]-=(long)output[i];
-      if(i==0) p->os1+=labs(output[i]);
-      else     p->os0+=labs(output[i]);
-    }
-  /* For a check:
-  printf("Corrected:\nos1: %lu\nos0: %lu\noutfpixval=(%.3f,%.3f)\n",
-         p->os1, p->os0, p->outfpixval[0], p->outfpixval[1]);
+  printf("Wrapped:\n");
+  printf("onaxes: (%lu, %lu)\n", p->onaxes[0], p->onaxes[1]);
+  printf("outfpixval=(%.4f, %.4f)\n", p->outfpixval[0], p->outfpixval[1]);
   */
 
   /* We now know the size of the output and the starting and ending
      coordinates in the output image (bottom left corners of pixels)
      for the transformation. */
   errno=0;
-  p->output=malloc(p->os0*p->os1*sizeof *p->output);
+  size=p->onaxes[0]*p->onaxes[1];
+  p->output=malloc(size*sizeof *p->output);
   if(p->output==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for the output array",
-          p->os0*p->os1*sizeof *p->output);
-  df=(d=p->output)+p->os0*p->os1; do *d++=NAN; while(d<df);
+          size*sizeof *p->output);
 
 
   /* Order the corners of the inverse-transformed pixel (from the
@@ -465,8 +311,16 @@ imgwarppreparations(struct imgwarpparams *p)
      general homographic transform, the scales of the output pixels
      may change, but the relative positions of the corners will
      not.  */
-  for(i=0;i<4;++i) mappoint(&ocrn[i*2], p->inverse, &icrn[i*2]);
-  orderedpolygoncorners(icrn, 4);
+  for(i=0;i<4;++i)
+    {
+      ocrn[i*2]   += p->outfpixval[0];
+      ocrn[i*2+1] += p->outfpixval[1];
+      mappoint(&ocrn[i*2], p->inverse, &icrn[i*2]);
+    }
+
+
+  /* Order the transformed output pixel. */
+  orderedpolygoncorners(icrn, 4, p->ordinds);
 
 
   /* Find which index after transformation will have the minimum and
@@ -482,7 +336,13 @@ imgwarppreparations(struct imgwarpparams *p)
       if(icrn[i*2+1]>ymax) { ymax=icrn[i*2+1]; extinds[3]=i*2+1; }
     }
 
-  printf("\n%f\n", polygonarea(icrn, 4));
+  /* For a check:
+  for(i=0;i<4;++i)
+    printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
+           ocrn[i*2], ocrn[i*2+1], icrn[i*2], icrn[i*2+1]);
+  printf("xmin: %.3f\nxmax: %.3f\nymin: %.3f\nymax: %.3f\n",
+         xmin, xmax, ymin, ymax);
+  */
 }
 
 
@@ -515,8 +375,8 @@ imgwarp(struct imgwarpparams *p)
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct iwpparams *iwp;
-  size_t nt=p->cp.numthreads;
   size_t i, nb, *indexs, thrdcols;
+  size_t nt=p->cp.numthreads, size;
 
 
   /* Array keeping thread parameters for each thread. */
@@ -532,7 +392,8 @@ imgwarp(struct imgwarpparams *p)
 
 
   /* Distribute the output pixels into the threads: */
-  distinthreads(p->os0*p->os1, nt, &indexs, &thrdcols);
+  size=p->onaxes[0]*p->onaxes[1];
+  distinthreads(size, nt, &indexs, &thrdcols);
 
 
   /* Start the convolution. */
@@ -548,7 +409,7 @@ imgwarp(struct imgwarpparams *p)
 	 (that spinns off the nt threads) is also a thread, so the
 	 number the barrier should be one more than the number of
 	 threads spinned off. */
-      if(p->os0*p->os1<nt) nb=p->os0*p->os1+1;
+      if(size<nt) nb=size+1;
       else nb=nt+1;
       attrbarrierinit(&attr, &b, nb);
 
@@ -571,8 +432,8 @@ imgwarp(struct imgwarpparams *p)
     }
 
   /* Save the output: */
-  arraytofitsimg(p->cp.output, "Warped", DOUBLE_IMG, p->output, p->os0,
-                 p->os1, NULL, SPACK_STRING);
+  arraytofitsimg(p->cp.output, "Warped", DOUBLE_IMG, p->output, p->onaxes[1],
+                 p->onaxes[0], NULL, SPACK_STRING);
 
   /* Free the allocated spaces: */
   free(iwp);

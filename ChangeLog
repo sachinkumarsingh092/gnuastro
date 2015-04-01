@@ -1,3 +1,8 @@
+2015-04-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/imgwarp/args.h: Temporarily removed the wrap option. Will be
+	added later.
+
 2015-03-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/imgcrop/ui.c (preparearrays): Aborts if in WCS mode and the
