@@ -4780,8 +4780,9 @@ Image wrapping is a very important step in astronomy, both in
 observational data analysis and in simulating modeled images. In
 modelling, warping an image is necessary when we want to apply grid
 transformations to the initial models, for example in simulating
-gravitational lensing. Observational reasons for warping an image are
-listed below:
+gravitational lensing (Such non-linear warpings are not yet included
+in ImageWarp). Observational reasons for warping an image are listed
+below:
 
 @itemize
 
@@ -4824,11 +4825,11 @@ grid.
 @cindex Optical distortion
 @cindex Distortion, optical
 @item
-@strong{Optical distortion:} In wide field images, the optical
-distortion that occurs on the outer parts of the focal plane will make
-accurate comparison of the objects at various locations impossible. It
-is therefore necessary to warp the image and correct for those
-distortions prior to the analysis.
+@strong{Optical distortion:} (Not yet included in ImageWarp) In wide
+field images, the optical distortion that occurs on the outer parts of
+the focal plane will make accurate comparison of the objects at
+various locations impossible. It is therefore necessary to warp the
+image and correct for those distortions prior to the analysis.
 
 @cindex ACS
 @cindex CCD
@@ -4838,7 +4839,7 @@ distortions prior to the analysis.
 @cindex Hubble Space Telescope
 @cindex Advanced camera for surveys
 @item
-@strong{Imager not on focal plane:} In some cases (like the Hubble
+@strong{Detector not on focal plane:} In some cases (like the Hubble
 Space Telescope ACS and WFC3 cameras), the CCD might be tilted
 compared to the focal plane, therefore the recorded CCD pixels have to
 be projected onto the focal plane before further analysis.
@@ -5191,6 +5192,12 @@ be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 @itemize
 
 @item
+@strong{Important: Add WCS}. The output currently doesn't have WCS
+information (mainly because of not enough time!). Add the capability
+to use the WCS information and apply the warping to the WCS
+information too. For example to set the scale to around @code{CRPIX}.
+
+@item
 Add options to read all the warp parameters separately (for example
 translate by @mymath{X}, then rotate by @mymath{\theta} and scale by
 @mymath{4} times) and build matrices and multiply them internally. So
@@ -5211,6 +5218,10 @@ a certain number of pixels along the first and second axis, the
 fractions of area for each neighbour will be identical and it will
 repeat. Allow the program to calculate this repetition and avoid going
 through all the weight calculations for each pixel separately.
+
+@item
+Add non-linear transformations like optical distortion or
+gravitational lensing.
 
 @end itemize
 

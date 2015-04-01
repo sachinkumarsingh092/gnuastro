@@ -414,6 +414,7 @@ preparearrays(struct imgwarpparams *p)
                  (void **)&p->input, DOUBLE_IMG);
       free(array);
     }
+  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 
   /* Make the inverse matrix: */
   errno=0;
@@ -540,6 +541,9 @@ freeandreport(struct imgwarpparams *p, struct timeval *t1)
   free(p->cp.hdu);
   free(p->inverse);
   free(p->cp.output);
+
+  if(p->wcs)
+    wcsvfree(&p->nwcs, &p->wcs);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

@@ -71,6 +71,8 @@ struct imgwarpparams
   size_t              ms0;  /* Matrix number of rows.                    */
   size_t              ms1;  /* Matrix number of columns.                 */
   int         inputbitpix;  /* The type of the input array.              */
+  int                nwcs;  /* Number of WCS structures.                 */
+  struct wcsprm      *wcs;  /* Pointer to WCS structures.                */
 
   /* Output: */
   int                wrap;  /* Wrap the warped/transfomed pixels.        */
