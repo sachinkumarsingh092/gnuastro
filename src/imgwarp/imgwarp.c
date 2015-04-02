@@ -128,7 +128,10 @@ imgwarponthread(void *inparam)
       /* Initialize the output pixel value: */
       output[ind]=0.0f;
 
-      /* Set the corners of this output pixel. */
+      /* Set the corners of this output pixel. The ind/os1 and ind%os1
+         start from 0. Note that the outfpixval already contains the
+         correction for the fact that the FITS standard considers the
+         center of first pixel to be at (1.0f, 1.0f).*/
       ocrn[0]=(double)(ind%os1)-0.5f+outfpixval[0];
       ocrn[1]=(double)(ind/os1)-0.5f+outfpixval[1];
       ocrn[2]=(double)(ind%os1)+0.5f+outfpixval[0];
@@ -156,52 +159,60 @@ imgwarponthread(void *inparam)
 
 
       /* For a check:
-      printf("\n\n\n%lu, %lu:\n", ind%os1+1, ind/os1+1);
-      for(j=0;j<4;++j) printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
-               ocrn[j*2], ocrn[j*2+1], icrn_base[j*2], icrn_base[j*2+1]);
-      printf("------- Ordered -------\n");
-      for(j=0;j<4;++j) printf("(%.3f, %.3f)\n", icrn[j*2], icrn[j*2+1]);
-      printf("------- Start and ending pixels -------\n");
-      printf("X: %ld -- %ld\n", xstart, xend);
-      printf("Y: %ld -- %ld\n", ystart, yend);
+      if(ind==9999)
+        {
+          printf("\n\n\nind: %lu: (%lu, %lu):\n", ind, ind%os1+1, ind/os1+1);
+          for(j=0;j<4;++j)
+            printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
+                   ocrn[j*2], ocrn[j*2+1], icrn_base[j*2], icrn_base[j*2+1]);
+          printf("------- Ordered -------\n");
+          for(j=0;j<4;++j) printf("(%.3f, %.3f)\n", icrn[j*2], icrn[j*2+1]);
+          printf("------- Start and ending pixels -------\n");
+          printf("X: %ld -- %ld\n", xstart, xend);
+          printf("Y: %ld -- %ld\n", ystart, yend);
+        }
       */
+
 
       /* Go over all the input pixels that are covered. Note that x
          and y are the centers of the pixel. */
       for(y=ystart;y<yend;++y)
         {
-          /* If the pixel isn't in the image, contine to next. Note
-             that the pixel polygon should be counter clockwise. */
-          if( y<0 || y>=is0 ) continue;
+          /* If the pixel isn't in the image (note that the pixel
+             coordinates start from 1), contine to next. Note that the
+             pixel polygon should be counter clockwise. */
+          if( y<1 || y>is0 ) continue;
           pcrn[1]=y-0.5f;      pcrn[3]=y-0.5f;
           pcrn[5]=y+0.5f;      pcrn[7]=y+0.5f;
           for(x=xstart;x<xend;++x)
             {
-              if( x<0 || x>=is1 ) continue;
+              if( x<1 || x>is1 ) continue;
               pcrn[0]=x-0.5f;          pcrn[2]=x+0.5f;
               pcrn[4]=x+0.5f;          pcrn[6]=x-0.5f;
 
               /* Find the overlapping (clipped) polygon: */
               polygonclip(icrn, 4, pcrn, 4, ccrn, &numcrn);
 
-              /* For a check:
-              printf("%lu -- (%ld, %ld):\n", ind, x, y);
-              printf("icrn:\n");
-              for(j=0;j<4;++j)
-                printf("\t%.3f, %.3f\n", icrn[j*2], icrn[j*2+1]);
-              printf("pcrn:\n");
-              for(j=0;j<4;++j)
-                printf("\t%.3f, %.3f\n", pcrn[j*2], pcrn[j*2+1]);
-              printf("ccrn:\n");
-              for(j=0;j<numcrn;++j)
-                printf("\t%.3f, %.3f\n", ccrn[j*2], ccrn[j*2+1]);
-              */
-
               /* Add the fractional value of this pixel: */
-              output[ind]+=input[y*is1+x]*polygonarea(ccrn, numcrn);
-              /*
-              printf("[%lu]: %.3f of [%ld, %ld]: %f\n", ind,
-                     polygonarea(ccrn, numcrn), x+1, y+1, input[y*is1+x]);
+              output[ind]+=input[(y-1)*is1+x-1]*polygonarea(ccrn, numcrn);
+
+              /* For a check:
+              if(ind==9999)
+                {
+                  printf("%lu -- (%ld, %ld):\n", ind, x, y);
+                  printf("icrn:\n");
+                  for(j=0;j<4;++j)
+                    printf("\t%.3f, %.3f\n", icrn[j*2], icrn[j*2+1]);
+                  printf("pcrn:\n");
+                  for(j=0;j<4;++j)
+                    printf("\t%.3f, %.3f\n", pcrn[j*2], pcrn[j*2+1]);
+                  printf("ccrn:\n");
+                  for(j=0;j<numcrn;++j)
+                    printf("\t%.3f, %.3f\n", ccrn[j*2], ccrn[j*2+1]);
+                  printf("[%lu]: %.3f of [%ld, %ld]: %f\n", ind,
+                         polygonarea(ccrn, numcrn), x, y,
+                         input[(y-1)*is1+x-1]);
+                }
               */
             }
         }
@@ -256,9 +267,9 @@ imgwarppreparations(struct imgwarpparams *p)
   double icrn[8]={0,0,0,0,0,0,0,0};
   size_t i, *extinds=p->extinds, size;
   double xmin=DBL_MAX, xmax=-DBL_MAX, ymin=DBL_MAX, ymax=-DBL_MAX;
-  double ocrn[8]={-0.5f,-0.5f,  0.5f,-0.5f, -0.5f,0.5f,   0.5f, 0.5f};
-  double input[8]={-0.5f,-0.5f,             p->is1-0.5f, -0.5f,
-                   -0.5f, p->is0-0.5f,      p->is1-0.5f, p->is0-0.5f};
+  double ocrn[8]={0.5f,0.5f,  1.5f,0.5f, 0.5f,1.5f,   1.5f, 1.5f};
+  double input[8]={0.5f,0.5f,             p->is1+0.5f, 0.5f,
+                   0.5f, p->is0+0.5f,     p->is1+0.5f, p->is0+0.5f};
 
   /* Find the range of pixels of the input image. All the input
      positions are moved to the negative by half a pixel since the
@@ -349,6 +360,45 @@ imgwarppreparations(struct imgwarpparams *p)
 
 
 
+/* Correct the WCS coordinates (Multiply the 2x2 PC matrix of the WCS
+   structure by the INVERSE of the transform in 2x2 form that has been
+   converted from homogeneous coordinates). Then Multiply the crpix
+   array with the ACTUAL transformation matrix. */
+void
+correctwcssaveoutput(struct imgwarpparams *p)
+{
+  double *m=p->matrix;
+  double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
+  double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
+                  p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
+
+  if(p->correctwcs && p->wcs)
+    {
+      /* Correct the PC matrix: */
+      tpc[0]=pc[0]*tinv[0]+pc[1]*tinv[2];
+      tpc[1]=pc[0]*tinv[1]+pc[1]*tinv[3];
+      tpc[2]=pc[2]*tinv[0]+pc[3]*tinv[2];
+      tpc[3]=pc[2]*tinv[1]+pc[3]*tinv[3];
+      pc[0]=tpc[0]; pc[1]=tpc[1]; pc[2]=tpc[2]; pc[3]=tpc[3];
+
+      /* Correct the CRPIX point. The +1 in the end of the last two
+         lines is because FITS counts from 1. */
+      tcrpix[0]=m[0]*crpix[0]+m[1]*crpix[1]+m[2];
+      tcrpix[1]=m[3]*crpix[0]+m[4]*crpix[1]+m[5];
+      tcrpix[2]=m[6]*crpix[0]+m[7]*crpix[1]+m[8];
+      crpix[0]=tcrpix[0]/tcrpix[2]-p->outfpixval[0]+1;
+      crpix[1]=tcrpix[1]/tcrpix[2]-p->outfpixval[1]+1;
+    }
+
+  /* Save the output: */
+  arraytofitsimg(p->cp.output, "Warped", DOUBLE_IMG, p->output, p->onaxes[1],
+                 p->onaxes[0], p->wcs, SPACK_STRING);
+}
+
+
+
+
+
 
 
 
@@ -377,7 +427,6 @@ imgwarp(struct imgwarpparams *p)
   struct iwpparams *iwp;
   size_t i, nb, *indexs, thrdcols;
   size_t nt=p->cp.numthreads, size;
-
 
   /* Array keeping thread parameters for each thread. */
   errno=0;
@@ -431,9 +480,8 @@ imgwarp(struct imgwarpparams *p)
       pthread_barrier_destroy(&b);
     }
 
-  /* Save the output: */
-  arraytofitsimg(p->cp.output, "Warped", DOUBLE_IMG, p->output, p->onaxes[1],
-                 p->onaxes[0], NULL, SPACK_STRING);
+  /* Correct the WCS information and save the output. */
+  correctwcssaveoutput(p);
 
   /* Free the allocated spaces: */
   free(iwp);

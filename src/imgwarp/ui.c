@@ -476,6 +476,7 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   cp->verb          = 1;
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
+  p->correctwcs     = 1;
 
   /* Read the arguments. */
   errno=0;

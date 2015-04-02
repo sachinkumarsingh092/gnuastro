@@ -75,7 +75,7 @@ struct imgwarpparams
   struct wcsprm      *wcs;  /* Pointer to WCS structures.                */
 
   /* Output: */
-  int                wrap;  /* Wrap the warped/transfomed pixels.        */
+  int          correctwcs;  /* Wrap the warped/transfomed pixels.        */
 
   /* Internal parameters: */
   double          *output;  /* Warped image array.                       */

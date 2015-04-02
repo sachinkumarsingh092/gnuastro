@@ -3214,8 +3214,6 @@ DATE    = ' ... '       / file creation date (YYYY-MM-DDThh:mm:ss UT)
 CFITSIO = '3.37    '    / Version of CFITSIO used.
 COMMENT GNU Astronomy Utilities 0.1
 COMMENT http://www.gnu.org/software/gnuastro/
-COMMENT Copyright (C) 2013 - 2015, Free Software Foundation.
-COMMENT License GPLv3+: GNU General public license version 3 or later.
 END
 @end example
 
@@ -4780,8 +4778,8 @@ Image wrapping is a very important step in astronomy, both in
 observational data analysis and in simulating modeled images. In
 modelling, warping an image is necessary when we want to apply grid
 transformations to the initial models, for example in simulating
-gravitational lensing (Such non-linear warpings are not yet included
-in ImageWarp). Observational reasons for warping an image are listed
+gravitational lensing (Radial warpings are not yet included in
+ImageWarp). Observational reasons for warping an image are listed
 below:
 
 @itemize
@@ -5045,18 +5043,23 @@ multiplication below:
 @subsection Resampling
 
 @cindex Pixel
+@cindex Camera
+@cindex Detector
+@cindex Sampling
 @cindex Resampling
 @cindex Pixel mixing
 @cindex Photoelectrons
 @cindex Picture element
 @cindex Mixing pixel values
 A digital image is composed of descrete `picture elements' or
-`pixels'. When a real image is created from a camera, each pixel's
-area is used to store the number of photoelectrons that were created
-when the incident photon collided with that pixel's surface. When we
-change the pixel grid of an image or warp it as we defined in
-@ref{Warping basics}, we have to `guess' the flux value of each pixel
-on the new grid based on the old grid. Thus any form of warping on the
+`pixels'. When a real image is created from a camera or detector, each
+pixel's area is used to store the number of photoelectrons that were
+created when incident photons collided with that pixel's surface
+area. This process is called the `sampling' of a continuous or analog
+data into digital data. When we change the pixel grid of an image or
+warp it as we defined in @ref{Warping basics}, we have to `guess' the
+flux value of each pixel on the new grid based on the old grid, or
+resample it. Because of the `guessing', any form of warping on the
 data is going to degrade the image and mix the original pixel values
 with each other. So if an analysis can be done on an un-warped data
 image, it is best to leave the image untouched and pursue the
@@ -5086,15 +5089,22 @@ more accurate interpolation in the output grid.
 @cindex Edges, image
 However, interpolation has several problems. The first one is that it
 will depend on the type of function you want to assume for the
-interpolation. For example you choose a bi-linear or bi-cubic (the
-`bi's are for the 2 dimentional nature of the data). For the latter
-there are various ways to set the constants@footnote{see
+interpolation. For example you can choose a bi-linear or bi-cubic (the
+`bi's are for the 2 dimentional nature of the data) interpolation
+method. For the latter there are various ways to set the
+constants@footnote{see
 @url{http://entropymine.com/imageworsener/bicubic/} for a nice
 introduction.}. Such functional interpolation functions can fail
 seriously on the edges of an image. They will also need normalization
 so that the flux of the objects before and after the warpings are
-comparable. Because of these reasons we will not be using such
-interpolation techniques.
+comparable. The most basic problem with such techniques is that they
+are based on a point while a detector pixel is an area. They add a
+level of subjectivitiy to the data (make more assumptions through the
+functions than the data can handle). For most applications this is
+fine, but in scientific applications where detection of the faintest
+possible galaxies or fainter parts of bright galaxies is our aim, we
+cannot afford this loss. Because of these reasons ImageWarp will not
+use such interpolation techniques.
 
 @cindex Drizzle
 @cindex Pixel mixing
@@ -5105,13 +5115,16 @@ a graphic demonstration see
 resampling''. This is also what the Hubble Space Telescope pipeline
 calles
 ``Drizzling''@footnote{@url{http://en.wikipedia.org/wiki/Drizzle_(image_processing)}}. This
-technique requires no functions, it is thus non-parametric. The basic
-idea is that you reverse-transform each output pixel to find which
-pixels of the input image it covers and what fraction of the area of
-the input pixels are covered. You then simply sum the value of each
-input pixel covered with the overlap fraction (between 0 to
-1). Through this process, pixels are treated as an area not as a
-point, also the total flux of an object will be left completely
+technique requires no functions, it is thus non-parametric. It is also
+the closest we can get (make least assumptions) to what actually
+happens on the detector pixels. The basic idea is that you
+reverse-transform each output pixel to find which pixels of the input
+image it covers and what fraction of the area of the input pixels are
+covered. To find the output pixel value, you simply sum the value of
+each input pixel weighted by the overlap fraction (between 0 to 1) of
+the output pixel and that input pixel. Through this process, pixels
+are treated as an area not as a point (which is how detectors create
+the image), also the total flux of an object will be left completely
 unchanged.
 
 If there are very high spatial-frequency signals in the image (for
@@ -5119,7 +5132,7 @@ example fringes) which vary on a scale smaller than your output image
 pixel size, pixel mixing can cause
 ailiasing@footnote{@url{http://en.wikipedia.org/wiki/Aliasing}}. So if
 the input image has fringes, they have to be calculated and removed
-(which would naturally be done in any astronomical
+separately (which would naturally be done in any astronomical
 application). Because of the PSF no astronomical target has a sharp
 change in the signal so this issue is less important for astronoimcal
 applications, see @ref{PSF}.
@@ -5139,8 +5152,8 @@ One line examples:
 
 @example
 $ astimgwarp matrix.txt image.fits
-$ astimgwarp --matrix="0.5,0   0,0.5" image.fits
-$ astimgwarp --matrix=2,0,0,0,2,0,5,5,1 image.fits
+$ astimgwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
+$ astimgwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
 @end example
 
 ImageWarp can accept two arguments, one (the input image) is mandatory
@@ -5152,15 +5165,34 @@ present when calling ImageWarp, the contents of the plain text file
 have higher precedence. The general options to all Gnuastro programs
 can be seen in @ref{Common options}.
 
+@cindex WCSLIB
+@cindex World Coordinate System
+By default the WCS (World Coordinate System) information of the input
+image is going to be corrected in the output image. WCSLIB will save
+the input WCS information in the @code{PC} matrix@footnote{Greisen
+E.W., Calabretta M.R. (2002) Representation of world coordinates in
+FITS. Astronomy and Astrophysics, 395, 1061-1075.}. To correct the
+WCS, ImageWarp multiplies the @code{PC} matrix with the inverse of the
+specified transformation matrix. Also the @code{CRPIX} point is going
+to be changed to its correct place in the output image
+coordinates. This behavior can be disabled with the
+@option{--nowcscorrection} option.
+
 @cartouche
 @noindent
 @strong{Coordinates of pixel center}: Based on the FITS standard,
-integer values are assigned to the center of a pixel, the coordinate
-[0.0, 0.0] is the center of the bottom left image pixel. If you want
-to warp the image relative to the bottom left vertice of the bottom
-left pixel, then you have to shift the warping center by [-0.5, -0.5],
-apply your transform then shift back by [0.5, 0.5]. Similar to the
-example in see @ref{Merging multiple warpings}.
+integer values are assigned to the center of a pixel and the
+coordinate [1.0, 1.0] is the center of the bottom left (first) image
+pixel. So the point [0.0, 0.0] is half a pixel away (in each axis)
+from the bottom left vertice of the first pixel@footnote{So if you
+want to warp the image relative to the bottom left vertice of the
+bottom left pixel, you have to shift the warping center by [0.5, 0.5],
+apply your transform then shift back by [-0.5, -0.5]. Similar to the
+example in see @ref{Merging multiple warpings}. For example see the
+one line example above which scales the image by one fifth
+(0.2). Without this correction (if it was
+@code{0.2,0,0,0,0.2,0,0,0,1}), the image would not be correctly
+scaled.}.
 @end cartouche
 
 @table @option
@@ -5183,6 +5215,11 @@ elements of the matrix have to be written in a column-first order. So
 for the general homography matrix of @ref{Warping basics}, it should
 be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
+@item -n
+@itemx --nowcscorrection
+Do not correct the WCS information of the input image and save it
+untouched to the output image.
+
 @end table
 
 
@@ -5192,10 +5229,9 @@ be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 @itemize
 
 @item
-@strong{Important: Add WCS}. The output currently doesn't have WCS
-information (mainly because of not enough time!). Add the capability
-to use the WCS information and apply the warping to the WCS
-information too. For example to set the scale to around @code{CRPIX}.
+Add functionality to warp based on the WCS coordinates, for example to
+rotate about the @code{CRPIX} (pixel position of WCS reference point)
+or to align the image with the RA and Dec axises.
 
 @item
 Add options to read all the warp parameters separately (for example

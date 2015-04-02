@@ -71,7 +71,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g i j k l n p r s t u v w x y z
+   a b c d e f g i j k l p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
@@ -102,6 +102,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
+      2
+    },
+    {
+      "nowcscorrection",
+      'n',
+      0,
+      0,
+      "Do not correct input image WCS.",
       2
     },
 
@@ -152,6 +160,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'm':
       p->up.matrixstring=arg;
       p->up.matrixstringset=1;
+      break;
+
+
+    /* Output: */
+    case 'n':
+      p->correctwcs=0;
       break;
 
 

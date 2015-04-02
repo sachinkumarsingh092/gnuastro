@@ -41,4 +41,4 @@ fi
 # Actual test script:
 #####################
 img=convolve_spatial.fits
-$execname $img --matrix="0.2,0,-0.4   0,0.2,-0.4   0,0,1"
+$execname $img --matrix="0.2,0,0.4   0,0.2,0.4   0,0,1"

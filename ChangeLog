@@ -1,3 +1,12 @@
+2015-04-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/imgwarp/imgwarp.c (imgwarppreparations): Coorected the point
+	(1.0f, 1.0f) to be center of the first pixel, not zero.
+
+	* lib/fitsarrayvv.c (copyrightandend): Removed the Copyright
+	notice of Gnuastro from the output image header. Since it might be
+	confused with a copyright on the data its self.
+
 2015-04-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/imgwarp/args.h: Temporarily removed the wrap option. Will be

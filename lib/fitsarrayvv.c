@@ -980,8 +980,10 @@ copyrightandend(fitsfile *fptr, char *spack_string)
 		  "Version of CFITSIO used.", &status);
   fits_write_comment(fptr, PACKAGE_STRING, &status);
   fits_write_comment(fptr, PACKAGE_URL, &status);
+  /*
   fits_write_comment(fptr, SHORTCOPYRIGHT, &status);
   fits_write_comment(fptr, SHORTLICENSE, &status);
+  */
   fitsioerror(status, NULL);
 }
 
