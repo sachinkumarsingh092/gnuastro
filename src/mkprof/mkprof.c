@@ -220,7 +220,7 @@ saveindividual(struct mkonthread *mkp)
      coordinates): */
   if(ibq->ispsf && p->psfinimg==0)
     arraytofitsimg(outname, "MockImg", FLOAT_IMG, ibq->img,
-		   mkp->width[1], mkp->width[0], NULL, SPACK_STRING);
+		   mkp->width[1], mkp->width[0], 0, NULL, SPACK_STRING);
   else
     atofcorrectwcs(outname, "MockImg", FLOAT_IMG, ibq->img,
 		   mkp->width[1], mkp->width[0], p->wcsheader,

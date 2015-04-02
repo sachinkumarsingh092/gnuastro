@@ -225,7 +225,7 @@ savefits(struct converttparams *p)
       /* Write array to a FITS file.*/
       sprintf(hdu, "Channel%lu", i+1);
       arraytofitsimg(p->cp.output, hdu, p->bitpixs[i], array,
-                     p->s0[i], p->s1[i], NULL, SPACK_STRING);
+                     p->s0[i], p->s1[i], 0, NULL, SPACK_STRING);
 
       /* If array was allocated separately, free it. */
       if(p->bitpixs[i]!=DOUBLE_IMG)

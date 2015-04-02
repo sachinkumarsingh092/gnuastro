@@ -4066,7 +4066,7 @@ one of the characters that separates options on the command line.
 @node Blank pixels, Invoking astimgcrop, Crop section syntax, ImageCrop
 @subsection Blank pixels
 
-@cindex Blank pixels in FITS
+@cindex Blank pixel
 The cropped box can potentially include pixels that are beyond the
 image range. For example when a target in the input catalog was very
 near the edge of the input image. The parts of the cropped image that
@@ -4651,7 +4651,7 @@ array for analysis.
 
 @item
 @cindex NaN
-@cindex Blank pixels in FITS
+@cindex Blank pixel
 Any blank or NaN (not a number) pixel in the kernel will be given a
 value of zero.
 
@@ -4784,13 +4784,13 @@ below:
 
 @itemize
 
-@cindex Signal-to-noise ratio
+@cindex Signal to noise ratio
 @item
 @strong{Noise:} Most scientifically interesting targets are inherently
-faint (have a very low Signal-to-noise ratio). Therefore one short
+faint (have a very low Signal to noise ratio). Therefore one short
 exposure is not enough to detect such objects that are drowned deeply
 in the noise. We need multiple exposures so we can add them together
-and increase the objects' signal-to-noise ratio. Keeping the telescope
+and increase the objects' signal to noise ratio. Keeping the telescope
 fixed on one field of the sky is practically impossible. Therefore
 very deep observations have to put into the same grid before adding
 them.
@@ -5070,7 +5070,7 @@ image.
 @cindex Point pixels
 @cindex Interpolation
 @cindex Bicubic interpolation
-@cindex Signal-to-noise ratio
+@cindex Signal to noise ratio
 @cindex Bilinear interpolation
 @cindex Interpolation, bicubic
 @cindex Interpolation, bilinear
@@ -5078,7 +5078,7 @@ In most applications of image processing, it is sufficient to consider
 each pixel to be a point and not an area. This assumption can
 significantly speed up the processing of an image and also the
 simplicity of the code. It is a fine assumption when the
-signal-to-noise ratio of the objects are very large. The question will
+signal to noise ratio of the objects are very large. The question will
 then be one of interpolation because you have multiple points
 distributed over the output image and you want to find the values at
 the pixel centers. To increase the accuracy, you might also sample
@@ -5178,6 +5178,16 @@ to be changed to its correct place in the output image
 coordinates. This behavior can be disabled with the
 @option{--nowcscorrection} option.
 
+To be the most accurate the input image will be converted to double
+precision floating points and all the processing will be done in this
+format. By default, in the end, the output image will be converted
+back to the input image data type. Note that if the input type was not
+a floating point format, then the floating point output pixels are
+going to be rounded to the nearest integer (using the @code{round}
+function in the C programming language) which can lead to a loss of
+data. This behavior can be disabled with the @option{--doubletype}
+option.
+
 @cartouche
 @noindent
 @strong{Coordinates of pixel center}: Based on the FITS standard,
@@ -5211,20 +5221,29 @@ either 2 by 2 or 3 by 3 array, see @ref{Warping basics}.
 @cindex NaN
 The determinant of the matrix has to be non-zero and it must not
 contain any non-number values (for example infinities or NaNs). The
-elements of the matrix have to be written in a column-first order. So
-for the general homography matrix of @ref{Warping basics}, it should
-be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
+elements of the matrix have to be written row by row. So for the
+general homography matrix of @ref{Warping basics}, it should be called
+with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
 @item -n
 @itemx --nowcscorrection
 Do not correct the WCS information of the input image and save it
 untouched to the output image.
 
-@cindex NaN
+@cindex Blank pixel
+@cindex Pixel, blank
 @item -z
 @itemx --zerofornoinput
 Set output pixels which do not correspond to any input to zero. By
-default they are set to NaN (Not a number).
+default they are set to blank pixel values, see @ref{Blank pixels}.
+
+@item -d
+@itemx --doubletype
+By default the output image is going to have the same type as the
+input image. If this option is called, the output will be in double
+precision floating point format irrespective of the input data
+type. When dealing with integer input formats, this option can be
+useful in checking the results.
 
 @end table
 

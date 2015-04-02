@@ -153,7 +153,7 @@ fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
 
 void
 arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
-	       size_t s0, size_t s1, struct wcsprm *wcs,
+	       size_t s0, size_t s1, size_t numblank, struct wcsprm *wcs,
 	       char *spack_string);
 
 void

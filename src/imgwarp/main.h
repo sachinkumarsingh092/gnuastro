@@ -75,7 +75,9 @@ struct imgwarpparams
   struct wcsprm      *wcs;  /* Pointer to WCS structures.                */
 
   /* Output: */
+  size_t           numnul;  /* Number of blank pixels in output.         */
   int          correctwcs;  /* Wrap the warped/transfomed pixels.        */
+  int          doubletype;  /* Save output in double not in input type.  */
   int      zerofornoinput;  /* Set the pixels with no input to zero.     */
 
   /* Internal parameters: */

@@ -115,7 +115,7 @@ imgwarponthread(void *inparam)
   struct iwpparams *iwp=(struct iwpparams*)inparam;
   struct imgwarpparams *p=iwp->p;
 
-  double *input=p->input;
+  double *input=p->input, v;
   long is0=p->is0, is1=p->is1;
   size_t *extinds=p->extinds, *ordinds=p->ordinds;
   size_t i, j, ind, os1=p->onaxes[0], numcrn, numinput;
@@ -188,6 +188,8 @@ imgwarponthread(void *inparam)
           for(x=xstart;x<xend;++x)
             {
               if( x<1 || x>is1 ) continue;
+              if( isnan(v=input[(y-1)*is1+x-1]) ) continue;
+
               pcrn[0]=x-0.5f;          pcrn[2]=x+0.5f;
               pcrn[4]=x+0.5f;          pcrn[6]=x-0.5f;
 
@@ -195,7 +197,7 @@ imgwarponthread(void *inparam)
               polygonclip(icrn, 4, pcrn, 4, ccrn, &numcrn);
 
               /* Add the fractional value of this pixel: */
-              output[ind]+=input[(y-1)*is1+x-1]*polygonarea(ccrn, numcrn);
+              output[ind]+=v*polygonarea(ccrn, numcrn);
               ++numinput;
 
               /* For a check:
@@ -219,7 +221,10 @@ imgwarponthread(void *inparam)
             }
         }
       if(numinput==0 && p->zerofornoinput==0)
-        output[ind]=NAN;
+        {
+          output[ind]=NAN;
+          ++p->numnul;
+        }
     }
 
 
@@ -371,6 +376,7 @@ imgwarppreparations(struct imgwarpparams *p)
 void
 correctwcssaveoutput(struct imgwarpparams *p)
 {
+  void *array;
   double *m=p->matrix;
   double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
@@ -394,9 +400,24 @@ correctwcssaveoutput(struct imgwarpparams *p)
       crpix[1]=tcrpix[1]/tcrpix[2]-p->outfpixval[1]+1;
     }
 
+
+  /* Convert the output to the input image format: */
+  if(p->inputbitpix==DOUBLE_IMG || p->doubletype)
+    {
+      array=p->output;
+      p->inputbitpix=DOUBLE_IMG; /* In case it wasn't and p->doubletype==1 */
+    }
+  else
+    changetype((void **)p->output, DOUBLE_IMG, p->onaxes[1]*p->onaxes[0],
+               p->numnul, &array, p->inputbitpix);
+
   /* Save the output: */
-  arraytofitsimg(p->cp.output, "Warped", DOUBLE_IMG, p->output, p->onaxes[1],
-                 p->onaxes[0], p->wcs, SPACK_STRING);
+  arraytofitsimg(p->cp.output, "Warped", p->inputbitpix, array,
+                 p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
+                 SPACK_STRING);
+
+  if(array!=p->output)
+    free(array);
 }
 
 
@@ -431,6 +452,9 @@ imgwarp(struct imgwarpparams *p)
   struct iwpparams *iwp;
   size_t i, nb, *indexs, thrdcols;
   size_t nt=p->cp.numthreads, size;
+
+  /* Set the number of output blank pixels to zero: */
+  p->numnul=0;
 
   /* Array keeping thread parameters for each thread. */
   errno=0;
