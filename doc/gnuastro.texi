@@ -5220,6 +5220,12 @@ be called with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 Do not correct the WCS information of the input image and save it
 untouched to the output image.
 
+@cindex NaN
+@item -z
+@itemx --zerofornoinput
+Set output pixels which do not correspond to any input to zero. By
+default they are set to NaN (Not a number).
+
 @end table
 
 

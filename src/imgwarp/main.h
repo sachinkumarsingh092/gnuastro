@@ -76,6 +76,7 @@ struct imgwarpparams
 
   /* Output: */
   int          correctwcs;  /* Wrap the warped/transfomed pixels.        */
+  int      zerofornoinput;  /* Set the pixels with no input to zero.     */
 
   /* Internal parameters: */
   double          *output;  /* Warped image array.                       */

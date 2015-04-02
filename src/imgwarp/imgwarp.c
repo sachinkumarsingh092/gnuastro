@@ -117,8 +117,8 @@ imgwarponthread(void *inparam)
 
   double *input=p->input;
   long is0=p->is0, is1=p->is1;
-  size_t i, j, ind, os1=p->onaxes[0], numcrn;
   size_t *extinds=p->extinds, *ordinds=p->ordinds;
+  size_t i, j, ind, os1=p->onaxes[0], numcrn, numinput;
   double ocrn[8], icrn_base[8], icrn[8], *output=p->output;
   long x, y, xstart, xend, ystart, yend; /* Might be negative */
   double pcrn[8], *outfpixval=p->outfpixval, ccrn[MAXPOLYGONCORNERS];
@@ -126,6 +126,7 @@ imgwarponthread(void *inparam)
   for(i=0;(ind=iwp->indexs[i])!=NONTHRDINDEX;++i)
     {
       /* Initialize the output pixel value: */
+      numinput=0;
       output[ind]=0.0f;
 
       /* Set the corners of this output pixel. The ind/os1 and ind%os1
@@ -195,6 +196,7 @@ imgwarponthread(void *inparam)
 
               /* Add the fractional value of this pixel: */
               output[ind]+=input[(y-1)*is1+x-1]*polygonarea(ccrn, numcrn);
+              ++numinput;
 
               /* For a check:
               if(ind==9999)
@@ -216,6 +218,8 @@ imgwarponthread(void *inparam)
               */
             }
         }
+      if(numinput==0 && p->zerofornoinput==0)
+        output[ind]=NAN;
     }
 
 
