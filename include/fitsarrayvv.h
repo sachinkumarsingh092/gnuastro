@@ -1,6 +1,6 @@
 /*********************************************************************
 Functions to convert a FITS array to a C array and vice versa.
-This is part of GNU Astronomy Utilities (gnuastro) package.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

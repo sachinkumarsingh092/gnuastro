@@ -1,6 +1,6 @@
 /*********************************************************************
 ConvertType - Convert between various types of files.
-ConvertType is part of GNU Astronomy Utilities (gnuastro) package.
+ConvertType is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

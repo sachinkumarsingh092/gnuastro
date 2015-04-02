@@ -1,6 +1,6 @@
 /*********************************************************************
 Convolve - Convolve input data with a given kernel.
-Convolve is part of GNU Astronomy Utilities (gnuastro) package.
+Convolve is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

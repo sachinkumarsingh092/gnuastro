@@ -1,6 +1,6 @@
 /*********************************************************************
 Argument parsing for options that are common to all programs.
-This is part of GNU Astronomy Utilities (gnuastro) package.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

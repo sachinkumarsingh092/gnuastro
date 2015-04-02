@@ -1,6 +1,6 @@
 /*********************************************************************
 Functions to facilitate using threads.
-This is part of GNU Astronomy Utilities (gnuastro) package.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

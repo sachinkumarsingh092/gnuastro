@@ -1,6 +1,6 @@
 /*********************************************************************
 txtarrayvv -- Convert a text file table to a C array.
-This is part of GNU Astronomy Utilities (gnuastro) package.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

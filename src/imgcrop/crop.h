@@ -1,6 +1,6 @@
 /*********************************************************************
 ImageCrop - Crop a given size from one or multiple images.
-ImageCrop is part of GNU Astronomy Utilities (gnuastro) package.
+ImageCrop is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

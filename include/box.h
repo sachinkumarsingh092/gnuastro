@@ -1,6 +1,6 @@
 /*********************************************************************
 overlap -- Find the overlap of a region and an image.
-This is part of GNU Astronomy Utilities (gnuastro) package.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

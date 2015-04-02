@@ -1,6 +1,6 @@
 /*********************************************************************
 Fixed strings for use in all utilities.
-This is part of GNU Astronomy Utilities (gnuastro) package.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>

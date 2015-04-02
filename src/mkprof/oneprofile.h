@@ -1,6 +1,6 @@
 /********************************************************************
 MakeProfiles - Create mock astronomical profiles.
-MakeProfiles is part of GNU Astronomy Utilities (gnuastro) package.
+MakeProfiles is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
