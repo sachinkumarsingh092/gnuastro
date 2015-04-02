@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageWarp - Warp images using projective mapping.
-ImageWarp is part of GNU Astronomy Utilities (Gnuastro) package.
+MakeNoise - Add noise to a dataset.
+MakeNoise is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -48,7 +48,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "[matrix.txt] ASTRdata ...";
+static char args_doc[] = "ASTRdata ...";
 
 
 
@@ -57,9 +57,8 @@ static char args_doc[] = "[matrix.txt] ASTRdata ...";
 const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
-  SPACK_NAME" will warp/transform the input image using an input coordinate "
-  "matrix. Currently it accepts any general projective mapping (which "
-  "includes affine mappings as a subset). \n"
+  SPACK_NAME" will add noise to all the pixels in an input image. The noise "
+  "parameters can be specified with the command line options. \n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -71,7 +70,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c e f g i j k l p r s t u v w x y
+   a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
@@ -86,14 +85,6 @@ static struct argp_option options[] =
       "Input:",
       1
     },
-    {
-      "matrix",
-      'm',
-      "STR",
-      0,
-      "Warp/Transform matrix elements.",
-      1
-    },
 
 
 
@@ -104,30 +95,7 @@ static struct argp_option options[] =
       "Output:",
       2
     },
-    {
-      "nowcscorrection",
-      'n',
-      0,
-      0,
-      "Do not correct input image WCS.",
-      2
-    },
-    {
-      "zerofornoinput",
-      'z',
-      0,
-      0,
-      "Set pixels with no input to zero not blank.",
-      2
-    },
-    {
-      "doubletype",
-      'd',
-      0,
-      0,
-      "Do not convert output to input image type.",
-      2
-    },
+
 
 
 
@@ -150,7 +118,7 @@ static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
-  struct imgwarpparams *p = state->input;
+  struct mknoiseparams *p = state->input;
 
   /* Set the pointer to the common parameters for all programs
      here: */
@@ -173,22 +141,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Input: */
-    case 'm':
-      p->up.matrixstring=arg;
-      p->up.matrixstringset=1;
-      break;
+
 
 
     /* Output: */
-    case 'n':
-      p->correctwcs=0;
-      break;
-    case 'z':
-      p->zerofornoinput=1;
-      break;
-    case 'd':
-      p->doubletype=1;
-      break;
 
 
 
@@ -204,13 +160,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
             p->up.inputname=arg;
 	}
       else
-	{
-	  if(p->up.matrixname)
-	    argp_error(state, "Only one warp/transformation matrix "
-                       "should be given.");
-	  else
-            p->up.matrixname=arg;
-	}
+        argp_error(state, "%s is not a valid file type.", arg);
       break;
 
 

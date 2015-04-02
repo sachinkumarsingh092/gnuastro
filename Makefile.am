@@ -40,6 +40,9 @@ endif
 if COND_IMGWARP
   MAYBE_IMGWARP = src/imgwarp
 endif
+if COND_MKNOISE
+  MAYBE_MKNOISE = src/mknoise
+endif
 if COND_MKPROF
   MAYBE_MKPROF = src/mkprof
 endif
@@ -47,8 +50,8 @@ if COND_GNULIBCHECK
   MAYBE_GNULIBCHECK = gnulib/tests
 endif
 SUBDIRS = gnulib/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)		\
-$(MAYBE_CONVOLVE) $(MAYBE_IMGCROP) $(MAYBE_IMGWARP) $(MAYBE_MKPROF)	\
-doc tests
+$(MAYBE_CONVOLVE) $(MAYBE_IMGCROP) $(MAYBE_IMGWARP) $(MAYBE_MKNOISE)	\
+$(MAYBE_MKPROF) doc tests
 
 
 ACLOCAL_AMFLAGS = -I m4

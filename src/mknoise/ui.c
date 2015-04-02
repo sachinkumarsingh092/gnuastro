@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageWarp - Warp images using projective mapping.
-ImageWarp is part of GNU Astronomy Utilities (Gnuastro) package.
+MakeNoise - Add noise to a dataset.
+MakeNoise is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -62,7 +62,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************       Options and parameters    ***************/
 /**************************************************************/
 void
-readconfig(char *filename, struct imgwarpparams *p)
+readconfig(char *filename, struct mknoiseparams *p)
 {
   FILE *fp;
   size_t lineno=0, len=200;
@@ -114,16 +114,9 @@ readconfig(char *filename, struct imgwarpparams *p)
 
 
       /* Outputs */
-      else if(strcmp(name, "matrix")==0)
-	{
-	  if(up->matrixstringset) continue;
-	  errno=0;
-	  up->matrixstring=malloc(strlen(value)+1);
-	  if(up->matrixstring==NULL)
-	    error(EXIT_FAILURE, errno, "Space for matrixstring");
-	  strcpy(up->matrixstring, value);
-	  up->matrixstringset=1;
-	}
+
+
+
       else if(strcmp(name, "output")==0)
 	{
 	  if(cp->outputset) continue;
@@ -162,7 +155,7 @@ readconfig(char *filename, struct imgwarpparams *p)
 
 
 void
-printvalues(FILE *fp, struct imgwarpparams *p)
+printvalues(FILE *fp, struct mknoiseparams *p)
 {
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
@@ -180,13 +173,8 @@ printvalues(FILE *fp, struct imgwarpparams *p)
 
 
   fprintf(fp, "\n# Output parameters:\n");
-  if(up->matrixstringset)
-    {
-      if(stringhasspace(up->matrixstring))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "matrix", up->matrixstring);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "matrix", up->matrixstring);
-    }
+
+
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
 
@@ -205,7 +193,7 @@ printvalues(FILE *fp, struct imgwarpparams *p)
 /* Note that numthreads will be used automatically based on the
    configure time. */
 void
-checkifset(struct imgwarpparams *p)
+checkifset(struct mknoiseparams *p)
 {
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
@@ -213,82 +201,9 @@ checkifset(struct imgwarpparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
-  if(up->matrixstringset==0)
-    REPORT_NOTSET("matrix");
+
 
   END_OF_NOTSET_REPORT;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/***************        Read Matrix         *******************/
-/**************************************************************/
-void
-readmatrixoption(struct imgwarpparams *p)
-{
-  size_t counter=0;
-  char *t, *tailptr;
-
-  errno=0;
-  p->matrix=malloc(9*sizeof *p->matrix);
-  if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for temporary array to keep "
-          "the matrix option.", 9*sizeof *p->matrix);
-
-  t=p->up.matrixstring;
-  while(*t!='\0')
-    {
-      switch(*t)
-        {
-        case ' ': case '\t': case ',':
-          ++t;
-          break;
-        default:
-          errno=0;
-          p->matrix[counter++]=strtod(t, &tailptr);
-          if(errno) error(EXIT_FAILURE, errno, "In reading `%s`", t);
-          if(tailptr==t)
-            error(EXIT_FAILURE, 0, "The provided string `%s' for matrix "
-                  "could not be read as a number.", t);
-          t=tailptr;
-          if(counter>9)       /* Note that it was ++'d! */
-            error(EXIT_FAILURE, 0, "There are %lu elements in `%s', there "
-                  "should be 4 or 9.", counter, p->up.matrixstring);
-          /*printf("%f, %s\n", p->matrix[counter-1], t);*/
-        }
-    }
-
-  switch(counter)
-    {
-    case 4:
-      p->ms1=p->ms0=2;
-      break;
-    case 9:
-      p->ms1=p->ms0=3;
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "There are %lu numbers in the string `%s'! "
-            "It should contain 4 or 9 numbers (for a 2 by 2 or 3 by 3 "
-            "matrix).", counter, p->up.matrixstring);
-    }
 }
 
 
@@ -314,62 +229,9 @@ readmatrixoption(struct imgwarpparams *p)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 void
-sanitycheck(struct imgwarpparams *p)
+sanitycheck(struct mknoiseparams *p)
 {
-  double *d, *df, *tmp, *m=p->matrix;
 
-  /* If the output was not set, find it using automatic output. */
-  if(p->cp.outputset==0)
-    {
-      automaticoutput(p->up.inputname, "_warped.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->cp.output);
-      p->cp.outputset=1;
-    }
-
-  /* Check the size of the input matrix, note that it might only have
-     the wrong numbers when it is read from a file. */
-  if(p->up.matrixname
-     && (p->ms0!=2 || p->ms0!=3 || p->ms1!=2 || p->ms1!=3))
-    error(EXIT_FAILURE, 0, "The given matrix in %s has %lu rows and %lu "
-          "columns. Its size must be either 2x2 or 3x3.", p->up.matrixname,
-          p->ms0, p->ms1);
-
-  /* Check if there are any non-normal numbers in the matrix: */
-  df=(d=m)+p->ms0*p->ms1;
-  do
-    if(!isfinite(*d++))
-      error(EXIT_FAILURE, 0, "%f is not a `normal' number!", *(d-1));
-  while(d<df);
-
-  /* Check if the determinant is not zero: */
-  if( ( p->ms0==2 && (m[0]*m[3] - m[1]*m[2] == 0) )
-      ||
-      ( p->ms0==3 &&
-        (m[0]*m[4]*m[8] + m[1]*m[5]*m[6] + m[2]*m[3]*m[7]
-         - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7] == 0) ) )
-      error(EXIT_FAILURE, 0, "The determinant of the given matrix "
-            "is zero!");
-
-  /* If the matrix only has two components, then convert it to
-     three. */
-  if(p->ms0==2)
-    {
-      errno=0;
-      tmp=malloc(9*sizeof *tmp);
-      if(tmp==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for 3 by 3 matrix",
-              9*sizeof *tmp);
-      tmp[0]=m[0];
-      tmp[1]=m[1];
-      tmp[3]=m[2];
-      tmp[4]=m[3];
-      tmp[8]=1.0f;
-      tmp[7]=tmp[6]=tmp[5]=tmp[2]=0.0f;
-      free(p->matrix);
-      m=p->matrix=tmp;
-    }
-
-  /* Check if the transformation is spatially invariant */
 }
 
 
@@ -394,54 +256,10 @@ sanitycheck(struct imgwarpparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
-/* It is important that the image names are stored in an array (for
-   WCS mode in particular). We do that here. */
 void
-preparearrays(struct imgwarpparams *p)
+preparearrays(struct mknoiseparams *p)
 {
-  void *array;
-  size_t numnul;
-  double *inv, *m=p->matrix;
 
-  /* Read in the input image: */
-  numnul=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
-                        &array, &p->is0, &p->is1);
-  if(p->inputbitpix==DOUBLE_IMG)
-    p->input=array;
-  else
-    {
-      changetype(array, p->inputbitpix, p->is0*p->is1, numnul,
-                 (void **)&p->input, DOUBLE_IMG);
-      free(array);
-    }
-  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
-
-  /* Make the inverse matrix: */
-  errno=0;
-  p->inverse=inv=malloc(9*sizeof *inv);
-  if(inv==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for the inverse array.",
-          9*sizeof *inv);
-  inv[0]=m[4]*m[8]-m[5]*m[7];
-  inv[1]=m[2]*m[7]-m[1]*m[8];
-  inv[2]=m[1]*m[5]-m[2]*m[4];
-  inv[3]=m[5]*m[6]-m[3]*m[8];
-  inv[4]=m[0]*m[8]-m[2]*m[6];
-  inv[5]=m[2]*m[3]-m[0]*m[5];
-  inv[6]=m[3]*m[7]-m[4]*m[6];
-  inv[7]=m[1]*m[6]-m[0]*m[7];
-  inv[8]=m[0]*m[4]-m[1]*m[3];
-  /* Just for a test:
-  {
-    size_t i;
-    printf("\nInput matrix:");
-    for(i=0;i<9;++i) { if(i%3==0) printf("\n"); printf("%-10.5f", m[i]); }
-    printf("\n-----------\n");
-    printf("Inverse matrix:");
-    for(i=0;i<9;++i) { if(i%3==0) printf("\n"); printf("%-10.5f", inv[i]); }
-    printf("\n\n");
-  }
-  */
 }
 
 
@@ -466,7 +284,7 @@ preparearrays(struct imgwarpparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 void
-setparams(int argc, char *argv[], struct imgwarpparams *p)
+setparams(int argc, char *argv[], struct mknoiseparams *p)
 {
   struct commonparams *cp=&p->cp;
 
@@ -476,7 +294,6 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   cp->verb          = 1;
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
-  p->correctwcs     = 1;
 
   /* Read the arguments. */
   errno=0;
@@ -493,22 +310,16 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   if(cp->printparams)
     REPORT_PARAMETERS_SET;
 
-  /* Read catalog if given. */
-  if(p->up.matrixname)
-    txttoarray(p->up.matrixname, &p->matrix, &p->ms0, &p->ms1);
-  else
-    readmatrixoption(p);
-
   /* Do a sanity check. */
   sanitycheck(p);
   checkremovefile(TXTARRAYVVLOG, 0);
 
+  /* Make the array of input images. */
+  preparearrays(p);
+
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
     printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-
-  /* Make the array of input images. */
-  preparearrays(p);
 }
 
 
@@ -534,13 +345,11 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct imgwarpparams *p, struct timeval *t1)
+freeandreport(struct mknoiseparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->input);
-  free(p->matrix);
   free(p->cp.hdu);
-  free(p->inverse);
   free(p->cp.output);
 
   if(p->wcs)

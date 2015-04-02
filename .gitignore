@@ -23,6 +23,7 @@ m4
 gnulib
 snippet
 astmkprof
+astmknoise
 astimgcrop
 astimgwarp
 astconvertt

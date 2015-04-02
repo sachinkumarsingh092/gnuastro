@@ -54,6 +54,9 @@ Texts.  A copy of the license is included in the section entitled
 * ImageWarp: (gnuastro)ImageWarp. Warp an image to a new grid.
 * astimgwarp: (gnuastro)Invoking astimgwarp. Options to ImageWarp.
 
+* MakeNoise: (gnuastro)MakeNoise. Make (add) noise to an image.
+* astmknoise: (gnuastro)Invoking astmkprof. Options to MakeNoise.
+
 * MakeProfiles: (gnuastro)MakeProfiles. Make mock profiles.
 * astmkprof: (gnuastro)Invoking astmkprof. Options to MakeProfiles.
 
@@ -314,6 +317,7 @@ Modeling and fitting
 
 * Modeling basics::             Astronomical modeling basics.
 * MakeProfiles::                Making mock galaxies and stars.
+* MakeNoise::                   Make (add) noise to an image.
 
 Modeling basics
 
@@ -343,6 +347,10 @@ Invoking MakeProfiles
 * MakeProfiles catalog::        Required catalog properties.
 * MakeProfiles options::        Full list of MakeProfiles options.
 * MakeProfiles output::         The generated outputs.
+
+MakeNoise
+
+* Invoking astmknoise::         Options and arguments to MakeNoise.
 
 Developing
 
@@ -507,6 +515,9 @@ from image(s).
 @item
 @ref{ImageWarp} (@file{astimgwarp}) @value{IMGWARP_VERSION}: Warp
 image to new pixel grid.
+@item
+@ref{MakeNoise} (@file{astmknoise}) @value{MKNOISE_VERSION}: Make
+(add) noise to an image.
 @item
 @ref{MakeProfiles} (@file{astmkprof}) @value{MKPROF_VERSION}: Make
 mock profiles in image.
@@ -5406,6 +5417,7 @@ data. The tools in this chapter create model galaxies and will provide
 @menu
 * Modeling basics::             Astronomical modeling basics.
 * MakeProfiles::                Making mock galaxies and stars.
+* MakeNoise::                   Make (add) noise to an image.
 @end menu
 
 
@@ -5902,7 +5914,7 @@ chosen from a Gaussian distribution with
 
 
 
-@node MakeProfiles,  , Modeling basics, Modeling and fittings
+@node MakeProfiles, MakeNoise, Modeling basics, Modeling and fittings
 @section MakeProfiles
 
 @cindex Checking detection algorithms
@@ -6386,6 +6398,16 @@ but stop adding to one sum earlier.
 
 
 
+@node MakeNoise,  , MakeProfiles, Modeling and fittings
+@section MakeNoise
+
+
+@menu
+* Invoking astmknoise::         Options and arguments to MakeNoise.
+@end menu
+
+@node Invoking astmknoise,  , MakeNoise, MakeNoise
+@subsection Invoking MakeNoise
 
 
 
