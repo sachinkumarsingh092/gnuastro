@@ -89,6 +89,10 @@ intsmallerequalto(char *optarg, int *var, char *lo, char so, char *spack,
                   char *filename, size_t lineno, long maxvalue);
 
 void
+longelzero(char *optarg, long *var, char *lo, char so, char *spack,
+           char *filename, size_t lineno);
+
+void
 anylong(char *optarg, long *var, char *lo, char so, char *spack,
 	char *filename, size_t lineno);
 
@@ -115,6 +119,10 @@ anyfloat(char *optarg, float *var, char *lo, char so, char *spack,
 void
 doublel0(char *optarg, double *var, char *lo, char so, char *spack,
 	 char *filename, size_t lineno);
+
+void
+doublele0(char *optarg, double *var, char *lo, char so, char* spack,
+          char *filename, size_t lineno);
 
 void
 anydouble(char *optarg, double *var, char *lo, char so, char *spack,

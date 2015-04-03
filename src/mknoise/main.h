@@ -42,6 +42,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct uiparams
 {
   char       *inputname;   /* Name of input file.                      */
+
+  int     backgroundset;
+  int         stdaddset;
+  int       randseedset;
 };
 
 
@@ -55,9 +59,20 @@ struct mknoiseparams
   struct commonparams cp;  /* Common parameters.                       */
 
   /* Input: */
+  int            envseed;  /* ==1, generate a random seed.             */
   double          *input;  /* Input image data in double precision.    */
+  int        inputbitpix;  /* Input BITPIX header keyword value.       */
+  size_t             is0;  /* The number of rows in the input image.   */
+  size_t             is1;  /* The number of columns in the input image.*/
+  size_t        numblank;  /* Number of blank pixels.                  */
   int               nwcs;  /* Number of WCS structures.                */
   struct wcsprm     *wcs;  /* Pointer to WCS structures.               */
+  double      background;  /* Mean of noise probability distribution.  */
+  double          stdadd;  /* Standard deviation constants.            */
+
+  /* Output: */
+  int   backgroundinmean;  /* Use the background in the mean too.      */
+  int         doubletype;  /* Save the output in double type.          */
 
   /* Internal: */
   time_t          rawtime; /* Starting time of the program.            */

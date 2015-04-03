@@ -70,7 +70,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g i j k l m n p r s t u v w x y z
+   a c f g j k l m n p r t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
@@ -85,8 +85,30 @@ static struct argp_option options[] =
       "Input:",
       1
     },
-
-
+    {
+      "stdadd",
+      's',
+      "FLT",
+      0,
+      "Standard deviation addition constant.",
+      1
+    },
+    {
+      "background",
+      'b',
+      "FLT",
+      0,
+      "Fixed background flux for the image.",
+      1
+    },
+    {
+      "envseed",
+      'e',
+      0,
+      0,
+      "Use GSL_RNG_SEED environment variable for seed.",
+      1
+    },
 
 
 
@@ -95,7 +117,22 @@ static struct argp_option options[] =
       "Output:",
       2
     },
-
+    {
+      "backgroundinmean",
+      'i',
+      0,
+      0,
+      "Use the background value in the mean too.",
+      2
+    },
+    {
+      "doubletype",
+      'd',
+      0,
+      0,
+      "Save output as a double precision floating point.",
+      2
+    },
 
 
 
@@ -141,11 +178,26 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Input: */
-
+    case 'b':
+      anydouble(arg, &p->background, "background", key, SPACK, NULL, 0);
+      p->up.backgroundset=1;
+      break;
+    case 's':
+      doublele0(arg, &p->stdadd, "stdadd", key, SPACK, NULL, 0);
+      p->up.stdaddset=1;
+      break;
+    case 'e':
+      p->envseed=0;
+      break;
 
 
     /* Output: */
-
+    case 'i':
+      p->backgroundinmean=1;
+      break;
+    case 'd':
+      p->doubletype=1;
+      break;
 
 
     /* Read the non-option arguments: */

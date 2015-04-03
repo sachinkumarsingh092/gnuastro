@@ -175,7 +175,7 @@ bitpixtodtype(int bitpix)
 
 
 void *
-bitpixnull(int bitpix)
+bitpixblank(int bitpix)
 {
   unsigned char *b;
   short *s;
@@ -191,42 +191,42 @@ bitpixnull(int bitpix)
       b=malloc(sizeof(unsigned char));
       if(b==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(unsigned char));
-      *b=FITSBYTENUL;
+      *b=FITSBYTEBLANK;
       return b;
 
     case SHORT_IMG:
       s=malloc(sizeof(short));
       if(s==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(short));
-      *s=FITSSHORTNUL;
+      *s=FITSSHORTBLANK;
       return s;
 
     case LONG_IMG:
       l=malloc(sizeof(long));
       if(l==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(long));
-      *l=FITSLONGNUL;
+      *l=FITSLONGBLANK;
       return l;
 
     case LONGLONG_IMG:
       L=malloc(sizeof(LONGLONG));
       if(L==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(LONGLONG));
-      *L=FITSLLONGNUL;
+      *L=FITSLLONGBLANK;
       return L;
 
     case FLOAT_IMG:
       f=malloc(sizeof(float));
       if(f==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(float));
-      *f=FITSFLOATNUL;
+      *f=FITSFLOATBLANK;
       return f;
 
     case DOUBLE_IMG:
       d=malloc(sizeof(double));
       if(d==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(double));
-      *d=FITSFLOATNUL;
+      *d=FITSFLOATBLANK;
       return d;
 
     default:
@@ -299,7 +299,7 @@ bitpixalloc(size_t size, int bitpix)
 
 
 void
-nultovalue(void *array, int bitpix, size_t size, void *value)
+blanktovalue(void *array, int bitpix, size_t size, void *value)
 {
   unsigned char *b, *bf, bv=*(uint8_t *) value; /* Value will only be read*/
   short *s, *sf, sv=*(int16_t *) value;   /* from one of these based on    */
@@ -312,38 +312,39 @@ nultovalue(void *array, int bitpix, size_t size, void *value)
     {
     case BYTE_IMG:
       bf=(b=array)+size;
-      do if(*b==FITSBYTENUL) *b=bv; while(++b<bf);
+      do if(*b==FITSBYTEBLANK) *b=bv; while(++b<bf);
       break;
 
     case SHORT_IMG:
       sf=(s=array)+size;
-      do if(*s==FITSSHORTNUL) *s=sv; while(++s<sf);
+      do if(*s==FITSSHORTBLANK) *s=sv; while(++s<sf);
       break;
 
     case LONG_IMG:
       lf=(l=array)+size;
-      do if(*l==FITSLONGNUL) *l=lv; while(++l<lf);
+      do if(*l==FITSLONGBLANK) *l=lv; while(++l<lf);
       break;
 
     case LONGLONG_IMG:
       Lf=(L=array)+size;
-      do if(*L==FITSLLONGNUL) *L=Lv; while(++L<Lf);
+      do if(*L==FITSLLONGBLANK) *L=Lv; while(++L<Lf);
       break;
 
     case FLOAT_IMG:
       ff=(f=array)+size;
-      do if(*f==FITSFLOATNUL) *f=fv; while(++f<ff);
+      do if(*f==FITSFLOATBLANK) *f=fv; while(++f<ff);
       break;
 
     case DOUBLE_IMG:
       df=(d=array)+size;
-      do if(*d==FITSFLOATNUL) *d=dv; while(++d<df);
+      do if(*d==FITSFLOATBLANK) *d=dv; while(++d<df);
       break;
 
     default:
       error(EXIT_FAILURE, 0, "A bug! Bitpix value of %d not recognized. "
-	    "This should not happen here (convertnul in fitsarrayvv.c). "
-	    "Please contact us to see how this happened.", bitpix);
+	    "This should not happen here (blanktovalue in fitsarrayvv.c). "
+	    "Please contact us at %s to see how this happened.", bitpix,
+            PACKAGE_BUGREPORT);
     }
 }
 
@@ -352,7 +353,7 @@ nultovalue(void *array, int bitpix, size_t size, void *value)
 
 
 void
-changetype(void *in, int inbitpix, size_t size, size_t numnul,
+changetype(void *in, int inbitpix, size_t size, size_t numblank,
            void **out, int outbitpix)
 {
   size_t i=0;
@@ -374,32 +375,32 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
 	  bf=(b=*out)+size; do *b=*ib++; while(++b<bf); return;
 	case SHORT_IMG:
 	  bf=(b=*out)+size; do *b=*is++; while(++b<bf);
-          if(numnul)
-            {b=*out; do {b[i]=(iis[i]==FITSSHORTNUL)?FITSBYTENUL:b[i];}
+          if(numblank)
+            {b=*out; do {b[i]=(iis[i]==FITSSHORTBLANK)?FITSBYTEBLANK:b[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  bf=(b=*out)+size; do *b=*il++; while(++b<bf);
-          if(numnul)
-            {b=*out; do {b[i]=(iil[i]==FITSLONGNUL)?FITSBYTENUL:b[i];}
+          if(numblank)
+            {b=*out; do {b[i]=(iil[i]==FITSLONGBLANK)?FITSBYTEBLANK:b[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  bf=(b=*out)+size; do *b=*iL++; while(++b<bf);
-          if(numnul)
-            {b=*out; do {b[i]=(iiL[i]==FITSLLONGNUL)?FITSBYTENUL:b[i];}
+          if(numblank)
+            {b=*out; do {b[i]=(iiL[i]==FITSLLONGBLANK)?FITSBYTEBLANK:b[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
 	  bf=(b=*out)+size; do *b=roundf(*iif++); while(++b<bf);
-          if(numnul)
-            {b=*out; do {b[i]=isnan(iiif[i])?FITSBYTENUL:b[i];}
+          if(numblank)
+            {b=*out; do {b[i]=isnan(iiif[i])?FITSBYTEBLANK:b[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  bf=(b=*out)+size; do *b=round(*id++); while(++b<bf);
-          if(numnul)
-            {b=*out; do {b[i]=isnan(iid[i])?FITSBYTENUL:b[i];}
+          if(numblank)
+            {b=*out; do {b[i]=isnan(iid[i])?FITSBYTEBLANK:b[i];}
               while(++i!=size);}
           return;
 	default:
@@ -414,34 +415,34 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
 	{
 	case BYTE_IMG:
 	  sf=(s=*out)+size; do *s=*ib++; while(++s<sf);
-          if(numnul)
-            {s=*out; do {s[i]=(iib[i]==FITSBYTENUL)?FITSSHORTNUL:s[i];}
+          if(numblank)
+            {s=*out; do {s[i]=(iib[i]==FITSBYTEBLANK)?FITSSHORTBLANK:s[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  sf=(s=*out)+size; do *s=*is++; while(++s<sf); return;
 	case LONG_IMG:
 	  sf=(s=*out)+size; do *s=*il++; while(++s<sf);
-          if(numnul)
-            {s=*out; do {s[i]=(iil[i]==FITSLONGNUL)?FITSSHORTNUL:s[i];}
+          if(numblank)
+            {s=*out; do {s[i]=(iil[i]==FITSLONGBLANK)?FITSSHORTBLANK:s[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  sf=(s=*out)+size; do *s=*iL++; while(++s<sf);
-          if(numnul)
-            {s=*out; do {s[i]=(iiL[i]==FITSLLONGNUL)?FITSSHORTNUL:s[i];}
+          if(numblank)
+            {s=*out; do {s[i]=(iiL[i]==FITSLLONGBLANK)?FITSSHORTBLANK:s[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
 	  sf=(s=*out)+size; do *s=roundf(*iif++); while(++s<sf);
-          if(numnul)
-            {s=*out; do {s[i]=isnan(iiif[i])?FITSSHORTNUL:s[i];}
+          if(numblank)
+            {s=*out; do {s[i]=isnan(iiif[i])?FITSSHORTBLANK:s[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  sf=(s=*out)+size; do *s=round(*id++); while(++s<sf);
-          if(numnul)
-            {s=*out; do {s[i]=isnan(iid[i])?FITSSHORTNUL:s[i];}
+          if(numblank)
+            {s=*out; do {s[i]=isnan(iid[i])?FITSSHORTBLANK:s[i];}
               while(++i!=size);}
           return;
 	default:
@@ -456,34 +457,34 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
 	{
 	case BYTE_IMG:
 	  lf=(l=*out)+size; do *l=*ib++; while(++l<lf);
-          if(numnul)
-            {l=*out; do {l[i]=(iib[i]==FITSBYTENUL)?FITSLONGNUL:l[i];}
+          if(numblank)
+            {l=*out; do {l[i]=(iib[i]==FITSBYTEBLANK)?FITSLONGBLANK:l[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  lf=(l=*out)+size; do *l=*is++; while(++l<lf);
-          if(numnul)
-            {l=*out; do {l[i]=(iis[i]==FITSSHORTNUL)?FITSLONGNUL:l[i];}
+          if(numblank)
+            {l=*out; do {l[i]=(iis[i]==FITSSHORTBLANK)?FITSLONGBLANK:l[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  lf=(l=*out)+size; do *l=*il++; while(++l<lf); return;
 	case LONGLONG_IMG:
 	  lf=(l=*out)+size; do *l=*iL++; while(++l<lf);
-          if(numnul)
-            {l=*out; do {l[i]=(iiL[i]==FITSLLONGNUL)?FITSLONGNUL:l[i];}
+          if(numblank)
+            {l=*out; do {l[i]=(iiL[i]==FITSLLONGBLANK)?FITSLONGBLANK:l[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
 	  lf=(l=*out)+size; do *l=roundf(*iif++); while(++l<lf);
-          if(numnul)
-            {l=*out; do {l[i]=isnan(iiif[i])?FITSLONGNUL:l[i];}
+          if(numblank)
+            {l=*out; do {l[i]=isnan(iiif[i])?FITSLONGBLANK:l[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  lf=(l=*out)+size; do *l=round(*id++); while(++l<lf);
-          if(numnul)
-            {l=*out; do {l[i]=isnan(iid[i])?FITSLONGNUL:l[i];}
+          if(numblank)
+            {l=*out; do {l[i]=isnan(iid[i])?FITSLONGBLANK:l[i];}
               while(++i!=size);}
           return;
 	default:
@@ -498,34 +499,34 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
 	{
 	case BYTE_IMG:
 	  Lf=(L=*out)+size; do *L=*ib++; while(++L<Lf);
-          if(numnul)
-            {L=*out; do {L[i]=(iib[i]==FITSBYTENUL)?FITSLLONGNUL:L[i];}
+          if(numblank)
+            {L=*out; do {L[i]=(iib[i]==FITSBYTEBLANK)?FITSLLONGBLANK:L[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  Lf=(L=*out)+size; do *L=*is++; while(++L<Lf);
-          if(numnul)
-            {L=*out; do {L[i]=(iis[i]==FITSSHORTNUL)?FITSLLONGNUL:L[i];}
+          if(numblank)
+            {L=*out; do {L[i]=(iis[i]==FITSSHORTBLANK)?FITSLLONGBLANK:L[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  Lf=(L=*out)+size; do *L=*il++; while(++L<Lf);
-          if(numnul)
-            {L=*out; do {L[i]=(iil[i]==FITSLONGNUL)?FITSLLONGNUL:L[i];}
+          if(numblank)
+            {L=*out; do {L[i]=(iil[i]==FITSLONGBLANK)?FITSLLONGBLANK:L[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  Lf=(L=*out)+size; do *L=*iL++; while(++L<Lf); return;
 	case FLOAT_IMG:
 	  Lf=(L=*out)+size; do *L=roundf(*iif++); while(++L<Lf);
-          if(numnul)
-            {L=*out; do {L[i]=isnan(iiif[i])?FITSLLONGNUL:L[i];}
+          if(numblank)
+            {L=*out; do {L[i]=isnan(iiif[i])?FITSLLONGBLANK:L[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  Lf=(L=*out)+size; do *L=round(*id++); while(++L<Lf);
-          if(numnul)
-            {L=*out; do {L[i]=isnan(iid[i])?FITSLLONGNUL:L[i];}
+          if(numblank)
+            {L=*out; do {L[i]=isnan(iid[i])?FITSLLONGBLANK:L[i];}
               while(++i!=size);}
           return;
 	default:
@@ -540,26 +541,26 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
 	{
 	case BYTE_IMG:
 	  ff=(f=*out)+size; do *f=*ib++; while(++f<ff);
-          if(numnul)
-            {f=*out; do {f[i]=iib[i]==FITSBYTENUL?FITSFLOATNUL:f[i];}
+          if(numblank)
+            {f=*out; do {f[i]=iib[i]==FITSBYTEBLANK?FITSFLOATBLANK:f[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  ff=(f=*out)+size; do *f=*is++; while(++f<ff);
-          if(numnul)
-            {f=*out; do {f[i]=iis[i]==FITSSHORTNUL?FITSFLOATNUL:f[i];}
+          if(numblank)
+            {f=*out; do {f[i]=iis[i]==FITSSHORTBLANK?FITSFLOATBLANK:f[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  ff=(f=*out)+size; do *f=*il++; while(++f<ff);
-          if(numnul)
-            {f=*out; do {f[i]=iil[i]==FITSLONGNUL?FITSFLOATNUL:f[i];}
+          if(numblank)
+            {f=*out; do {f[i]=iil[i]==FITSLONGBLANK?FITSFLOATBLANK:f[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  ff=(f=*out)+size; do *f=*iL++; while(++f<ff);
-          if(numnul)
-            {f=*out; do {f[i]=iiL[i]==FITSLLONGNUL?FITSFLOATNUL:f[i];}
+          if(numblank)
+            {f=*out; do {f[i]=iiL[i]==FITSLLONGBLANK?FITSFLOATBLANK:f[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
@@ -578,26 +579,26 @@ changetype(void *in, int inbitpix, size_t size, size_t numnul,
 	{
 	case BYTE_IMG:
 	  df=(d=*out)+size; do *d=*ib++; while(++d<df);
-          if(numnul)
-            {d=*out; do {d[i]=iib[i]==FITSBYTENUL?FITSFLOATNUL:d[i];}
+          if(numblank)
+            {d=*out; do {d[i]=iib[i]==FITSBYTEBLANK?FITSFLOATBLANK:d[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  df=(d=*out)+size; do *d=*is++; while(++d<df);
-          if(numnul)
-            {d=*out; do {d[i]=iis[i]==FITSSHORTNUL?FITSFLOATNUL:d[i];}
+          if(numblank)
+            {d=*out; do {d[i]=iis[i]==FITSSHORTBLANK?FITSFLOATBLANK:d[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  df=(d=*out)+size; do *d=*il++; while(++d<df);
-          if(numnul)
-            {d=*out; do {d[i]=iil[i]==FITSLONGNUL?FITSFLOATNUL:d[i];}
+          if(numblank)
+            {d=*out; do {d[i]=iil[i]==FITSLONGBLANK?FITSFLOATBLANK:d[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  df=(d=*out)+size; do *d=*iL++; while(++d<df);
-          if(numnul)
-            {d=*out; do {d[i]=iiL[i]==FITSLLONGNUL?FITSFLOATNUL:d[i];}
+          if(numblank)
+            {d=*out; do {d[i]=iiL[i]==FITSLLONGBLANK?FITSFLOATBLANK:d[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
@@ -1104,9 +1105,9 @@ size_t
 fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
                size_t *s0, size_t *s1)
 {
-  void *bitnul;
+  void *bitblank;
   fitsfile *fptr;
-  int status=0, anynul=0;
+  int status=0, anyblank=0;
   long naxes[2], fpixel[]={1,1};
 
   /* Check HDU for realistic conditions: */
@@ -1118,21 +1119,21 @@ fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
   *s1=naxes[0];
 
   /* Allocate space for the array. */
-  bitnul=bitpixnull(*bitpix);
+  bitblank=bitpixblank(*bitpix);
   *array=bitpixalloc(*s0 * *s1, *bitpix);
 
   /* Read the image into the allocated array: */
   fits_read_pix(fptr, bitpixtodtype(*bitpix), fpixel, *s0 * *s1,
-		bitnul, *array, &anynul, &status);
+		bitblank, *array, &anyblank, &status);
   if(status) fitsioerror(status, NULL);
-  free(bitnul);
+  free(bitblank);
 
   /* Close the FITS file: */
   fits_close_file(fptr, &status);
   fitsioerror(status, NULL);
 
-  /* Return the number of nul pixels: */
-  return (size_t)anynul;
+  /* Return the number of blank pixels: */
+  return (size_t)anyblank;
 }
 
 
@@ -1187,7 +1188,7 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
     if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
        || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
       {
-        blank=bitpixnull(bitpix);
+        blank=bitpixblank(bitpix);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           fitsioerror(status, "Adding the BLANK keyword.");

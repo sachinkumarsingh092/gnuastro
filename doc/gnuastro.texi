@@ -315,9 +315,16 @@ Image analysis
 
 Modeling and fitting
 
-* Modeling basics::             Astronomical modeling basics.
 * MakeProfiles::                Making mock galaxies and stars.
 * MakeNoise::                   Make (add) noise to an image.
+
+MakeProfiles
+
+* Modeling basics::             Astronomical modeling basics.
+* If convolving afterwards::    Considerations for convolving later.
+* Profile total magnitude::     Definition of total profile magnitude.
+* Invoking astmkprof::          Inputs and Options for MakeProfiles.
+* MakeProfiles future updates::  Plans for the future of MakeProfiles.
 
 Modeling basics
 
@@ -327,20 +334,6 @@ Modeling basics
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
 * Oversampling::                Oversampling the model.
-* Noise::                       The basics of noise.
-
-Noise
-
-* Photon counting noise::       Poisson noise
-* Instrumental noise::          Readout, dark current and other sources.
-* Final noised pixel value::    How the final noised value is calculated.
-
-MakeProfiles
-
-* If convolving afterwards::    Considerations for convolving later.
-* Profile total magnitude::     Definition of total profile magnitude.
-* Invoking astmkprof::          Inputs and Options for MakeProfiles.
-* MakeProfiles future updates::  Plans for the future of MakeProfiles.
 
 Invoking MakeProfiles
 
@@ -350,7 +343,16 @@ Invoking MakeProfiles
 
 MakeNoise
 
+* Noise basics::                Noise concepts and definitions.
 * Invoking astmknoise::         Options and arguments to MakeNoise.
+* MakeNoise future updates::    Plans for future updates.
+
+Noise basics
+
+* Photon counting noise::       Poisson noise
+* Instrumental noise::          Readout, dark current and other sources.
+* Final noised pixel value::    How the final noised value is calculated.
+* Generating random numbers::
 
 Developing
 
@@ -1066,7 +1068,7 @@ $ parallel astconvertt -ojpg ::: *_crop.fits
 @cindex Eye of GNOME
 Now that you have the different JPEG images you can go through them
 very fast with the default GNOME image viewer@footnote{This is only
-for users fo the GNOME graphical desktop environment which is the
+for users of the GNOME graphical desktop environment which is the
 default in most GNU/Linux distributions. If you use another graphical
 desktop environment, replace @command{eog} with any other image
 viewer.} (Eye of GNOME), you can open the first one with
@@ -1461,11 +1463,11 @@ very similar to the @option{--enable-progname}, but will build and
 install all the other programs except this one.
 
 @item --enable-gnulibcheck
-@cindex GNU C library
+@cindex GNU C Library
 @cindex GNU Portability Library
 Enable checks on the GNU Portability Library (Gnulib). Gnulib is used
 by Gnuastro to enable users of non-GNU based operating systems (that
-don't use GNU C library or glibc) to compile and use the advanced
+don't use GNU C Library or glibc) to compile and use the advanced
 features that this library provides. We make extensive use of such
 functions. If you give this option to @command{$ ./configure}, when
 you run @command{$ make check}, first the functions in Gnulib will be
@@ -1525,7 +1527,7 @@ options. We will start with a short introduction to the shell
 variables.
 
 @cindex Shell variables
-@cindex Environment variable
+@cindex Environment variables
 Shell variable values are basically treated as strings of
 characters. You can define a variable and a value for it by running
 @command{$ myvariable=a test value} on the command line. Then you can
@@ -2302,7 +2304,7 @@ To facilitate the job of the users and developers, all the programs in
 Gnuastro share some basic command line options for the same
 operations where they are relevant. The list of options is provided
 below. It is noteworthy that these similar options are hard-wired into
-the programming of all of Gnuastro programs using GNU C library's
+the programming of all of Gnuastro programs using GNU C Library's
 argument parser merging ability.
 
 @cindex Irrelevant options
@@ -3100,10 +3102,10 @@ this manner:
 $ export ARGP_HELP_FMT=rmargin=100,opt-doc-col=20
 @end example
 @cindex @file{.bashrc}
-This will affect all GNU programs using GNU C library's @file{argp.h}
+This will affect all GNU programs using GNU C Library's @file{argp.h}
 facilities as long as the environment variable is in memory. You can
 see the full list of these formatting parameters in the ``Argp User
-Customization'' part of the GNU C library manual. If you are more
+Customization'' part of the GNU C Library manual. If you are more
 comfortable to read the @option{--help} outputs of all GNU software in
 your customized format, you can add your customizations (similar to
 the line above, without the @command{$} sign) to your @file{~/.bashrc}
@@ -3167,7 +3169,7 @@ provided in Info, your whole GNU/Linux life will significantly
 improve.
 
 @cindex GNU Emacs
-@cindex GNU C library
+@cindex GNU C Library
 Once you've become an efficient navigator in Info, you can go to any
 part of this manual or any other GNU software or library manual, no
 matter how long it is, in a matter of seconds. It also blends nicely
@@ -5415,14 +5417,84 @@ data. The tools in this chapter create model galaxies and will provide
 2D fittings to be able to understand the detections.
 
 @menu
-* Modeling basics::             Astronomical modeling basics.
 * MakeProfiles::                Making mock galaxies and stars.
 * MakeNoise::                   Make (add) noise to an image.
 @end menu
 
 
-@node Modeling basics, MakeProfiles, Modeling and fittings, Modeling and fittings
-@section Modeling basics
+
+
+@node MakeProfiles, MakeNoise, Modeling and fittings, Modeling and fittings
+@section MakeProfiles
+
+@cindex Checking detection algorithms
+@pindex @r{MakeProfiles @value{MKPROF_VERSION} (}astmkprof@r{)}
+MakeProfiles will create mock astronomical profiles from a catalog,
+either individually or together in one output image. In data analysis,
+making a mock image can act like a calibration tool, through which you
+can test how successfully your detection technique is able to detect a
+known set of objects. There are commonly two aspects to detecting: the
+detection of the fainter parts of bright objects (which in the case of
+galaxies fade into the noise very slowly) or the complete detection of
+an over-all faint object. Making mock galaxies is the most accurate
+(and idealistic) way these two aspects of a detection algorithm can be
+tested. You also need mock profiles in fitting known functional
+profiles with observations.
+
+MakeProfiles was initially built for extra galactic studies, so
+currently the only astronomical objects it can produce are stars and
+galaxies. We welcome the simulation of any other astronomical
+object. The general outline of the steps that MakeProfiles takes are
+the following:
+
+@enumerate
+
+@item
+Build the full profile out to its truncation radius in a possibly
+over-sampled array.
+
+@item
+Multiply all the elements by a fixed constant so its total magnitude
+equals the desired total magnitude.
+
+@item
+If @option{--individual} is called, save the array for each profile to
+a FITS file.
+
+@item
+If @option{--nomerged} is not called, add the overlapping pixels of
+all the created profiles to the output image and abort.
+
+@end enumerate
+
+Using input values, MakeProfiles adds the World Coordinate System
+(WCS) headers of the FITS standard to all its outputs (except PSF
+images!). For a simple test on a set of mock galaxies in one image,
+there is no need for the third step or the WCS information.
+
+@cindex Transform image
+@cindex Lensing simulations
+@cindex Image transformations
+However in complicated simulations like weak lensing simulations,
+where each galaxy undergoes various types of individual
+transformations based on their position, those transformations can be
+applied to the different individual images with other programs. After
+all the transformations are applied, using the WCS information in each
+individual profile image, they can be merged into one output image for
+convolution and adding noise.
+
+@menu
+* Modeling basics::             Astronomical modeling basics.
+* If convolving afterwards::    Considerations for convolving later.
+* Profile total magnitude::     Definition of total profile magnitude.
+* Invoking astmkprof::          Inputs and Options for MakeProfiles.
+* MakeProfiles future updates::  Plans for the future of MakeProfiles.
+@end menu
+
+
+
+@node Modeling basics, If convolving afterwards, MakeProfiles, MakeProfiles
+@subsection Modeling basics
 
 In the subsections below, first a review of some very basic
 information and concepts behind modeling a real astronomical image is
@@ -5436,11 +5508,10 @@ familiar with these concepts.
 * Galaxies::                    Radial profiles for galaxies.
 * Sampling from a function::    Sample a function on a pixelated canvas.
 * Oversampling::                Oversampling the model.
-* Noise::                       The basics of noise.
 @end menu
 
 @node Defining an ellipse, PSF, Modeling basics, Modeling basics
-@subsection Defining an ellipse
+@subsubsection Defining an ellipse
 
 @cindex Ellipse
 The PSF, see @ref{PSF}, and galaxy radial profiles are generally
@@ -5499,7 +5570,7 @@ dealing with.
 
 
 @node PSF, Stars, Defining an ellipse, Modeling basics
-@subsection Point Spread function
+@subsubsection Point Spread function
 
 @cindex PSF
 @cindex Point source
@@ -5620,7 +5691,7 @@ when @mymath{\beta} is large.
 
 
 @node Stars, Galaxies, PSF, Modeling basics
-@subsection Stars
+@subsubsection Stars
 
 @cindex Modeling stars
 @cindex Stars, modeling
@@ -5639,7 +5710,7 @@ image.
 
 
 @node Galaxies, Sampling from a function, Stars, Modeling basics
-@subsection Galaxies
+@subsubsection Galaxies
 
 @cindex Galaxy profiles
 @cindex S@'ersic profile
@@ -5683,7 +5754,7 @@ this equation:
 
 
 @node Sampling from a function, Oversampling, Galaxies, Modeling basics
-@subsection Sampling from a function
+@subsubsection Sampling from a function
 
 @cindex Sampling
 A pixel is the ultimate level of accuracy to gather data, we can't get
@@ -5746,8 +5817,8 @@ of pixels with large fractional differences will be missed.
 
 
 
-@node Oversampling, Noise, Sampling from a function, Modeling basics
-@subsection Oversampling
+@node Oversampling,  , Sampling from a function, Modeling basics
+@subsubsection Oversampling
 
 @cindex Oversampling
 The steps explained in @ref{Sampling from a function} do give an
@@ -5776,213 +5847,7 @@ a continuous space like all the prior steps.
 
 
 
-@node Noise,  , Oversampling, Modeling basics
-@subsection Noise
-
-@cindex Noise
-@cindex Image noise
-Deep astronomical images, like those used in extra galactic studies
-seriously suffer from noise in the data. Generally speaking, the
-sources of noise in an astronomical image are:
-
-@menu
-* Photon counting noise::       Poisson noise
-* Instrumental noise::          Readout, dark current and other sources.
-* Final noised pixel value::    How the final noised value is calculated.
-@end menu
-
-@node Photon counting noise, Instrumental noise, Noise, Noise
-@subsubsection Photon counting noise
-
-@cindex Counting error
-@cindex Photon counting noise
-Thanks to the very accurate electronics used in today's CCDs, this
-type of noise is the main cause of concern for extra galactic studies.
-It can generally be associate with the counting error that is known to
-have a Poisson distribution. The Poisson distribution is about
-counting. But counting is a discrete operation with only positive
-values, for example we can't count @mymath{3.2} or @mymath{-2} of
-anything. We only count @mymath{0}, @mymath{1}, @mymath{2}, @mymath{3}
-and so on. Therefore the Poisson distribution is also a discrete
-distribution, only applying to whole positive integers.
-
-Let's assume the mean value of counting something is known. In this
-case, the number of electrons that are produced by photons in the
-CCD. Let's call this mean @mymath{\lambda}.  Let's take @mymath{k} to
-represent the result of counting in one particular time we attempt to
-count. The probability density function of @mymath{k} can be written
-as:
-
-@cindex Poisson distribution
-@dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in \{0, 1, 2,
-3, \dots \}}
-
-@cindex Skewed Poisson distribution
-Because the Poisson distribution is only applicable to positive
-values, it is by nature very skewed when @mymath{\lambda} is near
-zero. One qualitative way to imagine it is that there simply aren't
-enough integers smaller than @mymath{\lambda}, than there are larger
-integers. Therefore to accommodate all possibilities, it has to be
-skewed when @mymath{\lambda} is small.
-
-@cindex Compare Poisson and Gaussian
-But as @mymath{\lambda} becomes larger and larger, the distribution
-becomes more and more symmetric. One very useful property of the
-Poisson distribution is that the mean value is also its variance.
-When @mymath{\lambda} is very large, say @mymath{\lambda>1000}, then
-the normal (Gaussian) distribution, see @ref{PSF}, is an excellent
-approximation of the Poisson distribution with mean
-@mymath{\mu=\lambda} and standard deviation
-@mymath{\sigma=\sqrt{\lambda}}.
-
-We see that the variance or dispersion of the distribution depends on
-the mean value, and when it is large it can be approximated with a
-Gaussian that only has one free parameter (@mymath{\mu=\lambda} and
-@mymath{\sigma=\sqrt{\lambda}}) instead of two that it originally has.
-
-@cindex Sky value
-@cindex Background flux
-@cindex Undetected objects
-The astronomical objects after convolution with the PSF of the
-instrument, lie above a certain background flux. This background flux
-is defined to be the average flux of a region in the image that has
-absolutely no objects. The physical origin of this background value is
-the brightness of the atmosphere or possible stray light within the
-imagining instrument. It is thus an ideal definition, because in
-practice, what lies deep in the noise far lower than the detection
-limit is never known@footnote{See the section on sky in Akhlaghi
-M. Ichikawa. T. 2015...}. However, in a real image, a relatively large
-number of very faint objects can been fully buried in the noise. These
-undetected objects will bias the background measurement to slightly
-larger values. The sky value is therefore defined to be the average of
-the undetected regions in the image, so in an ideal case where all the
-objects have been detected, the sky value and background value are the
-same.
-
-@cindex Background flux gradients
-@cindex Gradients in background flux
-@cindex Variation of background flux
-As longer wavelengths are used, the background value becomes more
-significant and also varies over a wide image field. Such variations
-are not currently implemented in MakeProfiles, but will be in the
-future. In a mock image, we have the luxury of setting the background
-value.
-
-@cindex Simulating noise
-@cindex Noise simulation
-In each pixel of the canvas of pixels the flux is the sum of
-contributions from various sources after convolution. Let's name this
-flux of the convolved sum of possibly overlapping objects,
-@mymath{I_{nn}}.  @mymath{nn} representing `no noise'. For now,
-let's assume the background is constant and represented by
-@mymath{B}. In practice the background values are larger than
-@mymath{\sim1,000} counts. Then the flux after adding noise is a
-random value taken from a Gaussian distribution with the following
-mean (@mymath{\mu}) and standard deviation (@mymath{\sigma}):
-
-@dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
-
-@node Instrumental noise, Final noised pixel value, Photon counting noise, Noise
-@subsubsection Instrumental noise
-
-@cindex Readout noise
-@cindex Instrumental noise
-@cindex Noise, instrumental
-While taking images with a camera, a dark current is fed to the
-pixels, the variation of the value of this dark current over the
-pixels, also adds to the final image noise. Another source of noise is
-the readout noise that is produced by the electronics in the CCD that
-attempt to read the amount of flux that was recorded. In deep
-extra-galactic studies these sources of noise are not as significant
-as the noise of the background sky. Let @mymath{C} represent the
-combined standard deviation of all these sources of noise. If only
-this source of noise is present, the noised pixel value would be a
-random value chosen from a Gaussian distribution with
-
-@dispmath{\mu=I_{nn}, \quad \sigma=\sqrt{C^2+I_{nn}}}
-
-
-@node Final noised pixel value,  , Instrumental noise, Noise
-@subsubsection Final noised pixel value
-Depending on the values you specify for @mymath{B} and @mymath{C} from
-the above, the final noised value for each pixel is a random value
-chosen from a Gaussian distribution with
-
-@dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{C^2+B+I_{nn}}}
-
-
-
-
-
-@node MakeProfiles, MakeNoise, Modeling basics, Modeling and fittings
-@section MakeProfiles
-
-@cindex Checking detection algorithms
-@pindex @r{MakeProfiles @value{MKPROF_VERSION} (}astmkprof@r{)}
-MakeProfiles will create mock astronomical profiles from a catalog,
-either individually or together in one output image. In data analysis,
-making a mock image can act like a calibration tool, through which you
-can test how successfully your detection technique is able to detect a
-known set of objects. There are commonly two aspects to detecting: the
-detection of the fainter parts of bright objects (which in the case of
-galaxies fade into the noise very slowly) or the complete detection of
-an over-all faint object. Making mock galaxies is the most accurate
-(and idealistic) way these two aspects of a detection algorithm can be
-tested. You also need mock profiles in fitting known functional
-profiles with observations.
-
-MakeProfiles was initially built for extra galactic studies, so
-currently the only astronomical objects it can produce are stars and
-galaxies. We welcome the simulation of any other astronomical
-object. The general outline of the steps that MakeProfiles takes are
-the following:
-
-@enumerate
-
-@item
-Build the full profile out to its truncation radius in a possibly
-over-sampled array.
-
-@item
-Multiply all the elements by a fixed constant so its total magnitude
-equals the desired total magnitude.
-
-@item
-If @option{--individual} is called, save the array for each profile to
-a FITS file.
-
-@item
-If @option{--nomerged} is not called, add the overlapping pixels of
-all the created profiles to the output image and abort.
-
-@end enumerate
-
-Using input values, MakeProfiles adds the World Coordinate System
-(WCS) headers of the FITS standard to all its outputs (except PSF
-images!). For a simple test on a set of mock galaxies in one image,
-there is no need for the third step or the WCS information.
-
-@cindex Transform image
-@cindex Lensing simulations
-@cindex Image transformations
-However in complicated simulations like weak lensing simulations,
-where each galaxy undergoes various types of individual
-transformations based on their position, those transformations can be
-applied to the different individual images with other programs. After
-all the transformations are applied, using the WCS information in each
-individual profile image, they can be merged into one output image for
-convolution and adding noise.
-
-@menu
-* If convolving afterwards::    Considerations for convolving later.
-* Profile total magnitude::     Definition of total profile magnitude.
-* Invoking astmkprof::          Inputs and Options for MakeProfiles.
-* MakeProfiles future updates::  Plans for the future of MakeProfiles.
-@end menu
-
-
-
-@node If convolving afterwards, Profile total magnitude, MakeProfiles, MakeProfiles
+@node If convolving afterwards, Profile total magnitude, Modeling basics, MakeProfiles
 @subsection If convolving afterwards
 
 In case you want to convolve the image later with a given point spread
@@ -6398,19 +6263,336 @@ but stop adding to one sum earlier.
 
 
 
+
+
+
+
+
+
+
 @node MakeNoise,  , MakeProfiles, Modeling and fittings
 @section MakeNoise
 
+@cindex Noise
+Real data are always burried in noise, therefore to finalize a
+simulation of real data (for example to test our observational
+algorithms) it is essential to add noise to the mock profiles created
+with MakeProfiles, see @ref{MakeProfiles}. Below, the general
+principles and concepts to help understand how noise is quantified is
+discussed.  MakeNoise options and argument are then discussed in
+@ref{Invoking astmknoise}. Finally our current plans for future of
+MakeNoise are listed in @ref{MakeNoise future updates}.
 
 @menu
+* Noise basics::                Noise concepts and definitions.
 * Invoking astmknoise::         Options and arguments to MakeNoise.
+* MakeNoise future updates::    Plans for future updates.
 @end menu
 
-@node Invoking astmknoise,  , MakeNoise, MakeNoise
+
+
+@node Noise basics, Invoking astmknoise, MakeNoise, MakeNoise
+@subsection Noise basics
+
+@cindex Noise
+@cindex Image noise
+Deep astronomical images, like those used in extragalactic studies
+seriously suffer from noise in the data. Generally speaking, the
+sources of noise in an astronomical image are photon counting noise
+and Instrumental noise which are discussed in detail below. We finish
+with a short introduction on how random numbers are generated and how
+you can determine the random number generator and seed value.
+
+@menu
+* Photon counting noise::       Poisson noise
+* Instrumental noise::          Readout, dark current and other sources.
+* Final noised pixel value::    How the final noised value is calculated.
+* Generating random numbers::   How random numbers are generated.
+@end menu
+
+@node Photon counting noise, Instrumental noise, Noise basics, Noise basics
+@subsubsection Photon counting noise
+
+@cindex Counting error
+@cindex Photon counting noise
+Thanks to the very accurate electronics used in today's CCDs, this
+type of noise is the main cause of concern for extra galactic studies.
+It can generally be associate with the counting error that is known to
+have a Poisson distribution. The Poisson distribution is about
+counting. But counting is a discrete operation with only positive
+values, for example we can't count @mymath{3.2} or @mymath{-2} of
+anything. We only count @mymath{0}, @mymath{1}, @mymath{2}, @mymath{3}
+and so on. Therefore the Poisson distribution is also a discrete
+distribution, only applying to whole positive integers.
+
+Let's assume the mean value of counting something is known. In this
+case, the number of electrons that are produced by photons in the
+CCD. Let's call this mean @mymath{\lambda}.  Let's take @mymath{k} to
+represent the result of counting in one particular time we attempt to
+count. The probability density function of @mymath{k} can be written
+as:
+
+@cindex Poisson distribution
+@dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in \{0, 1, 2,
+3, \dots \}}
+
+@cindex Skewed Poisson distribution
+Because the Poisson distribution is only applicable to positive
+values, it is by nature very skewed when @mymath{\lambda} is near
+zero. One qualitative way to imagine it is that there simply aren't
+enough integers smaller than @mymath{\lambda}, than there are larger
+integers. Therefore to accommodate all possibilities, it has to be
+skewed when @mymath{\lambda} is small.
+
+@cindex Compare Poisson and Gaussian
+But as @mymath{\lambda} becomes larger and larger, the distribution
+becomes more and more symmetric. One very useful property of the
+Poisson distribution is that the mean value is also its variance.
+When @mymath{\lambda} is very large, say @mymath{\lambda>1000}, then
+the normal (Gaussian) distribution, see @ref{PSF}, is an excellent
+approximation of the Poisson distribution with mean
+@mymath{\mu=\lambda} and standard deviation
+@mymath{\sigma=\sqrt{\lambda}}.
+
+We see that the variance or dispersion of the distribution depends on
+the mean value, and when it is large it can be approximated with a
+Gaussian that only has one free parameter (@mymath{\mu=\lambda} and
+@mymath{\sigma=\sqrt{\lambda}}) instead of two that it originally has.
+
+@cindex Sky value
+@cindex Background flux
+@cindex Undetected objects
+The astronomical objects after convolution with the PSF of the
+instrument, lie above a certain background flux. This background flux
+is defined to be the average flux of a region in the image that has
+absolutely no objects. The physical origin of this background value is
+the brightness of the atmosphere or possible stray light within the
+imagining instrument. It is thus an ideal definition, because in
+practice, what lies deep in the noise far lower than the detection
+limit is never known@footnote{See the section on sky in Akhlaghi
+M. Ichikawa. T. 2015...}. However, in a real image, a relatively large
+number of very faint objects can been fully buried in the noise. These
+undetected objects will bias the background measurement to slightly
+larger values. The sky value is therefore defined to be the average of
+the undetected regions in the image, so in an ideal case where all the
+objects have been detected, the sky value and background value are the
+same.
+
+@cindex Background flux gradients
+@cindex Gradients in background flux
+@cindex Variation of background flux
+As longer wavelengths are used, the background value becomes more
+significant and also varies over a wide image field. Such variations
+are not currently implemented in MakeProfiles, but will be in the
+future. In a mock image, we have the luxury of setting the background
+value.
+
+@cindex Simulating noise
+@cindex Noise simulation
+In each pixel of the canvas of pixels the flux is the sum of
+contributions from various sources after convolution. Let's name this
+flux of the convolved sum of possibly overlapping objects,
+@mymath{I_{nn}}.  @mymath{nn} representing `no noise'. For now,
+let's assume the background is constant and represented by
+@mymath{B}. In practice the background values are larger than
+@mymath{\sim1,000} counts. Then the flux after adding noise is a
+random value taken from a Gaussian distribution with the following
+mean (@mymath{\mu}) and standard deviation (@mymath{\sigma}):
+
+@dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
+
+@node Instrumental noise, Final noised pixel value, Photon counting noise, Noise basics
+@subsubsection Instrumental noise
+
+@cindex Readout noise
+@cindex Instrumental noise
+@cindex Noise, instrumental
+While taking images with a camera, a dark current is fed to the
+pixels, the variation of the value of this dark current over the
+pixels, also adds to the final image noise. Another source of noise is
+the readout noise that is produced by the electronics in the CCD that
+attempt to read the amount of flux that was recorded. In deep
+extra-galactic studies these sources of noise are not as significant
+as the noise of the background sky. Let @mymath{C} represent the
+combined standard deviation of all these sources of noise. If only
+this source of noise is present, the noised pixel value would be a
+random value chosen from a Gaussian distribution with
+
+@dispmath{\mu=I_{nn}, \quad \sigma=\sqrt{C^2+I_{nn}}}
+
+
+@node Final noised pixel value, Generating random numbers, Instrumental noise, Noise basics
+@subsubsection Final noised pixel value
+Depending on the values you specify for @mymath{B} and @mymath{C} from
+the above, the final noised value for each pixel is a random value
+chosen from a Gaussian distribution with
+
+@dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{C^2+B+I_{nn}}}
+
+
+
+@node Generating random numbers,  , Final noised pixel value, Noise basics
+@subsubsection Generating random numbers
+
+@cindex Random numbers
+@cindex Numbers, random
+As discussed above, to generate noise we need to make random samples
+of a particular distribution. So it is important to understand some
+general concepts regarding the generation of random numbers. For a
+very complete and nice introduction we strongly advise reading Donald
+Knuth's ``The art of computer programming'', volume 2, chapter
+3@footnote{Knuth, Donald. 1998. The art of computer
+programming. Addison--Wesley. ISBN 0-201-89684-2 }. Quoting from the
+GNU Scientific Library manual, ``If you don't own it, you should stop
+reading right now, run to the nearest bookstore, and buy
+it''@footnote{For students, running to the library might be more
+affordable!}!
+
+@cindex Psudo-random numbers
+@cindex Numbers, psudo-random
+@cindex Seed, psudo-random numbers
+Using only software, we can only produce what is called a psudo-random
+sequence of numbers. A truely random number generator is through a
+hardware (lets assume we have made sure it has no systematic biases),
+for examle throwing dice or flipping coins (which have remained from
+the ancient times). More modern hardware methods use atmospheric
+noise, thermal noise or other types of external electromagnetic or
+quantum phenomena. All psudo-random number generators (software)
+require a seed to be the basis of the generation. The advantage of
+having a seed is that if you specify the same seed for multiple runs,
+you will get an identical sequence of random numbers which allows you
+to reproduce the same final noised image.
+
+@cindex Environment variables
+@cindex GNU Scientific Library
+MakeNoise uses the GNU Scientific Library (GSL) to generate random
+numbers. GSL allows the user to set the random number generator
+through environment variables, see @ref{Installation directory} for an
+introduction to environment variables. In the chapter titled ``Random
+Number Generation'' they have fully explained the various random
+number generators that are available (there are a lot of
+them!). Through the two environment variables @code{GSL_RNG_TYPE} and
+@code{GSL_RNG_SEED} you can sepecify the generator and its seed
+respectively. If you don't specify values for these environment
+variables, GSL will use its default type and seed. The default type is
+sufficient for most general applications.
+
+There are two ways you can specify values for these environment
+variables. You can call them on the same command line as MakeNoise for
+example:
+
+@example
+$ GSL_RNG_TYPE="taus" GSL_RNG_SEED=345 astmknoise input.fits
+@end example
+
+@noindent
+In this manner the values will only be used for this particular
+execution of MakeNoise. To define them for the full period of your
+terminal session or script length, you can use the shell's
+@command{export} command (for a script remove the @code{$} signs):
+
+@example
+$ export GSL_RNG_TYPE="taus"
+$ export GSL_RNG_SEED=345
+@end example
+
+@cindex Startup scripts
+@cindex @file{.bashrc}
+@noindent
+The subsequent programs in the particular terminal (or script) that
+you ran these commands on which use of GSL's random number generators
+(including MakeNoise) will hence forth use these values.  Finally, in
+case you want set values for these variables any time you run
+MakeNoise (in any terminal or script), you can add these commands to
+your @file{.bashrc} startup script@footnote{If you are giving the
+scripts to others you have to make sure you also tell them to set them
+separately. So for scripts, it is best to keep all such variable
+definitions within the script.}.
+
+@cindex GNU C Library
+By default, MakeNoise will only use the @code{GSL_RNG_TYPE}
+variable. For the seed, by default it will use the microsecond level
+accuracy of the GNU C Library. So the random number sequences of
+separate runs will be different@footnote{So unless your commands are
+less than one microsecond apart, two images will not have the same
+sequence of noise values.}. If you want MakeNoise to use the
+@code{GSL_RNG_SEED} variable for a reproducable result, you can use
+the @option{--envseed} option.
+
+@node Invoking astmknoise, MakeNoise future updates, Noise basics, MakeNoise
 @subsection Invoking MakeNoise
 
+MakeNoise will add noise to an existing image. The executable name is
+@file{astmknoise} with the following general template
+
+@example
+$ astmknoise [OPTION ...] InputImage.fits
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astmknoise --background=1000 --stdadd=20 mockimage.fits
+@end example
+
+@noindent
+If actual processing is to be done, the input image is a mandatory
+argument. The full list of options common to all the programs in
+Gnuastro can be seen in @ref{Common options}. The output will have the
+same type as the input image, however the internal processing is done
+on a double precision floating point format. If the input values were
+integer types, then each floating point number will be rounded to the
+nearest integer away from zero. This might cause integer overflow if
+types with small ranges are used (for example images with a
+@code{BITPIX} of @code{8} which can only keep 256 values). This can be
+disabled with the @option{doubletype} option.
+
+@table @option
+
+@item -b
+@itemx --background
+The background value for the image, see @ref{Photon counting
+noise}.
+
+@item -s
+@itemx --stdadd
+The instrumental noise constant, see @ref{Instrumental noise}.
+
+@item -e
+@itemx --envseed
+Use the @code{GSL_RNG_SEED} environment variable for the seed used in
+the random number generator, see @ref{Generating random numbers}. With
+this option, the output image noise is always going to be identical
+(or reproducable).
+
+@item -d
+@itemx --doubletype
+Save the output in the double precision floating point format that was
+used internally. This option will be most useful if the input images
+were of integer types.
+
+@item -i
+@itemx --backgroundinmean
+Keep the background value in the mean of the distribution. By default,
+the background value will not be used in the mean of the distribution
+to find a noised value for each pixel. If this option is called, it
+will be used. Note that in the equations of @ref{Photon counting
+noise}, @ref{Instrumental noise} and @ref{Final noised pixel value},
+the background is included in the mean.
+
+@end table
 
 
+@node MakeNoise future updates,  , Invoking astmknoise, MakeNoise
+@subsection MakeNoise future updates
+
+@itemize
+
+@item
+Allow for more complicated noise models.
+
+@end itemize
 
 
 
@@ -6592,14 +6774,14 @@ usage and `high speed' is desired.
 
 The core processing functions of each program are written mostly with
 the basic ISO C90 standard. We do make lots of use of the GNU
-additions to the C language in the GNU C library, but these additional
+additions to the C language in the GNU C Library, but these additional
 functions are mainly used in the user interface functions (reading
 your inputs and preparing them prior to or after the analysis). The
 actual algorithms, which most scientists would be more interested in,
 are much more closer to ISO C90. For this reason, the source files
 containing user interface code and those containing actual processing
 code are clearly separated, see @ref{Program source}. If any thing
-particular to the GNU C library is used in the processing functions,
+particular to the GNU C Library is used in the processing functions,
 it is explained in the comments in between the code.
 
 @cindex GNU Coreutils
@@ -6658,7 +6840,7 @@ version of Gnuastro can be cloned by running
 $ git clone git://git.sv.gnu.org/gnuastro.git
 @end example
 
-@cindex GNU C library
+@cindex GNU C Library
 @cindex GNU Autoconf Archive
 @cindex GNU Portability Library
 @cindex Automatically created build files
@@ -6668,7 +6850,7 @@ not written or are automatically built (and included in the
 distributed @file{gnuastro-@value{VERSION}.tar.gz}) for configuration
 and building. There are two types of files that we have not
 written. To ensure portability for a wider range of operating systems
-(those that don't include GNU C library, namely glibc), we have used
+(those that don't include GNU C Library, namely glibc), we have used
 the GNU Portability Library (Gnulib). Gnulib keeps a copy of all the
 functions in glibc and you can include them in the source code to
 replace system wide functions on other compilers. To test for various
@@ -6717,7 +6899,7 @@ $ cp ~/Development/autoconf-archive/m4/ax_pthread.m4 ./m4/
 @cindex GNU Automake
 @cindex GNU build system
 @noindent
-All the necessary GNU C library functions and Autoconf macros are now
+All the necessary GNU C Library functions and Autoconf macros are now
 available. Now you can add the automatically generated files used to
 build Gnuastro using the GNU build system. To generate those files you
 have to run the following command in the cloned @file{gnuastro}
@@ -6935,7 +7117,7 @@ int verb=p->cp.verb;
 
 @item args.h
 @cindex Argp argument parser
-The argument parser structures (which are used by GNU C library's
+The argument parser structures (which are used by GNU C Library's
 Argp) for each program are defined in @file{args.h}. They are separate
 global variables and function definitions that will be used by
 Argp. We recommend going through the appropriate section in GNU C

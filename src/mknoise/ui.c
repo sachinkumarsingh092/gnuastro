@@ -108,15 +108,23 @@ readconfig(char *filename, struct mknoiseparams *p)
 	  strcpy(cp->hdu, value);
 	  cp->hduset=1;
 	}
-
-
+      else if(strcmp(name, "background")==0)
+	{
+	  if(up->backgroundset) continue;
+          anydouble(value, &p->background, value, key, SPACK, filename,
+                    lineno);
+	  up->backgroundset=1;
+	}
+      else if(strcmp(name, "stdadd")==0)
+	{
+	  if(up->stdaddset) continue;
+          doublele0(value, &p->stdadd, value, key, SPACK, filename, lineno);
+	  up->stdaddset=1;
+	}
 
 
 
       /* Outputs */
-
-
-
       else if(strcmp(name, "output")==0)
 	{
 	  if(cp->outputset) continue;
@@ -173,10 +181,13 @@ printvalues(FILE *fp, struct mknoiseparams *p)
 
 
   fprintf(fp, "\n# Output parameters:\n");
-
-
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
+  if(up->backgroundset)
+    fprintf(fp, CONF_SHOWFMT"%f\n", "background", p->background);
+  if(up->stdaddset)
+    fprintf(fp, CONF_SHOWFMT"%f\n", "stdadd", p->stdadd);
+
 
 
   fprintf(fp, "\n# Operating mode:\n");
@@ -201,6 +212,11 @@ checkifset(struct mknoiseparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
+
+  if(up->backgroundset==0)
+    REPORT_NOTSET("background");
+  if(up->stdaddset==0)
+    REPORT_NOTSET("stdadd");
 
 
   END_OF_NOTSET_REPORT;
@@ -231,7 +247,9 @@ checkifset(struct mknoiseparams *p)
 void
 sanitycheck(struct mknoiseparams *p)
 {
-
+  if(p->cp.output==NULL)
+    automaticoutput(p->up.inputname, "_noised.fits", p->cp.removedirinfo,
+                    p->cp.dontdelete, &p->cp.output);
 }
 
 
@@ -259,7 +277,20 @@ sanitycheck(struct mknoiseparams *p)
 void
 preparearrays(struct mknoiseparams *p)
 {
+  void *array;
 
+  /* Read in the input image: */
+  p->numblank=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
+                        &array, &p->is0, &p->is1);
+  if(p->inputbitpix==DOUBLE_IMG)
+    p->input=array;
+  else
+    {
+      changetype(array, p->inputbitpix, p->is0*p->is1, p->numblank,
+                 (void **)&p->input, DOUBLE_IMG);
+      free(array);
+    }
+  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 }
 
 
@@ -310,12 +341,11 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
   if(cp->printparams)
     REPORT_PARAMETERS_SET;
 
-  /* Do a sanity check. */
-  sanitycheck(p);
-  checkremovefile(TXTARRAYVVLOG, 0);
-
   /* Make the array of input images. */
   preparearrays(p);
+
+  /* Do a sanity check. */
+  sanitycheck(p);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)

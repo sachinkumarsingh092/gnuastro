@@ -611,7 +611,7 @@ preparearrays(struct imgcropparams *p)
 	{
 	  firstbitpix=p->bitpix;
 	  p->datatype=bitpixtodtype(p->bitpix);
-	  p->bitnul=bitpixnull(p->bitpix);
+	  p->bitnul=bitpixblank(p->bitpix);
 	}
       else if(firstbitpix!=p->bitpix)
 	error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "

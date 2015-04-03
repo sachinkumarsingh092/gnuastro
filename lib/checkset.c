@@ -182,6 +182,30 @@ intsmallerequalto(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
+longelzero(char *optarg, long *var, char *lo, char so, char *spack,
+	  char *filename, size_t lineno)
+{
+  long tmp;
+  char *tailptr;
+  *var=tmp=strtol(optarg, &tailptr, 0);
+
+  CHECKFULLNUMBER;
+  if(tmp<0)
+    {
+      if(filename)
+	error_at_line(EXIT_FAILURE, 0, filename, lineno,
+		      FIXEDFORFILE" "NOTEMSG_LEQZERO, lo, optarg);
+      else
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LEQZERO,
+	      lo, so, optarg);
+    }
+}
+
+
+
+
+
+void
 anylong(char *optarg, long *var, char *lo, char so, char *spack,
 	char *filename, size_t lineno)
 {
@@ -318,6 +342,30 @@ doublel0(char *optarg, double *var, char *lo, char so, char* spack,
 
   CHECKFULLNUMBER;
   if(tmp<=0)
+    {
+      if(filename)
+	error_at_line(EXIT_FAILURE, 0, filename, lineno,
+		      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
+      else
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
+	      lo, so, optarg);
+    }
+}
+
+
+
+
+
+void
+doublele0(char *optarg, double *var, char *lo, char so, char* spack,
+          char *filename, size_t lineno)
+{
+  double tmp;
+  char *tailptr;
+  *var=tmp=strtod(optarg, &tailptr);
+
+  CHECKFULLNUMBER;
+  if(tmp<0)
     {
       if(filename)
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,

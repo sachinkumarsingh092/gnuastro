@@ -32,11 +32,11 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcsfix.h>
 #include <wcslib/wcs.h>
 
-#define FITSBYTENUL     UCHAR_MAX	/* 0 is often meaningful here! */
-#define FITSSHORTNUL    INT16_MIN
-#define FITSLONGNUL     INT32_MIN
-#define FITSLLONGNUL    INT64_MIN
-#define FITSFLOATNUL    NAN
+#define FITSBYTEBLANK     UCHAR_MAX	/* 0 is often meaningful here! */
+#define FITSSHORTBLANK    INT16_MIN
+#define FITSLONGBLANK     INT32_MIN
+#define FITSLLONGBLANK    INT64_MIN
+#define FITSFLOATBLANK    NAN
 
 
 
@@ -120,10 +120,10 @@ copyrightandend(fitsfile *fptr, char *spack_string);
  ******************        Read/Write        *****************
  *************************************************************/
 void *
-bitpixnull(int bitpix);
+bitpixblank(int bitpix);
 
 void
-convertnul(void *array, int bitpix, size_t size, void *value);
+convertblank(void *array, int bitpix, size_t size, void *value);
 
 int
 bitpixtodtype(int bitpix);
@@ -138,7 +138,7 @@ void *
 bitpixalloc(size_t size, int bitpix);
 
 void
-changetype(void *in, int inbitpix, size_t size, size_t numnul,
+changetype(void *in, int inbitpix, size_t size, size_t numblank,
            void **out, int outbitpix);
 
 void
