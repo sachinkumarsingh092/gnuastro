@@ -110,7 +110,8 @@ void
 updatekeys(fitsfile *fptr, struct fitsheaderll **keylist);
 
 void
-copyrightandend(fitsfile *fptr, char *spack_string);
+copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
+                char *spack_string);
 
 
 
@@ -154,7 +155,7 @@ fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
 void
 arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
 	       size_t s0, size_t s1, size_t numblank, struct wcsprm *wcs,
-	       char *spack_string);
+	       struct fitsheaderll *headers, char *spack_string);
 
 void
 atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,

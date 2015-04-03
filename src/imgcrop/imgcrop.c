@@ -83,7 +83,7 @@ imgmodecrop(void *inparam)
 	  log->centerfilled=iscenterfilled(crp);
 
 	  /* Add the final headers and close output FITS image: */
-	  copyrightandend(crp->outfits, SPACK_STRING);
+	  copyrightandend(crp->outfits, NULL, SPACK_STRING);
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
 	    fitsioerror(status, "CFITSIO could not close the opened file.");
@@ -178,7 +178,7 @@ wcsmodecrop(void *inparam)
 	{
 	  log->centerfilled=iscenterfilled(crp);
 
-	  copyrightandend(crp->outfits, SPACK_STRING);
+	  copyrightandend(crp->outfits, NULL, SPACK_STRING);
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
 	    fitsioerror(status, "CFITSIO could not close the opened file.");

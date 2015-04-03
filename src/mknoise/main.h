@@ -25,8 +25,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <pthread.h>
 
+#include "fitsarrayvv.h"
 #include "commonparams.h"
-
 
 /* Progarm name macros: */
 #define SPACK_VERSION   "0.1"
@@ -76,6 +76,8 @@ struct mknoiseparams
 
   /* Internal: */
   time_t          rawtime; /* Starting time of the program.            */
+  char rng_type[FLEN_VALUE];   /* The type of the Random number gen.  */
+  long           rng_seed; /* Seed of Random number generator.         */
 };
 
 #endif

@@ -26,6 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sys/time.h>		 /* Generate random seed. */
 #include <gsl/gsl_rng.h>	 /* Used in setrandoms.   */
@@ -60,6 +61,9 @@ void
 convertsaveoutput(struct mknoiseparams *p)
 {
   void *array;
+  struct fitsheaderll *headers=NULL;
+  char keyname1[FLEN_KEYWORD], keyname2[FLEN_KEYWORD];
+  char keyname3[FLEN_KEYWORD], keyname4[FLEN_KEYWORD];
 
   /* Convert the output to the input image format: */
   if(p->inputbitpix==DOUBLE_IMG || p->doubletype)
@@ -71,9 +75,25 @@ convertsaveoutput(struct mknoiseparams *p)
     changetype((void **)p->input, DOUBLE_IMG, p->is0*p->is1,
                p->numblank, &array, p->inputbitpix);
 
+  /* Add the proper information to the header of the output: */
+  filenameinkeywords("INF", p->up.inputname, &headers);
+  strcpy(keyname1, "BCKGRND");
+  add_to_fitsheaderllend(&headers, TDOUBLE, keyname1, 0, &p->background, 0,
+                         "Background value for noise.", 0, NULL);
+  strcpy(keyname2, "STDADD");
+  add_to_fitsheaderllend(&headers, TDOUBLE, keyname2, 0, &p->stdadd, 0,
+                         "Constant added for calculation of noise STD.",
+                         0, NULL);
+  strcpy(keyname3, "RNGTYPE");
+  add_to_fitsheaderllend(&headers, TSTRING, keyname3, 0, &p->rng_type, 0,
+                         "Random number generator (by GSL) type.", 0, NULL);
+  strcpy(keyname4, "RNGSEED");
+  add_to_fitsheaderllend(&headers, TLONG, keyname4, 0, &p->rng_seed, 0,
+                         "Random number generator (by GSL) seed.", 0, NULL);
+
   /* Save the output: */
   arraytofitsimg(p->cp.output, "NoiseAdded", p->inputbitpix, array,
-                 p->is0, p->is1, p->numblank, p->wcs,
+                 p->is0, p->is1, p->numblank, p->wcs, headers,
                  SPACK_STRING);
 
   if(array!=p->input)
@@ -124,6 +144,8 @@ mknoise(struct mknoiseparams *p)
     { do *d+=gsl_ran_gaussian(r,sqrt(stdadd+background+*d)); while(++d<df); }
 
   /* Convert and save the output in the proper format: */
+  p->rng_seed=seed;
+  strcpy(p->rng_type, gsl_rng_name(r));
   convertsaveoutput(p);
 
   /* Free what ever was allocated here. */

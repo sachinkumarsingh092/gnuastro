@@ -760,6 +760,10 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
 /*************************************************************
  ******************         Header          ******************
  *************************************************************/
+/* Add on keyword to the list of header keywords that nee to be added
+   to a FITS file. In the end, they keywords will have to be freed, so
+   it is important to know before hand if they were allocated or
+   not. If not, they don't need to be freed. */
 void
 add_to_fitsheaderllend(struct fitsheaderll **list, int datatype,
 		       char *keyname, int kfree, void *value, int vfree,
@@ -945,7 +949,8 @@ updatekeys(fitsfile *fptr, struct fitsheaderll **keylist)
 
 
 void
-copyrightandend(fitsfile *fptr, char *spack_string)
+copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
+                char *spack_string)
 {
   size_t i;
   int status=0;
@@ -965,6 +970,10 @@ copyrightandend(fitsfile *fptr, char *spack_string)
   for(i=strlen(titlerec);i<79;++i) titlerec[i]=' ';
   fits_write_record(fptr, titlerec, &status);
   fitsioerror(status, NULL);
+
+  /* If any header keywords are specified add them: */
+  if(headers)
+    updatekeys(fptr, &headers);
 
   /* Set the version of CFITSIO as a string. */
   sprintf(version, "%-.2f", CFITSIO_VERSION);
@@ -1161,7 +1170,7 @@ fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
 void
 arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
 	       size_t s0, size_t s1, size_t numblank, struct wcsprm *wcs,
-	       char *spack_string)
+	       struct fitsheaderll *headers, char *spack_string)
 {
   int nkeyrec;
   void *blank;
@@ -1203,7 +1212,8 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
 	      wcs_errmsg[status]);
       addwcstoheader(fptr, wcsheader, nkeyrec);
     }
-  copyrightandend(fptr, spack_string);
+
+  copyrightandend(fptr, headers, spack_string);
 
   fits_close_file(fptr, &status);
   fitsioerror(status, NULL);
@@ -1251,7 +1261,7 @@ atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
 	}
     }
 
-  copyrightandend(fptr, spack_string);
+  copyrightandend(fptr, NULL, spack_string);
 
   fits_close_file(fptr, &status);
   fitsioerror(status, NULL);

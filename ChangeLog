@@ -3,6 +3,8 @@
 	* lib/fitsarrayvv.c: Changed all occurences of `nul' or `NUL' to
 	`blank' or `BLANK'. The FITS standard defines a BLANK keyword for
 	integer types.
+	(copyrightandend): Will now right extra headers.
+	(arraytofitsimg): Can now accept header to write to output.
 
 	* include/fitsarrayvv.h: Changed all `NUL' macros to `BLANK'.
 

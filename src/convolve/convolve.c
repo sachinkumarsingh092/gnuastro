@@ -471,11 +471,11 @@ frequencyconvolve(struct convolveparams *p)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, 1, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Input transform", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, SPACK_STRING);
+                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
       complextoreal(p->pker, p->ps0*p->ps1, 1, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Kernel transform", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, SPACK_STRING);
+                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -492,11 +492,11 @@ frequencyconvolve(struct convolveparams *p)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, 1, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Input transform", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, SPACK_STRING);
+                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
       complextoreal(p->pker, p->ps0*p->ps1, 1, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Kernel transform", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, SPACK_STRING);
+                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -509,7 +509,7 @@ frequencyconvolve(struct convolveparams *p)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, 1, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Multiplied", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, SPACK_STRING);
+                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -523,7 +523,7 @@ frequencyconvolve(struct convolveparams *p)
   if(p->viewfreqsteps)
     {
       arraytofitsimg(p->up.freqstepsname, "Spatial", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, SPACK_STRING);
+                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -588,5 +588,5 @@ convolve(struct convolveparams *p)
   /* Save the output (which is in p->input) array. Note that p->input
      will be freed in ui.c. */
   arraytofitsimg(p->cp.output, "Convolved", FLOAT_IMG, p->input,
-                 p->is0, p->is1, 0, p->wcs, SPACK_STRING);
+                 p->is0, p->is1, 0, p->wcs, NULL, SPACK_STRING);
 }

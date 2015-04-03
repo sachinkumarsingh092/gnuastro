@@ -376,8 +376,11 @@ imgwarppreparations(struct imgwarpparams *p)
 void
 correctwcssaveoutput(struct imgwarpparams *p)
 {
+  size_t i;
   void *array;
   double *m=p->matrix;
+  char keyword[9*FLEN_KEYWORD];
+  struct fitsheaderll *headers=NULL;
   double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
@@ -411,10 +414,20 @@ correctwcssaveoutput(struct imgwarpparams *p)
     changetype((void **)p->output, DOUBLE_IMG, p->onaxes[1]*p->onaxes[0],
                p->numnul, &array, p->inputbitpix);
 
+  /* Add the appropriate headers: */
+  filenameinkeywords("INF", p->up.inputname, &headers);
+  for(i=0;i<9;++i)
+    {
+      sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%lu_%lu", i/3+1, i%3+1);
+      add_to_fitsheaderllend(&headers, TDOUBLE, &keyword[i*FLEN_KEYWORD],
+                             0, &p->matrix[i], 0, "Warp matrix element "
+                             "value.", 0, NULL);
+    }
+
   /* Save the output: */
   arraytofitsimg(p->cp.output, "Warped", p->inputbitpix, array,
                  p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
-                 SPACK_STRING);
+                 headers, SPACK_STRING);
 
   if(array!=p->output)
     free(array);

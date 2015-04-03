@@ -5199,7 +5199,8 @@ a floating point format, then the floating point output pixels are
 going to be rounded to the nearest integer (using the @code{round}
 function in the C programming language) which can lead to a loss of
 data. This behavior can be disabled with the @option{--doubletype}
-option.
+option. The input file and input warping matrix elements are stored in
+the output's header.
 
 @cartouche
 @noindent
@@ -6546,7 +6547,9 @@ integer types, then each floating point number will be rounded to the
 nearest integer away from zero. This might cause integer overflow if
 types with small ranges are used (for example images with a
 @code{BITPIX} of @code{8} which can only keep 256 values). This can be
-disabled with the @option{doubletype} option.
+disabled with the @option{doubletype} option.  The header of the
+output FITS file keeps all the parameters that were influential in
+making it. This is done for future reproducability.
 
 @table @option
 
