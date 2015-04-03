@@ -187,6 +187,7 @@ Version numbering
 Tutorial
 
 * Viewing a catalog's targets in JPEG::
+* Making a mock image::
 
 Installation
 
@@ -352,7 +353,7 @@ Noise basics
 * Photon counting noise::       Poisson noise
 * Instrumental noise::          Readout, dark current and other sources.
 * Final noised pixel value::    How the final noised value is calculated.
-* Generating random numbers::
+* Generating random numbers::   How random numbers are generated.
 
 Developing
 
@@ -871,17 +872,18 @@ automatically on the GUI.
 On the command line, with one command you can run numerous actions
 which can come from various CLI capable programs you have decided your
 self in any possible permutation with one command@footnote{By writing
-a shell script and running it.}. This allows for much more creativity
-than that offered to a GUI user. For technical and scientific
-operations, where the same operation (using various programs) has to
-be done on a large set of data files, this is crucially important. It
-also allows exact reproducability which is a foundation principle for
-scientific results. The most common CLI (which is also known as a
-shell) in GNU/Linux is GNU Bash, we strongly encourage you to put
-aside several hours and go through this beautifully explained web
-page: @url{https://flossmanuals.net/command-line/}. You don't need to
-read or even fully understand the whole thing, only a general
-knowledge of the first few chapters are enough to get you going.
+a shell script and running it, for example see the tutorial
+@ref{Making a mock image}.}. This allows for much more creativity than
+that offered to a GUI user. For technical and scientific operations,
+where the same operation (using various programs) has to be done on a
+large set of data files, this is crucially important. It also allows
+exact reproducability which is a foundation principle for scientific
+results. The most common CLI (which is also known as a shell) in
+GNU/Linux is GNU Bash, we strongly encourage you to put aside several
+hours and go through this beautifully explained web page:
+@url{https://flossmanuals.net/command-line/}. You don't need to read
+or even fully understand the whole thing, only a general knowledge of
+the first few chapters are enough to get you going.
 
 Since the operations in the GUI are very limited and they are visible,
 reading a manual is not that important in the GUI (most programs don't
@@ -1003,10 +1005,11 @@ and arguments of any program, see the section titled `Invoking
 ProgramName'.
 
 @menu
-* Viewing a catalog's targets in JPEG::
+* Viewing a catalog's targets in JPEG:: Using one program.
+* Making a mock image::                 Using several programs.
 @end menu
 
-@node Viewing a catalog's targets in JPEG,  , Tutorial, Tutorial
+@node Viewing a catalog's targets in JPEG, Making a mock image, Tutorial, Tutorial
 @section Viewing a catalog's targets in JPEG
 
 Suppose you have a catalog of 200 objects that you want to use in your
@@ -1093,13 +1096,267 @@ report.
 
 
 
+@node Making a mock image,  , Viewing a catalog's targets in JPEG, Tutorial
+@section Making a mock image
 
+When we do an analysis on real data, we have no idea how meaningful
+our results are. One way to test them is to make an image of a mock
+galaxy and first test our results on that. Here we will go through the
+steps to do just this job.
 
+To make the initial mock image we need to provide a catalog to
+MakeProfiles. Remembering how the columns in the catalog should be
+sorted is not easy (and given that it is customizable, it is
+practically impossible). So the first thing you can do is to run
 
+@example
+$ astmkprof -P
+# MakeProfiles (GNU Astronomy Utilities 0.1) 0.1
+# Configured on AA BBBB CCCC at 19:37
+# Written on AAA BBB CC 13:49:31 DDDD
 
+# Output:
+ naxis1              1000
+ naxis2              1000
+ oversample          5
 
+[[[ Truncated rest of list ]]]
 
+# Catalog:
+ xcol                1
+ ycol                2
+ fcol                3
+ rcol                4
+ ncol                5
+ pcol                6
+ qcol                7
+ mcol                8
+ tcol                9
 
+[[[ Truncated rest of list ]]]
+@end example
+
+@noindent
+You now see a list of all the input parameters that MakeProfiles
+currently assumes. The parameters under the catalog option (shown
+above) give us the column numbers we need (note that column number
+counting starts from zero), see @ref{MakeProfiles catalog} for more
+information. We also want MakeProfiles to create the PSF that we want
+to convolve the mock profile with, so as the first row in the catalog
+we specify the PSF (column 3 has a value of 1). Then we specify the
+following parameters for 12 profiles which we want to make in a 500 by
+500 image. You can copy and paste these into your favorite text editor
+and save the result in @file{cat.txt}.
+
+@example
+ 0  0.0000   0.0000  1  3.000  4.765  0.0000  1.000  30.000  5.000
+ 1  100.40   40.593  0  20.00  2.500  45.000  0.992  16.058  5.000
+ 2  50.325   298.45  0  50.82  0.561  103.65  0.231  20.044  5.000
+ 3  572.32   791.32  0  17.21  1.723  172.89  0.672  17.231  5.000
+ 4  94.529   650.29  0  5.320  8.823  12.892  0.593  21.231  5.000
+ 5  179.92   13.859  0  80.51  3.401  151.98  0.587  19.891  5.000
+ 6  382.03   542.65  0  20.76  4.874  94.328  0.683  17.230  5.000
+ 7  1005.3   349.67  0  37.28  1.903  9.5420  0.129  19.348  5.000
+ 8  8.9501   945.34  0  45.32  0.952  80.912  0.902  21.023  5.000
+ 9  702.49   921.30  0  2.781  5.071  147.11  0.723  18.209  5.000
+10  252.94   461.82  0  37.49  2.218  162.12  0.549  16.306  5.000
+11  -50.81   586.81  0  45.80  4.512  0.8221  0.891  19.478  5.000
+12  145.93   103.72  0  9.234  3.871  64.892  0.521  19.001  5.000
+@end example
+
+@noindent
+Since we want to convolve afterwards, we also add in the
+@option{--prepforconv} option.
+
+@example
+$ ls
+cat.txt
+$ astmkprof --prepforconv --naxis1=500 --naxis2=500 cat.txt
+MakeProfiles started on AAA BBB  C 20:23:50 DDD
+  - 13 profiles read from cat.txt            in 0.000309 seconds
+  ---- ./0.fits created.
+  ---- Row 0 complete, 12 left to go.
+  ---- Row 4 complete, 11 left to go.
+  ---- Row 7 complete, 10 left to go.
+  ---- Row 3 complete, 9 left to go.
+  ---- Row 6 complete, 8 left to go.
+  ---- Row 12 complete, 7 left to go.
+  ---- Row 1 complete, 6 left to go.
+  ---- Row 9 complete, 5 left to go.
+  ---- Row 2 complete, 4 left to go.
+  ---- Row 10 complete, 3 left to go.
+  ---- Row 8 complete, 2 left to go.
+  ---- Row 11 complete, 1 left to go.
+  ---- Row 5 complete, 0 left to go.
+  - cat.fits created.                        in 0.087646 seconds
+MakeProfiles finished in:  1.942481 (seconds)
+$ ls
+0.fits  astmkprof.log  cat.fits  cat.txt
+@end example
+
+@cindex Oversample
+@noindent
+The file @file{0.fits} is the PSF we specified that is now available
+for the next step which is convolution. Before going onto convolving
+the image with a PSF, we first have a look at the result. If you look
+at the header of @file{cat.fits} you might notice that the size of the
+image is 2580 by 2580 not 500 by 500 as we asked it. This is due to
+the value to @option{--oversample=5} that we saw in the output of
+@command{astmkprof -P}. In order to more accurately model the
+observations, MakeProfiles has the ability to oversample the given
+profiles to any odd integer, see @ref{Oversampling}. The PSF is also
+oversampled. Also in order to compensate for the artifacts of
+frequency domain convolution, the image is slightly larger than what
+you had asked for. In the end we will crop the central part and get to
+the 500 by 500 pixels that we wanted from the start.
+
+Now we want to convolve the image. To do that we run Convolve:
+
+@example
+$ astconvolve --kernel=0.fits cat.fits
+Convolve started on AAA BBB  C 21:00:39 DDDD
+Convolving cat.fits (hdu: 0)
+ with the kernel 0.fits (hdu: 0).
+ using 8 CPU threads in the frequency domain.
+  - Input and Kernel images padded.          in 0.042885 seconds
+  - Images converted to frequency domain.    in 0.649136 seconds
+  - Multiplied in the frequency domain.      in 0.031040 seconds
+  - Converted back to the spatial domain.    in 0.415976 seconds
+  - Padded parts removed.                    in 0.011312 seconds
+Convolve finished in:  1.200138 (seconds)
+$ls
+0.fits  astmkprof.log  cat_convolved.fits  cat.fits  cat.txt
+@end example
+
+@noindent
+The output can be seen in the @file{cat_convolved.fits} file, when you
+look at the image you will notice that the profiles are no longer as
+sharp as the @file{cat.fits} file. This shows the blurring effect of
+convolution. If you had specified a wider PSF, then they would even
+become more blurred than this.
+
+Now that we have the convolved image, we can re-sample it back by
+1/5th, so each pixel in the output image will be the sum of a 5 by 5
+box of pixels in the input image. To do this we can use ImageWarp:
+
+@example
+$ astimgwarp cat_convolved.fits --matrix="0.2,0,0.4,0,0.2,0.4,0,0,1"
+ImageWarp started on AA BBB  C 21:15:00 DDDD
+ImageWarp finished in:  0.449490 (seconds)
+$ ls
+0.fits         cat_convolved.fits         cat.fits
+astmkprof.log  cat_convolved_warped.fits  cat.txt
+@end example
+
+@noindent
+We now have the image in the pixel scale that we wanted in the
+beginning in @file{cat_convolved_warped.fits}. However, the image is
+still larger than what we had wanted (it is 516 by 516 pixels). It is
+clear that the image has 8 pixels extra on each axis. To check, you
+can resample the @file{0.fits} image with the same warping matrix and
+check its size. You will see that it is 17 by 17 pixels, see @ref{If
+convolving afterwards}. So we crop out all the pixels that are 8
+pixels near the borders:
+
+@example
+$ astimgcrop cat_convolved_warped.fits --section=8:*-8,8:*-8
+ImageCrop started on AAA BBB  C 21:23:58 DDD
+  - Read metadata of 1 images.               in 0.000575 seconds
+  ---- cat_convolved_warped_crop.fits 1 1
+ImageCrop finished in:  0.017612 (seconds)
+$ls
+0.fits          astmkprof.log           cat_convolved_warped.fits
+0_warped.fits   cat_convolved.fits              cat.fits
+astimgcrop.log  cat_convolved_warped_crop.fits  cat.txt
+@end example
+
+@noindent
+Finally, the @file{cat_convolved_warped.fits} has the same
+dimensionality as we had asked for in the beginning. All this trouble
+was certainly worth it because now we have no dimming on the edges of
+the image and the profile centers are more accurately sampled than if
+we hadn't done oversampling. The final step to simulate a real
+observation would be to add noise to the image:
+
+@example
+$ astmknoise cat_convolved_warped_crop.fits --output=out.fits
+MakeNoise started on AAA BBB  C 21:28:18 DDD
+  - Generator type: mt19937
+  - Generator seed: 1428823890
+MakeNoise finished in:  0.039916 (seconds)
+$ls
+0.fits          cat_convolved.fits              cat.txt
+0_warped.fits   cat_convolved_warped_crop.fits  out.fits
+astimgcrop.log  cat_convolved_warped.fits
+astmkprof.log   cat.fits
+@end example
+
+@noindent
+The @file{out.fits} file now has the noised image of the mock catalog
+we had asked for. Infact you could have used the @option{--output}
+option at any of the steps above to get any output name you wanted,
+not the automatic output, see @ref{Automatic output}.
+
+If you don't want to run these commands separately every time, you can
+simply put them all in one script to only run that script. Copy the
+following text into a file named @file{mymock.sh}:
+
+@example
+edge=8
+base=cat
+
+astmkprof --prepforconv --naxis1=500 --naxis2=500 "$base".txt
+astconvolve --kernel=0.fits "$base".fits
+astimgwarp "$base"_convolved.fits --matrix="0.2,0,0.4,0,0.2,0.4,0,0,1"
+astimgcrop "$base"_convolved_warped.fits \
+           --section=$edge:*-$edge,$edge:*-$edge
+astmknoise "$base"_convolved_warped_crop.fits --output=out.fits
+rm 0.fits "$base"*.fits *.log
+@end example
+
+@cindex Gedit
+@cindex GNU Emacs
+We have used shell variables to generalize this script for a general
+catalog. In the shell, you define a variable by giving it a name,
+followed by an @code{=} sign and the value you want. Then you can
+reference that variable from anywhere in the script by calling its
+name with a @code{$} prefix. So in the script whenever you see
+@code{$base}, the value we defined for it above is used. If you use
+advanced editors like GNU Emacs or even simpler ones like Gedit (part
+of the GNOME graphical user interface) the variables will become a
+different color which can really help in understanding the script. We
+have put all the @code{$base} variables in double quotation marks
+(@code{"}) so the variable name and the following text do not get
+mixed. Once you save this file, run the following command to make it
+executable:
+
+@example
+$ chmod +x mymock.sh
+@end example
+
+@noindent
+To run the script, you can run this command:
+
+@example
+$ ./mymock.sh
+@end example
+
+After the script has finished you will notice that all the temporary
+files were also removed (by the last line of the script) and the only
+extra file is the @file{out.fits} file that you wanted in the
+beginning.
+
+Now you can run this script anywhere that you have a
+catalog@footnote{You just have to put a copy of the script in the same
+directory as the catalog.}. You can simply change the name of the
+catalog by changing the value of the @code{base} variable in the start
+of the script @footnote{You won't need to make it executable again
+when you save changes, it will remain executable unless you explicitly
+change the executable flag with @command{chmod}.}. In case the PSFs of
+the different catalogs differ, you can set a different value for the
+@code{edge} variable. One run of this command will run all the
+separate programs one by one and in the end it will remove all the
+temporary outputs that were created.
 
 
 

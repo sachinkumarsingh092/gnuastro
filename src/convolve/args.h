@@ -32,7 +32,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "InputFile1 [InputFile2] ... [InputFile4]";
+static char args_doc[] = "InputFile";
 
 
 
