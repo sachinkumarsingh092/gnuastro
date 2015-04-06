@@ -22,6 +22,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <math.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
@@ -111,9 +112,16 @@ readconfig(char *filename, struct mknoiseparams *p)
       else if(strcmp(name, "background")==0)
 	{
 	  if(up->backgroundset) continue;
-          anydouble(value, &p->background, value, key, SPACK, filename,
+          anydouble(value, &p->mbackground, value, key, SPACK, filename,
                     lineno);
 	  up->backgroundset=1;
+	}
+      else if(strcmp(name, "zeropoint")==0)
+	{
+	  if(up->zeropointset) continue;
+          anydouble(value, &p->zeropoint, value, key, SPACK, filename,
+                    lineno);
+	  up->zeropointset=1;
 	}
       else if(strcmp(name, "stdadd")==0)
 	{
@@ -178,15 +186,17 @@ printvalues(FILE *fp, struct mknoiseparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
     }
+  if(up->backgroundset)
+    fprintf(fp, CONF_SHOWFMT"%f\n", "background", p->mbackground);
+  if(up->zeropointset)
+    fprintf(fp, CONF_SHOWFMT"%f\n", "zeropoint", p->zeropoint);
+  if(up->stdaddset)
+    fprintf(fp, CONF_SHOWFMT"%f\n", "stdadd", p->stdadd);
 
 
   fprintf(fp, "\n# Output parameters:\n");
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
-  if(up->backgroundset)
-    fprintf(fp, CONF_SHOWFMT"%f\n", "background", p->background);
-  if(up->stdaddset)
-    fprintf(fp, CONF_SHOWFMT"%f\n", "stdadd", p->stdadd);
 
 
 
@@ -215,6 +225,8 @@ checkifset(struct mknoiseparams *p)
 
   if(up->backgroundset==0)
     REPORT_NOTSET("background");
+  if(up->zeropointset==0)
+    REPORT_NOTSET("zeropoint");
   if(up->stdaddset==0)
     REPORT_NOTSET("stdadd");
 
@@ -247,9 +259,13 @@ checkifset(struct mknoiseparams *p)
 void
 sanitycheck(struct mknoiseparams *p)
 {
+  /* Set the output name if not specified: */
   if(p->cp.output==NULL)
     automaticoutput(p->up.inputname, "_noised.fits", p->cp.removedirinfo,
                     p->cp.dontdelete, &p->cp.output);
+
+  /* Convert the background value from magnitudes to flux: */
+  p->background=pow(10, (p->zeropoint-p->mbackground)/2.5f);
 }
 
 

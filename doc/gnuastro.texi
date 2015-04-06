@@ -151,7 +151,7 @@ sub-component to a title is present.
 
 @menu
 * Introduction::                General introduction.
-* Tutorial::                    Some tutorial example applications.
+* Tutorials::                   Tutorials or Cookbooks.
 * Installation::                Requirements and installation.
 * Common behavior::             Common behavior in all programs.
 * Files::                       File information and type conversion.
@@ -184,10 +184,10 @@ Version numbering
 
 * GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
 
-Tutorial
+Tutorials
 
-* Viewing a catalog's targets in JPEG::
-* Making a mock image::
+* Hubble visually checks and classifies his catalog::
+* Sufi simulates a detection::  Simulating a detection.
 
 Installation
 
@@ -299,6 +299,7 @@ Convolve
 * Convolution on the edges::    Dealing with the edges of an image.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
 * Invoking astconvolve::        Options and arguments to Convolve.
+* Convolve future updates::     Future plans for Convolve.
 
 ImageWarp
 
@@ -324,6 +325,7 @@ MakeProfiles
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
 * Profile total magnitude::     Definition of total profile magnitude.
+* Magnitude to flux conversion::
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
 
@@ -384,7 +386,7 @@ SAO ds9
 @end detailmenu
 @end menu
 
-@node Introduction, Tutorial, Top, Top
+@node Introduction, Tutorials, Top, Top
 @chapter Introduction
 
 @cindex GNU coding standards
@@ -488,7 +490,7 @@ can be read on the command line by running the command @command{$ info
 astprogname}, see @ref{Naming convention} and @ref{Getting help}. The
 `Invoke ProgramName' sub-section starts with a few examples of each
 program and goes on to explain the invocation details. In
-@ref{Tutorial} some real life examples of how these programs might be
+@ref{Tutorials} some real life examples of how these programs might be
 used is given.
 
 
@@ -795,8 +797,11 @@ independent. Something like the GNU Coreutils.
 Some astronomers initially install and use the GNU/Linux operating
 systems because their research software can only be run in this
 environment. This is how the founder of Gnuastro started using
-GNU/Linux at least! If this is not the case for you, you can skip the
-following.
+GNU/Linux at least! If this is not the case for you, you can skip this
+section. @ref{Tutorials} is a complete chapter with some real world
+example applications of Gnuastro making good use of GNU/Linux
+capabilities written for newcomers to this environment. It is fully
+explained and is easy and entertaining to read, we hope you enjoy it.
 
 @cindex GNU/Linux
 @cindex Linux
@@ -872,12 +877,12 @@ automatically on the GUI.
 On the command line, with one command you can run numerous actions
 which can come from various CLI capable programs you have decided your
 self in any possible permutation with one command@footnote{By writing
-a shell script and running it, for example see the tutorial
-@ref{Making a mock image}.}. This allows for much more creativity than
-that offered to a GUI user. For technical and scientific operations,
-where the same operation (using various programs) has to be done on a
-large set of data files, this is crucially important. It also allows
-exact reproducability which is a foundation principle for scientific
+a shell script and running it, for example see the tutorials in
+@ref{Tutorials}.}. This allows for much more creativity than that
+offered to a GUI user. For technical and scientific operations, where
+the same operation (using various programs) has to be done on a large
+set of data files, this is crucially important. It also allows exact
+reproducability which is a foundation principle for scientific
 results. The most common CLI (which is also known as a shell) in
 GNU/Linux is GNU Bash, we strongly encourage you to put aside several
 hours and go through this beautifully explained web page:
@@ -933,7 +938,10 @@ In this manual we have the following conventions:
 All commands that are to be run on the shell (command line) prompt as
 the user start with a @command{$}. In case they must be run as a
 super-user or system administrator, they will start with a
-@command{#}.
+@command{#}. If the command is in a separate line and next line
+@code{is also in the code type face}, but doesn't have any of the
+@command{$} or @command{#} signs, then it is the output of the command
+after it is run. As a user, you don't need to type those lines.
 
 @item
 If the command becomes larger than the page width a @key{\} is
@@ -955,23 +963,32 @@ character, enabling you to use multiple lines to write your commands.
 @node Acknowledgments,  , Conventions, Introduction
 @section Acknowledgments
 
-GNU Astronomy Utilities has benefited alot for the help and support of
-various people, a complete list is distributed along with the source
-code in the file named @file{THANKS} (it is a plain text
-file). Professor Takashi Ichikawa has been instrumental in the
-evolution of the various small programs that were the predecessors of
-Gnuastro, his very critical view points were very useful in creating
-the algorithms of MakeProfiles and NoiseChisel.
+GNU Astronomy Utilities has significantly benefited from the help and
+support of various people and institutions. The plain text file
+@file{THANKS} which is distributed along with the source code has a
+full list. In particular the role of the Japanese Ministry of Science
+and Technology (MEXT) scholarship should be acknowledged for the long
+term scholarship of Mohammad Akhlaghi's Masters and PhD period in
+Tohoku University Astronomical Insitute in Sendai city. Gnuastro would
+not have been possible without the long term learning and planning
+that could only be acheived with such a long term scholarship. Tohoku
+University was the first institution to sign a copyright disclaimer to
+the Free Software Foundation for Gnuastro, allowing it to be freely
+available for the astronomical community. The very critical view
+points of Professor Takashi Ichikawa (at Tohoku University) were also
+instrumental in the creation of Gnuastro.
 
 Mohammad-reza Khellat and Alan Lefor kindly studied the manual
 multiple times and provided very useful suggestions. Alan also helped
 in testing Gnuastro on other operating systems. Brandon Invergo, Karl
-Berry and Richard Stallman from GNU also provided very useful
-suggestions during the evaluation process. At first we wanted to
-submit the programs as independent and individual small programs, but
-thanks to their suggestions and ideas in the evalution process, all
-the separate programs were merged into the complete system that is now
-available.
+Berry and Richard Stallman also provided very useful suggestions
+during the GNU evaluation process. At first we wanted to submit the
+programs as independent and individual small programs, but thanks to
+their suggestions and ideas, all the separate programs were merged
+into the complete system that is now available for the astronomical
+community. Finally we should thank all the anonymous developers in
+various online forums which patiently answered all our small (but very
+important) technical questions.
 
 
 
@@ -992,135 +1009,368 @@ available.
 
 
 
-@node Tutorial, Installation, Introduction, Top
-@chapter Tutorial
+@node Tutorials, Installation, Introduction, Top
+@chapter Tutorials
 
-Before going into details about the installation, common behaviour and
-the particular aspects of each program, we will first give some
-general outlines of the most common use cases for the various
-utilities in GNU Astronomy Utilities. To get more information about a
+@cindex Tutorial
+@cindex Cookbook
+In this chapter we give several tutorials or cookbooks on how to use
+the various tools in Gnuastro for your scientific purposes. In these
+tutorials, we have intentionally avoided too many cross references to
+make it more easily readable. To get more information about a
 particular program, you can visit the section with the same name as
-the program in this manual. To see only an explanation of the options
-and arguments of any program, see the section titled `Invoking
-ProgramName'.
+the program in this manual. Each program section starts by explaning
+the general concepts behind what it does. If you only want to see an
+explanation of the options and arguments of any program, see the
+subsection titled `Invoking ProgramName'. See @ref{Conventions}, for
+an explanations of the conventions we use in the example codes.
+
+The tutorials in this section use a fictional setting of some
+historical figures in the history of astronomy. We have tried to show
+how Gnuastro would have been helpful for them in making their
+discoveries if there were GNU/Linux computers in their times! Please
+excuse us for any historical inaccuracy, this is not intended to be a
+historical reference. This form of presentation can make the tutorials
+more pleasent and entertaining to read while also being more practical
+(explaining from a user's point of view)@footnote{This form of
+presenting a tutorial was influenced by the TikZ and PGF manual which
+provides graphic capabilities in @TeX{} and @LaTeX{} where Till Tantau
+(author of the manual) uses Euclid to present those
+capabilities. There are also some nice words of wisdom for Unix-like
+systems called ``Rootless Root'':
+@url{http://catb.org/esr/writings/unix-koans/}. These also have a
+similar style but they use a mythical figure named Master Foo. If you
+already have some experience in Unix-like systems, you will definitely
+find these ``Unix Koans'' very entertaining.}. The main reference for
+the historical facts mentioned in these fictional settings was
+Wikipedia.
 
 @menu
-* Viewing a catalog's targets in JPEG:: Using one program.
-* Making a mock image::                 Using several programs.
+* Hubble visually checks and classifies his catalog::
+* Sufi simulates a detection::  Simulating a detection.
 @end menu
 
-@node Viewing a catalog's targets in JPEG, Making a mock image, Tutorial, Tutorial
-@section Viewing a catalog's targets in JPEG
+@node Hubble visually checks and classifies his catalog, Sufi simulates a detection, Tutorials, Tutorials
+@section Hubble visually checks and classifies his catalog
 
-Suppose you have a catalog of 200 objects that you want to use in your
-research. The right ascension of each target is stored in column 0 and
-the declination in column 1. Let's assume you created the catalog using
-a detection program (for example NoiseChisel) on one image
-(@file{image.fits}). Doing your science process (for example fittings
-or etc) on the large input image is impractical for most applications,
-so you need cutouts. A reasonable scientist would also want to
-visually check all or a random sample of them first. But doing so with
-SAO ds9 will be too slow, this is where ConvertType comes in handy.
+@cindex Edwin Hubble
+In 1924 Hubble@footnote{Edwin Powell Hubble (1889 -- 1953 A.D.) was an
+American astronomer who can be considered as the father of
+extragalactic astronomy, by proving that some nebulae are too distant
+to be within the Galaxy. He then went on to show that the universe
+appears to expand and also done a visual classification of the
+galaxies that is known as the Hubble fork.} announced his discovery
+that some of the known nebulous objects are too distant to be within
+the the Milky Way (or Galaxy) and that they were probably distant
+galaxies in their own right. He had also used them to show that the
+redshift of the nebulae increases with their distance. So now he wants
+to study them more accuratly to see what they actually are. Since they
+are nebulous or amorphous, they can't be modeled (like stars that are
+always a point) easily. So there is no better way to distinguish them
+than to visually inspect them and see if it is possible to classify
+these nebulae or not.
 
-All the targets can be cut out from the larger image(s) using
-ImageCrop. Let's assume you are content with the default ImageCrop
-parameter values. At first you have an empty folder with the image and
-NoiseChisel object catalog:
+Hubble has stored all the FITS images of the objects he wants to
+visually inspect in his @file{/mnt/data/images} directory. He has also
+stored his catalog of extra Galactic nebulae in
+@file{/mnt/data/catalogs/extragalactic.txt}. Any normal user on his
+GNU/Linux system (including him self) only has read access to the
+contents of the @file{/mnt/data} directory. He done this by running
+this command as root:
+
 @example
-$ ls
-image.fits image_o.txt
+# chmod 755 /mnt/data
 @end example
 
 @noindent
-You can then run astimgcrop with the following parameters:
+Hubble has done this intentionally to avoid mistakenly deleting or
+modifying the valuable images he has taken at Mount Wilson while he is
+working as an ordinary user. Retaking all those images and data is
+simply not an option. Infact they are also in another hard disk
+(@file{/dev/sdb1}). So if the hard disk which stores his GNU/Linux
+distribution suddenly malfunctions due to work load, his data is not
+in harms way. That hard disk is only mounted to this directory when he
+wants to use it with the command:
+
 @example
-$ astimgcrop --racol=0 --deccol=1 image_o.txt image.fits
-ImageCrop started on AAA BBB CC DD:EE:FF GGGG
+# mount /dev/sdb1 /mnt/data
+@end example
+
+@noindent
+In short, Hubble wants to keep his data safe and fortunately by
+default Gnuastro allows for this.  Hubble creates a temporary
+@file{visualcheck} directory in his home directory for this check. He
+runs the following commands to make the directory and change to
+it@footnote{The @code{pwd} command is short for ``Print Working
+Directory'' and @code{ls} is short for ``list'' which shows the
+contents of a directory.}:
+
+@example
+$ mkdir ~/visualcheck
+$ cd ~/visualcheck
+$ pwd
+/home/edwin/visualcheck
+$ ls
+@end example
+
+Hubble has multiple images in @file{/mnt/data/images}, some of his
+targets might be on the edges of an image and so several images need
+to be stitched to give a good view of them. Also his extra Galactic
+targets belong to various pointings on the sky, so they are not in one
+large image. Gnuastro's ImageCrop is just the utility he wants. The
+catalog in @file{extragalactic.txt} is a plain text file which stores
+the basic information of all his known 200 extra Galactic nebulae. In
+its second column it has each object's Right Ascention (the first
+column is a label he has given to each object) and in the third the
+object's declination.  Having read the Gnuastro manual, he knows that
+all counting is done starting from zero, so the RA and Dec columns
+have number 1 and 2 respectively.
+
+@example
+$ astimgcrop --racol=1 --deccol=2 /mnt/data/images/*.fits     \
+             /mnt/data/catalogs/extragalactic.txt
+ImageCrop started on Tue Jun  14 10:18:11 1932
   ---- ./4_crop.fits                  1 1
   ---- ./2_crop.fits                  1 1
   ---- ./1_crop.fits                  1 1
-[[[ Truncated rest of list ]]]
+[[[ Truncated middle of list ]]]
   ---- ./198_crop.fits                1 1
   ---- ./195_crop.fits                1 1
   - 200 images created.
   - 200 were filled in the center.
   - 0 used more than one input.
-ImageCrop finished in:  AA.BBBBBB (seconds)
-$ ls
-1_crop.fits 2_crop.fits ... 200_crop.fits catalog.txt image.fits
+ImageCrop finished in:  2.429401 (seconds)
 @end example
+
 
 @cindex Asynchronous thread allocation
 @noindent
-The thread allocation of the CPUs is asynchronous, so each time you
-run it the order of which job gets done first differs. For ImageCrop
-the order of outputs is irrelevant since each crop is independent of the
-rest. This is why the crops are not necessarily created in the same
-input order. From the output of @command{ls} you see that in the end
-all the 200 objects have been cropped out.
+Hubble already knows that thread allocation to the the CPU cores is
+asynchronous, so each time you run it the order of which job gets done
+first differs. When using ImageCrop the order of outputs is irrelevant
+since each crop is independent of the rest. This is why the crops are
+not necessarily created in the same input order. He is content with
+the default width of the outputs (which he inspected by running
+@code{$ astimgcrop -P}), but if he wanted a different width for the
+cropped images he could do that with the @option{--wwidth} option
+which accepts a value in arcseconds.  When he lists the contents of
+the directory again he finds his 200 objects as separate FITS images.
+
+@example
+$ ls
+1_crop.fits 2_crop.fits ... 200_crop.fits
+@end example
 
 @cindex GNU Parallel
-Converting all the images to JPEG can be done very fast using GNU
-Parallel (which will run ConvertType simultaneously on all your
-available cores to speed up the job):
+The FITS image format was not designed for viewing, but mainly for
+accurate storing of the data. So he chooses to convert the cropped
+images to a more common image format to view them more quickly and
+easily through standard image viewers (which load much faster than
+FITS image viewer). JPEG is one of the most recognized image formats
+that is supported by most image viewers. Fortuantely Gnuastro has just
+such a tool to convert various types of file types to and from each
+other: ConvertType. Hubble has already heard of GNU Parallel from one
+of his colleagues at Mount Wilson Observatory. It allows multiple
+instances of a command to be run simultaneously on the system, so he
+uses it in conjuction with ConvertType to convert all the images to
+JPEG.
 @example
 $ parallel astconvertt -ojpg ::: *_crop.fits
 @end example
 
 @pindex eog
 @cindex Eye of GNOME
-Now that you have the different JPEG images you can go through them
-very fast with the default GNOME image viewer@footnote{This is only
-for users of the GNOME graphical desktop environment which is the
-default in most GNU/Linux distributions. If you use another graphical
-desktop environment, replace @command{eog} with any other image
-viewer.} (Eye of GNOME), you can open the first one with
+For his graphical user interface Hubble is using GNOME which is the
+default in most distributions in GNU/Linux. The basic image viewer in
+GNOME is the Eye of GNOME, which has the executable file name
+@command{eog} @footnote{Eye of GNOME is only available for users of
+the GNOME graphical desktop environment which is the default in most
+GNU/Linux distributions. If you use another graphical desktop
+environment, replace @command{eog} with any other image
+viewer.}. Since he has used it before he knows that once it opens an
+image, you can use the @key{ENTER} or @key{SPACE} keys on the keyboard
+to go to the next image in the directory or the @key{Backspace} key to
+to go the previous image. So he opens the image of the first object
+with the command below and with his cup of coffee in his other hand,
+he flips through his targets very fast to get a good initial
+impression of the morphologies of these extra Galactic nebulae.
+
 @example
 $ eog 1_crop.jpg
 @end example
 
-Simply by pressing the @key{Enter} key, you can go onto the next image
-and check all the results in the catalog very fast. You can also use
-the JPEG images and an automated script to make an automatic webpage
-to display all the images side by side in one screen for a faster
-check. You can then delete all the JPEG files with the command.
+@cindex GNU Bash
+@cindex GNU Emacs
+@cindex Spiral galaxies
+@cindex Elliptical galaxies
+Hubble's cup of coffee is now finished and he also got a nice general
+impression of the shapes of the nebulae. He tentatively/mentally
+classified the objects into three classes while doing the visual
+inspection. One group of the nebulae have a very simple elliptical
+shape and seem to have no internal special structure, so he gives them
+code 1. Another clearly different class are those which have spiral
+arms which he associates with code 2 and finally there seems to be a
+class of nebulae in between which appear to have a disk but no spiral
+arms, he gives them code 3.
+
+Now he wants to know how many of the nebulae in his extra Galactic
+sample are within each class. Repeating the same process above and
+writing the results on paper is very time consuming and prone to
+errors. Fortunately Hubble knows the basics of GNU Bash shell
+programming, so he writes the following short script with a loop to
+help him with the job. After all, computers are made for us to operate
+and knowing basic shell programming gives Hubble this ability to
+creatively operate the computer as he wants. So using GNU
+Emacs@footnote{This can be done with any text editor} (his favorite
+text editor) he puts the following text in a file named
+@file{classify.sh}.
+
 @example
-$ rm *.jpg
+for name in *.jpg
+do
+    eog $name &
+    processid=$!
+    echo -n "$name belongs to class: "
+    read class
+    echo $name $class >> classified.txt
+    kill $processid
+done
 @end example
 
-After you have used the cutouts and your research is complete, you can
-convert the crops to EPS or PDF to include in the end of your paper or
-report.
+@cindex Gedit
+@cindex GNU Emacs
+Fortunately GNU Emacs or even simpler editors like Gedit (part of the
+GNOME graphical user interface) will display the variables and shell
+constructs in different colors which can really help in understanding
+the script. Put simply, the @code{for} loop gets the name of each JPEG
+file in the directory this script is run in and puts it in
+@code{name}. In the shell, the value of a variable is used by putting
+a @code{$} sign before the variable name. Then Eye of GNOME is run on
+the image in the background to show him that image and its process ID
+is saved internally (this is necessary to close Eye of GNOME
+later). The shell then prompts the user to specify a class and after
+saving it in @code{class}, it prints the file name and the given class
+in the next line of a file named @file{classified.txt}. To make the
+script executable (so he can run it later any time he wants) he runs:
+
+@example
+$ chmod +x classify.sh
+@end example
+
+@noindent
+Now he is ready to do the classification, so he runs the script:
+
+@example
+$ ./classify.sh
+@end example
+
+@noindent
+In the end he can delete all the JPEG and FITS files along with
+ImageCrop's log file with the following short command. The only files
+remaining are the script and the result of the classification.
+
+@example
+$ rm *.jpg *.fits astimgcrop.txt
+$ ls
+classified.txt   classify.sh
+@end example
+
+@noindent
+He can now use @file{classified.txt} as input to a plotting program to
+plot the histogram of the classes and start making interpretations
+about what these nebulous objects that are outside of the Galaxy are.
 
 
 
+@node Sufi simulates a detection,  , Hubble visually checks and classifies his catalog, Tutorials
+@section Sufi simulates a detection
 
+It is the year 953 A.D.  and Sufi@footnote{Abd al-rahman Sufi (903 --
+986 A.D.), also known in Latin as Azophi was an Iranian
+astronomer. His manuscript ``Book of fixed stars'' contains the first
+recorded observations of the Andromeda galaxy, the Large Magellanic
+Cloud and seven other non-stellar or `nebulous' objects.}  is in
+Shiraz as a guest astronomer. He had come there to use the advanced
+123 centimeter astrolabe for his studies on the Ecliptic. However,
+something was bothering him for a long time. While mapping the
+constellations, there were several non-stellar objects that he had
+detected in the sky, one of them was in the Andromeda
+constellation. During a trip he had to Yemen, Sufi had seen another
+such object in the southern skies looking over the indian ocean. He
+wasn't sure if such cloud-like non-stellar objects (which he was the
+first to call `Sah@={a}bi' in Arabic or `nebulous') were real
+astronomical objects or if they were only the result of some bias in
+his observations. Could such diffuse objects actually be detected at
+all with his detection technqiue?
 
-@node Making a mock image,  , Viewing a catalog's targets in JPEG, Tutorial
-@section Making a mock image
+He still had a few hours left until nightfall (when he would continue
+his studies on the ecliptic) so he decided to find an answer to this
+question. He had thoroughly studied Claudius Ptolemy's (90 -- 168 A.D)
+Almagest and had made lots of corrections to it, in particular in
+measuring the brightness. Using his same experience, he was able to
+measure a magnitude for the objects and wanted to simulate his
+observation to see if the a simulated object with the same brightness
+could be detected in a simulated noise with the same detection
+technique.  The general outline of the steps he wants to take are:
 
-When we do an analysis on real data, we have no idea how meaningful
-our results are. One way to test them is to make an image of a mock
-galaxy and first test our results on that. Here we will go through the
-steps to do just this job.
+@enumerate
 
-To make the initial mock image we need to provide a catalog to
-MakeProfiles. Remembering how the columns in the catalog should be
-sorted is not easy (and given that it is customizable, it is
-practically impossible). So the first thing you can do is to run
+@item
+Make some mock profiles in an oversampled image. The initial mock
+image has to be oversampled prior to convolution or other forms of
+transformation in the image. Through his experiences, Sufi knew that
+this is because the image of heavenly bodies is actually transformed
+by the atmosphere or other sources outside the atmosphere (for example
+gravitational lenses) prior to being sampled on an image. Since that
+transformation occurs on a continues grid, to best approximate it, he
+should do all the work on a finer pixel grid then in the end resample
+that grid.
+
+@item
+Convolve the image with a PSF image that is oversampled to the same
+value as the mock image. Since he wants to finish in a reasonable time
+and the PSF kernel will be very large due to oversampling, he has to
+use frequency domain convolution which has the side effect of dimming
+the edges of the image. So in the first step above he also has to
+build the image to be larger by atleast half the width of the PSF
+convolution kernel on each edge.
+
+@item
+With all the transformations complete, the image should be resampled
+to the same size of the pixels in his detector.
+
+@item
+He should remove those extra pixels on all edges to remove frequency
+domain convolution artifacts in the final product.
+
+@item
+He should add noise to the (until now, noise-less) mock image. After
+all, all observations have noise associated witht them.
+
+@end enumerate
+
+Fortunately Sufi had heard of GNU Astronomy Utilities from a colleague
+in Isfahan (where he worked) and had installed it on his computer a
+year before. It had tools to do all the steps above. He had used
+MakeProfiles before, but wasn't sure which columns he had chosen in
+his user or system or user wide configuration files for which
+parameters, see @ref{Configuration files}. So to start his simulation,
+Sufi runs MakeProfiles with the @option{-P} option to make sure what
+columns in a catalog MakeProfiles currently recognizes and the output
+image prameters:
 
 @example
 $ astmkprof -P
 # MakeProfiles (GNU Astronomy Utilities 0.1) 0.1
-# Configured on AA BBBB CCCC at 19:37
-# Written on AAA BBB CC 13:49:31 DDDD
+# Configured on 21 September 952 at 19:37
+# Written on Sat Oct  6 15:49:31 953
 
 # Output:
  naxis1              1000
  naxis2              1000
  oversample          5
 
-[[[ Truncated rest of list ]]]
+[[[ Truncated middle of list ]]]
 
 # Catalog:
  xcol                1
@@ -1137,133 +1387,155 @@ $ astmkprof -P
 @end example
 
 @noindent
-You now see a list of all the input parameters that MakeProfiles
-currently assumes. The parameters under the catalog option (shown
-above) give us the column numbers we need (note that column number
-counting starts from zero), see @ref{MakeProfiles catalog} for more
-information. We also want MakeProfiles to create the PSF that we want
-to convolve the mock profile with, so as the first row in the catalog
-we specify the PSF (column 3 has a value of 1). Then we specify the
-following parameters for 12 profiles which we want to make in a 500 by
-500 image. You can copy and paste these into your favorite text editor
-and save the result in @file{cat.txt}.
+In particular, Sufi looks at the parameters under the catalog
+grouping.  Fortunately the columns are naturally numbered such that
+column 0 can be an ID he specifies for each object (which MakeProfiles
+ignores) and each subsequent column specifies a given
+parameter. Fortunately MakeProfiles has the capability to also make
+the PSF which is to be used on the mock image and using the
+@option{--prepforconv} option, he can also make the mock image to be
+larger by the correct amount and all the sources to be shifted by the
+correct amount.
+
+For his initial check he decides to simulate the nebula in the
+Andromeda constellation. The night he was observing, the PSF had
+roughly a FWHM of about 5 pixels, so as the first row, he defines the
+PSF parameters and sets the radius column (@code{rcol} above, fifth
+column) to @code{5.000}, he also chooses a Moffat function for it's
+functional form. Remembering how diffuse the nebula in the Andromeda
+constellation was, he decides to simulate it with a mock S@'{e}rsic
+index 1.0 profile. He wants the output to be 500 pixels by 500 pixels,
+so he puts the mock profile in the center. Looking at his drawings of
+it, he decides a reasonable effective radius for it would be 40 pixels
+on this image pixel scale, he sets the axis ratio and position angle
+to approximately correct values too and finally he sets the total
+magnitude of the profile to 3.44 which he had accurately
+measured. Sufi also decides to truncate both the mock profile and PSF
+at 5 times the respective radius parameters. In the end he decides to
+put four stars on the four corners of the image at very low magnitudes
+as a visual scale.
+
+Using all the information above, he creates the catalog of mock
+profiles he wants in a file named @file{cat.txt} (short for catalog)
+using his favorite text editor and stores it in a directory named
+@file{simulationtest} in his home directory@footnote{The @command{cat}
+command prints the contents of a file, short for concatenation.}:
 
 @example
- 0  0.0000   0.0000  1  3.000  4.765  0.0000  1.000  30.000  5.000
- 1  100.40   40.593  0  20.00  2.500  45.000  0.992  16.058  5.000
- 2  50.325   298.45  0  50.82  0.561  103.65  0.231  20.044  5.000
- 3  572.32   791.32  0  17.21  1.723  172.89  0.672  17.231  5.000
- 4  94.529   650.29  0  5.320  8.823  12.892  0.593  21.231  5.000
- 5  179.92   13.859  0  80.51  3.401  151.98  0.587  19.891  5.000
- 6  382.03   542.65  0  20.76  4.874  94.328  0.683  17.230  5.000
- 7  1005.3   349.67  0  37.28  1.903  9.5420  0.129  19.348  5.000
- 8  8.9501   945.34  0  45.32  0.952  80.912  0.902  21.023  5.000
- 9  702.49   921.30  0  2.781  5.071  147.11  0.723  18.209  5.000
-10  252.94   461.82  0  37.49  2.218  162.12  0.549  16.306  5.000
-11  -50.81   586.81  0  45.80  4.512  0.8221  0.891  19.478  5.000
-12  145.93   103.72  0  9.234  3.871  64.892  0.521  19.001  5.000
+$ mkdir ~/simulationtest
+$ cd ~/simulationtest
+$ pwd
+/home/rahman/simulationtest
+$ emacs cat.txt
+$ ls
+cat.txt
+$ cat cat.txt
+ 0  0.0000   0.0000  1  5.000  4.765  0.0000  1.000  30.000  5.000
+ 1  250.00   250.00  0  40.00  1.000  -25.00  0.400  3.4400  5.000
+ 2  50.000   50.000  3  0.000  0.000  0.0000  0.000  9.0000  0.000
+ 3  450.00   50.000  3  0.000  0.000  0.0000  0.000  9.2500  0.000
+ 4  50.000   450.00  3  0.000  0.000  0.0000  0.000  9.5000  0.000
+ 5  450.00   450.00  3  0.000  0.000  0.0000  0.000  9.7500  0.000
 @end example
 
 @noindent
-Since we want to convolve afterwards, we also add in the
-@option{--prepforconv} option.
+He looked into his observation logs and found that the night he was
+observing, the zeropoint magnitude was 18. Now he has all the
+necessary parameters and runs MakeProfiles with the following command:
 
 @example
-$ ls
-cat.txt
-$ astmkprof --prepforconv --naxis1=500 --naxis2=500 cat.txt
-MakeProfiles started on AAA BBB  C 20:23:50 DDD
-  - 13 profiles read from cat.txt            in 0.000309 seconds
+
+$ astmkprof --prepforconv --naxis1=500 --naxis2=500         \
+            --zeropoint=18.0 cat.txt
+MakeProfiles started on Sat Oct  6 16:26:56 953
+  - 6 profiles read from cat.txt             in 0.000209 seconds
+  ---- Row 5 complete, 5 left to go.
+  ---- Row 3 complete, 4 left to go.
+  ---- Row 2 complete, 3 left to go.
+  ---- Row 4 complete, 2 left to go.
   ---- ./0.fits created.
-  ---- Row 0 complete, 12 left to go.
-  ---- Row 4 complete, 11 left to go.
-  ---- Row 7 complete, 10 left to go.
-  ---- Row 3 complete, 9 left to go.
-  ---- Row 6 complete, 8 left to go.
-  ---- Row 12 complete, 7 left to go.
-  ---- Row 1 complete, 6 left to go.
-  ---- Row 9 complete, 5 left to go.
-  ---- Row 2 complete, 4 left to go.
-  ---- Row 10 complete, 3 left to go.
-  ---- Row 8 complete, 2 left to go.
-  ---- Row 11 complete, 1 left to go.
-  ---- Row 5 complete, 0 left to go.
-  - cat.fits created.                        in 0.087646 seconds
-MakeProfiles finished in:  1.942481 (seconds)
-$ ls
+  ---- Row 0 complete, 1 left to go.
+  ---- Row 1 complete, 0 left to go.
+  - cat.fits created.                        in 0.024811 seconds
+MakeProfiles finished in:  0.236629 (seconds)
+$ls
 0.fits  astmkprof.log  cat.fits  cat.txt
 @end example
 
 @cindex Oversample
 @noindent
-The file @file{0.fits} is the PSF we specified that is now available
-for the next step which is convolution. Before going onto convolving
-the image with a PSF, we first have a look at the result. If you look
-at the header of @file{cat.fits} you might notice that the size of the
-image is 2580 by 2580 not 500 by 500 as we asked it. This is due to
-the value to @option{--oversample=5} that we saw in the output of
-@command{astmkprof -P}. In order to more accurately model the
-observations, MakeProfiles has the ability to oversample the given
-profiles to any odd integer, see @ref{Oversampling}. The PSF is also
-oversampled. Also in order to compensate for the artifacts of
-frequency domain convolution, the image is slightly larger than what
-you had asked for. In the end we will crop the central part and get to
-the 500 by 500 pixels that we wanted from the start.
-
-Now we want to convolve the image. To do that we run Convolve:
+The file @file{0.fits} is the PSF Sufi had asked for and
+@file{cat.fits} is the image containing the 5 objects. The PSF is now
+available to him as a separate file for the convolution step. While he
+was preparing the catalog, one of his students came up and was also
+following the steps. When he opened the image, the student was
+surprized to see that all the stars are only one pixel and not in the
+shape of the PSF as we see when we image the sky at night. So Sufi
+explained to him that the stars will take the shape of the PSF after
+convolution and this is how they would look if we didn't have an
+atmosphere or an aperture when we took the image. The size of the
+image was also surprizing for the student, instead of 500 by 500, it
+was 2630 by 2630 pixels. So Sufi had to explain why oversampling is
+very important for parts of the image where the flux change is
+significant over a pixel. Sufi then explained to him that after
+convolving we will resample the image to get our originally desired
+size. To convolve the image, Sufi ran the following command:
 
 @example
 $ astconvolve --kernel=0.fits cat.fits
-Convolve started on AAA BBB  C 21:00:39 DDDD
+Convolve started on Mon Apr  6 16:35:32 953
 Convolving cat.fits (hdu: 0)
  with the kernel 0.fits (hdu: 0).
  using 8 CPU threads in the frequency domain.
-  - Input and Kernel images padded.          in 0.042885 seconds
-  - Images converted to frequency domain.    in 0.649136 seconds
-  - Multiplied in the frequency domain.      in 0.031040 seconds
-  - Converted back to the spatial domain.    in 0.415976 seconds
-  - Padded parts removed.                    in 0.011312 seconds
-Convolve finished in:  1.200138 (seconds)
+  - Input and Kernel images padded.          in 0.045576 seconds
+  - Images converted to frequency domain.    in 10.486712 seconds
+  - Multiplied in the frequency domain.      in 0.032780 seconds
+  - Converted back to the spatial domain.    in 5.342335 seconds
+  - Padded parts removed.                    in 0.011880 seconds
+Convolve finished in:  15.972771 (seconds)
 $ls
 0.fits  astmkprof.log  cat_convolved.fits  cat.fits  cat.txt
 @end example
 
 @noindent
-The output can be seen in the @file{cat_convolved.fits} file, when you
-look at the image you will notice that the profiles are no longer as
-sharp as the @file{cat.fits} file. This shows the blurring effect of
-convolution. If you had specified a wider PSF, then they would even
-become more blurred than this.
-
-Now that we have the convolved image, we can re-sample it back by
-1/5th, so each pixel in the output image will be the sum of a 5 by 5
-box of pixels in the input image. To do this we can use ImageWarp:
+When convolution finished, Sufi opened the @file{cat_convolved.fits}
+file and showed the effect of convolution to his student and explained
+to him how a PSF with a larger FWHM would make the points even
+wider. With the convolved image ready, they were ready to re-sample it
+to the orignal pixel scale Sufi had planned. Sufi explained the basic
+concepts of warping the image to his student and also the fact that
+since the center of a pixel is assumed to take integer values in the
+FITS standard, the transformation matrix would not be a simple scaling
+but would also need translating, see @ref{Merging multiple
+warpings}. Then he ran ImageWarp with the following command:
 
 @example
-$ astimgwarp cat_convolved.fits --matrix="0.2,0,0.4,0,0.2,0.4,0,0,1"
-ImageWarp started on AA BBB  C 21:15:00 DDDD
-ImageWarp finished in:  0.449490 (seconds)
+$ astimgwarp cat_convolved.fits --matrix="0.2,0,0.4  0,0.2,0.4  0,0,1"
+ImageWarp started on Mon Apr  6 16:51:59 953
+ImageWarp finished in:  0.481421 (seconds)
 $ ls
 0.fits         cat_convolved.fits         cat.fits
 astmkprof.log  cat_convolved_warped.fits  cat.txt
 @end example
 
 @noindent
-We now have the image in the pixel scale that we wanted in the
-beginning in @file{cat_convolved_warped.fits}. However, the image is
-still larger than what we had wanted (it is 516 by 516 pixels). It is
-clear that the image has 8 pixels extra on each axis. To check, you
-can resample the @file{0.fits} image with the same warping matrix and
-check its size. You will see that it is 17 by 17 pixels, see @ref{If
-convolving afterwards}. So we crop out all the pixels that are 8
-pixels near the borders:
+@file{cat_convolved_warped.fits} now has the correct pixel
+scale. However, the image is still larger than what we had wanted, it
+is 526 (@mymath{500+13+13}) by 526 pixels. The student is slightly
+confused, so Sufi also resamples the PSF with ImageWarp and the same
+warping matrix and shows him that it is 27 (@mymath{2\times13+1}) by
+27 pixels. Sufi goes on to explain how frequency space convolution
+will dim the edges and that is why he added the @option{--prepforconv}
+option to MakeProfiles, see @ref{If convolving afterwards}. Now that
+convolution is done Sufi can remove those extra pixels using
+ImageCrop:
 
 @example
-$ astimgcrop cat_convolved_warped.fits --section=8:*-8,8:*-8
-ImageCrop started on AAA BBB  C 21:23:58 DDD
-  - Read metadata of 1 images.               in 0.000575 seconds
+$ astimgcrop cat_convolved_warped.fits --section=13:*-13,13:*-13
+ImageCrop started on Sat Oct  6 17:03:24 953
+  - Read metadata of 1 images.               in 0.000560 seconds
   ---- cat_convolved_warped_crop.fits 1 1
-ImageCrop finished in:  0.017612 (seconds)
+ImageCrop finished in:  0.018917 (seconds)
 $ls
 0.fits          astmkprof.log           cat_convolved_warped.fits
 0_warped.fits   cat_convolved.fits              cat.fits
@@ -1272,18 +1544,23 @@ astimgcrop.log  cat_convolved_warped_crop.fits  cat.txt
 
 @noindent
 Finally, the @file{cat_convolved_warped.fits} has the same
-dimensionality as we had asked for in the beginning. All this trouble
-was certainly worth it because now we have no dimming on the edges of
-the image and the profile centers are more accurately sampled than if
-we hadn't done oversampling. The final step to simulate a real
-observation would be to add noise to the image:
+dimensionality as Sufi had asked for in the beginning. All this
+trouble was certainly worth it because now there is no dimming on the
+edges of the image and the profile centers are more accurately
+sampled. The final step to simulate a real observation would be to add
+noise to the image. Sufi set the zeropoint magnitude to the same value
+that he set when making the mock profiles and looking again at his
+observation log, he found that at that night the background flux near
+the nebula had a magnitude of 7. So using these values he ran
+MakeNoise:
 
 @example
-$ astmknoise cat_convolved_warped_crop.fits --output=out.fits
-MakeNoise started on AAA BBB  C 21:28:18 DDD
+$ astmknoise --zeropoint=18 --background=7 --output=out.fits    \
+             cat_convolved_warped_crop.fits
+MakeNoise started on Mon Apr  6 17:05:06 953
   - Generator type: mt19937
-  - Generator seed: 1428823890
-MakeNoise finished in:  0.039916 (seconds)
+  - Generator seed: 1428318100
+MakeNoise finished in:  0.033491 (seconds)
 $ls
 0.fits          cat_convolved.fits              cat.txt
 0_warped.fits   cat_convolved_warped_crop.fits  out.fits
@@ -1293,70 +1570,104 @@ astmkprof.log   cat.fits
 
 @noindent
 The @file{out.fits} file now has the noised image of the mock catalog
-we had asked for. Infact you could have used the @option{--output}
-option at any of the steps above to get any output name you wanted,
-not the automatic output, see @ref{Automatic output}.
+Sufi had asked for. Seeing how the @option{--output} option allows the
+user to specify the name of the output file, the student was confused
+and wanted to know why Sufi hadn't used it before? Sufi then explained
+to him that for intermediate steps it is best to rely on the automatic
+output, see @ref{Automatic output}. Doing so will give all the
+intermediate files the same basic name structure, so in the end you
+can simply remove them all with the Shell's capabilities. So Sufi
+decided to show this to the student by making a shell script from the
+commands he had used before.
 
-If you don't want to run these commands separately every time, you can
-simply put them all in one script to only run that script. Copy the
-following text into a file named @file{mymock.sh}:
+The command line shell has the capability to read all the separate
+input commands from a file. This is very useful when you want to do
+the same thing multiple times, with only the names of the files or
+minor parameters changing between the different instances. Using the
+shell's history (by pressing the up keyboard key) Sufi reviewed all
+the commands and then he retrieved the last 5 commands with the
+@command{$ history 5} command. He selected all those lines he had
+input and put them in a text file named @file{mymock.sh}. Then he used
+some shell variables to set the two main constant parts of all the
+command to generalized variables.
 
 @example
-edge=8
+edge=13
 base=cat
+rm out.fits
 
-astmkprof --prepforconv --naxis1=500 --naxis2=500 "$base".txt
+astmkprof --prepforconv --naxis1=500 --naxis2=500            \
+          --zeropoint=18.0 "$base".txt
 astconvolve --kernel=0.fits "$base".fits
-astimgwarp "$base"_convolved.fits --matrix="0.2,0,0.4,0,0.2,0.4,0,0,1"
-astimgcrop "$base"_convolved_warped.fits \
+astimgwarp "$base"_convolved.fits --matrix="0.2,0,0.4  0,0.2,0.4  0,0,1"
+astimgcrop "$base"_convolved_warped.fits                     \
            --section=$edge:*-$edge,$edge:*-$edge
-astmknoise "$base"_convolved_warped_crop.fits --output=out.fits
-rm 0.fits "$base"*.fits *.log
+astmknoise --zeropoint=18 --background=7 --output=out.fits   \
+           "$base"_convolved_warped_crop.fits
+rm 0*.fits cat*.fits *.log
 @end example
 
 @cindex Gedit
 @cindex GNU Emacs
-We have used shell variables to generalize this script for a general
-catalog. In the shell, you define a variable by giving it a name,
-followed by an @code{=} sign and the value you want. Then you can
-reference that variable from anywhere in the script by calling its
-name with a @code{$} prefix. So in the script whenever you see
-@code{$base}, the value we defined for it above is used. If you use
-advanced editors like GNU Emacs or even simpler ones like Gedit (part
-of the GNOME graphical user interface) the variables will become a
-different color which can really help in understanding the script. We
-have put all the @code{$base} variables in double quotation marks
-(@code{"}) so the variable name and the following text do not get
-mixed. Once you save this file, run the following command to make it
-executable:
+Sufi then explained to the eager student that you define a variable by
+giving it a name, followed by an @code{=} sign and the value you
+want. Then you can reference that variable from anywhere in the script
+by calling its name with a @code{$} prefix. So in the script whenever
+you see @code{$base}, the value we defined for it above is used. If
+you use advanced editors like GNU Emacs or even simpler ones like
+Gedit (part of the GNOME graphical user interface) the variables will
+become a different color which can really help in understanding the
+script. We have put all the @code{$base} variables in double quotation
+marks (@code{"}) so the variable name and the following text do not
+get mixed, the shell is going to ignore the @code{"} after replacing
+the variable value. To make the script executable, Sufi ran the
+following command:
 
 @example
 $ chmod +x mymock.sh
 @end example
 
 @noindent
-To run the script, you can run this command:
+Then finally, Sufi ran the script, simply by calling its file name:
 
 @example
 $ ./mymock.sh
 @end example
 
-After the script has finished you will notice that all the temporary
-files were also removed (by the last line of the script) and the only
-extra file is the @file{out.fits} file that you wanted in the
-beginning.
+After the script finished, the only file remaining is the
+@file{out.fits} file that Sufi had wanted in the beginning.  Sufi then
+explained to the student how he could run this script anywhere that he
+has a catalog if the script is in the same directory. The only thing
+the student had to modify in the script was the name of the catalog
+(the value of the @code{base} variable in the start of the script) and
+the value to the @code{edge} variable if he changed the PSF size. The
+student was also very happy to hear that he won't need to make it
+executable again when he makes changes later, it will remain
+executable unless he explicitly changes the executable flag with
+@command{chmod}.
 
-Now you can run this script anywhere that you have a
-catalog@footnote{You just have to put a copy of the script in the same
-directory as the catalog.}. You can simply change the name of the
-catalog by changing the value of the @code{base} variable in the start
-of the script @footnote{You won't need to make it executable again
-when you save changes, it will remain executable unless you explicitly
-change the executable flag with @command{chmod}.}. In case the PSFs of
-the different catalogs differ, you can set a different value for the
-@code{edge} variable. One run of this command will run all the
-separate programs one by one and in the end it will remove all the
-temporary outputs that were created.
+The student was really excited, since now, through simple shell
+scripting, he could really speed up his work and run any command in
+any fashion he likes allowing him to be much more creative in his
+works. Until now he was using the graphic user interface which doesn't
+have such a facility and doing repetitive things on it was really
+frustrating and some times he would make mistakes. So he left to go
+and try scripting on his own computer.
+
+Sufi could now get back to his own work and see if the simulated
+nebula which resembled the one in the Andromeda constellation could be
+detected or not. Although it was extremely faint@footnote{The total
+flux of a diffuse object is added over all its pixels to give its
+final magnitude. So although the magnitude 3.44 (of the mock nebula)
+is orders of magnitude brighter than 6 (of the stars), the central
+galaxy is much fainter. Put another way, the flux is distributed over
+a large area in the case of a nebula.}, fortunately it passed his
+detection tests and he wrote it in the draft manuscript that would
+later become ``Book of fixed stars''. He still had to check the other
+nebula he saw from Yemen and several other such objects, but they
+could wait until tomorrow (thanks to the shell script, he only has to
+define a new catalog). It was nearly sunset and they had to begin
+preparing for the night's measurements on the ecliptic.
 
 
 
@@ -1365,7 +1676,19 @@ temporary outputs that were created.
 
 
 
-@node Installation, Common behavior, Tutorial, Top
+
+
+
+
+
+
+
+
+
+
+
+
+@node Installation, Common behavior, Tutorials, Top
 @chapter Installation
 
 @cindex Installation
@@ -4723,6 +5046,7 @@ removing small frequencies}.
 * Convolution on the edges::    Dealing with the edges of an image.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
 * Invoking astconvolve::        Options and arguments to Convolve.
+* Convolve future updates::     Future plans for Convolve.
 @end menu
 
 @node Convolution process, Convolution on the edges, Convolve, Convolve
@@ -4882,7 +5206,7 @@ frequency domain convolution will significantly improve the processing
 time, see @ref{Oversampling}.
 
 
-@node Invoking astconvolve,  , Spatial vs. Frequency domain, Convolve
+@node Invoking astconvolve, Convolve future updates, Spatial vs. Frequency domain, Convolve
 @subsection Invoking Convolve
 
 Convolve an input image with a known kernel. The general template for
@@ -5022,6 +5346,22 @@ of the image), we also remove any pixel with a value less than
 
 @end enumerate
 @end table
+
+
+@node Convolve future updates,  , Invoking astconvolve, Convolve
+@subsection Convolve future updates
+
+@itemize
+
+@item
+When the image size is too large, cut the image into smaller pieces
+and convolve them then stitch the separate convolved parts to make the
+output. Since by default Convolve makes heavy use of all the CPU cores
+in the frequency domain, if the image is too large (in width or height
+or both), it can take too long and the CPU will heat up to dangerous
+limits.
+
+@end itemize
 
 
 
@@ -5745,6 +6085,7 @@ convolution and adding noise.
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
 * Profile total magnitude::     Definition of total profile magnitude.
+* Magnitude to flux conversion::
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
 @end menu
@@ -6129,7 +6470,7 @@ facilitate this shift, MakeProfiles has the options @option{--xshift},
 astmkprof}.
 
 
-@node Profile total magnitude, Invoking astmkprof, If convolving afterwards, MakeProfiles
+@node Profile total magnitude, Magnitude to flux conversion, If convolving afterwards, MakeProfiles
 @subsection Profile total magnitude
 
 @cindex Truncation radius
@@ -6164,6 +6505,10 @@ If the @option{--individual} option is called, this same array is
 written to a FITS file. If not, only the overlapping pixels of this
 array and the output image are kept and added to the output array.
 
+
+@node Magnitude to flux conversion, Invoking astmkprof, Profile total magnitude, MakeProfiles
+@subsection Magnitude to flux conversion
+
 @cindex Magnitude zero-point
 @cindex Magnitudes from flux
 @cindex Flux to magnitude conversion
@@ -6186,7 +6531,7 @@ then it will have a total flux of:
           F=10^{m_z-m \over 2.5}}
 
 
-@node Invoking astmkprof, MakeProfiles future updates, Profile total magnitude, MakeProfiles
+@node Invoking astmkprof, MakeProfiles future updates, Magnitude to flux conversion, MakeProfiles
 @subsection Invoking MakeProfiles
 
 MakeProfiles will make any number of profiles specified in a catalog
@@ -6573,15 +6918,16 @@ you can determine the random number generator and seed value.
 
 @cindex Counting error
 @cindex Photon counting noise
-Thanks to the very accurate electronics used in today's CCDs, this
-type of noise is the main cause of concern for extra galactic studies.
-It can generally be associate with the counting error that is known to
-have a Poisson distribution. The Poisson distribution is about
-counting. But counting is a discrete operation with only positive
-values, for example we can't count @mymath{3.2} or @mymath{-2} of
-anything. We only count @mymath{0}, @mymath{1}, @mymath{2}, @mymath{3}
-and so on. Therefore the Poisson distribution is also a discrete
-distribution, only applying to whole positive integers.
+Thanks to the very accurate electronics used in today's detectors,
+this type of noise is the main cause of concern for extra galactic
+studies.  It can generally be associate with the counting error that
+is known to have a Poisson distribution. The Poisson distribution is
+about counting. But counting is a discrete operation with only
+positive values, for example we can't count @mymath{3.2} or
+@mymath{-2} of anything. We only count @mymath{0}, @mymath{1},
+@mymath{2}, @mymath{3} and so on. Therefore the Poisson distribution
+is also a discrete distribution, only applying to whole positive
+integers.
 
 Let's assume the mean value of counting something is known. In this
 case, the number of electrons that are produced by photons in the
@@ -6659,6 +7005,11 @@ mean (@mymath{\mu}) and standard deviation (@mymath{\sigma}):
 
 @dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
 
+Since this type of noise is inherent in the objects we study, it is
+usually measured on the same scale as the astronomical objects, namely
+the magnitude system, see @ref{Magnitude to flux conversion}. It is
+then internally converted to the flux scale for further processing.
+
 @node Instrumental noise, Final noised pixel value, Photon counting noise, Noise basics
 @subsubsection Instrumental noise
 
@@ -6678,6 +7029,12 @@ random value chosen from a Gaussian distribution with
 
 @dispmath{\mu=I_{nn}, \quad \sigma=\sqrt{C^2+I_{nn}}}
 
+This type of noise is completley independent of the type of objects
+being studied, it is completely determined by the instrument. So the
+flux scale (and not magnitude scale) is most commonly used for this
+type of noise. In practice, this value is usually reported in ADUs not
+flux or electron counts. The gain value of the device can be used to
+convert between these two.
 
 @node Final noised pixel value, Generating random numbers, Instrumental noise, Noise basics
 @subsubsection Final noised pixel value
@@ -6812,12 +7169,19 @@ making it. This is done for future reproducability.
 
 @item -b
 @itemx --background
-The background value for the image, see @ref{Photon counting
-noise}.
+The background value for the image in units of magnitudes, see
+@ref{Photon counting noise} and @ref{Magnitude to flux conversion}.
+
+@item -z
+@itemx --zeropoint
+The zeropoint magnitude used to convert the value of
+@option{--background} (in units of magnitude) to flux, see
+@ref{Magnitude to flux conversion}.
 
 @item -s
 @itemx --stdadd
-The instrumental noise constant, see @ref{Instrumental noise}.
+The instrumental noise which is in units of flux, see
+@ref{Instrumental noise}.
 
 @item -e
 @itemx --envseed

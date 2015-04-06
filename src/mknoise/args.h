@@ -70,7 +70,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a c f g j k l m n p r t u v w x y z
+   a c f g j k l m n p r t u v w x y
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
@@ -98,7 +98,15 @@ static struct argp_option options[] =
       'b',
       "FLT",
       0,
-      "Fixed background flux for the image.",
+      "Fixed background magnitude for the image.",
+      1
+    },
+    {
+      "zeropoint",
+      'z',
+      "FLT",
+      0,
+      "Image zeropoint magnitude.",
       1
     },
     {
@@ -179,12 +187,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'b':
-      anydouble(arg, &p->background, "background", key, SPACK, NULL, 0);
+      anydouble(arg, &p->mbackground, "background", key, SPACK, NULL, 0);
       p->up.backgroundset=1;
       break;
     case 's':
       doublele0(arg, &p->stdadd, "stdadd", key, SPACK, NULL, 0);
       p->up.stdaddset=1;
+      break;
+    case 'z':
+      anydouble(arg, &p->zeropoint, "zeropoint", key, SPACK, NULL, 0);
+      p->up.zeropointset=1;
       break;
     case 'e':
       p->envseed=0;

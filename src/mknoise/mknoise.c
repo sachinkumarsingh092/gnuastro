@@ -63,7 +63,7 @@ convertsaveoutput(struct mknoiseparams *p)
   void *array;
   struct fitsheaderll *headers=NULL;
   char keyname1[FLEN_KEYWORD], keyname2[FLEN_KEYWORD];
-  char keyname3[FLEN_KEYWORD], keyname4[FLEN_KEYWORD];
+  char keyname3[FLEN_KEYWORD], keyname4[FLEN_KEYWORD], keyname5[FLEN_KEYWORD];
 
   /* Convert the output to the input image format: */
   if(p->inputbitpix==DOUBLE_IMG || p->doubletype)
@@ -78,17 +78,21 @@ convertsaveoutput(struct mknoiseparams *p)
   /* Add the proper information to the header of the output: */
   filenameinkeywords("INF", p->up.inputname, &headers);
   strcpy(keyname1, "BCKGRND");
-  add_to_fitsheaderllend(&headers, TDOUBLE, keyname1, 0, &p->background, 0,
-                         "Background value for noise.", 0, NULL);
-  strcpy(keyname2, "STDADD");
-  add_to_fitsheaderllend(&headers, TDOUBLE, keyname2, 0, &p->stdadd, 0,
-                         "Constant added for calculation of noise STD.",
+  add_to_fitsheaderllend(&headers, TDOUBLE, keyname1, 0, &p->mbackground, 0,
+                         "Background value (in magnitude) for noise.",
                          0, NULL);
-  strcpy(keyname3, "RNGTYPE");
-  add_to_fitsheaderllend(&headers, TSTRING, keyname3, 0, &p->rng_type, 0,
+  strcpy(keyname2, "BZRPNT");
+  add_to_fitsheaderllend(&headers, TDOUBLE, keyname2, 0, &p->zeropoint, 0,
+                         "Zeropoint magnitude of image.", 0, NULL);
+  strcpy(keyname3, "STDADD");
+  add_to_fitsheaderllend(&headers, TDOUBLE, keyname3, 0, &p->stdadd, 0,
+                         "Instrumental noise in units of flux.",
+                         0, NULL);
+  strcpy(keyname4, "RNGTYPE");
+  add_to_fitsheaderllend(&headers, TSTRING, keyname4, 0, &p->rng_type, 0,
                          "Random number generator (by GSL) type.", 0, NULL);
-  strcpy(keyname4, "RNGSEED");
-  add_to_fitsheaderllend(&headers, TLONG, keyname4, 0, &p->rng_seed, 0,
+  strcpy(keyname5, "RNGSEED");
+  add_to_fitsheaderllend(&headers, TLONG, keyname5, 0, &p->rng_seed, 0,
                          "Random number generator (by GSL) seed.", 0, NULL);
 
   /* Save the output: */

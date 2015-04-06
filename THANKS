@@ -1,7 +1,36 @@
-These people have contributed to the GNU Astronomical Utilities. If
-your name has been left out, if you'd rather not be listed, or if
-you'd prefer a different address be used, please send a note to the
-bug-report mailing list (as seen at end of e.g., astimgcrop --help).
+Great thanks to the following institutions and people
+=====================================================
+
+
+Institutions
+------------
+
+GNU Astronomy Utilities (Gnuastro) has greatly benefited from the
+following institutions. These institutions funded, supported and most
+importantly provided a productive environment for the developers of
+Gnuastro. They finally disclaimed any copyright ownership of the
+developers' work while in those institutions which allows the world
+wide astronomical community to benefit from their support.
+
+In particular special thanks should be given to the Japanese Ministry
+of science and technology (MEXT) scholarship, which funded Mohammad
+Akhlaghi's five year Masters and PhD program in Tohoku University
+Astronomical Institute. Without this long term scholarship (which
+allowed long term and basic learning and planning), Gnuastro would not
+have been possible.
+
+Tohoku University
+
+
+
+
+
+People
+------
+
+These people have contributed to Gnuastro. If your name has been left
+out, if you'd rather not be listed, or if you'd prefer a different
+address be used, please send a note to bug-gnuastro@gnu.org.
 
 Alan Lefor                           alefor@astr.tohoku.ac.jp
 Brandon Invergo                      brandon@gnu.org

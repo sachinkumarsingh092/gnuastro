@@ -356,7 +356,6 @@ build(void *inparam)
 	    }
 	}
 
-
       /* Add ibq to bq if you can lock the mutex. */
       if(p->cp.numthreads>1)
 	{
@@ -390,6 +389,19 @@ build(void *inparam)
 	      fbq=NULL;
 	      mkp->ibq=NULL;
 	    }
+          /* The mutex couldn't be locked and there are no more
+             objects for this thread to build (giving a chance for
+             this thread to add up its built profiles). So we have to
+             lock the mutex to pass on this built structure to the
+             builtqueue. */
+          else if (mkp->indexs[i+1]==NONTHRDINDEX)
+            {
+	      pthread_mutex_lock(qlock);
+	      fbq->next=p->bq;
+	      p->bq=ibq;
+              pthread_cond_signal(qready);
+	      pthread_mutex_unlock(qlock);
+            }
 	}
     }
 
@@ -484,7 +496,7 @@ write(struct mkprofparams *p)
 	    {
 	      pthread_mutex_lock(&p->qlock);
 	      while(p->bq==NULL)
-		pthread_cond_wait(&p->qready, &p->qlock);
+                pthread_cond_wait(&p->qready, &p->qlock);
 	      ibq=p->bq;
 	      p->bq=NULL;
 	      pthread_mutex_unlock(&p->qlock);
@@ -680,7 +692,6 @@ mkprof(struct mkprofparams *p)
 	  }
     }
 
-
   /* Write the created arrays into the image. */
   write(p);
   writelog(p);
@@ -698,5 +709,6 @@ mkprof(struct mkprofparams *p)
 
   /* Free the allocated spaces. */
   free(mkp);
+  free(indexs);
   free(p->wcsheader);
 }

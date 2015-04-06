@@ -44,6 +44,7 @@ struct uiparams
   char       *inputname;   /* Name of input file.                      */
 
   int     backgroundset;
+  int      zeropointset;
   int         stdaddset;
   int       randseedset;
 };
@@ -68,7 +69,9 @@ struct mknoiseparams
   int               nwcs;  /* Number of WCS structures.                */
   struct wcsprm     *wcs;  /* Pointer to WCS structures.               */
   double      background;  /* Mean of noise probability distribution.  */
+  double     mbackground;  /* Background in magnitudes.                */
   double          stdadd;  /* Standard deviation constants.            */
+  double       zeropoint;  /* Zeropoint magnitude of image.            */
 
   /* Output: */
   int   backgroundinmean;  /* Use the background in the mean too.      */
