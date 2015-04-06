@@ -48,6 +48,9 @@ Texts.  A copy of the license is included in the section entitled
 * Convolve: (gnuastro)Convolve. Convolve an input file with kernel.
 * astconvolve: (gnuastro)Invoking astconvolve. Options to Convolve.
 
+* Header: (gnuastro)Header. Print and manipulate data header info.
+* astheader: (gnuastro)Invoking astheader. Options to Header.
+
 * ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
 * astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
 
@@ -155,7 +158,6 @@ sub-component to a title is present.
 * Installation::                Requirements and installation.
 * Common behavior::             Common behavior in all programs.
 * Files::                       File information and type conversion.
-* Header manipulation::         Tools to Read/Write Headers.
 * Image manipulation::          Tools for basic image manipulation.
 * Image analysis::              Analyze images.
 * Modeling and fittings::       Make and fit models.
@@ -262,8 +264,13 @@ Getting help
 Files
 
 * FileInfo::                    List all the extensions in a file.
+* Header::                      Print and manipulate data file header.
 * FileExtensions::              Manipulate data extensions in a file.
 * ConvertType::                 Convert data to various formats.
+
+Header
+
+* Invoking astheader::          Arguments and options to Header.
 
 ConvertType
 
@@ -514,6 +521,9 @@ Convert data files.
 @item
 @ref{Convolve} (@file{astconvolve}) @value{CONVOLVE_VERSION}: Convolve
 (blur) data with a kernel.
+@item
+@ref{Header} (@file{astheader}) @value{HEADER_VERSION}: Print and
+manipulate data header.
 @item
 @ref{ImageCrop} (@file{astimgcrop}) @value{IMGCROP_VERSION}: Crop region(s)
 from image(s).
@@ -3823,7 +3833,7 @@ END
 
 
 
-@node Files, Header manipulation, Common behavior, Top
+@node Files, Image manipulation, Common behavior, Top
 @chapter Files
 
 @cindex File operations
@@ -3839,11 +3849,12 @@ reports) that don't recognize the FITS format.
 
 @menu
 * FileInfo::                    List all the extensions in a file.
+* Header::                      Print and manipulate data file header.
 * FileExtensions::              Manipulate data extensions in a file.
 * ConvertType::                 Convert data to various formats.
 @end menu
 
-@node FileInfo, FileExtensions, Files, Files
+@node FileInfo, Header, Files, Files
 @section FileInfo
 
 @cindex File information
@@ -3854,7 +3865,52 @@ extensions in the given FITS file and also give some basic information
 about the form of data that is in that extension, for example image
 size and data type.
 
-@node FileExtensions, ConvertType, FileInfo, Files
+
+
+
+
+@node Header, FileExtensions, FileInfo, Files
+@section Header
+
+The FITS standard requires each extension of a FITS file to have a
+header, giving basic information about what is in that extension. Each
+line in the header is for one keyword, specifying its name, value and
+a short comment string. Besides the basic information, the headers
+also contain vital information about the data, how they were
+processed, the instrument specifications that took the image and also
+the World Coordinate System that is used to translate pixel
+coordinates to sky or spectrum coordinates on the image or table.
+
+@menu
+* Invoking astheader::          Arguments and options to Header.
+@end menu
+
+@node Invoking astheader,  , Header, Header
+@subsection Invoking Header
+
+Header can print or manipulate the header information in an extension
+of an astronomical data file. The executable name is @file{astheader}
+with the following general template
+
+@example
+$ astheader [OPTION...] ASTRdata
+@end example
+
+
+@noindent
+One line examples:
+
+@example
+$ astheader image.fits
+$ astheader --remove=COMMENT --add=COMMENT,"Anything you like ;-)."
+$ astheader --add=MYKEY1,20.00,"An example keyword" --add=MYKEY2,fd
+@end example
+
+
+
+
+
+@node FileExtensions, ConvertType, Header, Files
 @section FileExtensions
 The FITS standard allows for multiple extensions, using this tool you
 can manipute the extensions, for example merge all the extensions of
@@ -4395,46 +4451,10 @@ Invert color images with meaningful colors.
 
 
 
-@node Header manipulation, Image manipulation, Files, Top
-@chapter Header manipulation
-
-@cindex FITS headers
-@cindex Headers of FITS data
-The FITS standard requires each extension of a FITS file to have a
-header, giving basic information about what is in that extension. Each
-line in the header is for one keyword, specifying its name, value and
-a short comment string. Besides the basic information, the headers
-also contain vital information about the data, how they were
-processed, the instrument specifications that took the image and also
-the World Coordinate System that is used to translate pixel
-coordinates to sky or spectrum coordinates on the image or table.
-
-With the set of tools in this section you can view the contents of any
-extension in a FITS file. You can also add keywords and values and
-comments to a FITS header or remove them if you like.
-
-Programs for this section will soon be added....
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@node Image manipulation, Image analysis, Header manipulation, Top
+@node Image manipulation, Image analysis, Files, Top
 @chapter Image manipulation
 
 Images are one of the major formats of data that is used in

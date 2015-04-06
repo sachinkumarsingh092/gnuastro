@@ -189,6 +189,12 @@ AC_ARG_ENABLE([convolve],
 	      [AS_IF([test "x$enable_convolve" != xno],
                      [enable_convolve=yes; ayes=true])],
               [enable_convolve=notset])
+AC_ARG_ENABLE([header],
+              [AS_HELP_STRING([--enable-header],
+  	            [Install Header and other enabled packages only.])],
+	      [AS_IF([test "x$enable_header" != xno],
+                     [enable_header=yes; ayes=true])],
+              [enable_header=notset])
 AC_ARG_ENABLE([imgcrop],
               [AS_HELP_STRING([--enable-imgcrop],
   	            [Install ImageCrop and other enabled packages only.])],
@@ -230,6 +236,7 @@ AC_ARG_ENABLE([mkprof],
 AS_IF([test $ayes = true ],
       [AS_IF([test $enable_convertt = notset], [enable_convertt=no])
        AS_IF([test $enable_convolve = notset], [enable_convolve=no])
+       AS_IF([test $enable_header = notset], [enable_header=no])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=no])
@@ -237,6 +244,7 @@ AS_IF([test $ayes = true ],
 
       [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
+       AS_IF([test $enable_header = notset], [enable_header=yes])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=yes])
@@ -250,6 +258,7 @@ AS_IF([test $ayes = true ],
 # Make the enable_package values available for the Makefile:
 AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
+AM_CONDITIONAL([COND_HEADER], [test $enable_header = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
 AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
@@ -263,6 +272,7 @@ AC_CONFIG_FILES([Makefile
 		 tests/Makefile
                  gnulib/lib/Makefile
                  src/mkprof/Makefile
+                 src/header/Makefile
                  src/mknoise/Makefile
 		 src/imgcrop/Makefile
        		 src/imgwarp/Makefile
