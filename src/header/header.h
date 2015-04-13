@@ -23,7 +23,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef HEADER_H
 #define HEADER_H
 
-void
+int
 header(struct headerparams *p);
 
 #endif

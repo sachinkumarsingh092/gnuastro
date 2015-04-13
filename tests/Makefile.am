@@ -37,7 +37,8 @@ imgcrop/section.sh imgcrop/radec.sh convertt/fitstotxt.sh		\
 convertt/fitstojpeg.sh convertt/blankch.sh convertt/jpegtotxt.sh	\
 convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh			\
 convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh		\
-imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh
+imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh	\
+header/write.sh header/print.sh header/update.sh header/delete.sh
 
 EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt mkprof/mkprofcat2.txt	\
 mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt imgcrop/cat.txt

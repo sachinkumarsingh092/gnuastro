@@ -96,6 +96,11 @@ struct fitsheaderll
 };
 
 void
+add_to_fitsheaderll(struct fitsheaderll **list, int datatype,
+                    char *keyname, int kfree, void *value, int vfree,
+                    char *comment, int cfree, char *unit);
+
+void
 add_to_fitsheaderllend(struct fitsheaderll **list, int datatype,
 		       char *keyname, int kfree, void *value, int vfree,
 		       char *comment, int cfree, char *unit);

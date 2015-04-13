@@ -271,6 +271,7 @@ Files
 Header
 
 * Invoking astheader::          Arguments and options to Header.
+* Header future updates::
 
 ConvertType
 
@@ -1089,7 +1090,7 @@ contents of the @file{/mnt/data} directory. He done this by running
 this command as root:
 
 @example
-# chmod 755 /mnt/data
+# chmod -R 755 /mnt/data
 @end example
 
 @noindent
@@ -1363,11 +1364,11 @@ Fortunately Sufi had heard of GNU Astronomy Utilities from a colleague
 in Isfahan (where he worked) and had installed it on his computer a
 year before. It had tools to do all the steps above. He had used
 MakeProfiles before, but wasn't sure which columns he had chosen in
-his user or system or user wide configuration files for which
-parameters, see @ref{Configuration files}. So to start his simulation,
-Sufi runs MakeProfiles with the @option{-P} option to make sure what
-columns in a catalog MakeProfiles currently recognizes and the output
-image prameters:
+his user or system wide configuration files for which parameters, see
+@ref{Configuration files}. So to start his simulation, Sufi runs
+MakeProfiles with the @option{-P} option to make sure what columns in
+a catalog MakeProfiles currently recognizes and the output image
+prameters:
 
 @example
 $ astmkprof -P
@@ -3883,9 +3884,10 @@ coordinates to sky or spectrum coordinates on the image or table.
 
 @menu
 * Invoking astheader::          Arguments and options to Header.
+* Header future updates::
 @end menu
 
-@node Invoking astheader,  , Header, Header
+@node Invoking astheader, Header future updates, Header, Header
 @subsection Invoking Header
 
 Header can print or manipulate the header information in an extension
@@ -3902,9 +3904,180 @@ One line examples:
 
 @example
 $ astheader image.fits
+$ astheader --update=OLDKEY,153.034,"Old keyword comment"
 $ astheader --remove=COMMENT --add=COMMENT,"Anything you like ;-)."
 $ astheader --add=MYKEY1,20.00,"An example keyword" --add=MYKEY2,fd
 @end example
+
+@cindex HDU
+If no keyword modification options are given, the full header of the
+given HDU will be printed on the command line. If any of the keywords
+are to be modified, the headers of the input file will be changed. If
+you want to keep the original FITS file, it is easiest to create a
+copy first and then run Header on that. In the FITS standard, keywords
+are always uppercase. So case does not matter in the input or output
+keyword names you specify.
+
+Most of the options can accept multiple instances in one command. For
+example you can add multiple keywords to delete by calling delete
+multiple times, since repeated keywords are allowed, you can even
+delete the same keyword multiple times. The action of such options
+will start from the top most keyword.
+
+@cartouche
+@noindent
+@strong{FITS STANDARD KEYWORDS:} Some header keywords are necessary
+for later operations on a FITS file, for example BITPIX or NAXIS, see
+the FITS standard for their full list. If you modify (for example
+remove or rename) such keywords, the FITS file extension might not be
+usable any more. Also be careful for the world coordinate system
+keywords, if you modify or change their values, any future world
+coordinate system (like RA and Dec) measurements on the image will
+also change.
+@end cartouche
+
+@cartouche
+@noindent
+@strong{PRECEDENCE:} The order of operations are as follows. Note that
+while the order within each class of actions is preserved, the order
+of individual actions is not. So irrespective of what order you called
+@option{--delete} and @option{--update}. First all the delete
+operations are going to take effect then the update operations.
+@enumerate
+@item
+@option{--delete}
+@item
+@option{--rename}
+@item
+@option{--update}
+@item
+@option{--write}
+@item
+@option{--history}
+@item
+@option{--comment}
+@item
+@option{--date}
+@end enumerate
+@noindent
+All possible syntax errors will be reported before the keywords are
+actually written. FITS errors during any of these actions will be
+reported, but Header won't stop until all the operations are
+complete. If @option{quitonerror} is called, then Header will
+immediately stop upon the first error.
+@end cartouche
+
+@cindex GNU Grep
+If only a certain set of header keywords are desired, it is easiest to
+pipe the output of Header to GNU Grep. Grep is a very powerfull and
+advanced tool to search strings which is precisely made for such
+situations. For example if you only want to check the size of an image
+FITS HDU, you can run:
+
+@example
+$ astheader input.fits | grep NAXIS
+@end example
+
+@noindent
+The options particular to Header can be seen below. See @ref{Common
+options} for a list of the options that are common to all Gnuastro
+programs, they are not repeated here.
+@table @option
+
+@item -d
+@itemx --delete
+(@option{=STR}) Delete one instance of the desired keyword. Multiple
+instances of @option{--delete} can be given (possibly even for the
+same keyword). All keywords given will be removed from the headers in
+the opposite order (last given keyword will be deleted first). If the
+keyword doesn't exist, Header will give a warning and return with a
+non-zero value, but will not stop.
+
+@item -r
+@itemx --rename
+(@option{=STR}) Rename a keyword to a new value. The old name and the
+new name should be separated by either a comma (@key{,}) or a space
+character. Note that if you use a space character, you have to put the
+value to this option within double quotation marks (@key{"}) so the
+space character is not interpreted as an option separator. Multiple
+instances of @option{--rename} can be given in one command. The
+keywords will be renamed in the specified order.
+
+@item -u
+@itemx --update
+(@option{=STR}) Update a keyword, its value, its comments and its
+units all defined separately. If there are multiple instances of the
+keyword in the header, they will be changed from top to bottom (with
+multiple @option{--update} options).
+
+@noindent
+The format of the values to this option can best be specified with an
+exmaple:
+
+@example
+--update=KEYWORD,value,"comments for this keyword",unit
+@end example
+
+@noindent
+The value can be any numerical or string value. Other than the
+@code{KEYWORD}, all the other values are optional. To leave a given
+token empty, follow the preceding comma (@key{,}) immediately with the
+next. If any space character is present around the commas, it will be
+considered part of the respective token. So if more than one token has
+space characters within it, the safest method to specify a value to
+this option is to put double quotation marks around each individual
+token that needs it. Note that without double quotation marks, space
+characters will be seen as option separators and can lead to undefined
+behavior.
+
+@item -w
+@itemx --write
+(@option{=STR}) Write a keyword to the header. For the format of
+inputing the possible values, comments and units for the keyword, see
+the @option{--update} option above.
+
+@item -H
+@itemx --history
+(@option{=STR}) Add a @code{HISTORY} keyword to the header. The string
+given to this keyword will be separated into multiple keyword cards if
+it is longer than 70 characters. With each run only one value for the
+@option{--history} option will be read. If there are multiple, it is
+the last one.
+
+@item -c
+@itemx --comment
+(@option{=STR}) Add a @code{COMMENT} keyword to the header. Similar to
+the explanation for @option{--history} above.
+
+@item -t
+@itemx --date
+Put the current date and time in the header. If the @code{DATE}
+keyword already exists in the header, it will be updated.
+
+@item -Q
+@itemx --quitonerror
+Quit if any of the operations above are not successful. By default if
+an error occurs, Header will warn the user of the faulty keyword and
+continue with the rest of actions.
+
+@end table
+
+@node Header future updates,  , Invoking astheader, Header
+@subsection Header future updates
+
+@itemize
+@item
+Allow the user to specify a full keyword card and let them worry about
+conforming with the FITS standard if they use this option.
+@item
+Add an option to update, delete or rename all keywords in a header
+with only one call to the respective option.
+@end itemize
+
+
+
+
+
 
 
 

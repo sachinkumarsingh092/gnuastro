@@ -36,7 +36,7 @@ astheader_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 header.c header.h
 
 astheader_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
--lfitsarrayvv -lcheckset -ltiming
+-lfitsarrayvv -lcheckset -ltiming -llinkedlist
 
 
 

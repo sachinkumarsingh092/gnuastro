@@ -27,6 +27,6 @@ void
 setparams(int argc, char *argv[], struct headerparams *p);
 
 void
-freeandreport(struct headerparams *p, struct timeval *t1);
+freeandreport(struct headerparams *p);
 
 #endif

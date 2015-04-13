@@ -39,7 +39,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct uiparams
 {
-  char       *inputname;   /* Name of input file.                      */
+  char             *inputname;  /* Name of input file.               */
+  struct stll         *rename;  /* Rename a keyword.                 */
+  struct stll         *update;  /* For keywords to update.           */
+  struct stll          *write;  /* Full argument for keywords to add.*/
 };
 
 
@@ -49,17 +52,30 @@ struct uiparams
 struct headerparams
 {
   /* Other structures: */
-  struct uiparams     up;  /* User interface parameters.               */
-  struct commonparams cp;  /* Common parameters.                       */
+  struct uiparams          up;  /* User interface parameters.         */
+  struct commonparams      cp;  /* Common parameters.                 */
 
   /* Input: */
-  int               nwcs;  /* Number of WCS structures.                */
-  struct wcsprm     *wcs;  /* Pointer to WCS structures.               */
+  int                    nwcs;  /* Number of WCS structures.          */
+  fitsfile              *fptr;  /* FITS file pointer.                 */
+  struct wcsprm          *wcs;  /* Pointer to WCS structures.         */
 
   /* Output: */
+  int                    date;  /* Set DATE to current time.          */
+  char               *comment;  /* COMMENT value.                     */
+  char               *history;  /* HISTORY value.                     */
+  struct stll         *delete;  /* Keywords to remove.                */
+  struct stll     *renamefrom;  /* The initial value of the keyword.  */
+  struct stll       *renameto;  /* The final value of the keyword.    */
+  struct fitsheaderll *update;  /* Linked list of keywords to update. */
+  struct fitsheaderll  *write;  /* Linked list of keywords to add.    */
+
+  /* Operating mode: */
+  int             quitonerror;  /* Quit if an error occurs.           */
 
   /* Internal: */
-  time_t          rawtime; /* Starting time of the program.            */
+  int                onlyview;
+  time_t              rawtime;  /* Starting time of the program.      */
 };
 
 #endif

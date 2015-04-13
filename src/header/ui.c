@@ -200,13 +200,16 @@ checkifset(struct headerparams *p)
 
 /**************************************************************/
 /***************       Sanity Check         *******************/
-/*************************************************************
+/**************************************************************/
 void
 sanitycheck(struct headerparams *p)
 {
-
+  if(p->delete || p->up.update || p->up.write || p->comment || p->history
+     || p->date || p->up.rename)
+    p->onlyview=0;
+  else
+    p->onlyview=1;
 }
-*/
 
 
 
@@ -228,13 +231,202 @@ sanitycheck(struct headerparams *p)
 
 /**************************************************************/
 /***************       Preparations         *******************/
-/*************************************************************
+/**************************************************************/
+void
+setuprename(struct headerparams *p)
+{
+  char *c;
+  struct stll *tmp;
+
+  for(tmp=p->up.rename; tmp!=NULL; tmp=tmp->next)
+    {
+      /* `c' is created in case of an error, so the input value can be
+         reported. */
+      errno=0;
+      c=malloc(strlen(tmp->v));
+      if(c==NULL) error(EXIT_FAILURE, errno, "space for c in setuprename.");
+      strcpy(c, tmp->v);
+
+      /* Tokenize the input. */
+      add_to_stll(&p->renamefrom, strtok(tmp->v, ", "));
+      add_to_stll(&p->renameto, strtok(NULL, ", "));
+      if(p->renamefrom->v==NULL || p->renameto->v==NULL)
+        error(EXIT_FAILURE, 0, "`%s' could not be tokenized in order to "
+              "complete rename. There should be a space character "
+              "or a comma (,) between the two keyword names. If you have "
+              "used the space character, be sure to enclose the value to "
+              "the `--rename' option in double quotation marks.", c);
+      free(c);
+    }
+  /*
+  {
+    struct stll *tmp2=p->renameto;
+    for(tmp=p->renamefrom; tmp!=NULL; tmp=tmp->next)
+      {
+        printf("%s to %s\n", tmp->v, tmp2->v);
+        tmp2=tmp2->next;
+      }
+  }
+  */
+}
+
+
+
+
+
+void
+fillfitsheaderll(struct stll *input, struct fitsheaderll **output)
+{
+  long l, *lp;
+  void *fvalue;
+  double d, *dp;
+  struct stll *tmp;
+  int i=0, datatype, vfree;
+  char *c, *cf, *start, *tailptr;
+  char *original, *keyname, *value, *comment, *unit;
+
+  for(tmp=input; tmp!=NULL; tmp=tmp->next)
+    {
+      i=0;
+      tailptr=NULL;
+
+      /* `c' is created in case of an error, so the input value can be
+         reported. */
+      errno=0;
+      original=malloc(strlen(tmp->v)+1);
+      if(original==NULL)
+        error(EXIT_FAILURE, errno, "space for c in setuprename.");
+      strcpy(original, tmp->v);
+
+      /* Tokenize the input. Note that strlen does not include the \0
+         character. So we have added it with a 1. */
+      cf=(c=start=tmp->v)+strlen(tmp->v)+1;
+      keyname=value=comment=unit=NULL;
+      do
+        {
+          switch(*c)
+            {
+            case ',': case '\0':
+              *c='\0';
+              if(start!=c)
+                switch(i)
+                  {
+                  case 0:
+                    keyname=start;
+                    break;
+                  case 1:
+                    value=start;
+                    break;
+                  case 2:
+                    comment=start;
+                    break;
+                  case 3:
+                    unit=start;
+                    break;
+                  default:
+                    error(EXIT_FAILURE, 0, "%s: Only three commas should be "
+                          "given in the write or update keyword options. "
+                          "The general expected format is:\n"
+                          "    KEYWORD,value,\"a comment string\",unit\n",
+                          original);
+                  }
+              ++i;
+              start=c+1;
+              break;
+
+            default:
+              break;
+            }
+        }
+      while(++c<cf);
+      if(keyname==NULL)
+        error(EXIT_FAILURE, 0, "The keyword in %s was not readable. "
+              "The general expected format is:\n"
+              "    KEYWORD,value,\"a comment string\",unit\n"
+              "Any space characters around the the comma (,) characters "
+              "will be seen as part of the respective token.", original);
+      /*
+      printf("\n\n-%s-\n-%s-\n-%s-\n-%s-\n", keyname, value, comment, unit);
+      */
+
+      /* Find the datatype of the value: */
+      errno=0;
+      l=strtol(value, &tailptr, 10);
+      if(*tailptr=='\0' && errno==0)
+        {
+          vfree=1;
+          datatype=TLONG;
+          errno=0;
+          fvalue=lp=malloc(sizeof *lp);
+          if(lp==NULL)
+            error(EXIT_FAILURE, errno, "%lu bytes for long integer.",
+                  sizeof *lp);
+          *lp=l;
+        }
+      else
+        {
+          errno=0;
+          d=strtod(value, &tailptr);
+          if(*tailptr=='\0' && errno==0)
+            {
+              vfree=1;
+              datatype=TDOUBLE;
+              errno=0;
+              fvalue=dp=malloc(sizeof *dp);
+              if(dp==NULL)
+                error(EXIT_FAILURE, errno, "%lu bytes for double.",
+                      sizeof *dp);
+              *dp=d;
+            }
+          else
+            { fvalue=value; datatype=TSTRING; vfree=0; }
+        }
+
+
+      add_to_fitsheaderll(output, datatype, keyname, 0, fvalue, vfree,
+                          comment, 0, unit);
+      free(original);
+    }
+}
+
+
+
+
+
 void
 preparearrays(struct headerparams *p)
 {
+  size_t len;
+  char *ffname;
+  int status=0, iomode;
+
+  /* Add hdu to filename: */
+  errno=0;
+  len=strlen(p->up.inputname)+strlen(p->cp.hdu)+4;
+  ffname=malloc(len*sizeof *ffname);
+  if(ffname==NULL)
+    error(EXIT_FAILURE, errno, "%lu characters", len);
+  sprintf(ffname, "%s[%s#]", p->up.inputname, p->cp.hdu);
+
+  /* Open the FITS file: */
+  if(p->onlyview)
+    iomode=READONLY;
+  else
+    iomode=READWRITE;
+  if( fits_open_file(&p->fptr, ffname, iomode, &status) )
+    fitsioerror(status, "Reading file.");
+  free(ffname);
+
+  /* Separate the comma-separated values:  */
+  if(p->up.rename)
+    setuprename(p);
+  if(p->up.update)
+    fillfitsheaderll(p->up.update, &p->update);
+  if(p->up.write)
+    fillfitsheaderll(p->up.write, &p->write);
 
 }
-*/
+
 
 
 
@@ -283,12 +475,11 @@ setparams(int argc, char *argv[], struct headerparams *p)
   if(cp->printparams)
     REPORT_PARAMETERS_SET;
 
-  /* Make the array of input images.
-  preparearrays(p);
-  */
-  /* Do a sanity check.
+  /* Do a sanity check. */
   sanitycheck(p);
-  */
+
+  /* Make the array of input images. */
+  preparearrays(p);
 }
 
 
@@ -314,11 +505,17 @@ setparams(int argc, char *argv[], struct headerparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct headerparams *p, struct timeval *t1)
+freeandreport(struct headerparams *p)
 {
+  int status=0;
+
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
+
+  /* Close the FITS file: */
+  if(fits_close_file(p->fptr, &status))
+    fitsioerror(status, NULL);
 
   if(p->wcs)
     wcsvfree(&p->nwcs, &p->wcs);

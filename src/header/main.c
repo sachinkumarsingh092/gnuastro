@@ -36,25 +36,22 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 main (int argc, char *argv[])
 {
-  struct timeval t1;
+  int r;
   struct headerparams p={{0}, {0}, 0};
 
-  /* Set the starting time.*/
-  time(&p.rawtime);
-  gettimeofday(&t1, NULL);
-
   /* Set the program name (needed by non-gnu operating systems): */
+  time(&p.rawtime);
   set_program_name(argv[0]);
 
   /* Read the input parameters. */
   setparams(argc, argv, &p);
 
   /* Run MakeProfiles */
-  header(&p);
+  r=header(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
+  freeandreport(&p);
 
   /* Return successfully.*/
-  return EXIT_SUCCESS;
+  return r;
 }

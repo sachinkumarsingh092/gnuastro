@@ -25,8 +25,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <argp.h>
 
-#include "fixedstringmacros.h"
 #include "commonargs.h"
+#include "linkedlist.h"
+#include "fixedstringmacros.h"
 
 
 
@@ -71,8 +72,8 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z
+   a b e f g i j k l m n p s v x y z
+   A B C E F G I J L M O R T U W X Y Z
 
    Number keys used: Nothing!
 
@@ -95,13 +96,76 @@ static struct argp_option options[] =
       "Output:",
       2
     },
-
+    {
+      "delete",
+      'd',
+      "STR",
+      0,
+      "Delete a keyword from the header.",
+      2
+    },
+    {
+      "rename",
+      'r',
+      "STR",
+      0,
+      "Rename keyword, keeping value and comments.",
+      2
+    },
+    {
+      "update",
+      'u',
+      "STR",
+      0,
+      "Update a keyword value or comments.",
+      2
+    },
+    {
+      "write",
+      'w',
+      "STR",
+      0,
+      "Write a keyword (with value, comments and units).",
+      2
+    },
+    {
+      "history",
+      'H',
+      "STR",
+      0,
+      "Add HISTORY keyword, any length is ok.",
+      2
+    },
+    {
+      "comment",
+      'c',
+      "STR",
+      0,
+      "Add COMMENT keyword, any length is ok.",
+      2
+    },
+    {
+      "date",
+      't',
+      0,
+      0,
+      "Set the DATE keyword to the current time.",
+      2
+    },
 
 
 
     {
       0, 0, 0, 0,
       "Operating modes:",
+      -1
+    },
+    {
+      "quitonerror",
+      'Q',
+      0,
+      0,
+      "Quit if there is an error on any action.",
       -1
     },
 
@@ -145,7 +209,31 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
+    case 'd':
+      add_to_stll(&p->delete, arg);
+      break;
+    case 'r':
+      add_to_stll(&p->up.rename, arg);
+      break;
+    case 'u':
+      add_to_stll(&p->up.update, arg);
+      break;
+    case 'w':
+      add_to_stll(&p->up.write, arg);
+      break;
+    case 'c':
+      p->comment=arg;
+      break;
+    case 'H':
+      p->history=arg;
+      break;
+    case 't':
+      p->date=1;
+      break;
 
+    /* Operating modes: */
+    case 'Q':
+      p->quitonerror=1;
 
 
     /* Read the non-option arguments: */

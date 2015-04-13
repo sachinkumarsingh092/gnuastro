@@ -1,3 +1,9 @@
+2015-04-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/fitsarrayvv.c (updatekeys): When no value is given, it will
+	use fits_update_key_null.
+	(readwcs): Uses fits_free_memory instead of clib's free.
+
 2015-04-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/mkprof.c: Corrected condition when a thread would

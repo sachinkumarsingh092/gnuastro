@@ -765,6 +765,36 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
+add_to_fitsheaderll(struct fitsheaderll **list, int datatype,
+                    char *keyname, int kfree, void *value, int vfree,
+                    char *comment, int cfree, char *unit)
+{
+  struct fitsheaderll *newnode;
+
+  /* Allocate space for the new node and fill it in. */
+  errno=0;
+  newnode=malloc(sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno,
+	  "linkedlist: New element in fitsheaderll");
+  newnode->datatype=datatype;
+  newnode->keyname=keyname;
+  newnode->value=value;
+  newnode->comment=comment;
+  newnode->unit=unit;
+  newnode->kfree=kfree;		/* Free pointers after using them. */
+  newnode->vfree=vfree;
+  newnode->cfree=cfree;
+
+  newnode->next=*list;
+  *list=newnode;
+}
+
+
+
+
+
+void
 add_to_fitsheaderllend(struct fitsheaderll **list, int datatype,
 		       char *keyname, int kfree, void *value, int vfree,
 		       char *comment, int cfree, char *unit)
@@ -923,9 +953,17 @@ updatekeys(fitsfile *fptr, struct fitsheaderll **keylist)
   while(tmp!=NULL)
     {
       /* Write the information: */
-      if( fits_update_key(fptr, tmp->datatype, tmp->keyname, tmp->value,
-			  tmp->comment, &status) )
-	fitsioerror(status, NULL);
+      if(tmp->value)
+        {
+          if( fits_update_key(fptr, tmp->datatype, tmp->keyname, tmp->value,
+                              tmp->comment, &status) )
+            fitsioerror(status, NULL);
+        }
+      else
+        {
+          if(fits_update_key_null(fptr, tmp->keyname, tmp->comment, &status))
+            fitsioerror(status, NULL);
+        }
       if(tmp->unit && fits_write_key_unit(fptr, tmp->keyname,
 					  tmp->unit, &status) )
 	fitsioerror(status, NULL);
@@ -1050,7 +1088,6 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
 
   /* WCSlib function */
   status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs);
-  free(fullheader);
   if(status)
     {
       fprintf(stderr, "\n##################\n"
@@ -1059,6 +1096,9 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
               status, wcs_errmsg[status]);
       *wcs=NULL; *nwcs=0;
     }
+  if (fits_free_memory(fullheader, &status) )
+    fitsioerror(status, "Problem in fitsarrayvv.c for freeing the memory "
+                "used to keep all the headers.");
 
   /* Set the internal structure: */
   status=wcsset(*wcs);
