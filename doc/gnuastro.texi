@@ -172,7 +172,7 @@ sub-component to a title is present.
 
 Introduction
 
-* Naming convention::
+* Naming convention::           About names of programs in Gnuastro.
 * Quick start::                 A quick start to installation.
 * GNU Astronomy Utilities list::  List of program in Gnuastro.
 * Science and its tools::       Some philosophy and history.
@@ -188,7 +188,7 @@ Version numbering
 
 Tutorials
 
-* Hubble visually checks and classifies his catalog::
+* Hubble visually checks and classifies his catalog::  Check a catalog.
 * Sufi simulates a detection::  Simulating a detection.
 
 Installation
@@ -271,7 +271,7 @@ Files
 Header
 
 * Invoking astheader::          Arguments and options to Header.
-* Header future updates::
+* Header future updates::       Future plans for Header.
 
 ConvertType
 
@@ -333,7 +333,7 @@ MakeProfiles
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
 * Profile total magnitude::     Definition of total profile magnitude.
-* Magnitude to flux conversion::
+* Magnitude to flux conversion:: Converting flux to magnitude.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
 
@@ -426,7 +426,7 @@ manual first. As discussed in @ref{Science and its tools} this is the
 founding basis of the GNU Astronomy Utilities.
 
 @menu
-* Naming convention::
+* Naming convention::           About names of programs in Gnuastro.
 * Quick start::                 A quick start to installation.
 * GNU Astronomy Utilities list::  List of program in Gnuastro.
 * Science and its tools::       Some philosophy and history.
@@ -511,7 +511,7 @@ used is given.
 GNU Astronomy Utilities @value{VERSION}, contains the following
 programs. They are sorted in alphabetical order and followed by their
 executable names along with a short description, see @ref{Naming
-convention}. In this manual they are discussed based on their context,
+convention}. In the manual they are discussed based on their context,
 please see the manual contents.
 
 @itemize
@@ -990,16 +990,16 @@ points of Professor Takashi Ichikawa (at Tohoku University) were also
 instrumental in the creation of Gnuastro.
 
 Mohammad-reza Khellat and Alan Lefor kindly studied the manual
-multiple times and provided very useful suggestions. Alan also helped
-in testing Gnuastro on other operating systems. Brandon Invergo, Karl
-Berry and Richard Stallman also provided very useful suggestions
-during the GNU evaluation process. At first we wanted to submit the
-programs as independent and individual small programs, but thanks to
-their suggestions and ideas, all the separate programs were merged
-into the complete system that is now available for the astronomical
-community. Finally we should thank all the anonymous developers in
-various online forums which patiently answered all our small (but very
-important) technical questions.
+multiple times and provided very useful suggestions. Alan and
+Mohammad-reza also helped in testing Gnuastro on other operating
+systems. Brandon Invergo, Karl Berry and Richard Stallman also
+provided very useful suggestions during the GNU evaluation process. At
+first we wanted to submit the programs as independent and individual
+small programs, but thanks to their suggestions and ideas, all the
+separate programs were merged into the complete system that is now
+available for the astronomical community. Finally we should thank all
+the anonymous developers in various online forums which patiently
+answered all our small (but very important) technical questions.
 
 
 
@@ -1057,7 +1057,7 @@ the historical facts mentioned in these fictional settings was
 Wikipedia.
 
 @menu
-* Hubble visually checks and classifies his catalog::
+* Hubble visually checks and classifies his catalog::  Check a catalog.
 * Sufi simulates a detection::  Simulating a detection.
 @end menu
 
@@ -1075,19 +1075,19 @@ that some of the known nebulous objects are too distant to be within
 the the Milky Way (or Galaxy) and that they were probably distant
 galaxies in their own right. He had also used them to show that the
 redshift of the nebulae increases with their distance. So now he wants
-to study them more accuratly to see what they actually are. Since they
-are nebulous or amorphous, they can't be modeled (like stars that are
-always a point) easily. So there is no better way to distinguish them
-than to visually inspect them and see if it is possible to classify
-these nebulae or not.
+to study them more accurately to see what they actually are. Since
+they are nebulous or amorphous, they can't be modeled (like stars that
+are always a point) easily. So there is no better way to distinguish
+them than to visually inspect them and see if it is possible to
+classify these nebulae or not.
 
 Hubble has stored all the FITS images of the objects he wants to
 visually inspect in his @file{/mnt/data/images} directory. He has also
 stored his catalog of extra Galactic nebulae in
 @file{/mnt/data/catalogs/extragalactic.txt}. Any normal user on his
-GNU/Linux system (including him self) only has read access to the
-contents of the @file{/mnt/data} directory. He done this by running
-this command as root:
+GNU/Linux system (including himself) only has read access to the
+contents of the @file{/mnt/data} directory. He has done this by
+running this command as root:
 
 @example
 # chmod -R 755 /mnt/data
@@ -1097,7 +1097,7 @@ this command as root:
 Hubble has done this intentionally to avoid mistakenly deleting or
 modifying the valuable images he has taken at Mount Wilson while he is
 working as an ordinary user. Retaking all those images and data is
-simply not an option. Infact they are also in another hard disk
+simply not an option. In fact they are also in another hard disk
 (@file{/dev/sdb1}). So if the hard disk which stores his GNU/Linux
 distribution suddenly malfunctions due to work load, his data is not
 in harms way. That hard disk is only mounted to this directory when he
@@ -1127,7 +1127,7 @@ $ ls
 Hubble has multiple images in @file{/mnt/data/images}, some of his
 targets might be on the edges of an image and so several images need
 to be stitched to give a good view of them. Also his extra Galactic
-targets belong to various pointings on the sky, so they are not in one
+targets belong to various pointings in the sky, so they are not in one
 large image. Gnuastro's ImageCrop is just the utility he wants. The
 catalog in @file{extragalactic.txt} is a plain text file which stores
 the basic information of all his known 200 extra Galactic nebulae. In
@@ -1162,8 +1162,8 @@ first differs. When using ImageCrop the order of outputs is irrelevant
 since each crop is independent of the rest. This is why the crops are
 not necessarily created in the same input order. He is content with
 the default width of the outputs (which he inspected by running
-@code{$ astimgcrop -P}), but if he wanted a different width for the
-cropped images he could do that with the @option{--wwidth} option
+@code{$ astimgcrop -P}). If he wanted a different width for the
+cropped images, he could do that with the @option{--wwidth} option
 which accepts a value in arcseconds.  When he lists the contents of
 the directory again he finds his 200 objects as separate FITS images.
 
@@ -1198,8 +1198,8 @@ GNOME is the Eye of GNOME, which has the executable file name
 the GNOME graphical desktop environment which is the default in most
 GNU/Linux distributions. If you use another graphical desktop
 environment, replace @command{eog} with any other image
-viewer.}. Since he has used it before he knows that once it opens an
-image, you can use the @key{ENTER} or @key{SPACE} keys on the keyboard
+viewer.}. Since he has used it before, he knows that once it opens an
+image, he can use the @key{ENTER} or @key{SPACE} keys on the keyboard
 to go to the next image in the directory or the @key{Backspace} key to
 to go the previous image. So he opens the image of the first object
 with the command below and with his cup of coffee in his other hand,
@@ -1320,8 +1320,8 @@ question. He had thoroughly studied Claudius Ptolemy's (90 -- 168 A.D)
 Almagest and had made lots of corrections to it, in particular in
 measuring the brightness. Using his same experience, he was able to
 measure a magnitude for the objects and wanted to simulate his
-observation to see if the a simulated object with the same brightness
-could be detected in a simulated noise with the same detection
+observation to see if a simulated object with the same brightness and
+size could be detected in a simulated noise with the same detection
 technique.  The general outline of the steps he wants to take are:
 
 @enumerate
@@ -1334,8 +1334,8 @@ this is because the image of heavenly bodies is actually transformed
 by the atmosphere or other sources outside the atmosphere (for example
 gravitational lenses) prior to being sampled on an image. Since that
 transformation occurs on a continues grid, to best approximate it, he
-should do all the work on a finer pixel grid then in the end resample
-that grid.
+should do all the work on a finer pixel grid. In the end he can
+resample the result to the initially desired grid size.
 
 @item
 Convolve the image with a PSF image that is oversampled to the same
@@ -1343,7 +1343,7 @@ value as the mock image. Since he wants to finish in a reasonable time
 and the PSF kernel will be very large due to oversampling, he has to
 use frequency domain convolution which has the side effect of dimming
 the edges of the image. So in the first step above he also has to
-build the image to be larger by atleast half the width of the PSF
+build the image to be larger by at least half the width of the PSF
 convolution kernel on each edge.
 
 @item
@@ -1356,7 +1356,7 @@ domain convolution artifacts in the final product.
 
 @item
 He should add noise to the (until now, noise-less) mock image. After
-all, all observations have noise associated witht them.
+all, all observations have noise associated with them.
 
 @end enumerate
 
@@ -1368,7 +1368,7 @@ his user or system wide configuration files for which parameters, see
 @ref{Configuration files}. So to start his simulation, Sufi runs
 MakeProfiles with the @option{-P} option to make sure what columns in
 a catalog MakeProfiles currently recognizes and the output image
-prameters:
+parameters:
 
 @example
 $ astmkprof -P
@@ -1412,7 +1412,7 @@ For his initial check he decides to simulate the nebula in the
 Andromeda constellation. The night he was observing, the PSF had
 roughly a FWHM of about 5 pixels, so as the first row, he defines the
 PSF parameters and sets the radius column (@code{rcol} above, fifth
-column) to @code{5.000}, he also chooses a Moffat function for it's
+column) to @code{5.000}, he also chooses a Moffat function for its
 functional form. Remembering how diffuse the nebula in the Andromeda
 constellation was, he decides to simulate it with a mock S@'{e}rsic
 index 1.0 profile. He wants the output to be 500 pixels by 500 pixels,
@@ -1480,12 +1480,12 @@ The file @file{0.fits} is the PSF Sufi had asked for and
 available to him as a separate file for the convolution step. While he
 was preparing the catalog, one of his students came up and was also
 following the steps. When he opened the image, the student was
-surprized to see that all the stars are only one pixel and not in the
+surprised to see that all the stars are only one pixel and not in the
 shape of the PSF as we see when we image the sky at night. So Sufi
 explained to him that the stars will take the shape of the PSF after
 convolution and this is how they would look if we didn't have an
 atmosphere or an aperture when we took the image. The size of the
-image was also surprizing for the student, instead of 500 by 500, it
+image was also surprising for the student, instead of 500 by 500, it
 was 2630 by 2630 pixels. So Sufi had to explain why oversampling is
 very important for parts of the image where the flux change is
 significant over a pixel. Sufi then explained to him that after
@@ -1660,10 +1660,10 @@ executable unless he explicitly changes the executable flag with
 The student was really excited, since now, through simple shell
 scripting, he could really speed up his work and run any command in
 any fashion he likes allowing him to be much more creative in his
-works. Until now he was using the graphic user interface which doesn't
-have such a facility and doing repetitive things on it was really
-frustrating and some times he would make mistakes. So he left to go
-and try scripting on his own computer.
+works. Until now he was using the graphical user interface which
+doesn't have such a facility and doing repetitive things on it was
+really frustrating and some times he would make mistakes. So he left
+to go and try scripting on his own computer.
 
 Sufi could now get back to his own work and see if the simulated
 nebula which resembled the one in the Andromeda constellation could be
@@ -3884,7 +3884,7 @@ coordinates to sky or spectrum coordinates on the image or table.
 
 @menu
 * Invoking astheader::          Arguments and options to Header.
-* Header future updates::
+* Header future updates::       Future plans for Header.
 @end menu
 
 @node Invoking astheader, Header future updates, Header, Header
@@ -6278,7 +6278,7 @@ convolution and adding noise.
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
 * Profile total magnitude::     Definition of total profile magnitude.
-* Magnitude to flux conversion::
+* Magnitude to flux conversion::  Converting magnitude to flux.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 * MakeProfiles future updates::  Plans for the future of MakeProfiles.
 @end menu

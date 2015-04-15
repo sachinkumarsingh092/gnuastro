@@ -1,0 +1,275 @@
+<!--#include virtual="/server/header.html" -->
+<!-- Parent-Version: 1.77 -->
+
+<!-- This is the template document for GNU web pages.  We use
+     server side includes (#include) for common elements, for
+     instance, the very first line of the file.  If you're reading
+     this in its expanded form, you can retrieve the original source,
+     with the SSI statements intact, from
+     http://web.cvs.savannah.gnu.org/viewvc/*checkout*/www/server/standards/boilerplate.html?root=www&content-type=text%2Fplain
+-->
+
+<!-- Instructions for adapting this boilerplate to a new project: -->
+
+<!-- 1. In the line above starting "Parent-Version:", remove the
+        "$Revision...$" from around the revision number,
+        leaving just Parent-Version: and the number. -->
+
+<!-- 2. Replace "baz" with the name of your project.
+        You should be able to do this with search and replace;
+        making sure that the search is case insensitive and
+        that the case of the replacement matches the case
+        of the string found. In Emacs, query-replace will do this
+        when case-fold-search and case-replace are both non-nil
+        and both search and replacement string are given in lower case. -->
+
+<!-- 3. Of course update the actual information according to your project,
+        such as mailing lists, project locations, and maintainer name.  -->
+
+<!-- 4. You can use the patch-from-parent script to semi-automate
+        merging future changes to the boilerplate with your file:
+        http://web.cvs.savannah.gnu.org/viewvc/*checkout*/www/server/standards/patch-from-parent?root=www&content-type=text%2Fplain
+        -->
+
+<!-- If you would like to make sure your page validates with HTML5, that
+     would be a good thing.  To do that, change the first line from
+     to /server/html5-header.html before trying the validation.  Maybe
+     someday we will be able to make /server/header be HTML5.  -->
+
+<title>GNU Astronomy Utilities - Gnuastro -
+- GNU Project - Free Software Foundation</title>
+<!--#include virtual="/server/gnun/initial-translations-list.html" -->
+<!--#include virtual="/server/banner.html" -->
+<h2>GNU Astronomy Utilities</h2>
+
+<p>The GNU Astronomy Utilities (Gnuastro) is an official GNU package
+consisting of separate programs for the manipulation and analysis of
+astronomical data. All the various utilities share the same basic
+command line user interface for the comfort of both the users and
+developers. GNU Astronomy Utilities is written to comply fully with
+the <a href="https://www.gnu.org/prep/standards/">GNU coding
+standards</a> so it integrates finely with the GNU/Linux operating
+system. This also enables astronomers to expect a fully familiar
+experience in the source code, building, installing and command line
+user interaction that they have seen in all the other GNU software
+that they use. Please see
+the <a href="http://www.gnu.org/software/gnuastro/manual/html_node/Tutorials.html#Tutorials">Tutorials</a>
+for entertaining and easy to read real world examples of using
+Gnuastro.</p>
+
+<p><b>We are working hard on the first release of the source code as
+soon as possible.</b> If you would like to be informed when it is
+released (and keep up to date with all future Gnuastro announcements),
+please subscribe
+to <a href="https://lists.gnu.org/mailman/listinfo/info-gnuastro">info-gnuastro</a>. However,
+the <a href="manual/">documentation</a> is available.</p>
+
+<h3>List of GNU Astronomy Utilities</h3>
+
+GNU Astronomy Utilities 0.1, contains the following programs. They are
+sorted in alphabetical order and followed by their executable names
+along with a short description,
+see <a href="manual/html_node/Naming-convention.html#Naming-convention">Naming
+convention</a>. In the documentation/manual they are discussed based
+on their context.
+
+<ul>
+<li> <a href="manual/html_node/ConvertType.html#ConvertType">ConvertType</a> (<samp>astconvertt</samp>) 0.1:
+Convert data files.
+</li><li> <a href="manual/html_node/Convolve.html#Convolve">Convolve</a> (<samp>astconvolve</samp>) 0.1: Convolve
+(blur) data with a kernel.
+</li><li> <a href="manual/html_node/Header.html#Header">Header</a> (<samp>astheader</samp>) 0.1: Print and
+manipulate data header.
+</li><li> <a href="manual/html_node/ImageCrop.html#ImageCrop">ImageCrop</a> (<samp>astimgcrop</samp>) 0.1: Crop region(s)
+from image(s).
+</li><li> <a href="manual/html_node/ImageWarp.html#ImageWarp">ImageWarp</a> (<samp>astimgwarp</samp>) 0.1: Warp
+image to new pixel grid.
+</li><li> <a href="manual/html_node/MakeNoise.html#MakeNoise">MakeNoise</a> (<samp>astmknoise</samp>) 0.1: Make
+(add) noise to an image.
+</li><li> <a href="manual/html_node/MakeProfiles.html#MakeProfiles">MakeProfiles</a> (<samp>astmkprof</samp>) 0.1: Make
+mock profiles in image.
+</li></ul>
+
+<h3 id="download">Downloading GNU Astronomy Utilities</h3>
+
+<p>Gnuastro can be found on the main GNU ftp server: (not yet
+activated)<a href="http://ftp.gnu.org/gnu/gnuastro/">http://ftp.gnu.org/gnu/gnuastro/</a>
+(via HTTP) and (not yet
+activated)<a href="ftp://ftp.gnu.org/gnu/gnuastro/">ftp://ftp.gnu.org/gnu/gnuastro/</a>
+(via FTP).  It can also be found on the <a href="/prep/ftp.html">GNU
+mirrors</a>; please (not yet
+activated)<a href="http://ftpmirror.gnu.org/gnuastro/">use a
+mirror</a> if possible.</p>
+
+
+<h3 id="documentation">Documentation</h3>
+
+<p><a href="manual/">Documentation (manual) for Gnuastro</a> is
+available online in various formats, as
+is <a href="/manual/">documentation for most GNU software</a>. After
+installing Gnuastro, you can access the documentation for the full
+package or individual programs on the command line,
+in <a href="http://www.gnu.org/software/texinfo/manual/info/info.html">Info</a>
+format, by running any of the top three commands below for varying
+levels of generality (the name in the top three is not case
+sensitive):
+
+<ul>
+  <li><code>info gnuastro</code>: To view the complete GNU Astronomy
+  Utilities manual.</li>
+  <li><code>info ProgramName</code>: To view the complete section
+    about ProgramName. For example <code>info NoiseChisel</code>
+    or <code>info ImageCrop</code>.</li>
+  <li><code>info astprogname</code>: To only view the "Invoking
+  ProgramName" sub-section of the manual. Each program has this
+  subsection which explains the input(s), output(s) and command line
+  options for that particular program. For example <code>info
+  astnoisechisel</code> or <code>info astimgcrop</code>.</li>
+  <li><code>astprogname --help</code>: A description and full list of
+  options (classified by context) for this program will be
+  printed.</li>
+  <li><code>man astprogname</code>: A man page listing the options and
+  arguments of this program.</li>
+</ul>
+
+
+<h3 id="mail">Mailing lists</h3>
+
+<p>Gnuastro has the following mailing lists:</p>
+
+<ul>
+<li><a href="https://lists.gnu.org/mailman/listinfo/bug-gnuastro">bug-gnuastro</a>
+is used to discuss most aspects of Gnuastro, including development and
+enhancement requests, as well as bug reports.</li>
+<li><a
+href="https://lists.gnu.org/mailman/listinfo/help-gnuastro">help-gnuastro</a> is
+  for general user help and discussion.</li>
+<li><a
+href="https://lists.gnu.org/mailman/listinfo/info-gnuastro">info-gnuastro</a> is
+  for announcements made by Gnuastro developers for the user community.</li>
+</ul>
+
+<p>Security reports that should not be made immediately public can be
+sent directly to the maintainer.  If there is no response to an urgent
+issue, you can escalate to the general
+<a href="http://lists.gnu.org/mailman/listinfo/security">security</a>
+mailing list for advice.</p>
+
+<h3 id="contribute">Getting involved</h3>
+
+<p>Development of GNU Astronomy Utilities, and GNU in general, is a
+volunteer effort, and you can contribute.  For information, please
+read <a href="/help/">How to help GNU</a>. If you'd like to get
+involved, it's a good idea to join the discussion mailing list (see
+above).</p>
+
+
+<dl>
+<dt>Test releases</dt>
+
+<dd>Trying the latest test release (when available) is always
+appreciated.  Test releases of Gnuastro can be found at
+<a href="http://alpha.gnu.org/gnu/gnuastro/">http://alpha.gnu.org/gnu/gnuastro/</a>
+(via HTTP) and
+<a href="ftp://alpha.gnu.org/gnu/gnuastro/">ftp://alpha.gnu.org/gnu/gnuastro/</a>
+(via FTP).</dd>
+
+
+<dt>Development</dt>
+
+<dd>GNU Astronomy Utilities is still under active development, so if
+you are interested, please study the "Developing" chapter of the
+documentation and start hacking into Gnuastro or even write your own
+utility within it. If you feel you want to share your work as an
+official section of Gnuastro, please contact the maintainer (below).
+For development sources, issue trackers, and other information, please
+see the
+<a href="http://savannah.gnu.org/projects/gnuastro/">Gnuastro project
+page</a>
+at <a href="http://savannah.gnu.org">savannah.gnu.org</a>.</dd>
+
+<dt>Maintainer</dt>
+
+<dd>GNU Astronomy Utilities is currently being maintained by
+  <a href="http://astr.tohoku.ac.jp/~akhlaghi">Mohammad
+Akhlaghi</a>
+<a href="mailto:akhlaghi@gnu.org">&lt;akhlaghi@gnu.org&gt;</a>.
+Please use the mailing lists for contact.</dd>
+
+
+</dl>
+
+
+<h3 id="license">Licensing</h3>
+
+<p>GNU Astronomy Utilities (Gnuastro) is free software; you can
+redistribute it and/or modify it under the terms of
+the <a href="http://www.gnu.org/licenses/gpl.html" rel="license">GNU
+General Public License</a> as published by the Free Software
+Foundation; either version&nbsp;3 of the License, or (at your option)
+any later version.</p>
+
+</div><!-- for id="content", starts in the include above -->
+<!--#include virtual="/server/footer.html" -->
+<div id="footer">
+<div class="unprintable">
+
+<p>Please send general FSF &amp; GNU inquiries to
+<a href="mailto:gnu@gnu.org">&lt;gnu@gnu.org&gt;</a>.
+There are also <a href="/contact/">other ways to contact</a>
+the FSF.  Broken links and other corrections or suggestions can be sent
+to <a href="mailto:bug-gnuastro@gnu.org">&lt;bug-gnuastro@gnu.org&gt;</a>.</p>
+
+<p><!-- TRANSLATORS: Ignore the original text in this paragraph,
+        replace it with the translation of these two:
+
+        We work hard and do our best to provide accurate, good quality
+        translations.  However, we are not exempt from imperfection.
+        Please send your comments and general suggestions in this regard
+        to <a href="mailto:web-translators@gnu.org">
+        &lt;web-translators@gnu.org&gt;</a>.</p>
+
+        <p>For information on coordinating and submitting translations of
+        our web pages, see <a
+        href="/server/standards/README.translations.html">Translations
+        README</a>. -->
+Please see the <a
+href="/server/standards/README.translations.html">Translations
+README</a> for information on coordinating and submitting translations
+of this article.</p>
+</div>
+
+<!-- Regarding copyright, in general, standalone pages (as opposed to
+     files generated as part of manuals) on the GNU web server should
+     be under CC BY-ND 3.0 US.  Please do NOT change or remove this
+     without talking with the webmasters or licensing team first.
+     Please make sure the copyright date is consistent with the
+     document.  For web pages, it is ok to list just the latest year the
+     document was modified, or published.
+
+     If you wish to list earlier years, that is ok too.
+     Either "2001, 2002, 2003" or "2001-2003" are ok for specifying
+     years, as long as each year in the range is in fact a copyrightable
+     year, i.e., a year in which the document was published (including
+     being publicly visible on the web or in a revision control system).
+
+     There is more detail about copyright years in the GNU Maintainers
+     Information document, www.gnu.org/prep/maintain. -->
+
+<p>Copyright &copy; 2015 Free Software Foundation, Inc.</p>
+
+<p>This page is licensed under a <a rel="license"
+href="http://creativecommons.org/licenses/by-nd/3.0/us/">Creative
+Commons Attribution-NoDerivs 3.0 United States License</a>.</p>
+
+<!--#include virtual="/server/bottom-notes.html" -->
+
+<p class="unprintable">Updated:
+<!-- timestamp start -->
+$Date: 2015/04/15 11:33:33 $
+<!-- timestamp end -->
+</p>
+</div>
+</div>
+</body>
+</html>

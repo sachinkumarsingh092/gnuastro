@@ -1,7 +1,10 @@
 The authors that have contributed to each package are listed after the
 name of the package:
 
-ConvertType (astconvertt): Mohammad Akhlaghi
-Convolve (astconvolve): Mohammad Akhlaghi
-ImageCrop (astimgcrop): Mohammad Akhlaghi
-MakeProfiles (astmkprof): Mohammad Akhlaghi
+ConvertType (astconvertt)   Mohammad Akhlaghi<akhlaghi@gnu.org>
+Convolve (astconvolve)      Mohammad Akhlaghi<akhlaghi@gnu.org>
+Header (astheader)          Mohammad Akhlaghi<akhlaghi@gnu.org>
+ImageCrop (astimgcrop)      Mohammad Akhlaghi<akhlaghi@gnu.org>
+ImageWarp (astimgwarp)      Mohammad Akhlaghi<akhlaghi@gnu.org>
+MakeProfiles (astmkprof)    Mohammad Akhlaghi<akhlaghi@gnu.org>
+MakeNoise (astmknoise)      Mohammad Akhlaghi<akhlaghi@gnu.org>

@@ -317,7 +317,7 @@ AS_IF([test "x$anywarnings" = xyes],
       ]
      )
 AS_ECHO(["Please run the following commands to build, test"])
-AS_ECHO(["and install AC_PACKAGE_TARNAME AC_PACKAGE_VERSION in your machine."])
+AS_ECHO(["and install AC_PACKAGE_TARNAME AC_PACKAGE_VERSION on your machine."])
 AS_ECHO(["    make"])
 AS_ECHO(["    make check"])
 AS_ECHO(["    make install"])
