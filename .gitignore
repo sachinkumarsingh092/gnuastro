@@ -58,6 +58,6 @@ doc/stamp-vti
 autom4te.cache
 doc/texinfo.tex
 doc/version.texi
-www/gnuastro/CVS/
-www/gnuastro/manual/
+doc/www/gnuastro/CVS/
+doc/www/gnuastro/manual/
 doc/subpackageversions.texi

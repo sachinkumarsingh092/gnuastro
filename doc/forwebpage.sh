@@ -1,5 +1,38 @@
 #! /usr/bin/bash
 
+# This shell script will first run gendocs.sh on the Texinfo source
+# which creates the standrard GNU webpage style documentation
+# page. Then it does some modifications to the HTMLs produced:
+#
+# 1. Add a CSS sytlesheet.
+# 2. Add MathJax.
+# 3. Add a "GNU Astronomy Utilities manual" title on the top.
+# 4. Add a link to read in different formats.
+# 5. If MathJax was used in a page, add a link to Javascript.html
+# 6. Add a link to the main Gnuastro webpage on the bottom.
+#
+# After making all these changes, it copies all the necessry files in
+# in the folder that will be linked to the GNU servers and it will run
+# CVS to upload them there.
+#
+# Original author:
+#     Mohammad Akhlaghi <akhlaghi@gnu.org>
+# Contributing author(s):
+# Copyright (C) 2015, Free Software Foundation, Inc.
+#
+# Gnuastro is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Gnuastro is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
 umask 002
 
 if [ -d ./manual ]; then rm -rf ./manual; fi
@@ -11,10 +44,11 @@ rm gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
    gnuastro.log gnuastro.pg gnuastro.toc gnuastro.tp gnuastro.vr
 
 
+# Copy the two necessary files in the manual directory:
+cp javascript.html style.css ./manual/
+
 
 # Make the proper corrections to the HTML files:
-echo
-echo
 echo
 echo %%%%% Correcting the HTMLs %%%%%
 thismonth=$(date +"%B %Y")
@@ -35,11 +69,18 @@ do
     while read -r line; do
 
         # Actions that must be done before a given line:
-        if [ $hasjavascript = "yes" ] && [ "$line" = "</head>" ]; then
-            echo "<script type=\"text/javascript\"" >> tmp.html
-            echo "src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">" >> tmp.html
-            echo "</script>" >> tmp.html
-            echo "" >> tmp.html
+        if [ "$line" = "</head>" ]; then
+            if [ "$file" = manual/gnuastro.html ]; then
+                echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"./style.css\">" >> tmp.html
+            else
+                echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\">" >> tmp.html
+            fi
+            if [ $hasjavascript = "yes" ]; then
+                echo "<script type=\"text/javascript\"" >> tmp.html
+                echo "src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">" >> tmp.html
+                echo "</script>" >> tmp.html
+                echo "" >> tmp.html
+            fi
         fi
 
         if [ "$line" = "</body>" ]; then
@@ -64,11 +105,13 @@ do
 done
 
 
-# Copy the generated files to the proper directory
-cp -R javascript.html manual/* ../www/gnuastro/manual/
+# Copy the generated files to the proper directory. We do not want to
+# copy the full directory there because the CVS information will be
+# removed.
+cp -R manual/* www/gnuastro/manual/
 rm -rf ./manual
 
 
 # Run CVS to upload the page to the GNU server
-cd ../www/gnuastro/
+cd www/gnuastro/
 cvs commit

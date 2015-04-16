@@ -1034,7 +1034,8 @@ the program in this manual. Each program section starts by explaning
 the general concepts behind what it does. If you only want to see an
 explanation of the options and arguments of any program, see the
 subsection titled `Invoking ProgramName'. See @ref{Conventions}, for
-an explanations of the conventions we use in the example codes.
+an explanation of the conventions we use in the example codes through
+the manual.
 
 The tutorials in this section use a fictional setting of some
 historical figures in the history of astronomy. We have tried to show
@@ -3905,7 +3906,7 @@ One line examples:
 @example
 $ astheader image.fits
 $ astheader --update=OLDKEY,153.034,"Old keyword comment"
-$ astheader --remove=COMMENT --add=COMMENT,"Anything you like ;-)."
+$ astheader --remove=COMMENT --comment="Anything you like ;-)."
 $ astheader --add=MYKEY1,20.00,"An example keyword" --add=MYKEY2,fd
 @end example
 
@@ -7607,7 +7608,8 @@ provide very low level operations. This enables you to use the GNU
 Bash scripting language (which is the default in most GNU/Linux
 operating systems) or any other shell you might be using to operate on
 a large number of files or do very complex things through the creative
-combinations of these tools that the authors had never dreamed of.
+combinations of these tools that the authors had never dreamed of. We
+have put a few simple examples in @ref{Tutorials}.
 
 @cindex GNU Bash
 @cindex Python Matplotlib
@@ -7675,8 +7677,9 @@ system architectures and compiler configurations we make use of the
 various GNU Autoconf macros in the GNU Autoconf
 archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
 
-To get the Gnulib and the Autoconf archives, just run this command in
-any directory (lets assume you are in @file{~/Development} directory):
+To get the Gnulib and the Autoconf archives, just run these commands
+in any directory you want to store them in (lets assume you are in
+@file{~/Development} directory):
 
 @example
 $ pwd
@@ -8053,14 +8056,10 @@ you can use @key{CTRL-u 5 CTRL-o}.
 @item
 One group of functions is separated from another with 20 blank
 lines. In Emacs you can use @key{CTRL-u 20 CTRL-o}. Each group of
-functions has short descriptive title of the functions in that group
-in the form:
-
-@example
-/******************************************************/
-/****************     Sample title     ****************/
-/******************************************************/
-@end example
+functions has short descriptive title of the functions in that
+group. This title is surrounded by asterisks (@key{*}) to make it
+clearly distinguishable. Such contextual grouping and clear title are
+very important for easily understanding the code.
 
 @end itemize
 
