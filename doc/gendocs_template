@@ -3,11 +3,11 @@
 <!--#include virtual="/server/banner.html" -->
 <h2>%%TITLE%%</h2>
 
-<address>Free Software Foundation</address>
-<address>last updated %%DATE%%</address>
+<address>Last updated %%DATE%%</address>
 
-<p>This manual (%%PACKAGE%%) is available in the following formats:</p>
-
+<p><a href="http://www.gnu.org/software/gnuastro">GNU Astronomy
+Utilities</a> manual (documentation) is available in the following
+formats:</p>
 <ul>
 <li><a href="%%PACKAGE%%.html">HTML
     (%%HTML_MONO_SIZE%%K bytes)</a> - entirely on one web page.</li>

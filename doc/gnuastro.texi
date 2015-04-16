@@ -591,9 +591,9 @@ based on the experience they have gained by frequently using it. This
 kind of subjective experience is prone to very serious
 mis-understandings about what it really does behind the scenes and can
 be misleading. This attitude is further encouraged through non-free
-software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}. This
-approach to scientific software only helps in producing dogmas and an
-``obscurantist faith in the expert’s special skill, and in his
+software@footnote{@url{https://www.gnu.org/philosophy/free-sw.html}}.
+This approach to scientific software only helps in producing dogmas
+and an ``obscurantist faith in the expert’s special skill, and in his
 personal knowledge and authority''@footnote{Karl Popper. The logic of
 scientific discovery. 1959. Larger quote is given at the start of the
 PDF manual.}.
