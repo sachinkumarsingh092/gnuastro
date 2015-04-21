@@ -60,4 +60,5 @@ doc/texinfo.tex
 doc/version.texi
 doc/www/gnuastro/CVS/
 doc/www/gnuastro/manual/
+doc/www/gnuastro/MathJax/
 doc/subpackageversions.texi

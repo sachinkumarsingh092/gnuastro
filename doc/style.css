@@ -34,9 +34,13 @@ div.example
 
 table.cartouche
 {
-    border:0;
+    margin:10px;
+    border:solid;
+    border-width:1px;
+    padding-left:1em;
+    padding-right:1em;
     border-radius:10px;
-    background-color:#F6CED8;
+    background-color:#ccccff;
 }
 
 

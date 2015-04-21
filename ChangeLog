@@ -1,3 +1,9 @@
+2015-04-21  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* doc/gnuastro.texi: Removed all "Future updates ..." subsections
+	in the manual. They are now managed in the Gnuastro project
+	webpage on Savannah.
+
 2015-04-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/fitsarrayvv.c (updatekeys): When no value is given, it will

@@ -10,6 +10,7 @@
 # 4. Add a link to read in different formats.
 # 5. If MathJax was used in a page, add a link to Javascript.html
 # 6. Add a link to the main Gnuastro webpage on the bottom.
+# 7. Remove the border from cartouche in the HTML.
 #
 # After making all these changes, it copies all the necessry files in
 # in the folder that will be linked to the GNU servers and it will run
@@ -92,12 +93,18 @@ do
             echo "<br><a href=\"http://www.gnu.org/software/gnuastro\">GNU Astronomy Utilities</a> manual, $thismonth.</p>" >> tmp.html
         fi
 
+        #Do any modifications to the line:
+        temp1=${line:0:5}
+        if [ "$temp1" = "<tabl" ]; then
+            temp2=$(echo "$line" | sed -e "s/class=\"cartouche\" border=\"1\"/class=\"cartouche\"/")
+            line=$temp2
+        fi
+
         # Add the line:
         echo $line >> tmp.html
 
         # Actions after a given line:
-        temporary=${line:0:5}
-        if [ $addtitle = "yes" ] &&  [ "$temporary" = "<body" ]; then
+        if [ $addtitle = "yes" ] &&  [ "$temp1" = "<body" ]; then
             echo "<h2>GNU Astronomy Utilities manual</h2>" >> tmp.html
         fi
     done < "$file"

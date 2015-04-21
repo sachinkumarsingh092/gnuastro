@@ -11,6 +11,9 @@
 @include formath.texi
 @include subpackageversions.texi
 
+@c So dashes and underscores can be used in HTMLs
+@allowcodebreaks true
+
 @c Use section titles in cross references, not node titles.
 @xrefautomaticsectiontitle on
 
@@ -179,6 +182,9 @@ Introduction
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
+* Report a bug::                Search and report the bug you found.
+* Suggest new feature::         How to suggest a new feature.
+* Announcements::               How to stay up to date with Gnuastro.
 * Conventions::                 Conventions used in this manual.
 * Acknowledgments::             People who helped in the production.
 
@@ -260,33 +266,28 @@ Getting help
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
 * Info::                        View complete manual in terminal.
+* help-gnuastro mailing list::  Contacting experienced users.
 
 Files
 
-* FileInfo::                    List all the extensions in a file.
 * Header::                      Print and manipulate data file header.
-* FileExtensions::              Manipulate data extensions in a file.
 * ConvertType::                 Convert data to various formats.
 
 Header
 
 * Invoking astheader::          Arguments and options to Header.
-* Header future updates::       Future plans for Header.
 
 ConvertType
 
 * Recognized file types::       Recognized file types
 * Color::                       Some explanations on color.
 * Invoking astconvertt::        Options and arguments to ConvertType.
-* ConvertType future updates::  Plans for future updates.
 
 Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
-* ImageArith::                  Apply arithmetic on image(s).
-* EllipMask::                   Place elliptical masks on an image.
 
 ImageCrop
 
@@ -294,7 +295,6 @@ ImageCrop
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
 * Invoking astimgcrop::         Calling ImageCrop on the command line
-* ImageCrop future::            Future updates to ImageCrop.
 
 Invoking ImageCrop
 
@@ -307,7 +307,6 @@ Convolve
 * Convolution on the edges::    Dealing with the edges of an image.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
 * Invoking astconvolve::        Options and arguments to Convolve.
-* Convolve future updates::     Future plans for Convolve.
 
 ImageWarp
 
@@ -315,13 +314,6 @@ ImageWarp
 * Merging multiple warpings::   How to merge multiple matrices.
 * Resampling::                  Warping an image is re-sampling it.
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
-* ImageWarp future updates::    Plans for ImageWarp's future.
-
-Image analysis
-
-* ImageStat::                   Basic statistics of image pixels
-* SubtractSky::                 Subtract the sky level from the image.
-* NoiseChisel::                 Detect and segment objects in noise.
 
 Modeling and fitting
 
@@ -333,9 +325,8 @@ MakeProfiles
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
 * Profile total magnitude::     Definition of total profile magnitude.
-* Magnitude to flux conversion:: Converting flux to magnitude.
+* Magnitude to flux conversion::  Converting magnitude to flux.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
-* MakeProfiles future updates::  Plans for the future of MakeProfiles.
 
 Modeling basics
 
@@ -356,7 +347,6 @@ MakeNoise
 
 * Noise basics::                Noise concepts and definitions.
 * Invoking astmknoise::         Options and arguments to MakeNoise.
-* MakeNoise future updates::    Plans for future updates.
 
 Noise basics
 
@@ -369,6 +359,7 @@ Developing
 
 * Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
+* Gnuastro project webpage::    Central hub for Gnuastro activities.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
 * Headers::                     Library and common headers.
@@ -433,6 +424,9 @@ founding basis of the GNU Astronomy Utilities.
 * Your rights::                 User rights.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
+* Report a bug::                Search and report the bug you found.
+* Suggest new feature::         How to suggest a new feature.
+* Announcements::               How to stay up to date with Gnuastro.
 * Conventions::                 Conventions used in this manual.
 * Acknowledgments::             People who helped in the production.
 @end menu
@@ -802,7 +796,7 @@ independent. Something like the GNU Coreutils.
 
 
 
-@node New to GNU/Linux?, Conventions, Version numbering, Introduction
+@node New to GNU/Linux?, Report a bug, Version numbering, Introduction
 @section New to GNU/Linux?
 
 Some astronomers initially install and use the GNU/Linux operating
@@ -939,7 +933,175 @@ convenient for remote access to your computer. Using secure shell
 console) from anywhere even if the connection speeds are low. There
 are apps for smart phones and tablets which allow you to do this.
 
-@node Conventions, Acknowledgments, New to GNU/Linux?, Introduction
+
+
+
+
+@node Report a bug, Suggest new feature, New to GNU/Linux?, Introduction
+@section Report a bug
+
+@cindex Bug
+@cindex Wrong output
+@cindex Software bug
+@cindex Output, wrong
+@cindex Wrong results
+@cindex Results, wrong
+@cindex Halted program
+@cindex Program crashing
+@cindex Inconsistent results
+According to Wikipedia ``a software bug is an error, flaw, failure, or
+fault in a computer program or system that causes it to produce an
+incorrect or unexpected result, or to behave in unintended ways''. So
+when you see that a program is crashing, not reading your input
+correctly, giving the wrong results, or not writing your output
+correctly, you have found a bug. In such cases, it is best if you
+report the bug to the developers. If it is an immediate issue, the
+developers will work hard to correct it as soon as possible.
+
+@cindex Bug reporting
+@cindex Version control
+Prior to actually filing a bug, it is best to search previous
+reports. The issue might have already been found and even
+solved. Recently corrected bugs are probably not yet publicly released
+because they are scheduled for the next Gnuastro stable release. If
+the bug is solved but not yet released and it is an urgent issue for
+you, you can get the version controlled source and compile that, see
+@ref{Version controlled source}. There are generally two ways to
+inform us of bugs:
+
+@itemize
+@cindex Mailing list archives
+@cindex Mailing list: bug-gnuastro
+@cindex @code{bug-gnuastro@@gnu.org}
+@item
+Send a mail to @code{bug-gnuastro@@gnu.org}. Any mail you send to this
+address will be distributed through the bug-gnuastro mailing
+list. This is the simplest and preferred way to send bug reports. The
+archives of this mailing list can be found at
+@url{http://lists.gnu.org/archive/html/bug-gnuastro/}.
+
+@cindex Gnuastro project page
+@cindex Support request manager
+@cindex Submit new tracker item
+@cindex Anonymous bug submission
+@item
+``Submit a new item'' to the ``Communication tools'' section of the
+@url{https://savannah.gnu.org/projects/gnuastro/, Gnuastro project
+webpage}
+@footnote{@url{https://savannah.gnu.org/projects/gnuastro/}}. All the
+bug reports that are sent for Gnuastro (including the mailing list)
+are ultimately stored and managed in the Gnuastro project Bugs tracker
+@footnote{@url{https://savannah.gnu.org/bugs/?group=gnuastro}}. Users
+can also initiate a bug report from the project webpage directly
+through the @clicksequence{``Support''@click{}``Submit new''} links on
+the top of the page or the ``Submit a new item'' link under the ``Tech
+Support Manager'' section (with a red question mark beside it) of the
+main Gnuastro project page. You can browse or submit a new item to
+this list anonymously. See @ref{Gnuastro project webpage} for more
+information about the central management hub of Gnuastro.
+@end itemize
+
+@cindex Tracker
+@cindex Bug tracker
+@cindex Task tracker
+@cindex Viewing trackers
+Once the items have been gathered from the mailing list or webpage,
+the developers will add it to either the ``Bug Tracker'' or ``Task
+Manager'' trackers of the Gnuastro project webpage. These two trackers
+can only be edited by the Gnuastro project members, but they can be
+browsed by anyone. So prior to filing a bug report please browse and
+search these two trackers to see if the issue has already been solved
+or is being solved.
+
+@cartouche
+@noindent
+@strong{Individual and independent bug reports:} If you have found
+multiple bugs, please send them as separate (and independent) mails as
+much as possible. This will significantly help us in managing and
+resolving them sooner.
+@end cartouche
+
+@cartouche
+@cindex Reproducible bug reports
+@noindent
+@strong{Reproducible bug reports:} If we cannot reproduce your bug,
+then it is very hard to resolve it. So please send us a Minimal
+working
+example@footnote{@url{http://en.wikipedia.org/wiki/Minimal_Working_Example}}
+along with the description. For example in running a program, please
+send us the full command line text and the output with the @option{-P}
+option, see @ref{Final parameter values}. If it is caused only for a
+certain input, also send us that input file. In case the input FITS is
+large, please use ImageCrop to only crop the problematic section and
+make it as small as possible so it can easily be uploaded and
+downloaded and not waste the archive's storage, see @ref{ImageCrop}.
+@end cartouche
+
+
+@node Suggest new feature, Announcements, Report a bug, Introduction
+@section Suggest new feature
+
+@cindex Feature requests
+@cindex Additions to Gnuastro
+We would always be very happy to hear of suggested new features. For
+every program there are already lists of feautures that we are
+planning to add. You can see the current list of plans from the
+Gnuastro project webpage at
+@url{https://savannah.gnu.org/projects/gnuastro/} and following
+@clicksequence{``Tasks''@click{}``Browse''} at the top of the page. If
+you want to request a feature to an existing program, click on the
+``Display Criteria'' above the list and under ``Category'', choose
+that particular program. Under ``Category'' you can also see the
+existing suggestions for new utilities or other cases like
+installation.
+
+If the feature you want to suggest is not already listed in the task
+manager, then inform us through the @code{bug-gnuastro@@gnu.org}
+mailing list or submitting an issue through the Gnuastro project
+webpage, see @ref{Report a bug}. Please have in mind that the
+developers are all very busy with their own astronomical research, and
+implementing existing ``task''s to add or resolving bugs. Gnuastro is
+a volunteer effort and none of the developers are paid for their hard
+work. So, although we will try our best, please don't not expect that
+your suggested feature be immediately included (with the next release
+of Gnuastro).
+
+The best person to apply the feature is you, since you have the
+motivation and need. So you can read @ref{Developing} and start
+applying your desired feature. Once you have added it, you can use it
+for your own work and if you feel you want others to benefit from your
+labour, you can request for it to become part of Gnuastro. You can
+then join the developers and start maintaining your own part (utility)
+of Gnuastro. If you choose to take this path of action please contact
+us before hand (@ref{Report a bug}) so we can avoid possible duplicate
+activities and get interested people in contact.
+
+@cartouche
+@noindent
+@strong{Gnuastro is a collection of low level programs:} As described
+in @ref{Design philosophy}, a founding principle of Gnuastro is that
+each program should be very basic and low-level. High level jobs
+should be done by running the separate programs in succession through
+a shell script, see the examples in @ref{Tutorials}. So please
+consider how your desired job can best be broken into separate steps.
+@end cartouche
+
+
+
+@node Announcements, Conventions, Suggest new feature, Introduction
+@section Announcements
+
+@cindex Announcements
+@cindex Mailing list: info-gnuastro
+Gnuastro has a dedicated mailing list for making announcements. Anyone
+that is interested can subscribe to this mailing list to stay upto
+date with new releases. To subscribe to this list, please visit
+@url{https://lists.gnu.org/mailman/listinfo/info-gnuastro}.
+
+
+
+
+@node Conventions, Acknowledgments, Announcements, Introduction
 @section Conventions
 In this manual we have the following conventions:
 
@@ -970,6 +1132,8 @@ looses its meaning an the shell sees it as a simple white-space
 character, enabling you to use multiple lines to write your commands.
 
 @end itemize
+
+
 
 @node Acknowledgments,  , Conventions, Introduction
 @section Acknowledgments
@@ -2357,7 +2521,7 @@ of every program is really annoying you! You can remove this prefix
 from all the executables at configure time by adding this option:
 
 @example
-$ configure --program-transform-name='s/ast/ /'
+$ ./configure --program-transform-name='s/ast/ /'
 @end example
 
 
@@ -2561,6 +2725,9 @@ Live@footnote{@url{https://www.tug.org/texlive/}}.
 
 @end itemize
 
+@noindent
+If your problem was not listed above, please file a bug report
+(@ref{Report a bug}).
 
 
 
@@ -3556,7 +3723,9 @@ If you only need to remember the short or long names of the options,
 @option{--usage} is advised. If it is what the options do, then
 @option{--help} is a great tool. Man pages are also provided for those
 who are use to this older system of documentation. This full manual is
-also available to you on the command line in Info format. In the
+also available to you on the command line in Info format. If none of
+these seems to resolve the problems, there is a mailing list for which
+enables you to get in touch with experienced Gnuastro users. In the
 subsections below each of these methods are reviewed.
 
 
@@ -3565,6 +3734,7 @@ subsections below each of these methods are reviewed.
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
 * Info::                        View complete manual in terminal.
+* help-gnuastro mailing list::  Contacting experienced users.
 @end menu
 
 @node --usage, --help, Getting help, Getting help
@@ -3727,7 +3897,7 @@ standard manner.
 
 
 
-@node Info,  , Man pages, Getting help
+@node Info, help-gnuastro mailing list, Man pages, Getting help
 @subsection Info
 
 @cindex GNU Info
@@ -3799,6 +3969,35 @@ $ info ProgramName
 you will be taken to the top section which introduces the
 program. Note that in all cases, Info is not case sensitive.
 
+
+
+@node help-gnuastro mailing list,  , Info, Getting help
+@subsection help-gnuastro mailing list
+
+@cindex help-gnuastro mailing list
+@cindex Mailing list: help-gnuastro
+Gnuastro maintains the help-gnuastro mailing list for users to ask any
+questions related to Gnuastro. The experienced Gnuastro users and some
+of its developers are subscribed to this mailing list and your email
+will be sent to them immediately. However, when contacting this
+mailing list please have in mind that they are possibly very busy and
+might not be able to answer immediately.
+
+@cindex Mailing list archives
+@cindex @code{help-gnuastro@@gnu.org}
+To ask a question from this mailing list, send a mail to
+@code{help-gnuastro@@gnu.org}. Anyone can view the mailing list
+archives at @url{http://lists.gnu.org/archive/html/help-gnuastro/}. It
+is best that before sending a mail, you search the archives to see if
+anyone has asked a question similar to yours. If you want to make a
+suggestion or report a bug, please don't send a mail to this mailing
+list. We have other mailing lists and tools for those purposes, see
+@ref{Report a bug} or @ref{Suggest new feature}.
+
+
+
+
+
 @node Output headers,  , Getting help, Common behavior
 @section Output headers
 
@@ -3833,8 +4032,6 @@ END
 
 
 
-
-
 @node Files, Image manipulation, Common behavior, Top
 @chapter Files
 
@@ -3850,28 +4047,15 @@ want to use the data in a FITS file in other programs (for example in
 reports) that don't recognize the FITS format.
 
 @menu
-* FileInfo::                    List all the extensions in a file.
 * Header::                      Print and manipulate data file header.
-* FileExtensions::              Manipulate data extensions in a file.
 * ConvertType::                 Convert data to various formats.
 @end menu
 
-@node FileInfo, Header, Files, Files
-@section FileInfo
-
-@cindex File information
-The FITS file format allows for multiple extensions and each can have
-a completely independent header that possibly contains data, which is
-either in the form of a table or image. FileInfo will list all the
-extensions in the given FITS file and also give some basic information
-about the form of data that is in that extension, for example image
-size and data type.
 
 
 
 
-
-@node Header, FileExtensions, FileInfo, Files
+@node Header, ConvertType, Files, Files
 @section Header
 
 The FITS standard requires each extension of a FITS file to have a
@@ -3885,10 +4069,9 @@ coordinates to sky or spectrum coordinates on the image or table.
 
 @menu
 * Invoking astheader::          Arguments and options to Header.
-* Header future updates::       Future plans for Header.
 @end menu
 
-@node Invoking astheader, Header future updates, Header, Header
+@node Invoking astheader,  , Header, Header
 @subsection Invoking Header
 
 Header can print or manipulate the header information in an extension
@@ -4063,17 +4246,6 @@ continue with the rest of actions.
 
 @end table
 
-@node Header future updates,  , Invoking astheader, Header
-@subsection Header future updates
-
-@itemize
-@item
-Allow the user to specify a full keyword card and let them worry about
-conforming with the FITS standard if they use this option.
-@item
-Add an option to update, delete or rename all keywords in a header
-with only one call to the respective option.
-@end itemize
 
 
 
@@ -4084,17 +4256,10 @@ with only one call to the respective option.
 
 
 
-@node FileExtensions, ConvertType, Header, Files
-@section FileExtensions
-The FITS standard allows for multiple extensions, using this tool you
-can manipute the extensions, for example merge all the extensions of
-two FITS files, or remove any number of the extensions in a file.
 
 
 
-
-
-@node ConvertType,  , FileExtensions, Files
+@node ConvertType,  , Header, Files
 @section ConvertType
 
 @cindex Data format conversion
@@ -4125,7 +4290,6 @@ color.
 * Recognized file types::       Recognized file types
 * Color::                       Some explanations on color.
 * Invoking astconvertt::        Options and arguments to ConvertType.
-* ConvertType future updates::  Plans for future updates.
 @end menu
 
 @node Recognized file types, Color, ConvertType, ConvertType
@@ -4344,7 +4508,7 @@ Grayscale image and a CMYK image that has only the K-channel filled
 are approximately the same file size.
 
 
-@node Invoking astconvertt, ConvertType future updates, Color, ConvertType
+@node Invoking astconvertt,  , Color, ConvertType
 @subsection Invoking ConvertType
 
 ConvertType will convert any recognized input file type to any
@@ -4570,46 +4734,6 @@ is best to call this option so the image is not inverted.
 
 
 
-@node ConvertType future updates,  , Invoking astconvertt, ConvertType
-@subsection ConvertType future updates
-
-@itemize
-
-@item
-@cindex Convert Table formats
-@cindex Table format file conversion
-Currently ConvertType only operates on a FITS image, not table. Add
-functionality for tables too.
-
-@item
-Use image statistics for flux threshold instead of absolute values,
-for example quantiles or a multiple of the average and standard
-deviation.
-
-@item
-Until now the emphasis has been mainly on grayscale images since FITS
-images where the primary input, using simple channel data colors do
-work fine, however there is still a lot of work that needs to be done
-to have color images as input. For example when converting a JPEG
-image to PDF, the colors not displayed nicely. Another example is when
-you ask to only fill the black channel of CMYK in PDF format, the
-inversion has to be the opposite. We still need to work on such
-cases. Please inform us if you have such problems so it is added to
-the list of checks we can do to find the solution.
-
-@item
-Add a @file{fill} argument (like @file{blank}) too to fill the
-respective channel with a given value.
-
-@item
-Add Hue-Saturation-Lightness and Hue-Saturation-Value color spaces.
-
-@item
-Invert color images with meaningful colors.
-
-@end itemize
-
-
 
 
 
@@ -4641,8 +4765,6 @@ given kernel or applying a transformation to it.
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
-* ImageArith::                  Apply arithmetic on image(s).
-* EllipMask::                   Place elliptical masks on an image.
 @end menu
 
 @node ImageCrop, Convolve, Image manipulation, Image manipulation
@@ -4690,7 +4812,6 @@ files.
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
 * Invoking astimgcrop::         Calling ImageCrop on the command line
-* ImageCrop future::            Future updates to ImageCrop.
 @end menu
 
 @node ImageCrop modes, Crop section syntax, ImageCrop, ImageCrop
@@ -4886,7 +5007,7 @@ also regarded as blank regions. This can be turned off with the
 @option{--zeroisnotblank} option.
 
 
-@node Invoking astimgcrop, ImageCrop future, Blank pixels, ImageCrop
+@node Invoking astimgcrop,  , Blank pixels, ImageCrop
 @subsection Invoking ImageCrop
 
 ImageCrop will crop a region from an image. If in WCS mode, it will
@@ -5115,35 +5236,7 @@ will not be created (unless @option{--individual} is called). You can
 see the same results in verbose mode on the command line in such
 cases.
 
-@node ImageCrop future,  , Invoking astimgcrop, ImageCrop
-@subsection ImageCrop future updates
-The current plan for future work on ImageCrop is:
 
-@itemize
-@item
-Add an option to save/read the required meta-data of each input image
-in an ASCII (or maybe but hopefully not a binary) file. Such that all
-the information in the @code{inputimgs} structure (in @file{main.h})
-is included in it. Such a file can become important when the images
-are always the same and there are lots of requests. The reason a
-binary might be necessary is that it includes the @code{wcsprm}
-structure of WCSLIB. We certainly don't want to run the WCSLIB
-settings each time (they are not thread safe and can be slow). The
-good thing with an ASCII file is that it is transparent.
-
-@item
-Add checks and conditions so if the input image or crop box cover the
-celestial poles, the overlaps can still be found. Currently if either
-the crop box or input image pass the equator, there is no problem.
-
-@item
-Find a better search method in WCS mode. Currently, for each target,
-the region of every image is checked, which makes the job a little
-slow when there are a lot of input images. If a specific organization
-is defined for the @code{inputimgs} array where the images are ordered
-some how so images far from a crop are not searched it would make it
-much more efficient. There are also much faster search strategies.
-@end itemize
 
 
 
@@ -5240,7 +5333,6 @@ removing small frequencies}.
 * Convolution on the edges::    Dealing with the edges of an image.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
 * Invoking astconvolve::        Options and arguments to Convolve.
-* Convolve future updates::     Future plans for Convolve.
 @end menu
 
 @node Convolution process, Convolution on the edges, Convolve, Convolve
@@ -5400,7 +5492,7 @@ frequency domain convolution will significantly improve the processing
 time, see @ref{Oversampling}.
 
 
-@node Invoking astconvolve, Convolve future updates, Spatial vs. Frequency domain, Convolve
+@node Invoking astconvolve,  , Spatial vs. Frequency domain, Convolve
 @subsection Invoking Convolve
 
 Convolve an input image with a known kernel. The general template for
@@ -5542,20 +5634,6 @@ of the image), we also remove any pixel with a value less than
 @end table
 
 
-@node Convolve future updates,  , Invoking astconvolve, Convolve
-@subsection Convolve future updates
-
-@itemize
-
-@item
-When the image size is too large, cut the image into smaller pieces
-and convolve them then stitch the separate convolved parts to make the
-output. Since by default Convolve makes heavy use of all the CPU cores
-in the frequency domain, if the image is too large (in width or height
-or both), it can take too long and the CPU will heat up to dangerous
-limits.
-
-@end itemize
 
 
 
@@ -5565,8 +5643,7 @@ limits.
 
 
 
-
-@node ImageWarp, ImageArith, Convolve, Image manipulation
+@node ImageWarp,  , Convolve, Image manipulation
 @section ImageWarp
 Image warpring is the process of mapping the pixels of one image onto
 a new pixel grid. This process is sometimes known as transformation,
@@ -5653,7 +5730,6 @@ be projected onto the focal plane before further analysis.
 * Merging multiple warpings::   How to merge multiple matrices.
 * Resampling::                  Warping an image is re-sampling it.
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
-* ImageWarp future updates::    Plans for ImageWarp's future.
 @end menu
 
 @node Warping basics, Merging multiple warpings, ImageWarp, ImageWarp
@@ -5942,7 +6018,7 @@ change in the signal so this issue is less important for astronoimcal
 applications, see @ref{PSF}.
 
 
-@node Invoking astimgwarp, ImageWarp future updates, Resampling, ImageWarp
+@node Invoking astimgwarp,  , Resampling, ImageWarp
 @subsection Invoking ImageWarp
 
 The general template for invoking ImageWarp is:
@@ -6053,76 +6129,6 @@ useful in checking the results.
 @end table
 
 
-@node ImageWarp future updates,  , Invoking astimgwarp, ImageWarp
-@subsection ImageWarp future updates
-
-@itemize
-
-@item
-Add functionality to warp based on the WCS coordinates, for example to
-rotate about the @code{CRPIX} (pixel position of WCS reference point)
-or to align the image with the RA and Dec axises.
-
-@item
-Add options to read all the warp parameters separately (for example
-translate by @mymath{X}, then rotate by @mymath{\theta} and scale by
-@mymath{4} times) and build matrices and multiply them internally. So
-the user doesn't have to calculate the final matrix prior to running
-the program. Currently ImageWarp can only accept the final
-matrix. This can be useful in scripts.
-
-@item
-When the final matrix is just a simple scaling which is a multiple of
-the width and height of the image, or it is just a flipping, there is
-no need to go through all the area calculations and waste time. Write
-some simple functions to do these jobs and avoid the polygon clipping
-calculations.
-
-@item
-For all Affine transformations (which are spatially invariant), after
-a certain number of pixels along the first and second axis, the
-fractions of area for each neighbour will be identical and it will
-repeat. Allow the program to calculate this repetition and avoid going
-through all the weight calculations for each pixel separately.
-
-@item
-Add non-linear transformations like optical distortion or
-gravitational lensing.
-
-@end itemize
-
-
-
-
-
-
-
-
-@node ImageArith, EllipMask, ImageWarp, Image manipulation
-@section ImageArith
-By arithmetic on images, we mean applying various arithmetic
-operations on all the pixels of several images, for example adding all
-the pixels in one image with another.
-
-
-
-
-
-
-
-
-
-
-
-
-
-@node EllipMask,  , ImageArith, Image manipulation
-@section EllipMask
-
-EllipMask will mask some of the pixels in the image based on
-elliptical parameters that are specified through an ASCII catalog.
-
-
 
 
 
@@ -6143,40 +6149,11 @@ elliptical parameters that are specified through an ASCII catalog.
 @chapter Image analysis
 
 Astronomical images contain very valuable information, the tools in
-this section can help in extracting and quantifying that information.
+this section can help in extracting and quantifying that
+information. For example calculating image statistics, or finding the
+sky value or detecting objects within an image.
 
-@menu
-* ImageStat::                   Basic statistics of image pixels
-* SubtractSky::                 Subtract the sky level from the image.
-* NoiseChisel::                 Detect and segment objects in noise.
-@end menu
 
-@node ImageStat, SubtractSky, Image analysis, Image analysis
-@section ImageStat
-Image stat is a tool to extract basic pixel statistics from an image
-or part of it. It will also output the histogram, cumulative frequency
-and sigma-clipping results.
-
-@node SubtractSky, NoiseChisel, ImageStat, Image analysis
-@section SubtractSky
-
-In any noisy image, the level that noise fluctuates around is the most
-vital statistic. Since it directly determines all subsequent
-measurements on the data. Subtract Sky will find that level in an
-image which might potentially have strong gradients and subtract it.
-
-@node NoiseChisel,  , SubtractSky, Image analysis
-@section NoiseChisel
-
-NoiseChisel is the tool that started Gnuastro! It is a new noise
-based algorithm to detect extremely faint and amorphous objects in
-noise. Galaxies apparently have a very rich dynamic history and we
-cannot image them in their full 3D glory, these resulting in a
-multitude of shapes when they are imaged.
-
-Using a noise based approach to detect signal and its substructure in
-noise, NoiseChisel will detect and catalog all the galaxies and their
-substructure in an image irrespective of their shape.
 
 
 
@@ -6281,7 +6258,6 @@ convolution and adding noise.
 * Profile total magnitude::     Definition of total profile magnitude.
 * Magnitude to flux conversion::  Converting magnitude to flux.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
-* MakeProfiles future updates::  Plans for the future of MakeProfiles.
 @end menu
 
 
@@ -6725,7 +6701,7 @@ then it will have a total flux of:
           F=10^{m_z-m \over 2.5}}
 
 
-@node Invoking astmkprof, MakeProfiles future updates, Magnitude to flux conversion, MakeProfiles
+@node Invoking astmkprof,  , Magnitude to flux conversion, MakeProfiles
 @subsection Invoking MakeProfiles
 
 MakeProfiles will make any number of profiles specified in a catalog
@@ -7028,35 +7004,7 @@ The fraction of flux in the Monte Carlo integrated pixels.
 If an individual image was created or not.
 @end itemize
 
-@node MakeProfiles future updates,  , Invoking astmkprof, MakeProfiles
-@subsection MakeProfiles future updates
 
-@itemize
-
-@item
-Add options to read the RA and Dec of profiles from a catalog instead
-of their central position in image coordinates. In this manner one
-catalog can be used to create several mock images.
-
-@item
-Currently the whole profile has to have only one mathematical
-function, this can easily be extended such that each galaxy has
-separate profiles or different ellipticities.
-
-@item
-Currently MakeProfiles makes mock profiles on a 2D surface, but due to
-the particular way it builds the mock profiles, the infra-structure is
-there to make the profiles on a 3D volume and find a real projection
-of a real 3D object. Or more generally, make 3D profiles.
-
-@item
-Add more progressive states of accuracy: For example the user
-specifies the most accurate, number of points, then each time it is
-compared with 1/10th of that number and so on until a minimum number
-is reached. You don't have to specify two random sets, only one set,
-but stop adding to one sum earlier.
-
-@end itemize
 
 
 
@@ -7077,13 +7025,11 @@ algorithms) it is essential to add noise to the mock profiles created
 with MakeProfiles, see @ref{MakeProfiles}. Below, the general
 principles and concepts to help understand how noise is quantified is
 discussed.  MakeNoise options and argument are then discussed in
-@ref{Invoking astmknoise}. Finally our current plans for future of
-MakeNoise are listed in @ref{MakeNoise future updates}.
+@ref{Invoking astmknoise}.
 
 @menu
 * Noise basics::                Noise concepts and definitions.
 * Invoking astmknoise::         Options and arguments to MakeNoise.
-* MakeNoise future updates::    Plans for future updates.
 @end menu
 
 
@@ -7328,7 +7274,7 @@ sequence of noise values.}. If you want MakeNoise to use the
 @code{GSL_RNG_SEED} variable for a reproducable result, you can use
 the @option{--envseed} option.
 
-@node Invoking astmknoise, MakeNoise future updates, Noise basics, MakeNoise
+@node Invoking astmknoise,  , Noise basics, MakeNoise
 @subsection Invoking MakeNoise
 
 MakeNoise will add noise to an existing image. The executable name is
@@ -7402,17 +7348,6 @@ the background is included in the mean.
 @end table
 
 
-@node MakeNoise future updates,  , Invoking astmknoise, MakeNoise
-@subsection MakeNoise future updates
-
-@itemize
-
-@item
-Allow for more complicated noise models.
-
-@end itemize
-
-
 
 
 
@@ -7476,6 +7411,7 @@ discussed. Finally some notes on the building process are given.
 @menu
 * Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
+* Gnuastro project webpage::    Central hub for Gnuastro activities.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
 * Headers::                     Library and common headers.
@@ -7587,7 +7523,7 @@ usage and `high speed' is desired.
 
 
 
-@node Design philosophy, Version controlled source, Why C, Developing
+@node Design philosophy, Gnuastro project webpage, Why C, Developing
 @section Design philosophy
 
 The core processing functions of each program are written mostly with
@@ -7639,7 +7575,79 @@ systems@footnote{KISS principle: Keep It Simple, Stupid!}.
 
 
 
-@node Version controlled source, Internal libraries, Design philosophy, Developing
+
+@node Gnuastro project webpage, Version controlled source, Design philosophy, Developing
+@section Gnuastro project webpage
+
+@cindex Bug
+@cindex Issue
+@cindex Tracker
+@cindex Report a bug
+@cindex Management hub
+@cindex Feature request
+@cindex Central management
+@url{https://savannah.gnu.org/projects/gnuastro/, Gnuastro's central
+management
+hub}@footnote{@url{https://savannah.gnu.org/projects/gnuastro/}} is
+located on @url{https://savannah.gnu.org/, GNU
+Savannah}@footnote{@url{https://savannah.gnu.org/}}. It is the central
+software development management system for all GNU projects. Through
+this central hub, you can view the list of activities that the
+developers are engaged in, their activity on the version controlled
+source, and other things. Each defined activity in the development
+cycle is known as an `issue' (or `item'). An issue can be a bug (see
+@ref{Report a bug}), or a suggested feature (@ref{Suggest new
+feature}) or an enhancement or generally any @emph{one} job that is to
+be done. In Savannah, issues are classified into three categories or
+`tracker's:
+
+@table @asis
+
+@cindex Mailing list: bug-gnuastro
+@item Support
+This tracker is a way that (possibly anonymous) users can get in touch
+with the Gnuastro developers. It is a complement to the bug-gnuastro
+mailing list (see @ref{Report a bug}). Anyone can post an issue to
+this tracker. The developers will not submit an issue to this
+list. They will only reassign the issues in this list to the other two
+trackers if they are valid@footnote{Some of the issues registered here
+might be due to a mistake on the user's side, not an actual bug in the
+program.}. Ideally (when the developers have time to put on Gnuastro),
+there should be no open items in this tracker.
+
+@item Bugs
+This tracker contains all the existing and resolved bugs in Gnuastro
+(problems with the existing tools).
+
+@item Tasks
+The items in this tracker contain the future plans (or new
+features/capabilities) that are to be added to Gnuastro.
+
+@end table
+
+@noindent
+All the trackers can be browsed by a (possibly anonymous) visitor, but
+to edit and comment on the Bugs and Tasks trackers, you have to be a
+registered Gnuastro developer. When posting an issue to this tracker,
+it is very important to choose the `Category' and `Item Group' options
+accurately. The first contains a list of all Gnuastro's utilities
+along with `Installation', `New utility' and `Webpage'. The Item Group
+contains the nature of the issue, for example if it is a `Crash' in
+the software (a bug), or a problem in the documentation (also a bug)
+or a feature request or an enhancement.
+
+The set of horizontal links on the top of the page (Starting with
+`Main' and `Homepage' and finishing with `News') are the easiest way
+to access these trackers (and other major aspects of the project) from
+any part of the project webpage. Hovering your mouse over them will
+open a drop down menu that will link you to the different things you
+can do on each tracker (for example, `Submit new' or `Browse').  When
+you browse each tracker, you can use the ``Display Criteria'' link
+above the list to limit the displayed issues to what you are
+interested in. The `Category' and `Group Item' (explained above) are a
+good starting point.
+
+@node Version controlled source, Internal libraries, Gnuastro project webpage, Developing
 @section Version controlled source
 
 @cindex Git
@@ -7692,11 +7700,11 @@ $ git clone git://git.sv.gnu.org/autoconf-archive.git
 This will download the full version controlled source of the two in
 separate directories. Both these packages are regularly updated, so
 every once and a while you can run @command{$ git pull} within them to
-get any possible updates. To include all the necessary packages from
-Gnulib, run the following command from within the cloned
-@file{gnuastro} directory@footnote{Note that the @file{gnulib-tool}
-script has to be run from within the cloned Gnulib directory, it is
-not installed.}:
+get any possible updates. First, include all the necessary packages
+from Gnulib. To do that, run the following command from within the
+cloned @file{gnuastro} directory@footnote{Note that the
+@file{gnulib-tool} script has to be run from within the cloned Gnulib
+directory, it is not insxtalled.}:
 
 @example
 $ ~/Development/gnulib/gnulib-tool --import --source-base=gnulib/lib \
@@ -7808,9 +7816,10 @@ can also be installed so they can be used by other programs too.
 @section Headers
 
 @cindex Headers
-Besides the headers for the libraries explained above, there are also
-several header-only files in the @file{include} directory. Below is a
-short explanation of their purpose.
+The @file{include/} directory contains the headers for Gnuastro's
+internal libraries (see @ref{Internal libraries}) and several
+header-only files in the @file{include} directory. Below is a list of
+the latter type.
 
 @table @code
 
@@ -7874,9 +7883,9 @@ Each executable has a @code{main} function, which is located in
 @file{main.c}. Therefore this file in any program's source code will
 be the starting point. No actual processing functions are to be
 defined in this file, the function(s) in this file are only meant to
-connect the most high level steps of each program, most generally,
-they will first call the top user interface function to read user
-input and make all the preparations. Then they will pass control to
+connect the most high level steps of each program. Generally,
+@code{main} will first call the top user interface function to read
+user input and make all the preparations. Then it will pass control to
 the top processing function for that program. The functions to do both
 these jobs must be defined in other source files.
 
@@ -8028,6 +8037,104 @@ it after reading once).
 @itemize
 
 @item
+It is very important that the code be easy to read by the eye. So when
+the order of several lines within a function does not matter (mostly
+when defining variables at the start of a function). You should put
+the lines in the order of increasing length and group the variables
+with similar types such that this half-pyramid of declarations becomes
+most visible. If the reader is interested, a simple search will show
+them the variable they are interested in. However, when looking
+through the functions or reading the separate steps of the functions,
+this `order' in the declarations will make reading the rest of the
+function steps much more easier and pleasent to the eye.
+
+@item
+When ever you see that the function cannot be fully displayed
+(vertically) in your monitor, this is a sign that it has become too
+long and should be broken up into multiple functions. 40 lines is
+usually a good reference. When the start and end of a function are
+clearly visible in one glance, the function is much more easier to
+understand. This is most important for low-level functions (which
+usually define a lot of variables). Low-level functions do most of the
+processing, they will also be the most interesting part of a program
+for an inquiring astronomer. This convention is less important for
+higher level functions that don't define too many variables and whose
+only purpose is to run the lower-level functions in a specific order
+and with checks.
+
+@cindex Optimization flag
+@cindex GNU Compiler Collection
+In general you can be very liberal in breaking up the functions into
+smaller parts, the GNU Compiler Collection (GCC) will automatically
+compile the functions as inline functions when the optimizations are
+turned on. So you don't have to worry about decreasing the speed. By
+default Gnuastro will compile with the @option{-O3} optmization flag.
+
+@cindex Buffers (Emacs)
+@cindex Emacs buffers
+@item
+If possible, the text files should always be at most 80 characters
+wide. Monitors today are certainly much wider, but with this limit,
+reading the functions becomes much more easier. Also for the
+developers, it allows multiple files (or multiple views of one file)
+to be displayed beside each other on wide monitors (Emacs's buffers
+are excellent for this capability).
+
+For long comments you can use press @key{Alt-q} in Emacs to separate
+them into separate lines automatically. For long literal strings, you
+can use the fact that in C, two strings immediately after each other
+are concatenated, for example @code{"The first part, " "and the second
+part."} Note the space character in the end of the first part. Since
+they are now separated, you can easily break a long literal string
+into several lines and adhere to the maximum 80 character line length
+policy.
+
+@cindex Header file
+@item
+The headers required by each source file (ending with @file{.c})
+should be defined inside of it. All the headers a program needs should
+not be stacked in another header to include in all source files (for
+example @file{main.h}). Although most `professional' programmers
+choose the latter type, Gnuastro is primarily written for inquisitive
+astronomers (who are generally amateur programmers). This is very
+useful for readability by a first time reader. @file{main.h} may only
+include the header file(s) that define types that the main program
+structure needs, see @file{main.h} in @ref{Program source}. Those
+particular header files that are included in @file{main.h} can
+ofcourse be ignored (not included) in separate source files.
+
+@item
+The headers should be classified (by an empty line) into separate
+groups:
+
+@enumerate
+@cindex GNU Portability Library
+@item
+@code{#include <config.h>}: This must be the first code line (not
+commented or blank) in each source file. It sets macros that the GNU
+Portability Library (Gnulib) will use for the possible
+additions/modifications to C library headers.
+
+@cindex GNU C library
+@item
+The C library (or GNU C library) header files, for example
+@file{stdio.h} or @file{errno.h}.
+@item
+Installed library header files, for example @file{cfitsio.h} or
+@file{gsl/gsl_rng.h}.
+@item
+Gnuastro common header files, for example @file{fitsarrayvv.h} or
+@file{neighbors.h}, see @ref{Headers}.
+@item
+That particular program's header files, for example @file{main.h} and
+@file{mkprof.h}.
+@end enumerate
+
+@noindent
+As much as order does not matter when you include the header of each
+group, sort them by length, see above.
+
+@item
 @cindex GNU Emacs
 @cindex Trailing space
 There should be no trailing white space in a line. To do this
@@ -8161,13 +8268,14 @@ also true for images or files that were produced by other tests.
 @cindex GNU Automake
 @cindex GNU build system
 To build the various programs and libraries in Gnuastro, the GNU build
-system is used. It consists of GNU Autoconf and GNU Automake and GNU
-Libtool which are collectively known as GNU Autotools. They provide a
-very portable system to check the environment a program is to be
-installed on prior to compiling and set the compilation conditions
-based on the particular user. They also make installing everything in
-their standard places very easy for the programmer. Most of the small
-caps files that you see in the top @file{gnuastro-@value{VERSION}/}
+system is used which defines the steps in @ref{Quick start}. It
+consists of GNU Autoconf and GNU Automake and GNU Libtool which are
+collectively known as GNU Autotools. They provide a very portable
+system to check the environment a program is to be installed on prior
+to compiling and set the compilation conditions based on the
+particular user. They also make installing everything in their
+standard places very easy for the programmer. Most of the small caps
+files that you see in the top @file{gnuastro-@value{VERSION}/}
 directory are created by these three tools.
 
 By default all the programs are compiled with optimization flags for
@@ -8176,7 +8284,7 @@ is lost. To compile with the debugging flag set on (and no
 optimization) you can add the following options to configure:
 
 @example
-$ configure CFLAGS="-g -O0"
+$ ./configure CFLAGS="-g -O0"
 @end example
 
 In order to understand the building process, you can go through the
@@ -8194,10 +8302,40 @@ can get you started off.
 
 @node After making changes,  , Building, Developing
 @section After making changes
-After you have saved your changes/additions, it is strongly
-recommended to run
+After you have made your your changes/additions, please take the
+following steps:
+
+@enumerate
+
+@item
+Write test(s) in the @file{tests/progname/} directory to test the
+change(s)/addition(s) you have made. Then add their file names to
+@file{tests/Makefile.am}. And run @command{$ make check} to make sure
+everything is working correctly.
+
+@item
+Update this manual. Documentation is an integral part of Gnuastro.
+Documentation is not considered a separate project. So, no change is
+considered valid for implementation unless the respective parts of the
+manual have been updated also.
+
+@cindex GNU Emacs
+@cindex @file{ChangeLog}
+@cindex GNU coding standards
+@item
+If you have @emph{Changed} anything in the program, add it to the
+@file{ChangeLog} (a file in the top source code
+directory). @file{ChangeLog} has a specific format defined by the GNU
+coding standards. The easiest way to add an entry to it is through
+Emacs: by pressing @key{CTRL-x 4 a} within the places that you have
+changed. Note that if you have only added something, there is no need
+to include it in @file{ChangeLog}.
 
 @cindex Making a distribution package
+@item
+Finally, to make sure everything will run and is checked correctly,
+run
+
 @example
 $ make distcheck
 @end example
@@ -8206,20 +8344,12 @@ $ make distcheck
 This command will create a distribution file (ending with
 @file{.tar.gz}) and try to compile it in the most general cases, then
 it will run the tests on what it has built in its own
-mini-environment. If your change (and the added tests) passes this
-check, then you are safe to send your changes to us to implement or
-for your own purposes.
+mini-environment. If @command{$ make check} finishes successfully,
+then you are safe to send your changes to us to implement or for your
+own purposes.
 
-@cartouche
-@noindent
-@cindex @file{ChangeLog}
-@strong{CAUTION:} Documentation is an integral part of GNU Astronomy
-Utilities, it is not considered a separate project. So, no change is
-considered valid for implementation unless the respective parts of the
-manual have been updated also. Also don't forget to update the
-@file{ChangeLog} file too.
+@end enumerate
 
-@end cartouche
 
 
 
