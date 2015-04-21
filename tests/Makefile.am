@@ -38,9 +38,11 @@ convertt/fitstojpeg.sh convertt/blankch.sh convertt/jpegtotxt.sh	\
 convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh			\
 convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh		\
 imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh	\
-header/write.sh header/print.sh header/update.sh header/delete.sh
+mkprof/ellipticalmasks.sh header/write.sh header/print.sh		\
+header/update.sh header/delete.sh
 
-EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt mkprof/mkprofcat2.txt	\
+EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt			\
+mkprof/mkprofcat1_mask.txt mkprof/mkprofcat2.txt		\
 mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt imgcrop/cat.txt
 
 CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps .gnuastro/*.conf	\

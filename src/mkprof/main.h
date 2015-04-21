@@ -25,6 +25,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <pthread.h>
 
+#include "fitsarrayvv.h"
 #include "commonparams.h"
 
 
@@ -38,13 +39,16 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #define DEGREESTORADIANS M_PI/180.0f
 
-#define SERSICCODE      0
-#define MOFFATCODE      1
-#define GAUSSIANCODE    2
-#define POINTCODE       3
-#define MAXIMUMCODE     3
+#define SERSICCODE         0
+#define MOFFATCODE         1
+#define GAUSSIANCODE       2
+#define POINTCODE          3
+#define FLATCODE           4
+#define CIRCUMFERENCECODE  5
+#define MAXIMUMCODE        5
 
-#define EPSREL_FOR_INTEG 2
+#define EPSREL_FOR_INTEG   2
+#define MINCIRCUMWIDTH     1.0f
 
 /* Log columns:
 
@@ -66,6 +70,7 @@ struct builtqueue
   long        fpixel_i[2];    /* First pixel in output image.        */
   long        lpixel_i[2];    /* Last pixel in output image.         */
   long        fpixel_o[2];    /* First pixel in this array.          */
+  int                type;    /* The type of the profile.            */
 
   int        indivcreated;    /* ==1: an individual file is created. */
   size_t          numaccu;    /* Number of accurate pixels.          */
@@ -80,8 +85,9 @@ struct builtqueue
 
 struct uiparams
 {
-  char          *psfname;      /* Name of PSF FITS name.               */
-  char          *catname;      /* Name of catalog of parameters.       */
+  char         *backname;  /* Name of background image file name.      */
+  char          *backhdu;  /* HDU of background image.                 */
+  char          *catname;  /* Name of catalog of parameters.           */
   int        prepforconv;  /* Shift and expand by size of first psf.   */
 
   /* Check if all parameters are read (use .def file for
@@ -89,9 +95,11 @@ struct uiparams
      input FITS images that come in from arguments, not options) are
      checked in the args.h files. */
 
+  int         backhduset;
   int          naxis1set;
   int          naxis2set;
   int      oversampleset;
+  int     circumwidthset;
 
   int        tunitinpset;
   int       numrandomset;
@@ -133,9 +141,13 @@ struct mkprofparams
   int         individual;  /* ==1: Build all catalog separately.       */
 
   /* Profiles and noise */
+  int      setconsttomin;  /* ==1: Constant value = image minimum.     */
+  int            replace;  /* Replace overlaping profile pixel values. */
+  float         constant;  /* Value for constant profiles.             */
   size_t       numrandom;  /* Number of radom points for integration.  */
   float        tolerance;  /* Accuracy to stop integration.            */
   float        zeropoint;  /* Magnitude of zero point flux.            */
+  double     circumwidth;  /* Width of circumference (inward).         */
   int           tunitinp;  /* ==1: Truncation unit is in pixels.       */
                            /* ==0: It is in radial parameter.          */
   /* Catalog */
@@ -150,10 +162,14 @@ struct mkprofparams
   size_t            tcol;  /* Truncation of the profiles.              */
 
   /* Output */
+  size_t        numblank;  /* Number of blank pixels in image.         */
+  int             bitpix;  /* bitpix of backgroud/output image.        */
   int           nomerged;  /* ==1: Don't make a merged image of all.   */
   long          naxes[2];  /* Size of the output image.                */
   long          shift[2];  /* Shift along axeses position of profiles. */
   size_t      oversample;  /* Oversampling scale.                      */
+  int               nwcs;  /* Number of WCS.                           */
+  struct wcsprm     *wcs;  /* WCSparam structure.                      */
 
   /* WCS: */
   double        crpix[2];  /* CRPIX FITS header keywords.              */
@@ -162,6 +178,7 @@ struct mkprofparams
 
   /* Internal parameters: */
   time_t         rawtime;  /* Starting time of the program.            */
+  float             *out;  /* Output image.                            */
   double            *cat;  /* Input catalog.                           */
   size_t             cs0;  /* Number of rows in input catalog.         */
   size_t             cs1;  /* Number of columns in input catalog.      */

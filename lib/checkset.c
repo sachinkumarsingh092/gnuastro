@@ -381,6 +381,30 @@ doublele0(char *optarg, double *var, char *lo, char so, char* spack,
 
 
 void
+doublelvalue(char *optarg, double *var, char *lo, char so, char* spack,
+             double value, char *filename, size_t lineno)
+{
+  float tmp;
+  char *tailptr;
+  *var=tmp=strtof(optarg, &tailptr);
+
+  CHECKFULLNUMBER;
+  if(tmp<=value)
+    {
+      if(filename)
+	error_at_line(EXIT_FAILURE, 0, filename, lineno,
+		      FIXEDFORFILE" should be > %.4f", lo, optarg, value);
+      else
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
+	      lo, so, optarg);
+    }
+}
+
+
+
+
+
+void
 anydouble(char *optarg, double *var, char *lo, char so, char *spack,
 	  char *filename, size_t lineno)
 {

@@ -125,6 +125,10 @@ doublele0(char *optarg, double *var, char *lo, char so, char* spack,
           char *filename, size_t lineno);
 
 void
+doublelvalue(char *optarg, double *var, char *lo, char so, char* spack,
+             double value, char *filename, size_t lineno);
+
+void
 anydouble(char *optarg, double *var, char *lo, char so, char *spack,
 	  char *filename, size_t lineno);
 

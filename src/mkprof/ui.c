@@ -32,6 +32,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "box.h"
 #include "timing.h"	        /* Includes time.h and sys/time.h */
 #include "checkset.h"
+#include "statistics.h"
 #include "txtarrayvv.h"
 #include "commonargs.h"
 #include "configfiles.h"
@@ -94,9 +95,20 @@ readconfig(char *filename, struct mkprofparams *p)
       /* Prepare the "name" and "value" strings, also set lineno. */
       STARTREADINGLINE;
 
+      /* Inputs: */
+      if(strcmp(name, "hdu")==0)
+	{
+	  if(cp->hduset) continue;
+	  errno=0;
+	  cp->hdu=malloc(strlen(value)+1);
+	  if(cp->hdu==NULL)
+	    error(EXIT_FAILURE, errno, "Space for HDU.");
+	  strcpy(cp->hdu, value);
+	  cp->hduset=1;
+	}
 
       /* Outputs: */
-      if(strcmp(name, "output")==0)
+      else if(strcmp(name, "output")==0)
 	{
 	  if(cp->outputset) continue;
 	  errno=0;
@@ -180,6 +192,13 @@ readconfig(char *filename, struct mkprofparams *p)
 		      filename, lineno);
 	  p->shift[1]=tmp;
 	  up->yshiftset=1;
+	}
+      else if(strcmp(name, "circumwidth")==0)
+	{
+	  if(up->circumwidthset) continue;
+          doublelvalue(value, &p->circumwidth, name, key, SPACK,
+                       MINCIRCUMWIDTH, filename, lineno);
+	  up->circumwidthset=1;
 	}
 
 
@@ -312,10 +331,20 @@ void
 printvalues(FILE *fp, struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
+  struct commonparams *cp=&p->cp;
+
+  fprintf(fp, "\n# Input:\n");
+  if(cp->hduset)
+    {
+      if(stringhasspace(cp->hdu))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
+    }
 
   fprintf(fp, "\n# Output:\n");
-  if(p->cp.outputset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "output", p->cp.output);
+  if(cp->outputset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
   if(up->naxis1set)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->naxes[0]);
   if(up->naxis2set)
@@ -332,6 +361,8 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "tolerance", p->tolerance);
   if(up->zeropointset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "zeropoint", p->zeropoint);
+  if(up->circumwidthset)
+    fprintf(fp, CONF_SHOWFMT"%f\n", "circumwidth", p->circumwidth);
 
   fprintf(fp, "\n# Catalog:\n");
   if(up->xcolset)
@@ -369,7 +400,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
   fprintf(fp, "\n# Operating modes:\n");
   /* Number of threads doesn't need to be checked, it is set by
      default */
-  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads);
+  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", cp->numthreads);
 }
 
 
@@ -382,6 +413,8 @@ checkifset(struct mkprofparams *p)
   struct uiparams *up=&p->up;
 
   int intro=0;
+  if(p->cp.hduset==0)
+    REPORT_NOTSET("hdu");
   if(up->tunitinpset==0)
     REPORT_NOTSET("tunitinp");
   if(up->numrandomset==0)
@@ -412,6 +445,8 @@ checkifset(struct mkprofparams *p)
     REPORT_NOTSET("naxis2");
   if(up->oversampleset==0)
     REPORT_NOTSET("oversample");
+  if(up->circumwidthset==0)
+    REPORT_NOTSET("circumwidth");
   if(up->crpix1set==0)
     REPORT_NOTSET("crpix1");
   if(up->crpix2set==0)
@@ -453,6 +488,7 @@ sanitycheck(struct mkprofparams *p)
   long width[2]={1,1};
   double truncr, *cat=p->cat, *row;
   size_t i, j, columns[9], cs1=p->cs1;
+
 
 
   /* Check if over-sampling is an odd number, then convert the
@@ -593,11 +629,48 @@ sanitycheck(struct mkprofparams *p)
 void
 preparearrays(struct mkprofparams *p)
 {
+  void *array;
+  size_t naxes[2];
+
   /* Allocate space for the log file: */
   p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
   if(p->log==NULL)
     error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
 	  p->cs0*LOGNUMCOLS*sizeof *p->log);
+
+  /* If a background image is specified, then use that as the output
+     image to build the profiles over. */
+  if(p->up.backname)
+    {
+      /* Read in the background image and its coordinates: */
+      p->numblank=fitsimgtoarray(p->up.backname, p->cp.hdu, &p->bitpix,
+                                 &array, &naxes[1], &naxes[0]);
+      readfitswcs(p->up.backname, p->cp.hdu, &p->nwcs, &p->wcs);
+      p->naxes[1]=naxes[1];
+      p->naxes[0]=naxes[0];
+
+      /* The the type of the input image is not float, then convert it
+         to float to add the mock profile. */
+      if(p->bitpix==FLOAT_IMG)
+        p->out=array;
+      else
+        {
+          changetype(array, p->bitpix, p->naxes[1]*p->naxes[0], p->numblank,
+                     (void **)(&p->out), FLOAT_IMG);
+          free(array);
+        }
+
+      /* If setconsttomin is called, then there should be an input image: */
+      if(p->setconsttomin)
+        floatmin(p->out, p->naxes[1]*p->naxes[0], &p->constant);
+    }
+  else
+    {
+      p->bitpix=FLOAT_IMG;
+      if(p->setconsttomin)
+        error(EXIT_FAILURE, 0, "The `--setconsttomin' option can only be "
+              "called when an input background image is also provided.");
+    }
 }
 
 
@@ -635,6 +708,8 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
 
+  p->constant       = 1;
+
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
@@ -651,8 +726,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
     REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
-  if(p->up.catname)
-    txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
+  txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
 
   /* If cp->output was not specified on the command line or in any of
      the configuration files, then automatic output should be used, in
@@ -723,9 +797,15 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
      we simply free them after each other, there will be a double free
      error. So after freeing output, we set it to NULL since
      free(NULL) is ok.*/
-  free(p->cp.output);
-  p->cp.output=NULL;
-  free(p->mergedimgname);
+  if(p->cp.output==p->mergedimgname)
+    free(p->cp.output);
+  else
+    {
+      free(p->cp.output);
+      free(p->mergedimgname);
+    }
+  if(p->up.backname)
+    wcsvfree(&p->nwcs, &p->wcs);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

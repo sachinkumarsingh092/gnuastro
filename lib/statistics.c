@@ -49,7 +49,7 @@ floatmin(float *in, size_t size, float *min)
   float tmin=FLT_MAX, *fpt;
   fpt=in+size;
   do
-    if(*in<tmin) tmin=*in;
+    if(!isnan(*in) && *in<tmin) tmin=*in;
   while(++in<fpt);
   *min=tmin;
 }
@@ -64,7 +64,7 @@ floatmax(float *in, size_t size, float *max)
   float tmax=-FLT_MAX, *fpt;
   fpt=in+size;
   do
-    if(*in>tmax) tmax=*in;
+    if(!isnan(*in) && *in>tmax) tmax=*in;
   while(++in<fpt);
   *max=tmax;
 }
@@ -79,7 +79,7 @@ doublemin(double *in, size_t size, double *min)
   double tmin=FLT_MAX, *fpt;
   fpt=in+size;
   do
-    if(*in<tmin) tmin=*in;
+    if(!isnan(*in) && *in<tmin) tmin=*in;
   while(++in<fpt);
   *min=tmin;
 }
@@ -94,7 +94,7 @@ doublemax(double *in, size_t size, double *max)
   double tmax=-FLT_MAX, *fpt;
   fpt=in+size;
   do
-    if(*in>tmax) tmax=*in;
+    if(!isnan(*in) && *in>tmax) tmax=*in;
   while(++in<fpt);
   *max=tmax;
 }
@@ -125,12 +125,12 @@ floatsecondmax(float *in, size_t size, float *secondmax)
   fpt=in+size;
   do
     {
-      if(*in>max)
+      if(!isnan(*in) && *in>max)
 	{
 	  smax=max;
 	  max=*in;
 	}
-      else if(*in>smax) smax=*in;
+      else if(!isnan(*in) && *in>smax) smax=*in;
     }
   while(++in<fpt);
   *secondmax=smax;
@@ -147,12 +147,12 @@ floatsecondmin(float *in, size_t size, float *secondmin)
   fpt=in+size;
   do
     {
-      if(*in<min)
+      if(!isnan(*in) && *in<min)
 	{
 	  smin=min;
 	  min=*in;
 	}
-      else if(*in<smin) smin=*in;
+      else if(!isnan(*in) && *in<smin) smin=*in;
     }
   while(++in<fpt);
   *secondmin=smin;
@@ -252,15 +252,14 @@ dminmax(double *in, size_t size, double *min, double *max)
 
 
 void
-dmax_withindex(double *in, size_t size,
-        double *max, size_t *index)
+dmax_withindex(double *in, size_t size, double *max, size_t *index)
 {
   size_t tindex=0;
   double *fpt, *pt=in, tmax=-FLT_MAX;
 
   fpt=pt+size;
   do
-    if(*pt>tmax)
+    if(!isnan(*pt) && *pt>tmax)
       {
 	tmax=*pt;
 	tindex=pt-in;
@@ -283,7 +282,7 @@ fmax_withindex(float *in, size_t size,
 
   fpt=pt+size;
   do
-    if(*pt>tmax)
+    if(!isnan(*pt) && *pt>tmax)
       {
 	tmax=*pt;
 	tindex=pt-in;
@@ -306,7 +305,7 @@ dmin_withindex(double *in, size_t size,
 
   fpt=pt+size;
   do
-    if(*pt<tmin)
+    if(!isnan(*pt) && *pt<tmin)
       {
 	tmin=*pt;
 	tindex=pt-in;
@@ -329,7 +328,7 @@ fmin_withindex(float *in, size_t size,
 
   fpt=pt+size;
   do
-    if(*pt<tmin)
+    if(!isnan(*pt) && *pt<tmin)
       {
 	tmin=*pt;
 	tindex=pt-in;
@@ -364,13 +363,13 @@ fmin_withindex(float *in, size_t size,
 float
 floatsum(float *in, size_t size)
 {
-  float *pt, *fpt;
+  float *fpt;
   double sum=0;
   fpt=in+size;
-  pt=in;
   do
-    sum+=*pt;
-  while(++pt<fpt);
+    if(!isnan(*in))
+      sum+=*in;
+  while(++in<fpt);
   return sum;
 }
 
@@ -385,7 +384,8 @@ floatsumsquared(float *in, size_t size)
   double sum=0;
   fpt=in+size;
   do
-    sum+=*in * *in;
+    if(!isnan(*in))
+      sum+=*in * *in;
   while(++in<fpt);
   return sum;
 }

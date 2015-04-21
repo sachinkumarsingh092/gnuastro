@@ -2196,6 +2196,9 @@ program using the GNU build system (through the configure script).
 
 @vtable @option
 
+@cindex CPU threads
+@cindex CPU threads, set number
+@cindex Number of CPU threads to use
 @item --with-numthreads
 (=@code{INT}) If this option is given an integer value, that value
 will be used for the default number of threads to use. If it is not
@@ -3235,6 +3238,8 @@ the program will not run).
 Update the user configuration file from the command line options and
 quit. See explanation under @option{--setdirconf} for more details.
 
+@cindex CPU threads, set number
+@cindex Number of CPU threads to use
 @item -N
 @itemx --numthreads
 (@option{=INT}) Set the number of CPU threads to use. See @ref{Threads
@@ -3267,7 +3272,9 @@ standard@footnote{@url{http://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standar
 
 @vindex --output
 @vindex --numthreads
+@cindex CPU threads, number
 @cindex Internal default value
+@cindex Number of CPU threads to use
 The thing to have in mind is that none of the programs in Gnuastro
 keep any internal default value. All the values must either be stored
 in one of the configuration files or explicitly called in the command
@@ -3453,6 +3460,7 @@ self.
 @section Threads in GNU Astronomy Utilities
 
 @cindex pthread
+@cindex CPU threads
 @cindex Using CPU threads
 @cindex POSIX threads library
 @cindex CPU, using all threads
@@ -6709,13 +6717,14 @@ either individually or in one image. The executable name is
 @file{astmkprof} with the following general template
 
 @example
-$ astmkprof [OPTION ...] Catalog
+$ astmkprof [OPTION ...] [BackgroundImage] Catalog
 @end example
 
 @noindent
 One line examples:
 
 @example
+$ astmkprof background.fits catalog.txt
 $ astmkprof --xcol=0 --ycol=1 catalog.txt
 $ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 @end example
@@ -6728,6 +6737,16 @@ separated by space, tab or comma (@key{,}) characters. See @ref{Common
 behavior} for a complete explanation of some common behaviour and
 options in all Gnuastro programs including MakeProfiles.
 
+If a data image file (see @ref{Arguments}) is given, that image is
+used as the background. The flux value of each profile pixel will be
+added to the pixel in that background value. In this case the values
+to all options relating to the output size and WCS will be ignored if
+specified (for example @option{--naxis1}, @option{--naxis2} and
+@option{--prepforconv}) on the command line or in the configuration
+files. The profiles will be made on the background image (their values
+will be added to the background image pixels). Note that
+@option{--oversample} will remain active even if a background image is
+specified.
 
 @menu
 * MakeProfiles catalog::        Required catalog properties.
@@ -6790,7 +6809,8 @@ first FITS axis (horizontal when viewed in SAO ds9). This is before
 over-sampling. For example if you call MakeProfiles with
 @option{--naxis1=100 --oversample=5} (assuming no shift due for later
 convolution), then the final image size along the first axis will be
-500.
+500. If a background image is specified, any possible value to this
+option is ignored.
 
 @item -y
 @itemx --naxis2
@@ -6802,7 +6822,9 @@ explanation for @option{--naxis1}.
 @itemx --oversample
 (@option{=INT}) The scale to over-sample the profiles and final
 image. If not an odd number, will be added by one, see
-@ref{Oversampling}.
+@ref{Oversampling}. Note that this @option{--oversample} will remain
+active even if an input image is specified. If your input catalog is
+based on the background image, be sure to set @option{--oversample=1}.
 
 @item --psfinimg
 Build the possibly existing PSF profiles (Moffat or Gaussian) in the
@@ -6871,7 +6893,8 @@ radial parameters of the profile (@option{--rcol}). Read it as
 first FITS axis, see @mymath{n} in @ref{If convolving
 afterwards}. This is useful when you want to convolve the image
 afterwards. If you are using an external PSF, be sure to oversample it
-to the same scale used for creating the mock images.
+to the same scale used for creating the mock images. If a background
+image is specified, any possible value to this option is ignored.
 
 @item -Y
 @itemx --yshift
@@ -6884,7 +6907,39 @@ of the first Moffat or Gaussian profile in the catalog, considering
 any possible oversampling see @ref{If convolving
 afterwards}. @option{--prepforconv} is only checked and possibly
 activated if @option{--xshift} and @option{--yshift} are both zero
-(after reading the command line and configuration files).
+(after reading the command line and configuration files). If a
+background image is specified, any possible value to this option is
+ignored.
+
+@item -M
+@itemx --setconsttomin
+For profiles that have a constant value (no variation from pixel to
+pixel), set the constant value to the minimum value in the image. This
+is very useful if the profiles with constant value are to be used as
+masks. When displaying the images in a document (and inverting the
+images as is automatically done in ConvertType), the masked pixels
+will become white.
+
+@item -R
+@itemx --replace
+Do not add pixel values to each other, replace them. By default, when
+two profiles overlap, the final pixel value is the sum of all the
+profiles that overlap on that pixel. When this option is given, the
+pixels are not added but replaced by newer profiles.
+
+@cindex CPU threads
+@cindex Threads, CPU
+When order does matter, make sure to use this function with
+@option{--numthreads=1}. When multiple threads are used, the separate
+profiles are built asynchronously and not in order. Since order does
+not matter in an addition, this causes no problems by default but has
+to be considered when this option is given. Using multiple threads is
+no problem if the profiles are to be used as a mask (with
+@option{--setconsttomin}) since all their pixel values are the same.
+
+@item -w
+@itemx --circumwidth
+(@option{=FLT})
 
 @item -z
 @itemx --zeropoint
@@ -6913,6 +6968,13 @@ example 2.80 will be converted to 2.
 2: Gaussian.
 @item
 3: Point source (a star).
+@item
+4: Flat profile: all pixels have same value.
+@item
+5: Circumference: same value for all pixels between the truncation
+radius (@mymath{r_t}) and @mymath{r_t-w} where @mymath{w} is the value
+to the @option{--circumwidth}. Currently this is only intended to be
+used for making an elliptical annulus (with a width of 1 or 2 pixels).
 @end itemize
 
 @item --xcol
@@ -7448,7 +7510,8 @@ Ritchie. @emph{The C programming language}. Prentice Hall, Inc.,
 Second edition, 1988. It is also commonly known as K&R and is based on
 the ANSI C and ISO C90 standards.} book, written by the authors of C,
 is only 286 pages and covers a very good fraction of the language, it
-has also remained unchanged from 1988 and there is no plan of any
+has also remained unchanged from 1988. C is the main programming
+language of nearly all operating systems and there is no plan of any
 significant update. The most recent ``C++ programming
 language''@footnote{Bjarne Stroustrup. @emph{The C++ programming
 language}. Addison-Wesley Professional; 4 edition, 2013.}  book, also
@@ -7534,18 +7597,18 @@ your inputs and preparing them prior to or after the analysis). The
 actual algorithms, which most scientists would be more interested in,
 are much more closer to ISO C90. For this reason, the source files
 containing user interface code and those containing actual processing
-code are clearly separated, see @ref{Program source}. If any thing
+code are clearly separated, see @ref{Program source}. If anything
 particular to the GNU C Library is used in the processing functions,
 it is explained in the comments in between the code.
 
 @cindex GNU Coreutils
-Similar to GNU Coreutils, all the programs provided with Gnuastro,
-provide very low level operations. This enables you to use the GNU
-Bash scripting language (which is the default in most GNU/Linux
-operating systems) or any other shell you might be using to operate on
-a large number of files or do very complex things through the creative
-combinations of these tools that the authors had never dreamed of. We
-have put a few simple examples in @ref{Tutorials}.
+Similar to GNU Coreutils, all the Gnuastro utilities provide very low
+level operations. This enables you to use the GNU Bash scripting
+language (which is the default in most GNU/Linux operating systems) or
+any other shell you might be using to operate on a large number of
+files or do very complex things through the creative combinations of
+these tools that the authors had never dreamed of. We have put a few
+simple examples in @ref{Tutorials}.
 
 @cindex GNU Bash
 @cindex Python Matplotlib
@@ -7558,7 +7621,8 @@ tables to immediately check your results. If you want to include the
 plots in a document, you can use the PGFplots package within @LaTeX{},
 no attempt is made to include such operations in Gnuastro. In short,
 Bash can act as a glue to connect the inputs and outputs of all these
-various programs (and other programs) in any fashion you please.
+various Gnuastro utilities (and other programs) in any fashion you
+please.
 
 The advantage of this architecture is that the programs become small
 and transparent: the starting and finishing point of every program is
@@ -7612,8 +7676,9 @@ this tracker. The developers will not submit an issue to this
 list. They will only reassign the issues in this list to the other two
 trackers if they are valid@footnote{Some of the issues registered here
 might be due to a mistake on the user's side, not an actual bug in the
-program.}. Ideally (when the developers have time to put on Gnuastro),
-there should be no open items in this tracker.
+program.}. Ideally (when the developers have time to put on Gnuastro,
+please don't forget that Gnuastro is a volunteer effort), there should
+be no open items in this tracker.
 
 @item Bugs
 This tracker contains all the existing and resolved bugs in Gnuastro
@@ -7753,7 +7818,8 @@ but a short summary is given here:
 @table @file
 
 @item doc
-The Texinfo source files for this manual.
+The Texinfo source files for this manual and the Gnuastro webpage
+file(s).
 
 @item include
 The header files of the internal static libraries and also some other

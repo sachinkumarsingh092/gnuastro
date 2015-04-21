@@ -1,5 +1,21 @@
 2015-04-21  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
+	* src/mkprof/ui.c (freeandreport): Avoided double-free by only
+	freeing mergeedimgname when it is not equal to output.
+
+	* src/mkprof/oneprofile.c (makepixbypix): Will only do monte carlo
+	integration when the profile is not a constant value.
+	(setprofparams): Changed the function of point to `Fixed'.
+
+	* src/mkprof/mkprof.c (write): Changed to replace and read from an
+	image and add profiles on that.
+
+	* lib/statistics.c: All float and double functions can now work
+	with NaN too.
+
+	* src/mkprof/ui.c (setparams): Catalog is always given, no need to
+	check.
+
 	* doc/gnuastro.texi: Removed all "Future updates ..." subsections
 	in the manual. They are now managed in the Gnuastro project
 	webpage on Savannah.

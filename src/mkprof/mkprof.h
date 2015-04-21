@@ -44,6 +44,7 @@ struct mkonthread
   double               yc;    /* Center in C of created(oversampled).*/
   double (*profile)(struct mkonthread *); /* Function to use.        */
   double           truncr;    /* Truncation radius in pixels.        */
+  double         intruncr;    /* Inner truncation radius in pixels.  */
   long           width[2];    /* The width of the enclosing box.     */
   float           totflux;    /* The total flux of the profile.      */
   int                type;    /* The type of the profile.            */
@@ -60,7 +61,7 @@ struct mkonthread
 
   double       gaussian_c;    /* Constant value in Gaussian.         */
 
-  double          point_v;    /* Value of a point source.            */
+  double       fixedvalue;    /* Value of a point source.            */
 
   /* General parameters */
   struct mkprofparams  *p;    /* Pointer to the main.h structure.    */

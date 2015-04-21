@@ -22,6 +22,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -34,7 +35,41 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/*********************************************************************
+ **********************    Initialize values    **********************
+ *********************************************************************/
+void
+fsetconst(float *in, size_t size, float a)
+{
+  float *fpt;
+  fpt=in+size;
+  do
+    *in = a;
+  while(++in<fpt);
+}
 
+
+
+
+
+void
+freplacevalue(float *in, size_t size, float from, float to)
+{
+  float *fpt;
+  fpt=in+size;
+  if(isnan(from))
+    {
+      do
+        *in = isnan(*in) ? to : *in;
+      while(++in<fpt);
+    }
+  else
+    {
+      do
+        *in = *in==from ? to : *in;
+      while(++in<fpt);
+    }
+}
 
 
 

@@ -216,6 +216,9 @@ saveindividual(struct mkonthread *mkp)
   sprintf(outname, "%s%lu.fits", outdir, ibq->id);
   checkremovefile(outname, p->cp.dontdelete);
 
+  /* Change NaN values to 0.0f: */
+  freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], NAN, 0.0f);
+
   /* Write the array to file (A separately built PSF doesn't need WCS
      coordinates): */
   if(ibq->ispsf && p->psfinimg==0)
@@ -227,6 +230,9 @@ saveindividual(struct mkonthread *mkp)
 		   mkp->width[1], mkp->width[0], p->wcsheader,
 		   p->wcsnkeyrec, crpix, SPACK_STRING);
   ibq->indivcreated=1;
+
+  /* Change 0.0f values to NAN: */
+  freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], 0.0f, NAN);
 
   /* Report if in verbose mode. */
   if(p->cp.verb)
@@ -465,23 +471,30 @@ writelog(struct mkprofparams *p)
 void
 write(struct mkprofparams *p)
 {
+  void *array;
   char *jobname;
   double sum, *log;
   struct timeval t1;
-  int verb=p->cp.verb;
   long os=p->oversample;
+  int replace=p->replace;
   size_t complete=0, cs0=p->cs0;
   struct builtqueue *ibq=NULL, *tbq;
-  float *img, *to, *from, *colend, *rowend;
+  int verb=p->cp.verb, bitpix=p->bitpix;
+  float *out, *to, *from, *colend, *rowend;
   size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
 
 
   /* Allocate the output array. */
-  errno=0;
-  img=calloc(p->naxes[0]*p->naxes[1], sizeof *img);
-  if(img==NULL)
-    error(EXIT_FAILURE, 0, "%lu bytes for output image",
-	  p->naxes[0]*p->naxes[1]*sizeof *img);
+  if(p->up.backname)
+    out=p->out;
+  else
+    {
+      errno=0;
+      out=calloc(p->naxes[0]*p->naxes[1], sizeof *out);
+      if(out==NULL)
+        error(EXIT_FAILURE, 0, "%lu bytes for output image",
+              p->naxes[0]*p->naxes[1]*sizeof *out);
+    }
 
 
   /* Write each image into the output array. */
@@ -534,16 +547,25 @@ write(struct mkprofparams *p)
 	     know the images overlap, iw and jw are both smaller than
 	     the two image number of columns and number of rows, so
 	     w-jw and ow-jw will always be positive. */
-	  to=img+i*w+j;
+	  to=out+i*w+j;
 	  from=ibq->img+ii*ow+jj;
 	  rowend=to+iw*w;
-	  do
-	    {
-	      colend=to+jw;
-	      do {sum+=*from; *to+=*from++;} while(++to<colend);
-	      to+=w-jw; from+=ow-jw;		     /* Go to next row. */
-	    }
-	  while(to<rowend);
+          do
+            {
+              colend=to+jw;
+              do
+                {
+                if(!isnan(*from))
+                  {
+                    sum+=*from;
+                    *to = replace ? *from : *to+*from;
+                  }
+                ++from;
+                }
+              while(++to<colend);
+              to+=w-jw; from+=ow-jw;	     /* Go to next row. */
+            }
+          while(to<rowend);
 	}
 
       /* Fill the log array. */
@@ -582,9 +604,20 @@ write(struct mkprofparams *p)
   if(p->nomerged==0)
     {
       if(verb) gettimeofday(&t1, NULL);
-      atofcorrectwcs(p->mergedimgname, "MockImg", FLOAT_IMG, img,
-		     p->naxes[1], p->naxes[0], p->wcsheader,
-		     p->wcsnkeyrec, NULL, SPACK_STRING);
+      if(p->up.backname)
+        {
+          if(bitpix==FLOAT_IMG) array=out;
+          else changetype(p->out, FLOAT_IMG, p->naxes[1]*p->naxes[0],
+                          p->numblank, &array, bitpix);
+          arraytofitsimg(p->mergedimgname, "MockImg on back", bitpix,
+                         array, p->naxes[1], p->naxes[0], p->numblank,
+                         p->wcs, NULL, SPACK_STRING);
+          if(bitpix!=FLOAT_IMG) free(array);
+        }
+      else
+        atofcorrectwcs(p->mergedimgname, "MockImg", FLOAT_IMG, out,
+                       p->naxes[1], p->naxes[0], p->wcsheader,
+                       p->wcsnkeyrec, NULL, SPACK_STRING);
       if(verb)
 	{
 	  errno=0;
@@ -596,6 +629,8 @@ write(struct mkprofparams *p)
 	  free(jobname);
 	}
     }
+
+  free(out);
 }
 
 
@@ -634,7 +669,8 @@ mkprof(struct mkprofparams *p)
 
   /* Get the WCS header strings ready to put into the FITS
      image(s). */
-  preparewcs(p);
+  if(p->up.backname==NULL)
+    preparewcs(p);
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. Note that we only want nt-1 threads to do the

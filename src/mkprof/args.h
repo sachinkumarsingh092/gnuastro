@@ -34,7 +34,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "[PSFimage] Catalog";
+static char args_doc[] = "[BackgroundImage] Catalog";
 
 
 
@@ -46,9 +46,8 @@ const char doc[] =
   SPACK_NAME" will create a FITS image containing any number of mock "
   "astronomical profiles based on an input catalog. All the profiles "
   "will be built from the center outwards. First by 10000 random "
-  "points, then by integration and finally central pixel "
-  "position. The tolerance level specifies when to switch to a less "
-  "accurate method.\n"
+  "points, then using the central pixel position. The tolerance level "
+  "specifies when to switch to a less accurate method.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -61,8 +60,8 @@ const char doc[] =
 /*
    Available letters (-V which is used by GNU is also removed):
 
-   a d e f g j k l u v w
-   A B C E F G H I J L M O Q R T U W Z
+   a d e f g j k l u v
+   A B C E F G H I J L O Q T U W Z
 
    Maximum integer used so far: 514.
 */
@@ -83,8 +82,6 @@ static struct argp_option options[] =
       "Input:",
       1
     },
-
-
 
 
 
@@ -208,7 +205,30 @@ static struct argp_option options[] =
       "Magnitude zero point.",
       3
     },
-
+    {
+      "circumwidth",
+      'w',
+      "FLT",
+      0,
+      "Width of circumference (inward) profiles",
+      3
+    },
+    {
+      "setconsttomin",
+      'M',
+      0,
+      0,
+      "Set constant profile values to input minimum",
+      3
+    },
+    {
+      "replace",
+      'R',
+      0,
+      0,
+      "Replace overlaping profile pixels, don't add.",
+      3
+    },
 
 
 
@@ -240,7 +260,8 @@ static struct argp_option options[] =
       502,
       "INT",
       0,
-      "Sersic (0), Moffat (1), Gaussian(2), Point (3).",
+      "Sersic (0), Moffat (1), Gaussian (2), Point (3),\n"
+      "Flat (4), Circumference (5).",
       4
     },
     {
@@ -419,6 +440,17 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'm':
       p->nomerged=1;
       break;
+    case 'w':
+      doublelvalue(arg, &p->circumwidth, "circumwidth", key, p->cp.spack,
+                   MINCIRCUMWIDTH, NULL, 0);
+      p->up.circumwidthset=1;
+      break;
+    case 'M':
+      p->setconsttomin=1;
+      break;
+    case 'R':
+      p->replace=1;
+      break;
 
     /* Profiles: */
     case 'r':
@@ -478,7 +510,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.pcolset=1;
       break;
     case 506:
-      sizetelzero(arg, &p->pcol, "qcol", ' ', p->cp.spack, NULL, 0);
+      sizetelzero(arg, &p->qcol, "qcol", ' ', p->cp.spack, NULL, 0);
       p->up.qcolset=1;
       break;
     case 507:
@@ -525,11 +557,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       /* See what type of input value it is and put it in. */
       if( nameisfits(arg) )
 	{
-	  if(p->up.psfname)
-	    argp_error(state, "Only one input FITS image (the PSF) "
+	  if(p->up.backname)
+	    argp_error(state, "Only one input FITS image (the background) "
 		       "should be input. You have given more.");
 	  else
-	    p->up.psfname=arg;
+	    p->up.backname=arg;
 	}
       else
 	{

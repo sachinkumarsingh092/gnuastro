@@ -23,6 +23,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARRAYMANIP_H
 #define ARRAYMANIP_H
 
+
+void
+fsetconst(float *in, size_t size, float a);
+
+void
+freplacevalue(float *in, size_t size, float from, float to);
+
 void
 fmultipconst(float *in, size_t size, float a);
 

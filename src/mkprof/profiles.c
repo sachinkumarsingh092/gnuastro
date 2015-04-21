@@ -154,9 +154,20 @@ totsersic(double n, double re, double b, double q)
 
 
 
-/* For a point source. */
+/* Make a circumference (inner to the radius). */
 double
-Point(struct mkonthread *mkp)
+Circumference(struct mkonthread *mkp)
 {
-  return mkp->point_v;
+  return mkp->r > mkp->intruncr ? mkp->fixedvalue : NAN;
+}
+
+
+
+
+
+/* Always returns a fixed value: */
+double
+Fixed(struct mkonthread *mkp)
+{
+  return mkp->fixedvalue;
 }

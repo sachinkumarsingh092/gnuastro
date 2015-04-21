@@ -274,68 +274,74 @@ makepixbypix(struct mkonthread *mkp)
 	  "data in %s.", is0*is1*sizeof *byt, ibq->id,
 	  mkp->p->up.catname);
 
-  /* Start filling the queue. */
+  /* Start the queue: */
   byt[p]=1;
   add_to_tosll_end( &lQ, &sQ, p, r_circle(p, mkp) );
-  while(sQ)
+
+  /* If random points are necessary, then do it: */
+  if(mkp->type==SERSICCODE || mkp->type==MOFFATCODE
+     || mkp->type==GAUSSIANCODE)
     {
-      /* In case you want to see the status of the twosided ordered
-	 queue, increasing and decreasing side by side, uncomment this
-	 line. Note that there will be a lot of lines printed! */
-      /*print_tossll(lQ, sQ);*/
+      while(sQ)
+        {
+          /* In case you want to see the status of the twosided ordered
+             queue, increasing and decreasing side by side, uncomment this
+             line. Note that there will be a lot of lines printed! */
+          /*print_tossll(lQ, sQ);*/
 
-      /* Pop the pixel from the queue and check if it is within the
-	 truncation radius. Note that `xc` and `p` both belong to the
-	 over sampled image. But all the profile parameters are in the
-	 non-oversampled image. So we divide the distance by os
-	 (p->oversample in double type) */
-      pop_from_tosll_start(&lQ, &sQ, ind, &circ_r); /* ind=&p */
-      mkp->x=(p/is1-xc)/os;
-      mkp->y=(p%is1-yc)/os;
-      r_el(mkp);
-      if(mkp->r>truncr) continue;
+          /* Pop the pixel from the queue and check if it is within the
+             truncation radius. Note that `xc` and `p` both belong to the
+             over sampled image. But all the profile parameters are in the
+             non-oversampled image. So we divide the distance by os
+             (p->oversample in double type) */
+          pop_from_tosll_start(&lQ, &sQ, ind, &circ_r); /* ind=&p */
+          mkp->x=(p/is1-xc)/os;
+          mkp->y=(p%is1-yc)/os;
+          r_el(mkp);
+          if(mkp->r>truncr) continue;
 
-      /* Find the value for this pixel: */
-      mkp->xl=mkp->x-hp;
-      mkp->xh=mkp->x+hp;
-      mkp->yl=mkp->y-hp;
-      mkp->yh=mkp->y+hp;
-      /*
-      printf("Center (%lu, %lu). r: %.4f. x: [%.4f--%.4f], y: [%.4f, %.4f]\n",
-	     p%is1+1, p/is1+1, mkp->r, mkp->xl, mkp->xh, mkp->yl, mkp->yh);
-      */
-      /* Find the random points and profile center. */
-      img[p]=randompoints(mkp);
-      approx=profile(mkp);
-      if (fabs(img[p]-approx)/img[p] < tolerance)
-	use_rand_points=0;
+          /* Find the value for this pixel: */
+          mkp->xl=mkp->x-hp;
+          mkp->xh=mkp->x+hp;
+          mkp->yl=mkp->y-hp;
+          mkp->yh=mkp->y+hp;
+          /*
+            printf("Center (%lu, %lu). r: %.4f. x: [%.4f--%.4f], "
+                   "y: [%.4f, %.4f]\n", p%is1+1, p/is1+1, mkp->r, mkp->xl,
+                   mkp->xh, mkp->yl, mkp->yh);
+          */
+          /* Find the random points and profile center. */
+          img[p]=randompoints(mkp);
+          approx=profile(mkp);
+          if (fabs(img[p]-approx)/img[p] < tolerance)
+            use_rand_points=0;
 
-      /* For the log file: */
-      ++ibq->numaccu;
-      ibq->accufrac+=img[p];
+          /* For the log file: */
+          ++ibq->numaccu;
+          ibq->accufrac+=img[p];
 
-      /*
-      printf("\tac: %f, ap: %f, frac: %f\n", img[p], approx,
-	     fabs(img[p]-approx)/img[p]);
-      arraytofitsimg("tmp.fits", "", FLOAT_IMG, img, is0, is1,
-		     NULL, SPACK_STRING);
-      */
+          /*
+            printf("\tac: %f, ap: %f, frac: %f\n", img[p], approx,
+            fabs(img[p]-approx)/img[p]);
+            arraytofitsimg("tmp.fits", "", FLOAT_IMG, img, is0, is1,
+            NULL, SPACK_STRING);
+          */
 
-      /* Go over the neighbours and add them to queue of elements
-	 to check. */
-      FILL_NGB_4_ALLIMG;
-      nf=(n=ngb)+numngb;
-      do
-	if(byt[*n]==0)
-	  {
-	    byt[*n]=1;
-	    add_to_tosll_end( &lQ, &sQ, *n, r_circle(*n, mkp) );
-	  }
-      while(++n<nf);
+          /* Go over the neighbours and add them to queue of elements
+             to check. */
+          FILL_NGB_4_ALLIMG;
+          nf=(n=ngb)+numngb;
+          do
+            if(byt[*n]==0)
+              {
+                byt[*n]=1;
+                add_to_tosll_end( &lQ, &sQ, *n, r_circle(*n, mkp) );
+              }
+          while(++n<nf);
 
-      if(use_rand_points==0) break;
+          if(use_rand_points==0) break;
+        }
     }
-
 
 
   /* All the pixels that required integration or random points are now
@@ -427,7 +433,7 @@ setprofparams(struct mkonthread *mkp)
   mkp->q          = cat[p->qcol];
   mkp->totflux    = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
   mkp->ibq->ispsf = ispsf(cat[p->fcol]);
-  mkp->type       = cat[p->fcol];
+  mkp->type       = mkp->ibq->type=cat[p->fcol];
 
 
   /* Fill the profile dependent parameters. */
@@ -461,8 +467,22 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     case POINTCODE:
-      mkp->profile          = &Point;
-      mkp->point_v          = 1;
+      mkp->profile          = &Fixed;
+      mkp->fixedvalue       = 1;
+      break;
+
+    case FLATCODE:
+      mkp->profile          = &Fixed;
+      mkp->fixedvalue       = p->constant;
+      mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
+      break;
+
+    case CIRCUMFERENCECODE:
+      mkp->profile          = &Circumference;
+      mkp->fixedvalue       = p->constant;
+      mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
+      mkp->intruncr         = mkp->truncr - p->circumwidth;
+      if(mkp->intruncr<0.0f) mkp->intruncr=0.0f;
       break;
 
     default:
@@ -503,8 +523,8 @@ makeoneprofile(struct mkonthread *mkp)
 
   float sum;
   size_t size;
-  double pixfrac, intpart;
   long os=p->oversample;
+  double pixfrac, intpart;
   double *cat=&p->cat[ mkp->ibq->id*p->cs1 ];
 
 
@@ -531,10 +551,11 @@ makeoneprofile(struct mkonthread *mkp)
   /* Allocate the array and build it. */
   errno=0;
   size=mkp->width[0]*mkp->width[1];
-  mkp->ibq->img=calloc(size, sizeof *mkp->ibq->img);
+  mkp->ibq->img=malloc(size*sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
     error(EXIT_FAILURE, 0, "%lu bytes for object in row %lu of data in %s.",
 	  size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
+  fsetconst(mkp->ibq->img, size, NAN);
 
 
   /* Build the profile in the image. */
@@ -542,7 +563,10 @@ makeoneprofile(struct mkonthread *mkp)
 
 
   /* Correct the sum of pixels in it. */
-  sum=floatsum(mkp->ibq->img, size);
-  mkp->ibq->accufrac/=sum;
-  fmultipconst(mkp->ibq->img, size, mkp->totflux/sum);
+  if(p->setconsttomin==0)
+    {
+      sum=floatsum(mkp->ibq->img, size);
+      mkp->ibq->accufrac/=sum;
+      fmultipconst(mkp->ibq->img, size, mkp->totflux/sum);
+    }
 }

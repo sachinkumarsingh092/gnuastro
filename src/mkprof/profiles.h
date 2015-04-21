@@ -48,6 +48,9 @@ double
 totsersic(double n, double re, double b, double q);
 
 double
-Point(struct mkonthread *mkp);
+Circumference(struct mkonthread *mkp);
+
+double
+Fixed(struct mkonthread *mkp);
 
 #endif
