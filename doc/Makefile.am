@@ -34,7 +34,7 @@ headers=${top_srcdir}/src/*/main.h
 info_TEXINFOS = gnuastro.texi
 gnuastro_TEXINFOS = fdl.texi subpackageversions.texi formath.texi
 
-EXTRA_DIST = findversions.sh
+EXTRA_DIST = findversions.sh README
 
 subpackageversions.texi: ${headers}
 	./findversions.sh ${headers}

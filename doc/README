@@ -1,0 +1,52 @@
+Documentation of GNU Astronomy Utilities
+========================================
+
+This directory contains the documentation (manual) of GNU Astronomy
+Utilities (Gnuastro) and also all the files necessary for the Gnuastro
+webpage. Note that only the basic files needed to make the webpage are
+version controlled. The generated files are not.
+
+Documentation (manual):
+-----------------------
+
+The documentation of Gnuastro is written in Texinfo.
+
+Webpage files:
+--------------
+
+The webpage files are stored in the `www/gnuastro' directory. If you
+actually checkout the webpage files from gnu.org, then there will also
+be another directory: `MathJax', which keeps all the MathJax source
+code. Although this directory is not too heavy (In total less than
+40MB), it contains a very very very large number of files (~40,000)!!!
+This makes all kinds of syncing tools you have very very very very
+very very slow!
+
+To solve this problem, after checking out the webpage files in the
+`www' directory, you can remove the MathJax directory. My solution to
+the problem was to checkout all the webpage files in another directory
+that I don't sync. After the checkout is complete there, I remove the
+`index.html' file and `manual' directory.
+
+Update MathJax:
+---------------
+
+There is a script in the `MathJax' directory on the Gnuastro webpage
+directory to update MathJax (`addmissing.sh'). You can get a recent
+version of MathJax from its webpage and put it in the correct place
+(see the comments in the script). That script will then add all the
+new files from MathJax to the checked out files and then you can use
+`cvs -nq update' and `cvs add' to add all the new files and
+directories. Just note that CVS is an antique(!) and so you have to
+add all the files in separate directories separately, first add the
+directory, then CVS will find the untracked files inside it and add
+them one by one! Unfortunately the GNU webpage runs on CVS.
+
+Update the webpage documentation:
+---------------------------------
+
+To make the full documentation in all the formats, run the following
+command (you have to be a Gnuastro developer to actually commit the
+resulting files to the Gnuastro webpage.)
+
+      $ ./forwebpage.sh
