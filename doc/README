@@ -9,7 +9,8 @@ version controlled. The generated files are not.
 Documentation (manual):
 -----------------------
 
-The documentation of Gnuastro is written in Texinfo.
+The documentation of Gnuastro is written in Texinfo. The main source
+file is `gnuastro.texi'.
 
 Webpage files:
 --------------
@@ -27,6 +28,9 @@ To solve this problem, after checking out the webpage files in the
 the problem was to checkout all the webpage files in another directory
 that I don't sync. After the checkout is complete there, I remove the
 `index.html' file and `manual' directory.
+
+If you also choose to follow this path too, then the consequence is
+that the mathematical equations will not load.
 
 Update MathJax:
 ---------------

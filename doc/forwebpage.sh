@@ -72,20 +72,41 @@ do
         # Actions that must be done before a given line:
         if [ "$line" = "</head>" ]; then
             if [ "$file" = manual/gnuastro.html ]; then
-                echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"./style.css\">" >> tmp.html
+                cssbase="./"
+                jsbase="../"
             else
-                echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"../style.css\">" >> tmp.html
+                cssbase="../"
+                jsbase="../../"
             fi
+            echo "<link rel=\"stylesheet\" type=\"text/css\" href=\""$cssbase"style.css\">" >> tmp.html
             if [ $hasjavascript = "yes" ]; then
                 echo "<script type=\"text/javascript\"" >> tmp.html
-                echo "src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">" >> tmp.html
+                echo "src=\""$jsbase"MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">" >> tmp.html
                 echo "</script>" >> tmp.html
                 echo "" >> tmp.html
             fi
         fi
 
         if [ "$line" = "</body>" ]; then
+
+            # Put a blank line to finish the main body of the page.
             echo "<hr>" >> tmp.html
+
+            # Add a notice in case Javascript is disabled.
+            if [ $hasjavascript = "yes" ]; then
+                echo "" >> tmp.html
+                echo "<noscript>" >> tmp.html
+                echo "<table class=\"cartouche\" style=\"background-color:#FF9912;\"><tr><td><p>" >> tmp.html
+                echo "<b>Warning:</b> This page uses <a href=\"http://www.mathjax.org/\">MathJax</a>" >> tmp.html
+                echo "to render TeX equations. MathJax requires JavaScript for the rendering." >> tmp.html
+                echo "However, scripts are disabled." >> tmp.html
+                echo "<br /><br />" >> tmp.html
+                echo "To see the equations, you can either use <a href=\"https://www.gnu.org/software/librejs/\">LibreJS</a>" >> tmp.html
+                echo "to allow trusted scripts, or get the full manual in <a href=\""$cssbase"gnuastro.pdf\">PDF</a>." >> tmp.html
+                echo "</p></td></tr></table>" >> tmp.html
+                echo "</noscript>" >> tmp.html
+                echo "" >> tmp.html
+            fi
             echo "<p><a href=\"http://www.gnu.org/software/gnuastro/manual\">Read in other formats</a>." >> tmp.html
             if [ $hasjavascript = "yes" ]; then
                 echo "<br><a href=\"http://www.gnu.org/software/gnuastro/manual/javascript.html\" rel=\"jslicense\">JavaScript license information</a>" >> tmp.html
@@ -104,13 +125,17 @@ do
         echo $line >> tmp.html
 
         # Actions after a given line:
-        if [ $addtitle = "yes" ] &&  [ "$temp1" = "<body" ]; then
+        if [ "$temp1" = "<body" ]; then
+
+            # Add a title.
+            if [ $addtitle = "yes" ]; then
             echo "<h2>GNU Astronomy Utilities manual</h2>" >> tmp.html
+            fi
         fi
     done < "$file"
     mv tmp.html "$file"
 done
-
+echo %%%%% DONE %%%%%
 
 # Copy the generated files to the proper directory. We do not want to
 # copy the full directory there because the CVS information will be
@@ -121,4 +146,4 @@ rm -rf ./manual
 
 # Run CVS to upload the page to the GNU server
 cd www/gnuastro/
-cvs commit
+cvs commit -m "Update."
