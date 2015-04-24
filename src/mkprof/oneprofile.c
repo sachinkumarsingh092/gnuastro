@@ -356,7 +356,14 @@ makepixbypix(struct mkonthread *mkp)
       mkp->x=(p/is1-xc)/os;
       mkp->y=(p%is1-yc)/os;
       r_el(mkp);
-      if(mkp->r>truncr) continue;
+      if(mkp->r>truncr)
+        {
+          /* For the circumference, if the profile is too elongated
+             and circumwidth is too small, then some parts of the
+             circumference will not be shown without this condition. */
+          if(mkp->type==CIRCUMFERENCECODE) img[p]=profile(mkp);
+          continue;
+        }
 
       /* Find the value for this pixel: */
       img[p]=profile(mkp);

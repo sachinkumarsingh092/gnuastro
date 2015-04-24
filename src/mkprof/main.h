@@ -48,7 +48,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAXIMUMCODE        5
 
 #define EPSREL_FOR_INTEG   2
-#define MINCIRCUMWIDTH     1.0f
+#define MINCIRCUMWIDTH     0.5f
 
 /* Log columns:
 

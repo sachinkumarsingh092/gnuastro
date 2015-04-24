@@ -1,3 +1,15 @@
+2015-04-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/mkprof/oneprofile.c (makepixbypix): When in circumference
+	mode, if the truncation radius is reached, it is filled with the
+	profile value. This is done so very elongated profiles can at
+	least show a one pixel circumference.
+
+	* src/mkprof/main.h (MINCIRCUMWIDTH): Changed to 0.5f.
+
+	* lib/checkset.c (doublelvalue): Corrected bad value report when
+	options are called.
+
 2015-04-21  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/ui.c (freeandreport): Avoided double-free by only

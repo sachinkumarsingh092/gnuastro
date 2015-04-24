@@ -505,8 +505,8 @@ used is given.
 GNU Astronomy Utilities @value{VERSION}, contains the following
 programs. They are sorted in alphabetical order and followed by their
 executable names along with a short description, see @ref{Naming
-convention}. In the manual they are discussed based on their context,
-please see the manual contents.
+convention}. Throughout this manual, they are discussed based on their
+context, see the manual contents for contextual ordering.
 
 @itemize
 

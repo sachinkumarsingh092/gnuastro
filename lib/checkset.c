@@ -395,8 +395,8 @@ doublelvalue(char *optarg, double *var, char *lo, char so, char* spack,
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,
 		      FIXEDFORFILE" should be > %.4f", lo, optarg, value);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
-	      lo, so, optarg);
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be > %.4f",
+	      lo, so, optarg, value);
     }
 }
 

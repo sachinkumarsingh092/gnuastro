@@ -36,7 +36,9 @@
 
 umask 002
 
+
 if [ -d ./manual ]; then rm -rf ./manual; fi
+
 
 # Run gendocs.sh to generate all the files:
 ./gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
@@ -44,15 +46,30 @@ if [ -d ./manual ]; then rm -rf ./manual; fi
 rm gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
    gnuastro.log gnuastro.pg gnuastro.toc gnuastro.tp gnuastro.vr
 
-
 # Copy the two necessary files in the manual directory:
 cp javascript.html style.css ./manual/
+
+
+# Get the current month to put under all the pages.
+thismonth=$(date +"%B %Y")
 
 
 # Make the proper corrections to the HTML files:
 echo
 echo %%%%% Correcting the HTMLs %%%%%
-thismonth=$(date +"%B %Y")
+
+
+# Correct the address of the `(dir)' links on the top pages of both
+# HTML outputs. In the ./manual/gnuastro.html, it is `dir.html#top'
+# which should be change to index.html. In
+# ./manual/html_node/index.html, it is `../dir/index.html' which
+# should become ../index.html
+cat ./manual/gnuastro.html | sed s/dir\.html\#Top/index.html/g > tmp.txt
+mv tmp.txt ./manual/gnuastro.html
+cat ./manual/html_node/index.html | sed -e 's/\/dir\//\//g' > tmp.txt
+mv tmp.txt ./manual/html_node/index.html
+
+
 if [ -f tmp.html ]; then rm tmp.html; fi
 
 for file in manual/gnuastro.html manual/html_node/*.html
