@@ -34,7 +34,11 @@
 # You should have received a copy of the GNU General Public License
 # along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
+# For the permissions of the output:
 umask 002
+
+# So Bash's `read' will read white space characters too:
+IFS=''
 
 
 if [ -d ./manual ]; then rm -rf ./manual; fi
@@ -48,7 +52,6 @@ rm gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
 
 # Copy the two necessary files in the manual directory:
 cp javascript.html style.css ./manual/
-
 
 # Get the current month to put under all the pages.
 thismonth=$(date +"%B %Y")
@@ -68,7 +71,6 @@ cat ./manual/gnuastro.html | sed s/dir\.html\#Top/index.html/g > tmp.txt
 mv tmp.txt ./manual/gnuastro.html
 cat ./manual/html_node/index.html | sed -e 's/\/dir\//\//g' > tmp.txt
 mv tmp.txt ./manual/html_node/index.html
-
 
 if [ -f tmp.html ]; then rm tmp.html; fi
 

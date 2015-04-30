@@ -366,9 +366,15 @@ Developing
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
-* After making changes::        Run `make distcheck` after making changes.
+* After making changes::        What to do after you have finished you changes.
 
 Program source
+
+* Mandatory source code files::  How the source files of each program are managed.
+* Coding conventions::          Basic conventions for coding structure.
+* Multithreaded programming::   Gnuastro's multithreaded programming style.
+
+Mandatory source code files
 
 * Coding conventions::          Conventions used for coding
 * Multithreaded programming::   Gnuastro uses POSIX threads.
@@ -1209,11 +1215,12 @@ excuse us for any historical inaccuracy, this is not intended to be a
 historical reference. This form of presentation can make the tutorials
 more pleasent and entertaining to read while also being more practical
 (explaining from a user's point of view)@footnote{This form of
-presenting a tutorial was influenced by the TikZ and PGF manual which
-provides graphic capabilities in @TeX{} and @LaTeX{} where Till Tantau
-(author of the manual) uses Euclid to present those
-capabilities. There are also some nice words of wisdom for Unix-like
-systems called ``Rootless Root'':
+presenting a tutorial was influenced by the PGF/TikZ and Beamer
+manuals. The first provides graphic capabilities, while with the
+second you can make presentation slides in @TeX{} and @LaTeX{}. In
+these manuals, Till Tantau (author of the manual) uses Euclid to
+present for the tutorial. There are also some nice words of wisdom for
+Unix-like systems called ``Rootless Root'':
 @url{http://catb.org/esr/writings/unix-koans/}. These also have a
 similar style but they use a mythical figure named Master Foo. If you
 already have some experience in Unix-like systems, you will definitely
@@ -1238,13 +1245,16 @@ appears to expand and also done a visual classification of the
 galaxies that is known as the Hubble fork.} announced his discovery
 that some of the known nebulous objects are too distant to be within
 the the Milky Way (or Galaxy) and that they were probably distant
-galaxies in their own right. He had also used them to show that the
-redshift of the nebulae increases with their distance. So now he wants
-to study them more accurately to see what they actually are. Since
-they are nebulous or amorphous, they can't be modeled (like stars that
-are always a point) easily. So there is no better way to distinguish
-them than to visually inspect them and see if it is possible to
-classify these nebulae or not.
+Galaxies@footnote{Note that at that time, ``Galaxy'' was a proper noun
+used to refer to the Milky way. The concept of a galaxy as we define
+it today had not yet become common. Hubble played a major role in
+creating today's concept of a galaxy.} in their own right. He had also
+used them to show that the redshift of the nebulae increases with
+their distance. So now he wants to study them more accurately to see
+what they actually are. Since they are nebulous or amorphous, they
+can't be modeled (like stars that are always a point) easily. So there
+is no better way to distinguish them than to visually inspect them and
+see if it is possible to classify these nebulae or not.
 
 Hubble has stored all the FITS images of the objects he wants to
 visually inspect in his @file{/mnt/data/images} directory. He has also
@@ -5526,11 +5536,11 @@ Convolve:
 
 @item -k
 @itemx --kernel
-The input kernel image filename. It should have an odd number of
-pixels and any blank pixel value in the image will be changed to
-zero. Prior to convolution several operations will be done on the
-image, see @ref{Convolution process} for an explanation of the reason
-for the last two.
+(@option{=STR}) The input kernel image filename. It should have an odd
+number of pixels and any blank pixel value in the image will be
+changed to zero. Prior to convolution several operations will be done
+on the image, see @ref{Convolution process} for an explanation of the
+reason for the last two.
 @itemize
 
 @item
@@ -5553,7 +5563,7 @@ unity), can be disabled with @option{--nokernelnorm}.
 
 @item -H
 @itemx --khdu
-The input kernel image HDU name or number.
+(@option{=STR}) The input kernel image HDU name or number.
 
 @item --nokernelflip
 Do not flip the kernel after reading it the spatial domain
@@ -6098,11 +6108,11 @@ scaled.}.
 
 @item -m
 @itemx --matrix
-The warp/transformation matrix. All the elements in this matrix must
-be separated by any number of space, tab or comma (@key{,})
-characters. If you want to use the first two, then be sure to wrap the
-matrix within double quotation marks (@key{"}) so they are not
-confused with other arguments on the command line, see
+(@option{=STR}) The warp/transformation matrix. All the elements in
+this matrix must be separated by any number of space, tab or comma
+(@key{,}) characters. If you want to use the first two, then be sure
+to wrap the matrix within double quotation marks (@key{"}) so they are
+not confused with other arguments on the command line, see
 @ref{Options}. This also applies to values in the configuration files,
 see @ref{Configuration file format}.  The transformation matrix can be
 either 2 by 2 or 3 by 3 array, see @ref{Warping basics}.
@@ -7371,18 +7381,19 @@ making it. This is done for future reproducability.
 
 @item -b
 @itemx --background
-The background value for the image in units of magnitudes, see
-@ref{Photon counting noise} and @ref{Magnitude to flux conversion}.
+(@option{=FLT}) The background value for the image in units of
+magnitudes, see @ref{Photon counting noise} and @ref{Magnitude to flux
+conversion}.
 
 @item -z
 @itemx --zeropoint
-The zeropoint magnitude used to convert the value of
+(@option{=FLT}) The zeropoint magnitude used to convert the value of
 @option{--background} (in units of magnitude) to flux, see
 @ref{Magnitude to flux conversion}.
 
 @item -s
 @itemx --stdadd
-The instrumental noise which is in units of flux, see
+(@option{=FLT}) The instrumental noise which is in units of flux, see
 @ref{Instrumental noise}.
 
 @item -e
@@ -7480,7 +7491,7 @@ discussed. Finally some notes on the building process are given.
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
-* After making changes::        Run `make distcheck` after making changes.
+* After making changes::        What to do after you have finished you changes.
 @end menu
 
 
@@ -7693,13 +7704,13 @@ features/capabilities) that are to be added to Gnuastro.
 @noindent
 All the trackers can be browsed by a (possibly anonymous) visitor, but
 to edit and comment on the Bugs and Tasks trackers, you have to be a
-registered Gnuastro developer. When posting an issue to this tracker,
-it is very important to choose the `Category' and `Item Group' options
+registered Gnuastro developer. When posting an issue to a tracker, it
+is very important to choose the `Category' and `Item Group' options
 accurately. The first contains a list of all Gnuastro's utilities
-along with `Installation', `New utility' and `Webpage'. The Item Group
-contains the nature of the issue, for example if it is a `Crash' in
-the software (a bug), or a problem in the documentation (also a bug)
-or a feature request or an enhancement.
+along with `Installation', `New utility' and `Webpage'. The ``Item
+Group'' contains the nature of the issue, for example if it is a
+`Crash' in the software (a bug), or a problem in the documentation
+(also a bug) or a feature request or an enhancement.
 
 The set of horizontal links on the top of the page (Starting with
 `Main' and `Homepage' and finishing with `News') are the easiest way
@@ -7932,14 +7943,29 @@ four or eight connectivity in a region of an image or the whole image.
 @cindex Gnuastro program structure convention
 Besides the fact that all the programs share some functions that were
 explained in @ref{Internal libraries}, everything else about each
-program is completely independent. Some programs might need lots of
-source files and if there is no fixed convention, navigating them for
-a specific function or to generally understand their programming steps
-can become very hard for a new inquirer into the code. In this section
-the conventions used in all the programs is explained. To easily
-understand the explanations in this section, it is good to open the
-source files of one or several of the programs in Gnuastro and inspect
-them as you read along.
+program is completely independent. In this section the conventions
+used in all the program sources are explained. To easily understand
+the explanations in this section, it is good to open the source files
+of one or several of the programs in Gnuastro and inspect them as you
+read along.
+
+
+@menu
+* Mandatory source code files::  How the source files of each program are managed.
+* Coding conventions::          Basic conventions for coding structure.
+* Multithreaded programming::   Gnuastro's multithreaded programming style.
+@end menu
+
+@node Mandatory source code files, Coding conventions, Program source, Program source
+@subsection Mandatory source code files
+
+Some programs might need lots of source files and if there is no fixed
+convention, navigating them can become very hard for a new inquirer
+into the code. The following source files exist in every program's
+source directory (which is located in @file{src/progname}). For small
+programs, these files are enough. Larger programs will need more
+files. In general for writing other source files, please choose
+filenames that are descriptive.
 
 @vtable @file
 
@@ -8035,16 +8061,16 @@ structuring your @file{ui.c} in a similar fashion with the rest of the
 programs.
 
 @cindex @code{setparams} function
-The most high-level function in @file{ui.c} should be named
-@code{setparams} which accepts @code{int argc, char *argv[]} and a
-pointer to the root structure for that program, see below. This is the
-function that @code{main} calls. The basic idea of the functions in
-this file is that the processing functions should need a minimum
-number of such checks. With this convention an inquirer who only wants
-to understand only one part (mostly the processing part and not user
-input details) of the code can easily do so. It also makes all the
-errors related to input appear before the processing begins which is
-more convenient for the user.
+The most high-level function in @file{ui.c} is named @code{setparams}
+which accepts @code{int argc, char *argv[]} and a pointer to the root
+structure for that program, see the explanation for
+@file{main.h}. This is the function that @code{main} calls. The basic
+idea of the functions in this file is that the processing functions
+should need a minimum number of such checks. With this convention an
+inquirer who only wants to understand only one part (mostly the
+processing part and not user input details) of the code can easily do
+so. It also makes all the errors related to input appear before the
+processing begins which is more convenient for the user.
 
 @item progname.c
 @cindex Top processing source file
@@ -8089,7 +8115,7 @@ programs with @option{--cite}, see @ref{Operating modes}.
 * Multithreaded programming::   Gnuastro uses POSIX threads.
 @end menu
 
-@node Coding conventions, Multithreaded programming, Program source, Program source
+@node Coding conventions, Multithreaded programming, Mandatory source code files, Program source
 @subsection Coding conventions
 
 @cindex GNU coding standards
