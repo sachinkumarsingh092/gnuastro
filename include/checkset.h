@@ -105,6 +105,10 @@ sizetlzero(char *optarg, size_t *var, char *lo, char so, char *spack,
 	 char *filename, size_t lineno);
 
 void
+sizetpodd(char *optarg, size_t *var, char *lo, char so, char* spack,
+          char *filename, size_t lineno);
+
+void
 floatl0(char *optarg, float *var, char *lo, char so, char *spack,
 	char *filename, size_t lineno);
 

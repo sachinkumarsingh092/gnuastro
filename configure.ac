@@ -219,6 +219,12 @@ AC_ARG_ENABLE([mkprof],
 	      [AS_IF([test "x$enable_mkprof" != xno],
                      [enable_mkprof=yes; ayes=true])],
               [enable_mkprof=notset])
+AC_ARG_ENABLE([subtractsky],
+              [AS_HELP_STRING([--enable-subtractsky],
+  	            [Install SubtractSky and other enabled packages only.])],
+	      [AS_IF([test "x$enable_subtractsky" != xno],
+                     [enable_subtractsky=yes; ayes=true])],
+              [enable_subtractsky=notset])
 
 
 
@@ -240,7 +246,9 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=no])
-       AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])],
+       AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
+       AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=no])
+       ],
 
       [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
@@ -248,7 +256,9 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=yes])
-       AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])]
+       AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
+       AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=yes])
+       ]
      )
 
 
@@ -263,6 +273,7 @@ AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
 AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
+AM_CONDITIONAL([COND_SUBTRACTSKY], [test $enable_subtractsky = yes])
 
 
 # Tell autoconf what to work on:
@@ -279,6 +290,7 @@ AC_CONFIG_FILES([Makefile
                  gnulib/tests/Makefile
                  src/convertt/Makefile
                  src/convolve/Makefile
+                 src/subtractsky/Makefile
                  ])
 
 

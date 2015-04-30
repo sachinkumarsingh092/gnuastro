@@ -29,6 +29,7 @@ astimgcrop
 astimgwarp
 astconvertt
 astconvolve
+astsubtractsky
 
 .deps
 .sync

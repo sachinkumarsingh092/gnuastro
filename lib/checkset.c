@@ -272,6 +272,31 @@ sizetlzero(char *optarg, size_t *var, char *lo, char so, char* spack,
 
 
 
+/* Positive and odd size_t. */
+void
+sizetpodd(char *optarg, size_t *var, char *lo, char so, char* spack,
+          char *filename, size_t lineno)
+{
+  long tmp;
+  char *tailptr;
+  *var=tmp=strtol(optarg, &tailptr, 0);
+
+  CHECKFULLNUMBER;
+  if(tmp<0 || tmp%2==0)
+    {
+      if(filename)
+	error_at_line(EXIT_FAILURE, 0, filename, lineno,
+		      FIXEDFORFILE" should be >0 and odd.", lo, optarg);
+      else
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be >0 and odd.",
+	      lo, so, optarg);
+    }
+}
+
+
+
+
+
 void
 floatl0(char *optarg, float *var, char *lo, char so, char* spack,
 	char *filename, size_t lineno)

@@ -49,12 +49,15 @@ endif
 if COND_MKPROF
   MAYBE_MKPROF = src/mkprof
 endif
+if COND_SUBTRACTSKY
+  MAYBE_SUBTRACTSKY = src/subtractsky
+endif
 if COND_GNULIBCHECK
   MAYBE_GNULIBCHECK = gnulib/tests
 endif
 SUBDIRS = gnulib/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)		\
 $(MAYBE_CONVOLVE) $(MAYBE_HEADER) $(MAYBE_IMGCROP) $(MAYBE_IMGWARP)	\
-$(MAYBE_MKNOISE) $(MAYBE_MKPROF) doc tests
+$(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_SUBTRACTSKY) doc tests
 
 
 ACLOCAL_AMFLAGS = -I m4
@@ -63,9 +66,6 @@ ACLOCAL_AMFLAGS = -I m4
 ## Files that are installed (and distributed)
 ## =========================================
 dist_doc_DATA = README
-
-
-
 
 
 ## Files that are only distributed:

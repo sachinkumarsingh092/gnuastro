@@ -66,6 +66,9 @@ Texts.  A copy of the license is included in the section entitled
 * MakeProfiles: (gnuastro)MakeProfiles. Make mock profiles.
 * astmkprof: (gnuastro)Invoking astmkprof. Options to MakeProfiles.
 
+* SubtractSky: (gnuastro)SubtractSky. Find and subtract the sky value.
+* astmkprof: (gnuastro)Invoking astsubtractsky. Options to SubtractSky.
+
 @end direntry
 
 
@@ -288,6 +291,7 @@ Image manipulation
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
+* SubtractSky::                 Find the sky and subtract it from image.
 
 ImageCrop
 
@@ -314,6 +318,17 @@ ImageWarp
 * Merging multiple warpings::   How to merge multiple matrices.
 * Resampling::                  Warping an image is re-sampling it.
 * Invoking astimgwarp::         Arguments and options for ImageWarp.
+
+SubtractSky
+
+* Sky value::                   Definition of the sky value.
+* Sky value interpolation::     How blank grid elements are filled.
+* Invoking astsubtractsky::     Options and arguments to SubtractSky.
+
+Sky value
+
+* Finding the sky value::       How SubtractSky finds the sky value.
+* Sky value misconceptions::    Sky value misconceptions and wrong approaches.
 
 Modeling and fitting
 
@@ -362,7 +377,7 @@ Developing
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
-* Headers::                     Library and common headers.
+* Header files::                Library and common headers.
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
@@ -373,6 +388,7 @@ Program source
 * Mandatory source code files::  How the source files of each program are managed.
 * Coding conventions::          Basic conventions for coding structure.
 * Multithreaded programming::   Gnuastro's multithreaded programming style.
+* Documentation::               Documentation is an integral part of Gnuastro.
 
 Mandatory source code files
 
@@ -537,6 +553,9 @@ image to new pixel grid.
 @item
 @ref{MakeProfiles} (@file{astmkprof}) @value{MKPROF_VERSION}: Make
 mock profiles in image.
+@item
+@ref{SubtractSky} (@file{astsubtractsky}) @value{SUBTRACTSKY_VERSION}:
+Find and subtract sky value.
 
 @end itemize
 
@@ -4783,6 +4802,7 @@ given kernel or applying a transformation to it.
 * ImageCrop::                   Crop region(s) from FITS image(s).
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
+* SubtractSky::                 Find the sky and subtract it from image.
 @end menu
 
 @node ImageCrop, Convolve, Image manipulation, Image manipulation
@@ -5661,7 +5681,7 @@ of the image), we also remove any pixel with a value less than
 
 
 
-@node ImageWarp,  , Convolve, Image manipulation
+@node ImageWarp, SubtractSky, Convolve, Image manipulation
 @section ImageWarp
 Image warpring is the process of mapping the pixels of one image onto
 a new pixel grid. This process is sometimes known as transformation,
@@ -6151,9 +6171,318 @@ useful in checking the results.
 
 
 
+@node SubtractSky,  , ImageWarp, Image manipulation
+@section SubtractSky
+
+@cindex Atmosphere
+@cindex Flat field
+@cindex Stray light
+@cindex Bias subtraction
+Raw astronomical images (and even poorly processed images) don't
+usually have a uniform `sky' value over their surface prior to
+processing, see @ref{Sky value} for a complete definition of the sky
+value. However, a uniform sky value over the image is vital for
+further processing. For ground based images (particularly at longer
+wavelengths) this can be due to actual variations of flux in the
+atmosphere. Another cause might be systematic biases in the instrument
+or prior processing. For example stray light in the telescope/camera
+or bad flat-fielding or bias subtraction. The latter is a major issue
+in space based images where the atmosphere is no longer a problem.
+
+@cindex Grid
+@cindex Mesh
+@cindex Gradient
+SubtractSky is a tool to find the sky value on a grid over the
+image. The size of the grid will determine how accuratly it can
+account for gradients in the sky value. Such that if the gradient
+(change of sky value) is too sharp, a smaller grid size has to be
+chosen. However the results will be most accurate with a larger grid
+size.
+
+
+@menu
+* Sky value::                   Definition of the sky value.
+* Sky value interpolation::     How blank grid elements are filled.
+* Invoking astsubtractsky::     Options and arguments to SubtractSky.
+@end menu
+
+@node Sky value, Sky value interpolation, SubtractSky, SubtractSky
+@subsection Sky value
+
+@cindex Sky value
+The discussion here is taken from Akhlaghi and Ichikawa
+(2015)@footnote{See the section on sky in Akhlaghi M.,
+Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Let's
+assume that all instrument defects -- bias, dark and flat -- have been
+corrected and the total flux of a detected object, @mymath{O}, is
+desired. The sources of flux on pixel @mymath{i}@footnote{For this
+analysis the dimentionality of the data (image) is irrelevant. So if
+the data is an image (2D) with width of @mymath{w} pixels, then a
+pixel located on column @mymath{x} and row @mymath{y} (where all
+counting starts from zero and (0, 0) is located on the bottom left
+corner of the image), would have an index: @mymath{i=x\times{}w+y}.}
+of the image can be written as follows:
+
+@itemize
+@item
+Contribution from the target object, (@mymath{O_i}).
+@item
+Contribution from other detected objects, (@mymath{D_i}).
+@item
+Undetected objects or the fainter undetected regions of bright
+objects, (@mymath{U_i}).
+@item
+@cindex Cosmic rays
+A cosmic ray, (@mymath{C_i}).
+@item
+@cindex Background flux
+The background flux, which is defined to be the count if none of the
+others exists on that pixel, (@mymath{B_i}).
+@end itemize
+@noindent
+The total flux in this pixel, @mymath{T_i}, can thus be written as:
+
+@dispmath{T_i=B_i+D_i+U_i+C_i+O_i.}
+
+@cindex Cosmic ray removal
+@noindent
+By definition, @mymath{D_i} is detected and it can be assumed that it
+is correctly subtracted, so that @mymath{D_i} can be set to
+zero. There are also methods to detect and remove cosmic rays (for
+example, van Dokkum (2001)@footnote{van Dokkum,
+P. G. (2001). Publications of the Astronomical Society of the Pacific.
+113, 1420.}) enabling us to set @mymath{C_i=0}. Note that in practice,
+@mymath{D_i} and @mymath{U_i} are correlated, because they both
+directly depend on the detection algorithm and its input
+parameters. Also note that no detection or cosmic ray removal
+algorithm is perfect. With these limitations in mind, the observed sky
+value for this pixel @mymath{S_i}) can be defined as
+
+@cindex Sky value
+@dispmath{S_i=B_i+U_i.}
+
+@noindent
+Therefore, as the detection process (algorithm and input parameters)
+becomes more accurate, or @mymath{U_i\to0}, the sky value will tend to
+the background value or @mymath{S_i\to B_i}. Therefore, while
+@mymath{B_i} is an inherent property of the data (pixel in an image),
+@mymath{S_i} depends on the detection process. Over a group of pixels,
+for example in an image or part of an image, this equation translates
+to the average of undetected pixels.  With this definition of sky, the
+object flux in the data can be calculated with
+
+@dispmath{ T_{ij}=S_{ij}+O_{ij} \quad\rightarrow\quad
+           O_{ij}=T_{ij}-S_{ij}.}
+
+@noindent
+@cindex photo-electrons
+Hence, the more accurately @mymath{S_i} is measured, the more
+accurately the flux of the target object can be calculated. Similarly,
+any under(over) estimation in the sky will directly translate to an
+over(under) estimation of the measured object's flux.  In the fainter
+outskirts of an object a very small fraction of the photo-electrons in
+the pixels actually belong to objects. Therefore even a small over
+estimation of the sky value will result in the loss of a very large
+portion of this mock galaxy. Based on the definition above, the sky
+value is only correctly found when all the detected objects
+(@mymath{D_i} and @mymath{C_i}) have been removed from the data.
+
+
+@menu
+* Finding the sky value::       How SubtractSky finds the sky value.
+* Sky value misconceptions::    Sky value misconceptions and wrong approaches.
+@end menu
 
 
 
+@node Finding the sky value, Sky value misconceptions, Sky value, Sky value
+@subsubsection Finding the sky value
+
+@cindex Data
+@cindex Distribution mode
+@cindex Distribution mean
+@cindex Distribution median
+@cindex Mode of distribution
+@cindex Mean of distribution
+@cindex Median of distribution
+This technique to find the sky value in a distribution was initially
+proposed in Akhlaghi and Ichikawa 2015@footnote{Akhlaghi M.,
+Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. When
+we have absolutely no data and only noise in a dataset, the mean,
+median and mode of the distribution are equal within statistical
+errors and approximately equal to zero. Data always has a positive
+value and will never become negative, see Figure 1 in Akhlaghi and
+Ichikawa (2015). Therefore, as data is buried into the noise, all
+three of these measures shift to the positive. The mean is the fastest
+in this shift, since it is most reliant on the flux values. The median
+is slower since it is defined based on an ordered distribution and so
+is not affected by a small (less than half) number of
+outliers. Finally, the mode is the slowest to shift to the positive.
+
+@cindex Sky value
+Inversing the argument above gives the basis of SubtractSky's
+algorithm to find the sky value. Namely, when the mode and median of a
+distribution are approximately equal, we can argue that there is no
+significant data in the distribution. So we can consider the image to
+be made of a grid and use this argument to `detect' data in each grid
+element. When a grid element satisfies the condition above, we keep
+its mean value. Note that the sky was the mean of undetected
+pixels. Any grid element that dosn't satisfy this condition is kept
+with a blank value. Finally, when all the grid elements have been
+checked, we can interpolate over all the empty elements and smooth the
+final result to find the sky value over the full image.
+
+Note that through the difference of the mode and median we have
+actually `detected' data in the distribution. However this detection
+was only based on the flux of the data, not its spatial position in
+each mesh. So we adhere to the definition of Sky value in @ref{Sky
+value}. Finding the median is very easy, the main problem is in
+finding the mode through a robust method. In Appendix C of Akhlaghi
+and Ichikawa (2015) a new approach to finding the mode in any
+astronomically relevant distribution is introduced.
+
+
+@node Sky value misconceptions,  , Finding the sky value, Sky value
+@subsubsection Sky value misconceptions
+
+As defined in @ref{Sky value}, the sky value is only accurately
+defined when the detection algorithm is not significantly reliant on
+the sky value. In particular its detection threshold. However, most
+signal-based detection tools @footnote{According to Akhlaghi and
+Ichikawa (2015), signal-based detection is a detection process that
+realies heavily on assumptions about the to-be-detected objects. This
+method was the most heavily used technique prior to the introduction
+of NoiseChisel in that paper.} used the sky value as a reference to
+define the detection threshold. So these old techniques had to rely on
+approximations based on other assumptions about the data. A full
+review of those other techniques can be seen in Appendix A of Akhlaghi
+and Ichikawa (2015)@footnote{Akhlaghi M.,
+Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Since
+they were extensively used in astronomical data analysis for several
+decades, such approximations have given rise to a lot of
+misconceptions and disagreements about the sky value and how to
+measure it. As a summary, the major methods used until now were an
+approximation of the mode of the image pixel distribution and
+@mymath{\sigma}-clipping.
+
+@itemize
+@cindex Histogram
+@cindex Distribution mode
+@cindex Mode of a distribution
+@cindex Probability density function
+@item
+To find the mode of a distribution those methods would either have to
+assume (or find) a certain probablity density function (PDF) or use
+the histogram. But the image pixels can have any distribution, and the
+histogram results are very inaccurate (there is a large dispersion)
+and depend on bin-widths.
+
+@cindex @mymath{\sigma}-clipping
+@item
+Another approach was to iteratively clip the brightest pixels in the
+image (which is known as @mymath{\sigma}-clipping, since the reference
+was found from the image mean and its stadard deviation or
+@mymath{\sigma}). The problem with @mymath{\sigma}-clipping was that
+real astronomical objects have diffuse and faint wings that penetrate
+deeply into the noise. So only removing their brightest parts is
+completely useless in removing the systematic bias an object's fainter
+parts cause in the sky value.
+@end itemize
+
+As discussed in @ref{Sky value}, the sky value can only be correctly
+defined as the average of undetected pixels. Therefore all such
+approaches that try to approximate the sky value prior to detection
+are ultimately poor approximations.
+
+
+
+@node Sky value interpolation, Invoking astsubtractsky, Sky value, SubtractSky
+@subsection Sky value interpolation
+
+As explained in @ref{Finding the sky value}, the sky value will not be
+found over some of the grid elements. For example when a large galaxy
+is present in the image, no sky value will be found for the grid
+elements that lie over it. However, the sky value should be `guessed'
+over that part of the image. We cannot just not subtract the sky value
+from those regions! To fill in such blank grid elements, we use
+interpolation. If the number of grid elements in the input image
+becomes smaller than @option{--mininterp}, then SubtractSky will abort
+and notify you.
+
+@cindex Spline interpolation
+@cindex Linear interpolation
+@cindex Bicubic interpolation
+@cindex Interpolation, spline
+@cindex Interpolation, bicubic
+@cindex Interpolation, bilinear
+Parametric interpolations like bi-linear or bicubic or spline
+interpolations are not used because they fail terribly on the edges of
+the image. They are also prone to cause significant gradients in the
+image. So to find the interpolated value for each grid element,
+SubtractSky will look at a certain number of the nearest
+neighbours. The exact number can be specified through
+@option{--numnearest}. The median value of those mesh grids will be
+taken as the final value for each mesh. The median is chosen because
+on the fainter wings of bright objects, the mean can easily become
+biased.
+
+Once all the grid elements are filled, the grid sky values should be
+smoothed. This is because when the median is used, there will be
+strong differences from one grid element to the next. By smoothing the
+grid, the variation between grid element to grid element will be far
+less and so the sky subtracted image will become much more uniform. To
+smooth the image, SubtractSky uses an average filter. An average
+filter is just a convolution of the grid (spatial convolution) by a
+kernel will all elements having an equal weight, see @ref{Convolution
+process}. The size of this kernel can be set through the
+@option{--kernelwidth} option (which has to be an odd number as with
+any kernel).
+
+
+
+@node Invoking astsubtractsky,  , Sky value interpolation, SubtractSky
+@subsection Invoking SubtractSky
+
+SubtractSky will find the sky value on a grid in an image and subtract
+it. The executable name is @file{astsubtractsky} with the following
+general template:
+
+@example
+$ astsubtractsky [OPTION ...] Image
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astsubtractsky dataimage.fits
+@end example
+
+The only required input to SubtractSky is the input data file that
+currently has to be only a 2D image. But in the future it might be
+useful to use it for 1D or 3D data too.
+
+@table @option
+
+@item -n
+@itemx --numnearest
+(@option{=INT}) The number of nearest grid elements with a successful
+sky value to use for interpolating over blank grid elements (those
+that had a significant contribution of flux), see @ref{Sky value
+interpolation}.
+
+@item -m
+@itemx --mininterp
+(@option{=INT}) The minimum number of grid elements with a sky
+value. If the number of grid elements in the image becomes smaller
+than this value, the program will abort.
+
+@item -k
+@itemx --kernelwidth
+(@option{=INT}) The width of the average filter kernel used to smooth
+the interpolated image. See @ref{Sky value interpolation}.
+
+@end table
 
 
 
@@ -7185,14 +7514,14 @@ absolutely no objects. The physical origin of this background value is
 the brightness of the atmosphere or possible stray light within the
 imagining instrument. It is thus an ideal definition, because in
 practice, what lies deep in the noise far lower than the detection
-limit is never known@footnote{See the section on sky in Akhlaghi
-M. Ichikawa. T. 2015...}. However, in a real image, a relatively large
-number of very faint objects can been fully buried in the noise. These
-undetected objects will bias the background measurement to slightly
-larger values. The sky value is therefore defined to be the average of
-the undetected regions in the image, so in an ideal case where all the
-objects have been detected, the sky value and background value are the
-same.
+limit is never known@footnote{See the section on sky in Akhlaghi M.,
+Ichikawa. T. 2015. Astrophysical Journal Supplement Series.}. However,
+in a real image, a relatively large number of very faint objects can
+been fully buried in the noise. These undetected objects will bias the
+background measurement to slightly larger values. The sky value is
+therefore defined to be the average of the undetected regions in the
+image, so in an ideal case where all the objects have been detected,
+the sky value and background value are the same.
 
 @cindex Background flux gradients
 @cindex Gradients in background flux
@@ -7487,7 +7816,7 @@ discussed. Finally some notes on the building process are given.
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
 * Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
-* Headers::                     Library and common headers.
+* Header files::                Library and common headers.
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
@@ -7648,6 +7977,19 @@ which beautifully describes the design philosophy and practice which
 lead to the success of Unix-based operating
 systems@footnote{KISS principle: Keep It Simple, Stupid!}.
 
+Finally, and arguably the most important, principle of Gnuastro is
+this: Gnuastro is not planned to be a repository of creative programs
+with no clear purpose. The purpose of each program and all the major
+operations it does have to be very clearly documented and aligned with
+the general purpose of Gnuastro. Through the main management hub, we
+have a set of planned tasks and bugs, see @ref{Gnuastro project
+webpage}. If you have a plan to add something and want it to be an
+official part of Gnuastro, please check there and if it (or something
+similar to it) doesn't already exist, then add it. This will notify
+all the developers of your intent, so potentially parallel operations
+do not occur and similar ideas can be discussed. If something similar
+to your idea already exists, you can contact the person in charge and
+join that work.
 
 
 
@@ -7860,7 +8202,7 @@ guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/Sub
 
 
 
-@node Internal libraries, Headers, Version controlled source, Developing
+@node Internal libraries, Header files, Version controlled source, Developing
 @section Internal libraries
 
 @cindex Static libraries
@@ -7889,10 +8231,10 @@ them after installing the executable). In the future if need be, they
 can also be installed so they can be used by other programs too.
 
 
-@node Headers, Program source, Internal libraries, Developing
-@section Headers
+@node Header files, Program source, Internal libraries, Developing
+@section Header files
 
-@cindex Headers
+@cindex Header files
 The @file{include/} directory contains the headers for Gnuastro's
 internal libraries (see @ref{Internal libraries}) and several
 header-only files in the @file{include} directory. Below is a list of
@@ -7933,7 +8275,7 @@ four or eight connectivity in a region of an image or the whole image.
 @end table
 
 
-@node Program source, Test scripts, Headers, Developing
+@node Program source, Test scripts, Header files, Developing
 @section Program source
 
 @cindex Source file navigation
@@ -7954,6 +8296,7 @@ read along.
 * Mandatory source code files::  How the source files of each program are managed.
 * Coding conventions::          Basic conventions for coding structure.
 * Multithreaded programming::   Gnuastro's multithreaded programming style.
+* Documentation::               Documentation is an integral part of Gnuastro.
 @end menu
 
 @node Mandatory source code files, Coding conventions, Program source, Program source
@@ -8002,7 +8345,7 @@ The main root structure of a program contains at least two other
 structures: a structure only keeping parameters for user interface
 functions, which is also defined in @file{main.h} and the
 @code{commonparams} structure which is defined in
-@file{commonparams.h}, see @ref{Headers}. The main structure can
+@file{commonparams.h}, see @ref{Header files}. The main structure can
 become very large and since the programmer and inquirer often don't
 need to be confused with these parameters mixed with the actual
 processing parameters, they are conveniently defined in another
@@ -8216,7 +8559,7 @@ Installed library header files, for example @file{cfitsio.h} or
 @file{gsl/gsl_rng.h}.
 @item
 Gnuastro common header files, for example @file{fitsarrayvv.h} or
-@file{neighbors.h}, see @ref{Headers}.
+@file{neighbors.h}, see @ref{Header files}.
 @item
 That particular program's header files, for example @file{main.h} and
 @file{mkprof.h}.
@@ -8263,7 +8606,7 @@ very important for easily understanding the code.
 @end itemize
 
 
-@node Multithreaded programming,  , Coding conventions, Program source
+@node Multithreaded programming, Documentation, Coding conventions, Program source
 @subsection Multithreaded programming
 
 @cindex Multithreaded programming
@@ -8300,6 +8643,77 @@ problems. They are some of the simplest problems to solve with threads
 and also the ones that benefit most from threads, see the LLNL
 introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
 
+
+@node Documentation,  , Multithreaded programming, Program source
+@subsection Documentation
+
+Documentation (this manual) is an integral part of Gnuastro.
+Documentation is not considered a separate project. So, no change is
+considered valid for implementation unless the respective parts of the
+manual have also been updated. The following procedure can be a good
+suggestion to take when you have a new idea and are about to start
+implementing it.
+
+The steps below are not a requirement, the important thing is that
+when you send the program to be included in Gnuastro, the manual and
+the code have to both be fully up-to-date and compatible and the
+purpose should be very clearly explained. You can follow any path you
+choose to do this, the following path was what we found to be most
+successful during the initial design and implementation steps of
+Gnuastro.
+
+@enumerate
+@item
+Edit the manual and fully explain your desired change, such that your
+idea is completely embedded in the general context of the manual with
+no sence of discontinuity for a first time reader. This will allow you
+to plan the idea much more accurately and in the general context of
+Gnuastro or a particular program. Later on, when you are coding, this
+genral context will significantly help you as a road-map.
+
+A very important part of this process is the program introduction,
+which explains the purposes of the program. Before actually starting
+to code, explain your idea's purpose thoroughly in the start of the
+program section you wish to add or edit. While actually writing its
+purpose for a new reader, you will probably get some very valuable
+ideas that you hadn't thought of before, this has occured several
+times during the creation of Gnuastro. If an introduction already
+exists, embed or blend your idea's purpose with the existing
+purposes. We emphasize that doing this is equally useful for you (as
+the programmer) as it is useful for the user (reader). Recall that the
+purpose of a program is very important, see @ref{Design philosophy}.
+
+As you have already noticed for every program, it is very important
+that the basics of the science and technique be explained in separate
+subsections prior to the `Invoking Programname' subsection. If you are
+writing a new program or your addition involves a new concept, also
+include such subsections and explain the concepts so a person
+completely unfamiliar with the concepts can get a general initial
+understanding. You don't have to go deep into the details, just enough
+to get an interested person (with absolutely no background)
+started. If you feel you can't do that, then you have probably not
+understood the concept your self! Have in mind that your only
+limitation in length is the fatigue of the reader after reading a long
+text, nothing else.
+
+It might also help if you start implementing your idea in the
+`Invoking ProgramName' subsection (explaining the options and
+arguments you have in mind) at this stage too. Actually starting to
+write it here will really help you later when you are coding.
+
+@item
+After you have finished adding your initial intended plan to the
+manual, then start coding your change or new program within the
+Gnuastro source files. While you are coding, you will notice that
+somethings should be different from what you wrote in the manual (your
+initial plan). So correct them as you are actually coding.
+
+@item
+In the end, read the section in the manual that you edited completely
+and see if you didn't miss any change in the coding and to see if the
+context is fairly contiues for a first time reader (who hasn't seen
+the manual or had known of Gnuastro before you made your change).
+@end enumerate
 
 @node Test scripts, Building, Program source, Developing
 @section Test scripts
@@ -8392,6 +8806,7 @@ can get you started off.
 
 
 
+
 @node After making changes,  , Building, Developing
 @section After making changes
 After you have made your your changes/additions, please take the
@@ -8406,16 +8821,14 @@ change(s)/addition(s) you have made. Then add their file names to
 everything is working correctly.
 
 @item
-Update this manual. Documentation is an integral part of Gnuastro.
-Documentation is not considered a separate project. So, no change is
-considered valid for implementation unless the respective parts of the
-manual have been updated also.
+Make sure the manual is completely up to date with your changes, see
+@ref{Documentation}.
 
 @cindex GNU Emacs
 @cindex @file{ChangeLog}
 @cindex GNU coding standards
 @item
-If you have @emph{Changed} anything in the program, add it to the
+If you have @emph{changed} anything in the program, add it to the
 @file{ChangeLog} (a file in the top source code
 directory). @file{ChangeLog} has a specific format defined by the GNU
 coding standards. The easiest way to add an entry to it is through
