@@ -40,7 +40,7 @@ table.cartouche
     padding-left:1em;
     padding-right:1em;
     border-radius:10px;
-    background-color:#ccccff;
+    background-color:#EE9A49;
 }
 
 
@@ -50,9 +50,10 @@ a:hover,
 a:active
       {
           text-decoration:none;
-          color:#000078;
+          font-weight:bold;
+          color:#B13E0F;
       }
 a:hover
       {
-          color:#0147FA;
+          color:#FF9F00;
       }

@@ -30,10 +30,12 @@ AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 noinst_LTLIBRARIES = libconfigfiles.la libfitsarrayvv.la	\
 libtxtarrayvv.la libcheckset.la liblinkedlist.la libtiming.la	\
 libastrthreads.la libbox.la libarraymanip.la libstatistics.la	\
-libspatialconvolve.la
+libspatialconvolve.la libmesh.la
 
 libbox_la_SOURCES = box.c $(top_srcdir)/include/box.h
 libbox_la_LIBADD = -lm
+
+libmesh_la_SOURCES = mesh.c $(top_srcdir)/include/mesh.h
 
 libtiming_la_SOURCES = timing.c $(top_srcdir)/include/timing.h
 
@@ -50,6 +52,7 @@ libtxtarrayvv_la_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
 libastrthreads_la_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
 
 libconfigfiles_la_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
+
 
 libfitsarrayvv_la_SOURCES = fitsarrayvv.c $(top_srcdir)/include/fitsarrayvv.h
 libfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lm

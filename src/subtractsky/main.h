@@ -23,6 +23,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
+#include "mesh.h"
 #include "fitsarrayvv.h"
 #include "commonparams.h"
 
@@ -39,10 +40,19 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct uiparams
 {
-  char      *inputname;  /* Name of input file.                 */
-  int    numnearestset;
-  int     mininterpset;
-  int   kernelwidthset;
+  char       *inputname;  /* Name of input file.                 */
+  char        *maskname;  /* Name of mask image file.            */
+  char            *mhdu;  /* Name of mask image header name.     */
+  int       masknameset;
+  int masknameallocated;
+  int           mhduset;
+  int     numnearestset;
+  int      mininterpset;
+  int    kernelwidthset;
+  int       meshsizeset;
+  int           nch1set;
+  int           nch2set;
+  int   lastmeshfracset;
 };
 
 
@@ -54,6 +64,7 @@ struct subtractskyparams
   /* Other structures: */
   struct uiparams          up;  /* User interface parameters.          */
   struct commonparams      cp;  /* Common parameters.                  */
+  struct meshparams        mp;  /* Mesh grid of input image.           */
 
   /* Input: */
   float                  *img;  /* The input image array.              */
@@ -62,8 +73,11 @@ struct subtractskyparams
   size_t           numnearest;  /* Number of nearest for interpolation.*/
   size_t            mininterp;  /* Minimum number for interpolation.   */
   size_t          kernelwidth;  /* Width of smoothing kernel.          */
+  int                  bitpix;  /* Input image bitpix value.           */
+  size_t             numblank;  /* Number of blank pixels in image.    */
 
   /* output: */
+  char              *meshname;  /* Name of --checkmesh output.         */
 
   /* Operating mode: */
 

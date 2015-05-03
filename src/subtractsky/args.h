@@ -70,10 +70,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g i j l p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z
+   c d e f g i j l p r t u v w x y z
+   A B C E F G I J O Q R T U W X Y Z
 
-   Number keys used: Nothing!
+   Number keys used: <=500
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -83,6 +83,22 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Input:",
+      1
+    },
+    {
+      "mask",
+      'M',
+      "STR",
+      0,
+      "Mask image file name.",
+      1
+    },
+    {
+      "mhdu",
+      'H',
+      "STR",
+      0,
+      "Mask image header name.",
       1
     },
     {
@@ -111,13 +127,59 @@ static struct argp_option options[] =
     },
 
 
-
     {
       0, 0, 0, 0,
       "Output:",
       2
     },
 
+
+
+    {
+      0, 0, 0, 0,
+      "Mesh grid:",
+      3
+    },
+    {
+      "meshsize",
+      's',
+      "INT",
+      0,
+      "Size of each mesh (tile) in the grid.",
+      3
+    },
+    {
+      "nch1",
+      'a',
+      "INT",
+      0,
+      "Number of channels along first FITS axis.",
+      3
+    },
+    {
+      "nch2",
+      'b',
+      "INT",
+      0,
+      "Number of channels along second FITS axis.",
+      3
+    },
+    {
+      "lastmeshfrac",
+      'L',
+      "INT",
+      0,
+      "Fraction of last mesh area to add new.",
+      3
+    },
+    {
+      "checkmesh",
+      500,
+      0,
+      0,
+      "View the mesh grid on the input image.",
+      3
+    },
 
 
     {
@@ -163,6 +225,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Input: */
+    case 'M':
+      p->up.maskname=arg;
+      p->up.masknameset=1;
+      break;
+    case 'H':
+      errno=0;                  /* We want to free it in the end. */
+      p->up.mhdu=malloc(strlen(arg)+1);
+      if(p->up.mhdu==NULL)
+        error(EXIT_FAILURE, errno, "Space for mask HDU.");
+      strcpy(p->up.mhdu, arg);
+      p->up.mhduset=1;
+      break;
     case 'n':
       sizetlzero(arg, &p->numnearest, "numnearest", key, SPACK, NULL, 0);
       p->up.numnearestset=1;
@@ -177,6 +251,28 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
 
     /* Output: */
+
+    /* Mesh grid: */
+    case 's':
+      sizetlzero(arg, &p->mp.meshsize, "meshsize", key, SPACK, NULL, 0);
+      p->up.meshsizeset=1;
+      break;
+    case 'a':
+      sizetlzero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
+      p->up.nch1set=1;
+      break;
+    case 'b':
+      sizetlzero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
+      p->up.nch2set=1;
+      break;
+    case 'L':
+      floatl0s1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key, SPACK,
+                NULL, 0);
+      p->up.lastmeshfracset=1;
+      break;
+    case 500:
+      p->meshname="a";  /* Just a placeholder! It will be corrected later */
+      break;
 
 
     /* Operating modes: */

@@ -23,12 +23,47 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <math.h>
+#include <errno.h>
+#include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <pthread.h>
 
 #include "arraymanip.h"
+
+
+
+
+
+/*********************************************************************
+ **********************    Initialize values    **********************
+ *********************************************************************/
+void
+floatcopy(float *in, size_t size, float **out)
+{
+  float *fp=in+size, *o;
+
+  errno=0;
+  o=*out=malloc(size*sizeof *out);
+  if(*out==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for copying", size);
+  do *o++=*in; while(++in<fp);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -70,6 +105,23 @@ freplacevalue(float *in, size_t size, float from, float to)
       while(++in<fpt);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -25,6 +25,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 void
+floatcopy(float *in, size_t size, float **out);
+
+void
 fsetconst(float *in, size_t size, float a);
 
 void

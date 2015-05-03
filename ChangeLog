@@ -1,3 +1,11 @@
+2015-05-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* include/fixedstringmacros.h (MOREHELPINFO): Corrected to include
+	help-gnuastro mailing list.
+
+	* doc/style.css (a:hover): Changed to bright orange color.
+	(a:active): Changed to dark orange.
+
 2015-04-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/oneprofile.c (makepixbypix): When in circumference

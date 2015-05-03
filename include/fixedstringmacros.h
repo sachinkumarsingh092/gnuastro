@@ -43,13 +43,17 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "following commands. They will respectively show you the `Invoking "	\
   SPACK_NAME"' subsection, the complete `"SPACK_NAME"' section, or the "\
   "full "PACKAGE_NAME" manual.\n"                                       \
-  "      info "SPACK"\n"                                                \
-  "      info "SPACK_NAME"\n"						\
-  "      info "PACKAGE_TARNAME"\n"                                      \
+  "     info "SPACK"\n"                                                 \
+  "     info "SPACK_NAME"\n"						\
+  "     info "PACKAGE_TARNAME"\n"                                       \
   "If you couldn't find your answer in the manual, you can contact "    \
-  "`help-gnuastro@gnu.org' for direct help from experienced Gnuastro "  \
-  "users and developers.\n"                                             \
-  "\nOptions:"								\
+  "the help-gnuastro mailing list at the email address below for "      \
+  "direct help from experienced Gnuastro users and developers. "        \
+  "Just be sure to check the archives first. Your question might "      \
+  "have already been asked and answered.\n"                             \
+  "     help-gnuastro@gnu.org\n"                                        \
+  "     https://lists.gnu.org/mailman/listinfo/help-gnuastro\n"         \
+  "\n"SPACK_NAME" options:"                                             \
 
 
 
