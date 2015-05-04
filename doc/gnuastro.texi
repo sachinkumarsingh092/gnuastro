@@ -57,6 +57,9 @@ Texts.  A copy of the license is included in the section entitled
 * ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
 * astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
 
+* ImageStatistics: (gnuastro)ImageStatistics. Get image Statistics.
+* astimgstat: (gnuastro)Invoking astimgstat. Options to ImageStatistics.
+
 * ImageWarp: (gnuastro)ImageWarp. Warp an image to a new grid.
 * astimgwarp: (gnuastro)Invoking astimgwarp. Options to ImageWarp.
 
@@ -331,6 +334,14 @@ Sky value
 * Finding the sky value::       How SubtractSky finds the sky value.
 * Sky value misconceptions::    Sky value misconceptions and wrong approaches.
 
+Image analysis
+
+* ImageStatistics::             Calculate main image statistics.
+
+ImageStatistics
+
+* Invoking astimgstat::         Arguments and options to ImageStatistics
+
 Modeling and fitting
 
 * MakeProfiles::                Making mock galaxies and stars.
@@ -543,8 +554,10 @@ Convert data files.
 @ref{Header} (@file{astheader}) @value{HEADER_VERSION}: Print and
 manipulate data header.
 @item
-@ref{ImageCrop} (@file{astimgcrop}) @value{IMGCROP_VERSION}: Crop region(s)
-from image(s).
+@ref{ImageCrop} (@file{astimgcrop}) @value{IMGCROP_VERSION}: Crop
+region(s) from image(s).
+@item
+@ref{ImageStatistics} (@file{astimgstat}) @value{IMGSTAT_VERSION}: Get pixel statistics.
 @item
 @ref{ImageWarp} (@file{astimgwarp}) @value{IMGWARP_VERSION}: Warp
 image to new pixel grid.
@@ -6423,10 +6436,10 @@ Meshes are considered to be a square with a side of
 @option{--meshsize} pixels. The best mesh size is directly related to
 the gradient on the image. In practice we assume that the gradient is
 not significant over each mesh. So if there is a strong gradient (for
-example in long wavelength ground based images) you have to choose a
-smaller mesh size and if there is no gradient (for example in space
-based images) you can choose a larger mesh size. If there is no
-gradient, a larger mesh will give more accurate results.
+example in long wavelength ground based images) or the image is of a
+crowded area where there isn't too much blank area, you have to choose
+a smaller mesh size. A larger mesh will give more pixels and so the
+scatter in the results will be less.
 
 @cindex CCD
 @cindex Amplifier
@@ -6639,7 +6652,44 @@ one. See @ref{Tiling an image}.
 
 @item --checkmesh
 An image with suffix @file{_mesh.fits} will be created for you to
-check the mesh grid, see @ref{Tiling an image}.
+check the mesh grid, see @ref{Tiling an image}. SubtractSky only uses
+one mesh grid, so only one grid extension will be included in the
+produced file.
+
+@item -d
+@itemx --mirrordist
+(@option{=FLT}) The distance beyond the mirror point (in units of the
+error in the mirror point) to check in finding the mode. See appendix
+C in Akhlaghi and Ichikawa (2015) for a complete explanation of the
+mode-finding algorithm. The value to this option is shown as
+@mymath{\alpha} in that appendix.
+
+@item -Q
+@itemx --minmodeq
+(@option{=FLT}) The minimum acceptable quantile for the mode of each
+mesh.
+
+@item -u
+@itemx --sigclipmultip
+(@option{=FLT}) The multiple of the standard devation to clip from the
+distribution in @mymath{\sigma}-clipping. This is necessary to remove
+the effect of cosmic rays.
+
+@item -t
+@itemx --sigcliptolerance
+(@option{=FLT}) The tolerance of sigma clipping. If the fractional
+change in the standard deviation before and after sigma clipping is
+less than the value given to this option, @mymath{\sigma}-clipping
+will stop.
+
+@item --checkinterpolation
+A two extension FITS image ending with @file{_interp.fits} will be
+created which shows the average value on each mesh before
+interpolation and after interpolation.
+
+@item --checksmoothing
+A two extension FITS image ending with @file{_smooth.fits} will be
+created showing how the interpolated sky value is smoothed.
 
 @end table
 
@@ -6659,10 +6709,53 @@ this section can help in extracting and quantifying that
 information. For example calculating image statistics, or finding the
 sky value or detecting objects within an image.
 
+@menu
+* ImageStatistics::             Calculate main image statistics.
+@end menu
 
+@node ImageStatistics,  , Image analysis, Image analysis
+@section ImageStatistics
 
+The distribution of pixel values in an image can give us valuable
+information about the image, for example if it is a positively skewed
+distribution, we can see that there is significant data in the
+image. If the distribution is roughly symmetric, we can tell that
+there is no significant data in the image.
 
+On the other hand, in some measurements that we do on the image, we
+might need to know the certain statistical parameters of the
+image. For example, if we have run a detection algorithm on an image,
+and we want to see how accurate it was, one method is to calculate the
+average of the undetected pixels and see how reasonable it is (if
+detection is done correctly, the average of undetected pixels should
+be approximately equal to the background value, see @ref{Sky
+value}). ImageStatistics is built for precisely such situatons.
 
+@menu
+* Invoking astimgstat::         Arguments and options to ImageStatistics
+@end menu
+
+@node Invoking astimgstat,  , ImageStatistics, ImageStatistics
+@subsection Invoking ImageStatistics
+
+ImageStatistics will print the major statistical measures of an
+image's pixel flux distribution. The executable name is
+@file{astimgstat} with the following general template
+
+@example
+$ astimgstat [OPTION ...] InputImage.fits
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astimgstat input.fits
+@end example
+
+@noindent
+If ImageStatistics is to run, an input image should be provided with
+the recognized extensions as input data, see @ref{Arguments}.
 
 
 

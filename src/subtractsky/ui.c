@@ -151,6 +151,7 @@ readconfig(char *filename, struct subtractskyparams *p)
 	}
 
 
+
       /* Outputs */
       else if(strcmp(name, "output")==0)
 	{
@@ -194,6 +195,36 @@ readconfig(char *filename, struct subtractskyparams *p)
 	  up->lastmeshfracset=1;
 	}
 
+
+      /* Statistics: */
+      else if(strcmp(name, "mirrordist")==0)
+	{
+	  if(up->mirrordistset) continue;
+          floatl0(value, &p->mp.mirrordist, name, key, SPACK,
+                  filename, lineno);
+	  up->mirrordistset=1;
+	}
+      else if(strcmp(name, "minmodeq")==0)
+	{
+	  if(up->minmodeqset) continue;
+          floatl0s1(value, &p->mp.minmodeq, name, key, SPACK,
+                  filename, lineno);
+	  up->minmodeqset=1;
+	}
+      else if(strcmp(name, "sigclipmultip")==0)
+	{
+	  if(up->sigclipmultipset) continue;
+          floatl0(value, &p->mp.sigclipmultip, name, key, SPACK,
+                  filename, lineno);
+	  up->sigclipmultipset=1;
+	}
+      else if(strcmp(name, "sigcliptolerance")==0)
+	{
+	  if(up->sigcliptoleranceset) continue;
+          floatl0s1(value, &p->mp.sigcliptolerance, name, key, SPACK,
+                  filename, lineno);
+	  up->sigcliptoleranceset=1;
+	}
 
 
       /* Operating modes: */
@@ -272,6 +303,17 @@ printvalues(FILE *fp, struct subtractskyparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
+
+  fprintf(fp, "\n# Statistics:\n");
+  if(up->mirrordistset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mp.mirrordist);
+  if(up->minmodeqset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->mp.minmodeq);
+  if(up->sigclipmultipset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->mp.sigclipmultip);
+  if(up->sigcliptoleranceset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
+            p->mp.sigcliptolerance);
 }
 
 
@@ -299,6 +341,7 @@ checkifset(struct subtractskyparams *p)
   if(up->kernelwidthset==0)
     REPORT_NOTSET("kernelwidth");
 
+  /* Mesh grid: */
   if(up->meshsizeset==0)
     REPORT_NOTSET("meshsize");
   if(up->nch1set==0)
@@ -307,6 +350,16 @@ checkifset(struct subtractskyparams *p)
     REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
     REPORT_NOTSET("lastmeshfrac");
+
+  /* Statistics: */
+  if(up->mirrordistset==0)
+    REPORT_NOTSET("mirrordist");
+  if(up->minmodeqset==0)
+    REPORT_NOTSET("minmodeq");
+  if(up->sigclipmultipset==0)
+    REPORT_NOTSET("sigclipmultip");
+  if(up->sigcliptoleranceset==0)
+    REPORT_NOTSET("sigcliptolerance");
 
   END_OF_NOTSET_REPORT;
 }
@@ -365,6 +418,18 @@ sanitycheck(struct subtractskyparams *p)
       p->meshname=NULL;         /* Was not allocated before!  */
       automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->meshname);
+    }
+  if(p->interpname)
+    {
+      p->interpname=NULL;         /* Was not allocated before!  */
+      automaticoutput(p->up.inputname, "_interp.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->interpname);
+    }
+  if(p->smoothname)
+    {
+      p->smoothname=NULL;         /* Was not allocated before!  */
+      automaticoutput(p->up.inputname, "_smooth.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->smoothname);
     }
 }
 

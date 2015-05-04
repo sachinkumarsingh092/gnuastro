@@ -29,8 +29,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
+#include "forqsort.h"
 #include "statistics.h"
-
+#include "arraymanip.h"
 
 
 
@@ -655,4 +656,421 @@ floatavestdmaskbyt0inregion(float *in, unsigned char *byt,
 
   *ave = sum/size;
   *std = sqrt( (sumsq-sum*sum/size)/size );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ ********     Histogram and Cumulative Frequency Plot     *******
+ ****************************************************************/
+/* Set the bin lower values for all the bins: */
+#define CHECKBINS 0
+void
+setbins(float *sorted, size_t size, size_t numbins, float min,
+	float max, int binonzero, float quant, float **obins)
+{
+  size_t i;
+  float tosubtract, *bins, binwidth;
+
+  /* Allocate space for the array. The extra bin is only for internal
+     purposes (so the loops for the histogram and CFP can see the end
+     of the last bin). It will never be seen by the user. */
+  errno=0;
+  bins=*obins=calloc((numbins+1)*2, sizeof *bins);
+  if(bins==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for bins in setbins (statistics.c)",
+          (numbins+1)*2*sizeof *bins);
+
+  /* If the range is not defined, find it and set the bin width. */
+  if(min==max)
+    {
+      if(quant!=0.0f)
+	{
+	  min=sorted[ indexfromquantile(size, quant)   ];
+	  max=sorted[ indexfromquantile(size, 1-quant) ];
+	}
+      else
+	{
+	  min=sorted[0];
+	  max=sorted[size-1];
+	  /* The number of elements in each bin is counted by those
+	     equal or smaller to the smaller bin side and smaller than
+	     the right of the bin. Therefore, if the maximum bin side
+	     equals the maximum element value, it will not be
+	     counted. So we slightly increase the maximum before
+	     calculating the bin width */
+	  max+=(max-min)/10000;
+	}
+    }
+  binwidth=(max-min)/numbins;
+
+  /* Set all the bin smaller sides: */
+  for(i=0;i<numbins+1;++i)
+    bins[i*2]=min+i*binwidth;
+
+  /* If one bin is to be placed on zero. */
+  if(binonzero)
+    {
+      for(i=0;i<numbins+1;++i)
+	if(bins[i*2]>=0.0f) break;
+      tosubtract=bins[i*2];
+      for(i=0;i<numbins+1;++i)
+	bins[i*2]-=tosubtract;
+    }
+
+  /* In case you want to check the bins: */
+  if(CHECKBINS)
+    for(i=0;i<numbins;++i)
+      printf("%lu: %.4f\n", i+1, bins[i*2]);
+}
+
+
+
+
+
+#define CHECKHIST 0
+void
+histogram(float *sorted, size_t size, float *bins, size_t numbins,
+	  int normhist, int maxhistone)
+{
+  float max=-FLT_MAX;
+  size_t histrow, i;
+
+  /* Fill the histogram. */
+  histrow=0;
+  for(i=0;i<size;++i)
+    {
+      if(sorted[i]<bins[histrow*2]) continue;
+      while (sorted[i]>=bins[(histrow+1)*2])
+	if(++histrow>=numbins) break;
+      if(histrow>=numbins) break;
+      ++bins[histrow*2+1];
+    }
+
+  /* In case a normalized histogram is desired: */
+  if(normhist)
+    for(i=0;i<numbins;++i)
+      bins[i*2+1]/=size;
+
+  /* In case the maximum value is to become one. */
+  if(maxhistone)
+    {
+      for(i=0;i<numbins;++i)
+	if(bins[i*2+1]>max)
+	  max=bins[i*2+1];
+      for(i=0;i<numbins;++i)
+	bins[i*2+1]/=max;
+    }
+
+  /* In case you want to see the histogram: */
+  if(CHECKHIST)
+    for(i=0;i<numbins;++i)
+      printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+}
+
+
+
+
+
+#define CHECKCFP 0
+void
+cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
+	     int normcfp)
+{
+  float prevind=0;
+  size_t cfprow=0, i, numinds=0;
+
+  /* Fill the Cumulative frequency plot: */
+  for(i=0;i<size;++i)
+    {
+      if(sorted[i]<bins[cfprow*2]) continue;
+      while (sorted[i]>=bins[(cfprow+1)*2])
+	{
+	  if(numinds>0)
+	    prevind=bins[cfprow*2+1]/=numinds;
+	  else
+	    bins[cfprow*2+1]=prevind;
+	  numinds=0;
+	  if(++cfprow>=numbins)
+	    break;
+	}
+      if(cfprow>=numbins) break;
+      bins[cfprow*2+1]+=i;	/* Sum of indexs */
+      ++numinds;
+    }
+
+  /* For a normalized CFP: */
+  if(normcfp)
+    for(i=0;i<numbins;++i)
+      bins[i*2+1]/=size;
+
+  /* In case you want to see the CFP: */
+  if(CHECKCFP)
+    for(i=0;i<numbins;++i)
+      printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+}
+
+
+
+
+
+void
+savehist(float *sorted, size_t size, size_t numbins,
+	 char *filename, char *histname, size_t id)
+{
+  FILE *fp;
+  size_t i;
+  int binonzero=0, normhist=0, maxhistone=0;
+  float d, *bins, min=0.0f, max=0.0f, quant=0.0f;
+
+  /* Set the bin sides: */
+  setbins(sorted, size, numbins, min, max, binonzero, quant, &bins);
+
+  /* Set the size of half a bin width:*/
+  d=(bins[2]-bins[0])/2;
+
+  /* Fill the histogram: */
+  histogram(sorted, size, bins, numbins, normhist, maxhistone);
+
+  /* Open the file for writing and save the histogram: */
+  errno=0;
+  fp=fopen(filename, "w");
+  if(fp==NULL)
+    error(EXIT_FAILURE, errno, "Couldn't open file %s", filename);
+  fprintf(fp, "# %s: S/N histogram of %s in mesh %lu.\n",
+	  PACKAGE_STRING, histname, id);
+  fprintf(fp, "# %lu points in %lu bins\n", size, numbins);
+  fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
+  fprintf(fp, "# Column 1: Number of points in this bin.\n");
+  for(i=0;i<numbins;++i)
+    fprintf(fp, "%-15.6f%.0f\n", bins[i*2]+d, bins[i*2+1]);
+  fclose(fp);
+  free(bins);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ *****************         Quantiles         ********************
+ ****************************************************************/
+/* Find the index corresponding to a certain quantile, considering the
+   rounding that might be needed. */
+size_t
+indexfromquantile(size_t size, float quant)
+{
+  float floatindex;
+
+  if(quant>1.0f)
+    error(EXIT_FAILURE, 0, "The quantile in indexfromquantile (statistics.c) "
+          "Should be smaller.");
+
+  /* Find the index of the quantile. */
+  floatindex=(float)size*quant;
+  /*
+  printf("quant: %f, size: %lu, findex: %f\n", quant, size, floatindex);
+  */
+  /* Note that in the conversion from float to size_t, the floor
+     integer value of the float will be used. */
+  if( floatindex - (int)floatindex > 0.5 )
+    return floatindex+1;
+  else
+    return floatindex;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ *****************        Sigma clip         ********************
+ ****************************************************************/
+/* This function will repeatedly sigma clip the data and return the
+   median. It is assumed that the data have been ordered.
+
+   o1_n0: Ordered (1), not ordered (0).
+*/
+int
+sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
+		   float sigma_multiple, float accuracy,
+		   float *outave, float *outmed, float *outstd)
+{
+  size_t counter=0;
+  float *start, *oldstart, *dpt;
+  float ave=*outave, med=*outmed, std=*outstd;
+  float oldstd=0, oldmed=0, oldave=0, *orderedarray;
+
+  if(o1_n0==0)
+    {
+      floatcopy(array, num_elem, &orderedarray);
+      qsort(orderedarray, num_elem, sizeof*orderedarray,
+	    floatincreasing);
+    }
+  else orderedarray=array;
+
+  start=orderedarray;
+  while(1)
+    {
+      oldstart=start;
+
+      med=*(start+num_elem/2);
+      favestd(start, num_elem, &ave, &std, NULL);
+
+      /*
+      printf("%lu: mean: %.2f, med: %.2f, std= %.2f, num inside: %lu\n",
+	     counter+1, ave, med, std, num_elem);
+      */
+
+      /* It might happen that ave and std are NaN. If so, stop the
+	 process here (the user has not given a mask and some pixels
+	 have nan values!). */
+      if(isnan(ave) || isnan(std))
+	return 0;
+
+      /* Normally, oldstd should be larger than std, because the
+	 possible outliers have been removed. If it is not, it means
+	 that we have clipped too much! */
+      if(counter>0 && (oldstd-std)/std<accuracy)
+	{
+	  *outstd=oldstd; *outave=oldave; *outmed=oldmed;
+	  return 1;
+	}
+
+      for(dpt=start; dpt<start+num_elem; ++dpt)
+	if (*dpt>med-sigma_multiple*std)
+	  {
+	    start=dpt;
+	    break;
+	  }
+
+      for(dpt=oldstart+num_elem-1;dpt>start;dpt--)
+	if (*dpt<med+sigma_multiple*std)
+	  {
+	    num_elem=dpt-start+1;
+	    break;
+	  }
+
+      oldave=ave;
+      oldmed=med;
+      oldstd=std;
+      ++counter;
+    }
+  return 0;
+}
+
+
+
+
+
+/* This function will do a certain number of sigma clips and return
+   the final average, median and std. o1_n0: 1: initially ordered. 2:
+   initially not ordered.*/
+int
+sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
+		     float sigma_multiple, size_t numtimes,
+		     float *outave, float *outmed, float *outstd)
+{
+  size_t counter=0;
+  float ave=*outave, med=*outmed, std=*outstd;
+  float *start, *oldstart, *dpt, *orderedarray;
+
+  if(o1_n0==0)
+    {
+      floatcopy(array, num_elem, &orderedarray);
+      qsort(orderedarray, num_elem, sizeof*orderedarray,
+	    floatincreasing);
+    }
+  else orderedarray=array;
+
+  start=orderedarray;
+  for(counter=0;counter<numtimes+1;++counter)
+    {
+      oldstart=start;
+
+      med=*(start+num_elem/2);
+      favestd(start, num_elem, &ave, &std, NULL);
+
+      /*
+      printf("%lu: mean: %.2f, med: %.2f, std= %.2f, num inside: %lu\n",
+             counter+1, ave, med, std, num_elem);
+      */
+
+      /* It might happen that ave and std are nan. If so, stop the
+	 process here (the user has not given a mask and some pixels
+	 have nan values!). */
+      if(isnan(ave) || isnan(std))
+	return 0;
+
+
+      for(dpt=start; dpt<start+num_elem; ++dpt)
+	if (*dpt>med-sigma_multiple*std)
+	  {
+	    start=dpt;
+	    break;
+	  }
+
+
+      for(dpt=oldstart+num_elem-1;dpt>start;dpt--)
+	if (*dpt<med+sigma_multiple*std)
+	  {
+	    num_elem=dpt-start+1;
+	    break;
+	  }
+    }
+
+  if(o1_n0==0)
+    free(orderedarray);
+
+  *outave=ave;
+  *outmed=med;
+  *outstd=std;
+  return 1;
 }

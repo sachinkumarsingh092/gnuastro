@@ -41,7 +41,7 @@ eps.h jpeg.c jpeg.h convertt.c convertt.h
 
 astconvertt_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
 -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -llinkedlist		\
--lstatistics
+-lstatistics -larraymanip -lforqsort
 
 
 

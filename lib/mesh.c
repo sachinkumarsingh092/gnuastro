@@ -22,12 +22,16 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <math.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
 #include <stdlib.h>
 
 #include "mesh.h"
+#include "mode.h"
+#include "forqsort.h"
+#include "statistics.h"
 #include "astrthreads.h"
 
 
@@ -56,11 +60,16 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
+
+
+
 /*********************************************************************/
-/********************     Show meshes on grid     ********************/
+/********************     Preparing for Save      ********************/
 /*********************************************************************/
 void
-checkmesh(float *img, struct meshparams *mp, long **out)
+checkmeshid(struct meshparams *mp, long **out)
 {
   long i, *l, *lp;
   size_t row, start, *types=mp->types;
@@ -94,6 +103,63 @@ checkmesh(float *img, struct meshparams *mp, long **out)
 
 
 
+void
+checkcharray(struct meshparams *mp, int operationid,
+             float **out1, float **out2)
+{
+  int needstwo=0;
+  float *f, *fp, *ff, charray1, charray2;
+  size_t i, row, start, *types=mp->types;
+  size_t s0, s1, is1=mp->s1, *ts0=mp->ts0, *ts1=mp->ts1;
+
+  if(operationid==MODEEQMED_AVESTD)
+    needstwo=1;
+
+  /* Allocate the array to keep the mesh indexs. Calloc is used so we
+     can add all the indexes to the existing value to make sure that
+     there is no overlap. */
+  errno=0;
+  *out1=malloc(mp->s0*mp->s1*sizeof **out1);
+  if(*out1==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for out1 in checkcharray "
+          "(mesh.c)", mp->s0*mp->s1*sizeof **out1);
+  if(needstwo)
+    {
+      errno=0;
+      *out2=malloc(mp->s0*mp->s1*sizeof **out2);
+      if(*out2==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for out2 in checkcharray "
+              "(mesh.c)", mp->s0*mp->s1*sizeof **out2);
+    }
+
+  /* Fill the indexs: */
+  for(i=0;i<mp->nmeshi;++i)
+    {
+      row=0;
+      s0=ts0[types[i]];
+      s1=ts1[types[i]];
+      start=mp->start[i];
+      charray1=mp->charray1[i];
+      if(needstwo) charray2=mp->charray2[i];
+      do
+        {
+          fp= ( f = *out1 + start + row * is1 ) + s1;
+          if(needstwo) ff= *out2 + start + row * is1;
+          do
+            {
+              *f++ = charray1;
+              if(needstwo) *ff++ = charray2;
+            }
+          while(f<fp);
+          ++row;
+        }
+      while(row<s0);
+    }
+}
+
+
+
+
 
 
 
@@ -110,7 +176,7 @@ checkmesh(float *img, struct meshparams *mp, long **out)
 
 
 /*********************************************************************/
-/********************       Basic mesh info       ********************/
+/********************      Creating the mesh      ********************/
 /*********************************************************************/
 /* In each channel we can have four types (sizes of meshs):
 
@@ -151,6 +217,9 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
   size_t nch1=mp->nch1, nch2=mp->nch2, *ts0=mp->ts0, *ts1=mp->ts1;
   size_t *types=mp->types, *start=mp->start, *imgindex=mp->imgindex;
 
+  /* Initialize the maximum number of rows and columns: */
+  mp->maxs1=mp->maxs0=0;
+
   /* Main meshs (type 0) in each channel. */
   if(gs0>1 && gs1>1)
     {
@@ -158,6 +227,8 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
       ts1[typeind]=ts0[typeind]=meshsize;
       lasti = lasts0==meshsize ? gs0 : gs0-1;
       lastj = lasts1==meshsize ? gs1 : gs1-1;
+      if(ts0[typeind]>mp->maxs0) mp->maxs0=ts0[typeind];
+      if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)   /* Don't forget that C and FITS */
 	for(chj=0;chj<nch1;++chj) /* axises have different order. */
@@ -184,6 +255,8 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
       ts0[typeind] = lasts0;
       ts1[typeind] = meshsize;
       lastj = lasts1==meshsize ? gs1 : gs1-1;
+      if(ts0[typeind]>mp->maxs0) mp->maxs0=ts0[typeind];
+      if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)
 	for(chj=0;chj<nch1;++chj)
@@ -209,6 +282,8 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
       ts0[typeind] = meshsize;
       ts1[typeind] = lasts1;
       lasti = lasts0==meshsize ? gs0 : gs0-1;
+      if(ts0[typeind]>mp->maxs0) mp->maxs0=ts0[typeind];
+      if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)
 	for(chj=0;chj<nch1;++chj)
@@ -236,6 +311,8 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
       typeind=numtypes++;
       ts0[typeind] = lasts0;
       ts1[typeind] = lasts1;
+      if(ts0[typeind]>mp->maxs0) mp->maxs0=ts0[typeind];
+      if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)
 	for(chj=0;chj<nch1;++chj)
@@ -262,24 +339,6 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/********************      Outside functions      ********************/
-/*********************************************************************/
 /* In the explanation below, all the parameters named are from the
    `struct meshparams` of `mesh.h`.
 
@@ -302,7 +361,16 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
 
    Each mesh is treated independently in its thread, but when
    interpolation over the meshes is desired, only meshes in each
-   channel should be interpolated over.*/
+   channel should be interpolated over.
+
+   charray:
+   -------
+   Or grid-array. It used for operations on the mesh grid, where one
+   value is to be assigned for each mesh. It has one element for
+   each mesh in the image.  Each channel has its own part of this
+   larger array. The respective parts have gs0*gs1 elements. There
+   are `nch' parts. in total.
+*/
 void
 makemesh(struct meshparams *mp)
 {
@@ -354,6 +422,7 @@ makemesh(struct meshparams *mp)
 
   /* Allocate the arrays to keep all the mesh starting points and
      types. Irrespective of which channel they lie in. */
+  mp->charray1=mp->charray2=NULL;
   errno=0; mp->start=malloc(mp->nmeshi*sizeof *mp->start);
   if(mp->start==NULL) error(EXIT_FAILURE, errno, "Mesh starting points");
   errno=0; mp->types=malloc(mp->nmeshi*sizeof *mp->types);
@@ -380,5 +449,198 @@ freemesh(struct meshparams *mp)
   free(mp->start);
   free(mp->types);
   free(mp->chindex);
+  free(mp->charray1);
+  free(mp->charray2);
   free(mp->imgindex);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********************       Mesh operations       ********************/
+/*********************************************************************/
+void *
+fillmeshonthreads(void *inparam)
+{
+  struct fillmeshparams *fcp=(struct fillmeshparams *)inparam;
+  struct meshparams *mp=fcp->mp;
+
+  size_t modeindex;
+  float sigcliptolerance=mp->sigcliptolerance;
+  float *f, *mesh, *img, *imgend, *inimg=mp->img;
+  size_t s0, s1, ind, row, num, start, is1=mp->s1;
+  size_t i, *indexs=&mp->indexs[fcp->id*mp->thrdcols];
+  float ave, med, std, sigclipmultip=mp->sigclipmultip;
+  float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
+
+
+  /* Allocate the array that will keep this mesh's pixels
+     contiguously. In fillmeshinfo the maximum s0 and s1 sizes of the
+     arrays were stored so we could allocate one array for all the
+     meshes irrespective of their type. */
+  errno=0;
+  mesh=fcp->alltypes=malloc(mp->maxs0*mp->maxs1*sizeof *fcp->alltypes);
+  if(mesh==NULL)
+    error(EXIT_FAILURE, errno, "Unable to allocate %lu bytes for"
+          "fcp->alltypes of thread %lu in allocatetypearrays of mesh.c.",
+          mp->maxs0*mp->maxs1*sizeof *fcp->alltypes, fcp->id);
+
+
+  /* Start this thread's work: */
+  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+    {
+      /* Prepare the values: */
+      f=mesh;
+      num=row=0;
+      ind=indexs[i];
+      start=mp->start[ind];
+      s0=mp->ts0[mp->types[ind]];
+      s1=mp->ts1[mp->types[ind]];
+
+      /* Copy all the non-NaN pixels images pixels of this mesh into
+         the mesh array. Note that currently, the spatial positioning
+         of the pixels is irrelevant, so we only keep those that are
+         non-NaN.*/
+      do
+        {
+          imgend=(img = inimg + start + row++ * is1 ) + s1;
+          do
+            if(!isnan(*img))
+            {
+              ++num;
+              *f++ = *img;
+            }
+          while(++img<imgend);
+        }
+      while(row<s0);
+
+      /* Do the desired operation on the mesh: */
+      qsort(mesh, num, sizeof *mesh, floatincreasing);
+      if(modeindexinsorted(mesh, num, &modeindex, mirrordist, -1)
+         && (float)modeindex/(float)num>minmodeq )
+        {
+          switch(fcp->operationid)
+            {
+
+            case MODEEQMED_AVESTD: /* Average and standard devaition. */
+              if(sigmaclip_converge(mesh, 1, num, sigclipmultip,
+                                    sigcliptolerance, &ave, &med, &std))
+                {mp->charray1[ind]=ave; mp->charray2[ind]=std;}
+              else
+                {mp->charray1[ind]=NAN; mp->charray2[ind]=NAN;}
+              break;
+
+            case MODEEQMED_QUANT: /* Quantile value.                 */
+              mp->charray1[ind]=mesh[indexfromquantile(num, fcp->value)];
+              break;
+
+            default:
+              error(EXIT_FAILURE, 0, "A bug! Please contact us at "
+                    PACKAGE_BUGREPORT" so we can correct this issue. The "
+                    "value to fcp->operationid is not recognized in "
+                    "fillmeshonthreads (mesh.c).");
+            }
+        }
+      else
+        {
+          mp->charray1[ind]=NAN;
+          if(fcp->operationid==MODEEQMED_AVESTD)
+            mp->charray2[ind]=NAN;
+        }
+
+    }
+
+  /* Free alltype and if multiple threads were used, wait until all
+     other threads finish. */
+  free(fcp->alltypes);
+  if(mp->numthreads>1)
+    pthread_barrier_wait(&mp->b);
+  return NULL;
+}
+
+
+
+
+
+void
+fillmesh(struct meshparams *mp, int operationid, float value)
+{
+  int err;
+  size_t i, nb;
+  pthread_t t; /* We don't use the thread id, so all are saved here. */
+  pthread_attr_t attr;
+  struct fillmeshparams *fcp;
+  size_t numthreads=mp->numthreads;
+
+  /* Allocate the arrays to keep the thread and parameters for each
+     thread. */
+  errno=0; fcp=malloc(numthreads*sizeof *fcp);
+  if(fcp==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for fcp",
+          numthreads*sizeof *fcp);
+
+  /* Allocate the array to keep the values for each  */
+  errno=0; mp->charray1=malloc(mp->nmeshi*sizeof *mp->charray1);
+  if(mp->charray1==NULL) error(EXIT_FAILURE, errno, "mp->charray1");
+  if(operationid==MODEEQMED_AVESTD)
+    {
+      errno=0; mp->charray2=malloc(mp->nmeshi*sizeof *mp->charray2);
+      if(mp->charray2==NULL) error(EXIT_FAILURE, errno, "mp->charray2");
+    }
+
+  /* Spin off the threads: */
+  if(numthreads==1)
+    {
+      fcp[0].id=0;
+      fcp[0].mp=mp;
+      fcp[0].value=value;
+      fcp[0].operationid=operationid;
+      fillmeshonthreads(&fcp[0]);
+    }
+  else
+    {
+      /* Initialize the attributes. Note that this running thread
+	 (that spinns off the nt threads) is also a thread, so the
+	 number the barrier should be one more than the number of
+	 threads spinned off. */
+      if(mp->nmeshi<numthreads) nb=mp->nmeshi+1;
+      else                      nb=numthreads+1;
+      attrbarrierinit(&attr, &mp->b, nb);
+
+      /* Spin off the threads: */
+      for(i=0;i<numthreads;++i)
+	if(mp->indexs[i*mp->thrdcols]!=NONTHRDINDEX)
+	  {
+            fcp[i].id=i;
+	    fcp[i].mp=mp;
+            fcp[i].value=value;
+            fcp[i].operationid=operationid;
+	    err=pthread_create(&t, &attr, fillmeshonthreads, &fcp[i]);
+	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	  }
+
+      /* Wait for all threads to finish and free the spaces. */
+      pthread_barrier_wait(&mp->b);
+      pthread_attr_destroy(&attr);
+      pthread_barrier_destroy(&mp->b);
+    }
+
+  free(fcp);
 }

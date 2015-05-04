@@ -123,4 +123,54 @@ floatavestdmaskbyt0inregionsclip(float *in, unsigned char *byt,
 				 size_t s0, size_t s1, size_t is1,
 				 size_t numback, float *ave, float *std);
 
+
+
+
+
+/****************************************************************
+ ********     Histogram and Cumulative Frequency Plot     *******
+ ****************************************************************/
+void
+setbins(float *sorted, size_t size, size_t numbins, float min,
+	float max, int binonzero, float quant, float **obins);
+
+void
+histogram(float *sorted, size_t size, float *bins, size_t numbins,
+	  int normhist, int maxhistone);
+
+void
+cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
+	     int normcfp);
+
+void
+savehist(float *sorted, size_t size, size_t numbins,
+	 char *filename, char *histname, size_t id);
+
+
+
+
+
+/****************************************************************
+ *****************         Quantiles         ********************
+ ****************************************************************/
+size_t
+indexfromquantile(size_t size, float quant);
+
+
+
+
+
+/****************************************************************
+ *****************        Sigma clip         ********************
+ ****************************************************************/
+int
+sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
+		   float sigma_multiple, float accuracy,
+		   float *outave, float *outmed, float *outstd);
+
+int
+sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
+		     float sigma_multiple, size_t numtimes,
+		     float *outave, float *outmed, float *outstd);
+
 #endif

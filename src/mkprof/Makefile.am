@@ -36,7 +36,7 @@ oneprofile.c oneprofile.h profiles.c profiles.h cite.h
 
 astmkprof_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
 -lfitsarrayvv -ltxtarrayvv -lcheckset -llinkedlist -ltiming		\
--lastrthreads -lbox -lstatistics -larraymanip
+-lastrthreads -lbox -lstatistics -larraymanip -lforqsort
 
 
 

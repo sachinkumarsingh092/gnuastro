@@ -70,10 +70,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c d e f g i j l p r t u v w x y z
-   A B C E F G I J O Q R T U W X Y Z
+   c e f g i j l p r v w x y z
+   A B C E F G I J O R T U W X Y Z
 
-   Number keys used: <=500
+   Number keys used: <=502
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -177,9 +177,67 @@ static struct argp_option options[] =
       500,
       0,
       0,
-      "View the mesh grid on the input image.",
+      "Store mesh IDs in `_mesh.fits' file.",
       3
     },
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Statistics:",
+      4
+    },
+    {
+      "mirrordist",
+      'd',
+      "FLT",
+      0,
+      "Distance beyond mirror point. Multiple of std.",
+      4
+    },
+    {
+      "minmodeq",
+      'Q',
+      "FLT",
+      0,
+      "Minimum acceptable quantile for the mode.",
+      4
+    },
+    {
+      "sigclipmultip",
+      'u',
+      "FLT",
+      0,
+      "Multiple of standard deviation in sigma-clipping.",
+      4
+    },
+    {
+      "sigcliptolerance",
+      't',
+      "FLT",
+      0,
+      "Minimum acceptable quantile for the mode.",
+      4
+    },
+    {
+      "checkinterpolation",
+      501,
+      0,
+      0,
+      "Store mesh interpolation in `_interp.fits' file.",
+      4
+    },
+    {
+      "checksmoothing",
+      502,
+      0,
+      0,
+      "Store mesh smoothing in `_smooth.fits' file.",
+      4
+    },
+
 
 
     {
@@ -272,6 +330,33 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 500:
       p->meshname="a";  /* Just a placeholder! It will be corrected later */
+      break;
+
+
+    /* Statistics */
+    case 'd':
+      floatl0(arg, &p->mp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      p->up.mirrordistset=1;
+      break;
+    case 'Q':
+      floatl0s1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      p->up.minmodeqset=1;
+      break;
+    case 'u':
+      floatl0(arg, &p->mp.sigclipmultip, "sigclipmultip", key, SPACK,
+              NULL, 0);
+      p->up.sigclipmultipset=1;
+      break;
+    case 't':
+      floatl0s1(arg, &p->mp.sigcliptolerance, "sigcliptolerance", key, SPACK,
+              NULL, 0);
+      p->up.sigcliptoleranceset=1;
+      break;
+    case 501:
+      p->interpname="a";
+      break;
+    case 502:
+      p->smoothname="a";
       break;
 
 

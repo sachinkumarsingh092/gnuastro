@@ -308,7 +308,7 @@ imgcrop(struct imgcropparams *p)
 	 number the barrier should be one more than the number of
 	 threads spinned off. */
       if(p->cs0<nt) nb=p->cs0+1;
-      else nb=nt+1;
+      else          nb=nt+1;
       attrbarrierinit(&attr, &b, nb);
 
       /* Spin off the threads: */

@@ -35,16 +35,19 @@ void
 subtractsky(struct subtractskyparams *p)
 {
   long *meshindexs;
+  float *sky, *std;
   struct timeval t1;
   struct meshparams *mp=&p->mp;
 
+
   /* Prepare the mesh array. */
   gettimeofday(&t1, NULL);
+  p->mp.img=p->img;
   p->mp.numthreads=p->cp.numthreads;
   makemesh(mp);
   if(p->meshname)
     {
-      checkmesh(p->img, mp, &meshindexs);
+      checkmeshid(mp, &meshindexs);
       arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->img,
                      mp->s0, mp->s1, p->numblank, p->wcs, NULL,
                      SPACK_STRING);
@@ -54,5 +57,27 @@ subtractsky(struct subtractskyparams *p)
       free(meshindexs);
     }
   if(p->cp.verb) reporttiming(&t1, "Mesh grid ready", 1);
+
+
+
+  /* Find the sky value on each mesh: */
+  fillmesh(mp, MODEEQMED_AVESTD, 0);
+
+
+  /* Interpolate to fill the blank meshes: */
+  if(p->interpname)
+    {
+      checkcharray(mp, MODEEQMED_AVESTD, &sky, &std);
+      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky,
+                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
+                     SPACK_STRING);
+      arraytofitsimg(p->interpname, "STD", FLOAT_IMG, std,
+                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
+                     SPACK_STRING);
+      free(sky);
+      free(std);
+    }
+
+  /* Subtract the sky value */
 
 }
