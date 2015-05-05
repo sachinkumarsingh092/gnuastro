@@ -33,6 +33,15 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+#define PRINTFLT "%.6f\n"
+#define PRINTINT "%.0f\n"
+#define STRVAL   "   -- %-45s%s\n"
+#define FNAMEVAL "   -- %-45s%g\n"
+#define SNAMEVAL "   -- %-45s%lu\n"
+#define ASCIIHISTNUMBINS    60
+#define ASCIIHISTHEIGHT     10
+#define HISTSTRING     "Histogram"
+#define CFPSTRING      "Cumulative Frequency Plot"
 
 
 
@@ -70,16 +79,19 @@ struct imgstatparams
 
   /* Input: */
   float               *img;  /* Input image array.                    */
+  float            *sorted;  /* Sorted input data.                    */
   size_t              size;  /* Number of non-blank data elements.    */
   int            ignoremin;  /* Ignore all data with minimum value.   */
 
   /* Output: */
+  int            asciihist;  /* ==1: print an ASCII histogram.        */
+  int            binonzero;  /* Shift histogram, one bin starts at 0. */
+  int             lowerbin;  /* Interval lower limit as column 1.     */
 
   /* Histogram: */
   char           *histname;  /* Histogram file name.                  */
   int             normhist;  /* ==1: Normalize the histogram.         */
   int           maxhistone;  /* Scale such that max bin is one.       */
-  int            binonzero;  /* Shift histogram, one bin starts at 0. */
   size_t       histnumbins;  /* Number of bins in the histogram.      */
   float            histmin;  /* Minimum value to use in histogram.    */
   float            histmax;  /* Maximum value to use in histogram.    */

@@ -72,4 +72,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
     "   adsurl = {XXXXXXXXXXXXXXXXXXXXXX},\n"				\
     "}"									\
 
+/* This can be used in the end of error messages related to option
+   values. */
+#define HOWTOCHECKVALUES                                                \
+  " You can check all the input values with the `--printparams' "       \
+  "(-P) option."
+
 #endif

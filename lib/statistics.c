@@ -680,7 +680,8 @@ floatavestdmaskbyt0inregion(float *in, unsigned char *byt,
 /****************************************************************
  ********     Histogram and Cumulative Frequency Plot     *******
  ****************************************************************/
-/* Set the bin lower values for all the bins: */
+/* Set the bin lower values for all the bins. If the minimum and
+   maximum are equal, then use the quantile. */
 #define CHECKBINS 0
 void
 setbins(float *sorted, size_t size, size_t numbins, float min,
@@ -789,7 +790,6 @@ histogram(float *sorted, size_t size, float *bins, size_t numbins,
 
 
 
-#define CHECKCFP 0
 void
 cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
 	     int normcfp)
@@ -804,7 +804,7 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
       while (sorted[i]>=bins[(cfprow+1)*2])
 	{
 	  if(numinds>0)
-	    prevind=bins[cfprow*2+1]/=numinds;
+	    prevind=bins[cfprow*2+1]/=numinds; /* Divide by num indexs */
 	  else
 	    bins[cfprow*2+1]=prevind;
 	  numinds=0;
@@ -812,7 +812,7 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
 	    break;
 	}
       if(cfprow>=numbins) break;
-      bins[cfprow*2+1]+=i;	/* Sum of indexs */
+      bins[cfprow*2+1]+=i;	/* Sum of indexs (see above for average) */
       ++numinds;
     }
 
@@ -821,10 +821,10 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
     for(i=0;i<numbins;++i)
       bins[i*2+1]/=size;
 
-  /* In case you want to see the CFP: */
-  if(CHECKCFP)
-    for(i=0;i<numbins;++i)
-      printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+  /* In case you want to see the CFP:
+  for(i=0;i<numbins;++i)
+    printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+  */
 }
 
 

@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c d e f j k l m  s t v w y z
-   A B C E F G I J L O R T W X Y Z
+   c d e f j k m s t v w y z
+   B C E F G I J L O R T W X Y Z
 
-   Number keys used: <=508
+   Number keys used: <=509
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -121,6 +121,30 @@ static struct argp_option options[] =
       "Output:",
       2
     },
+    {
+      "lowerbin",
+      'l',
+      0,
+      0,
+      "Interval lower limit for column 1.",
+      2
+    },
+    {
+      "binonzero",
+      503,
+      0,
+      0,
+      "Shift bins so one bin starts on zero.",
+      2
+    },
+    {
+      "noasciihist",
+      'A',
+      0,
+      0,
+      "Do not show an ASCII histogram of the data.",
+      2
+    },
 
 
 
@@ -151,14 +175,6 @@ static struct argp_option options[] =
       0,
       0,
       "Scale such that the maximum bin has value of one.",
-      3
-    },
-    {
-      "binonzero",
-      503,
-      0,
-      0,
-      "Shift histogram so one bin starts on zero.",
       3
     },
     {
@@ -348,7 +364,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
   switch(key)
     {
 
-
     /* Input: */
     case 'M':
       p->up.maskname=arg;
@@ -365,8 +380,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->ignoremin=1;
       break;
 
-
     /* Output: */
+    case 'l':
+      p->lowerbin=1;
+      break;
+    case 503:
+      p->binonzero=1;
+      break;
+    case 'A':
+      p->asciihist=0;
+      break;
 
     /* Histogram */
     case 500:
@@ -377,9 +400,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 502:
       p->maxhistone=1;
-      break;
-    case 503:
-      p->binonzero=1;
       break;
     case 'n':
       sizetlzero(arg, &p->histnumbins, "histnumbins", key, SPACK, NULL, 0);

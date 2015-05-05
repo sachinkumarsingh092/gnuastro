@@ -6891,6 +6891,8 @@ One line examples:
 
 @example
 $ astimgstat input.fits
+$ astimgstat animage.fits --maskmin --nohist
+$ astimgstat anotherimage.fits --mask=detectionlabels.fits --mhdu=1
 @end example
 
 @noindent
@@ -6912,7 +6914,41 @@ frequency plots. If no value is given for these options, then the full
 data range will be used. Such that the minimum image value will be set
 for the minimums and the maximum image value will be used for the
 maximum. The Mask name and HDU are also not mandatory in the
-configuration file. The basic input options are:
+configuration file.
+
+@cindex ASCII plot
+By default, in verbose mode @footnote{If the @option{-q} option is not
+called then all programs will operate in verbose mode, see @ref{Common
+options}.}, along with a short summary of the basic data statistics, a
+simple ASCII histogram will also be printed. This can be useful for a
+very quick and general view of the distribution. An example verbose
+output of ImageStatistics can be seen below:
+
+@example
+ImageStatistics started on AAA BBB  CC DD:EE:FF GGGG
+  - Input read: InputImage.fits (hdu: 0)
+   -- Number of points                             984884
+   -- Minimum                                      -461.504
+   -- Maximum                                      476.17
+   -- Sum                                          12489.2
+   -- Mean                                         0.0126808
+   -- Standard deviation                           100.014
+   -- Median                                       0.0560763
+   -- Mode                                         0.0911971
+   -- ASCII histogram in the range: -461.504395 - 476.169617:
+    |                            ***
+    |                          *******
+    |                         *********
+    |                        ***********
+    |                       *************
+    |                     *****************
+    |                    *******************
+    |                   *********************
+    |                 *************************
+    |              *******************************
+    |************************************************************
+    |------------------------------------------------------------
+@end example
 
 @table @option
 
@@ -6932,6 +6968,23 @@ will be used.
 Ignore all data elements that have a value equal to the minimum value
 in the image. In practice this is like masking those pixels, their
 values will not be used.
+
+@item -l
+@itemx --lowerbin
+Set the first column of the outputs of the histogram and cumulative
+frequency plot to the lower bin value. By default the first column
+will be the center of the interval.
+
+@item --binonzero
+Make sure that one bin starts from zero. In practice, this will shift
+the histogam such that one bin's lower interval is zero. It is useful
+if the range includes negative values, but for this histogram or
+cumulative frequency plot you only want positive values. If zero is in
+the middle of one bin, then the viewers of the plot(s) will think
+negative data is also present.
+
+@item --noasciihist
+Do not show an ASCII plot on the command line.
 
 @end table
 
@@ -6956,13 +7009,6 @@ the histogram numbers are important in showing along with the
 cumulative frequency plot, you can use @option{--maxcfpeqmaxhist}, see
 below.
 
-@item --binonzero
-Make sure that one bin starts from zero. In practice, this will shift
-the histogam such that one bin's lower interval is zero. It is useful
-if the range includes negative values, but for this histogram you only
-want positive values. If zero is in the middle of one bin, then the
-viewers of the histogram will think negative data is also present.
-
 @item -n
 @itemx --histnumbins
 (@option{=INT}) The number of bins in the histogram. Note that in
@@ -6971,24 +7017,31 @@ text file.
 
 @item -i
 @itemx --histmin
-(@option{=FLT}) The minimum value to use in the histogram.
+(@option{=FLT}) The minimum value to use in the histogram. If
+@option{--histquant} is given, then any value given @option{--histmin}
+or @option{--histmax} is ignored.
 
 @item -x
 @itemx --histmax
-(@option{=FLT}) The maximum value to use in the histogram.
+(@option{=FLT}) The maximum value to use in the histogram. Similar to
+@option{--histmin}.
 
 @item -Q
 @itemx --histquant
 (@option{=FLT}) Set the range of the histogram based on the image
 quantile. So @option{--histquant=0.05} is given, all the data from the
 0.05 quantile to 0.95 quantile will be used in the histogram. This is
-useful when there is a small number of outliers in the image.
+useful when there is a small number of outliers in the image. Note
+that if this option is given, any (possible) value given to
+@option{--histmin} or @option{--histmax} are ignored.
 
 @end table
 
 @noindent
 @strong{Cumulative Frequency Plot:} The cumulative frequency plot will
-be stored in a text file ending with @file{_cfp.txt}.
+be stored in a text file ending with @file{_cfp.txt}. To be more
+realistic, the average of the indexs in each interval is used as the
+second column, see @ref{Histogram and Cumulative Freqency Plot}.
 
 @table @option
 
@@ -7008,8 +7061,8 @@ the histogram numbers are important.
 @item --cfpsimhist
 Set the range of the cumulative frequency plot and the number of
 points to store to the same range as the histogram. If the two are to
-be plotted together, this is essential. The first axis of the two will
-become identical.
+be plotted together, this is very useful, since the first axis
+(column) of the two will become identical.
 
 @item -p
 @itemx --cfpnum
@@ -7020,12 +7073,13 @@ values.
 @item -a
 @itemx --cfpmin
 (@option{=FLT}) The minimum value to use for the cumulative flux
-range.
+range. If @option{--cfpquant} is given, then any value given
+@option{--cfpmin} or @option{--cfpmax} is ignored.
 
 @item -n
 @itemx --cfpmax
 (@option{=FLT}) The maximum value to use for the cumulative flux
-range.
+range. Similar to @option{--cfpmin}.
 
 @item -U
 @itemx --cfpquant

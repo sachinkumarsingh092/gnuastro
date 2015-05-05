@@ -32,12 +32,14 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "timing.h"	/* Includes time.h and sys/time.h   */
 #include "checkset.h"
+#include "forqsort.h"
 #include "arraymanip.h"
 #include "statistics.h"
 #include "txtarrayvv.h"
 #include "commonargs.h"
 #include "configfiles.h"
 #include "fitsarrayvv.h"
+#include "fixedstringmacros.h"
 
 #include "main.h"
 
@@ -401,6 +403,30 @@ sanitycheck(struct imgstatparams *p)
       automaticoutput(basename, "_cfp.txt", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->cfpname);
     }
+
+
+  /* If the cumulative frequency plot parameters are to depend on the
+     histogram, then make sure that the histogram will be created.*/
+  if(p->cfpname && p->histname)
+    {
+      if(p->cfpsimhist)
+	error(EXIT_FAILURE, 0, "Without a histogram, `--cfpsimhist` is "
+              "meaningless.");
+      if (p->maxcfpeqmaxhist)
+	error(EXIT_FAILURE, 0, "Without a histogram, `--maxcfpeqmaxhist` "
+		"is meaningless.\n");
+    }
+
+  /* Check if `--maxcfpeqmaxhist` and `--normcfp` are not called
+     together: */
+  if(p->normcfp && p->maxcfpeqmaxhist)
+    error(EXIT_FAILURE, 0, "`--normcfp` and `--maxcfpeqmaxhist` "
+          "cannot be called together.\n");
+
+  /* Check if `normhist` and `maxhistone` are not called together: */
+  if(p->normhist && p->maxhistone)
+    error(EXIT_FAILURE, 0, "`--normhist` and `--histnumbins` cannot be "
+	      "called together.\n");
 }
 
 
@@ -430,9 +456,10 @@ preparearrays(struct imgstatparams *p)
   float min;
   int bitpix;
   size_t numblank, s0, s1;
+  struct uiparams *up=&p->up;
 
   /* Read the input and mask arrays: */
-  filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
+  filetofloat(up->inputname, up->maskname, p->cp.hdu, up->mhdu,
               &p->img, &bitpix, &numblank, &s0, &s1);
   p->size=s0*s1;
 
@@ -445,6 +472,110 @@ preparearrays(struct imgstatparams *p)
 
   /* Move all the non-nan elements to the start of the array: */
   nonans(p->img, &p->size);
+
+  /* Make a sorted array for most of the jobs: */
+  floatcopy(p->img, p->size, &p->sorted);
+  qsort(p->sorted, p->size, sizeof *p->sorted, floatincreasing);
+
+  /* Check the given range: */
+  if(p->histname)
+    {
+      if(up->histquantset)
+        {
+          if(p->histquant>=0.5)
+            error(EXIT_FAILURE, 0, "The value to `--histquant' (-Q) must "
+                  "Be smaller than 0.5, because it sets the lower limit of "
+                  "the value range. The higher limit will be 1-Q.");
+          p->histmin=p->sorted[indexfromquantile(p->size, p->histquant)];
+          p->histmax=p->sorted[indexfromquantile(p->size, 1 - p->histquant)];
+        }
+      else
+        {
+          switch(up->histminset+up->histmaxset)
+            {
+            case 0:
+              p->histmin=p->sorted[0];
+              p->histmax=p->sorted[p->size-1];
+              break;
+            case 1:
+              error(EXIT_FAILURE, 0, "The options `--histmin' (-i) and "
+                    "`--histmax' (-x) should both be specified. You have "
+                    "only given the %s."HOWTOCHECKVALUES,
+                    up->histminset==1 ? "former" : "latter");
+              break;
+            case 2:
+              if(p->histmin>=p->histmax)
+                error(EXIT_FAILURE, 0, "The value to `--histmin' (-i) (%f) "
+                      "is larger or equal to that of `--histmax' (-x) (%f)."
+                      HOWTOCHECKVALUES, p->histmin, p->histmax);
+              if(p->histmin>p->sorted[p->size-1] || p->histmax<p->sorted[0])
+                error(EXIT_FAILURE, 0, "The range of data is %.5f to %.5f. "
+                      "However, you have set `--histmin' (-i) and "
+                      "`--histmax' (-x) to %.5f and %.5f respectively. "
+                      "They do not overlap!"HOWTOCHECKVALUES,
+                      p->sorted[0], p->sorted[p->size-1], p->histmin,
+                      p->histmax);
+              break;
+            default:
+              error(EXIT_FAILURE, 0, "A bug! Please contact us at "
+                    PACKAGE_BUGREPORT" So we can solve the problem. the "
+                    "value of up->histminset+up->histmaxset is not 0, 1 or "
+                    "2.");
+            }
+        }
+    }
+  else                          /* For the ascii histogram. */
+    {
+      p->histmin=p->sorted[0];
+      p->histmax=p->sorted[p->size-1];
+    }
+
+  if(p->cfpname && p->cfpsimhist==0)
+    {
+      if(up->cfpquantset)
+        {
+          if(p->cfpquant>=0.5)
+            error(EXIT_FAILURE, 0, "The value to `--cfpquant' (-U) must "
+                  "Be smaller than 0.5, because it sets the lower limit of "
+                  "the value range. The higher limit will be 1-U.");
+          p->cfpmin=p->sorted[indexfromquantile(p->size, p->cfpquant)];
+          p->cfpmax=p->sorted[indexfromquantile(p->size, 1 - p->cfpquant)];
+        }
+      else
+        {
+          switch(up->cfpminset+up->cfpmaxset)
+            {
+            case 0:
+              p->cfpmin=p->sorted[0];
+              p->cfpmax=p->sorted[p->size-1];
+              break;
+            case 1:
+              error(EXIT_FAILURE, 0, "The options `--cfpmin' (-a) and "
+                    "`--cfpmax' (-b) should both be specified. You have "
+                    "only given the %s."HOWTOCHECKVALUES,
+                    up->cfpminset==1 ? "former" : "latter");
+              break;
+            case 2:
+              if(p->cfpmin>p->cfpmax)
+                error(EXIT_FAILURE, 0, "The value to `--cfpmin' (-a) (%.f) "
+                      "is larger than that of `--cfpmax' (-b) (%f)."
+                      HOWTOCHECKVALUES, p->cfpmin, p->cfpmax);
+              if(p->cfpmin>p->sorted[p->size-1] || p->cfpmax<p->sorted[0])
+                error(EXIT_FAILURE, 0, "The range of data is %.5f to %.5f. "
+                      "However, you have set `--cfpmin' (-a) and "
+                      "`--cfpmax' (-b) to %.5f and %.5f respectively. "
+                      "They do not overlap!"HOWTOCHECKVALUES,
+                      p->sorted[0], p->sorted[p->size-1], p->cfpmin,
+                      p->cfpmax);
+              break;
+            default:
+              error(EXIT_FAILURE, 0, "A bug! Please contact us at "
+                    PACKAGE_BUGREPORT" So we can solve the problem. the "
+                    "value of up->cfpminset+up->cfpmaxset is not 0, 1 or "
+                    "2.");
+            }
+        }
+    }
 }
 
 
@@ -480,7 +611,8 @@ setparams(int argc, char *argv[], struct imgstatparams *p)
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
 
-  p->sigclip        =1;
+  p->asciihist      = 1;
+  p->sigclip        = 1;
   p->histname=p->cfpname="a";   /* Will be set later, just a sign that */
                                 /* they should be output.              */
   /* Read the arguments. */
@@ -541,6 +673,7 @@ freeandreport(struct imgstatparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->img);
+  free(p->sorted);
   free(p->cp.hdu);
   free(p->cfpname);
   free(p->histname);

@@ -36,7 +36,7 @@ astimgstat_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 imgstat.c imgstat.h
 
 astimgstat_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
--lfitsarrayvv -lcheckset -ltiming -llinkedlist -lstatistics		\
+-lfitsarrayvv -lcheckset -ltiming -llinkedlist -lmode -lstatistics	\
 -larraymanip -lforqsort
 
 
