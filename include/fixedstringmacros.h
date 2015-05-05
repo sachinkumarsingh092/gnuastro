@@ -45,15 +45,12 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "full "PACKAGE_NAME" manual.\n"                                       \
   "     info "SPACK"\n"                                                 \
   "     info "SPACK_NAME"\n"						\
-  "     info "PACKAGE_TARNAME"\n"                                       \
-  "If you couldn't find your answer in the manual, you can contact "    \
-  "the help-gnuastro mailing list at the email address below for "      \
+  "     info "PACKAGE_TARNAME"\n\n"                                     \
+  "If you couldn't find your answer in the manual, you can get "        \
   "direct help from experienced Gnuastro users and developers. "        \
-  "Just be sure to check the archives first. Your question might "      \
-  "have already been asked and answered.\n"                             \
-  "     help-gnuastro@gnu.org\n"                                        \
-  "     https://lists.gnu.org/mailman/listinfo/help-gnuastro\n"         \
-  "\n"SPACK_NAME" options:"                                             \
+  "For more information, please run:\n"                                 \
+  "     info help-gnuastro\n\n"                                         \
+  SPACK_NAME" options:"                                                 \
 
 
 

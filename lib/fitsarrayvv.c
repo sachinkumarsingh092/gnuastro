@@ -1306,3 +1306,107 @@ atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
   fits_close_file(fptr, &status);
   fitsioerror(status, NULL);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********          Check prepare file            ************/
+/**************************************************************/
+void
+setmaskname(char *inputname, char **maskname, char *inhdu, char *mhdu)
+{
+  if(*maskname)
+    {
+      if(strcmp(inputname, *maskname)==0
+         && strcmp(inhdu, mhdu)==0)
+        error(EXIT_FAILURE, 0, "The specified mask name and input image "
+              "name are the same (%s). The input image hdu name and mask "
+              "hdu are also identical: (%s)! An image cannot be its own "
+              "mask.", inputname, inhdu);
+    }
+  else if(mhdu)
+    {
+      if(strcmp(inhdu, mhdu))
+        *maskname=inputname;
+    }
+  else *maskname=NULL;
+}
+
+
+
+
+
+/* The user has specified an input file and a mask file. In the
+   processing, all masked pixels will be converted to NaN pixels in
+   the input image so we only have to deal with one array. Also since
+   all processing is done on floating point arrays, the input is
+   converted to floating point, irrespective of its input type. The
+   original input bitpix will be stored so if you want to, you can
+   return it back to the input type if you please. */
+void
+filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
+            float **img, int *inbitpix, size_t *numblank, size_t *ins0,
+            size_t *ins1)
+{
+  void *array;
+  int maskbitpix;
+  size_t masknumblank, s0, s1;
+  float *mask, *f, *ff, *fp;
+
+  /* Read the input array and convert it to float. */
+  *numblank=fitsimgtoarray(inputname, inhdu, inbitpix,
+                             &array, ins0, ins1);
+  if(*inbitpix==FLOAT_IMG)
+    *img=array;
+  else
+    {
+      changetype(array, *inbitpix, *ins0 * *ins1, *numblank,
+                 (void **)img, FLOAT_IMG);
+      free(array);
+    }
+
+  /* If a mask was specified, read it as a float image, then set all
+     the corresponding pixels of the input image to NaN. */
+  if(maskname)
+    {
+      masknumblank=fitsimgtoarray(maskname, mhdu, &maskbitpix,
+                                  &array, &s0, &s1);
+
+      if(s0!=*ins0 || s1!=*ins1)
+        error(EXIT_FAILURE, 0, "The input image %s (hdu: %s) has size: "
+              "%lu x %lu. The mask image %s (hdu: %s) has size %lu x %lu. "
+              "The two images have to have the same size.", inputname,
+              inhdu, *ins1, *ins0, maskname, mhdu, s1, s0);
+
+      if(maskbitpix==FLOAT_IMG)
+        mask=array;
+      else
+        {
+          changetype(array, maskbitpix, *ins0 * *ins1, masknumblank,
+                     (void **)(&mask), FLOAT_IMG);
+          free(array);
+        }
+
+      ff=mask;
+      fp=(f=*img)+s0*s1;
+      do if(*ff++!=0.0f) {*f=NAN; ++(*numblank);} while(++f<fp);
+      free(mask);
+    }
+}

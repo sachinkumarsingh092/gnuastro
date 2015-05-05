@@ -1,6 +1,6 @@
 /*********************************************************************
-Functions to manipulate arrays.
-This is part of GNU Astronomy Utilities (Gnuastro) package.
+ImageStatistics - Get general statistics about the image.
+ImgeStatistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -20,26 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef ARRAYMANIP_H
-#define ARRAYMANIP_H
+#ifndef CITE_H
+#define CITE_H
 
+#define HEADERBIBTEX ""
 
-void
-floatcopy(float *in, size_t size, float **out);
-
-void
-fsetconst(float *in, size_t size, float a);
-
-void
-freplacevalue(float *in, size_t size, float from, float to);
-
-void
-nonans(float *in, size_t *size);
-
-void
-fmultipconst(float *in, size_t size, float a);
-
-void
-fsumconst(float *in, size_t size, float a);
+#define PRINTCITEABORT {						\
+    printf("\nWe hope %s has been useful for your research.\n"		\
+	   "Citations are vital for the continued work on %s.\n"	\
+	   "Thank you for citing it in your research paper.\n"		\
+	   "\nPlease cite as \"%s\":\n\n%s\n\n%s",			\
+	   SPACK_NAME, SPACK_NAME, SPACK_STRING, ASTRUTILSBIBTEX,	\
+	   HEADERBIBTEX);						\
+    exit(EXIT_SUCCESS);							\
+}
 
 #endif

@@ -1,3 +1,12 @@
+2015-05-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/subtractsky/ui.c (preparearrays): Moved the function that
+	reads any input as float and incorporates the mask into it.
+
+	* include/fixedstringmacros.h (MOREHELPINFO): Removed long
+	explanation about help-gnuastro. Instead an info link to the part of
+	the manual that introduces it was included.
+
 2015-05-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* include/fixedstringmacros.h (MOREHELPINFO): Corrected to include

@@ -1,6 +1,6 @@
 /*********************************************************************
-Functions to manipulate arrays.
-This is part of GNU Astronomy Utilities (Gnuastro) package.
+ImageStatistics - Get general statistics about the image.
+ImgeStatistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -20,26 +20,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef ARRAYMANIP_H
-#define ARRAYMANIP_H
-
-
-void
-floatcopy(float *in, size_t size, float **out);
+#ifndef IMCROPUI_H
+#define IMCROPUI_H
 
 void
-fsetconst(float *in, size_t size, float a);
+setparams(int argc, char *argv[], struct imgstatparams *p);
 
 void
-freplacevalue(float *in, size_t size, float from, float to);
-
-void
-nonans(float *in, size_t *size);
-
-void
-fmultipconst(float *in, size_t size, float a);
-
-void
-fsumconst(float *in, size_t size, float a);
+freeandreport(struct imgstatparams *p, struct timeval *t1);
 
 #endif

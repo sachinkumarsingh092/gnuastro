@@ -98,11 +98,11 @@ anylong(char *optarg, long *var, char *lo, char so, char *spack,
 
 void
 sizetelzero(char *optarg, size_t *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
+            char *filename, size_t lineno);
 
 void
 sizetlzero(char *optarg, size_t *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
+           char *filename, size_t lineno);
 
 void
 sizetpodd(char *optarg, size_t *var, char *lo, char so, char* spack,

@@ -201,6 +201,12 @@ AC_ARG_ENABLE([imgcrop],
 	      [AS_IF([test "x$enable_imgcrop" != xno],
                      [enable_imgcrop=yes; ayes=true])],
               [enable_imgcrop=notset])
+AC_ARG_ENABLE([imgstat],
+              [AS_HELP_STRING([--enable-imgstat],
+  	            [Install ImageStatistics and other enabled packages only.])],
+	      [AS_IF([test "x$enable_imgstat" != xno],
+                     [enable_imgstat=yes; ayes=true])],
+              [enable_imgstat=notset])
 AC_ARG_ENABLE([imgwarp],
               [AS_HELP_STRING([--enable-imgwarp],
   	            [Install ImageWarp and other enabled packages only.])],
@@ -244,6 +250,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_convolve = notset], [enable_convolve=no])
        AS_IF([test $enable_header = notset], [enable_header=no])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
+       AS_IF([test $enable_imgstat = notset], [enable_imgstat=no])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=no])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
@@ -254,6 +261,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
        AS_IF([test $enable_header = notset], [enable_header=yes])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
+       AS_IF([test $enable_imgstat = notset], [enable_imgstat=yes])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=yes])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
@@ -270,6 +278,7 @@ AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_HEADER], [test $enable_header = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
+AM_CONDITIONAL([COND_IMGSTAT], [test $enable_imgstat = yes])
 AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
@@ -286,6 +295,7 @@ AC_CONFIG_FILES([Makefile
                  src/header/Makefile
                  src/mknoise/Makefile
 		 src/imgcrop/Makefile
+           	 src/imgstat/Makefile
        		 src/imgwarp/Makefile
                  gnulib/tests/Makefile
                  src/convertt/Makefile

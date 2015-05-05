@@ -37,7 +37,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /*********************************************************************
- **********************    Initialize values    **********************
+ **********************       Copy array        **********************
  *********************************************************************/
 void
 floatcopy(float *in, size_t size, float **out)
@@ -71,7 +71,7 @@ floatcopy(float *in, size_t size, float **out)
 
 
 /*********************************************************************
- **********************    Initialize values    **********************
+ **********************         Values          **********************
  *********************************************************************/
 void
 fsetconst(float *in, size_t size, float a)
@@ -106,6 +106,27 @@ freplacevalue(float *in, size_t size, float from, float to)
     }
 }
 
+
+
+
+
+/* Move all the non-NaN elements in the array to the start of the
+   array so that the non-NaN alements are contiguous. This is useful
+   for cases where you want to sort the data.*/
+void
+nonans(float *in, size_t *size)
+{
+  size_t outsize=0;
+  float *f=in, *fp=in+*size;
+  do
+    if(!isnan(*in))
+      {
+        *f++=*in;
+        ++outsize;
+      }
+  while(++in<fp);
+  *size=outsize;
+}
 
 
 

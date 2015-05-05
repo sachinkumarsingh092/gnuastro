@@ -1,6 +1,6 @@
 /*********************************************************************
-SubtractSky - Find and subtract the sky value from an image.
-SubtractSky is part of GNU Astronomy Utilities (Gnuastro) package.
+ImageStatistics - Get general statistics about the image.
+ImgeStatistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -32,6 +32,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "timing.h"	/* Includes time.h and sys/time.h   */
 #include "checkset.h"
+#include "arraymanip.h"
+#include "statistics.h"
 #include "txtarrayvv.h"
 #include "commonargs.h"
 #include "configfiles.h"
@@ -63,7 +65,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************       Options and parameters    ***************/
 /**************************************************************/
 void
-readconfig(char *filename, struct subtractskyparams *p)
+readconfig(char *filename, struct imgstatparams *p)
 {
   FILE *fp;
   size_t lineno=0, len=200;
@@ -94,6 +96,8 @@ readconfig(char *filename, struct subtractskyparams *p)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
       STARTREADINGLINE;
+
+
 
 
       /* Inputs: */
@@ -128,27 +132,6 @@ readconfig(char *filename, struct subtractskyparams *p)
 	  strcpy(up->mhdu, value);
 	  up->mhduset=1;
 	}
-      else if(strcmp(name, "numnearest")==0)
-	{
-	  if(up->numnearestset) continue;
-          sizetlzero(value, &p->numnearest, name, key, SPACK,
-                     filename, lineno);
-	  up->numnearestset=1;
-	}
-      else if(strcmp(name, "mininterp")==0)
-	{
-	  if(up->mininterpset) continue;
-          sizetlzero(value, &p->mininterp, name, key, SPACK,
-                     filename, lineno);
-	  up->mininterpset=1;
-	}
-      else if(strcmp(name, "kernelwidth")==0)
-	{
-	  if(up->kernelwidthset) continue;
-          sizetpodd(value, &p->kernelwidth, name, key, SPACK,
-                    filename, lineno);
-	  up->kernelwidthset=1;
-	}
 
 
 
@@ -165,65 +148,88 @@ readconfig(char *filename, struct subtractskyparams *p)
 	}
 
 
-      /* Mesh grid: */
-      else if(strcmp(name, "meshsize")==0)
+      /* Histogram: */
+      else if(strcmp(name, "histnumbins")==0)
 	{
-	  if(up->meshsizeset) continue;
-          sizetlzero(value, &p->mp.meshsize, name, key, SPACK,
+	  if(up->histnumbinsset) continue;
+          sizetlzero(value, &p->histnumbins, name, key, SPACK,
                      filename, lineno);
-	  up->meshsizeset=1;
+          up->histnumbinsset=1;
 	}
-      else if(strcmp(name, "nch1")==0)
+      else if(strcmp(name, "histmin")==0)
 	{
-	  if(up->nch1set) continue;
-          sizetlzero(value, &p->mp.nch1, name, key, SPACK,
+	  if(up->histminset) continue;
+          anyfloat(value, &p->histmin, name, key, SPACK,
                      filename, lineno);
-	  up->nch1set=1;
+          up->histminset=1;
 	}
-      else if(strcmp(name, "nch2")==0)
+      else if(strcmp(name, "histmax")==0)
 	{
-	  if(up->nch2set) continue;
-          sizetlzero(value, &p->mp.nch2, name, key, SPACK,
-                     filename, lineno);
-	  up->nch2set=1;
+	  if(up->histmaxset) continue;
+          anyfloat(value, &p->histmax, name, key, SPACK,
+                   filename, lineno);
+          up->histmaxset=1;
 	}
-      else if(strcmp(name, "lastmeshfrac")==0)
+      else if(strcmp(name, "histquant")==0)
 	{
-	  if(up->lastmeshfracset) continue;
-          floatl0s1(value, &p->mp.lastmeshfrac, name, key, SPACK,
+	  if(up->histquantset) continue;
+          floatl0s1(value, &p->histquant, name, key, SPACK,
                     filename, lineno);
-	  up->lastmeshfracset=1;
+          up->histquantset=1;
 	}
 
 
-      /* Statistics: */
-      else if(strcmp(name, "mirrordist")==0)
+      /* Cumulative Frequency Plot: */
+      else if(strcmp(name, "cfpnum")==0)
 	{
-	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mp.mirrordist, name, key, SPACK,
-                  filename, lineno);
-	  up->mirrordistset=1;
+	  if(up->cfpnumset) continue;
+          sizetlzero(value, &p->cfpnum, name, key, SPACK,
+                     filename, lineno);
+          up->cfpnumset=1;
 	}
-      else if(strcmp(name, "minmodeq")==0)
+      else if(strcmp(name, "cfpmin")==0)
 	{
-	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->mp.minmodeq, name, key, SPACK,
-                  filename, lineno);
-	  up->minmodeqset=1;
+	  if(up->cfpminset) continue;
+          anyfloat(value, &p->cfpmin, name, key, SPACK,
+                     filename, lineno);
+          up->cfpminset=1;
 	}
+      else if(strcmp(name, "cfpmax")==0)
+	{
+	  if(up->cfpmaxset) continue;
+          anyfloat(value, &p->cfpmax, name, key, SPACK,
+                     filename, lineno);
+          up->cfpmaxset=1;
+	}
+      else if(strcmp(name, "cfpquant")==0)
+	{
+	  if(up->cfpquantset) continue;
+          floatl0s1(value, &p->cfpquant, name, key, SPACK,
+                    filename, lineno);
+          up->cfpquantset=1;
+	}
+
+      /* Sigma clipping: */
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->mp.sigclipmultip, name, key, SPACK,
-                  filename, lineno);
-	  up->sigclipmultipset=1;
+          floatl0(value, &p->sigclipmultip, name, key, SPACK,
+                    filename, lineno);
+          up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0s1(value, &p->mp.sigcliptolerance, name, key, SPACK,
-                  filename, lineno);
-	  up->sigcliptoleranceset=1;
+          floatl0(value, &p->sigcliptolerance, name, key, SPACK,
+                    filename, lineno);
+          up->sigcliptoleranceset=1;
+	}
+      else if(strcmp(name, "sigclipnum")==0)
+	{
+	  if(up->sigclipnumset) continue;
+          sizetlzero(value, &p->sigclipnum, name, key, SPACK,
+                     filename, lineno);
+          up->sigclipnumset=1;
 	}
 
 
@@ -251,15 +257,14 @@ readconfig(char *filename, struct subtractskyparams *p)
 
 
 void
-printvalues(FILE *fp, struct subtractskyparams *p)
+printvalues(FILE *fp, struct imgstatparams *p)
 {
   struct uiparams *up=&p->up;
-  struct meshparams *mp=&p->mp;
   struct commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input:\n");
+  fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
     {
       if(stringhasspace(cp->hdu))
@@ -281,39 +286,42 @@ printvalues(FILE *fp, struct subtractskyparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
-  if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->numnearest);
-  if(up->mininterpset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "mininterp", p->mininterp);
-  if(up->kernelwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "kernelwidth", p->kernelwidth);
 
-
+  /* Output: */
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
 
+  /* Histogram: */
+  fprintf(fp, "\n# Histogram:\n");
+  if(up->histnumbinsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "histnumbins", p->histnumbins);
+  if(up->histminset)
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "histmin", p->histmin);
+  if(up->histmaxset)
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "histmax", p->histmax);
+  if(up->histquantset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "histquant", p->histquant);
 
-  fprintf(fp, "\n# Mesh grid:\n");
-  if(up->meshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "meshsize", mp->meshsize);
-  if(up->nch1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch1", mp->nch1);
-  if(up->nch2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
-  if(up->lastmeshfracset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
+  /* Cumulative frequency plot: */
+  fprintf(fp, "\n# Cumulative frequency plot:\n");
+  if(up->cfpnumset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "cfpnum", p->cfpnum);
+  if(up->cfpminset)
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "cfpmin", p->cfpmin);
+  if(up->cfpmaxset)
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "cfpmax", p->cfpmax);
+  if(up->cfpquantset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "cfpquant", p->cfpquant);
 
-  fprintf(fp, "\n# Statistics:\n");
-  if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mp.mirrordist);
-  if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->mp.minmodeq);
+  /* Sigma clipping: */
   if(up->sigclipmultipset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->mp.sigclipmultip);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
   if(up->sigcliptoleranceset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
-            p->mp.sigcliptolerance);
+            p->sigcliptolerance);
+  if(up->sigclipnumset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "sigclipnum", p->sigclipnum);
 }
 
 
@@ -322,9 +330,10 @@ printvalues(FILE *fp, struct subtractskyparams *p)
 
 
 /* Note that numthreads will be used automatically based on the
-   configure time. */
+   configure time. Note that those options which are not mandatory
+   must not be listed here. */
 void
-checkifset(struct subtractskyparams *p)
+checkifset(struct imgstatparams *p)
 {
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
@@ -332,34 +341,17 @@ checkifset(struct subtractskyparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
-  if(up->mhduset==0)
-    REPORT_NOTSET("mhdu");
-  if(up->numnearestset==0)
-    REPORT_NOTSET("numnearest");
-  if(up->mininterpset==0)
-    REPORT_NOTSET("mininterp");
-  if(up->kernelwidthset==0)
-    REPORT_NOTSET("kernelwidth");
-
-  /* Mesh grid: */
-  if(up->meshsizeset==0)
-    REPORT_NOTSET("meshsize");
-  if(up->nch1set==0)
-    REPORT_NOTSET("nch1");
-  if(up->nch2set==0)
-    REPORT_NOTSET("nch2");
-  if(up->lastmeshfracset==0)
-    REPORT_NOTSET("lastmeshfrac");
-
-  /* Statistics: */
-  if(up->mirrordistset==0)
-    REPORT_NOTSET("mirrordist");
-  if(up->minmodeqset==0)
-    REPORT_NOTSET("minmodeq");
+  if(up->histnumbinsset==0)
+    REPORT_NOTSET("histnumbins");
+  if(up->cfpnumset==0)
+    REPORT_NOTSET("cfpnum");
   if(up->sigclipmultipset==0)
     REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
     REPORT_NOTSET("sigcliptolerance");
+  if(up->sigclipnumset==0)
+    REPORT_NOTSET("sigclipnum");
+
 
   END_OF_NOTSET_REPORT;
 }
@@ -387,49 +379,27 @@ checkifset(struct subtractskyparams *p)
 /***************       Sanity Check         *******************/
 /**************************************************************/
 void
-sanitycheck(struct subtractskyparams *p)
+sanitycheck(struct imgstatparams *p)
 {
+  char *basename;
+
   /* Set the maskname and mask hdu accordingly: */
-  if(p->up.masknameset)
-    {
-      if(strcmp(p->up.inputname, p->up.maskname)==0
-         && strcmp(p->up.mhdu, p->cp.hdu)==0)
-        error(EXIT_FAILURE, 0, "The specified mask name and input image "
-              "name are the same while the input image hdu name and "
-              "mask hdu are also identical!");
-    }
-  else
-    {
-      if(strcmp(p->up.mhdu, p->cp.hdu))
-        p->up.maskname=p->up.inputname;
-    }
+  setmaskname(p->up.inputname, &p->up.maskname, p->cp.hdu, p->up.mhdu);
 
-
-  /* Set the output name: */
-  if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
-  else
-    automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
-		p->cp.dontdelete, &p->cp.output);
-
-  /* Set the check image names: */
-  if(p->meshname)
+  /* Set the names of the output files: */
+  if(p->cp.outputset) basename=p->cp.output;
+  else                basename=p->up.inputname;
+  if(p->histname)
     {
-      p->meshname=NULL;           /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->meshname);
+      p->histname=NULL;         /* It wasn't allocated. */
+      automaticoutput(basename, "_hist.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->histname);
     }
-  if(p->interpname)
+  if(p->cfpname)
     {
-      p->interpname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_interp.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->interpname);
-    }
-  if(p->smoothname)
-    {
-      p->smoothname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_smooth.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->smoothname);
+      p->cfpname=NULL;         /* It wasn't allocated. */
+      automaticoutput(basename, "_cfp.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->cfpname);
     }
 }
 
@@ -455,19 +425,26 @@ sanitycheck(struct subtractskyparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 void
-preparearrays(struct subtractskyparams *p)
+preparearrays(struct imgstatparams *p)
 {
-  struct meshparams *mp=&p->mp;
+  float min;
+  int bitpix;
+  size_t numblank, s0, s1;
 
+  /* Read the input and mask arrays: */
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              &p->img, &p->bitpix, &p->numblank, &mp->s0, &mp->s1);
+              &p->img, &bitpix, &numblank, &s0, &s1);
+  p->size=s0*s1;
 
-  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+  /* If the minimum value is to be used as a mask then do it: */
+  if(p->ignoremin)
+    {
+      floatmin(p->img, p->size, &min);
+      freplacevalue(p->img, p->size, min, NAN);
+    }
 
-  if( mp->s0%mp->nch2 || mp->s1%mp->nch1 )
-    error(EXIT_FAILURE, 0, "The input image size (%lu x %lu) is not an "
-          "exact multiple of the number of the given channels (%lu, %lu) "
-          "in the respective axis.", mp->s1, mp->s0, mp->nch1, mp->nch2);
+  /* Move all the non-nan elements to the start of the array: */
+  nonans(p->img, &p->size);
 }
 
 
@@ -492,7 +469,7 @@ preparearrays(struct subtractskyparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 void
-setparams(int argc, char *argv[], struct subtractskyparams *p)
+setparams(int argc, char *argv[], struct imgstatparams *p)
 {
   struct commonparams *cp=&p->cp;
 
@@ -503,6 +480,9 @@ setparams(int argc, char *argv[], struct subtractskyparams *p)
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
 
+  p->sigclip        =1;
+  p->histname=p->cfpname="a";   /* Will be set later, just a sign that */
+                                /* they should be output.              */
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
@@ -557,23 +537,15 @@ setparams(int argc, char *argv[], struct subtractskyparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct subtractskyparams *p, struct timeval *t1)
+freeandreport(struct imgstatparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
+  free(p->img);
   free(p->cp.hdu);
-  free(p->up.mhdu);
+  free(p->cfpname);
+  free(p->histname);
   free(p->cp.output);
-
-  /* Free all the allocated names: */
-  if(p->meshname) free(p->meshname);
   if(p->up.masknameallocated) free(p->up.maskname);
-
-  /* Free the WCS structure: */
-  if(p->wcs)
-    wcsvfree(&p->nwcs, &p->wcs);
-
-  /* Free the mesh structure: */
-  freemesh(&p->mp);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

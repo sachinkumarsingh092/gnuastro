@@ -1,6 +1,6 @@
 /*********************************************************************
-SubtractSky - Find and subtract the sky value from an image.
-SubtractSky is part of GNU Astronomy Utilities (Gnuastro) package.
+ImageStatistics - Get general statistics about the image.
+ImgeStatistics is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -26,6 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <argp.h>
 
 #include "commonargs.h"
+#include "linkedlist.h"
 #include "fixedstringmacros.h"
 
 
@@ -57,8 +58,9 @@ static char args_doc[] = "ASTRdata";
 const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
-  SPACK_NAME" Finds the sky value over a grid on the input and subtracts "
-  "it from the image to give a clear and uniform output. \n"
+  SPACK_NAME" will print the basic statistics of the input image pixel "
+  "flux distribution. All blank pixels or pixels specified by a mask "
+  "image will be ignored.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -70,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j l p r v w x y z
-   A B C E F G I J O R T U W X Y Z
+   c d e f j k l m  s t v w y z
+   A B C E F G I J L O R T W X Y Z
 
-   Number keys used: <=502
+   Number keys used: <=508
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -102,29 +104,16 @@ static struct argp_option options[] =
       1
     },
     {
-      "numnearest",
-      'n',
-      "INT",
+      "ignoremin",
+      'r',
       0,
-      "Number of nearest neighbors to interpolate.",
+      0,
+      "Ignore data with values equal to minimum.",
       1
     },
-    {
-      "mininterp",
-      'm',
-      "INT",
-      0,
-      "Minimum number of successful grid elements.",
-      1
-    },
-    {
-      "kernelwidth",
-      'k',
-      "INT",
-      0,
-      "Width of smoothing kernel (odd number).",
-      1
-    },
+
+
+
 
 
     {
@@ -137,47 +126,71 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Mesh grid:",
+      "Histogram (suffix: `_hist.txt'):",
       3
     },
     {
-      "meshsize",
-      's',
-      "INT",
-      0,
-      "Size of each mesh (tile) in the grid.",
-      3
-    },
-    {
-      "nch1",
-      'a',
-      "INT",
-      0,
-      "Number of channels along first FITS axis.",
-      3
-    },
-    {
-      "nch2",
-      'b',
-      "INT",
-      0,
-      "Number of channels along second FITS axis.",
-      3
-    },
-    {
-      "lastmeshfrac",
-      'L',
-      "INT",
-      0,
-      "Fraction of last mesh area to add new.",
-      3
-    },
-    {
-      "checkmesh",
+      "nohist",
       500,
       0,
       0,
-      "Store mesh IDs in `_mesh.fits' file.",
+      "Do not calculate histogram.",
+      3
+    },
+    {
+      "normhist",
+      501,
+      0,
+      0,
+      "Normalize the  histogram (sum of all bins 1).",
+      3
+    },
+    {
+      "maxhistone",
+      502,
+      0,
+      0,
+      "Scale such that the maximum bin has value of one.",
+      3
+    },
+    {
+      "binonzero",
+      503,
+      0,
+      0,
+      "Shift histogram so one bin starts on zero.",
+      3
+    },
+    {
+      "histnumbins",
+      'n',
+      "INT",
+      0,
+      "Number of bins in the histogram.",
+      3
+    },
+    {
+      "histmin",
+      'i',
+      "FLT",
+      0,
+      "The minimum value for the histogram.",
+      3
+    },
+    {
+      "histmax",
+      'x',
+      "FLT",
+      0,
+      "The maximum value for the histogram.",
+      3
+    },
+    {
+      "histquant",
+      'Q',
+      "FLT",
+      0,
+      "Quantile (Q) range. Histogram from Q to 1-Q.",
       3
     },
 
@@ -186,24 +199,88 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Statistics:",
+      "Cumulative Frequency Plot (suffix: `_cfp.txt'):",
       4
     },
     {
-      "mirrordist",
-      'd',
-      "FLT",
+      "nocfp",
+      504,
       0,
-      "Distance beyond mirror point. Multiple of std.",
+      0,
+      "No Cumulative Frequency Plot.",
       4
     },
     {
-      "minmodeq",
-      'Q',
+      "normcfp",
+      505,
+      0,
+      0,
+      "Normalize the CFP (sum of all bins 1).",
+      4
+    },
+    {
+      "maxcfpeqmaxhist",
+      506,
+      0,
+      0,
+      "Set maximum of CFP to maximum of histogram.",
+      4
+    },
+    {
+      "cfpsimhist",
+      507,
+      0,
+      0,
+      "Set CFP range and bins similar to histogram.",
+      4
+    },
+    {
+      "cfpnum",
+      'p',
+      "INT",
+      0,
+      "Number of data points to find CFP.",
+      4
+    },
+    {
+      "cfpmin",
+      'a',
       "FLT",
       0,
-      "Minimum acceptable quantile for the mode.",
+      "Minimum value to use in the CFP.",
       4
+    },
+    {
+      "cfpmax",
+      'b',
+      "FLT",
+      0,
+      "Maximum value to use in the CFP.",
+      4
+    },
+    {
+      "cfpquant",
+      'U',
+      "FLT",
+      0,
+      "Quantile of range: from U to 1-U.",
+      4
+    },
+
+
+
+    {
+      0, 0, 0, 0,
+      "Sigma clipping:",
+      5
+    },
+    {
+      "nosigclip",
+      508,
+      0,
+      0,
+      "Do not preform sigma clipping.",
+      5
     },
     {
       "sigclipmultip",
@@ -211,7 +288,7 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Multiple of standard deviation in sigma-clipping.",
-      4
+      5
     },
     {
       "sigcliptolerance",
@@ -219,25 +296,16 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Difference in STD tolerance to halt iteration.",
-      4
+      5
     },
     {
-      "checkinterpolation",
-      501,
+      "sigclipnum",
+      'g',
+      "INT",
       0,
-      0,
-      "Store mesh interpolation in `_interp.fits' file.",
-      4
+      "Number of times to do sigma clipping.",
+      5
     },
-    {
-      "checksmoothing",
-      502,
-      0,
-      0,
-      "Store mesh smoothing in `_smooth.fits' file.",
-      4
-    },
-
 
 
     {
@@ -245,7 +313,6 @@ static struct argp_option options[] =
       "Operating modes:",
       -1
     },
-
 
 
     {0}
@@ -260,7 +327,7 @@ static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
-  struct subtractskyparams *p = state->input;
+  struct imgstatparams *p = state->input;
 
   /* Set the pointer to the common parameters for all programs
      here: */
@@ -285,7 +352,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Input: */
     case 'M':
       p->up.maskname=arg;
-      p->up.masknameset=1;
       break;
     case 'H':
       errno=0;                  /* We want to free it in the end. */
@@ -295,72 +361,94 @@ parse_opt(int key, char *arg, struct argp_state *state)
       strcpy(p->up.mhdu, arg);
       p->up.mhduset=1;
       break;
-    case 'n':
-      sizetlzero(arg, &p->numnearest, "numnearest", key, SPACK, NULL, 0);
-      p->up.numnearestset=1;
+    case 'r':
+      p->ignoremin=1;
       break;
-    case 'm':
-      sizetlzero(arg, &p->mininterp, "mininterp", key, SPACK, NULL, 0);
-      p->up.mininterpset=1;
-      break;
-    case 'k':
-      sizetpodd(arg, &p->kernelwidth, "kernelwidth", key, SPACK, NULL, 0);
-      p->up.kernelwidthset=1;
-      break;
+
 
     /* Output: */
 
-    /* Mesh grid: */
-    case 's':
-      sizetlzero(arg, &p->mp.meshsize, "meshsize", key, SPACK, NULL, 0);
-      p->up.meshsizeset=1;
-      break;
-    case 'a':
-      sizetlzero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
-      p->up.nch1set=1;
-      break;
-    case 'b':
-      sizetlzero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
-      p->up.nch2set=1;
-      break;
-    case 'L':
-      floatl0s1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key, SPACK,
-                NULL, 0);
-      p->up.lastmeshfracset=1;
-      break;
+    /* Histogram */
     case 500:
-      p->meshname="a";  /* Just a placeholder! It will be corrected later */
+      p->histname=NULL;
       break;
-
-
-    /* Statistics */
-    case 'd':
-      floatl0(arg, &p->mp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
-      p->up.mirrordistset=1;
+    case 501:
+      p->normhist=1;
+      break;
+    case 502:
+      p->maxhistone=1;
+      break;
+    case 503:
+      p->binonzero=1;
+      break;
+    case 'n':
+      sizetlzero(arg, &p->histnumbins, "histnumbins", key, SPACK, NULL, 0);
+      p->up.histnumbinsset=1;
+      break;
+    case 'i':
+      anyfloat(arg, &p->histmin, "histmin", key, SPACK, NULL, 0);
+      p->up.histminset=1;
+      break;
+    case 'x':
+      anyfloat(arg, &p->histmax, "histmax", key, SPACK, NULL, 0);
+      p->up.histmaxset=1;
       break;
     case 'Q':
-      floatl0s1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
-      p->up.minmodeqset=1;
+      floatl0s1(arg, &p->histquant, "histquant", key, SPACK, NULL, 0);
+      p->up.histquantset=1;
+      break;
+
+    /* Cumulative frequency plot: */
+    case 504:
+      p->cfpname=NULL;
+      break;
+    case 505:
+      p->normcfp=1;
+      break;
+    case 506:
+      p->maxcfpeqmaxhist=1;
+      break;
+    case 507:
+      p->cfpsimhist=1;
+      break;
+    case 'p':
+      sizetlzero(arg, &p->cfpnum, "cfpnum", key, SPACK, NULL, 0);
+      p->up.cfpnumset=1;
+      break;
+    case 'a':
+      anyfloat(arg, &p->cfpmin, "cfpmin", key, SPACK, NULL, 0);
+      p->up.cfpminset=1;
+      break;
+    case 'b':
+      anyfloat(arg, &p->cfpmax, "cfpmax", key, SPACK, NULL, 0);
+      p->up.cfpmaxset=1;
+      break;
+    case 'U':
+      floatl0s1(arg, &p->cfpquant, "cfpquant", key, SPACK, NULL, 0);
+      p->up.cfpquantset=1;
+      break;
+
+
+    /* Sigma clipping: */
+    case 508:
+      p->sigclip=0;
       break;
     case 'u':
-      floatl0(arg, &p->mp.sigclipmultip, "sigclipmultip", key, SPACK,
-              NULL, 0);
+      floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK, NULL, 0);
       p->up.sigclipmultipset=1;
       break;
     case 't':
-      floatl0s1(arg, &p->mp.sigcliptolerance, "sigcliptolerance", key, SPACK,
+      floatl0(arg, &p->sigcliptolerance, "sigcliptolerance", key, SPACK,
               NULL, 0);
       p->up.sigcliptoleranceset=1;
       break;
-    case 501:
-      p->interpname="a";
+    case 'g':
+      sizetlzero(arg, &p->sigclipnum, "sigclipnum", key, SPACK, NULL, 0);
+      p->up.sigclipnumset=1;
       break;
-    case 502:
-      p->smoothname="a";
-      break;
-
 
     /* Operating modes: */
+
 
 
     /* Read the non-option arguments: */

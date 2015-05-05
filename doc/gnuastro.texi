@@ -45,6 +45,8 @@ Texts.  A copy of the license is included in the section entitled
 @direntry
 * Gnuastro: (gnuastro).       GNU Astronomy Utilities.
 
+* help-gnuastro: (gnuastro)help-gnuastro mailing list. Instructions.
+
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
 
@@ -340,7 +342,9 @@ Image analysis
 
 ImageStatistics
 
-* Invoking astimgstat::         Arguments and options to ImageStatistics
+* Histogram and Cumulative Freqency Plot::  Basic definitions.
+* Sigma clipping::
+* Invoking astimgstat::         Arguments and options to ImageStatistics.
 
 Modeling and fitting
 
@@ -1251,9 +1255,9 @@ more pleasent and entertaining to read while also being more practical
 presenting a tutorial was influenced by the PGF/TikZ and Beamer
 manuals. The first provides graphic capabilities, while with the
 second you can make presentation slides in @TeX{} and @LaTeX{}. In
-these manuals, Till Tantau (author of the manual) uses Euclid to
-present for the tutorial. There are also some nice words of wisdom for
-Unix-like systems called ``Rootless Root'':
+these manuals, Till Tantau (author of the manual) uses Euclid as the
+protagonist. There are also some nice words of wisdom for Unix-like
+systems called ``Rootless Root'':
 @url{http://catb.org/esr/writings/unix-koans/}. These also have a
 similar style but they use a mythical figure named Master Foo. If you
 already have some experience in Unix-like systems, you will definitely
@@ -6732,10 +6736,146 @@ be approximately equal to the background value, see @ref{Sky
 value}). ImageStatistics is built for precisely such situatons.
 
 @menu
-* Invoking astimgstat::         Arguments and options to ImageStatistics
+* Histogram and Cumulative Freqency Plot::  Basic definitions.
+* Sigma clipping::         Definition of @mymath{\sigma}-clipping
+* Invoking astimgstat::         Arguments and options to ImageStatistics.
 @end menu
 
-@node Invoking astimgstat,  , ImageStatistics, ImageStatistics
+
+@node Histogram and Cumulative Freqency Plot, Sigma clipping, ImageStatistics, ImageStatistics
+@subsection Histogram and Cumulative Freqency Plot
+
+Histograms and the cumulative frequency plots are both used to study
+the distribution of data. The histogram is mainly easier to understand
+for the untrained eye, while the cumulative frequency plot is more
+accurate, but needs a good level of experience for interpretation.
+
+@cindex Histogram
+@cindex Intervals, histogram
+@cindex Bin width, histogram
+@cindex Normalizing histogram
+@cindex Probability distribution function
+A histogram shows the number of data points which lie within
+pre-defined intervals (bins). It is used to get a genral view of the
+distribution and its shape. The width of the bins is one of the most
+important parameters for a histogram. In the limiting case that the
+bin-widths tend to zero (and assuming there is data for each bin),
+then the normalized histogram would show the probability distribution
+function of the distribution. Normalizing a histogram means to divide
+the number of data points in each bin by the total number of data.
+
+@cindex Cumulative Frequency Plot
+In the cumulative frequency plot of a distribution, the x axis is the
+sorted data values and the y axis shows is the index of each data in
+the sorted distribution. Unlike a histogram, a cumulative frequency
+plot does not involve intervals or bins. This makes it less prone to
+any sort of bias or error that a given bin-width would have on the
+analysis. When a larger number of the data points have roughly the
+same value, then the cumulative frequency plot will become steep in
+that vicinity. This occurs because on the x axis (data values), there
+is little change while on the y axis the indexs constantly
+increase. Normalizing a cumultaive frequency plot means to divide each
+index (y axis) by the total number of data points.
+
+Unlike the histogram which has a limited number of bins, ideally the
+cumulative frequency plot should have one point for every data
+point. Even in small images (for example a @mymath{200\times200}) this
+will result in an unreasonably larger number of points to plot
+(40000)! So when the cumulative frequency plot of an image is stored
+in a text file, it is best to only store its value on a certain number
+of points (intervals) rather than the whole data. The number of points
+to use for the final plot can be specified with the @option{--cfpnum}
+option.
+
+
+
+
+@node  Sigma clipping, Invoking astimgstat, Histogram and Cumulative Freqency Plot, ImageStatistics
+@subsection Sigma clipping
+
+Lets assume that you have pure noise (centered on zero) with a clear
+Gaussian distribution, see @ref{Photon counting noise}. Now lets
+assume you add very bright objects (signal) on the image which have a
+very sharp boundary. By a sharp boundary, we mean that there is a
+clear cutoff at the place the objects finish. In other words, at their
+boundaries, the objects do not fade away into the noise. In such a
+case, when you plot the histogram (see @ref{Histogram and Cumulative
+Freqency Plot}) of the distribution, the pixels relating to those
+objects will be clearly separte from pixels that belong to parts of
+the image that did not have data. In the cumulative frequency plot,
+you would observe a long flat region were for a certain range of data
+(x axis), there is no increase in the index (y axis).
+
+@cindex Blurring
+@cindex Cosmic rays
+@cindex Aperture blurring
+@cindex Atmosphere blurring
+In cases like the above, @mymath{\sigma}-clipping is a very useful
+tool to remove the effect (bias) of such forms of signal from the
+distribution. In astronomical applications, cosmic rays (when they
+collide at a near normal incidence angle) are a very good example of
+such signals. The tracks they leave behind in the image are perfectly
+immune to the blurring caused by the atmosphere and the aperture. They
+are also very energetic and so their borders are usually clearly
+separated from the surrounding noise. So @mymath{\sigma}-clipping is
+very useful in removing their effect on the data. See Figure 15 in
+Akhlaghi and Ichikawa (2015).
+
+@mymath{\sigma}-clipping is the very simple iteration below. In each
+iteration, the range of input data might decrease and so when the data
+in the image have the conditions above, they will be removed. The
+criteria to stop the iteration will be discussed below.
+
+@enumerate
+@item
+Calcuate the mean, standard deviation (@mymath{\sigma}) and median
+(@mymath{m}) of a distribution.
+@item
+Remove all points that are smaller or larger than
+@mymath{m\pm\alpha\sigma}.
+@end enumerate
+
+@noindent
+The reason the median is used as a reference and not the mean is that
+the mean is too significantly affected by the presence of signal,
+while the median is less affected, see @ref{Finding the sky value}. As
+you can tell from this algorithm, besides the condition above (that
+the signal have clear high signal to noise boundaries)
+@mymath{\sigma}-clipping is only useful when the signal do not cover
+more than half of the full data set. If they do, then the median will
+lie over the signal and sigma clipping might remove the pixels with no
+signal.
+
+In the literature researchers use either one of two criteria to stop
+this iteration above:
+
+@itemize
+@item
+When a certain number of iterations has taken place.
+@item
+When the new measured standard deviation is within a certain tolerance
+level of the old one. The tolerance level is defined by:
+
+@dispmath{\sigma_{old}-\sigma_{new} \over \sigma_{new}}
+
+The standard deviation is heavily influenced by the presence of
+outliers. Therefore the fact that it stops changing between two
+iterations is a sign that we have successfully removed outliers. Note
+that in each clipping, the dispersion in the distribution is either
+less or equal. So @mymath{\sigma_{old}\geq\sigma_{new}}.
+@end itemize
+
+@cartouche
+@noindent
+Other objects in astronomical data analysis like galaxies and stars
+are blurred by the atmosphere and the telescope aperture. Galaxies in
+particular do not appear to have a clear high signal to noise cutoff
+at all. Therefore @mymath{\sigma}-clipping will not be useful in
+removing their effect on the data. In astronomy, it is only useful for
+removing the effect of Cosmic rays.
+@end cartouche
+
+@node Invoking astimgstat,  , Sigma clipping, ImageStatistics
 @subsection Invoking ImageStatistics
 
 ImageStatistics will print the major statistical measures of an
@@ -6755,14 +6895,175 @@ $ astimgstat input.fits
 
 @noindent
 If ImageStatistics is to run, an input image should be provided with
-the recognized extensions as input data, see @ref{Arguments}.
+the recognized extensions as input data, see @ref{Arguments}. See
+@ref{Common options} for the list of options that are shared by all
+programs. All the main statistical operations have their specific set
+of options. If a string is given to the @option{--output} option, it
+is used as the base name for the generated files. Without this option,
+the input image name is used as the name-base.
 
+Some of the options are necessary and if they are not included in the
+configuration file, ImageStatistics will not run, see
+@ref{Configuration files}. However, for some others this is not so:
+@option{--histmin}, @option{--histmax}, @option{--histquant},
+@option{--cfpmin}, @option{--cfpmax}, @option{--cfpquant}. These are
+options to do with the range of flux in the histogram and cumulative
+frequency plots. If no value is given for these options, then the full
+data range will be used. Such that the minimum image value will be set
+for the minimums and the maximum image value will be used for the
+maximum. The Mask name and HDU are also not mandatory in the
+configuration file. The basic input options are:
 
+@table @option
 
+@item -M
+@itemx --mask
+(@option{=STR}) The file name of a mask image. If this option is not
+given on the command line or in the configuration files and
+@option{--mhdu} is not identical to @option{--hdu}, then no mask image
+will be used.
 
+@item -H
+@itemx --mhdu
+(@option{=STR}) The header name of the mask extension.
 
+@item -r
+@itemx --ignoremin
+Ignore all data elements that have a value equal to the minimum value
+in the image. In practice this is like masking those pixels, their
+values will not be used.
 
+@end table
 
+@noindent
+@strong{Histogram:} The stored histogram is stored in a text file
+ending with @file{_hist.txt}.
+
+@table @option
+
+@item --nohist
+Do not calculate or save the histogram.
+
+@item --normhist
+Make a normalized histogram, see @ref{Histogram and Cumulative
+Freqency Plot}.
+
+@item --maxhistone
+Divide all histogram bins by the number in the bin with the most data
+points. This is very useful if you want to plot the histogram along
+with a normalized cumulative frequency plot in one plot. Note that if
+the histogram numbers are important in showing along with the
+cumulative frequency plot, you can use @option{--maxcfpeqmaxhist}, see
+below.
+
+@item --binonzero
+Make sure that one bin starts from zero. In practice, this will shift
+the histogam such that one bin's lower interval is zero. It is useful
+if the range includes negative values, but for this histogram you only
+want positive values. If zero is in the middle of one bin, then the
+viewers of the histogram will think negative data is also present.
+
+@item -n
+@itemx --histnumbins
+(@option{=INT}) The number of bins in the histogram. Note that in
+practice, this is also equivalent to the number of rows in the output
+text file.
+
+@item -i
+@itemx --histmin
+(@option{=FLT}) The minimum value to use in the histogram.
+
+@item -x
+@itemx --histmax
+(@option{=FLT}) The maximum value to use in the histogram.
+
+@item -Q
+@itemx --histquant
+(@option{=FLT}) Set the range of the histogram based on the image
+quantile. So @option{--histquant=0.05} is given, all the data from the
+0.05 quantile to 0.95 quantile will be used in the histogram. This is
+useful when there is a small number of outliers in the image.
+
+@end table
+
+@noindent
+@strong{Cumulative Frequency Plot:} The cumulative frequency plot will
+be stored in a text file ending with @file{_cfp.txt}.
+
+@table @option
+
+@item --nocfp
+Do not calculate or store the cumulative frequency plot.
+
+@item --normcfp
+Normalize the cumulative frequency plot, see @ref{Histogram and
+Cumulative Freqency Plot}.
+
+@item --maxcfpeqmaxhist
+Set the maximum cumulative frequency plot value to the maximum value
+in the histogram (if it is to be created). This is a useful in
+plotting the histogram and cumulative frequency plots together when
+the histogram numbers are important.
+
+@item --cfpsimhist
+Set the range of the cumulative frequency plot and the number of
+points to store to the same range as the histogram. If the two are to
+be plotted together, this is essential. The first axis of the two will
+become identical.
+
+@item -p
+@itemx --cfpnum
+(@option{=INT}) The number of points to store the cumulative frequency
+plot. They will be evenly distributed between the range of flux
+values.
+
+@item -a
+@itemx --cfpmin
+(@option{=FLT}) The minimum value to use for the cumulative flux
+range.
+
+@item -n
+@itemx --cfpmax
+(@option{=FLT}) The maximum value to use for the cumulative flux
+range.
+
+@item -U
+@itemx --cfpquant
+(@option{=FLT}) Similar to @option{--histquant} but for the cumulative
+frequency plot.
+
+@end table
+
+@noindent
+@strong{@mymath{\sigma}-clipping:} The result of each iteration of
+@mymath{\sigma}-clipping will be printed in the terminal for both
+types of sigma clipping: A certain number of times and convergence of
+the standard deviation.
+
+@table @option
+
+@item --nosigclip
+If this option is called, no @mymath{\sigma}-clipping will take place.
+
+@item -u
+@itemx --sigclipmultip
+(@option{=FLT}) The multiple of the standard deviation above which to
+clip. This value is demonstrated by @mymath{\alpha} in @ref{Sigma
+clipping}.
+
+@item -t
+@itemx --sigcliptolerance
+(@option{=FLT}) If the fractional difference of the standard deviation
+becomes less than this value, then @mymath{\sigma}-clipping will halt,
+see @ref{Sigma clipping}.
+
+@item -g
+@itemx --sigclipnum
+(@option{=INT}) The number of iterations for the case where the
+@mymath{\sigma}-clipping iteration stops after a certain number of
+runs.
+
+@end table
 
 
 

@@ -26,6 +26,7 @@ astmkprof
 astheader
 astmknoise
 astimgcrop
+astimgstat
 astimgwarp
 astconvertt
 astconvolve
