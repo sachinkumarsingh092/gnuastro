@@ -542,7 +542,7 @@ fillmeshonthreads(void *inparam)
 
             case MODEEQMED_AVESTD: /* Average and standard devaition. */
               if(sigmaclip_converge(mesh, 1, num, sigclipmultip,
-                                    sigcliptolerance, &ave, &med, &std))
+                                    sigcliptolerance, &ave, &med, &std, 0))
                 {mp->charray1[ind]=ave; mp->charray2[ind]=std;}
               else
                 {mp->charray1[ind]=NAN; mp->charray2[ind]=NAN;}

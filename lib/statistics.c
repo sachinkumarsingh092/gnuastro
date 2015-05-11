@@ -962,8 +962,8 @@ indexfromquantile(size_t size, float quant)
 */
 int
 sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
-		   float sigma_multiple, float accuracy,
-		   float *outave, float *outmed, float *outstd)
+		   float sigma_multiple, float accuracy, float *outave,
+                   float *outmed, float *outstd, int print)
 {
   size_t counter=0;
   float *start, *oldstart, *dpt;
@@ -986,10 +986,9 @@ sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
       med=*(start+num_elem/2);
       favestd(start, num_elem, &ave, &std, NULL);
 
-      /*
-      printf("%lu: mean: %.2f, med: %.2f, std= %.2f, num inside: %lu\n",
-	     counter+1, ave, med, std, num_elem);
-      */
+      if(print)
+        printf("      %lu: %f, %f, %f, %lu\n",
+               counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are NaN. If so, stop the
 	 process here (the user has not given a mask and some pixels
@@ -1038,7 +1037,8 @@ sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
 int
 sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
 		     float sigma_multiple, size_t numtimes,
-		     float *outave, float *outmed, float *outstd)
+		     float *outave, float *outmed, float *outstd,
+                     int print)
 {
   size_t counter=0;
   float ave=*outave, med=*outmed, std=*outstd;
@@ -1060,10 +1060,9 @@ sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
       med=*(start+num_elem/2);
       favestd(start, num_elem, &ave, &std, NULL);
 
-      /*
-      printf("%lu: mean: %.2f, med: %.2f, std= %.2f, num inside: %lu\n",
-             counter+1, ave, med, std, num_elem);
-      */
+      if(print)
+        printf("      %lu: %f, %f, %f, %lu\n",
+               counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are nan. If so, stop the
 	 process here (the user has not given a mask and some pixels

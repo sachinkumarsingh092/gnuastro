@@ -65,7 +65,7 @@ reportsimplestats(struct imgstatparams *p)
   if(modequant>MODELOWQUANTGOOD && modesym>MODESYMGOOD)
     {
       /* Report the values: */
-      printf("   -- %-45s%.2f, %g\n", "Mode (quantile, value)",
+      printf("   -- %-45s%.4f, %g\n", "Mode (quantile, value)",
              modequant, p->sorted[modeindex]);
       printf(FNAMEVAL, "Mode symmetricity", modesym);
 
@@ -211,6 +211,7 @@ imgstat(struct imgstatparams *p)
 {
   size_t i;
   float quant=-1.0f;                   /* The quantile was already   */
+  float ave, std, med;
   float maxhist=-FLT_MAX, *bins=NULL;  /* taken into affect in ui.c. */
 
 
@@ -263,17 +264,20 @@ imgstat(struct imgstatparams *p)
       printhistcfp(p, bins, p->cfpnum, p->cfpname, CFPSTRING);
     }
 
-  /* Print out the Sigma clippings:
-  if(p->verb && p->sigmaclip)
+  /* Print out the Sigma clippings: */
+  if(p->cp.verb)
     {
-      printf(" - %.2f sigma-clipping by convergence (med, mean, "
-	     "std, number):\n", p->sigmultip);
-      sigmaclip_converge(p);
-      printf(" - %.2f sigma-clipping %lu times (med, mean, std, number):\n",
-	     p->sigmultip, p->timesclip);
-      sigmaclip_certainnum(p);
+      printf(" - Sigma clipping results (Median, Mean, STD, Number):\n");
+      printf("   - %.2f times sigma by convergence (tolerance: %.4f):\n",
+             p->sigclipmultip, p->sigcliptolerance);
+      sigmaclip_converge(p->sorted, 1, p->size, p->sigclipmultip,
+                         p->sigcliptolerance, &ave, &med, &std, 1);
+      printf("   - %.2f sigma-clipping %lu times:\n",
+	     p->sigclipmultip, p->sigclipnum);
+      sigmaclip_certainnum(p->sorted, 1, p->size, p->sigclipmultip,
+                           p->sigclipnum, &ave, &med, &std, 1);
     }
-  */
+
   /* Free the allocated arrays: */
   if(p->histname || p->cfpname) free(bins);
 }

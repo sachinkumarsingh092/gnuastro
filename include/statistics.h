@@ -166,11 +166,13 @@ indexfromquantile(size_t size, float quant);
 int
 sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
 		   float sigma_multiple, float accuracy,
-		   float *outave, float *outmed, float *outstd);
+		   float *outave, float *outmed, float *outstd,
+                   int print);
 
 int
 sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
 		     float sigma_multiple, size_t numtimes,
-		     float *outave, float *outmed, float *outstd);
+		     float *outave, float *outmed, float *outstd,
+                     int print);
 
 #endif

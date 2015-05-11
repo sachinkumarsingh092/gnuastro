@@ -9,6 +9,8 @@
 	open like the rest of the histogram bins. This also includes
 	floating point rounding error.
 	(cumulativefp): Same as the histogram function.
+	(sigmaclip_certainnum): Printing is now an option.
+	(sigmaclip_converge): Printing is now an option.
 
 	* lib/mode.c (makemirrorplots): New name for the old
 	savemodeplots.
