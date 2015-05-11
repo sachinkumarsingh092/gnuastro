@@ -42,7 +42,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MOREHELPINFO   "\nFor more information, please run any of the "	\
   "following commands. They will respectively show you the `Invoking "	\
   SPACK_NAME"' subsection, the complete `"SPACK_NAME"' section, or the "\
-  "full "PACKAGE_NAME" manual.\n"                                       \
+  "full "PACKAGE_NAME" manual. In particular the first contains "       \
+  "a very complete explanation of each option.\n"                       \
   "     info "SPACK"\n"                                                 \
   "     info "SPACK_NAME"\n"						\
   "     info "PACKAGE_TARNAME"\n\n"                                     \

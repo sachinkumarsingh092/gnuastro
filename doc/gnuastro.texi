@@ -71,6 +71,9 @@ Texts.  A copy of the license is included in the section entitled
 * MakeProfiles: (gnuastro)MakeProfiles. Make mock profiles.
 * astmkprof: (gnuastro)Invoking astmkprof. Options to MakeProfiles.
 
+* NoiseChisel: (gnuastro)NoiseChisel. Detect signal in noise.
+* astnoisechisel: (gnuastro)Invoking astnoisechisel. Options to NoiseChisel.
+
 * SubtractSky: (gnuastro)SubtractSky. Find and subtract the sky value.
 * astmkprof: (gnuastro)Invoking astsubtractsky. Options to SubtractSky.
 
@@ -339,12 +342,18 @@ Sky value
 Image analysis
 
 * ImageStatistics::             Calculate main image statistics.
+* NoiseChisel::                 Detect objects in an image.
 
 ImageStatistics
 
 * Histogram and Cumulative Freqency Plot::  Basic definitions.
-* Sigma clipping::
+* Sigma clipping::              Definition of @mymath{\sigma}-clipping
+* Mirror distribution::         Used for finding the mode.
 * Invoking astimgstat::         Arguments and options to ImageStatistics.
+
+NoiseChisel
+
+* Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 
 Modeling and fitting
 
@@ -544,7 +553,7 @@ GNU Astronomy Utilities @value{VERSION}, contains the following
 programs. They are sorted in alphabetical order and followed by their
 executable names along with a short description, see @ref{Naming
 convention}. Throughout this manual, they are discussed based on their
-context, see the manual contents for contextual ordering.
+context, please see the manual contents for contextual ordering.
 
 @itemize
 
@@ -571,6 +580,9 @@ image to new pixel grid.
 @item
 @ref{MakeProfiles} (@file{astmkprof}) @value{MKPROF_VERSION}: Make
 mock profiles in image.
+@item
+@ref{NoiseChisel} (@file{astnoisechisel}) @value{NOISECHISEL_VERSION}:
+Detect signal in noise.
 @item
 @ref{SubtractSky} (@file{astsubtractsky}) @value{SUBTRACTSKY_VERSION}:
 Find and subtract sky value.
@@ -1087,16 +1099,15 @@ downloaded and not waste the archive's storage, see @ref{ImageCrop}.
 @cindex Feature requests
 @cindex Additions to Gnuastro
 We would always be very happy to hear of suggested new features. For
-every program there are already lists of feautures that we are
-planning to add. You can see the current list of plans from the
-Gnuastro project webpage at
-@url{https://savannah.gnu.org/projects/gnuastro/} and following
-@clicksequence{``Tasks''@click{}``Browse''} at the top of the page. If
-you want to request a feature to an existing program, click on the
-``Display Criteria'' above the list and under ``Category'', choose
-that particular program. Under ``Category'' you can also see the
-existing suggestions for new utilities or other cases like
-installation.
+every program there are already lists of features that we are planning
+to add. You can see the current list of plans from the Gnuastro
+project webpage at @url{https://savannah.gnu.org/projects/gnuastro/}
+and following @clicksequence{``Tasks''@click{}``Browse''} at the top
+of the page. If you want to request a feature to an existing program,
+click on the ``Display Criteria'' above the list and under
+``Category'', choose that particular program. Under ``Category'' you
+can also see the existing suggestions for new utilities or other cases
+like installation.
 
 If the feature you want to suggest is not already listed in the task
 manager, then inform us through the @code{bug-gnuastro@@gnu.org}
@@ -5326,13 +5337,12 @@ Convolution is the process of changing the value of one pixel to the
 @emph{neighborhood}@footnote{The definition here is the specific
 definition that is most commonly used in image processing and
 astronomy. Mathematically speaking, convolution is a far more general
-process of merging two functions.}. We define the `neighbourhood' of
+process of merging two functions.}. We define the `neighborhood' of
 each pixel (how many pixels) and the `weight' function (how much each
-neighbouring pixel should contribute depending on its position)
-through a second image which is known as a spatial
-kernel@footnote{Also known as filter, here we will use `kernel'.}. A
-nice and fully illustrated introduction to convolution has been
-provided by
+neighboring pixel should contribute depending on its position) through
+a second image which is known as a spatial kernel@footnote{Also known
+as filter, here we will use `kernel'.}. A nice and fully illustrated
+introduction to convolution has been provided by
 ImageMagick@footnote{@url{http://www.imagemagick.org/Usage/convolve/}}.
 
 @cindex Detection
@@ -5343,13 +5353,13 @@ ImageMagick@footnote{@url{http://www.imagemagick.org/Usage/convolve/}}.
 @cindex Mixing pixel values
 Convolution of an image will generally result in blurring the image
 because it mixes pixel values. In other words, if the image has sharp
-differences in neighbouring pixel values@footnote{In astronomy, the
+differences in neighboring pixel values@footnote{In astronomy, the
 only major time we confront such sharp borders in signal are cosmic
 rays. All other sources of signal in an image are already blurred by
 the atmosphere or the optics of the instrument.}, those sharp
 differences will become smoother. This has very good consequences in
 detection for example, because in an actual observed image, the
-variation in neighbouring pixel values due to noise can be very
+variation in neighboring pixel values due to noise can be very
 high. But after convolution, those variations will decrease and we
 have a better hope in detecting the possible underlying
 signal. Another case where convolution is extensively used is in mock
@@ -6480,7 +6490,7 @@ the amplifier boundary will still be present after sky subtraction.
 So in practice, we define `channel's. A channel is an independent mesh
 grid that covers one amplifier to ensure that the meshes do not pass
 the amplifier boundary. They are also used in subsequent steps as the
-area used to identify nearby neighbours to interpolate, see @ref{Sky
+area used to identify nearby neighbors to interpolate, see @ref{Sky
 value interpolation}. The number of channels along each axis can be
 specified by the user at run time through @option{--nch1} and
 @option{--nch2} or in the configuration files, see @ref{Configuration
@@ -6537,7 +6547,7 @@ interpolations are not used because they fail terribly on the edges of
 the image. They are also prone to cause significant gradients in the
 image. So to find the interpolated value for each grid element,
 SubtractSky will look at a certain number of the nearest
-neighbours. The exact number can be specified through
+neighbors. The exact number can be specified through
 @option{--numnearest}. The median value of those grid elements will be
 taken as the final value for the blank mesh. The median is chosen
 because on the fainter wings of bright objects, the mean can easily
@@ -6715,9 +6725,10 @@ sky value or detecting objects within an image.
 
 @menu
 * ImageStatistics::             Calculate main image statistics.
+* NoiseChisel::                 Detect objects in an image.
 @end menu
 
-@node ImageStatistics,  , Image analysis, Image analysis
+@node ImageStatistics, NoiseChisel, Image analysis, Image analysis
 @section ImageStatistics
 
 The distribution of pixel values in an image can give us valuable
@@ -6737,7 +6748,8 @@ value}). ImageStatistics is built for precisely such situatons.
 
 @menu
 * Histogram and Cumulative Freqency Plot::  Basic definitions.
-* Sigma clipping::         Definition of @mymath{\sigma}-clipping
+* Sigma clipping::              Definition of @mymath{\sigma}-clipping
+* Mirror distribution::         Used for finding the mode.
 * Invoking astimgstat::         Arguments and options to ImageStatistics.
 @end menu
 
@@ -6766,10 +6778,10 @@ the number of data points in each bin by the total number of data.
 
 @cindex Cumulative Frequency Plot
 In the cumulative frequency plot of a distribution, the x axis is the
-sorted data values and the y axis shows is the index of each data in
-the sorted distribution. Unlike a histogram, a cumulative frequency
-plot does not involve intervals or bins. This makes it less prone to
-any sort of bias or error that a given bin-width would have on the
+sorted data values and the y axis is the index of each data in the
+sorted distribution. Unlike a histogram, a cumulative frequency plot
+does not involve intervals or bins. This makes it less prone to any
+sort of bias or error that a given bin-width would have on the
 analysis. When a larger number of the data points have roughly the
 same value, then the cumulative frequency plot will become steep in
 that vicinity. This occurs because on the x axis (data values), there
@@ -6787,10 +6799,13 @@ of points (intervals) rather than the whole data. The number of points
 to use for the final plot can be specified with the @option{--cfpnum}
 option.
 
+Note that the interval's lower value is considered to be part of each
+interval, but its larger value is not. Formally, an interval between a
+and b is represented by [a, b). This is true for all the intervals
+except the last one. The last interval is closed or [a, b].
 
 
-
-@node  Sigma clipping, Invoking astimgstat, Histogram and Cumulative Freqency Plot, ImageStatistics
+@node  Sigma clipping, Mirror distribution, Histogram and Cumulative Freqency Plot, ImageStatistics
 @subsection Sigma clipping
 
 Lets assume that you have pure noise (centered on zero) with a clear
@@ -6841,7 +6856,7 @@ the mean is too significantly affected by the presence of signal,
 while the median is less affected, see @ref{Finding the sky value}. As
 you can tell from this algorithm, besides the condition above (that
 the signal have clear high signal to noise boundaries)
-@mymath{\sigma}-clipping is only useful when the signal do not cover
+@mymath{\sigma}-clipping is only useful when the signal does not cover
 more than half of the full data set. If they do, then the median will
 lie over the signal and sigma clipping might remove the pixels with no
 signal.
@@ -6875,7 +6890,94 @@ removing their effect on the data. In astronomy, it is only useful for
 removing the effect of Cosmic rays.
 @end cartouche
 
-@node Invoking astimgstat,  , Sigma clipping, ImageStatistics
+@node Mirror distribution, Invoking astimgstat, Sigma clipping, ImageStatistics
+@subsection Mirror distribution
+
+@cindex Mirror distribution
+The mirror distribution of a data set was defined in Appendix C of
+Akhlaghi and Ichikawa (2015). It is best visiualized by mentally
+placing a mirror on the histogram of a distribution at any point
+within the distribution (which we call the mirror point).
+
+Through the @option{--mirrorquant} in ImageStatistics, you can check
+the mirror of a distribution when the mirror is placed on any given
+quantile. The mirror distribution is plotted along with the input
+distribution both as histograms and cumulative frequency plots, see
+@ref{Histogram and Cumulative Freqency Plot}. Unlike the rest of the
+histograms and cumulative frequency plots in ImageStatistics, the text
+files created with the @option{--mirrorquant} and @option{--checkmode}
+will contain 3 columns. The first is the horizontal axis similar to
+all other histograms and cumulative frequency plots. The second column
+shows the respective value for the actual data distribution and the
+third shows the value for the mirror distribution.
+
+The value for each bin of both histogram is divided by the maximum of
+both. For the cumulative frequency plot, the value in each bin is
+divided by the maximum number of elements. So one of the cumulative
+frequency plots reaches the maximum vertical axis of 1. Currently the
+range of the displayed distributions is between the 0.02 to 0.98
+quantile which is divided into 200 bins.
+
+@cindex Python
+The outputs will have the @file{_mirrorhist.txt} and
+@file{_mirrorcfp.txt} suffixs respectively. You can use a simple
+Python script like the one below to display the histograms and
+cumulative frequency plots in one plot:
+
+@example
+#! /usr/bin/env python3
+
+# Import the necessary modules:
+import sys
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the two files:
+a=np.loadtxt(sys.argv[1]+"_mirrorhist.txt")
+b=np.loadtxt(sys.argv[1]+"_mirrorcfp.txt")
+
+# Calculate the bin width:
+w=a[1,0]-a[0,0]
+
+# Plot the two histograms and cumulative frequency plots:
+plt.bar(a[:,0], a[:,1], width=w, color="blue", linewidth=0, alpha=0.6)
+plt.bar(a[:,0], a[:,2], width=w, color="green", linewidth=0, alpha=0.4)
+plt.plot(b[:,0], b[:,1], linewidth=2, color="blue")
+plt.plot(b[:,0], b[:,2], linewidth=2, color="green")
+
+# Write the axis labels:
+plt.ylim([0,np.amax(a[:,1])])
+plt.xlim([np.amin(a[:,0]),np.amax(a[:,0])])
+
+# Save the output to any name from the command line:
+plt.savefig(sys.argv[2])
+@end example
+
+@cindex PNG
+@cindex Matplotlib
+@noindent
+The output format can be anything that Python's Matplotlib recognizes
+(for example png or jpg are also acceptable). So, if your input data
+file name was @file{input.fits}, and you want to see how its mirror
+distribution would look like if the mirror was placed at the 0.8
+quantile (or the value which is above 80 percent of your data) you can
+run the following sequence of commands. Lets assume you have put the
+Python script above into the file @file{mirrorplot.py}. The second
+command makes the Python script an executable file.
+
+@example
+$ ls
+input.fits mirrorplot.py
+$ chmod +x mirrorplot.py
+$ astimgstat input.fits --nohist --nocfp --mirrorquant=0.8
+$ ls
+input.fits  input_mirrorcfp.txt  input_mirrorhist.txt  mirrorplot.py
+$ ./mirrorplot.py input mirrorplot.pdf
+
+@end example
+
+
+@node Invoking astimgstat,  , Mirror distribution, ImageStatistics
 @subsection Invoking ImageStatistics
 
 ImageStatistics will print the major statistical measures of an
@@ -6891,18 +6993,19 @@ One line examples:
 
 @example
 $ astimgstat input.fits
-$ astimgstat animage.fits --maskmin --nohist
+$ astimgstat animage.fits --ignoremin --nohist
 $ astimgstat anotherimage.fits --mask=detectionlabels.fits --mhdu=1
 @end example
 
 @noindent
-If ImageStatistics is to run, an input image should be provided with
-the recognized extensions as input data, see @ref{Arguments}. See
-@ref{Common options} for the list of options that are shared by all
-programs. All the main statistical operations have their specific set
-of options. If a string is given to the @option{--output} option, it
-is used as the base name for the generated files. Without this option,
-the input image name is used as the name-base.
+If ImageStatistics is to do any data processing, an input image should
+be provided with the recognized extensions as input data, see
+@ref{Arguments}. See @ref{Common options} for the list of options that
+are shared by all programs. All the main statistical operations have
+their specific set of options. If a string is given to the
+@option{--output} option, it is used as the base name for the
+generated files. Without this option, the input image name is used as
+the name-base.
 
 Some of the options are necessary and if they are not included in the
 configuration file, ImageStatistics will not run, see
@@ -6910,7 +7013,8 @@ configuration file, ImageStatistics will not run, see
 @option{--histmin}, @option{--histmax}, @option{--histquant},
 @option{--cfpmin}, @option{--cfpmax}, @option{--cfpquant}. These are
 options to do with the range of flux in the histogram and cumulative
-frequency plots. If no value is given for these options, then the full
+frequency plots. If no value is given for these options when
+ImageStatistics is about to start processing the data, then the full
 data range will be used. Such that the minimum image value will be set
 for the minimums and the maximum image value will be used for the
 maximum. The Mask name and HDU are also not mandatory in the
@@ -6925,29 +7029,33 @@ very quick and general view of the distribution. An example verbose
 output of ImageStatistics can be seen below:
 
 @example
+$ astimgstat InputImage.fits --histquant=0.05
 ImageStatistics started on AAA BBB  CC DD:EE:FF GGGG
   - Input read: InputImage.fits (hdu: 0)
-   -- Number of points                             984884
-   -- Minimum                                      -461.504
-   -- Maximum                                      476.17
-   -- Sum                                          12489.2
-   -- Mean                                         0.0126808
-   -- Standard deviation                           100.014
-   -- Median                                       0.0560763
-   -- Mode                                         0.0911971
-   -- ASCII histogram in the range: -461.504395 - 476.169617:
-    |                            ***
-    |                          *******
-    |                         *********
-    |                        ***********
-    |                       *************
-    |                     *****************
-    |                    *******************
-    |                   *********************
-    |                 *************************
-    |              *******************************
+   -- Number of points                             40401
+   -- Minimum                                      -0.010998
+   -- Maximum                                      0.272138
+   -- Sum                                          155.605
+   -- Mean                                         0.00385152
+   -- Standard deviation                           0.0111203
+   -- Median                                       0.00103936
+   -- Mode (quantile, value)                       0.40, 0.000253622
+   -- Mode symmetricity                            0.223073
+   -- ASCII histogram in the range: -0.003554 - 0.024204:
+    |       ***
+    |     ******
+    |    ********
+    |   **********
+    |  ************
+    |  **************
+    |*****************
+    |*******************
+    |**********************
+    |********************************* *
     |************************************************************
     |------------------------------------------------------------
+
+ImageStatistics finished in:  0.009895 (seconds)
 @end example
 
 @table @option
@@ -6956,8 +7064,8 @@ ImageStatistics started on AAA BBB  CC DD:EE:FF GGGG
 @itemx --mask
 (@option{=STR}) The file name of a mask image. If this option is not
 given on the command line or in the configuration files and
-@option{--mhdu} is not identical to @option{--hdu}, then no mask image
-will be used.
+@option{--mhdu} is not given or is identical to @option{--hdu}, then
+no mask image will be used.
 
 @item -H
 @itemx --mhdu
@@ -6971,20 +7079,39 @@ values will not be used.
 
 @item -l
 @itemx --lowerbin
-Set the first column of the outputs of the histogram and cumulative
-frequency plot to the lower bin value. By default the first column
-will be the center of the interval.
+Set the first column of the histogram and cumulative frequency plots
+to the lower interval boundary. By default (without calling this
+option), the central interval value is used.
 
 @item --binonzero
 Make sure that one bin starts from zero. In practice, this will shift
 the histogam such that one bin's lower interval is zero. It is useful
-if the range includes negative values, but for this histogram or
-cumulative frequency plot you only want positive values. If zero is in
-the middle of one bin, then the viewers of the plot(s) will think
-negative data is also present.
+if the range includes negative values, but the data doesn't. If zero
+is somewhere between one bin, then the viewers of the plot(s) will
+think negative data is also present.
+
+Note that by default, the bins are shown by their central values in
+the output text files, so you will not see the 0.000 value there. To
+see it, add the @option{--lowerbin} option.
 
 @item --noasciihist
 Do not show an ASCII plot on the command line.
+
+@item --mirrorquant
+(@option{=FLT}) quantile to put the mirror. A value between 0 and
+1. See @ref{Mirror distribution} for a complete explanation. Outputs
+two files with suffixes @file{_mirrorhist.txt} and
+@file{_mirrorcfp.txt}.
+
+@item --checkmode
+The mode of the data is found by comparing the input data distribution
+with its mirror distribution. If this option is called, the mirror
+distribution's histogram and cumulative frequency plots will be saved
+in to plain text files ending with @file{_modehist.txt} and
+@file{_modecfp.txt}. See the explanation for @ref{Mirror distribution}
+for more details about these two files and how you can easily plot the
+outputs. Note that you just have to change the appended suffixes in
+the two calls to @code{np.loadtxt} in the Python script.
 
 @end table
 
@@ -7119,6 +7246,68 @@ runs.
 
 @end table
 
+
+
+@node NoiseChisel,  , ImageStatistics, Image analysis
+@section NoiseChisel
+
+Once raw data have gone through the initial reduction process (through
+the programs in @ref{Image manipulation}). We are ready to derive
+scientific results out of it. Unfortunately in most cases, the
+scientificly interesting targets are deeply drowned in a sea of
+noise. NoiseChisel is Gnuastro's tool to detect signal in
+noise. Infact, NoiseChisel was the motivation behind creating Gnuastro
+and has @url{http://arxiv.org/abs/1505.01664, a full journal
+article}@footnote{It is currently under production by the
+Astrophysical Journal Supplement Series. It can also be read in arXiv:
+@url{http://arxiv.org/abs/1505.01664}.} devoted to its
+techniques. Currently the paper does a very thorough job at explaining
+the concepts, methods and even the options of NoiseChisel. However,
+the paper cannot undergo any futher updates, so as the development of
+NoiseChisel evolves, this section will grow.
+
+@cindex Detection
+Detection is the process of separating signal from noise. In other
+words, after detection is complete, one set data elements (pixels in
+an image) will be distinguished as signal and another set of the data
+elements will be noise. NoiseChisel was the first software to make use
+of a noise-based concept to detection. In this method, other than
+emphasizing on the signal and trying to guess its properties prior to
+detection (for example assuming that it is an ellipse), we put out
+emphasis on the noise in the image and impose only negligible
+requirements on the signal. The name of NoiseChisel is derived from
+the first thing it does after thresholding the image: to erode it. In
+practice (on an image) this is very similar to carve off pixels,
+similar to what a wood chisel or stone chisel does. Please read the
+NoiseChisel paper for a complete explanation.
+
+@menu
+* Invoking astnoisechisel::     Options and arguments for NoiseChisel.
+@end menu
+
+@node Invoking astnoisechisel,  , NoiseChisel, NoiseChisel
+@subsection Invoking NoiseChisel
+
+NoiseChisel will detect signal in noise. The executable name is
+@file{astnoisechisel} with the following general template
+
+@example
+$ astnoisechisel [OPTION ...] InputImage.fits
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astnoisechisel input.fits
+$ astnoisechisel field.fits --mask=badpixels.fits --mhdu=1
+@end example
+
+@noindent
+If NoiseChisel is to run, an input image should be provided with the
+recognized extensions as input data, see @ref{Arguments}. See
+@ref{Common options} for the list of options that are shared by all
+programs.
 
 
 
@@ -8641,8 +8830,8 @@ please don't forget that Gnuastro is a volunteer effort), there should
 be no open items in this tracker.
 
 @item Bugs
-This tracker contains all the known bugs in the Gnuastro (problems
-with the existing tools).
+This tracker contains all the known bugs in Gnuastro (problems with
+the existing tools).
 
 @item Tasks
 The items in this tracker contain the future plans (or new
@@ -8768,10 +8957,10 @@ $ autoreconf --install
 Now you can easily configure, build and start hacking into the code
 and you have the full revision history under your fingers.
 
-The hand-written (that is version controlled) code for Gnuastro, this
-manual and the tests are divided in the following sub-directories of
-the top directory. Their names are standard and descriptive enough,
-but a short summary is given here:
+The hand-written (version controlled) code for Gnuastro, this manual
+and the tests are divided in the following sub-directories of the top
+directory. Their names are standard and descriptive enough, but a
+short summary is given here:
 
 @cindex Top source code directories
 @cindex Directories in Gnuastro source
@@ -9318,7 +9507,7 @@ initial plan). So correct them as you are actually coding.
 @item
 In the end, read the section in the manual that you edited completely
 and see if you didn't miss any change in the coding and to see if the
-context is fairly contiues for a first time reader (who hasn't seen
+context is fairly continuous for a first time reader (who hasn't seen
 the manual or had known of Gnuastro before you made your change).
 @end enumerate
 
@@ -9456,7 +9645,7 @@ $ make distcheck
 This command will create a distribution file (ending with
 @file{.tar.gz}) and try to compile it in the most general cases, then
 it will run the tests on what it has built in its own
-mini-environment. If @command{$ make check} finishes successfully,
+mini-environment. If @command{$ make distcheck} finishes successfully,
 then you are safe to send your changes to us to implement or for your
 own purposes.
 

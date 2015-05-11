@@ -403,6 +403,22 @@ sanitycheck(struct imgstatparams *p)
       automaticoutput(basename, "_cfp.txt", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->cfpname);
     }
+  if(p->mhistname)              /* The mode mirror distribution will need */
+    {                           /* both a histogram and cfp.              */
+      p->mcfpname=p->mhistname=NULL;
+      automaticoutput(basename, "_modehist.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->mhistname);
+      automaticoutput(basename, "_modecfp.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->mcfpname);
+    }
+  if(isnan(p->mirror)==0)
+    {
+      p->mirrorhist=p->mirrorcfp=NULL;
+      automaticoutput(basename, "_mirrorhist.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->mirrorhist);
+      automaticoutput(basename, "_mirrorcfp.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->mirrorcfp);
+    }
 
 
   /* If the cumulative frequency plot parameters are to depend on the
@@ -478,7 +494,7 @@ preparearrays(struct imgstatparams *p)
   qsort(p->sorted, p->size, sizeof *p->sorted, floatincreasing);
 
   /* Check the given range: */
-  if(p->histname)
+  if(p->histname || p->asciihist)
     {
       if(up->histquantset)
         {
@@ -613,6 +629,7 @@ setparams(int argc, char *argv[], struct imgstatparams *p)
 
   p->asciihist      = 1;
   p->sigclip        = 1;
+  p->mirror         = NAN;
   p->histname=p->cfpname="a";   /* Will be set later, just a sign that */
                                 /* they should be output.              */
   /* Read the arguments. */
@@ -677,6 +694,8 @@ freeandreport(struct imgstatparams *p, struct timeval *t1)
   free(p->cp.hdu);
   free(p->cfpname);
   free(p->histname);
+  free(p->mcfpname);
+  free(p->mhistname);
   free(p->cp.output);
   if(p->up.masknameallocated) free(p->up.maskname);
 

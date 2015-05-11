@@ -101,8 +101,8 @@ makemirrored(float *in, size_t mi, float **outmirror, size_t *outsize)
 
 
 void
-savemodeplots(float *in, size_t size, size_t mirrorindex,
-	      char *histsname, char *cfpsname)
+makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
+                char *histsname, char *cfpsname)
 {
   FILE *fp;
   size_t msize;
@@ -113,9 +113,9 @@ savemodeplots(float *in, size_t size, size_t mirrorindex,
 
 
   /* Find the index of the mirror and make the mirror array: */
-  mf=in[mirrorindex];
-  floatcopy(in, size, &actual);
-  makemirrored(in, mirrorindex, &mirror, &msize);
+  mf=sorted[mirrorindex];
+  floatcopy(sorted, size, &actual);
+  makemirrored(sorted, mirrorindex, &mirror, &msize);
 
 
   /* Set the mirror pixel to have the value of zero.*/
@@ -127,15 +127,17 @@ savemodeplots(float *in, size_t size, size_t mirrorindex,
   errno=0;
   out=malloc(numbins*3*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out in savemodeplots (mode.c)",
-          numbins*3*sizeof *out);
+    error(EXIT_FAILURE, errno, "%lu bytes for out in makemirrorplots "
+          "(mode.c)", numbins*3*sizeof *out);
 
 
   /* Define the bin sides: */
   setbins(actual, size, numbins, min, max, binonzero, quant, &bins);
 
 
-  /* Find the histogram of the actual data and put it in out: */
+  /* Find the histogram of the actual data and put it in out. Note
+     that maxhistone=0, because here we want to use one value for both
+     histograms so they are comparable. */
   histogram(actual, size, bins, numbins, normhist, maxhistone);
   for(i=0;i<numbins;++i)
     if(bins[i*2+1]>maxhist) maxhist=bins[i*2+1];
@@ -144,12 +146,14 @@ savemodeplots(float *in, size_t size, size_t mirrorindex,
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
   d=(out[3]-out[0])/2;
 
+
   /* Find the histogram of the mirrired distribution and put it in
      out: */
   histogram(mirror, msize, bins, numbins, normhist, maxhistone);
   for(i=0;i<numbins;++i)
     { out[i*3+2]=bins[i*2+1]/maxhist; bins[i*2+1]=0.0f;}
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
+
 
   /* Print out the histogram: */
   errno=0;
@@ -158,7 +162,8 @@ savemodeplots(float *in, size_t size, size_t mirrorindex,
     error(EXIT_FAILURE, errno, "Could not open file %s", histsname);
   fprintf(fp, "# Histogram of actual and mirrored distributions.\n");
   fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
-  fprintf(fp, "# Column 1: Number of points in this bin.\n");
+  fprintf(fp, "# Column 1: Input data.\n");
+  fprintf(fp, "# Column 2: Mirror distribution.\n");
   for(i=0;i<numbins;++i)
     fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3]+d,
 	    out[i*3+1], out[i*3+2]);
@@ -170,12 +175,13 @@ savemodeplots(float *in, size_t size, size_t mirrorindex,
   /* Find the cumulative frequency plots of the two distributions: */
   cumulativefp(actual, size, bins, numbins, normcfp);
   for(i=0;i<numbins;++i)
-    { out[i*3+1]=bins[i*2+1]; bins[i*2+1]=0.0f;}
+    { out[i*3+1]=bins[i*2+1]; bins[i*2+1]=0.0f; }
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
   cumulativefp(mirror, msize, bins, numbins, normcfp);
   for(i=0;i<numbins;++i)
     { out[i*3+2]=bins[i*2+1]; bins[i*2+1]=0.0f;}
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
+
 
   /* Since the two cumultiave frequency plots have to be on scale, see
      which one is larger and divided both CFPs by the size of the
@@ -185,10 +191,11 @@ savemodeplots(float *in, size_t size, size_t mirrorindex,
   errno=0;
   fp=fopen(cfpsname, "w");
   if(fp==NULL) error(EXIT_FAILURE, errno, "Could not open file %s", cfpsname);
-  fprintf(fp, "# Cumulative frequency plot of\n"
-	  "# actual and mirrored distributions.\n");
+  fprintf(fp, "# Cumulative frequency plot (average index in bin) of\n"
+	  "# Actual and mirrored distributions.\n");
   fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
-  fprintf(fp, "# Column 1: Average index of points in this bin.\n");
+  fprintf(fp, "# Column 1: Actual data.\n");
+  fprintf(fp, "# Column 2: Mirror distribution.\n");
   for(i=0;i<numbins;++i)
     fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3],
 	    out[i*3+1]/maxcfp, out[i*3+2]/maxcfp);
@@ -368,7 +375,7 @@ modegoldenselection(struct modeparams *mp)
   sprintf(outname, "%dcmp.pdf", counter);
   sprintf(cfpsname, "%dcfps.txt", counter);
   sprintf(histsname, "%dhists.txt", counter);
-  savemodeplots(mp->sorted, mp->size, di, histsname, cfpsname);
+  makemirrorplots(mp->sorted, mp->size, di, histsname, cfpsname);
   sprintf(command, "./plot.py %s %s %s", histsname, cfpsname, outname);
   system(command);
   -------------------------------------------------------------------*/
@@ -513,16 +520,19 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
 /* Find the quantile of the mode of a sorted distribution. The return
    value is either 0 (not accurate) or 1 (accurate). Accuracy is
    defined based on the difference between the maximum and minimum
-   maxdiffs that were found during the golden section search. */
-int
-modeindexinsorted(float *sorted, size_t size, size_t *modeindex,
-		  float errorstdm, int dataid)
+   maxdiffs that were found during the golden section search.
+
+   A good mode will have:
+
+   modequant=(float)(modeindex)/(float)size;
+   modesym>MODESYMGOOD && modequant>MODELOWQUANTGOOD
+*/
+void
+modeindexinsorted(float *sorted, size_t size, float errorstdm,
+                  size_t *modeindex, float *modesym)
 {
-  int output;
   struct modeparams mp;
-  float modequant, minmaxquant=0.05;
-  float sym=0, symlimit=0.15, modequantlimit=0.025;
-  char histname[100], cfpname[100], command[1000], cmpname[100];
+  float minmaxquant=0.05;
 
   /* Initialize the modeparams structure: */
   mp.size=size;
@@ -539,43 +549,9 @@ modeindexinsorted(float *sorted, size_t size, size_t *modeindex,
   mp.midd  = mirrormaxdiff(mp.sorted, mp.size, mp.midi, mp.numcheck,
 			   mp.interval, mp.errorstdm);
 
-  /* To view a random quantile mirror distribution uncomment this
-     section.
-  savemodeplots(sorted, size, indexfromquantile(size, 0.10f),
-		"modehists.txt", "modecfps.txt");
-  system("./plot.py modehists.txt modecfps.txt modecmp.pdf"); exit(0);
-  exit(0);*/
-
-  /* Find the quantile of the mode of the distribution within the
-     given tolerance. */
+  /* Do the golden section search and find the resulting
+     symmetricity. */
   *modeindex=modegoldenselection(&mp);
-  modequant=(float)(*modeindex)/(float)size;
-
-  /* Save the plot of the symmetric mode comparison:
-  printf("modequant: %f. Value: %f\n", *modequant, sorted[modeindex]);
-  savemodeplots(sorted, size, modeindex, "modehists.txt", "modecfps.txt");
-  system("./plot.py modehists.txt modecfps.txt modecmp.pdf");*/
-
-  if(modequant>modequantlimit)
-    {
-      modesymmetricity(sorted, size, *modeindex,
-		       mp.errorstdm, minmaxquant, &sym);
-      if(sym>symlimit) output=1;
-      else             output=0;
-    }
-  else                 output=0;
-  if(output==1 && dataid>=0 && dataid<10)
-    {
-      sprintf(cmpname, "%d_cmp.pdf", dataid);
-      sprintf(cfpname, "%d_cfp.txt", dataid);
-      sprintf(histname, "%d_hist.txt", dataid);
-      sprintf(command, "./plot.py %s %s %s", histname, cfpname, cmpname);
-      printf("%d: modequant: %f. Sym: %f\n", dataid, modequant, sym);
-      savemodeplots(sorted, size, *modeindex, histname, cfpname);
-      system(command);
-      sprintf(command, "rm %s %s", histname, cfpname);
-      system(command);
-    }
-
-  return output;
+  modesymmetricity(sorted, size, *modeindex, errorstdm,
+                   minmaxquant, modesym);
 }

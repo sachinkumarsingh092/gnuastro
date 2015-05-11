@@ -711,13 +711,6 @@ setbins(float *sorted, size_t size, size_t numbins, float min,
 	{
 	  min=sorted[0];
 	  max=sorted[size-1];
-	  /* The number of elements in each bin is counted by those
-	     equal or smaller to the smaller bin side and smaller than
-	     the right of the bin. Therefore, if the maximum bin side
-	     equals the maximum element value, it will not be
-	     counted. So we slightly increase the maximum before
-	     calculating the bin width */
-	  max+=(max-min)/10000;
 	}
     }
   binwidth=(max-min)/numbins;
@@ -729,11 +722,16 @@ setbins(float *sorted, size_t size, size_t numbins, float min,
   /* If one bin is to be placed on zero. */
   if(binonzero)
     {
-      for(i=0;i<numbins+1;++i)
-	if(bins[i*2]>=0.0f) break;
-      tosubtract=bins[i*2];
-      for(i=0;i<numbins+1;++i)
-	bins[i*2]-=tosubtract;
+      /* Go over all the bins and stop when the sign of the two sides
+         of one bin are different. */
+      for(i=0;i<numbins;++i)
+	if(bins[i*2]*bins[(i+1)*2]<0.0f) break;
+      if(i!=numbins)
+        {
+          tosubtract=bins[(i+1)*2];
+          for(i=0;i<numbins+1;++i)
+            bins[i*2]-=tosubtract;
+        }
     }
 
   /* In case you want to check the bins: */
@@ -746,22 +744,36 @@ setbins(float *sorted, size_t size, size_t numbins, float min,
 
 
 
-#define CHECKHIST 0
 void
 histogram(float *sorted, size_t size, float *bins, size_t numbins,
 	  int normhist, int maxhistone)
 {
-  float max=-FLT_MAX;
+  int lastrow=0;
   size_t histrow, i;
+  float max=-FLT_MAX;
+
+  if((long)numbins<=0)
+    error(EXIT_FAILURE, 0, "The number of bins in histogram (statistics.h) "
+          "must be >0. You have given asked for %ld.", (long)numbins);
 
   /* Fill the histogram. */
   histrow=0;
   for(i=0;i<size;++i)
     {
+      /* Data has not reached bins yet: */
       if(sorted[i]<bins[histrow*2]) continue;
-      while (sorted[i]>=bins[(histrow+1)*2])
-	if(++histrow>=numbins) break;
-      if(histrow>=numbins) break;
+
+      /* Until the last bin, the larger bin interval is in the next
+         bin. But for the last bin, it should be included in the
+         bin. Note that the constant added in the end is to account
+         for floating point rounding error.*/
+      while ((lastrow && sorted[i]>bins[(histrow+1)*2]+1e-6f)
+             || sorted[i]>=bins[(histrow+1)*2])
+        {
+          if(++histrow>=numbins) break; /* break out of this inner while. */
+          if(histrow==numbins-1) lastrow=1;
+        }
+      if(histrow>=numbins) break;     /* break out of the whole loop.   */
       ++bins[histrow*2+1];
     }
 
@@ -780,10 +792,10 @@ histogram(float *sorted, size_t size, float *bins, size_t numbins,
 	bins[i*2+1]/=max;
     }
 
-  /* In case you want to see the histogram: */
-  if(CHECKHIST)
-    for(i=0;i<numbins;++i)
-      printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+  /* In case you want to see the histogram:
+  for(i=0;i<numbins;++i)
+    printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+  */
 }
 
 
@@ -794,6 +806,7 @@ void
 cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
 	     int normcfp)
 {
+  int lastrow=0;
   float prevind=0;
   size_t cfprow=0, i, numinds=0;
 
@@ -801,7 +814,8 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
   for(i=0;i<size;++i)
     {
       if(sorted[i]<bins[cfprow*2]) continue;
-      while (sorted[i]>=bins[(cfprow+1)*2])
+      while ( (lastrow && sorted[i]>bins[(cfprow+1)*2]+1e-6f)
+              || sorted[i]>=bins[(cfprow+1)*2] )
 	{
 	  if(numinds>0)
 	    prevind=bins[cfprow*2+1]/=numinds; /* Divide by num indexs */
@@ -809,9 +823,10 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
 	    bins[cfprow*2+1]=prevind;
 	  numinds=0;
 	  if(++cfprow>=numbins)
-	    break;
+	    break;              /* To break out of this while loop. */
+          else if (cfprow==numbins-1) lastrow=1;
 	}
-      if(cfprow>=numbins) break;
+      if(cfprow>=numbins) break; /* To break out of the for loop.   */
       bins[cfprow*2+1]+=i;	/* Sum of indexs (see above for average) */
       ++numinds;
     }
@@ -820,6 +835,13 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
   if(normcfp)
     for(i=0;i<numbins;++i)
       bins[i*2+1]/=size;
+
+  /* In a CFP, all bins that are possibly left behind (there was no
+     data to fill them) should get the same value as the lastly filled
+     value. They should not be zero. Note that this has to be done
+     after the possible normalization. */
+  for(i=cfprow;i<numbins;++i)
+    bins[i*2+1]=bins[(cfprow-1)*2+1];
 
   /* In case you want to see the CFP:
   for(i=0;i<numbins;++i)

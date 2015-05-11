@@ -26,6 +26,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MODELOWQUANTILE  0.01f
 #define MODEHIGHQUANTILE 0.51f
 
+#define MODESYMGOOD       0.15f
+#define MODELOWQUANTGOOD  0.025f
+
 #define GOLDENRATIO        1.618034f
 #define TWOTAKEGOLDENRATIO 0.38197f
 
@@ -45,8 +48,12 @@ struct modeparams
   float   errorstdm;		/* Multiple of standard deviation.         */
 };
 
-int
-modeindexinsorted(float *sorted, size_t size, size_t *modeindex,
-		  float errorstdm, int dataid);
+void
+makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
+                char *histsname, char *cfpsname);
+
+void
+modeindexinsorted(float *sorted, size_t size, float errorstdm,
+                  size_t *modeindex, float *modesym);
 
 #endif

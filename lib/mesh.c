@@ -482,6 +482,7 @@ fillmeshonthreads(void *inparam)
   struct fillmeshparams *fcp=(struct fillmeshparams *)inparam;
   struct meshparams *mp=fcp->mp;
 
+  float modesym;
   size_t modeindex;
   float sigcliptolerance=mp->sigcliptolerance;
   float *f, *mesh, *img, *imgend, *inimg=mp->img;
@@ -533,8 +534,8 @@ fillmeshonthreads(void *inparam)
 
       /* Do the desired operation on the mesh: */
       qsort(mesh, num, sizeof *mesh, floatincreasing);
-      if(modeindexinsorted(mesh, num, &modeindex, mirrordist, -1)
-         && (float)modeindex/(float)num>minmodeq )
+      modeindexinsorted(mesh, num, mirrordist, &modeindex, &modesym);
+      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq )
         {
           switch(fcp->operationid)
             {

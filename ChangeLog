@@ -1,3 +1,22 @@
+2015-05-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/statistics.c (setbins): Changed method to find the bin that
+	has the value zero within it. Before it would just choose the
+	first bin with a positive value. But now, it will check the signs
+	of the two interval sides of the bin and when ever the
+	multiplication becomes negative, that bin is chosen.
+	(histogram): Changed so the last bin is a closed bin, not half
+	open like the rest of the histogram bins. This also includes
+	floating point rounding error.
+	(cumulativefp): Same as the histogram function.
+
+	* lib/mode.c (makemirrorplots): New name for the old
+	savemodeplots.
+
+	* include/mode.h: Changed input arguments to
+	modeindexinsorted. Plots can now be made through the separate
+	makemirrorpolots function.
+
 2015-05-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/subtractsky/ui.c (preparearrays): Moved the function that

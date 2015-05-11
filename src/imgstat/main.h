@@ -33,11 +33,11 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define PRINTFLT "%.6f\n"
-#define PRINTINT "%.0f\n"
-#define STRVAL   "   -- %-45s%s\n"
-#define FNAMEVAL "   -- %-45s%g\n"
-#define SNAMEVAL "   -- %-45s%lu\n"
+#define PRINTFLT  "%.6f\n"
+#define PRINTINT  "%.0f\n"
+#define STRVAL    "   -- %-45s%s\n"
+#define FNAMEVAL  "   -- %-45s%g\n"
+#define SNAMEVAL  "   -- %-45s%lu\n"
 #define ASCIIHISTNUMBINS    60
 #define ASCIIHISTHEIGHT     10
 #define HISTSTRING     "Histogram"
@@ -87,6 +87,11 @@ struct imgstatparams
   int            asciihist;  /* ==1: print an ASCII histogram.        */
   int            binonzero;  /* Shift histogram, one bin starts at 0. */
   int             lowerbin;  /* Interval lower limit as column 1.     */
+  float             mirror;  /* Mirror quantile.                      */
+  char         *mirrorhist;  /* Name of mirror histogram.             */
+  char          *mirrorcfp;  /* Name of mirror CFP.                   */
+  char          *mhistname;  /* Name of mode mirror histogram.        */
+  char           *mcfpname;  /* Name of mode mirror CFP.              */
 
   /* Histogram: */
   char           *histname;  /* Histogram file name.                  */

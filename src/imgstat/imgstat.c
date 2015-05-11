@@ -45,26 +45,44 @@ void
 reportsimplestats(struct imgstatparams *p)
 {
   double sum;
+  float modequant;
   size_t modeindex;
-  float ave, std, med, mode;
+  float ave, std, med, modesym;
 
   sum=floatsum(p->img, p->size);
   favestd(p->img, p->size, &ave, &std, NULL);
   med=p->sorted[indexfromquantile(p->size, 0.5f)];
 
+  /* Very simple and basic: */
   printf(SNAMEVAL FNAMEVAL FNAMEVAL, "Number of points", p->size,
 	 "Minimum", p->sorted[0], "Maximum", p->sorted[p->size-1]);
   printf(FNAMEVAL FNAMEVAL FNAMEVAL FNAMEVAL, "Sum", sum, "Mean", ave,
 	 "Standard deviation", std, "Median", med);
-  if(modeindexinsorted(p->sorted, p->size, &modeindex, 1.5f, -1))
+
+  /* The mode: */
+  modeindexinsorted(p->sorted, p->size, 1.5f, &modeindex, &modesym);
+  modequant=(float)(modeindex)/(float)(p->size);
+  if(modequant>MODELOWQUANTGOOD && modesym>MODESYMGOOD)
     {
-      mode=p->sorted[modeindex];
-      printf(FNAMEVAL, "Mode", mode);
+      /* Report the values: */
+      printf("   -- %-45s%.2f, %g\n", "Mode (quantile, value)",
+             modequant, p->sorted[modeindex]);
+      printf(FNAMEVAL, "Mode symmetricity", modesym);
+
+      /* Save the mode histogram and cumulative frequency plot. Note
+         that if the histograms are to be built, then
+         mhistname!=NULL. */
+      if(p->mhistname)
+        makemirrorplots(p->sorted, p->size, modeindex,
+                        p->mhistname, p->mcfpname);
     }
   else
-    {
-      printf(STRVAL, "Mode", "Not accurate");
-    }
+    printf(STRVAL, "Mode", "Not accurate");
+
+  /* The mirror distribution: */
+  if(isnan(p->mirror)==0)
+    makemirrorplots(p->sorted, p->size, indexfromquantile(p->size, p->mirror),
+                    p->mirrorhist, p->mirrorcfp);
 }
 
 
@@ -144,7 +162,7 @@ printhistcfp(struct imgstatparams *p, float *bins, size_t numbins,
   else
     fprintf(out, "# Column 1: Flux in the middle of each bin\n");
 
-  if(strcmp(outputtype, CFPSTRING))
+  if(strcmp(outputtype, CFPSTRING)==0)
     {
       fprintf(out, "# Column 2: Average of the sorted index of all points "
               "in this bin");
@@ -158,7 +176,7 @@ printhistcfp(struct imgstatparams *p, float *bins, size_t numbins,
           int0float1=0;
         }
     }
-  else if (strcmp(outputtype, HISTSTRING))
+  else if (strcmp(outputtype, HISTSTRING)==0)
     {
       if(p->normhist)
         fprintf(out, "# Column 2: Fraction of points in this bin. \n");
