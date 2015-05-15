@@ -188,7 +188,7 @@ removepaddingcorrectroundoff(struct convolveparams *p)
     {
       o=&input[i*is1];
       df=(d=start+i*ps1)+is1;
-      do *o++ = *d<1e-17 ? 0 : *d; while (++d<df);
+      do *o++ = (*d<CONVFLOATINGPOINTERR && *d>0) ? 0 : *d; while (++d<df);
     }
 }
 
@@ -540,6 +540,8 @@ frequencyconvolve(struct convolveparams *p)
   if(verb) gettimeofday(&t1, NULL);
   removepaddingcorrectroundoff(p);
   if(verb) reporttiming(&t1, "Padded parts removed.", 1);
+
+
 
 
   /* Free all the allocated space. */

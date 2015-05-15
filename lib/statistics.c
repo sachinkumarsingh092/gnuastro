@@ -979,7 +979,7 @@ sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
   else orderedarray=array;
 
   start=orderedarray;
-  while(1)
+  while(counter<MAXSIGCLIPCONVERGE)
     {
       oldstart=start;
 
@@ -1053,7 +1053,7 @@ sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
   else orderedarray=array;
 
   start=orderedarray;
-  for(counter=0;counter<numtimes+1;++counter)
+  for(counter=0;counter<numtimes;++counter)
     {
       oldstart=start;
 

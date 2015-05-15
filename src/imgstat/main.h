@@ -61,6 +61,7 @@ struct uiparams
   int               cfpminset;
   int               cfpmaxset;
   int             cfpquantset;
+  int       mirrorplotdistset;
   int        sigclipmultipset;
   int     sigcliptoleranceset;
   int           sigclipnumset;
@@ -91,7 +92,9 @@ struct imgstatparams
   char         *mirrorhist;  /* Name of mirror histogram.             */
   char          *mirrorcfp;  /* Name of mirror CFP.                   */
   char          *mhistname;  /* Name of mode mirror histogram.        */
+  float     mirrorplotdist;  /* Dist. after mode to display on plot.  */
   char           *mcfpname;  /* Name of mode mirror CFP.              */
+  int   histrangeformirror;  /* ==1: Use histogram range for mirror.  */
 
   /* Histogram: */
   char           *histname;  /* Histogram file name.                  */

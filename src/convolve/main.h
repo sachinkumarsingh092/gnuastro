@@ -38,6 +38,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+#define CONVFLOATINGPOINTERR 1e-10
+
+
 
 /* User interface parameters structure */
 struct uiparams

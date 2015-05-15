@@ -243,6 +243,64 @@ channelsinhex(struct converttparams *p, FILE *fp, size_t size)
 
 
 void
+channelsinascii85(struct converttparams *p, FILE *fp, size_t size)
+{
+  uint8_t *ech;
+  uint32_t anint, base;
+  size_t i, j, k, numelem=15;   /* 15*5=75 */
+
+  for(i=0;i<p->numch;++i)
+    {
+      if(p->isblank[i])
+        fprintf(fp, "{<00>} %% Channel %lu is blank\n", i);
+      else
+        {
+          ech=p->ech[i];
+          fprintf(fp, "{<~");
+          for(j=0;j<size;j+=4)
+            {
+              /* This is the last four bytes */
+              if(size-j<4)
+                {
+                  anint=ech[j]*256*256*256;
+                  if(size-j>1)  anint+=ech[j+1]*256*256;
+                  if(size-j==3) anint+=ech[j+2]*256;
+                }
+              else
+                anint=( ech[j]*256*256*256 + ech[j+1]*256*256
+                        + ech[j+2]*256     + ech[j+3] );
+
+              /* If all four bytes are zero, then just print `z'. */
+              if(anint==0) fprintf(fp, "z");
+              else
+                {
+                  /* To check, just change the fprintf below to printf:
+                     printf("\n\n");
+                     printf("%u %u %u %u\n", ech[j], ech[j+1],
+                            ech[j+2], ech[j+3]);
+                  */
+                  base=85*85*85*85;
+                  /* Do the ASCII85 encoding: */
+                  for(k=0;k<5;++k)
+                    {
+                      fprintf(fp, "%c", anint/base+33);
+                      anint%=base;
+                      base/=85;
+                    }
+                }
+              /* Go to the next line if on the right place: */
+              if(j%numelem==0) fprintf(fp, "\n");
+            }
+          fprintf(fp, "~>}\n");
+        }
+    }
+}
+
+
+
+
+
+void
 writeepsimage(struct converttparams *p, FILE *fp)
 {
   int bpc=8;
@@ -274,7 +332,8 @@ writeepsimage(struct converttparams *p, FILE *fp)
   for(i=0;i<p->numch;++i) fprintf(fp, " 0 1"); fprintf(fp, " ]\n");
   fprintf(fp, "  /Interpolate false\n");
   fprintf(fp, "  /DataSource [\n");
-  channelsinhex(p, fp, size);
+  if(p->hex) channelsinhex(p, fp, size);
+  else channelsinascii85(p, fp, size);
   fprintf(fp, "  ]\n");
   fprintf(fp, ">>\n");
   fprintf(fp, "image\n\n");

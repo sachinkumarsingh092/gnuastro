@@ -505,7 +505,17 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
-    printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+    {
+      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+      printf(" Input image: %s\n", p->up.inputname);
+      printf(" matrix:"
+             "\n\t%.4f   %.4f   %.4f"
+             "\n\t%.4f   %.4f   %.4f"
+             "\n\t%.4f   %.4f   %.4f\n",
+             p->matrix[0], p->matrix[1], p->matrix[2],
+             p->matrix[3], p->matrix[4], p->matrix[5],
+             p->matrix[6], p->matrix[7], p->matrix[8]);
+    }
 
   /* Make the array of input images. */
   preparearrays(p);

@@ -62,6 +62,9 @@ AC_CHECK_LIB([gslcblas], [cblas_sdsdot], [absolutejunk=1],
 AC_CHECK_LIB([gsl], [gsl_integration_qng], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lgslcblas -lm])
 
+AC_CHECK_LIB([wcs], [wcslib_version],
+             [AC_DEFINE([HAVE_WCSLIBVERSION], [1], [Has wcslib_version])],
+             [], [-lcfitsio -lm])
 AC_CHECK_LIB([pthread], [pthread_barrier_wait],
              [AC_DEFINE([HAVE_PTHREAD_BARRIER], [1], [Has pthread_barrier])])
 

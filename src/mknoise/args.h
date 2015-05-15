@@ -199,7 +199,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.zeropointset=1;
       break;
     case 'e':
-      p->envseed=0;
+      p->envseed=1;
       break;
 
 

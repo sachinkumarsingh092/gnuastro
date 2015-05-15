@@ -24,6 +24,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define STATISTICS_H
 
 
+#define MAXSIGCLIPCONVERGE 50
+
+
 /****************************************************************
  *****************    Mininum and Maximum    ********************
  ****************************************************************/

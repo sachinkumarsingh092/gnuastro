@@ -167,7 +167,7 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "zeropoint")==0)
 	{
 	  if(up->zeropointset) continue;
-	  floatl0(value, &p->zeropoint, name, key, SPACK, filename, lineno);
+	  anyfloat(value, &p->zeropoint, name, key, SPACK, filename, lineno);
 	  up->zeropointset=1;
 	}
       else if(strcmp(name, "prepforconv")==0)
@@ -362,7 +362,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(up->zeropointset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "zeropoint", p->zeropoint);
   if(up->circumwidthset)
-    fprintf(fp, CONF_SHOWFMT"%f\n", "circumwidth", p->circumwidth);
+    fprintf(fp, CONF_SHOWFMT"%.2f\n", "circumwidth", p->circumwidth);
 
   fprintf(fp, "\n# Catalog:\n");
   if(up->xcolset)

@@ -75,7 +75,7 @@ const char doc[] =
    c d e f j k m s t v w y z
    B C E F G I J L O R T W X Y Z
 
-   Number keys used: <=510
+   Number keys used: <=512
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -150,7 +150,7 @@ static struct argp_option options[] =
       509,
       0,
       0,
-      "Mode mirror. `_modehist.txt', `_modecfp.txt'.",
+      "Mode mirror plot. `_modehist.txt', `_modecfp.txt'",
       2
     },
     {
@@ -159,6 +159,22 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Mirror quantile. `_mirhist.txt', `_mircfp.txt'.",
+      2
+    },
+    {
+      "histrangeformirror",
+      511,
+      0,
+      0,
+      "Use input histogram range for mirror plots.",
+      2
+    },
+    {
+      "mirrorplotdist",
+      512,
+      "FLT",
+      0,
+      "Distance beyond mode to display.",
       2
     },
 
@@ -411,6 +427,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 510:
       floatl0s1(arg, &p->mirror, "mirrorquant", key, SPACK, NULL, 0);
+      break;
+    case 511:
+      p->histrangeformirror=1;
+      break;
+    case 512:
+      floatl0(arg, &p->mirrorplotdist, "mirrorplotdist", key, SPACK, NULL, 0);
+      p->up.mirrorplotdistset=1;
       break;
 
     /* Histogram */

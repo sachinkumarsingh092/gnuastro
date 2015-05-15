@@ -779,5 +779,6 @@ freeandreport(struct imgcropparams *p, struct timeval *t1)
   free(p->log);
 
   /* Print the final message. */
-  reporttiming(t1, SPACK_NAME" finished in: ", 0);
+  if(p->cp.verb)
+    reporttiming(t1, SPACK_NAME" finished in: ", 0);
 }

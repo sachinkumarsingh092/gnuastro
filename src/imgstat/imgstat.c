@@ -45,8 +45,8 @@ void
 reportsimplestats(struct imgstatparams *p)
 {
   double sum;
-  float modequant;
   size_t modeindex;
+  float modequant, symvalue;
   float ave, std, med, modesym;
 
   sum=floatsum(p->img, p->size);
@@ -62,27 +62,24 @@ reportsimplestats(struct imgstatparams *p)
   /* The mode: */
   modeindexinsorted(p->sorted, p->size, 1.5f, &modeindex, &modesym);
   modequant=(float)(modeindex)/(float)(p->size);
-  if(modequant>MODELOWQUANTGOOD && modesym>MODESYMGOOD)
-    {
-      /* Report the values: */
-      printf("   -- %-45s%.4f, %g\n", "Mode (quantile, value)",
-             modequant, p->sorted[modeindex]);
-      printf(FNAMEVAL, "Mode symmetricity", modesym);
 
-      /* Save the mode histogram and cumulative frequency plot. Note
-         that if the histograms are to be built, then
-         mhistname!=NULL. */
-      if(p->mhistname)
-        makemirrorplots(p->sorted, p->size, modeindex,
-                        p->mhistname, p->mcfpname);
-    }
-  else
-    printf(STRVAL, "Mode", "Not accurate");
+  /* Report the values: */
+  printf("   -- %-45s%.4f, %g\n",
+         (modesym>MODESYMGOOD
+          ? "Mode (quantile, value)"
+          : "Mode (quantile, value) ## NOT ACCURATE ##"),
+         modequant, p->sorted[modeindex]);
+  symvalue=valuefromsym(p->sorted, p->size, modeindex, modesym);
+  printf("   -- %-45s%.4f, %g\n", "Mode symmetricity and its cutoff"
+         " value", modesym, symvalue);
 
-  /* The mirror distribution: */
-  if(isnan(p->mirror)==0)
-    makemirrorplots(p->sorted, p->size, indexfromquantile(p->size, p->mirror),
-                    p->mirrorhist, p->mirrorcfp);
+  /* Save the mode histogram and cumulative frequency plot. Note
+     that if the histograms are to be built, then
+     mhistname!=NULL. */
+  if(p->mhistname)
+    makemirrorplots(p->sorted, p->size, modeindex, p->histmin, p->histmax,
+                    p->histnumbins, p->mhistname, p->mcfpname,
+                    p->histrangeformirror ? 0.0f : p->mirrorplotdist);
 }
 
 
@@ -109,7 +106,7 @@ printasciihist(struct imgstatparams *p)
     bins[j*2+1]*=ASCIIHISTHEIGHT;
 
   /* Plot the ASCII histogram: */
-  printf("   -- ASCII histogram in the range: %f - %f:\n",
+  printf("   -- ASCII histogram in the range: %f  --  %f:\n",
 	 p->histmin, p->histmax);
   for(i=ASCIIHISTHEIGHT;i>=0;--i)
     {
@@ -209,6 +206,7 @@ printhistcfp(struct imgstatparams *p, float *bins, size_t numbins,
 void
 imgstat(struct imgstatparams *p)
 {
+  int r;
   size_t i;
   float quant=-1.0f;                   /* The quantile was already   */
   float ave, std, med;
@@ -264,14 +262,23 @@ imgstat(struct imgstatparams *p)
       printhistcfp(p, bins, p->cfpnum, p->cfpname, CFPSTRING);
     }
 
+  /* Make the mirror distribution if asked for: */
+  if(isnan(p->mirror)==0)
+    makemirrorplots(p->sorted, p->size, indexfromquantile(p->size, p->mirror),
+                    p->histmin, p->histmax, p->histnumbins, p->mirrorhist,
+                    p->mirrorcfp,
+                    p->histrangeformirror ? 0.0f : p->mirrorplotdist);
+
   /* Print out the Sigma clippings: */
-  if(p->cp.verb)
+  if(p->sigclip && p->cp.verb)
     {
       printf(" - Sigma clipping results (Median, Mean, STD, Number):\n");
       printf("   - %.2f times sigma by convergence (tolerance: %.4f):\n",
              p->sigclipmultip, p->sigcliptolerance);
-      sigmaclip_converge(p->sorted, 1, p->size, p->sigclipmultip,
-                         p->sigcliptolerance, &ave, &med, &std, 1);
+      r=sigmaclip_converge(p->sorted, 1, p->size, p->sigclipmultip,
+                           p->sigcliptolerance, &ave, &med, &std, 1);
+      if(r==0)
+        printf("   #### Could not converge\n");
       printf("   - %.2f sigma-clipping %lu times:\n",
 	     p->sigclipmultip, p->sigclipnum);
       sigmaclip_certainnum(p->sorted, 1, p->size, p->sigclipmultip,

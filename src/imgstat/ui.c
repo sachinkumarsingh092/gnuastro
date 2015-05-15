@@ -148,6 +148,13 @@ readconfig(char *filename, struct imgstatparams *p)
 	  strcpy(cp->output, value);
 	  cp->outputset=1;
 	}
+      else if(strcmp(name, "mirrorplotdist")==0)
+	{
+	  if(up->mirrorplotdistset) continue;
+          floatl0(value, &p->mirrorplotdist, name, key, SPACK,
+                    filename, lineno);
+          up->mirrorplotdistset=1;
+	}
 
 
       /* Histogram: */
@@ -293,6 +300,8 @@ printvalues(FILE *fp, struct imgstatparams *p)
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
+  if(up->mirrorplotdistset)
+    fprintf(fp, CONF_SHOWFMT"%.2f\n", "mirrorplotdist", p->mirrorplotdist);
 
   /* Histogram: */
   fprintf(fp, "\n# Histogram:\n");
@@ -343,6 +352,8 @@ checkifset(struct imgstatparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
+  if(up->mirrorplotdistset==0)
+    REPORT_NOTSET("mirrorplotdist");
   if(up->histnumbinsset==0)
     REPORT_NOTSET("histnumbins");
   if(up->cfpnumset==0)
@@ -423,7 +434,7 @@ sanitycheck(struct imgstatparams *p)
 
   /* If the cumulative frequency plot parameters are to depend on the
      histogram, then make sure that the histogram will be created.*/
-  if(p->cfpname && p->histname)
+  if(p->cfpname && p->histname==NULL)
     {
       if(p->cfpsimhist)
 	error(EXIT_FAILURE, 0, "Without a histogram, `--cfpsimhist` is "
@@ -494,7 +505,7 @@ preparearrays(struct imgstatparams *p)
   qsort(p->sorted, p->size, sizeof *p->sorted, floatincreasing);
 
   /* Check the given range: */
-  if(p->histname || p->asciihist)
+  if(p->histname || p->asciihist || p->mhistname || p->mirrorhist)
     {
       if(up->histquantset)
         {
@@ -700,5 +711,6 @@ freeandreport(struct imgstatparams *p, struct timeval *t1)
   if(p->up.masknameallocated) free(p->up.maskname);
 
   /* Print the final message. */
-  reporttiming(t1, SPACK_NAME" finished in: ", 0);
+  if(p->cp.verb)
+    reporttiming(t1, SPACK_NAME" finished in: ", 0);
 }

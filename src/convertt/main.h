@@ -106,6 +106,7 @@ struct converttparams
   int               quality;  /* Quality of JPEG image.                */
   float           widthincm;  /* Width in centimeters.                 */
   int           borderwidth;  /* Width of border in PostScript points. */
+  int                   hex;  /* Use hexadecimal not ASCII85 encoding. */
 
   /* Flux: */
   double            fluxlow;  /* Lower flux truncation value.          */

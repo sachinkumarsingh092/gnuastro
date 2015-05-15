@@ -102,14 +102,14 @@ makemirrored(float *in, size_t mi, float **outmirror, size_t *outsize)
 
 void
 makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
-                char *histsname, char *cfpsname)
+                float min, float max, size_t numbins, char *histsname,
+                char *cfpsname, float mirrorplotdist)
 {
   FILE *fp;
-  size_t msize;
-  size_t i, numbins=200;
-  float quant=0.02, *out, maxhist=-FLT_MAX, maxcfp, d;
+  size_t i, msize;
+  float *bins, *mirror, *actual, mf;
+  float *out, maxhist=-FLT_MAX, maxcfp, d;
   int binonzero=1, normhist=0, maxhistone=0, normcfp=0;
-  float *bins, *mirror, *actual, mf, min=0.0f, max=0.0f;
 
 
   /* Find the index of the mirror and make the mirror array: */
@@ -118,7 +118,18 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
   makemirrored(sorted, mirrorindex, &mirror, &msize);
 
 
-  /* Set the mirror pixel to have the value of zero.*/
+  /* Set the best range if asked for, such that the mirror is on the
+     1/3 of the image scale. */
+  if(mirrorplotdist!=0.0f)
+    {
+      min=actual[indexfromquantile(size, 0.001f)];
+      max=mf+mirrorplotdist*(mf-min);
+    }
+
+
+  /* set the mirror pixel to have the value of zero.*/
+  min-=mf;
+  max-=mf;
   fsumconst(actual, size, -1.0f*mf);
   fsumconst(mirror, msize, -1.0f*mf);
 
@@ -132,7 +143,7 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
 
 
   /* Define the bin sides: */
-  setbins(actual, size, numbins, min, max, binonzero, quant, &bins);
+  setbins(actual, size, numbins, min, max, binonzero, 0, &bins);
 
 
   /* Find the histogram of the actual data and put it in out. Note
@@ -457,15 +468,15 @@ modegoldenselection(struct modeparams *mp)
    for `b` only goes to the 95% of the distribution.  */
 void
 modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
-		 float minmaxquant, float *sym)
+		 float *sym)
 {
   float af, bf, mf, fi;
   size_t i, j, bi=0, topi, errdiff, prevj=0;
 
   mf=a[mi];
   errdiff=errorstdm*sqrt(mi);
-  topi=indexfromquantile(2*mi+1, 1-minmaxquant);
-  af=a[indexfromquantile(2*mi+1,   minmaxquant)];
+  topi=indexfromquantile(2*mi+1, 1-SYMMETRICITYLOWQUANT);
+  af=a[indexfromquantile(2*mi+1,   SYMMETRICITYLOWQUANT)];
 
   /* This loop is very similar to that of mirrormaxdiff(). It will
      find the index where the difference between the two cumulative
@@ -517,6 +528,22 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
 
 
 
+/* It happens that you have the symmetricity and you want the flux
+   value at that point, this function will do that job. In practice,
+   it just finds bf from the equation to calculate symmetricity in
+   modesymmetricity. */
+float
+valuefromsym(float *sorted, size_t size, size_t modeindex, float sym)
+{
+  float mf=sorted[modeindex];
+  float af=sorted[indexfromquantile(size, SYMMETRICITYLOWQUANT)];
+  return sym*(mf-af)+mf;
+}
+
+
+
+
+
 /* Find the quantile of the mode of a sorted distribution. The return
    value is either 0 (not accurate) or 1 (accurate). Accuracy is
    defined based on the difference between the maximum and minimum
@@ -532,7 +559,6 @@ modeindexinsorted(float *sorted, size_t size, float errorstdm,
                   size_t *modeindex, float *modesym)
 {
   struct modeparams mp;
-  float minmaxquant=0.05;
 
   /* Initialize the modeparams structure: */
   mp.size=size;
@@ -552,6 +578,5 @@ modeindexinsorted(float *sorted, size_t size, float errorstdm,
   /* Do the golden section search and find the resulting
      symmetricity. */
   *modeindex=modegoldenselection(&mp);
-  modesymmetricity(sorted, size, *modeindex, errorstdm,
-                   minmaxquant, modesym);
+  modesymmetricity(sorted, size, *modeindex, errorstdm, modesym);
 }

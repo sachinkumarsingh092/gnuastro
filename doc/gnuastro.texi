@@ -4684,6 +4684,23 @@ in your @command{includegraphics} command in @TeX{} or @LaTeX{}. Since
 it is vector graphics, the changes of size have no effect on the
 quality of your output quality (pixels don't get different values).
 
+@item -x
+@itemx --hex
+@cindex ASCII85 encoding
+@cindex Hexadecimal encoding
+Use Hexadecimal encoding in creating EPS output. By default the
+ASCII85 encoding is used which provides a much better compression
+rate. When converted to PDF (or included in @TeX{} or @LaTeX{} which
+is finally saved as a PDF file), an efficient binary encoding is used
+which is far more efficient than both of them. The choice of EPS
+encoding will thus have no effect on the final PDF.
+
+So if you want to transfer your EPS files (for example if you want to
+submit your paper to arXiv or journals in PostScript), their storage
+might become important if you have large images or lots of small
+ones. By default ASCII85 encoding is used which offers a much better
+compression rate (nearly 40 percent) compared to Hexadecimal encoding.
+
 @item -u
 @itemx --quality
 @cindex JPEG compression quality
@@ -6911,18 +6928,14 @@ all other histograms and cumulative frequency plots. The second column
 shows the respective value for the actual data distribution and the
 third shows the value for the mirror distribution.
 
+@cindex Python
 The value for each bin of both histogram is divided by the maximum of
 both. For the cumulative frequency plot, the value in each bin is
 divided by the maximum number of elements. So one of the cumulative
-frequency plots reaches the maximum vertical axis of 1. Currently the
-range of the displayed distributions is between the 0.02 to 0.98
-quantile which is divided into 200 bins.
-
-@cindex Python
-The outputs will have the @file{_mirrorhist.txt} and
-@file{_mirrorcfp.txt} suffixs respectively. You can use a simple
-Python script like the one below to display the histograms and
-cumulative frequency plots in one plot:
+frequency plots reaches the maximum vertical axis of 1. The outputs
+will have the @file{_mirrorhist.txt} and @file{_mirrorcfp.txt} suffixs
+respectively. You can use a simple Python script like the one below to
+display the histograms and cumulative frequency plots in one plot:
 
 @example
 #! /usr/bin/env python3
@@ -6950,7 +6963,7 @@ plt.ylim([0,np.amax(a[:,1])])
 plt.xlim([np.amin(a[:,0]),np.amax(a[:,0])])
 
 # Save the output to any name from the command line:
-plt.savefig(sys.argv[2])
+plt.savefig(sys.argv[1]+"_plot.pdf")
 @end example
 
 @cindex PNG
@@ -6961,9 +6974,11 @@ The output format can be anything that Python's Matplotlib recognizes
 file name was @file{input.fits}, and you want to see how its mirror
 distribution would look like if the mirror was placed at the 0.8
 quantile (or the value which is above 80 percent of your data) you can
-run the following sequence of commands. Lets assume you have put the
-Python script above into the file @file{mirrorplot.py}. The second
-command makes the Python script an executable file.
+run the following sequence of commands to see the combined cumulative
+frequency plot and histogram together in one PDF file. Lets assume you
+have put the Python script above into the file
+@file{mirrorplot.py}. The second command makes the Python script an
+executable file.
 
 @example
 $ ls
@@ -6972,10 +6987,20 @@ $ chmod +x mirrorplot.py
 $ astimgstat input.fits --nohist --nocfp --mirrorquant=0.8
 $ ls
 input.fits  input_mirrorcfp.txt  input_mirrorhist.txt  mirrorplot.py
-$ ./mirrorplot.py input mirrorplot.pdf
-
+$ ./mirrorplot.py input
 @end example
 
+By default, the range of the mirror distribution is set to the 0.01
+quantile of the image to 2 times the distance of the mode to that
+point. This is done so that the mode (which will have a value of zero
+in this plot) is positioned exactly on 1/3rd point of the x axis
+plot. The number of bins is the same value as the
+@option{--histnumbins} option. Alternatively, through the option
+@option{--histrangeformirror}, the histogram properties set with the
+@option{--histmin} and @option{--histmax} can be used. In these mirror
+plots, the mirror value is going to have the value of zero and one of
+the bins is going to start at zero (if @option{--histrangeformirror}
+is called, the given ranges will also shift accordingly).
 
 @node Invoking astimgstat,  , Mirror distribution, ImageStatistics
 @subsection Invoking ImageStatistics
@@ -7110,8 +7135,17 @@ distribution's histogram and cumulative frequency plots will be saved
 in to plain text files ending with @file{_modehist.txt} and
 @file{_modecfp.txt}. See the explanation for @ref{Mirror distribution}
 for more details about these two files and how you can easily plot the
-outputs. Note that you just have to change the appended suffixes in
-the two calls to @code{np.loadtxt} in the Python script.
+outputs. This option only works when when ImageStatistics is in
+verbose mode. Since otherwise the mode is not calculated.
+
+To draw the plots you can use the script in @ref{Mirror
+distribution}. Just change the appended suffixes in the two calls to
+@code{np.loadtxt} in the Python script.
+
+@item --histrangeformirror
+Use @option{--histmin} and @option{--histmax} for the range of the
+mirror distributions (which are produced with the
+@option{--mirrorquant} and @option{--checkmode} options).
 
 @end table
 
@@ -8074,7 +8108,9 @@ no problem if the profiles are to be used as a mask (with
 
 @item -w
 @itemx --circumwidth
-(@option{=FLT})
+(@option{=FLT}) The width of the circumference if the profile is to be
+an elliptical circumference or annulus. See the explanations for this
+type of profile in @option{--fcol}.
 
 @item -z
 @itemx --zeropoint

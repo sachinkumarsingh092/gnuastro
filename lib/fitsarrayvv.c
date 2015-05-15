@@ -992,9 +992,18 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
 {
   size_t i;
   int status=0;
-  char version[20];
+  const char *wcslibversion_const;
   char startblank[]="              / ";
   char *cp, *cpf, blankrec[80], titlerec[80];
+
+  /* Before WCSLIB 5.0, the wcslib_version function was not
+     defined. Sometime in the future were everyone has moved to more
+     recent versions of WCSLIB, we can remove this macro and its check
+     in configure.ac.*/
+#ifdef HAVE_WCSLIBVERSION
+  int wcslibvers[3];
+  char cfitsioversion[20], wcslibversion[20];
+#endif
 
   /* Set the last element of the blank array. */
   cpf=blankrec+79;
@@ -1014,18 +1023,20 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
     updatekeys(fptr, &headers);
 
   /* Set the version of CFITSIO as a string. */
-  sprintf(version, "%-.2f", CFITSIO_VERSION);
-  for(i=0;i<strlen(version);++i)
-    if(version[i]==' ')
-      {
-	version[i]='\0';
-	break;
-      }
+  sprintf(cfitsioversion, "%-.2f", CFITSIO_VERSION);
 
   /* Write all the information: */
   fits_write_date(fptr, &status);
-  fits_update_key(fptr, TSTRING, "CFITSIO", version,
+  fits_update_key(fptr, TSTRING, "CFITSIO", cfitsioversion,
 		  "Version of CFITSIO used.", &status);
+#ifdef HAVE_WCSLIBVERSION
+  wcslibversion_const=wcslib_version(wcslibvers);
+  strcpy(wcslibversion, wcslibversion_const);
+  fits_update_key(fptr, TSTRING, "WCSLIB", wcslibversion,
+		  "Version of WCSLIB used.", &status);
+#endif
+  fits_update_key(fptr, TSTRING, "GNUASTRO", PACKAGE_VERSION,
+		  "Version of GNU Astronomy Utilities used.", &status);
   fits_write_comment(fptr, PACKAGE_STRING, &status);
   fits_write_comment(fptr, PACKAGE_URL, &status);
   /*

@@ -1,3 +1,20 @@
+2015-05-15  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/convolve/convolve.c (removepaddingcorrectroundoff): The
+	limit to check for floating point errors is now set by a macro and
+	changed to 1e-10 instead of 1e-17.
+
+	* lib/statistics.c (sigmaclip_converge): Now, there is a limit on
+	the number of times to try for convergence.
+
+	* lib/mode.c (makemirrorplots): All the output paramters are now
+	given as arguments so the output can be fully configured from the
+	outside. Also, the method that it sets the plot ranges is now
+	better configurable.
+
+	* include/mode.h (MODESYMGOOD): Changed to 0.2 from 0.15 based on
+	new simulation tests.
+
 2015-05-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/statistics.c (setbins): Changed method to find the bin that

@@ -462,7 +462,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.toleranceset=1;
       break;
     case 'z':
-      floatl0(arg, &p->zeropoint, "zeropoint", key, p->cp.spack, NULL, 0);
+      anyfloat(arg, &p->zeropoint, "zeropoint", key, p->cp.spack, NULL, 0);
       p->up.zeropointset=1;
       break;
     case 'p':

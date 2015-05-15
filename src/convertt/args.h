@@ -55,7 +55,7 @@ const char doc[] =
 
 /* Free letters for options:
 
-   d e f g j k p r s t v x y z
+   d e f g j k p r s t v y z
    A B E F G I J M O Q R T U W X Y Z
 
    Free numbers: 503
@@ -134,7 +134,14 @@ static struct argp_option options[] =
       "Border width (EPS, PDF) in units of 1/72 inch.",
       2
     },
-
+    {
+      "hex",
+      'x',
+      0,
+      0,
+      "Hexadecimal encoding in EPS. Default: ASCII85.",
+      2
+    },
 
 
 
@@ -308,6 +315,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       if(p->quality<0)
         error(EXIT_FAILURE, 0, "The quality option should be positive.");
       p->up.qualityset=1;
+      break;
+    case 'x':
+      p->hex=1;
       break;
 
 
