@@ -7736,7 +7736,7 @@ can be set with @option{--numrandom}.
 
 Unfortunately, repeating this Monte Carlo process would be extremely
 time and CPU consuming if it is to be applied to every pixel. In order
-to not lose too much accuracy, in MakeProfiles, the profile is built
+to not loose too much accuracy, in MakeProfiles, the profile is built
 using both methods explained above. The building of the profile begins
 from its central pixel and continues outwards. Monte Carlo integration
 is first applied (which yields @mymath{F_r}), then the central pixel
@@ -7744,6 +7744,18 @@ value (@mymath{F_c}) on the same pixel. If the fractional difference
 (@mymath{|F_r-F_c|/F_r}) is lower than a given tolerance level we will
 stop using Monte Carlo integration and only use the central pixel
 value.
+
+Monte Carlo integration uses a random number of points. Thus,
+everytime you run it, by default, you will get a different
+distribution of points to sample within the pixel. In the case of
+large profiles, this will result in a slight difference of the pixels
+which use Monte Carlo integration each time MakeProfiles is run. To
+have a deterministic result, you have to fix the random number
+generator properties which is used to build the random
+distribution. This can be done by setting the @code{GSL_RNG_TYPE} and
+@code{GSL_RNG_SEED} environment variables and calling MakeProfiles
+with the @option{--envseed} option. To learn more about the process of
+generating random numbers, see @ref{Generating random numbers}.
 
 @cindex Inside-out construction
 The ordering of the pixels in this inside-out construction is based on
@@ -7757,8 +7769,6 @@ smaller @mymath{r_{el}}. In other words, the gradient is strongest
 along the minor axis. So if the next pixel is chosen based on
 @mymath{r_{el}}, the tolerance level will be reached sooner and lots
 of pixels with large fractional differences will be missed.
-
-
 
 
 
@@ -8044,6 +8054,16 @@ Profiles:
 The number of random points used in the central regions of the
 profile, see @ref{Sampling from a function}.
 
+@item -e
+@itemx --envseed
+Use the @code{GSL_RNG_TYPE} and @code{GSL_RNG_SEED} environment
+variables to generate the random Monte Carlo sampling distribution,
+see @ref{Sampling from a function} and @ref{Generating random
+numbers}. Note that when you call this option, all the pixels will use
+the same seed and thus the same positions within each pixel. So if the
+number of random points are small, this using this option might result
+in systematic effects.
+
 @item -t
 @itemx --tolerance
 (@option{=FLT}) The tolerance to switch from Monte Carlo integration
@@ -8079,6 +8099,36 @@ activated if @option{--xshift} and @option{--yshift} are both zero
 (after reading the command line and configuration files). If a
 background image is specified, any possible value to this option is
 ignored.
+
+@item --magatpeak
+Use the flux specified by the magnitude column in the catalog (see
+@ref{MakeProfiles catalog}) only for the peak profile pixel, not the
+full profile. Note that this is the flux of the profile's peak pixel
+in the final output of MakeProfiles. So the specified oversampling,
+see @ref{Oversampling} has no affect.
+
+This option can be useful if you want to check a mock profile's total
+magnitude at various truncation radii. Without this option, no matter
+what the truncation radius is, the total magnitude will be the same as
+that given in the catalog. But with this option, the total magnitude
+will become brighter as you increase the truncation radius.
+
+In sharper profiles, sometimes the accuracy of measuring the peak
+profile flux is more than the total profile flux. In such cases, with
+this option, the final profile will be built such that its peak has
+the given magnitude, not the total profile.
+
+@cartouche
+@strong{CAUTION:} If you want to use this option for comparing with
+observations, please note that MakeProfiles does not do
+convolution. Unless you have deconvolved your data, your images are
+convolved with the instrument and atmospheric PSF, see
+@ref{PSF}. Particularly in sharper profiles, the flux in the peak
+pixel is strongly decreased after convolution. Also note that in such
+cases, besides deconvolution, you will have to set
+@option{--oversample=1} otherwise after resampling your profile with
+ImageWarp (see @ref{ImageWarp}), the peak flux will be different.
+@end cartouche
 
 @item -M
 @itemx --setconsttomin
@@ -8506,6 +8556,15 @@ less than one microsecond apart, two images will not have the same
 sequence of noise values.}. If you want MakeNoise to use the
 @code{GSL_RNG_SEED} variable for a reproducable result, you can use
 the @option{--envseed} option.
+
+@cartouche
+@noindent
+@strong{NOTE:} If the two environment variables @code{GSL_RNG_TYPE}
+and @code{GSL_RNG_SEED} are defined, GSL will report them by default,
+even if you don't use the @option{--envseed} option. MakeNoise and
+MakeProfiles will separately report the values used for these
+variables.
+@end cartouche
 
 @node Invoking astmknoise,  , Noise basics, MakeNoise
 @subsection Invoking MakeNoise

@@ -39,6 +39,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define CONVFLOATINGPOINTERR 1e-10
+#define COMPLEXTOREALSPEC    1  /* Spectrum of complex number.  */
+#define COMPLEXTOREALPHASE   2  /* Phase of the complex number. */
+#define COMPLEXTOREALREAL    3  /* Only show the real part.     */
 
 
 

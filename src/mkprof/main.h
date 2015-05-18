@@ -140,7 +140,7 @@ struct mkprofparams
   int           psfinimg;  /* ==1: Build PSF profiles in image.        */
   int         individual;  /* ==1: Build all catalog separately.       */
 
-  /* Profiles and noise */
+  /* Profiles */
   int      setconsttomin;  /* ==1: Constant value = image minimum.     */
   int            replace;  /* Replace overlaping profile pixel values. */
   float         constant;  /* Value for constant profiles.             */
@@ -148,6 +148,8 @@ struct mkprofparams
   float        tolerance;  /* Accuracy to stop integration.            */
   float        zeropoint;  /* Magnitude of zero point flux.            */
   double     circumwidth;  /* Width of circumference (inward).         */
+  int          magatpeak;  /* Mag only for peak pixel, not all profile.*/
+  int            envseed;  /* Use GSL_RNG_SEED for random seed.        */
   int           tunitinp;  /* ==1: Truncation unit is in pixels.       */
                            /* ==0: It is in radial parameter.          */
   /* Catalog */

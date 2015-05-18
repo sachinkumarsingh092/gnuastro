@@ -33,6 +33,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_randist.h>	 /* To make noise.       */
 #include <gsl/gsl_integration.h> /* gsl_integration_qng  */
 
+#include "timing.h"
 #include "neighbors.h"
 #include "arraymanip.h"
 #include "statistics.h"
@@ -113,27 +114,47 @@ random_seed()
 float
 randompoints(struct mkonthread *mkp)
 {
-  gsl_rng * rng;
+  gsl_rng *r;
+  unsigned long seed;
   const gsl_rng_type *T;
+  char message[VERBMSGLENGTH_V];
   double xrange, yrange, sum=0.0f;
   size_t i, numrandom=mkp->p->numrandom;
 
+  /* Set the random number generator parameters. */
+  gsl_rng_env_setup();
+  T=gsl_rng_default;
+  r=gsl_rng_alloc(T);
+  if(mkp->p->envseed)
+    seed=gsl_rng_default_seed;
+  else
+    {
+      seed=random_seed();
+      gsl_rng_set(r,seed);
+    }
+
+  if(mkp->p->cp.verb)
+    {
+      sprintf(message, "Generator type: %s", gsl_rng_name(r));
+      reporttiming(NULL, message, 1);
+      sprintf(message, "Generator seed: %lu", seed);
+      reporttiming(NULL, message, 1);
+    }
+
+  /* Set the range of the x and y: */
   xrange=mkp->xh-mkp->xl;
   yrange=mkp->yh-mkp->yl;
 
-  T = gsl_rng_default;
-  rng = gsl_rng_alloc (T);
-  gsl_rng_set(rng,random_seed());
-
+  /* Find the sum of the profile on the random positions */
   for(i=0;i<numrandom;++i)
     {
-      mkp->x = mkp->xl + gsl_rng_uniform(rng)*xrange;
-      mkp->y = mkp->yl + gsl_rng_uniform(rng)*yrange;
+      mkp->x = mkp->xl + gsl_rng_uniform(r)*xrange;
+      mkp->y = mkp->yl + gsl_rng_uniform(r)*yrange;
       r_el(mkp);
       sum+=mkp->profile(mkp);
     }
 
-  gsl_rng_free(rng);
+  gsl_rng_free(r);
 
   return sum/numrandom;
 }
@@ -243,8 +264,8 @@ makepixbypix(struct mkonthread *mkp)
   float circ_r;
   struct sll *Q=NULL;
   unsigned char *byt;
-  int use_rand_points=1;
   float *img=mkp->ibq->img;
+  int use_rand_points=1, ispeak=1;
   struct builtqueue *ibq=mkp->ibq;
   size_t is1=mkp->width[0], is0=mkp->width[1];
   size_t p, ngb[4], *ind=&p, numngb, *n, *nf, x, y;
@@ -316,6 +337,9 @@ makepixbypix(struct mkonthread *mkp)
           if (fabs(img[p]-approx)/img[p] < tolerance)
             use_rand_points=0;
 
+          /* Save the peak flux if this is the first pixel: */
+          if(ispeak) { mkp->peakflux=img[p]; ispeak=0; }
+
           /* For the log file: */
           ++ibq->numaccu;
           ibq->accufrac+=img[p];
@@ -367,6 +391,9 @@ makepixbypix(struct mkonthread *mkp)
 
       /* Find the value for this pixel: */
       img[p]=profile(mkp);
+
+      /* Save the peak flux if this is the first pixel: */
+      if(ispeak) { mkp->peakflux=img[p]; ispeak=0; }
 
       /*
       arraytofitsimg("tmp.fits", "", FLOAT_IMG, img, is0, is1,
@@ -574,6 +601,9 @@ makeoneprofile(struct mkonthread *mkp)
     {
       sum=floatsum(mkp->ibq->img, size);
       mkp->ibq->accufrac/=sum;
-      fmultipconst(mkp->ibq->img, size, mkp->totflux/sum);
+      if(p->magatpeak)
+        fmultipconst(mkp->ibq->img, size, mkp->totflux/mkp->peakflux);
+      else
+        fmultipconst(mkp->ibq->img, size, mkp->totflux/sum);
     }
 }

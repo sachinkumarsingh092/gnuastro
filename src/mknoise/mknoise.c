@@ -141,11 +141,16 @@ mknoise(struct mknoiseparams *p)
   df=(d=p->input)+p->is0*p->is1;
   if(p->backgroundinmean)
     {
-      do *d+=background+gsl_ran_gaussian(r,sqrt(stdadd+background+*d));
+      do
+        *d+=background+gsl_ran_gaussian(r,sqrt(stdadd+background+*d));
       while(++d<df);
     }
   else
-    { do *d+=gsl_ran_gaussian(r,sqrt(stdadd+background+*d)); while(++d<df); }
+    {
+      do
+        *d+=gsl_ran_gaussian(r,sqrt(stdadd+background+*d));
+      while(++d<df);
+    }
 
   /* Convert and save the output in the proper format: */
   p->rng_seed=seed;

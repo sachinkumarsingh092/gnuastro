@@ -50,7 +50,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    Phase:    arctan(I/R)
 */
 void
-complextoreal(double *c, size_t size, int spec1phase0, double **output)
+complextoreal(double *c, size_t size, int action, double **output)
 {
   double *out, *o, *of;
 
@@ -61,10 +61,23 @@ complextoreal(double *c, size_t size, int spec1phase0, double **output)
           size*sizeof *out);
 
   of=(o=out)+size;
-  if(spec1phase0)
-    do { *o++ = sqrt( *c**c + *(c+1)**(c+1) ); c+=2; } while(o<of);
-  else
-    do { *o++ = atan2( *(c+1), *c );           c+=2; } while(o<of);
+  switch(action)
+    {
+    case COMPLEXTOREALSPEC:
+      do { *o++ = sqrt( *c**c + *(c+1)**(c+1) ); c+=2; } while(o<of);
+      break;
+    case COMPLEXTOREALPHASE:
+      do { *o++ = atan2( *(c+1), *c );           c+=2; } while(o<of);
+      break;
+    case COMPLEXTOREALREAL:
+      do { *o++ = *c;                            c+=2; } while(o<of);
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+            "correct it. For some reason, the action code for complextoreal "
+            "in convolve.c (%d) is not recognized.", PACKAGE_BUGREPORT,
+            action);
+    }
 }
 
 
@@ -188,14 +201,11 @@ removepaddingcorrectroundoff(struct convolveparams *p)
     {
       o=&input[i*is1];
       df=(d=start+i*ps1)+is1;
-      do *o++ = (*d<CONVFLOATINGPOINTERR && *d>0) ? 0 : *d; while (++d<df);
+      do
+        *o++ = ( *d<0.0f || *d>CONVFLOATINGPOINTERR ) ? *d : *d;
+      while (++d<df);
     }
 }
-
-
-
-
-
 
 /* Allocate the necessary arrays, note that we put everything in the
    first element of the fftonthreadparams structure array. All the
@@ -462,18 +472,17 @@ frequencyconvolve(struct convolveparams *p)
   int verb=p->cp.verb;
   struct fftonthreadparams *fp;
 
-
   /* Make the padded arrays. */
   if(verb) gettimeofday(&t1, NULL);
   makepaddedcomplex(p);
   if(verb) reporttiming(&t1, "Input and Kernel images padded.", 1);
   if(p->viewfreqsteps)
     {
-      complextoreal(p->pimg, p->ps0*p->ps1, 1, &tmp);
+      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Input transform", DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
-      complextoreal(p->pker, p->ps0*p->ps1, 1, &tmp);
+      complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Kernel transform", DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
@@ -490,11 +499,11 @@ frequencyconvolve(struct convolveparams *p)
   if(verb) reporttiming(&t1, "Images converted to frequency domain.", 1);
   if(p->viewfreqsteps)
     {
-      complextoreal(p->pimg, p->ps0*p->ps1, 1, &tmp);
+      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Input transform", DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
-      complextoreal(p->pker, p->ps0*p->ps1, 1, &tmp);
+      complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Kernel transform", DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
@@ -507,7 +516,7 @@ frequencyconvolve(struct convolveparams *p)
   if(verb) reporttiming(&t1, "Multiplied in the frequency domain.", 1);
   if(p->viewfreqsteps)
     {
-      complextoreal(p->pimg, p->ps0*p->ps1, 1, &tmp);
+      complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
       arraytofitsimg(p->up.freqstepsname, "Multiplied", DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
@@ -518,7 +527,7 @@ frequencyconvolve(struct convolveparams *p)
   /* Forward (in practice inverse) 2D FFT on each image. */
   if(verb) gettimeofday(&t1, NULL);
   twodimensionfft(p, fp, -1);
-  complextoreal(p->pimg, p->ps0*p->ps1, 1, &tmp);
+  complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
   if(verb) reporttiming(&t1, "Converted back to the spatial domain.", 1);
   if(p->viewfreqsteps)
     {

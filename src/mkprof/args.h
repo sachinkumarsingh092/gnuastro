@@ -45,9 +45,9 @@ const char doc[] =
   TOPHELPINFO
   SPACK_NAME" will create a FITS image containing any number of mock "
   "astronomical profiles based on an input catalog. All the profiles "
-  "will be built from the center outwards. First by 10000 random "
-  "points, then using the central pixel position. The tolerance level "
-  "specifies when to switch to a less accurate method.\n"
+  "will be built from the center outwards. First by Monte Carlo "
+  "integration, then using the central pixel position. The tolerance "
+  "level specifies when to switch to a latter.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -60,10 +60,10 @@ const char doc[] =
 /*
    Available letters (-V which is used by GNU is also removed):
 
-   a d e f g j k l u v
+   a d f g j k l u v
    A B C E F G H I J L O Q T U W Z
 
-   Maximum integer used so far: 514.
+   Maximum integer used so far: 515.
 */
 static struct argp_option options[] =
   {
@@ -138,7 +138,6 @@ static struct argp_option options[] =
       "Do not create a merged image of all profiles.",
       2
     },
-
 
 
 
@@ -227,6 +226,22 @@ static struct argp_option options[] =
       0,
       0,
       "Replace overlaping profile pixels, don't add.",
+      3
+    },
+    {
+      "magatpeak",
+      515,
+      0,
+      0,
+      "Magnitude is for peak pixel, not full profile.",
+      3
+    },
+    {
+      "envseed",
+      'e',
+      0,
+      0,
+      "Use GSL_RNG_SEED environment variable for seed.",
       3
     },
 
@@ -482,6 +497,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetelzero(arg, &tmp, "yshift", key, p->cp.spack, NULL, 0);
       p->shift[1]=tmp;
       p->up.yshiftset=1;
+      break;
+    case 515:
+      p->magatpeak=1;
+      break;
+    case 'e':
+      p->envseed=1;
       break;
 
    /* Catalog */
