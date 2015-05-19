@@ -42,13 +42,11 @@ subtractsky(struct subtractskyparams *p)
 
   /* Prepare the mesh array. */
   gettimeofday(&t1, NULL);
-  p->mp.img=p->img;
-  p->mp.numthreads=p->cp.numthreads;
   makemesh(mp);
   if(p->meshname)
     {
       checkmeshid(mp, &meshindexs);
-      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->img,
+      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img,
                      mp->s0, mp->s1, p->numblank, p->wcs, NULL,
                      SPACK_STRING);
       arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
@@ -56,28 +54,49 @@ subtractsky(struct subtractskyparams *p)
                      SPACK_STRING);
       free(meshindexs);
     }
-  if(p->cp.verb) reporttiming(&t1, "Mesh grid ready", 1);
+  if(p->cp.verb) reporttiming(&t1, "Mesh grid ready.", 1);
 
 
 
-  /* Find the sky value on each mesh: */
+  /* Find the sky value and its standard deviation on each mesh. */
   fillmesh(mp, MODEEQMED_AVESTD, 0);
-
-
-  /* Interpolate to fill the blank meshes: */
   if(p->interpname)
     {
-      checkcharray(mp, MODEEQMED_AVESTD, &sky, &std);
+      checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
       arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky,
                      mp->s0, mp->s1, p->numblank, p->wcs, NULL,
                      SPACK_STRING);
       arraytofitsimg(p->interpname, "STD", FLOAT_IMG, std,
                      mp->s0, mp->s1, p->numblank, p->wcs, NULL,
                      SPACK_STRING);
-      free(sky);
-      free(std);
+      free(sky); free(std);
     }
+  if(p->cp.verb)
+    reporttiming(&t1, "Sky and its STD found on some meshes.", 1);
+
+
+  /* Interpolate over the meshs to fill all the blank ones in both the
+     sky and the standard deviation arrays: */
+  meshinterpolate(mp, 2);
+  if(p->interpname)
+    {
+      checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
+      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky,
+                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
+                     SPACK_STRING);
+      arraytofitsimg(p->interpname, "STD", FLOAT_IMG, std,
+                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
+                     SPACK_STRING);
+      free(sky); free(std);
+    }
+  if(p->cp.verb) reporttiming(&t1, "All blank meshs filled.", 1);
+
+
+  /* Smooth the interpolated array:  */
+
+
 
   /* Subtract the sky value */
+
 
 }

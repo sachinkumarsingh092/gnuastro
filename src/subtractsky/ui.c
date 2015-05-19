@@ -131,16 +131,9 @@ readconfig(char *filename, struct subtractskyparams *p)
       else if(strcmp(name, "numnearest")==0)
 	{
 	  if(up->numnearestset) continue;
-          sizetlzero(value, &p->numnearest, name, key, SPACK,
+          sizetlzero(value, &p->mp.numnearest, name, key, SPACK,
                      filename, lineno);
 	  up->numnearestset=1;
-	}
-      else if(strcmp(name, "mininterp")==0)
-	{
-	  if(up->mininterpset) continue;
-          sizetlzero(value, &p->mininterp, name, key, SPACK,
-                     filename, lineno);
-	  up->mininterpset=1;
 	}
       else if(strcmp(name, "kernelwidth")==0)
 	{
@@ -282,9 +275,7 @@ printvalues(FILE *fp, struct subtractskyparams *p)
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
   if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->numnearest);
-  if(up->mininterpset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "mininterp", p->mininterp);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->mp.numnearest);
   if(up->kernelwidthset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "kernelwidth", p->kernelwidth);
 
@@ -336,8 +327,6 @@ checkifset(struct subtractskyparams *p)
     REPORT_NOTSET("mhdu");
   if(up->numnearestset==0)
     REPORT_NOTSET("numnearest");
-  if(up->mininterpset==0)
-    REPORT_NOTSET("mininterp");
   if(up->kernelwidthset==0)
     REPORT_NOTSET("kernelwidth");
 
@@ -431,6 +420,16 @@ sanitycheck(struct subtractskyparams *p)
       automaticoutput(p->up.inputname, "_smooth.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->smoothname);
     }
+
+
+  /* Other checks: */
+  if(p->mp.numnearest<MINACCEPTABLENEAREST)
+    error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
+          "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
+          p->mp.numnearest);
+
+  /* Put the number of threads into the mesh structure: */
+  p->mp.numthreads=p->cp.numthreads;
 }
 
 
@@ -460,7 +459,7 @@ preparearrays(struct subtractskyparams *p)
   struct meshparams *mp=&p->mp;
 
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              &p->img, &p->bitpix, &p->numblank, &mp->s0, &mp->s1);
+              &p->mp.img, &p->bitpix, &p->numblank, &mp->s0, &mp->s1);
 
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 
@@ -560,12 +559,14 @@ void
 freeandreport(struct subtractskyparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
+  free(p->mp.img);
   free(p->cp.hdu);
   free(p->up.mhdu);
   free(p->cp.output);
 
   /* Free all the allocated names: */
   if(p->meshname) free(p->meshname);
+  if(p->interpname) free(p->interpname);
   if(p->up.masknameallocated) free(p->up.maskname);
 
   /* Free the WCS structure: */

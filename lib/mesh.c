@@ -27,10 +27,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mesh.h"
 #include "mode.h"
 #include "forqsort.h"
+#include "neighbors.h"
+#include "linkedlist.h"
 #include "statistics.h"
 #include "astrthreads.h"
 
@@ -68,6 +71,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********************************************************************/
 /********************     Preparing for Save      ********************/
 /*********************************************************************/
+/* Save the meshid of each pixel into an array the size of the image. */
 void
 checkmeshid(struct meshparams *mp, long **out)
 {
@@ -103,12 +107,15 @@ checkmeshid(struct meshparams *mp, long **out)
 
 
 
+/* Put the values of the check array(s) into an array the size of the
+   input image. Note that the check arrays are only the size of the
+   number of meshs, not the actual input image size. */
 void
-checkcharray(struct meshparams *mp, int operationid,
+checkgarray(struct meshparams *mp, int operationid,
              float **out1, float **out2)
 {
   int needstwo=0;
-  float *f, *fp, *ff, charray1, charray2;
+  float *f, *fp, *ff, garray1, garray2;
   size_t i, row, start, *types=mp->types;
   size_t s0, s1, is1=mp->s1, *ts0=mp->ts0, *ts1=mp->ts1;
 
@@ -121,14 +128,14 @@ checkcharray(struct meshparams *mp, int operationid,
   errno=0;
   *out1=malloc(mp->s0*mp->s1*sizeof **out1);
   if(*out1==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out1 in checkcharray "
+    error(EXIT_FAILURE, errno, "%lu bytes for out1 in checkgarray "
           "(mesh.c)", mp->s0*mp->s1*sizeof **out1);
   if(needstwo)
     {
       errno=0;
       *out2=malloc(mp->s0*mp->s1*sizeof **out2);
       if(*out2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for out2 in checkcharray "
+        error(EXIT_FAILURE, errno, "%lu bytes for out2 in checkgarray "
               "(mesh.c)", mp->s0*mp->s1*sizeof **out2);
     }
 
@@ -139,16 +146,16 @@ checkcharray(struct meshparams *mp, int operationid,
       s0=ts0[types[i]];
       s1=ts1[types[i]];
       start=mp->start[i];
-      charray1=mp->charray1[i];
-      if(needstwo) charray2=mp->charray2[i];
+      garray1=mp->garray1[i];
+      if(needstwo) garray2=mp->garray2[i];
       do
         {
           fp= ( f = *out1 + start + row * is1 ) + s1;
           if(needstwo) ff= *out2 + start + row * is1;
           do
             {
-              *f++ = charray1;
-              if(needstwo) *ff++ = charray2;
+              *f++ = garray1;
+              if(needstwo) *ff++ = garray2;
             }
           while(f<fp);
           ++row;
@@ -362,14 +369,6 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
    Each mesh is treated independently in its thread, but when
    interpolation over the meshes is desired, only meshes in each
    channel should be interpolated over.
-
-   charray:
-   -------
-   Or grid-array. It used for operations on the mesh grid, where one
-   value is to be assigned for each mesh. It has one element for
-   each mesh in the image.  Each channel has its own part of this
-   larger array. The respective parts have gs0*gs1 elements. There
-   are `nch' parts. in total.
 */
 void
 makemesh(struct meshparams *mp)
@@ -422,7 +421,7 @@ makemesh(struct meshparams *mp)
 
   /* Allocate the arrays to keep all the mesh starting points and
      types. Irrespective of which channel they lie in. */
-  mp->charray1=mp->charray2=NULL;
+  mp->garray1=mp->garray2=NULL;
   errno=0; mp->start=malloc(mp->nmeshi*sizeof *mp->start);
   if(mp->start==NULL) error(EXIT_FAILURE, errno, "Mesh starting points");
   errno=0; mp->types=malloc(mp->nmeshi*sizeof *mp->types);
@@ -434,9 +433,6 @@ makemesh(struct meshparams *mp)
 
   /* Fill in the information for each mesh and each type. */
   fillmeshinfo(mp, chs0, chs1, lasts0, lasts1);
-
-  /* Distribute the meshes in all the threads. */
-  distinthreads(mp->nmeshi, mp->numthreads, &mp->indexs, &mp->thrdcols);
 }
 
 
@@ -449,8 +445,8 @@ freemesh(struct meshparams *mp)
   free(mp->start);
   free(mp->types);
   free(mp->chindex);
-  free(mp->charray1);
-  free(mp->charray2);
+  free(mp->garray1);
+  free(mp->garray2);
   free(mp->imgindex);
 }
 
@@ -479,15 +475,15 @@ freemesh(struct meshparams *mp)
 void *
 fillmeshonthreads(void *inparam)
 {
-  struct fillmeshparams *fcp=(struct fillmeshparams *)inparam;
-  struct meshparams *mp=fcp->mp;
+  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
+  struct meshparams *mp=mtp->mp;
 
   float modesym;
   size_t modeindex;
   float sigcliptolerance=mp->sigcliptolerance;
-  float *f, *mesh, *img, *imgend, *inimg=mp->img;
   size_t s0, s1, ind, row, num, start, is1=mp->s1;
-  size_t i, *indexs=&mp->indexs[fcp->id*mp->thrdcols];
+  float *f, *allmeshs, *img, *imgend, *inimg=mp->img;
+  size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
   float ave, med, std, sigclipmultip=mp->sigclipmultip;
   float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
 
@@ -497,19 +493,19 @@ fillmeshonthreads(void *inparam)
      arrays were stored so we could allocate one array for all the
      meshes irrespective of their type. */
   errno=0;
-  mesh=fcp->alltypes=malloc(mp->maxs0*mp->maxs1*sizeof *fcp->alltypes);
-  if(mesh==NULL)
+  allmeshs=mtp->allmeshs=malloc(mp->maxs0*mp->maxs1*sizeof *mtp->allmeshs);
+  if(allmeshs==NULL)
     error(EXIT_FAILURE, errno, "Unable to allocate %lu bytes for"
-          "fcp->alltypes of thread %lu in allocatetypearrays of mesh.c.",
-          mp->maxs0*mp->maxs1*sizeof *fcp->alltypes, fcp->id);
+          "mtp->allmeshs of thread %lu in allocatetypearrays of mesh.c.",
+          mp->maxs0*mp->maxs1*sizeof *mtp->allmeshs, mtp->id);
 
 
   /* Start this thread's work: */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
     {
       /* Prepare the values: */
-      f=mesh;
       num=row=0;
+      f=allmeshs;
       ind=indexs[i];
       start=mp->start[ind];
       s0=mp->ts0[mp->types[ind]];
@@ -533,44 +529,44 @@ fillmeshonthreads(void *inparam)
       while(row<s0);
 
       /* Do the desired operation on the mesh: */
-      qsort(mesh, num, sizeof *mesh, floatincreasing);
-      modeindexinsorted(mesh, num, mirrordist, &modeindex, &modesym);
+      qsort(allmeshs, num, sizeof *allmeshs, floatincreasing);
+      modeindexinsorted(allmeshs, num, mirrordist, &modeindex, &modesym);
       if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq )
         {
-          switch(fcp->operationid)
+          switch(mtp->operationid)
             {
 
             case MODEEQMED_AVESTD: /* Average and standard devaition. */
-              if(sigmaclip_converge(mesh, 1, num, sigclipmultip,
+              if(sigmaclip_converge(allmeshs, 1, num, sigclipmultip,
                                     sigcliptolerance, &ave, &med, &std, 0))
-                {mp->charray1[ind]=ave; mp->charray2[ind]=std;}
+                {mp->garray1[ind]=ave; mp->garray2[ind]=std;}
               else
-                {mp->charray1[ind]=NAN; mp->charray2[ind]=NAN;}
+                {mp->garray1[ind]=NAN; mp->garray2[ind]=NAN;}
               break;
 
             case MODEEQMED_QUANT: /* Quantile value.                 */
-              mp->charray1[ind]=mesh[indexfromquantile(num, fcp->value)];
+              mp->garray1[ind]=allmeshs[indexfromquantile(num, mtp->value)];
               break;
 
             default:
               error(EXIT_FAILURE, 0, "A bug! Please contact us at "
                     PACKAGE_BUGREPORT" so we can correct this issue. The "
-                    "value to fcp->operationid is not recognized in "
+                    "value to mtp->operationid is not recognized in "
                     "fillmeshonthreads (mesh.c).");
             }
         }
       else
         {
-          mp->charray1[ind]=NAN;
-          if(fcp->operationid==MODEEQMED_AVESTD)
-            mp->charray2[ind]=NAN;
+          mp->garray1[ind]=NAN;
+          if(mtp->operationid==MODEEQMED_AVESTD)
+            mp->garray2[ind]=NAN;
         }
 
     }
 
   /* Free alltype and if multiple threads were used, wait until all
      other threads finish. */
-  free(fcp->alltypes);
+  free(mtp->allmeshs);
   if(mp->numthreads>1)
     pthread_barrier_wait(&mp->b);
   return NULL;
@@ -587,33 +583,36 @@ fillmesh(struct meshparams *mp, int operationid, float value)
   size_t i, nb;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
-  struct fillmeshparams *fcp;
+  struct meshthreadparams *mtp;
   size_t numthreads=mp->numthreads;
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. */
-  errno=0; fcp=malloc(numthreads*sizeof *fcp);
-  if(fcp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for fcp",
-          numthreads*sizeof *fcp);
+  errno=0; mtp=malloc(numthreads*sizeof *mtp);
+  if(mtp==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
+          numthreads*sizeof *mtp);
 
   /* Allocate the array to keep the values for each  */
-  errno=0; mp->charray1=malloc(mp->nmeshi*sizeof *mp->charray1);
-  if(mp->charray1==NULL) error(EXIT_FAILURE, errno, "mp->charray1");
+  errno=0; mp->garray1=malloc(mp->nmeshi*sizeof *mp->garray1);
+  if(mp->garray1==NULL) error(EXIT_FAILURE, errno, "mp->garray1");
   if(operationid==MODEEQMED_AVESTD)
     {
-      errno=0; mp->charray2=malloc(mp->nmeshi*sizeof *mp->charray2);
-      if(mp->charray2==NULL) error(EXIT_FAILURE, errno, "mp->charray2");
+      errno=0; mp->garray2=malloc(mp->nmeshi*sizeof *mp->garray2);
+      if(mp->garray2==NULL) error(EXIT_FAILURE, errno, "mp->garray2");
     }
+
+  /* Distribute the meshes in all the threads. */
+  distinthreads(mp->nmeshi, mp->numthreads, &mp->indexs, &mp->thrdcols);
 
   /* Spin off the threads: */
   if(numthreads==1)
     {
-      fcp[0].id=0;
-      fcp[0].mp=mp;
-      fcp[0].value=value;
-      fcp[0].operationid=operationid;
-      fillmeshonthreads(&fcp[0]);
+      mtp[0].id=0;
+      mtp[0].mp=mp;
+      mtp[0].value=value;
+      mtp[0].operationid=operationid;
+      fillmeshonthreads(&mtp[0]);
     }
   else
     {
@@ -629,11 +628,11 @@ fillmesh(struct meshparams *mp, int operationid, float value)
       for(i=0;i<numthreads;++i)
 	if(mp->indexs[i*mp->thrdcols]!=NONTHRDINDEX)
 	  {
-            fcp[i].id=i;
-	    fcp[i].mp=mp;
-            fcp[i].value=value;
-            fcp[i].operationid=operationid;
-	    err=pthread_create(&t, &attr, fillmeshonthreads, &fcp[i]);
+            mtp[i].id=i;
+	    mtp[i].mp=mp;
+            mtp[i].value=value;
+            mtp[i].operationid=operationid;
+	    err=pthread_create(&t, &attr, fillmeshonthreads, &mtp[i]);
 	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
 	  }
 
@@ -643,5 +642,341 @@ fillmesh(struct meshparams *mp, int operationid, float value)
       pthread_barrier_destroy(&mp->b);
     }
 
-  free(fcp);
+  free(mtp);
+  free(mp->indexs);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********************         Interpolate         ********************/
+/*********************************************************************/
+/* Ideally, this should be a radial distance using the square root of
+   the differences. But here we are not dealing with subpixel
+   distances, so manhattan distance is fine. It also avoids the square
+   root function which is much slower. */
+float
+manhattandistance(long ind, long xc, long yc, long s1)
+{
+  return labs(ind%s1 - xc) + labs(ind/s1 - yc);
+}
+
+
+
+
+
+void *
+meshinterponthread(void *inparams)
+{
+  struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
+  struct meshparams *mp=mtp->mp;
+  size_t numnearest=mp->numnearest;
+  size_t is0=mp->gs0, is1=mp->gs1; /* different names for macro */
+
+  /* Variables for this function: */
+  size_t fmeshid, position, *ind=&position;
+  size_t xc, yc, *n, *nf, currentnum, thisind;
+  unsigned char *byt=&mp->byt[mtp->id*is0*is1];
+  float *nearest1=&mp->nearest1[mtp->id*numnearest];
+  size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
+  size_t numngb, ngb[4]; /* different names for macro. */
+  float *outgarray1=mp->outgarray1, *outgarray2=mp->outgarray2;
+  float mdist, *nearest2, *garray1=mp->garray1, *garray2=mp->garray2;
+  struct tosll *lQ, *sQ;	/* lQ: Largest. sQ: Smallest in queue */
+
+  /* In case garray2 is allocated, then it will also need
+     interpolation. */
+  if(garray2) nearest2=&mp->nearest2[mtp->id*numnearest];
+
+  /* Go over all the meshes for this thread. */
+  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+    {
+      /* Reset the byt array: */
+      memset(byt, 0, is0*is1);
+
+      /* Get the index of this NaN mesh: */
+      thisind=mp->naninds[indexs[i]];
+
+      /*
+         `fmeshid' (first-mesh-id) keeps the index of the first mesh
+         in this channel. We are going to consider each channel as a
+         sparate image for the neighbor finding job. This is why the
+         pixels in each channel were designed to be contiguous. When
+         we want to look at the value on each mesh, we simply sum its
+         channel index with fmeshid. From this point on, *ind
+         corresponds to the index of the mesh in the channel.
+
+         We will also only be concerened with the portion of `mp->byt'
+         array that is within this channel. So the `byt' pointer is
+         set to point to the first mesh index in this channel.
+      */
+      lQ=sQ=NULL;
+      fmeshid = (thisind/mp->nmeshc) * mp->nmeshc;
+
+      /* Initialize the necessary parameters. */
+      *ind=thisind-fmeshid;
+      xc=*ind%is1;
+      yc=*ind/is1;
+      byt[*ind]=1;
+      currentnum=0;
+      add_to_tosll_end( &lQ, &sQ, *ind, 0 );
+
+      /* Start finding the nearest filled pixels. */
+      while(sQ)
+        {
+          /* Pop out a pixel index (p) from the queue: */
+          pop_from_tosll_start(&lQ, &sQ, ind, &mdist);
+
+          /* If it isn't a NaN, then put it in the `nearest1' and
+             `nearest2' arrays. */
+          if(!isnan(garray1[*ind+fmeshid]))
+            {
+              nearest1[currentnum]=garray1[*ind+fmeshid];
+              if(garray2) nearest2[currentnum]=garray2[*ind+fmeshid];
+              if(++currentnum>=numnearest) break;
+            }
+
+          /* Check the four neighbors and if they have not already
+             been checked, put them into the queue. */
+          FILL_NGB_4_ALLIMG;
+          nf=(n=ngb)+numngb;
+          do
+            if(byt[*n]==0)
+              {
+                byt[*n]=1;
+                add_to_tosll_end( &lQ, &sQ, *n,
+                                  manhattandistance(*n, xc, yc, is1) );
+              }
+          while(++n<nf);
+
+          /********************************************
+          printf("%lu: %lu: %lu\t## %d ##.\n",
+                 mtp->id, thisind, currentnum, sQ==NULL ? 1 : 0);
+          *********************************************/
+
+          /* If there are no more meshes to add to the queue, then
+             this shows, there were not enough points for
+             interpolation. Normally, this loop should only be exited
+             through the `currentnum>=numnearest' check above. */
+          if(sQ==NULL)
+            error(EXIT_FAILURE, 0, "Only %lu mesh(s) are filled for "
+                  "interpolation in channel %lu. Either set less "
+                  "restrictive requirements to get more interpolation "
+                  "points or decrease the number of nearest points to "
+                  "use for interpolation. Problem encountered on thread "
+                  "%lu, for pixel %lu.\n", currentnum, thisind/mp->nmeshc,
+                  mtp->id, thisind);
+        }
+      tosll_free(lQ);       /* The rest of the queue not needed. */
+
+
+      /* Find the median of the nearest neighbors and put it in: */
+      qsort(nearest1, numnearest, sizeof *nearest1, floatincreasing);
+      outgarray1[thisind] = ( numnearest%2 ?
+                              nearest1[numnearest/2] : /* Odd.  */
+                              (nearest1[numnearest/2]  /* Even. */
+                               +nearest1[numnearest/2-1])/2 );
+      if(garray2)
+        {
+          qsort(nearest2, numnearest, sizeof *nearest2, floatincreasing);
+          outgarray2[thisind] = ( numnearest%2 ?
+                                  nearest2[numnearest/2] : /* Odd.  */
+                                  (nearest2[numnearest/2]  /* Even. */
+                                   +nearest2[numnearest/2-1])/2 );
+        }
+    }
+
+  /* If there is more than one thread, wait until the others
+     finish. */
+  if(mp->numthreads>1)
+    pthread_barrier_wait(&mp->b);
+  return NULL;
+}
+
+
+
+
+void
+preparemeshinterparrays(struct meshparams *mp)
+{
+  size_t numnan=0;
+  size_t numthreads=mp->numthreads;
+  float *f, *ff, *fff=NULL, *ffff=NULL, *fp;
+  float *garray1=mp->garray1, *garray2=mp->garray2;
+
+  /* Allocate the output arrays to keep the final values. Note that we
+     cannot just do the interpolaton on the same input grid, because
+     the newly filled interpolated pixels will affect the later
+     ones. In the end, these copies are going to replace the
+     garrays. */
+  errno=0; ff=mp->outgarray1=malloc(mp->nmeshi*sizeof *mp->outgarray1);
+  if(mp->outgarray1==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for outgarray1",
+          mp->nmeshi*sizeof *mp->outgarray1);
+  if(garray2)
+    {
+      fff=garray2;
+      errno=0; ffff=mp->outgarray2=malloc(mp->nmeshi*sizeof *mp->outgarray2);
+      if(mp->outgarray2==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for outgarray2",
+              mp->nmeshi*sizeof *mp->outgarray2);
+    }
+
+
+  /* Find how many blank pixels there are and keep all their indexs in
+     the naninds array. Note that all garrays are going to have the
+     same number of NaN meshs. */
+  fp=(f=garray1)+mp->nmeshi;
+  do if(isnan(*f++)) ++numnan; while(f<fp);
+  errno=0; mp->naninds=malloc(numnan*sizeof *mp->naninds);
+  if(mp->naninds==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for blank pixel indexs in "
+          "meshinterpolate (mesh.c).", numnan*sizeof *mp->naninds);
+  numnan=0; fp=(f=garray1)+mp->nmeshi;
+  do
+    {
+      if(isnan(*f))
+        mp->naninds[numnan++]=f-garray1;
+      else
+        {
+          *ff=*f;
+          if(garray2)
+            *ffff=*fff;
+        }
+      if(garray2)
+        {
+          ++fff;
+          ++ffff;
+        }
+      ++ff;
+    }
+  while(++f<fp);
+  mp->numnan=numnan;
+
+
+  /* Allocate the array for the values of the nearest pixels. For each
+     pixel in each thread, the nearest pixels will be put here and
+     sorted to find the median value. If garray2 is not NULL, then it
+     should be interpolated. Note that both arrays have blank pixels
+     on the same places.*/
+  errno=0;
+  mp->nearest1=malloc(numthreads*mp->numnearest*sizeof *mp->nearest1);
+  if(mp->nearest1==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
+          "nearest1 values for interpolation (mesh.c).",
+          numthreads*mp->numnearest*sizeof *mp->nearest1);
+  if(garray2)
+    {
+      errno=0;
+      mp->nearest2=malloc(numthreads*mp->numnearest*sizeof *mp->nearest2);
+      if(mp->nearest2==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
+              "nearest2 values for interpolation (mesh.c).",
+              numthreads*mp->numnearest*sizeof *mp->nearest2);
+    }
+
+
+  /* Allocate space for the byte array keeping a record of which
+     pixels were used to search. Note that each thread needs one byt
+     array. */
+  errno=0; mp->byt=malloc(numthreads*mp->gs0*mp->gs1*sizeof *mp->byt);
+  if(mp->byt==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for mp->byt array in "
+          "mesh.c", numthreads*mp->gs0*mp->gs1*sizeof *mp->byt);
+}
+
+
+
+
+
+void
+meshinterpolate(struct meshparams *mp, size_t numgarray)
+{
+  int err;
+  pthread_t t; /* We don't use the thread id, so all are saved here. */
+  size_t i, nb;
+  pthread_attr_t attr;
+  struct meshthreadparams *mtp;
+  size_t numthreads=mp->numthreads;
+
+  /* Prepare all the meshparams arrays: */
+  preparemeshinterparrays(mp);
+
+  /* Allocate the arrays to keep the thread and parameters for each
+     thread. */
+  errno=0; mtp=malloc(numthreads*sizeof *mtp);
+  if(mtp==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
+          numthreads*sizeof *mtp);
+
+  /* Distribute the blank pixels between the threads: */
+  distinthreads(mp->numnan, numthreads, &mp->indexs, &mp->thrdcols);
+
+  /* Spin off the threads: */
+  if(numthreads==1)
+    {
+      mtp[0].id=0;
+      mtp[0].mp=mp;
+      meshinterponthread(&mtp[0]);
+    }
+  else
+    {
+      /* Initialize the attributes. Note that this running thread
+	 (that spinns off the nt threads) is also a thread, so the
+	 number the barrier should be one more than the number of
+	 threads spinned off. */
+      if(mp->numnan<numthreads) nb=mp->numnan+1;
+      else                      nb=numthreads+1;
+      attrbarrierinit(&attr, &mp->b, nb);
+
+      /* Spin off the threads: */
+      for(i=0;i<numthreads;++i)
+	if(mp->indexs[i*mp->thrdcols]!=NONTHRDINDEX)
+	  {
+            mtp[i].id=i;
+	    mtp[i].mp=mp;
+	    err=pthread_create(&t, &attr, meshinterponthread, &mtp[i]);
+	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	  }
+
+      /* Wait for all threads to finish and free the spaces. */
+      pthread_barrier_wait(&mp->b);
+      pthread_attr_destroy(&attr);
+      pthread_barrier_destroy(&mp->b);
+    }
+
+  /* Replace garray1 and garray2 with outgarray1 and outgarray2 */
+  free(mp->garray1);
+  mp->garray1=mp->outgarray1;
+  if(mp->garray2)
+    {
+      free(mp->garray2);
+      mp->garray2=mp->outgarray2;
+    }
+  mp->outgarray1=mp->outgarray2=NULL; /* Only for safetly ;-). */
+
+  /* Clean up. */
+  free(mtp);
+  free(mp->byt);
+  free(mp->indexs);
+  free(mp->naninds);
+  free(mp->nearest1);
+  free(mp->nearest2);
 }

@@ -36,26 +36,48 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Operations to do on each mesh. If input parameters are needed (for
    example the quantile), they are given as other argument(s) to the
    fillcharray function. */
-#define MODEEQMED_AVESTD 1  /* If mode==median, then save average.       */
-#define MODEEQMED_QUANT  2  /* If mode==median, then save quantile.      */
+#define MODEEQMED_AVESTD 1  /* If mode==median, then save average.        */
+#define MODEEQMED_QUANT  2  /* If mode==median, then save quantile.       */
+#define MAXNUMCHARRAY    2  /* Maximum number of charrays.                */
+#define INTERPALL        1  /* Interpolate over the whole image as one.   */
+#define INTERPCHANNEL    2  /* Interpolate over each channel individually.*/
 
 
 
-
-
-struct fillmeshparams
+struct meshthreadparams
 {
+  /* For fillmesh: */
+  float           value; /* Value to be used in the operation.          */
+  int       operationid; /* The operation to be done on the meshs.      */
+  float       *allmeshs; /* One array for all mesh sizes.               */
+
+  /* For all: */
   struct meshparams *mp; /* Pointer to meshparams structure.            */
   size_t             id; /* The thread ID starting from zero.           */
-  int       operationid; /* The operation to be done on the meshs.      */
-  float           value; /* Value to be used in the operation.          */
-  float       *alltypes; /* Array keeping pointers to all 4 type sizes. */
 };
 
 
 
 
+/*
+   garray:
+   -------
 
+   Or grid-array. It is used for operations on the mesh grid, where
+   one value is to be assigned for each mesh. It has one element for
+   each mesh in the image.  Each channel has its own part of this
+   larger array. The respective parts have gs0*gs1 elements. There are
+   `nch' parts (or channels). in total.
+
+   In short, the meshs in each channel have to be contiguous to
+   facilitate the neighbor analysis in interpolation and other channel
+   specific jobs.g
+
+   The operations on the meshs might need more than one output, for
+   example the mean and the standard deviation. So we have two garrays
+   and two nearest arrays. So the garrays have to be used such that
+   they are both either valid on one mesh or not.
+*/
 struct meshparams
 {
   /* Image: */
@@ -73,8 +95,10 @@ struct meshparams
   size_t             nch; /* Total number of channels.                   */
   size_t            nch1; /* Number of channels along first FITS axis.   */
   size_t            nch2; /* Number of channels along first FITS axis.   */
-  float        *charray1; /* One value per mesh array for all channels.  */
-  float        *charray2; /* One value per mesh array for all channels.  */
+  float         *garray1; /* One value per mesh array for all channels.  */
+  float         *garray2; /* One value per mesh array for all channels.  */
+  size_t             gs0; /* Number of meshes on axis 0 in each channel. */
+  size_t             gs1; /* Number of meshes on axis 1 in each channel. */
 
   /* Meshs: */
   float     lastmeshfrac; /* Last mesh fraction of size, to add new.     */
@@ -85,8 +109,6 @@ struct meshparams
   size_t          *types; /* The type of each mesh.                      */
   size_t        *chindex; /* The index of each mesh in its channel.      */
   size_t       *imgindex; /* The index of each mesh in the image.        */
-  size_t             gs0; /* Number of meshes on axis 0 in each channel. */
-  size_t             gs1; /* Number of meshes on axis 1 in each channel. */
   size_t           maxs0; /* Maximum number of rows in all types.        */
   size_t           maxs1; /* Maximum number of columns in all types.     */
 
@@ -95,6 +117,16 @@ struct meshparams
   float         minmodeq; /* Minimum acceptable quantile for the mode.   */
   float    sigclipmultip; /* Multiple of standard deviation, sigma clip. */
   float sigcliptolerance; /* Tolerance in sigma clip.                    */
+
+  /* Interpolation: */
+  unsigned char     *byt; /* To keep track of pixels already checked.    */
+  size_t      numnearest; /* Number of the nearest pixels for interp.    */
+  float        *nearest1; /* Array keeping nearest pixels for garray1.   */
+  float        *nearest2; /* Array keeping nearest pixels for garray2.   */
+  size_t          numnan; /* Number of blank elements to interpolate.    */
+  size_t        *naninds; /* Array to keep blank mesh indexs.            */
+  float      *outgarray1; /* The interpolated garray1.                   */
+  float      *outgarray2; /* The interpolated garray2.                   */
 
   /* Mesh types and information: */
   size_t          ts0[4]; /* Size (along first FITS axis) of mesh types. */
@@ -105,7 +137,7 @@ void
 checkmeshid(struct meshparams *mp, long **out);
 
 void
-checkcharray(struct meshparams *mp, int operationid,
+checkgarray(struct meshparams *mp, int operationid,
              float **out1, float **out2);
 
 void
@@ -116,5 +148,8 @@ freemesh(struct meshparams *mp);
 
 void
 fillmesh(struct meshparams *mp, int operationid, float value);
+
+void
+meshinterpolate(struct meshparams *mp, size_t numgarray);
 
 #endif

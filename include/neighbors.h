@@ -31,8 +31,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    Inputs:
    ind        : Pointer to the index being considered.
    (is0, is1) : Input image number of columns.
-   (x0,y0)    : The bottom left corner of image or mesh box.
-   (x1,y1)    : The Top right corner of image or mesh box.
+   (x0,y0)    : The bottom left corner of image or mesh box (included).
+   (x1,y1)    : The Top right corner of image or mesh box (not included).
 
    Outputs:
    numngb     : Number of filled neighbors.

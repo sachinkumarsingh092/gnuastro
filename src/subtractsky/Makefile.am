@@ -36,7 +36,7 @@ subtractsky.c subtractsky.h
 
 astsubtractsky_LDADD = $(top_builddir)/gnulib/lib/libgnu.a		\
 -lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh -lastrthreads	\
--lmode -lstatistics -larraymanip -lforqsort
+-lmode -lstatistics -larraymanip -lforqsort -llinkedlist
 
 
 

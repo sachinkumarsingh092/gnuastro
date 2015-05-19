@@ -37,6 +37,7 @@ libbox_la_LIBADD = -lm
 
 libmesh_la_SOURCES = mesh.c $(top_srcdir)/include/mesh.h
 
+
 libmode_la_SOURCES = mode.c $(top_srcdir)/include/mode.h
 
 libtiming_la_SOURCES = timing.c $(top_srcdir)/include/timing.h
@@ -56,7 +57,6 @@ libtxtarrayvv_la_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
 libastrthreads_la_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
 
 libconfigfiles_la_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
-
 
 libfitsarrayvv_la_SOURCES = fitsarrayvv.c $(top_srcdir)/include/fitsarrayvv.h
 libfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lm

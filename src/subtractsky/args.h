@@ -70,7 +70,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j l p r v w x y z
+   c e f g i j l m p r v w x y z
    A B C E F G I J O R T U W X Y Z
 
    Number keys used: <=502
@@ -107,14 +107,6 @@ static struct argp_option options[] =
       "INT",
       0,
       "Number of nearest neighbors to interpolate.",
-      1
-    },
-    {
-      "mininterp",
-      'm',
-      "INT",
-      0,
-      "Minimum number of successful grid elements.",
       1
     },
     {
@@ -296,12 +288,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.mhduset=1;
       break;
     case 'n':
-      sizetlzero(arg, &p->numnearest, "numnearest", key, SPACK, NULL, 0);
+      sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);
       p->up.numnearestset=1;
-      break;
-    case 'm':
-      sizetlzero(arg, &p->mininterp, "mininterp", key, SPACK, NULL, 0);
-      p->up.mininterpset=1;
       break;
     case 'k':
       sizetpodd(arg, &p->kernelwidth, "kernelwidth", key, SPACK, NULL, 0);

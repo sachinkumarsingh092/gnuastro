@@ -36,6 +36,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Macros: */
+#define MINACCEPTABLENEAREST 3
+
 
 
 struct uiparams
@@ -47,7 +50,6 @@ struct uiparams
   int   masknameallocated;
   int             mhduset;
   int       numnearestset;
-  int        mininterpset;
   int      kernelwidthset;
   int       mirrordistset;
   int         minmodeqset;
@@ -71,11 +73,8 @@ struct subtractskyparams
   struct meshparams        mp;  /* Mesh grid of input image.           */
 
   /* Input: */
-  float                  *img;  /* The input image array.              */
   int                    nwcs;  /* Number of WCS structures.           */
   struct wcsprm          *wcs;  /* Pointer to WCS structures.          */
-  size_t           numnearest;  /* Number of nearest for interpolation.*/
-  size_t            mininterp;  /* Minimum number for interpolation.   */
   size_t          kernelwidth;  /* Width of smoothing kernel.          */
   int                  bitpix;  /* Input image bitpix value.           */
   size_t             numblank;  /* Number of blank pixels in image.    */
