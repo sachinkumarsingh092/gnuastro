@@ -72,7 +72,6 @@ reportsimplestats(struct imgstatparams *p)
   symvalue=valuefromsym(p->sorted, p->size, modeindex, modesym);
   printf("   -- %-45s%.4f, %g\n", "Mode symmetricity and its cutoff"
          " value", modesym, symvalue);
-
   /* Save the mode histogram and cumulative frequency plot. Note
      that if the histograms are to be built, then
      mhistname!=NULL. */

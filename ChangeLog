@@ -1,3 +1,11 @@
+2015-05-20  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/mode.c (modesymmetricity): Corrected topi to the end of the
+	mirror distribution.
+	(modesymmetricity): If no diff point is found, the end of the
+	mirror distribution is used. Before it was the end of the data!
+	(valuefromsym): af set to the quantile of the mirror distribution.
+
 2015-05-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/convolve.c (complextoreal): Changed the two states

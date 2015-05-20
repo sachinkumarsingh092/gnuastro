@@ -474,8 +474,8 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
   size_t i, j, bi=0, topi, errdiff, prevj=0;
 
   mf=a[mi];
+  topi=2*mi;
   errdiff=errorstdm*sqrt(mi);
-  topi=indexfromquantile(2*mi+1, 1-SYMMETRICITYLOWQUANT);
   af=a[indexfromquantile(2*mi+1,   SYMMETRICITYLOWQUANT)];
 
   /* This loop is very similar to that of mirrormaxdiff(). It will
@@ -504,12 +504,10 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
 	}
       prevj=j;
     }
-  /*
-  printf("\n%lu, %lu, %lu\n", indexfromquantile(2*mi+1, minmaxquant),
-	 mi, bi);
-  */
-  if(bi==0)
-    bi=size-1;
+
+  /* bi==0 shows that no point with a larger difference could be
+     found. So bi should be set to the end of the search region. */
+  if(bi==0) bi=topi;
 
   bf=a[bi];
   /*
@@ -536,7 +534,7 @@ float
 valuefromsym(float *sorted, size_t size, size_t modeindex, float sym)
 {
   float mf=sorted[modeindex];
-  float af=sorted[indexfromquantile(size, SYMMETRICITYLOWQUANT)];
+  float af=sorted[indexfromquantile(2*modeindex+1, SYMMETRICITYLOWQUANT)];
   return sym*(mf-af)+mf;
 }
 
