@@ -73,7 +73,7 @@ const char doc[] =
    c e f g i j l m p r v w x y z
    A B C E F G I J O R T U W X Y Z
 
-   Number keys used: <=502
+   Number keys used: <=504
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -99,22 +99,6 @@ static struct argp_option options[] =
       "STR",
       0,
       "Mask image header name.",
-      1
-    },
-    {
-      "numnearest",
-      'n',
-      "INT",
-      0,
-      "Number of nearest neighbors to interpolate.",
-      1
-    },
-    {
-      "kernelwidth",
-      'k',
-      "INT",
-      0,
-      "Width of smoothing kernel (odd number).",
       1
     },
 
@@ -165,6 +149,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "numnearest",
+      'n',
+      "INT",
+      0,
+      "Number of nearest neighbors to interpolate.",
+      3
+    },
+    {
+      "kernelwidth",
+      'k',
+      "INT",
+      0,
+      "Width of smoothing kernel (odd number).",
+      3
+    },
+    {
       "checkmesh",
       500,
       0,
@@ -172,7 +172,38 @@ static struct argp_option options[] =
       "Store mesh IDs in `_mesh.fits' file.",
       3
     },
-
+    {
+      "checkinterpolation",
+      501,
+      0,
+      0,
+      "Store mesh interpolation in `_interp.fits' file.",
+      3
+    },
+    {
+      "checksmoothing",
+      502,
+      0,
+      0,
+      "Store mesh smoothing in `_smooth.fits' file.",
+      3
+    },
+    {
+      "fullinterpolation",
+      503,
+      0,
+      0,
+      "Ignore channels in interpolation.",
+      3
+    },
+    {
+      "fullsmooth",
+      504,
+      0,
+      0,
+      "Ignore channels in smoothing.",
+      3
+    },
 
 
 
@@ -211,22 +242,6 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Difference in STD tolerance to halt iteration.",
-      4
-    },
-    {
-      "checkinterpolation",
-      501,
-      0,
-      0,
-      "Store mesh interpolation in `_interp.fits' file.",
-      4
-    },
-    {
-      "checksmoothing",
-      502,
-      0,
-      0,
-      "Store mesh smoothing in `_smooth.fits' file.",
       4
     },
 
@@ -319,6 +334,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 500:
       p->meshname="a";  /* Just a placeholder! It will be corrected later */
       break;
+    case 501:
+      p->interpname="a";
+      break;
+    case 502:
+      p->smoothname="a";
+      break;
+    case 503:
+      p->mp.fullinterpolation=1;
+      break;
+    case 504:
+      p->mp.fullsmooth=1;
+      break;
 
 
     /* Statistics */
@@ -339,12 +366,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
       floatl0s1(arg, &p->mp.sigcliptolerance, "sigcliptolerance", key, SPACK,
               NULL, 0);
       p->up.sigcliptoleranceset=1;
-      break;
-    case 501:
-      p->interpname="a";
-      break;
-    case 502:
-      p->smoothname="a";
       break;
 
 

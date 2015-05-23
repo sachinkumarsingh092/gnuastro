@@ -98,5 +98,4 @@ subtractsky(struct subtractskyparams *p)
 
   /* Subtract the sky value */
 
-
 }

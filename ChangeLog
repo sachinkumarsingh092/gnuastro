@@ -1,3 +1,16 @@
+2015-05-23  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/mode.c (modesymmetricity): Corrrected topi to account for
+	the case when 2*mi is larger than size.
+
+	* src/subtractsky/args.h: --numnearest and --kernelwidth moved to
+	the `Mesh grid' part of the help output. --checksmoothing and
+	--checkinterpolation also moved to the `Mesh grid' part.
+
+	* lib/mesh.c (checkgarray): Modified to show both the full, or
+	contiguous over full image, garray and the default one which is
+	contiguous only over each channel.
+
 2015-05-20  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/mode.c (modesymmetricity): Corrected topi to the end of the

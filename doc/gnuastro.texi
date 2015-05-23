@@ -331,13 +331,16 @@ SubtractSky
 
 * Sky value::                   Definition of the sky value.
 * Tiling an image::             Defining a mesh grid on the image.
-* Sky value interpolation::     How blank grid elements are filled.
 * Invoking astsubtractsky::     Options and arguments to SubtractSky.
 
 Sky value
 
 * Finding the sky value::       How SubtractSky finds the sky value.
 * Sky value misconceptions::    Sky value misconceptions and wrong approaches.
+
+Tiling an image
+
+* Grid interpolation and smoothing::
 
 Image analysis
 
@@ -6237,18 +6240,17 @@ in space based images where the atmosphere is no longer a problem.
 @cindex Grid
 @cindex Mesh
 @cindex Gradient
-SubtractSky is a tool to find the sky value on a grid over the
-image. The size of the grid will determine how accurately it can
-account for gradients in the sky value. Such that if the gradient
-(change of sky value) is too sharp, a smaller grid size has to be
-chosen. However the results will be most accurate with a larger grid
-size.
+SubtractSky is a tool to find the sky value and its standard deviation
+on a grid over the image. The size of the grid will determine how
+accurately it can account for gradients in the sky value. Such that if
+the gradient (change of sky value) is too sharp, a smaller grid size
+has to be chosen. However the results will be most accurate with a
+larger grid size.
 
 
 @menu
 * Sky value::                   Definition of the sky value.
 * Tiling an image::             Defining a mesh grid on the image.
-* Sky value interpolation::     How blank grid elements are filled.
 * Invoking astsubtractsky::     Options and arguments to SubtractSky.
 @end menu
 
@@ -6324,7 +6326,7 @@ object flux in the data can be calculated with
 @cindex photo-electrons
 Hence, the more accurately @mymath{S_i} is measured, the more
 accurately the flux of the target object can be measured
-(photometry). Similarly, any under(over) estimation in the sky will
+(photometry). Similarly, any under-(over-)estimation in the sky will
 directly translate to an over(under) estimation of the measured
 object's flux.  In the fainter outskirts of an object a very small
 fraction of the photo-electrons in the pixels actually belong to
@@ -6374,11 +6376,11 @@ significant data in the distribution. So we can consider the image to
 be made of a grid and use this argument to `detect' data in each grid
 element. When a grid element satisfies the condition above, we keep
 its mean value. Recall that the sky was the mean of undetected
-pixels. Any grid element that dosn't satisfy this condition is kept
+pixels. Any grid element that doesn't satisfy this condition is kept
 with a blank value. Finally, when all the grid elements have been
 checked, we can interpolate over all the empty elements and smooth the
-final result to find the sky value over the full image. See @ref{Sky
-value interpolation}.
+final result to find the sky value over the full image. See @ref{Grid
+interpolation and smoothing}.
 
 Note that through the difference of the mode and median we have
 actually `detected' data in the distribution. However this detection
@@ -6388,6 +6390,22 @@ value}. Finding the median is very easy, the main problem is in
 finding the mode through a robust method. In Appendix C of Akhlaghi
 and Ichikawa (2015) a new approach to finding the mode in any
 astronomically relevant distribution is introduced.
+
+@cindex Cosmic rays
+Even when the mode and median are approximately equal, Cosmic rays can
+significantly bias the calculation of the average. Even if they are
+very few, they can still significantly bias the average and standard
+deviation. Fortunately, usually, Cosmic rays have very sharp
+boundaries and do not fade away into the noise. Therefore, when the
+histogram of the distribution is plotted, they are clearly separate
+from the rest of the data. For example see Figure 15 in Akhlaghi and
+Ichikawa (2015). In such cases, @mymath{\sigma}-clipping is a perfect
+tool to remove the effect of such objects in the average and standard
+deviation. See @ref{Sigma clipping} for a complete explanation. So
+after asserting that the mode and median are approximately equal in a
+mesh (see @ref{Tiling an image}), convergance-based
+@mymath{\sigma}-clipping is also applied before getting the final sky
+value and its standard deviation for a mesh.
 
 
 @node Sky value misconceptions,  , Finding the sky value, Sky value
@@ -6402,15 +6420,15 @@ realies heavily on assumptions about the to-be-detected objects. This
 method was the most heavily used technique prior to the introduction
 of NoiseChisel in that paper.} used the sky value as a reference to
 define the detection threshold. So these old techniques had to rely on
-approximations based on other assumptions about the data. A full
-review of those other techniques can be seen in Appendix A of Akhlaghi
-and Ichikawa (2015)@footnote{Akhlaghi M.,
+approximations based on other assumptions about the data. A review of
+those other techniques can be seen in Appendix A of Akhlaghi and
+Ichikawa (2015)@footnote{Akhlaghi M.,
 Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Since
 they were extensively used in astronomical data analysis for several
 decades, such approximations have given rise to a lot of
-misconceptions and disagreements about the sky value and how to
-measure it. As a summary, the major methods used until now were an
-approximation of the mode of the image pixel distribution and
+misconceptions, ambiguities and disagreements about the sky value and
+how to measure it. As a summary, the major methods used until now were
+an approximation of the mode of the image pixel distribution and
 @mymath{\sigma}-clipping.
 
 @itemize
@@ -6430,8 +6448,9 @@ and depend on bin-widths.
 Another approach was to iteratively clip the brightest pixels in the
 image (which is known as @mymath{\sigma}-clipping, since the reference
 was found from the image mean and its stadard deviation or
-@mymath{\sigma}). The problem with @mymath{\sigma}-clipping was that
-real astronomical objects have diffuse and faint wings that penetrate
+@mymath{\sigma}). See @ref{Sigma clipping} for a complete
+explanation. The problem with @mymath{\sigma}-clipping was that real
+astronomical objects have diffuse and faint wings that penetrate
 deeply into the noise. So only removing their brightest parts is
 completely useless in removing the systematic bias an object's fainter
 parts cause in the sky value.
@@ -6445,7 +6464,7 @@ are ultimately poor approximations.
 
 
 
-@node Tiling an image, Sky value interpolation, Sky value, SubtractSky
+@node Tiling an image, Invoking astsubtractsky, Sky value, SubtractSky
 @subsection Tiling an image
 
 @cindex Grid
@@ -6458,10 +6477,10 @@ gradients. In this section we will explain the concept in detail and
 how the user can check the grid. In the case of SubtractSky, if the
 image is completely uniform then one sky value will suffice for the
 whole image. See @ref{Sky value} for the definition of the sky value.
-Unfortunately though as discussed in @ref{SubtractSky}, in most images
-taken with ground or space-based telescopes the sky value is not
-uniform. So we have to break the image up into small tiles on a mesh
-grid and find the sky value on those tiles.
+Unfortunately though, as discussed in @ref{SubtractSky}, in most
+images taken with ground or space-based telescopes the sky value is
+not uniform. So we have to break the image up into small tiles on a
+mesh grid and find the sky value on those tiles.
 
 Meshes are considered to be a square with a side of
 @option{--meshsize} pixels. The best mesh size is directly related to
@@ -6484,21 +6503,22 @@ detectors usually have multiple amplifiers, for example the Hubble
 Space Telecope Advanced Camera for Surveys (ACS) has four amplifiers
 over its full detector area dividing the square field of view to four
 smaller squares. Ground based image detectors are not exempt, for
-example each CCD of Subaru Telescope's gigantic Hyper Suprime-Cam
-camera (which has 104 CCDs) has four amplifiers, but they have the
-same height of the CCD and divide the width by four parts.
+example each CCD of Subaru Telescope's Hyper Suprime-Cam camera (which
+has 104 CCDs) has four amplifiers, but they have the same height of
+the CCD and divide the width by four parts.
 
 @cindex Channel
 The bias current on each amplifier is different, and normaly bias
 subtraction is not accurately done. So after subtracting the bias
 current, you can clearly still identify the boundaries of different
-amplifiers by eye. This results in the final reduced data to have
-non-uniform amplifier-shaped regions with higher or lower background
-flux values. Such systematic biases will then propagate to all
-subsequent measurements we do on the data (for example photometry and
-subsequent stellar mass and star formation rate measurements in the
-case of galaxies). Therefore an accurate sky subtraction routine
-should also be able to account for such biases.
+amplifiers by eye. See Figure 11 in Akhlaghi and Ichikawa (2015)a for
+example This results in the final reduced data to have non-uniform
+amplifier-shaped regions with higher or lower background flux
+values. Such systematic biases will then propagate to all subsequent
+measurements we do on the data (for example photometry and subsequent
+stellar mass and star formation rate measurements in the case of
+galaxies). Therefore an accurate sky subtraction routine should also
+be able to account for such biases.
 
 To get an accurate result, the mesh boundaries should be located
 exactly on the amplifier boundaries. Otherwise, the meshes which lie
@@ -6507,9 +6527,9 @@ the amplifier boundary will still be present after sky subtraction.
 So in practice, we define `channel's. A channel is an independent mesh
 grid that covers one amplifier to ensure that the meshes do not pass
 the amplifier boundary. They are also used in subsequent steps as the
-area used to identify nearby neighbors to interpolate, see @ref{Sky
-value interpolation}. The number of channels along each axis can be
-specified by the user at run time through @option{--nch1} and
+area used to identify nearby neighbors to interpolate, see @ref{Grid
+interpolation and smoothing}. The number of channels along each axis
+can be specified by the user at run time through @option{--nch1} and
 @option{--nch2} or in the configuration files, see @ref{Configuration
 files}. The area of each channel will then be tiled by meshes of the
 given size and subsequent processing will be done on those meshes. If
@@ -6540,8 +6560,12 @@ subsequent extension. Each pixel in the grid extensions is labled to
 the mesh that it is part of. You can flip through the extensions to
 check the mesh sizes and locations compared to the input image.
 
-@node Sky value interpolation, Invoking astsubtractsky, Tiling an image, SubtractSky
-@subsection Sky value interpolation
+@menu
+* Grid interpolation and smoothing::    Filling the blank grid elements.
+@end menu
+
+@node Grid interpolation and smoothing,  , Tiling an image, Tiling an image
+@subsubsection Grid interpolation and smoothing
 
 As explained in @ref{Finding the sky value}, the sky value will not be
 found over some of the grid elements. For example when a large galaxy
@@ -6549,9 +6573,7 @@ is present in the image, no sky value will be found for the grid
 elements that lie over it. However, the sky value should be `guessed'
 over that part of the image. We cannot just not subtract the sky value
 from those regions! To fill in such blank grid elements, we use
-interpolation. If the number of grid elements in the input image
-becomes smaller than @option{--mininterp}, then SubtractSky will abort
-and notify you.
+interpolation.
 
 @cindex Spline interpolation
 @cindex Linear interpolation
@@ -6561,14 +6583,17 @@ and notify you.
 @cindex Interpolation, bilinear
 Parametric interpolations like bi-linear or bicubic or spline
 interpolations are not used because they fail terribly on the edges of
-the image. They are also prone to cause significant gradients in the
+the image. For example see Figure 16 in Akhlaghi and Ichikawa
+(2015). They are also prone to cause significant gradients in the
 image. So to find the interpolated value for each grid element,
 SubtractSky will look at a certain number of the nearest
 neighbors. The exact number can be specified through
 @option{--numnearest}. The median value of those grid elements will be
 taken as the final value for the blank mesh. The median is chosen
 because on the fainter wings of bright objects, the mean can easily
-become biased.
+become biased. If the number of meshes with a good value is less than
+the value given to @option{--numnearest}, then SubtractSky will abort
+and notify you.
 
 Once all the grid elements are filled, the grid sky values should be
 smoothed. This is because when the median is used, there will be
@@ -6582,9 +6607,19 @@ process}. The size of this kernel can be set through the
 @option{--kernelwidth} option (which has to be an odd number as with
 any kernel).
 
+By default the interpolation and smoothing explained above are done
+independently on each channel. In some circumstances, it might be
+preferable to do either one of these two steps on the whole
+image. Independent of the channels in an image. Through the two
+options @option{--fullinterpolation} and @option{--fullsmooth} you can
+ask for interpolation or smoothing to use all the meshs in the
+image. Note that it is still very important that no mesh contain
+pixels from two channels. Since the mesh sizes and positions have
+already been defined and filled prior to these steps, there is no
+problem in this regard.
 
 
-@node Invoking astsubtractsky,  , Sky value interpolation, SubtractSky
+@node Invoking astsubtractsky,  , Tiling an image, SubtractSky
 @subsection Invoking SubtractSky
 
 SubtractSky will find the sky value on a grid in an image and subtract
@@ -6599,8 +6634,10 @@ $ astsubtractsky [OPTION ...] Image
 One line examples:
 
 @example
-$ astsubtractsky processedimage.fits
-$ astsubtractsky --nch1=2 --nch2=2 fromcamera.fits
+$ astsubtractsky image.fits
+$ astsubtractsky --hdu=0 --mhdu=1 image.fits
+$ astsubtractsky --nch1=2 --nch2=2 image.fits
+$ astsubtractsky --mask=maskforimage.fits image.fits
 @end example
 
 @cindex Blank pixels
@@ -6609,7 +6646,9 @@ currently has to be only a 2D image. But in the future it might be
 useful to use it for 1D or 3D data too. Any pixels in the image with a
 blank value will be ignored in the analysis, see @ref{Blank
 pixels}. Alternatively a mask can be specified which indicates pixels
-to not be used (see @option{--mask} and @option{--mhdu}).
+to not be used (see @option{--mask} and @option{--mhdu}). The common
+options to all Gnuastro programs can be seen in @ref{Common options}
+and input data formats are explained in @ref{Arguments}.
 
 @table @option
 
@@ -6638,25 +6677,6 @@ pixels}).
 mask name is optional in the configuration files, the mask hdu is not
 and must be specified in at least one of the configuration files.
 
-
-@item -n
-@itemx --numnearest
-(@option{=INT}) The number of nearest grid elements with a successful
-sky value to use for interpolating over blank grid elements (those
-that had a significant contribution of flux), see @ref{Sky value
-interpolation}.
-
-@item -m
-@itemx --mininterp
-(@option{=INT}) The minimum number of grid elements with a sky
-value. If the number of grid elements in the image becomes smaller
-than this value, the program will abort.
-
-@item -k
-@itemx --kernelwidth
-(@option{=INT}) The width of the average filter kernel used to smooth
-the interpolated image. See @ref{Sky value interpolation}.
-
 @item -s
 @itemx --meshsize
 (@option{=INT}) The size of each mesh, see @ref{Tiling an image}. If
@@ -6668,7 +6688,12 @@ cover the full channel.
 @itemx --nch1
 (@option{=INT}) The number of channels along the first FITS axis
 (horizontal when viewed in SAO ds9). If the length of the image is not
-an exact multiple of this number, then SubtractSky will stop.
+an exact multiple of this number, then SubtractSky will stop. You can
+use ImageCrop (@ref{ImageCrop}) to trim off or add some pixels (blank
+pixels if added, see @ref{Blank pixels}) to the image if it is not an
+exact multiple. Usually, when channels become significant, the image
+is not yet fully processed and the full channel pixels should still
+exist in the image.
 
 @item -b
 @itemx --nch2
@@ -6686,6 +6711,27 @@ An image with suffix @file{_mesh.fits} will be created for you to
 check the mesh grid, see @ref{Tiling an image}. SubtractSky only uses
 one mesh grid, so only one grid extension will be included in the
 produced file.
+
+@item -n
+@itemx --numnearest
+(@option{=INT}) The number of nearest grid elements with a successful
+sky value to use for interpolating over blank meshs elements (those
+that had a significant contribution of flux), see @ref{Grid
+interpolation and smoothing}.
+
+@item -k
+@itemx --kernelwidth
+(@option{=INT}) The width of the average filter kernel used to smooth
+the interpolated image. See @ref{Grid interpolation and smoothing}.
+
+@item --fullinterpolation
+Do interpolation irrespective of the channels in the image, see
+@ref{Grid interpolation and smoothing}.
+
+@item --fullsmoothing
+Do smoothing irrespective of the channels in the image, see @ref{Grid
+interpolation and smoothing}.
+
 
 @item -d
 @itemx --mirrordist

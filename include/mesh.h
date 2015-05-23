@@ -95,6 +95,7 @@ struct meshparams
   size_t             nch; /* Total number of channels.                   */
   size_t            nch1; /* Number of channels along first FITS axis.   */
   size_t            nch2; /* Number of channels along first FITS axis.   */
+  int         fullgarray; /* ==1: garray represents the whole image.     */
   float         *garray1; /* One value per mesh array for all channels.  */
   float         *garray2; /* One value per mesh array for all channels.  */
   size_t             gs0; /* Number of meshes on axis 0 in each channel. */
@@ -127,6 +128,10 @@ struct meshparams
   size_t        *naninds; /* Array to keep blank mesh indexs.            */
   float      *outgarray1; /* The interpolated garray1.                   */
   float      *outgarray2; /* The interpolated garray2.                   */
+  int  fullinterpolation; /* ==1: Ignore channels in interpolation.      */
+
+  /* Smoothing: */
+  int         fullsmooth; /* ==1: Ignore channels in smoothing.          */
 
   /* Mesh types and information: */
   size_t          ts0[4]; /* Size (along first FITS axis) of mesh types. */

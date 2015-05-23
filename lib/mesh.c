@@ -35,6 +35,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "neighbors.h"
 #include "linkedlist.h"
 #include "statistics.h"
+#include "fitsarrayvv.h"
 #include "astrthreads.h"
 
 
@@ -115,8 +116,10 @@ checkgarray(struct meshparams *mp, int operationid,
              float **out1, float **out2)
 {
   int needstwo=0;
+  size_t gs0=mp->gs0, gs1=mp->gs1;
   float *f, *fp, *ff, garray1, garray2;
-  size_t i, row, start, *types=mp->types;
+  size_t i, row, start, meshid, *types=mp->types;
+  size_t f0, f1, fs1=mp->gs1*mp->nch1, chid, inchid;
   size_t s0, s1, is1=mp->s1, *ts0=mp->ts0, *ts1=mp->ts1;
 
   if(operationid==MODEEQMED_AVESTD)
@@ -139,15 +142,35 @@ checkgarray(struct meshparams *mp, int operationid,
               "(mesh.c)", mp->s0*mp->s1*sizeof **out2);
     }
 
-  /* Fill the indexs: */
+  /* Fill the array: */
   for(i=0;i<mp->nmeshi;++i)
     {
+      /* Find the proper index for this mesh. garrays can either be
+         indexed by each channel (so the indexs in each channel are
+         contiguous) or by the image (so the mesh indexs are
+         contiguous over the image). If mp->fullgarray==1, then it is
+         the latter. By default it is the former. */
+      if(mp->fullgarray)
+        {
+          /* In this case, `i' is the index of a mesh in the full
+             image, not the channel separated image. So we have to
+             correct it to the channel independent indexing system. */
+          f0=i/fs1;
+          f1=i%fs1;
+          inchid = (f0%gs0)*gs1      + f1%gs1;
+          chid   = (f0/gs0)*mp->nch1 + f1/gs1;
+          meshid = chid*mp->nmeshc + inchid;
+        }
+      else meshid=i;
+
+      /* Fill the output array with the value in this mesh: */
       row=0;
-      s0=ts0[types[i]];
-      s1=ts1[types[i]];
-      start=mp->start[i];
-      garray1=mp->garray1[i];
-      if(needstwo) garray2=mp->garray2[i];
+      s0=ts0[types[meshid]];
+      s1=ts1[types[meshid]];
+      start=mp->start[meshid];
+      garray1 = mp->garray1[i];
+      if(needstwo)
+        garray2 = mp->garray2[i];
       do
         {
           fp= ( f = *out1 + start + row * is1 ) + s1;
@@ -164,6 +187,79 @@ checkgarray(struct meshparams *mp, int operationid,
     }
 }
 
+
+
+
+
+/* By default, the garray1 and garray2 arrays keep the meshes of each
+   channel contiguously. So in practice, each channel is like a small
+   independent image. This will cause problems when we want to work on
+   the meshs irrespective of which channel they belong to. This
+   function allocates and fills in the fgarray1 and fgarray2 arrays.*/
+void
+fullgarray(struct meshparams *mp)
+{
+  size_t nch1=mp->nch1;
+  size_t ind, gs1=mp->gs1, gs0=mp->gs0;
+  float *fgarray1=NULL, *fgarray2=NULL;
+  float *garray1=mp->garray1, *garray2=mp->garray2;
+  size_t g0, g1, f0, f1, fmeshind, chid, is1=mp->nch1*mp->gs1;
+
+  /* First allocate the fgarrays. */
+  errno=0; fgarray1=malloc(mp->nmeshi*sizeof *fgarray1);
+  if(fgarray1==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for fgarray1",
+          mp->nmeshi*sizeof *fgarray1);
+  if(garray2)
+    {
+      errno=0;
+      fgarray2=malloc(mp->nmeshi*sizeof *fgarray2);
+      if(fgarray2==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for fgarray2",
+              mp->nmeshi*sizeof *fgarray2);
+    }
+
+  /* Fill the fgarrays with the proper values: */
+  for(chid=0;chid<mp->nch;++chid)
+    {
+      /* The first pixel ID in this channel is: chid*mp->nmeshi. */
+      f0=(chid/nch1)*gs0;      /* Position of first channel mesh */
+      f1=(chid%nch1)*gs1;      /* in full image.                 */
+      fmeshind=chid*mp->nmeshc;
+
+      /* Go over all the meshes in this channel and put them in their
+         righful place. */
+      for(ind=0;ind<mp->nmeshc;++ind)
+        {
+          g0=ind/gs1;    /* Position of this mesh in this channel. */
+          g1=ind%gs1;
+          fgarray1[(g0+f0)*is1+g1+f1]=garray1[ind+fmeshind];
+          if(garray2)
+            fgarray2[(g0+f0)*is1+g1+f1]=garray2[ind+fmeshind];
+        }
+    }
+
+  /* Just for a check:
+  arraytofitsimg("nochannels.fits", "fgarray1", FLOAT_IMG, fgarray1,
+                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                 "mesh");
+  if(garray2)
+    arraytofitsimg("nochannels.fits", "fgarray2", FLOAT_IMG, fgarray2,
+                   mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                   "mesh");
+  */
+
+  /* garray1 and garray2 are no longer needed. So free up their space
+     and replace them with fgarray1 and fgarray2. */
+  mp->fullgarray=1;
+  free(mp->garray1);
+  mp->garray1=fgarray1;
+  if(mp->garray2)
+    {
+      free(mp->garray2);
+      mp->garray2=fgarray2;
+    }
+}
 
 
 
@@ -478,8 +574,8 @@ fillmeshonthreads(void *inparam)
   struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
   struct meshparams *mp=mtp->mp;
 
-  float modesym;
-  size_t modeindex;
+  float modesym=0.0f;
+  size_t modeindex=(size_t)(-1);
   float sigcliptolerance=mp->sigcliptolerance;
   size_t s0, s1, ind, row, num, start, is1=mp->s1;
   float *f, *allmeshs, *img, *imgend, *inimg=mp->img;
@@ -594,6 +690,7 @@ fillmesh(struct meshparams *mp, int operationid, float value)
           numthreads*sizeof *mtp);
 
   /* Allocate the array to keep the values for each  */
+  mp->fullgarray=0;
   errno=0; mp->garray1=malloc(mp->nmeshi*sizeof *mp->garray1);
   if(mp->garray1==NULL) error(EXIT_FAILURE, errno, "mp->garray1");
   if(operationid==MODEEQMED_AVESTD)
@@ -681,29 +778,30 @@ manhattandistance(long ind, long xc, long yc, long s1)
 
 
 
-
+/* Some of the variables have different names than the meshparams
+   structure because they are to be fed into the FILL_NGB_4_ALLIMG
+   macro. */
 void *
 meshinterponthread(void *inparams)
 {
   struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
   struct meshparams *mp=mtp->mp;
+
+  /* Basic variables used in other definitions: */
   size_t numnearest=mp->numnearest;
-  size_t is0=mp->gs0, is1=mp->gs1; /* different names for macro */
+  size_t is0=mp->fullinterpolation ? mp->gs0*mp->nch2 : mp->gs0;
+  size_t is1=mp->fullinterpolation ? mp->gs1*mp->nch1 : mp->gs1;
 
   /* Variables for this function: */
-  size_t fmeshid, position, *ind=&position;
+  struct tosll *lQ, *sQ;
   size_t xc, yc, *n, *nf, currentnum, thisind;
   unsigned char *byt=&mp->byt[mtp->id*is0*is1];
   float *nearest1=&mp->nearest1[mtp->id*numnearest];
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
-  size_t numngb, ngb[4]; /* different names for macro. */
+  float mdist, *garray1=mp->garray1, *garray2=mp->garray2;
+  size_t fmeshid, position, *ind=&position, numngb, ngb[4];
   float *outgarray1=mp->outgarray1, *outgarray2=mp->outgarray2;
-  float mdist, *nearest2, *garray1=mp->garray1, *garray2=mp->garray2;
-  struct tosll *lQ, *sQ;	/* lQ: Largest. sQ: Smallest in queue */
-
-  /* In case garray2 is allocated, then it will also need
-     interpolation. */
-  if(garray2) nearest2=&mp->nearest2[mtp->id*numnearest];
+  float *nearest2=garray2 ? &mp->nearest2[mtp->id*numnearest] : NULL;
 
   /* Go over all the meshes for this thread. */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
@@ -713,6 +811,7 @@ meshinterponthread(void *inparams)
 
       /* Get the index of this NaN mesh: */
       thisind=mp->naninds[indexs[i]];
+      /*printf("Started mesh %lu\n", thisind);*/
 
       /*
          `fmeshid' (first-mesh-id) keeps the index of the first mesh
@@ -728,7 +827,9 @@ meshinterponthread(void *inparams)
          set to point to the first mesh index in this channel.
       */
       lQ=sQ=NULL;
-      fmeshid = (thisind/mp->nmeshc) * mp->nmeshc;
+      fmeshid = ( mp->fullinterpolation
+                  ? 0
+                  : (thisind/mp->nmeshc) * mp->nmeshc);
 
       /* Initialize the necessary parameters. */
       *ind=thisind-fmeshid;
@@ -766,11 +867,6 @@ meshinterponthread(void *inparams)
               }
           while(++n<nf);
 
-          /********************************************
-          printf("%lu: %lu: %lu\t## %d ##.\n",
-                 mtp->id, thisind, currentnum, sQ==NULL ? 1 : 0);
-          *********************************************/
-
           /* If there are no more meshes to add to the queue, then
              this shows, there were not enough points for
              interpolation. Normally, this loop should only be exited
@@ -793,6 +889,15 @@ meshinterponthread(void *inparams)
                               nearest1[numnearest/2] : /* Odd.  */
                               (nearest1[numnearest/2]  /* Even. */
                                +nearest1[numnearest/2-1])/2 );
+      /*
+      if(outgarray1[thisind]<4000 || outgarray1[thisind]>5000)
+        {
+          printf("%lu", thisind);
+          for(i=0;i<numnearest;++i)
+            printf("\t%f\n", nearest1[i]);
+          printf("Result: %f\n\n\n", outgarray1[thisind]);
+        }
+      */
       if(garray2)
         {
           qsort(nearest2, numnearest, sizeof *nearest2, floatincreasing);
@@ -816,10 +921,26 @@ meshinterponthread(void *inparams)
 void
 preparemeshinterparrays(struct meshparams *mp)
 {
-  size_t numnan=0;
   size_t numthreads=mp->numthreads;
+  size_t numnan=0, bs0=mp->gs0, bs1=mp->gs1;
   float *f, *ff, *fff=NULL, *ffff=NULL, *fp;
   float *garray1=mp->garray1, *garray2=mp->garray2;
+
+
+  /* If full-interpolation is to be done (ignoring channels) we will
+     need two arrays to temporarily keep the actual positions of the
+     meshs. Note that by default, the meshs in each channels are
+     placed contiguously. In these arrays, the meshs are placed as
+     they would in the image (channels are ignored).*/
+  if(mp->fullinterpolation)
+    {
+      fullgarray(mp);
+      garray1=mp->garray1;      /* garray1 and garray2 were freed inside */
+      garray2=mp->garray2;      /* the fullgarray function.              */
+      bs0=mp->nch2*mp->gs0;
+      bs1=mp->nch1*mp->gs1;
+    }
+
 
   /* Allocate the output arrays to keep the final values. Note that we
      cannot just do the interpolaton on the same input grid, because
@@ -838,6 +959,7 @@ preparemeshinterparrays(struct meshparams *mp)
         error(EXIT_FAILURE, errno, "%lu bytes for outgarray2",
               mp->nmeshi*sizeof *mp->outgarray2);
     }
+
 
 
   /* Find how many blank pixels there are and keep all their indexs in
@@ -896,10 +1018,10 @@ preparemeshinterparrays(struct meshparams *mp)
   /* Allocate space for the byte array keeping a record of which
      pixels were used to search. Note that each thread needs one byt
      array. */
-  errno=0; mp->byt=malloc(numthreads*mp->gs0*mp->gs1*sizeof *mp->byt);
+  errno=0; mp->byt=malloc(numthreads*bs0*bs1*sizeof *mp->byt);
   if(mp->byt==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for mp->byt array in "
-          "mesh.c", numthreads*mp->gs0*mp->gs1*sizeof *mp->byt);
+          "mesh.c", numthreads*bs0*bs1*sizeof *mp->byt);
 }
 
 
@@ -970,7 +1092,17 @@ meshinterpolate(struct meshparams *mp, size_t numgarray)
       free(mp->garray2);
       mp->garray2=mp->outgarray2;
     }
-  mp->outgarray1=mp->outgarray2=NULL; /* Only for safetly ;-). */
+  mp->outgarray1=mp->outgarray2=NULL;
+
+  /* For a check
+  system("rm test.fits");
+  arraytofitsimg("test.fits", "garray1", FLOAT_IMG, mp->garray1,
+                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                 "mesh");
+  arraytofitsimg("test.fits", "garray2", FLOAT_IMG, mp->garray2,
+                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                 "mesh");
+  */
 
   /* Clean up. */
   free(mtp);

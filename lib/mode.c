@@ -474,8 +474,8 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
   size_t i, j, bi=0, topi, errdiff, prevj=0;
 
   mf=a[mi];
-  topi=2*mi;
   errdiff=errorstdm*sqrt(mi);
+  topi = 2*mi>size-1 ? size-1 : 2*mi;
   af=a[indexfromquantile(2*mi+1,   SYMMETRICITYLOWQUANT)];
 
   /* This loop is very similar to that of mirrormaxdiff(). It will
