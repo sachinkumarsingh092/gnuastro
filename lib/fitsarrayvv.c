@@ -1028,15 +1028,15 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
   /* Write all the information: */
   fits_write_date(fptr, &status);
   fits_update_key(fptr, TSTRING, "CFITSIO", cfitsioversion,
-		  "Version of CFITSIO used.", &status);
+		  "CFITSIO version.", &status);
 #ifdef HAVE_WCSLIBVERSION
   wcslibversion_const=wcslib_version(wcslibvers);
   strcpy(wcslibversion, wcslibversion_const);
   fits_update_key(fptr, TSTRING, "WCSLIB", wcslibversion,
-		  "Version of WCSLIB used.", &status);
+		  "WCSLIB version.", &status);
 #endif
   fits_update_key(fptr, TSTRING, "GNUASTRO", PACKAGE_VERSION,
-		  "Version of GNU Astronomy Utilities used.", &status);
+		  "GNU Astronomy Utilities version.", &status);
   fits_write_comment(fptr, PACKAGE_STRING, &status);
   fits_write_comment(fptr, PACKAGE_URL, &status);
   /*

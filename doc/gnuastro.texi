@@ -4031,18 +4031,21 @@ list. We have other mailing lists and tools for those purposes, see
 @cindex Output FITS headers
 @cindex CFITSIO version on outputs
 The output FITS files created by Gnuastro will have the following two
-keywords: @command{DATE} and @command{CFITSIO}. The first specifies
-the time in UT of the file being created and the second specifies the
-version of CFITSIO that was used to make the file. We are not aware if
-WCSLIB has this capability (to give its version number), therefore it
-is not included. Some basic information about Gnuastro is also
-printed. The example below shows the last few keywords of one of the
-outputs of ImageCrop.
+keywords: @command{DATE}, @command{CFITSIO}, @command{WCSLIB} and
+@command{GNUASTRO}. The first specifies the time in UT of the file
+being created. The next three specify the versions of CFITSIO, WCSLIB
+and Gnuastro that was used to make the file. Note that WCSLIB has only
+recently added the version reporting capability. If you version of
+WCSLIB doesn't have this capability, it will not be reported. Some
+basic information about Gnuastro is also printed. The example below
+shows the last few keywords of one of the outputs of ImageCrop.
 
 @example
-        / ImageCrop (GNU Astronomy Utilities 0.1) 0.1:
-DATE    = ' ... '       / file creation date (YYYY-MM-DDThh:mm:ss UT)
-CFITSIO = '3.37    '    / Version of CFITSIO used.
+              / ImageCrop (GNU Astronomy Utilities 0.1) 0.1:
+DATE    = ' ... '              / file creation date ( ... )
+CFITSIO = '3.37    '           / CFITSIO version.
+WCSLIB  = '5.5     '           / WCSLIB version.
+GNUASTRO= '0.1     '           / GNU Astronomy Utilities version.
 COMMENT GNU Astronomy Utilities 0.1
 COMMENT http://www.gnu.org/software/gnuastro/
 END
@@ -4180,7 +4183,7 @@ immediately stop upon the first error.
 
 @cindex GNU Grep
 If only a certain set of header keywords are desired, it is easiest to
-pipe the output of Header to GNU Grep. Grep is a very powerfull and
+pipe the output of Header to GNU Grep. Grep is a very powerful and
 advanced tool to search strings which is precisely made for such
 situations. For example if you only want to check the size of an image
 FITS HDU, you can run:
@@ -4400,7 +4403,7 @@ quality. Since it also includes vector graphic lines we also use such
 lines to make a thin border around the image to make its appearance in
 the document much better. No matter the resolution of the display or
 printer, these lines will always be clear and not pixelated. In the
-future addition of text might be included (for example labels or
+future, addition of text might be included (for example labels or
 object IDs) on the EPS output. However, this can be done better with
 tools within @TeX{} or @LaTeX{} such as
 PGF/Tikz@footnote{@url{http://sourceforge.net/projects/pgf/}}.

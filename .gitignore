@@ -30,6 +30,7 @@ astimgstat
 astimgwarp
 astconvertt
 astconvolve
+astnoisechisel
 astsubtractsky
 
 .deps

@@ -56,22 +56,23 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define ASTRUTILSBIBTEX 						\
-    "@ARTICLE{gnuastro,\n"						\
-    "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"		\
-    "    title = \"{Noise based detection and segmentation of nebulous" \
-    " objects}\"\n"							\
-    "  journal = {\\apjs},\n"						\
-    " keywords = {galaxies: irregular, galaxies: photometry, galaxies: " \
-    "structure, methods: data analysis, techniques: image processing, "	\
-    "techniques: photometric},\n"					\
-    "     year = 2015,\n"						\
-    "    month = XXX,\n"						\
-    "   volume = XXX,\n"						\
-    "      eid = {XX},\n"						\
-    "    pages = {XX},\n"						\
-    "      doi = {XXXXXXXXX},\n"					\
-    "   adsurl = {XXXXXXXXXXXXXXXXXXXXXX},\n"				\
-    "}"									\
+  "@ARTICLE{noisechisel,\n"                                             \
+  "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"                  \
+  "    title = \"{Noise Based Detection and Segmentation of Nebulous "  \
+  "Objects}\",\n"                                                       \
+  "  journal = {ArXiv e-prints},\n"                                     \
+  " archivePrefix = \"arXiv\",\n"                                       \
+  "   eprint = {1505.01664},\n"                                         \
+  " primaryClass = \"astro-ph.IM\",\n"                                  \
+  " keywords = {Astrophysics - Instrumentation and Methods for "        \
+  "Astrophysics, Astrophysics - Cosmology and Nongalactic "             \
+  "Astrophysics, Astrophysics - Astrophysics of Galaxies},\n"           \
+  "     year = 2015,\n"                                                 \
+  "    month = may,\n"                                                  \
+  "   adsurl = {http://adsabs.harvard.edu/abs/2015arXiv150501664A},\n"  \
+  "  adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"   \
+  "}\n"
+
 
 /* This can be used in the end of error messages related to option
    values. */
