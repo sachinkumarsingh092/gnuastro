@@ -50,7 +50,7 @@ struct uiparams
   int   masknameallocated;
   int             mhduset;
   int       numnearestset;
-  int      kernelwidthset;
+  int      smoothwidthset;
   int       mirrordistset;
   int         minmodeqset;
   int    sigclipmultipset;
@@ -75,14 +75,14 @@ struct subtractskyparams
   /* Input: */
   int                    nwcs;  /* Number of WCS structures.           */
   struct wcsprm          *wcs;  /* Pointer to WCS structures.          */
-  size_t          kernelwidth;  /* Width of smoothing kernel.          */
   int                  bitpix;  /* Input image bitpix value.           */
   size_t             numblank;  /* Number of blank pixels in image.    */
 
   /* output: */
+  int                checkstd;  /* ==1: include the sky STD in checks. */
   char              *meshname;  /* Name of --checkmesh output.         */
   char            *interpname;  /* Name of --checkinterpolation output.*/
-  char            *smoothname;  /* Name of --checksmoothing output.    */
+  char               *skyname;  /* Name of sky and its STD image.      */
 
   /* Operating mode: */
 

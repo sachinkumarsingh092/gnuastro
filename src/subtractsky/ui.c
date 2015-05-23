@@ -135,12 +135,12 @@ readconfig(char *filename, struct subtractskyparams *p)
                      filename, lineno);
 	  up->numnearestset=1;
 	}
-      else if(strcmp(name, "kernelwidth")==0)
+      else if(strcmp(name, "smoothwidth")==0)
 	{
-	  if(up->kernelwidthset) continue;
-          sizetpodd(value, &p->kernelwidth, name, key, SPACK,
+	  if(up->smoothwidthset) continue;
+          sizetpodd(value, &p->mp.smoothwidth, name, key, SPACK,
                     filename, lineno);
-	  up->kernelwidthset=1;
+	  up->smoothwidthset=1;
 	}
 
 
@@ -274,10 +274,6 @@ printvalues(FILE *fp, struct subtractskyparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
-  if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->mp.numnearest);
-  if(up->kernelwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "kernelwidth", p->kernelwidth);
 
 
   fprintf(fp, "\n# Output:\n");
@@ -294,6 +290,11 @@ printvalues(FILE *fp, struct subtractskyparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
+  if(up->numnearestset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->mp.numnearest);
+  if(up->smoothwidthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", p->mp.smoothwidth);
+
 
   fprintf(fp, "\n# Statistics:\n");
   if(up->mirrordistset)
@@ -327,8 +328,8 @@ checkifset(struct subtractskyparams *p)
     REPORT_NOTSET("mhdu");
   if(up->numnearestset==0)
     REPORT_NOTSET("numnearest");
-  if(up->kernelwidthset==0)
-    REPORT_NOTSET("kernelwidth");
+  if(up->smoothwidthset==0)
+    REPORT_NOTSET("smoothwidth");
 
   /* Mesh grid: */
   if(up->meshsizeset==0)
@@ -401,6 +402,8 @@ sanitycheck(struct subtractskyparams *p)
     automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
 		p->cp.dontdelete, &p->cp.output);
 
+  /* Set the sky image name: */
+
   /* Set the check image names: */
   if(p->meshname)
     {
@@ -414,11 +417,11 @@ sanitycheck(struct subtractskyparams *p)
       automaticoutput(p->up.inputname, "_interp.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->interpname);
     }
-  if(p->smoothname)
+  if(p->skyname)
     {
-      p->smoothname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_smooth.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->smoothname);
+      p->skyname=NULL;            /* Was not allocated before!  */
+      automaticoutput(p->up.inputname, "_sky.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->skyname);
     }
 
 

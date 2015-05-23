@@ -27,6 +27,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "mesh.h"
 #include "timing.h"
+#include "arraymanip.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
@@ -34,10 +35,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 subtractsky(struct subtractskyparams *p)
 {
-  long *meshindexs;
-  float *sky, *std;
-  struct timeval t1;
   struct meshparams *mp=&p->mp;
+
+  long *meshindexs;
+  struct timeval t1;
+  int checkstd=p->checkstd;
+  size_t s0=mp->s0, s1=mp->s1;
+  float *sky, *std, *skysubtracted;
 
 
   /* Prepare the mesh array. */
@@ -46,12 +50,10 @@ subtractsky(struct subtractskyparams *p)
   if(p->meshname)
     {
       checkmeshid(mp, &meshindexs);
-      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img,
-                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
+      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img, s0, s1,
+                     p->numblank, p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
-                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
+                     s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
       free(meshindexs);
     }
   if(p->cp.verb) reporttiming(&t1, "Mesh grid ready.", 1);
@@ -59,43 +61,75 @@ subtractsky(struct subtractskyparams *p)
 
 
   /* Find the sky value and its standard deviation on each mesh. */
-  fillmesh(mp, MODEEQMED_AVESTD, 0);
+  fillmesh(mp, MODEEQMED_AVESTD, 0, checkstd);
   if(p->interpname)
     {
       checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
-      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky,
-                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
-      arraytofitsimg(p->interpname, "STD", FLOAT_IMG, std,
-                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
-      free(sky); free(std);
+      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky, s0, s1,
+                     p->numblank, p->wcs, NULL, SPACK_STRING);
+      free(sky);
+      if(checkstd)
+        {
+          arraytofitsimg(p->interpname, "SkySTD", FLOAT_IMG, std, s0, s1,
+                         p->numblank, p->wcs, NULL, SPACK_STRING);
+          free(std);
+        }
     }
   if(p->cp.verb)
     reporttiming(&t1, "Sky and its STD found on some meshes.", 1);
 
 
+
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
-  meshinterpolate(mp, 2);
+  meshinterpolate(mp);
   if(p->interpname)
     {
       checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
-      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky,
-                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
-      arraytofitsimg(p->interpname, "STD", FLOAT_IMG, std,
-                     mp->s0, mp->s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
-      free(sky); free(std);
+      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky, s0, s1, 0,
+                     p->wcs, NULL, SPACK_STRING);
+      free(sky);
+      if(checkstd)
+        {
+          arraytofitsimg(p->interpname, "SkySTD", FLOAT_IMG, std, s0, s1, 0,
+                         p->wcs, NULL, SPACK_STRING);
+          free(std);
+        }
     }
-  if(p->cp.verb) reporttiming(&t1, "All blank meshs filled.", 1);
+  if(p->cp.verb)
+    reporttiming(&t1, "All blank meshs filled (interplated).", 1);
+
 
 
   /* Smooth the interpolated array:  */
+  if(mp->smoothwidth>1)
+    {
+      meshsmooth(mp);
+      if(p->cp.verb)
+        reporttiming(&t1, "Mesh grid smoothed.", 1);
+    }
 
+
+  /* Make the sky array and save it if the user has asked for it: */
+  checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
+  if(p->skyname)
+    {
+      arraytofitsimg(p->skyname ,"Sky", FLOAT_IMG, sky, s0, s1, 0,
+                     p->wcs, NULL, SPACK_STRING);
+      if(checkstd)
+        arraytofitsimg(p->skyname, "SkySTD", FLOAT_IMG, std, s0, s1, 0,
+                       p->wcs, NULL, SPACK_STRING);
+    }
 
 
   /* Subtract the sky value */
+  fmultipconst(sky, s0*s1, -1.0f);
+  skysubtracted=fsumarrays(mp->img, sky, s0*s1);
+  arraytofitsimg(p->cp.output ,"SkySubtracted", FLOAT_IMG, skysubtracted,
+                 s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
 
+  /* Clean up: */
+  free(sky);
+  free(skysubtracted);
+  if(checkstd) free(std);
 }

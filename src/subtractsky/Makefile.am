@@ -35,8 +35,9 @@ astsubtractsky_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 subtractsky.c subtractsky.h
 
 astsubtractsky_LDADD = $(top_builddir)/gnulib/lib/libgnu.a		\
--lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh -lastrthreads	\
--lmode -lstatistics -larraymanip -lforqsort -llinkedlist
+-lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh			\
+-lspatialconvolve -lastrthreads -lmode -lstatistics -larraymanip	\
+-lforqsort -llinkedlist -lbox
 
 
 

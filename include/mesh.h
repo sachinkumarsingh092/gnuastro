@@ -131,6 +131,7 @@ struct meshparams
   int  fullinterpolation; /* ==1: Ignore channels in interpolation.      */
 
   /* Smoothing: */
+  size_t     smoothwidth; /* Width of smoothing kernel.                  */
   int         fullsmooth; /* ==1: Ignore channels in smoothing.          */
 
   /* Mesh types and information: */
@@ -152,9 +153,13 @@ void
 freemesh(struct meshparams *mp);
 
 void
-fillmesh(struct meshparams *mp, int operationid, float value);
+fillmesh(struct meshparams *mp, int operationid, float value,
+         int makegarray2);
 
 void
-meshinterpolate(struct meshparams *mp, size_t numgarray);
+meshinterpolate(struct meshparams *mp);
+
+void
+meshsmooth(struct meshparams *mp);
 
 #endif

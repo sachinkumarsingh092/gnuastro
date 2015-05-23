@@ -37,6 +37,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "statistics.h"
 #include "fitsarrayvv.h"
 #include "astrthreads.h"
+#include "spatialconvolve.h"
 
 
 
@@ -115,15 +116,11 @@ void
 checkgarray(struct meshparams *mp, int operationid,
              float **out1, float **out2)
 {
-  int needstwo=0;
   size_t gs0=mp->gs0, gs1=mp->gs1;
   float *f, *fp, *ff, garray1, garray2;
   size_t i, row, start, meshid, *types=mp->types;
   size_t f0, f1, fs1=mp->gs1*mp->nch1, chid, inchid;
   size_t s0, s1, is1=mp->s1, *ts0=mp->ts0, *ts1=mp->ts1;
-
-  if(operationid==MODEEQMED_AVESTD)
-    needstwo=1;
 
   /* Allocate the array to keep the mesh indexs. Calloc is used so we
      can add all the indexes to the existing value to make sure that
@@ -133,7 +130,7 @@ checkgarray(struct meshparams *mp, int operationid,
   if(*out1==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for out1 in checkgarray "
           "(mesh.c)", mp->s0*mp->s1*sizeof **out1);
-  if(needstwo)
+  if(mp->garray2)
     {
       errno=0;
       *out2=malloc(mp->s0*mp->s1*sizeof **out2);
@@ -169,16 +166,16 @@ checkgarray(struct meshparams *mp, int operationid,
       s1=ts1[types[meshid]];
       start=mp->start[meshid];
       garray1 = mp->garray1[i];
-      if(needstwo)
+      if(mp->garray2)
         garray2 = mp->garray2[i];
       do
         {
           fp= ( f = *out1 + start + row * is1 ) + s1;
-          if(needstwo) ff= *out2 + start + row * is1;
+          if(mp->garray2) ff= *out2 + start + row * is1;
           do
             {
               *f++ = garray1;
-              if(needstwo) *ff++ = garray2;
+              if(mp->garray2) *ff++ = garray2;
             }
           while(f<fp);
           ++row;
@@ -635,9 +632,15 @@ fillmeshonthreads(void *inparam)
             case MODEEQMED_AVESTD: /* Average and standard devaition. */
               if(sigmaclip_converge(allmeshs, 1, num, sigclipmultip,
                                     sigcliptolerance, &ave, &med, &std, 0))
-                {mp->garray1[ind]=ave; mp->garray2[ind]=std;}
+                {
+                  mp->garray1[ind]=ave;
+                  if(mp->garray2) mp->garray2[ind]=std;
+                }
               else
-                {mp->garray1[ind]=NAN; mp->garray2[ind]=NAN;}
+                {
+                  mp->garray1[ind]=NAN;
+                  if(mp->garray2) mp->garray2[ind]=NAN;
+                }
               break;
 
             case MODEEQMED_QUANT: /* Quantile value.                 */
@@ -654,8 +657,7 @@ fillmeshonthreads(void *inparam)
       else
         {
           mp->garray1[ind]=NAN;
-          if(mtp->operationid==MODEEQMED_AVESTD)
-            mp->garray2[ind]=NAN;
+          if(mp->garray2) mp->garray2[ind]=NAN;
         }
 
     }
@@ -673,7 +675,8 @@ fillmeshonthreads(void *inparam)
 
 
 void
-fillmesh(struct meshparams *mp, int operationid, float value)
+fillmesh(struct meshparams *mp, int operationid, float value,
+         int makegarray2)
 {
   int err;
   size_t i, nb;
@@ -693,7 +696,7 @@ fillmesh(struct meshparams *mp, int operationid, float value)
   mp->fullgarray=0;
   errno=0; mp->garray1=malloc(mp->nmeshi*sizeof *mp->garray1);
   if(mp->garray1==NULL) error(EXIT_FAILURE, errno, "mp->garray1");
-  if(operationid==MODEEQMED_AVESTD)
+  if(makegarray2)
     {
       errno=0; mp->garray2=malloc(mp->nmeshi*sizeof *mp->garray2);
       if(mp->garray2==NULL) error(EXIT_FAILURE, errno, "mp->garray2");
@@ -1029,7 +1032,7 @@ preparemeshinterparrays(struct meshparams *mp)
 
 
 void
-meshinterpolate(struct meshparams *mp, size_t numgarray)
+meshinterpolate(struct meshparams *mp)
 {
   int err;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
@@ -1111,4 +1114,87 @@ meshinterpolate(struct meshparams *mp, size_t numgarray)
   free(mp->naninds);
   free(mp->nearest1);
   free(mp->nearest2);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********************           Smooth            ********************/
+/*********************************************************************/
+void
+meshsmooth(struct meshparams *mp)
+{
+  float *charray;
+  float *f, *o, *fp, *tmp, *kernel, *sgarray1, *sgarray2;
+  size_t numthreads=mp->numthreads, gs0=mp->gs0, gs1=mp->gs1;
+  size_t chid, nmeshc=mp->nmeshc, smoothwidth=mp->smoothwidth;
+
+  /* Make the kernel and set all its elements to 1. */
+  errno=0;
+  kernel=malloc(smoothwidth*smoothwidth*sizeof *kernel);
+  if(kernel==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for kernel in mesh.c",
+          mp->smoothwidth*sizeof *kernel);
+  fp=(f=kernel)+smoothwidth*smoothwidth; do *f++=1; while(f<fp);
+
+
+  /* If the full image is to be used and interpolation was done
+     independently on each mesh then correct garray1 and garray2. If
+     interpolation was also done over the whole image, then it should
+     not be done. */
+  if(mp->fullsmooth && mp->fullinterpolation==0)
+    fullgarray(mp);
+
+
+  /* Smooth garray: */
+  if(mp->fullgarray)
+    {
+      spatialconvolve(mp->garray1, gs0*mp->nch2, gs1*mp->nch1, kernel,
+                      smoothwidth, smoothwidth, numthreads, 1, &sgarray1);
+      free(mp->garray1);
+      mp->garray1=sgarray1;
+      if(mp->garray2)
+        {
+          spatialconvolve(mp->garray2, gs0*mp->nch2, gs1*mp->nch1, kernel,
+                          smoothwidth, smoothwidth, mp->numthreads, 1,
+                          &sgarray2);
+          free(mp->garray2);
+          mp->garray2=sgarray2;
+        }
+    }
+  else
+    for(chid=0;chid<mp->nch;++chid)
+      {
+        charray=&mp->garray1[chid*nmeshc];
+        spatialconvolve(charray, gs0, gs1, kernel, smoothwidth, smoothwidth,
+                        numthreads, 1, &tmp);
+        o=tmp; fp=(f=charray)+gs0*gs1; do *f=*o++; while(++f<fp);
+        if(mp->garray2)
+          {
+            charray=&mp->garray2[chid*nmeshc];
+            spatialconvolve(charray, gs0, gs1, kernel, smoothwidth,
+                            smoothwidth, numthreads, 1, &tmp);
+            o=tmp; fp=(f=charray)+gs0*gs1; do *f=*o++; while(++f<fp);
+          }
+      }
+
+  /* Clean up: */
+  free(kernel);
 }

@@ -70,10 +70,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j l m p r v w x y z
-   A B C E F G I J O R T U W X Y Z
+   c e f g i j k l m p r v w x y z
+   A B C E F G I J O R U W X Y Z
 
-   Number keys used: <=504
+   Number keys free: 502 and >=506
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -157,8 +157,8 @@ static struct argp_option options[] =
       3
     },
     {
-      "kernelwidth",
-      'k',
+      "smoothwidth",
+      'T',
       "INT",
       0,
       "Width of smoothing kernel (odd number).",
@@ -181,11 +181,11 @@ static struct argp_option options[] =
       3
     },
     {
-      "checksmoothing",
+      "checksky",
       502,
       0,
       0,
-      "Store mesh smoothing in `_smooth.fits' file.",
+      "Store final sky and its STD in `_sky.fits' file.",
       3
     },
     {
@@ -202,6 +202,14 @@ static struct argp_option options[] =
       0,
       0,
       "Ignore channels in smoothing.",
+      3
+    },
+    {
+      "checkskystd",
+      505,
+      0,
+      0,
+      "Include sky standard deviation in all checks too.",
       3
     },
 
@@ -306,9 +314,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);
       p->up.numnearestset=1;
       break;
-    case 'k':
-      sizetpodd(arg, &p->kernelwidth, "kernelwidth", key, SPACK, NULL, 0);
-      p->up.kernelwidthset=1;
+    case 'T':
+      sizetpodd(arg, &p->mp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
+      p->up.smoothwidthset=1;
       break;
 
     /* Output: */
@@ -338,13 +346,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->interpname="a";
       break;
     case 502:
-      p->smoothname="a";
+      p->skyname="a";
       break;
     case 503:
       p->mp.fullinterpolation=1;
       break;
     case 504:
       p->mp.fullsmooth=1;
+      break;
+    case 505:
+      p->checkstd=1;
       break;
 
 

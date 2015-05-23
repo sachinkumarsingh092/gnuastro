@@ -42,4 +42,7 @@ fmultipconst(float *in, size_t size, float a);
 void
 fsumconst(float *in, size_t size, float a);
 
+float *
+fsumarrays(float *in1, float *in2, size_t size);
+
 #endif

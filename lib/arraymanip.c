@@ -172,3 +172,24 @@ fsumconst(float *in, size_t size, float a)
     *in += a;
   while(++in<fpt);
 }
+
+
+
+
+
+float *
+fsumarrays(float *in1, float *in2, size_t size)
+{
+  float *out, *o, *op;
+
+  errno=0;
+  o=out=malloc(size*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for out in fsumarrays "
+          "(arraymanip.c)", size*sizeof *out);
+
+  op=o+size;
+  do *o = *in1++ + *in2++; while(++o<op);
+
+  return out;
+}

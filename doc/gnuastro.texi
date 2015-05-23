@@ -177,6 +177,7 @@ sub-component to a title is present.
 * Modeling and fittings::       Make and fit models.
 * Table manipulation::          Read/Write tables.
 * Developing::                  The development environment.
+* GNU Astronomy Utilities list::  List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
 * GNU Free Documentation License::  Full FDL text.
 * Index::                       Index of terms
@@ -186,11 +187,10 @@ sub-component to a title is present.
 
 Introduction
 
-* Naming convention::           About names of programs in Gnuastro.
 * Quick start::                 A quick start to installation.
-* GNU Astronomy Utilities list::  List of program in Gnuastro.
 * Science and its tools::       Some philosophy and history.
 * Your rights::                 User rights.
+* Naming convention::           About names of programs in Gnuastro.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
 * Report a bug::                Search and report the bug you found.
@@ -340,7 +340,7 @@ Sky value
 
 Tiling an image
 
-* Grid interpolation and smoothing::
+* Grid interpolation and smoothing::  Filling the blank grid elements.
 
 Image analysis
 
@@ -442,14 +442,15 @@ SAO ds9
 @cindex GNU Astronomy Utilities (Gnuastro) @value{VERSION}
 The GNU Astronomy Utilities (Gnuastro) is an official GNU package
 consisting of separate programs for the manipulation and analysis of
-astronomical data. All the various utilities share the same basic
-command line user interface for the comfort of both the users and
-developers. GNU Astronomy Utilities is written to comply fully with
-the GNU coding standards so it integrates finely with the GNU/Linux
-operating system. This also enables astronomers to expect a fully
-familiar experience in the source code, building, installing and
-command line user interaction that they have seen in all the other GNU
-software that they use.
+astronomical data. See @ref{GNU Astronomy Utilities list} for the full
+list. All the various utilities share the same basic command line user
+interface for the comfort of both the users and developers. GNU
+Astronomy Utilities is written to comply fully with the GNU coding
+standards so it integrates finely with the GNU/Linux operating
+system. This also enables astronomers to expect a fully familiar
+experience in the source code, building, installing and command line
+user interaction that they have seen in all the other GNU software
+that they use.
 
 For users who are new to the GNU/Linux environment, unless otherwise
 specified most of the topics in chapters 2 and 3 are common to all GNU
@@ -467,11 +468,10 @@ manual first. As discussed in @ref{Science and its tools} this is the
 founding basis of the GNU Astronomy Utilities.
 
 @menu
-* Naming convention::           About names of programs in Gnuastro.
 * Quick start::                 A quick start to installation.
-* GNU Astronomy Utilities list::  List of program in Gnuastro.
 * Science and its tools::       Some philosophy and history.
 * Your rights::                 User rights.
+* Naming convention::           About names of programs in Gnuastro.
 * Version numbering::           Understanding version numbers.
 * New to GNU/Linux?::           Suggested GNU/Linux distribution.
 * Report a bug::                Search and report the bug you found.
@@ -481,31 +481,7 @@ founding basis of the GNU Astronomy Utilities.
 * Acknowledgments::             People who helped in the production.
 @end menu
 
-@node Naming convention, Quick start, Introduction, Introduction
-@section Naming convention
-
-@cindex Names, programs
-@cindex Program names
-GNU Astronomy Utilities is a package of independent utilities or
-programs. Each utility has an official name which consists of one or
-two words, describing what they do. The latter are printed with no
-space, for example NoiseChisel or ImageCrop. On the command line, you
-can run them with their executable names which start with an
-@file{ast} and might be an abbreviation of the official name, for
-example @file{astnoisechisel} or @file{astimgcrop}, see
-@ref{Executable names}.
-
-@pindex ProgramName
-@pindex @file{astprogname}
-We will use ``ProgramName'' for a generic official program name and
-@file{astprogname} for a generic executable name. In this manual, the
-programs are classified based on what they do and thoroughly
-explained. An alphabetical list of the utilities that are installed on
-your system with this installation are given in @ref{GNU Astronomy
-Utilities list}. That list also contains the executable names and
-version numbers along with a one line description.
-
-@node Quick start, GNU Astronomy Utilities list, Naming convention, Introduction
+@node Quick start, Science and its tools, Introduction, Introduction
 @section Quick start
 
 @cindex Uncompress source
@@ -549,54 +525,10 @@ used is given.
 
 
 
-@node GNU Astronomy Utilities list, Science and its tools, Quick start, Introduction
-@section GNU Astronomy Utilities list
-
-GNU Astronomy Utilities @value{VERSION}, contains the following
-programs. They are sorted in alphabetical order and followed by their
-executable names along with a short description, see @ref{Naming
-convention}. Throughout this manual, they are discussed based on their
-context, please see the manual contents for contextual ordering.
-
-@itemize
-
-@item
-@ref{ConvertType} (@file{astconvertt}) @value{CONVERTT_VERSION}:
-Convert data files.
-@item
-@ref{Convolve} (@file{astconvolve}) @value{CONVOLVE_VERSION}: Convolve
-(blur) data with a kernel.
-@item
-@ref{Header} (@file{astheader}) @value{HEADER_VERSION}: Print and
-manipulate data header.
-@item
-@ref{ImageCrop} (@file{astimgcrop}) @value{IMGCROP_VERSION}: Crop
-region(s) from image(s).
-@item
-@ref{ImageStatistics} (@file{astimgstat}) @value{IMGSTAT_VERSION}: Get pixel statistics.
-@item
-@ref{ImageWarp} (@file{astimgwarp}) @value{IMGWARP_VERSION}: Warp
-image to new pixel grid.
-@item
-@ref{MakeNoise} (@file{astmknoise}) @value{MKNOISE_VERSION}: Make
-(add) noise to an image.
-@item
-@ref{MakeProfiles} (@file{astmkprof}) @value{MKPROF_VERSION}: Make
-mock profiles in image.
-@item
-@ref{NoiseChisel} (@file{astnoisechisel}) @value{NOISECHISEL_VERSION}:
-Detect signal in noise.
-@item
-@ref{SubtractSky} (@file{astsubtractsky}) @value{SUBTRACTSKY_VERSION}:
-Find and subtract sky value.
-
-@end itemize
 
 
 
-
-
-@node Science and its tools, Your rights, GNU Astronomy Utilities list, Introduction
+@node Science and its tools, Your rights, Quick start, Introduction
 @section Science and its tools
 
 History of science indicates that there are always inevitably unseen
@@ -732,7 +664,7 @@ things that the experiment was competent to find.
 
 
 
-@node Your rights, Version numbering, Science and its tools, Introduction
+@node Your rights, Naming convention, Science and its tools, Introduction
 @section Your rights
 
 @cindex GNU Texinfo
@@ -786,7 +718,33 @@ License}.
 
 
 
-@node Version numbering, New to GNU/Linux?, Your rights, Introduction
+@node Naming convention, Version numbering, Your rights, Introduction
+@section Naming convention
+
+@cindex Names, programs
+@cindex Program names
+GNU Astronomy Utilities is a package of independent utilities or
+programs. Each utility has an official name which consists of one or
+two words, describing what they do. The latter are printed with no
+space, for example NoiseChisel or ImageCrop. On the command line, you
+can run them with their executable names which start with an
+@file{ast} and might be an abbreviation of the official name, for
+example @file{astnoisechisel} or @file{astimgcrop}, see
+@ref{Executable names}.
+
+@pindex ProgramName
+@pindex @file{astprogname}
+We will use ``ProgramName'' for a generic official program name and
+@file{astprogname} for a generic executable name. In this manual, the
+programs are classified based on what they do and thoroughly
+explained. An alphabetical list of the utilities that are installed on
+your system with this installation are given in @ref{GNU Astronomy
+Utilities list}. That list also contains the executable names and
+version numbers along with a one line description.
+
+
+
+@node Version numbering, New to GNU/Linux?, Naming convention, Introduction
 @section Version numbering
 
 @cindex Version number
@@ -6394,13 +6352,12 @@ astronomically relevant distribution is introduced.
 @cindex Cosmic rays
 Even when the mode and median are approximately equal, Cosmic rays can
 significantly bias the calculation of the average. Even if they are
-very few, they can still significantly bias the average and standard
-deviation. Fortunately, usually, Cosmic rays have very sharp
-boundaries and do not fade away into the noise. Therefore, when the
-histogram of the distribution is plotted, they are clearly separate
-from the rest of the data. For example see Figure 15 in Akhlaghi and
-Ichikawa (2015). In such cases, @mymath{\sigma}-clipping is a perfect
-tool to remove the effect of such objects in the average and standard
+very few. However, usually, Cosmic rays have very sharp boundaries and
+do not fade away into the noise. Therefore, when the histogram of the
+distribution is plotted, they are clearly separate from the rest of
+the data. For example see Figure 15 in Akhlaghi and Ichikawa
+(2015). In such cases, @mymath{\sigma}-clipping is a perfect tool to
+remove the effect of such objects in the average and standard
 deviation. See @ref{Sigma clipping} for a complete explanation. So
 after asserting that the mode and median are approximately equal in a
 mesh (see @ref{Tiling an image}), convergance-based
@@ -6480,7 +6437,8 @@ whole image. See @ref{Sky value} for the definition of the sky value.
 Unfortunately though, as discussed in @ref{SubtractSky}, in most
 images taken with ground or space-based telescopes the sky value is
 not uniform. So we have to break the image up into small tiles on a
-mesh grid and find the sky value on those tiles.
+mesh grid, assume the sky value is constant over them and find the sky
+value on those tiles.
 
 Meshes are considered to be a square with a side of
 @option{--meshsize} pixels. The best mesh size is directly related to
@@ -6499,42 +6457,45 @@ scatter in the results will be less.
 @cindex Hubble Space Telescope
 For raw image processing, a simple mesh grid is not sufficient. Raw
 images are the unprocessed outputs of the camera detectors. Large
-detectors usually have multiple amplifiers, for example the Hubble
-Space Telecope Advanced Camera for Surveys (ACS) has four amplifiers
-over its full detector area dividing the square field of view to four
-smaller squares. Ground based image detectors are not exempt, for
-example each CCD of Subaru Telescope's Hyper Suprime-Cam camera (which
-has 104 CCDs) has four amplifiers, but they have the same height of
-the CCD and divide the width by four parts.
+detectors usually have multiple readout channels each with its own
+amplifier. For example the Hubble Space Telecope Advanced Camera for
+Surveys (ACS) has four amplifiers over its full detector area dividing
+the square field of view to four smaller squares. Ground based image
+detectors are not exempt, for example each CCD of Subaru Telescope's
+Hyper Suprime-Cam camera (which has 104 CCDs) has four amplifiers, but
+they have the same height of the CCD and divide the width by four
+parts.
 
 @cindex Channel
 The bias current on each amplifier is different, and normaly bias
 subtraction is not accurately done. So after subtracting the bias
 current, you can clearly still identify the boundaries of different
-amplifiers by eye. See Figure 11 in Akhlaghi and Ichikawa (2015)a for
-example This results in the final reduced data to have non-uniform
-amplifier-shaped regions with higher or lower background flux
-values. Such systematic biases will then propagate to all subsequent
-measurements we do on the data (for example photometry and subsequent
-stellar mass and star formation rate measurements in the case of
-galaxies). Therefore an accurate sky subtraction routine should also
-be able to account for such biases.
+amplifiers by eye. See Figure 11(a) in Akhlaghi and Ichikawa (2015)
+for an example. This results in the final reduced data to have
+non-uniform amplifier-shaped regions with higher or lower background
+flux values. Such systematic biases will then propagate to all
+subsequent measurements we do on the data (for example photometry and
+subsequent stellar mass and star formation rate measurements in the
+case of galaxies). Therefore an accurate sky subtraction routine
+should also be able to account for such biases.
 
 To get an accurate result, the mesh boundaries should be located
-exactly on the amplifier boundaries. Otherwise, the meshes which lie
-over two amplifier regions are going to give very biased results and
-the amplifier boundary will still be present after sky subtraction.
-So in practice, we define `channel's. A channel is an independent mesh
-grid that covers one amplifier to ensure that the meshes do not pass
-the amplifier boundary. They are also used in subsequent steps as the
-area used to identify nearby neighbors to interpolate, see @ref{Grid
-interpolation and smoothing}. The number of channels along each axis
-can be specified by the user at run time through @option{--nch1} and
-@option{--nch2} or in the configuration files, see @ref{Configuration
-files}. The area of each channel will then be tiled by meshes of the
-given size and subsequent processing will be done on those meshes. If
-the image is processed or the detector only has one amplifier, you can
-set the number of channels in both axises to 1.
+exactly on the amplifier boundaries. Otherwise, some meshes will
+contain pixels that have been read from two or four different
+amplifiers. These meshes are going to give very biased results and the
+amplifier boundary will still be present after sky subtraction.  So we
+define `channel's. A channel is an independent mesh grid that covers
+one amplifier to ensure that the meshes do not pass the amplifier
+boundary. They can also be used in subsequent steps as the area used
+to identify nearby neighbors to interpolate and smooth the final grid,
+see @ref{Grid interpolation and smoothing}. The number of channels
+along each axis can be specified by the user at run time through the
+command line @option{--nch1} and @option{--nch2} options or in the
+configuration files, see @ref{Configuration files}. The area of each
+channel will then be tiled by meshes of the given size and subsequent
+processing will be done on those meshes. If the image is processed or
+the detector only has one amplifier, you can set the number of
+channels in both axises to 1.
 
 Unlike the channel size, that has to be an exact multiple of the image
 size, the mesh size can be any number. If it is not an exact multiple
@@ -6552,16 +6513,16 @@ or thinner than the rest.
 The final mesh grid can be seen on the image with the
 @option{--checkmesh} option that is available to all programs which
 use the mesh grid for localized operations. When this option is
-called, a multi-extension FITS file with the input name and suffix
-@file{_mesh.fits} will be created along with the usual run of the
-program, see @ref{Automatic output}. The first extension will be the
-input image. For each mesh grid the image produces, there will be a
-subsequent extension. Each pixel in the grid extensions is labled to
-the mesh that it is part of. You can flip through the extensions to
-check the mesh sizes and locations compared to the input image.
+called, a multi-extension FITS file with a @file{_mesh.fits} suffix
+will be created along with the outputs, see @ref{Automatic
+output}. The first extension will be the input image. For each mesh
+grid the image produces, there will be a subsequent extension. Each
+pixel in the grid extensions is labled to the mesh that it is part
+of. You can flip through the extensions to check the mesh sizes and
+locations compared to the input image.
 
 @menu
-* Grid interpolation and smoothing::    Filling the blank grid elements.
+* Grid interpolation and smoothing::  Filling the blank grid elements.
 @end menu
 
 @node Grid interpolation and smoothing,  , Tiling an image, Tiling an image
@@ -6593,7 +6554,10 @@ taken as the final value for the blank mesh. The median is chosen
 because on the fainter wings of bright objects, the mean can easily
 become biased. If the number of meshes with a good value is less than
 the value given to @option{--numnearest}, then SubtractSky will abort
-and notify you.
+and notify you. In such cases you can either decrease the value to
+this option or set less restrictive requirements (for example a
+smaller @option{--minmodeq}, or larger meshs) at the expense of less
+accurate results.
 
 Once all the grid elements are filled, the grid sky values should be
 smoothed. This is because when the median is used, there will be
@@ -6601,22 +6565,26 @@ strong differences from one grid element to the next. By smoothing the
 grid, the variation between grid element to grid element will be far
 less and so the sky subtracted image will become much more uniform. To
 smooth the image, SubtractSky uses an average filter. An average
-filter is just a convolution of the grid (spatial convolution) by a
-kernel will all elements having an equal weight, see @ref{Convolution
-process}. The size of this kernel can be set through the
-@option{--kernelwidth} option (which has to be an odd number as with
-any kernel).
+filter is just a convolution of the grid (spatial convolution with
+edge correction) by a kernel will all elements having an equal weight,
+see @ref{Convolution process}. The kernel is a square. The length of
+the kernel edge can be set in units of pixels through the
+@option{--smoothwidth} option (which has to be an odd number as with
+any kernel). If a width of 1 is given for the kernel width, then no
+smoothing will take place.
 
 By default the interpolation and smoothing explained above are done
 independently on each channel. In some circumstances, it might be
-preferable to do either one of these two steps on the whole
-image. Independent of the channels in an image. Through the two
-options @option{--fullinterpolation} and @option{--fullsmooth} you can
-ask for interpolation or smoothing to use all the meshs in the
-image. Note that it is still very important that no mesh contain
-pixels from two channels. Since the mesh sizes and positions have
-already been defined and filled prior to these steps, there is no
-problem in this regard.
+preferable to do either one of these two steps on the whole image,
+independent of the channels. For example when there are gradients over
+the image and their variation over the image is stronger than the
+variation caused by the channels. Through the two options
+@option{--fullinterpolation} and @option{--fullsmooth} you can ask for
+interpolation or smoothing to use all the meshs in the image, not just
+those in the same channel of a mesh. Note that it is still very
+important that no mesh contain pixels from two channels. Since the
+pixels have been assigned to a mesh prior to these steps (see
+@ref{Tiling an image}), there is no problem in this regard.
 
 
 @node Invoking astsubtractsky,  , Tiling an image, SubtractSky
@@ -6675,7 +6643,8 @@ pixels}).
 (@option{=STR}) The mask image header name or number. Similar to the
 @option{--hdu} option, see @ref{Common options}. Note that while the
 mask name is optional in the configuration files, the mask hdu is not
-and must be specified in at least one of the configuration files.
+and must be specified by the user. Either through command line options
+or in least one of the configuration files.
 
 @item -s
 @itemx --meshsize
@@ -6691,9 +6660,7 @@ cover the full channel.
 an exact multiple of this number, then SubtractSky will stop. You can
 use ImageCrop (@ref{ImageCrop}) to trim off or add some pixels (blank
 pixels if added, see @ref{Blank pixels}) to the image if it is not an
-exact multiple. Usually, when channels become significant, the image
-is not yet fully processed and the full channel pixels should still
-exist in the image.
+exact multiple.
 
 @item -b
 @itemx --nch2
@@ -6704,7 +6671,7 @@ exist in the image.
 @itemx --lastmeshfrac
 (@option{=FLT}) Fraction of extra area on the last (rightest on the
 first FITS axis and highest/top on the second) mesh, to define a new
-one. See @ref{Tiling an image}.
+(smaller) one. See @ref{Tiling an image}.
 
 @item --checkmesh
 An image with suffix @file{_mesh.fits} will be created for you to
@@ -6712,17 +6679,50 @@ check the mesh grid, see @ref{Tiling an image}. SubtractSky only uses
 one mesh grid, so only one grid extension will be included in the
 produced file.
 
+@item -d
+@itemx --mirrordist
+(@option{=FLT}) The distance beyond the mirror point (in units of the
+error in the mirror point) to check for finding the mode in each
+mesh. See appendix C in Akhlaghi and Ichikawa (2015) for a complete
+explanation of the mode-finding algorithm. The value to this option is
+shown as @mymath{\alpha} in that appendix.
+
+@item -Q
+@itemx --minmodeq
+(@option{=FLT}) The minimum acceptable quantile for the mode of each
+mesh. The median is on the 0.5 quantile of the image and as long as we
+have positive signal (all astronomically relevant observations), the
+mode will be less than the median. The sky value is only found on
+meshes where the median and mode are approximately the same, see
+@ref{Sky value}.
+
+@item -u
+@itemx --sigclipmultip
+(@option{=FLT}) The multiple of the standard devation to clip from the
+distribution in @mymath{\sigma}-clipping. This is necessary to remove
+the effect of cosmic rays, see @ref{Sky value} and @ref{Sigma
+clipping}.
+
+@item -t
+@itemx --sigcliptolerance
+(@option{=FLT}) The tolerance of sigma clipping. If the fractional
+change in the standard deviation before and after
+@mymath{\sigma}-clipping is less than the value given to this option,
+@mymath{\sigma}-clipping will stop, see @ref{Sigma clipping}.
+
 @item -n
 @itemx --numnearest
 (@option{=INT}) The number of nearest grid elements with a successful
-sky value to use for interpolating over blank meshs elements (those
+sky value to use for interpolating over blank mesh elements (those
 that had a significant contribution of flux), see @ref{Grid
 interpolation and smoothing}.
 
-@item -k
-@itemx --kernelwidth
+@item -T
+@itemx --smoothwidth
 (@option{=INT}) The width of the average filter kernel used to smooth
-the interpolated image. See @ref{Grid interpolation and smoothing}.
+the interpolated image in units of pixels. See @ref{Grid interpolation
+and smoothing}. If this option is given a value of 1 (one), then no
+smoothing will be done.
 
 @item --fullinterpolation
 Do interpolation irrespective of the channels in the image, see
@@ -6732,41 +6732,20 @@ Do interpolation irrespective of the channels in the image, see
 Do smoothing irrespective of the channels in the image, see @ref{Grid
 interpolation and smoothing}.
 
-
-@item -d
-@itemx --mirrordist
-(@option{=FLT}) The distance beyond the mirror point (in units of the
-error in the mirror point) to check in finding the mode. See appendix
-C in Akhlaghi and Ichikawa (2015) for a complete explanation of the
-mode-finding algorithm. The value to this option is shown as
-@mymath{\alpha} in that appendix.
-
-@item -Q
-@itemx --minmodeq
-(@option{=FLT}) The minimum acceptable quantile for the mode of each
-mesh.
-
-@item -u
-@itemx --sigclipmultip
-(@option{=FLT}) The multiple of the standard devation to clip from the
-distribution in @mymath{\sigma}-clipping. This is necessary to remove
-the effect of cosmic rays.
-
-@item -t
-@itemx --sigcliptolerance
-(@option{=FLT}) The tolerance of sigma clipping. If the fractional
-change in the standard deviation before and after sigma clipping is
-less than the value given to this option, @mymath{\sigma}-clipping
-will stop.
-
 @item --checkinterpolation
 A two extension FITS image ending with @file{_interp.fits} will be
 created which shows the average value on each mesh before
 interpolation and after interpolation.
 
-@item --checksmoothing
+@item --checksky
 A two extension FITS image ending with @file{_smooth.fits} will be
 created showing how the interpolated sky value is smoothed.
+
+@item --checkskystd
+In the interpolation and sky checks above, include the sky standard
+devation too. By default, only the sky value is shown in all the
+checks. However with this option, an extension will be added showing
+how the standard deviation on each mesh is finally found too.
 
 @end table
 
@@ -8724,7 +8703,7 @@ The software for this section have to be added ....
 
 
 
-@node Developing, Other useful software, Table manipulation, Top
+@node Developing, GNU Astronomy Utilities list, Table manipulation, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested
@@ -9811,8 +9790,59 @@ own purposes.
 
 
 
+@node GNU Astronomy Utilities list, Other useful software, Developing, Top
+@appendix GNU Astronomy Utilities list
 
-@node Other useful software, GNU Free Documentation License, Developing, Top
+GNU Astronomy Utilities @value{VERSION}, contains the following
+programs. They are sorted in alphabetical order and followed by their
+executable names along with a short description, see @ref{Naming
+convention}. Throughout this manual, they are discussed based on their
+context, please see the manual contents for contextual ordering.
+
+@itemize
+
+@item
+@ref{ConvertType} (@file{astconvertt}) @value{CONVERTT_VERSION}:
+Convert data files.
+@item
+@ref{Convolve} (@file{astconvolve}) @value{CONVOLVE_VERSION}: Convolve
+(blur) data with a kernel.
+@item
+@ref{Header} (@file{astheader}) @value{HEADER_VERSION}: Print and
+manipulate data header.
+@item
+@ref{ImageCrop} (@file{astimgcrop}) @value{IMGCROP_VERSION}: Crop
+region(s) from image(s).
+@item
+@ref{ImageStatistics} (@file{astimgstat}) @value{IMGSTAT_VERSION}: Get pixel statistics.
+@item
+@ref{ImageWarp} (@file{astimgwarp}) @value{IMGWARP_VERSION}: Warp
+image to new pixel grid.
+@item
+@ref{MakeNoise} (@file{astmknoise}) @value{MKNOISE_VERSION}: Make
+(add) noise to an image.
+@item
+@ref{MakeProfiles} (@file{astmkprof}) @value{MKPROF_VERSION}: Make
+mock profiles in image.
+@item
+@ref{NoiseChisel} (@file{astnoisechisel}) @value{NOISECHISEL_VERSION}:
+Detect signal in noise.
+@item
+@ref{SubtractSky} (@file{astsubtractsky}) @value{SUBTRACTSKY_VERSION}:
+Find and subtract sky value.
+
+@end itemize
+
+
+
+
+
+
+
+
+
+
+@node Other useful software, GNU Free Documentation License, GNU Astronomy Utilities list, Top
 @appendix Other useful software
 
 In this appendix the installation of programs and libraries that are
