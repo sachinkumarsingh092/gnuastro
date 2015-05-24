@@ -324,8 +324,6 @@ checkifset(struct subtractskyparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
-  if(up->mhduset==0)
-    REPORT_NOTSET("mhdu");
   if(up->numnearestset==0)
     REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
@@ -380,20 +378,7 @@ void
 sanitycheck(struct subtractskyparams *p)
 {
   /* Set the maskname and mask hdu accordingly: */
-  if(p->up.masknameset)
-    {
-      if(strcmp(p->up.inputname, p->up.maskname)==0
-         && strcmp(p->up.mhdu, p->cp.hdu)==0)
-        error(EXIT_FAILURE, 0, "The specified mask name and input image "
-              "name are the same while the input image hdu name and "
-              "mask hdu are also identical!");
-    }
-  else
-    {
-      if(strcmp(p->up.mhdu, p->cp.hdu))
-        p->up.maskname=p->up.inputname;
-    }
-
+  CHECKMASKNAMEANDHDU(SPACK);
 
   /* Set the output name: */
   if(p->cp.output)
@@ -575,9 +560,6 @@ freeandreport(struct subtractskyparams *p, struct timeval *t1)
   /* Free the WCS structure: */
   if(p->wcs)
     wcsvfree(&p->nwcs, &p->wcs);
-
-  /* Free the mesh structure: */
-  freemesh(&p->mp);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

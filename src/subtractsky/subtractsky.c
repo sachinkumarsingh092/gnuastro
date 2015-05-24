@@ -53,7 +53,7 @@ subtractsky(struct subtractskyparams *p)
       arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img, s0, s1,
                      p->numblank, p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
-                     s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
       free(meshindexs);
     }
   if(p->cp.verb) reporttiming(&t1, "Mesh grid ready.", 1);
@@ -130,6 +130,7 @@ subtractsky(struct subtractskyparams *p)
 
   /* Clean up: */
   free(sky);
+  freemesh(mp);
   free(skysubtracted);
   if(checkstd) free(std);
 }

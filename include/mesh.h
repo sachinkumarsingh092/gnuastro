@@ -43,6 +43,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define INTERPCHANNEL    2  /* Interpolate over each channel individually.*/
 
 
+/* The minimum number of acceptable nearest pixels. */
+#define MINACCEPTABLENEAREST 3
+
+
 
 struct meshthreadparams
 {
@@ -50,6 +54,10 @@ struct meshthreadparams
   float           value; /* Value to be used in the operation.          */
   int       operationid; /* The operation to be done on the meshs.      */
   float       *allmeshs; /* One array for all mesh sizes.               */
+
+  /* For convolve: */
+  float           *conv; /* The convolved array.                        */
+  size_t         *chbrd; /* Bordering x and y values all channels.      */
 
   /* For all: */
   struct meshparams *mp; /* Pointer to meshparams structure.            */
@@ -134,6 +142,12 @@ struct meshparams
   size_t     smoothwidth; /* Width of smoothing kernel.                  */
   int         fullsmooth; /* ==1: Ignore channels in smoothing.          */
 
+  /* Convolution: */
+  float          *kernel; /* Convolution kernel.                         */
+  size_t             ks0; /* Size of kernel along first C axis.          */
+  size_t             ks1; /* Size of kernel along second C axis.         */
+  int    fullconvolution; /* ==1: Convove over all channels.             */
+
   /* Mesh types and information: */
   size_t          ts0[4]; /* Size (along first FITS axis) of mesh types. */
   size_t          ts1[4]; /* Size (along second FITS axis) of mesh types.*/
@@ -161,5 +175,8 @@ meshinterpolate(struct meshparams *mp);
 
 void
 meshsmooth(struct meshparams *mp);
+
+void
+spatialconvolveonmesh(struct meshparams *mp, float **conv);
 
 #endif

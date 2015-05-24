@@ -47,6 +47,34 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
   }
 
 
+#define CHECKMASKNAMEANDHDU(spack) {                                    \
+    if(p->up.masknameset)                                               \
+      {                                                                 \
+        if(p->up.mhduset==0)                                            \
+          error(EXIT_FAILURE, 0, "A mask image was specified (%s). "    \
+                "However, no HDU is given for it. Please add a HDU "    \
+                "for the mask with the `--mhdu' (`-H') option. If you " \
+                "regularly use a mask, you may consider adding `mhdu' " \
+                "to the %s configuration file. For more information, "  \
+                "please see the `Configuration files' section of the "  \
+                "%s manual by running ` info gnuastro ' on the "        \
+                "command-line.",                                        \
+                p->up.maskname, (spack), PACKAGE_NAME);                 \
+        if(strcmp(p->up.inputname, p->up.maskname)==0)                  \
+          {                                                             \
+            if(strcmp(p->up.mhdu, p->cp.hdu)==0)                        \
+              error(EXIT_FAILURE, 0, "The specified mask name and "     \
+                    "input image name are the same while the input "    \
+                    "image hdu name and mask hdu are also identical!"); \
+          }                                                             \
+      }                                                                 \
+    else if(p->up.mhduset && strcmp(p->up.mhdu, p->cp.hdu))             \
+      p->up.maskname=p->up.inputname;                                   \
+    else                                                                \
+      p->up.maskname=NULL;                                              \
+  }
+
+
 
 
 

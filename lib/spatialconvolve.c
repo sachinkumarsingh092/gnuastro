@@ -123,9 +123,17 @@ sconvonthread(void *inparam)
   /* Go over all the pixels associated with this thread. */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
     {
+      /* Set the index, if it is a NaN pixel, then set the output to
+         be NaN too. */
+      ind=indexs[i];
+      if(isnan(input[ind]))
+        {
+          out[ind]=NAN;
+          continue;
+        }
+
       /* Set the starting and ending pixels on the kernel, note that
          the overlap function in box.c uses FITS coordinates. */
-      ind=indexs[i];
       fpixel_o[0]=1;                fpixel_o[1]=1;
       lpixel_o[0]=ks1;              lpixel_o[1]=ks0;
       fpixel_i[0]=ind%is1+1-ks1/2;  fpixel_i[1]=ind/is1+1-ks0/2;
@@ -138,12 +146,12 @@ sconvonthread(void *inparam)
       numcols=lpixel_i[0]-fpixel_i[0]+1; /* lpixel is inside the box. */
       numrows=lpixel_i[1]-fpixel_i[1]+1; /* lpixel is inside the box. */
       ksum = edgecorrection ? 0.0f : 1.0f;
-      istart= &input[ (fpixel_i[1]-1) * is1 + fpixel_i[0]-1 ];
-      kstart=&kernel[ (fpixel_o[1]-1) * ks1 + fpixel_o[0]-1 ];
+      istart =  &input[ (fpixel_i[1]-1) * is1 + fpixel_i[0]-1 ];
+      kstart = &kernel[ (fpixel_o[1]-1) * ks1 + fpixel_o[0]-1 ];
       for(j=0;j<numrows;++j)
         {
-          k=kstart+j*ks1;
-          fp = ( f=istart+j*is1 ) + numcols;
+          k = kstart + j*ks1;
+          fp = (f = istart + j*is1) + numcols;
           do
             {
               if( isnan(*f)==0 )

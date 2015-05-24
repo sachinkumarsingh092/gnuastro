@@ -80,9 +80,11 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
   lpixel[1]=naxes[1];
   fpixel[0]=fpixel[1]=1;
 
+
   /* Parse the string. */
   while(*pt!='\0')
     {
+      add=0;
       switch(*pt)
 	{
 	case ',':
@@ -102,51 +104,52 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
 		"includes a float number: %s.",
 		section);
 	  break;
-	case ' ':
+	case ' ': case '\t':
 	  ++pt;
 	  break;
+        case '*':
+          add=1;                /* If it is an asterisk, then add the */
+          ++pt;                 /* given value to the maximum size of */
+          break;                /* the image. */
 	default:
-	  /* If it is a star, then add the given value to the maximum
-	     size of the image. */
-	  if(*pt=='*')
-	    {
-	      add=1;
-	      ++pt;
-	    }
-	  else add=0;
+          break;
+        }
 
-	  /* Read the number: */
-	  read=strtol(pt, &tailptr, 0);
+      /* Read the number: */
+      read=strtol(pt, &tailptr, 0);
 
-	  /* Check if there actually was a number! */
-	  /*printf("\n\n------\n%c: %ld (%s)\n", *pt, read, tailptr);*/
-	  if(tailptr==pt)	/* No number was read! */
-	    {
-	      pt=NULL;
-	      break;
-	    }
+      /* Check if there actually was a number.
+      printf("\n\n------\n%c: %ld (%s)\n", *pt, read, tailptr);
+      */
 
-	  /* Put it in the correct array. Note that for the last
-	     point, we don't want to include the given pixel. Unlike
-	     CFITSIO, in ImageCrop, the given intervals are not
-	     inclusive. fpixel and lpixel will be directly passed to
-	     CFITSIO. So we have to correct his here.*/
-	  if(forl=='f')
-	    fpixel[dim] = add ? naxes[dim]+read : read;
-	  else
-	    lpixel[dim] = add ? naxes[dim] + read - 1 : read - 1;
-	  pt=tailptr;
-	  /*
-	  printf("\n\n[%ld, %ld]: fpixel=(%ld, %ld), lpixel=(%ld, %ld)\n\n",
-		 naxes[0], naxes[1],
-		 fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
-	  */
-	}
+      /* Make sure if a number was read at all? */
+      if(tailptr==pt)	        /* No number was read!             */
+        {
+          if(add) read=0;       /* We have a * followed by `:' or `,'. */
+          else    continue;
+        }
+
+      /* Put it in the correct array. Note that for the last
+         point, we don't want to include the given pixel. Unlike
+         CFITSIO, in ImageCrop, the given intervals are not
+         inclusive. fpixel and lpixel will be directly passed to
+         CFITSIO. So we have to correct his here.*/
+      if(forl=='f')
+        fpixel[dim] = add ? naxes[dim]+read : read;
+      else
+        lpixel[dim] = add ? naxes[dim]+read-1 : read-1;
+      pt=tailptr;
+
+      /* For a check:
+      printf("\n\n[%ld, %ld]: fpixel=(%ld, %ld), lpixel=(%ld, %ld)\n\n",
+             naxes[0], naxes[1],
+             fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
+      */
     }
 
   if(fpixel[0]>=lpixel[0] || fpixel[1]>=lpixel[1])
     error(EXIT_FAILURE, 0, "The bottom left corner coordinates "
-	  "cannot be larger than the top right's! Your section "
+	  "cannot be larger or equal to the top right's! Your section "
 	  "string (%s) has been read as: bottom left coordinate "
 	  "(%ld, %ld) to top right coordinate (%ld, %ld).",
 	  section, fpixel[0], fpixel[1], lpixel[0], lpixel[1]);

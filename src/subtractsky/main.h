@@ -36,10 +36,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Macros: */
-#define MINACCEPTABLENEAREST 3
-
-
 
 struct uiparams
 {

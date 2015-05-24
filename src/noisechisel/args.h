@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j k l m p r v w x y z
+   e f g i j m p v w x y z
    A B C E F G I J O R U W X Y Z
 
-   Number keys free: >=503
+   Number keys free: >=505
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -103,6 +103,23 @@ static struct argp_option options[] =
       "Mask image header name.",
       1
     },
+    {
+      "kernel",
+      'k',
+      "STR",
+      0,
+      "Kernel image file name.",
+      1
+    },
+    {
+      "khdu",
+      'c',
+      "STR",
+      0,
+      "Kernel image header name.",
+      1
+    },
+
 
 
     {
@@ -119,11 +136,19 @@ static struct argp_option options[] =
       3
     },
     {
-      "meshsize",
+      "smeshsize",
       's',
       "INT",
       0,
-      "Size of each mesh (tile) in the grid.",
+      "Size of each small mesh (tile) in the grid.",
+      3
+    },
+    {
+      "lmeshsize",
+      'l',
+      "INT",
+      0,
+      "Size of each large mesh (tile) in the grid.",
       3
     },
     {
@@ -190,12 +215,20 @@ static struct argp_option options[] =
       "Ignore channels in smoothing.",
       3
     },
+    {
+      "fullconvolution",
+      504,
+      0,
+      0,
+      "Ignore channels in convolution.",
+      3
+    },
 
 
 
     {
       0, 0, 0, 0,
-      "Statistics:",
+      "Detection:",
       4
     },
     {
@@ -215,6 +248,14 @@ static struct argp_option options[] =
       4
     },
     {
+      "qthresh",
+      't',
+      "FLT",
+      0,
+      "Quantile threshold on convolved image.",
+      4
+    },
+    {
       "sigclipmultip",
       'u',
       "FLT",
@@ -224,10 +265,18 @@ static struct argp_option options[] =
     },
     {
       "sigcliptolerance",
-      't',
+      'r',
       "FLT",
       0,
       "Difference in STD tolerance to halt iteration.",
+      4
+    },
+    {
+      "checkdetection",
+      503,
+      0,
+      0,
+      "Initial detection steps in file `_det.fits'.",
       4
     },
 
@@ -277,75 +326,113 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'M':
-      p->up.maskname=arg;
+      errno=0;                  /* We want to free it in the end. */
+      p->up.maskname=malloc(strlen(arg)+1);
+      if(p->up.maskname==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for mask file name.",
+              strlen(arg)+1);
+      strcpy(p->up.maskname, arg);
       p->up.masknameset=1;
       break;
     case 'H':
       errno=0;                  /* We want to free it in the end. */
       p->up.mhdu=malloc(strlen(arg)+1);
       if(p->up.mhdu==NULL)
-        error(EXIT_FAILURE, errno, "Space for mask HDU.");
+        error(EXIT_FAILURE, errno, "%lu bytes for mask HDU.",
+              strlen(arg)+1);
       strcpy(p->up.mhdu, arg);
       p->up.mhduset=1;
       break;
-    case 'n':
-      sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);
-      p->up.numnearestset=1;
-      break;
     case 'k':
-      sizetpodd(arg, &p->mp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
-      p->up.smoothwidthset=1;
+      errno=0;                  /* We want to free it in the end. */
+      p->up.kernelname=malloc(strlen(arg)+1);
+      if(p->up.kernelname==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for kernel file name.",
+              strlen(arg)+1);
+      strcpy(p->up.kernelname, arg);
+      p->up.kernelnameset=1;
+      break;
+    case 'c':
+      errno=0;                  /* We want to free it in the end. */
+      p->up.khdu=malloc(strlen(arg)+1);
+      if(p->up.khdu==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for kernel HDU.",
+              strlen(arg)+1);
+      strcpy(p->up.khdu, arg);
+      p->up.khduset=1;
       break;
 
     /* Output: */
 
     /* Mesh grid: */
     case 's':
-      sizetlzero(arg, &p->mp.meshsize, "meshsize", key, SPACK, NULL, 0);
-      p->up.meshsizeset=1;
+      sizetlzero(arg, &p->smp.meshsize, "smeshsize", key, SPACK, NULL, 0);
+      p->up.smeshsizeset=1;
+      break;
+    case 'l':
+      sizetlzero(arg, &p->lmp.meshsize, "lmeshsize", key, SPACK, NULL, 0);
+      p->up.lmeshsizeset=1;
       break;
     case 'a':
-      sizetlzero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
+      sizetlzero(arg, &p->smp.nch1, "nch1", key, SPACK, NULL, 0);
       p->up.nch1set=1;
       break;
     case 'b':
-      sizetlzero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
+      sizetlzero(arg, &p->smp.nch2, "nch2", key, SPACK, NULL, 0);
       p->up.nch2set=1;
       break;
     case 'L':
-      floatl0s1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key, SPACK,
+      floatl0s1(arg, &p->smp.lastmeshfrac, "lastmeshfrac", key, SPACK,
                 NULL, 0);
       p->up.lastmeshfracset=1;
+      break;
+    case 'n':
+      sizetlzero(arg, &p->smp.numnearest, "numnearest", key, SPACK, NULL, 0);
+      p->up.numnearestset=1;
+      break;
+    case 'T':
+      sizetpodd(arg, &p->smp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
+      p->up.smoothwidthset=1;
       break;
     case 500:
       p->meshname="a";  /* Just a placeholder! It will be corrected later */
       break;
     case 501:
-      p->mp.fullinterpolation=1;
+      p->smp.fullinterpolation=1;
       break;
     case 502:
-      p->mp.fullsmooth=1;
+      p->smp.fullsmooth=1;
+      break;
+    case 504:
+      p->smp.fullconvolution=1;
       break;
 
 
-    /* Statistics */
+    /* Detection */
     case 'd':
-      floatl0(arg, &p->mp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      floatl0(arg, &p->smp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
       p->up.mirrordistset=1;
       break;
     case 'Q':
-      floatl0s1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      floatl0s1(arg, &p->smp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
       p->up.minmodeqset=1;
       break;
+    case 't':
+      floatl0s1(arg, &p->qthresh, "qthresh", key, SPACK, NULL, 0);
+      p->up.qthreshset=1;
+      break;
     case 'u':
-      floatl0(arg, &p->mp.sigclipmultip, "sigclipmultip", key, SPACK,
+      floatl0(arg, &p->smp.sigclipmultip, "sigclipmultip", key, SPACK,
               NULL, 0);
       p->up.sigclipmultipset=1;
       break;
-    case 't':
-      floatl0s1(arg, &p->mp.sigcliptolerance, "sigcliptolerance", key, SPACK,
+    case 'r':
+      floatl0s1(arg, &p->smp.sigcliptolerance, "sigcliptolerance", key, SPACK,
               NULL, 0);
       p->up.sigcliptoleranceset=1;
+      break;
+    case 503:
+      p->detectionname="a";
       break;
 
 

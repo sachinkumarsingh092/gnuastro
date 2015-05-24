@@ -992,7 +992,7 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
 {
   size_t i;
   int status=0;
-  const char *wcslibversion_const;
+  char cfitsioversion[20];
   char startblank[]="              / ";
   char *cp, *cpf, blankrec[80], titlerec[80];
 
@@ -1002,7 +1002,8 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
      in configure.ac.*/
 #ifdef HAVE_WCSLIBVERSION
   int wcslibvers[3];
-  char cfitsioversion[20], wcslibversion[20];
+  char wcslibversion[20];
+  const char *wcslibversion_const;
 #endif
 
   /* Set the last element of the blank array. */
@@ -1378,8 +1379,8 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
 {
   void *array;
   int maskbitpix;
-  size_t masknumblank, s0, s1;
   float *mask, *f, *ff, *fp;
+  size_t masknumblank, s0, s1;
 
   /* Read the input array and convert it to float. */
   *numblank=fitsimgtoarray(inputname, inhdu, inbitpix,

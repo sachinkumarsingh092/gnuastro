@@ -1198,3 +1198,237 @@ meshsmooth(struct meshparams *mp)
   /* Clean up: */
   free(kernel);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********************      Convolve in mesh       ********************/
+/*********************************************************************/
+void*
+meshspatialconvonthreads(void *inparam)
+{
+  struct meshthreadparams *mtp = (struct meshthreadparams *) inparam;
+  struct meshparams *mp = mtp->mp;
+  const size_t ks0=mp->ks0, ks1=mp->ks1, is1=mp->s1;
+
+  double sum, ksum;
+  const size_t *types=mp->types;
+  size_t chid, *chbrd=mtp->chbrd, ystart;
+  const size_t *ts0=mp->ts0, *ts1=mp->ts1;
+  size_t i, meshid, ind, *start=mp->start;
+  size_t x, y, fx, fy, a, b, k0h=ks0/2, k1h=ks1/2;
+  size_t xmin, xmax, ymin, ymax, nmeshc=mp->nmeshc;
+  size_t *indexs=&mp->indexs[mtp->id*mp->thrdcols];
+  float *img=mp->img, *conv=mtp->conv, *kernel=mp->kernel;
+
+  /* For each mesh in this thread, convolve the mesh */
+  for(i=0; (meshid=indexs[i])!=NONTHRDINDEX; ++i)
+    {
+      /* Get the channel ID and the relevant information for this mesh. */
+      chid=meshid/nmeshc;
+      xmin=chbrd[chid*4]+k0h;    /* Within these four points, the      */
+      xmax=chbrd[chid*4+2]-k0h;  /* convolution does not have to worry */
+      ymin=chbrd[chid*4+1]+k1h;  /* about the edges. */
+      ymax=chbrd[chid*4+3]-k1h;
+
+      /* Get the starting and ending positions of this mesh. NOTE:
+         ystart is needed because for every `x', the value of y needs
+         to change. */
+      fx = ( x      = start[meshid]/is1 ) + ts0[types[meshid]];
+      fy = ( ystart = start[meshid]%is1 ) + ts1[types[meshid]];
+
+      /* If the mesh is on the edge of the channel it should be
+         treated differently compared to when it is not. */
+      if( x>=xmin && ystart>=ymin && fx<xmax && fy<ymax )
+	{                       /* All pixels in this mesh are distant  */
+          for(;x<fx;++x)        /* enough from the edge of the channel. */
+            for(y=ystart;y<fy;++y)
+              {
+                if(isnan(img[x*is1+y]))
+                  conv[x*is1+y]=NAN;
+                else
+                  {
+                    ksum=sum=0.0f;
+                    for(a=0;a<ks0;++a)
+                      for(b=0;b<ks1;++b)
+                        if( !isnan( img[ ind = (x+a-k0h) * is1 + y+b-k1h ] ) )
+                          {
+                            ksum+=kernel[a*ks1+b];
+                            sum+=img[ind] * kernel[a*ks1+b];
+                          }
+                    conv[x*is1+y] = sum/ksum;
+                  }
+              }
+	}
+      else
+	{                       /* Some pixels in this mesh are too  */
+	  for(;x<fx;++x)        /* close to the edge.                */
+	    for(y=ystart;y<fy;++y)
+	      {
+                if( isnan(img[x*is1+y]) )
+                    conv[x*is1+y]=NAN;
+                else
+                  {
+                    ksum=sum=0.0f;
+                    if(x>=xmin && y>=ymin && fx<xmax && fy<ymax)
+                      for(a=0;a<ks0;++a)
+                        for(b=0;b<ks1;++b)
+                          {     /* {} needed, because of next `else'. */
+                            if( !isnan(img[ ind=(x+a-k0h) * is1 + y+b-k1h ]))
+                              {
+                                ksum+=kernel[a*ks1+b];
+                                sum+=img[ind] * kernel[a*ks1+b];
+                              }
+                          }
+                    else
+                      {
+                        for(a=0;a<ks0;++a)
+                          if(x+a>=xmin && x+a<chbrd[chid*4+2]+k0h)
+                            for(b=0;b<ks1;++b)
+                              if(y+b>=ymin && y+b<chbrd[chid*4+3]+k1h)
+                                {
+                                  if( !isnan( img[ind=(x+a-k0h)
+                                                  * is1
+                                                  + y+b-k1h]) )
+                                    {
+                                      ksum+=kernel[a*ks1+b];
+                                      sum+=img[ind] * kernel[a*ks1+b];
+                                    }
+                                }
+                      }
+                    conv[x*is1+y] = sum/ksum;
+                  }
+            }
+	}
+    }
+
+  /* Free alltype and if multiple threads were used, wait until all
+     other threads finish. */
+  if(mp->numthreads>1)
+    pthread_barrier_wait(&mp->b);
+  return NULL;
+}
+
+
+
+
+
+void
+spatialconvolveonmesh(struct meshparams *mp, float **conv)
+{
+  int err;
+  pthread_t t; /* We don't use the thread id, so all are saved here. */
+  pthread_attr_t attr;
+  size_t i, nb, *chbrd;
+  struct meshthreadparams *mtp;
+  size_t numthreads=mp->numthreads;
+
+
+  /* Allocate the arrays to keep the thread and parameters for each
+     thread. */
+  errno=0; mtp=malloc(numthreads*sizeof *mtp);
+  if(mtp==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
+          numthreads*sizeof *mtp);
+
+
+  /* Allocate space for the convolved array. */
+  errno=0; *conv=malloc(mp->s0*mp->s1* sizeof **conv);
+  if(*conv==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for convolution on mesh output.",
+          mp->s0*mp->s1* sizeof **conv);
+
+
+  /* Channel borders so we can see if a mesh is inside or outside a
+     channel. chbrd contians for number for each channel: in order
+     they are:
+
+     1. The channel's first pixel's first C axis value.
+     2. The channel's first pixel's second C axis value.
+     3. The channel's last pixel's first C axis value.
+     4. The channel's last pixel's second C axis value.
+  */
+  errno=0; chbrd=malloc(mp->nch*4*sizeof *chbrd);
+  if(chbrd==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for chbrd in "
+          "spatialconvolveonmesh", mp->nch*4*sizeof *chbrd);
+  for(i=0;i<mp->nch;++i)
+    {
+      if(mp->fullconvolution)
+        {
+          chbrd[i*4+2]=mp->s0;
+          chbrd[i*4+3]=mp->s1;
+          chbrd[i*4]=chbrd[i*4+1]=0;
+        }
+      else
+        {
+          chbrd[i*4+0]=mp->start[i*mp->nmeshc]/mp->s1;
+          chbrd[i*4+1]=mp->start[i*mp->nmeshc]%mp->s1;
+          chbrd[i*4+2]=chbrd[i*4+0]+mp->s0/mp->nch2;
+          chbrd[i*4+3]=chbrd[i*4+1]+mp->s1/mp->nch1;
+        }
+    }
+
+
+  /* Distribute the meshes in all the threads. */
+  distinthreads(mp->nmeshi, mp->numthreads, &mp->indexs, &mp->thrdcols);
+
+
+  /* Spin off the threads: */
+  if(numthreads==1)
+    {
+      mtp[0].id=0;
+      mtp[0].mp=mp;
+      mtp[0].conv=*conv;
+      mtp[0].chbrd=chbrd;
+      meshspatialconvonthreads(&mtp[0]);
+    }
+  else
+    {
+      /* Initialize the attributes. Note that this running thread
+	 (that spinns off the nt threads) is also a thread, so the
+	 number the barrier should be one more than the number of
+	 threads spinned off. */
+      if(mp->nmeshi<numthreads) nb=mp->nmeshi+1;
+      else                      nb=numthreads+1;
+      attrbarrierinit(&attr, &mp->b, nb);
+
+      /* Spin off the threads: */
+      for(i=0;i<numthreads;++i)
+	if(mp->indexs[i*mp->thrdcols]!=NONTHRDINDEX)
+	  {
+            mtp[i].id=i;
+	    mtp[i].mp=mp;
+            mtp[i].conv=*conv;
+            mtp[i].chbrd=chbrd;
+	    err=pthread_create(&t, &attr, meshspatialconvonthreads, &mtp[i]);
+	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	  }
+
+      /* Wait for all threads to finish and free the spaces. */
+      pthread_barrier_wait(&mp->b);
+      pthread_attr_destroy(&attr);
+      pthread_barrier_destroy(&mp->b);
+    }
+
+  free(mtp);
+  free(chbrd);
+  free(mp->indexs);
+}

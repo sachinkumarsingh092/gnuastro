@@ -1,3 +1,12 @@
+2015-05-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/imgcrop/crop.c (sectionparser): When only a `*' was given
+	with no positive or negative following number, a segmentation
+	fault would happen. This bug is now fixed.
+
+	* lib/spatialconvolve.c (sconvonthread): No convolution will be
+	attempted for a NaN pixel.
+
 2015-05-23  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/mode.c (modesymmetricity): Corrrected topi to account for

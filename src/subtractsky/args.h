@@ -310,14 +310,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
       strcpy(p->up.mhdu, arg);
       p->up.mhduset=1;
       break;
-    case 'n':
-      sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);
-      p->up.numnearestset=1;
-      break;
-    case 'T':
-      sizetpodd(arg, &p->mp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
-      p->up.smoothwidthset=1;
-      break;
 
     /* Output: */
 
@@ -338,6 +330,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       floatl0s1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key, SPACK,
                 NULL, 0);
       p->up.lastmeshfracset=1;
+      break;
+    case 'n':
+      sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);
+      p->up.numnearestset=1;
+      break;
+    case 'T':
+      sizetpodd(arg, &p->mp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
+      p->up.smoothwidthset=1;
       break;
     case 500:
       p->meshname="a";  /* Just a placeholder! It will be corrected later */

@@ -34,6 +34,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "checkset.h"
 #include "txtarrayvv.h"
 #include "commonargs.h"
+#include "arraymanip.h"
+#include "statistics.h"
 #include "configfiles.h"
 #include "fitsarrayvv.h"
 
@@ -115,7 +117,6 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  if(up->maskname==NULL)
 	    error(EXIT_FAILURE, errno, "Space for mask name.");
 	  strcpy(up->maskname, value);
-          up->masknameallocated=1;
 	  up->masknameset=1;
 	}
       else if(strcmp(name, "mhdu")==0)
@@ -128,19 +129,25 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  strcpy(up->mhdu, value);
 	  up->mhduset=1;
 	}
-      else if(strcmp(name, "numnearest")==0)
+      else if(strcmp(name, "kernel")==0)
 	{
-	  if(up->numnearestset) continue;
-          sizetlzero(value, &p->mp.numnearest, name, key, SPACK,
-                     filename, lineno);
-	  up->numnearestset=1;
+	  if(up->kernelnameset) continue;
+	  errno=0;
+	  up->kernelname=malloc(strlen(value)+1);
+	  if(up->kernelname==NULL)
+	    error(EXIT_FAILURE, errno, "Space for kernel name.");
+	  strcpy(up->kernelname, value);
+	  up->kernelnameset=1;
 	}
-      else if(strcmp(name, "smoothwidth")==0)
+      else if(strcmp(name, "khdu")==0)
 	{
-	  if(up->smoothwidthset) continue;
-          sizetpodd(value, &p->mp.smoothwidth, name, key, SPACK,
-                    filename, lineno);
-	  up->smoothwidthset=1;
+	  if(up->khduset) continue;
+	  errno=0;
+	  up->khdu=malloc(strlen(value)+1);
+	  if(up->khdu==NULL)
+	    error(EXIT_FAILURE, errno, "Space for kernel HDU.");
+	  strcpy(up->khdu, value);
+	  up->khduset=1;
 	}
 
 
@@ -159,62 +166,90 @@ readconfig(char *filename, struct noisechiselparams *p)
 
 
       /* Mesh grid: */
-      else if(strcmp(name, "meshsize")==0)
+      else if(strcmp(name, "smeshsize")==0)
 	{
-	  if(up->meshsizeset) continue;
-          sizetlzero(value, &p->mp.meshsize, name, key, SPACK,
+	  if(up->smeshsizeset) continue;
+          sizetlzero(value, &p->smp.meshsize, name, key, SPACK,
                      filename, lineno);
-	  up->meshsizeset=1;
+	  up->smeshsizeset=1;
+	}
+      else if(strcmp(name, "lmeshsize")==0)
+	{
+	  if(up->lmeshsizeset) continue;
+          sizetlzero(value, &p->lmp.meshsize, name, key, SPACK,
+                     filename, lineno);
+	  up->lmeshsizeset=1;
 	}
       else if(strcmp(name, "nch1")==0)
 	{
 	  if(up->nch1set) continue;
-          sizetlzero(value, &p->mp.nch1, name, key, SPACK,
+          sizetlzero(value, &p->smp.nch1, name, key, SPACK,
                      filename, lineno);
 	  up->nch1set=1;
 	}
       else if(strcmp(name, "nch2")==0)
 	{
 	  if(up->nch2set) continue;
-          sizetlzero(value, &p->mp.nch2, name, key, SPACK,
+          sizetlzero(value, &p->smp.nch2, name, key, SPACK,
                      filename, lineno);
 	  up->nch2set=1;
 	}
       else if(strcmp(name, "lastmeshfrac")==0)
 	{
 	  if(up->lastmeshfracset) continue;
-          floatl0s1(value, &p->mp.lastmeshfrac, name, key, SPACK,
+          floatl0s1(value, &p->smp.lastmeshfrac, name, key, SPACK,
                     filename, lineno);
 	  up->lastmeshfracset=1;
 	}
+      else if(strcmp(name, "numnearest")==0)
+	{
+	  if(up->numnearestset) continue;
+          sizetlzero(value, &p->smp.numnearest, name, key, SPACK,
+                     filename, lineno);
+	  up->numnearestset=1;
+	}
+      else if(strcmp(name, "smoothwidth")==0)
+	{
+	  if(up->smoothwidthset) continue;
+          sizetpodd(value, &p->smp.smoothwidth, name, key, SPACK,
+                    filename, lineno);
+	  up->smoothwidthset=1;
+	}
 
 
-      /* Statistics: */
+      /* Detection: */
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mp.mirrordist, name, key, SPACK,
+          floatl0(value, &p->smp.mirrordist, name, key, SPACK,
                   filename, lineno);
 	  up->mirrordistset=1;
 	}
       else if(strcmp(name, "minmodeq")==0)
 	{
 	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->mp.minmodeq, name, key, SPACK,
+          floatl0s1(value, &p->smp.minmodeq, name, key, SPACK,
                   filename, lineno);
 	  up->minmodeqset=1;
+	}
+      else if(strcmp(name, "qthresh")==0)
+	{
+	  if(up->qthreshset) continue;
+          floatl0s1(value, &p->qthresh, name, key, SPACK,
+                  filename, lineno);
+	  up->qthreshset=1;
 	}
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->mp.sigclipmultip, name, key, SPACK,
+          floatl0(value, &p->smp.sigclipmultip, name, key, SPACK,
                   filename, lineno);
 	  up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0s1(value, &p->mp.sigcliptolerance, name, key, SPACK,
+          floatl0s1(value, &p->smp.sigcliptolerance, name, key, SPACK,
                   filename, lineno);
 	  up->sigcliptoleranceset=1;
 	}
@@ -247,8 +282,8 @@ void
 printvalues(FILE *fp, struct noisechiselparams *p)
 {
   struct uiparams *up=&p->up;
-  struct meshparams *mp=&p->mp;
   struct commonparams *cp=&p->cp;
+  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
@@ -274,10 +309,20 @@ printvalues(FILE *fp, struct noisechiselparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
-  if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->mp.numnearest);
-  if(up->smoothwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", p->mp.smoothwidth);
+  if(up->kernelnameset)
+    {
+      if(stringhasspace(up->kernelname))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
+    }
+  if(up->khdu)
+    {
+      if(stringhasspace(up->khdu))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
+    }
 
 
   fprintf(fp, "\n# Output:\n");
@@ -286,25 +331,34 @@ printvalues(FILE *fp, struct noisechiselparams *p)
 
 
   fprintf(fp, "\n# Mesh grid:\n");
-  if(up->meshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "meshsize", mp->meshsize);
+  if(up->smeshsizeset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "smeshsize", smp->meshsize);
+  if(up->lmeshsizeset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "lmeshsize", lmp->meshsize);
   if(up->nch1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch1", mp->nch1);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch1", smp->nch1);
   if(up->nch2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", smp->nch2);
   if(up->lastmeshfracset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", smp->lastmeshfrac);
+  if(up->numnearestset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", smp->numnearest);
+  if(up->smoothwidthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", smp->smoothwidth);
 
-  fprintf(fp, "\n# Statistics:\n");
+
+  fprintf(fp, "\n# Detection:\n");
   if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mp.mirrordist);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", smp->mirrordist);
   if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->mp.minmodeq);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", smp->minmodeq);
+  if(up->qthreshset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "qthresh", p->qthresh);
   if(up->sigclipmultipset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->mp.sigclipmultip);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", smp->sigclipmultip);
   if(up->sigcliptoleranceset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
-            p->mp.sigcliptolerance);
+            smp->sigcliptolerance);
 }
 
 
@@ -323,16 +377,18 @@ checkifset(struct noisechiselparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
-  if(up->mhduset==0)
-    REPORT_NOTSET("mhdu");
+  if(up->khduset==0)
+    REPORT_NOTSET("khdu");
   if(up->numnearestset==0)
     REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
     REPORT_NOTSET("smoothwidth");
 
   /* Mesh grid: */
-  if(up->meshsizeset==0)
-    REPORT_NOTSET("meshsize");
+  if(up->smeshsizeset==0)
+    REPORT_NOTSET("smeshsize");
+  if(up->lmeshsizeset==0)
+    REPORT_NOTSET("lmeshsize");
   if(up->nch1set==0)
     REPORT_NOTSET("nch1");
   if(up->nch2set==0)
@@ -340,11 +396,13 @@ checkifset(struct noisechiselparams *p)
   if(up->lastmeshfracset==0)
     REPORT_NOTSET("lastmeshfrac");
 
-  /* Statistics: */
+  /* Detection: */
   if(up->mirrordistset==0)
     REPORT_NOTSET("mirrordist");
   if(up->minmodeqset==0)
     REPORT_NOTSET("minmodeq");
+  if(up->qthreshset==0)
+    REPORT_NOTSET("qthresh");
   if(up->sigclipmultipset==0)
     REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
@@ -378,48 +436,47 @@ checkifset(struct noisechiselparams *p)
 void
 sanitycheck(struct noisechiselparams *p)
 {
-  /* Set the maskname and mask hdu accordingly: */
-  if(p->up.masknameset)
-    {
-      if(strcmp(p->up.inputname, p->up.maskname)==0
-         && strcmp(p->up.mhdu, p->cp.hdu)==0)
-        error(EXIT_FAILURE, 0, "The specified mask name and input image "
-              "name are the same while the input image hdu name and "
-              "mask hdu are also identical!");
-    }
-  else
-    {
-      if(strcmp(p->up.mhdu, p->cp.hdu))
-        p->up.maskname=p->up.inputname;
-    }
+  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
 
+  /* Set the maskname and mask hdu accordingly: */
+  CHECKMASKNAMEANDHDU(SPACK);
 
   /* Set the output name: */
   if(p->cp.output)
     checkremovefile(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
+    automaticoutput(p->up.inputname, "_detected.fits", p->cp.removedirinfo,
 		p->cp.dontdelete, &p->cp.output);
-
-  /* Set the sky image name: */
 
   /* Set the check image names: */
   if(p->meshname)
     {
       p->meshname=NULL;           /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
+      automaticoutput(p->up.inputname, "_meshs.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->meshname);
     }
-
+  if(p->detectionname)
+    {
+      p->detectionname=NULL;           /* Was not allocated before!  */
+      automaticoutput(p->up.inputname, "_det.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->detectionname);
+    }
 
   /* Other checks: */
-  if(p->mp.numnearest<MINACCEPTABLENEAREST)
+  if(smp->numnearest<MINACCEPTABLENEAREST)
     error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
           "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
-          p->mp.numnearest);
+          smp->numnearest);
 
-  /* Put the number of threads into the mesh structure: */
-  p->mp.numthreads=p->cp.numthreads;
+  /* Set the parameters for both mesh grids. */
+  lmp->nch1=smp->nch1;
+  lmp->nch2=smp->nch2;
+  lmp->fullsmooth=smp->fullsmooth;
+  lmp->numnearest=smp->numnearest;
+  lmp->smoothwidth=smp->smoothwidth;
+  lmp->lastmeshfrac=smp->lastmeshfrac;
+  lmp->fullinterpolation=smp->fullinterpolation;
+  lmp->numthreads=smp->numthreads=p->cp.numthreads;
 }
 
 
@@ -443,20 +500,111 @@ sanitycheck(struct noisechiselparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
+/* The default PSF. It was created with the following set of
+   commands. The crop is because the first and last rows of all PSFs
+   made by MakeProfiles is blank (zero).
+
+      $ cat tmp.txt
+      0    0.0    0.0   2   2   0   0   1   1   5
+      $ export GSL_RNG_TYPE=ranlxs2
+      $ export GSL_RNG_SEED=1
+      $ astmkprof tmp.txt --oversample=1 --envseed            \
+                  --numrandom=10000 --tolerance=0.01
+      $ astimgcrop 0.fits --section=2:*,2:* --zeroisnotblank
+      $ astconvertt 0_crop.fits --output=fwhm2.txt
+*/
+size_t defaultkernel_s0=11;
+size_t defaultkernel_s1=11;
+float defaultkernel[121]=
+  {
+    0, 0, 0, 0, 0, 2.58073e-08, 0, 0, 0, 0, 0,
+
+    0, 0, 2.90237e-08, 6.79851e-07, 4.4435e-06, 8.31499e-06,
+    4.50166e-06, 6.97185e-07, 3.00904e-08, 0, 0,
+
+    0, 2.87873e-08, 2.48435e-06, 5.81339e-05, 0.000379508, 0.000709334,
+    0.000383714, 5.94125e-05, 2.56498e-06, 3.00032e-08, 0,
+
+    0, 6.70501e-07, 5.77826e-05, 0.00134992, 0.00879665, 0.0164126,
+    0.00886609, 0.00137174, 5.92134e-05, 6.92853e-07, 0,
+
+    0, 4.3798e-06, 0.000376616, 0.00877689, 0.0570404, 0.106142, 0.0572108,
+    0.00883846, 0.000381257, 4.46059e-06, 0,
+
+    2.54661e-08, 8.24845e-06, 0.00070725, 0.0164287, 0.10639, 0.19727,
+    0.106003, 0.0163402, 0.000703951, 8.23152e-06, 2.55057e-08,
+
+    0, 4.5229e-06, 0.000386632, 0.00894947, 0.0577282, 0.106614, 0.0570877,
+    0.00877699, 0.000377496, 4.41036e-06, 0,
+
+    0, 7.1169e-07, 6.0678e-05, 0.00140013, 0.00899917, 0.0165582, 0.00883658,
+    0.00135509, 5.81823e-05, 6.79067e-07, 0,
+
+    0, 3.12002e-08, 2.65502e-06, 6.11192e-05, 0.000391739, 0.000718637,
+    0.000382453, 5.85194e-05, 2.50864e-06, 2.9249e-08, 0,
+
+    0, 0, 3.14197e-08, 7.22146e-07, 4.61954e-06, 8.45613e-06, 4.49082e-06,
+    6.85919e-07, 2.9364e-08, 0, 0,
+
+    0, 0, 0, 0, 0, 2.63305e-08, 0, 0, 0, 0, 0
+  };
+
+
+
+
+
 void
 preparearrays(struct noisechiselparams *p)
 {
-  struct meshparams *mp=&p->mp;
+  int kbitpix;
+  size_t knumblank;
+  float *f, *ff, *fp, sum;
+  struct meshparams *smp=&p->smp;
 
+  /* Read the input image in. Note that the pointer to the image is
+     also kept in p->img. Since some of the mesh operations should be
+     done on the convolved image and some on the actual image, we will
+     need to change the mesh's img value some times and the p->img
+     will be used to keep its actual value. */
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              &p->mp.img, &p->bitpix, &p->numblank, &mp->s0, &mp->s1);
-
+              &smp->img, &p->bitpix, &p->numblank, &smp->s0, &smp->s1);
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+  p->lmp.s0=smp->s0;
+  p->lmp.s1=smp->s1;
+  p->img=p->lmp.img=smp->img;
 
-  if( mp->s0%mp->nch2 || mp->s1%mp->nch1 )
+  /* make sure the channel sizes fit the channel sizes. */
+  if( smp->s0%smp->nch2 || smp->s1%smp->nch1 )
     error(EXIT_FAILURE, 0, "The input image size (%lu x %lu) is not an "
           "exact multiple of the number of the given channels (%lu, %lu) "
-          "in the respective axis.", mp->s1, mp->s0, mp->nch1, mp->nch2);
+          "in the respective axis.", smp->s1, smp->s0, smp->nch1, smp->nch2);
+
+  /* Read the kernel: */
+  if(p->up.kernelnameset)
+    {
+      filetofloat(p->up.kernelname, NULL, p->up.khdu, 0, &smp->kernel,
+                  &kbitpix, &knumblank, &smp->ks0, &smp->ks1);
+      if(knumblank)
+        {
+          fp=(f=smp->kernel)+smp->ks0*smp->ks1;
+          do if(isnan(*f)) *f=0.0f; while(++f<fp);
+        }
+      sum=floatsum(smp->kernel, smp->ks0*smp->ks1);
+      fmultipconst(smp->kernel, smp->ks0*smp->ks1, 1/sum);
+    }
+  else
+    {
+      errno=0;
+      smp->ks0=defaultkernel_s0;
+      smp->ks1=defaultkernel_s1;
+      smp->kernel=malloc(smp->ks0*smp->ks1*sizeof *smp->kernel);
+      if(smp->kernel==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for default kernel",
+              smp->ks0*smp->ks1);
+      ff=defaultkernel;
+      fp=(f=smp->kernel)+smp->ks0*smp->ks1;
+      do *f=*ff++; while(++f<fp);
+    }
 }
 
 
@@ -520,6 +668,11 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
       printf("  - Input read: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)
         printf("  - Mask read: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
+      if(p->up.kernelnameset)
+        printf("  - Kernel read: %s (hdu: %s)\n", p->up.kernelname,
+               p->up.khdu);
+      else
+        printf("  - Kernel: FWHM=2 pixel Gaussian.\n");
     }
 }
 
@@ -549,20 +702,23 @@ void
 freeandreport(struct noisechiselparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
-  free(p->mp.img);
+  free(p->img);
   free(p->cp.hdu);
   free(p->up.mhdu);
+  free(p->up.khdu);
   free(p->cp.output);
+  free(p->smp.kernel);
+  if(p->up.maskname && p->up.maskname!=p->up.inputname)
+    free(p->up.maskname);
+  free(p->up.kernelname);
 
   /* Free all the allocated names: */
   if(p->meshname) free(p->meshname);
+  if(p->detectionname) free(p->detectionname);
 
   /* Free the WCS structure: */
   if(p->wcs)
     wcsvfree(&p->nwcs, &p->wcs);
-
-  /* Free the mesh structure: */
-  freemesh(&p->mp);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

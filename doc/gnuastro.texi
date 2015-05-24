@@ -356,6 +356,7 @@ ImageStatistics
 
 NoiseChisel
 
+* Objects and clumps::          Definition of objects and clumps.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 
 Modeling and fitting
@@ -2882,9 +2883,9 @@ quotes are much more easier, elegant and readable.
 In GNU Astronomy Utilities, the names of the input data files and
 ASCII tables are mostly specified as arguments, you can generally
 specify them in any order unless otherwise stated for a particular
-program. Everything particular about the how a program treats
-arguments, is explained under the ``Invoking ProgramName'' section for
-that program.
+program. Everything particular about how a program treats arguments,
+is explained under the ``Invoking ProgramName'' section for that
+program.
 
 Generally, if there is a standard file name extension for a particular
 format, that filename extension is used to separate the kinds of
@@ -4978,15 +4979,15 @@ ImageCrop can fill them for you based on the input image sizes.
 @cindex Define section to crop
 To define a box, you need the coordinates of two points: the first
 pixel in the box at (@code{X1}, @code{Y1}) and the pixel which is
-immediately outside of the box (@code{X2, @code{Y2}}), for coordinates
-in total. The four coordinates can be specified with one string:
-@command{X1:X2,Y1:Y2} which is given to the @option{--section}
-option. Therefore, the pixels along the first axis that are
-@math{\geq}@command{X1} and <@command{X2} will be included in the
-cropped image. The same goes for the second axis. Note that each
+immediately outside of the box (@code{X2, @code{Y2}}), four
+coordinates in total. The four coordinates can be specified with one
+string in this format: @command{X1:X2,Y1:Y2}. It is given to the
+@option{--section} option. Therefore, the pixels along the first axis
+that are @math{\geq}@command{X1} and <@command{X2} will be included in
+the cropped image. The same goes for the second axis. Note that each
 different term will be read as an integer, not a float (there are no
 sub-pixels). Also, following the FITS standard, pixel indexes along
-each axis starts from unity(1) not zero(0).
+each axis start from unity(1) not zero(0).
 
 @cindex Crop section format
 You can omit any of the values and they will be filled automatically.
@@ -5002,9 +5003,9 @@ second axis, you should set it to: @command{,2}.
 If you specify a negative value, it will be seen as before the indexes
 of the image which are outside the image along the bottom or left
 sides when viewed in SAO ds9. In case you want to count from the top
-or right sides of the image, you can use a star (@option{*}). When
-confronted with a @option{*}, ImageCrop will replace it with the
-maximum length of the image in that dimension. So
+or right sides of the image, you can use an asterisk
+(@option{*}). When confronted with a @option{*}, ImageCrop will
+replace it with the maximum length of the image in that dimension. So
 @command{*-10:*+10,*-20:*+20} will mean that the crop box will be
 @math{20\times40} pixels in size and only include the top corner of
 the input image with 3/4 of the image being covered by blank pixels,
@@ -5012,10 +5013,11 @@ see @ref{Blank pixels}.
 
 If you feel more comfortable with space characters between the values,
 you can use as many space characters as you wish, just be careful to
-put your value in double quotes, for example @command{-s"5:200,
-123:854"}. If you forget, anything after the first space will not be
-seen by @option{--section}, because the unquoted space character is
-one of the characters that separates options on the command line.
+put your value in double quotes, for example
+@command{--section="5:200, 123:854"}. If you forget, anything after
+the first space will not be seen by @option{--section}, because the
+unquoted space character is one of the characters that separates
+options on the command line.
 
 
 
@@ -6644,10 +6646,10 @@ pixels}).
 @item -H
 @itemx --mhdu
 (@option{=STR}) The mask image header name or number. Similar to the
-@option{--hdu} option, see @ref{Common options}. Note that while the
-mask name is optional in the configuration files, the mask hdu is not
-and must be specified by the user. Either through command line options
-or in least one of the configuration files.
+@option{--hdu} option, see @ref{Common options}. Like @option{--mask},
+this option does not have to be included in the configuration file or
+the command-line. However, if it is present on either of them, it will
+be used.
 
 @item -s
 @itemx --meshsize
@@ -7344,10 +7346,37 @@ similar to what a wood chisel or stone chisel does. Please read the
 NoiseChisel paper for a complete explanation.
 
 @menu
+* Objects and clumps::          Definition of objects and clumps.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
 @end menu
 
-@node Invoking astnoisechisel,  , NoiseChisel, NoiseChisel
+@node Objects and clumps, Invoking astnoisechisel, NoiseChisel, NoiseChisel
+@subsection Objects and clumps
+
+NoiseChisel gives two output catalogs. One is for the detected
+`objects' in the image and the other is for the detected
+`clumps'. They are defined as follows:
+
+@table @asis
+
+@item Objects
+All the detected pixels are part of one object. The object label of
+each detected pixel can be seen in the second extension of the output
+FITS image.
+
+@item Clumps
+Not every detected pixel is part of a clump. A clump is defined as an
+8 connected group of pixels with only one local maximum.  See section
+3.2 (Segmentation) in Akhlaghi and Ichikawa (2015) for a complete and
+fully illustrated definition.
+
+@end table
+
+There is an extension to the default output FITS image for each one of
+these two outputs. The pixel labels in these two extensions correspond
+to the ID (first column) in the corresponding catalog.
+
+@node Invoking astnoisechisel,  , Objects and clumps, NoiseChisel
 @subsection Invoking NoiseChisel
 
 NoiseChisel will detect signal in noise. The executable name is
@@ -7366,11 +7395,98 @@ $ astnoisechisel field.fits --mask=badpixels.fits --mhdu=1
 @end example
 
 @noindent
-If NoiseChisel is to run, an input image should be provided with the
-recognized extensions as input data, see @ref{Arguments}. See
+If NoiseChisel is to do processing, an input image should be provided
+with the recognized extensions as input data, see @ref{Arguments}. See
 @ref{Common options} for the list of options that are shared by all
-programs.
+programs. The default output of NoiseChisel are three files explained
+below, also see @ref{Objects and clumps}. The name and directory of
+the outputs are explained in @ref{Automatic output}. If an output name
+is explictly given, it will be used as the prefix (removing any
+possible extensions) in the following instead of the input file name.
 
+@enumerate
+
+@item
+A multi-extension FITS image (with @file{_detected.fits} suffix), the
+first extension is the sky subtracted input image (the sky value is
+found after removing all detections). The second is a labeled image,
+specifying an object label for each pixel. The labels are the same as
+those in the objects catalog. Non-detected objects have a label of
+zero. The third extension shows the clump labels on the final
+image. The detected pixels that are not part of any clump are given a
+negative label.
+
+@item
+An objects catalog with a @file{_objects.txt} suffix. This is a
+plain text file with one row for each object. All the columns are
+explained in the top few commented (starting with @code{#}) lines.
+
+@item
+A clumps catalog with a @file{_clumps.txt} suffix. This is also a
+plain text file like the objects catalog.
+
+@end enumerate
+
+@table @option
+
+@cindex NaN
+@item -M
+@itemx --mask
+(@option{=STR}) Mask image file name. In case certain image pixels
+should not be considered, you can define a mask image file name with
+this option. Any pixel with a non-zero value in the specified mask
+image will not be considered in the input image. It goes without
+saying that the two images have to have the same size. If this option
+is not given and the @option{--mhdu} option has a different value from
+@option{--hdu}, then the input image name will be used. If a name is
+specified for @option{--mask} on the command line or in any of the
+configuration files, it will be used. If SubtractSky doesn't get any
+mask file name, it will use all the non-NaN pixels in the
+image. Therefore, specifying a mask file name in any of the
+configuration files is not mandatory.
+
+Note that if the mask image has blank pixels, then they act like
+pixels with non-zero values and will be masked (see @ref{Blank
+pixels}).
+
+@item -H
+@itemx --mhdu
+(@option{=STR}) The mask image header name or number. Similar to the
+@option{--hdu} option, see @ref{Common options}. Like @option{--mask},
+this option does not have to be included in the configuration file or
+the command-line. However, if it is present on either of them, it will
+be used.
+
+@item -k
+@itemx --kernel
+(@option{=STR}) The convolution kernel file name. The @code{BITPIX}
+(data type) value of this file can be any standard type and it does
+not necessarily have to be normalized. After reading the image, it
+will be converted to floating point type and will be normalized
+internally. The kernel is usually very small and so this process does
+not cause any preformance penatly. Any blank pixels in the kernel will
+be converted to zero (0), see @ref{Blank pixels}.
+
+@cindex Gaussian
+If a value is given to the kernel variable in the NoiseChisel
+configuration file (see @ref{Configuration files}), then that value
+(file name) will be used. Otherwise a default kernel will be used. The
+default kernel is a 2D Gaussian with a FWHM of 2 pixels truncated at 5
+times the FWHM. See Section 3.1.1 of Akhlaghi and Ichikawa (2015) to
+learn why this particular kernel was chosen as default. If you want to
+define a different parametric kernel, you can use MakeProfiles (see
+@ref{MakeProfiles}). Alternatively, you can use ConvertType to convert
+a text file with any table into a FITS image to feed into NoiseChisel.
+
+@item -c
+@itemx --khdu
+(@option{=STR}) The convolution kernel HDU. Although the kernel file
+name is optional, before running, NoiseChisel needs to have a value
+for this variable even if the default kernel is to be used. So be sure
+to keep its value in at least one of the configuration files (see
+@ref{Configuration files}).
+
+@end table
 
 
 

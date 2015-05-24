@@ -36,29 +36,32 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Macros: */
-#define MINACCEPTABLENEAREST 3
-
-
-
 struct uiparams
 {
   char         *inputname;  /* Name of input file.                 */
   char          *maskname;  /* Name of mask image file.            */
   char              *mhdu;  /* Name of mask image header name.     */
+  char        *kernelname;  /* Name of kernel image file.          */
+  char              *khdu;  /* Name of kernel header name.         */
+
   int         masknameset;
-  int   masknameallocated;
   int             mhduset;
+  int       kernelnameset;
+  int             khduset;
+
+  int        smeshsizeset;
+  int        lmeshsizeset;
+  int             nch1set;
+  int             nch2set;
+  int     lastmeshfracset;
+
   int       numnearestset;
   int      smoothwidthset;
   int       mirrordistset;
   int         minmodeqset;
+  int          qthreshset;
   int    sigclipmultipset;
   int sigcliptoleranceset;
-  int         meshsizeset;
-  int             nch1set;
-  int             nch2set;
-  int     lastmeshfracset;
 };
 
 
@@ -70,7 +73,8 @@ struct noisechiselparams
   /* Other structures: */
   struct uiparams          up;  /* User interface parameters.          */
   struct commonparams      cp;  /* Common parameters.                  */
-  struct meshparams        mp;  /* Mesh grid of input image.           */
+  struct meshparams       smp;  /* Smaller mesh grid of input image.   */
+  struct meshparams       lmp;  /* Larger mesh grid of input image.    */
 
   /* Input: */
   int                    nwcs;  /* Number of WCS structures.           */
@@ -82,10 +86,17 @@ struct noisechiselparams
   int                checkstd;  /* ==1: include the sky STD in checks. */
   char              *meshname;  /* Name of --checkmesh output.         */
 
+  /* Detection: */
+  float                 *conv;  /* Convolved image.                    */
+  float               qthresh;  /* Quantile threshold on convolved img.*/
+  char         *detectionname;  /* ==1: Initial detection steps.       */
+
   /* Operating mode: */
 
   /* Internal: */
   time_t              rawtime;  /* Starting time of the program.       */
+  float                  *img;  /* Input image, kept here to enable    */
+                                /* temporarily changing the mesh's img.*/
 };
 
 #endif
