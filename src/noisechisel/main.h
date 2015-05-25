@@ -71,32 +71,36 @@ struct uiparams
 struct noisechiselparams
 {
   /* Other structures: */
-  struct uiparams          up;  /* User interface parameters.          */
-  struct commonparams      cp;  /* Common parameters.                  */
-  struct meshparams       smp;  /* Smaller mesh grid of input image.   */
-  struct meshparams       lmp;  /* Larger mesh grid of input image.    */
+  struct uiparams     up;  /* User interface parameters.                  */
+  struct commonparams cp;  /* Common parameters.                          */
+  struct meshparams  smp;  /* Smaller mesh grid of input image.           */
+  struct meshparams  lmp;  /* Larger mesh grid of input image.            */
 
   /* Input: */
-  int                    nwcs;  /* Number of WCS structures.           */
-  struct wcsprm          *wcs;  /* Pointer to WCS structures.          */
-  int                  bitpix;  /* Input image bitpix value.           */
-  size_t             numblank;  /* Number of blank pixels in image.    */
+  int               nwcs;  /* Number of WCS structures.                   */
+  struct wcsprm     *wcs;  /* Pointer to WCS structures.                  */
+  int             bitpix;  /* Input image bitpix value.                   */
+  size_t        numblank;  /* Number of blank pixels in image.            */
 
   /* output: */
-  int                checkstd;  /* ==1: include the sky STD in checks. */
-  char              *meshname;  /* Name of --checkmesh output.         */
+  int           checkstd;  /* ==1: include the sky STD in checks.         */
+  char         *meshname;  /* Name of --checkmesh output.                 */
 
   /* Detection: */
-  float                 *conv;  /* Convolved image.                    */
-  float               qthresh;  /* Quantile threshold on convolved img.*/
-  char         *detectionname;  /* ==1: Initial detection steps.       */
+  float            *conv;  /* Convolved image.                            */
+  float          qthresh;  /* Quantile threshold on convolved img.        */
+  char    *detectionname;  /* ==1: Initial detection steps.               */
+  float       mirrordist;  /* For finding the mode. Distance after mirror.*/
+  float         minmodeq;  /* Minimum acceptable quantile for the mode.   */
+  float    sigclipmultip;  /* Multiple of standard deviation, sigma clip. */
+  float sigcliptolerance;  /* Tolerance in sigma clip.                    */
 
   /* Operating mode: */
 
   /* Internal: */
-  time_t              rawtime;  /* Starting time of the program.       */
-  float                  *img;  /* Input image, kept here to enable    */
-                                /* temporarily changing the mesh's img.*/
+  time_t         rawtime;  /* Starting time of the program.               */
+  float             *img;  /* Input image, kept here to enable            */
+                           /* temporarily changing the mesh's img.        */
 };
 
 #endif

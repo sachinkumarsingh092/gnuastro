@@ -50,11 +50,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct meshthreadparams
 {
-  /* For fillmesh: */
-  float           value; /* Value to be used in the operation.          */
-  int       operationid; /* The operation to be done on the meshs.      */
-  float       *allmeshs; /* One array for all mesh sizes.               */
-
   /* For convolve: */
   float           *conv; /* The convolved array.                        */
   size_t         *chbrd; /* Bordering x and y values all channels.      */
@@ -89,7 +84,7 @@ struct meshthreadparams
 struct meshparams
 {
   /* Image: */
-  float             *img; /* Input image array.                          */
+  void              *img; /* Input image array.                          */
   size_t              s0; /* Height of input image.                      */
   size_t              s1; /* Width of input image.                       */
 
@@ -121,11 +116,9 @@ struct meshparams
   size_t           maxs0; /* Maximum number of rows in all types.        */
   size_t           maxs1; /* Maximum number of columns in all types.     */
 
-  /* Statistics: */
-  float       mirrordist; /* For finding the mode. Distance after mirror.*/
-  float         minmodeq; /* Minimum acceptable quantile for the mode.   */
-  float    sigclipmultip; /* Multiple of standard deviation, sigma clip. */
-  float sigcliptolerance; /* Tolerance in sigma clip.                    */
+  /* Operate on each mesh: */
+  void           *params; /* Pointer to parameters structure of caller.  */
+  void        *oneforall; /* One array that can contain all the meshs.   */
 
   /* Interpolation: */
   unsigned char     *byt; /* To keep track of pixels already checked.    */
@@ -167,8 +160,8 @@ void
 freemesh(struct meshparams *mp);
 
 void
-fillmesh(struct meshparams *mp, int operationid, float value,
-         int makegarray2);
+operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
+              size_t oneforallsize, int makegarray2);
 
 void
 meshinterpolate(struct meshparams *mp);

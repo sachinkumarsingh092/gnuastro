@@ -1,3 +1,9 @@
+2015-05-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/mesh.c (operateonmesh): New name for `fillmesh'. Now the
+	function that will be spinned off from each thread can be
+	specified from the outside.
+
 2015-05-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/imgcrop/crop.c (sectionparser): When only a `*' was given

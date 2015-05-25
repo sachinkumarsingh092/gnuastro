@@ -565,118 +565,34 @@ freemesh(struct meshparams *mp)
 /*********************************************************************/
 /********************       Mesh operations       ********************/
 /*********************************************************************/
-void *
-fillmeshonthreads(void *inparam)
-{
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
-  struct meshparams *mp=mtp->mp;
+/* The purpose of this function is to prepare the (possibly)
+   multi-threaded environemnt, spin-off each thread and wait for them
+   to finish for any operation that is to be done on the mesh
+   grid.
 
-  float modesym=0.0f;
-  size_t modeindex=(size_t)(-1);
-  float sigcliptolerance=mp->sigcliptolerance;
-  size_t s0, s1, ind, row, num, start, is1=mp->s1;
-  float *f, *allmeshs, *img, *imgend, *inimg=mp->img;
-  size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
-  float ave, med, std, sigclipmultip=mp->sigclipmultip;
-  float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
+   The arguments are:
 
+   1. A pointer to the meshparams structure that keeps all the
+      information.
 
-  /* Allocate the array that will keep this mesh's pixels
-     contiguously. In fillmeshinfo the maximum s0 and s1 sizes of the
-     arrays were stored so we could allocate one array for all the
-     meshes irrespective of their type. */
-  errno=0;
-  allmeshs=mtp->allmeshs=malloc(mp->maxs0*mp->maxs1*sizeof *mtp->allmeshs);
-  if(allmeshs==NULL)
-    error(EXIT_FAILURE, errno, "Unable to allocate %lu bytes for"
-          "mtp->allmeshs of thread %lu in allocatetypearrays of mesh.c.",
-          mp->maxs0*mp->maxs1*sizeof *mtp->allmeshs, mtp->id);
+   2. A pointer to a function that returns and gets a `void *' as its
+      only argument. This function will be directly given to
+      pthread_create. Through this function, you can any function that
+      you wish to operate on the mesh grid with.
 
+   3. The size of each element to copy the mesh grid into, this has to
+      be type size of the same type that constitutes `img' in
+      meshparams. If the value to this argument is non-zero, an array
+      will be allocated that can contain all the pixels in all the
+      meshs and can be used by threads to manipute the pixels (for
+      example sort them) in each mesh.
 
-  /* Start this thread's work: */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
-    {
-      /* Prepare the values: */
-      num=row=0;
-      f=allmeshs;
-      ind=indexs[i];
-      start=mp->start[ind];
-      s0=mp->ts0[mp->types[ind]];
-      s1=mp->ts1[mp->types[ind]];
-
-      /* Copy all the non-NaN pixels images pixels of this mesh into
-         the mesh array. Note that currently, the spatial positioning
-         of the pixels is irrelevant, so we only keep those that are
-         non-NaN.*/
-      do
-        {
-          imgend=(img = inimg + start + row++ * is1 ) + s1;
-          do
-            if(!isnan(*img))
-            {
-              ++num;
-              *f++ = *img;
-            }
-          while(++img<imgend);
-        }
-      while(row<s0);
-
-      /* Do the desired operation on the mesh: */
-      qsort(allmeshs, num, sizeof *allmeshs, floatincreasing);
-      modeindexinsorted(allmeshs, num, mirrordist, &modeindex, &modesym);
-      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq )
-        {
-          switch(mtp->operationid)
-            {
-
-            case MODEEQMED_AVESTD: /* Average and standard devaition. */
-              if(sigmaclip_converge(allmeshs, 1, num, sigclipmultip,
-                                    sigcliptolerance, &ave, &med, &std, 0))
-                {
-                  mp->garray1[ind]=ave;
-                  if(mp->garray2) mp->garray2[ind]=std;
-                }
-              else
-                {
-                  mp->garray1[ind]=NAN;
-                  if(mp->garray2) mp->garray2[ind]=NAN;
-                }
-              break;
-
-            case MODEEQMED_QUANT: /* Quantile value.                 */
-              mp->garray1[ind]=allmeshs[indexfromquantile(num, mtp->value)];
-              break;
-
-            default:
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at "
-                    PACKAGE_BUGREPORT" so we can correct this issue. The "
-                    "value to mtp->operationid is not recognized in "
-                    "fillmeshonthreads (mesh.c).");
-            }
-        }
-      else
-        {
-          mp->garray1[ind]=NAN;
-          if(mp->garray2) mp->garray2[ind]=NAN;
-        }
-
-    }
-
-  /* Free alltype and if multiple threads were used, wait until all
-     other threads finish. */
-  free(mtp->allmeshs);
-  if(mp->numthreads>1)
-    pthread_barrier_wait(&mp->b);
-  return NULL;
-}
-
-
-
-
-
+   4. If the value of this argument is 1, then a second garray will be
+      allocated in case your operation needs one.
+*/
 void
-fillmesh(struct meshparams *mp, int operationid, float value,
-         int makegarray2)
+operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
+              size_t oneforallsize, int makegarray2)
 {
   int err;
   size_t i, nb;
@@ -702,6 +618,30 @@ fillmesh(struct meshparams *mp, int operationid, float value,
       if(mp->garray2==NULL) error(EXIT_FAILURE, errno, "mp->garray2");
     }
 
+  /* `oneforall' is an array with the sides equal to the maximum side
+     of the meshes in the image. The purpose is to enable manipulating
+     the mesh pixels (for example sorting them and so on.). One such
+     array is allocated for each thread in this one full
+     allocation. Each thread can then use its own portion of this
+     array through the following declaration:
+
+     float *oneforall=&mp->oneforall[mtp->id*mp->maxs0*mp->maxs1];
+
+     In meshparams, `oneforall' is defined as a `void *', so the
+     caller function, can cast it to any type it wants. The size of
+     each type is given to `fillmesh' through the `oneforallsize'
+     argument.
+  */
+  if(oneforallsize)
+    {
+      errno=0;
+      mp->oneforall=malloc(numthreads*mp->maxs0*mp->maxs1*oneforallsize);
+      if(mp->oneforall==NULL)
+        error(EXIT_FAILURE, errno, "Unable to allocate %lu bytes for"
+              "mtp->oneforall in fillmesh of mesh.c.",
+              numthreads*mp->maxs0*mp->maxs1*oneforallsize);
+    }
+
   /* Distribute the meshes in all the threads. */
   distinthreads(mp->nmeshi, mp->numthreads, &mp->indexs, &mp->thrdcols);
 
@@ -710,9 +650,7 @@ fillmesh(struct meshparams *mp, int operationid, float value,
     {
       mtp[0].id=0;
       mtp[0].mp=mp;
-      mtp[0].value=value;
-      mtp[0].operationid=operationid;
-      fillmeshonthreads(&mtp[0]);
+      (*meshfunc)(&mtp[0]);
     }
   else
     {
@@ -730,9 +668,7 @@ fillmesh(struct meshparams *mp, int operationid, float value,
 	  {
             mtp[i].id=i;
 	    mtp[i].mp=mp;
-            mtp[i].value=value;
-            mtp[i].operationid=operationid;
-	    err=pthread_create(&t, &attr, fillmeshonthreads, &mtp[i]);
+	    err=pthread_create(&t, &attr, meshfunc, &mtp[i]);
 	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
 	  }
 
@@ -744,6 +680,7 @@ fillmesh(struct meshparams *mp, int operationid, float value,
 
   free(mtp);
   free(mp->indexs);
+  if(oneforallsize) free(mp->oneforall);
 }
 
 

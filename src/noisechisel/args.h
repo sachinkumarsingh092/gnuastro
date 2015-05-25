@@ -410,11 +410,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Detection */
     case 'd':
-      floatl0(arg, &p->smp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      floatl0(arg, &p->mirrordist, "mirrordist", key, SPACK, NULL, 0);
       p->up.mirrordistset=1;
       break;
     case 'Q':
-      floatl0s1(arg, &p->smp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      floatl0s1(arg, &p->minmodeq, "minmodeq", key, SPACK, NULL, 0);
       p->up.minmodeqset=1;
       break;
     case 't':
@@ -422,12 +422,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.qthreshset=1;
       break;
     case 'u':
-      floatl0(arg, &p->smp.sigclipmultip, "sigclipmultip", key, SPACK,
+      floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
               NULL, 0);
       p->up.sigclipmultipset=1;
       break;
     case 'r':
-      floatl0s1(arg, &p->smp.sigcliptolerance, "sigcliptolerance", key, SPACK,
+      floatl0s1(arg, &p->sigcliptolerance, "sigcliptolerance", key, SPACK,
               NULL, 0);
       p->up.sigcliptoleranceset=1;
       break;

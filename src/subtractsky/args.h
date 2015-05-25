@@ -361,20 +361,20 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Statistics */
     case 'd':
-      floatl0(arg, &p->mp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      floatl0(arg, &p->mirrordist, "mirrordist", key, SPACK, NULL, 0);
       p->up.mirrordistset=1;
       break;
     case 'Q':
-      floatl0s1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      floatl0s1(arg, &p->minmodeq, "minmodeq", key, SPACK, NULL, 0);
       p->up.minmodeqset=1;
       break;
     case 'u':
-      floatl0(arg, &p->mp.sigclipmultip, "sigclipmultip", key, SPACK,
+      floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
               NULL, 0);
       p->up.sigclipmultipset=1;
       break;
     case 't':
-      floatl0s1(arg, &p->mp.sigcliptolerance, "sigcliptolerance", key, SPACK,
+      floatl0s1(arg, &p->sigcliptolerance, "sigcliptolerance", key, SPACK,
               NULL, 0);
       p->up.sigcliptoleranceset=1;
       break;

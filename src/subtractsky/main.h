@@ -64,26 +64,32 @@ struct uiparams
 struct subtractskyparams
 {
   /* Other structures: */
-  struct uiparams          up;  /* User interface parameters.          */
-  struct commonparams      cp;  /* Common parameters.                  */
-  struct meshparams        mp;  /* Mesh grid of input image.           */
+  struct uiparams     up;  /* User interface parameters.                 */
+  struct commonparams cp;  /* Common parameters.                         */
+  struct meshparams   mp;  /* Mesh grid of input image.                  */
 
   /* Input: */
-  int                    nwcs;  /* Number of WCS structures.           */
-  struct wcsprm          *wcs;  /* Pointer to WCS structures.          */
-  int                  bitpix;  /* Input image bitpix value.           */
-  size_t             numblank;  /* Number of blank pixels in image.    */
+  int               nwcs;  /* Number of WCS structures.                  */
+  struct wcsprm     *wcs;  /* Pointer to WCS structures.                 */
+  int             bitpix;  /* Input image bitpix value.                  */
+  size_t        numblank;  /* Number of blank pixels in image.           */
 
   /* output: */
-  int                checkstd;  /* ==1: include the sky STD in checks. */
-  char              *meshname;  /* Name of --checkmesh output.         */
-  char            *interpname;  /* Name of --checkinterpolation output.*/
-  char               *skyname;  /* Name of sky and its STD image.      */
+  int           checkstd;  /* ==1: include the sky STD in checks.        */
+  char         *meshname;  /* Name of --checkmesh output.                */
+  char       *interpname;  /* Name of --checkinterpolation output.       */
+  char          *skyname;  /* Name of sky and its STD image.             */
+
+  /* Statistics: */
+  float       mirrordist; /* For finding the mode. Distance after mirror.*/
+  float         minmodeq; /* Minimum acceptable quantile for the mode.   */
+  float    sigclipmultip; /* Multiple of standard deviation, sigma clip. */
+  float sigcliptolerance; /* Tolerance in sigma clip.                    */
 
   /* Operating mode: */
 
   /* Internal: */
-  time_t              rawtime;  /* Starting time of the program.       */
+  time_t         rawtime;  /* Starting time of the program.       */
 };
 
 #endif

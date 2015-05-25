@@ -26,11 +26,90 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include "mesh.h"
+#include "mode.h"
 #include "timing.h"
+#include "forqsort.h"
+#include "statistics.h"
 #include "arraymanip.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
+
+
+void *
+avestdonthread(void *inparam)
+{
+  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
+  struct meshparams *mp=mtp->mp;
+  struct subtractskyparams *p=(struct subtractskyparams *)mp->params;
+
+  float *mponeforall=mp->oneforall;
+  float *oneforall=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
+
+  size_t modeindex=(size_t)(-1);
+  float sigcliptolerance=p->sigcliptolerance;
+  size_t s0, s1, ind, row, num, start, is1=mp->s1;
+  size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
+  float ave, med, std, sigclipmultip=p->sigclipmultip;
+  float mirrordist=p->mirrordist, minmodeq=p->minmodeq;
+  float *f, *img, *imgend, *inimg=mp->img, modesym=0.0f;
+
+  /* Start this thread's work: */
+  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+    {
+      /* Prepare the values: */
+      num=row=0;
+      f=oneforall;
+      ind=indexs[i];
+      start=mp->start[ind];
+      s0=mp->ts0[mp->types[ind]];
+      s1=mp->ts1[mp->types[ind]];
+
+      /* Copy all the non-NaN pixels images pixels of this mesh into
+         the mesh array. Note that currently, the spatial positioning
+         of the pixels is irrelevant, so we only keep those that are
+         non-NaN.*/
+      do
+        {
+          imgend=(img = inimg + start + row++ * is1 ) + s1;
+          do
+            if(!isnan(*img))
+            {
+              ++num;
+              *f++ = *img;
+            }
+          while(++img<imgend);
+        }
+      while(row<s0);
+
+      /* Do the desired operation on the mesh: */
+      qsort(oneforall, num, sizeof *oneforall, floatincreasing);
+      modeindexinsorted(oneforall, num, mirrordist, &modeindex, &modesym);
+      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq
+          && sigmaclip_converge(oneforall, 1, num, sigclipmultip,
+                                sigcliptolerance, &ave, &med, &std, 0))
+        {
+          mp->garray1[ind]=ave;
+          if(mp->garray2) mp->garray2[ind]=std;
+        }
+      else
+        {
+          mp->garray1[ind]=NAN;
+          if(mp->garray2) mp->garray2[ind]=NAN;
+        }
+
+    }
+
+  /* Free alltype and if multiple threads were used, wait until all
+     other threads finish. */
+  if(mp->numthreads>1)
+    pthread_barrier_wait(&mp->b);
+  return NULL;
+}
+
+
+
+
 
 void
 subtractsky(struct subtractskyparams *p)
@@ -61,7 +140,7 @@ subtractsky(struct subtractskyparams *p)
 
 
   /* Find the sky value and its standard deviation on each mesh. */
-  fillmesh(mp, MODEEQMED_AVESTD, 0, checkstd);
+  operateonmesh(mp, avestdonthread, sizeof(float), checkstd);
   if(p->interpname)
     {
       checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
@@ -77,7 +156,6 @@ subtractsky(struct subtractskyparams *p)
     }
   if(p->cp.verb)
     reporttiming(&t1, "Sky and its STD found on some meshes.", 1);
-
 
 
   /* Interpolate over the meshs to fill all the blank ones in both the

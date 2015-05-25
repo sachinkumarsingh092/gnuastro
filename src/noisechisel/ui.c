@@ -221,14 +221,14 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->smp.mirrordist, name, key, SPACK,
+          floatl0(value, &p->mirrordist, name, key, SPACK,
                   filename, lineno);
 	  up->mirrordistset=1;
 	}
       else if(strcmp(name, "minmodeq")==0)
 	{
 	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->smp.minmodeq, name, key, SPACK,
+          floatl0s1(value, &p->minmodeq, name, key, SPACK,
                   filename, lineno);
 	  up->minmodeqset=1;
 	}
@@ -242,14 +242,14 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->smp.sigclipmultip, name, key, SPACK,
+          floatl0(value, &p->sigclipmultip, name, key, SPACK,
                   filename, lineno);
 	  up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0s1(value, &p->smp.sigcliptolerance, name, key, SPACK,
+          floatl0s1(value, &p->sigcliptolerance, name, key, SPACK,
                   filename, lineno);
 	  up->sigcliptoleranceset=1;
 	}
@@ -349,16 +349,16 @@ printvalues(FILE *fp, struct noisechiselparams *p)
 
   fprintf(fp, "\n# Detection:\n");
   if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", smp->mirrordist);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mirrordist);
   if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", smp->minmodeq);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->minmodeq);
   if(up->qthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "qthresh", p->qthresh);
   if(up->sigclipmultipset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", smp->sigclipmultip);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
   if(up->sigcliptoleranceset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
-            smp->sigcliptolerance);
+            p->sigcliptolerance);
 }
 
 
@@ -567,7 +567,8 @@ preparearrays(struct noisechiselparams *p)
      need to change the mesh's img value some times and the p->img
      will be used to keep its actual value. */
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              &smp->img, &p->bitpix, &p->numblank, &smp->s0, &smp->s1);
+              (float **)&smp->img, &p->bitpix, &p->numblank, &smp->s0,
+              &smp->s1);
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
   p->lmp.s0=smp->s0;
   p->lmp.s1=smp->s1;

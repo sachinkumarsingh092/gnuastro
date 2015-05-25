@@ -193,28 +193,28 @@ readconfig(char *filename, struct subtractskyparams *p)
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mp.mirrordist, name, key, SPACK,
+          floatl0(value, &p->mirrordist, name, key, SPACK,
                   filename, lineno);
 	  up->mirrordistset=1;
 	}
       else if(strcmp(name, "minmodeq")==0)
 	{
 	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->mp.minmodeq, name, key, SPACK,
+          floatl0s1(value, &p->minmodeq, name, key, SPACK,
                   filename, lineno);
 	  up->minmodeqset=1;
 	}
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->mp.sigclipmultip, name, key, SPACK,
+          floatl0(value, &p->sigclipmultip, name, key, SPACK,
                   filename, lineno);
 	  up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0s1(value, &p->mp.sigcliptolerance, name, key, SPACK,
+          floatl0s1(value, &p->sigcliptolerance, name, key, SPACK,
                   filename, lineno);
 	  up->sigcliptoleranceset=1;
 	}
@@ -298,14 +298,14 @@ printvalues(FILE *fp, struct subtractskyparams *p)
 
   fprintf(fp, "\n# Statistics:\n");
   if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mp.mirrordist);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mirrordist);
   if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->mp.minmodeq);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->minmodeq);
   if(up->sigclipmultipset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->mp.sigclipmultip);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
   if(up->sigcliptoleranceset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
-            p->mp.sigcliptolerance);
+            p->sigcliptolerance);
 }
 
 
@@ -416,7 +416,8 @@ sanitycheck(struct subtractskyparams *p)
           "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
           p->mp.numnearest);
 
-  /* Put the number of threads into the mesh structure: */
+  /* Set the constants in the meshparams structure. */
+  p->mp.params=p;
   p->mp.numthreads=p->cp.numthreads;
 }
 
@@ -447,7 +448,8 @@ preparearrays(struct subtractskyparams *p)
   struct meshparams *mp=&p->mp;
 
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              &p->mp.img, &p->bitpix, &p->numblank, &mp->s0, &mp->s1);
+              (float **)&p->mp.img, &p->bitpix, &p->numblank, &mp->s0,
+              &mp->s1);
 
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 
