@@ -318,6 +318,7 @@ Convolve
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
+* Convolution kernel::
 * Invoking astconvolve::        Options and arguments to Convolve.
 
 ImageWarp
@@ -331,6 +332,7 @@ SubtractSky
 
 * Sky value::                   Definition of the sky value.
 * Tiling an image::             Defining a mesh grid on the image.
+* Mask image::                  How to mask pixels for no analysis.
 * Invoking astsubtractsky::     Options and arguments to SubtractSky.
 
 Sky value
@@ -340,7 +342,9 @@ Sky value
 
 Tiling an image
 
+* Quantifying signal in a mesh::  Good meshs for gradients.
 * Grid interpolation and smoothing::  Filling the blank grid elements.
+* Mesh grid options::           Common options related to the mesh grid.
 
 Image analysis
 
@@ -358,6 +362,11 @@ NoiseChisel
 
 * Objects and clumps::          Definition of objects and clumps.
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
+
+Invoking NoiseChisel
+
+* NoiseChisel options::         List of NoiseChisel options.
+* NoiseChisel output::          Explanation of NoiseChisel's outputs.
 
 Modeling and fitting
 
@@ -5381,6 +5390,7 @@ removing small frequencies}.
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
+* Convolution kernel::
 * Invoking astconvolve::        Options and arguments to Convolve.
 @end menu
 
@@ -5497,7 +5507,7 @@ observed images (where we don't have any more data on the edges) and
 not in modeling.
 
 
-@node Spatial vs. Frequency domain, Invoking astconvolve, Convolution on the edges, Convolve
+@node Spatial vs. Frequency domain, Convolution kernel, Convolution on the edges, Convolve
 @subsection Spatial vs. Frequency domain
 
 With the discussions above it might not be clear when to choose the
@@ -5540,8 +5550,88 @@ kernels and the images can become very large and the speed boost of
 frequency domain convolution will significantly improve the processing
 time, see @ref{Oversampling}.
 
+@node Convolution kernel, Invoking astconvolve, Spatial vs. Frequency domain, Convolve
+@subsection Convolution kernel
 
-@node Invoking astconvolve,  , Spatial vs. Frequency domain, Convolve
+All the programs that need convolution will need to be given a
+convolution kernel file and extension. In most cases (other than
+Convolve, see @ref{Convolve}) the kernel file name is
+optional. However, the extension is necessary and must be specified
+either on the command line or at least one of the configuration files
+(see @ref{Configuration files}). Within Gnuastro, there are two ways
+to create a kernel image:
+
+@itemize
+
+@item
+MakeProfiles: You can use MakeProfiles to create a parameteric (based
+on a radial function) kernel, see @ref{MakeProfiles}. By default
+MakeProfiles will make the Gaussian and Moffat profiles in a separate
+file so you can feed it into any of the programs.
+
+@item
+ConvertType: You can write your own desired kernel into a text file
+table and convert it to a FITS file with ConvertType, see
+@ref{ConvertType}. Just be careful that the kernel has to have an odd
+number of pixels along its two axises, see @ref{Convolution
+process}. All the programs that do convolution will normalize the
+kernel internally, so if you choose this option, you don't have to
+worry about normalizing the kernel. Only within Convolve, there is an
+option to disable normalization, see @ref{Invoking astconvolve}.
+
+@end itemize
+
+@noindent
+The two options to specify a kernel file name and its extension are
+shown below. These are common between all the programs that will do
+convolution.
+@table @option
+@item -k
+@itemx --kernel
+(@option{=STR}) The convolution kernel file name. The @code{BITPIX}
+(data type) value of this file can be any standard type and it does
+not necessarily have to be normalized. Several operations will be done
+on the kernel image prior to the program's processing:
+
+@itemize
+
+@item
+It will be converted to floating point type.
+
+@item
+All blank pixels (see @ref{Blank pixels}) will be set to zero.
+
+@item
+It will be normalized so the sum of its pixels equal unity.
+
+@item
+It will be flipped so the convolved image has the same
+orientation. This is only relevant if the kernel is not circular. See
+@ref{Convolution process}.
+@end itemize
+
+@item -U
+@itemx --khdu
+(@option{=STR}) The convolution kernel HDU. Although the kernel file
+name is optional, before running any of the programs, they need to
+have a value for @option{--khdu} even if the default kernel is to be
+used. So be sure to keep its value in at least one of the
+configuration files (see @ref{Configuration files}). By default, the
+system configuration file has a value.
+
+@item --fullconvolution
+Ignore the (possible) channels in the mesh grid when doing spatial
+convolution, see @ref{Tiling an image}. When applied over a mesh grid,
+spatial convolution will be done independently on each channel. This
+is necessary when the noise properties of each channel are different
+and so the pixels should not be mixed. With this option, all channel
+information is going to be ignored. Currently this option is not
+deployed for the frequency space convolutions.
+
+@end table
+
+
+@node Invoking astconvolve,  , Convolution kernel, Convolve
 @subsection Invoking Convolve
 
 Convolve an input image with a known kernel. The general template for
@@ -5558,43 +5648,24 @@ One line examples:
 $ astconvolve --kernel=psf.fits mockimg.fits
 @end example
 
-The only argument accepted by Convolve is an input image file. For the
-full list of options to all Gnuastro programs, please see @ref{Common
-options}, here we will only explain the options particular to
-Convolve:
+The only argument accepted by Convolve is an input image file. Some of
+the options are the same between Convolve and some other Gnuastro
+programs. Therefore, to avoid repetition, they will not be repeated
+here. For the full list of options shared by all Gnuastro programs,
+please see @ref{Common options}. @ref{Mesh grid options} lists all the
+options related to spefiying a mesh grid which is currently only used
+in spatial convolution. Note that here, no interpolation or smoothing
+is defined, only channels and the mesh size are
+important. @ref{Convolution kernel} lists the the convolution kernel
+options.
+
+It is also possible to specify a mask image for the input. In that
+case, see @ref{Mask image}. Here we will only explain the options
+particular to Convolve. Run Convolve with @option{--help} in order to
+see the full list of options Convolve accepts, irrespective of where
+they are explained in this manual.
 
 @table @option
-
-@item -k
-@itemx --kernel
-(@option{=STR}) The input kernel image filename. It should have an odd
-number of pixels and any blank pixel value in the image will be
-changed to zero. Prior to convolution several operations will be done
-on the image, see @ref{Convolution process} for an explanation of the
-reason for the last two.
-@itemize
-
-@item
-Whatever its initial type, it will be converted to a floating point
-array for analysis.
-
-@item
-@cindex NaN
-@cindex Blank pixel
-Any blank or NaN (not a number) pixel in the kernel will be given a
-value of zero.
-
-@item
-The kernel will be flipped immediately after reading it, can be disabled with the @option{--nokernelflip}
-
-@item
-The kernel will be normalized (such that the sum of its pixels will be
-unity), can be disabled with @option{--nokernelnorm}.
-@end itemize
-
-@item -H
-@itemx --khdu
-(@option{=STR}) The input kernel image HDU name or number.
 
 @item --nokernelflip
 Do not flip the kernel after reading it the spatial domain
@@ -5604,11 +5675,6 @@ applied to the kernel.
 @item --nokernelnorm
 Do not normalize the kernel after reading it, such that the sum of its
 pixels is unity.
-
-@item -C
-@itemx --noedgecorrection
-Do not apply edge correction when convolving in the spatial domain,
-see @ref{Convolution on the edges}.
 
 @item -f
 @itemx --frequency
@@ -5622,7 +5688,7 @@ For large images, this process will be more efficient than convolving
 in the spatial domain. However, the edges of the image will loose some
 flux, see @ref{Convolution on the edges}.
 
-@item -s
+@item -p
 @itemx --spatial
 Convolve in the spatial domain, see @ref{Convolution process}.
 
@@ -6214,6 +6280,7 @@ larger grid size.
 @menu
 * Sky value::                   Definition of the sky value.
 * Tiling an image::             Defining a mesh grid on the image.
+* Mask image::                  How to mask pixels for no analysis.
 * Invoking astsubtractsky::     Options and arguments to SubtractSky.
 @end menu
 
@@ -6319,31 +6386,7 @@ from the data.
 @cindex Median of distribution
 This technique to find the sky value in a distribution was initially
 proposed in Akhlaghi and Ichikawa 2015@footnote{Akhlaghi M.,
-Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. When
-we have absolutely no data and only noise in a dataset, the mean,
-median and mode of the distribution are equal within statistical
-errors and approximately equal to zero. Data always has a positive
-value and will never become negative, see Figure 1 in Akhlaghi and
-Ichikawa (2015). Therefore, as data is buried into the noise, all
-three of these measures shift to the positive. The mean is the fastest
-in this shift, since it is most reliant on the flux values. The median
-is slower since it is defined based on an ordered distribution and so
-is not affected by a small (less than half) number of
-outliers. Finally, the mode is the slowest to shift to the positive.
-
-@cindex Sky value
-Inversing the argument above gives the basis of SubtractSky's
-algorithm to find the sky value. Namely, when the mode and median of a
-distribution are approximately equal, we can argue that there is no
-significant data in the distribution. So we can consider the image to
-be made of a grid and use this argument to `detect' data in each grid
-element. When a grid element satisfies the condition above, we keep
-its mean value. Recall that the sky was the mean of undetected
-pixels. Any grid element that doesn't satisfy this condition is kept
-with a blank value. Finally, when all the grid elements have been
-checked, we can interpolate over all the empty elements and smooth the
-final result to find the sky value over the full image. See @ref{Grid
-interpolation and smoothing}.
+Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}.
 
 Note that through the difference of the mode and median we have
 actually `detected' data in the distribution. However this detection
@@ -6426,7 +6469,7 @@ are ultimately poor approximations.
 
 
 
-@node Tiling an image, Invoking astsubtractsky, Sky value, SubtractSky
+@node Tiling an image, Mask image, Sky value, SubtractSky
 @subsection Tiling an image
 
 @cindex Grid
@@ -6527,10 +6570,69 @@ of. You can flip through the extensions to check the mesh sizes and
 locations compared to the input image.
 
 @menu
+* Quantifying signal in a mesh::  Good meshs for gradients.
 * Grid interpolation and smoothing::  Filling the blank grid elements.
+* Mesh grid options::           Common options related to the mesh grid.
 @end menu
 
-@node Grid interpolation and smoothing,  , Tiling an image, Tiling an image
+
+@node Quantifying signal in a mesh, Grid interpolation and smoothing, Tiling an image, Tiling an image
+@subsubsection Quantifying signal in a mesh
+
+@cindex Noise
+@cindex Gaussian distribution
+Noise is characterized with a fixed background value and a certain
+distribution. For example, for the Gaussian distribution these two are
+the mean and standard deviation. When we have absolutely no signal and
+only noise in a dataset, the mean, median and mode of the distribution
+are equal within statistical errors and approximately equal to the
+background value. For the next paragraph, let's assume that the
+background is subtracted and is zero.
+
+Data always has a positive value and will never become negative, see
+Figure 1 in Akhlaghi and Ichikawa (2015). Therefore, as data is buried
+into the noise, the mean, median and mode shift to the positive. The
+mean is the fastest in this shift, since it is most reliant on the
+flux values. The median is slower since it is defined based on an
+ordered distribution and so is not affected by a small (less than
+half) number of outliers. Finally, the mode is the slowest to shift to
+the positive.
+
+Inversing the argument above provides us with the basis of Gnuastro's
+algorithm to quantify the presence of signal in a mesh. Namely, when
+the mode and median of a distribution are approximately equal, we can
+argue that there is no significant signal in that mesh. So we can
+consider the image to be made of a grid and use this argument to
+`detect' signal in each grid element. The median is defined to be the
+value of the 0.5 quantile in the image. So the only necessary
+parameter is the minimum acceptable quantile (smaller than 0.5) for
+the mode in a mesh that we deem accurate. See @ref{Mesh grid options}
+for an explanation of the options used to customize this behavior.
+
+Since there is sufficient signal in the mesh to bias the analysis on
+that mesh, any grid element whose mode quantile is smaller than the
+minimum acceptable quantile is usually kept with a blank value and no
+value is given to it. Finally, when all the grid elements have been
+checked, we can interpolate over all the empty elements and smooth the
+final result to find the sky value over the full image. See @ref{Grid
+interpolation and smoothing}.
+
+Convolving a dataset (that contains signal and noise), creates a
+positive skewness in it depending on the fraction of data present in
+the distribution and also the convolution kernel. See Section 3.1.1 in
+Akhlaghi and Ichikawa (2015) and @ref{Convolution process}. This
+skewness can be interpreted as an increase in the Signal to noise
+ratio of the objects burried in the noise. Therefore, to obtain an
+even better measure of the presence of signal in a mesh, the image can
+be convolved with a given PSF first. This positive skew will result in
+more distance between the mode an median thereby enabling a more
+accurate detection of fainter signal, for example the faint wings of
+bright stars and galaxies. When convolving over a mesh grid, the
+pixels in each channel will be treated independently. This can be
+disabled with the @option{--fullconvolution} option. See
+@ref{Convolution kernel} for the respective options.
+
+@node Grid interpolation and smoothing, Mesh grid options, Quantifying signal in a mesh, Tiling an image
 @subsubsection Grid interpolation and smoothing
 
 As explained in @ref{Finding the sky value}, the sky value will not be
@@ -6558,25 +6660,26 @@ neighbors. The exact number can be specified through
 taken as the final value for the blank mesh. The median is chosen
 because on the fainter wings of bright objects, the mean can easily
 become biased. If the number of meshes with a good value is less than
-the value given to @option{--numnearest}, then SubtractSky will abort
+the value given to @option{--numnearest}, then the program will abort
 and notify you. In such cases you can either decrease the value to
 this option or set less restrictive requirements (for example a
-smaller @option{--minmodeq}, or larger meshs) at the expense of less
-accurate results.
+smaller @option{--minmodeq}, or larger/smaller meshs) at the expense
+of less accurate results.
 
-Once all the grid elements are filled, the grid sky values should be
-smoothed. This is because when the median is used, there will be
-strong differences from one grid element to the next. By smoothing the
-grid, the variation between grid element to grid element will be far
-less and so the sky subtracted image will become much more uniform. To
-smooth the image, SubtractSky uses an average filter. An average
-filter is just a convolution of the grid (spatial convolution with
-edge correction) by a kernel will all elements having an equal weight,
-see @ref{Convolution process}. The kernel is a square. The length of
-the kernel edge can be set in units of pixels through the
-@option{--smoothwidth} option (which has to be an odd number as with
-any kernel). If a width of 1 is given for the kernel width, then no
-smoothing will take place.
+@cindex Average filter
+Once all the grid elements are filled, the values given to all the
+meshs should be smoothed. This is because the median was used in the
+interpolation. The median is robust in the face of outliers, but there
+might be strong differences from one grid element to the next. By
+smoothing the grid, the variation between grid element to grid element
+will be far less. To smooth the mesh values, Gnuastro uses an average
+filter. An average filter is just a convolution of the mesh grid
+(spatial convolution with edge correction) by a kernel will all
+elements having an equal weight, see @ref{Convolution process}. The
+kernel is a square. The length of the kernel edge can be set in units
+of pixels through the @option{--smoothwidth} option (which has to be
+an odd number as with any kernel). If a width of 1 is given for the
+kernel width, then no smoothing will take place.
 
 By default the interpolation and smoothing explained above are done
 independently on each channel. In some circumstances, it might be
@@ -6592,7 +6695,186 @@ pixels have been assigned to a mesh prior to these steps (see
 @ref{Tiling an image}), there is no problem in this regard.
 
 
-@node Invoking astsubtractsky,  , Tiling an image, SubtractSky
+@node Mesh grid options,  , Grid interpolation and smoothing, Tiling an image
+@subsubsection Mesh grid options
+
+The mesh grid structure defined here (see @ref{Tiling an image}) is
+used by more than one program. Therefore in order to avoid repetition,
+all the options to do with the mesh grid (and are shared by all the
+programs using it) are listed here.
+
+Some programs might define multiple meshs over the image (for example
+in NoiseChisel, there is a large and a small mesh for different
+operations, see @ref{NoiseChisel}), in such cases, the options for
+each mesh are designated by an appropriate prefix. For example in
+NoiseChisel the small and large mesh sizes are specified through the
+@option{--smeshsize} and @option{--lmeshsize} respectively. Both these
+options are similar to the @option{--meshsize} option explained below,
+but for their respective grid. Note that the short option name might
+also differ. If such options exist in a program, they are listed in
+the `Invoking ProgramName' section within the list of options.
+
+@table @option
+
+@item -s
+@itemx --meshsize
+(@option{=INT}) The size of each mesh, see @ref{Tiling an image}. If
+the width of all channels are not an exact multiple of the specified
+size, then the last mesh on each axis will have a different size to
+cover the full channel.
+
+@item -a
+@itemx --nch1
+(@option{=INT}) The number of channels along the first FITS axis
+(horizontal when viewed in SAO ds9). If the length of the image is not
+an exact multiple of this number, then the program will stop. You can
+use ImageCrop (@ref{ImageCrop}) to trim off or add some pixels (blank
+pixels if added, see @ref{Blank pixels}) to the image if it is not an
+exact multiple.
+
+@item -b
+@itemx --nch2
+(@option{=INT}) The number of channels along the second FITS axis,
+(vertical when viewed in SAO ds9). Similar to @option{--nch1}.
+
+@item -L
+@itemx --lastmeshfrac
+(@option{=FLT}) Fraction of extra area on the last (rightest on the
+first FITS axis and highest/top on the second) mesh, to define a new
+(smaller) one. See @ref{Tiling an image}.
+
+@item --checkmesh
+An image with suffix @file{_mesh.fits} will be created for you to
+check the mesh grid, see @ref{Tiling an image}. The input image will
+be the first extension, followed by an extension, where each pixel is
+labeled (number starting from zero) by the ID of the mesh it belongs
+to. If the program uses multiple mesh grids, the output will have more
+than two extensions. By flipping through the extensions, you can check
+the positioning and size of the meshs.
+
+@item -d
+@itemx --mirrordist
+(@option{=FLT}) The distance beyond the mirror point (in units of the
+error in the mirror point) to check for finding the mode in each
+mesh. This is part of the process to quantify the presence of signal
+in a mesh, see @ref{Quantifying signal in a mesh}. See appendix C in
+Akhlaghi and Ichikawa (2015) for a complete explanation of the
+mode-finding algorithm. The value to this option is shown as
+@mymath{\alpha} in that appendix.
+
+@item -Q
+@itemx --minmodeq
+(@option{=FLT}) The minimum acceptable quantile for the mode of each
+mesh. The median is on the 0.5 quantile of the image and as long as we
+have positive signal (all astronomically relevant observations), the
+mode will be less than the median. The sky value is only found on
+meshes where the median and mode are approximately the same, see
+@ref{Sky value}.
+
+@item -n
+@itemx --numnearest
+(@option{=INT}) The number of nearest grid elements with a successful
+sky value to use for interpolating over blank mesh elements (those
+that had a significant contribution of flux), see @ref{Grid
+interpolation and smoothing}.
+
+@item --fullinterpolation
+Do interpolation irrespective of the channels in the image, see
+@ref{Grid interpolation and smoothing}.
+
+@item --checkinterpolation
+A two extension FITS image ending with @file{_interp.fits} will be
+created which shows the average value on each mesh before
+interpolation and after interpolation.
+
+@item -T
+@itemx --smoothwidth
+(@option{=INT}) The width of the average filter kernel used to smooth
+the interpolated image in units of pixels. See @ref{Grid interpolation
+and smoothing}. If this option is given a value of 1 (one), then no
+smoothing will be done.
+
+@item --fullsmoothing
+Do smoothing irrespective of the channels in the image, see @ref{Grid
+interpolation and smoothing}.
+
+@end table
+
+
+@node Mask image, Invoking astsubtractsky, Tiling an image, SubtractSky
+@subsection Mask image
+
+@cindex Mask image
+All of the programs in Gnuastro that do processing on the input data
+can also account for masked pixels. Particularly in raw data
+processing, there are usually a set of pixels in the image that should
+not be included in any analysis. For example saturated pixels on the
+centers of bright objects, or the edges of the image which received no
+data and were only used for bias calculation. The detectors or the
+very early processing that is done on raw images clearly identifies
+such cases and usually assigns an integer (or flag or mask value) to
+those pixels. Pixels that are good for processing usually have a zero
+value in the mask image.
+
+@cindex Binary mask image values
+The integer values in the mask images are usually sums of powers of
+two. Each power of two has a specific meaning and since the sum of two
+different sets of powers of two are never equal, each mask value
+identifies a set of different properties for each masked pixels. For
+some analysis, some masked properties might not be a
+problem. Therefore a pixel that only has that property should be
+included. In such cases, you can use bit flags to keep some of the
+powers of two and remove the rest. The individual Gnuastro programs do
+not consider these issues. Therefore, if some masked pixels should be
+included in the analysis, it is best to use another tool to set the
+appropriate mask pixel values to zero prior to running the analysis
+program. We are working on such a program as part of Gnuastro. If the
+data type (@code{BITPIX}) of the input mask image is not an integer
+type, the programs will print a warning, but continue on with the
+analysis. This usually happens because of a mistake in specifying the
+file or the HDU.
+
+@cindex NaN
+The programs that accept a mask image, all share the options
+below. Any masked pixels will receive a NaN value (or a blank pixel,
+see @ref{Blank pixels}) in the final output of those programs.
+Infact, another way to notify any of the Gnuastro programs to not use
+a certain set of pixels in a dataset is to set those pixels equal to
+appropriate blank pixel value for the type of the image, @ref{Blank
+pixels}.
+
+@table @option
+
+@item -M
+@itemx --mask
+(@option{=STR}) Mask image file name. In case certain image pixels
+should not be considered, you can define a mask image file name with
+this option. Any pixel with a non-zero value in the specified mask
+image will not be considered in the input image. It goes without
+saying that the two images have to have the same size. If this option
+is not given and the @option{--mhdu} option has a different value from
+@option{--hdu}, then the input image name will be used. If a name is
+specified on the command line or in any of the configuration files, it
+will be used. If SubtractSky doesn't get any mask file name, it will
+use all the non-NaN pixels in the image. Therefore, specifying a mask
+file name in any of the configuration files is not mandatory.
+
+Note that if the mask image has blank pixels, then they act like
+pixels with non-zero values and will be masked (see @ref{Blank
+pixels}).
+
+@item -H
+@itemx --mhdu
+(@option{=STR}) The mask image header name or number. Similar to the
+@option{--hdu} option, see @ref{Common options}. Like @option{--mask},
+this option does not have to be included in the configuration file or
+the command-line. However, if it is present on either of them, it will
+be used.
+
+@end table
+
+
+@node Invoking astsubtractsky,  , Mask image, SubtractSky
 @subsection Invoking SubtractSky
 
 SubtractSky will find the sky value on a grid in an image and subtract
@@ -6623,83 +6905,21 @@ to not be used (see @option{--mask} and @option{--mhdu}). The common
 options to all Gnuastro programs can be seen in @ref{Common options}
 and input data formats are explained in @ref{Arguments}.
 
+SubtractSky uses a mesh grid to tile the image. This enables it to
+deal with possible gradients, see @ref{Tiling an image}. The mesh grid
+options are common to all the programs using it, and are listed in
+@ref{Mesh grid options}. In order to ignore some pixels during the
+analysis, you can specify a mask image, see @ref{Mask image} for an
+explanation and the relevant options. For a more accurate result, a
+kernel file name can be specified so the image is first convolved, see
+@ref{Quantifying signal in a mesh}, see @ref{Convolution kernel} for
+the kernel related options. The @option{--kernel} option is not
+mandatory and if not specified anywhere prior to running, the original
+image will be used. Please run SubtractSky with the @option{--help}
+option to list all the recognized options, irrespective of which part
+of the manual they are fully explained in.
+
 @table @option
-
-@item -M
-@itemx --mask
-(@option{=STR}) Mask image file name. In case certain image pixels
-should not be considered, you can define a mask image file name with
-this option. Any pixel with a non-zero value in the specified mask
-image will not be considered in the input image. It goes without
-saying that the two images have to have the same size. If this option
-is not given and the @option{--mhdu} option has a different value from
-@option{--hdu}, then the input image name will be used. If a name is
-specified on the command line or in any of the configuration files, it
-will be used. If SubtractSky doesn't get any mask file name, it will
-use all the non-NaN pixels in the image. Therefore, specifying a mask
-file name in any of the configuration files is not mandatory.
-
-Note that if the mask image has blank pixels, then they act like
-pixels with non-zero values and will be masked (see @ref{Blank
-pixels}).
-
-@item -H
-@itemx --mhdu
-(@option{=STR}) The mask image header name or number. Similar to the
-@option{--hdu} option, see @ref{Common options}. Like @option{--mask},
-this option does not have to be included in the configuration file or
-the command-line. However, if it is present on either of them, it will
-be used.
-
-@item -s
-@itemx --meshsize
-(@option{=INT}) The size of each mesh, see @ref{Tiling an image}. If
-the width of all channels are not an exact multiple of the specified
-size, then the last mesh on each axis will have a different size to
-cover the full channel.
-
-@item -a
-@itemx --nch1
-(@option{=INT}) The number of channels along the first FITS axis
-(horizontal when viewed in SAO ds9). If the length of the image is not
-an exact multiple of this number, then SubtractSky will stop. You can
-use ImageCrop (@ref{ImageCrop}) to trim off or add some pixels (blank
-pixels if added, see @ref{Blank pixels}) to the image if it is not an
-exact multiple.
-
-@item -b
-@itemx --nch2
-(@option{=INT}) The number of channels along the second FITS axis,
-(horizontal when viewed in SAO ds9). Similar to @option{--nch1}.
-
-@item -L
-@itemx --lastmeshfrac
-(@option{=FLT}) Fraction of extra area on the last (rightest on the
-first FITS axis and highest/top on the second) mesh, to define a new
-(smaller) one. See @ref{Tiling an image}.
-
-@item --checkmesh
-An image with suffix @file{_mesh.fits} will be created for you to
-check the mesh grid, see @ref{Tiling an image}. SubtractSky only uses
-one mesh grid, so only one grid extension will be included in the
-produced file.
-
-@item -d
-@itemx --mirrordist
-(@option{=FLT}) The distance beyond the mirror point (in units of the
-error in the mirror point) to check for finding the mode in each
-mesh. See appendix C in Akhlaghi and Ichikawa (2015) for a complete
-explanation of the mode-finding algorithm. The value to this option is
-shown as @mymath{\alpha} in that appendix.
-
-@item -Q
-@itemx --minmodeq
-(@option{=FLT}) The minimum acceptable quantile for the mode of each
-mesh. The median is on the 0.5 quantile of the image and as long as we
-have positive signal (all astronomically relevant observations), the
-mode will be less than the median. The sky value is only found on
-meshes where the median and mode are approximately the same, see
-@ref{Sky value}.
 
 @item -u
 @itemx --sigclipmultip
@@ -6714,33 +6934,6 @@ clipping}.
 change in the standard deviation before and after
 @mymath{\sigma}-clipping is less than the value given to this option,
 @mymath{\sigma}-clipping will stop, see @ref{Sigma clipping}.
-
-@item -n
-@itemx --numnearest
-(@option{=INT}) The number of nearest grid elements with a successful
-sky value to use for interpolating over blank mesh elements (those
-that had a significant contribution of flux), see @ref{Grid
-interpolation and smoothing}.
-
-@item -T
-@itemx --smoothwidth
-(@option{=INT}) The width of the average filter kernel used to smooth
-the interpolated image in units of pixels. See @ref{Grid interpolation
-and smoothing}. If this option is given a value of 1 (one), then no
-smoothing will be done.
-
-@item --fullinterpolation
-Do interpolation irrespective of the channels in the image, see
-@ref{Grid interpolation and smoothing}.
-
-@item --fullsmoothing
-Do smoothing irrespective of the channels in the image, see @ref{Grid
-interpolation and smoothing}.
-
-@item --checkinterpolation
-A two extension FITS image ending with @file{_interp.fits} will be
-created which shows the average value on each mesh before
-interpolation and after interpolation.
 
 @item --checksky
 A two extension FITS image ending with @file{_smooth.fits} will be
@@ -7081,36 +7274,51 @@ called then all programs will operate in verbose mode, see @ref{Common
 options}.}, along with a short summary of the basic data statistics, a
 simple ASCII histogram will also be printed. This can be useful for a
 very quick and general view of the distribution. An example verbose
-output of ImageStatistics can be seen below:
+output of ImageStatistics on one of the @command{$ make check} outputs
+can be seen below:
 
 @example
-$ astimgstat InputImage.fits --histquant=0.05
-ImageStatistics started on AAA BBB  CC DD:EE:FF GGGG
-  - Input read: InputImage.fits (hdu: 0)
-   -- Number of points                             40401
-   -- Minimum                                      -0.010998
-   -- Maximum                                      0.272138
-   -- Sum                                          155.605
-   -- Mean                                         0.00385152
-   -- Standard deviation                           0.0111203
-   -- Median                                       0.00103936
-   -- Mode (quantile, value)                       0.40, 0.000253622
-   -- Mode symmetricity                            0.223073
-   -- ASCII histogram in the range: -0.003554 - 0.024204:
-    |       ***
-    |     ******
-    |    ********
-    |   **********
-    |  ************
-    |  **************
-    |*****************
-    |*******************
-    |**********************
-    |********************************* *
+$ astimgstat ./tests/convolve_spatial_warped_noised.fits        \
+             --histquant=0.05
+ImageStatistics started on AAA BBB CC DD:EE:FF GGGG
+  - Input read: ./tests/convolve_spatial_warped_noised.fits (hdu: 0)
+   -- Number of points                             10000
+   -- Minimum                                      -38.2066
+   -- Maximum                                      1268.72
+   -- Sum                                          154927
+   -- Mean                                         15.4927
+   -- Standard deviation                           60.5407
+   -- Median                                       4.82691
+   -- Mode (quantile, value)                       0.4335, 2.90301
+   -- Mode symmetricity and its cutoff value       0.5909, 17.2507
+   -- ASCII histogram in the range: -13.912957  --  65.058487:
+    |           * *
+    |        ********
+    |        ********* **
+    |      **************
+    |    ******************
+    |   ********************
+    |  ***********************
+    |***************************
+    |******************************
+    |*****************************************
     |************************************************************
     |------------------------------------------------------------
 
-ImageStatistics finished in:  0.009895 (seconds)
+ - Sigma clipping results (Median, Mean, STD, Number):
+   - 4.00 times sigma by convergence (tolerance: 0.2000):
+      1: 4.826907, 15.492665, 60.540707, 10000
+      2: 4.665353, 10.117773, 27.793823, 9881
+      3: 4.433090, 7.458610, 18.510950, 9715
+      4: 4.216213, 6.176818, 15.231371, 9575
+      5: 4.088199, 5.679162, 14.183748, 9502
+   - 4.00 sigma-clipping 5 times:
+      1: 4.826907, 15.492665, 60.540707, 10000
+      2: 4.665353, 10.117773, 27.793823, 9881
+      3: 4.433090, 7.458610, 18.510950, 9715
+      4: 4.216213, 6.176818, 15.231371, 9575
+      5: 4.088199, 5.679162, 14.183748, 9502
+ImageStatistics finished in:  0.006964 (seconds)
 @end example
 
 @table @option
@@ -7326,24 +7534,32 @@ article}@footnote{It is currently under production by the
 Astrophysical Journal Supplement Series. It can also be read in arXiv:
 @url{http://arxiv.org/abs/1505.01664}.} devoted to its
 techniques. Currently the paper does a very thorough job at explaining
-the concepts, methods and even the options of NoiseChisel. However,
-the paper cannot undergo any futher updates, so as the development of
-NoiseChisel evolves, this section will grow.
+the concepts, methods and even the options of NoiseChisel with
+abundant demonstrations for each step. However, the paper cannot
+undergo any futher updates, so as the development of NoiseChisel
+evolves, this section will grow.
 
 @cindex Detection
 Detection is the process of separating signal from noise. In other
 words, after detection is complete, one set data elements (pixels in
 an image) will be distinguished as signal and another set of the data
-elements will be noise. NoiseChisel was the first software to make use
-of a noise-based concept to detection. In this method, other than
-emphasizing on the signal and trying to guess its properties prior to
-detection (for example assuming that it is an ellipse), we put out
-emphasis on the noise in the image and impose only negligible
-requirements on the signal. The name of NoiseChisel is derived from
-the first thing it does after thresholding the image: to erode it. In
-practice (on an image) this is very similar to carve off pixels,
-similar to what a wood chisel or stone chisel does. Please read the
-NoiseChisel paper for a complete explanation.
+elements will be noise. Segmentation is the process of labeling the
+detected pixels into possibly multiple components (objects). For
+example when two galaxies lie sufficiently close to each other to be
+detected as one object.
+
+@cindex Noise-based detection
+NoiseChisel was the first software to make use of a noise-based
+concept to detection and segmentation. In this method, instead of
+emphasizing on the signal and trying to guess the properties of the
+to-be-detected targets prior to detection (for example assuming that
+it is an ellipse), the emphasis is put on the noise in the image and
+it imposes statistically negligible requirements on the signal. The
+name of NoiseChisel is derived from the first thing it does after
+thresholding the image: to erode it. In mathematical morphology,
+erosion on pixels can be pictured as carving off boundary pixels. So
+what NoiseChisel does is similar to what a wood chisel or stone chisel
+does. It is just not a hardware but software.
 
 @menu
 * Objects and clumps::          Definition of objects and clumps.
@@ -7360,7 +7576,7 @@ NoiseChisel gives two output catalogs. One is for the detected
 @table @asis
 
 @item Objects
-All the detected pixels are part of one object. The object label of
+All the detected pixels are part of an object. The object label of
 each detected pixel can be seen in the second extension of the output
 FITS image.
 
@@ -7374,7 +7590,9 @@ fully illustrated definition.
 
 There is an extension to the default output FITS image for each one of
 these two outputs. The pixel labels in these two extensions correspond
-to the ID (first column) in the corresponding catalog.
+to the ID (first column) in the corresponding catalog. The clumps on
+an image can be seen as the third extension of NoiseChisel's output
+FITS file.
 
 @node Invoking astnoisechisel,  , Objects and clumps, NoiseChisel
 @subsection Invoking NoiseChisel
@@ -7394,15 +7612,63 @@ $ astnoisechisel input.fits
 $ astnoisechisel field.fits --mask=badpixels.fits --mhdu=1
 @end example
 
+@cindex Gaussian
 @noindent
 If NoiseChisel is to do processing, an input image should be provided
-with the recognized extensions as input data, see @ref{Arguments}. See
-@ref{Common options} for the list of options that are shared by all
-programs. The default output of NoiseChisel are three files explained
-below, also see @ref{Objects and clumps}. The name and directory of
-the outputs are explained in @ref{Automatic output}. If an output name
-is explictly given, it will be used as the prefix (removing any
-possible extensions) in the following instead of the input file name.
+with the recognized extensions as input data, see @ref{Arguments}.
+
+@menu
+* NoiseChisel options::         List of NoiseChisel options.
+* NoiseChisel output::          Explanation of NoiseChisel's outputs.
+@end menu
+
+
+@node NoiseChisel options, NoiseChisel output, Invoking astnoisechisel, Invoking astnoisechisel
+@subsubsection NoiseChisel options
+
+The options that are shared by Gnuastro programs can be seen in
+@ref{Common options}. NoiseChisel uses a mesh grid to tile the
+image. This enables it to deal with possible gradients, see
+@ref{Tiling an image}. The mesh grid options are common to all the
+programs using it, and are listed in @ref{Mesh grid options}. In order
+to ignore some pixels during the analysis, you can specify a mask
+image, see @ref{Mask image} for an explanation and the relevant
+options. Please run NoiseChisel with the @option{--help} option to
+list all the recognized options, irrespective of which part of the
+manual they are fully explained in, see @ref{Getting help}.
+
+If a value (file name) is given to @option{--kernel} on the command
+line or in the configuration file (see @ref{Configuration files}),
+then that file will be used to convolve the image prior to
+thresholding. Otherwise a default kernel will be used. The default
+kernel is a 2D Gaussian with a FWHM of 2 pixels truncated at 5 times
+the FWHM. See Section 3.1.1 of Akhlaghi and Ichikawa (2015) to learn
+why this particular kernel was chosen as default. See @ref{Convolution
+kernel} for kernel related options.
+
+@table @option
+
+@item -s
+@itemx --smeshsize
+Similar to @option{--meshsize} in @ref{Mesh grid options}, but for the
+smaller mesh grid, which is most dependent on the gradients in the
+image.
+
+@item -l
+@itemx --lmeshsize
+Similar to @option{--meshsize} in @ref{Mesh grid options}, but for the
+larger mesh grid, used for detection and segmentation signal to noise
+ratio analysis.
+
+@end table
+
+
+@node NoiseChisel output,  , NoiseChisel options, Invoking astnoisechisel
+@subsubsection NoiseChisel output
+The default name and directory of the outputs are explained in
+@ref{Automatic output}. If an output name is explictly given, it will
+be used as the prefix (removing any possible file-name extensions) in
+the following instead of the input file name.
 
 @enumerate
 
@@ -7417,9 +7683,11 @@ image. The detected pixels that are not part of any clump are given a
 negative label.
 
 @item
-An objects catalog with a @file{_objects.txt} suffix. This is a
-plain text file with one row for each object. All the columns are
-explained in the top few commented (starting with @code{#}) lines.
+An objects catalog with a @file{_objects.txt} suffix. This is a plain
+text file with one row for each object. All the columns are explained
+in the top few commented (starting with @code{#}) lines. See
+@ref{Objects and clumps} along with the Akhlaghi and Ichikawa (2015)
+paper.
 
 @item
 A clumps catalog with a @file{_clumps.txt} suffix. This is also a
@@ -7427,69 +7695,14 @@ plain text file like the objects catalog.
 
 @end enumerate
 
-@table @option
-
-@cindex NaN
-@item -M
-@itemx --mask
-(@option{=STR}) Mask image file name. In case certain image pixels
-should not be considered, you can define a mask image file name with
-this option. Any pixel with a non-zero value in the specified mask
-image will not be considered in the input image. It goes without
-saying that the two images have to have the same size. If this option
-is not given and the @option{--mhdu} option has a different value from
-@option{--hdu}, then the input image name will be used. If a name is
-specified for @option{--mask} on the command line or in any of the
-configuration files, it will be used. If SubtractSky doesn't get any
-mask file name, it will use all the non-NaN pixels in the
-image. Therefore, specifying a mask file name in any of the
-configuration files is not mandatory.
-
-Note that if the mask image has blank pixels, then they act like
-pixels with non-zero values and will be masked (see @ref{Blank
-pixels}).
-
-@item -H
-@itemx --mhdu
-(@option{=STR}) The mask image header name or number. Similar to the
-@option{--hdu} option, see @ref{Common options}. Like @option{--mask},
-this option does not have to be included in the configuration file or
-the command-line. However, if it is present on either of them, it will
-be used.
-
-@item -k
-@itemx --kernel
-(@option{=STR}) The convolution kernel file name. The @code{BITPIX}
-(data type) value of this file can be any standard type and it does
-not necessarily have to be normalized. After reading the image, it
-will be converted to floating point type and will be normalized
-internally. The kernel is usually very small and so this process does
-not cause any preformance penatly. Any blank pixels in the kernel will
-be converted to zero (0), see @ref{Blank pixels}.
-
-@cindex Gaussian
-If a value is given to the kernel variable in the NoiseChisel
-configuration file (see @ref{Configuration files}), then that value
-(file name) will be used. Otherwise a default kernel will be used. The
-default kernel is a 2D Gaussian with a FWHM of 2 pixels truncated at 5
-times the FWHM. See Section 3.1.1 of Akhlaghi and Ichikawa (2015) to
-learn why this particular kernel was chosen as default. If you want to
-define a different parametric kernel, you can use MakeProfiles (see
-@ref{MakeProfiles}). Alternatively, you can use ConvertType to convert
-a text file with any table into a FITS image to feed into NoiseChisel.
-
-@item -c
-@itemx --khdu
-(@option{=STR}) The convolution kernel HDU. Although the kernel file
-name is optional, before running, NoiseChisel needs to have a value
-for this variable even if the default kernel is to be used. So be sure
-to keep its value in at least one of the configuration files (see
-@ref{Configuration files}).
-
-@end table
-
-
-
+Any one of these outputs can be disabled when calling NoiseChisel
+through the appropriate options. It is also possible to check any of
+the steps in NoiseChisel through the options starting with `check',
+for example @option{--checkdetection} and
+@option{--checkthresh}. These check steps can be very useful in
+understanding your results and how they depend on the different
+parameters. See @ref{NoiseChisel options} for a complete list of all
+NoiseChisel options.
 
 
 

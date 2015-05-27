@@ -31,6 +31,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "timing.h"	        /* Includes time.h and sys/time.h */
 #include "checkset.h"
+#include "statistics.h"
+#include "arraymanip.h"
 #include "configfiles.h"
 #include "fitsarrayvv.h"
 
@@ -103,6 +105,26 @@ readconfig(char *filename, struct convolveparams *p)
 	  strcpy(cp->hdu, value);
 	  cp->hduset=1;
 	}
+      else if(strcmp(name, "mask")==0)
+	{
+	  if(up->masknameset) continue;
+	  errno=0;
+	  up->maskname=malloc(strlen(value)+1);
+	  if(up->maskname==NULL)
+	    error(EXIT_FAILURE, errno, "Space for mask name.");
+	  strcpy(up->maskname, value);
+	  up->masknameset=1;
+	}
+      else if(strcmp(name, "mhdu")==0)
+	{
+	  if(up->mhduset) continue;
+	  errno=0;
+	  up->mhdu=malloc(strlen(value)+1);
+	  if(up->mhdu==NULL)
+	    error(EXIT_FAILURE, errno, "Space for mask HDU.");
+	  strcpy(up->mhdu, value);
+	  up->mhduset=1;
+	}
       else if(strcmp(name, "kernel")==0)
 	{
 	  if(up->kernelnameset) continue;
@@ -138,6 +160,38 @@ readconfig(char *filename, struct convolveparams *p)
 	  cp->outputset=1;
 	}
 
+
+
+
+      /* Mesh grid: */
+      else if(strcmp(name, "meshsize")==0)
+	{
+	  if(up->meshsizeset) continue;
+          sizetlzero(value, &p->mp.meshsize, name, key, SPACK,
+                     filename, lineno);
+	  up->meshsizeset=1;
+	}
+      else if(strcmp(name, "nch1")==0)
+	{
+	  if(up->nch1set) continue;
+          sizetlzero(value, &p->mp.nch1, name, key, SPACK,
+                     filename, lineno);
+	  up->nch1set=1;
+	}
+      else if(strcmp(name, "nch2")==0)
+	{
+	  if(up->nch2set) continue;
+          sizetlzero(value, &p->mp.nch2, name, key, SPACK,
+                     filename, lineno);
+	  up->nch2set=1;
+	}
+      else if(strcmp(name, "lastmeshfrac")==0)
+	{
+	  if(up->lastmeshfracset) continue;
+          floatl0s1(value, &p->mp.lastmeshfrac, name, key, SPACK,
+                    filename, lineno);
+	  up->lastmeshfracset=1;
+	}
 
 
 
@@ -208,6 +262,7 @@ void
 printvalues(FILE *fp, struct convolveparams *p)
 {
   struct uiparams *up=&p->up;
+  struct meshparams *mp=&p->mp;
   struct commonparams *cp=&p->cp;
 
   fprintf(fp, "\n# Input:\n");
@@ -218,10 +273,34 @@ printvalues(FILE *fp, struct convolveparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
     }
+  if(up->masknameset)
+    {
+      if(stringhasspace(up->maskname))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
+    }
+  if(up->mhdu)
+    {
+      if(stringhasspace(up->mhdu))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
+    }
   if(up->kernelnameset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
-  if(up->khduset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
+    {
+      if(stringhasspace(up->kernelname))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
+    }
+  if(up->khdu)
+    {
+      if(stringhasspace(up->khdu))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
+    }
 
 
 
@@ -229,6 +308,16 @@ printvalues(FILE *fp, struct convolveparams *p)
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
 
+
+  fprintf(fp, "\n# Mesh grid:\n");
+  if(up->meshsizeset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "meshsize", mp->meshsize);
+  if(up->nch1set)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch1", mp->nch1);
+  if(up->nch2set)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
+  if(up->lastmeshfracset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
 
 
   fprintf(fp, "\n# Operating modes:\n");
@@ -253,8 +342,8 @@ checkifset(struct convolveparams *p)
 
   int intro=0;
 
-  if(up->spatialset==0 && up->frequencyset==0)
-    REPORT_NOTSET("spatial or frequency");
+
+  /* Input: */
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
   if(up->kernelnameset==0)
@@ -262,7 +351,79 @@ checkifset(struct convolveparams *p)
   if(up->khduset==0)
     REPORT_NOTSET("khdu");
 
+
+  /* Mesh grid: */
+  if(up->meshsizeset==0)
+    REPORT_NOTSET("meshsize");
+  if(up->nch1set==0)
+    REPORT_NOTSET("nch1");
+  if(up->nch2set==0)
+    REPORT_NOTSET("nch2");
+  if(up->lastmeshfracset==0)
+    REPORT_NOTSET("lastmeshfrac");
+
+
+  /* Operating mode: */
+  if(up->spatialset==0 && up->frequencyset==0)
+    REPORT_NOTSET("spatial or frequency");
+
+
   END_OF_NOTSET_REPORT;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************         Prepare the arrays          *************/
+/**************************************************************/
+void
+sanitycheck(struct convolveparams *p)
+{
+  /* Set the maskname and mask hdu accordingly: */
+  CHECKMASKNAMEANDHDU(SPACK);
+
+  /* Check the output file name: */
+  if(p->cp.outputset)
+    {
+      if( dir0file1(p->cp.output, p->cp.dontdelete) == 0 )
+        error(EXIT_FAILURE, 0, "Your output name (%s) is a directory.",
+              p->cp.output);
+    }
+  else
+    {
+      automaticoutput(p->up.inputname, "_convolved.fits",
+                      p->cp.removedirinfo, p->cp.dontdelete,
+                      &p->cp.output);
+      p->cp.outputset=1;
+    }
+  if(p->frequency && p->viewfreqsteps)
+    automaticoutput(p->up.inputname, "_freqsteps.fits",
+                    p->cp.removedirinfo, p->cp.dontdelete,
+                    &p->up.freqstepsname);
+
+  /* Check output names: */
+  if(p->meshname)
+    {
+      p->meshname=NULL;           /* Was not allocated before!  */
+      automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->meshname);
+    }
 }
 
 
@@ -291,114 +452,72 @@ void
 preparearrays(struct convolveparams *p)
 {
   int bitpix;
-  void *array;
-  double sum=0.0f;
-  size_t numnul, i, size;
+  size_t numblank, i, size;
   struct uiparams *up=&p->up;
-  float *f, *fp, tmp, *kernel;
   struct commonparams *cp=&p->cp;
+  float *f, *fp, tmp, *kernel, sum;
 
   /* First read the input image: */
-  numnul=fitsimgtoarray(up->inputname, cp->hdu, &bitpix, &array,
-                        &p->is0, &p->is1);
-  readfitswcs(up->inputname, cp->hdu, &p->nwcs, &p->wcs);
-  if(bitpix==FLOAT_IMG)
-    p->input=array;
-  else
+  filetofloat(up->inputname, up->maskname, cp->hdu, up->mhdu, &p->input,
+              &bitpix, &p->numblank, &p->is0, &p->is1);
+  if(p->frequency && p->numblank)
+    fprintf(stderr, "\n----------------------------------------\n"
+            "######## %s WARNING ########\n"
+            "There are %lu blank (masked) pixels in %s (hdu: %s) and you "
+            "have asked for frequency domain convolution.%s All the "
+            "convolved pixels will become blank. Only spatial domain "
+            "convolution can account for blank (masked) pixels in the "
+            "input data.\n"
+            "----------------------------------------\n\n",
+            SPACK_NAME, p->numblank, up->inputname, cp->hdu, up->maskname ?
+            "" : " Even though you have not provided any mask image, "
+            "these are the blank pixels in the input image, see the `Blank "
+            "pixels' section of the Gnuastro manual for more information.");
+
+  /* Read the kernel. If there is anything particular to Convolve,
+     then don't use the standard kernel reading function in
+     fitsarrayvv.c. Otherwise just use the same one that all programs
+     use. The standard one is faster because it mixes the NaN
+     conversion and also the normalization into one loop.*/
+  if(p->kernelnorm==0 || p->kernelflip==0)
     {
-      changetype(array, bitpix, p->is0*p->is1, numnul, (void **)(&p->input),
-                 FLOAT_IMG);
-      free(array);
-    }
+      /* Read in the kernel array: */
+      filetofloat(up->kernelname, NULL, up->khdu, NULL, &p->kernel,
+                  &bitpix, &numblank, &p->ks0, &p->ks1);
+      size=p->ks0*p->ks1;
+      kernel=p->kernel;
 
-  /* Now read the kernel: */
-  numnul=fitsimgtoarray(up->kernelname, up->khdu, &bitpix, &array,
-                        &p->ks0, &p->ks1);
+      if(p->ks0%2==0 || p->ks1%2==0)
+        error(EXIT_FAILURE, 0, "The kernel image has to have an odd number "
+              "of pixels on both sides (there has to be on pixel in the "
+              "center). %s (hdu: %s) is %lu by %lu.", p->up.kernelname,
+              p->up.khdu, p->ks1, p->ks0);
 
-  /* Convert the kernel to a float image: */
-  size=p->ks0*p->ks1;
-  if(bitpix==FLOAT_IMG)
-    p->kernel=array;
-  else
-    {
-      changetype(array, bitpix, size, numnul, (void **)&p->kernel, FLOAT_IMG);
-      free(array);
-    }
-  kernel=p->kernel;
+      /* Convert all the NaN pixels to zero. */
+      fp=(f=kernel)+size; do if(isnan(*f)) *f=0.0f; while(++f<fp);
 
-  /* Convert Nul values to zero: */
-  if(numnul)
-    { fp=(f=kernel)+size; do *f = isnan(*f) ? 0 : *f; while(++f<fp); }
-
-  /* Normalize the kernel: */
-  if(p->kernelflip)
-    {
-      fp=(f=kernel)+size; do sum+=*f++; while(f<fp);
-      fp=(f=kernel)+size; do *f++/=sum; while(f<fp);
-    }
-
-  /* Flip the kernel: */
-  if(p->spatial && p->kernelflip)
-    {
-      for(i=0;i<size/2;++i)
+      /* Normalize the kernel: */
+      if(p->kernelnorm)
         {
-          tmp=kernel[i];
-          kernel[i]=kernel[size-i-1];
-          kernel[size-i-1]=tmp;
+          sum=floatsum(kernel, size);
+          fmultipconst(kernel, size, 1/sum);
         }
-    }
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/************         Prepare the arrays          *************/
-/**************************************************************/
-void
-sanitycheck(struct convolveparams *p)
-{
-  /* Check if the kernel has an odd number of pixels: */
-  if(p->ks0%2==0 || p->ks1%2==0)
-    error(EXIT_FAILURE, 0, "The kernel used for convolution has to have an "
-          "odd number of pixels on all sides, %s is %lux%lu.",
-          p->up.kernelname, p->ks1, p->ks0);
-
-  /* Check the output file name: */
-  if(p->cp.outputset)
-    {
-      if( dir0file1(p->cp.output, p->cp.dontdelete) == 0 )
-        error(EXIT_FAILURE, 0, "Your output name (%s) is a directory.",
-              p->cp.output);
+      /* Flip the kernel: */
+      if(p->spatial && p->kernelflip)
+        for(i=0;i<size/2;++i)
+          {
+            tmp=kernel[i];
+            kernel[i]=kernel[size-i-1];
+            kernel[size-i-1]=tmp;
+          }
     }
   else
-    {
-      automaticoutput(p->up.inputname, "_convolved.fits",
-                      p->cp.removedirinfo, p->cp.dontdelete,
-                      &p->cp.output);
-      p->cp.outputset=1;
-    }
-  if(p->frequency && p->viewfreqsteps)
-    automaticoutput(p->up.inputname, "_freqsteps.fits",
-                    p->cp.removedirinfo, p->cp.dontdelete,
-                    &p->up.freqstepsname);
+    prepfloatkernel(up->kernelname, up->khdu, &p->kernel,
+                    &p->ks0, &p->ks1);
 }
+
+
 
 
 
@@ -432,10 +551,9 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
 
-  /* Convert options: */
+  /* Set non-zero options: */
   p->kernelflip     = 1;
   p->kernelnorm     = 1;
-  p->edgecorrection = 1;
 
   /* Read the arguments. */
   errno=0;
@@ -452,22 +570,22 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   if(cp->printparams)
     REPORT_PARAMETERS_SET;
 
-  /* Prepare the necessary arrays: */
-  preparearrays(p);
-
   /* Do a sanity check, then remove the possibly existing log file
      created by txttoarray. */
   sanitycheck(p);
+
+  /* Prepare the necessary arrays: */
+  preparearrays(p);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("Convolving %s (hdu: %s)\n"
-             " with the kernel %s (hdu: %s).\n"
-             " using %lu CPU threads in the %s domain.\n",
-             p->up.inputname, cp->hdu, p->up.kernelname, p->up.khdu,
-             cp->numthreads, p->spatial?"spatial":"frequency");
+      printf("  - Using %lu CPU threads.\n", p->cp.numthreads);
+      printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
+      if(p->up.maskname)
+        printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
+      printf("  - Kernel: %s (hdu: %s)\n", p->up.kernelname, p->up.khdu);
     }
 }
 
@@ -500,8 +618,14 @@ freeandreport(struct convolveparams *p, struct timeval *t1)
   free(p->kernel);
   free(p->cp.hdu);
   free(p->up.khdu);
+  free(p->meshname);
   free(p->cp.output);
   wcsvfree(&p->nwcs, &p->wcs);
+
+  /* Free the mask image name. Note that p->up.inputname was not
+     allocated, but given to the program by the operating system. */
+  if(p->up.maskname && p->up.maskname!=p->up.inputname)
+    free(p->up.maskname);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

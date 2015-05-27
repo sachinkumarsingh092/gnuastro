@@ -35,10 +35,10 @@ bin_PROGRAMS = astconvolve
 astconvolve_SOURCES = main.c main.h args.h ui.c ui.h convolve.c	\
 convolve.h cite.h
 
-astconvolve_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lfitsarrayvv	\
--lcheckset -ltiming -lconfigfiles -lastrthreads -lspatialconvolve -lbox
-
-
+astconvolve_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lcheckset	\
+-lfitsarrayvv -ltiming -lconfigfiles -lmesh -lastrthreads		\
+-lspatialconvolve -lbox -larraymanip -lstatistics -lforqsort		\
+-llinkedlist
 
 
 

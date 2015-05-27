@@ -42,9 +42,12 @@ struct uiparams
   char         *inputname;  /* Name of input file.                 */
   char          *maskname;  /* Name of mask image file.            */
   char              *mhdu;  /* Name of mask image header name.     */
+  char        *kernelname;
+  char              *khdu;
   int         masknameset;
-  int   masknameallocated;
   int             mhduset;
+  int       kernelnameset;
+  int             khduset;
   int       numnearestset;
   int      smoothwidthset;
   int       mirrordistset;
@@ -78,18 +81,18 @@ struct subtractskyparams
   int           checkstd;  /* ==1: include the sky STD in checks.        */
   char         *meshname;  /* Name of --checkmesh output.                */
   char       *interpname;  /* Name of --checkinterpolation output.       */
+  char         *convname;  /* Name of --checkconvolution output.         */
   char          *skyname;  /* Name of sky and its STD image.             */
 
   /* Statistics: */
-  float       mirrordist; /* For finding the mode. Distance after mirror.*/
-  float         minmodeq; /* Minimum acceptable quantile for the mode.   */
   float    sigclipmultip; /* Multiple of standard deviation, sigma clip. */
   float sigcliptolerance; /* Tolerance in sigma clip.                    */
 
   /* Operating mode: */
 
   /* Internal: */
-  time_t         rawtime;  /* Starting time of the program.       */
+  float            *conv;  /* Convolved input image.                     */
+  time_t         rawtime;  /* Starting time of the program.              */
 };
 
 #endif

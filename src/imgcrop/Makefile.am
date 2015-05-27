@@ -18,6 +18,7 @@
 ## You should have received a copy of the GNU General Public License
 ## along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
+
 # Flags:
 AM_CFLAGS = -Wall -O3
 AM_LDFLAGS = -lcfitsio -lwcs -lm -L$(top_builddir)/lib
@@ -37,8 +38,6 @@ imgcrop.h wcsmode.c wcsmode.h crop.c crop.h cite.h
 astimgcrop_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
 -lfitsarrayvv -ltxtarrayvv -lcheckset -llinkedlist -ltiming		\
 -lastrthreads -lbox
-
-
 
 
 

@@ -113,8 +113,7 @@ checkmeshid(struct meshparams *mp, long **out)
    input image. Note that the check arrays are only the size of the
    number of meshs, not the actual input image size. */
 void
-checkgarray(struct meshparams *mp, int operationid,
-             float **out1, float **out2)
+checkgarray(struct meshparams *mp, float **out1, float **out2)
 {
   size_t gs0=mp->gs0, gs1=mp->gs1;
   float *f, *fp, *ff, garray1, garray2;
@@ -125,15 +124,13 @@ checkgarray(struct meshparams *mp, int operationid,
   /* Allocate the array to keep the mesh indexs. Calloc is used so we
      can add all the indexes to the existing value to make sure that
      there is no overlap. */
-  errno=0;
-  *out1=malloc(mp->s0*mp->s1*sizeof **out1);
+  errno=0; *out1=malloc(mp->s0*mp->s1*sizeof **out1);
   if(*out1==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for out1 in checkgarray "
           "(mesh.c)", mp->s0*mp->s1*sizeof **out1);
-  if(mp->garray2)
+  if(mp->cgarray2)
     {
-      errno=0;
-      *out2=malloc(mp->s0*mp->s1*sizeof **out2);
+      errno=0; *out2=malloc(mp->s0*mp->s1*sizeof **out2);
       if(*out2==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for out2 in checkgarray "
               "(mesh.c)", mp->s0*mp->s1*sizeof **out2);
@@ -145,9 +142,10 @@ checkgarray(struct meshparams *mp, int operationid,
       /* Find the proper index for this mesh. garrays can either be
          indexed by each channel (so the indexs in each channel are
          contiguous) or by the image (so the mesh indexs are
-         contiguous over the image). If mp->fullgarray==1, then it is
-         the latter. By default it is the former. */
-      if(mp->fullgarray)
+         contiguous over the image). If mp->fgarray1==mp->garray1,
+         then it is the latter. The last operation that worked on
+         garrays, set garray1 either to cgarray1 or fgarray1. */
+      if(mp->garray1==mp->fgarray1)
         {
           /* In this case, `i' is the index of a mesh in the full
              image, not the channel separated image. So we have to
@@ -156,7 +154,7 @@ checkgarray(struct meshparams *mp, int operationid,
           f1=i%fs1;
           inchid = (f0%gs0)*gs1      + f1%gs1;
           chid   = (f0/gs0)*mp->nch1 + f1/gs1;
-          meshid = chid*mp->nmeshc + inchid;
+          meshid = chid * mp->nmeshc + inchid;
         }
       else meshid=i;
 
@@ -166,16 +164,16 @@ checkgarray(struct meshparams *mp, int operationid,
       s1=ts1[types[meshid]];
       start=mp->start[meshid];
       garray1 = mp->garray1[i];
-      if(mp->garray2)
+      if(mp->cgarray2)
         garray2 = mp->garray2[i];
       do
         {
           fp= ( f = *out1 + start + row * is1 ) + s1;
-          if(mp->garray2) ff= *out2 + start + row * is1;
+          if(mp->cgarray2) ff= *out2 + start + row * is1;
           do
             {
               *f++ = garray1;
-              if(mp->garray2) *ff++ = garray2;
+              if(mp->cgarray2) *ff++ = garray2;
             }
           while(f<fp);
           ++row;
@@ -192,28 +190,48 @@ checkgarray(struct meshparams *mp, int operationid,
    channel contiguously. So in practice, each channel is like a small
    independent image. This will cause problems when we want to work on
    the meshs irrespective of which channel they belong to. This
-   function allocates and fills in the fgarray1 and fgarray2 arrays.*/
+   function allocates and fills in the fgarray1 and fgarray2 arrays.
+
+   The explanation above is for the case when reverse==0. If it is set
+   equal to 1 (or any non-zero number), then
+*/
 void
-fullgarray(struct meshparams *mp)
+fullgarray(struct meshparams *mp, int reverse)
 {
   size_t nch1=mp->nch1;
   size_t ind, gs1=mp->gs1, gs0=mp->gs0;
   float *fgarray1=NULL, *fgarray2=NULL;
-  float *garray1=mp->garray1, *garray2=mp->garray2;
+  float *cgarray1=mp->cgarray1, *cgarray2=mp->cgarray2;
   size_t g0, g1, f0, f1, fmeshind, chid, is1=mp->nch1*mp->gs1;
 
-  /* First allocate the fgarrays. */
-  errno=0; fgarray1=malloc(mp->nmeshi*sizeof *fgarray1);
-  if(fgarray1==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for fgarray1",
-          mp->nmeshi*sizeof *fgarray1);
-  if(garray2)
+  /* First allocate the fgarrays if they were not already full. */
+  if(mp->fgarray1==NULL)
     {
-      errno=0;
-      fgarray2=malloc(mp->nmeshi*sizeof *fgarray2);
-      if(fgarray2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for fgarray2",
-              mp->nmeshi*sizeof *fgarray2);
+      /* A simple sanity check */
+      if(reverse)
+        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+              "fix this problem. For some reason, fullgarray has been called "
+              "with the `reverse' flag set to true while fgarray is not "
+              "allocated! This should not happen.", PACKAGE_BUGREPORT);
+
+      /* Allocate the fgarrays */
+      errno=0; fgarray1=mp->fgarray1=malloc(mp->nmeshi*sizeof *fgarray1);
+      if(fgarray1==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for fgarray1",
+              mp->nmeshi*sizeof *fgarray1);
+      if(cgarray2)
+        {
+          errno=0;
+          fgarray2=mp->fgarray2=malloc(mp->nmeshi*sizeof *fgarray2);
+          if(fgarray2==NULL)
+            error(EXIT_FAILURE, errno, "%lu bytes for fgarray2",
+                  mp->nmeshi*sizeof *fgarray2);
+        }
+    }
+  else
+    {
+      fgarray1=mp->fgarray1;
+      fgarray2=mp->fgarray1;
     }
 
   /* Fill the fgarrays with the proper values: */
@@ -230,9 +248,17 @@ fullgarray(struct meshparams *mp)
         {
           g0=ind/gs1;    /* Position of this mesh in this channel. */
           g1=ind%gs1;
-          fgarray1[(g0+f0)*is1+g1+f1]=garray1[ind+fmeshind];
-          if(garray2)
-            fgarray2[(g0+f0)*is1+g1+f1]=garray2[ind+fmeshind];
+          if(reverse)
+            cgarray1[ind+fmeshind]=fgarray1[(g0+f0)*is1+g1+f1];
+          else
+            fgarray1[(g0+f0)*is1+g1+f1]=cgarray1[ind+fmeshind];
+          if(cgarray2)
+            {
+              if(reverse)
+                cgarray2[ind+fmeshind]=fgarray2[(g0+f0)*is1+g1+f1];
+              else
+                fgarray2[(g0+f0)*is1+g1+f1]=cgarray2[ind+fmeshind];
+            }
         }
     }
 
@@ -240,22 +266,11 @@ fullgarray(struct meshparams *mp)
   arraytofitsimg("nochannels.fits", "fgarray1", FLOAT_IMG, fgarray1,
                  mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
                  "mesh");
-  if(garray2)
+  if(cgarray2)
     arraytofitsimg("nochannels.fits", "fgarray2", FLOAT_IMG, fgarray2,
                    mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
                    "mesh");
   */
-
-  /* garray1 and garray2 are no longer needed. So free up their space
-     and replace them with fgarray1 and fgarray2. */
-  mp->fullgarray=1;
-  free(mp->garray1);
-  mp->garray1=fgarray1;
-  if(mp->garray2)
-    {
-      free(mp->garray2);
-      mp->garray2=fgarray2;
-    }
 }
 
 
@@ -514,7 +529,7 @@ makemesh(struct meshparams *mp)
 
   /* Allocate the arrays to keep all the mesh starting points and
      types. Irrespective of which channel they lie in. */
-  mp->garray1=mp->garray2=NULL;
+  mp->cgarray1=mp->cgarray2=mp->fgarray1=mp->fgarray2=NULL;
   errno=0; mp->start=malloc(mp->nmeshi*sizeof *mp->start);
   if(mp->start==NULL) error(EXIT_FAILURE, errno, "Mesh starting points");
   errno=0; mp->types=malloc(mp->nmeshi*sizeof *mp->types);
@@ -538,8 +553,10 @@ freemesh(struct meshparams *mp)
   free(mp->start);
   free(mp->types);
   free(mp->chindex);
-  free(mp->garray1);
-  free(mp->garray2);
+  free(mp->cgarray1);
+  free(mp->cgarray2);
+  free(mp->fgarray1);
+  free(mp->fgarray2);
   free(mp->imgindex);
 }
 
@@ -609,14 +626,16 @@ operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
           numthreads*sizeof *mtp);
 
   /* Allocate the array to keep the values for each  */
-  mp->fullgarray=0;
-  errno=0; mp->garray1=malloc(mp->nmeshi*sizeof *mp->garray1);
-  if(mp->garray1==NULL) error(EXIT_FAILURE, errno, "mp->garray1");
+  errno=0; mp->cgarray1=malloc(mp->nmeshi*sizeof *mp->cgarray1);
+  if(mp->cgarray1==NULL) error(EXIT_FAILURE, errno, "mp->cgarray1");
   if(makegarray2)
     {
-      errno=0; mp->garray2=malloc(mp->nmeshi*sizeof *mp->garray2);
-      if(mp->garray2==NULL) error(EXIT_FAILURE, errno, "mp->garray2");
+      errno=0; mp->cgarray2=malloc(mp->nmeshi*sizeof *mp->cgarray2);
+      if(mp->cgarray2==NULL) error(EXIT_FAILURE, errno, "mp->cgarray2");
     }
+  else mp->cgarray2=NULL;
+  mp->garray1=mp->cgarray1;
+  mp->garray2=mp->cgarray2;
 
   /* `oneforall' is an array with the sides equal to the maximum side
      of the meshes in the image. The purpose is to enable manipulating
@@ -861,10 +880,10 @@ meshinterponthread(void *inparams)
 void
 preparemeshinterparrays(struct meshparams *mp)
 {
+  float *garray1, *garray2;
   size_t numthreads=mp->numthreads;
   size_t numnan=0, bs0=mp->gs0, bs1=mp->gs1;
   float *f, *ff, *fff=NULL, *ffff=NULL, *fp;
-  float *garray1=mp->garray1, *garray2=mp->garray2;
 
 
   /* If full-interpolation is to be done (ignoring channels) we will
@@ -874,12 +893,20 @@ preparemeshinterparrays(struct meshparams *mp)
      they would in the image (channels are ignored).*/
   if(mp->fullinterpolation)
     {
-      fullgarray(mp);
-      garray1=mp->garray1;      /* garray1 and garray2 were freed inside */
-      garray2=mp->garray2;      /* the fullgarray function.              */
+      if(mp->fgarray1==NULL)
+        fullgarray(mp, 0);
       bs0=mp->nch2*mp->gs0;
       bs1=mp->nch1*mp->gs1;
+      mp->garray1=mp->fgarray1;
+      mp->garray2=mp->fgarray2;
     }
+  else
+    {
+      mp->garray1=mp->cgarray1;
+      mp->garray2=mp->cgarray2;
+    }
+  garray1=mp->garray1;
+  garray2=mp->garray2;
 
 
   /* Allocate the output arrays to keep the final values. Note that we
@@ -1026,11 +1053,13 @@ meshinterpolate(struct meshparams *mp)
 
   /* Replace garray1 and garray2 with outgarray1 and outgarray2 */
   free(mp->garray1);
-  mp->garray1=mp->outgarray1;
-  if(mp->garray2)
+  if(mp->fullinterpolation) mp->garray1=mp->fgarray1=mp->outgarray1;
+  else                      mp->garray1=mp->cgarray1=mp->outgarray1;
+  if(mp->cgarray2)
     {
       free(mp->garray2);
-      mp->garray2=mp->outgarray2;
+      if(mp->fullinterpolation) mp->garray2=mp->fgarray2=mp->outgarray2;
+      else                      mp->garray2=mp->cgarray2=mp->outgarray2;
     }
   mp->outgarray1=mp->outgarray2=NULL;
 
@@ -1083,7 +1112,7 @@ meshsmooth(struct meshparams *mp)
   size_t numthreads=mp->numthreads, gs0=mp->gs0, gs1=mp->gs1;
   size_t chid, nmeshc=mp->nmeshc, smoothwidth=mp->smoothwidth;
 
-  /* Make the kernel and set all its elements to 1. */
+  /* Make the smoothing kernel and set all its elements to 1. */
   errno=0;
   kernel=malloc(smoothwidth*smoothwidth*sizeof *kernel);
   if(kernel==NULL)
@@ -1092,43 +1121,50 @@ meshsmooth(struct meshparams *mp)
   fp=(f=kernel)+smoothwidth*smoothwidth; do *f++=1; while(f<fp);
 
 
-  /* If the full image is to be used and interpolation was done
-     independently on each mesh then correct garray1 and garray2. If
-     interpolation was also done over the whole image, then it should
-     not be done. */
-  if(mp->fullsmooth && mp->fullinterpolation==0)
-    fullgarray(mp);
-
-
-  /* Smooth garray: */
-  if(mp->fullgarray)
+  /* Smooth the garrays. */
+  if(mp->fullsmooth)
     {
-      spatialconvolve(mp->garray1, gs0*mp->nch2, gs1*mp->nch1, kernel,
+      if(mp->fgarray1==NULL || mp->fgarray1!=mp->garray1)
+        fullgarray(mp, 0);
+
+      spatialconvolve(mp->fgarray1, gs0*mp->nch2, gs1*mp->nch1, kernel,
                       smoothwidth, smoothwidth, numthreads, 1, &sgarray1);
-      free(mp->garray1);
-      mp->garray1=sgarray1;
-      if(mp->garray2)
+      free(mp->fgarray1);
+      mp->garray1=mp->fgarray1=sgarray1;
+      if(mp->cgarray2)
         {
-          spatialconvolve(mp->garray2, gs0*mp->nch2, gs1*mp->nch1, kernel,
+          spatialconvolve(mp->fgarray2, gs0*mp->nch2, gs1*mp->nch1, kernel,
                           smoothwidth, smoothwidth, mp->numthreads, 1,
                           &sgarray2);
-          free(mp->garray2);
-          mp->garray2=sgarray2;
+          free(mp->fgarray2);
+          mp->garray2=mp->fgarray2=sgarray2;
         }
     }
   else
-    for(chid=0;chid<mp->nch;++chid)
-      {
-        charray=&mp->garray1[chid*nmeshc];
+    for(chid=0;chid<mp->nch;++chid) /* Note that in this mode, we do not */
+      {                             /* Allocate anything :-).            */
+
+        /* If the last operation was done on the full image, then
+           mp->garray1==mp->fgarray1. Therefore, the mesh boxes in
+           each channel will not be congituous. So we have to update
+           cgarray and set mp->garray1=mp->cgarray1. */
+        if(mp->garray1==mp->fgarray1)
+          fullgarray(mp, 1);
+        mp->garray1=mp->cgarray1;
+        mp->garray2=mp->cgarray2;
+
+        charray=&mp->cgarray1[chid*nmeshc];
         spatialconvolve(charray, gs0, gs1, kernel, smoothwidth, smoothwidth,
                         numthreads, 1, &tmp);
         o=tmp; fp=(f=charray)+gs0*gs1; do *f=*o++; while(++f<fp);
-        if(mp->garray2)
+        free(tmp);
+        if(mp->cgarray2)
           {
-            charray=&mp->garray2[chid*nmeshc];
+            charray=&mp->cgarray2[chid*nmeshc];
             spatialconvolve(charray, gs0, gs1, kernel, smoothwidth,
                             smoothwidth, numthreads, 1, &tmp);
             o=tmp; fp=(f=charray)+gs0*gs1; do *f=*o++; while(++f<fp);
+            free(tmp);
           }
       }
 

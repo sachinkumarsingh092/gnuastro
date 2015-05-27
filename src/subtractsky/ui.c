@@ -33,6 +33,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"	/* Includes time.h and sys/time.h   */
 #include "checkset.h"
 #include "txtarrayvv.h"
+#include "statistics.h"
+#include "arraymanip.h"
 #include "commonargs.h"
 #include "configfiles.h"
 #include "fitsarrayvv.h"
@@ -115,7 +117,6 @@ readconfig(char *filename, struct subtractskyparams *p)
 	  if(up->maskname==NULL)
 	    error(EXIT_FAILURE, errno, "Space for mask name.");
 	  strcpy(up->maskname, value);
-          up->masknameallocated=1;
 	  up->masknameset=1;
 	}
       else if(strcmp(name, "mhdu")==0)
@@ -128,19 +129,25 @@ readconfig(char *filename, struct subtractskyparams *p)
 	  strcpy(up->mhdu, value);
 	  up->mhduset=1;
 	}
-      else if(strcmp(name, "numnearest")==0)
+      else if(strcmp(name, "kernel")==0)
 	{
-	  if(up->numnearestset) continue;
-          sizetlzero(value, &p->mp.numnearest, name, key, SPACK,
-                     filename, lineno);
-	  up->numnearestset=1;
+	  if(up->kernelnameset) continue;
+	  errno=0;
+	  up->kernelname=malloc(strlen(value)+1);
+	  if(up->kernelname==NULL)
+	    error(EXIT_FAILURE, errno, "Space for kernel name.");
+	  strcpy(up->kernelname, value);
+	  up->kernelnameset=1;
 	}
-      else if(strcmp(name, "smoothwidth")==0)
+      else if(strcmp(name, "khdu")==0)
 	{
-	  if(up->smoothwidthset) continue;
-          sizetpodd(value, &p->mp.smoothwidth, name, key, SPACK,
-                    filename, lineno);
-	  up->smoothwidthset=1;
+	  if(up->khduset) continue;
+	  errno=0;
+	  up->khdu=malloc(strlen(value)+1);
+	  if(up->khdu==NULL)
+	    error(EXIT_FAILURE, errno, "Space for kernel HDU.");
+	  strcpy(up->khdu, value);
+	  up->khduset=1;
 	}
 
 
@@ -187,23 +194,37 @@ readconfig(char *filename, struct subtractskyparams *p)
                     filename, lineno);
 	  up->lastmeshfracset=1;
 	}
-
-
-      /* Statistics: */
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mirrordist, name, key, SPACK,
+          floatl0(value, &p->mp.mirrordist, name, key, SPACK,
                   filename, lineno);
 	  up->mirrordistset=1;
 	}
       else if(strcmp(name, "minmodeq")==0)
 	{
 	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->minmodeq, name, key, SPACK,
+          floatl0s1(value, &p->mp.minmodeq, name, key, SPACK,
                   filename, lineno);
 	  up->minmodeqset=1;
 	}
+      else if(strcmp(name, "numnearest")==0)
+	{
+	  if(up->numnearestset) continue;
+          sizetlzero(value, &p->mp.numnearest, name, key, SPACK,
+                     filename, lineno);
+	  up->numnearestset=1;
+	}
+      else if(strcmp(name, "smoothwidth")==0)
+	{
+	  if(up->smoothwidthset) continue;
+          sizetpodd(value, &p->mp.smoothwidth, name, key, SPACK,
+                    filename, lineno);
+	  up->smoothwidthset=1;
+	}
+
+
+      /* Statistics: */
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
@@ -274,6 +295,20 @@ printvalues(FILE *fp, struct subtractskyparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
+  if(up->kernelnameset)
+    {
+      if(stringhasspace(up->kernelname))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
+    }
+  if(up->khdu)
+    {
+      if(stringhasspace(up->khdu))
+	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
+      else
+	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
+    }
 
 
   fprintf(fp, "\n# Output:\n");
@@ -290,6 +325,10 @@ printvalues(FILE *fp, struct subtractskyparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
+  if(up->mirrordistset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mp.mirrordist);
+  if(up->minmodeqset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->mp.minmodeq);
   if(up->numnearestset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->mp.numnearest);
   if(up->smoothwidthset)
@@ -297,10 +336,6 @@ printvalues(FILE *fp, struct subtractskyparams *p)
 
 
   fprintf(fp, "\n# Statistics:\n");
-  if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mirrordist);
-  if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->minmodeq);
   if(up->sigclipmultipset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
   if(up->sigcliptoleranceset)
@@ -324,10 +359,8 @@ checkifset(struct subtractskyparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
-  if(up->numnearestset==0)
-    REPORT_NOTSET("numnearest");
-  if(up->smoothwidthset==0)
-    REPORT_NOTSET("smoothwidth");
+  if(up->khduset==0)
+    REPORT_NOTSET("khdu");
 
   /* Mesh grid: */
   if(up->meshsizeset==0)
@@ -338,12 +371,16 @@ checkifset(struct subtractskyparams *p)
     REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
     REPORT_NOTSET("lastmeshfrac");
-
-  /* Statistics: */
   if(up->mirrordistset==0)
     REPORT_NOTSET("mirrordist");
   if(up->minmodeqset==0)
     REPORT_NOTSET("minmodeq");
+  if(up->numnearestset==0)
+    REPORT_NOTSET("numnearest");
+  if(up->smoothwidthset==0)
+    REPORT_NOTSET("smoothwidth");
+
+  /* Statistics: */
   if(up->sigclipmultipset==0)
     REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
@@ -402,6 +439,12 @@ sanitycheck(struct subtractskyparams *p)
       automaticoutput(p->up.inputname, "_interp.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->interpname);
     }
+  if(p->convname)
+    {
+      p->convname=NULL;         /* Was not allocated before!  */
+      automaticoutput(p->up.inputname, "_conv.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->convname);
+    }
   if(p->skyname)
     {
       p->skyname=NULL;            /* Was not allocated before!  */
@@ -447,12 +490,19 @@ preparearrays(struct subtractskyparams *p)
 {
   struct meshparams *mp=&p->mp;
 
+  /* Read the input image. */
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
               (float **)&p->mp.img, &p->bitpix, &p->numblank, &mp->s0,
               &mp->s1);
-
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 
+  /* Read the kernel: */
+  if(p->up.kernelnameset)
+    prepfloatkernel(p->up.kernelname, p->up.khdu, &mp->kernel,
+                    &mp->ks0, &mp->ks1);
+
+  /* Check if the input sizes and channel sizes are exact
+     multiples. */
   if( mp->s0%mp->nch2 || mp->s1%mp->nch1 )
     error(EXIT_FAILURE, 0, "The input image size (%lu x %lu) is not an "
           "exact multiple of the number of the given channels (%lu, %lu) "
@@ -517,9 +567,12 @@ setparams(int argc, char *argv[], struct subtractskyparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Input read: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
+      printf("  - Using %lu CPU threads.\n", p->cp.numthreads);
+      printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)
-        printf("  - Mask read: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
+        printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
+      if(p->up.kernelnameset)
+        printf("  - Kernel: %s (hdu: %s)\n", p->up.kernelname, p->up.khdu);
     }
 }
 
@@ -551,13 +604,19 @@ freeandreport(struct subtractskyparams *p, struct timeval *t1)
   /* Free the allocated arrays: */
   free(p->mp.img);
   free(p->cp.hdu);
+  free(p->up.khdu);
   free(p->up.mhdu);
   free(p->cp.output);
 
   /* Free all the allocated names: */
   if(p->meshname) free(p->meshname);
   if(p->interpname) free(p->interpname);
-  if(p->up.masknameallocated) free(p->up.maskname);
+  if(p->up.kernelnameset) free(p->up.kernelname);
+
+  /* Free the mask image name. Note that p->up.inputname was not
+     allocated, but given to the program by the operating system. */
+  if(p->up.maskname && p->up.maskname!=p->up.inputname)
+    free(p->up.maskname);
 
   /* Free the WCS structure: */
   if(p->wcs)

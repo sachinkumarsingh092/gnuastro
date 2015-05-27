@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   e f g i j m p v w x y z
-   A B C E F G I J O R U W X Y Z
+   c e f g i j m p v w x y z
+   A B C E F G I J O R W X Y Z
 
-   Number keys free: >=505
+   Number keys free: >=506
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -113,7 +113,7 @@ static struct argp_option options[] =
     },
     {
       "khdu",
-      'c',
+      'U',
       "STR",
       0,
       "Kernel image header name.",
@@ -176,6 +176,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "mirrordist",
+      'd',
+      "FLT",
+      0,
+      "Distance beyond mirror point. Multiple of std.",
+      3
+    },
+    {
+      "minmodeq",
+      'Q',
+      "FLT",
+      0,
+      "Minimum acceptable quantile for the mode.",
+      3
+    },
+    {
       "numnearest",
       'n',
       "INT",
@@ -232,22 +248,6 @@ static struct argp_option options[] =
       4
     },
     {
-      "mirrordist",
-      'd',
-      "FLT",
-      0,
-      "Distance beyond mirror point. Multiple of std.",
-      4
-    },
-    {
-      "minmodeq",
-      'Q',
-      "FLT",
-      0,
-      "Minimum acceptable quantile for the mode.",
-      4
-    },
-    {
       "qthresh",
       't',
       "FLT",
@@ -277,6 +277,14 @@ static struct argp_option options[] =
       0,
       0,
       "Initial detection steps in file `_det.fits'.",
+      4
+    },
+    {
+      "checkthresh",
+      505,
+      0,
+      0,
+      "Threshold value on each mesh `_thresh.fits'.",
       4
     },
 
@@ -352,7 +360,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       strcpy(p->up.kernelname, arg);
       p->up.kernelnameset=1;
       break;
-    case 'c':
+    case 'U':
       errno=0;                  /* We want to free it in the end. */
       p->up.khdu=malloc(strlen(arg)+1);
       if(p->up.khdu==NULL)
@@ -386,6 +394,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 NULL, 0);
       p->up.lastmeshfracset=1;
       break;
+    case 'd':
+      floatl0(arg, &p->smp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      p->up.mirrordistset=1;
+      break;
+    case 'Q':
+      floatl0s1(arg, &p->smp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      p->up.minmodeqset=1;
+      break;
     case 'n':
       sizetlzero(arg, &p->smp.numnearest, "numnearest", key, SPACK, NULL, 0);
       p->up.numnearestset=1;
@@ -409,14 +425,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Detection */
-    case 'd':
-      floatl0(arg, &p->mirrordist, "mirrordist", key, SPACK, NULL, 0);
-      p->up.mirrordistset=1;
-      break;
-    case 'Q':
-      floatl0s1(arg, &p->minmodeq, "minmodeq", key, SPACK, NULL, 0);
-      p->up.minmodeqset=1;
-      break;
     case 't':
       floatl0s1(arg, &p->qthresh, "qthresh", key, SPACK, NULL, 0);
       p->up.qthreshset=1;
@@ -433,6 +441,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 503:
       p->detectionname="a";
+      break;
+    case 505:
+      p->threshname="a";
       break;
 
 

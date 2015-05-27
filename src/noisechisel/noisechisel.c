@@ -28,11 +28,24 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include "timing.h"
-#include "spatialconvolve.h"
 
 #include "main.h"
+
+#include "thresh.h"
 #include "noisechisel.h"
 
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/******************         NoiseChisel        ***********************/
+/*********************************************************************/
 void
 noisechisel(struct noisechiselparams *p)
 {
@@ -64,6 +77,7 @@ noisechisel(struct noisechiselparams *p)
 
 
   /* Convolve the image: */
+  gettimeofday(&t1, NULL);
   spatialconvolveonmesh(smp, &p->conv);
   if(p->detectionname)
     {
@@ -76,11 +90,16 @@ noisechisel(struct noisechiselparams *p)
 
 
   /* Find the threshold and apply it: */
-  smp->img=p->conv;
-  /*fillmesh(smp, MODEEQMED_QUANT, p->qthresh, 0);*/
-
+  gettimeofday(&t1, NULL);
+  findapplythreshold(p);
+  if(p->detectionname)
+    arraytofitsimg(p->detectionname, "Thresholded", BYTE_IMG, p->byt,
+                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  if(p->cp.verb)
+    reporttiming(&t1, "Quantile threshold found and applied.", 1);
 
   /* Clean up: */
+  free(p->byt);
   free(p->conv);
   freemesh(smp);
   freemesh(lmp);

@@ -70,10 +70,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j k l m p r v w x y z
-   A B C E F G I J O R U W X Y Z
+   c e f g i j l m p r v w x y z
+   A B C E F G I J O R W X Y Z
 
-   Number keys free: 502 and >=506
+   Number keys free: >=508
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -101,6 +101,22 @@ static struct argp_option options[] =
       "Mask image header name.",
       1
     },
+    {
+      "kernel",
+      'k',
+      "STR",
+      0,
+      "Kernel image file name for convolution.",
+      1
+    },
+    {
+      "khdu",
+      'U',
+      "STR",
+      0,
+      "Kernel image header name for convolution.",
+      1
+    },
 
 
     {
@@ -108,7 +124,22 @@ static struct argp_option options[] =
       "Output:",
       2
     },
-
+    {
+      "checksky",
+      502,
+      0,
+      0,
+      "Store final sky and its STD in `_sky.fits' file.",
+      2
+    },
+    {
+      "checkskystd",
+      505,
+      0,
+      0,
+      "Include sky standard deviation in all checks too.",
+      2
+    },
 
 
     {
@@ -149,6 +180,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "mirrordist",
+      'd',
+      "FLT",
+      0,
+      "Distance beyond mirror point. Multiple of std.",
+      3
+    },
+    {
+      "minmodeq",
+      'Q',
+      "FLT",
+      0,
+      "Minimum acceptable quantile for the mode.",
+      3
+    },
+    {
       "numnearest",
       'n',
       "INT",
@@ -165,27 +212,11 @@ static struct argp_option options[] =
       3
     },
     {
-      "checkmesh",
-      500,
+      "fullconvolution",
+      506,
       0,
       0,
-      "Store mesh IDs in `_mesh.fits' file.",
-      3
-    },
-    {
-      "checkinterpolation",
-      501,
-      0,
-      0,
-      "Store mesh interpolation in `_interp.fits' file.",
-      3
-    },
-    {
-      "checksky",
-      502,
-      0,
-      0,
-      "Store final sky and its STD in `_sky.fits' file.",
+      "Ignore channels in imageconvolution.",
       3
     },
     {
@@ -205,11 +236,27 @@ static struct argp_option options[] =
       3
     },
     {
-      "checkskystd",
-      505,
+      "checkmesh",
+      500,
       0,
       0,
-      "Include sky standard deviation in all checks too.",
+      "Store mesh IDs in `_mesh.fits' file.",
+      3
+    },
+    {
+      "checkinterpolation",
+      501,
+      0,
+      0,
+      "Store mesh interpolation in `_interp.fits' file.",
+      3
+    },
+    {
+      "checkconvolution",
+      507,
+      0,
+      0,
+      "Store convolved image in `_conv.fits' file.",
       3
     },
 
@@ -218,22 +265,6 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Statistics:",
-      4
-    },
-    {
-      "mirrordist",
-      'd',
-      "FLT",
-      0,
-      "Distance beyond mirror point. Multiple of std.",
-      4
-    },
-    {
-      "minmodeq",
-      'Q',
-      "FLT",
-      0,
-      "Minimum acceptable quantile for the mode.",
       4
     },
     {
@@ -310,8 +341,32 @@ parse_opt(int key, char *arg, struct argp_state *state)
       strcpy(p->up.mhdu, arg);
       p->up.mhduset=1;
       break;
+    case 'k':
+      errno=0;                  /* We want to free it in the end. */
+      p->up.kernelname=malloc(strlen(arg)+1);
+      if(p->up.kernelname==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for kernel file name.",
+              strlen(arg)+1);
+      strcpy(p->up.kernelname, arg);
+      p->up.kernelnameset=1;
+      break;
+    case 'U':
+      errno=0;                  /* We want to free it in the end. */
+      p->up.khdu=malloc(strlen(arg)+1);
+      if(p->up.khdu==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for kernel HDU.",
+              strlen(arg)+1);
+      strcpy(p->up.khdu, arg);
+      p->up.khduset=1;
+      break;
 
     /* Output: */
+    case 502:
+      p->skyname="a";
+      break;
+    case 505:
+      p->checkstd=1;
+      break;
 
     /* Mesh grid: */
     case 's':
@@ -331,6 +386,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 NULL, 0);
       p->up.lastmeshfracset=1;
       break;
+    case 'd':
+      floatl0(arg, &p->mp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      p->up.mirrordistset=1;
+      break;
+    case 'Q':
+      floatl0s1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      p->up.minmodeqset=1;
+      break;
     case 'n':
       sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);
       p->up.numnearestset=1;
@@ -339,14 +402,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetpodd(arg, &p->mp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
       p->up.smoothwidthset=1;
       break;
-    case 500:
-      p->meshname="a";  /* Just a placeholder! It will be corrected later */
-      break;
-    case 501:
-      p->interpname="a";
-      break;
-    case 502:
-      p->skyname="a";
+    case 506:
+      p->mp.fullconvolution=1;
       break;
     case 503:
       p->mp.fullinterpolation=1;
@@ -354,20 +411,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 504:
       p->mp.fullsmooth=1;
       break;
-    case 505:
-      p->checkstd=1;
+    case 500:
+      p->meshname="a";  /* Just a placeholder! It will be corrected later */
+      break;
+    case 501:
+      p->interpname="a";
+      break;
+    case 507:
+      p->convname="a";
       break;
 
 
     /* Statistics */
-    case 'd':
-      floatl0(arg, &p->mirrordist, "mirrordist", key, SPACK, NULL, 0);
-      p->up.mirrordistset=1;
-      break;
-    case 'Q':
-      floatl0s1(arg, &p->minmodeq, "minmodeq", key, SPACK, NULL, 0);
-      p->up.minmodeqset=1;
-      break;
     case 'u':
       floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
               NULL, 0);

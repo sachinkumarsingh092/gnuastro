@@ -583,13 +583,32 @@ void
 convolve(struct convolveparams *p)
 {
   float *convolved;
+  long *meshindexs;
+  struct meshparams *mp=&p->mp;
 
   /* Do the convolution. */
   if(p->spatial)
     {
-      spatialconvolve(p->input, p->is0, p->is1, p->kernel, p->ks0,
-                      p->ks1, p->cp.numthreads, p->edgecorrection,
-                      &convolved);
+      /* Prepare the mesh structure: */
+      mp->img=p->input;      mp->s0=p->is0;      mp->s1=p->is1;
+      mp->kernel=p->kernel;  mp->ks0=p->ks0;     mp->ks1=p->ks1;
+      mp->numthreads=p->cp.numthreads;
+      makemesh(mp);
+      if(p->meshname)
+        {
+          checkmeshid(mp, &meshindexs);
+          arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img,
+                         mp->s0, mp->s1, p->numblank, p->wcs, NULL,
+                         SPACK_STRING);
+          arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
+                         mp->s0, mp->s1, 0, p->wcs, NULL, SPACK_STRING);
+          free(meshindexs);
+        }
+
+      /* Do the spatial convolution on the mesh: */
+      spatialconvolveonmesh(mp, &convolved);
+
+      /* Replace the input image array with the convolved array: */
       free(p->input);
       p->input=convolved;
     }
@@ -599,5 +618,5 @@ convolve(struct convolveparams *p)
   /* Save the output (which is in p->input) array. Note that p->input
      will be freed in ui.c. */
   arraytofitsimg(p->cp.output, "Convolved", FLOAT_IMG, p->input,
-                 p->is0, p->is1, 0, p->wcs, NULL, SPACK_STRING);
+                 p->is0, p->is1, p->numblank, p->wcs, NULL, SPACK_STRING);
 }

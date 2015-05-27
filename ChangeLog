@@ -1,3 +1,18 @@
+2015-05-27  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/convolve/args.h (options): Remove the `noedgecorrection'
+	option. Since it was useless. Also changed the old short option
+	for spatial (`s') to `p'. Because `s' is now needed for the mesh
+	size option. Also changed the old short option for khdu (`H') to
+	`U', to make it similar to all the other programs that do
+	convolution.
+
+	* include/mesh.h (meshparams): the garrays are now only
+	pointers. The allocated arrays are either cgarrays or fgarrays and
+	based on the user's will, garray will be set equal to one of these
+	two options. All the functions in mesh.c were changed to
+	accomodate this change.
+
 2015-05-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/mesh.c (operateonmesh): New name for `fillmesh'. Now the

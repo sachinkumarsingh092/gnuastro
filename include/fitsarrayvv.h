@@ -182,4 +182,8 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
             float **img, int *inbitpix, size_t *numblank, size_t *ins0,
             size_t *ins1);
 
+void
+prepfloatkernel(char *inputname, char *inhdu, float **kernel,
+                size_t *ins0, size_t *ins1);
+
 #endif

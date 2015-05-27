@@ -42,7 +42,8 @@ const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
   SPACK_NAME" will convolve an input image with a given spatial kernel "
-  "(image) in the spatial domain (edge-corrected) or frequency domain.\n"
+  "(image) in the spatial domain (no edge effects) or frequency domain. "
+  "The latter suffers from edge effects, but can be much faster.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -54,26 +55,32 @@ const char doc[] =
 
 /* Free letters for options:
 
-   a b c d e g i j l m n p r t u w x y z
-   A B E F G I J L M O Q R T U W X Y Z
+   c d e g i j l m n r t u w x y z
+   A B C E F G H I J O Q R T W X Y Z
 
-   Free numbers: >=502
+   Free numbers: >=504
 */
 static struct argp_option options[] =
   {
     {
       0, 0, 0, 0,
-      "Operating modes:",
-      -1
-    },
-
-
-
-
-
-    {
-      0, 0, 0, 0,
       "Input:",
+      1
+    },
+    {
+      "mask",
+      'M',
+      "STR",
+      0,
+      "Mask image file name.",
+      1
+    },
+    {
+      "mhdu",
+      'H',
+      "STR",
+      0,
+      "Mask image header name.",
       1
     },
     {
@@ -86,7 +93,7 @@ static struct argp_option options[] =
     },
     {
       "khdu",
-      'H',
+      'U',
       "STR",
       0,
       "HDU of kernel file.",
@@ -118,14 +125,6 @@ static struct argp_option options[] =
       2
     },
     {
-      "noedgecorrection",
-      'C',
-      0,
-      0,
-      "Do not correct the edges in the spatial domain.",
-      2
-    },
-    {
       "viewfreqsteps",
       'v',
       0,
@@ -136,11 +135,71 @@ static struct argp_option options[] =
 
 
 
+    {
+      0, 0, 0, 0,
+      "Mesh grid (only for spatial domain):",
+      3
+    },
+    {
+      "meshsize",
+      's',
+      "INT",
+      0,
+      "Size of each mesh (tile) in the grid.",
+      3
+    },
+    {
+      "nch1",
+      'a',
+      "INT",
+      0,
+      "Number of channels along first FITS axis.",
+      3
+    },
+    {
+      "nch2",
+      'b',
+      "INT",
+      0,
+      "Number of channels along second FITS axis.",
+      3
+    },
+    {
+      "lastmeshfrac",
+      'L',
+      "INT",
+      0,
+      "Fraction of last mesh area to add new.",
+      3
+    },
+    {
+      "checkmesh",
+      503,
+      0,
+      0,
+      "Store mesh IDs in `_mesh.fits' file.",
+      3
+    },
+    {
+      "fullconvolution",
+      502,
+      0,
+      0,
+      "Ignore channels in imageconvolution.",
+      3
+    },
+
+
 
 
     {
+      0, 0, 0, 0,
+      "Operating modes:",
+      -1
+    },
+    {
       "spatial",
-      's',
+      'p',
       0,
       0,
       "Spatial domain convolution.",
@@ -205,11 +264,23 @@ parse_opt(int key, char *arg, struct argp_state *state)
     {
 
     /* Inputs: */
+    case 'M':
+      p->up.maskname=arg;
+      p->up.masknameset=1;
+      break;
+    case 'H':
+      errno=0;                  /* We want to free it in the end. */
+      p->up.mhdu=malloc(strlen(arg)+1);
+      if(p->up.mhdu==NULL)
+        error(EXIT_FAILURE, errno, "Space for mask HDU.");
+      strcpy(p->up.mhdu, arg);
+      p->up.mhduset=1;
+      break;
     case 'k':
       p->up.kernelname=arg;
       p->up.kernelnameset=1;
       break;
-    case 'H':
+    case 'U':
       p->up.khdu=arg;
       p->up.khduset=1;
       break;
@@ -222,14 +293,37 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
-    case 'C':
-      p->edgecorrection=0;
+
+
+   /* Mesh grid: */
+    case 's':
+      sizetlzero(arg, &p->mp.meshsize, "meshsize", key, SPACK, NULL, 0);
+      p->up.meshsizeset=1;
+      break;
+    case 'a':
+      sizetlzero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
+      p->up.nch1set=1;
+      break;
+    case 'b':
+      sizetlzero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
+      p->up.nch2set=1;
+      break;
+    case 'L':
+      floatl0s1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key, SPACK,
+                NULL, 0);
+      p->up.lastmeshfracset=1;
+      break;
+    case 503:
+      p->meshname="a";
+      break;
+    case 502:
+      p->mp.fullconvolution=1;
       break;
 
 
    /* Operating mode: */
-    case 's':
-      if(p->up.spatialset)
+    case 'p':
+      if(p->up.frequencyset)
 	argp_error(state, "Only one of spatial or frequency domain "
                    "convolution modes may be chosen.");
       p->spatial=1;

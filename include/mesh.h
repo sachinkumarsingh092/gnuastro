@@ -36,8 +36,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Operations to do on each mesh. If input parameters are needed (for
    example the quantile), they are given as other argument(s) to the
    fillcharray function. */
-#define MODEEQMED_AVESTD 1  /* If mode==median, then save average.        */
-#define MODEEQMED_QUANT  2  /* If mode==median, then save quantile.       */
 #define MAXNUMCHARRAY    2  /* Maximum number of charrays.                */
 #define INTERPALL        1  /* Interpolate over the whole image as one.   */
 #define INTERPCHANNEL    2  /* Interpolate over each channel individually.*/
@@ -98,9 +96,6 @@ struct meshparams
   size_t             nch; /* Total number of channels.                   */
   size_t            nch1; /* Number of channels along first FITS axis.   */
   size_t            nch2; /* Number of channels along first FITS axis.   */
-  int         fullgarray; /* ==1: garray represents the whole image.     */
-  float         *garray1; /* One value per mesh array for all channels.  */
-  float         *garray2; /* One value per mesh array for all channels.  */
   size_t             gs0; /* Number of meshes on axis 0 in each channel. */
   size_t             gs1; /* Number of meshes on axis 1 in each channel. */
 
@@ -116,11 +111,21 @@ struct meshparams
   size_t           maxs0; /* Maximum number of rows in all types.        */
   size_t           maxs1; /* Maximum number of columns in all types.     */
 
+  /* garrays: */
+  float         *garray1; /* Either equal to cgarray1 or fgarray1.       */
+  float         *garray2; /* Either equal to cgarray2 or fgarray2.       */
+  float        *cgarray1; /* In cgarray1 or cgarray2, the meshs in each  */
+  float        *cgarray2; /*    channel are contiguous.                  */
+  float        *fgarray1; /* In fgarray1 or fgarray2, we have contiguous */
+  float        *fgarray2; /*    meshs in the full image. Ignore channels.*/
+
   /* Operate on each mesh: */
   void           *params; /* Pointer to parameters structure of caller.  */
   void        *oneforall; /* One array that can contain all the meshs.   */
 
   /* Interpolation: */
+  float       mirrordist;  /* For finding the mode. Distance after mirror.*/
+  float         minmodeq;  /* Minimum acceptable quantile for the mode.   */
   unsigned char     *byt; /* To keep track of pixels already checked.    */
   size_t      numnearest; /* Number of the nearest pixels for interp.    */
   float        *nearest1; /* Array keeping nearest pixels for garray1.   */
@@ -150,8 +155,7 @@ void
 checkmeshid(struct meshparams *mp, long **out);
 
 void
-checkgarray(struct meshparams *mp, int operationid,
-             float **out1, float **out2);
+checkgarray(struct meshparams *mp, float **out1, float **out2);
 
 void
 makemesh(struct meshparams *mp);

@@ -472,7 +472,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetlzero(arg, &p->numrandom, "numrandom", key, p->cp.spack, NULL, 0);
       p->up.numrandomset=1;
       break;
-    case 'l':
+    case 't':
       floatl0(arg, &p->tolerance, "tolerance", key, p->cp.spack, NULL, 0);
       p->up.toleranceset=1;
       break;

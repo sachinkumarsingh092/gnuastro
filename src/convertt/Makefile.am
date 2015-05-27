@@ -22,6 +22,8 @@ if COND_HASLIBJPEG
    MAYBE_HASLIBJPEG = -ljpeg
 endif
 
+
+
 # Flags:
 AM_CFLAGS = -Wall -O3
 AM_LDFLAGS = -lcfitsio -lwcs -lm $(MAYBE_HASLIBJPEG) -L$(top_builddir)/lib

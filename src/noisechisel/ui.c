@@ -201,6 +201,20 @@ readconfig(char *filename, struct noisechiselparams *p)
                     filename, lineno);
 	  up->lastmeshfracset=1;
 	}
+      else if(strcmp(name, "mirrordist")==0)
+	{
+	  if(up->mirrordistset) continue;
+          floatl0(value, &p->smp.mirrordist, name, key, SPACK,
+                  filename, lineno);
+	  up->mirrordistset=1;
+	}
+      else if(strcmp(name, "minmodeq")==0)
+	{
+	  if(up->minmodeqset) continue;
+          floatl0s1(value, &p->smp.minmodeq, name, key, SPACK,
+                  filename, lineno);
+	  up->minmodeqset=1;
+	}
       else if(strcmp(name, "numnearest")==0)
 	{
 	  if(up->numnearestset) continue;
@@ -218,20 +232,6 @@ readconfig(char *filename, struct noisechiselparams *p)
 
 
       /* Detection: */
-      else if(strcmp(name, "mirrordist")==0)
-	{
-	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mirrordist, name, key, SPACK,
-                  filename, lineno);
-	  up->mirrordistset=1;
-	}
-      else if(strcmp(name, "minmodeq")==0)
-	{
-	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->minmodeq, name, key, SPACK,
-                  filename, lineno);
-	  up->minmodeqset=1;
-	}
       else if(strcmp(name, "qthresh")==0)
 	{
 	  if(up->qthreshset) continue;
@@ -341,6 +341,10 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", smp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", smp->lastmeshfrac);
+  if(up->mirrordistset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->smp.mirrordist);
+  if(up->minmodeqset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->smp.minmodeq);
   if(up->numnearestset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", smp->numnearest);
   if(up->smoothwidthset)
@@ -348,10 +352,6 @@ printvalues(FILE *fp, struct noisechiselparams *p)
 
 
   fprintf(fp, "\n# Detection:\n");
-  if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mirrordist);
-  if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->minmodeq);
   if(up->qthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "qthresh", p->qthresh);
   if(up->sigclipmultipset)
@@ -379,10 +379,6 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("hdu");
   if(up->khduset==0)
     REPORT_NOTSET("khdu");
-  if(up->numnearestset==0)
-    REPORT_NOTSET("numnearest");
-  if(up->smoothwidthset==0)
-    REPORT_NOTSET("smoothwidth");
 
   /* Mesh grid: */
   if(up->smeshsizeset==0)
@@ -395,12 +391,16 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
     REPORT_NOTSET("lastmeshfrac");
-
-  /* Detection: */
   if(up->mirrordistset==0)
     REPORT_NOTSET("mirrordist");
   if(up->minmodeqset==0)
     REPORT_NOTSET("minmodeq");
+  if(up->numnearestset==0)
+    REPORT_NOTSET("numnearest");
+  if(up->smoothwidthset==0)
+    REPORT_NOTSET("smoothwidth");
+
+  /* Detection: */
   if(up->qthreshset==0)
     REPORT_NOTSET("qthresh");
   if(up->sigclipmultipset==0)
@@ -436,7 +436,7 @@ checkifset(struct noisechiselparams *p)
 void
 sanitycheck(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
+  struct meshparams *smp=&p->smp;
 
   /* Set the maskname and mask hdu accordingly: */
   CHECKMASKNAMEANDHDU(SPACK);
@@ -451,15 +451,21 @@ sanitycheck(struct noisechiselparams *p)
   /* Set the check image names: */
   if(p->meshname)
     {
-      p->meshname=NULL;           /* Was not allocated before!  */
+      p->meshname=NULL;         /* Was not allocated before!  */
       automaticoutput(p->up.inputname, "_meshs.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->meshname);
     }
   if(p->detectionname)
     {
-      p->detectionname=NULL;           /* Was not allocated before!  */
+      p->detectionname=NULL;    /* Was not allocated before!  */
       automaticoutput(p->up.inputname, "_det.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->detectionname);
+    }
+  if(p->threshname)
+    {
+      p->threshname=NULL;       /* Was not allocated before!  */
+      automaticoutput(p->up.inputname, "_thresh.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->threshname);
     }
 
   /* Other checks: */
@@ -467,16 +473,6 @@ sanitycheck(struct noisechiselparams *p)
     error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
           "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
           smp->numnearest);
-
-  /* Set the parameters for both mesh grids. */
-  lmp->nch1=smp->nch1;
-  lmp->nch2=smp->nch2;
-  lmp->fullsmooth=smp->fullsmooth;
-  lmp->numnearest=smp->numnearest;
-  lmp->smoothwidth=smp->smoothwidth;
-  lmp->lastmeshfrac=smp->lastmeshfrac;
-  lmp->fullinterpolation=smp->fullinterpolation;
-  lmp->numthreads=smp->numthreads=p->cp.numthreads;
 }
 
 
@@ -500,18 +496,21 @@ sanitycheck(struct noisechiselparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
-/* The default PSF. It was created with the following set of
-   commands. The crop is because the first and last rows of all PSFs
-   made by MakeProfiles is blank (zero).
+/* The default PSF. It was created by saving the following commands in
+   a script and running it. The crop is because the first and last
+   rows of all PSFs made by MakeProfiles is blank (zero). You can keep
+   the spaces when copying and pasting ;-). Just make it executable
+   and run it.
 
-      $ cat tmp.txt
-      0    0.0    0.0   2   2   0   0   1   1   5
-      $ export GSL_RNG_TYPE=ranlxs2
-      $ export GSL_RNG_SEED=1
-      $ astmkprof tmp.txt --oversample=1 --envseed            \
-                  --numrandom=10000 --tolerance=0.01
-      $ astimgcrop 0.fits --section=2:*,2:* --zeroisnotblank
-      $ astconvertt 0_crop.fits --output=fwhm2.txt
+   set -o errexit           # Stop if a program returns false.
+   echo "0    0.0    0.0   2   2   0   0   1   1   5" > tmp.txt
+   export GSL_RNG_TYPE=ranlxs2
+   export GSL_RNG_SEED=1
+   astmkprof tmp.txt --oversample=1 --envseed --numrandom=10000 \
+             --tolerance=0.01
+   astimgcrop 0.fits --section=2:*,2:* --zeroisnotblank --output=fwhm2.fits
+   astconvertt fwhm2.fits --output=fwhm2.txt
+   rm 0.fits tmp.fits *.log tmp.txt
 */
 size_t defaultkernel_s0=11;
 size_t defaultkernel_s1=11;
@@ -556,10 +555,8 @@ float defaultkernel[121]=
 void
 preparearrays(struct noisechiselparams *p)
 {
-  int kbitpix;
-  size_t knumblank;
-  float *f, *ff, *fp, sum;
-  struct meshparams *smp=&p->smp;
+  float *f, *ff, *fp;
+  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
 
   /* Read the input image in. Note that the pointer to the image is
      also kept in p->img. Since some of the mesh operations should be
@@ -582,17 +579,8 @@ preparearrays(struct noisechiselparams *p)
 
   /* Read the kernel: */
   if(p->up.kernelnameset)
-    {
-      filetofloat(p->up.kernelname, NULL, p->up.khdu, 0, &smp->kernel,
-                  &kbitpix, &knumblank, &smp->ks0, &smp->ks1);
-      if(knumblank)
-        {
-          fp=(f=smp->kernel)+smp->ks0*smp->ks1;
-          do if(isnan(*f)) *f=0.0f; while(++f<fp);
-        }
-      sum=floatsum(smp->kernel, smp->ks0*smp->ks1);
-      fmultipconst(smp->kernel, smp->ks0*smp->ks1, 1/sum);
-    }
+    prepfloatkernel(p->up.kernelname, p->up.khdu, &smp->kernel,
+                    &smp->ks0, &smp->ks1);
   else
     {
       errno=0;
@@ -606,6 +594,22 @@ preparearrays(struct noisechiselparams *p)
       fp=(f=smp->kernel)+smp->ks0*smp->ks1;
       do *f=*ff++; while(++f<fp);
     }
+
+  /* Set the parameters for both mesh grids. */
+  lmp->ks0=smp->ks0;
+  lmp->ks1=smp->ks1;
+  lmp->nch1=smp->nch1;
+  lmp->nch2=smp->nch2;
+  lmp->kernel=smp->kernel;
+  lmp->params=smp->params=p;
+  lmp->minmodeq=smp->minmodeq;
+  lmp->mirrordist=smp->mirrordist;
+  lmp->fullsmooth=smp->fullsmooth;
+  lmp->numnearest=smp->numnearest;
+  lmp->smoothwidth=smp->smoothwidth;
+  lmp->lastmeshfrac=smp->lastmeshfrac;
+  lmp->fullinterpolation=smp->fullinterpolation;
+  lmp->numthreads=smp->numthreads=p->cp.numthreads;
 }
 
 
@@ -666,11 +670,12 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Input read: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
+      printf("  - Using %lu CPU threads.\n", p->cp.numthreads);
+      printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)
-        printf("  - Mask read: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
+        printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
       if(p->up.kernelnameset)
-        printf("  - Kernel read: %s (hdu: %s)\n", p->up.kernelname,
+        printf("  - Kernel: %s (hdu: %s)\n", p->up.kernelname,
                p->up.khdu);
       else
         printf("  - Kernel: FWHM=2 pixel Gaussian.\n");
@@ -709,12 +714,16 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   free(p->up.khdu);
   free(p->cp.output);
   free(p->smp.kernel);
+  free(p->up.kernelname);
+
+  /* Free the mask image name. Note that p->up.inputname was not
+     allocated, but given to the program by the operating system. */
   if(p->up.maskname && p->up.maskname!=p->up.inputname)
     free(p->up.maskname);
-  free(p->up.kernelname);
 
   /* Free all the allocated names: */
   if(p->meshname) free(p->meshname);
+  if(p->threshname) free(p->threshname);
   if(p->detectionname) free(p->detectionname);
 
   /* Free the WCS structure: */

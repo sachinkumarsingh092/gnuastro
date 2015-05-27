@@ -25,6 +25,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+#include "mesh.h"
 #include "astrthreads.h"
 #include "commonparams.h"
 
@@ -49,14 +50,22 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct uiparams
 {
   char        *inputname;   /* Name of input file.           */
+  char         *maskname;   /* Mask file name.               */
+  char             *mhdu;   /* HDU of mask image.            */
   char       *kernelname;   /* Name of kernel file.          */
   char             *khdu;   /* HDU of input Kernel.          */
   char    *freqstepsname;   /* Name of frequency steps file. */
 
   int         spatialset;
   int       frequencyset;
+  int        masknameset;
+  int            mhduset;
   int      kernelnameset;
   int            khduset;
+  int        meshsizeset;
+  int            nch1set;
+  int            nch2set;
+  int    lastmeshfracset;
 };
 
 
@@ -65,23 +74,25 @@ struct uiparams
 /* Processing parameters structure */
 struct convolveparams
 {
-  struct uiparams     up;   /* Pointer to user interface structure.     */
-  struct commonparams cp;   /* Pointer to the commonparams structure.   */
+  struct uiparams     up;   /* user interface structure.                */
+  struct commonparams cp;   /* commonparams structure.                  */
+  struct meshparams   mp;   /* meshparams structure.                    */
 
   /* Inputs: */
   float           *input;   /* Input image array.                       */
   float          *kernel;   /* Input Kernel array.                      */
+  size_t        numblank;   /* Number of blank pixels in input.         */
   size_t             is0;   /* Input image size along C's first axis.   */
   size_t             is1;   /* Input image size along C's second axis.  */
   size_t             ks0;   /* Kernel size along C's first axis.        */
   size_t             ks1;   /* Kernel size along C's second axis.       */
   int         kernelflip;   /* ==1: Flip the kernel.                    */
   int         kernelnorm;   /* ==1: Normalize the kernel.               */
-  int     edgecorrection;   /* Correct for the edges in spatial domain. */
   int               nwcs;   /* Number of WCS headers.                   */
   struct wcsprm     *wcs;   /* WCS structure.                           */
 
   /* Outputs: */
+  char         *meshname;   /* Name of mesh structure output.           */
 
   /* Operating modes: */
   int            spatial;   /* Convolve using spatial domain.           */

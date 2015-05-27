@@ -89,16 +89,16 @@ struct noisechiselparams
   /* Detection: */
   float            *conv;  /* Convolved image.                            */
   float          qthresh;  /* Quantile threshold on convolved img.        */
-  char    *detectionname;  /* ==1: Initial detection steps.               */
-  float       mirrordist;  /* For finding the mode. Distance after mirror.*/
-  float         minmodeq;  /* Minimum acceptable quantile for the mode.   */
   float    sigclipmultip;  /* Multiple of standard deviation, sigma clip. */
   float sigcliptolerance;  /* Tolerance in sigma clip.                    */
+  char    *detectionname;  /* !=NULL: Name of initial detection steps.    */
+  char       *threshname;  /* !=NULL: Name of threshold steps.            */
 
   /* Operating mode: */
 
   /* Internal: */
   time_t         rawtime;  /* Starting time of the program.               */
+  unsigned char     *byt;  /* Array of single bytes for binary operations.*/
   float             *img;  /* Input image, kept here to enable            */
                            /* temporarily changing the mesh's img.        */
 };

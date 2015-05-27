@@ -138,7 +138,10 @@ imgbitpixsize(fitsfile *fptr, int *bitpix, long *naxes)
   if(naxis!=2)
     error(EXIT_FAILURE, 0, "Currently only a 2 dimensional image array "
 	  "is supported. Your array is %d dimension(s). %s", naxis,
-	  naxis ? "Please contact us to add this feature." : "");
+	  naxis ? "Please contact us to add this feature." : "This might "
+          "Be due to the fact that the data in images with multiple "
+          "extensions are sometimes put on the second extension. If this is "
+          "the case, try changing the hdu (maybe to --hdu=1).");
 }
 
 
@@ -1401,6 +1404,16 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
       masknumblank=fitsimgtoarray(maskname, mhdu, &maskbitpix,
                                   &array, &s0, &s1);
 
+      if(maskbitpix==FLOAT_IMG || maskbitpix==DOUBLE_IMG)
+        fprintf(stderr, "WARNING: the mask image (%s, hdu: %s) has a %s "
+                "precision floating point data type (BITPIX=%d). The mask "
+                "image is usually an integer type. Therefore this might "
+                "be due to a mistake in the inputs and the results might "
+                "not be what you intended. However, the program will not "
+                "abort and continue working only with zero valued pixels in "
+                "the given masked image.", maskname, mhdu,
+                maskbitpix==FLOAT_IMG ? "single" : "double", maskbitpix);
+
       if(s0!=*ins0 || s1!=*ins1)
         error(EXIT_FAILURE, 0, "The input image %s (hdu: %s) has size: "
               "%lu x %lu. The mask image %s (hdu: %s) has size %lu x %lu. "
@@ -1420,5 +1433,50 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
       fp=(f=*img)+s0*s1;
       do if(*ff++!=0.0f) {*f=NAN; ++(*numblank);} while(++f<fp);
       free(mask);
+    }
+}
+
+
+
+
+
+void
+prepfloatkernel(char *inputname, char *inhdu, float **outkernel,
+                size_t *ins0, size_t *ins1)
+{
+  int bitpix;
+  double sum=0.0f;
+  size_t i, size, numblank;
+  float *f, *fp, *kernel, tmp;
+
+  /* Read the kernel as a float array: */
+  filetofloat(inputname, NULL, inhdu, NULL, outkernel, &bitpix, &numblank,
+              ins0, ins1);
+  size = *ins0 * *ins1;
+  kernel=*outkernel;
+
+  /* Simple sanity check: */
+  if(*ins0%2==0 || *ins1%2==0)
+    error(EXIT_FAILURE, 0, "The kernel image has to have an odd number "
+          "of pixels on both sides (there has to be on pixel in the "
+          "center). %s (hdu: %s) is %lu by %lu.", inputname, inhdu,
+          *ins1, *ins0);
+
+  /* If there are any NaN pixels, set them to zero and normalize it.*/
+  fp=(f=kernel)+size;
+  do
+    {
+      if(isnan(*f)) *f=0.0f;
+      else          sum+=*f;
+    }
+  while(++f<fp);
+  f=kernel; do *f++ *= 1/sum; while(f<fp);
+
+  /* Flip the kernel: */
+  for(i=0;i<size/2;++i)
+    {
+      tmp=kernel[i];
+      kernel[i]=kernel[size-i-1];
+      kernel[size-i-1]=tmp;
     }
 }

@@ -23,6 +23,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <stdio.h>
+#include <errno.h>
+#include <error.h>
 #include <stdlib.h>
 
 #include "mesh.h"
@@ -46,62 +48,97 @@ avestdonthread(void *inparam)
   float *mponeforall=mp->oneforall;
   float *oneforall=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
+  int setnan;
+  float *cofa;                   /* convolved-oneforall */
   size_t modeindex=(size_t)(-1);
-  float sigcliptolerance=p->sigcliptolerance;
   size_t s0, s1, ind, row, num, start, is1=mp->s1;
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
-  float ave, med, std, sigclipmultip=p->sigclipmultip;
-  float mirrordist=p->mirrordist, minmodeq=p->minmodeq;
-  float *f, *img, *imgend, *inimg=mp->img, modesym=0.0f;
+  float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
+  float ave, med, std, *sorted, sigclipmultip=p->sigclipmultip;
+  float *imgend, *inimg=mp->img, *inconv=p->conv, modesym=0.0f;
+  float *f, *c=NULL, *conv, *img, sigcliptolerance=p->sigcliptolerance;
+
+  /* Allocate the oneforall array for the convolved image, since we
+     only want to use those meshs whose convolved image mode is larger
+     than minmodeq. */
+  if(p->conv!=mp->img)
+    {
+      errno=0; cofa=malloc(mp->maxs0*mp->maxs1*sizeof *oneforall);
+      if(cofa==NULL)
+        error(EXIT_FAILURE, errno, "Unable to allocate %lu bytes for"
+              "cofa in avestdonthread of subtractsky.c.",
+              mp->maxs0*mp->maxs1*sizeof *mp->img);
+    }
+  else cofa=NULL;
 
   /* Start this thread's work: */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
     {
       /* Prepare the values: */
+      setnan=0;
       num=row=0;
       f=oneforall;
       ind=indexs[i];
       start=mp->start[ind];
       s0=mp->ts0[mp->types[ind]];
       s1=mp->ts1[mp->types[ind]];
+      if(cofa) c=sorted=cofa; else sorted=oneforall;
 
       /* Copy all the non-NaN pixels images pixels of this mesh into
          the mesh array. Note that currently, the spatial positioning
          of the pixels is irrelevant, so we only keep those that are
-         non-NaN.*/
+         non-NaN. Recall that both the convolved an unconvolved image
+         have the same NaN pixels.*/
       do
         {
+          if(cofa) conv = inconv + start + row * is1;
           imgend=(img = inimg + start + row++ * is1 ) + s1;
           do
-            if(!isnan(*img))
             {
-              ++num;
-              *f++ = *img;
+              if(!isnan(*img))
+                {
+                  ++num;
+                  *f++ = *img;
+                  if(cofa) *c++=*conv;
+                }
+              if(cofa) ++conv;
             }
           while(++img<imgend);
         }
       while(row<s0);
 
       /* Do the desired operation on the mesh: */
-      qsort(oneforall, num, sizeof *oneforall, floatincreasing);
-      modeindexinsorted(oneforall, num, mirrordist, &modeindex, &modesym);
-      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq
-          && sigmaclip_converge(oneforall, 1, num, sigclipmultip,
-                                sigcliptolerance, &ave, &med, &std, 0))
+      qsort(sorted, num, sizeof *oneforall, floatincreasing);
+      modeindexinsorted(sorted, num, mirrordist, &modeindex, &modesym);
+      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq )
         {
-          mp->garray1[ind]=ave;
-          if(mp->garray2) mp->garray2[ind]=std;
-        }
-      else
-        {
-          mp->garray1[ind]=NAN;
-          if(mp->garray2) mp->garray2[ind]=NAN;
-        }
+          /* If cofa was defined, then oneforall was not sorted. */
+          if(cofa)
+            qsort(oneforall, num, sizeof *oneforall, floatincreasing);
 
+          /* Do sigma-clipping and save the result if it is
+             accurate. */
+          if(sigmaclip_converge(oneforall, 1, num, sigclipmultip,
+                                sigcliptolerance, &ave, &med, &std, 0))
+            {
+              mp->cgarray1[ind]=ave;
+              if(mp->cgarray2) mp->cgarray2[ind]=std;
+            }
+          else setnan=1;
+        }
+      else setnan=1;
+
+      /* Set this mesh should not be used: */
+      if(setnan)
+        {
+          mp->cgarray1[ind]=NAN;
+          if(mp->cgarray2) mp->cgarray2[ind]=NAN;
+        }
     }
 
-  /* Free alltype and if multiple threads were used, wait until all
-     other threads finish. */
+  /* Free any allocated space and if multiple threads were used, wait
+     until all other threads finish. */
+  if(p->conv!=mp->img) free(cofa);
   if(mp->numthreads>1)
     pthread_barrier_wait(&mp->b);
   return NULL;
@@ -139,11 +176,28 @@ subtractsky(struct subtractskyparams *p)
 
 
 
+  /* Convolve the image if the user has asked for it: */
+  if(p->up.kernelnameset)
+    {
+      spatialconvolveonmesh(mp, &p->conv);
+      if(p->convname)
+        {
+          arraytofitsimg(p->convname, "Input", FLOAT_IMG, p->mp.img, s0, s1,
+                         p->numblank, p->wcs, NULL, SPACK_STRING);
+          arraytofitsimg(p->convname, "Input", FLOAT_IMG, p->conv, s0, s1,
+                         p->numblank, p->wcs, NULL, SPACK_STRING);
+        }
+    }
+  else p->conv=p->mp.img;
+  if(p->cp.verb)
+    reporttiming(&t1, "Input image convolved with kernel.", 1);
+
+
   /* Find the sky value and its standard deviation on each mesh. */
   operateonmesh(mp, avestdonthread, sizeof(float), checkstd);
   if(p->interpname)
     {
-      checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
+      checkgarray(mp, &sky, &std);
       arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky, s0, s1,
                      p->numblank, p->wcs, NULL, SPACK_STRING);
       free(sky);
@@ -163,7 +217,7 @@ subtractsky(struct subtractskyparams *p)
   meshinterpolate(mp);
   if(p->interpname)
     {
-      checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
+      checkgarray(mp, &sky, &std);
       arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky, s0, s1, 0,
                      p->wcs, NULL, SPACK_STRING);
       free(sky);
@@ -189,7 +243,7 @@ subtractsky(struct subtractskyparams *p)
 
 
   /* Make the sky array and save it if the user has asked for it: */
-  checkgarray(mp, MODEEQMED_AVESTD, &sky, &std);
+  checkgarray(mp, &sky, &std);
   if(p->skyname)
     {
       arraytofitsimg(p->skyname ,"Sky", FLOAT_IMG, sky, s0, s1, 0,
@@ -211,4 +265,5 @@ subtractsky(struct subtractskyparams *p)
   freemesh(mp);
   free(skysubtracted);
   if(checkstd) free(std);
+  if(p->up.kernelnameset) free(p->conv);
 }
