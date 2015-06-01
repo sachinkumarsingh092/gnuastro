@@ -6855,9 +6855,10 @@ saying that the two images have to have the same size. If this option
 is not given and the @option{--mhdu} option has a different value from
 @option{--hdu}, then the input image name will be used. If a name is
 specified on the command line or in any of the configuration files, it
-will be used. If SubtractSky doesn't get any mask file name, it will
-use all the non-NaN pixels in the image. Therefore, specifying a mask
-file name in any of the configuration files is not mandatory.
+will be used. If the program doesn't get any mask file name, it will
+use all the non-blank (see @ref{Blank pixels}) pixels in the
+image. Therefore, specifying a mask file name in any of the
+configuration files is not mandatory.
 
 Note that if the mask image has blank pixels, then they act like
 pixels with non-zero values and will be masked (see @ref{Blank

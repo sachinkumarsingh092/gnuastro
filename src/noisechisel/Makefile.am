@@ -32,7 +32,8 @@ AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 bin_PROGRAMS = astnoisechisel
 
 astnoisechisel_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-noisechisel.c noisechisel.h thresh.c thresh.h
+noisechisel.c noisechisel.h thresh.c thresh.h binary.c binary.h	\
+label.c label.h
 
 astnoisechisel_LDADD = $(top_builddir)/gnulib/lib/libgnu.a		\
 -lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh			\

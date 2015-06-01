@@ -1,5 +1,5 @@
 /*********************************************************************
-Functions to report timing in verbose mode.
+NoiseChisel - Detect and segment signal in noise.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -20,35 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#include <config.h>
-
-#include <stdio.h>
-
-#include "timing.h"
+#ifndef BINARY_H
+#define BINARY_H
 
 void
-reporttiming(struct timeval *t1, char *jobname, size_t level)
-{
-  double dt=1e30;
-  struct timeval t2;
+dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
+                    unsigned char b0_f1);
 
-  if(level<2 && t1)
-    {
-      gettimeofday(&t2, NULL);
+void
+dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
+                    unsigned char b0_f1);
 
-      dt= ( ((double)t2.tv_sec+(double)t2.tv_usec/1e6) -
-	    ((double)t1->tv_sec+(double)t1->tv_usec/1e6) );
-    }
+void
+opening(unsigned char *byt, size_t s0, size_t s1,
+        size_t depth, int con_type);
 
-  if(level==0)
-    printf("%s %f (seconds)\n", jobname, dt);
-  else if(level==1)
-    {
-      if(t1)
-	printf("  - %-"VERBMSGLENGTH_T"s %f seconds\n", jobname, dt);
-      else
-	printf("  - %-"VERBMSGLENGTH_T"s\n", jobname);
-    }
-  else if(level==2)
-    printf("  ---- %s\n", jobname);
-}
+#endif

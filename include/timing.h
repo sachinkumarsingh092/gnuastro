@@ -26,8 +26,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <time.h>
 #include <sys/time.h>
 
-#define VERBMSGLENGTH_V 40
-#define VERBMSGLENGTH_T "40"
+#define VERBMSGLENGTH_V 45
+#define VERBMSGLENGTH_T "45"
 
 void
 reporttiming(struct timeval *t1, char *jobname, size_t level);

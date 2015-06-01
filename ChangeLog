@@ -1,3 +1,10 @@
+2015-06-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/timing.c (reporttiming): Removed the `in' from reporting
+	seconds.
+
+	* include/timing.h (VERBMSGLENGTH_V): Changed to 45 from 40.
+
 2015-05-27  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/args.h (options): Remove the `noedgecorrection'

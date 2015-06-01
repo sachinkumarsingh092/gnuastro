@@ -239,6 +239,34 @@ readconfig(char *filename, struct noisechiselparams *p)
                   filename, lineno);
 	  up->qthreshset=1;
 	}
+      else if(strcmp(name, "numerosion")==0)
+	{
+	  if(up->numerosionset) continue;
+          sizetelzero(value, &p->numerosion, name, key, SPACK,
+                      filename, lineno);
+	  up->numerosionset=1;
+	}
+      else if(strcmp(name, "erodengb")==0)
+	{
+	  if(up->erodengbset) continue;
+          int4or8(value, &p->erodengb, name, key, SPACK,
+                  filename, lineno);
+	  up->erodengbset=1;
+	}
+      else if(strcmp(name, "opening")==0)
+	{
+	  if(up->openingset) continue;
+          sizetelzero(value, &p->opening, name, key, SPACK,
+                      filename, lineno);
+	  up->openingset=1;
+	}
+      else if(strcmp(name, "openingngb")==0)
+	{
+	  if(up->openingngbset) continue;
+          int4or8(value, &p->openingngb, name, key, SPACK,
+                  filename, lineno);
+	  up->openingngbset=1;
+	}
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
@@ -354,6 +382,14 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   fprintf(fp, "\n# Detection:\n");
   if(up->qthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "qthresh", p->qthresh);
+  if(up->numerosionset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "numerosion", p->numerosion);
+  if(up->erodengbset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "erodengb", p->erodengb);
+  if(up->openingset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "opening", p->opening);
+  if(up->openingngbset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "openingngb", p->openingngb);
   if(up->sigclipmultipset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
   if(up->sigcliptoleranceset)
@@ -403,6 +439,14 @@ checkifset(struct noisechiselparams *p)
   /* Detection: */
   if(up->qthreshset==0)
     REPORT_NOTSET("qthresh");
+  if(up->numerosionset==0)
+    REPORT_NOTSET("numerosion");
+  if(up->erodengbset==0)
+    REPORT_NOTSET("erodengb");
+  if(up->openingset==0)
+    REPORT_NOTSET("opening");
+  if(up->openingngbset==0)
+    REPORT_NOTSET("openingngb");
   if(up->sigclipmultipset==0)
     REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
@@ -567,9 +611,6 @@ preparearrays(struct noisechiselparams *p)
               (float **)&smp->img, &p->bitpix, &p->numblank, &smp->s0,
               &smp->s1);
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
-  p->lmp.s0=smp->s0;
-  p->lmp.s1=smp->s1;
-  p->img=p->lmp.img=smp->img;
 
   /* make sure the channel sizes fit the channel sizes. */
   if( smp->s0%smp->nch2 || smp->s1%smp->nch1 )
@@ -595,12 +636,25 @@ preparearrays(struct noisechiselparams *p)
       do *f=*ff++; while(++f<fp);
     }
 
+  /* Prepare the output arrays: */
+  errno=0; p->olab=malloc(smp->s0*smp->s1*sizeof *p->olab);
+  if(p->olab==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->olab (ui.c).",
+          smp->s0*smp->s1*sizeof *p->olab);
+  errno=0; p->clab=malloc(smp->s0*smp->s1*sizeof *p->clab);
+  if(p->clab==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->clab (ui.c).",
+          smp->s0*smp->s1*sizeof *p->clab);
+
   /* Set the parameters for both mesh grids. */
+  lmp->s0=smp->s0;
+  lmp->s1=smp->s1;
   lmp->ks0=smp->ks0;
   lmp->ks1=smp->ks1;
   lmp->nch1=smp->nch1;
   lmp->nch2=smp->nch2;
   lmp->kernel=smp->kernel;
+  lmp->img=p->img=smp->img;
   lmp->params=smp->params=p;
   lmp->minmodeq=smp->minmodeq;
   lmp->mirrordist=smp->mirrordist;
@@ -709,6 +763,8 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->img);
+  free(p->olab);
+  free(p->clab);
   free(p->cp.hdu);
   free(p->up.mhdu);
   free(p->up.khdu);

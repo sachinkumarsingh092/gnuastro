@@ -86,6 +86,31 @@ intzeroorone(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
+int4or8(char *optarg, int *var, char *lo, char so, char *spack,
+        char *filename, size_t lineno)
+{
+  long tmp;
+  char *tailptr;
+
+  *var=tmp=strtol(optarg, &tailptr, 0);
+
+  CHECKFULLNUMBER;
+  if(tmp!=4 && tmp!=8)
+    {
+      if(filename)
+	error_at_line(EXIT_FAILURE, 0, filename, lineno,
+		      FIXEDFORFILE" "NOTEMSG_EQZEROORONE, lo, optarg);
+      else
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_EQZEROORONE,
+	      lo, so, optarg);
+    }
+}
+
+
+
+
+
+void
 intelzero(char *optarg, int *var, char *lo, char so, char *spack,
 	  char *filename, size_t lineno)
 {
@@ -125,30 +150,6 @@ intlzero(char *optarg, int *var, char *lo, char so, char *spack,
 		      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
       else
 	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
-	      lo, so, optarg);
-    }
-}
-
-
-
-
-
-void
-int4or8(char *optarg, int *var, char *lo, char so, char *spack,
-	char *filename, size_t lineno)
-{
-  long tmp;
-  char *tailptr;
-  *var=tmp=strtol(optarg, &tailptr, 0);
-
-  CHECKFULLNUMBER;
-  if(tmp!=4 && tmp!=8)
-    {
-      if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_4OR8, lo, optarg);
-      else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_4OR8,
 	      lo, so, optarg);
     }
 }

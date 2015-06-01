@@ -28,9 +28,12 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include "timing.h"
+#include "binary.h"
+#include "fitsarrayvv.h"
 
 #include "main.h"
 
+#include "label.h"
 #include "thresh.h"
 #include "noisechisel.h"
 
@@ -53,11 +56,13 @@ noisechisel(struct noisechiselparams *p)
 
   long *meshindexs;
   struct timeval t1;
-  size_t s0=smp->s0, s1=smp->s1;
+  int verb=p->cp.verb;
+  char report[VERBMSGLENGTH_V];
+  size_t i, s0=smp->s0, s1=smp->s1, numlabs;
 
 
   /* Prepare the mesh array. */
-  gettimeofday(&t1, NULL);
+  if(verb) gettimeofday(&t1, NULL);
   makemesh(smp);
   makemesh(lmp);
   if(p->meshname)
@@ -73,11 +78,12 @@ noisechisel(struct noisechiselparams *p)
                      s0, s1, 0, p->wcs, NULL, SPACK_STRING);
       free(meshindexs);
     }
-  if(p->cp.verb) reporttiming(&t1, "Mesh grids ready.", 1);
+  if(verb) reporttiming(&t1, "Mesh grids ready.", 1);
+
 
 
   /* Convolve the image: */
-  gettimeofday(&t1, NULL);
+  if(verb) gettimeofday(&t1, NULL);
   spatialconvolveonmesh(smp, &p->conv);
   if(p->detectionname)
     {
@@ -86,17 +92,71 @@ noisechisel(struct noisechiselparams *p)
       arraytofitsimg(p->detectionname, "Convolved", FLOAT_IMG, p->conv,
                      s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
     }
-  if(p->cp.verb) reporttiming(&t1, "Convolved with kernel.", 1);
+  if(verb) reporttiming(&t1, "Convolved with kernel.", 1);
+
 
 
   /* Find the threshold and apply it: */
-  gettimeofday(&t1, NULL);
+  if(verb) gettimeofday(&t1, NULL);
   findapplythreshold(p);
   if(p->detectionname)
     arraytofitsimg(p->detectionname, "Thresholded", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  if(p->cp.verb)
-    reporttiming(&t1, "Quantile threshold found and applied.", 1);
+  if(verb)
+    {
+      sprintf(report, "%.2f quantile threshold found and applied.",
+              p->qthresh);
+      reporttiming(&t1, report, 1);
+    }
+
+
+
+  /* Erode the thresholded image: */
+  if(verb) gettimeofday(&t1, NULL);
+  if(p->erodengb==4)
+    for(i=0;i<p->numerosion;++i)
+      dilate0_erode1_4con(p->byt, s0, s1, 1);
+  else
+    for(i=0;i<p->numerosion;++i)
+      dilate0_erode1_8con(p->byt, s0, s1, 1);
+  if(p->detectionname)
+    arraytofitsimg(p->detectionname, "Eroded", BYTE_IMG, p->byt,
+                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  if(verb)
+    {
+      sprintf(report, "Eroded %lu times (%s connectivity).", p->numerosion,
+              p->erodengb==4 ? "4" : "8");
+      reporttiming(&t1, report, 1);
+    }
+
+
+
+  /* Do the opening: */
+  if(verb) gettimeofday(&t1, NULL);
+  opening(p->byt, s0, s1, p->opening, p->openingngb);
+  if(p->detectionname)
+    arraytofitsimg(p->detectionname, "Opened", BYTE_IMG, p->byt,
+                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  if(verb)
+    {
+      sprintf(report, "Opened (depth: %lu, %s connectivity).",
+              p->opening, p->openingngb==4 ? "4" : "8");
+      reporttiming(&t1, report, 1);
+    }
+
+
+
+  /* Label the connected regions: */
+  if(verb) gettimeofday(&t1, NULL);
+  numlabs=BF_concmp(p->byt, p->olab, s0, s1, 4);
+  if(p->detectionname)
+    arraytofitsimg(p->detectionname, "Labeled", LONG_IMG, p->olab,
+                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  if(verb)
+    {
+      sprintf(report, "%lu initial detections found.", numlabs-1);
+      reporttiming(&t1, report, 1);
+    }
 
   /* Clean up: */
   free(p->byt);

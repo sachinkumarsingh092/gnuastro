@@ -54,12 +54,16 @@ struct uiparams
   int             nch1set;
   int             nch2set;
   int     lastmeshfracset;
-
   int       numnearestset;
   int      smoothwidthset;
   int       mirrordistset;
   int         minmodeqset;
+
   int          qthreshset;
+  int       numerosionset;
+  int         erodengbset;
+  int          openingset;
+  int       openingngbset;
   int    sigclipmultipset;
   int sigcliptoleranceset;
 };
@@ -85,19 +89,25 @@ struct noisechiselparams
   /* output: */
   int           checkstd;  /* ==1: include the sky STD in checks.         */
   char         *meshname;  /* Name of --checkmesh output.                 */
+  char    *detectionname;  /* !=NULL: Name of initial detection steps.    */
+  char       *threshname;  /* !=NULL: Name of threshold steps.            */
 
   /* Detection: */
   float            *conv;  /* Convolved image.                            */
   float          qthresh;  /* Quantile threshold on convolved img.        */
+  size_t      numerosion;  /* Number of times to erode thresholded image. */
+  int           erodengb;  /* Use 4 or 8 connectivity in erosion.         */
+  size_t         opening;  /* Depth of opening to apply to eroded image.  */
+  int         openingngb;  /* Use 4 or 8 connectivity in opening.         */
   float    sigclipmultip;  /* Multiple of standard deviation, sigma clip. */
   float sigcliptolerance;  /* Tolerance in sigma clip.                    */
-  char    *detectionname;  /* !=NULL: Name of initial detection steps.    */
-  char       *threshname;  /* !=NULL: Name of threshold steps.            */
 
   /* Operating mode: */
 
   /* Internal: */
   time_t         rawtime;  /* Starting time of the program.               */
+  long             *olab;  /* Object labels.                              */
+  long             *clab;  /* Clump labels.                               */
   unsigned char     *byt;  /* Array of single bytes for binary operations.*/
   float             *img;  /* Input image, kept here to enable            */
                            /* temporarily changing the mesh's img.        */

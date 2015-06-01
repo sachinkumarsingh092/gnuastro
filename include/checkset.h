@@ -101,15 +101,15 @@ intzeroorone(char *optarg, int *var, char *lo, char so, char* spack,
 	     char *filename, size_t lineno);
 
 void
+int4or8(char *optarg, int *var, char *lo, char so, char *spack,
+        char *filename, size_t lineno);
+
+void
 intelzero(char *optarg, int *var, char *lo, char so, char *spack,
 	  char *filename, size_t lineno);
 
 void
 intlzero(char *optarg, int *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
-
-void
-int4or8(char *optarg, int *var, char *lo, char so, char *spack,
 	 char *filename, size_t lineno);
 
 void

@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j m p v w x y z
+   c f g i j m v w x y z
    A B C E F G I J O R W X Y Z
 
-   Number keys free: >=506
+   Number keys free: >=508
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -256,6 +256,38 @@ static struct argp_option options[] =
       4
     },
     {
+      "numerosion",
+      'e',
+      "INT",
+      0,
+      "Num. erosions to apply after thresholding.",
+      4
+    },
+    {
+      "erodengb",
+      506,
+      "4or8",
+      0,
+      "Use 4 or 8 connectivity in erosion.",
+      4
+    },
+    {
+      "opening",
+      'p',
+      "INT",
+      0,
+      "Depth of opening to apply after erosion.",
+      4
+    },
+    {
+      "openingngb",
+      507,
+      "4or8",
+      0,
+      "Use 4 or 8 connectivity in opening.",
+      4
+    },
+    {
       "sigclipmultip",
       'u',
       "FLT",
@@ -428,6 +460,22 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 't':
       floatl0s1(arg, &p->qthresh, "qthresh", key, SPACK, NULL, 0);
       p->up.qthreshset=1;
+      break;
+    case 'e':
+      sizetelzero(arg, &p->numerosion, "numerosion", key, SPACK, NULL, 0);
+      p->up.numerosionset=1;
+      break;
+    case 506:
+      int4or8(arg, &p->erodengb, "erodengb", key, SPACK, NULL, 0);
+      p->up.erodengbset=1;
+      break;
+    case 'p':
+      sizetelzero(arg, &p->opening, "opening", key, SPACK, NULL, 0);
+      p->up.openingset=1;
+      break;
+    case 507:
+      int4or8(arg, &p->openingngb, "openingngb", key, SPACK, NULL, 0);
+      p->up.openingngbset=1;
       break;
     case 'u':
       floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
