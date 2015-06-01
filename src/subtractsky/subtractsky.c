@@ -260,6 +260,7 @@ subtractsky(struct subtractskyparams *p)
   arraytofitsimg(p->cp.output ,"SkySubtracted", FLOAT_IMG, skysubtracted,
                  s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
 
+
   /* Clean up: */
   free(sky);
   freemesh(mp);

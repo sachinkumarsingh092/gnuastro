@@ -49,8 +49,8 @@ floatmin(float *in, size_t size, float *min)
 {
   float tmin=FLT_MAX, *fpt;
   fpt=in+size;
-  do
-    if(!isnan(*in) && *in<tmin) tmin=*in;
+  do   /* Works for NAN, since NAN is not smaller than any number. */
+    if(*in<tmin) tmin=*in;
   while(++in<fpt);
   *min=tmin;
 }
@@ -64,8 +64,8 @@ floatmax(float *in, size_t size, float *max)
 {
   float tmax=-FLT_MAX, *fpt;
   fpt=in+size;
-  do
-    if(!isnan(*in) && *in>tmax) tmax=*in;
+  do /* Works for NAN, since NAN is not larger than any number. */
+    if(*in>tmax) tmax=*in;
   while(++in<fpt);
   *max=tmax;
 }
@@ -79,8 +79,8 @@ doublemin(double *in, size_t size, double *min)
 {
   double tmin=FLT_MAX, *fpt;
   fpt=in+size;
-  do
-    if(!isnan(*in) && *in<tmin) tmin=*in;
+  do   /* Works for NAN, since NAN is not smaller than any number. */
+    if(*in<tmin) tmin=*in;
   while(++in<fpt);
   *min=tmin;
 }
@@ -94,8 +94,8 @@ doublemax(double *in, size_t size, double *max)
 {
   double tmax=-FLT_MAX, *fpt;
   fpt=in+size;
-  do
-    if(!isnan(*in) && *in>tmax) tmax=*in;
+  do   /* Works for NAN, since NAN is not larger than any number. */
+    if(*in>tmax) tmax=*in;
   while(++in<fpt);
   *max=tmax;
 }
@@ -125,13 +125,13 @@ floatsecondmax(float *in, size_t size, float *secondmax)
   float smax=-FLT_MAX, max=-FLT_MAX, *fpt;
   fpt=in+size;
   do
-    {
-      if(!isnan(*in) && *in>max)
+    { /* Works for NAN, since NAN is not larger than any number. */
+      if(*in>max)
 	{
 	  smax=max;
 	  max=*in;
 	}
-      else if(!isnan(*in) && *in>smax) smax=*in;
+      else if(*in>smax) smax=*in;
     }
   while(++in<fpt);
   *secondmax=smax;
@@ -147,13 +147,13 @@ floatsecondmin(float *in, size_t size, float *secondmin)
   float smin=FLT_MAX, min=FLT_MAX, *fpt;
   fpt=in+size;
   do
-    {
-      if(!isnan(*in) && *in<min)
+    { /* Works for NAN, since NAN is not smaller than any number. */
+      if(*in<min)
 	{
 	  smin=min;
 	  min=*in;
 	}
-      else if(!isnan(*in) && *in<smin) smin=*in;
+      else if(*in<smin) smin=*in;
     }
   while(++in<fpt);
   *secondmin=smin;
@@ -170,28 +170,15 @@ fminmax(float *in, size_t size, float *min, float *max)
 
   fpt=(f=in)+size;
   do
-    {
+    {   /* Works for NAN, because NaN values are not greater or
+           smaller than any number. */
       if (*f>tmax) tmax=*f;
       if (*f<tmin) tmin=*f;
     }
   while(++f<fpt);
 
-
-  /* In case there was at least one NAN value */
-  if(isnan(tmin) || isnan(tmax))
-    {
-      tmin=FLT_MAX;
-      tmax=-FLT_MAX;
-      fpt=(f=in)+size;
-      do
-        if(isnan(*f)==0)
-          {
-            if (*f>tmax) tmax=*f;
-            if (*f<tmin) tmin=*f;
-          }
-      while(++f<fpt);
-    }
-
+  /* If the whole data was a NaN, then tmin and tmax did not change
+     from their initial values. */
   if(tmin==FLT_MAX || tmax==-FLT_MAX)
     *min=*max=NAN;
   else
@@ -199,9 +186,6 @@ fminmax(float *in, size_t size, float *min, float *max)
       *max=tmax;
       *min=tmin;
     }
-
-  *max=tmax;
-  *min=tmin;
 }
 
 
@@ -215,28 +199,13 @@ dminmax(double *in, size_t size, double *min, double *max)
 
   dpt=(d=in)+size;
   do
-    {
+    { /* Works for NAN */
       if (*d>tmax) tmax=*d;
       if (*d<tmin) tmin=*d;
     }
   while(++d<dpt);
 
-
-  /* In case there was at least one NAN value */
-  if(isnan(tmin) || isnan(tmax))
-    {
-      tmin=FLT_MAX;
-      tmax=-FLT_MAX;
-      dpt=(d=in)+size;
-      do
-        if(isnan(*d)==0)
-          {
-            if (*d>tmax) tmax=*d;
-            if (*d<tmin) tmin=*d;
-          }
-      while(++d<dpt);
-    }
-
+  /* If all the data was a NaN */
   if(tmin==FLT_MAX || tmax==-FLT_MAX)
     *min=*max=NAN;
   else
@@ -244,9 +213,6 @@ dminmax(double *in, size_t size, double *min, double *max)
       *max=tmax;
       *min=tmin;
     }
-
-  *max=tmax;
-  *min=tmin;
 }
 
 
@@ -259,8 +225,8 @@ dmax_withindex(double *in, size_t size, double *max, size_t *index)
   double *fpt, *pt=in, tmax=-FLT_MAX;
 
   fpt=pt+size;
-  do
-    if(!isnan(*pt) && *pt>tmax)
+  do  /*  Works for NAN, see comments above. */
+    if(*pt>tmax)
       {
 	tmax=*pt;
 	tindex=pt-in;
@@ -282,8 +248,8 @@ fmax_withindex(float *in, size_t size,
   float *pt=in, *fpt, tmax=-FLT_MAX;
 
   fpt=pt+size;
-  do
-    if(!isnan(*pt) && *pt>tmax)
+  do  /* Works for NAN, see comments above.x */
+    if(*pt>tmax)
       {
 	tmax=*pt;
 	tindex=pt-in;
@@ -305,8 +271,8 @@ dmin_withindex(double *in, size_t size,
   double *pt=in, *fpt, tmin=FLT_MAX;
 
   fpt=pt+size;
-  do
-    if(!isnan(*pt) && *pt<tmin)
+  do  /* Works for NAN, see comments above. */
+    if(*pt<tmin)
       {
 	tmin=*pt;
 	tindex=pt-in;
@@ -328,8 +294,8 @@ fmin_withindex(float *in, size_t size,
   float *pt=in, *fpt, tmin=FLT_MAX;
 
   fpt=pt+size;
-  do
-    if(!isnan(*pt) && *pt<tmin)
+  do /* Works for NAN, see comments above. */
+    if(*pt<tmin)
       {
 	tmin=*pt;
 	tindex=pt-in;

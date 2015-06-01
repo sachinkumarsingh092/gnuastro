@@ -35,6 +35,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "label.h"
 #include "thresh.h"
+#include "detection.h"
 #include "noisechisel.h"
 
 
@@ -59,6 +60,7 @@ noisechisel(struct noisechiselparams *p)
   int verb=p->cp.verb;
   char report[VERBMSGLENGTH_V];
   size_t i, s0=smp->s0, s1=smp->s1, numlabs;
+  char *initdetectionname=p->initdetectionname;
 
 
   /* Prepare the mesh array. */
@@ -85,11 +87,11 @@ noisechisel(struct noisechiselparams *p)
   /* Convolve the image: */
   if(verb) gettimeofday(&t1, NULL);
   spatialconvolveonmesh(smp, &p->conv);
-  if(p->detectionname)
+  if(initdetectionname)
     {
-      arraytofitsimg(p->detectionname, "Input", FLOAT_IMG, smp->img,
+      arraytofitsimg(initdetectionname, "Input", FLOAT_IMG, smp->img,
                      s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(p->detectionname, "Convolved", FLOAT_IMG, p->conv,
+      arraytofitsimg(initdetectionname, "Convolved", FLOAT_IMG, p->conv,
                      s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
     }
   if(verb) reporttiming(&t1, "Convolved with kernel.", 1);
@@ -99,8 +101,8 @@ noisechisel(struct noisechiselparams *p)
   /* Find the threshold and apply it: */
   if(verb) gettimeofday(&t1, NULL);
   findapplythreshold(p);
-  if(p->detectionname)
-    arraytofitsimg(p->detectionname, "Thresholded", BYTE_IMG, p->byt,
+  if(initdetectionname)
+    arraytofitsimg(initdetectionname, "Thresholded", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
@@ -119,8 +121,8 @@ noisechisel(struct noisechiselparams *p)
   else
     for(i=0;i<p->numerosion;++i)
       dilate0_erode1_8con(p->byt, s0, s1, 1);
-  if(p->detectionname)
-    arraytofitsimg(p->detectionname, "Eroded", BYTE_IMG, p->byt,
+  if(initdetectionname)
+    arraytofitsimg(initdetectionname, "Eroded", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
@@ -134,8 +136,8 @@ noisechisel(struct noisechiselparams *p)
   /* Do the opening: */
   if(verb) gettimeofday(&t1, NULL);
   opening(p->byt, s0, s1, p->opening, p->openingngb);
-  if(p->detectionname)
-    arraytofitsimg(p->detectionname, "Opened", BYTE_IMG, p->byt,
+  if(initdetectionname)
+    arraytofitsimg(initdetectionname, "Opened", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
@@ -149,14 +151,26 @@ noisechisel(struct noisechiselparams *p)
   /* Label the connected regions: */
   if(verb) gettimeofday(&t1, NULL);
   numlabs=BF_concmp(p->byt, p->olab, s0, s1, 4);
-  if(p->detectionname)
-    arraytofitsimg(p->detectionname, "Labeled", LONG_IMG, p->olab,
+  if(initdetectionname)
+    arraytofitsimg(initdetectionname, "Labeled", LONG_IMG, p->olab,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
       sprintf(report, "%lu initial detections found.", numlabs-1);
       reporttiming(&t1, report, 1);
     }
+
+
+
+  /* Remove the false detections */
+  if(verb) gettimeofday(&t1, NULL);
+  detectonmesh(p, &numlabs);
+  if(verb)
+    {
+      sprintf(report, "Final number of detections: %lu.", numlabs-1);
+      reporttiming(&t1, report, 1);
+    }
+
 
   /* Clean up: */
   free(p->byt);

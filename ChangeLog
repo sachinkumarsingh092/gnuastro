@@ -1,5 +1,9 @@
 2015-06-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
+	* lib/statistics.c: Removed all isnan checks in the comparison
+	functions for the minimum and maximum values. NaN values will
+	automatically fail all comparisons.
+
 	* lib/timing.c (reporttiming): Removed the `in' from reporting
 	seconds.
 

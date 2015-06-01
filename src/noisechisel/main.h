@@ -64,8 +64,10 @@ struct uiparams
   int         erodengbset;
   int          openingset;
   int       openingngbset;
+  int         minbfracset;
   int    sigclipmultipset;
   int sigcliptoleranceset;
+  int          dthreshset;
 };
 
 
@@ -75,42 +77,47 @@ struct uiparams
 struct noisechiselparams
 {
   /* Other structures: */
-  struct uiparams     up;  /* User interface parameters.                  */
-  struct commonparams cp;  /* Common parameters.                          */
-  struct meshparams  smp;  /* Smaller mesh grid of input image.           */
-  struct meshparams  lmp;  /* Larger mesh grid of input image.            */
+  struct uiparams      up;  /* User interface parameters.                  */
+  struct commonparams  cp;  /* Common parameters.                          */
+  struct meshparams   smp;  /* Smaller mesh grid of input image.           */
+  struct meshparams   lmp;  /* Larger mesh grid of input image.            */
 
   /* Input: */
-  int               nwcs;  /* Number of WCS structures.                   */
-  struct wcsprm     *wcs;  /* Pointer to WCS structures.                  */
-  int             bitpix;  /* Input image bitpix value.                   */
-  size_t        numblank;  /* Number of blank pixels in image.            */
+  int                nwcs;  /* Number of WCS structures.                   */
+  struct wcsprm      *wcs;  /* Pointer to WCS structures.                  */
+  int              bitpix;  /* Input image bitpix value.                   */
+  size_t         numblank;  /* Number of blank pixels in image.            */
 
   /* output: */
-  int           checkstd;  /* ==1: include the sky STD in checks.         */
-  char         *meshname;  /* Name of --checkmesh output.                 */
-  char    *detectionname;  /* !=NULL: Name of initial detection steps.    */
-  char       *threshname;  /* !=NULL: Name of threshold steps.            */
+  int            checkstd;  /* ==1: include the sky STD in checks.         */
+  char          *meshname;  /* Name of --checkmesh output.                 */
+  char        *threshname;  /* !=NULL: Name of threshold steps.            */
+  char *initdetectionname;  /* !=NULL: Name of initial detection steps.    */
+  char     *detectionname;  /* !=NULL: Name of detection steps.            */
+  char  *detectionskyname;  /* !=NULL: Name of detection sky steps.        */
 
   /* Detection: */
-  float            *conv;  /* Convolved image.                            */
-  float          qthresh;  /* Quantile threshold on convolved img.        */
-  size_t      numerosion;  /* Number of times to erode thresholded image. */
-  int           erodengb;  /* Use 4 or 8 connectivity in erosion.         */
-  size_t         opening;  /* Depth of opening to apply to eroded image.  */
-  int         openingngb;  /* Use 4 or 8 connectivity in opening.         */
-  float    sigclipmultip;  /* Multiple of standard deviation, sigma clip. */
-  float sigcliptolerance;  /* Tolerance in sigma clip.                    */
+  float             *conv;  /* Convolved image.                            */
+  float           qthresh;  /* Quantile threshold on convolved img.        */
+  size_t       numerosion;  /* Number of times to erode thresholded image. */
+  int            erodengb;  /* Use 4 or 8 connectivity in erosion.         */
+  size_t          opening;  /* Depth of opening to apply to eroded image.  */
+  int          openingngb;  /* Use 4 or 8 connectivity in opening.         */
+  float          minbfrac;  /* Minimum fraction of undetected pixels.      */
+  float     sigclipmultip;  /* Multiple of standard deviation, sigma clip. */
+  float  sigcliptolerance;  /* Tolerance in sigma clip.                    */
+  float           dthresh;  /* Threshold to remove false detections.       */
 
   /* Operating mode: */
 
   /* Internal: */
-  time_t         rawtime;  /* Starting time of the program.               */
-  long             *olab;  /* Object labels.                              */
-  long             *clab;  /* Clump labels.                               */
-  unsigned char     *byt;  /* Array of single bytes for binary operations.*/
-  float             *img;  /* Input image, kept here to enable            */
-                           /* temporarily changing the mesh's img.        */
+  time_t          rawtime;  /* Starting time of the program.               */
+  long              *olab;  /* Object labels.                              */
+  long              *clab;  /* Clump labels.                               */
+  unsigned char      *byt;  /* Array of single bytes for binary operations.*/
+  unsigned char     *dbyt;  /* False detection removal array.              */
+  float           cpscorr;  /* Correction for counts per second data.      */
+  float              *img;  /* Input image.                                */
 };
 
 #endif

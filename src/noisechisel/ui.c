@@ -267,6 +267,13 @@ readconfig(char *filename, struct noisechiselparams *p)
                   filename, lineno);
 	  up->openingngbset=1;
 	}
+      else if(strcmp(name, "minbfrac")==0)
+	{
+	  if(up->minbfracset) continue;
+          floatl0s1(value, &p->minbfrac, name, key, SPACK,
+                    filename, lineno);
+	  up->minbfracset=1;
+	}
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
@@ -280,6 +287,13 @@ readconfig(char *filename, struct noisechiselparams *p)
           floatl0s1(value, &p->sigcliptolerance, name, key, SPACK,
                   filename, lineno);
 	  up->sigcliptoleranceset=1;
+	}
+      else if(strcmp(name, "dthresh")==0)
+	{
+	  if(up->dthreshset) continue;
+          floatl0s1(value, &p->dthresh, name, key, SPACK,
+                  filename, lineno);
+	  up->dthreshset=1;
 	}
 
 
@@ -390,11 +404,15 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "opening", p->opening);
   if(up->openingngbset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "openingngb", p->openingngb);
+  if(up->minbfracset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minbfrac", p->minbfrac);
   if(up->sigclipmultipset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
   if(up->sigcliptoleranceset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
             p->sigcliptolerance);
+  if(up->dthreshset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "dthresh", p->dthresh);
 }
 
 
@@ -447,10 +465,14 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("opening");
   if(up->openingngbset==0)
     REPORT_NOTSET("openingngb");
+  if(up->minbfracset==0)
+    REPORT_NOTSET("minbfrac");
   if(up->sigclipmultipset==0)
     REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
     REPORT_NOTSET("sigcliptolerance");
+  if(up->dthreshset==0)
+    REPORT_NOTSET("dthresh");
 
   END_OF_NOTSET_REPORT;
 }
@@ -499,18 +521,31 @@ sanitycheck(struct noisechiselparams *p)
       automaticoutput(p->up.inputname, "_meshs.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->meshname);
     }
-  if(p->detectionname)
-    {
-      p->detectionname=NULL;    /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_det.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->detectionname);
-    }
   if(p->threshname)
     {
-      p->threshname=NULL;       /* Was not allocated before!  */
+      p->threshname=NULL;
       automaticoutput(p->up.inputname, "_thresh.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->threshname);
     }
+  if(p->initdetectionname)
+    {
+      p->initdetectionname=NULL;
+      automaticoutput(p->up.inputname, "_initdet.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->initdetectionname);
+    }
+  if(p->detectionname)
+    {
+      p->detectionname=NULL;
+      automaticoutput(p->up.inputname, "_det.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->detectionname);
+    }
+  if(p->detectionskyname)
+    {
+      p->detectionskyname=NULL;
+      automaticoutput(p->up.inputname, "_detsky.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->detectionskyname);
+    }
+
 
   /* Other checks: */
   if(smp->numnearest<MINACCEPTABLENEAREST)
@@ -724,7 +759,7 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Using %lu CPU threads.\n", p->cp.numthreads);
+      printf("  - Using %lu CPU thread(s).\n", p->cp.numthreads);
       printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)
         printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
@@ -781,6 +816,8 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   if(p->meshname) free(p->meshname);
   if(p->threshname) free(p->threshname);
   if(p->detectionname) free(p->detectionname);
+  if(p->detectionskyname) free(p->detectionskyname);
+  if(p->initdetectionname) free(p->initdetectionname);
 
   /* Free the WCS structure: */
   if(p->wcs)

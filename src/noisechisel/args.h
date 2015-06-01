@@ -73,9 +73,9 @@ const char doc[] =
 /* Available letters for short options:
 
    c f g i j m v w x y z
-   A B C E F G I J O R W X Y Z
+   A C E F G I J O W X Y Z
 
-   Number keys free: >=508
+   Number keys free: >=510
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -288,6 +288,14 @@ static struct argp_option options[] =
       4
     },
     {
+      "minbfrac",
+      'B',
+      "FLT",
+      0,
+      "Minimum fraction of undetected area in a mesh.",
+      4
+    },
+    {
       "sigclipmultip",
       'u',
       "FLT",
@@ -304,19 +312,44 @@ static struct argp_option options[] =
       4
     },
     {
-      "checkdetection",
-      503,
+      "dthresh",
+      'R',
+      "FLT",
       0,
-      0,
-      "Initial detection steps in file `_det.fits'.",
+      "Threshold (STD multiple) for false detections.",
       4
     },
+
     {
       "checkthresh",
       505,
       0,
       0,
       "Threshold value on each mesh `_thresh.fits'.",
+      4
+    },
+    {
+      "checkinitdetection",
+      503,
+      0,
+      0,
+      "Initial detection steps in file `_initdet.fits'.",
+      4
+    },
+    {
+      "checkdetection",
+      508,
+      0,
+      0,
+      "False detection steps in file `_det.fits'.",
+      4
+    },
+    {
+      "checkdetectionsky",
+      509,
+      0,
+      0,
+      "Sky for false detections in file `_detsky.fits'.",
       4
     },
 
@@ -477,6 +510,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       int4or8(arg, &p->openingngb, "openingngb", key, SPACK, NULL, 0);
       p->up.openingngbset=1;
       break;
+    case 'B':
+      floatl0s1(arg, &p->minbfrac, "minbfrac", key, SPACK, NULL, 0);
+      p->up.minbfracset=1;
+      break;
     case 'u':
       floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
               NULL, 0);
@@ -487,11 +524,21 @@ parse_opt(int key, char *arg, struct argp_state *state)
               NULL, 0);
       p->up.sigcliptoleranceset=1;
       break;
-    case 503:
-      p->detectionname="a";
+    case 'R':
+      anyfloat(arg, &p->dthresh, "dthresh", key, SPACK, NULL, 0);
+      p->up.dthreshset=1;
       break;
     case 505:
       p->threshname="a";
+      break;
+    case 503:
+      p->initdetectionname="a";
+      break;
+    case 508:
+      p->detectionname="a";
+      break;
+    case 509:
+      p->detectionskyname="a";
       break;
 
 
