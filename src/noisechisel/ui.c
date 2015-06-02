@@ -295,6 +295,20 @@ readconfig(char *filename, struct noisechiselparams *p)
                   filename, lineno);
 	  up->dthreshset=1;
 	}
+      else if(strcmp(name, "detsnminarea")==0)
+	{
+	  if(up->detsnminareaset) continue;
+          sizetlzero(value, &p->detsnminarea, name, key, SPACK,
+                     filename, lineno);
+	  up->detsnminareaset=1;
+	}
+      else if(strcmp(name, "detsnhistnbins")==0)
+	{
+	  if(up->detsnhistnbinsset) continue;
+          sizetelzero(value, &p->detsnhistnbins, name, key, SPACK,
+                      filename, lineno);
+	  up->detsnhistnbinsset=1;
+	}
 
 
       /* Operating modes: */
@@ -413,6 +427,10 @@ printvalues(FILE *fp, struct noisechiselparams *p)
             p->sigcliptolerance);
   if(up->dthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "dthresh", p->dthresh);
+  if(up->detsnminareaset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnminarea", p->detsnminarea);
+  if(up->detsnhistnbinsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnhistnbins", p->detsnhistnbins);
 }
 
 
@@ -473,6 +491,10 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("sigcliptolerance");
   if(up->dthreshset==0)
     REPORT_NOTSET("dthresh");
+  if(up->detsnminareaset==0)
+    REPORT_NOTSET("detsnminarea");
+  if(up->detsnhistnbinsset==0)
+    REPORT_NOTSET("detsnhistnbins");
 
   END_OF_NOTSET_REPORT;
 }
@@ -697,6 +719,7 @@ preparearrays(struct noisechiselparams *p)
   lmp->numnearest=smp->numnearest;
   lmp->smoothwidth=smp->smoothwidth;
   lmp->lastmeshfrac=smp->lastmeshfrac;
+  lmp->interponlyblank=smp->interponlyblank;
   lmp->fullinterpolation=smp->fullinterpolation;
   lmp->numthreads=smp->numthreads=p->cp.numthreads;
 }
@@ -812,7 +835,7 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   if(p->up.maskname && p->up.maskname!=p->up.inputname)
     free(p->up.maskname);
 
-  /* Free all the allocated names: */
+  /* Free all the allocated names. Note that detsnhist */
   if(p->meshname) free(p->meshname);
   if(p->threshname) free(p->threshname);
   if(p->detectionname) free(p->detectionname);

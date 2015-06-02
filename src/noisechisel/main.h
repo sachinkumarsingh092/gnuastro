@@ -68,6 +68,8 @@ struct uiparams
   int    sigclipmultipset;
   int sigcliptoleranceset;
   int          dthreshset;
+  int     detsnminareaset;
+  int   detsnhistnbinsset;
 };
 
 
@@ -89,7 +91,6 @@ struct noisechiselparams
   size_t         numblank;  /* Number of blank pixels in image.            */
 
   /* output: */
-  int            checkstd;  /* ==1: include the sky STD in checks.         */
   char          *meshname;  /* Name of --checkmesh output.                 */
   char        *threshname;  /* !=NULL: Name of threshold steps.            */
   char *initdetectionname;  /* !=NULL: Name of initial detection steps.    */
@@ -107,6 +108,8 @@ struct noisechiselparams
   float     sigclipmultip;  /* Multiple of standard deviation, sigma clip. */
   float  sigcliptolerance;  /* Tolerance in sigma clip.                    */
   float           dthresh;  /* Threshold to remove false detections.       */
+  size_t     detsnminarea;  /* Minimum area to calculate S/N for detection.*/
+  size_t   detsnhistnbins;  /* ==1: Save false detection S/Ns histogram.   */
 
   /* Operating mode: */
 
@@ -115,9 +118,12 @@ struct noisechiselparams
   long              *olab;  /* Object labels.                              */
   long              *clab;  /* Clump labels.                               */
   unsigned char      *byt;  /* Array of single bytes for binary operations.*/
-  unsigned char     *dbyt;  /* False detection removal array.              */
+  unsigned char     *dbyt;  /* False detection removal thresholded array.  */
   float           cpscorr;  /* Correction for counts per second data.      */
+  unsigned char      b0f1;  /* ==1: we are now working on data, not noise. */
   float              *img;  /* Input image.                                */
+  float              *std;  /* The standard deviation of each pixel.       */
+  int             stepnum;  /* Number of step if user wants to see steps.  */
 };
 
 #endif

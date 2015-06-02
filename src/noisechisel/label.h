@@ -30,4 +30,8 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
 size_t
 BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs);
 
+void
+removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
+			size_t *numlabs, size_t minarea);
+
 #endif

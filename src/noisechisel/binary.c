@@ -27,6 +27,53 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include "label.h"
+#include "fitsarrayvv.h"
+
+
+
+
+
+
+
+/****************************************************************
+ *****************          Counting         ********************
+ ****************************************************************/
+/* A region in a larger image is defined by its starting pixel
+   (`start`), its height (s0) and width (s1). This function will count
+   how many nonmasked (==0 in mask[]), foregound (==1 in byt[]) and
+   background (==0 in byt[]) pixels there are in a given region of
+   these two large arrays. mask[] and byt[] should have the same size
+   and their width is here called `is1`. */
+void
+count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
+                   size_t s1, size_t is1, size_t *numf, size_t *numb)
+{
+  size_t nf=0, nb=0, r;
+  unsigned char *b, *fb;
+
+  for(r=0;r<s0;++r)
+    {
+      fb=(b=byt+startind)+s1;
+      do
+        *b ? ++nf : ++nb;
+      while(++b<fb);
+      startind+=is1;
+    }
+  *numf=nf;
+  *numb=nb;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -244,4 +291,264 @@ opening(unsigned char *byt, size_t s0, size_t s1,
 
   for(i=0;i<depth;++i)
     func(byt, s0, s1, 0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ *****************          Fill holes       ********************
+ ****************************************************************/
+void
+fillleftside(unsigned char *inv, size_t idx, size_t idy,
+             size_t maxfill)
+{
+  size_t i, j, min_o, end, index;
+
+  min_o=1;
+  end=idx-2;
+  for(i=2;i<end;++i)
+    {
+      index=i*idy+2;
+      if(inv[index]==1 && inv[index+idy]==0)
+        {
+	  if(i+1-min_o<maxfill)
+	    for(j=min_o;j<=i+1;++j)
+	      inv[j*idy+1]=2;
+	  min_o=i+1;
+        }
+      else if(inv[index]==0 && inv[index+idy]==1)
+	min_o=i;
+    }
+  if(min_o!=1 && end-min_o<maxfill)
+    for(j=min_o;j<=end;++j)
+      inv[j*idy+1]=2;
+}
+
+
+
+
+
+void
+fillbottomside(unsigned char *inv, size_t idy,
+               size_t maxfill)
+{
+  size_t i, j, min_o, end, index;
+
+  min_o=1;
+  end=idy-2;
+  for(i=2;i<end;++i)
+    {
+      index=2*idy+i;
+      if(inv[index]==1 && inv[index+1]==0)
+        {
+	  if(i+1-min_o<maxfill)
+	    for(j=min_o;j<=i+1;++j)
+	      inv[idy+j]=2;
+	  min_o=i+1;
+        }
+      else if(inv[index]==0 && inv[index+1]==1)
+	min_o=i;
+    }
+  if(min_o!=1 && end-min_o<maxfill)
+    for(j=min_o;j<=end;++j)
+      inv[idy+j]=2;
+}
+
+
+
+
+
+void
+fillrightside(unsigned char *inv, size_t idx, size_t idy,
+              size_t maxfill)
+{
+  size_t i, j, min_o, end, index;
+
+  min_o=1;
+  end=idx-2;
+  for(i=2;i<end;++i)
+    {
+      index=i*idy+idy-3;
+      if(inv[index]==1 && inv[index+idy]==0)
+        {
+	  if(i+1-min_o<maxfill)
+	    for(j=min_o;j<=i+1;++j)
+	      inv[j*idy+idy-2]=2;
+	  min_o=i+1;
+        }
+      else if(inv[index]==0 && inv[index+idy]==1)
+	min_o=i;
+    }
+  if(min_o!=1 && end-min_o<maxfill)
+    for(j=min_o;j<=end;++j)
+      inv[j*idy+idy-2]=2;
+}
+
+
+
+
+
+void
+filltopside(unsigned char *inv, size_t idx, size_t idy,
+            size_t maxfill)
+{
+  size_t i, j, min_o, end, index;
+
+  min_o=1;
+  end=idy-2;
+  for(i=2;i<end;++i)
+    {
+      index=(idx-3)*idy+i;
+      if(inv[index]==1 && inv[index+1]==0)
+        {
+	  if(i+1-min_o<maxfill)
+	    for(j=min_o;j<=i+1;++j)
+	      inv[(idx-2)*idy+j]=2;
+	  min_o=i+1;
+        }
+      else if(inv[index]==0 && inv[index+1]==1)
+	min_o=i;
+    }
+  if(min_o!=1 && end-min_o<maxfill)
+    for(j=min_o;j<=end;++j)
+      inv[(idx-2)*idy+j]=2;
+}
+
+
+
+
+
+/* Make the array that is the inverse of the input byt of fill
+   holes. The inverse array will also be 4 pixels larger in both
+   dimensions. This is because we also want to fill those holes that
+   are touching the side of the image. One pixel for a pixel that is
+   one pixel away from the image border. Another pixel for those
+   objects that are touching the image border. */
+void
+fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
+	   unsigned char **inv, size_t *oidx, size_t *oidy,
+	   size_t l, size_t b, size_t r, size_t t)
+{
+  unsigned char *tinv;
+  size_t i, j, idx, idy, size, tdiff=2;
+
+  idx=s0+2*tdiff;
+  idy=s1+2*tdiff;
+  size=idx*idy;
+
+  /* Allocate the temporary inverse array: */
+  errno=0; tinv=malloc(size*sizeof *tinv);
+  if(tinv==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for tinv (label.c)",
+          size*sizeof *tinv);
+
+  for(i=0;i<size;++i) tinv[i]=1;
+  for(i=0;i<s0;++i)
+    for(j=0;j<s1;++j)
+      if(byt[i*s1+j]==1)
+	tinv[(i+tdiff)*idy+j+tdiff]=0;
+
+  if(l!=0) fillleftside(tinv, idx, idy, l);
+  if(b!=0) fillbottomside(tinv, idy, b);
+  if(r!=0) fillrightside(tinv, idx, idy, r);
+  if(t!=0) filltopside(tinv, idx, idy, t);
+
+  if(l!=0 || b!=0 || r!=0 || t!=0)
+    for(i=0;i<size;++i)
+      if(tinv[i]==2) tinv[i]=0;
+
+  *inv=tinv;
+  *oidx=idx;
+  *oidy=idy;
+}
+
+
+
+
+
+/* Fill all the holes in an input unsigned char array that are bounded
+   within a 4-connected region.
+
+   The basic method is this:
+
+   1. An inverse image is created:
+
+        * For every pixel in the input that is 1, the inverse is 0.
+
+        * The inverse image has two extra pixels on each edge to
+          ensure that all the inv[i]==1 pixels around the image are
+          touching each other and a diagonal object passing through
+          the image does not cause the inv[i]==1 pixels on the edges
+          of the image to get a different label.
+
+   2. The 8 connected regions in this inverse image are found.
+
+   3. Since we had a 2 pixel padding on the edges of the image, we
+      know for sure that all labeled regions with a label of 1 are
+      actually connected `holes' in the input image.
+
+      Any pixel with a label larger than 1, is therefore a bounded
+      hole that is not 8-connected to the rest of the holes.
+
+*/
+void
+fillboundedholes(unsigned char *in, size_t s0, size_t s1)
+{
+  long *hlab;
+  unsigned char *inv;
+  size_t i, j, idx, idy, diff;
+
+
+  /* Make the inverse array: */
+  fh_makeinv(in, s0, s1, &inv, &idx, &idy, 0, 0, 0, 0);
+  diff=(idx-s0)/2;
+
+
+  /* Allocate the array to keep the hole indexs */
+  errno=0; hlab=calloc(idx*idy, sizeof *hlab);
+  if(hlab==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for hlab in filllabeledholes "
+          "(label.c)", idx*idy*sizeof *hlab);
+
+
+  /* Find the hole labels */
+  BF_concmp(inv, hlab, idx, idy, 8);
+
+
+  /* For a check
+  arraytofitsimg("fbh.fits", "INPUT", BYTE_IMG, in,
+                 s0, s1, 0, NULL, NULL, "tmp");
+  arraytofitsimg("fbh.fits", "INV", BYTE_IMG, inv,
+                 idx, idy, 0, NULL, NULL, "tmp");
+  arraytofitsimg("fbh.fits", "HLAB", LONG_IMG, hlab,
+                 idx, idy, 0, NULL, NULL, "tmp");
+  */
+
+  /* Correct the labels: */
+  for(i=diff;i<idx-diff;++i)	/* Note that holes will always  */
+    for(j=diff;j<idy-diff;++j)	/* be in the inner diff pixels. */
+      if(hlab[i*idy+j]>1)
+	in[(i-diff)*s1+j-diff]=1;
+
+  /* For a check:
+  arraytofitsimg("fbh.fits", "INPUT", BYTE_IMG, in,
+                 s0, s1, 0, NULL, NULL, "tmp");
+  */
 }

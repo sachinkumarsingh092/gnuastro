@@ -35,10 +35,64 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/*********************************************************************
+ **********************       Initialize        **********************
+ *********************************************************************/
+void
+ucharinitonregion(unsigned char *in, const unsigned char v,
+		  size_t start, size_t s0, size_t s1, size_t is1)
+{
+  size_t r;
+  unsigned char *p, *fp;
+
+  for(r=0;r<s0;++r)
+    {
+      fp = (p=in+start) + s1;
+      do
+	*p=v;
+      while(++p<fp);
+      start+=is1;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*********************************************************************
  **********************       Copy array        **********************
  *********************************************************************/
+void
+ucharcopy(unsigned char *in, size_t size, unsigned char **out)
+{
+  unsigned char *fp=in+size, *o;
+
+  errno=0;
+  o=*out=malloc(size*sizeof *out);
+  if(*out==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for copying", size);
+  do *o++=*in; while(++in<fp);
+}
+
+
+
+
+
 void
 floatcopy(float *in, size_t size, float **out)
 {

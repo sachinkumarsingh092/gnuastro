@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c f g i j m v w x y z
+   c f g j m v w x y z
    A C E F G I J O W X Y Z
 
-   Number keys free: >=510
+   Number keys free: >=512
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -189,6 +189,14 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Minimum acceptable quantile for the mode.",
+      3
+    },
+    {
+      "interponlyblank",
+      511,
+      0,
+      0,
+      "Only interpolate over the blank pixels.",
       3
     },
     {
@@ -317,6 +325,22 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Threshold (STD multiple) for false detections.",
+      4
+    },
+    {
+      "detsnminarea",
+      'i',
+      "INT",
+      0,
+      "Minimum area to calculate S/N in detection.",
+      4
+    },
+    {
+      "detsnhistnbins",
+      510,
+      "INT",
+      0,
+      "Detection S/N histogram No. bins `_detsnXX.txt'.",
       4
     },
 
@@ -467,6 +491,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       floatl0s1(arg, &p->smp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
       p->up.minmodeqset=1;
       break;
+    case 511:
+      p->smp.interponlyblank=1;
+      break;
     case 'n':
       sizetlzero(arg, &p->smp.numnearest, "numnearest", key, SPACK, NULL, 0);
       p->up.numnearestset=1;
@@ -527,6 +554,15 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'R':
       anyfloat(arg, &p->dthresh, "dthresh", key, SPACK, NULL, 0);
       p->up.dthreshset=1;
+      break;
+    case 'i':
+      sizetlzero(arg, &p->detsnminarea, "detsnminarea", key, SPACK, NULL, 0);
+      p->up.detsnminareaset=1;
+      break;
+    case 510:
+      sizetelzero(arg, &p->detsnhistnbins, "detsnhistnbins", key,
+                  SPACK, NULL, 0);
+      p->up.detsnhistnbinsset=1;
       break;
     case 505:
       p->threshname="a";

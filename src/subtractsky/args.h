@@ -73,7 +73,7 @@ const char doc[] =
    c e f g i j l m p r v w x y z
    A B C E F G I J O R W X Y Z
 
-   Number keys free: >=508
+   Number keys free: >=509
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -193,6 +193,14 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Minimum acceptable quantile for the mode.",
+      3
+    },
+    {
+      "interponlyblank",
+      508,
+      0,
+      0,
+      "Only interpolate over the blank pixels.",
       3
     },
     {
@@ -393,6 +401,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'Q':
       floatl0s1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
       p->up.minmodeqset=1;
+      break;
+    case 508:
+      p->mp.interponlyblank=1;
       break;
     case 'n':
       sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);

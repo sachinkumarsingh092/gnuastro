@@ -24,6 +24,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define BINARY_H
 
 void
+count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
+                   size_t s1, size_t is1, size_t *numf, size_t *numb);
+
+void
 dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
                     unsigned char b0_f1);
 
@@ -34,5 +38,8 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
 void
 opening(unsigned char *byt, size_t s0, size_t s1,
         size_t depth, int con_type);
+
+void
+fillboundedholes(unsigned char *in, size_t s0, size_t s1);
 
 #endif

@@ -6635,13 +6635,14 @@ disabled with the @option{--fullconvolution} option. See
 @node Grid interpolation and smoothing, Mesh grid options, Quantifying signal in a mesh, Tiling an image
 @subsubsection Grid interpolation and smoothing
 
-As explained in @ref{Finding the sky value}, the sky value will not be
-found over some of the grid elements. For example when a large galaxy
-is present in the image, no sky value will be found for the grid
-elements that lie over it. However, the sky value should be `guessed'
-over that part of the image. We cannot just not subtract the sky value
-from those regions! To fill in such blank grid elements, we use
-interpolation.
+On some of the grid elements, the desired value will not be found, for
+example the Sky value in @ref{Finding the sky value}. This can happen
+for lots of reasons depending on the job that was to be done on a
+mesh, for example when a large galaxy is present in the image, no Sky
+value will be found for the grid elements that lie over it. However,
+the Sky value should be `guessed' over that part of the image. We
+cannot just ignore those regions! To fill in such blank grid elements,
+we use interpolation.
 
 @cindex Spline interpolation
 @cindex Linear interpolation
@@ -6649,22 +6650,32 @@ interpolation.
 @cindex Interpolation, spline
 @cindex Interpolation, bicubic
 @cindex Interpolation, bilinear
-Parametric interpolations like bi-linear or bicubic or spline
+Parametric interpolations like bi-linear, bicubic or spline
 interpolations are not used because they fail terribly on the edges of
 the image. For example see Figure 16 in Akhlaghi and Ichikawa
 (2015). They are also prone to cause significant gradients in the
 image. So to find the interpolated value for each grid element,
-SubtractSky will look at a certain number of the nearest
-neighbors. The exact number can be specified through
-@option{--numnearest}. The median value of those grid elements will be
-taken as the final value for the blank mesh. The median is chosen
-because on the fainter wings of bright objects, the mean can easily
-become biased. If the number of meshes with a good value is less than
-the value given to @option{--numnearest}, then the program will abort
-and notify you. In such cases you can either decrease the value to
-this option or set less restrictive requirements (for example a
-smaller @option{--minmodeq}, or larger/smaller meshs) at the expense
-of less accurate results.
+Gnuastro will look at a certain number of the nearest neighbors. The
+exact number can be specified through @option{--numnearest}. The
+median value of those grid elements will be taken as the final value
+for each mesh. The median is chosen because on the fainter wings of
+bright objects, the mean can easily become biased. If the number of
+meshes with a good value is less than the value given to
+@option{--numnearest}, then the program will abort and notify you. In
+such cases you can either decrease the value to this option or set
+less restrictive requirements (for example a smaller
+@option{--minmodeq}, or larger/smaller meshs) at the expense of less
+accurate results.
+
+@cindex PSF
+By default the process above will occur on all the grid elements, not
+just the ones that are blank. This is done to avoid biased results on
+the faint wings of bright galaxies and stars (the PSF). Because their
+flux penetrates into the noise very slowly, it might not be possible
+to completely identify it. Therefore, if interpolation is not done on
+non-blank pixels, they can cause a bias in the vicinity of bright
+objects, particularly after smoothing in the next step. This behavior
+can be disabled with the @option{--interponlyblank} option.
 
 @cindex Average filter
 Once all the grid elements are filled, the values given to all the
@@ -6770,6 +6781,11 @@ have positive signal (all astronomically relevant observations), the
 mode will be less than the median. The sky value is only found on
 meshes where the median and mode are approximately the same, see
 @ref{Sky value}.
+
+@item --interponlyblank
+Only interpolate the blank pixels. By default, interpolation will
+happen on all the mesh grids, not just the blank ones. See @ref{Grid
+interpolation and smoothing}.
 
 @item -n
 @itemx --numnearest

@@ -124,14 +124,13 @@ struct meshparams
   void        *oneforall; /* One array that can contain all the meshs.   */
 
   /* Interpolation: */
-  float       mirrordist;  /* For finding the mode. Distance after mirror.*/
-  float         minmodeq;  /* Minimum acceptable quantile for the mode.   */
+  float       mirrordist; /* For finding the mode. Distance after mirror.*/
+  float         minmodeq; /* Minimum acceptable quantile for the mode.   */
   unsigned char     *byt; /* To keep track of pixels already checked.    */
   size_t      numnearest; /* Number of the nearest pixels for interp.    */
   float        *nearest1; /* Array keeping nearest pixels for garray1.   */
   float        *nearest2; /* Array keeping nearest pixels for garray2.   */
-  size_t          numnan; /* Number of blank elements to interpolate.    */
-  size_t        *naninds; /* Array to keep blank mesh indexs.            */
+  int    interponlyblank; /* Only interpolate over blank pixels.         */
   float      *outgarray1; /* The interpolated garray1.                   */
   float      *outgarray2; /* The interpolated garray2.                   */
   int  fullinterpolation; /* ==1: Ignore channels in interpolation.      */

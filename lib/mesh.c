@@ -539,6 +539,9 @@ makemesh(struct meshparams *mp)
   errno=0; mp->imgindex=malloc(mp->nmeshi*sizeof *mp->imgindex);
   if(mp->imgindex==NULL) error(EXIT_FAILURE, errno, "Mesh in image index");
 
+  /* Distribute the meshes in all the threads. */
+  distinthreads(mp->nmeshi, mp->numthreads, &mp->indexs, &mp->thrdcols);
+
   /* Fill in the information for each mesh and each type. */
   fillmeshinfo(mp, chs0, chs1, lasts0, lasts1);
 }
@@ -552,6 +555,7 @@ freemesh(struct meshparams *mp)
 {
   free(mp->start);
   free(mp->types);
+  free(mp->indexs);
   free(mp->chindex);
   free(mp->cgarray1);
   free(mp->cgarray2);
@@ -613,6 +617,7 @@ operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
 {
   int err;
   size_t i, nb;
+  float *f, *fp;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   struct meshthreadparams *mtp;
@@ -628,10 +633,12 @@ operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
   /* Allocate the array to keep the values for each  */
   errno=0; mp->cgarray1=malloc(mp->nmeshi*sizeof *mp->cgarray1);
   if(mp->cgarray1==NULL) error(EXIT_FAILURE, errno, "mp->cgarray1");
+  fp=(f=mp->cgarray1)+mp->nmeshi; do *f++=NAN; while(f<fp);
   if(makegarray2)
     {
       errno=0; mp->cgarray2=malloc(mp->nmeshi*sizeof *mp->cgarray2);
       if(mp->cgarray2==NULL) error(EXIT_FAILURE, errno, "mp->cgarray2");
+      fp=(f=mp->cgarray2)+mp->nmeshi; do *f++=NAN; while(f<fp);
     }
   else mp->cgarray2=NULL;
   mp->garray1=mp->cgarray1;
@@ -660,9 +667,6 @@ operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
               "mtp->oneforall in fillmesh of mesh.c.",
               numthreads*mp->maxs0*mp->maxs1*oneforallsize);
     }
-
-  /* Distribute the meshes in all the threads. */
-  distinthreads(mp->nmeshi, mp->numthreads, &mp->indexs, &mp->thrdcols);
 
   /* Spin off the threads: */
   if(numthreads==1)
@@ -698,7 +702,6 @@ operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
     }
 
   free(mtp);
-  free(mp->indexs);
   if(oneforallsize) free(mp->oneforall);
 }
 
@@ -765,12 +768,21 @@ meshinterponthread(void *inparams)
   /* Go over all the meshes for this thread. */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
     {
+      /* Get the index of this NaN mesh: */
+      thisind=indexs[i];
+
+      /* If this mesh is not blank and the user has only asked to
+         interpolate blank pixels, then set the final values and go
+         onto the next mesh. */
+      if(mp->interponlyblank && !isnan(garray1[thisind]))
+        {
+          outgarray1[thisind]=garray1[thisind];
+          if(garray2) outgarray2[thisind]=garray2[thisind];
+          continue;
+        }
+
       /* Reset the byt array: */
       memset(byt, 0, is0*is1);
-
-      /* Get the index of this NaN mesh: */
-      thisind=mp->naninds[indexs[i]];
-      /*printf("Started mesh %lu\n", thisind);*/
 
       /*
          `fmeshid' (first-mesh-id) keeps the index of the first mesh
@@ -848,15 +860,6 @@ meshinterponthread(void *inparams)
                               nearest1[numnearest/2] : /* Odd.  */
                               (nearest1[numnearest/2]  /* Even. */
                                +nearest1[numnearest/2-1])/2 );
-      /*
-      if(outgarray1[thisind]<4000 || outgarray1[thisind]>5000)
-        {
-          printf("%lu", thisind);
-          for(i=0;i<numnearest;++i)
-            printf("\t%f\n", nearest1[i]);
-          printf("Result: %f\n\n\n", outgarray1[thisind]);
-        }
-      */
       if(garray2)
         {
           qsort(nearest2, numnearest, sizeof *nearest2, floatincreasing);
@@ -880,10 +883,9 @@ meshinterponthread(void *inparams)
 void
 preparemeshinterparrays(struct meshparams *mp)
 {
-  float *garray1, *garray2;
+  float *garray2;
   size_t numthreads=mp->numthreads;
-  size_t numnan=0, bs0=mp->gs0, bs1=mp->gs1;
-  float *f, *ff, *fff=NULL, *ffff=NULL, *fp;
+  size_t bs0=mp->gs0, bs1=mp->gs1;
 
 
   /* If full-interpolation is to be done (ignoring channels) we will
@@ -905,7 +907,6 @@ preparemeshinterparrays(struct meshparams *mp)
       mp->garray1=mp->cgarray1;
       mp->garray2=mp->cgarray2;
     }
-  garray1=mp->garray1;
   garray2=mp->garray2;
 
 
@@ -914,50 +915,17 @@ preparemeshinterparrays(struct meshparams *mp)
      the newly filled interpolated pixels will affect the later
      ones. In the end, these copies are going to replace the
      garrays. */
-  errno=0; ff=mp->outgarray1=malloc(mp->nmeshi*sizeof *mp->outgarray1);
+  errno=0; mp->outgarray1=malloc(mp->nmeshi*sizeof *mp->outgarray1);
   if(mp->outgarray1==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for outgarray1",
           mp->nmeshi*sizeof *mp->outgarray1);
   if(garray2)
     {
-      fff=garray2;
-      errno=0; ffff=mp->outgarray2=malloc(mp->nmeshi*sizeof *mp->outgarray2);
+      errno=0; mp->outgarray2=malloc(mp->nmeshi*sizeof *mp->outgarray2);
       if(mp->outgarray2==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for outgarray2",
               mp->nmeshi*sizeof *mp->outgarray2);
     }
-
-
-
-  /* Find how many blank pixels there are and keep all their indexs in
-     the naninds array. Note that all garrays are going to have the
-     same number of NaN meshs. */
-  fp=(f=garray1)+mp->nmeshi;
-  do if(isnan(*f++)) ++numnan; while(f<fp);
-  errno=0; mp->naninds=malloc(numnan*sizeof *mp->naninds);
-  if(mp->naninds==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for blank pixel indexs in "
-          "meshinterpolate (mesh.c).", numnan*sizeof *mp->naninds);
-  numnan=0; fp=(f=garray1)+mp->nmeshi;
-  do
-    {
-      if(isnan(*f))
-        mp->naninds[numnan++]=f-garray1;
-      else
-        {
-          *ff=*f;
-          if(garray2)
-            *ffff=*fff;
-        }
-      if(garray2)
-        {
-          ++fff;
-          ++ffff;
-        }
-      ++ff;
-    }
-  while(++f<fp);
-  mp->numnan=numnan;
 
 
   /* Allocate the array for the values of the nearest pixels. For each
@@ -1015,9 +983,6 @@ meshinterpolate(struct meshparams *mp)
     error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
           numthreads*sizeof *mtp);
 
-  /* Distribute the blank pixels between the threads: */
-  distinthreads(mp->numnan, numthreads, &mp->indexs, &mp->thrdcols);
-
   /* Spin off the threads: */
   if(numthreads==1)
     {
@@ -1031,7 +996,7 @@ meshinterpolate(struct meshparams *mp)
 	 (that spinns off the nt threads) is also a thread, so the
 	 number the barrier should be one more than the number of
 	 threads spinned off. */
-      if(mp->numnan<numthreads) nb=mp->numnan+1;
+      if(mp->nmeshi<numthreads) nb=mp->nmeshi+1;
       else                      nb=numthreads+1;
       attrbarrierinit(&attr, &mp->b, nb);
 
@@ -1076,8 +1041,6 @@ meshinterpolate(struct meshparams *mp)
   /* Clean up. */
   free(mtp);
   free(mp->byt);
-  free(mp->indexs);
-  free(mp->naninds);
   free(mp->nearest1);
   free(mp->nearest2);
 }
@@ -1360,10 +1323,6 @@ spatialconvolveonmesh(struct meshparams *mp, float **conv)
     }
 
 
-  /* Distribute the meshes in all the threads. */
-  distinthreads(mp->nmeshi, mp->numthreads, &mp->indexs, &mp->thrdcols);
-
-
   /* Spin off the threads: */
   if(numthreads==1)
     {
@@ -1403,5 +1362,4 @@ spatialconvolveonmesh(struct meshparams *mp, float **conv)
 
   free(mtp);
   free(chbrd);
-  free(mp->indexs);
 }

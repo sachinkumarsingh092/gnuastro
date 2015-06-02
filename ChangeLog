@@ -1,3 +1,13 @@
+2015-06-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/mesh.c (operateonmesh): mp->indexs is now allocated in
+	makemesh. Because all the programs that will need threads on meshs
+	will need it, so it is best to set mp->indexs once and for all in
+	makemesh.
+	(meshinterponthread): Removed the naninds array, a new option was
+	added to interpolate only on blank pixels when needed.
+	(preparemeshinterparrays): Similar to the above.
+
 2015-06-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/statistics.c: Removed all isnan checks in the comparison

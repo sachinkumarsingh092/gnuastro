@@ -56,8 +56,8 @@ qthreshonmesh(void *inparam)
   size_t modeindex=(size_t)(-1);
   size_t s0, s1, ind, row, num, start, is1=mp->s1;
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
-  float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
   float *f, *img, *imgend, *inimg=p->conv, modesym=0.0f;
+  float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
 
   /* Start this thread's work: */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
@@ -92,8 +92,6 @@ qthreshonmesh(void *inparam)
       modeindexinsorted(oneforall, num, mirrordist, &modeindex, &modesym);
       if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq)
         mp->garray1[ind]=oneforall[indexfromquantile(num, qthresh)];
-      else
-        mp->garray1[ind]=NAN;
     }
 
   /* Free alltype and if multiple threads were used, wait until all
@@ -204,6 +202,9 @@ findapplythreshold(struct noisechiselparams *p)
   struct meshparams *mp=&p->smp; /* `mp' instead of `smp' for you to */
   size_t  s0=mp->s0,  s1=mp->s1; /* try this function with p->lmp if */
                                  /* you like to see the effect. */
+
+
+
   /* Find the threshold on each mesh: */
   operateonmesh(mp, qthreshonmesh, sizeof(float), 0);
   if(p->threshname)
@@ -214,6 +215,7 @@ findapplythreshold(struct noisechiselparams *p)
                      SPACK_STRING);
       free(thresh);
     }
+
   meshinterpolate(mp);
   if(p->threshname)
     {
@@ -223,6 +225,7 @@ findapplythreshold(struct noisechiselparams *p)
                      SPACK_STRING);
       free(thresh);
     }
+
   meshsmooth(mp);
   if(p->threshname)
     {
