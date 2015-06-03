@@ -32,6 +32,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "linkedlist.h"
 #include "fitsarrayvv.h"
 
+#include "main.h"
+
 #include "label.h"
 #include "binary.h"
 
@@ -242,7 +244,7 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
 
 
 /**********************************************************************/
-/**************            Area of labeled          *******************/
+/**************            Work on labels           *******************/
 /**********************************************************************/
 /* Find the areas of labeled regions in an array. `numlabs`, which is
    the number of labels in the array has to be one larger than the
@@ -304,4 +306,94 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
 
   free(areas);
   free(newlabs);
+}
+
+
+
+
+
+/* Calculate the Signal to noise ratio for all the labels in
+   `labinmesh'. The sky subtracted input image and the standard
+   deviations image for each pixel are over the full image: p->img and
+   p->std. However, the array keeping the labels of each object is
+   only over the mesh under consideration.
+*/
+void
+detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t numlabs,
+           size_t start, size_t s0, size_t s1, float **outsntable)
+{
+  double *fluxs, *stds, err;
+  size_t i, r=0, is1=p->smp.s1;
+  float *f, *ff, *s, ave, *sntable, cpscorr=p->cpscorr;
+  long *areas, *l=labinmesh, detsnminarea=p->detsnminarea;
+
+
+  /* Allocate the necessary arrays to keep the label information: */
+  errno=0; sntable=*outsntable=calloc(numlabs, sizeof *sntable);
+  if(sntable==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for sntable in labelsn (label.c)",
+          numlabs*sizeof *sntable);
+  errno=0; fluxs=calloc(numlabs, sizeof *fluxs);
+  if(fluxs==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for fluxs in labelsn (label.c)",
+          numlabs*sizeof *fluxs);
+  errno=0; stds=calloc(numlabs, sizeof *stds);
+  if(stds==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for stds in labelsn (label.c)",
+          numlabs*sizeof *stds);
+  errno=0; areas=calloc(numlabs, sizeof *areas);
+  if(areas==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for areas in labelsn (label.c)",
+          numlabs*sizeof *areas);
+
+
+  /* For a check:
+  arraytofitsimg("test.fits", "Labs", LONG_IMG, labinmesh,
+                 s0, s1, 0, NULL, NULL, SPACK_STRING);
+  */
+
+
+  /* Go over the arrays and fill in the information. Note that since
+     labinmesh is over the mesh and not the full image, setting it
+     once in the definition was enough. */
+  do
+    {
+      s = p->std + start + r*is1;
+      ff = ( f = p->img + start + r++ * is1 ) + s1;
+      do
+        {
+          if(*l)                /* There is a label on this mesh. */
+            {
+              ++areas[*l];
+              stds[*l]+=*s;
+              fluxs[*l]+=*f;
+            }
+          ++l; ++s;
+        }
+      while(++f<ff);
+    }
+  while(r<s0);
+
+
+  /* calculate the signal to noise for successful detections: */
+  for(i=1;i<numlabs;++i)
+    if(areas[i]>detsnminarea && (ave=fluxs[i]/areas[i]) >0 )
+      {
+        err = (stds[i]/areas[i])*(stds[i]/areas[i]);
+        err *= p->skysubtracted ? 1.0f : 2.0f;
+        sntable[i] = sqrt( (float)(areas[i])/cpscorr ) * ave / sqrt(ave+err);
+      }
+
+
+  /* For a check:
+  for(i=0;i<numlabs;++i)
+    printf("%lu: %-10ld %-10.3f %-10.3f %-10.3f\n",
+           i, areas[i], fluxs[i], stds[i]/areas[i], sntable[i]);
+  */
+
+
+  /* Clean up */
+  free(stds);
+  free(fluxs);
+  free(areas);
 }

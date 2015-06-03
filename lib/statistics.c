@@ -648,7 +648,6 @@ floatavestdmaskbyt0inregion(float *in, unsigned char *byt,
  ****************************************************************/
 /* Set the bin lower values for all the bins. If the minimum and
    maximum are equal, then use the quantile. */
-#define CHECKBINS 0
 void
 setbins(float *sorted, size_t size, size_t numbins, float min,
 	float max, int binonzero, float quant, float **obins)
@@ -700,10 +699,10 @@ setbins(float *sorted, size_t size, size_t numbins, float min,
         }
     }
 
-  /* In case you want to check the bins: */
-  if(CHECKBINS)
-    for(i=0;i<numbins;++i)
-      printf("%lu: %.4f\n", i+1, bins[i*2]);
+  /* For a check
+  for(i=0;i<numbins;++i)
+    printf("%lu: %.4f\n", i+1, bins[i*2]);
+  */
 }
 
 
@@ -714,32 +713,39 @@ void
 histogram(float *sorted, size_t size, float *bins, size_t numbins,
 	  int normhist, int maxhistone)
 {
-  int lastrow=0;
-  size_t histrow, i;
   float max=-FLT_MAX;
+  size_t histrow=0, i;
 
   if((long)numbins<=0)
     error(EXIT_FAILURE, 0, "The number of bins in histogram (statistics.h) "
           "must be >0. You have given asked for %ld.", (long)numbins);
 
   /* Fill the histogram. */
-  histrow=0;
   for(i=0;i<size;++i)
     {
+      /* For a check:
+      printf("%f:\n  histrow: %lu, numbins: %lu\n",
+             sorted[i], histrow, numbins);
+      */
       /* Data has not reached bins yet: */
       if(sorted[i]<bins[histrow*2]) continue;
 
-      /* Until the last bin, the larger bin interval is in the next
-         bin. But for the last bin, it should be included in the
-         bin. Note that the constant added in the end is to account
-         for floating point rounding error.*/
-      while ((lastrow && sorted[i]>bins[(histrow+1)*2]+1e-6f)
-             || sorted[i]>=bins[(histrow+1)*2])
-        {
-          if(++histrow>=numbins) break; /* break out of this inner while. */
-          if(histrow==numbins-1) lastrow=1;
-        }
-      if(histrow>=numbins) break;     /* break out of the whole loop.   */
+      /* Jump bins until sorted[i] is smaller than the larger value of
+         one bin. If we are on the last bin (where
+         histrow==numbins-1), then you don't have to increase histrow
+         any more, as soon as sorted[i] becomes larger than the lagest
+         bin, quit the search. The 1e-6f is to account for floating
+         point error. NOTE: the last interval is closed on both
+         sides.*/
+      if(histrow==numbins-1)
+        { if(sorted[i]>bins[numbins*2]+1e-6f) break; }
+      else
+        while(sorted[i]>=bins[(histrow+1)*2])
+          if(++histrow==numbins-1) break;
+
+      /* For a check:
+      printf("  histrow: %lu\n", histrow);
+      */
       ++bins[histrow*2+1];
     }
 
@@ -770,6 +776,84 @@ histogram(float *sorted, size_t size, float *bins, size_t numbins,
 
 void
 cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
+	     int normcfp)
+{
+  float prevind=0;
+  size_t cfprow=0, i, numinds=0;
+
+
+  /* Fill the Cumulative frequency plot. The steps are just like the
+     histogram above so we won't explain similar concepts here
+     again. */
+  for(i=0;i<size;++i)
+    {
+      if(sorted[i]<bins[cfprow*2]) continue;
+
+      if(cfprow==numbins-1)
+        { if(sorted[i]>bins[numbins*2]+1e-6f) break; }
+      else
+        while(sorted[i]>=bins[(cfprow+1)*2])
+          {
+            /* We have not yet reached the last bin. But we have
+               reached the sorted[i] that is larger than the current
+               bin and we want to switch to the next bin. So we have
+               to finalize the current bin value.  bins[cfprow*2+1]
+               has kept the sum of all the indexs that lie within this
+               bin. Using numinds, we also kept a count of how many
+               indexs there was.
+
+               In case there were no indexs in this bin, then we have
+               to pass on the previous value (since this bin did not
+               contribute any data). We set numinds=0 and start
+               working on the next bin. */
+            if(numinds>0)
+              prevind=bins[cfprow*2+1]/=numinds; /* Divide by num indexs */
+            else
+              bins[cfprow*2+1]=prevind;
+            numinds=0;
+            if(++cfprow==numbins-1) break;
+          }
+
+      /* We can't plot every index, also in every bin, there might be
+         a sharp gradient. So in order to make things smooth, the
+         value given to each bin will be the average of all the indexs
+         that like over that bin. Here we keep the sum and number of
+         indexs so in the end we can find the average. */
+      bins[cfprow*2+1]+=i;
+      ++numinds;
+    }
+
+
+  /* The last bin was not finalized. So we will do that here: */
+  bins[cfprow*2+1] = numinds>0 ? bins[cfprow*2+1]/numinds : prevind;
+
+
+  /* For a normalized CFP: */
+  if(normcfp)
+    for(i=0;i<numbins;++i)
+      bins[i*2+1]/=size;
+
+
+  /* In a CFP, all bins that are possibly left behind (there was no
+     data to fill them) should get the same value as the lastly filled
+     value. They should not be zero. Note that this has to be done
+     after the possible normalization. */
+  for(i=cfprow;i<numbins;++i)
+    bins[i*2+1]=bins[(cfprow-1)*2+1];
+
+
+  /* In case you want to see the CFP:
+  for(i=0;i<numbins;++i)
+    printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+  */
+}
+
+
+
+
+
+void
+cumulativefp_old(float *sorted, size_t size, float *bins, size_t numbins,
 	     int normcfp)
 {
   int lastrow=0;
@@ -821,7 +905,7 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
 
 void
 savehist(float *sorted, size_t size, size_t numbins,
-	 char *filename, char *histname, size_t id)
+	 char *filename, char *comment)
 {
   FILE *fp;
   size_t i;
@@ -842,9 +926,9 @@ savehist(float *sorted, size_t size, size_t numbins,
   fp=fopen(filename, "w");
   if(fp==NULL)
     error(EXIT_FAILURE, errno, "Couldn't open file %s", filename);
-  fprintf(fp, "# %s: S/N histogram of %s in mesh %lu.\n",
-	  PACKAGE_STRING, histname, id);
-  fprintf(fp, "# %lu points in %lu bins\n", size, numbins);
+  fprintf(fp, "%s\n", comment);
+  fprintf(fp, "# The input %lu points binned in %lu bins\n#\n",
+          size, numbins);
   fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
   fprintf(fp, "# Column 1: Number of points in this bin.\n");
   for(i=0;i<numbins;++i)
@@ -919,7 +1003,7 @@ indexfromquantile(size_t size, float quant)
 
 
 /****************************************************************
- *****************        Sigma clip         ********************
+ *****************       Sigma clip          ********************
  ****************************************************************/
 /* This function will repeatedly sigma clip the data and return the
    median. It is assumed that the data have been ordered.
@@ -1060,4 +1144,80 @@ sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
   *outmed=med;
   *outstd=std;
   return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************/
+/*************         Identify outliers         ****************/
+/****************************************************************/
+/* Using the cumulative distribution function this funciton will
+   remove outliers from a dataset. */
+void
+removeoutliers_flatcdf(float *sorted, size_t *outsize)
+{
+  int firstfound=0;
+  size_t size=*outsize, i, maxind;
+  float *slopes, minslope, maxslope;
+
+  /* Find a slopes array, think of the cumulative frequency plot when
+     you want to think about slopes. */
+  errno=0; slopes=malloc(size*sizeof *slopes);
+  if(slopes==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for slopes in "
+          "removeoutliers_flatcdf (statistics.c)", size*sizeof *slopes);
+
+  /* Calcuate the slope of the CDF and put it in the slopes array. */
+  for(i=1;i<size-1;++i)
+    slopes[i]=2/(sorted[i+1]-sorted[i-1]);
+
+  /* Find the position of the maximum slope, note that around the
+     distribution mode, the difference between the values varies less,
+     so two neighbouring elements have the closest values, hence the
+     largest slope (when their difference is in the denominator). */
+  fmax_withindex(slopes+1, size-2, &maxslope, &maxind);
+
+  /* Find the minimum slope from the second element (for the first the
+     slope is not defined. NOTE; maxind is one smaller than it should
+     be because the input array to find it began from the second
+     element. */
+  floatsecondmin(slopes+1, maxind+1, &minslope);
+
+  /* Find the second place where the slope falls below `minslope`
+     after the maximum position. When found, add it with one to
+     account for error. Note that incase there are no outliers by this
+     definition, then the final size will be equal to size! */
+  for(i=maxind+1;i<size-1;++i)
+    if(slopes[i]<minslope)
+      {
+	if(firstfound)
+	  break;
+	else
+	  firstfound=1;
+      }
+  *outsize=i+1;
+
+  /*
+  for(i=0;i<size;++i)
+    printf("%lu\t%.3f\t%.3f\n", i, arr[i], slopes[i]);
+  printf("\n\nPlace to cut off for outliers is: %lu\n\n", *outsize);
+  */
+
+  free(slopes);
 }

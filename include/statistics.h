@@ -147,7 +147,7 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
 
 void
 savehist(float *sorted, size_t size, size_t numbins,
-	 char *filename, char *histname, size_t id);
+	 char *filename, char *comment);
 
 
 
@@ -178,4 +178,13 @@ sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
 		     float *outave, float *outmed, float *outstd,
                      int print);
 
+
+
+
+
+/****************************************************************/
+/*************         Identify outliers         ****************/
+/****************************************************************/
+void
+removeoutliers_flatcdf(float *sorted, size_t *outsize);
 #endif

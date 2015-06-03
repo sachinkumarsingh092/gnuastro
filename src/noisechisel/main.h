@@ -48,6 +48,7 @@ struct uiparams
   int             mhduset;
   int       kernelnameset;
   int             khduset;
+  int    skysubtractedset;
 
   int        smeshsizeset;
   int        lmeshsizeset;
@@ -69,6 +70,8 @@ struct uiparams
   int sigcliptoleranceset;
   int          dthreshset;
   int     detsnminareaset;
+  int      minnumfalseset;
+  int         detquantset;
   int   detsnhistnbinsset;
 };
 
@@ -89,6 +92,7 @@ struct noisechiselparams
   struct wcsprm      *wcs;  /* Pointer to WCS structures.                  */
   int              bitpix;  /* Input image bitpix value.                   */
   size_t         numblank;  /* Number of blank pixels in image.            */
+  int       skysubtracted;  /* ==1: the input image is already sky subted. */
 
   /* output: */
   char          *meshname;  /* Name of --checkmesh output.                 */
@@ -96,6 +100,7 @@ struct noisechiselparams
   char *initdetectionname;  /* !=NULL: Name of initial detection steps.    */
   char     *detectionname;  /* !=NULL: Name of detection steps.            */
   char  *detectionskyname;  /* !=NULL: Name of detection sky steps.        */
+  char   *detectionsnname;  /* !=NULL: Name of detection S/N on meshs.     */
 
   /* Detection: */
   float             *conv;  /* Convolved image.                            */
@@ -109,6 +114,8 @@ struct noisechiselparams
   float  sigcliptolerance;  /* Tolerance in sigma clip.                    */
   float           dthresh;  /* Threshold to remove false detections.       */
   size_t     detsnminarea;  /* Minimum area to calculate S/N for detection.*/
+  size_t      minnumfalse;  /* Min No. false detections/segments for quant.*/
+  float          detquant;  /* False detection S/N quantile to find true.  */
   size_t   detsnhistnbins;  /* ==1: Save false detection S/Ns histogram.   */
 
   /* Operating mode: */
@@ -123,6 +130,7 @@ struct noisechiselparams
   unsigned char      b0f1;  /* ==1: we are now working on data, not noise. */
   float              *img;  /* Input image.                                */
   float              *std;  /* The standard deviation of each pixel.       */
+  float               *sn;  /* Acceptable S/N for each mesh.               */
   int             stepnum;  /* Number of step if user wants to see steps.  */
 };
 

@@ -1,3 +1,14 @@
+2015-06-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/astnoisechisel.conf: Changed default dthresh to
+	-0.1.
+
+	* lib/statistics.c (histogram): Corrected the function. Until now,
+	there was a problem when an element was on the last bin: it would
+	go onto the next bin and thus would not be counted. This issue is
+	now corrected.
+	(cumulativefp): Same as above.
+
 2015-06-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/mesh.c (operateonmesh): mp->indexs is now allocated in

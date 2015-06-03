@@ -149,6 +149,13 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  strcpy(up->khdu, value);
 	  up->khduset=1;
 	}
+      else if(strcmp(name, "skysubtracted")==0)
+	{
+	  if(up->skysubtractedset) continue;
+          intzeroorone(value, &p->skysubtracted, name, key, SPACK,
+                       filename, lineno);
+	  up->skysubtractedset=1;
+	}
 
 
 
@@ -291,8 +298,8 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "dthresh")==0)
 	{
 	  if(up->dthreshset) continue;
-          floatl0s1(value, &p->dthresh, name, key, SPACK,
-                  filename, lineno);
+          anyfloat(value, &p->dthresh, name, key, SPACK,
+                   filename, lineno);
 	  up->dthreshset=1;
 	}
       else if(strcmp(name, "detsnminarea")==0)
@@ -302,12 +309,26 @@ readconfig(char *filename, struct noisechiselparams *p)
                      filename, lineno);
 	  up->detsnminareaset=1;
 	}
+      else if(strcmp(name, "minnumfalse")==0)
+	{
+	  if(up->minnumfalseset) continue;
+          sizetlzero(value, &p->minnumfalse, name, key, SPACK,
+                     filename, lineno);
+	  up->minnumfalseset=1;
+	}
       else if(strcmp(name, "detsnhistnbins")==0)
 	{
 	  if(up->detsnhistnbinsset) continue;
           sizetelzero(value, &p->detsnhistnbins, name, key, SPACK,
                       filename, lineno);
 	  up->detsnhistnbinsset=1;
+	}
+      else if(strcmp(name, "detquant")==0)
+	{
+	  if(up->detquantset) continue;
+          floatl0s1(value, &p->detquant, name, key, SPACK,
+                      filename, lineno);
+	  up->detquantset=1;
 	}
 
 
@@ -379,6 +400,8 @@ printvalues(FILE *fp, struct noisechiselparams *p)
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
     }
+  if(up->skysubtractedset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "skysubtracted", p->skysubtracted);
 
 
   fprintf(fp, "\n# Output:\n");
@@ -429,8 +452,12 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "dthresh", p->dthresh);
   if(up->detsnminareaset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnminarea", p->detsnminarea);
+  if(up->minnumfalseset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "minnumfalse", p->minnumfalse);
   if(up->detsnhistnbinsset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnhistnbins", p->detsnhistnbins);
+  if(up->detquantset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "detquant", p->detquant);
 }
 
 
@@ -451,6 +478,8 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("hdu");
   if(up->khduset==0)
     REPORT_NOTSET("khdu");
+  if(up->skysubtractedset==0)
+    REPORT_NOTSET("skysubtracted");
 
   /* Mesh grid: */
   if(up->smeshsizeset==0)
@@ -493,8 +522,12 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("dthresh");
   if(up->detsnminareaset==0)
     REPORT_NOTSET("detsnminarea");
+  if(up->minnumfalseset==0)
+    REPORT_NOTSET("minnumfalse");
   if(up->detsnhistnbinsset==0)
     REPORT_NOTSET("detsnhistnbins");
+  if(up->detquantset==0)
+    REPORT_NOTSET("detquant");
 
   END_OF_NOTSET_REPORT;
 }
@@ -566,6 +599,12 @@ sanitycheck(struct noisechiselparams *p)
       p->detectionskyname=NULL;
       automaticoutput(p->up.inputname, "_detsky.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->detectionskyname);
+    }
+  if(p->detectionsnname)
+    {
+      p->detectionsnname=NULL;
+      automaticoutput(p->up.inputname, "_detsn.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->detectionsnname);
     }
 
 

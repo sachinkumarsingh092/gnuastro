@@ -215,6 +215,8 @@ findavestdongrid(struct noisechiselparams *p, char *outname, int i0f1)
                          p->wcs, NULL, SPACK_STRING);
           arraytofitsimg(outname, "SkySTD", FLOAT_IMG, std, s0, s1, 0,
                          p->wcs, NULL, SPACK_STRING);
+          free(sky);
+          free(std);
         }
       if(verb)
         reporttiming(NULL, "Grid smoothed.", 2);
@@ -320,7 +322,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
 
 
 /****************************************************************
- *****************     Multi-threaded detection     *************
+ ************         Signal to noise ratio          ************
  ****************************************************************/
 /* The p->byt points to the array keeping the positions of initial
    detections. p->dbyt points to the array keeping the thresholded
@@ -375,19 +377,9 @@ bytparttolarge(struct noisechiselparams *p, unsigned char *in,
 
 
 void
-floatpartfromlarge(struct noisechiselparams *p, float *img, float *std,
-                   size_t start, size_t s0, size_t s1)
+removefalsedetections()
 {
-  float *f, *ff, *s;
-  size_t r=0, is1=p->smp.s1;
 
-  do
-    {
-      s = p->std + start + r*is1;
-      ff = ( f = p->img + start + r++ * is1 ) + s1;
-      do { *img++ = *f; *std++=*s; ++s;} while(++f<ff);
-    }
-  while(r<s0);
 }
 
 
@@ -405,12 +397,14 @@ snthreshonmesh(void *inparams)
   unsigned char *thisbyt=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
   long *thislab;
-  size_t i, s0, s1;
-  unsigned char *dbyt=p->dbyt;
-  char *detectionname=p->detectionname;
-  float *thisimg, *thisstd, minbfrac=p->minbfrac;
-  size_t ind, size, numcon, startind, is1=mp->s1;
+  char cline[1000];
+  size_t detsnhistnbins=p->detsnhistnbins;
+  unsigned char b0f1=p->b0f1, *dbyt=p->dbyt;
+  size_t i, s0, s1, minnumfalse=p->minnumfalse;
+  size_t ind, size, numlabs, startind, is1=mp->s1;
+  float *f, *ff, *to, *sntable, minbfrac=p->minbfrac;
   size_t nf, nb, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
+  char suffix[50], *histname, *detectionname=p->detectionname;
 
 
   /* Allocate all the necessary arrays: */
@@ -418,14 +412,6 @@ snthreshonmesh(void *inparams)
   if(thislab==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for thislab (detection.c)",
           mp->maxs0*mp->maxs1*sizeof *thislab);
-  errno=0; thisimg=malloc(mp->maxs0*mp->maxs1*sizeof *thisimg);
-  if(thisimg==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for thisimg (detection.c)",
-          mp->maxs0*mp->maxs1*sizeof *thisimg);
-  errno=0; thisstd=malloc(mp->maxs0*mp->maxs1*sizeof *thisstd);
-  if(thisstd==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for thisstd (detection.c)",
-          mp->maxs0*mp->maxs1*sizeof *thisstd);
 
 
   /* Do the job for each mesh: */
@@ -440,7 +426,7 @@ snthreshonmesh(void *inparams)
 
       /* If we are on "noise" mode, check to see if we have enough
 	 blank area for getting the background noise statistics. */
-      if(p->b0f1==0)
+      if(b0f1==0)
 	{
 	  count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &nb);
 	  if( (float)nb < (float)(size)*minbfrac )
@@ -473,31 +459,90 @@ snthreshonmesh(void *inparams)
 	{ bytparttolarge(p, thisbyt, startind, s0, s1); continue; }
 
 
-      /* Label the opened regions, remove the small area regions, and
-         relabel all the ones that are larger.  */
-      numcon=BF_concmp(thisbyt, thislab, s0, s1, 4);
-      removesmallarea_relabel(thislab, thisbyt, size, &numcon,
-                              p->detsnminarea);
-      if(p->b0f1 && numcon<100)
-        {
-          if(detectionname)
-            ucharinitonregion(dbyt, 0, startind, s0, s1, is1);
-          continue;
-        }
+      /* Find the connected components. Detections that are smaller
+         than detsnminarea and the meshs that don't have enough noise
+         detections will be removed in next step when the user doesn't
+         want to view the steps. However, when the user does want to
+         view the steps, they will be small detections and the meshs
+         will be removed for them to visually understand the condition
+         better. */
+      numlabs=BF_concmp(thisbyt, thislab, s0, s1, 4);
       if(detectionname && p->stepnum==4)
-	{ bytparttolarge(p, thisbyt, startind, s0, s1); continue; }
+	{
+          removesmallarea_relabel(thislab, thisbyt, size, &numlabs,
+                                  p->detsnminarea);
+          if(b0f1==0 && numlabs<minnumfalse)
+            ucharinitonregion(dbyt, 0, startind, s0, s1, is1);
+          bytparttolarge(p, thisbyt, startind, s0, s1); continue;
+        }
 
 
-      /* Make a copy of the input image and the standard deviation on
-         each pixel to calculate the signal to noise ratio. */
-      floatpartfromlarge(p, thisimg, thisstd, startind, s0, s1);
+      /* Find the signal to noise of all the detections in this mesh
+         and allocate an array to keep the S/N values in *sntable. If
+         we are on the noise, then check to see if we have enough
+         points or not. */
+      detlabelsn(p, thislab, numlabs, startind, s0, s1, &sntable);
+      if(b0f1==0)
+        {
+          /* We are in the noise region. From this point on, the order
+             of elements in sntable doesn't matter. So put all the
+             non-zero elements contiguously beside each other at the
+             start of the array. Also check if the number is not
+             enough, then go onto the next mesh. */
+          to=sntable; ff=(f=sntable)+numlabs;
+          do if(*f>0) *to++=*f; while(++f<ff);
+          numlabs=to-sntable;
+          if(numlabs<minnumfalse) {free(sntable); continue;}
 
+          /* Sort the signal to noise array for the proper values,
+             then remove any possible outliers using the cumulative
+             frequency plot of the distribution: */
+          qsort(sntable, numlabs, sizeof *sntable, floatincreasing);
+          removeoutliers_flatcdf(sntable, &numlabs);
+          if(numlabs<minnumfalse) {free(sntable); continue;}
+
+          /* Put the signal to noise ratio quantile into the
+             mp->garray1 array. Note that since garray1 was
+             initialized to NaN, when a mesh doesn't reach this
+             point, it will be NaN. */
+          mp->cgarray1[ind]=sntable[indexfromquantile(numlabs, p->detquant)];
+
+          /* If the user has asked for it, make the histogram of the
+             S/N distribution. */
+          if(detsnhistnbins)
+            {
+              /* For a check:
+              if(ind!=0) continue;
+              ff=(f=sntable)+numlabs; do printf("%f\n", *f++); while(f<ff);
+              */
+
+              /* histname has to be set to NULL so automaticoutput can
+                 safey free it. */
+              histname=NULL;
+              sprintf(suffix, "_%lu_detsn.txt", ind);
+              sprintf(cline, "# %s\n# %s started on %s"
+                      "# Input: %s (hdu: %s)\n"
+                      "# Histogram for S/N distribution of false "
+                      "detections.\n"
+                      "# On large mesh id %lu.\n"
+                      "# The %.3f quantile has a value of %.4f on "
+                      "this bin.", SPACK_STRING, SPACK_NAME,
+                      ctime(&p->rawtime), p->up.inputname, p->cp.hdu,
+                      ind, p->detquant, mp->cgarray1[ind]);
+              automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
+                              p->cp.dontdelete, &histname);
+              savehist(sntable, numlabs, detsnhistnbins,
+                       histname, cline);
+              free(histname);
+            }
+        }
+
+      /* Clean up: */
+      free(sntable);
     }
 
   /* Free any allocated space and if multiple threads were used, wait
      until all other threads finish. */
-  free(thisstd);
-  free(thisimg);
   free(thislab);
   if(mp->numthreads>1)
     pthread_barrier_wait(&mp->b);
@@ -535,8 +580,8 @@ snthreshongrid(struct noisechiselparams *p)
     {
       p->stepnum=1;
       ucharcopy(p->dbyt, s0*s1, &tmp); /* Backup of p->dbyt in tmp */
-      while( (p->b0f1==0 && p->stepnum<5)           /* Undetected. */
-             || (p->b0f1 && p->stepnum<6))          /* Detected.   */
+      while( (p->b0f1==0 && p->stepnum<6)           /* Undetected. */
+             || (p->b0f1 && p->stepnum<7))          /* Detected.   */
         {
           free(p->dbyt);
           ucharcopy(tmp, s0*s1, &p->dbyt);
@@ -556,13 +601,14 @@ snthreshongrid(struct noisechiselparams *p)
               extname="SmallRemoved";
               break;
             default:
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so "
-                    "we can fix the problem. For some reason p->stepnum "
-                    "(detection.c) has a value of %d which is not "
-                    "recognized.", PACKAGE_BUGREPORT, p->stepnum);
+              extname=NULL;
+              break;
             }
-          arraytofitsimg(p->detectionname, extname, BYTE_IMG, p->dbyt,
-                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+          if(extname)
+            arraytofitsimg(p->detectionname, extname, BYTE_IMG, p->dbyt,
+                           s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+          else
+            break;
           ++(p->stepnum);
         }
       free(tmp);
@@ -572,6 +618,62 @@ snthreshongrid(struct noisechiselparams *p)
 
 }
 
+
+
+
+
+void
+findsnthreshongrid(struct noisechiselparams *p)
+{
+  struct meshparams *lmp=&p->lmp;
+
+  float *sn;
+  int verb=p->cp.verb;
+  size_t s0=lmp->s0, s1=lmp->s1;
+
+
+  /* Find the Signal to noise ratio threshold for the good meshs. */
+  snthreshongrid(p);
+  if(p->detectionsnname)
+    {
+      checkgarray(lmp, &sn, NULL);
+      arraytofitsimg(p->detectionsnname, "S/N", FLOAT_IMG, sn, s0, s1,
+                     0, p->wcs, NULL, SPACK_STRING);
+      free(sn);
+    }
+  if(verb)
+    reporttiming(NULL, "S/N limit found on some meshes.", 2);
+
+
+  /* Interpolate over the meshs to fill all the blank ones in both the
+     sky and the standard deviation arrays: */
+  meshinterpolate(lmp);
+  if(p->detectionsnname)
+    {
+      checkgarray(lmp, &sn, NULL);
+      arraytofitsimg(p->detectionsnname, "Interpolated", FLOAT_IMG, sn,
+                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      free(sn);
+    }
+  if(verb)
+    reporttiming(NULL, "All blank meshs filled (interplated).", 2);
+
+
+  /* Smooth the interpolated array:  */
+  if(lmp->smoothwidth>1)
+    {
+      meshsmooth(lmp);
+      if(p->detectionsnname)
+        {
+          checkgarray(lmp, &sn, NULL);
+          arraytofitsimg(p->detectionsnname,"Smoothed", FLOAT_IMG, sn,
+                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+          free(sn);
+        }
+      if(verb)
+        reporttiming(NULL, "False detection S/N grid smoothed.", 2);
+    }
+}
 
 
 
@@ -645,7 +747,12 @@ detectonmesh(struct noisechiselparams *p, size_t *numlabs)
   checkgarray(&p->smp, &ave, &p->std);
   free(ave);
 
-  /* Find the Signal to noise ratio threshold on the grid: */
+  /* Find the Signal to noise ratio threshold on the grid and keep it
+     in one array. */
+  findsnthreshongrid(p);
+  checkgarray(&p->lmp, &p->sn, NULL);
+
+  /* Apply the SN threshold to all the detections. */
   snthreshongrid(p);
 
   /* Point the input image to its correct place: */
@@ -653,6 +760,7 @@ detectonmesh(struct noisechiselparams *p, size_t *numlabs)
   p->img=inputimage;
 
   /* Clean up: */
-  free(p->std);
+  free(p->sn); p->sn=NULL;
+  free(p->std); p->std=NULL;
   free(p->dbyt);
 }

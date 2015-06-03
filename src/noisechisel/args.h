@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c f g j m v w x y z
-   A C E F G I J O W X Y Z
+   f g j m v w x y z
+   A C G I J O W X Y Z
 
-   Number keys free: >=512
+   Number keys free: >=513
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -117,6 +117,14 @@ static struct argp_option options[] =
       "STR",
       0,
       "Kernel image header name.",
+      1
+    },
+    {
+      "skysubtraced",
+      'E',
+      0,
+      0,
+      "Input is already sky subtracted.",
       1
     },
 
@@ -336,11 +344,27 @@ static struct argp_option options[] =
       4
     },
     {
+      "minnumfalse",
+      'F',
+      "INT",
+      0,
+      "Min No. of false detection/segments for quantile.",
+      4
+    },
+    {
       "detsnhistnbins",
       510,
       "INT",
       0,
       "Detection S/N histogram No. bins `_detsnXX.txt'.",
+      4
+    },
+    {
+      "detquant",
+      'c',
+      "FLT",
+      0,
+      "False detections S/N quantile to find the true.",
       4
     },
 
@@ -376,7 +400,14 @@ static struct argp_option options[] =
       "Sky for false detections in file `_detsky.fits'.",
       4
     },
-
+    {
+      "checkdetectionsn",
+      512,
+      0,
+      0,
+      "Mesh detection S/N limit `_detsn.fits'.",
+      4
+    },
 
 
     {
@@ -457,6 +488,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
               strlen(arg)+1);
       strcpy(p->up.khdu, arg);
       p->up.khduset=1;
+      break;
+    case 'E':
+      p->skysubtracted=1;
+      p->up.skysubtractedset=1;
       break;
 
     /* Output: */
@@ -556,6 +591,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.dthreshset=1;
       break;
     case 'i':
+      sizetlzero(arg, &p->minnumfalse, "minnumfalse", key, SPACK, NULL, 0);
+      p->up.minnumfalseset=1;
+      break;
+    case 'F':
       sizetlzero(arg, &p->detsnminarea, "detsnminarea", key, SPACK, NULL, 0);
       p->up.detsnminareaset=1;
       break;
@@ -563,6 +602,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetelzero(arg, &p->detsnhistnbins, "detsnhistnbins", key,
                   SPACK, NULL, 0);
       p->up.detsnhistnbinsset=1;
+      break;
+    case 'c':
+      floatl0s1(arg, &p->detquant, "detquant", key, SPACK, NULL, 0);
+      p->up.detquantset=1;
       break;
     case 505:
       p->threshname="a";
@@ -575,6 +618,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 509:
       p->detectionskyname="a";
+      break;
+    case 512:
+      p->detectionsnname="a";
       break;
 
 

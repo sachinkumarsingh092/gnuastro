@@ -27,6 +27,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include "main.h"
+
 #include "label.h"
 #include "fitsarrayvv.h"
 
@@ -551,4 +553,7 @@ fillboundedholes(unsigned char *in, size_t s0, size_t s1)
   arraytofitsimg("fbh.fits", "INPUT", BYTE_IMG, in,
                  s0, s1, 0, NULL, NULL, "tmp");
   */
+
+  free(inv);
+  free(hlab);
 }
