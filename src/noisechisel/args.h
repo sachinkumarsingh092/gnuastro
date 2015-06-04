@@ -73,9 +73,9 @@ const char doc[] =
 /* Available letters for short options:
 
    f g j m v w x y z
-   A C G I J O W X Y Z
+   A C G J O W X Y Z
 
-   Number keys free: >=513
+   Number keys free: >=512
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -367,6 +367,14 @@ static struct argp_option options[] =
       "False detections S/N quantile to find the true.",
       4
     },
+    {
+      "dilate",
+      'I',
+      "INT",
+      0,
+      "Number of times to dilate true detections.",
+      4
+    },
 
     {
       "checkthresh",
@@ -374,14 +382,6 @@ static struct argp_option options[] =
       0,
       0,
       "Threshold value on each mesh `_thresh.fits'.",
-      4
-    },
-    {
-      "checkinitdetection",
-      503,
-      0,
-      0,
-      "Initial detection steps in file `_initdet.fits'.",
       4
     },
     {
@@ -402,7 +402,7 @@ static struct argp_option options[] =
     },
     {
       "checkdetectionsn",
-      512,
+      503,
       0,
       0,
       "Mesh detection S/N limit `_detsn.fits'.",
@@ -607,11 +607,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       floatl0s1(arg, &p->detquant, "detquant", key, SPACK, NULL, 0);
       p->up.detquantset=1;
       break;
+    case 'I':
+      sizetelzero(arg, &p->dilate, "dilate", key, SPACK, NULL, 0);
+      p->up.dilateset=1;
+      break;
     case 505:
       p->threshname="a";
-      break;
-    case 503:
-      p->initdetectionname="a";
       break;
     case 508:
       p->detectionname="a";
@@ -619,7 +620,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 509:
       p->detectionskyname="a";
       break;
-    case 512:
+    case 503:
       p->detectionsnname="a";
       break;
 

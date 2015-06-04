@@ -135,6 +135,7 @@ struct meshparams
   float      *outgarray1; /* The interpolated garray1.                   */
   float      *outgarray2; /* The interpolated garray2.                   */
   int  fullinterpolation; /* ==1: Ignore channels in interpolation.      */
+  char         *errstart; /* First sentence for error message.           */
 
   /* Smoothing: */
   size_t     smoothwidth; /* Width of smoothing kernel.                  */
@@ -168,10 +169,10 @@ freemesh(struct meshparams *mp);
 
 void
 operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
-              size_t oneforallsize, int makegarray2);
+              size_t oneforallsize, int makegarray2, int initialize);
 
 void
-meshinterpolate(struct meshparams *mp);
+meshinterpolate(struct meshparams *mp, char *errstart);
 
 void
 meshsmooth(struct meshparams *mp);

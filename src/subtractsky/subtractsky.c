@@ -185,7 +185,7 @@ subtractsky(struct subtractskyparams *p)
 
 
   /* Find the sky value and its standard deviation on each mesh. */
-  operateonmesh(mp, avestdonthread, sizeof(float), checkstd);
+  operateonmesh(mp, avestdonthread, sizeof(float), checkstd, 1);
   if(p->interpname)
     {
       checkgarray(mp, &sky, &std);
@@ -205,7 +205,7 @@ subtractsky(struct subtractskyparams *p)
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
-  meshinterpolate(mp);
+  meshinterpolate(mp, "Interpolating the sky and its standard deviation");
   if(p->interpname)
     {
       checkgarray(mp, &sky, &std);

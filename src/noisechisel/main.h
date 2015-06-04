@@ -73,6 +73,7 @@ struct uiparams
   int      minnumfalseset;
   int         detquantset;
   int   detsnhistnbinsset;
+  int           dilateset;
 };
 
 
@@ -97,7 +98,6 @@ struct noisechiselparams
   /* output: */
   char          *meshname;  /* Name of --checkmesh output.                 */
   char        *threshname;  /* !=NULL: Name of threshold steps.            */
-  char *initdetectionname;  /* !=NULL: Name of initial detection steps.    */
   char     *detectionname;  /* !=NULL: Name of detection steps.            */
   char  *detectionskyname;  /* !=NULL: Name of detection sky steps.        */
   char   *detectionsnname;  /* !=NULL: Name of detection S/N on meshs.     */
@@ -117,6 +117,7 @@ struct noisechiselparams
   size_t      minnumfalse;  /* Min No. false detections/segments for quant.*/
   float          detquant;  /* False detection S/N quantile to find true.  */
   size_t   detsnhistnbins;  /* ==1: Save false detection S/Ns histogram.   */
+  size_t           dilate;  /* Number of times to dilate true detections.  */
 
   /* Operating mode: */
 

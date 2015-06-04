@@ -59,7 +59,7 @@ noisechisel(struct noisechiselparams *p)
   struct timeval t1;
   int verb=p->cp.verb;
   char report[VERBMSGLENGTH_V];
-  size_t s0=smp->s0, s1=smp->s1;
+  size_t i, s0=smp->s0, s1=smp->s1;
 
 
   /* Prepare the mesh array. */
@@ -86,11 +86,11 @@ noisechisel(struct noisechiselparams *p)
   /* Convolve the image: */
   if(verb) gettimeofday(&t1, NULL);
   spatialconvolveonmesh(smp, &p->conv);
-  if(p->initdetectionname)
+  if(p->detectionname)
     {
-      arraytofitsimg(p->initdetectionname, "Input", FLOAT_IMG, smp->img,
+      arraytofitsimg(p->detectionname, "Input", FLOAT_IMG, smp->img,
                      s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(p->initdetectionname, "Convolved", FLOAT_IMG, p->conv,
+      arraytofitsimg(p->detectionname, "Convolved", FLOAT_IMG, p->conv,
                      s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
     }
   if(verb) reporttiming(&t1, "Convolved with kernel.", 1);
@@ -124,6 +124,24 @@ noisechisel(struct noisechiselparams *p)
       reporttiming(&t1, report, 1);
     }
 
+
+  /* Dilate the byt array and find the new number of detections: */
+  if(verb) gettimeofday(&t1, NULL);
+  if(p->dilate)
+    {
+      for(i=0;i<p->dilate;++i)
+        dilate0_erode1_8con(p->byt, s0, s1, 0);
+        p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, 4);
+      if(verb)
+        {
+          sprintf(report, "%lu detections after %lu dilation%s",
+                  p->numobjects-1, p->dilate, p->dilate>1 ? "s." : ".");
+          reporttiming(&t1, report, 1);
+        }
+    }
+  if(p->detectionname)
+    arraytofitsimg(p->detectionname, "Dilated", LONG_IMG, p->olab,
+                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
   /* Clean up: */
   free(p->conv);

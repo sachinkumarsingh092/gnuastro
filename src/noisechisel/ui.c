@@ -326,9 +326,14 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "detquant")==0)
 	{
 	  if(up->detquantset) continue;
-          floatl0s1(value, &p->detquant, name, key, SPACK,
-                      filename, lineno);
+          floatl0s1(value, &p->detquant, name, key, SPACK, filename, lineno);
 	  up->detquantset=1;
+	}
+      else if(strcmp(name, "dilate")==0)
+	{
+	  if(up->dilateset) continue;
+          sizetelzero(value, &p->dilate, name, key, SPACK, filename, lineno);
+	  up->dilateset=1;
 	}
 
 
@@ -458,6 +463,8 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnhistnbins", p->detsnhistnbins);
   if(up->detquantset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "detquant", p->detquant);
+  if(up->dilateset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "dilate", p->dilate);
 }
 
 
@@ -528,6 +535,8 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("detsnhistnbins");
   if(up->detquantset==0)
     REPORT_NOTSET("detquant");
+  if(up->dilateset==0)
+    REPORT_NOTSET("dilate");
 
   END_OF_NOTSET_REPORT;
 }
@@ -581,12 +590,6 @@ sanitycheck(struct noisechiselparams *p)
       p->threshname=NULL;
       automaticoutput(p->up.inputname, "_thresh.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->threshname);
-    }
-  if(p->initdetectionname)
-    {
-      p->initdetectionname=NULL;
-      automaticoutput(p->up.inputname, "_initdet.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->initdetectionname);
     }
   if(p->detectionname)
     {
@@ -884,7 +887,6 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   if(p->threshname) free(p->threshname);
   if(p->detectionname) free(p->detectionname);
   if(p->detectionskyname) free(p->detectionskyname);
-  if(p->initdetectionname) free(p->initdetectionname);
 
   /* Free the WCS structure: */
   if(p->wcs)

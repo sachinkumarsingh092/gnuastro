@@ -170,7 +170,7 @@ findapplyqthreshold(struct noisechiselparams *p)
 
 
   /* Find the threshold on each mesh: */
-  operateonmesh(mp, qthreshonmesh, sizeof(float), 0);
+  operateonmesh(mp, qthreshonmesh, sizeof(float), 0, 1);
   if(p->threshname)
     {
       checkgarray(mp, &thresh, NULL);
@@ -180,7 +180,7 @@ findapplyqthreshold(struct noisechiselparams *p)
       free(thresh);
     }
 
-  meshinterpolate(mp);
+  meshinterpolate(mp, "Interpolating quantile threshold");
   if(p->threshname)
     {
       checkgarray(mp, &thresh, NULL);
@@ -319,7 +319,7 @@ findavestdongrid(struct noisechiselparams *p, char *outname, int i0f1)
 
 
   /* Find the average and standard deviation */
-  operateonmesh(smp, avestdonthread, sizeof(float), 1);
+  operateonmesh(smp, avestdonthread, sizeof(float), 1, 1);
   if(outname)
     {
       checkgarray(smp, &sky, &std);
@@ -341,10 +341,9 @@ findavestdongrid(struct noisechiselparams *p, char *outname, int i0f1)
   floatmin(smp->garray2, smp->nmeshi, &p->cpscorr);
   if(p->cpscorr>1) p->cpscorr=1.0f;
 
-
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
-  meshinterpolate(smp);
+  meshinterpolate(smp, "Interpolating sky value and its standard deviation");
   if(outname)
     {
       checkgarray(smp, &sky, &std);
@@ -355,6 +354,7 @@ findavestdongrid(struct noisechiselparams *p, char *outname, int i0f1)
       free(sky);
       free(std);
     }
+
 
   /* Smooth the interpolated array:  */
   if(smp->smoothwidth>1)

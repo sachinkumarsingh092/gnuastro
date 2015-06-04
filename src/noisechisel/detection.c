@@ -67,12 +67,12 @@ initialdetection(struct noisechiselparams *p)
   int verb=p->cp.verb;
   char report[VERBMSGLENGTHS2_V];
   size_t i, s0=p->smp.s0, s1=p->smp.s1;
-  char *initdetectionname=p->initdetectionname;
+  char *detectionname=p->detectionname;
 
   /* Find the threshold and apply it: */
   findapplyqthreshold(p);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Thresholded", BYTE_IMG, p->byt,
+  if(detectionname)
+    arraytofitsimg(detectionname, "Thresholded", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
@@ -89,8 +89,8 @@ initialdetection(struct noisechiselparams *p)
   else
     for(i=0;i<p->numerosion;++i)
       dilate0_erode1_8con(p->byt, s0, s1, 1);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Eroded", BYTE_IMG, p->byt,
+  if(detectionname)
+    arraytofitsimg(detectionname, "Eroded", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
@@ -103,8 +103,8 @@ initialdetection(struct noisechiselparams *p)
 
   /* Do the opening: */
   opening(p->byt, s0, s1, p->opening, p->openingngb);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Opened", BYTE_IMG, p->byt,
+  if(detectionname)
+    arraytofitsimg(detectionname, "Opened", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
@@ -118,8 +118,8 @@ initialdetection(struct noisechiselparams *p)
   /* Label the connected regions. Note that p->olab was allocated in
      ui.c and will be freed there. */
   p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, 4);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Labeled", LONG_IMG, p->olab,
+  if(detectionname)
+    arraytofitsimg(detectionname, "Labeled", LONG_IMG, p->olab,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 }
 
@@ -196,34 +196,33 @@ bytparttolarge(struct noisechiselparams *p, unsigned char *in,
 
 
 
-/*
+
 void
 removefalsedetections(unsigned char *byt, long *lab, size_t size,
-                      size_t *numlabs)
+                      size_t numlabs, float *sntable, float minsn)
 {
 
   long *newlabs;
   size_t i, curlab=1;
 
-  errno=0; newlabs=calloc(*numlabs, sizeof *newlabs);
+  errno=0; newlabs=calloc(numlabs, sizeof *newlabs);
   if(newlabs==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for numlabs in "
-          "removefalsedetections (detections.c)", *numlabs*sizeof *newlabs);
+          "removefalsedetections (detections.c)", numlabs*sizeof *newlabs);
 
-  for(i=1;i<*numlabs;++i)
-    if(vartable[i]>minvar)
+  for(i=1;i<numlabs;++i)
+    if(sntable[i]>minsn)
       newlabs[i]=curlab++;
-
-  if(byt)
-    for(i=0;i<size;++i)
-      byt[i] = (in[i]=newlabs[in[i]]) > 0;
-  else
-    for(i=0;i<size;++i)
-      in[i]=newlabs[in[i]];
+  /*
+  for(i=1;i<numlabs;++i)
+    printf("   %lu: %.3f %lu\n", i, sntable[i], newlabs[i]);
+  */
+  for(i=0;i<size;++i)
+    byt[i] = newlabs[lab[i]] > 0;
 
   free(newlabs);
 }
-*/
+
 
 
 
@@ -240,9 +239,9 @@ snthreshonmesh(void *inparams)
 
   long *thislab;
   char cline[1000];
-  size_t detsnhistnbins=p->detsnhistnbins;
   unsigned char b0f1=p->b0f1, *dbyt=p->dbyt;
   size_t i, s0, s1, minnumfalse=p->minnumfalse;
+  size_t meshid, detsnhistnbins=p->detsnhistnbins;
   size_t ind, size, numlabs, startind, is1=mp->s1;
   float *f, *ff, *to, *sntable, minbfrac=p->minbfrac;
   size_t nf, nb, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
@@ -273,7 +272,6 @@ snthreshonmesh(void *inparams)
 	  count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &nb);
 	  if( (float)nb < (float)(size)*minbfrac )
 	    {
-              mp->cgarray1[ind]=NAN;
 	      if(detectionname)
 		ucharinitonregion(dbyt, 0, startind, s0, s1, is1);
 	      continue;
@@ -326,9 +324,23 @@ snthreshonmesh(void *inparams)
       detlabelsn(p, thislab, numlabs, startind, s0, s1, &sntable);
       if(b0f1)                  /* Initial detections. */
         {
-          /*
-          removefalsedetections(thisbyt, thislab, s0*s1, &numlabs);
-          */
+          /* The interpolation or smoothing might have been done
+             independent of channels. So, we can't just use
+             mp->cgarray1[ind] like the case for noise.  */
+          meshid=setmeshid(mp, ind);
+
+          /* A simple sanity check: */
+          if(isnan(mp->garray1[meshid]))
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix the problem. For some reason, the minimum Signal "
+                  "to noise ratio for mesh number %lu is a NaN!",
+                  PACKAGE_BUGREPORT, meshid);
+
+          /* Remove the false detections and copy thisbyt into
+             p->dbyt. */
+          removefalsedetections(thisbyt, thislab, s0*s1, numlabs,
+                                sntable, mp->garray1[meshid]);
+          bytparttolarge(p, thisbyt, startind, s0, s1);
         }
       else                      /* Noise (background). */
         {
@@ -351,9 +363,11 @@ snthreshonmesh(void *inparams)
 
           /* Put the signal to noise ratio quantile into the
              mp->garray1 array. Note that since garray1 was
-             initialized to NaN, when a mesh doesn't reach this
-             point, it will be NaN. */
-          mp->cgarray1[ind]=sntable[indexfromquantile(numlabs, p->detquant)];
+             initialized to NaN, when a mesh doesn't reach this point,
+             it will be NaN. Also note that since we are just defining
+             each grid element here, ind is actually the mesh ID or
+             meshid. */
+          mp->garray1[ind]=sntable[indexfromquantile(numlabs, p->detquant)];
 
           /* If the user has asked for it, make the histogram of the
              S/N distribution. */
@@ -376,7 +390,7 @@ snthreshonmesh(void *inparams)
                       "# The %.3f quantile has a value of %.4f on "
                       "this bin.", SPACK_STRING, SPACK_NAME,
                       ctime(&p->rawtime), p->up.inputname, p->cp.hdu,
-                      ind, p->detquant, mp->cgarray1[ind]);
+                      ind, p->detquant, mp->garray1[ind]);
               automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
                               p->cp.dontdelete, &histname);
               savehist(sntable, numlabs, detsnhistnbins,
@@ -412,6 +426,7 @@ snthreshongrid(struct noisechiselparams *p)
 {
   struct meshparams *lmp=&p->lmp;
 
+  int initialize;
   char *extname=NULL;
   unsigned char *tmp;
   size_t s0=lmp->s0, s1=lmp->s1;
@@ -421,6 +436,7 @@ snthreshongrid(struct noisechiselparams *p)
      allocated, then it shows that we are working on the data pixels,
      otherwise we are working on the noise pixels. */
   p->b0f1 = lmp->garray1 ? 1 : 0;
+  initialize = p->b0f1 ? 0 : 1;
 
 
   /* Find the SN threshold and save the steps in a FITS file: */
@@ -428,12 +444,12 @@ snthreshongrid(struct noisechiselparams *p)
     {
       p->stepnum=1;
       ucharcopy(p->dbyt, s0*s1, &tmp); /* Backup of p->dbyt in tmp */
-      while( (p->b0f1==0 && p->stepnum<6)           /* Undetected. */
-             || (p->b0f1 && p->stepnum<7))          /* Detected.   */
+      while(p->stepnum<6)
         {
           free(p->dbyt);    /* Free the old, p->dbyt, put the original */
           ucharcopy(tmp, s0*s1, &p->dbyt);
-          operateonmesh(lmp, snthreshonmesh, sizeof(unsigned char), 0);
+          operateonmesh(lmp, snthreshonmesh, sizeof(unsigned char), 0,
+                        initialize);
           switch(p->stepnum)
             {
             case 1:
@@ -449,7 +465,7 @@ snthreshongrid(struct noisechiselparams *p)
               extname="SmallRemoved";
               break;
             default:
-              extname=NULL;
+              extname = p->b0f1 ? "True" : NULL;
               break;
             }
           if(extname)
@@ -459,11 +475,17 @@ snthreshongrid(struct noisechiselparams *p)
             break;
           ++(p->stepnum);
         }
-      free(p->dbyt);
-      p->dbyt=tmp;
+      if(p->b0f1)
+        free(tmp);
+      else
+        {
+          free(p->dbyt);
+          p->dbyt=tmp;
+        }
     }
   else
-    operateonmesh(lmp, snthreshonmesh, sizeof(unsigned char), 0);
+    operateonmesh(lmp, snthreshonmesh, sizeof(unsigned char), 0,
+                  initialize);
 
 }
 
@@ -493,7 +515,7 @@ findsnthreshongrid(struct noisechiselparams *p)
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
-  meshinterpolate(lmp);
+  meshinterpolate(lmp, "Interpolating the Signal to noise ratio threshold");
   if(p->detectionsnname)
     {
       checkgarray(lmp, &sn, NULL);
@@ -515,6 +537,66 @@ findsnthreshongrid(struct noisechiselparams *p)
           free(sn);
         }
     }
+}
+
+
+
+
+
+void
+dbytolaboverlap(struct noisechiselparams *p)
+{
+  long *tokeep, *olab=p->olab;
+  size_t numobjects=p->numobjects;
+  unsigned char *dbyt=p->dbyt, *byt=p->byt;
+  size_t i, size=p->smp.s0*p->smp.s1, curlab=1;
+
+  /* Allocate array to keep the overlapping labels. */
+  errno=0; tokeep=calloc(numobjects, sizeof*tokeep);
+  if(tokeep==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for tokeep in dbytolaboverlap "
+          "(detection.c)", numobjects*sizeof*tokeep);
+
+  /* Note that the zeroth element of tokeep can also be non zero, this
+     is because the holes of the labeled regions might be filled
+     during filling the holes, but have not been filled in the
+     original labeled array. They are not important so you can just
+     ignore them.
+
+     The basic idea is that after the first pixel of a label overlaps
+     with dbyt[i], we don't need to check the rest of that object's
+     pixels. tokeep is only binary: 0 or 1.
+  */
+  for(i=0;i<size;++i)
+    tokeep[ olab[i] ] =
+      tokeep[ olab[i] ]		/* Check if this label is to be kept.    */
+      ? 1			/* It has, its all we need!              */
+      : dbyt[i]; 		/* It hasn't, check if it should be kept.*/
+  tokeep[0]=0;
+
+  /* Set the new labels: */
+  for(i=1;i<numobjects;++i)
+    if(tokeep[i])
+      tokeep[i]=curlab++;
+
+  /* Replace the byt and olab values with their proper values. If the
+     user doesn't want to dilate, then change the labels in `lab'
+     too. Otherwise, you don't have to worry about the label
+     array. After dilation a new labeling will be done and the whole
+     labeled array will be re-filled.*/
+  if(p->dilate)
+    for(i=0;i<size;++i)
+      byt[i] = tokeep[ olab[i] ] > 0;
+  else
+    for(i=0;i<size;++i)
+      byt[i] = (olab[i] = tokeep[ olab[i] ]) > 0;
+
+  /* Note that until here, numdetected is the number of labels
+     assigned. But since later we will want the labels to be
+     indexes in an array, numdetected has to be added with one. */
+  p->numobjects=curlab;
+
+  free(tokeep);
 }
 
 
@@ -544,21 +626,11 @@ onlytruedetections(struct noisechiselparams *p)
 
   float snave;
   int verb=p->cp.verb;
-  size_t s0=lmp->s0, s1=lmp->s1;
   char report[VERBMSGLENGTHS2_V];
   char *detectionname=p->detectionname;
   float *imgcopy, *ave, *inputimage=p->img;
+  size_t s0=lmp->s0, s1=lmp->s1, numobjects=p->numobjects;
 
-
-  /* In case you want to view the steps, put the correct arrays in the
-     FITS file. */
-  if(detectionname)
-    {
-      arraytofitsimg(detectionname, "Input", FLOAT_IMG, p->img,
-                     s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(detectionname, "InitialDetections", LONG_IMG, p->olab,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-    }
 
   /* Find the average and STD of the undetected pixels for each
      mesh for the initial detection threshold: */
@@ -578,6 +650,7 @@ onlytruedetections(struct noisechiselparams *p)
   floatcopy(p->img, s0*s1, &imgcopy);
   p->img=imgcopy;
 
+
   /* Apply the false detection removal threshold to the image. */
   applydetectionthresholdskysub(p);
   if(p->detectionname)
@@ -586,10 +659,12 @@ onlytruedetections(struct noisechiselparams *p)
   if(verb)
     reporttiming(NULL, "Initial sky value threshold applied.", 2);
 
+
   /* Save the standard deviation image. Since we have subtracted the
      average, we only need the standard deviation. */
   checkgarray(&p->smp, &ave, &p->std);
   free(ave);
+
 
   /* Find the Signal to noise ratio threshold on the grid and keep it
      in one array. */
@@ -602,14 +677,27 @@ onlytruedetections(struct noisechiselparams *p)
       reporttiming(NULL, report, 2);
     }
 
+
   /* Apply the SN threshold to all the detections. */
   snthreshongrid(p);
+  dbytolaboverlap(p);
+  if(detectionname)
+    arraytofitsimg(detectionname, "TrueDetections", BYTE_IMG, p->byt,
+                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  if(verb)
+    {            /* p->numobjects changed in dbytlaboverlap. */
+      sprintf(report, "%lu false detections removed.",
+              numobjects-p->numobjects);
+      reporttiming(NULL, report, 2);
+    }
+
 
   /* Point the input image to its correct place: */
   free(p->img);
   p->img=inputimage;
 
+
   /* Clean up: */
-  free(p->std); p->std=NULL;
   free(p->dbyt);
+  free(p->std); p->std=NULL;
 }

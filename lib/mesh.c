@@ -645,7 +645,7 @@ freemesh(struct meshparams *mp)
 */
 void
 operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
-              size_t oneforallsize, int makegarray2)
+              size_t oneforallsize, int makegarray2, int initialize)
 {
   int err;
   size_t i, nb;
@@ -662,27 +662,30 @@ operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
     error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
           numthreads*sizeof *mtp);
 
-  /* If cgarrays are set to NULL, allocate the cgarrays. */
+  /* Set the number of garrays to operate on: */
+  mp->ngarrays = makegarray2 ? 2 : 1;
+
+  /* If cgarrays have not been allocated before, allocate them. */
   if(mp->cgarray1==NULL)
     {
       errno=0; mp->cgarray1=malloc(mp->nmeshi*sizeof *mp->cgarray1);
       if(mp->cgarray1==NULL) error(EXIT_FAILURE, errno, "mp->cgarray1");
     }
-  if(makegarray2 && mp->cgarray2==NULL)
+  if(mp->ngarrays==2 && mp->cgarray2==NULL)
     {
-      mp->ngarrays=2;
       errno=0; mp->cgarray2=malloc(mp->nmeshi*sizeof *mp->cgarray2);
       if(mp->cgarray2==NULL) error(EXIT_FAILURE, errno, "mp->cgarray2");
     }
-  else mp->ngarrays=1;
-
-  mp->garray1=mp->cgarray1;
-  mp->garray2=mp->cgarray2;
 
   /* Initialize the cgarrays to NaN:*/
-  fp=(f=mp->cgarray1)+mp->nmeshi; do *f++=NAN; while(f<fp);
-  if(mp->ngarrays==2)
-    { fp=(f=mp->cgarray2)+mp->nmeshi; do *f++=NAN; while(f<fp); }
+  if(initialize)
+    {
+      fp=(f=mp->cgarray1)+mp->nmeshi; do *f++=NAN; while(f<fp);
+      if(mp->ngarrays==2)
+        { fp=(f=mp->cgarray2)+mp->nmeshi; do *f++=NAN; while(f<fp); }
+      mp->garray1=mp->cgarray1;
+      mp->garray2=mp->cgarray2;
+    }
 
   /* `oneforall' is an array with the sides equal to the maximum side
      of the meshes in the image. The purpose is to enable manipulating
@@ -767,6 +770,89 @@ operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
 /*********************************************************************/
 /********************         Interpolate         ********************/
 /*********************************************************************/
+void
+preparemeshinterparrays(struct meshparams *mp)
+{
+  size_t bs0=mp->gs0, bs1=mp->gs1;
+  size_t numthreads=mp->numthreads;
+
+
+  /* If full-interpolation is to be done (ignoring channels) we will
+     need two arrays to temporarily keep the actual positions of the
+     meshs. Note that by default, the meshs in each channels are
+     placed contiguously. In these arrays, the meshs are placed as
+     they would in the image (channels are ignored).*/
+  if(mp->fullinterpolation)
+    {
+      /* In case the previous operation was on cgarrays, then you have
+         to fill in fgarray. */
+      if(mp->garray1==mp->cgarray1)
+        fullgarray(mp, 0);
+      bs0=mp->nch2*mp->gs0;
+      bs1=mp->nch1*mp->gs1;
+      mp->garray1=mp->fgarray1;
+      if(mp->ngarrays==2) mp->garray2=mp->fgarray2;
+    }
+  else
+    {
+      mp->garray1=mp->cgarray1;
+      if(mp->ngarrays==2) mp->garray2=mp->cgarray2;
+    }
+
+
+  /* Allocate the output arrays to keep the final values. Note that we
+     cannot just do the interpolaton on the same input grid, because
+     the newly filled interpolated pixels will affect the later
+     ones. In the end, these copies are going to replace the
+     garrays. */
+  errno=0; mp->outgarray1=malloc(mp->nmeshi*sizeof *mp->outgarray1);
+  if(mp->outgarray1==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for outgarray1 (mesh.c)",
+          mp->nmeshi*sizeof *mp->outgarray1);
+  if(mp->ngarrays==2)
+    {
+      errno=0; mp->outgarray2=malloc(mp->nmeshi*sizeof *mp->outgarray2);
+      if(mp->outgarray2==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for outgarray2 (mesh.c)",
+              mp->nmeshi*sizeof *mp->outgarray2);
+    }
+
+
+  /* Allocate the array for the values of the nearest pixels. For each
+     pixel in each thread, the nearest pixels will be put here and
+     sorted to find the median value. If garray2 is not NULL, then it
+     should be interpolated. Note that both arrays have blank pixels
+     on the same places.*/
+  errno=0;
+  mp->nearest1=malloc(numthreads*mp->numnearest*sizeof *mp->nearest1);
+  if(mp->nearest1==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
+          "nearest1 values for interpolation (mesh.c).",
+          numthreads*mp->numnearest*sizeof *mp->nearest1);
+  if(mp->ngarrays==2)
+    {
+      errno=0;
+      mp->nearest2=malloc(numthreads*mp->numnearest*sizeof *mp->nearest2);
+      if(mp->nearest2==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
+              "nearest2 values for interpolation (mesh.c).",
+              numthreads*mp->numnearest*sizeof *mp->nearest2);
+    }
+
+
+  /* Allocate space for the byte array keeping a record of which
+     pixels were used to search. Note that each thread needs one byt
+     array. */
+  errno=0; mp->byt=malloc(numthreads*bs0*bs1*sizeof *mp->byt);
+  if(mp->byt==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for mp->byt array in "
+          "mesh.c", numthreads*bs0*bs1*sizeof *mp->byt);
+}
+
+
+
+
+
 /* Ideally, this should be a radial distance using the square root of
    the differences. But here we are not dealing with subpixel
    distances, so manhattan distance is fine. It also avoids the square
@@ -885,13 +971,15 @@ meshinterponthread(void *inparams)
              interpolation. Normally, this loop should only be exited
              through the `currentnum>=numnearest' check above. */
           if(sQ==NULL)
-            error(EXIT_FAILURE, 0, "Only %lu mesh(s) are filled for "
+            error(EXIT_FAILURE, 0, "%s: only %lu mesh(s) are filled for "
                   "interpolation in channel %lu. Either set less "
                   "restrictive requirements to get more interpolation "
                   "points or decrease the number of nearest points to "
                   "use for interpolation. Problem encountered on thread "
-                  "%lu, for pixel %lu.\n", currentnum, thisind/mp->nmeshc,
-                  mtp->id, thisind);
+                  "%lu, for pixel %lu. When running on multiple threads, "
+                  "This message might be repeated for different threads.\n",
+                  mp->errstart, currentnum, thisind/mp->nmeshc, mtp->id,
+                  thisind);
         }
       tosll_free(lQ);       /* The rest of the queue not needed. */
 
@@ -922,91 +1010,9 @@ meshinterponthread(void *inparams)
 
 
 
-void
-preparemeshinterparrays(struct meshparams *mp)
-{
-  size_t numthreads=mp->numthreads;
-  size_t bs0=mp->gs0, bs1=mp->gs1;
-
-
-  /* If full-interpolation is to be done (ignoring channels) we will
-     need two arrays to temporarily keep the actual positions of the
-     meshs. Note that by default, the meshs in each channels are
-     placed contiguously. In these arrays, the meshs are placed as
-     they would in the image (channels are ignored).*/
-  if(mp->fullinterpolation)
-    {
-      /* In case the previous operation was on cgarrays, then you have
-         to fill in fgarray. */
-      if(mp->garray1==mp->cgarray1)
-        fullgarray(mp, 0);
-      bs0=mp->nch2*mp->gs0;
-      bs1=mp->nch1*mp->gs1;
-      mp->garray1=mp->fgarray1;
-      if(mp->ngarrays==2) mp->garray2=mp->fgarray2;
-    }
-  else
-    {
-      mp->garray1=mp->cgarray1;
-      if(mp->ngarrays==2) mp->garray2=mp->cgarray2;
-    }
-
-
-  /* Allocate the output arrays to keep the final values. Note that we
-     cannot just do the interpolaton on the same input grid, because
-     the newly filled interpolated pixels will affect the later
-     ones. In the end, these copies are going to replace the
-     garrays. */
-  errno=0; mp->outgarray1=malloc(mp->nmeshi*sizeof *mp->outgarray1);
-  if(mp->outgarray1==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for outgarray1 (mesh.c)",
-          mp->nmeshi*sizeof *mp->outgarray1);
-  if(mp->ngarrays==2)
-    {
-      errno=0; mp->outgarray2=malloc(mp->nmeshi*sizeof *mp->outgarray2);
-      if(mp->outgarray2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for outgarray2 (mesh.c)",
-              mp->nmeshi*sizeof *mp->outgarray2);
-    }
-
-
-  /* Allocate the array for the values of the nearest pixels. For each
-     pixel in each thread, the nearest pixels will be put here and
-     sorted to find the median value. If garray2 is not NULL, then it
-     should be interpolated. Note that both arrays have blank pixels
-     on the same places.*/
-  errno=0;
-  mp->nearest1=malloc(numthreads*mp->numnearest*sizeof *mp->nearest1);
-  if(mp->nearest1==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
-          "nearest1 values for interpolation (mesh.c).",
-          numthreads*mp->numnearest*sizeof *mp->nearest1);
-  if(mp->ngarrays==2)
-    {
-      errno=0;
-      mp->nearest2=malloc(numthreads*mp->numnearest*sizeof *mp->nearest2);
-      if(mp->nearest2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
-              "nearest2 values for interpolation (mesh.c).",
-              numthreads*mp->numnearest*sizeof *mp->nearest2);
-    }
-
-
-  /* Allocate space for the byte array keeping a record of which
-     pixels were used to search. Note that each thread needs one byt
-     array. */
-  errno=0; mp->byt=malloc(numthreads*bs0*bs1*sizeof *mp->byt);
-  if(mp->byt==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for mp->byt array in "
-          "mesh.c", numthreads*bs0*bs1*sizeof *mp->byt);
-}
-
-
-
-
 
 void
-meshinterpolate(struct meshparams *mp)
+meshinterpolate(struct meshparams *mp, char *errstart)
 {
   int err;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
@@ -1016,6 +1022,7 @@ meshinterpolate(struct meshparams *mp)
   size_t numthreads=mp->numthreads;
 
   /* Prepare all the meshparams arrays: */
+  mp->errstart=errstart;
   preparemeshinterparrays(mp);
 
   /* Allocate the arrays to keep the thread and parameters for each

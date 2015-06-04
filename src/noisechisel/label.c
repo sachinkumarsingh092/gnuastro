@@ -362,7 +362,7 @@ detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t numlabs,
       ff = ( f = p->img + start + r++ * is1 ) + s1;
       do
         {
-          if(*l)                /* There is a label on this mesh. */
+          if(*l && !isnan(*f))     /* There is a label on this mesh. */
             {
               ++areas[*l];
               stds[*l]+=*s;
