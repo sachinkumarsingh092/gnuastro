@@ -345,6 +345,26 @@ floatsum(float *in, size_t size)
 
 
 float
+floatsumnum(float *in, size_t *size)
+{
+  float *fpt;
+  double sum=0;
+  fpt=in+*size;
+  *size=0;
+  do
+    if(!isnan(*in))
+      {
+        sum+=*in;
+        ++(*size);
+      }
+  while(++in<fpt);
+  return sum;
+}
+
+
+
+
+float
 floatsumsquared(float *in, size_t size)
 {
   float *fpt;
@@ -485,8 +505,20 @@ floatsumsquaredmaskl(float *in, long *mask,
  *****************      Average and          ********************
  ****************    Standard deviation      ********************
  ****************************************************************/
+float
+floataverage(float *in, size_t size)
+{
+  float sum;
+  sum=floatsumnum(in, &size);
+  return sum/size;
+}
+
+
+
+
+
 void
-fave(float *in, size_t size, float *ave, unsigned char *mask)
+fave_old(float *in, size_t size, float *ave, unsigned char *mask)
 {
   float sum;
   size_t nsize;

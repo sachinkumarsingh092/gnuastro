@@ -112,6 +112,7 @@ struct meshparams
   size_t           maxs1; /* Maximum number of columns in all types.     */
 
   /* garrays: */
+  int           ngarrays; /* Number of garrays in this run.              */
   float         *garray1; /* Either equal to cgarray1 or fgarray1.       */
   float         *garray2; /* Either equal to cgarray2 or fgarray2.       */
   float        *cgarray1; /* In cgarray1 or cgarray2, the meshs in each  */
@@ -149,6 +150,9 @@ struct meshparams
   size_t          ts0[4]; /* Size (along first FITS axis) of mesh types. */
   size_t          ts1[4]; /* Size (along second FITS axis) of mesh types.*/
 };
+
+size_t
+setmeshid(struct meshparams *mp, size_t findex);
 
 void
 checkmeshid(struct meshparams *mp, long **out);

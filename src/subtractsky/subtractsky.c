@@ -48,7 +48,6 @@ avestdonthread(void *inparam)
   float *mponeforall=mp->oneforall;
   float *oneforall=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
-  int setnan;
   float *cofa;                   /* convolved-oneforall */
   size_t modeindex=(size_t)(-1);
   size_t s0, s1, ind, row, num, start, is1=mp->s1;
@@ -75,7 +74,6 @@ avestdonthread(void *inparam)
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
     {
       /* Prepare the values: */
-      setnan=0;
       num=row=0;
       f=oneforall;
       ind=indexs[i];
@@ -117,22 +115,15 @@ avestdonthread(void *inparam)
             qsort(oneforall, num, sizeof *oneforall, floatincreasing);
 
           /* Do sigma-clipping and save the result if it is
-             accurate. */
+             accurate. Note that all meshs were initialized to NaN, so
+             if they don't fit the criteria, they can simply be
+             ignored. */
           if(sigmaclip_converge(oneforall, 1, num, sigclipmultip,
                                 sigcliptolerance, &ave, &med, &std, 0))
             {
               mp->cgarray1[ind]=ave;
-              if(mp->cgarray2) mp->cgarray2[ind]=std;
+              if(mp->ngarrays==2) mp->cgarray2[ind]=std;
             }
-          else setnan=1;
-        }
-      else setnan=1;
-
-      /* Set this mesh should not be used: */
-      if(setnan)
-        {
-          mp->cgarray1[ind]=NAN;
-          if(mp->cgarray2) mp->cgarray2[ind]=NAN;
         }
     }
 

@@ -59,8 +59,7 @@ noisechisel(struct noisechiselparams *p)
   struct timeval t1;
   int verb=p->cp.verb;
   char report[VERBMSGLENGTH_V];
-  size_t i, s0=smp->s0, s1=smp->s1, numlabs;
-  char *initdetectionname=p->initdetectionname;
+  size_t s0=smp->s0, s1=smp->s1;
 
 
   /* Prepare the mesh array. */
@@ -87,93 +86,46 @@ noisechisel(struct noisechiselparams *p)
   /* Convolve the image: */
   if(verb) gettimeofday(&t1, NULL);
   spatialconvolveonmesh(smp, &p->conv);
-  if(initdetectionname)
+  if(p->initdetectionname)
     {
-      arraytofitsimg(initdetectionname, "Input", FLOAT_IMG, smp->img,
+      arraytofitsimg(p->initdetectionname, "Input", FLOAT_IMG, smp->img,
                      s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(initdetectionname, "Convolved", FLOAT_IMG, p->conv,
+      arraytofitsimg(p->initdetectionname, "Convolved", FLOAT_IMG, p->conv,
                      s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
     }
   if(verb) reporttiming(&t1, "Convolved with kernel.", 1);
 
 
 
-  /* Find the threshold and apply it: */
-  if(verb) gettimeofday(&t1, NULL);
-  findapplythreshold(p);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Thresholded", BYTE_IMG, p->byt,
-                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  /* Do the initial detection: */
   if(verb)
     {
-      sprintf(report, "%.2f quantile threshold found and applied.",
-              p->qthresh);
-      reporttiming(&t1, report, 1);
+      reporttiming(NULL, "Starting to find initial detections.", 1);
+      gettimeofday(&t1, NULL);
     }
-
-
-
-  /* Erode the thresholded image: */
-  if(verb) gettimeofday(&t1, NULL);
-  if(p->erodengb==4)
-    for(i=0;i<p->numerosion;++i)
-      dilate0_erode1_4con(p->byt, s0, s1, 1);
-  else
-    for(i=0;i<p->numerosion;++i)
-      dilate0_erode1_8con(p->byt, s0, s1, 1);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Eroded", BYTE_IMG, p->byt,
-                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  initialdetection(p);
   if(verb)
     {
-      sprintf(report, "Eroded %lu times (%s connectivity).", p->numerosion,
-              p->erodengb==4 ? "4" : "8");
+      sprintf(report, "%lu initial detections found.", p->numobjects-1);
       reporttiming(&t1, report, 1);
     }
-
-
-
-  /* Do the opening: */
-  if(verb) gettimeofday(&t1, NULL);
-  opening(p->byt, s0, s1, p->opening, p->openingngb);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Opened", BYTE_IMG, p->byt,
-                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  if(verb)
-    {
-      sprintf(report, "Opened (depth: %lu, %s connectivity).",
-              p->opening, p->openingngb==4 ? "4" : "8");
-      reporttiming(&t1, report, 1);
-    }
-
-
-
-  /* Label the connected regions: */
-  if(verb) gettimeofday(&t1, NULL);
-  numlabs=BF_concmp(p->byt, p->olab, s0, s1, 4);
-  if(initdetectionname)
-    arraytofitsimg(initdetectionname, "Labeled", LONG_IMG, p->olab,
-                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  if(verb)
-    {
-      sprintf(report, "%lu initial detections found.", numlabs-1);
-      reporttiming(&t1, report, 1);
-    }
-
 
 
   /* Remove the false detections */
-  if(verb) gettimeofday(&t1, NULL);
-  detectonmesh(p, &numlabs);
   if(verb)
     {
-      sprintf(report, "Final number of detections: %lu.", numlabs-1);
+      reporttiming(NULL, "Starting to find and remove false detections.", 1);
+      gettimeofday(&t1, NULL);
+    }
+  onlytruedetections(p);
+  if(verb)
+    {
+      sprintf(report, "%lu true detections identified.", p->numobjects-1);
       reporttiming(&t1, report, 1);
     }
 
 
   /* Clean up: */
-  free(p->byt);
   free(p->conv);
   freemesh(smp);
   freemesh(lmp);

@@ -24,6 +24,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define DETECTION_H
 
 void
-detectonmesh(struct noisechiselparams *p, size_t *numlabs);
+initialdetection(struct noisechiselparams *p);
+
+void
+onlytruedetections(struct noisechiselparams *p);
 
 #endif

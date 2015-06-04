@@ -40,7 +40,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /*********************************************************************/
-/******************     Find the threshold     ***********************/
+/***************        Quantile threshold       *********************/
 /*********************************************************************/
 void *
 qthreshonmesh(void *inparam)
@@ -105,24 +105,6 @@ qthreshonmesh(void *inparam)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/******************     Find the threshold     ***********************/
-/*********************************************************************/
 /* The threshold values are stored in the garray1 array of the
    meshparams structure. This function is basically identical to the
    checkgarray function in mesh.c, only in the middle, it does
@@ -178,31 +160,13 @@ applythreshold(struct noisechiselparams *p)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/******************        Main function       ***********************/
-/*********************************************************************/
 void
-findapplythreshold(struct noisechiselparams *p)
+findapplyqthreshold(struct noisechiselparams *p)
 {
-  unsigned char *byt;
   float *thresh=NULL;
   struct meshparams *mp=&p->smp; /* `mp' instead of `smp' for you to */
   size_t  s0=mp->s0,  s1=mp->s1; /* try this function with p->lmp if */
                                  /* you like to see the effect. */
-
 
 
   /* Find the threshold on each mesh: */
@@ -230,22 +194,253 @@ findapplythreshold(struct noisechiselparams *p)
   if(p->threshname)
     {
       checkgarray(mp, &thresh, NULL);
-      arraytofitsimg(p->threshname, "Interpolated", FLOAT_IMG,
+      arraytofitsimg(p->threshname, "smoothed", FLOAT_IMG,
                      thresh, s0, s1, p->numblank, p->wcs, NULL,
                      SPACK_STRING);
       free(thresh);
     }
 
-  /* Apply the threshold on all the pixels: */
-  errno=0; byt=p->byt=malloc(s0*s1*sizeof *byt);
-  if(byt==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for byt in findapplythreshold "
-          "(thresh.c)", s0*s1*sizeof *byt);
-  applythreshold(p);
 
-  /* Free all the garrays (we don't need them any more): */
-  free(mp->cgarray1); mp->cgarray1=NULL;
-  free(mp->cgarray2); mp->cgarray2=NULL;
-  free(mp->fgarray1); mp->fgarray1=NULL;
-  free(mp->fgarray2); mp->fgarray2=NULL;
+  /* Apply the threshold on all the pixels: */
+  applythreshold(p);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/**************      Average and STD threshold     *******************/
+/*********************************************************************/
+void *
+avestdonthread(void *inparam)
+{
+  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
+  struct meshparams *mp=mtp->mp;
+  struct noisechiselparams *p=(struct noisechiselparams *)mp->params;
+
+  float *mponeforall=mp->oneforall;
+  float *oneforall=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
+
+  unsigned char *byt, *inbyt=p->byt;
+  size_t s0, s1, ind, start, is1=mp->s1;
+  float *f, *img, *imgend, *inimg=mp->img;
+  float ave, med, std, minbfrac=p->minbfrac;
+  size_t i, num, row, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
+
+  /* Start this thread's work: */
+  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+    {
+      /* Prepare the values: */
+      num=row=0;
+      f=oneforall;
+      ind=indexs[i];
+      start=mp->start[ind];
+      s0=mp->ts0[mp->types[ind]];
+      s1=mp->ts1[mp->types[ind]];
+
+      /* Copy all the non-NaN pixels images pixels of this mesh into
+         the mesh array. Note that currently, the spatial positioning
+         of the pixels is irrelevant, so we only keep those that are
+         non-NaN. Recall that both the convolved an unconvolved image
+         have the same NaN pixels.*/
+      do
+        {
+          byt = inbyt + start + row*is1;
+          imgend=(img = inimg + start + row++ * is1 ) + s1;
+          do
+            /* Only input pixels that have byt==0 and are not NaN. */
+            if(*byt++==0 && isnan(*img)==0)
+              {
+                ++num;
+                *f++ = *img;
+              }
+          while(++img<imgend);
+        }
+      while(row<s0);
+
+      /* Do the desired operation on the mesh, all the meshs were
+         initialized to NaN, so if they don't fit the criteria, they
+         can just be ignored. */
+      if( (float)num/(float)(s0*s1)>minbfrac )
+        {
+          /* Sort the array of values: */
+          qsort(oneforall, num, sizeof *oneforall, floatincreasing);
+
+          /* Do sigma-clipping and save the result if it is
+             accurate. */
+          if(sigmaclip_converge(oneforall, 1, num, p->sigclipmultip,
+                                p->sigcliptolerance, &ave, &med, &std, 0))
+            {
+              mp->garray1[ind]=ave;
+              mp->garray2[ind]=std;
+            }
+        }
+    }
+
+  /* Free any allocated space and if multiple threads were used, wait
+     until all other threads finish. */
+  if(mp->numthreads>1)
+    pthread_barrier_wait(&mp->b);
+  return NULL;
+}
+
+
+
+
+
+/* Using the smaller mesh and the p->byt array, find the average and
+   standard deviation of the undetected pixels and put them in the
+   smp->garray1 and smp->garray2 arrays. This function will be used
+   multiple times, the outputs for each should be different. So it
+   takes the second argument as the name.*/
+void
+findavestdongrid(struct noisechiselparams *p, char *outname, int i0f1)
+{
+  struct meshparams *smp=&p->smp;
+
+  float *sky, *std;
+  size_t s0=smp->s0, s1=smp->s1;
+
+
+  /* Find the average and standard deviation */
+  operateonmesh(smp, avestdonthread, sizeof(float), 1);
+  if(outname)
+    {
+      checkgarray(smp, &sky, &std);
+      arraytofitsimg(outname, "Detected", BYTE_IMG, p->byt, s0, s1,
+                     0, p->wcs, NULL, SPACK_STRING);
+      arraytofitsimg(outname, "Sky", FLOAT_IMG, sky, s0, s1,
+                     p->numblank, p->wcs, NULL, SPACK_STRING);
+      arraytofitsimg(outname, "SkySTD", FLOAT_IMG, std, s0, s1,
+                     p->numblank, p->wcs, NULL, SPACK_STRING);
+      free(sky);
+      free(std);
+    }
+
+
+  /* In case the image is in electrons or counts per second the
+     standard deviation of the noise will become smaller than
+     unity. You have to find the minimum STD value (which is always
+     positive) for later corrections. */
+  floatmin(smp->garray2, smp->nmeshi, &p->cpscorr);
+  if(p->cpscorr>1) p->cpscorr=1.0f;
+
+
+  /* Interpolate over the meshs to fill all the blank ones in both the
+     sky and the standard deviation arrays: */
+  meshinterpolate(smp);
+  if(outname)
+    {
+      checkgarray(smp, &sky, &std);
+      arraytofitsimg(outname, "SkyInterpolated", FLOAT_IMG, sky,
+                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      arraytofitsimg(outname, "SkySTDInterpolated", FLOAT_IMG, std,
+                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      free(sky);
+      free(std);
+    }
+
+  /* Smooth the interpolated array:  */
+  if(smp->smoothwidth>1)
+    {
+      meshsmooth(smp);
+      if(outname)
+        {
+          checkgarray(smp, &sky, &std);
+          arraytofitsimg(outname,"SkySmoothed", FLOAT_IMG, sky,
+                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+          arraytofitsimg(outname, "SkySTDSmoothed", FLOAT_IMG, std,
+                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+          free(sky);
+          free(std);
+        }
+    }
+}
+
+
+
+
+
+
+/* This is very similar to the checkgarray function. The sky and its
+   Standard deviation are stored in the garray1 and garray2 arrays of
+   smp meshparams structure. */
+void
+applydetectionthresholdskysub(struct noisechiselparams *p)
+{
+  struct meshparams *smp=&p->smp;
+
+  size_t is0=smp->s0;
+  unsigned char *b, *dbyt;
+  float dthresh=p->dthresh;
+  float *f, *fp, sky, std, *img=p->img;
+  size_t i, row, start, meshid, *types=smp->types;
+  size_t s0, s1, is1=smp->s1, *ts0=smp->ts0, *ts1=smp->ts1;
+
+  /* Allocate the array to keep the threshold value: */
+  errno=0; dbyt=p->dbyt=malloc(is0*is1*sizeof *p->dbyt);
+  if(dbyt==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for dbyt in "
+          "applydetectionthreshold (detection.c)", is0*is1*sizeof *dbyt);
+
+  /* Apply the threshold */
+  for(i=0;i<smp->nmeshi;++i)
+    {
+      /* Get the meshid from i: */
+      meshid=setmeshid(smp, i);
+
+      /* Fill the output array with the value in this mesh: */
+      row=0;
+      s0=ts0[types[meshid]];
+      s1=ts1[types[meshid]];
+      sky = smp->garray1[i];
+      std = smp->garray2[i];
+      start=smp->start[meshid];
+      do
+        {
+          b = dbyt + start + row*is1;
+          fp= ( f = img + start + row++ * is1 ) + s1;
+          do
+            {
+              /*
+                The basic idea behind choosing this comparison is that
+                we want it to work for NaN values too.
+
+                (From the GNU C library manual) "In comparison
+                operations, ... NaN is `unordered': it is not equal
+                to, greater than, or less than anything, _including
+                itself_."
+
+                In this context, we want NaN pixels to be treated like
+                those that are above the threshold (a region that is
+                only NaN will be removed later because it has no
+                flux). So if the checking condition below fails, we
+                want *b=1. To make this work when *f!=NAN also, we
+                check if the flux is below the threshold (so when it
+                fails, *b=1). In this manner we don't have to add an
+                `isnan' check and make this a tiny bit faster.
+              */
+              *f-=sky; /* Sky subtracted for later, p->img is a copy */
+              *b++ = *f<dthresh*std ? 0 : 1;
+            }
+          while(++f<fp);
+        }
+      while(row<s0);
+    }
 }

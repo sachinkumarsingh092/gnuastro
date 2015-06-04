@@ -1,3 +1,19 @@
+2015-06-04  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/subtractsky/subtractsky.c (avestdonthread): No more need for
+	setnan. Since all the meshes are initialized to NaN anyway.
+
+	* lib/mesh.c: Previously, the garrays would be allocated and freed
+	on every set of operations that were done on the mesh grid. I made
+	some modifications so there is no more need to allocate and free
+	them every time. A new prameter was added (ngarrays) so that on
+	each use of the garrays, the number of garrays that are needed are
+	kept here. All checks to work on the second garray are now done
+	through this parameter. In this fashion, when multiple operations
+	are to done on each mesh, there is no need to repeatedly free and
+	allocate the garrays. Nearly all the functions in mesh.c were
+	corrected to account for this.
+
 2015-06-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/astnoisechisel.conf: Changed default dthresh to

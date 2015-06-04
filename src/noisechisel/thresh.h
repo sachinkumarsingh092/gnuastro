@@ -24,6 +24,12 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define THRESH_H
 
 void
-findapplythreshold(struct noisechiselparams *p);
+findapplyqthreshold(struct noisechiselparams *p);
+
+void
+findavestdongrid(struct noisechiselparams *p, char *outname, int i0f1);
+
+void
+applydetectionthresholdskysub(struct noisechiselparams *p);
 
 #endif

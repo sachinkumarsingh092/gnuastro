@@ -732,7 +732,11 @@ preparearrays(struct noisechiselparams *p)
       do *f=*ff++; while(++f<fp);
     }
 
-  /* Prepare the output arrays: */
+  /* Allocate the necessary arrays: */
+  errno=0; p->byt=malloc(smp->s0*smp->s1*sizeof *p->byt);
+  if(p->byt==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for byt in findapplythreshold "
+          "(thresh.c)", smp->s0*smp->s1*sizeof *p->byt);
   errno=0; p->olab=malloc(smp->s0*smp->s1*sizeof *p->olab);
   if(p->olab==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for p->olab (ui.c).",
@@ -860,6 +864,7 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->img);
+  free(p->byt);
   free(p->olab);
   free(p->clab);
   free(p->cp.hdu);

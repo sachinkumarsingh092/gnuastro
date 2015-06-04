@@ -130,8 +130,9 @@ struct noisechiselparams
   unsigned char      b0f1;  /* ==1: we are now working on data, not noise. */
   float              *img;  /* Input image.                                */
   float              *std;  /* The standard deviation of each pixel.       */
-  float               *sn;  /* Acceptable S/N for each mesh.               */
   int             stepnum;  /* Number of step if user wants to see steps.  */
+  size_t       numobjects;  /* Total number of objects (detections).       */
+  size_t        numclumps;  /* Total number of clumps.                     */
 };
 
 #endif

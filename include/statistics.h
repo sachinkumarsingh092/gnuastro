@@ -80,6 +80,9 @@ float
 floatsum(float *in, size_t size);
 
 float
+floatsumnum(float *in, size_t *size);
+
+float
 floatsumsquared(float *in, size_t size);
 
 float
@@ -102,6 +105,9 @@ floatsumsquaredmaskl(float *in, long *mask, size_t size, size_t *nsize);
  *****************      Average and          ********************
  ****************    Standard deviation      ********************
  ****************************************************************/
+float
+floataverage(float *in, size_t size);
+
 void
 fave(float *in, size_t size, float *ave, unsigned char *mask);
 
