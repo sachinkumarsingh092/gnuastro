@@ -101,6 +101,7 @@ struct noisechiselparams
   char     *detectionname;  /* !=NULL: Name of detection steps.            */
   char  *detectionskyname;  /* !=NULL: Name of detection sky steps.        */
   char   *detectionsnname;  /* !=NULL: Name of detection S/N on meshs.     */
+  char           *skyname;  /* !=NULL: Name of image showing sky and STD.  */
 
   /* Detection: */
   float             *conv;  /* Convolved image.                            */

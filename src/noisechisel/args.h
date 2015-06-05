@@ -75,7 +75,7 @@ const char doc[] =
    f g j m v w x y z
    A C G J O W X Y Z
 
-   Number keys free: >=512
+   Number keys free: >=513
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -408,6 +408,14 @@ static struct argp_option options[] =
       "Mesh detection S/N limit `_detsn.fits'.",
       4
     },
+    {
+      "checksky",
+      512,
+      0,
+      0,
+      "Final sky and its STD per pixel `_sky.fits'.",
+      4
+    },
 
 
     {
@@ -622,6 +630,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 503:
       p->detectionsnname="a";
+      break;
+    case 512:
+      p->skyname="a";
       break;
 
 

@@ -609,6 +609,12 @@ sanitycheck(struct noisechiselparams *p)
       automaticoutput(p->up.inputname, "_detsn.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->detectionsnname);
     }
+  if(p->skyname)
+    {
+      p->skyname=NULL;
+      automaticoutput(p->up.inputname, "_sky.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->skyname);
+    }
 
 
   /* Other checks: */
@@ -883,6 +889,7 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
     free(p->up.maskname);
 
   /* Free all the allocated names. Note that detsnhist */
+  if(p->skyname) free(p->skyname);
   if(p->meshname) free(p->meshname);
   if(p->threshname) free(p->threshname);
   if(p->detectionname) free(p->detectionname);

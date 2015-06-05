@@ -20,13 +20,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef THRESH_H
-#define THRESH_H
+#ifndef SKY_H
+#define SKY_H
 
 void
-findapplyqthreshold(struct noisechiselparams *p);
+findavestdongrid(struct noisechiselparams *p, char *outname);
 
 void
-applydetectionthresholdskysub(struct noisechiselparams *p);
+findsubtractskyimgconv(struct noisechiselparams *p);
 
 #endif

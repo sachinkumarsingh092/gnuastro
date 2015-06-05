@@ -38,6 +38,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
+#include "sky.h"
 #include "label.h"
 #include "thresh.h"
 #include "binary.h"
@@ -634,7 +635,7 @@ onlytruedetections(struct noisechiselparams *p)
 
   /* Find the average and STD of the undetected pixels for each
      mesh for the initial detection threshold: */
-  findavestdongrid(p, p->detectionskyname, 0);
+  findavestdongrid(p, p->detectionskyname);
   if(verb)
     reporttiming(NULL, "Initial sky and its STD found.", 2);
 
@@ -698,6 +699,6 @@ onlytruedetections(struct noisechiselparams *p)
 
 
   /* Clean up: */
+  free(p->std);
   free(p->dbyt);
-  free(p->std); p->std=NULL;
 }

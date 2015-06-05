@@ -33,6 +33,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
+#include "sky.h"
 #include "label.h"
 #include "thresh.h"
 #include "detection.h"
@@ -143,8 +144,17 @@ noisechisel(struct noisechiselparams *p)
     arraytofitsimg(p->detectionname, "Dilated", LONG_IMG, p->olab,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
+
+  /* Find the final sky value and subtract it from the image. */
+  if(verb) gettimeofday(&t1, NULL);
+  findsubtractskyimgconv(p);
+  if(verb)
+    reporttiming(&t1, "Final sky and its STD found. Sky subtracted.", 1);
+
+
   /* Clean up: */
-  free(p->conv);
-  freemesh(smp);
-  freemesh(lmp);
+  free(p->std);                 /* Allocated in findsubtractsky.       */
+  free(p->conv);                /* Allocated in spatialconvolveonmesh. */
+  freemesh(smp);                /* Allocated here.                     */
+  freemesh(lmp);                /* Allocated here.                     */
 }
