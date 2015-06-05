@@ -318,6 +318,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 502:
       p->mp.fullconvolution=1;
+      p->up.fullconvolutionset=1;
       break;
 
 

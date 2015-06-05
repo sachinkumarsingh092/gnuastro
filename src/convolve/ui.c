@@ -192,7 +192,13 @@ readconfig(char *filename, struct convolveparams *p)
                     filename, lineno);
 	  up->lastmeshfracset=1;
 	}
-
+      else if(strcmp(name, "fullconvolution")==0)
+	{
+	  if(up->fullconvolutionset) continue;
+          intzeroorone(value, &p->mp.fullconvolution, name, key, SPACK,
+                       filename, lineno);
+	  up->fullconvolutionset=1;
+	}
 
 
 
@@ -318,6 +324,9 @@ printvalues(FILE *fp, struct convolveparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
+  if(up->fullconvolutionset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "fullconvolution",
+            mp->fullconvolution);
 
 
   fprintf(fp, "\n# Operating modes:\n");
@@ -361,6 +370,8 @@ checkifset(struct convolveparams *p)
     REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
     REPORT_NOTSET("lastmeshfrac");
+  if(up->fullconvolutionset==0)
+    REPORT_NOTSET("fullconvolution");
 
 
   /* Operating mode: */

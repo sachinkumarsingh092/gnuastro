@@ -236,6 +236,27 @@ readconfig(char *filename, struct noisechiselparams *p)
                     filename, lineno);
 	  up->smoothwidthset=1;
 	}
+      else if(strcmp(name, "fullconvolution")==0)
+	{
+	  if(up->fullconvolutionset) continue;
+          intzeroorone(value, &p->smp.fullconvolution, name, key, SPACK,
+                       filename, lineno);
+	  up->fullconvolutionset=1;
+	}
+      else if(strcmp(name, "fullinterpolation")==0)
+	{
+	  if(up->fullinterpolationset) continue;
+          intzeroorone(value, &p->smp.fullinterpolation, name, key, SPACK,
+                       filename, lineno);
+	  up->fullinterpolationset=1;
+	}
+      else if(strcmp(name, "fullsmooth")==0)
+	{
+	  if(up->fullsmoothset) continue;
+          intzeroorone(value, &p->smp.fullsmooth, name, key, SPACK,
+                       filename, lineno);
+	  up->fullsmoothset=1;
+	}
 
 
       /* Detection: */
@@ -426,13 +447,21 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", smp->lastmeshfrac);
   if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->smp.mirrordist);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", smp->mirrordist);
   if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->smp.minmodeq);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", smp->minmodeq);
   if(up->numnearestset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", smp->numnearest);
   if(up->smoothwidthset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", smp->smoothwidth);
+  if(up->fullconvolutionset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "fullconvolution",
+            smp->fullconvolution);
+  if(up->fullinterpolationset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "fullinterpolation",
+            smp->fullinterpolation);
+  if(up->fullsmoothset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "fullsmooth", smp->fullsmooth);
 
 
   fprintf(fp, "\n# Detection:\n");
@@ -507,6 +536,12 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
     REPORT_NOTSET("smoothwidth");
+  if(up->fullconvolutionset==0)
+    REPORT_NOTSET("fullconvolution");
+  if(up->fullinterpolationset==0)
+    REPORT_NOTSET("fullinterpolation");
+  if(up->fullsmoothset==0)
+    REPORT_NOTSET("fullsmooth");
 
   /* Detection: */
   if(up->qthreshset==0)
@@ -614,6 +649,12 @@ sanitycheck(struct noisechiselparams *p)
       p->skyname=NULL;
       automaticoutput(p->up.inputname, "_sky.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->skyname);
+    }
+  if(p->segmentationname)
+    {
+      p->segmentationname=NULL;
+      automaticoutput(p->up.inputname, "_seg.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->segmentationname);
     }
 
 
@@ -889,11 +930,12 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
     free(p->up.maskname);
 
   /* Free all the allocated names. Note that detsnhist */
-  if(p->skyname) free(p->skyname);
-  if(p->meshname) free(p->meshname);
-  if(p->threshname) free(p->threshname);
-  if(p->detectionname) free(p->detectionname);
-  if(p->detectionskyname) free(p->detectionskyname);
+  free(p->skyname);
+  free(p->meshname);
+  free(p->threshname);
+  free(p->detectionname);
+  free(p->segmentationname);
+  free(p->detectionskyname);
 
   /* Free the WCS structure: */
   if(p->wcs)

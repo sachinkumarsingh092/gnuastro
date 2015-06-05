@@ -39,25 +39,28 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct uiparams
 {
-  char         *inputname;  /* Name of input file.                 */
-  char          *maskname;  /* Name of mask image file.            */
-  char              *mhdu;  /* Name of mask image header name.     */
-  char        *kernelname;
-  char              *khdu;
-  int         masknameset;
-  int             mhduset;
-  int       kernelnameset;
-  int             khduset;
-  int       numnearestset;
-  int      smoothwidthset;
-  int       mirrordistset;
-  int         minmodeqset;
-  int    sigclipmultipset;
-  int sigcliptoleranceset;
-  int         meshsizeset;
-  int             nch1set;
-  int             nch2set;
-  int     lastmeshfracset;
+  char          *inputname;  /* Name of input file.                 */
+  char           *maskname;  /* Name of mask image file.            */
+  char               *mhdu;  /* Name of mask image header name.     */
+  char         *kernelname;
+  char               *khdu;
+  int          masknameset;
+  int              mhduset;
+  int        kernelnameset;
+  int              khduset;
+  int        numnearestset;
+  int       smoothwidthset;
+  int        mirrordistset;
+  int          minmodeqset;
+  int   fullconvolutionset;
+  int fullinterpolationset;
+  int        fullsmoothset;
+  int     sigclipmultipset;
+  int  sigcliptoleranceset;
+  int          meshsizeset;
+  int              nch1set;
+  int              nch2set;
+  int      lastmeshfracset;
 };
 
 

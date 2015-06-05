@@ -66,6 +66,7 @@ struct uiparams
   int            nch1set;
   int            nch2set;
   int    lastmeshfracset;
+  int fullconvolutionset;
 };
 
 

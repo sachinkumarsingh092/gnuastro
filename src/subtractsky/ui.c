@@ -222,6 +222,27 @@ readconfig(char *filename, struct subtractskyparams *p)
                     filename, lineno);
 	  up->smoothwidthset=1;
 	}
+      else if(strcmp(name, "fullconvolution")==0)
+	{
+	  if(up->fullconvolutionset) continue;
+          intzeroorone(value, &p->mp.fullconvolution, name, key, SPACK,
+                       filename, lineno);
+	  up->fullconvolutionset=1;
+	}
+      else if(strcmp(name, "fullinterpolation")==0)
+	{
+	  if(up->fullinterpolationset) continue;
+          intzeroorone(value, &p->mp.fullinterpolation, name, key, SPACK,
+                       filename, lineno);
+	  up->fullinterpolationset=1;
+	}
+      else if(strcmp(name, "fullsmooth")==0)
+	{
+	  if(up->fullsmoothset) continue;
+          intzeroorone(value, &p->mp.fullsmooth, name, key, SPACK,
+                       filename, lineno);
+	  up->fullsmoothset=1;
+	}
 
 
       /* Statistics: */
@@ -326,13 +347,21 @@ printvalues(FILE *fp, struct subtractskyparams *p)
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
   if(up->mirrordistset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", p->mp.mirrordist);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "mirrordist", mp->mirrordist);
   if(up->minmodeqset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", p->mp.minmodeq);
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", mp->minmodeq);
   if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", p->mp.numnearest);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", mp->numnearest);
   if(up->smoothwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", p->mp.smoothwidth);
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", mp->smoothwidth);
+  if(up->fullconvolutionset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "fullconvolution",
+            mp->fullconvolution);
+  if(up->fullinterpolationset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "fullinterpolation",
+            mp->fullinterpolation);
+  if(up->fullsmoothset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "fullsmooth", mp->fullsmooth);
 
 
   fprintf(fp, "\n# Statistics:\n");
@@ -379,6 +408,12 @@ checkifset(struct subtractskyparams *p)
     REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
     REPORT_NOTSET("smoothwidth");
+  if(up->fullconvolutionset==0)
+    REPORT_NOTSET("fullconvolution");
+  if(up->fullinterpolationset==0)
+    REPORT_NOTSET("fullinterpolation");
+  if(up->fullsmoothset==0)
+    REPORT_NOTSET("fullsmooth");
 
   /* Statistics: */
   if(up->sigclipmultipset==0)

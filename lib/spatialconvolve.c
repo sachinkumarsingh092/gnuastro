@@ -31,44 +31,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "box.h"
 #include "astrthreads.h"
-
-
-
-/*******************************************************************/
-/**************           Input structure           ****************/
-/***********   It is internal so it isn't in the header.   *********/
-/*******************************************************************/
-struct sconvparams
-{
-  /* General input parameters: */
-  float           *input;     /* Input image array.                    */
-  float          *kernel;     /* Kernel array.                         */
-  float             *out;     /* Output image.                         */
-  size_t             is0;     /* Image size along first C axis.        */
-  size_t             is1;     /* Image size along second C axis.       */
-  size_t             ks0;     /* Kernel size along first C axis.       */
-  size_t             ks1;     /* Kernel size along second C axis.      */
-  int     edgecorrection;     /* Correct the edges of the image.       */
-  long       fpixel_i[2];     /* First pixel in input image.           */
-  long       lpixel_i[2];     /* Last pixel in input image.            */
-  long       fpixel_o[2];     /* First pixel in kernel.                */
-  long       lpixel_o[2];     /* Last pixel in kernel.                 */
-
-  /* Thread parameters. */
-  size_t      numthreads;     /* Number of threads.                    */
-  size_t         *indexs;     /* Indexs to be used in this thread.     */
-  pthread_barrier_t   *b;     /* Barrier to keep threads waiting.      */
-};
-
-
-
-
-
-
-
-
-
-
+#include "spatialconvolve.h"
 
 
 
@@ -172,6 +135,7 @@ sconvonthread(void *inparam)
 
   return NULL;
 }
+
 
 
 

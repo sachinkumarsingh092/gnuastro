@@ -38,6 +38,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "thresh.h"
 #include "detection.h"
 #include "noisechisel.h"
+#include "segmentation.h"
 
 
 
@@ -61,6 +62,7 @@ noisechisel(struct noisechiselparams *p)
   int verb=p->cp.verb;
   char report[VERBMSGLENGTH_V];
   size_t i, s0=smp->s0, s1=smp->s1;
+
 
 
   /* Prepare the mesh array. */
@@ -112,6 +114,7 @@ noisechisel(struct noisechiselparams *p)
     }
 
 
+
   /* Remove the false detections */
   if(verb)
     {
@@ -124,6 +127,7 @@ noisechisel(struct noisechiselparams *p)
       sprintf(report, "%lu true detections identified.", p->numobjects-1);
       reporttiming(&t1, report, 1);
     }
+
 
 
   /* Dilate the byt array and find the new number of detections: */
@@ -145,11 +149,37 @@ noisechisel(struct noisechiselparams *p)
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
 
+
+  /* Correct convolution if it was done on edges independently: */
+  if(smp->nch>1 && smp->fullconvolution==0)
+    {
+      if(verb) gettimeofday(&t1, NULL);
+      changetofullconvolution(smp, p->conv);
+      if(verb)
+        reporttiming(&t1, "Convolved image internals corrected.", 1);
+    }
+
+
+
   /* Find the final sky value and subtract it from the image. */
   if(verb) gettimeofday(&t1, NULL);
   findsubtractskyimgconv(p);
   if(verb)
     reporttiming(&t1, "Final sky and its STD found. Sky subtracted.", 1);
+
+
+
+  /* Segment the detections: */
+  if(verb) gettimeofday(&t1, NULL);
+  segmentation(p);
+  if(verb)
+    {
+      sprintf(report, "%lu object%s""from %lu clump%s",
+              p->numobjects-1, p->numobjects >2 ? "s " : " ",
+              p->numclumps-1,  p->numclumps  >2 ? "s." : ".");
+      reporttiming(&t1, report, 1);
+    }
+
 
 
   /* Clean up: */

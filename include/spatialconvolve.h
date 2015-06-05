@@ -23,7 +23,38 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef SPATIALCONVOLVE_H
 #define SPATIALCONVOLVE_H
 
-int
+
+struct sconvparams
+{
+  /* General input parameters: */
+  float           *input;     /* Input image array.                    */
+  float          *kernel;     /* Kernel array.                         */
+  float             *out;     /* Output image.                         */
+  size_t             is0;     /* Image size along first C axis.        */
+  size_t             is1;     /* Image size along second C axis.       */
+  size_t             ks0;     /* Kernel size along first C axis.       */
+  size_t             ks1;     /* Kernel size along second C axis.      */
+  int     edgecorrection;     /* Correct the edges of the image.       */
+  long       fpixel_i[2];     /* First pixel in input image.           */
+  long       lpixel_i[2];     /* Last pixel in input image.            */
+  long       fpixel_o[2];     /* First pixel in kernel.                */
+  long       lpixel_o[2];     /* Last pixel in kernel.                 */
+
+  /* Thread parameters. */
+  size_t      numthreads;     /* Number of threads.                    */
+  size_t         *indexs;     /* Indexs to be used in this thread.     */
+  pthread_barrier_t   *b;     /* Barrier to keep threads waiting.      */
+};
+
+void
+scpparams(float *input, size_t is0, size_t is1, float *kernel, size_t ks0,
+          size_t ks1, size_t nt, int edgecorrection, float *out,
+          size_t *indexs, struct sconvparams *scp);
+
+void *
+sconvonthread(void *inparam);
+
+void
 spatialconvolve(float *input, size_t is0, size_t is1,
                 float *kernel, size_t ks0, size_t ks1,
                 size_t nt, int edgecorrection, float **out);

@@ -1422,3 +1422,217 @@ spatialconvolveonmesh(struct meshparams *mp, float **conv)
   free(mtp);
   free(chbrd);
 }
+
+
+
+
+
+
+/* The indexs array for correcting the convolution on inner channel
+   edges has been allocated. Note that distinthreads will distribute
+   indexs from zero to numpix-1. After it, we should fill in all the
+   channels.
+
+   The method of filling in the indexs array with the proper indexs to
+   re-convolve is very similar to the method explained below in
+   changetofullconvolution, where it is explained how to count the
+   number of pixels that should be re-convolved. */
+void
+corrconvindexs(struct meshparams *mp, size_t **indexs, size_t *numpix,
+               size_t *thrdcols)
+{
+  size_t i, j, a, b;
+  size_t numthreads=mp->numthreads;
+  size_t alow, ahigh, blow, bhigh, *ind;
+  size_t npch0=mp->s0/mp->nch2, npch1=mp->s1/mp->nch1;
+  size_t nch1=mp->nch1, nch2=mp->nch2, ks0=mp->ks0, ks1=mp->ks1;
+  size_t s0=mp->s0, s1=mp->s1, hk0=mp->ks0/2+1, hk1=mp->ks1/2+1;
+
+  /* Find the number of pixels that must be convolved. Note that when
+     we don't care about the edges, on each dimension, we have one
+     less border than the number of channels in that dimention.
+
+     On each channel's border, we want to re-convolve the ks0/2+1
+     pixels before the channel edge along the first dimension. So in
+     total, for each channel edge, we want ks0+1 pixels on its two
+     sides. Don't forget that the kernel sides are odd.
+
+     So on the first dimension, we have (ks0+1)*(nch2-1) pixels that
+     should be re-convolved. Multiplying it by s1, we get the total
+     number of pixels in 2D around the first axis internal edges.
+
+     Along the second dimension, we have (ks1+1)*(nch1-1) pixels. But
+     this time we can't just multiply by s0 to get the total number of
+     2D pixels. Because of the overlap. So we only have to multily by
+     the number of rows that were not accounted in the first run,
+     which is s0-(ks0+1)*(nch2-1). */
+  *numpix = ( (ks0+1)*(nch2-1)*s1
+             + (ks1+1)*(nch1-1)*(s0-(ks0+1)*(nch2-1)) );
+
+
+  /* Distribute the indexs of the desired pixels into the indexs
+     array. */
+  distinthreads(*numpix, numthreads, indexs, thrdcols);
+
+  ind=*indexs;
+  for(i=1;i<nch2;++i)           /* FIRST LOOP. */
+    {
+      alow  = i*npch0<hk0    ? 0  : i*npch0-hk0;
+      ahigh = i*npch0+hk0>s0 ? s0 : i*npch0+hk0;
+
+      /* For a check
+      printf("1: alow: %-4lu ahigh: %-4lu.\t(0 -- %lu)\n",
+             alow, ahigh, s1);
+      */
+      for(a=alow; a<ahigh; ++a)
+        for(b=0;b<s1;++b)
+          {
+            while(*ind==NONTHRDINDEX) ++ind;
+            *ind++=a*s1+b;
+          }
+    }
+  for(j=1;j<nch1;++j)           /* SECOND LOOP */
+    {
+      blow  = j*npch1<hk1    ? 0  : j*npch1-hk1;
+      bhigh = j*npch1+hk1>s1 ? s1 : j*npch1+hk1;
+      for(b=blow; b<bhigh; ++b)
+        {
+          /* Since there might be multiple channels along the first C axis
+             and we want the spaces between their borders, alow is
+             initiated with 0.  */
+          alow=0;
+
+          /* Check the areas under the bordering area for each
+             vertical channel row: */
+          for(i=1;i<nch2;++i)
+            {
+              /* This `ahigh' is actually the alow in the FIRST LOOP. */
+              ahigh = i*npch0<hk0    ? 0  : i*npch0-hk0;
+
+              /* For a check:
+              printf("2: alow: %-4lu ahigh: %-4lu. b: %-10lu (%lu -- %lu)\n",
+                     alow, ahigh, b, blow, bhigh);
+              */
+              for(a=alow;a<ahigh;++a)
+                {
+                  while(*ind==NONTHRDINDEX) ++ind;
+                  *ind++=a*s1+b;
+                }
+              /* This alow is actually the ahigh in the FIRST LOOP. */
+              alow = i*npch0+hk0>s0 ? s0 : i*npch0+hk0;
+            }
+
+          /* All the areas under were checked, now we have to add the
+             area ontop of the highest middle channel edge. Note that
+             when there is no channel along the first C axis
+             (nch2==1), then it will immediately come here and scan
+             all the rows between the blow and bhigh columns. */
+          ahigh=s0;
+
+          /* For a check:
+          printf("3: alow: %-4lu ahigh: %-4lu. b: %-10lu (%lu -- %lu)\n",
+                 alow, ahigh, b, blow, bhigh);
+          */
+          for(a=alow;a<ahigh;++a)
+            {
+              while(*ind==NONTHRDINDEX) ++ind;
+              *ind++=a*s1+b;
+            }
+        }
+    }
+}
+
+
+
+
+
+/* Convolution is a very expensive (time consuming) operation. The
+   problem is that sometimes, convolution was done on each channel
+   independently, but later on, a program might need convolution over
+   the full image (for example, during the program the differences
+   between the channels has been calculated and removed), so it is
+   very important to remove the discontinuities that the initial
+   convolution on each channel can cause.
+
+   This is the job of this function. It recieves a mesh structure and
+   an already convolved image. Only the pixels lying within half of
+   the PSF width of channel borders are chosen and only they are
+   convolved (this time over the full image). Most of the image pixels
+   (whose distance from the channel edges is more than half the PSF),
+   do not need to undergo convolution again.
+
+   Note that the pixels on the edges of the image do not need to
+   undergo this correction. Basically this function is very similar to
+   spatialconvolve (spatialconvolve.c), other than the fact that the
+   indexs are not over the full image but only a select number of
+   pixels.
+*/
+void
+changetofullconvolution(struct meshparams *mp, float *conv)
+{
+  int err;
+  pthread_t t;          /* All thread ids saved in this, not used. */
+  pthread_attr_t attr;
+  pthread_barrier_t b;
+  struct sconvparams *scp;
+  size_t i, nb, *indexs, numpix, thrdcols;
+
+  /* If convolution was done over the full image, then there is
+     nothing this function should do so just return. After this
+     function, the image is fully convolved, so fullconvolution should
+     be set to 1. */
+  if(mp->nch==1 || mp->fullconvolution) return;
+  mp->fullconvolution=1;
+
+
+  /* Array keeping thread parameters for each thread.*/
+  errno=0;
+  scp=malloc(mp->numthreads*sizeof *scp);
+  if(scp==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for scp in changetofullconvolution "
+          "(mesh.c)", mp->numthreads*sizeof *scp);
+
+
+  /* Put the indexs of the pixels to re-convolve here. */
+  corrconvindexs(mp, &indexs, &numpix, &thrdcols);
+
+
+  /* Start the convolution on the desired pixels. */
+  if(mp->numthreads==1)
+    {
+      scpparams(mp->img, mp->s0, mp->s1, mp->kernel, mp->ks0, mp->ks1,
+                mp->numthreads, 1, conv, indexs, &scp[0]);
+      sconvonthread(&scp[0]);
+    }
+  else
+    {
+      /* Initialize the attributes. Note that this running thread
+	 (that spinns off the nt threads) is also a thread, so the
+	 number the barrier should be one more than the number of
+	 threads spinned off. */
+      if(numpix<mp->numthreads) nb=numpix+1;
+      else                      nb=mp->numthreads+1;
+      attrbarrierinit(&attr, &b, nb);
+
+      /* Spin off the threads: */
+      for(i=0;i<mp->numthreads;++i)
+        if(indexs[i*thrdcols]!=NONTHRDINDEX)
+          {
+            scp[i].b=&b;
+            scpparams(mp->img, mp->s0, mp->s1, mp->kernel, mp->ks0, mp->ks1,
+                      mp->numthreads, 1, conv, &indexs[i*thrdcols],
+                      &scp[i]);
+	    err=pthread_create(&t, &attr, sconvonthread, &scp[i]);
+	    if(err)
+	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+          }
+
+      /* Wait for all threads to finish and free the spaces. */
+      pthread_barrier_wait(&b);
+      pthread_attr_destroy(&attr);
+      pthread_barrier_destroy(&b);
+    }
+
+  free(scp);
+  free(indexs);
+}

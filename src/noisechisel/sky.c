@@ -207,10 +207,6 @@ findsubtractskyimgconv(struct noisechiselparams *p)
           "(sky.c)", smp->s0*smp->s1*sizeof *p->std);
 
 
-  /* Find the sky value and its STD on the input image and put it in
-     the p->smp.garray1 and p->smp.garray2 arrays respectively. */
-  findavestdongrid(p, p->skyname);
-
 
   /* Replace the necessary arrays to find the sky value on the
      convolved image. */
@@ -233,6 +229,20 @@ findsubtractskyimgconv(struct noisechiselparams *p)
   smp->garray1=tmpg1;           smp->garray2=tmpg2;
   smp->cgarray1=tmpcg1;         smp->cgarray2=tmpcg2;
   smp->fgarray1=tmpfg1;         smp->fgarray2=tmpfg2;
+
+
+  /* Find the sky value and its STD on the input image and put it in
+     the p->smp.garray1 and p->smp.garray2 arrays respectively.
+
+     VERY IMPORTANT:
+     ###############
+
+     The sky value for the input image should be found after the
+     convolved image. This is because findavestdongrid, will also set
+     the p->cpscorr value and we want that from the input image, not
+     the convolved image.
+  */
+  findavestdongrid(p, p->skyname);
 
 
   /* Apply the threshold */

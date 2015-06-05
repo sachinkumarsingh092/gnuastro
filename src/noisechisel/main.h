@@ -38,42 +38,45 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct uiparams
 {
-  char         *inputname;  /* Name of input file.                 */
-  char          *maskname;  /* Name of mask image file.            */
-  char              *mhdu;  /* Name of mask image header name.     */
-  char        *kernelname;  /* Name of kernel image file.          */
-  char              *khdu;  /* Name of kernel header name.         */
+  char          *inputname;  /* Name of input file.                 */
+  char           *maskname;  /* Name of mask image file.            */
+  char               *mhdu;  /* Name of mask image header name.     */
+  char         *kernelname;  /* Name of kernel image file.          */
+  char               *khdu;  /* Name of kernel header name.         */
 
-  int         masknameset;
-  int             mhduset;
-  int       kernelnameset;
-  int             khduset;
-  int    skysubtractedset;
+  int   fullconvolutionset;
+  int fullinterpolationset;
+  int        fullsmoothset;
+  int          masknameset;
+  int              mhduset;
+  int        kernelnameset;
+  int              khduset;
+  int     skysubtractedset;
 
-  int        smeshsizeset;
-  int        lmeshsizeset;
-  int             nch1set;
-  int             nch2set;
-  int     lastmeshfracset;
-  int       numnearestset;
-  int      smoothwidthset;
-  int       mirrordistset;
-  int         minmodeqset;
+  int         smeshsizeset;
+  int         lmeshsizeset;
+  int              nch1set;
+  int              nch2set;
+  int      lastmeshfracset;
+  int        numnearestset;
+  int       smoothwidthset;
+  int        mirrordistset;
+  int          minmodeqset;
 
-  int          qthreshset;
-  int       numerosionset;
-  int         erodengbset;
-  int          openingset;
-  int       openingngbset;
-  int         minbfracset;
-  int    sigclipmultipset;
-  int sigcliptoleranceset;
-  int          dthreshset;
-  int     detsnminareaset;
-  int      minnumfalseset;
-  int         detquantset;
-  int   detsnhistnbinsset;
-  int           dilateset;
+  int           qthreshset;
+  int        numerosionset;
+  int          erodengbset;
+  int           openingset;
+  int        openingngbset;
+  int          minbfracset;
+  int     sigclipmultipset;
+  int  sigcliptoleranceset;
+  int           dthreshset;
+  int      detsnminareaset;
+  int       minnumfalseset;
+  int          detquantset;
+  int    detsnhistnbinsset;
+  int            dilateset;
 };
 
 
@@ -102,6 +105,7 @@ struct noisechiselparams
   char  *detectionskyname;  /* !=NULL: Name of detection sky steps.        */
   char   *detectionsnname;  /* !=NULL: Name of detection S/N on meshs.     */
   char           *skyname;  /* !=NULL: Name of image showing sky and STD.  */
+  char  *segmentationname;  /* !=NULL: Name of segmentation steps.         */
 
   /* Detection: */
   float             *conv;  /* Convolved image.                            */

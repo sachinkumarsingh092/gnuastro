@@ -180,4 +180,7 @@ meshsmooth(struct meshparams *mp);
 void
 spatialconvolveonmesh(struct meshparams *mp, float **conv);
 
+void
+changetofullconvolution(struct meshparams *mp, float *conv);
+
 #endif

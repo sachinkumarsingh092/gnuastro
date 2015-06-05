@@ -415,12 +415,15 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 506:
       p->mp.fullconvolution=1;
+      p->up.fullconvolutionset=1;
       break;
     case 503:
       p->mp.fullinterpolation=1;
+      p->up.fullinterpolationset=1;
       break;
     case 504:
       p->mp.fullsmooth=1;
+      p->up.fullsmoothset=1;
       break;
     case 500:
       p->meshname="a";  /* Just a placeholder! It will be corrected later */

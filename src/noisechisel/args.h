@@ -75,7 +75,7 @@ const char doc[] =
    f g j m v w x y z
    A C G J O W X Y Z
 
-   Number keys free: >=513
+   Number keys free: >=514
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -420,6 +420,21 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
+      "Segmentation:",
+      5
+    },
+    {
+      "checksegmentation",
+      513,
+      0,
+      0,
+      "False detection steps in file `_det.fits'.",
+      5
+    },
+
+
+    {
+      0, 0, 0, 0,
       "Operating modes:",
       -1
     },
@@ -550,12 +565,15 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 501:
       p->smp.fullinterpolation=1;
+      p->up.fullinterpolationset=1;
       break;
     case 502:
       p->smp.fullsmooth=1;
+      p->up.fullsmoothset=1;
       break;
     case 504:
       p->smp.fullconvolution=1;
+      p->up.fullconvolutionset=1;
       break;
 
 
@@ -633,6 +651,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 512:
       p->skyname="a";
+      break;
+
+
+    /* Segmentation: */
+    case 513:
+      p->segmentationname="a";
       break;
 
 
