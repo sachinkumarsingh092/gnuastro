@@ -1,6 +1,6 @@
 /*********************************************************************
-forqsort -- Functions used by qsort to sort an array.
-This is part of GNU Astronomy Utilities (Gnuastro) package.
+NoiseChisel - Detect and segment signal in noise.
+NoiseChisel is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -20,32 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef FORQSORT_H
-#define FORQSORT_H
+#ifndef CLUMPS_H
+#define CLUMPS_H
 
-/* Pointer used to sort the indexs of an array based on their flux
-   (value in this array). */
-extern float *forqsortindexarr;
+/* Important sizes and values (do not change). */
+#define SEGMENTNOOBJ     0
+#define SEGMENTMASKED   -4
+#define SEGMENTTMPCHECK -3
+#define SEGMENTINIT     -2
+#define SEGMENTRIVER    -1
+#define INFOTABCOLS      4
+#define WNGBSIZE         9	/* It is impossible to get this large! */
 
-int
-indexfloatdecreasing(const void * a, const void * b);
-
-int
-intdecreasing(const void * a, const void * b);
-
-int
-intincreasing(const void * a, const void * b);
-
-int
-floatdecreasing(const void * a, const void * b);
-
-int
-floatincreasing(const void * a, const void * b);
-
-int
-doubledecreasing(const void * a, const void * b);
-
-int
-doubleincreasing(const void * a, const void * b);
+void
+clumpsngrid(struct noisechiselparams *p);
 
 #endif

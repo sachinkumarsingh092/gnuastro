@@ -745,8 +745,10 @@ float defaultkernel[121]=
 void
 preparearrays(struct noisechiselparams *p)
 {
-  float *f, *ff, *fp;
   struct meshparams *smp=&p->smp, *lmp=&p->lmp;
+
+  float *f, *ff, *fp;
+  size_t *relngb=p->relngb, s0, s1;
 
   /* Read the input image in. Note that the pointer to the image is
      also kept in p->img. Since some of the mesh operations should be
@@ -757,12 +759,13 @@ preparearrays(struct noisechiselparams *p)
               (float **)&smp->img, &p->bitpix, &p->numblank, &smp->s0,
               &smp->s1);
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+  s0=smp->s0; s1=smp->s1;
 
   /* make sure the channel sizes fit the channel sizes. */
-  if( smp->s0%smp->nch2 || smp->s1%smp->nch1 )
+  if( s0%smp->nch2 || s1%smp->nch1 )
     error(EXIT_FAILURE, 0, "The input image size (%lu x %lu) is not an "
           "exact multiple of the number of the given channels (%lu, %lu) "
-          "in the respective axis.", smp->s1, smp->s0, smp->nch1, smp->nch2);
+          "in the respective axis.", s1, s0, smp->nch1, smp->nch2);
 
   /* Read the kernel: */
   if(p->up.kernelnameset)
@@ -783,18 +786,30 @@ preparearrays(struct noisechiselparams *p)
     }
 
   /* Allocate the necessary arrays: */
-  errno=0; p->byt=malloc(smp->s0*smp->s1*sizeof *p->byt);
+  errno=0; p->byt=malloc(s0*s1*sizeof *p->byt);
   if(p->byt==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for byt in findapplythreshold "
-          "(thresh.c)", smp->s0*smp->s1*sizeof *p->byt);
-  errno=0; p->olab=malloc(smp->s0*smp->s1*sizeof *p->olab);
+    error(EXIT_FAILURE, errno, "%lu bytes for p->byt (ui.c)",
+          s0*s1*sizeof *p->byt);
+  errno=0; p->olab=malloc(s0*s1*sizeof *p->olab);
   if(p->olab==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->olab (ui.c).",
-          smp->s0*smp->s1*sizeof *p->olab);
-  errno=0; p->clab=malloc(smp->s0*smp->s1*sizeof *p->clab);
+    error(EXIT_FAILURE, errno, "%lu bytes for p->olab (ui.c)",
+          s0*s1*sizeof *p->olab);
+  errno=0; p->clab=calloc(s0*s1, sizeof *p->clab);
   if(p->clab==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->clab (ui.c).",
-          smp->s0*smp->s1*sizeof *p->clab);
+    error(EXIT_FAILURE, errno, "%lu bytes for p->clab (ui.c)",
+          s0*s1*sizeof *p->clab);
+
+  /* This ngb array is used to keep the relative indexs of the
+     neighbors of a pixel. It is used in the over-segmentation step
+     (clumps.c). The labelings are such that the first four elements
+     are the four-connected ones and the second four are
+     8-connected. There is no problem with the negative values that
+     are stored as size_t (which is an unsigned type): they will be
+     added with positive values during the processing to give correct
+     values. */
+  relngb[4]=    s1-1;    relngb[0]=    s1;    relngb[5]=    s1+1;
+  relngb[1]=      -1;                         relngb[2]=       1;
+  relngb[6]= -1*s1-1;    relngb[3]= -1*s1;    relngb[7]= -1*s1+1;
 
   /* Set the parameters for both mesh grids. */
   lmp->s0=smp->s0;

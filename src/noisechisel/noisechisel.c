@@ -174,9 +174,9 @@ noisechisel(struct noisechiselparams *p)
   segmentation(p);
   if(verb)
     {
-      sprintf(report, "%lu object%s""from %lu clump%s",
-              p->numobjects-1, p->numobjects >2 ? "s " : " ",
-              p->numclumps-1,  p->numclumps  >2 ? "s." : ".");
+      sprintf(report, "%lu object%s""containing %lu clump%s",
+              p->numobjects-1, p->numobjects==2 ? " " : "s ",
+              p->numclumps-1,  p->numclumps ==2 ? "." : "s.");
       reporttiming(&t1, report, 1);
     }
 

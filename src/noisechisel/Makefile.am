@@ -34,7 +34,7 @@ bin_PROGRAMS = astnoisechisel
 astnoisechisel_SOURCES = main.c main.h cite.h ui.c ui.h args.h		\
 noisechisel.c noisechisel.h thresh.c thresh.h binary.c binary.h		\
 label.c label.h detection.c detection.h sky.c sky.h segmentation.c	\
-segmentation.h
+segmentation.h clumps.c clumps.h
 
 astnoisechisel_LDADD = $(top_builddir)/gnulib/lib/libgnu.a		\
 -lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh			\

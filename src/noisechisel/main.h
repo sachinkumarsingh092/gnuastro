@@ -139,6 +139,8 @@ struct noisechiselparams
   int             stepnum;  /* Number of step if user wants to see steps.  */
   size_t       numobjects;  /* Total number of objects (detections).       */
   size_t        numclumps;  /* Total number of clumps.                     */
+  size_t         *topinds;  /* Indexs of the top flux pixels in each clump.*/
+  size_t        relngb[8];  /* Indexs of neighbors.                        */
 };
 
 #endif

@@ -28,6 +28,11 @@ count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
                    size_t s1, size_t is1, size_t *numf, size_t *numb);
 
 void
+index_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
+                   size_t s1, size_t is1, size_t *inds,
+                   unsigned char b0f1);
+
+void
 dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
                     unsigned char b0_f1);
 

@@ -59,6 +59,27 @@ ucharinitonregion(unsigned char *in, const unsigned char v,
 
 
 
+void
+longinitonregion(long *in, const long v, size_t start, size_t s0,
+                 size_t s1, size_t is1)
+{
+  size_t r;
+  long *p, *fp;
+
+  for(r=0;r<s0;++r)
+    {
+      fp = (p=in+start) + s1;
+      do
+	*p=v;
+      while(++p<fp);
+      start+=is1;
+    }
+}
+
+
+
+
+
 
 
 

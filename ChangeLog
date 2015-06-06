@@ -1,3 +1,8 @@
+2015-06-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/astnoisechisel.conf: Changed default
+	lastmeshfrac to 0.51 from 0.6.
+
 2015-06-04  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/subtractsky/subtractsky.c (avestdonthread): No more need for

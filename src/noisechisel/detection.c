@@ -636,8 +636,6 @@ onlytruedetections(struct noisechiselparams *p)
   /* Find the average and STD of the undetected pixels for each
      mesh for the initial detection threshold: */
   findavestdongrid(p, p->detectionskyname);
-  if(verb)
-    reporttiming(NULL, "Initial sky and its STD found.", 2);
 
 
   /* Put a copy of the input array in imgcopy to operate on here and
@@ -658,7 +656,11 @@ onlytruedetections(struct noisechiselparams *p)
     arraytofitsimg(detectionname, "InitalSkySubtracted", FLOAT_IMG, p->img,
                    s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
   if(verb)
-    reporttiming(NULL, "Initial sky value threshold applied.", 2);
+    {
+      sprintf(report, "Initial sky threshold (%.3f sigma) applied.",
+              p->dthresh);
+      reporttiming(NULL, report, 2);
+    }
 
 
   /* Save the standard deviation image. Since we have subtracted the

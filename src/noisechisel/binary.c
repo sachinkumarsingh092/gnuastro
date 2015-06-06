@@ -39,7 +39,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /****************************************************************
- *****************          Counting         ********************
+ **************       Counting/indexing         *****************
  ****************************************************************/
 /* A region in a larger image is defined by its starting pixel
    (`start`), its height (s0) and width (s1). This function will count
@@ -51,19 +51,43 @@ void
 count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
                    size_t s1, size_t is1, size_t *numf, size_t *numb)
 {
-  size_t nf=0, nb=0, r;
   unsigned char *b, *fb;
+  size_t nf=0, nb=0, row=0;
 
-  for(r=0;r<s0;++r)
+  do
     {
-      fb=(b=byt+startind)+s1;
+      fb = ( b = byt + startind + is1*row++ ) + s1;
       do
         *b ? ++nf : ++nb;
       while(++b<fb);
-      startind+=is1;
     }
+  while(row<s0);
+
   *numf=nf;
   *numb=nb;
+}
+
+
+
+
+
+/* This function will put the indexs of the byt array that are equal
+   to b0f1 into the inds array. Note that the inds array has to have
+   been allocated outside this function. */
+void
+index_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
+                   size_t s1, size_t is1, size_t *inds,
+                   unsigned char b0f1)
+{
+  size_t row=0;
+  unsigned char *b, *fb;
+
+  do
+    {
+      fb = ( b = byt + startind + is1*row++ ) + s1;
+      do if(*b==b0f1) *inds++=b-byt; while(++b<fb);
+    }
+  while(row<s0);
 }
 
 

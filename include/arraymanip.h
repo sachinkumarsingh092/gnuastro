@@ -28,6 +28,10 @@ ucharinitonregion(unsigned char *in, const unsigned char v,
 		  size_t start, size_t s0, size_t s1, size_t is1);
 
 void
+longinitonregion(long *in, const long v, size_t start, size_t s0,
+                 size_t s1, size_t is1);
+
+void
 ucharcopy(unsigned char *in, size_t size, unsigned char **out);
 
 void

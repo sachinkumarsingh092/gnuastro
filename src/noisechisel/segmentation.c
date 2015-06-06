@@ -31,7 +31,14 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
+#include "clumps.h"
 #include "segmentation.h"
+
+
+
+
+
+
 
 
 
@@ -42,8 +49,14 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 segmentation(struct noisechiselparams *p)
 {
+  float *f, *fp;
   size_t s0=p->smp.s0, s1=p->smp.s1;
   char *segmentationname=p->segmentationname;
+
+
+  /* Start off the counter for the number of clumps: */
+  p->numclumps=1;
+
 
   /* Start the steps image: */
   if(segmentationname)
@@ -54,5 +67,30 @@ segmentation(struct noisechiselparams *p)
       arraytofitsimg(segmentationname, "Convolved-SkySubtracted",
                      FLOAT_IMG, p->conv, s0, s1, p->numblank,
                      p->wcs, NULL, SPACK_STRING);
+      arraytofitsimg(segmentationname, "InitialLabels",
+                     LONG_IMG, p->olab, s0, s1, 0, p->wcs,
+                     NULL, SPACK_STRING);
     }
+
+  /* All possible NaN pixels should be given the largest possible
+     float flux in the convolved image (which is used for
+     over-segmentation). NOTE that the convolved image is used for
+     relative pixel values, not absolute ones. This is because NaN
+     pixels might be in the centers of stars or bright objects (they
+     might slice through a connected region). So we can't allow them
+     to cut our objects. The safest approach is to start segmentation
+     of each object or noise mesh with the NaNs it might contain. A
+     NaN region will never be calculated in any flux measurement any
+     way and if it is connecting two bright objects, they will be
+     segmented because on the two sides of the NaN region, they have
+     different fluxes.*/
+  if(p->numblank)
+    {
+      fp=(f=p->conv)+s0*s1;
+      do if(isnan(*f)) *f=FLT_MAX; while(++f<fp);
+    }
+
+
+  /* Find S/N threshold: */
+  clumpsngrid(p);
 }
