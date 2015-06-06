@@ -26,6 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <float.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "forqsort.h"
@@ -336,8 +337,230 @@ oversegment(struct noisechiselparams *p, size_t *inds, size_t area,
 
 
 
+
 /******************************************************************/
-/*************     Find/Apply S/N threshold      ******************/
+/*************             Clump S/N             ******************/
+/******************************************************************/
+/* In this function we want to find the general information for each
+   clump in an over-segmented labeled array. The signal in each clump
+   is the average signal inside it subtracted by the average signal in
+   the river pixels around it. So this function will go over all the
+   pixels in the object (already found in deblendclumps()) and add
+   them appropriately.
+
+   The output is an array of size numseg*INFOTABCOLS. INFOTABCOLS=4. The
+   columns are:
+   0: Average signal in clump.
+   1: Number of pixels in clump.
+   2: Average signal around clump.
+   3: Number of pixels around clump.
+   4: Standard deviation on flux weighted center of clump.
+*/
+void
+getclumpinfo(struct noisechiselparams *p, size_t *inds, size_t area,
+             size_t numclumps, size_t x0, size_t y0, size_t x1,
+             size_t y1, double **outclumpinfo)
+{
+  struct meshparams *smp=&p->smp;
+
+  double *clumpinfo;
+  float *img=p->img, *smpstd=smp->garray2;
+  long *clab=p->clab, wngb[WNGBSIZE], ngblab;
+  size_t *xys, index, lab, is0=p->lmp.s0, is1=p->lmp.s1;
+  size_t i=0, ii=0, row, *n, *nf, ngb[8], *ind, *indf, numngb;
+
+  /* Just make sure that the box size is not only around one pixel! */
+  if(x1-x0<=1 || y1-y0<=1)
+    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can find "
+          "and fix the problem in clumpinfo (clumps.c). For some reason, "
+          "the specified input region is %lu by %lu wide.",
+          PACKAGE_BUGREPORT, y1-y0, x1-x0);
+
+  /* Allocate the clump information array. */
+  errno=0;
+  clumpinfo=*outclumpinfo=calloc(numclumps*INFOTABCOLS, sizeof *clumpinfo);
+  if(clumpinfo==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for clumpinfo (clumps.c)",
+          numclumps*INFOTABCOLS*sizeof *clumpinfo);
+  errno=0; xys=calloc(2*numclumps, sizeof *xys);
+  if(xys==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for xys (clumps.c)",
+          2*numclumps*sizeof *xys);
+
+  /* Go over all the pixels in this set of pixels and fill in the
+     proper information for each clump. */
+  indf = (ind=inds) + area;
+  do
+    if(!isnan(img[*ind]))
+      {
+        if(clab[*ind]==SEGMENTRIVER)
+          {
+            /* Fill in the neighbours arrary for this pixel. If we are
+               working on the mesh grid (the noise), then we only want
+               the neighbors within a region. Otherwise (when working
+               on the detections) we want the neighbors on the full
+               image.*/
+            if(p->b0f1) {FILL_NGB_8_ALLIMG}
+            else        {FILL_NGB_8_REGION}
+
+
+            /* We are on a river pixel. So its value has to be added
+               to the borders of any object it touches. But since it
+               might touch a labeled region more than once, we use
+               wngb to keep track of which label we have already added
+               its value to. `ii` is the number of different labels
+               this river pixel has already been added to. wngb will
+               keep the labels. */
+            ii=0;
+            memset(wngb, 0, sizeof(wngb));
+
+            /* Look into the 8-connected neighbors: */
+            nf=(n=ngb)+numngb;
+            do
+              if( (ngblab=clab[ *n ]) >0)
+                {
+                  /* Go over wngb to see if this river pixel's value
+                     has been added to a segment or not. */
+                  for(i=0;i<ii;++i)
+                    if(wngb[i]==ngblab)
+                      /* It is already present. break out. */
+                      break;
+
+                  if(i==ii) /* This label was not added yet. */
+                    {
+                      clumpinfo[ ngblab*INFOTABCOLS+2 ]+=img[*ind];;
+                      ++clumpinfo[ ngblab*INFOTABCOLS+3 ];
+                      wngb[ii]=ngblab;
+                      ++ii;
+                    }
+                }
+            while(++n<nf);
+          }
+        else
+          {
+            lab=clab[*ind];     /* The label of this clump. */
+            xys[ 2 * lab     ] = *ind/is1;
+            xys[ 2 * lab + 1 ] = *ind%is1;
+            clumpinfo[ lab * INFOTABCOLS     ]+=img[*ind];
+            clumpinfo[ lab * INFOTABCOLS + 1 ]+=1;
+          }
+      }
+  while(++ind<indf);
+
+  /* Do the final preparations. All the calculations are only
+     necessary for the clumps that satisfy the minimum area. So there
+     is no need to waste time on the smaller ones. */
+  for(lab=1;lab<numclumps;++lab)
+    {
+      row=lab*INFOTABCOLS;
+      if(clumpinfo[row+1]>p->segsnminarea)
+        {
+          /* Convert sum to average: */
+          clumpinfo[row  ] /= clumpinfo[row+1];
+          clumpinfo[row+2] /= clumpinfo[row+3];
+
+          /* Find the index of the flux weighted center and use it to
+             find the standard deviation for this clump. Note that
+             this is only needed if the input image was already sky
+             subtracted. If it wasn't, then we are not subtracting the
+             sky to worry about its error! The error in the total flux
+             is simply its square root. */
+          if(p->skysubtracted)
+            {
+              index = ( (xys[2*lab] / clumpinfo[row+1]) * is1
+                        + xys[2*lab+1] / clumpinfo[row+1] );
+              clumpinfo[row+4]  = smpstd[imgindextomeshid(smp, index)];
+            }
+        }
+    }
+
+  /* Clean up: */
+  free(xys);
+}
+
+
+
+
+
+void
+clumpsntable(struct noisechiselparams *p, size_t *inds, size_t area,
+             size_t *numclumps, size_t x0, size_t y0, size_t x1,
+             size_t y1, float **sntable)
+{
+  float *sntab;
+  double *clumpinfo, err;
+  size_t i, ind, counter=0;
+  double I, O, Ni, cpscorr=p->cpscorr;
+
+
+  /* Get the information for all the segments. */
+  getclumpinfo(p, inds, area, *numclumps, x0, y0, x1, y1, &clumpinfo);
+
+
+  /* Allocate the signal to noise table. */
+  errno=0;
+  sntab = *sntable = malloc( *numclumps * sizeof *sntab );
+  if(sntab==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for sntab (clumps.c)",
+          *numclumps*sizeof *sntab);
+
+
+  /* Start calculating the Signal to noise ratios. */
+  sntab[0]=0;
+  for(i=1;i<*numclumps;++i)
+    {
+      /* These variables used for easy readability. */
+      I = clumpinfo[ i * INFOTABCOLS     ];
+      O = clumpinfo[ i * INFOTABCOLS + 2 ];
+
+      /* If the inner flux is smaller than the outer flux (happens
+	 only in noise cases) or the area is smaller than the minimum
+	 area to calculate signal-to-noise, then set the S/N of this
+	 segment to zero. */
+      if( (Ni=clumpinfo[i*INFOTABCOLS+1]) > p->segsnminarea
+          && I>O )              /* This is O, not 0 (zero). */
+	{
+          /* If the sky was subtracted then put in the standard
+             deviation. */
+          err  = ( p->skysubtracted
+                   ? ( 2.0f * clumpinfo[i*INFOTABCOLS+4]
+                       * clumpinfo[i*INFOTABCOLS+4] )
+                   : 0.0f );
+
+          /* Calculate the Signal to noise ratio. */
+          ind = p->b0f1 ? i : counter++;
+	  sntab[ind]=( sqrt((float)(Ni)/cpscorr)*(I-O)
+		       / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + err ) );
+	}
+      else
+	sntab[i]=0;
+    }
+
+  /* If we are dealing with noise, replace the number of clumps with
+     the number of those with a sufficient area and inner flux. */
+  if(p->b0f1==0)
+    *numclumps=counter;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/******************************************************************/
+/*************       S/N threshold on grid       ******************/
 /******************************************************************/
 void *
 clumpsnthreshonmesh(void *inparams)
@@ -351,10 +574,10 @@ clumpsnthreshonmesh(void *inparams)
 
   size_t numclumps;
   long *clab=p->clab;
-  float minbfrac=p->minbfrac;
+  float *sntable, minbfrac=p->minbfrac;
   char *segmentationname=p->segmentationname;
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
-  size_t s0, s1, nf, nb, ind, size, startind, is1=mp->s1;
+  size_t s0, s1, nf, area, ind, size, startind, is1=mp->s1;
 
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
     {
@@ -368,8 +591,8 @@ clumpsnthreshonmesh(void *inparams)
 
       /* Check to see if we have enough blank area for getting the
 	 background noise statistics. */
-      count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &nb);
-      if( (float)nb < (float)(size)*minbfrac )
+      count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &area);
+      if( (float)area < (float)(size)*minbfrac )
         {
           if(segmentationname)
             longinitonregion(clab, 0, startind, s0, s1, is1);
@@ -379,18 +602,27 @@ clumpsnthreshonmesh(void *inparams)
 
       /* We want to find the clumps on the noise, not the signal, the
          number of noise pixels in this mesh were calculated above
-         (nb). Here we want to pull out the indexs of those pixels
+         (area). Here we want to pull out the indexs of those pixels
          which is necessary for the over-segmentation. */
       index_f_b_onregion(p->byt, startind, s0, s1, is1, inds, 0);
 
 
       /* Sort the indexs based on the flux within them. */
-      qsort(inds, nb, sizeof(size_t), indexfloatdecreasing);
+      qsort(inds, area, sizeof(size_t), indexfloatdecreasing);
 
 
       /* Do the over-segmentation: */
-      oversegment(p, inds, nb, startind/is1, startind%is1,
+      oversegment(p, inds, area, startind/is1, startind%is1,
                   startind/is1+s0, startind%is1+s1, &numclumps);
+      if(numclumps<p->minnumfalse) continue;
+
+      /* Find the signal to noise of all the clumps. */
+      clumpsntable(p, inds, area, &numclumps, startind/is1, startind%is1,
+                   startind/is1+s0, startind%is1+s1, &sntable);
+
+
+      /* Cleanup: */
+      free(sntable);
     }
 
   /* Free any allocated space and if multiple threads were used, wait
@@ -422,7 +654,8 @@ clumpsngrid(struct noisechiselparams *p)
   /* Find the clump signal to noise on each mesh: */
   operateonmesh(lmp, clumpsnthreshonmesh, sizeof(size_t), 0, 1);
 
-  arraytofitsimg(p->segmentationname, "NoiseOversegmentaion",
-                 LONG_IMG, p->clab, p->smp.s0, p->smp.s1, 0, p->wcs,
-                 NULL, SPACK_STRING);
+  if(p->segmentationname)
+    arraytofitsimg(p->segmentationname, "NoiseOversegmentaion",
+                   LONG_IMG, p->clab, p->smp.s0, p->smp.s1, 0, p->wcs,
+                   NULL, SPACK_STRING);
 }

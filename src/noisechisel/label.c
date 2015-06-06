@@ -319,32 +319,34 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
    only over the mesh under consideration.
 */
 void
-detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t numlabs,
+detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t *numlabs,
            size_t start, size_t s0, size_t s1, float **outsntable)
 {
-  double *fluxs, *stds, err;
-  size_t i, r=0, is1=p->smp.s1;
+  float *img=p->img;
+  double *fluxs, err;
+  struct meshparams *smp=&p->smp;
+  size_t i, ind, *xys, r=0, is1=p->smp.s1, counter=0;
   float *f, *ff, *s, ave, *sntable, cpscorr=p->cpscorr;
   long *areas, *l=labinmesh, detsnminarea=p->detsnminarea;
 
 
   /* Allocate the necessary arrays to keep the label information: */
-  errno=0; sntable=*outsntable=calloc(numlabs, sizeof *sntable);
+  errno=0; sntable=*outsntable=calloc(*numlabs, sizeof *sntable);
   if(sntable==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for sntable in labelsn (label.c)",
-          numlabs*sizeof *sntable);
-  errno=0; fluxs=calloc(numlabs, sizeof *fluxs);
+          *numlabs*sizeof *sntable);
+  errno=0; fluxs=calloc(*numlabs, sizeof *fluxs);
   if(fluxs==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for fluxs in labelsn (label.c)",
-          numlabs*sizeof *fluxs);
-  errno=0; stds=calloc(numlabs, sizeof *stds);
-  if(stds==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for stds in labelsn (label.c)",
-          numlabs*sizeof *stds);
-  errno=0; areas=calloc(numlabs, sizeof *areas);
+          *numlabs*sizeof *fluxs);
+  errno=0; xys=calloc(*numlabs*2, sizeof *xys);
+  if(xys==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for xys in labelsn (label.c)",
+          *numlabs*sizeof *xys);
+  errno=0; areas=calloc(*numlabs, sizeof *areas);
   if(areas==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for areas in labelsn (label.c)",
-          numlabs*sizeof *areas);
+          *numlabs*sizeof *areas);
 
 
   /* For a check:
@@ -358,15 +360,16 @@ detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t numlabs,
      once in the definition was enough. */
   do
     {
-      s = p->std + start + r*is1;
-      ff = ( f = p->img + start + r++ * is1 ) + s1;
+      ff = ( f = img + start + r++ * is1 ) + s1;
       do
         {
           if(*l && !isnan(*f))     /* There is a label on this mesh. */
             {
               ++areas[*l];
-              stds[*l]+=*s;
-              fluxs[*l]+=*f;
+              fluxs[*l]   += *f;
+              xys[*l*2]   += (f-img)/is1;
+              xys[*l*2+1] += (f-img)%is1;
+
             }
           ++l; ++s;
         }
@@ -376,24 +379,39 @@ detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t numlabs,
 
 
   /* calculate the signal to noise for successful detections: */
-  for(i=1;i<numlabs;++i)
+  for(i=1;i<*numlabs;++i)
     if(areas[i]>detsnminarea && (ave=fluxs[i]/areas[i]) >0 )
       {
-        err = (stds[i]/areas[i])*(stds[i]/areas[i]);
-        err *= p->skysubtracted ? 1.0f : 2.0f;
-        sntable[i] = sqrt( (float)(areas[i])/cpscorr ) * ave / sqrt(ave+err);
+        /* Find the weighted center of this object and get the
+           standard deviation at this point. Note that the standard
+           deviation on the grid was stored in smp->garray2. The error
+           should then be taken to the power of two and if the sky is
+           subtracted, a 2 should be multiplied to it.*/
+        ind=(xys[i*2]/areas[i]) * is1 + xys[i*2+1]/areas[i];
+        err = smp->garray2[imgindextomeshid(smp, ind)];
+        err *= p->skysubtracted ? err : 2.0f*err;
+
+        /* Set the index in the sntable to store the Signal to noise
+           ratio. When we are dealing with the noise, we only want the
+           non-zero signal to noise values, so we will just use a
+           counter. But for initial detections, it is very important
+           that their Signal to noise ratio be placed in the same
+           index as their label. */
+        ind = p->b0f1 ? i : counter++;
+        sntable[ind]=sqrt( (float)(areas[i])/cpscorr ) * ave / sqrt(ave+err);
       }
+  if(p->b0f1==0) *numlabs=counter;
 
 
   /* For a check:
-  for(i=0;i<numlabs;++i)
+  for(i=0;i<*numlabs;++i)
     printf("%lu: %-10ld %-10.3f %-10.3f %-10.3f\n",
            i, areas[i], fluxs[i], stds[i]/areas[i], sntable[i]);
   */
 
 
   /* Clean up */
-  free(stds);
+  free(xys);
   free(fluxs);
   free(areas);
 }

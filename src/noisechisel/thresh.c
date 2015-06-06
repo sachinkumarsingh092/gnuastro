@@ -245,7 +245,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
   unsigned char *b, *dbyt;
   float dthresh=p->dthresh;
   float *f, *fp, sky, std, *img=p->img;
-  size_t i, row, start, meshid, *types=smp->types;
+  size_t gid, row, start, chbasedid, *types=smp->types;
   size_t s0, s1, is1=smp->s1, *ts0=smp->ts0, *ts1=smp->ts1;
 
   /* Allocate the array to keep the threshold value: */
@@ -255,18 +255,18 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
           "applydetectionthreshold (detection.c)", is0*is1*sizeof *dbyt);
 
   /* Apply the threshold */
-  for(i=0;i<smp->nmeshi;++i)
+  for(gid=0;gid<smp->nmeshi;++gid)
     {
       /* Get the meshid from i: */
-      meshid=setmeshid(smp, i);
+      chbasedid=chbasedidfromgid(smp, gid);
 
       /* Fill the output array with the value in this mesh: */
       row=0;
-      s0=ts0[types[meshid]];
-      s1=ts1[types[meshid]];
-      sky = smp->garray1[i];
-      std = smp->garray2[i];
-      start=smp->start[meshid];
+      sky = smp->garray1[gid];
+      std = smp->garray2[gid];
+      s0=ts0[types[chbasedid]];
+      s1=ts1[types[chbasedid]];
+      start=smp->start[chbasedid];
       do
         {
           b = dbyt + start + row*is1;

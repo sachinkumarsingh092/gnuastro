@@ -72,7 +72,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   f g j m v w x y z
+   f g j v w x y z
    A C G J O W X Y Z
 
    Number keys free: >=514
@@ -424,6 +424,14 @@ static struct argp_option options[] =
       5
     },
     {
+      "segsnminarea",
+      'm',
+      0,
+      0,
+      "Minimum area to find clumps S/N.",
+      5
+    },
+    {
       "checksegmentation",
       513,
       0,
@@ -655,6 +663,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Segmentation: */
+    case 'm':
+      sizetlzero(arg, &p->segsnminarea, "segsnminarea", key, SPACK, NULL, 0);
+      p->up.segsnminareaset=1;
+      break;
     case 513:
       p->segmentationname="a";
       break;

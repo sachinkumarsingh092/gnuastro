@@ -91,6 +91,7 @@ segmentation(struct noisechiselparams *p)
     }
 
 
-  /* Find S/N threshold: */
+  /* Find the true clump S/N threshold: */
+  p->b0f1=0;
   clumpsngrid(p);
 }

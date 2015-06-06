@@ -161,11 +161,26 @@ noisechisel(struct noisechiselparams *p)
 
 
 
-  /* Find the final sky value and subtract it from the image. */
+  /* Find the final sky value for the input and convolved
+     images. Subtract it for the convolved image (since we don't want
+     gradients harming clump finding). But keep the sky value for each
+     small mesh in p->smp.garray1 and its STD in p->smp.garray2. They
+     will be calculated for each object and mesh. They will be
+     calculated for each object and subtracted where necessary. We
+     don't want to subtract it now so we don't add noise.
+
+     VERY IMPORTANT:
+     ###############
+
+     The sky value for the input image should be found after the
+     convolved image. This is because findavestdongrid, will also set
+     the p->cpscorr value and we want that from the input image, not
+     the convolved image.  */
   if(verb) gettimeofday(&t1, NULL);
-  findsubtractskyimgconv(p);
+  findsubtractskyconv(p);
+  findavestdongrid(p, p->skyname);
   if(verb)
-    reporttiming(&t1, "Final sky and its STD found. Sky subtracted.", 1);
+    reporttiming(&t1, "Final sky and its STD found.", 1);
 
 
 
@@ -183,7 +198,6 @@ noisechisel(struct noisechiselparams *p)
 
 
   /* Clean up: */
-  free(p->std);                 /* Allocated in findsubtractsky.       */
   free(p->conv);                /* Allocated in spatialconvolveonmesh. */
   freemesh(smp);                /* Allocated here.                     */
   freemesh(lmp);                /* Allocated here.                     */

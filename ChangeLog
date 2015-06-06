@@ -1,5 +1,12 @@
 2015-06-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
+	* lib/mesh.c (chbasedidfromgid): Chaged the old setmeshid to
+	chbasedidfromgid along with a new function (gidfromchbasedid). The
+	explanations on top of the first clearly explain everything
+	extensively. The old function (my understanding) was not yet
+	mature enough but now it seems to be very nicely working. All the
+	functions that used this were also changed.
+
 	* src/noisechisel/astnoisechisel.conf: Changed default
 	lastmeshfrac to 0.51 from 0.6.
 

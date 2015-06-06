@@ -27,6 +27,9 @@ void
 findavestdongrid(struct noisechiselparams *p, char *outname);
 
 void
-findsubtractskyimgconv(struct noisechiselparams *p);
+findsubtractskyconv(struct noisechiselparams *p);
+
+void
+findsubtractskyimg(struct noisechiselparams *p);
 
 #endif

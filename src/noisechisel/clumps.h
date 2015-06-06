@@ -29,8 +29,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SEGMENTTMPCHECK -3
 #define SEGMENTINIT     -2
 #define SEGMENTRIVER    -1
-#define INFOTABCOLS      4
-#define WNGBSIZE         9	/* It is impossible to get this large! */
+#define INFOTABCOLS      5
+#define WNGBSIZE        20
 
 void
 clumpsngrid(struct noisechiselparams *p);

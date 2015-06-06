@@ -240,11 +240,11 @@ snthreshonmesh(void *inparams)
 
   long *thislab;
   char cline[1000];
+  float *sntable, minbfrac=p->minbfrac;
   unsigned char b0f1=p->b0f1, *dbyt=p->dbyt;
   size_t i, s0, s1, minnumfalse=p->minnumfalse;
-  size_t meshid, detsnhistnbins=p->detsnhistnbins;
+  size_t gid, detsnhistnbins=p->detsnhistnbins;
   size_t ind, size, numlabs, startind, is1=mp->s1;
-  float *f, *ff, *to, *sntable, minbfrac=p->minbfrac;
   size_t nf, nb, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
   char suffix[50], *histname, *detectionname=p->detectionname;
 
@@ -319,40 +319,39 @@ snthreshonmesh(void *inparams)
 
 
       /* Find the signal to noise of all the detections in this mesh
-         and allocate an array to keep the S/N values in *sntable. If
-         we are on the noise, then check to see if we have enough
-         points or not. */
-      detlabelsn(p, thislab, numlabs, startind, s0, s1, &sntable);
+         and allocate an array to keep the S/N values in *sntable. */
+      detlabelsn(p, thislab, &numlabs, startind, s0, s1, &sntable);
       if(b0f1)                  /* Initial detections. */
         {
-          /* The interpolation or smoothing might have been done
-             independent of channels. So, we can't just use
-             mp->cgarray1[ind] like the case for noise.  */
-          meshid=setmeshid(mp, ind);
+          /* The index is based on the initial channel-based ID (since
+             it was used in mp->start). So if the interpolation and/or
+             smoothing were done on the full array, then there is
+             going to be a problem and we need to use gidfromchbasedid
+             to get the appropriate garray-based ID.*/
+          gid=gidfromchbasedid(mp, ind);
 
           /* A simple sanity check: */
-          if(isnan(mp->garray1[meshid]))
+          if(isnan(mp->garray1[gid]))
             error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
                   "can fix the problem. For some reason, the minimum Signal "
                   "to noise ratio for mesh number %lu is a NaN!",
-                  PACKAGE_BUGREPORT, meshid);
+                  PACKAGE_BUGREPORT, gid);
 
           /* Remove the false detections and copy thisbyt into
              p->dbyt. */
           removefalsedetections(thisbyt, thislab, s0*s1, numlabs,
-                                sntable, mp->garray1[meshid]);
+                                sntable, mp->garray1[gid]);
           bytparttolarge(p, thisbyt, startind, s0, s1);
         }
       else                      /* Noise (background). */
         {
-          /* We are in the noise region. From this point on, the order
-             of elements in sntable doesn't matter. So put all the
-             non-zero elements contiguously beside each other at the
-             start of the array. Also check if the number is not
-             enough, then go onto the next mesh. */
-          to=sntable; ff=(f=sntable)+numlabs;
-          do if(*f>0) *to++=*f; while(++f<ff);
-          numlabs=to-sntable;
+          /* We are in the noise region. Note that in detlabelsn, the
+             numlabs was changed to only keep those that have the good
+             conditions. The order of object indexs is no longer
+             important. So in detlabelsn the labels were moved and the
+             non-zero elements were put contiguously beside each other
+             at the start of the array. These were only done for the
+             noisy regions, not detections. */
           if(numlabs<minnumfalse) {free(sntable); continue;}
 
           /* Sort the signal to noise array for the proper values,
@@ -365,9 +364,7 @@ snthreshonmesh(void *inparams)
           /* Put the signal to noise ratio quantile into the
              mp->garray1 array. Note that since garray1 was
              initialized to NaN, when a mesh doesn't reach this point,
-             it will be NaN. Also note that since we are just defining
-             each grid element here, ind is actually the mesh ID or
-             meshid. */
+             it will be NaN. */
           mp->garray1[ind]=sntable[indexfromquantile(numlabs, p->detquant)];
 
           /* If the user has asked for it, make the histogram of the
@@ -628,8 +625,8 @@ onlytruedetections(struct noisechiselparams *p)
   float snave;
   int verb=p->cp.verb;
   char report[VERBMSGLENGTHS2_V];
+  float *imgcopy, *inputimage=p->img;
   char *detectionname=p->detectionname;
-  float *imgcopy, *ave, *inputimage=p->img;
   size_t s0=lmp->s0, s1=lmp->s1, numobjects=p->numobjects;
 
 
@@ -661,12 +658,6 @@ onlytruedetections(struct noisechiselparams *p)
               p->dthresh);
       reporttiming(NULL, report, 2);
     }
-
-
-  /* Save the standard deviation image. Since we have subtracted the
-     average, we only need the standard deviation. */
-  checkgarray(&p->smp, &ave, &p->std);
-  free(ave);
 
 
   /* Find the Signal to noise ratio threshold on the grid and keep it
@@ -701,6 +692,5 @@ onlytruedetections(struct noisechiselparams *p)
 
 
   /* Clean up: */
-  free(p->std);
   free(p->dbyt);
 }

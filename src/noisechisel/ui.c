@@ -358,6 +358,15 @@ readconfig(char *filename, struct noisechiselparams *p)
 	}
 
 
+      /* Segmentation: */
+      else if(strcmp(name, "segsnminarea")==0)
+	{
+	  if(up->segsnminareaset) continue;
+          sizetlzero(value, &p->segsnminarea, name, key, SPACK,
+                     filename, lineno);
+	  up->segsnminareaset=1;
+	}
+
       /* Operating modes: */
       else if(strcmp(name, "numthreads")==0)
 	{
@@ -494,6 +503,11 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "detquant", p->detquant);
   if(up->dilateset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "dilate", p->dilate);
+
+
+  fprintf(fp, "\n# Segmentation:\n");
+  if(up->segsnminareaset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnminarea", p->segsnminarea);
 }
 
 
@@ -572,6 +586,10 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("detquant");
   if(up->dilateset==0)
     REPORT_NOTSET("dilate");
+
+  /* Segmentation: */
+  if(up->segsnminareaset==0)
+    REPORT_NOTSET("segsnminarea");
 
   END_OF_NOTSET_REPORT;
 }

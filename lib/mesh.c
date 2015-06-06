@@ -82,47 +82,182 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /*********************************************************************/
-/********************     Checking functions      ********************/
+/************       Finding the proper mesh ID      ******************/
 /*********************************************************************/
-/* The `meshid' which is used to store the various information for
-   each mesh is defined independently on each channel so each channel
-   has its contiguous range of `meshid's. However, in some cases, the
-   meshes have to be treated together over the full image (depending
-   on the user). `index' is the index of a mesh. Depending on which
-   array garray is pointing to, it will either be the actual meshid or
-   it might be the id over the full image. This function comes in
-   handy for the latter case. For the former it will just return the
-   input index, but if it recognizes that the latter should be used,
-   it will return the proper value. */
+/* There are two interal ways to store the IDs of the meshs:
+
+   1. By default, the mesh IDs are set based on their position within
+      the channels (so the meshs in each channel are contiguous). We
+      call this the channel-based mesh ID. The cgarray1 and cgarray2
+      store the mesh values based on this ID. All the basic mesh
+      properties, like their types and height and widths are stored
+      based on this ID.
+
+   2. If the user asks for a full image interpolation or smoothing,
+      then two new arrays are created called fgarray1 and
+      fgarray2. These arrays keep the mesh values as they appear on
+      the image, irrespective of which channel they belong to. We call
+      this the image-based ID. The image based ID is contiguous over
+      the image.
+
+  There is a third pointer called garray1 and garray2. These can point
+  to either the cgarrays or the fgarrays. Ideally, the user should be
+  completely ignorant to what garray is pointing to. The caller knows
+  the type of IDs they are using, but they don't know what to put into
+  garray. We call the ID that should be put into garray the
+  garray-based ID. It can be either of the two kinds above.
+
+  So we have made the following two functions:
+
+    chbasedidfromgid:
+
+       This is useful for when you are going over the elements in
+       garray (and you are completley ignorant to which one of
+       cgarrays or fgarrays garray points to) and you need the channel
+       based IDs to get basic mesh information like the mesh type and
+       size.
+
+    gidfromchbasedid:
+
+       This function is useful for the opposite case: you are going
+       over the meshs through the channel-based IDs, but you need to
+       know what ID to use for garray.
+*/
 size_t
-setmeshid(struct meshparams *mp, size_t index)
+chbasedidfromgid(struct meshparams *mp, size_t gid)
 {
-  size_t f0, f1, chid, inchid;
-  size_t fs1=mp->gs1*mp->nch1;
-  size_t gs0=mp->gs0, gs1=mp->gs1;
-
   if(mp->nch==1 || mp->garray1==mp->cgarray1)
-    return index;
+    return gid;
+  else
+    {
+      /* The X and Y of this mesh in the full image: */
+      size_t f0=gid/(mp->gs1*mp->nch1), f1=gid%(mp->gs1*mp->nch1);
 
-  /* Find the position of this mesh in the mesh grid: */
-  f0=index/fs1;                /* First C axis.  */
-  f1=index%fs1;                /* Second C axis. */
+      /* The channel ID: */
+      size_t chid = (f0/mp->gs0) * mp->nch1 + f1/mp->gs1;
 
-  /* ID of this mesh within the channel it belongs to:
-     in-channel-id or inchid. */
-  inchid = (f0%gs0)*gs1      + f1%gs1;
+      /* The ID of this mesh in this channel: */
+      size_t inchannelid = (f0%mp->gs0) * mp->gs1 + f1%mp->gs1;
 
-  /* ID of channel: channel-id: chid.  */
-  chid   = (f0/gs0)*mp->nch1 + f1/gs1;
+      /* For a check:
+      printf("%lu:\n\t(f0, f1): (%lu, %lu)\t chid: %lu\tinchannelid: %lu\n",
+             gid, f0, f1, chid, inchannelid);
+      */
 
-  /* The mesh id from the above. */
-  return chid * mp->nmeshc + inchid;
+      /* Return the channel-based ID: */
+      return chid * mp->nmeshc + inchannelid;
+    }
+
+  /* This function should not reach here! If it does there is problem,
+     so just return an impossible value so the root of the issue can
+     be found easily: */
+  return (size_t)(-1);
 }
 
 
 
 
 
+/* Get the garray-based ID from the channel-based ID. See the
+   comments above chbasedidfromgid for a complete explanation. */
+size_t
+gidfromchbasedid(struct meshparams *mp, size_t chbasedid)
+{
+  if(mp->nch==1 || mp->garray1==mp->cgarray1)
+    return chbasedid;
+  else
+    {
+      /* The X and Y positions of this channel in the channels array: */
+      size_t chx=(chbasedid/mp->nmeshc)/mp->nch1;
+      size_t chy=(chbasedid/mp->nmeshc)%mp->nch1;
+
+      /* The X and Y of this mesh in this channel: */
+      size_t mx=(chbasedid%mp->nmeshc)/mp->gs1;
+      size_t my=(chbasedid%mp->nmeshc)%mp->gs1;
+
+      /* For a check:
+      printf("%lu:\n\t(chx, chy): (%lu, %lu)"
+             "\n\t(mx, my): (%lu, %lu)"
+             "\n\t%lu\n\n",
+             chbasedid, chx, chy, mx, my,
+             (chx*mp->gs0+mx) * mp->nch1 + (chy*mp->gs1+my));
+      */
+
+      /* Return the : */
+      return (chx*mp->gs0+mx) * mp->nch1 + (chy*mp->gs1+my);
+    }
+
+  /* This function should not reach here! If it does there is problem,
+     so just return an impossible value so the root of the issue can
+     be found easily: */
+  return (size_t)(-1);
+}
+
+
+
+
+
+/* The user has a pixel index in the final image and wants to know the
+   id it should plug into the garrays to get a value for this
+   pixel. This is the job of this function. So to find the value on
+   the mesh grid for a pixel at index `ind', the user should just run:
+
+       mp->garray[imgindextomeshid(mp, ind)]
+ */
+size_t
+imgindextomeshid(struct meshparams *mp, size_t index)
+{
+  size_t x=index/mp->s1, y=index%mp->s1;
+  size_t meshsize=mp->meshsize, gs1=mp->gs1;
+
+  /* Take the proper action: */
+  if(mp->nch==1)
+    return (x/meshsize) * gs1 + (y/meshsize);
+  else
+    {
+      /* Number of pixels along each axis in all channels: */
+      size_t cps0=mp->s0/mp->nch2, cps1=mp->s1/mp->nch1;
+
+      /* The X and Y positions of this channel in the channels array: */
+      size_t chx=x/cps0, chy=y/cps1;
+
+      /* The X and Y of this mesh in this channel: */
+      size_t mx=(x%cps0)/meshsize, my=(y%cps1)/meshsize;
+
+      /* Return the proper id to input into garray. */
+      if(mp->garray1==mp->cgarray1)
+        return mp->nmeshc * (chx*mp->nch1+chy) + mx*gs1+my;
+      else
+        return (chx*mp->gs0+mx) * gs1 + (chy*gs1+my);
+    }
+
+  /* This function should not reach here! So we will just return a
+     value that will always be problematic ;-). */
+  return (size_t) -1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********************     Checking functions      ********************/
+/*********************************************************************/
 /* Save the meshid of each pixel into an array the size of the image. */
 void
 checkmeshid(struct meshparams *mp, long **out)
@@ -166,7 +301,7 @@ void
 checkgarray(struct meshparams *mp, float **out1, float **out2)
 {
   int ngarrays=mp->ngarrays;
-  size_t i, row, start, meshid, *types=mp->types;
+  size_t gid, row, start, chbasedid, *types=mp->types;
   float *f, *fp, *ff, garray1=FLT_MAX, garray2=FLT_MAX;
   size_t s0, s1, is1=mp->s1, *ts0=mp->ts0, *ts1=mp->ts1;
 
@@ -186,20 +321,23 @@ checkgarray(struct meshparams *mp, float **out1, float **out2)
     }
 
   /* Fill the array: */
-  for(i=0;i<mp->nmeshi;++i)
+  for(gid=0;gid<mp->nmeshi;++gid)
     {
       /* Set the proper meshid depending on what garray points to, see
          the explanation above setmeshid. */
-      meshid = setmeshid(mp, i);
+      chbasedid = chbasedidfromgid(mp, gid);
 
-      /* Fill the output array with the value in this mesh: */
+      /* Fill the output array with the value in this mesh. It is
+         really important that `i' should be used for the garrays, not
+         cmeshid. cmeshid is only for the basic mesh parameters that
+         it is used for. */
       row=0;
-      s0=ts0[types[meshid]];
-      s1=ts1[types[meshid]];
-      start=mp->start[meshid];
-      garray1 = mp->garray1[i];
+      s0=ts0[types[chbasedid]];
+      s1=ts1[types[chbasedid]];
+      start=mp->start[chbasedid];
+      garray1 = mp->garray1[gid];
       if(ngarrays==2)
-        garray2 = mp->garray2[i];
+        garray2 = mp->garray2[gid];
       do
         {
           fp= ( f = *out1 + start + row * is1 ) + s1;
@@ -220,6 +358,24 @@ checkgarray(struct meshparams *mp, float **out1, float **out2)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/********************         Full garray         ********************/
+/*********************************************************************/
 /* By default, the garray1 and garray2 arrays keep the meshes of each
    channel contiguously. So in practice, each channel is like a small
    independent image. This will cause problems when we want to work on
@@ -304,6 +460,8 @@ fullgarray(struct meshparams *mp, int reverse)
                    "mesh");
   */
 }
+
+
 
 
 

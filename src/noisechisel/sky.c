@@ -126,6 +126,7 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
   size_t s0=smp->s0, s1=smp->s1;
 
 
+
   /* Find the average and standard deviation */
   operateonmesh(smp, avestdonthread, sizeof(float), 1, 1);
   if(outname)
@@ -142,12 +143,15 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
     }
 
 
+
   /* In case the image is in electrons or counts per second the
      standard deviation of the noise will become smaller than
      unity. You have to find the minimum STD value (which is always
      positive) for later corrections. */
   floatmin(smp->garray2, smp->nmeshi, &p->cpscorr);
   if(p->cpscorr>1) p->cpscorr=1.0f;
+
+
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
@@ -162,6 +166,7 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
       free(sky);
       free(std);
     }
+
 
 
   /* Smooth the interpolated array:  */
@@ -189,23 +194,13 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
    convolved images. Then subtract the sky value from both and save
    the standard deviation for every pixel in p->std. */
 void
-findsubtractskyimgconv(struct noisechiselparams *p)
+findsubtractskyconv(struct noisechiselparams *p)
 {
   struct meshparams *smp=&p->smp;
 
-  float *tmpg1, *tmpg2;
-  float *f, *s, *fp, sky, std, *tmpimg, *img=p->img;
-  size_t i, s0, s1, row, start, meshid, is1=smp->s1;
-  float *c, csky, *tmpcg1, *tmpcg2, *tmpfg1, *tmpfg2, *convsky;
-
-
-  /* Allocate an array for the standard deviation, we will need it for
-     every pixel. */
-  errno=0; p->std=malloc(smp->s0*smp->s1*sizeof *p->std);
-  if(p->std==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->std in findsubtractsky "
-          "(sky.c)", smp->s0*smp->s1*sizeof *p->std);
-
+  float *f, *fp, *tmpg1, *tmpg2, *tmpimg;
+  size_t gid, s0, s1, row, start, chbasedid, is1=smp->s1;
+  float csky, *tmpcg1, *tmpcg2, *tmpfg1, *tmpfg2, *convsky;
 
 
   /* Replace the necessary arrays to find the sky value on the
@@ -231,56 +226,59 @@ findsubtractskyimgconv(struct noisechiselparams *p)
   smp->fgarray1=tmpfg1;         smp->fgarray2=tmpfg2;
 
 
-  /* Find the sky value and its STD on the input image and put it in
-     the p->smp.garray1 and p->smp.garray2 arrays respectively.
-
-     VERY IMPORTANT:
-     ###############
-
-     The sky value for the input image should be found after the
-     convolved image. This is because findavestdongrid, will also set
-     the p->cpscorr value and we want that from the input image, not
-     the convolved image.
-  */
-  findavestdongrid(p, p->skyname);
-
-
-  /* Apply the threshold */
-  for(i=0;i<smp->nmeshi;++i)
+  /* Subtract the sky */
+  for(gid=0;gid<smp->nmeshi;++gid)
     {
       /* Get the meshid from i: */
-      meshid=setmeshid(smp, i);
+      chbasedid=chbasedidfromgid(smp, gid);
 
       /* Subtract the sky for each pixel. */
       row=0;
-      csky = convsky[i];
-      sky = smp->garray1[i];
-      std = smp->garray2[i];
-      start=smp->start[meshid];
-      s0=smp->ts0[smp->types[meshid]];
-      s1=smp->ts1[smp->types[meshid]];
+      csky = convsky[gid];
+      start=smp->start[chbasedid];
+      s0=smp->ts0[smp->types[chbasedid]];
+      s1=smp->ts1[smp->types[chbasedid]];
       do
         {
-          s = p->std + start + row*is1;
-          c = p->conv + start + row*is1;
-          fp= ( f = img + start + row++ * is1 ) + s1;
-          do
-            {
-              *s++  = std;      /* Fill STD array.              */
-              *f++ -= sky;      /* Subtract sky from image.     */
-              *c++ -= csky;     /* Subtract sky from convolved. */
-            }
-          while(f<fp);
+          fp= ( f = p->conv + start + row++ * is1 ) + s1;
+          do *f++ -= csky; while(f<fp);
         }
       while(row<s0);
     }
 
-  /* Write the output as the last frame of the sky subtracted
-     image if the user wants to check it: */
-  if(p->skyname)
-    arraytofitsimg(p->skyname, "SkySubtracted", FLOAT_IMG, p->img,
-                   p->smp.s0, p->smp.s1, 0, p->wcs, NULL, SPACK_STRING);
-
   /* Clean up: */
   free(convsky);
+}
+
+
+
+
+
+void
+subtractskyimg(struct noisechiselparams *p)
+{
+  struct meshparams *smp=&p->smp;
+
+  float *f, *fp, sky, *img=p->img;
+  size_t gid, s0, s1, row, start, chbasedid, is1=smp->s1;
+
+  /* Apply the threshold */
+  for(gid=0;gid<smp->nmeshi;++gid)
+    {
+      /* Get the meshid from i: */
+      chbasedid=chbasedidfromgid(smp, gid);
+
+      /* Subtract the sky for each pixel. */
+      row=0;
+      sky = smp->garray1[gid];
+      start=smp->start[chbasedid];
+      s0=smp->ts0[smp->types[chbasedid]];
+      s1=smp->ts1[smp->types[chbasedid]];
+      do
+        {
+          fp= ( f = img + start + row++ * is1 ) + s1;
+          do *f++ -= sky; while(f<fp);
+        }
+      while(row<s0);
+    }
 }

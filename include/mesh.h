@@ -153,7 +153,13 @@ struct meshparams
 };
 
 size_t
-setmeshid(struct meshparams *mp, size_t findex);
+chbasedidfromgid(struct meshparams *mp, size_t gid);
+
+size_t
+gidfromchbasedid(struct meshparams *mp, size_t chbasedid);
+
+size_t
+imgindextomeshid(struct meshparams *mp, size_t index);
 
 void
 checkmeshid(struct meshparams *mp, long **out);
