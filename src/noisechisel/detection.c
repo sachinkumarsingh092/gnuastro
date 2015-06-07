@@ -144,6 +144,130 @@ initialdetection(struct noisechiselparams *p)
 
 
 /****************************************************************
+ *********    Signal to noise ratio calculation      ************
+ ****************************************************************/
+/* Calculate the Signal to noise ratio for all the labels in
+   `labinmesh'. The sky subtracted input image and the standard
+   deviations image for each pixel are over the full image: p->img and
+   p->std. However, the array keeping the labels of each object is
+   only over the mesh under consideration.
+*/
+void
+detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t *numlabs,
+           size_t start, size_t s0, size_t s1, float **outsntable)
+{
+  float *img=p->img;
+  double *fluxs, err, *xys;
+  struct meshparams *smp=&p->smp;
+  size_t i, ind, r=0, is1=p->smp.s1, counter=0;
+  float *f, *ff, *s, ave, *sntable, cpscorr=p->cpscorr;
+  long *areas, *l=labinmesh, detsnminarea=p->detsnminarea;
+
+
+  /* Allocate the necessary arrays to keep the label information: */
+  errno=0; sntable=*outsntable=calloc(*numlabs, sizeof *sntable);
+  if(sntable==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for sntable in labelsn (label.c)",
+          *numlabs*sizeof *sntable);
+  errno=0; fluxs=calloc(*numlabs, sizeof *fluxs);
+  if(fluxs==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for fluxs in labelsn (label.c)",
+          *numlabs*sizeof *fluxs);
+  errno=0; xys=calloc(*numlabs*2, sizeof *xys);
+  if(xys==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for xys in labelsn (label.c)",
+          *numlabs*sizeof *xys);
+  errno=0; areas=calloc(*numlabs, sizeof *areas);
+  if(areas==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for areas in labelsn (label.c)",
+          *numlabs*sizeof *areas);
+
+
+  /* For a check:
+  arraytofitsimg("test.fits", "Labs", LONG_IMG, labinmesh,
+                 s0, s1, 0, NULL, NULL, SPACK_STRING);
+  */
+
+
+  /* Go over the arrays and fill in the information. Note that since
+     labinmesh is over the mesh and not the full image, setting it
+     once in the definition was enough. */
+  do
+    {
+      ff = ( f = img + start + r++ * is1 ) + s1;
+      do
+        {
+          if(*l && !isnan(*f))     /* There is a label on this mesh. */
+            {
+              ++areas[*l];
+              fluxs[*l]   += *f;
+              xys[*l*2]   += (double)((f-img)/is1) * *f;
+              xys[*l*2+1] += (double)((f-img)%is1) * *f;
+            }
+          ++l; ++s;
+        }
+      while(++f<ff);
+    }
+  while(r<s0);
+
+
+  /* calculate the signal to noise for successful detections: */
+  for(i=1;i<*numlabs;++i)
+    if(areas[i]>detsnminarea && (ave=fluxs[i]/areas[i]) >0 )
+      {
+        /* Find the flux weighted center of this object and get the
+           standard deviation at this point. Note that the standard
+           deviation on the grid was stored in smp->garray2. The error
+           should then be taken to the power of two and if the sky is
+           subtracted, a 2 should be multiplied to it.*/
+        ind=(xys[i*2]/fluxs[i]) * is1 + xys[i*2+1]/fluxs[i];
+        err = smp->garray2[imgindextomeshid(smp, ind)];
+        err *= p->skysubtracted ? err : 2.0f*err;
+
+        /* Set the index in the sntable to store the Signal to noise
+           ratio. When we are dealing with the noise, we only want the
+           non-zero signal to noise values, so we will just use a
+           counter. But for initial detections, it is very important
+           that their Signal to noise ratio be placed in the same
+           index as their label. */
+        ind = p->b0f1 ? i : counter++;
+        sntable[ind]=sqrt( (float)(areas[i])/cpscorr ) * ave / sqrt(ave+err);
+      }
+  if(p->b0f1==0) *numlabs=counter;
+
+
+  /* For a check:
+  for(i=0;i<*numlabs;++i)
+    printf("%lu: %-10ld %-10.3f %-10.3f %-10.3f\n",
+           i, areas[i], fluxs[i], stds[i]/areas[i], sntable[i]);
+  */
+
+
+  /* Clean up */
+  free(xys);
+  free(fluxs);
+  free(areas);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
  ************        Remove false detections         ************
  ****************************************************************/
 /* The p->byt points to the array keeping the positions of initial
@@ -229,7 +353,7 @@ removefalsedetections(unsigned char *byt, long *lab, size_t size,
 
 
 void*
-snthreshonmesh(void *inparams)
+detsnthreshonmesh(void *inparams)
 {
   struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
   struct meshparams *mp=mtp->mp;
@@ -420,7 +544,7 @@ snthreshonmesh(void *inparams)
    times for all the meshs and re-done for each step. This function
    does that job. */
 void
-snthreshongrid(struct noisechiselparams *p)
+detsnthreshongrid(struct noisechiselparams *p)
 {
   struct meshparams *lmp=&p->lmp;
 
@@ -446,7 +570,7 @@ snthreshongrid(struct noisechiselparams *p)
         {
           free(p->dbyt);    /* Free the old, p->dbyt, put the original */
           ucharcopy(tmp, s0*s1, &p->dbyt);
-          operateonmesh(lmp, snthreshonmesh, sizeof(unsigned char), 0,
+          operateonmesh(lmp, detsnthreshonmesh, sizeof(unsigned char), 0,
                         initialize);
           switch(p->stepnum)
             {
@@ -482,7 +606,7 @@ snthreshongrid(struct noisechiselparams *p)
         }
     }
   else
-    operateonmesh(lmp, snthreshonmesh, sizeof(unsigned char), 0,
+    operateonmesh(lmp, detsnthreshonmesh, sizeof(unsigned char), 0,
                   initialize);
 
 }
@@ -491,34 +615,38 @@ snthreshongrid(struct noisechiselparams *p)
 
 
 
+/* The p->lmp.garray1 has been filled with the successful mesh
+   elements. The ones with an unsuccessful value are blank. This
+   function will first interpolate the grid to have no blank
+   elements. Then it will smooth it. It is used both by the detection
+   process and the segmentation process to find an S/N value for
+   each grid element.*/
 void
-findsnthreshongrid(struct noisechiselparams *p)
+findsnthreshongrid(struct meshparams *lmp, char *filename,
+                   char *comment, struct wcsprm *wcs)
 {
-  struct meshparams *lmp=&p->lmp;
-
   float *sn;
   size_t s0=lmp->s0, s1=lmp->s1;
 
 
   /* Find the Signal to noise ratio threshold for the good meshs. */
-  snthreshongrid(p);
-  if(p->detectionsnname)
+  if(filename)
     {
       checkgarray(lmp, &sn, NULL);
-      arraytofitsimg(p->detectionsnname, "S/N", FLOAT_IMG, sn, s0, s1,
-                     0, p->wcs, NULL, SPACK_STRING);
+      arraytofitsimg(filename, "S/N", FLOAT_IMG, sn, s0, s1,
+                     0, wcs, NULL, SPACK_STRING);
       free(sn);
     }
 
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
-  meshinterpolate(lmp, "Interpolating the Signal to noise ratio threshold");
-  if(p->detectionsnname)
+  meshinterpolate(lmp, comment);
+  if(filename)
     {
       checkgarray(lmp, &sn, NULL);
-      arraytofitsimg(p->detectionsnname, "Interpolated", FLOAT_IMG, sn,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      arraytofitsimg(filename, "Interpolated", FLOAT_IMG, sn,
+                     s0, s1, 0, wcs, NULL, SPACK_STRING);
       free(sn);
     }
 
@@ -527,11 +655,11 @@ findsnthreshongrid(struct noisechiselparams *p)
   if(lmp->smoothwidth>1)
     {
       meshsmooth(lmp);
-      if(p->detectionsnname)
+      if(filename)
         {
           checkgarray(lmp, &sn, NULL);
-          arraytofitsimg(p->detectionsnname,"Smoothed", FLOAT_IMG, sn,
-                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+          arraytofitsimg(filename, "Smoothed", FLOAT_IMG, sn,
+                         s0, s1, 0, wcs, NULL, SPACK_STRING);
           free(sn);
         }
     }
@@ -662,7 +790,9 @@ onlytruedetections(struct noisechiselparams *p)
 
   /* Find the Signal to noise ratio threshold on the grid and keep it
      in one array. */
-  findsnthreshongrid(p);
+  detsnthreshongrid(p);
+  findsnthreshongrid(&p->lmp, p->detectionsnname, "Interpolating the "
+                     "DETECTION Signal to noise ratio threshold", p->wcs);
   if(verb)
     {
       snave=floataverage(lmp->garray1, lmp->nmeshi);
@@ -673,7 +803,7 @@ onlytruedetections(struct noisechiselparams *p)
 
 
   /* Apply the SN threshold to all the detections. */
-  snthreshongrid(p);
+  detsnthreshongrid(p);
   dbytolaboverlap(p);
   if(detectionname)
     arraytofitsimg(detectionname, "TrueDetections", BYTE_IMG, p->byt,

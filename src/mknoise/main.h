@@ -24,6 +24,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 #include <pthread.h>
+#include <gsl/gsl_rng.h>
 
 #include "fitsarrayvv.h"
 #include "commonparams.h"
@@ -73,8 +74,10 @@ struct mknoiseparams
   double          stdadd;  /* Standard deviation constants.            */
   double       zeropoint;  /* Zeropoint magnitude of image.            */
 
+  /* Random number generator */
+  gsl_rng           *rng;  /* Main instance of random number generator.*/
+
   /* Output: */
-  int   backgroundinmean;  /* Use the background in the mean too.      */
   int         doubletype;  /* Save the output in double type.          */
 
   /* Internal: */

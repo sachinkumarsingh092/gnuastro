@@ -679,13 +679,19 @@ floatavestdmaskbyt0inregion(float *in, unsigned char *byt,
  ********     Histogram and Cumulative Frequency Plot     *******
  ****************************************************************/
 /* Set the bin lower values for all the bins. If the minimum and
-   maximum are equal, then use the quantile. */
+   maximum are equal, then use the quantile.
+
+   If the value of onebinvalue is NaN, then nothing will happen,
+   however, if it is not a NaN, all the bins will be shifted such that
+   the lower values of one of the bins is placed on this value (if it
+   is in the range of the data).
+*/
 void
 setbins(float *sorted, size_t size, size_t numbins, float min,
-	float max, int binonzero, float quant, float **obins)
+	float max, float onebinvalue, float quant, float **obins)
 {
   size_t i;
-  float tosubtract, *bins, binwidth;
+  float diff, *bins, binwidth;
 
   /* Allocate space for the array. The extra bin is only for internal
      purposes (so the loops for the histogram and CFP can see the end
@@ -716,18 +722,17 @@ setbins(float *sorted, size_t size, size_t numbins, float min,
   for(i=0;i<numbins+1;++i)
     bins[i*2]=min+i*binwidth;
 
-  /* If one bin is to be placed on zero. */
-  if(binonzero)
+  /* Go over all the bins and stop when the sign of the two sides
+     of one bin are different. */
+  if(isnan(onebinvalue)==0)
     {
-      /* Go over all the bins and stop when the sign of the two sides
-         of one bin are different. */
       for(i=0;i<numbins;++i)
-	if(bins[i*2]*bins[(i+1)*2]<0.0f) break;
+        if(bins[i*2]<onebinvalue && bins[(i+1)*2]>onebinvalue) break;
       if(i!=numbins)
         {
-          tosubtract=bins[(i+1)*2];
+          diff=onebinvalue-bins[i*2];
           for(i=0;i<numbins+1;++i)
-            bins[i*2]-=tosubtract;
+            bins[i*2]+=diff;
         }
     }
 
@@ -885,67 +890,17 @@ cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
 
 
 void
-cumulativefp_old(float *sorted, size_t size, float *bins, size_t numbins,
-	     int normcfp)
-{
-  int lastrow=0;
-  float prevind=0;
-  size_t cfprow=0, i, numinds=0;
-
-  /* Fill the Cumulative frequency plot: */
-  for(i=0;i<size;++i)
-    {
-      if(sorted[i]<bins[cfprow*2]) continue;
-      while ( (lastrow && sorted[i]>bins[(cfprow+1)*2]+1e-6f)
-              || sorted[i]>=bins[(cfprow+1)*2] )
-	{
-	  if(numinds>0)
-	    prevind=bins[cfprow*2+1]/=numinds; /* Divide by num indexs */
-	  else
-	    bins[cfprow*2+1]=prevind;
-	  numinds=0;
-	  if(++cfprow>=numbins)
-	    break;              /* To break out of this while loop. */
-          else if (cfprow==numbins-1) lastrow=1;
-	}
-      if(cfprow>=numbins) break; /* To break out of the for loop.   */
-      bins[cfprow*2+1]+=i;	/* Sum of indexs (see above for average) */
-      ++numinds;
-    }
-
-  /* For a normalized CFP: */
-  if(normcfp)
-    for(i=0;i<numbins;++i)
-      bins[i*2+1]/=size;
-
-  /* In a CFP, all bins that are possibly left behind (there was no
-     data to fill them) should get the same value as the lastly filled
-     value. They should not be zero. Note that this has to be done
-     after the possible normalization. */
-  for(i=cfprow;i<numbins;++i)
-    bins[i*2+1]=bins[(cfprow-1)*2+1];
-
-  /* In case you want to see the CFP:
-  for(i=0;i<numbins;++i)
-    printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
-  */
-}
-
-
-
-
-
-void
 savehist(float *sorted, size_t size, size_t numbins,
 	 char *filename, char *comment)
 {
   FILE *fp;
   size_t i;
-  int binonzero=0, normhist=0, maxhistone=0;
+  float onebinvalue=NAN;
+  int normhist=0, maxhistone=0;
   float d, *bins, min=0.0f, max=0.0f, quant=0.0f;
 
   /* Set the bin sides: */
-  setbins(sorted, size, numbins, min, max, binonzero, quant, &bins);
+  setbins(sorted, size, numbins, min, max, onebinvalue, quant, &bins);
 
   /* Set the size of half a bin width:*/
   d=(bins[2]-bins[0])/2;

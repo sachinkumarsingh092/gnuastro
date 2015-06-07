@@ -31,6 +31,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define VERBMSGLENGTHS2_V 65
 #define VERBMSGLENGTHS2_T "65"
 
+unsigned long int
+timebasedrngseed();
+
 void
 reporttiming(struct timeval *t1, char *jobname, size_t level);
 

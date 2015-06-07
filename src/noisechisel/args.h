@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   f g j v w x y z
+   f j v w x y z
    A C G J O W X Y Z
 
-   Number keys free: >=514
+   Number keys free: >=516
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -120,7 +120,7 @@ static struct argp_option options[] =
       1
     },
     {
-      "skysubtraced",
+      "skysubtracted",
       'E',
       0,
       0,
@@ -356,7 +356,7 @@ static struct argp_option options[] =
       510,
       "INT",
       0,
-      "Detection S/N histogram No. bins `_detsnXX.txt'.",
+      "Detection S/N hist. N. bins `_XX_detsn.txt'.",
       4
     },
     {
@@ -432,12 +432,37 @@ static struct argp_option options[] =
       5
     },
     {
+      "segquant",
+      'g',
+      0,
+      0,
+      "Signal to noise ratio quantile for clumps.",
+      5
+    },
+    {
+      "segsnhistnbins",
+      514,
+      "INT",
+      0,
+      "Segmentation S/N hist. N. bins `_XX_segsn.txt'.",
+      5
+    },
+
+    {
       "checksegmentation",
       513,
       0,
       0,
-      "False detection steps in file `_det.fits'.",
+      "Store segmentation steps in file `_seg.fits'.",
       5
+    },
+    {
+      "checkclumpsn",
+      515,
+      0,
+      0,
+      "Mesh clump S/N limit `_clumpsn.fits'.",
+      4
     },
 
 
@@ -667,8 +692,20 @@ parse_opt(int key, char *arg, struct argp_state *state)
       sizetlzero(arg, &p->segsnminarea, "segsnminarea", key, SPACK, NULL, 0);
       p->up.segsnminareaset=1;
       break;
+    case 'g':
+      floatl0s1(arg, &p->segquant, "segquant", key, SPACK, NULL, 0);
+      p->up.segquantset=1;
+      break;
+    case 514:
+      sizetelzero(arg, &p->segsnhistnbins, "segsnhistnbins", key,
+                  SPACK, NULL, 0);
+      p->up.segsnhistnbinsset=1;
+      break;
     case 513:
       p->segmentationname="a";
+      break;
+    case 515:
+      p->clumpsnname="a";
       break;
 
 

@@ -26,6 +26,22 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "timing.h"
 
+
+
+/* Used to generate random numbers. */
+unsigned long int
+timebasedrngseed()
+{
+  struct timeval tv;
+  gettimeofday(&tv,0);
+  return tv.tv_sec + tv.tv_usec;
+}
+
+
+
+
+
+/* Used to report the time it takes for an action to be done. */
 void
 reporttiming(struct timeval *t1, char *jobname, size_t level)
 {

@@ -34,8 +34,4 @@ void
 removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
 			size_t *numlabs, size_t minarea);
 
-void
-detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t *numlabs,
-           size_t start, size_t s0, size_t s1, float **outsntable);
-
 #endif

@@ -107,9 +107,9 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
 {
   FILE *fp;
   size_t i, msize;
-  float *bins, *mirror, *actual, mf;
   float *out, maxhist=-FLT_MAX, maxcfp, d;
-  int binonzero=1, normhist=0, maxhistone=0, normcfp=0;
+  int normhist=0, maxhistone=0, normcfp=0;
+  float *bins, *mirror, *actual, mf, onebinvalue=0.0f;
 
 
   /* Find the index of the mirror and make the mirror array: */
@@ -143,7 +143,7 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
 
 
   /* Define the bin sides: */
-  setbins(actual, size, numbins, min, max, binonzero, 0, &bins);
+  setbins(actual, size, numbins, min, max, onebinvalue, 0, &bins);
 
 
   /* Find the histogram of the actual data and put it in out. Note

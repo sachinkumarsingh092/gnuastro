@@ -155,6 +155,13 @@ readconfig(char *filename, struct imgstatparams *p)
                     filename, lineno);
           up->mirrorplotdistset=1;
 	}
+      else if(strcmp(name, "onebinvalue")==0)
+	{
+	  if(up->onebinvalueset) continue;
+          anyfloat(value, &p->onebinvalue, name, key, SPACK,
+                     filename, lineno);
+          up->onebinvalueset=1;
+	}
 
 
       /* Histogram: */
@@ -302,6 +309,8 @@ printvalues(FILE *fp, struct imgstatparams *p)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
   if(up->mirrorplotdistset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "mirrorplotdist", p->mirrorplotdist);
+  if(up->onebinvalueset)
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "onebinvalue", p->onebinvalue);
 
   /* Histogram: */
   fprintf(fp, "\n# Histogram:\n");
@@ -354,6 +363,8 @@ checkifset(struct imgstatparams *p)
     REPORT_NOTSET("hdu");
   if(up->mirrorplotdistset==0)
     REPORT_NOTSET("mirrorplotdist");
+  if(up->onebinvalueset==0)
+    REPORT_NOTSET("onebinvalue");
   if(up->histnumbinsset==0)
     REPORT_NOTSET("histnumbins");
   if(up->cfpnumset==0)
@@ -641,6 +652,7 @@ setparams(int argc, char *argv[], struct imgstatparams *p)
   p->asciihist      = 1;
   p->sigclip        = 1;
   p->mirror         = NAN;
+  p->onebinvalue    = NAN;
   p->histname=p->cfpname="a";   /* Will be set later, just a sign that */
                                 /* they should be output.              */
   /* Read the arguments. */

@@ -1,3 +1,28 @@
+2015-06-07  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/mkprof/oneprofile.c (randompoints): The random number
+	generator is now allocated (cloned) with the build thread and for
+	every profile the seed is independently set once. Before each
+	pixel would allocate and seed the random number generator
+	individually!
+
+	* src/mkprof/astmkprof.conf: Changed default zeropoint magnitude
+	to 0.00.
+
+	* src/mknoise/mknoise.c (mknoise): moved the random number
+	generator to ui.c to make things faster and more easier to
+	understand.
+
+	* src/mknoise/args.h (argp_option): Removed the `backgroundinmean'
+	option, because I couldn't figure out what use it would have. If
+	it is needed we can add it again later!
+
+	* src/imgstat/args.h (argp_option): Changed `binonzero' option to
+	the more general `onebinvalue' option.
+
+	* src/convolve/convolve.c (removepaddingcorrectroundoff):
+	Corrected bug: would return *d in both cases! It is corrected now.
+
 2015-06-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/mesh.c (chbasedidfromgid): Chaged the old setmeshid to

@@ -141,7 +141,7 @@ floatavestdmaskbyt0inregionsclip(float *in, unsigned char *byt,
  ****************************************************************/
 void
 setbins(float *sorted, size_t size, size_t numbins, float min,
-	float max, int binonzero, float quant, float **obins);
+	float max, float onebinvalue, float quant, float **obins);
 
 void
 histogram(float *sorted, size_t size, float *bins, size_t numbins,

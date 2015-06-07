@@ -7363,16 +7363,26 @@ Set the first column of the histogram and cumulative frequency plots
 to the lower interval boundary. By default (without calling this
 option), the central interval value is used.
 
-@item --binonzero
-Make sure that one bin starts from zero. In practice, this will shift
-the histogam such that one bin's lower interval is zero. It is useful
-if the range includes negative values, but the data doesn't. If zero
-is somewhere between one bin, then the viewers of the plot(s) will
-think negative data is also present.
+@item --onebinvalue
+(@option{=FLT}) Make sure that one bin starts with the value to this
+option. In practice, this will shift the bins used to find the
+histogram and cumulative frequency plot such that one bin's lower
+interval becomes this value. For example when the histogram range
+includes negative values, but the data doesn't. If zero is somewhere
+between one bin, then the viewers of the plot(s) will think negative
+data is also present. By setting @option{--onebinvalue=0}, you can
+make sure that the viewers of the histogram will not be confused.
 
-Note that by default, the bins are shown by their central values in
-the output text files, so you will not see the 0.000 value there. To
-see it, add the @option{--lowerbin} option.
+@cindex NaN
+Note that by default, the first row of the histogram and cumulative
+frequency plot show the central values of each bin. So in the example
+above you will not see the 0.000. To see it, add the
+@option{--lowerbin} option to show the lower value of each bin. If you
+don't care about the bin positions within the specified range you can
+set the value to this option to a Not-a-Number (NaN) value on the
+command line (@option{--onebinvalue=nan}) or in the configuration
+files with a @code{nan} following the option name. If the value is not
+within the specified bin range, it will be ignored.
 
 @item --noasciihist
 Do not show an ASCII plot on the command line.
@@ -8119,18 +8129,6 @@ value (@mymath{F_c}) on the same pixel. If the fractional difference
 stop using Monte Carlo integration and only use the central pixel
 value.
 
-Monte Carlo integration uses a random number of points. Thus,
-everytime you run it, by default, you will get a different
-distribution of points to sample within the pixel. In the case of
-large profiles, this will result in a slight difference of the pixels
-which use Monte Carlo integration each time MakeProfiles is run. To
-have a deterministic result, you have to fix the random number
-generator properties which is used to build the random
-distribution. This can be done by setting the @code{GSL_RNG_TYPE} and
-@code{GSL_RNG_SEED} environment variables and calling MakeProfiles
-with the @option{--envseed} option. To learn more about the process of
-generating random numbers, see @ref{Generating random numbers}.
-
 @cindex Inside-out construction
 The ordering of the pixels in this inside-out construction is based on
 @mymath{r=\sqrt{(i_c-i)^2+(j_c-j)^2}}, not @mymath{r_{el}}, see
@@ -8144,7 +8142,31 @@ along the minor axis. So if the next pixel is chosen based on
 @mymath{r_{el}}, the tolerance level will be reached sooner and lots
 of pixels with large fractional differences will be missed.
 
+Monte Carlo integration uses a random number of points. Thus,
+everytime you run it, by default, you will get a different
+distribution of points to sample within the pixel. In the case of
+large profiles, this will result in a slight difference of the pixels
+which use Monte Carlo integration each time MakeProfiles is run. To
+have a deterministic result, you have to fix the random number
+generator properties which is used to build the random
+distribution. This can be done by setting the @code{GSL_RNG_TYPE} and
+@code{GSL_RNG_SEED} environment variables and calling MakeProfiles
+with the @option{--envseed} option. To learn more about the process of
+generating random numbers, see @ref{Generating random numbers}.
 
+The seed values are fixed for every profile: with @option{--envseed},
+all the profiles have the same seed and without it, each will get a
+different seed using the system clock (which is accurate to within one
+microsecond). The same seed will be used to generate a random number
+for all the sub-pixel positions of all the profiles. So in the former,
+the subpixel points checked for all the pixels undergoing Monte carlo
+integration in all profiles will be identical. In other words, the
+subpixel points in the first (closest to the center) pixel of all the
+profiles will be identical with each other. All the second pixels
+studied for all the profiles will also receive an identical (different
+from the first pixel) set of sub-pixel points and so on. As long as
+the number of random points used is large enough or the profiles are
+not identical, this should not cause any systematic bias.
 
 
 @node Oversampling,  , Sampling from a function, Modeling basics
@@ -8430,13 +8452,10 @@ profile, see @ref{Sampling from a function}.
 
 @item -e
 @itemx --envseed
-Use the @code{GSL_RNG_TYPE} and @code{GSL_RNG_SEED} environment
-variables to generate the random Monte Carlo sampling distribution,
-see @ref{Sampling from a function} and @ref{Generating random
-numbers}. Note that when you call this option, all the pixels will use
-the same seed and thus the same positions within each pixel. So if the
-number of random points are small, this using this option might result
-in systematic effects.
+Use the value to the @code{GSL_RNG_SEED} environment variable to
+generate the random Monte Carlo sampling distribution, see
+@ref{Sampling from a function} and @ref{Generating random
+numbers}.
 
 @item -t
 @itemx --tolerance
@@ -8864,20 +8883,21 @@ affordable!}!
 @cindex Numbers, psudo-random
 @cindex Seed, psudo-random numbers
 Using only software, we can only produce what is called a psudo-random
-sequence of numbers. A truely random number generator is through a
-hardware (lets assume we have made sure it has no systematic biases),
-for examle throwing dice or flipping coins (which have remained from
-the ancient times). More modern hardware methods use atmospheric
-noise, thermal noise or other types of external electromagnetic or
-quantum phenomena. All psudo-random number generators (software)
-require a seed to be the basis of the generation. The advantage of
-having a seed is that if you specify the same seed for multiple runs,
-you will get an identical sequence of random numbers which allows you
-to reproduce the same final noised image.
+sequence of numbers. A true random number generator a hardware (lets
+assume we have made sure it has no systematic biases), for examle
+throwing dice or flipping coins (which have remained from the ancient
+times). More modern hardware methods use atmospheric noise, thermal
+noise or other types of external electromagnetic or quantum
+phenomena. All psudo-random number generators (software) require a
+seed to be the basis of the generation. The advantage of having a seed
+is that if you specify the same seed for multiple runs, you will get
+an identical sequence of random numbers which allows you to reproduce
+the same final noised image.
 
 @cindex Environment variables
 @cindex GNU Scientific Library
-MakeNoise uses the GNU Scientific Library (GSL) to generate random
+The programs in GNU Astronomy Utilities (for example MakeNoise or
+MakeProfiles) use the GNU Scientific Library (GSL) to generate random
 numbers. GSL allows the user to set the random number generator
 through environment variables, see @ref{Installation directory} for an
 introduction to environment variables. In the chapter titled ``Random
@@ -8885,13 +8905,22 @@ Number Generation'' they have fully explained the various random
 number generators that are available (there are a lot of
 them!). Through the two environment variables @code{GSL_RNG_TYPE} and
 @code{GSL_RNG_SEED} you can sepecify the generator and its seed
-respectively. If you don't specify values for these environment
-variables, GSL will use its default type and seed. The default type is
-sufficient for most general applications.
+respectively.
+
+If you don't specify a value for @code{GSL_RNG_TYPE}, GSL will use its
+default random number generator type. The default type is sufficient
+for most general applications. If no value is given for the
+@code{GSL_RNG_SEED} environment variable and you have asked Gnuastro
+to read the seed from the environment (through the @option{--envseed}
+option), then GSL will use the default value of each generator to give
+identical outputs. If you don't explicitly tell Gnuastro programs to
+read the seed value from the environment variable, then they will use
+the system time (accurate to within a microsecond) to generate
+(apparently random) seeds. In this manner, every time you run the
+program, you will get a different random number distribution.
 
 There are two ways you can specify values for these environment
-variables. You can call them on the same command line as MakeNoise for
-example:
+variables. You can call them on the same command line for example:
 
 @example
 $ GSL_RNG_TYPE="taus" GSL_RNG_SEED=345 astmknoise input.fits
@@ -8913,32 +8942,46 @@ $ export GSL_RNG_SEED=345
 @noindent
 The subsequent programs in the particular terminal (or script) that
 you ran these commands on which use of GSL's random number generators
-(including MakeNoise) will hence forth use these values.  Finally, in
-case you want set values for these variables any time you run
-MakeNoise (in any terminal or script), you can add these commands to
-your @file{.bashrc} startup script@footnote{If you are giving the
-scripts to others you have to make sure you also tell them to set them
-separately. So for scripts, it is best to keep all such variable
-definitions within the script.}.
-
-@cindex GNU C Library
-By default, MakeNoise will only use the @code{GSL_RNG_TYPE}
-variable. For the seed, by default it will use the microsecond level
-accuracy of the GNU C Library. So the random number sequences of
-separate runs will be different@footnote{So unless your commands are
-less than one microsecond apart, two images will not have the same
-sequence of noise values.}. If you want MakeNoise to use the
-@code{GSL_RNG_SEED} variable for a reproducable result, you can use
-the @option{--envseed} option.
+(including the Gnuastro programs) will hence forth use these values.
+Finally, in case you want set fixed values for these variables every
+time you use the GSL random number generator, you can add these two
+lines to your @file{.bashrc} startup script@footnote{Don't forget that
+if you are going to give your scripts (that use the GSL random number
+generator) to others you have to make sure you also tell them to set
+these environment variable separately. So for scripts, it is best to
+keep all such variable definitions within the script, even if they are
+within your @file{.bashrc}.}.
 
 @cartouche
 @noindent
 @strong{NOTE:} If the two environment variables @code{GSL_RNG_TYPE}
 and @code{GSL_RNG_SEED} are defined, GSL will report them by default,
-even if you don't use the @option{--envseed} option. MakeNoise and
-MakeProfiles will separately report the values used for these
-variables.
+even if you don't use the @option{--envseed} option. For example you
+can see the top few lines of the output of MakeProfiles:
+
+@example
+$ export GSL_RNG_TYPE="taus"
+$ export GSL_RNG_SEED=345
+$ astmkprof catalog.txt --envseed
+GSL_RNG_TYPE=taus
+GSL_RNG_SEED=345
+MakeProfiles started on AAA BBB DD EE:FF:GG HHH
+  - 6 profiles read from catalog.txt 0.000236 seconds
+  - Random number generator (RNG) type: taus
+  - RNG seed for all profiles: 345
+@end example
+
+@noindent
+The first two output lines (showing the names of the environment
+variables) are printed by GSL before MakeProfiles actually starts
+generating random numbers. The Gnuastro programs will report the
+values they use independently, you should check them for the final
+values used. For example if @option{--envseed} is not given,
+@code{GSL_RNG_SEED} will not be used and the last line shown above
+will not be printed. In the case of MakeProfiles, each profile will
+get its own seed value.
 @end cartouche
+
 
 @node Invoking astmknoise,  , Noise basics, MakeNoise
 @subsection Invoking MakeNoise
@@ -9002,15 +9045,6 @@ this option, the output image noise is always going to be identical
 Save the output in the double precision floating point format that was
 used internally. This option will be most useful if the input images
 were of integer types.
-
-@item -i
-@itemx --backgroundinmean
-Keep the background value in the mean of the distribution. By default,
-the background value will not be used in the mean of the distribution
-to find a noised value for each pixel. If this option is called, it
-will be used. Note that in the equations of @ref{Photon counting
-noise}, @ref{Instrumental noise} and @ref{Final noised pixel value},
-the background is included in the mean.
 
 @end table
 

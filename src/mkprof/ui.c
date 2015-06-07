@@ -638,6 +638,7 @@ preparearrays(struct mkprofparams *p)
     error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
 	  p->cs0*LOGNUMCOLS*sizeof *p->log);
 
+
   /* If a background image is specified, then use that as the output
      image to build the profiles over. */
   if(p->up.backname)
@@ -671,6 +672,11 @@ preparearrays(struct mkprofparams *p)
         error(EXIT_FAILURE, 0, "The `--setconsttomin' option can only be "
               "called when an input background image is also provided.");
     }
+
+
+  /* Allocate the random number generator: */
+  gsl_rng_env_setup();
+  p->rng=gsl_rng_alloc(gsl_rng_default);
 }
 
 
@@ -699,6 +705,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 {
   char *jobname;
   struct timeval t1;
+  char message[VERBMSGLENGTH_V];
   struct commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
@@ -760,6 +767,16 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 	      p->cs0>1?"s ":" ", p->up.catname);
       reporttiming(&t1, jobname, 1);
       free(jobname);
+
+      sprintf(message, "Random number generator (RNG) type: %s",
+              gsl_rng_name(p->rng));
+      reporttiming(NULL, message, 1);
+      if(p->envseed)
+        {
+          sprintf(message, "RNG seed for all profiles: %lu",
+                  gsl_rng_default_seed);
+          reporttiming(NULL, message, 1);
+        }
     }
 }
 
@@ -806,6 +823,9 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
     }
   if(p->up.backname)
     wcsvfree(&p->nwcs, &p->wcs);
+
+  /* Free the random number generator: */
+  gsl_rng_free(p->rng);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

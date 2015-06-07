@@ -73,9 +73,9 @@ const char doc[] =
 /* Available letters for short options:
 
    c d e f j k m s t v w y z
-   B C E F G I J L O R T W X Y Z
+   C E F G I J L O R T W X Y Z
 
-   Number keys used: <=512
+   Number keys used: <=511
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -130,11 +130,11 @@ static struct argp_option options[] =
       2
     },
     {
-      "binonzero",
-      503,
+      "onebinvalue",
+      'B',
+      "FLT",
       0,
-      0,
-      "Shift bins so one bin starts on zero.",
+      "Shift bins so one bin starts on this value.",
       2
     },
     {
@@ -171,7 +171,7 @@ static struct argp_option options[] =
     },
     {
       "mirrorplotdist",
-      512,
+      503,
       "FLT",
       0,
       "Distance beyond mode to display.",
@@ -416,8 +416,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'l':
       p->lowerbin=1;
       break;
-    case 503:
-      p->binonzero=1;
+    case 'B':
+      anyfloat(arg, &p->onebinvalue, "onebinvalue", key, SPACK, NULL, 0);
+      p->up.onebinvalueset=1;
       break;
     case 'A':
       p->asciihist=0;
@@ -431,7 +432,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 511:
       p->histrangeformirror=1;
       break;
-    case 512:
+    case 503:
       floatl0(arg, &p->mirrorplotdist, "mirrorplotdist", key, SPACK, NULL, 0);
       p->up.mirrorplotdistset=1;
       break;

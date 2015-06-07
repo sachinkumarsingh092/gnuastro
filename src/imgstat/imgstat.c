@@ -224,7 +224,7 @@ imgstat(struct imgstatparams *p)
     {
       /* Make the actual data histogram and save it. */
       setbins(p->sorted, p->size, p->histnumbins, p->histmin,
-              p->histmax, p->binonzero, quant, &bins);
+              p->histmax, p->onebinvalue, quant, &bins);
       histogram(p->sorted, p->size, bins, p->histnumbins,
                 p->normhist, p->maxhistone);
       printhistcfp(p, bins, p->histnumbins, p->histname, HISTSTRING);
@@ -250,7 +250,7 @@ imgstat(struct imgstatparams *p)
 	{
 	  if(p->histname) free(bins);
           setbins(p->sorted, p->size, p->cfpnum, p->cfpmin,
-                  p->cfpmax, p->binonzero, quant, &bins);
+                  p->cfpmax, p->onebinvalue, quant, &bins);
 	}
       cumulativefp(p->sorted, p->size, bins, p->cfpnum, p->normcfp);
 

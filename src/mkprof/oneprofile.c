@@ -98,48 +98,12 @@ r_circle(size_t p, struct mkonthread *mkp)
 /****************************************************************
  **************          Random points         ******************
  ****************************************************************/
-unsigned long int
-random_seed()
-{
-  struct timeval tv;
-  gettimeofday(&tv,0);
-  return(tv.tv_sec + tv.tv_usec);
-}
-
-
-
-
-
 /* Fill pixel with random values */
 float
 randompoints(struct mkonthread *mkp)
 {
-  gsl_rng *r;
-  unsigned long seed;
-  const gsl_rng_type *T;
-  char message[VERBMSGLENGTH_V];
   double xrange, yrange, sum=0.0f;
   size_t i, numrandom=mkp->p->numrandom;
-
-  /* Set the random number generator parameters. */
-  gsl_rng_env_setup();
-  T=gsl_rng_default;
-  r=gsl_rng_alloc(T);
-  if(mkp->p->envseed)
-    seed=gsl_rng_default_seed;
-  else
-    {
-      seed=random_seed();
-      gsl_rng_set(r,seed);
-    }
-
-  if(mkp->p->cp.verb)
-    {
-      sprintf(message, "Generator type: %s", gsl_rng_name(r));
-      reporttiming(NULL, message, 1);
-      sprintf(message, "Generator seed: %lu", seed);
-      reporttiming(NULL, message, 1);
-    }
 
   /* Set the range of the x and y: */
   xrange=mkp->xh-mkp->xl;
@@ -148,13 +112,11 @@ randompoints(struct mkonthread *mkp)
   /* Find the sum of the profile on the random positions */
   for(i=0;i<numrandom;++i)
     {
-      mkp->x = mkp->xl + gsl_rng_uniform(r)*xrange;
-      mkp->y = mkp->yl + gsl_rng_uniform(r)*yrange;
+      mkp->x = mkp->xl + gsl_rng_uniform(mkp->rng)*xrange;
+      mkp->y = mkp->yl + gsl_rng_uniform(mkp->rng)*yrange;
       r_el(mkp);
       sum+=mkp->profile(mkp);
     }
-
-  gsl_rng_free(r);
 
   return sum/numrandom;
 }

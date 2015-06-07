@@ -24,6 +24,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 #include <pthread.h>
+#include <gsl/gsl_rng.h>
 
 #include "fitsarrayvv.h"
 #include "commonparams.h"
@@ -132,11 +133,11 @@ struct uiparams
 
 struct mkprofparams
 {
-  /* Other structures: */
+  /* Other structures */
   struct uiparams     up;  /* User interface parameters.               */
   struct commonparams cp;  /* Common parameters.                       */
 
-  /* Operating modes: */
+  /* Operating modes */
   int           psfinimg;  /* ==1: Build PSF profiles in image.        */
   int         individual;  /* ==1: Build all catalog separately.       */
 
@@ -162,6 +163,9 @@ struct mkprofparams
   size_t            qcol;  /* Axis ratio column of profile.            */
   size_t            mcol;  /* Magnitude column.                        */
   size_t            tcol;  /* Truncation of the profiles.              */
+
+  /* Random number generator */
+  gsl_rng           *rng;  /* Main instance of random number generator.*/
 
   /* Output */
   size_t        numblank;  /* Number of blank pixels in image.         */

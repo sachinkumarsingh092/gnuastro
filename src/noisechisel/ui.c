@@ -366,6 +366,20 @@ readconfig(char *filename, struct noisechiselparams *p)
                      filename, lineno);
 	  up->segsnminareaset=1;
 	}
+      else if(strcmp(name, "segquant")==0)
+	{
+	  if(up->segquantset) continue;
+          floatl0s1(value, &p->segquant, name, key, SPACK, filename, lineno);
+	  up->segquantset=1;
+	}
+      else if(strcmp(name, "segsnhistnbins")==0)
+	{
+	  if(up->segsnhistnbinsset) continue;
+          sizetelzero(value, &p->segsnhistnbins, name, key, SPACK,
+                      filename, lineno);
+	  up->segsnhistnbinsset=1;
+	}
+
 
       /* Operating modes: */
       else if(strcmp(name, "numthreads")==0)
@@ -508,6 +522,10 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   fprintf(fp, "\n# Segmentation:\n");
   if(up->segsnminareaset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnminarea", p->segsnminarea);
+  if(up->segquantset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "segquant", p->segquant);
+  if(up->segsnhistnbinsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnhistnbins", p->segsnhistnbins);
 }
 
 
@@ -590,6 +608,10 @@ checkifset(struct noisechiselparams *p)
   /* Segmentation: */
   if(up->segsnminareaset==0)
     REPORT_NOTSET("segsnminarea");
+  if(up->segquantset==0)
+    REPORT_NOTSET("segquant");
+  if(up->segsnhistnbinsset==0)
+    REPORT_NOTSET("segsnhistnbins");
 
   END_OF_NOTSET_REPORT;
 }
@@ -673,6 +695,12 @@ sanitycheck(struct noisechiselparams *p)
       p->segmentationname=NULL;
       automaticoutput(p->up.inputname, "_seg.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->segmentationname);
+    }
+  if(p->clumpsnname)
+    {
+      p->clumpsnname=NULL;
+      automaticoutput(p->up.inputname, "_clumpsn.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->clumpsnname);
     }
 
 

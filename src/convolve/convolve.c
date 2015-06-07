@@ -202,7 +202,9 @@ removepaddingcorrectroundoff(struct convolveparams *p)
       o=&input[i*is1];
       df=(d=start+i*ps1)+is1;
       do
-        *o++ = ( *d<0.0f || *d>CONVFLOATINGPOINTERR ) ? *d : *d;
+        *o++ = ( *d<-CONVFLOATINGPOINTERR || *d>CONVFLOATINGPOINTERR )
+          ? *d
+          : 0.0f;
       while (++d<df);
     }
 }

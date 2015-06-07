@@ -53,6 +53,7 @@ struct uiparams
   int             masknameset;
   int       masknameallocated;
   int                 mhduset;
+  int          onebinvalueset;
   int          histnumbinsset;
   int              histminset;
   int              histmaxset;
@@ -75,57 +76,57 @@ struct uiparams
 struct imgstatparams
 {
   /* Other structures: */
-  struct uiparams       up;  /* User interface parameters.            */
-  struct commonparams   cp;  /* Common parameters.                    */
+  struct uiparams       up;  /* User interface parameters.              */
+  struct commonparams   cp;  /* Common parameters.                      */
 
   /* Input: */
-  float               *img;  /* Input image array.                    */
-  float            *sorted;  /* Sorted input data.                    */
-  size_t              size;  /* Number of non-blank data elements.    */
-  int            ignoremin;  /* Ignore all data with minimum value.   */
+  float               *img;  /* Input image array.                      */
+  float            *sorted;  /* Sorted input data.                      */
+  size_t              size;  /* Number of non-blank data elements.      */
+  int            ignoremin;  /* Ignore all data with minimum value.     */
 
   /* Output: */
-  int            asciihist;  /* ==1: print an ASCII histogram.        */
-  int            binonzero;  /* Shift histogram, one bin starts at 0. */
-  int             lowerbin;  /* Interval lower limit as column 1.     */
-  float             mirror;  /* Mirror quantile.                      */
-  char         *mirrorhist;  /* Name of mirror histogram.             */
-  char          *mirrorcfp;  /* Name of mirror CFP.                   */
-  char          *mhistname;  /* Name of mode mirror histogram.        */
-  float     mirrorplotdist;  /* Dist. after mode to display on plot.  */
-  char           *mcfpname;  /* Name of mode mirror CFP.              */
-  int   histrangeformirror;  /* ==1: Use histogram range for mirror.  */
+  int            asciihist;  /* ==1: print an ASCII histogram.          */
+  float        onebinvalue;  /* Shift bins so one bin starts with this. */
+  int             lowerbin;  /* Interval lower limit as column 1.       */
+  float             mirror;  /* Mirror quantile.                        */
+  char         *mirrorhist;  /* Name of mirror histogram.               */
+  char          *mirrorcfp;  /* Name of mirror CFP.                     */
+  char          *mhistname;  /* Name of mode mirror histogram.          */
+  float     mirrorplotdist;  /* Dist. after mode to display on plot.    */
+  char           *mcfpname;  /* Name of mode mirror CFP.                */
+  int   histrangeformirror;  /* ==1: Use histogram range for mirror.    */
 
   /* Histogram: */
-  char           *histname;  /* Histogram file name.                  */
-  int             normhist;  /* ==1: Normalize the histogram.         */
-  int           maxhistone;  /* Scale such that max bin is one.       */
-  size_t       histnumbins;  /* Number of bins in the histogram.      */
-  float            histmin;  /* Minimum value to use in histogram.    */
-  float            histmax;  /* Maximum value to use in histogram.    */
-  float          histquant;  /* Quantile range of histogram.          */
+  char           *histname;  /* Histogram file name.                    */
+  int             normhist;  /* ==1: Normalize the histogram.           */
+  int           maxhistone;  /* Scale such that max bin is one.         */
+  size_t       histnumbins;  /* Number of bins in the histogram.        */
+  float            histmin;  /* Minimum value to use in histogram.      */
+  float            histmax;  /* Maximum value to use in histogram.      */
+  float          histquant;  /* Quantile range of histogram.            */
 
   /* Cumulative frequency plot: */
-  char            *cfpname;  /* Cumultiave frequency plot file name.  */
-  int              normcfp;  /* ==1: Normalize the CFP.               */
-  int      maxcfpeqmaxhist;  /* ==1: CFP max equal to historgram max. */
-  int           cfpsimhist;  /* ==1: CFP range equal to hist range.   */
-  size_t            cfpnum;  /* The number of points to sample CFP.   */
-  float             cfpmin;  /* Minimum value for CFP.                */
-  float             cfpmax;  /* Maximum value for CFP.                */
-  float           cfpquant;  /* Quantile range of CFP.                */
+  char            *cfpname;  /* Cumultiave frequency plot file name.    */
+  int              normcfp;  /* ==1: Normalize the CFP.                 */
+  int      maxcfpeqmaxhist;  /* ==1: CFP max equal to historgram max.   */
+  int           cfpsimhist;  /* ==1: CFP range equal to hist range.     */
+  size_t            cfpnum;  /* The number of points to sample CFP.     */
+  float             cfpmin;  /* Minimum value for CFP.                  */
+  float             cfpmax;  /* Maximum value for CFP.                  */
+  float           cfpquant;  /* Quantile range of CFP.                  */
 
   /* Sigma clipping: */
-  int              sigclip;  /* ==1: Do sigma clipping.               */
-  float      sigclipmultip;  /* Multiple of STD in sigma clipping.    */
-  float   sigcliptolerance;  /* Tolerance level in sigma clipping.    */
-  size_t        sigclipnum;  /* Number of times to sigma clip.        */
+  int              sigclip;  /* ==1: Do sigma clipping.                 */
+  float      sigclipmultip;  /* Multiple of STD in sigma clipping.      */
+  float   sigcliptolerance;  /* Tolerance level in sigma clipping.      */
+  size_t        sigclipnum;  /* Number of times to sigma clip.          */
 
 
   /* Operating mode: */
 
   /* Internal: */
-  time_t           rawtime;  /* Starting time of the program.         */
+  time_t           rawtime;  /* Starting time of the program.           */
 };
 
 #endif

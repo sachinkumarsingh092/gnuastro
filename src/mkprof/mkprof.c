@@ -352,7 +352,16 @@ build(void *inparam)
 	 oversampled. */
       if(ibq->overlaps || p->individual || (ibq->ispsf && p->psfinimg==0))
 	{
+          /* Put a copy of the main random number generator for this
+             thread to use for this profile. */
+          gsl_rng_memcpy(mkp->rng, p->rng);
 
+          /* Set the seed of the random number generator if the
+             environment is not to be used. */
+          if(mkp->p->envseed==0)
+            gsl_rng_set(mkp->rng, timebasedrngseed());
+
+          /* Make the profile */
 	  makeoneprofile(mkp);
 	  if( p->individual || (ibq->ispsf && p->psfinimg==0))
 	    {
@@ -411,7 +420,9 @@ build(void *inparam)
 	}
     }
 
-  /* Wait until all other threads finish. */
+  /* Free the allocated space for this thread and wait until all other
+     threads finish. */
+  gsl_rng_free(mkp->rng);
   if(p->cp.numthreads==1)
     p->bq=mkp->ibq;
   else
@@ -696,6 +707,7 @@ mkprof(struct mkprofparams *p)
       mkp[0].p=p;
       mkp[0].onaxes=onaxes;
       mkp[0].indexs=indexs;
+      mkp[0].rng=gsl_rng_clone(p->rng);
       build(&mkp[0]);
     }
   else
@@ -721,6 +733,7 @@ mkprof(struct mkprofparams *p)
 	    mkp[i].b=&b;
 	    mkp[i].ibq=NULL;
 	    mkp[i].onaxes=onaxes;
+            mkp[i].rng=gsl_rng_clone(p->rng);
 	    mkp[i].indexs=&indexs[i*thrdcols];
 	    err=pthread_create(&t, &attr, build, &mkp[i]);
 	    if(err)

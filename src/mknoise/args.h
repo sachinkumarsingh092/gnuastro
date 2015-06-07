@@ -70,7 +70,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a c f g j k l m n p r t u v w x y
+   a c f g i j k l m n p r t u v w x y
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
@@ -123,14 +123,6 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
-      2
-    },
-    {
-      "backgroundinmean",
-      'i',
-      0,
-      0,
-      "Use the background value in the mean too.",
       2
     },
     {
@@ -204,9 +196,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
-    case 'i':
-      p->backgroundinmean=1;
-      break;
     case 'd':
       p->doubletype=1;
       break;

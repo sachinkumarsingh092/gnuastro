@@ -307,6 +307,14 @@ preparearrays(struct mknoiseparams *p)
       free(array);
     }
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+
+  /* Allocate the random number generator: */
+  gsl_rng_env_setup();
+  p->rng=gsl_rng_alloc(gsl_rng_default);
+  if(p->envseed==0)
+    gsl_rng_set(p->rng, timebasedrngseed());
+  p->rng_seed=gsl_rng_default_seed;
+  strcpy(p->rng_type, gsl_rng_name(p->rng));
 }
 
 
@@ -333,6 +341,7 @@ preparearrays(struct mknoiseparams *p)
 void
 setparams(int argc, char *argv[], struct mknoiseparams *p)
 {
+  char message[VERBMSGLENGTH_V];
   struct commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
@@ -365,7 +374,18 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
-    printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+    {
+      printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+      sprintf(message, "Random number generator type: %s",
+              gsl_rng_name(p->rng));
+      reporttiming(NULL, message, 1);
+      if(p->envseed)
+        {
+          sprintf(message, "Random number generator seed: %lu",
+                  gsl_rng_default_seed);
+          reporttiming(NULL, message, 1);
+        }
+    }
 }
 
 
@@ -398,8 +418,12 @@ freeandreport(struct mknoiseparams *p, struct timeval *t1)
   free(p->cp.hdu);
   free(p->cp.output);
 
+  /* The world coordinate system: */
   if(p->wcs)
     wcsvfree(&p->nwcs, &p->wcs);
+
+  /* Free the random number generator: */
+  gsl_rng_free(p->rng);
 
   /* Print the final message. */
   reporttiming(t1, SPACK_NAME" finished in: ", 0);

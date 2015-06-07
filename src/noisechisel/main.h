@@ -79,6 +79,8 @@ struct uiparams
   int            dilateset;
 
   int      segsnminareaset;
+  int          segquantset;
+  int    segsnhistnbinsset;
 };
 
 
@@ -108,6 +110,7 @@ struct noisechiselparams
   char   *detectionsnname;  /* !=NULL: Name of detection S/N on meshs.     */
   char           *skyname;  /* !=NULL: Name of image showing sky and STD.  */
   char  *segmentationname;  /* !=NULL: Name of segmentation steps.         */
+  char       *clumpsnname;  /* !=NULL: Name of clump S/N on grid.          */
 
   /* Detection: */
   float             *conv;  /* Convolved image.                            */
@@ -128,6 +131,8 @@ struct noisechiselparams
 
   /* Segmentation: */
   size_t     segsnminarea;  /* Minimum area to find the S/N of a clump.    */
+  float          segquant;  /* S/N quantile for true clump.                */
+  size_t   segsnhistnbins;  /* ==1: Save false clumps S/Ns histogram.      */
 
   /* Operating mode: */
 

@@ -45,13 +45,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-unsigned long int
-random_seed()
-{
-  struct timeval tv;
-  gettimeofday(&tv,0);
-  return tv.tv_sec+tv.tv_usec;
-}
 
 
 
@@ -111,52 +104,14 @@ convertsaveoutput(struct mknoiseparams *p)
 void
 mknoise(struct mknoiseparams *p)
 {
-  gsl_rng *r;
-  unsigned long seed;
-  const gsl_rng_type *T;
-  char message[VERBMSGLENGTH_V];
   double *d, *df, background=p->background, stdadd=p->stdadd;
-
-  /* Set the random number generator parameters. */
-  gsl_rng_env_setup();
-  T=gsl_rng_default;
-  r=gsl_rng_alloc(T);
-  if(p->envseed)
-    seed=gsl_rng_default_seed;
-  else
-    {
-      seed=random_seed();
-      gsl_rng_set(r,seed);
-    }
-
-  if(p->cp.verb)
-    {
-      sprintf(message, "Generator type: %s", gsl_rng_name(r));
-      reporttiming(NULL, message, 1);
-      sprintf(message, "Generator seed: %lu", seed);
-      reporttiming(NULL, message, 1);
-    }
 
   /* Add the noise: */
   df=(d=p->input)+p->is0*p->is1;
-  if(p->backgroundinmean)
-    {
-      do
-        *d+=background+gsl_ran_gaussian(r,sqrt(stdadd+background+*d));
-      while(++d<df);
-    }
-  else
-    {
-      do
-        *d+=gsl_ran_gaussian(r,sqrt(stdadd+background+*d));
-      while(++d<df);
-    }
+  do
+    *d+=background+gsl_ran_gaussian(p->rng, sqrt(stdadd+background+*d));
+  while(++d<df);
 
   /* Convert and save the output in the proper format: */
-  p->rng_seed=seed;
-  strcpy(p->rng_type, gsl_rng_name(r));
   convertsaveoutput(p);
-
-  /* Free what ever was allocated here. */
-  gsl_rng_free(r);
 }
