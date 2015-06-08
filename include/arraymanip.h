@@ -38,6 +38,9 @@ void
 floatcopy(float *in, size_t size, float **out);
 
 void
+floatcopyvalues(float *in, size_t size, float **out);
+
+void
 fsetconst(float *in, size_t size, float a);
 
 void

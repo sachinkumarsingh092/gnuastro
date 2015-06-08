@@ -30,6 +30,6 @@ void
 findsubtractskyconv(struct noisechiselparams *p);
 
 void
-findsubtractskyimg(struct noisechiselparams *p);
+subtractskyimg(struct noisechiselparams *p);
 
 #endif

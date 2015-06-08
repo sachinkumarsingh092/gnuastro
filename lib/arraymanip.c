@@ -130,6 +130,17 @@ floatcopy(float *in, size_t size, float **out)
 
 
 
+void
+floatcopyvalues(float *in, size_t size, float **out)
+{
+  float *fp=in+size, *o=*out;
+  do *o++=*in; while(++in<fp);
+}
+
+
+
+
+
 
 
 

@@ -145,6 +145,7 @@ struct noisechiselparams
   float           cpscorr;  /* Correction for counts per second data.      */
   unsigned char      b0f1;  /* ==1: we are now working on data, not noise. */
   float              *img;  /* Input image.                                */
+  float            *imgss;  /* Sky subtracted image.                       */
   int             stepnum;  /* Number of step if user wants to see steps.  */
   size_t       numobjects;  /* Total number of objects (detections).       */
   size_t        numclumps;  /* Total number of clumps.                     */

@@ -156,7 +156,7 @@ void
 detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t *numlabs,
            size_t start, size_t s0, size_t s1, float **outsntable)
 {
-  float *img=p->img;
+  float *imgss=p->imgss;
   double *fluxs, err, *xys;
   struct meshparams *smp=&p->smp;
   size_t i, ind, r=0, is1=p->smp.s1, counter=0;
@@ -194,15 +194,15 @@ detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t *numlabs,
      once in the definition was enough. */
   do
     {
-      ff = ( f = img + start + r++ * is1 ) + s1;
+      ff = ( f = imgss + start + r++ * is1 ) + s1;
       do
         {
           if(*l && !isnan(*f))     /* There is a label on this mesh. */
             {
               ++areas[*l];
               fluxs[*l]   += *f;
-              xys[*l*2]   += (double)((f-img)/is1) * *f;
-              xys[*l*2+1] += (double)((f-img)%is1) * *f;
+              xys[*l*2]   += (double)((f-imgss)/is1) * *f;
+              xys[*l*2+1] += (double)((f-imgss)%is1) * *f;
             }
           ++l; ++s;
         }
@@ -578,24 +578,20 @@ detsnthreshongrid(struct noisechiselparams *p)
               extname = p->b0f1 ? "ThresholdDetections" : "ThresholdNoise";
               break;
             case 2:
-              extname="HolesFilled";
-              break;
+              extname="HolesFilled"; break;
             case 3:
-              extname="Opened";
-              break;
+              extname="Opened"; break;
             case 4:
-              extname="SmallRemoved";
-              break;
+              extname="SmallRemoved"; break;
             default:
-              extname = p->b0f1 ? "True" : NULL;
-              break;
+              extname = p->b0f1 ? "True" : NULL; break;
             }
           if(extname)
             arraytofitsimg(p->detectionname, extname, BYTE_IMG, p->dbyt,
                            s0, s1, 0, p->wcs, NULL, SPACK_STRING);
           else
             break;
-          ++(p->stepnum);
+          ++p->stepnum;
         }
       if(p->b0f1)
         free(tmp);
@@ -753,7 +749,6 @@ onlytruedetections(struct noisechiselparams *p)
   float snave;
   int verb=p->cp.verb;
   char report[VERBMSGLENGTHS2_V];
-  float *imgcopy, *inputimage=p->img;
   char *detectionname=p->detectionname;
   size_t s0=lmp->s0, s1=lmp->s1, numobjects=p->numobjects;
 
@@ -763,23 +758,12 @@ onlytruedetections(struct noisechiselparams *p)
   findavestdongrid(p, p->detectionskyname);
 
 
-  /* Put a copy of the input array in imgcopy to operate on here and
-     point p->img to that copy, not the original image. For the
-     removal of false detections, it is important that the initial sky
-     value be subtracted. However we don't want to touch the input
-     image, since each subtraction adds noise. A copy of the pointer
-     to the input array is kept in `inputimage'. After the job is
-     done, this temporary copy will be freed and p->img will point to
-     the actual input image again. */
-  floatcopy(p->img, s0*s1, &imgcopy);
-  p->img=imgcopy;
-
-
   /* Apply the false detection removal threshold to the image. */
   applydetectionthresholdskysub(p);
   if(p->detectionname)
-    arraytofitsimg(detectionname, "InitalSkySubtracted", FLOAT_IMG, p->img,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+    arraytofitsimg(detectionname, "InitalSkySubtracted", FLOAT_IMG,
+                   p->imgss, s0, s1, p->numblank, p->wcs, NULL,
+                   SPACK_STRING);
   if(verb)
     {
       sprintf(report, "Initial sky threshold (%.3f sigma) applied.",
@@ -814,11 +798,6 @@ onlytruedetections(struct noisechiselparams *p)
               numobjects-p->numobjects);
       reporttiming(NULL, report, 2);
     }
-
-
-  /* Point the input image to its correct place: */
-  free(p->img);
-  p->img=inputimage;
 
 
   /* Clean up: */

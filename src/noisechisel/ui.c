@@ -793,6 +793,7 @@ preparearrays(struct noisechiselparams *p)
 {
   struct meshparams *smp=&p->smp, *lmp=&p->lmp;
 
+  long *meshindexs;
   float *f, *ff, *fp;
   size_t *relngb=p->relngb, s0, s1;
 
@@ -813,6 +814,30 @@ preparearrays(struct noisechiselparams *p)
           "exact multiple of the number of the given channels (%lu, %lu) "
           "in the respective axis.", s1, s0, smp->nch1, smp->nch2);
 
+  /* p->imgss (image-sky-subtracted) is the sky subtracted input
+     image. For both the removal of false detections and also the
+     segmentation, it is important to use the sky subtracted image,
+     not the actual input image for some operations. In both cases the
+     input image is used for Signal to noise ratio measurements (where
+     subtracting the sky will add noise).
+
+       False detection removal: The sky subtracted image will be used
+           for thresholding over the detected and undetected regions.
+
+       Segmentation: The sky subtracted image will also be used for
+           generating the catalog.
+
+     Since both operations involve the sky subtracted input image
+     (with different sky values) one array playing the role can really
+     help in following the code. It will also help in the memory usage
+     of the program. This array is allocated in the beginning and
+     freed in the end and used throughout. A huge chunk of memory
+     doesn't have to be allocated and de-allocated on every step.  */
+  errno=0; p->imgss=malloc(s0*s1*sizeof *p->imgss);
+  if(p->imgss==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->imgss in preparearrays "
+          "(ui.c)", s0*s1*sizeof *p->imgss);
+
   /* Read the kernel: */
   if(p->up.kernelnameset)
     prepfloatkernel(p->up.kernelname, p->up.khdu, &smp->kernel,
@@ -831,7 +856,7 @@ preparearrays(struct noisechiselparams *p)
       do *f=*ff++; while(++f<fp);
     }
 
-  /* Allocate the necessary arrays: */
+  /* Allocate the other necessary arrays: */
   errno=0; p->byt=malloc(s0*s1*sizeof *p->byt);
   if(p->byt==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for p->byt (ui.c)",
@@ -876,6 +901,24 @@ preparearrays(struct noisechiselparams *p)
   lmp->interponlyblank=smp->interponlyblank;
   lmp->fullinterpolation=smp->fullinterpolation;
   lmp->numthreads=smp->numthreads=p->cp.numthreads;
+
+
+  /* Prepare the mesh structures. */
+  makemesh(smp);
+  makemesh(lmp);
+  if(p->meshname)
+    {
+      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, smp->img, s0, s1,
+                     p->numblank, p->wcs, NULL, SPACK_STRING);
+      checkmeshid(smp, &meshindexs);
+      arraytofitsimg(p->meshname, "SmallMeshIndexs", LONG_IMG, meshindexs,
+                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      free(meshindexs);
+      checkmeshid(lmp, &meshindexs);
+      arraytofitsimg(p->meshname, "LargeMeshIndexs", LONG_IMG, meshindexs,
+                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      free(meshindexs);
+    }
 }
 
 
@@ -978,6 +1021,7 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   free(p->byt);
   free(p->olab);
   free(p->clab);
+  free(p->imgss);
   free(p->cp.hdu);
   free(p->up.mhdu);
   free(p->up.khdu);

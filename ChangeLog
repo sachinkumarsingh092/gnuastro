@@ -1,3 +1,17 @@
+2015-06-08  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/thresh.c (applydetectionthresholdskysub):
+	Similar to below, uses p->imgss for sky subtracted image.
+
+	* src/noisechisel/sky.c (subtractskyimg): Does not touch the input
+	image, puts the sky subtracted value in p->imgss.
+
+	* src/noisechisel/noisechisel.c (noisechisel): Removed the
+	allocation of the mesh structures to ui.c
+
+	* src/noisechisel/detection.c (detlabelsn): Uses p->imgss for the
+	sky subtracted image.
+
 2015-06-07  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/oneprofile.c (randompoints): The random number

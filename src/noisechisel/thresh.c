@@ -244,7 +244,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
   size_t is0=smp->s0;
   unsigned char *b, *dbyt;
   float dthresh=p->dthresh;
-  float *f, *fp, sky, std, *img=p->img;
+  float *f, *fp, *in, sky, std;
   size_t gid, row, start, chbasedid, *types=smp->types;
   size_t s0, s1, is1=smp->s1, *ts0=smp->ts0, *ts1=smp->ts1;
 
@@ -253,6 +253,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
   if(dbyt==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for dbyt in "
           "applydetectionthreshold (detection.c)", is0*is1*sizeof *dbyt);
+
 
   /* Apply the threshold */
   for(gid=0;gid<smp->nmeshi;++gid)
@@ -270,7 +271,8 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
       do
         {
           b = dbyt + start + row*is1;
-          fp= ( f = img + start + row++ * is1 ) + s1;
+          in = p->img + start + row*is1;
+          fp= ( f = p->imgss + start + row++ * is1 ) + s1;
           do
             {
               /*
@@ -291,7 +293,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
                 fails, *b=1). In this manner we don't have to add an
                 `isnan' check and make this a tiny bit faster.
               */
-              *f-=sky; /* Sky subtracted for later, p->img is a copy */
+              *f = *in++ - sky;
               *b++ = *f<dthresh*std ? 0 : 1;
             }
           while(++f<fp);

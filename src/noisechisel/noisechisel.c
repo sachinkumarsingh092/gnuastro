@@ -57,33 +57,10 @@ noisechisel(struct noisechiselparams *p)
 {
   struct meshparams *smp=&p->smp, *lmp=&p->lmp;
 
-  long *meshindexs;
   struct timeval t1;
   int verb=p->cp.verb;
   char report[VERBMSGLENGTH_V];
   size_t i, s0=smp->s0, s1=smp->s1;
-
-
-
-  /* Prepare the mesh array. */
-  if(verb) gettimeofday(&t1, NULL);
-  makemesh(smp);
-  makemesh(lmp);
-  if(p->meshname)
-    {
-      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, smp->img, s0, s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
-      checkmeshid(smp, &meshindexs);
-      arraytofitsimg(p->meshname, "SmallMeshIndexs", LONG_IMG, meshindexs,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-      free(meshindexs);
-      checkmeshid(lmp, &meshindexs);
-      arraytofitsimg(p->meshname, "LargeMeshIndexs", LONG_IMG, meshindexs,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-      free(meshindexs);
-    }
-  if(verb) reporttiming(&t1, "Mesh grids ready.", 1);
-
 
 
   /* Convolve the image: */
@@ -160,14 +137,11 @@ noisechisel(struct noisechiselparams *p)
     }
 
 
+  /* Subtract the sky from the image: */
 
-  /* Find the final sky value for the input and convolved
-     images. Subtract it for the convolved image (since we don't want
-     gradients harming clump finding). But keep the sky value for each
-     small mesh in p->smp.garray1 and its STD in p->smp.garray2. They
-     will be calculated for each object and mesh. They will be
-     calculated for each object and subtracted where necessary. We
-     don't want to subtract it now so we don't add noise.
+
+  /* Find and subtract the final sky value for the input and convolved
+     images.
 
      VERY IMPORTANT:
      ###############
@@ -179,8 +153,9 @@ noisechisel(struct noisechiselparams *p)
   if(verb) gettimeofday(&t1, NULL);
   findsubtractskyconv(p);
   findavestdongrid(p, p->skyname);
+  subtractskyimg(p);
   if(verb)
-    reporttiming(&t1, "Final sky and its STD found.", 1);
+    reporttiming(&t1, "Final sky and its STD found and subtracted.", 1);
 
 
 

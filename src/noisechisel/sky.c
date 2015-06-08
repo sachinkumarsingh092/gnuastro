@@ -259,7 +259,7 @@ subtractskyimg(struct noisechiselparams *p)
 {
   struct meshparams *smp=&p->smp;
 
-  float *f, *fp, sky, *img=p->img;
+  float *f, *fp, *in, sky;
   size_t gid, s0, s1, row, start, chbasedid, is1=smp->s1;
 
   /* Apply the threshold */
@@ -276,8 +276,9 @@ subtractskyimg(struct noisechiselparams *p)
       s1=smp->ts1[smp->types[chbasedid]];
       do
         {
-          fp= ( f = img + start + row++ * is1 ) + s1;
-          do *f++ -= sky; while(f<fp);
+          in = p->img + start + row * is1;
+          fp= ( f = p->imgss + start + row++ * is1 ) + s1;
+          do *f = *in++ - sky; while(++f<fp);
         }
       while(row<s0);
     }
