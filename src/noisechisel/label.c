@@ -250,19 +250,24 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
    the number of labels in the array has to be one larger than the
    largest label in the array. */
 void
-labareas(long *in, size_t size, size_t numlabs, size_t **areas)
+labareas(long *in, size_t size, size_t numlabs, size_t **outareas)
 {
-  size_t i, *a;
+  size_t *areas;
+  long *last=in+size;
 
-  errno=0; a=*areas=calloc(numlabs, sizeof *a);
-  if(a==NULL)
+  /* Allocate the areas array: */
+  errno=0;
+  areas=*outareas=calloc(numlabs, sizeof *areas);
+  if(areas==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for areas in labareas (label.c)",
-          numlabs*sizeof *a);
+          numlabs*sizeof *areas);
 
-  for(i=0;i<size;++i)
-    ++a[in[i]];
+  /* Find the area of each label. In is a copy of the pointer to the
+     input array only for this function. We don't need it any more, so
+     we can simply use it instead for the increment variable. */
+  do ++areas[*in]; while(++in<last);
 
-  /*
+  /* For a check:
   for(i=0;i<numlabs;++i)
     printf("%lu: %ld\n", i, a[i]);
   printf("\n\n\n\n\n");
@@ -306,4 +311,70 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
 
   free(areas);
   free(newlabs);
+}
+
+
+
+
+
+/* Make an array of pointers to arrays that keep the indexes of
+   different labeled regions in the image. Note that the label zero
+   is not going to be considered. */
+void
+labindexs(long *lab, size_t size, size_t numlabs, size_t **outareas,
+             size_t ***outlabinds)
+{
+  long *l, *lp;
+  size_t i, *areas, *counters, **labinds;
+
+  /* Allocate the pointers to the objects index array and set the
+     pointer to label zero to NULL. */
+  errno=0;
+  labinds=*outlabinds=malloc(numlabs*sizeof *labinds);
+  if(labinds==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for labinds in labindexs "
+          "(label.c)", numlabs*sizeof *labinds);
+  labinds[0]=NULL;
+
+  /* Find the area of each label: */
+  labareas(lab, size, numlabs, outareas);
+  areas=*outareas;
+  areas[0]=0;
+
+  /* For each label, counter will keep the position of the last filled
+     element. */
+  errno=0;
+  counters=calloc(numlabs, sizeof *counters);
+  if(counters==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for counters in labindexs "
+          "(label.c)", numlabs*sizeof *counters);
+
+  /* Allocate space for each label's indexs: */
+  for(i=1;i<numlabs;++i)
+    {
+      errno=0;
+      labinds[i]=malloc(areas[i]*sizeof **labinds);
+      if(labinds[i]==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for labinds[%lu] in labindexs "
+              "(label.c)", areas[i]*sizeof **labinds, i);
+    }
+
+  /* Fill in the indexs array. */
+  lp=(l=lab)+size;
+  do if(*l) labinds[*l][counters[*l]++]=l-lab; while(++l<lp);
+
+  /* For a check:
+  {
+    size_t j;
+    for(i=1;i<numlabs;++i)
+      {
+	printf("Lab: %lu\n", i);
+	for(j=0;j<areas[i];++j)
+	  printf("%lu, ", labinds[i][j]);
+	printf("\b\b.\n\n\n");
+      }
+    exit(0);
+  }
+  */
+  free(counters);
 }

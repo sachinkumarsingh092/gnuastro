@@ -25,14 +25,41 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "fitsarrayvv.h"
 
 #include "main.h"
 
+#include "label.h"
 #include "clumps.h"
 #include "segmentation.h"
+
+
+
+
+
+
+/******************************************************************/
+/*****************         Segmentation         *******************/
+/******************************************************************/
+void
+segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
+                  size_t *labareas, size_t **labinds)
+{
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -50,12 +77,16 @@ void
 segmentation(struct noisechiselparams *p)
 {
   float *f, *fp;
-  size_t s0=p->smp.s0, s1=p->smp.s1;
+  size_t i, s0=p->smp.s0, s1=p->smp.s1;
   char *segmentationname=p->segmentationname;
+  size_t *labareas, **labinds, numobjsinit=p->numobjects;
 
-
-  /* Start off the counter for the number of clumps: */
+  /* Start off the counter for the number of objects and clumps. The
+     value to these variables will be the label that is given to the
+     next clump or object found. Note that we stored a copy of the
+     initial number of objects in the numobjsinit variable above.*/
   p->numclumps=1;
+  p->numobjects=1;
 
 
   /* Start the steps image: */
@@ -91,7 +122,25 @@ segmentation(struct noisechiselparams *p)
     }
 
 
-  /* Find the true clump S/N threshold: */
+  /* Find the true clump S/N threshold andput it in p->lmp.garray1. */
   p->b0f1=0;
   clumpsngrid(p);
+
+
+  /* Save the indexs of all the detected labels. We will be working on
+     each label independently: */
+  labindexs(p->olab, s0*s1, numobjsinit, &labareas, &labinds);
+
+
+  /* Set all the elements of p->clab to zero: */
+  memset(p->clab, 0, s0*s1*sizeof *p->clab);
+
+
+  /* Segment the detections: */
+  segmentdetections(p, numobjsinit, labareas, labinds);
+
+  /* Clean up */
+  for(i=0;i<numobjsinit;++i) free(labinds[i]);
+  free(labareas);
+  free(labinds);
 }

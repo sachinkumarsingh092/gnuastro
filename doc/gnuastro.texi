@@ -3495,22 +3495,22 @@ self.
 @cindex CPU, using all threads
 @cindex Multi-threaded programs
 @cindex Using multiple CPU cores
-Some of the programs benefit significantly when you use all the cores
-your computer's CPU has to offer. In general, when you run an
-application, the whole process is done only on one core. GNU Astronomy
-Utilities uses the POSIX threads library (pthreads) for spinning off
-threads when the user asks for it, see @ref{Multithreaded programming}
-if you want more details.
+Some of the programs benefit significantly when you use all the
+threads your computer's CPU has to offer to your operating system.
+GNU Astronomy Utilities uses the POSIX threads library (pthreads) for
+spinning off threads when the user asks for it. The number of threads
+available to your operating system is usually double the number of
+physical (hardware) cores in your CPU.
 
 @pindex nproc
 @vindex --numthreads
 @cindex GNU Coreutils
 @cindex Number of threads available
 @cindex Available number of threads
-You can find the number of cores available to your system with the
+You can find the number of threads available to your system with the
 command @command{$ nproc}, which is part of GNU Coreutils and is most
 probably already available on your GNU/Linux system. If not specified
-as an option at configure time, Gnuastro finds the number of cores
+as an option at configure time, Gnuastro finds the number of threads
 available to your system (and reports it along with all those other
 things it checks!). It is saved internally for all the programs to use
 by default. To specify the number of threads at configure time, use
@@ -3538,16 +3538,41 @@ configuration file will be used, not the internal value.
 @cindex Best use of CPU threads
 @cindex Efficient use of CPU threads
 Spinning off threads internally is not necessarily always the most
-efficient way to run an application. It is most useful when the input
-data are fixed and you want the same operation to be done on parts of
-it. For example one input image to ImageCrop and multiple crops from
-various parts of it. In this fashion, the image is loaded into memory
-once, all the crops are divided between the number of threads
-internally and each thread cuts out those parts which are assigned to
-it from the same image. On the other hand, if you have multiple images
-and you want to crop the same region out of all of them, it is much
-more efficient to set @option{--numthreads=1} (so no threads spin off)
-and run ImageCrop multiple times simultaneously.
+efficient way to run an application. Creating a new thread isn't a
+cheap operation for the operating system. It is most useful when the
+input data are fixed and you want the same operation to be done on
+parts of it. For example one input image to ImageCrop and multiple
+crops from various parts of it. In this fashion, the image is loaded
+into memory once, all the crops are divided between the number of
+threads internally and each thread cuts out those parts which are
+assigned to it from the same image. On the other hand, if you have
+multiple images and you want to crop the same region out of all of
+them, it is much more efficient to set @option{--numthreads=1} (so no
+threads spin off) and run ImageCrop multiple times simultaneously.
+
+@cindex Wall-clock time
+You can check the boost in speed by first running a program on one of
+the data sets with the maximum number of threads and another time
+(with everything else the same) and only using one thread. You will
+notice that the wall-clock time (reported by most programs at their
+end) in the former is longer than the latter divided by number of
+physical CPU cores available to your operating system. Asymptotically
+these two can be equal (most of the time they aren't). So limiting the
+programs to use only one thread and running them independently on the
+number of available threads will be more efficient.
+
+@cindex System Cache
+@cindex Cache, system
+Note that the operating system keeps a cache of recently processed
+data, so usually, the second time you process an identical dataset
+(independent of the number of threads used), you will get faster
+results. In order to make an unbiased comparison, you have to first
+clean the system's cache with the following command between the two
+runs.
+
+@example
+$ sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
+@end example
 
 @cindex GNU Parallel
 The best method to run multiple instances of a command on different
@@ -3559,7 +3584,7 @@ please run
 @example
 $ man parallel
 @end example
-
+@noindent
 As an example, let's assume we want to crop a region fixed on the
 pixels (500, 600) with the default width from all the FITS images in
 the @file{./data} directory ending with @file{sci.fits} to the current
@@ -3577,7 +3602,21 @@ beginners: the backslash (@command{\}) is only a line breaker to fit
 nicely in the page. If you type the whole command in one line, you
 should remove it.
 
+@cartouche
+@noindent
+@strong{SUMMARY: Should I use multiple threads?} Depends:
+@itemize
+@item
+If you only have @strong{one} data set (image in most cases!), then
+yes, the more threads you use (with a maximum of the number of threads
+available to your OS) the faster you will get your results.
 
+@item
+If you want to run the same operation on @strong{multiple} data sets,
+it is best to set the number of threads to 1 and use GNU Parallel as
+explained above.
+@end itemize
+@end cartouche
 
 
 
