@@ -232,12 +232,46 @@ oversegment(struct clumpsthreadparams *ctp)
             /* Set the label that is to be given to this equal flux
                region. If n1 was set to any value, then that label
                should be used for the whole region. Otherwise, this is
-               a new label. */
-            if(n1) rlab = n1;
+               a new label.
+
+               About the topinds checks:
+               =========================
+
+               The knowing the top index of a profile is very
+               important in order to be able to successfully remove
+               false detections. However, our convention of setting
+               the masked pixels as the maximum floating point value
+               is going to make some troubles in this regard.
+
+               Masked pixels will always be checked first for each
+               clump. The moment a new label is definied (curlab++),
+               we are on the top index of a profile. If it is a NaN
+               pixel (note that the NaN pixels do not change after
+               convolution), then we can't assign it to the top flux
+               of that profile. So we mark this by setting the value
+               to the topinds for this profile to NOTOPIND which is an
+               impossible index. later on, for every other pixel, we
+               check to see if topinds has been set for this clump or
+               not. If it hasn't, then since the pixels are ordered by
+               flux, this index is the top index.
+            */
+            if(n1)
+              {
+                rlab = n1;
+                if(ctp->topinds && ctp->topinds[rlab]==NOTOPIND
+                   && n1>0 && !isnan(p->img[*pind]))
+                  ctp->topinds[rlab]=*pind;
+              }
             else
               {
                 rlab = curlab++;
-                if(ctp->topinds) ctp->topinds[rlab]=*pind;
+                if( ctp->topinds)
+                  {
+                    if( isnan(p->img[*pind]) )
+                      ctp->topinds[rlab]=NOTOPIND;
+                    else
+                      ctp->topinds[rlab]=*pind;
+                  }
               }
 
             /* Give the same label to the whole connected equal flux
@@ -311,11 +345,24 @@ oversegment(struct clumpsthreadparams *ctp)
                n1!=0, it is either a river pixel (has more than one
                labeled neighbor) or all its neighbors have the same
                label. */
-            if(n1) rlab = n1;
+            if(n1)
+              {
+                rlab = n1;
+                if(ctp->topinds && ctp->topinds[rlab]==NOTOPIND
+                   && n1>0 && !isnan(p->img[*pind]))
+                  ctp->topinds[rlab]=*pind;
+              }
             else
               {
                 rlab = curlab++;
-                if(ctp->topinds) ctp->topinds[rlab]=*pind;
+                if( ctp->topinds )
+                  {
+                    if( isnan(p->img[*pind]) )
+                      ctp->topinds[rlab]=NOTOPIND;
+                    else
+                      ctp->topinds[rlab]=*pind;
+                  }
+
               }
 
             /* Put the found label in the pixel. */
@@ -370,10 +417,10 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
   struct noisechiselparams *p=ctp->p;
   struct meshparams *smp=&p->smp;
 
-  double *xys=NULL, *clumpinfo;
-  float *img=p->img, *smpstd=smp->garray2;
+  double *xys, *clumpinfo;
   size_t lab, is0=p->lmp.s0, is1=p->lmp.s1;
   long *clab=p->clab, wngb[WNGBSIZE], ngblab;
+  float *img=p->img, *smpstd=smp->garray2;
   size_t x0=ctp->x0, y0=ctp->y0, x1=ctp->x1, y1=ctp->y1;
   size_t i=0, ii=0, row, *n, *nf, ngb[8], *ind, *indf, numngb;
 
@@ -391,13 +438,21 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
     error(EXIT_FAILURE, errno, "%lu bytes for clumpinfo (clumps.c)",
           ctp->numclumps*INFOTABCOLS*sizeof *clumpinfo);
   *outclumpinfo=clumpinfo;
-  if(p->skysubtracted)
+
+  /* If the image is sky subtracted or if we are working on the
+     detections (not noise), we will need the light weighted center of
+     each clump. In the former, for finding the error in measuring the
+     sky (through the smp->garray2) which is done in this same
+     function. In the latter case, in order to find the signal to
+     noise threshold on lmp->garray1. */
+  if(p->skysubtracted || p->b0f1)
     {
-      errno=0; xys=calloc(2*ctp->numclumps, sizeof *xys);
+      errno=0; xys=ctp->xys=calloc(2*ctp->numclumps, sizeof *xys);
       if(xys==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for xys (clumps.c)",
               2*ctp->numclumps*sizeof *xys);
     }
+  else xys=NULL; /* To check if it is needed below. */
 
   /* Go over all the pixels in this set of pixels and fill in the
      proper information for each clump. */
@@ -405,7 +460,7 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
   do
     if(!isnan(img[*ind]))
       {
-        if(clab[*ind]==SEGMENTRIVER)
+        if(clab[*ind]==SEGMENTRIVER) /* We are on a river. */
           {
             /* Fill in the neighbours arrary for this pixel. If we are
                working on the mesh grid (the noise), then we only want
@@ -448,22 +503,15 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
                 }
             while(++n<nf);
           }
-        else
+        else                    /* We are on a clump. */
           {
-            lab=clab[*ind];     /* The label of this clump. */
+            lab=clab[*ind];
             ++clumpinfo[ lab * INFOTABCOLS + 1 ];
             clumpinfo[ lab * INFOTABCOLS ] += img[*ind];
-            if(p->skysubtracted)
+            if(xys)
               {
                 xys[ 2 * lab     ] += (*ind/is1) * img[*ind];
                 xys[ 2 * lab + 1 ] += (*ind%is1) * img[*ind];
-
-                /* For a check
-                if(lab==1)
-                  printf("%lu*%.3f=%.3f\t%lu*%.3f=%.3f\n",
-                         (*ind/is1), img[*ind], xys[2*lab],
-                         (*ind%is1), img[*ind], xys[2*lab+1]);
-                */
               }
 
           }
@@ -484,20 +532,32 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
              subtracted. If it wasn't, then we are not subtracting the
              sky to worry about its error! The error in a pixel flux
              measurement is simply its square root. */
-          if(p->skysubtracted)
+          if(xys)
             {
               /* Especially for noise, it might happen that the total
                  flux or any of the positions multiplied by flux
                  becomes negative. If left unchecked, it will result
                  in checking the wrong pointers, so we need to check
                  them at this point. */
-              if(clumpinfo[row]<0.0f || xys[2*lab]<0.0f || xys[2*lab+1]<0.0f)
-                { clumpinfo[row+1]=0; continue; }
+              if(clumpinfo[row]<0.0f || xys[2*lab]<0.0f
+                 || xys[2*lab+1]<0.0f)
+                {
+                  clumpinfo[row+1]=0;
+                  xys[2*lab]=xys[2*lab+1]=NAN;
+                  continue;
+                }
               else
                 {
-                  clumpinfo[row+4]=
-                    smpstd[imgxytomeshid(smp, xys[2*lab]/clumpinfo[row],
-                                         xys[2*lab+1]/clumpinfo[row])];
+                  /* It is important that xys are corrected
+                     (divided by the total flux here). Because they
+                     are used later when we don't have access to
+                     clumpinfo any more. */
+                  xys[2*lab  ] /= clumpinfo[row];
+                  xys[2*lab+1] /= clumpinfo[row];
+                  if(p->skysubtracted)
+                    clumpinfo[row+4]=
+                      smpstd[imgxytomeshid(smp, xys[2*lab],
+                                           xys[2*lab+1])];
 
                   /* For a check:
                   printf("%lu: (%lu, %lu) --> %f\n", lab,
@@ -508,27 +568,29 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
                 }
             }
 
-          /* Convert sum to average: */
+          /* Convert sum to average. IMPORTANT NOTE: This has to be
+             done after the step above, because there, we need the
+             total flux to find the flux weighted center positions. */
           clumpinfo[row  ] /= clumpinfo[row+1];
           clumpinfo[row+2] /= clumpinfo[row+3];
         }
+      else
+        if(xys) xys[2*lab]=xys[2*lab+1]=NAN;
     }
 
-  /* For a check:
-  for(lab=1;lab<numclumps;++lab)
-    {
-      row=lab*INFOTABCOLS;
-      if(clumpinfo[row+1]>p->segsnminarea)
-        {
-          printf("%-5lu: %-8.3f %-8.3f %-8.3f %-8.3f %-8.3f\n",
-                 lab, clumpinfo[row+0], clumpinfo[row+1], clumpinfo[row+2],
-                 clumpinfo[row+3], clumpinfo[row+4]);
-        }
-    }
+  /* To check a specific detection (p->b0f1==1) or a noise mesh grid
+     (p->b0f1==0). set ctp->thislabel to the desired label.
+  if(p->b0f1==1 && ctp->thislabel==1)
+    for(i=1;i<ctp->numclumps;++i)
+      printf("%lu: %-10.3f %-5.0f %-10.3f %-5.0f %-10.3f\n", i,
+             clumpinfo[i*INFOTABCOLS], clumpinfo[i*INFOTABCOLS+1],
+             clumpinfo[i*INFOTABCOLS+2], clumpinfo[i*INFOTABCOLS+3],
+             clumpinfo[i*INFOTABCOLS+4]);
   */
 
-  /* Clean up: */
-  if(p->skysubtracted) free(xys);
+  /* If we are on the noise clumps, then xys is not needed any more.
+     So if it was allocated, fre the space. */
+  if(p->b0f1==0 && xys) free(xys);
 }
 
 
@@ -581,7 +643,11 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
                    ? ( 2.0f * clumpinfo[row+4] * clumpinfo[row+4] )
                    : 0.0f );
 
-          /* Calculate the Signal to noise ratio. */
+          /* Calculate the Signal to noise ratio, if we are on the
+             noise regions, we don't care about the IDs of the clumps
+             anymore, so store the Signal to noise ratios contiguously
+             (for easy sorting and etc). Note that counter will always
+             be smaller and equal to i. */
           ind = p->b0f1 ? i : counter++;
 	  sntab[ind]=( sqrt((float)(Ni)/cpscorr)*(I-O)
 		       / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + err ) );
@@ -597,6 +663,15 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
     ctp->numclumps=counter;
 
 
+  /* To check a specific detection (p->b0f1==1) or a noise mesh grid
+     (p->b0f1==0):
+  if(p->b0f1==1 && ctp->thislabel==1)
+    for(i=1;i<ctp->numclumps;++i)
+      printf("%lu: %-10.3f %-5.0f %-10.3f --> %-10.3f (%-6.0f, %-6.0f)\n", i,
+             clumpinfo[i*INFOTABCOLS], clumpinfo[i*INFOTABCOLS+1],
+             clumpinfo[i*INFOTABCOLS+2], sntab[i],
+             ctp->xys[i*2], ctp->xys[i*2+1]);
+  */
   /* Clean up */
   free(clumpinfo);
 }
@@ -647,8 +722,10 @@ clumpsnthreshonmesh(void *inparams)
   /* Go over all the meshs that are assigned to this thread. */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
     {
-      /* Set the necesary parameters: */
-      ind=indexs[i];
+      /* Set index of this mesh: */
+      ind=ctp.thislabel=indexs[i];
+
+      /* Find the necessary parameters */
       startind=mp->start[ind];
       s0=mp->ts0[mp->types[ind]];
       s1=mp->ts1[mp->types[ind]];
@@ -788,86 +865,88 @@ clumpsngrid(struct noisechiselparams *p)
 
 
 
-#if 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/******************************************************************/
+/*************        Remove false clumps        ******************/
+/******************************************************************/
 /* Given the signal to noise of each segment (in sntable), and a
    threshold for an acceptable S/N (in `p`), remove those segments
    that don't satisfy the criteria and correct the number of clumps. */
 void
-removefalseclumps(struct noisechiselparams *p)
+removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
 {
-  double *seginfo;
-  size_t *n, *nf, ;
-  long *newlabs, oldlab, *clab=p->sp->clab;
-  float *sntable=p->sntable, snthresh=p->snthresh;
-  size_t i, j, numreal, *ind, *indf, ngb[8], numngb;
-  size_t is0=p->sp->np->lmesh.s0, is1=p->sp->np->lmesh.s1;
+  struct meshparams *lmp=&ctp->p->lmp;
+
+  double *xys=ctp->xys;
+  float *snonmesh=lmp->garray1;
+  long *newlabs, *clab=ctp->p->clab;
+  size_t *n, *nf, is0=lmp->s0, is1=lmp->s1;
+  size_t i, curlab=1, *ind, *indf, ngb[8], numngb;
 
   /* Allocate space for the new labels array. */
-  errno=0; newlabs=malloc(p->numseg*sizeof *newlabs);
+  errno=0; newlabs=malloc(ctp->numclumps*sizeof *newlabs);
+  if(newlabs==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for newlabs in "
+          "removefalsedetections (clumps.c)", ctp->numclumps*sizeof *newlabs);
 
   /* We want the removed regions to become SEGMENTINIT. */
-  longinit(newlabs, p->numseg, SEGMENTINIT);
+  longinit(newlabs, ctp->numclumps, SEGMENTINIT);
 
-  /* Find the number of successful clumps + 1 (since an array is going
-     to be built later and the labels have to be the indexs of that
-     array). */
-  numreal=1;
-  if(p->sp->np->keepmaxriver)
-    for(i=1;i<p->numseg;++i)
-      {/*
-	if(p->mid==3938)
-	  printf("%lu: %f %f\n", i, sntable[i], snthresh);
-       */
-	if(sntable[i]>snthresh)
-	  newlabs[i]=numreal++;
-      }
+  /* Set the new labels: */
+  if(ctp->p->keepmaxnearriver)
+    {       /* `{' because We don't want to confuse the `else' below. */
+      for(i=1;i<ctp->numclumps;++i)
+        if( !isnan(xys[2*i]) && sntable[i] >
+            snonmesh[ imgxytomeshid(lmp, xys[2*i], xys[2*i+1]) ] )
+          newlabs[i]=curlab++;
+    }
   else
-    for(i=1;i<p->numseg;++i)
-      {
-	/* Check to see if the brightest pixel in this clump is touching
-	   a river or not. */
-	ind=&topinds[i];
-	{FILL_NGB_8_ALLIMG}
-	nf=(n=ngb)+numngb;
-	for(;n<nf;++n) if(clab[*n]==SEGMENTRIVER) break;
+    for(i=1;i<ctp->numclumps;++i)
+      if(ctp->topinds[i]!=NOTOPIND)
+        {
+          /* Check to see if the brightest pixel in this clump is
+             touching a river or not. */
+          ind=&ctp->topinds[i];
+          FILL_NGB_8_ALLIMG;
+          nf=(n=ngb)+numngb;
+          do if(clab[*n++]==SEGMENTRIVER) break; while(n<nf);
 
-	/* If the brightest pixel of this clump was not touching a river
-	   and its signal to noise is larger than the threshold, then
-	   give it a new label.*/
-	if(n==nf && sntable[i]>snthresh)
-	  {/*
-	    printf("%lu: %f %f\n", i, sntable[i], snthresh);
-	   */
-	    newlabs[i]=numreal++;
-	  }
-      }
-
-
-  /* Allocate space for the information of each real clump and save
-     the information for that clump into the seginfo table. */
-  seginfo=malloc(numreal*INFOTABCOLS*sizeof *seginfo);
-  assert(seginfo!=NULL);
-  for(i=1;i<p->numseg;++i)
-    if(newlabs[i]!=SEGMENTINIT)
-      for(j=0;j<INFOTABCOLS;++j)
-	seginfo[newlabs[i]*INFOTABCOLS+j]=p->seginfo[i*INFOTABCOLS+j];
+          /* If the brightest pixel of this clump was not touching a
+             river and its Signal to noise ratio is larger than the
+             threshold, then give it a new label.*/
+          if(n==nf && !isnan(xys[2*i]) && sntable[i] >
+             snonmesh[ imgxytomeshid(lmp, xys[2*i], xys[2*i+1]) ] )
+            newlabs[i]=curlab++;
+        }
+  ctp->numclumps=curlab;
 
   /* Change the values of the false clumps. Note that the labels are
      either SEGMENTRIVER or a label */
-  indf = (ind=p->indexs) + p->area;
+  indf = (ind=ctp->inds) + ctp->area;
   do
     {
-      oldlab=clab[*ind];
-      if( oldlab == SEGMENTRIVER  )
-	clab[*ind] = SEGMENTINIT;
+      if(clab[*ind]>0)
+	clab[*ind] = newlabs[ clab[*ind] ];
       else
-	clab[*ind] = newlabs[oldlab];
+	clab[*ind] = SEGMENTINIT;
+
     }
   while(++ind<indf);
 
+  /* Cleanup. */
   free(newlabs);
-  free(p->seginfo);
-  p->seginfo=seginfo;
-  p->numseg = numreal;
 }
-#endif

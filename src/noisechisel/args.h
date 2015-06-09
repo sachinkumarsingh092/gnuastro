@@ -72,7 +72,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   f j v w x y z
+   f j w x y z
    A C G J O W X Y Z
 
    Number keys free: >=516
@@ -447,6 +447,15 @@ static struct argp_option options[] =
       "Segmentation S/N hist. N. bins `_XX_segsn.txt'.",
       5
     },
+    {
+      "keepmaxnearriver",
+      'v',
+      0,
+      0,
+      "Keep clumps with max touching river.",
+      5
+    },
+
 
     {
       "checksegmentation",
@@ -695,6 +704,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'g':
       floatl0s1(arg, &p->segquant, "segquant", key, SPACK, NULL, 0);
       p->up.segquantset=1;
+      break;
+    case 'v':
+      p->keepmaxnearriver=1;
       break;
     case 514:
       sizetelzero(arg, &p->segsnhistnbins, "segsnhistnbins", key,

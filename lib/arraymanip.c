@@ -58,6 +58,16 @@ ucharinitonregion(unsigned char *in, const unsigned char v,
 
 
 
+void
+longinit(long *in, size_t size, const long v)
+{
+  long *end=in+size;
+  do *in++=v; while(in<end);
+}
+
+
+
+
 
 void
 longinitonregion(long *in, const long v, size_t start, size_t s0,

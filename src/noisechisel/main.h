@@ -90,66 +90,67 @@ struct uiparams
 struct noisechiselparams
 {
   /* Other structures: */
-  struct uiparams      up;  /* User interface parameters.                  */
-  struct commonparams  cp;  /* Common parameters.                          */
-  struct meshparams   smp;  /* Smaller mesh grid of input image.           */
-  struct meshparams   lmp;  /* Larger mesh grid of input image.            */
+  struct uiparams       up; /* User interface parameters.                  */
+  struct commonparams   cp; /* Common parameters.                          */
+  struct meshparams    smp; /* Smaller mesh grid of input image.           */
+  struct meshparams    lmp; /* Larger mesh grid of input image.            */
 
   /* Input: */
-  int                nwcs;  /* Number of WCS structures.                   */
-  struct wcsprm      *wcs;  /* Pointer to WCS structures.                  */
-  int              bitpix;  /* Input image bitpix value.                   */
-  size_t         numblank;  /* Number of blank pixels in image.            */
-  int       skysubtracted;  /* ==1: the input image is already sky subted. */
+  int                 nwcs; /* Number of WCS structures.                   */
+  struct wcsprm       *wcs; /* Pointer to WCS structures.                  */
+  int               bitpix; /* Input image bitpix value.                   */
+  size_t          numblank; /* Number of blank pixels in image.            */
+  int        skysubtracted; /* ==1: the input image is already sky subted. */
 
   /* output: */
-  char          *meshname;  /* Name of --checkmesh output.                 */
-  char        *threshname;  /* !=NULL: Name of threshold steps.            */
-  char     *detectionname;  /* !=NULL: Name of detection steps.            */
-  char  *detectionskyname;  /* !=NULL: Name of detection sky steps.        */
-  char   *detectionsnname;  /* !=NULL: Name of detection S/N on meshs.     */
-  char           *skyname;  /* !=NULL: Name of image showing sky and STD.  */
-  char  *segmentationname;  /* !=NULL: Name of segmentation steps.         */
-  char       *clumpsnname;  /* !=NULL: Name of clump S/N on grid.          */
+  char           *meshname; /* Name of --checkmesh output.                 */
+  char         *threshname; /* !=NULL: Name of threshold steps.            */
+  char      *detectionname; /* !=NULL: Name of detection steps.            */
+  char   *detectionskyname; /* !=NULL: Name of detection sky steps.        */
+  char    *detectionsnname; /* !=NULL: Name of detection S/N on meshs.     */
+  char            *skyname; /* !=NULL: Name of image showing sky and STD.  */
+  char   *segmentationname; /* !=NULL: Name of segmentation steps.         */
+  char        *clumpsnname; /* !=NULL: Name of clump S/N on grid.          */
 
   /* Detection: */
-  float             *conv;  /* Convolved image.                            */
-  float           qthresh;  /* Quantile threshold on convolved img.        */
-  size_t       numerosion;  /* Number of times to erode thresholded image. */
-  int            erodengb;  /* Use 4 or 8 connectivity in erosion.         */
-  size_t          opening;  /* Depth of opening to apply to eroded image.  */
-  int          openingngb;  /* Use 4 or 8 connectivity in opening.         */
-  float          minbfrac;  /* Minimum fraction of undetected pixels.      */
-  float     sigclipmultip;  /* Multiple of standard deviation, sigma clip. */
-  float  sigcliptolerance;  /* Tolerance in sigma clip.                    */
-  float           dthresh;  /* Threshold to remove false detections.       */
-  size_t     detsnminarea;  /* Minimum area to calculate S/N for detection.*/
-  size_t      minnumfalse;  /* Min No. false detections/segments for quant.*/
-  float          detquant;  /* False detection S/N quantile to find true.  */
-  size_t   detsnhistnbins;  /* ==1: Save false detection S/Ns histogram.   */
-  size_t           dilate;  /* Number of times to dilate true detections.  */
+  float              *conv; /* Convolved image.                            */
+  float            qthresh; /* Quantile threshold on convolved img.        */
+  size_t        numerosion; /* Number of times to erode thresholded image. */
+  int             erodengb; /* Use 4 or 8 connectivity in erosion.         */
+  size_t           opening; /* Depth of opening to apply to eroded image.  */
+  int           openingngb; /* Use 4 or 8 connectivity in opening.         */
+  float           minbfrac; /* Minimum fraction of undetected pixels.      */
+  float      sigclipmultip; /* Multiple of standard deviation, sigma clip. */
+  float   sigcliptolerance; /* Tolerance in sigma clip.                    */
+  float            dthresh; /* Threshold to remove false detections.       */
+  size_t      detsnminarea; /* Minimum area to calculate S/N for detection.*/
+  size_t       minnumfalse; /* Min No. false detections/segments for quant.*/
+  float           detquant; /* False detection S/N quantile to find true.  */
+  size_t    detsnhistnbins; /* ==1: Save false detection S/Ns histogram.   */
+  size_t            dilate; /* Number of times to dilate true detections.  */
 
   /* Segmentation: */
-  size_t     segsnminarea;  /* Minimum area to find the S/N of a clump.    */
-  float          segquant;  /* S/N quantile for true clump.                */
-  size_t   segsnhistnbins;  /* ==1: Save false clumps S/Ns histogram.      */
+  size_t      segsnminarea; /* Minimum area to find the S/N of a clump.    */
+  float           segquant; /* S/N quantile for true clump.                */
+  size_t    segsnhistnbins; /* ==1: Save false clumps S/Ns histogram.      */
+  size_t  keepmaxnearriver; /* ==1: Keep clumps with max touching river.   */
 
   /* Operating mode: */
 
   /* Internal: */
-  float              *img;  /* Input image.                                */
-  float            *imgss;  /* Sky subtracted image.                       */
-  time_t          rawtime;  /* Starting time of the program.               */
-  long              *olab;  /* Object labels.                              */
-  long              *clab;  /* Clump labels.                               */
-  unsigned char      *byt;  /* Array of single bytes for binary operations.*/
-  unsigned char     *dbyt;  /* False detection removal thresholded array.  */
-  float           cpscorr;  /* Correction for counts per second data.      */
-  unsigned char      b0f1;  /* ==1: we are now working on data, not noise. */
-  int             stepnum;  /* Number of step if user wants to see steps.  */
-  size_t       numobjects;  /* Total number of objects (detections).       */
-  size_t        numclumps;  /* Total number of clumps.                     */
-  size_t        relngb[8];  /* Indexs of relative neighbors.               */
+  float               *img; /* Input image.                                */
+  float             *imgss; /* Sky subtracted image.                       */
+  time_t           rawtime; /* Starting time of the program.               */
+  long               *olab; /* Object labels.                              */
+  long               *clab; /* Clump labels.                               */
+  unsigned char       *byt; /* Array of single bytes for binary operations.*/
+  unsigned char      *dbyt; /* False detection removal thresholded array.  */
+  float            cpscorr; /* Correction for counts per second data.      */
+  unsigned char       b0f1; /* ==1: we are now working on data, not noise. */
+  int              stepnum; /* Number of step if user wants to see steps.  */
+  size_t        numobjects; /* Total number of objects (detections).       */
+  size_t         numclumps; /* Total number of clumps.                     */
+  size_t         relngb[8]; /* Indexs of relative neighbors.               */
 };
 
 #endif

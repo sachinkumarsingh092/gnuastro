@@ -65,13 +65,17 @@ segmentonthread(void *inparam)
   for(i=0;ctp->indexs[i]!=NONTHRDINDEX;++i)
     if(ctp->indexs[i])   /* sp->indexs[i]==0 for the background. */
       {
-        /* Keep the initial label of this detection. */
-        ctp->area=ctp->allareas[ctp->indexs[i]];
-        ctp->inds=ctp->alllabinds[ctp->indexs[i]];
+        /* Keep the initial label of this detection. The initial label
+           is mainly stored for possible debugging and checking. */
+        ctp->thislabel=ctp->indexs[i];
+        ctp->area=ctp->allareas[ctp->thislabel];
+        ctp->inds=ctp->alllabinds[ctp->thislabel];
 
 
         /* Allocate the space for the indexs of the brightest pixels
-           in each clump.*/
+           in each clump. We don't know how many clumps there are
+           before hand, so to be safe just allocate a space equal to
+           the number of pixels*/
         errno=0; ctp->topinds=malloc(ctp->area*sizeof *ctp->topinds);
         if(ctp->topinds==NULL)
           error(EXIT_FAILURE, errno, "%lu bytes for ctp->topinds in "
@@ -92,12 +96,15 @@ segmentonthread(void *inparam)
 
 
         /* Remove clumps with smaller signal to noise ratios: */
-
+        removefalseclumps(ctp, sntable);
+        if(segmentationname && p->stepnum==2)
+          { free(ctp->topinds); free(ctp->xys); free(sntable); continue; }
 
 
         /* Clean up: */
-        free(sntable);
-        free(ctp->topinds);
+        free(sntable);          /* Allocated here.                      */
+        free(ctp->xys);         /* Allocated in getclumpinfo (clumps.c) */
+        free(ctp->topinds);     /* Allocated here.                      */
       }
 
   /* Wait until all the threads finish: */
@@ -223,9 +230,8 @@ segmentation(struct noisechiselparams *p)
   /* Start the steps image: */
   if(segmentationname)
     {
-      arraytofitsimg(segmentationname, "Input-SkySubtracted",
-                     FLOAT_IMG, p->img, s0, s1, p->numblank,
-                     p->wcs, NULL, SPACK_STRING);
+      arraytofitsimg(segmentationname, "Input", FLOAT_IMG, p->img,
+                     s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(segmentationname, "Convolved-SkySubtracted",
                      FLOAT_IMG, p->conv, s0, s1, p->numblank,
                      p->wcs, NULL, SPACK_STRING);
@@ -283,7 +289,7 @@ segmentation(struct noisechiselparams *p)
   if(p->segmentationname)
     {
       p->stepnum=1;
-      while(p->stepnum<6)
+      while(p->stepnum<3/*6*/)
 	{
 	  memset(p->clab, 0, s0*s1*sizeof *p->clab);
           segmentdetections(p, numobjsinit, labareas, labinds);

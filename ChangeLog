@@ -3,6 +3,8 @@
 	* src/noisechisel/clumps.c: All functions now use the
 	clumpsthreadparams structure as input instead of a list of
 	arguments.
+	(oversegment): ctp->topinds now keeps a good value when the clump
+	has NaN pixels over it.
 
 	* lib/mesh.c (imgindextomeshid): Corrected to work correctly when
 	the pixel might be lying on the last mesh that might be larger.

@@ -30,6 +30,7 @@ struct clumpsthreadparams
   struct noisechiselparams *p;  /* Main NoiseChisel structure. */
 
   /* Threads (only for detections, the noise uses the mesh threads.) */
+  size_t       thislabel; /* The initial label of this detection.        */
   size_t              id; /* ID of this thread.                          */
   size_t       *allareas; /* Array keeping the areas of all detections.  */
   size_t    **alllabinds; /* Array of pointers to the indexs of all dets.*/
@@ -41,6 +42,7 @@ struct clumpsthreadparams
   size_t              y0; /* Bottom left corner on y axis.               */
   size_t              x1; /* Top right corner on x axis.                 */
   size_t              y1; /* Top right corner on y axis.                 */
+  double            *xys; /* The light weighted center of each clump.    */
 
   /* Other basic parameters: */
   size_t        *topinds; /* Indexs of the top flux in each clump.       */
@@ -58,6 +60,7 @@ struct clumpsthreadparams
 #define SEGMENTRIVER    -1
 #define INFOTABCOLS      5
 #define WNGBSIZE        20
+#define NOTOPIND        (size_t)(-1)
 
 void
 oversegment(struct clumpsthreadparams *ctp);
@@ -67,5 +70,8 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable);
 
 void
 clumpsngrid(struct noisechiselparams *p);
+
+void
+removefalseclumps(struct clumpsthreadparams *ctp, float *sntable);
 
 #endif

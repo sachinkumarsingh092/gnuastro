@@ -28,6 +28,9 @@ ucharinitonregion(unsigned char *in, const unsigned char v,
 		  size_t start, size_t s0, size_t s1, size_t is1);
 
 void
+longinit(long *in, size_t size, const long v);
+
+void
 longinitonregion(long *in, const long v, size_t start, size_t s0,
                  size_t s1, size_t is1);
 
