@@ -90,6 +90,9 @@ oversegment(struct clumpsthreadparams *ctp)
   size_t *n, *nf, *indf, *pind, *ind=&pix, is1=p->lmp.s1;
   size_t ng, *rn, *rnf, numngb, ngb[8], *relngb=p->relngb;
 
+  /* Sort the indexs based on the flux within them. */
+  qsort(ctp->inds, ctp->area, sizeof(size_t), indexfloatdecreasing);
+
   /* Initialize the region you want to over-segment. */
   indf=(pind=ctp->inds)+ctp->area;
   do clab[*pind]=SEGMENTINIT; while(++pind<indf);
@@ -375,6 +378,110 @@ oversegment(struct clumpsthreadparams *ctp)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/******************************************************************/
+/*************            Grow clumps            ******************/
+/******************************************************************/
+/* Grow the true clumps in a detection. Note that unlike before, were
+   river pixels would get a separate label for them selves, here, they
+   don't, they just get set back to SEGMENTINIT. This is because the
+   some of the pixels that lie immediately between two labeled regions
+   might not be in the blankinds array (they were below the
+   threshold). So we have to find river pixels later on after the
+   growth is done independently. */
+void
+growclumps(struct clumpsthreadparams *ctp, int withrivers)
+{
+  long n1, *olab=ctp->p->olab;
+  size_t *ind, *indf, thisround, numngb;
+  size_t *n, *nf, numblanks=ctp->numblanks;
+  size_t ngb[8], is0=ctp->p->lmp.s0, is1=ctp->p->lmp.s1;
+
+  /* The basic idea is this: after growing, not all the blank pixels
+     are necessarily filled, for example the pixels might belong to
+     two regions above the growth threshold. So the pixels in between
+     them (which are below the threshold will not ever be able to get
+     a label). Therefore, the safest way we can terminate the loop of
+     growing the objects is to stop it when the number of pixels left
+     to fill in this round (thisround) equals the number of blanks.
+
+     To start the loop, we set thisround=numblanks+1. Note that
+     immediately after the loop has started, thisround is set to
+     numblanks, so we will not be reading an un-initialized element.
+  */
+  thisround=numblanks+1;
+  while(thisround>numblanks)
+    {
+      /* "thisround" will keep the number of pixels to be inspected in
+	 this round. "numblanks" will count the number of pixels left
+	 without an index by the end of this round. Since numblack
+	 comes from the previous loop (or outside for the first loop)
+	 it has to be saved in "thisround" to begin counting a
+	 fresh. */
+      thisround=numblanks;
+      numblanks=0;
+
+      /* Go over all the available indexs to fill: */
+      indf = ( ind=ctp->blankinds ) + thisround;
+      do
+	{
+	  /* We begin by assuming the neighbor label is zero (meaning
+	     that no neighbor actually exists!) */
+	  n1=0;
+
+	  /* Check the 4 connected neighbors of the pixel: */
+          FILL_NGB_4_ALLIMG;
+	  nf=(n=ngb)+numngb;
+	  do
+            if( olab[*n]>0 )	             /* This neighbor is labeled. */
+	    {
+              if(n1)           /* A previous neighboring label was found. */
+                {
+                  if(n1!=olab[*n])      /* This neighbor has a new label. */
+                    {              /* So it should be set to SEGMENTINIT. */
+                      n1=SEGMENTINIT;     /* IMPORTANT: not SEGMENTRIVER. */
+                      break;                   /* See explanations above. */
+                    }
+                }
+              else              /* This is the first labeled     */
+                {               /* neighbor that is found.       */
+                  n1=olab[*n];
+                  if(!withrivers) break;
+                }
+	    }
+	  while(++n<nf);
+
+	  /* The loop above finishes with three possibilities:
+  	       n1==0            --> No labeled neighbor was found.
+	       n1==SEGMENTINIT  --> It is connecting two labeled regions.
+	       n1>0             --> It only has one neighbouring label.*/
+	  if(n1==0)		/* First condition above. */
+	    ctp->blankinds[numblanks++]=*ind;
+	  else			/* Last two conditions above. */
+            olab[*ind]=n1;
+	}
+      while(++ind<indf);
+    }
+
+  ctp->numblanks=numblanks;
+}
 
 
 
@@ -749,10 +856,6 @@ clumpsnthreshonmesh(void *inparams)
          (area). Here we want to pull out the indexs of those pixels
          which is necessary for the over-segmentation. */
       index_f_b_onregion(p->byt, startind, s0, s1, is1, ctp.inds, 0);
-
-
-      /* Sort the indexs based on the flux within them. */
-      qsort(ctp.inds, ctp.area, sizeof(size_t), indexfloatdecreasing);
 
 
       /* Do the over-segmentation and put the number of clumps in

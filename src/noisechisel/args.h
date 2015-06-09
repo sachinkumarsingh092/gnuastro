@@ -73,7 +73,7 @@ const char doc[] =
 /* Available letters for short options:
 
    f j w x y z
-   A C G J O W X Y Z
+   A C J W X Y Z
 
    Number keys free: >=516
 
@@ -455,7 +455,22 @@ static struct argp_option options[] =
       "Keep clumps with max touching river.",
       5
     },
-
+    {
+      "gthresh",
+      'G',
+      0,
+      0,
+      "Threshold (STD multiple) to stop growing clumps.",
+      5
+    },
+    {
+      "objbordersn",
+      'O',
+      "FLT",
+      0,
+      "Minimum S/N for grown clumps to be one object.",
+      5
+    },
 
     {
       "checksegmentation",
@@ -708,6 +723,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'v':
       p->keepmaxnearriver=1;
       break;
+    case 'G':
+      anyfloat(arg, &p->gthresh, "gthresh", key, SPACK, NULL, 0);
+      p->up.gthreshset=1;
+      break;
+    case 'O':
+      floatl0(arg, &p->objbordersn, "objbordersn", key, SPACK,
+              NULL, 0);
+      p->up.objbordersnset=1;
+      break;
+
     case 514:
       sizetelzero(arg, &p->segsnhistnbins, "segsnhistnbins", key,
                   SPACK, NULL, 0);

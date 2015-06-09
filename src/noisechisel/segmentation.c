@@ -29,6 +29,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include "forqsort.h"
+#include "neighbors.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
@@ -36,6 +37,321 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "label.h"
 #include "clumps.h"
 #include "segmentation.h"
+
+
+
+/******************************************************************/
+/*****************     Growing preparations     *******************/
+/******************************************************************/
+/* Set the growth threshold. We need one standard deviation for the
+   full detection so we take the light weighted center of the full
+   detected region and use that to find a standard deviation. Note
+   that we are using the sky subtracted input image so gradients don't
+   harm our results and that we only use pixels above the sky
+   value. */
+void
+prepfirstgrowth(struct clumpsthreadparams *ctp)
+{
+  struct meshparams *smp=&ctp->p->smp;
+
+  size_t *ind, *indf, is1=smp->s1;
+  double x=0.0f, y=0.0f, fluxsum=0.0f;
+  float growlimit, *imgss=ctp->p->imgss;
+  long *olab=ctp->p->olab, *clab=ctp->p->clab;
+
+  /* Try to find the flux weighted center (only on the pixels with
+     positive flux) */
+  indf=(ind=ctp->inds)+ctp->area;
+  do
+    if(imgss[*ind]>0.0f)
+      {
+        fluxsum+=imgss[*ind];
+        x+=(*ind/is1)*imgss[*ind];
+        y+=(*ind%is1)*imgss[*ind];
+      }
+  while(++ind<indf);
+
+  /* Calculate the center, if no pixels were positive, use the
+     geometric center (irrespective of flux). */
+  if(fluxsum==0.0f)
+    {
+      ind=ctp->inds;
+      do { x+=*ind/is1; y+=*ind%is1; } while(++ind<indf);
+      x/=ctp->area;
+      y/=ctp->area;
+    }
+  else
+    {
+      x/=fluxsum;
+      y/=fluxsum;
+    }
+
+  /* First find the standard deviation on this detection, then use
+     it to calculate the growth threshold. */
+  ctp->std=smp->garray2[imgxytomeshid(smp, x, y)];
+  growlimit=ctp->p->gthresh * ctp->std;
+
+  /* Allocate and fill the array for the blank pixels and reset the
+     olab pixels while you are at it. Note that after removing false
+     clumps, usually most of the objects become blank, so we can just
+     allocate an area the size of the detection: */
+  errno=0;
+  ctp->blankinds=malloc(ctp->area*sizeof *ctp->blankinds);
+  if(ctp->blankinds==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for ctp->blankpixels in "
+          "growclumps (clumps.c)", ctp->area*sizeof *ctp->blankinds);
+  ctp->numblanks=0;
+  indf=(ind=ctp->inds)+ctp->area;
+  do
+    {
+      olab[*ind]=clab[*ind];
+      if(olab[*ind]==SEGMENTINIT && imgss[*ind]>growlimit)
+        ctp->blankinds[ctp->numblanks++]=*ind;
+    }
+  while(++ind<indf);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/******************************************************************/
+/*****************            Objects           *******************/
+/******************************************************************/
+void
+thisdetectionisoneobject(struct clumpsthreadparams *ctp)
+{
+  size_t *ind, *indf;
+  long *olab=ctp->p->olab;
+
+  indf=(ind=ctp->inds)+ctp->area;
+  do olab[*ind]=1; while(++ind<indf);
+}
+
+
+
+
+
+/* Find the adjacency matrixs (number, sum and signal to noise) for
+   the rivers between potentially separate objects in a detection
+   region. They have to be allocated prior to entering this funciton.
+
+   The way to find connected objects is through an adjacency
+   matrix. It is a square array with a side equal to numobjs. So to
+   see if regions `a` and `b` are connected. All I have to do is to
+   look at element a*numobjs+b or b*numobjs+a and get my answer. Since
+   the number of objects in a given region will not be too high, this
+   is efficient. */
+void
+adjacencymatrixs(struct clumpsthreadparams *ctp,
+		 double *sns, double *sums, int *nums)
+{
+  int rpnum;
+  float *imgss=ctp->p->imgss;
+  size_t numclumps=ctp->numclumps;
+  long wngb[WNGBSIZE], *olab=ctp->p->olab;
+  size_t i, j, ii, *n, *nf, ngb[8], numngb;
+  double ave, rpave, c=sqrt(1/ctp->p->cpscorr);
+  size_t *ind, *indf, is0=ctp->p->lmp.s0, is1=ctp->p->lmp.s1;
+  double err=ctp->std*ctp->std*(ctp->p->skysubtracted?1.0f:2.0f);
+
+  /* Go over all the still-unlabeled pixels and see which labels they
+     touch. */
+  indf = (ind=ctp->inds) + ctp->area;
+  do
+    if( olab[*ind]==SEGMENTINIT && !isnan(imgss[*ind]) )
+      {
+	/* Initialize the values to be used: */
+	ii=0;
+	rpnum=1;
+	rpave=imgss[*ind];
+	memset(wngb, 0, sizeof(wngb));
+
+	/* Find which grown clumps this river pixel touches.      */
+	FILL_NGB_8_ALLIMG;
+	nf=(n=ngb)+numngb;
+	do
+	  if( olab[*n]>0 )
+	    {
+              if(!isnan(imgss[*n])) /* Add the flux of this neighbor */
+                {                   /* pixel for finding the average */
+                  ++rpnum;          /* of this river pixel later.    */
+                  rpave+=imgss[*n];
+                }
+	      for(i=0;i<ii;++i)
+		if(wngb[i]==olab[*n])
+		  break;
+	      if(i==ii) 	    /* label not yet added to wngb.  */
+		{
+		  wngb[ii]=olab[*n];
+		  ++ii;
+		}
+	    }
+	while(++n<nf);
+
+	/* If more than one neighboring label was found, fill in the
+	   'sums' and 'nums' adjacency matrixs with the values for
+	   this pixel. Recall that ii is the number of neighboring
+	   labels to this river pixel. */
+        if(ii>1)
+          {
+            rpave/=rpnum;
+            for(i=0;i<ii;++i)
+              for(j=0;j<ii;++j)
+                if(i!=j)
+                  {
+                    nums[ wngb[i]* numclumps + wngb[j] ]++;
+                    sums[ wngb[i]* numclumps + wngb[j] ]+=rpave;
+                  }
+          }
+      }
+  while(++ind<indf);
+
+
+  /* Calculate the Signal to noise ratio of the rivers. Here, ii is
+     the index in the adjacency matrix. */
+  for(i=0;i<numclumps;++i)
+    for(j=0;j<i;++j)
+      if( nums [ ii=i*numclumps+j ] ) /* There is a connection! */
+	{
+	  ave = sums[ii]/nums[ii];
+	  /* In case the average is nagive (only possible if sums is
+	     negative), forget it. Note that even an area of 1 is
+	     acceptable, and we put no area criteria here, because the
+	     fact that a river exists between two clumps is
+	     important. */
+	  if( ave<0 )
+	    {
+	      nums[ii]=nums[j*numclumps+i]=0;
+	      sums[ii]=sums[j*numclumps+i]=0;
+	    }
+	  /* Everything is ready, calculate the SN for this river:  */
+	  else
+	    /* Calculate the SN for this river and put it in both
+	       sections of the SN adjacency matrix. Note that here we
+	       want the average SN of the river, not the total. This
+	       is why we haven't included the number of pixels. */
+	    sns[ii] = sns[j*numclumps+i] = c * ave / sqrt(ave+err);
+	}
+
+  /* To check the matrix specific detected region:
+  if(ctp->thislabel==105)
+    for(i=1;i<numclumps;++i)
+      {
+        printf("%lu: \n", i);
+        for(j=1;j<numclumps;++j)
+          if(nums[ i * numclumps + j])
+            printf("   %lu: %-4d %-10.2f %-10.3f\n", j,
+                   nums[i*numclumps+j],
+                   sums[i*numclumps+j]/nums[i*numclumps+j],
+                   sns[i*numclumps+j]);
+        printf("\n");
+      }
+  */
+}
+
+
+
+
+
+/* The true clumps were expanded. Here the job is to create two
+   adjacency matrixs, which will keep the total flux on the rivers
+   between two neighbouring objects. Note that since growth was not
+   extended to cover the whole image, some objects might be totally
+   isolated from others with no rivers existing between them. To find
+   the unique neighbours of each river pixel, I will be using the same
+   `wngb[]` and `ii` introduced in segmentinfo() of clumps.c.
+*/
+void
+grownclumpstoobjects(struct clumpsthreadparams *ctp)
+{
+  int *nums;
+  double *sums, *sns;
+  long *olab=ctp->p->olab;
+  size_t i, j, ii, *ind, *indf;
+  size_t numclumps=ctp->numclumps;
+
+
+  /* Allocate the necessary arrays: */
+  errno=0; nums=calloc(numclumps*numclumps, sizeof *nums);
+  if(nums==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for nums in grownclumpstoobjects "
+          "(segmentation.c)", numclumps*numclumps*sizeof *nums);
+  errno=0; sums=calloc(numclumps*numclumps, sizeof *sums);
+  if(sums==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for sums in grownclumpstoobjects "
+          "(segmentation.c)", numclumps*numclumps*sizeof *sums);
+  errno=0; sns=calloc(numclumps*numclumps, sizeof *sns);
+  if(sns==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for sns in grownclumpstoobjects "
+          "(segmentation.c)", numclumps*numclumps*sizeof *sns);
+
+
+  /* Find the signal to noise adjacency matrix for these grown
+     clumps. */
+  adjacencymatrixs(ctp, sns, sums, nums);
+
+
+  /* Remove the connections that are smaller than the required
+     threshold. Note that we don't need to worry about the number of
+     pixels, because each river pixels's value was the average of its
+     self and its 8 neighbors. Note that these river pixels are also
+     in systematically low valued regions, which is exactly what we
+     want, so they aren't completely random and any area is
+     important. Connections will be based on the `nums' array. So if a
+     connection is severed, its place in nums will be set to zero. */
+  for(i=1;i<numclumps;++i)
+    for(j=1;j<i;++j)
+      if( nums[ ii=i*numclumps+j ] && sns[ii] < ctp->p->objbordersn )
+	nums[ ii ] = nums[ j*numclumps+i ]=0;
+
+
+  /* Find the connected regions and assign new labels (starting
+     from one) to the grown clumps regions. */
+  ctp->numobjects=BF_concomp_AdjMatrix(nums, numclumps, &ctp->segtoobjlabs);
+
+
+  /* Correct all the pixels in olab: */
+  indf = (ind=ctp->inds) + ctp->area;
+  do
+    if(olab[*ind]>0)
+      olab[*ind]=ctp->segtoobjlabs[ olab[*ind] ];
+  while(++ind<indf);
+
+
+  /* Clean up */
+  free(sns);
+  free(nums);
+  free(sums);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -52,8 +368,8 @@ segmentonthread(void *inparam)
   struct noisechiselparams *p=ctp->p;
 
   float *sntable;
-  size_t i, s0=p->lmp.s0, s1=p->lmp.s1;
   char *segmentationname=p->segmentationname;
+  size_t i, *ind, *indf, s0=p->lmp.s0, s1=p->lmp.s1;
 
   /* For the detections, there is no box, only the sides of the image. */
   ctp->x1=s0;
@@ -83,8 +399,7 @@ segmentonthread(void *inparam)
                 ctp->area*sizeof *ctp->topinds);
 
 
-        /* Sort the indexs based on the flux within them. */
-        qsort(ctp->inds, ctp->area, sizeof(size_t), indexfloatdecreasing);
+        /* Oversegment this detection. */
         oversegment(ctp);
         if(segmentationname && p->stepnum==1)
           {free(ctp->topinds); continue;}
@@ -95,16 +410,78 @@ segmentonthread(void *inparam)
         clumpsntable(ctp, &sntable);
 
 
-        /* Remove clumps with smaller signal to noise ratios: */
+        /* Remove clumps with smaller signal to noise ratios and free
+           all the nolonger necessary arrays: */
         removefalseclumps(ctp, sntable);
-        if(segmentationname && p->stepnum==2)
-          { free(ctp->topinds); free(ctp->xys); free(sntable); continue; }
+        free(sntable);
+        free(ctp->xys);
+        free(ctp->topinds);
+        if(segmentationname && p->stepnum==2) continue;
 
 
-        /* Clean up: */
-        free(sntable);          /* Allocated here.                      */
-        free(ctp->xys);         /* Allocated in getclumpinfo (clumps.c) */
-        free(ctp->topinds);     /* Allocated here.                      */
+        /* Segmenting objects can only be defined when there is more
+           than one segment. Since ctp->numclumps is the number of
+           clumps+1, if an object has more than one clump,
+           p->numclumps will be larger than two. When there is only
+           one segment (p->numseg==2) or none (p->numseg==1), then
+           just set the required preliminaries to make the next steps
+           be generic for all cases. */
+        if(ctp->numclumps<=2)
+          {
+            ctp->numobjects=2;
+            thisdetectionisoneobject(ctp);
+            errno=0; ctp->segtoobjlabs=malloc(2*sizeof*ctp->segtoobjlabs);
+            if(ctp->segtoobjlabs==NULL)
+              error(EXIT_FAILURE, errno, "%lu bytes for ctp->segtoobjlabs "
+                    "in segmentonthread (segmentation.c)",
+                    2*sizeof*ctp->segtoobjlabs);
+            if(segmentationname && ( p->stepnum>=3 || p->stepnum<=5) )
+              continue;
+          }
+        else
+          {
+            /* Grow the true clumps until the growth limit. */
+            prepfirstgrowth(ctp);
+            growclumps(ctp, 1);
+            if(segmentationname && p->stepnum==3)
+              { free(ctp->blankinds); continue; }
+
+
+            /* Identify the objects within the grown clumps and set
+               ctp->numobjects. */
+            grownclumpstoobjects(ctp);
+            if(segmentationname && p->stepnum==4)
+              { free(ctp->blankinds); continue; }
+
+
+            /* Fill in the full detected area. */
+            if(ctp->numclumps<=2)
+              /* There is only one object in this whole detection. So
+                 automatically, the whole region should get a label of
+                 1. Do that with this function. */
+              thisdetectionisoneobject(ctp);
+            else
+              {
+                /* Grow the clumps unconditionally to fill the
+                   remaining blank pixels. */
+                ctp->numblanks=0; indf=(ind=ctp->inds)+ctp->area;
+                do
+                  if(p->olab[*ind]<0)
+                    ctp->blankinds[ctp->numblanks++]=*ind;
+                while(++ind<indf);
+                growclumps(ctp, 0);
+              }
+            if(segmentationname && p->stepnum==5)
+              { free(ctp->blankinds); continue; }
+
+            /* Clean up */
+            free(ctp->blankinds);
+          }
+
+        /*  */
+
+        /* Clean up */
+        free(ctp->segtoobjlabs);
       }
 
   /* Wait until all the threads finish: */
@@ -214,7 +591,7 @@ segmentation(struct noisechiselparams *p)
 {
   float *f, *fp;
   char *extname=NULL;
-  long *l, *c, *lp, *forfits=NULL;
+  long *forfits=NULL;
   size_t i, s0=p->smp.s0, s1=p->smp.s1;
   char *segmentationname=p->segmentationname;
   size_t *labareas, **labinds, numobjsinit=p->numobjects;
@@ -274,22 +651,20 @@ segmentation(struct noisechiselparams *p)
   labindexs(p->olab, s0*s1, numobjsinit, &labareas, &labinds);
 
 
-  /* We don't need the labels in the p->olab and p->clab any
-     more. From now on, they will be used to keep the final values. */
-  c=p->clab; lp=(l=p->olab)+s0*s1; do *l=*c++=0; while(++l<lp);
-
-
-  /* We are now working on the foreground pixels: */
-  p->b0f1=1;
+  /* p->clab was used for the noise clumps once, we have to reset it
+     to zero. Note that olab will be initialized for each object later
+     on. */
+  memset(p->clab, 0, s0*s1*sizeof *p->clab);
 
 
   /* Segment the detections. When the viewer wants to check the steps,
      the operations have to be repeated multiple times to output each
      step. */
+  p->b0f1=1;
   if(p->segmentationname)
     {
       p->stepnum=1;
-      while(p->stepnum<3/*6*/)
+      while(p->stepnum<6)
 	{
 	  memset(p->clab, 0, s0*s1*sizeof *p->clab);
           segmentdetections(p, numobjsinit, labareas, labinds);

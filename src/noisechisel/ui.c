@@ -379,6 +379,20 @@ readconfig(char *filename, struct noisechiselparams *p)
                       filename, lineno);
 	  up->segsnhistnbinsset=1;
 	}
+      else if(strcmp(name, "gthresh")==0)
+	{
+	  if(up->gthreshset) continue;
+          anyfloat(value, &p->gthresh, name, key, SPACK,
+                   filename, lineno);
+	  up->gthreshset=1;
+	}
+      else if(strcmp(name, "objbordersn")==0)
+	{
+	  if(up->objbordersnset) continue;
+          floatl0(value, &p->objbordersn, name, key, SPACK,
+                  filename, lineno);
+	  up->objbordersnset=1;
+	}
 
 
       /* Operating modes: */
@@ -526,6 +540,10 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "segquant", p->segquant);
   if(up->segsnhistnbinsset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnhistnbins", p->segsnhistnbins);
+  if(up->gthreshset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "gthresh", p->gthresh);
+  if(up->objbordersnset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "objbordersn", p->objbordersn);
 }
 
 
@@ -612,6 +630,10 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("segquant");
   if(up->segsnhistnbinsset==0)
     REPORT_NOTSET("segsnhistnbins");
+  if(up->gthreshset==0)
+    REPORT_NOTSET("gthresh");
+  if(up->objbordersnset==0)
+    REPORT_NOTSET("objbordersn");
 
   END_OF_NOTSET_REPORT;
 }

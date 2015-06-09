@@ -81,6 +81,8 @@ struct uiparams
   int      segsnminareaset;
   int          segquantset;
   int    segsnhistnbinsset;
+  int           gthreshset;
+  int       objbordersnset;
 };
 
 
@@ -134,6 +136,8 @@ struct noisechiselparams
   float           segquant; /* S/N quantile for true clump.                */
   size_t    segsnhistnbins; /* ==1: Save false clumps S/Ns histogram.      */
   size_t  keepmaxnearriver; /* ==1: Keep clumps with max touching river.   */
+  float            gthresh; /* Threshold to stop growing objects.          */
+  float        objbordersn; /* S/N of rivers to define objects.            */
 
   /* Operating mode: */
 

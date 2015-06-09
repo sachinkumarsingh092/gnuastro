@@ -45,10 +45,15 @@ struct clumpsthreadparams
   double            *xys; /* The light weighted center of each clump.    */
 
   /* Other basic parameters: */
+  float              std; /* Standard deviation on this detection.       */
   size_t        *topinds; /* Indexs of the top flux in each clump.       */
   size_t       numclumps; /* Number of clumps in this set of pixels.     */
+  size_t      numobjects; /* Number of objects in this detected region.  */
   size_t            area; /* Array keeping the areas of all detections.  */
   size_t           *inds; /* Array of pointers to the indexs of all dets.*/
+  size_t      *blankinds; /* Array of pixels which should be grown.      */
+  size_t       numblanks; /* Number of blank pixels.                     */
+  long     *segtoobjlabs; /* Convert from grown segments to object label.*/
 };
 
 
@@ -64,6 +69,9 @@ struct clumpsthreadparams
 
 void
 oversegment(struct clumpsthreadparams *ctp);
+
+void
+growclumps(struct clumpsthreadparams *ctp, int withrivers);
 
 void
 clumpsntable(struct clumpsthreadparams *ctp, float **sntable);
