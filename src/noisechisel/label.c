@@ -362,6 +362,7 @@ labindexs(long *lab, size_t size, size_t numlabs, size_t **outareas,
   /* Fill in the indexs array. */
   lp=(l=lab)+size;
   do if(*l) labinds[*l][counters[*l]++]=l-lab; while(++l<lp);
+  labinds[0]=NULL;
 
   /* For a check:
   {

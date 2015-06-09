@@ -160,7 +160,11 @@ noisechisel(struct noisechiselparams *p)
 
 
   /* Segment the detections: */
-  if(verb) gettimeofday(&t1, NULL);
+  if(verb)
+    {
+      reporttiming(NULL, "Starting to find clumps and objects.", 1);
+      gettimeofday(&t1, NULL);
+    }
   segmentation(p);
   if(verb)
     {

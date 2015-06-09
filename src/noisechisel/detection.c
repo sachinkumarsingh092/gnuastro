@@ -215,13 +215,14 @@ detlabelsn(struct noisechiselparams *p, long *labinmesh, size_t *numlabs,
   for(i=1;i<*numlabs;++i)
     if(areas[i]>detsnminarea && (ave=fluxs[i]/areas[i]) >0 )
       {
-        /* Find the flux weighted center of this object and get the
+        /* Find the flux weighted center of this object in each
+           dimension to find the mesh it belongs to and get the
            standard deviation at this point. Note that the standard
            deviation on the grid was stored in smp->garray2. The error
            should then be taken to the power of two and if the sky is
            subtracted, a 2 should be multiplied to it.*/
-        ind=(xys[i*2]/fluxs[i]) * is1 + xys[i*2+1]/fluxs[i];
-        err = smp->garray2[imgindextomeshid(smp, ind)];
+        err = smp->garray2[imgxytomeshid(smp, xys[i*2]/fluxs[i],
+                                         xys[i*2+1]/fluxs[i])];
         err *= p->skysubtracted ? err : 2.0f*err;
 
         /* Set the index in the sntable to store the Signal to noise
@@ -780,7 +781,7 @@ onlytruedetections(struct noisechiselparams *p)
   if(verb)
     {
       snave=floataverage(lmp->garray1, lmp->nmeshi);
-      sprintf(report, "S/N limit found on larger grid (Average: %.3f).",
+      sprintf(report, "Detection S/N limit found (Average: %.3f).",
               snave);
       reporttiming(NULL, report, 2);
     }

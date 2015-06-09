@@ -159,7 +159,7 @@ size_t
 gidfromchbasedid(struct meshparams *mp, size_t chbasedid);
 
 size_t
-imgindextomeshid(struct meshparams *mp, size_t index);
+imgxytomeshid(struct meshparams *mp, size_t x, size_t y);
 
 void
 checkmeshid(struct meshparams *mp, long **out);

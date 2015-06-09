@@ -29,6 +29,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include "timing.h"
 #include "checkset.h"
 #include "forqsort.h"
 #include "neighbors.h"
@@ -71,10 +72,10 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
        where is0 and is1 are the height and width of the input image.
 */
 void
-oversegment(struct noisechiselparams *p, size_t *inds, size_t area,
-            size_t x0, size_t y0, size_t x1, size_t y1,
-            size_t *numclumps)
+oversegment(struct clumpsthreadparams *ctp)
 {
+  struct noisechiselparams *p=ctp->p;
+
   /* pix is not actually used its self, however, the pointer to it
      will be extensively used (ind) for the macro FILL_NGB_8_REGION.
      This macro works on the pointer to the index, not the index its
@@ -83,21 +84,21 @@ oversegment(struct noisechiselparams *p, size_t *inds, size_t area,
   size_t pix;
 
   float *arr=p->conv;
-  size_t *topinds=p->topinds;
   struct sll *Q=NULL, *cleanup=NULL;
   long n1, rlab, nlab, curlab=1, *clab=p->clab;
+  size_t x0=ctp->x0, y0=ctp->y0, x1=ctp->x1, y1=ctp->y1;
   size_t *n, *nf, *indf, *pind, *ind=&pix, is1=p->lmp.s1;
   size_t ng, *rn, *rnf, numngb, ngb[8], *relngb=p->relngb;
 
   /* Initialize the region you want to over-segment. */
-  indf=(pind=inds)+area;
+  indf=(pind=ctp->inds)+ctp->area;
   do clab[*pind]=SEGMENTINIT; while(++pind<indf);
 
   /* In the case where a connected region with the same flux or masked
      regions exists, some later indices might already be labeled. Note
      that in the convolved image that is being used here, the masked
      pixels have the smallest possible float value.  */
-  indf=(pind=inds)+area;
+  indf=(pind=ctp->inds)+ctp->area;
   do
     /* When regions of a constant flux or masked regions exist, some
        later indexs (although they have same flux) will be filled
@@ -233,7 +234,11 @@ oversegment(struct noisechiselparams *p, size_t *inds, size_t area,
                should be used for the whole region. Otherwise, this is
                a new label. */
             if(n1) rlab = n1;
-            else   rlab = curlab++;
+            else
+              {
+                rlab = curlab++;
+                if(ctp->topinds) ctp->topinds[rlab]=*pind;
+              }
 
             /* Give the same label to the whole connected equal flux
                region, except those that might have been on the side
@@ -310,7 +315,7 @@ oversegment(struct noisechiselparams *p, size_t *inds, size_t area,
             else
               {
                 rlab = curlab++;
-                if(topinds) topinds[rlab]=*pind;
+                if(ctp->topinds) ctp->topinds[rlab]=*pind;
               }
 
             /* Put the found label in the pixel. */
@@ -319,7 +324,7 @@ oversegment(struct noisechiselparams *p, size_t *inds, size_t area,
       }
   while(++pind<indf);
 
-  *numclumps=curlab;
+  ctp->numclumps=curlab;
 }
 
 
@@ -360,16 +365,16 @@ oversegment(struct noisechiselparams *p, size_t *inds, size_t area,
    4: Standard deviation on flux weighted center of clump.
 */
 void
-getclumpinfo(struct noisechiselparams *p, size_t *inds, size_t area,
-             size_t numclumps, size_t x0, size_t y0, size_t x1,
-             size_t y1, double **outclumpinfo)
+getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
 {
+  struct noisechiselparams *p=ctp->p;
   struct meshparams *smp=&p->smp;
 
   double *xys=NULL, *clumpinfo;
   float *img=p->img, *smpstd=smp->garray2;
+  size_t lab, is0=p->lmp.s0, is1=p->lmp.s1;
   long *clab=p->clab, wngb[WNGBSIZE], ngblab;
-  size_t index, lab, is0=p->lmp.s0, is1=p->lmp.s1;
+  size_t x0=ctp->x0, y0=ctp->y0, x1=ctp->x1, y1=ctp->y1;
   size_t i=0, ii=0, row, *n, *nf, ngb[8], *ind, *indf, numngb;
 
   /* Just make sure that the box size is not only around one pixel! */
@@ -381,21 +386,22 @@ getclumpinfo(struct noisechiselparams *p, size_t *inds, size_t area,
 
   /* Allocate the clump information array. */
   errno=0;
-  clumpinfo=*outclumpinfo=calloc(numclumps*INFOTABCOLS, sizeof *clumpinfo);
+  clumpinfo=calloc(ctp->numclumps*INFOTABCOLS, sizeof *clumpinfo);
   if(clumpinfo==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for clumpinfo (clumps.c)",
-          numclumps*INFOTABCOLS*sizeof *clumpinfo);
+          ctp->numclumps*INFOTABCOLS*sizeof *clumpinfo);
+  *outclumpinfo=clumpinfo;
   if(p->skysubtracted)
     {
-      errno=0; xys=calloc(2*numclumps, sizeof *xys);
+      errno=0; xys=calloc(2*ctp->numclumps, sizeof *xys);
       if(xys==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for xys (clumps.c)",
-              2*numclumps*sizeof *xys);
+              2*ctp->numclumps*sizeof *xys);
     }
 
   /* Go over all the pixels in this set of pixels and fill in the
      proper information for each clump. */
-  indf = (ind=inds) + area;
+  indf = (ind=ctp->inds) + ctp->area;
   do
     if(!isnan(img[*ind]))
       {
@@ -467,7 +473,7 @@ getclumpinfo(struct noisechiselparams *p, size_t *inds, size_t area,
   /* Do the final preparations. All the calculations are only
      necessary for the clumps that satisfy the minimum area. So there
      is no need to waste time on the smaller ones. */
-  for(lab=1;lab<numclumps;++lab)
+  for(lab=1;lab<ctp->numclumps;++lab)
     {
       row=lab*INFOTABCOLS;
       if(clumpinfo[row+1]>p->segsnminarea)
@@ -489,10 +495,9 @@ getclumpinfo(struct noisechiselparams *p, size_t *inds, size_t area,
                 { clumpinfo[row+1]=0; continue; }
               else
                 {
-                  index = ( (size_t)(xys[2*lab] / clumpinfo[row]) * is1
-                            + (size_t)(xys[2*lab+1] / clumpinfo[row]) );
-
-                  clumpinfo[row+4]  = smpstd[imgindextomeshid(smp, index)];
+                  clumpinfo[row+4]=
+                    smpstd[imgxytomeshid(smp, xys[2*lab]/clumpinfo[row],
+                                         xys[2*lab+1]/clumpinfo[row])];
 
                   /* For a check:
                   printf("%lu: (%lu, %lu) --> %f\n", lab,
@@ -531,10 +536,10 @@ getclumpinfo(struct noisechiselparams *p, size_t *inds, size_t area,
 
 
 void
-clumpsntable(struct noisechiselparams *p, size_t *inds, size_t area,
-             size_t *numclumps, size_t x0, size_t y0, size_t x1,
-             size_t y1, float **sntable)
+clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
 {
+  struct noisechiselparams *p=ctp->p;
+
   float *sntab;
   double *clumpinfo, err;
   size_t i, ind, row, counter=0;
@@ -542,20 +547,20 @@ clumpsntable(struct noisechiselparams *p, size_t *inds, size_t area,
 
 
   /* Get the information for all the segments. */
-  getclumpinfo(p, inds, area, *numclumps, x0, y0, x1, y1, &clumpinfo);
+  getclumpinfo(ctp, &clumpinfo);
 
 
   /* Allocate the signal to noise table. */
   errno=0;
-  sntab = *sntable = malloc( *numclumps * sizeof *sntab );
+  sntab = *sntable = malloc( ctp->numclumps * sizeof *sntab );
   if(sntab==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for sntab (clumps.c)",
-          *numclumps*sizeof *sntab);
+          ctp->numclumps*sizeof *sntab);
 
 
   /* Start calculating the Signal to noise ratios. */
   sntab[0]=0;
-  for(i=1;i<*numclumps;++i)
+  for(i=1;i<ctp->numclumps;++i)
     {
       /* These variables used for easy readability. */
       row=i*INFOTABCOLS;
@@ -585,10 +590,15 @@ clumpsntable(struct noisechiselparams *p, size_t *inds, size_t area,
 	sntab[i]=0;
     }
 
+
   /* If we are dealing with noise, replace the number of clumps with
      the number of those with a sufficient area and inner flux. */
   if(p->b0f1==0)
-    *numclumps=counter;
+    ctp->numclumps=counter;
+
+
+  /* Clean up */
+  free(clumpinfo);
 }
 
 
@@ -609,25 +619,30 @@ clumpsntable(struct noisechiselparams *p, size_t *inds, size_t area,
 
 
 /******************************************************************/
-/*************       S/N threshold on grid       ******************/
+/*************           S/N threshold           ******************/
 /******************************************************************/
 void *
 clumpsnthreshonmesh(void *inparams)
 {
+  struct clumpsthreadparams ctp;
   struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
   struct meshparams *mp=mtp->mp;
   struct noisechiselparams *p=(struct noisechiselparams *)mp->params;
 
   size_t *mponeforall=mp->oneforall;
-  size_t *inds=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
+  float *sntable;
   char cline[1000];
   long *clab=p->clab;
-  float *sntable, minbfrac=p->minbfrac;
-  size_t numclumps, minnumfalse=p->minnumfalse;
-  size_t s0, s1, nf, area, ind, startind, is1=mp->s1;
+  size_t s0, s1, nf, ind, startind, is1=mp->s1;
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
   char suffix[50], *histname, *segmentationname=p->segmentationname;
+
+  /* Set the necessary pointers for the clumpsthreadparams
+     structure. */
+  ctp.p=p;
+  ctp.topinds=NULL;             /* For noise, we don't want topinds. */
+  ctp.inds=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
   /* Go over all the meshs that are assigned to this thread. */
   for(i=0;indexs[i]!=NONTHRDINDEX;++i)
@@ -637,12 +652,14 @@ clumpsnthreshonmesh(void *inparams)
       startind=mp->start[ind];
       s0=mp->ts0[mp->types[ind]];
       s1=mp->ts1[mp->types[ind]];
+      ctp.x1 = (ctp.x0=startind/is1) + s0;
+      ctp.y1 = (ctp.y0=startind%is1) + s1;
 
 
       /* Check to see if we have enough blank area for getting the
 	 background noise statistics. */
-      count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &area);
-      if( (float)area < (float)(s0*s1)*minbfrac )
+      count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &ctp.area);
+      if( (float)ctp.area < (float)(s0*s1)*p->minbfrac )
         {
           if(segmentationname)
             longinitonregion(clab, 0, startind, s0, s1, is1);
@@ -654,17 +671,17 @@ clumpsnthreshonmesh(void *inparams)
          number of noise pixels in this mesh were calculated above
          (area). Here we want to pull out the indexs of those pixels
          which is necessary for the over-segmentation. */
-      index_f_b_onregion(p->byt, startind, s0, s1, is1, inds, 0);
+      index_f_b_onregion(p->byt, startind, s0, s1, is1, ctp.inds, 0);
 
 
       /* Sort the indexs based on the flux within them. */
-      qsort(inds, area, sizeof(size_t), indexfloatdecreasing);
+      qsort(ctp.inds, ctp.area, sizeof(size_t), indexfloatdecreasing);
 
 
-      /* Do the over-segmentation: */
-      oversegment(p, inds, area, startind/is1, startind%is1,
-                  startind/is1+s0, startind%is1+s1, &numclumps);
-      if(numclumps<p->minnumfalse)
+      /* Do the over-segmentation and put the number of clumps in
+         ctp.numclumps */
+      oversegment(&ctp);
+      if(ctp.numclumps<p->minnumfalse)
         {
           if(segmentationname)
             longinitonregion(clab, 0, startind, s0, s1, is1);
@@ -673,12 +690,11 @@ clumpsnthreshonmesh(void *inparams)
 
 
       /* Find the signal to noise of all the clumps. */
-      clumpsntable(p, inds, area, &numclumps, startind/is1, startind%is1,
-                   startind/is1+s0, startind%is1+s1, &sntable);
+      clumpsntable(&ctp, &sntable);
 
 
       /* Continue if the number of clumps is enough: */
-      if(numclumps<minnumfalse)
+      if(ctp.numclumps<p->minnumfalse)
         {
           free(sntable);
           if(segmentationname)
@@ -688,9 +704,9 @@ clumpsnthreshonmesh(void *inparams)
 
 
       /* Sort the Signal to noise ratio values and remove outliers. */
-      qsort(sntable, numclumps, sizeof *sntable, floatincreasing);
-      removeoutliers_flatcdf(sntable, &numclumps);
-      if(numclumps<minnumfalse)
+      qsort(sntable, ctp.numclumps, sizeof *sntable, floatincreasing);
+      removeoutliers_flatcdf(sntable, &ctp.numclumps);
+      if(ctp.numclumps<p->minnumfalse)
         {
           free(sntable);
           if(segmentationname)
@@ -700,7 +716,7 @@ clumpsnthreshonmesh(void *inparams)
 
 
       /* Put the signal to noise quantile into the mesh grid. */
-      mp->garray1[ind]=sntable[indexfromquantile(numclumps, p->segquant)];
+      mp->garray1[ind]=sntable[indexfromquantile(ctp.numclumps, p->segquant)];
 
 
       /* If the user has asked for it, make the histogram of the
@@ -722,7 +738,7 @@ clumpsnthreshonmesh(void *inparams)
                   ind, p->segquant, mp->garray1[ind]);
           automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
                           p->cp.dontdelete, &histname);
-          savehist(sntable, numclumps, p->segsnhistnbins,
+          savehist(sntable, ctp.numclumps, p->segsnhistnbins,
                    histname, cline);
           free(histname);
         }
@@ -745,25 +761,113 @@ clumpsnthreshonmesh(void *inparams)
 void
 clumpsngrid(struct noisechiselparams *p)
 {
+  float snave;
+  char report[VERBMSGLENGTHS2_V];
   struct meshparams *lmp=&p->lmp;
 
   /* Set the convolved image as the basis for sorting the indexs and
      finding clumps. */
   forqsortindexarr=p->conv;
 
-  /* For finding the noise signal to noise, we know there is no
-     objects, so there is no need to identify the index with the top
-     flux. Later on, when dealing with the detections, they become
-     important. */
-  p->topinds=NULL;
-
   /* Find the clump Signal to noise ratio on successful meshs then on
      all the meshs. findsnthreshongrid is in detection.c. */
   operateonmesh(lmp, clumpsnthreshonmesh, sizeof(size_t), 0, 1);
   findsnthreshongrid(&p->lmp, p->clumpsnname, "Interpolating the "
                      "CLUMP Signal to noise ratio threshold", p->wcs);
-  if(p->segmentationname)
-    arraytofitsimg(p->segmentationname, "NoiseOversegmentaion",
-                   LONG_IMG, p->clab, p->smp.s0, p->smp.s1, 0, p->wcs,
-                   NULL, SPACK_STRING);
+  if(p->cp.verb)
+    {
+      snave=floataverage(lmp->garray1, lmp->nmeshi);
+      sprintf(report, "Clump S/N limit found (Average: %.3f).",
+              snave);
+      reporttiming(NULL, report, 2);
+    }
+
 }
+
+
+
+
+
+#if 0
+/* Given the signal to noise of each segment (in sntable), and a
+   threshold for an acceptable S/N (in `p`), remove those segments
+   that don't satisfy the criteria and correct the number of clumps. */
+void
+removefalseclumps(struct noisechiselparams *p)
+{
+  double *seginfo;
+  size_t *n, *nf, ;
+  long *newlabs, oldlab, *clab=p->sp->clab;
+  float *sntable=p->sntable, snthresh=p->snthresh;
+  size_t i, j, numreal, *ind, *indf, ngb[8], numngb;
+  size_t is0=p->sp->np->lmesh.s0, is1=p->sp->np->lmesh.s1;
+
+  /* Allocate space for the new labels array. */
+  errno=0; newlabs=malloc(p->numseg*sizeof *newlabs);
+
+  /* We want the removed regions to become SEGMENTINIT. */
+  longinit(newlabs, p->numseg, SEGMENTINIT);
+
+  /* Find the number of successful clumps + 1 (since an array is going
+     to be built later and the labels have to be the indexs of that
+     array). */
+  numreal=1;
+  if(p->sp->np->keepmaxriver)
+    for(i=1;i<p->numseg;++i)
+      {/*
+	if(p->mid==3938)
+	  printf("%lu: %f %f\n", i, sntable[i], snthresh);
+       */
+	if(sntable[i]>snthresh)
+	  newlabs[i]=numreal++;
+      }
+  else
+    for(i=1;i<p->numseg;++i)
+      {
+	/* Check to see if the brightest pixel in this clump is touching
+	   a river or not. */
+	ind=&topinds[i];
+	{FILL_NGB_8_ALLIMG}
+	nf=(n=ngb)+numngb;
+	for(;n<nf;++n) if(clab[*n]==SEGMENTRIVER) break;
+
+	/* If the brightest pixel of this clump was not touching a river
+	   and its signal to noise is larger than the threshold, then
+	   give it a new label.*/
+	if(n==nf && sntable[i]>snthresh)
+	  {/*
+	    printf("%lu: %f %f\n", i, sntable[i], snthresh);
+	   */
+	    newlabs[i]=numreal++;
+	  }
+      }
+
+
+  /* Allocate space for the information of each real clump and save
+     the information for that clump into the seginfo table. */
+  seginfo=malloc(numreal*INFOTABCOLS*sizeof *seginfo);
+  assert(seginfo!=NULL);
+  for(i=1;i<p->numseg;++i)
+    if(newlabs[i]!=SEGMENTINIT)
+      for(j=0;j<INFOTABCOLS;++j)
+	seginfo[newlabs[i]*INFOTABCOLS+j]=p->seginfo[i*INFOTABCOLS+j];
+
+  /* Change the values of the false clumps. Note that the labels are
+     either SEGMENTRIVER or a label */
+  indf = (ind=p->indexs) + p->area;
+  do
+    {
+      oldlab=clab[*ind];
+      if( oldlab == SEGMENTRIVER  )
+	clab[*ind] = SEGMENTINIT;
+      else
+	clab[*ind] = newlabs[oldlab];
+    }
+  while(++ind<indf);
+
+  free(newlabs);
+  free(p->seginfo);
+  p->seginfo=seginfo;
+  p->numseg = numreal;
+}
+#endif

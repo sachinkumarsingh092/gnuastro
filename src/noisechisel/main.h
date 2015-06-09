@@ -137,6 +137,8 @@ struct noisechiselparams
   /* Operating mode: */
 
   /* Internal: */
+  float              *img;  /* Input image.                                */
+  float            *imgss;  /* Sky subtracted image.                       */
   time_t          rawtime;  /* Starting time of the program.               */
   long              *olab;  /* Object labels.                              */
   long              *clab;  /* Clump labels.                               */
@@ -144,14 +146,10 @@ struct noisechiselparams
   unsigned char     *dbyt;  /* False detection removal thresholded array.  */
   float           cpscorr;  /* Correction for counts per second data.      */
   unsigned char      b0f1;  /* ==1: we are now working on data, not noise. */
-  float              *img;  /* Input image.                                */
-  float            *imgss;  /* Sky subtracted image.                       */
   int             stepnum;  /* Number of step if user wants to see steps.  */
   size_t       numobjects;  /* Total number of objects (detections).       */
   size_t        numclumps;  /* Total number of clumps.                     */
-  double       *clumpinfo;  /* Information for each clump.                 */
-  size_t         *topinds;  /* Indexs of the top flux pixels in each clump.*/
-  size_t        relngb[8];  /* Indexs of neighbors.                        */
+  size_t        relngb[8];  /* Indexs of relative neighbors.               */
 };
 
 #endif

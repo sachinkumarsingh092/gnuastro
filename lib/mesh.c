@@ -205,14 +205,19 @@ gidfromchbasedid(struct meshparams *mp, size_t chbasedid)
        mp->garray[imgindextomeshid(mp, ind)]
  */
 size_t
-imgindextomeshid(struct meshparams *mp, size_t index)
+imgxytomeshid(struct meshparams *mp, size_t x, size_t y)
 {
-  size_t x=index/mp->s1, y=index%mp->s1;
-  size_t meshsize=mp->meshsize, gs1=mp->gs1;
-
-  /* Take the proper action: */
+  /* Take the proper action. The ternary conditional is here because
+     when the meshsize is not an exact multiple of the the channel
+     (image) size, there might be some extra pixels in the last mesh
+     in each dimension which will cause trouble in the end. So without
+     these checks, a pixel lying in those extra regions will be
+     thought of as belongin to another mesh (that doesn't exist). We
+     have to make sure that doesn't happen. */
   if(mp->nch==1)
-    return (x/meshsize) * gs1 + (y/meshsize);
+    return ( (x/mp->meshsize<mp->gs0 ? x/mp->meshsize : x/mp->meshsize -1)
+             * mp->gs1
+             + (y/mp->meshsize<mp->gs1 ? y/mp->meshsize : y/mp->meshsize -1));
   else
     {
       /* Number of pixels along each axis in all channels: */
@@ -222,13 +227,22 @@ imgindextomeshid(struct meshparams *mp, size_t index)
       size_t chx=x/cps0, chy=y/cps1;
 
       /* The X and Y of this mesh in this channel: */
-      size_t mx=(x%cps0)/meshsize, my=(y%cps1)/meshsize;
+      size_t mx = (x%cps0)/mp->meshsize;
+      size_t my = (y%cps1)/mp->meshsize;
+
+      /* If the last mesh doesn't have the same size as the rest, mx
+         or my might become one larger. Note that we have already made
+         sure that this pixel is in the channel specified by chx and
+         chy. */
+      mx = mx<mp->gs0 ? mx : mx-1;
+      my = my<mp->gs1 ? my : my-1;
+
 
       /* Return the proper id to input into garray. */
       if(mp->garray1==mp->cgarray1)
-        return mp->nmeshc * (chx*mp->nch1+chy) + mx*gs1+my;
+        return mp->nmeshc * (chx*mp->nch1+chy) + mx * mp->gs1 + my;
       else
-        return (chx*mp->gs0+mx) * gs1 + (chy*gs1+my);
+        return (chx*mp->gs0+mx) * mp->gs1 + (chy * mp->gs1 + my);
     }
 
   /* This function should not reach here! So we will just return a

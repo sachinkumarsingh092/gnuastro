@@ -1,3 +1,12 @@
+2015-06-09  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/clumps.c: All functions now use the
+	clumpsthreadparams structure as input instead of a list of
+	arguments.
+
+	* lib/mesh.c (imgindextomeshid): Corrected to work correctly when
+	the pixel might be lying on the last mesh that might be larger.
+
 2015-06-08  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/thresh.c (applydetectionthresholdskysub):

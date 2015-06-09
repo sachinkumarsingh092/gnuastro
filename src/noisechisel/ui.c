@@ -979,7 +979,8 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Using %lu CPU thread(s).\n", p->cp.numthreads);
+      printf("  - Using %lu CPU thread%s\n", p->cp.numthreads,
+             p->cp.numthreads==1 ? "." : "s.");
       printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)
         printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);

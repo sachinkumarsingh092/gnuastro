@@ -23,24 +23,6 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef SEGMENTATION_H
 #define SEGMENTATION_H
 
-
-struct segmentationparams
-{
-  /* Main NoiseChisel parameters: */
-  struct noisechiselparams *p;  /* Main NoiseChisel structure. */
-
-  /* Indexs and areas of all the labels. */
-  size_t     thisinitlab; /* Initial label of this whole detection.      */
-  size_t       *labareas; /* Array keeping the areas of all detections.  */
-  size_t       **labinds; /* Array of pointers to the indexs of all dets.*/
-
-  /* Threads: */
-  size_t              id; /* ID of this thread.                          */
-  size_t         *indexs; /* 2D array of initial indexs for each thread. */
-  pthread_barrier_t   *b; /* pthreads barrier for running threads.       */
-};
-
-
 void
 segmentation(struct noisechiselparams *p);
 

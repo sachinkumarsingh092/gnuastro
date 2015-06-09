@@ -28,6 +28,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include "forqsort.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
@@ -47,24 +48,61 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void *
 segmentonthread(void *inparam)
 {
-  struct segmentationparams *sp=(struct segmentationparams *)inparam;
-  struct noisechiselparams *p=sp->p;
+  struct clumpsthreadparams *ctp=(struct clumpsthreadparams *)inparam;
+  struct noisechiselparams *p=ctp->p;
 
-  size_t i;
+  float *sntable;
+  size_t i, s0=p->lmp.s0, s1=p->lmp.s1;
+  char *segmentationname=p->segmentationname;
+
+  /* For the detections, there is no box, only the sides of the image. */
+  ctp->x1=s0;
+  ctp->y1=s1;
+  ctp->x0=ctp->y0=0;
 
   /* Go over all the initial detections that were assigned to this
      thread. */
-  for(i=0;sp->indexs[i]!=NONTHRDINDEX;++i)
-    {
-      /* Keep the initial label of this detection. */
-      sp->thisinitlab=sp->indexs[i];
+  for(i=0;ctp->indexs[i]!=NONTHRDINDEX;++i)
+    if(ctp->indexs[i])   /* sp->indexs[i]==0 for the background. */
+      {
+        /* Keep the initial label of this detection. */
+        ctp->area=ctp->allareas[ctp->indexs[i]];
+        ctp->inds=ctp->alllabinds[ctp->indexs[i]];
 
 
-    }
+        /* Allocate the space for the indexs of the brightest pixels
+           in each clump.*/
+        errno=0; ctp->topinds=malloc(ctp->area*sizeof *ctp->topinds);
+        if(ctp->topinds==NULL)
+          error(EXIT_FAILURE, errno, "%lu bytes for ctp->topinds in "
+                "segmentonthread (segmentation.c)",
+                ctp->area*sizeof *ctp->topinds);
+
+
+        /* Sort the indexs based on the flux within them. */
+        qsort(ctp->inds, ctp->area, sizeof(size_t), indexfloatdecreasing);
+        oversegment(ctp);
+        if(segmentationname && p->stepnum==1)
+          {free(ctp->topinds); continue;}
+
+
+        /* Get the Signal to noise ratio of all the clumps within this
+           detection. */
+        clumpsntable(ctp, &sntable);
+
+
+        /* Remove clumps with smaller signal to noise ratios: */
+
+
+
+        /* Clean up: */
+        free(sntable);
+        free(ctp->topinds);
+      }
 
   /* Wait until all the threads finish: */
   if(p->cp.numthreads>1)
-    pthread_barrier_wait(sp->b);
+    pthread_barrier_wait(ctp->b);
   return NULL;
 }
 
@@ -74,40 +112,39 @@ segmentonthread(void *inparam)
 
 void
 segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
-                  size_t *labareas, size_t **labinds)
+                  size_t *allareas, size_t **alllabinds)
 {
   int err;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
-  struct segmentationparams *sp;
+  struct clumpsthreadparams *ctp;
   size_t i, nb, *indexs, thrdcols;
   size_t numthreads=p->cp.numthreads;
 
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. */
-  errno=0; sp=malloc(numthreads*sizeof *sp);
-  if(sp==NULL)
+  errno=0; ctp=malloc(numthreads*sizeof *ctp);
+  if(ctp==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes in segmentdetections "
-          "(segmentation.c) for sp", numthreads*sizeof *sp);
+          "(segmentation.c) for ctp", numthreads*sizeof *ctp);
 
 
-  /* Distribute the initial labels between all the threads. */
+  /* Distribute the initial labels between all the threads.  */
   distinthreads(numobjsinit, numthreads, &indexs, &thrdcols);
-
 
   /* Spin off the threads to work on each object if more than one
      thread will be used. If not, simply start working on all the
      detections. */
   if(numthreads==1)
     {
-      sp[0].p=p;
-      sp[0].id=0;
-      sp[0].indexs=indexs;
-      sp[0].labinds=labinds;
-      sp[0].labareas=labareas;
-      segmentonthread(&sp[0]);
+      ctp[0].p=p;
+      ctp[0].id=0;
+      ctp[0].indexs=indexs;
+      ctp[0].allareas=allareas;
+      ctp[0].alllabinds=alllabinds;
+      segmentonthread(&ctp[0]);
     }
   else
     {
@@ -123,13 +160,13 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
       for(i=0;i<numthreads;++i)
 	if(indexs[i*thrdcols]!=NONTHRDINDEX)
 	  {
-            sp[i].p=p;
-            sp[i].id=i;
-            sp[i].b=&b;
-            sp[i].labinds=labinds;
-            sp[i].labareas=labareas;
-            sp[i].indexs=&indexs[i*thrdcols];
-	    err=pthread_create(&t, &attr, segmentonthread, &sp[i]);
+            ctp[i].p=p;
+            ctp[i].id=i;
+            ctp[i].b=&b;
+            ctp[i].allareas=allareas;
+            ctp[i].alllabinds=alllabinds;
+            ctp[i].indexs=&indexs[i*thrdcols];
+	    err=pthread_create(&t, &attr, segmentonthread, &ctp[i]);
 	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
 	  }
 
@@ -139,7 +176,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
       pthread_barrier_destroy(&b);
     }
 
-  free(sp);
+  free(ctp);
   free(indexs);
 }
 
@@ -219,6 +256,11 @@ segmentation(struct noisechiselparams *p)
   /* Find the true clump S/N threshold andput it in p->lmp.garray1. */
   p->b0f1=0;
   clumpsngrid(p);
+  if(p->segmentationname)
+    arraytofitsimg(p->segmentationname, "NoiseOversegmentaion",
+                   LONG_IMG, p->clab, p->smp.s0, p->smp.s1, 0, p->wcs,
+                   NULL, SPACK_STRING);
+
 
 
   /* Save the indexs of all the detected labels. We will be working on
@@ -229,6 +271,10 @@ segmentation(struct noisechiselparams *p)
   /* We don't need the labels in the p->olab and p->clab any
      more. From now on, they will be used to keep the final values. */
   c=p->clab; lp=(l=p->olab)+s0*s1; do *l=*c++=0; while(++l<lp);
+
+
+  /* We are now working on the foreground pixels: */
+  p->b0f1=1;
 
 
   /* Segment the detections. When the viewer wants to check the steps,
