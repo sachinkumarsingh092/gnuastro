@@ -426,7 +426,7 @@ static struct argp_option options[] =
     {
       "segsnminarea",
       'm',
-      0,
+      "INT",
       0,
       "Minimum area to find clumps S/N.",
       5
@@ -673,11 +673,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       anyfloat(arg, &p->dthresh, "dthresh", key, SPACK, NULL, 0);
       p->up.dthreshset=1;
       break;
-    case 'i':
+    case 'F':
       sizetlzero(arg, &p->minnumfalse, "minnumfalse", key, SPACK, NULL, 0);
       p->up.minnumfalseset=1;
       break;
-    case 'F':
+    case 'i':
       sizetlzero(arg, &p->detsnminarea, "detsnminarea", key, SPACK, NULL, 0);
       p->up.detsnminareaset=1;
       break;

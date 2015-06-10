@@ -1,3 +1,8 @@
+2015-06-10  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/mknoise/astmknoise.conf: Default background magnitude
+	changed to -10 and zeropoint to 0.0.
+
 2015-06-09  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/clumps.c: All functions now use the

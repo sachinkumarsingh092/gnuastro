@@ -40,7 +40,7 @@ convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh		\
 imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh	\
 mkprof/ellipticalmasks.sh header/write.sh header/print.sh		\
 header/update.sh header/delete.sh imgstat/basicstats.sh			\
-subtractsky/subtractsky.sh
+subtractsky/subtractsky.sh noisechisel/noisechisel.sh
 
 EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt			\
 mkprof/mkprofcat1_mask.txt mkprof/mkprofcat2.txt		\
