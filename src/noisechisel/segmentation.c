@@ -344,6 +344,97 @@ grownclumpstoobjects(struct clumpsthreadparams *ctp)
 
 
 
+/* When there is more than one object over a detection and there is
+   more than one clump over the detected region, the clumps have to be
+   re-labeled. The clumps have to be re-labeled based on which object
+   they overlap with.*/
+void
+newclumplabels(struct clumpsthreadparams *ctp)
+{
+  long *clab=ctp->p->clab;
+  size_t i, *ind, *indf, *numclumpsinobj;
+  long *newclumplabs, *segtoobjlabs=ctp->segtoobjlabs;
+
+  /* A simple sanity check. */
+  if(ctp->numclumps<=2 || ctp->numobjects<=2)
+    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it. "
+          "For some reason, the newclumplabels function (in segmentation.c) "
+          "was called for the %lu detected region, even though this region "
+          "has ctp->numclumps=%lu and ctp->numobjects=%lu! This function "
+          "should only be used when there is more than one object and "
+          "clump over a detected region.", PACKAGE_BUGREPORT,
+          ctp->thislabel, ctp->numclumps, ctp->numobjects);
+
+  /* 'numclumpsinobj' will keep the number of clumps in each object.
+     Unlike the numbers of objects and clumps, this is the actual
+     number of clumps in an object, NOT ADDED WITH ONE. */
+  errno=0;
+  numclumpsinobj=calloc(ctp->numobjects, sizeof *numclumpsinobj);
+  if(numclumpsinobj==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for numclumpsinobj in "
+          "newclumplabels (segmentation.c)",
+          ctp->numobjects*sizeof *numclumpsinobj);
+
+
+  /* Allocate the array to keep the new clump labels.  */
+  errno=0;
+  newclumplabs=calloc(ctp->numclumps, sizeof *newclumplabs);
+  if(newclumplabs==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for newclumplabs in "
+          "newclumplabels (segmentation.c)",
+          ctp->numclumps*sizeof *newclumplabs);
+
+
+  /* Fill the newclumplabs and numclumpsinobj arrays: */
+  for(i=1;i<ctp->numclumps;++i)
+    newclumplabs[i]=++numclumpsinobj[ segtoobjlabs[i] ];
+
+
+  /* Reset the clump labels over the detected region */
+  indf=(ind=ctp->inds)+ctp->area;
+  do
+    if(clab[*ind]>0)
+      clab[*ind]=newclumplabs[ clab[*ind] ];
+  while(++ind<indf);
+
+
+  /* Clean up: */
+  free(newclumplabs);
+  free(numclumpsinobj);
+}
+
+
+
+
+
+/* We are potentially dealing with multiple threads which will get to
+   this point at various (asynchronous) times. However, the total
+   object and clump counters in noisechiselparams should only be
+   accessed by one thread at a time. Therefore we have defined the
+   totalnummtx mutex to make threads wait at this point and not allow
+   multiple threads to change these two variables simultaneously. */
+void
+nextavailablelabel(struct clumpsthreadparams *ctp)
+{
+  /* If we are using multiple threads, lock the mutex, so only this
+     thread can change the p->numobjects and p->numclumps values. */
+  if(ctp->p->cp.numthreads>1)
+    pthread_mutex_lock(ctp->totalnummtx);
+
+  ctp->firstavailablelab  = ctp->p->numobjects;
+  ctp->p->numobjects     += ctp->numobjects-1;
+  ctp->p->numclumps      += ctp->numclumps-1;
+
+  /* This thread is finished with the mutex, unlock it for the
+     other threads: */
+  if(ctp->p->cp.numthreads>1)
+    pthread_mutex_unlock(ctp->totalnummtx);
+
+}
+
+
+
+
 
 
 
@@ -430,12 +521,7 @@ segmentonthread(void *inparam)
           {
             ctp->numobjects=2;
             thisdetectionisoneobject(ctp);
-            errno=0; ctp->segtoobjlabs=malloc(2*sizeof*ctp->segtoobjlabs);
-            if(ctp->segtoobjlabs==NULL)
-              error(EXIT_FAILURE, errno, "%lu bytes for ctp->segtoobjlabs "
-                    "in segmentonthread (segmentation.c)",
-                    2*sizeof*ctp->segtoobjlabs);
-            if(segmentationname && ( p->stepnum>=3 || p->stepnum<=5) )
+            if(segmentationname && ( p->stepnum>=3 && p->stepnum<=6) )
               continue;
           }
         else
@@ -448,10 +534,11 @@ segmentonthread(void *inparam)
 
 
             /* Identify the objects within the grown clumps and set
-               ctp->numobjects. */
+               ctp->numobjects. This function allocates
+               ctp->segtoobjlabs. */
             grownclumpstoobjects(ctp);
             if(segmentationname && p->stepnum==4)
-              { free(ctp->blankinds); continue; }
+              { free(ctp->blankinds); free(ctp->segtoobjlabs); continue; }
 
 
             /* Fill in the full detected area. */
@@ -466,22 +553,38 @@ segmentonthread(void *inparam)
                    remaining blank pixels. */
                 ctp->numblanks=0; indf=(ind=ctp->inds)+ctp->area;
                 do
-                  if(p->olab[*ind]<0)
-                    ctp->blankinds[ctp->numblanks++]=*ind;
+                  if(p->olab[*ind]<0) ctp->blankinds[ctp->numblanks++]=*ind;
                 while(++ind<indf);
                 growclumps(ctp, 0);
               }
             if(segmentationname && p->stepnum==5)
-              { free(ctp->blankinds); continue; }
+              { free(ctp->blankinds); free(ctp->segtoobjlabs); continue; }
+
+            /* Set the final clump labels. Note that this is only
+               necessary when there is more than object over the
+               detection. When there is only one object over the full
+               detection or if there is only one clump, the existing
+               clump labels are fine. Note that both these counters
+               are one more than the total number of objects or clumps
+               (they are the labels of the next object). */
+            if(ctp->numobjects>2)
+              newclumplabels(ctp);
+            if(segmentationname && p->stepnum==6)
+              { free(ctp->blankinds); free(ctp->segtoobjlabs); continue; }
 
             /* Clean up */
             free(ctp->blankinds);
+            free(ctp->segtoobjlabs);
           }
 
-        /*  */
 
-        /* Clean up */
-        free(ctp->segtoobjlabs);
+        /* Get the next available unique label for the final image. */
+        nextavailablelabel(ctp);
+
+
+        /* Fix all the labels in the olab array */
+        indf=(ind=ctp->inds)+ctp->area;
+        do p->olab[*ind] += ctp->firstavailablelab-1; while(++ind<indf);
       }
 
   /* Wait until all the threads finish: */
@@ -502,6 +605,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
+  pthread_mutex_t totalnummtx;
   struct clumpsthreadparams *ctp;
   size_t i, nb, *indexs, thrdcols;
   size_t numthreads=p->cp.numthreads;
@@ -540,6 +644,9 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
       else                       nb=numthreads+1;
       attrbarrierinit(&attr, &b, nb);
 
+      /* Initialize the mutex for the number of objects. */
+      pthread_mutex_init(&totalnummtx, NULL);
+
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
 	if(indexs[i*thrdcols]!=NONTHRDINDEX)
@@ -549,6 +656,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
             ctp[i].b=&b;
             ctp[i].allareas=allareas;
             ctp[i].alllabinds=alllabinds;
+            ctp[i].totalnummtx=&totalnummtx;
             ctp[i].indexs=&indexs[i*thrdcols];
 	    err=pthread_create(&t, &attr, segmentonthread, &ctp[i]);
 	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
@@ -558,6 +666,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
       pthread_barrier_wait(&b);
       pthread_attr_destroy(&attr);
       pthread_barrier_destroy(&b);
+      pthread_mutex_destroy(&totalnummtx);
     }
 
   free(ctp);
@@ -664,7 +773,7 @@ segmentation(struct noisechiselparams *p)
   if(p->segmentationname)
     {
       p->stepnum=1;
-      while(p->stepnum<6)
+      while(p->stepnum<8)
 	{
 	  memset(p->clab, 0, s0*s1*sizeof *p->clab);
           segmentdetections(p, numobjsinit, labareas, labinds);
@@ -680,6 +789,10 @@ segmentation(struct noisechiselparams *p)
               extname="Objects found"; forfits=p->olab; break;
             case 5:
               extname="Objects grown"; forfits=p->olab; break;
+            case 6:
+              extname="New clump labels"; forfits=p->clab; break;
+            case 7:
+              extname="Final object labels"; forfits=p->olab; break;
             default:
               error(EXIT_FAILURE, 0, "A bug! Please contact us at %s to "
                     "fix the problem. For some reason, the variable "

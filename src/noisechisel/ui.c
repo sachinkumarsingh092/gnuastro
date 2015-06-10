@@ -672,7 +672,7 @@ sanitycheck(struct noisechiselparams *p)
   if(p->cp.output)
     checkremovefile(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_detected.fits", p->cp.removedirinfo,
+    automaticoutput(p->up.inputname, "_forcatalog.fits", p->cp.removedirinfo,
 		p->cp.dontdelete, &p->cp.output);
 
   /* Set the check image names: */
@@ -1070,5 +1070,5 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
     wcsvfree(&p->nwcs, &p->wcs);
 
   /* Print the final message. */
-  reporttiming(t1, SPACK_NAME" finished in: ", 0);
+  reporttiming(t1, SPACK_NAME" finished in", 0);
 }

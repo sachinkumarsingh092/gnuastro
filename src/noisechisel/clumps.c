@@ -1046,7 +1046,6 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
 	clab[*ind] = newlabs[ clab[*ind] ];
       else
 	clab[*ind] = SEGMENTINIT;
-
     }
   while(++ind<indf);
 

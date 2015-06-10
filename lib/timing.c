@@ -57,7 +57,7 @@ reporttiming(struct timeval *t1, char *jobname, size_t level)
     }
 
   if(level==0)
-    printf("%s %f (seconds)\n", jobname, dt);
+    printf("%s %-f seconds\n", jobname, dt);
   else if(level==1)
     {
       if(t1)

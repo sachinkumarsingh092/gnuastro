@@ -36,6 +36,7 @@ struct clumpsthreadparams
   size_t    **alllabinds; /* Array of pointers to the indexs of all dets.*/
   size_t         *indexs; /* 2D array of initial indexs for each thread. */
   pthread_barrier_t   *b; /* pthreads barrier for running threads.       */
+  pthread_mutex_t *totalnummtx; /* Mutex to change the total numbers.    */
 
   /* Box coordinates for this thread: */
   size_t              x0; /* Bottom left corner on x axis.               */
@@ -54,6 +55,7 @@ struct clumpsthreadparams
   size_t      *blankinds; /* Array of pixels which should be grown.      */
   size_t       numblanks; /* Number of blank pixels.                     */
   long     *segtoobjlabs; /* Convert from grown segments to object label.*/
+  long firstavailablelab; /* First free label over the full image.       */
 };
 
 
