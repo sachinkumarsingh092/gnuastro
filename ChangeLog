@@ -1,3 +1,13 @@
+2015-06-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/args.h (options): `minbfrac' and `minnumfalse'
+	options moved under the `Input' category from the detections
+	category. This move was because these two options are used by both
+	the detection and segmentation steps and thus keeping them under
+	detection would be confusing. Also `checkthresh' was changed to
+	`checkthreshold'. Also, the option `numerosion' was changed to
+	`erode' to be consistent with the opening and dilate options.
+
 2015-06-10  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mknoise/astmknoise.conf: Default background magnitude

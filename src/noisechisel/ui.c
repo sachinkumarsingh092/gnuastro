@@ -156,6 +156,20 @@ readconfig(char *filename, struct noisechiselparams *p)
                        filename, lineno);
 	  up->skysubtractedset=1;
 	}
+      else if(strcmp(name, "minbfrac")==0)
+	{
+	  if(up->minbfracset) continue;
+          floatl0s1(value, &p->minbfrac, name, key, SPACK,
+                    filename, lineno);
+	  up->minbfracset=1;
+	}
+      else if(strcmp(name, "minnumfalse")==0)
+	{
+	  if(up->minnumfalseset) continue;
+          sizetlzero(value, &p->minnumfalse, name, key, SPACK,
+                     filename, lineno);
+	  up->minnumfalseset=1;
+	}
 
 
 
@@ -267,12 +281,12 @@ readconfig(char *filename, struct noisechiselparams *p)
                   filename, lineno);
 	  up->qthreshset=1;
 	}
-      else if(strcmp(name, "numerosion")==0)
+      else if(strcmp(name, "erode")==0)
 	{
-	  if(up->numerosionset) continue;
-          sizetelzero(value, &p->numerosion, name, key, SPACK,
+	  if(up->erodeset) continue;
+          sizetelzero(value, &p->erode, name, key, SPACK,
                       filename, lineno);
-	  up->numerosionset=1;
+	  up->erodeset=1;
 	}
       else if(strcmp(name, "erodengb")==0)
 	{
@@ -294,13 +308,6 @@ readconfig(char *filename, struct noisechiselparams *p)
           int4or8(value, &p->openingngb, name, key, SPACK,
                   filename, lineno);
 	  up->openingngbset=1;
-	}
-      else if(strcmp(name, "minbfrac")==0)
-	{
-	  if(up->minbfracset) continue;
-          floatl0s1(value, &p->minbfrac, name, key, SPACK,
-                    filename, lineno);
-	  up->minbfracset=1;
 	}
       else if(strcmp(name, "sigclipmultip")==0)
 	{
@@ -329,13 +336,6 @@ readconfig(char *filename, struct noisechiselparams *p)
           sizetlzero(value, &p->detsnminarea, name, key, SPACK,
                      filename, lineno);
 	  up->detsnminareaset=1;
-	}
-      else if(strcmp(name, "minnumfalse")==0)
-	{
-	  if(up->minnumfalseset) continue;
-          sizetlzero(value, &p->minnumfalse, name, key, SPACK,
-                     filename, lineno);
-	  up->minnumfalseset=1;
 	}
       else if(strcmp(name, "detsnhistnbins")==0)
 	{
@@ -465,6 +465,10 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     }
   if(up->skysubtractedset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "skysubtracted", p->skysubtracted);
+  if(up->minbfracset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minbfrac", p->minbfrac);
+  if(up->minnumfalseset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "minnumfalse", p->minnumfalse);
 
 
   fprintf(fp, "\n# Output:\n");
@@ -504,16 +508,14 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   fprintf(fp, "\n# Detection:\n");
   if(up->qthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "qthresh", p->qthresh);
-  if(up->numerosionset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numerosion", p->numerosion);
+  if(up->erodeset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "erode", p->erode);
   if(up->erodengbset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "erodengb", p->erodengb);
   if(up->openingset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "opening", p->opening);
   if(up->openingngbset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "openingngb", p->openingngb);
-  if(up->minbfracset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "minbfrac", p->minbfrac);
   if(up->sigclipmultipset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigclipmultip", p->sigclipmultip);
   if(up->sigcliptoleranceset)
@@ -523,8 +525,6 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "dthresh", p->dthresh);
   if(up->detsnminareaset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnminarea", p->detsnminarea);
-  if(up->minnumfalseset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "minnumfalse", p->minnumfalse);
   if(up->detsnhistnbinsset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnhistnbins", p->detsnhistnbins);
   if(up->detquantset)
@@ -566,6 +566,10 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("khdu");
   if(up->skysubtractedset==0)
     REPORT_NOTSET("skysubtracted");
+  if(up->minbfracset==0)
+    REPORT_NOTSET("minbfrac");
+  if(up->minnumfalseset==0)
+    REPORT_NOTSET("minnumfalse");
 
   /* Mesh grid: */
   if(up->smeshsizeset==0)
@@ -596,16 +600,14 @@ checkifset(struct noisechiselparams *p)
   /* Detection: */
   if(up->qthreshset==0)
     REPORT_NOTSET("qthresh");
-  if(up->numerosionset==0)
-    REPORT_NOTSET("numerosion");
+  if(up->erodeset==0)
+    REPORT_NOTSET("erode");
   if(up->erodengbset==0)
     REPORT_NOTSET("erodengb");
   if(up->openingset==0)
     REPORT_NOTSET("opening");
   if(up->openingngbset==0)
     REPORT_NOTSET("openingngb");
-  if(up->minbfracset==0)
-    REPORT_NOTSET("minbfrac");
   if(up->sigclipmultipset==0)
     REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
@@ -614,8 +616,6 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("dthresh");
   if(up->detsnminareaset==0)
     REPORT_NOTSET("detsnminarea");
-  if(up->minnumfalseset==0)
-    REPORT_NOTSET("minnumfalse");
   if(up->detsnhistnbinsset==0)
     REPORT_NOTSET("detsnhistnbins");
   if(up->detquantset==0)

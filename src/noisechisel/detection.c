@@ -85,18 +85,18 @@ initialdetection(struct noisechiselparams *p)
 
   /* Erode the thresholded image: */
   if(p->erodengb==4)
-    for(i=0;i<p->numerosion;++i)
+    for(i=0;i<p->erode;++i)
       dilate0_erode1_4con(p->byt, s0, s1, 1);
   else
-    for(i=0;i<p->numerosion;++i)
+    for(i=0;i<p->erode;++i)
       dilate0_erode1_8con(p->byt, s0, s1, 1);
   if(detectionname)
     arraytofitsimg(detectionname, "Eroded", BYTE_IMG, p->byt,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
-      sprintf(report, "Eroded %lu times (%s connectivity).", p->numerosion,
-              p->erodengb==4 ? "4" : "8");
+      sprintf(report, "Eroded %lu times (%s connectivity).",
+              p->erode, p->erodengb==4 ? "4" : "8");
       reporttiming(NULL, report, 2);
     }
 

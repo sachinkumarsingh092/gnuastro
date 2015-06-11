@@ -64,7 +64,7 @@ struct uiparams
   int          minmodeqset;
 
   int           qthreshset;
-  int        numerosionset;
+  int             erodeset;
   int          erodengbset;
   int           openingset;
   int        openingngbset;
@@ -117,7 +117,7 @@ struct noisechiselparams
   /* Detection: */
   float              *conv; /* Convolved image.                            */
   float            qthresh; /* Quantile threshold on convolved img.        */
-  size_t        numerosion; /* Number of times to erode thresholded image. */
+  size_t             erode; /* Number of times to erode thresholded image. */
   int             erodengb; /* Use 4 or 8 connectivity in erosion.         */
   size_t           opening; /* Depth of opening to apply to eroded image.  */
   int           openingngb; /* Use 4 or 8 connectivity in opening.         */

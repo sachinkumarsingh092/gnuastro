@@ -127,6 +127,22 @@ static struct argp_option options[] =
       "Input is already sky subtracted.",
       1
     },
+    {
+      "minbfrac",
+      'B',
+      "FLT",
+      0,
+      "Minimum fraction of undetected area in a mesh.",
+      1
+    },
+    {
+      "minnumfalse",
+      'F',
+      "INT",
+      0,
+      "Min No. of false detection/segments for quantile.",
+      1
+    },
 
 
 
@@ -272,7 +288,7 @@ static struct argp_option options[] =
       4
     },
     {
-      "numerosion",
+      "erode",
       'e',
       "INT",
       0,
@@ -301,14 +317,6 @@ static struct argp_option options[] =
       "4or8",
       0,
       "Use 4 or 8 connectivity in opening.",
-      4
-    },
-    {
-      "minbfrac",
-      'B',
-      "FLT",
-      0,
-      "Minimum fraction of undetected area in a mesh.",
       4
     },
     {
@@ -344,14 +352,6 @@ static struct argp_option options[] =
       4
     },
     {
-      "minnumfalse",
-      'F',
-      "INT",
-      0,
-      "Min No. of false detection/segments for quantile.",
-      4
-    },
-    {
       "detsnhistnbins",
       510,
       "INT",
@@ -377,7 +377,7 @@ static struct argp_option options[] =
     },
 
     {
-      "checkthresh",
+      "checkthreshold",
       505,
       0,
       0,
@@ -573,6 +573,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->skysubtracted=1;
       p->up.skysubtractedset=1;
       break;
+    case 'B':
+      floatl0s1(arg, &p->minbfrac, "minbfrac", key, SPACK, NULL, 0);
+      p->up.minbfracset=1;
+      break;
+    case 'F':
+      sizetlzero(arg, &p->minnumfalse, "minnumfalse", key, SPACK, NULL, 0);
+      p->up.minnumfalseset=1;
+      break;
 
     /* Output: */
 
@@ -640,8 +648,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.qthreshset=1;
       break;
     case 'e':
-      sizetelzero(arg, &p->numerosion, "numerosion", key, SPACK, NULL, 0);
-      p->up.numerosionset=1;
+      sizetelzero(arg, &p->erode, "erode", key, SPACK, NULL, 0);
+      p->up.erodeset=1;
       break;
     case 506:
       int4or8(arg, &p->erodengb, "erodengb", key, SPACK, NULL, 0);
@@ -654,10 +662,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 507:
       int4or8(arg, &p->openingngb, "openingngb", key, SPACK, NULL, 0);
       p->up.openingngbset=1;
-      break;
-    case 'B':
-      floatl0s1(arg, &p->minbfrac, "minbfrac", key, SPACK, NULL, 0);
-      p->up.minbfracset=1;
       break;
     case 'u':
       floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
@@ -672,10 +676,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'R':
       anyfloat(arg, &p->dthresh, "dthresh", key, SPACK, NULL, 0);
       p->up.dthreshset=1;
-      break;
-    case 'F':
-      sizetlzero(arg, &p->minnumfalse, "minnumfalse", key, SPACK, NULL, 0);
-      p->up.minnumfalseset=1;
       break;
     case 'i':
       sizetlzero(arg, &p->detsnminarea, "detsnminarea", key, SPACK, NULL, 0);
