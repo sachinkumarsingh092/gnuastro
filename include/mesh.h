@@ -25,7 +25,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
+#include <wcslib/wcs.h>
 
 #include "astrthreads.h"
 
@@ -148,6 +148,7 @@ struct meshparams
   int    fullconvolution; /* ==1: Convove over all channels.             */
 
   /* Mesh types and information: */
+  int     meshbasedcheck; /* ==1: use one pixel for each mesh in checks. */
   size_t          ts0[4]; /* Size (along first FITS axis) of mesh types. */
   size_t          ts1[4]; /* Size (along second FITS axis) of mesh types.*/
 };
@@ -166,6 +167,13 @@ checkmeshid(struct meshparams *mp, long **out);
 
 void
 checkgarray(struct meshparams *mp, float **out1, float **out2);
+
+void
+meshvaluefile(struct meshparams *mp, char *filename, char *extname1,
+              char *extname2, struct wcsprm *wcs, char *spack_string);
+
+void
+fullgarray(struct meshparams *mp, int reverse);
 
 void
 makemesh(struct meshparams *mp);

@@ -468,12 +468,6 @@ sanitycheck(struct subtractskyparams *p)
       automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->meshname);
     }
-  if(p->interpname)
-    {
-      p->interpname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_interp.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->interpname);
-    }
   if(p->convname)
     {
       p->convname=NULL;         /* Was not allocated before!  */
@@ -645,7 +639,6 @@ freeandreport(struct subtractskyparams *p, struct timeval *t1)
 
   /* Free all the allocated names: */
   if(p->meshname) free(p->meshname);
-  if(p->interpname) free(p->interpname);
   if(p->up.kernelnameset) free(p->up.kernelname);
 
   /* Free the mask image name. Note that p->up.inputname was not

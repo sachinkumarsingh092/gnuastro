@@ -180,14 +180,16 @@ noisechisel(struct noisechiselparams *p)
 
   /* Make the output: */
   if(verb) gettimeofday(&t1, NULL);
-  arraytofitsimg(p->cp.output, "Sky Subtracted", FLOAT_IMG, p->imgss,
-                 s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
   checkgarray(&p->smp, &sky, &std);
+  arraytofitsimg(p->cp.output, "Input", FLOAT_IMG, p->imgss,
+                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
+                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
+                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  arraytofitsimg(p->cp.output, "Sky", FLOAT_IMG, sky,
+                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   arraytofitsimg(p->cp.output, "Standard deviation", FLOAT_IMG, std,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  arraytofitsimg(p->cp.output, "Object labels", LONG_IMG, p->olab,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  arraytofitsimg(p->cp.output, "Clump labels", LONG_IMG, p->clab,
                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {

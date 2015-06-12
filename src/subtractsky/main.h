@@ -83,7 +83,6 @@ struct subtractskyparams
   /* output: */
   int           checkstd;  /* ==1: include the sky STD in checks.        */
   char         *meshname;  /* Name of --checkmesh output.                */
-  char       *interpname;  /* Name of --checkinterpolation output.       */
   char         *convname;  /* Name of --checkconvolution output.         */
   char          *skyname;  /* Name of sky and its STD image.             */
 

@@ -672,7 +672,7 @@ sanitycheck(struct noisechiselparams *p)
   if(p->cp.output)
     checkremovefile(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_forcatalog.fits", p->cp.removedirinfo,
+    automaticoutput(p->up.inputname, "_labeled.fits", p->cp.removedirinfo,
 		p->cp.dontdelete, &p->cp.output);
 
   /* Set the check image names: */
@@ -920,6 +920,7 @@ preparearrays(struct noisechiselparams *p)
   lmp->numnearest=smp->numnearest;
   lmp->smoothwidth=smp->smoothwidth;
   lmp->lastmeshfrac=smp->lastmeshfrac;
+  lmp->meshbasedcheck=smp->meshbasedcheck;
   lmp->interponlyblank=smp->interponlyblank;
   lmp->fullinterpolation=smp->fullinterpolation;
   lmp->numthreads=smp->numthreads=p->cp.numthreads;

@@ -344,6 +344,7 @@ Tiling an image
 
 * Quantifying signal in a mesh::  Good meshs for gradients.
 * Grid interpolation and smoothing::  Filling the blank grid elements.
+* Checking grid values::        Check the values on the grid.
 * Mesh grid options::           Common options related to the mesh grid.
 
 Image analysis
@@ -6554,16 +6555,16 @@ parts.
 
 @cindex Channel
 The bias current on each amplifier is different, and normaly bias
-subtraction is not accurately done. So after subtracting the bias
-current, you can clearly still identify the boundaries of different
-amplifiers by eye. See Figure 11(a) in Akhlaghi and Ichikawa (2015)
-for an example. This results in the final reduced data to have
-non-uniform amplifier-shaped regions with higher or lower background
-flux values. Such systematic biases will then propagate to all
-subsequent measurements we do on the data (for example photometry and
-subsequent stellar mass and star formation rate measurements in the
-case of galaxies). Therefore an accurate sky subtraction routine
-should also be able to account for such biases.
+subtraction is not accurately done. So even after subtracting the
+measured bias current, you can usually still identify identify the
+boundaries of different amplifiers by eye. See Figure 11(a) in
+Akhlaghi and Ichikawa (2015) for an example. This results in the final
+reduced data to have non-uniform amplifier-shaped regions with higher
+or lower background flux values. Such systematic biases will then
+propagate to all subsequent measurements we do on the data (for
+example photometry and subsequent stellar mass and star formation rate
+measurements in the case of galaxies). Therefore an accurate sky
+subtraction routine should also be able to account for such biases.
 
 To get an accurate result, the mesh boundaries should be located
 exactly on the amplifier boundaries. Otherwise, some meshes will
@@ -6610,6 +6611,7 @@ locations compared to the input image.
 @menu
 * Quantifying signal in a mesh::  Good meshs for gradients.
 * Grid interpolation and smoothing::  Filling the blank grid elements.
+* Checking grid values::        Check the values on the grid.
 * Mesh grid options::           Common options related to the mesh grid.
 @end menu
 
@@ -6670,7 +6672,7 @@ pixels in each channel will be treated independently. This can be
 disabled with the @option{--fullconvolution} option. See
 @ref{Convolution kernel} for the respective options.
 
-@node Grid interpolation and smoothing, Mesh grid options, Quantifying signal in a mesh, Tiling an image
+@node Grid interpolation and smoothing, Checking grid values, Quantifying signal in a mesh, Tiling an image
 @subsubsection Grid interpolation and smoothing
 
 On some of the grid elements, the desired value will not be found, for
@@ -6710,10 +6712,12 @@ By default the process above will occur on all the grid elements, not
 just the ones that are blank. This is done to avoid biased results on
 the faint wings of bright galaxies and stars (the PSF). Because their
 flux penetrates into the noise very slowly, it might not be possible
-to completely identify it. Therefore, if interpolation is not done on
-non-blank pixels, they can cause a bias in the vicinity of bright
-objects, particularly after smoothing in the next step. This behavior
-can be disabled with the @option{--interponlyblank} option.
+to completely identify that flux and ignore that mesh. Therefore, if
+interpolation is only done on blank pixels, such false positives can
+cause a bias in the vicinity of bright objects, particularly after
+smoothing in the next step. In order to only interpolate over blank
+meshs and leave the values of the successful meshs untouched, the
+@option{--interponlyblank} option can be used.
 
 @cindex Average filter
 Once all the grid elements are filled, the values given to all the
@@ -6726,8 +6730,8 @@ filter. An average filter is just a convolution of the mesh grid
 (spatial convolution with edge correction) by a kernel will all
 elements having an equal weight, see @ref{Convolution process}. The
 kernel is a square. The length of the kernel edge can be set in units
-of pixels through the @option{--smoothwidth} option (which has to be
-an odd number as with any kernel). If a width of 1 is given for the
+of meshs through the @option{--smoothwidth} option (which has to be an
+odd number as with any kernel). If a width of 1 is given for the
 kernel width, then no smoothing will take place.
 
 By default the interpolation and smoothing explained above are done
@@ -6743,8 +6747,87 @@ important that no mesh contain pixels from two channels. Since the
 pixels have been assigned to a mesh prior to these steps (see
 @ref{Tiling an image}), there is no problem in this regard.
 
+Even after smoothing, a simple visual examination of the values given
+to the pixels in each mesh over the image will give a very `boxy' or
+pixelated impression. To our eyes it feels that it would be much
+better if the values could be smoothed in sub-mesh (pixel) scales to
+obtain a smooth variation. An example is the results of bi-linear and
+bi-cubic interpolations, see Figure 16 in Akhlaghi and Ichikawa (2015)
+for several examples. The reasons we are not doing that level of
+smoothing are two fold:
 
-@node Mesh grid options,  , Grid interpolation and smoothing, Tiling an image
+@itemize
+
+@item
+The difference in value between neighboring meshs is not statistically
+significant. After smoothing, the variation between the neighboring
+mesh values will be very small. It does visually appear to be a lot
+when viewing in image viewers like SAO ds9. This is because such
+viewers use the minimum and maximum range of all the pixel values as a
+reference to choose the color given to each pixel. However compared to
+the standard deviation of the noise in the image, the different values
+of each mesh are completely negligible. Please confirm this for your
+self on your own datasets to clearly understand.
+
+@item
+Such pixel-based (not mesh-based) interpolation will be very time
+consuming. Since the difference between the neighboring meshs is
+statistically negligible, it is simply not worth the time investment.
+
+@end itemize
+
+@node Checking grid values, Mesh grid options, Grid interpolation and smoothing, Tiling an image
+@subsubsection Checking grid values
+
+Programs that use the mesh grid to calculate some value, also have
+checking options (that start with @option{--check}). When such options
+are called, the program will create a specific output file depending
+on what you want to check. When the operation is done on the meshes,
+this file shows the values assigned to each mesh grid element. It has
+three extensions:
+
+@enumerate
+
+@item
+The value that was initially calculated for each grid element. If a
+mesh was not successful in providing a value, a NaN value is stored
+for that mesh.
+
+@item
+The interpolated values, see @ref{Grid interpolation and smoothing}.
+
+@item
+The smoothed values, see @ref{Grid interpolation and smoothing}.
+
+@end enumerate
+If more than one value is calculated for each mesh (for example the
+mean and its standard deviation), then each step has that many
+extensions. By default, these check image outputs have the same size
+(pixels) as the input image. So all the pixels within a mesh are given
+the same value. This is useful if you want to later apply these values
+to the image through another program for example. There is a one to
+one correspondence between the input image pixels and the grid showing
+you the mesh values for that pixel.
+
+In other situations, the input pixel resolution might not be important
+for you and you just want to see the relative mesh values over the
+image. In such cases, you can call the @option{--meshbasedcheck}
+option so the check image only has one pixel for each mesh. This image
+will only be as big as the full mesh grid and there will be no world
+coordinate system. When the input images are really large, this can
+make a differnence in both the processing of the programs and in
+viewing the images.
+
+Another case when only one pixel for each mesh will be useful is when
+you might want to display the mesh values in a document and you don't
+want the volume of the document (in bytes) to get too high. For
+example if the mesh sizes are 30 pixels by 30 pixels, then the mesh
+grid created through this option will take @mymath{30\times30=900}
+times less space! You can resize the standard output, but the borders
+between the meshs will be blurred. The best case is to call that
+program with this option.
+
+@node Mesh grid options,  , Checking grid values, Tiling an image
 @subsubsection Mesh grid options
 
 The mesh grid structure defined here (see @ref{Tiling an image}) is
@@ -6836,11 +6919,6 @@ interpolation and smoothing}.
 Do interpolation irrespective of the channels in the image, see
 @ref{Grid interpolation and smoothing}.
 
-@item --checkinterpolation
-A two extension FITS image ending with @file{_interp.fits} will be
-created which shows the average value on each mesh before
-interpolation and after interpolation.
-
 @item -T
 @itemx --smoothwidth
 (@option{=INT}) The width of the average filter kernel used to smooth
@@ -6851,6 +6929,11 @@ smoothing will be done.
 @item --fullsmoothing
 Do smoothing irrespective of the channels in the image, see @ref{Grid
 interpolation and smoothing}.
+
+@item --meshbasedcheck
+Store the fixed value in each mesh in one check image pixel, see
+@ref{Checking grid values}. Note that this image has no world
+coordinate system.
 
 @end table
 
@@ -7590,8 +7673,8 @@ runs.
 
 Once raw data have gone through the initial reduction process (through
 the programs in @ref{Image manipulation}). We are ready to derive
-scientific results out of it. Unfortunately in most cases, the
-scientificly interesting targets are deeply drowned in a sea of
+scientific results out of them. Unfortunately in most cases, the
+scientifically interesting targets are deeply drowned in a sea of
 noise. NoiseChisel is Gnuastro's tool to detect signal in
 noise. Infact, NoiseChisel was the motivation behind creating Gnuastro
 and has @url{http://arxiv.org/abs/1505.01664, a full journal
@@ -7601,10 +7684,10 @@ Astrophysical Journal Supplement Series. It can also be read in arXiv:
 techniques. Following the explanations for the options in
 @ref{NoiseChisel options} should also give you a relatively good idea
 of the steps. Currently the paper does a very thorough job at
-explaining the concepts, methods and even the options of NoiseChisel
-with abundant demonstrations for each step. However, the paper cannot
-undergo any futher updates, so as the development of NoiseChisel
-evolves, this section will grow.
+explaining the concepts and methods of NoiseChisel with abundant
+demonstrations for each step. However, the paper cannot undergo any
+futher updates, so as the development of NoiseChisel evolves, this
+section will grow.
 
 @cindex Detection
 Detection is the process of separating signal from noise. In other
@@ -7655,10 +7738,18 @@ $ astnoisechisel field.fits --mask=badpixels.fits --mhdu=1
 @noindent
 If NoiseChisel is to do processing, an input image should be provided
 with the recognized extensions as input data, see @ref{Arguments}.
-The options that are shared by Gnuastro programs can be seen in
+The options that are shared by all Gnuastro programs can be seen in
 @ref{Common options}. In order to ignore some pixels during the
 analysis, you can specify a mask image, see @ref{Mask image} for an
-explanation and the relevant options.
+explanation and the relevant options. A masked pixel is treated as
+being above the threshold in detection and is assumed to have the
+largest possible flux during the definition of clumps. The reason for
+this is that the centers of bright stars and galaxies are often masked
+(due to saturation). It causes no problems when other parts of the
+image are masked, for example cosmic rays or the edges of raw
+images. No flux is ever assigned to any masked pixel and it is not
+counted in any of the areas. In short masked pixels in a detection or
+clump are ignored while calculating the Signal to noise ratio.
 
 A convolution kernel can also be optionally given. If a value (file
 name) is given to @option{--kernel} on the command line or in a
@@ -7675,8 +7766,10 @@ deal with possible gradients, see @ref{Tiling an image}. The mesh grid
 options are common to all the programs using it, and are listed in
 @ref{Mesh grid options}. In particular, NoiseChisel uses two mesh
 grids: a large and a small one. The sizes of the meshs in each grid
-can be specified with the following two options. The rest of the
-options explained in @ref{Mesh grid options} apply to both grids.
+can be specified with the following two options (the
+@option{--meshsize} option is not recognized by NoiseChisel). The rest
+of the options explained in @ref{Mesh grid options} apply to both
+grids.
 
 @table @option
 
@@ -7715,10 +7808,8 @@ a very complete, detailed and illustrated explanation of each
 step. Reading through the option explanations should be enough to
 optain a general idea of how NoiseChisel works. Before the procedures
 explained by these options begin, the image is convolved with a
-kernel.
-
-The basic properties that apply to the detection and segmentation
-steps are listed below.
+kernel. The first group of options listed below are those that apply
+to both the detection and the segmentation processes.
 @table @option
 
 @item -E
@@ -7766,17 +7857,19 @@ many detected regions should be excluded.
 
 @item -F
 @itemx --minnumfalse
-(@option{=INT}) The minimum number of `psudo-detections' or clumps in
-each large mesh grid. If their number is less than this value, this
+(@option{=INT}) The minimum number of `psudo-detections' (in
+identifying false detections) or clumps (in identifying false clumps)
+in each large mesh grid. If their number is less than this value, this
 mesh will be left blank and filled during mesh interpolation, see
-@ref{Grid interpolation and smoothing}. The Signal to noise ratio of
-false detections and clumps in each mesh is found using the quantile
-of the Signal to noise ratio distribution of the psudo-detections and
-clumps over the undetected pixels in each mesh. If the number of
-Signal to noise ratio measurements in each mesh is not enough, the
-quantile will not be accurate. For example if you set
-@option{--detquant=0.99} (or the top 1 percent), then it is best to
-have at least 100 Signal to noise ratio measurements.
+@ref{Grid interpolation and smoothing}.
+
+The Signal to noise ratio of false detections and clumps in each mesh
+is found using the quantile of the Signal to noise ratio distribution
+of the psudo-detections and clumps over the undetected pixels in each
+mesh. If the number of Signal to noise ratio measurements in each mesh
+is not enough, the quantile will not be accurate. For example if you
+set @option{--detquant=0.99} (or the top 1 percent), then it is best
+to have at least 100 Signal to noise ratio measurements.
 
 @end table
 
@@ -7803,27 +7896,18 @@ mesh}.
 The quantile value is a floating point value between 0 and 1. Assume
 that we have sorted the @mymath{N} data elements of a distribution
 (the pixels in each mesh on the convolved image). The quantile
-(@mymath{q}) of this distribution is the value of the element with
-index @mymath{q\times{N}} in the sorted data set. After thresholding
-is complete, we will have a binary (two valued) image. The pixels
-above the threshold are known as foreground pixels (have a value of 1)
-while those which lie below the threshold are known as background
-(have a value of 0).
+(@mymath{q}) of this distribution is the value of the element with an
+index of (the nearest integer to) @mymath{q\times{N}} in the sorted
+data set. After thresholding is complete, we will have a binary (two
+valued) image. The pixels above the threshold are known as foreground
+pixels (have a value of 1) while those which lie below the threshold
+are known as background (have a value of 0).
 
 @cindex NaN
 @item --checkthreshold
-A three extension FITS file will be created with the prefix set to the
-input file name (see @ref{Automatic output}) and suffixed with
-@file{_thresh.fits}. All three extensions are the same size as the
-input image.
-
-In the first, the pixels in the small mesh grid elements which could
-be used for finding a threshold (see @ref{Quantifying signal in a
-mesh}) are given the threshold value. Those that were not successful
-have a NaN value. In the second extension all the grid elements are
-interpolated and there are no more NaN pixels. In the third extension
-the interpolated values are smoothed to remove strong differences
-between the meshs.
+Check the quantile threshold values on the mesh grid. A file suffixed
+with @file{_thresh.fits} will be created, see @ref{Checking grid
+values}.
 
 @item -e
 @itemx --erode
@@ -7845,27 +7929,27 @@ holes, we are able to separate the regions harboring signal.
 
 @item --erodengb
 (@option{=4or8}) The type of neighborhood (structuring element) used
-in erosion, see @option{--numerosion} for an explanation on
-erosion. In 4-connectivity, the neighbors of a pixel are defined as
-the four pixels on the top, bottom, right and left of a pixel that
-share an edge with it. The 8-connected neighbors on the other hand
-include the 4-connected neighbors along with the other 4 pixels that
-share a corner with this pixels. See Figure 6 (a) and (b) in Akhlaghi
-and Ichikawa (2015) for a demonstration.
+in erosion, see @option{--erode} for an explanation on erosion. In
+4-connectivity, the neighbors of a pixel are defined as the four
+pixels on the top, bottom, right and left of a pixel that share an
+edge with it. The 8-connected neighbors on the other hand include the
+4-connected neighbors along with the other 4 pixels that share a
+corner with this pixel. See Figure 6 (a) and (b) in Akhlaghi and
+Ichikawa (2015) for a demonstration.
 
 @item -p
 @itemx --opening
 (@option{=INT}) Depth of opening to be applied to the eroded binary
 image. Opening is a composite operation. When opening a binary image
 with a depth of @mymath{n}, @mymath{n} erosions (explained in
-@option{--numerosion}) are followed by @mymath{n} dilations. Simply
-put, dilation is the inverse of erosion. When dilating an image any
+@option{--erode}) are followed by @mymath{n} dilations. Simply put,
+dilation is the inverse of erosion. When dilating an image any
 background pixel is flipped (from 0 to 1) to become a foreground
 pixel. Dilation has the effect of fattening the foreground. Note that
 in NoiseChisel, the erosion which is part of opening is independent of
-the initial erosion that is done on the thresholded image
-(@option{--numerosion}). The structuring element for the opening can
-be specified with the @option{--openingngb} option. Opening has the
+the initial erosion that is done on the thresholded image (explained
+in @option{--erode}). The structuring element for the opening can be
+specified with the @option{--openingngb} option. Opening has the
 effect of removing the thin foreground connections (mostly noise)
 between separate foreground `islands' (detections) thereby completely
 isolating them. Once opening is complete, we have @emph{initial}
@@ -7888,7 +7972,7 @@ pixels. Although they might cover a very small number of pixels, they
 usually have very large flux values which can easily bias the average
 and standard devation measured on a mesh. Their effect can easily be
 removed by @mymath{\sigma}-clipping, see @ref{Sigma
-clipping}. NoiseChisel uses a the convergence of the value of the
+clipping}. NoiseChisel uses the convergence of the value of the
 standard deviation as the criteria to stop the
 @mymath{\sigma}-clipping iteration.
 
@@ -7903,23 +7987,26 @@ always be larger than @mymath{\sigma_{new}}. Only statistical scatter
 considered to be approximately equal.
 
 @item --checkdetectionsky
-The sky value that is calculated and finally used for each mesh can be
-checked with this option. A file with the suffix @file{_detsky.fits}
-will be created. Like the output of @option{--checkthreshold}, this
-file will have three extensions showing how the meshs are interpolated
-and smoothed.
+Check the initial approximation of the sky value and its standard
+deviation in a FITS file ending with @file{_detsky.fits}. See
+@ref{Checking grid values} for more information. If
+@option{--meshbasedcheck} is not called, then the first extension will
+be the the binary image with initial detections labeled one and
+background labeled zero. The mesh values will be in the subsequent
+extensions.
 
 @item -R
 @itemx --dthresh
-(@option{=FLT}) The detection threshold (a multiple of the sky
-standard deviation added with the sky). This flux threshold is applied
-to the initially undetected regions. The background pixels that are
-completely engulfed in a 4-connected foreground region are converted
-to background (holes are filled) and one opening (depth of 1) is
-applied over both the initially detected and undetected regions. The
-Signal to noise ratio of the resulting `psudo-detections' are used to
-identify true vs. false detections. See Section 3.1.5 and Figure 7 in
-Akhlaghi and Ichikawa (2015) for a very complete explanation.
+(@option{=FLT}) The detection threshold: a multiple of the initial sky
+standard deviation added with the initial sky approximation. This flux
+threshold is applied to the initially undetected regions on the
+unconvolved image. The background pixels that are completely engulfed
+in a 4-connected foreground region are converted to background (holes
+are filled) and one opening (depth of 1) is applied over both the
+initially detected and undetected regions. The Signal to noise ratio
+of the resulting `psudo-detections' are used to identify true
+vs. false detections. See Section 3.1.5 and Figure 7 in Akhlaghi and
+Ichikawa (2015) for a very complete explanation.
 
 @item -i
 @itemx --detsnminarea
@@ -7933,32 +8020,32 @@ ignore any psudo-detection that is smaller than this area.
 @item --detsnhistnbins
 (@option{=INT}) If not equal to zero, a histogram of the Signal to
 noise ratios of the psudo-detections will be stored in a text file for
-every large mesh grid element whose signal to noise is used. The
-number of bins in this histogram is specified by the value given to
-this option. This is good for inspecting the best possible value to
-@option{--detsnminarea}. The best values are obtained when the
-distribution is not skewed significantly. Note that when correlated
-noise is present (processed images) a certain level of skewness will
-be present in any case.
+every large mesh grid element which is successful in defining a Signal
+to noise ratio in the grid. The number of bins in this histogram is
+specified by the value given to this option. This is good for
+inspecting the best possible value to @option{--detsnminarea}. The
+best values are obtained when the distribution is not skewed
+significantly. Note that when correlated noise is present (processed
+images) a certain level of skewness will be present in any case.
 
 @item -c
 @itemx --detquant
 (@option{=FLT}) The quantile of the Signal to noise ratio distribution
 of the psudo-detections in each mesh to use for filling the large mesh
 grid. Note that this is only calculated for the large mesh grids that
-satisfy the minimum fraction of undetected pixels and minimum number
-of psudo-detections.
+satisfy the minimum fraction of undetected pixels (value of
+@option{--minbfrac}) and minimum number of psudo-detections (value of
+@option{--minnumfalse}).
 
 @item --checkdetectionsn
-A file with the suffix @file{--detsn.fits} will be created. Similar to
-the output of @option{--checkthreshold}, it will have three extensions
-showing how the signal to noise values are interpolated and smoothed
-overf the mesh grid.
+Check the Signal to noise ratio value on each large mesh grid in a
+file ending with @file{_detsn.fits}, see @ref{Checking grid values}
+for more information.
 
 @item -I
 @itemx --dilate
 (@option{=INT}) Number of times to dilate the final true
-detections. See the explanations in @option{opening} for more
+detections. See the explanations in @option{--opening} for more
 information on dilation. The structuring element for this final
 dilation is fixed to an 8-connected neighborhood. This is because
 astronomical objects, except cosmic rays, never have a clear cutoff,
@@ -7971,45 +8058,53 @@ file with the suffix @file{_det.fits}. Going through each would just
 be a repeat of the explanations above and also of those in Akhlaghi
 and Ichikawa (2015). The extension label should be sufficient to
 recognize which step you are observing. Viewing all the steps can be
-the best guide in choosing the best set of parameters.
+the best guide in choosing the best set of parameters. Note that
+calling this function will significantly slow NoiseChisel.
 
 @item --checksky
-A file with the suffix @file{_sky.fits} will be created. Like the
-output of the @option{--checkthreshold}, it will have three
-extensions, showing how the final sky value is intepolated and
-smoothed for all the mesh grid elements and pixels in the image.
+Check the final sky value on the mesh grid. Similar to
+@option{--checkdetectionsky}.
 
 @end table
 
+@noindent
 Segmentation is the process of possibly breaking up a detection into
 multiple objects and clumps. In deep surveys segmentation becomes
 particularly important since galaxies might fall along the same line
-of sight or they might be mergring. It is thus very important to be
-able separate the pixels by which of the objects has the most effect
-on them. After segmentation, such a detected region will get different
-labels.
+of sight or they might be merging. It is thus very important to be
+able separate the pixels within a detection if it is necessary. After
+segmentation, such a detected region will get different labels.
+
+In NoiseChisel, segmentation is done by first finding the `true'
+clumps over a detection and then expanding those clumps to a certain
+flux limit. True clumps are found in a process very similar to the
+true detections explained above, see Akhlaghi and Ichikawa (2015) for
+more information. If the connections between the grown clumps are
+weaker than a given threshold, the grown clumps are considered to be
+separate objects. Otherwise, the are considered to be part of the same
+object.
 
 @table @option
 
 @item -m
 @itemx --segsnminarea
 (@option{=INT}) The minimum area which a clump in the undetected
-regions should have in order to be considered. If this size is set to
-small values, the distribution which is used to find the final Signal
-to noise ratio of true clumps will not be accurately found. Note that
-this has to be usually larger than @option{--detsnminarea} because the
-clumps are found on the convolved (smoothed) image while the
-psudo-detections are found on the input image.
+regions should have in order to be considered in the clump Signal to
+noise ratio measurement. If this size is set to a small value, the
+Signal to noise ratio of false clumps will not be accurately
+found. Note that this has to be larger than the value to
+@option{--detsnminarea}. Because the clumps are found on the convolved
+(smoothed) image while the psudo-detections are found on the input
+image.
 
 @item --checkclumpsn
-A file with the suffix @file{_clumpsn.fits} will be created which
-shows the Signal to noise ratio value derived from and used in each
-large mesh grid. See the explanations for @option{--checkthresh} for
-the extensions of this FITS file.
+Check the limiting clump Signal to noise ratio for true detections in
+a file ending with @file{_clumpsn.fits}, see @ref{Checking grid
+values} for more information on checking values on the mesh grid.
 
 @item -g
 @itemx --segquant
-(@option{=FLT}) The quantile of the noise clump Signal to noise
+(@option{=FLT}) The quantile of the noise clump Signal to noise ratio
 distribution. This value is used to identify true clumps over the
 detected regions.
 
@@ -8021,12 +8116,12 @@ undetected regions.
 @item -v
 @itemx --keepmaxnearriver
 Keep a clump whose maximum flux is 8-connected to a river pixel. By
-default such clumps are considered to be noise and are removed. Over
-large profiles, that sink into the noise very slowly, noise can cause
-part of the profile (which was flat without noise) to become a very
-large and with a very high Signal to noise ratio. In such cases, the
-pixel with the maximum flux in the clump will be immediately touching
-a river pixel.
+default such clumps over detections are considered to be noise and are
+removed irrespective of their flux. Over large profiles, that sink
+into the noise very slowly, noise can cause part of the profile (which
+was flat without noise) to become a very large and with a very high
+Signal to noise ratio. In such cases, the pixel with the maximum flux
+in the clump will be immediately touching a river pixel.
 
 @item -G
 @itemx --gthresh
@@ -8043,13 +8138,14 @@ between two grown clumps in order to consider them as separate
 clumps is larger than this value, they are defined to be part of one
 `object'. Note that the physical reality of these `objects' can never
 be established with one image, or even multiple images from one
-broad-band filter. Ultimately, any method we devise to define
-`object's over a detected region is ultimately subjective.
+broad-band filter. Any method we devise to define `object's over a
+detected region is ultimately subjective.
 
 Two very distant galaxies or satellites in one halo might lie in the
-same line of sight and be detected as clumps on a galaxy. On the other
-hand, the connected between two parts of one galaxy have such a low
-surface brightness that they are broken up into multiple
+same line of sight and be detected as clumps on one detection. On the
+other hand, the connection (through a spiral arm or tidal tail for
+example) between two parts of one galaxy might have such a low surface
+brightness that they are broken up into multiple detections or
 objects. Infact if you have noticed, exactly for this purpose, this is
 the only Signal to noise ratio that the user gives into
 NoiseChisel. The `true' detections and clumps can be objectively
@@ -8062,7 +8158,8 @@ keeps all the relevant steps in finding true clumps and segmenting the
 detections in various extensions. Having read the paper or the steps
 above, the extension name should be enough to understand which step
 each extension is showing. Examing this file can be an excellent guide
-in choosing the best set of parameters.
+in choosing the best set of parameters. Note that calling this
+function will significantly slow NoiseChisel.
 
 @end table
 
@@ -8071,25 +8168,28 @@ in choosing the best set of parameters.
 @subsubsection NoiseChisel output
 
 The default name and directory of the outputs are explained in
-@ref{Automatic output}. If an output name is explictly given, it will
-be used as the prefix (removing any possible file-name extensions) in
-the following instead of the input file name. The output is a FITS
-file with four extensions:
+@ref{Automatic output}. NoiseChisel's default output (when none of the
+options starting with @option{--check} or the @option{--output} option
+are called) is one file ending with @file{_labeled.fits}. This file
+has the extensions listed below:
 
 @enumerate
 @item
-The sky subtracted input image. After detection was done, the sky
-value over the smaller mesh grid was found and subtracted from the
-input image. See @ref{Sky value} for a complete explanation.
+A copy of the input image, a copy is placed here for the following
+reasons:
+
+@itemize
 
 @item
-The Standard deviation on each pixel. All the pixels belonging to each
-small mesh grid element get one value. The image in this extension is
-the same size as the input image. At first sight when viewing this
-image in an image viewer, the mesh colors might seem very different on
-the borders of each mesh. However, note that the difference in the
-values of the standard deviation on the meshs do not differ
-significantly.
+By flipping through the extensions, a user can check how accurate the
+detection and segmentation process was.
+
+@item
+All the inputs to MakeCatalog (for generating a catalog from
+NoiseChisel's detections) are included in this one one which makes the
+running of MakeCatalog after NoiseChisel very easy.
+
+@end itemize
 
 @item
 The object labels. Each pixel in the input image is given a label in
@@ -8101,6 +8201,15 @@ The clump labels. All the pixels in the input image that belong to a
 true clump are given a positive label in this extension. The detected
 regions that were not a clump are given a negative value to clearly
 identify the noise from the detections.
+
+@item
+The final sky value on each pixel. See @ref{Sky value} for a complete
+explanation. See @ref{Grid interpolation and smoothing} for an
+explanation on the boxy appearance of this image.
+
+@item
+Similar to the previous mesh but for the standard deviation on each
+pixel.
 
 @end enumerate
 

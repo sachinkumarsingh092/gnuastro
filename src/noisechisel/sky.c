@@ -121,8 +121,6 @@ void
 findavestdongrid(struct noisechiselparams *p, char *outname)
 {
   struct meshparams *smp=&p->smp;
-
-  float *sky, *std;
   size_t s0=smp->s0, s1=smp->s1;
 
 
@@ -131,15 +129,11 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
   operateonmesh(smp, avestdonthread, sizeof(float), 1, 1);
   if(outname)
     {
-      checkgarray(smp, &sky, &std);
-      arraytofitsimg(outname, "Detected", BYTE_IMG, p->byt, s0, s1,
-                     0, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(outname, "Sky", FLOAT_IMG, sky, s0, s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(outname, "SkySTD", FLOAT_IMG, std, s0, s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
-      free(sky);
-      free(std);
+      if(smp->meshbasedcheck==0)
+        arraytofitsimg(outname, "Detected", BYTE_IMG, p->byt, s0, s1,
+                       0, p->wcs, NULL, SPACK_STRING);
+      meshvaluefile(smp, outname, "Calculated Sky", "Calculated Sky STD",
+                    p->wcs, SPACK_STRING);
     }
 
 
@@ -157,15 +151,8 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
      sky and the standard deviation arrays: */
   meshinterpolate(smp, "Interpolating sky value and its standard deviation");
   if(outname)
-    {
-      checkgarray(smp, &sky, &std);
-      arraytofitsimg(outname, "SkyInterpolated", FLOAT_IMG, sky,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(outname, "SkySTDInterpolated", FLOAT_IMG, std,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-      free(sky);
-      free(std);
-    }
+    meshvaluefile(smp, outname, "Interpolated Sky", "Interpolated Sky STD",
+                  p->wcs, SPACK_STRING);
 
 
 
@@ -174,15 +161,8 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
     {
       meshsmooth(smp);
       if(outname)
-        {
-          checkgarray(smp, &sky, &std);
-          arraytofitsimg(outname,"SkySmoothed", FLOAT_IMG, sky,
-                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-          arraytofitsimg(outname, "SkySTDSmoothed", FLOAT_IMG, std,
-                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-          free(sky);
-          free(std);
-        }
+        meshvaluefile(smp, outname, "Smoothed Sky", "Smoothed Sky STD",
+                      p->wcs, SPACK_STRING);
     }
 }
 

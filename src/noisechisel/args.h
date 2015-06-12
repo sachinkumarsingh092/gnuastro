@@ -75,7 +75,7 @@ const char doc[] =
    f j w x y z
    A C J W X Y Z
 
-   Number keys free: >=516
+   Number keys free: >=517
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -269,6 +269,14 @@ static struct argp_option options[] =
       0,
       0,
       "Ignore channels in convolution.",
+      3
+    },
+    {
+      "meshbasedcheck",
+      516,
+      0,
+      0,
+      "Each mesh in one pixel in mesh check images.",
       3
     },
 
@@ -639,6 +647,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 504:
       p->smp.fullconvolution=1;
       p->up.fullconvolutionset=1;
+      break;
+    case 516:
+      p->smp.meshbasedcheck=1;
       break;
 
 

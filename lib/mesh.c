@@ -270,6 +270,112 @@ imgxytomeshid(struct meshparams *mp, size_t x, size_t y)
 
 
 /*********************************************************************/
+/********************         Full garray         ********************/
+/*********************************************************************/
+/* By default, the garray1 and garray2 arrays keep the meshes of each
+   channel contiguously. So in practice, each channel is like a small
+   independent image. This will cause problems when we want to work on
+   the meshs irrespective of which channel they belong to. This
+   function allocates and fills in the fgarray1 and fgarray2 arrays.
+
+   The explanation above is for the case when reverse==0. If it is set
+   equal to 1 (or any non-zero number), then
+*/
+void
+fullgarray(struct meshparams *mp, int reverse)
+{
+  size_t nch1=mp->nch1;
+  size_t ind, gs1=mp->gs1, gs0=mp->gs0;
+  float *fgarray1=NULL, *fgarray2=NULL;
+  float *cgarray1=mp->cgarray1, *cgarray2=mp->cgarray2;
+  size_t g0, g1, f0, f1, fmeshind, chid, is1=mp->nch1*mp->gs1;
+
+  /* First allocate the fgarrays if they were not already
+     allocated. */
+  if(mp->fgarray1==NULL)
+    {
+      /* A simple sanity check */
+      if(reverse)
+        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+              "fix this problem. For some reason, fullgarray has been called "
+              "with the `reverse' flag set to true while fgarray is not "
+              "allocated! This should not happen.", PACKAGE_BUGREPORT);
+
+      /* Allocate the fgarrays */
+      errno=0; mp->fgarray1=malloc(mp->nmeshi*sizeof *mp->fgarray1);
+      if(mp->fgarray1==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for mp->fgarray1 (mesh.c)",
+              mp->nmeshi*sizeof *mp->fgarray1);
+    }
+  if(mp->ngarrays==2 && mp->fgarray2==NULL)
+    {
+      errno=0;
+      mp->fgarray2=malloc(mp->nmeshi*sizeof *mp->fgarray2);
+      if(mp->fgarray2==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for mp->fgarray2 (mesh.c)",
+              mp->nmeshi*sizeof *mp->fgarray2);
+    }
+  fgarray1=mp->fgarray1;
+  fgarray2=mp->fgarray2;
+
+  /* Fill the fgarrays or cgarrays with the proper values: */
+  for(chid=0;chid<mp->nch;++chid)
+    {
+      /* The first pixel ID in this channel is: chid*mp->nmeshi. */
+      f0=(chid/nch1)*gs0;      /* Position of first channel mesh */
+      f1=(chid%nch1)*gs1;      /* in full image.                 */
+      fmeshind=chid*mp->nmeshc;
+
+      /* Go over all the meshes in this channel and put them in their
+         righful place. */
+      for(ind=0;ind<mp->nmeshc;++ind)
+        {
+          g0=ind/gs1;    /* Position of this mesh in this channel. */
+          g1=ind%gs1;
+          if(reverse)
+            cgarray1[ind+fmeshind]=fgarray1[(g0+f0)*is1+g1+f1];
+          else
+            fgarray1[(g0+f0)*is1+g1+f1]=cgarray1[ind+fmeshind];
+          if(mp->ngarrays==2)
+            {
+              if(reverse)
+                cgarray2[ind+fmeshind]=fgarray2[(g0+f0)*is1+g1+f1];
+              else
+                fgarray2[(g0+f0)*is1+g1+f1]=cgarray2[ind+fmeshind];
+            }
+        }
+    }
+
+  /* Just for a check:
+  arraytofitsimg("nochannels.fits", "fgarray1", FLOAT_IMG, fgarray1,
+                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                 "mesh");
+  if(mp->ngarrays==2)
+    arraytofitsimg("nochannels.fits", "fgarray2", FLOAT_IMG, fgarray2,
+                   mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                   "mesh");
+  */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
 /********************     Checking functions      ********************/
 /*********************************************************************/
 /* Save the meshid of each pixel into an array the size of the image. */
@@ -372,108 +478,45 @@ checkgarray(struct meshparams *mp, float **out1, float **out2)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/********************         Full garray         ********************/
-/*********************************************************************/
-/* By default, the garray1 and garray2 arrays keep the meshes of each
-   channel contiguously. So in practice, each channel is like a small
-   independent image. This will cause problems when we want to work on
-   the meshs irrespective of which channel they belong to. This
-   function allocates and fills in the fgarray1 and fgarray2 arrays.
-
-   The explanation above is for the case when reverse==0. If it is set
-   equal to 1 (or any non-zero number), then
-*/
+/* Save the mesh grid values into an output file. */
 void
-fullgarray(struct meshparams *mp, int reverse)
+meshvaluefile(struct meshparams *mp, char *filename, char *extname1,
+              char *extname2, struct wcsprm *wcs, char *spack_string)
 {
-  size_t nch1=mp->nch1;
-  size_t ind, gs1=mp->gs1, gs0=mp->gs0;
-  float *fgarray1=NULL, *fgarray2=NULL;
-  float *cgarray1=mp->cgarray1, *cgarray2=mp->cgarray2;
-  size_t g0, g1, f0, f1, fmeshind, chid, is1=mp->nch1*mp->gs1;
+  float *tmp1=NULL, *tmp2=NULL;
 
-  /* First allocate the fgarrays if they were not already
-     allocated. */
-  if(mp->fgarray1==NULL)
+  if(mp->meshbasedcheck)
     {
-      /* A simple sanity check */
-      if(reverse)
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
-              "fix this problem. For some reason, fullgarray has been called "
-              "with the `reverse' flag set to true while fgarray is not "
-              "allocated! This should not happen.", PACKAGE_BUGREPORT);
+      /* We want one pixel per mesh. If the last operation was on
+         cgarray, then first the fgarray has to be filled. Note that
+         when more than one channel is present, only fgarray can be
+         used for this job. In cgarray the meshs are ordered
+         differently. */
+      if(mp->garray1==mp->cgarray1) fullgarray(mp, 0);
+      arraytofitsimg(filename, extname1, FLOAT_IMG, mp->fgarray1,
+                     mp->gs0*mp->nch2, mp->gs1*mp->nch1,
+                     0, wcs, NULL, spack_string);
+      if(mp->ngarrays==2)
+        /* Note that fullgarray will correct both the meshs if there
+           are two.*/
+        arraytofitsimg(filename, extname2, FLOAT_IMG, mp->fgarray2,
+                       mp->gs0*mp->nch2, mp->gs1*mp->nch1,
+                       0, wcs, NULL, spack_string);
 
-      /* Allocate the fgarrays */
-      errno=0; mp->fgarray1=malloc(mp->nmeshi*sizeof *mp->fgarray1);
-      if(mp->fgarray1==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for mp->fgarray1 (mesh.c)",
-              mp->nmeshi*sizeof *mp->fgarray1);
     }
-  if(mp->ngarrays==2 && mp->fgarray2==NULL)
+  else
     {
-      errno=0;
-      mp->fgarray2=malloc(mp->nmeshi*sizeof *mp->fgarray2);
-      if(mp->fgarray2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for mp->fgarray2 (mesh.c)",
-              mp->nmeshi*sizeof *mp->fgarray2);
+      checkgarray(mp, &tmp1, &tmp2);
+      arraytofitsimg(filename, extname1, FLOAT_IMG, tmp1, mp->s0,
+                     mp->s1, 0, wcs, NULL, spack_string);
+      if(mp->ngarrays==2)
+        arraytofitsimg(filename, extname2, FLOAT_IMG, tmp2, mp->s0,
+                       mp->s1, 0, wcs, NULL, spack_string);
+      free(tmp1);
+      free(tmp2);
     }
-  fgarray1=mp->fgarray1;
-  fgarray2=mp->fgarray2;
-
-  /* Fill the fgarrays with the proper values: */
-  for(chid=0;chid<mp->nch;++chid)
-    {
-      /* The first pixel ID in this channel is: chid*mp->nmeshi. */
-      f0=(chid/nch1)*gs0;      /* Position of first channel mesh */
-      f1=(chid%nch1)*gs1;      /* in full image.                 */
-      fmeshind=chid*mp->nmeshc;
-
-      /* Go over all the meshes in this channel and put them in their
-         righful place. */
-      for(ind=0;ind<mp->nmeshc;++ind)
-        {
-          g0=ind/gs1;    /* Position of this mesh in this channel. */
-          g1=ind%gs1;
-          if(reverse)
-            cgarray1[ind+fmeshind]=fgarray1[(g0+f0)*is1+g1+f1];
-          else
-            fgarray1[(g0+f0)*is1+g1+f1]=cgarray1[ind+fmeshind];
-          if(mp->ngarrays==2)
-            {
-              if(reverse)
-                cgarray2[ind+fmeshind]=fgarray2[(g0+f0)*is1+g1+f1];
-              else
-                fgarray2[(g0+f0)*is1+g1+f1]=cgarray2[ind+fmeshind];
-            }
-        }
-    }
-
-  /* Just for a check:
-  arraytofitsimg("nochannels.fits", "fgarray1", FLOAT_IMG, fgarray1,
-                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
-                 "mesh");
-  if(mp->ngarrays==2)
-    arraytofitsimg("nochannels.fits", "fgarray2", FLOAT_IMG, fgarray2,
-                   mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
-                   "mesh");
-  */
 }
+
 
 
 

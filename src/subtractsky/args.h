@@ -73,7 +73,7 @@ const char doc[] =
    c e f g i j l m p r v w x y z
    A B C E F G I J O R W X Y Z
 
-   Number keys free: >=509
+   Number keys free: >=510
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -140,6 +140,16 @@ static struct argp_option options[] =
       "Include sky standard deviation in all checks too.",
       2
     },
+    {
+      "checkconvolution",
+      507,
+      0,
+      0,
+      "Store convolved image in `_conv.fits' file.",
+      2
+    },
+
+
 
 
     {
@@ -252,19 +262,11 @@ static struct argp_option options[] =
       3
     },
     {
-      "checkinterpolation",
+      "meshbasedcheck",
       501,
       0,
       0,
-      "Store mesh interpolation in `_interp.fits' file.",
-      3
-    },
-    {
-      "checkconvolution",
-      507,
-      0,
-      0,
-      "Store convolved image in `_conv.fits' file.",
+      "Each mesh in one pixel in mesh check images.",
       3
     },
 
@@ -428,11 +430,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 500:
       p->meshname="a";  /* Just a placeholder! It will be corrected later */
       break;
-    case 501:
-      p->interpname="a";
-      break;
     case 507:
       p->convname="a";
+      break;
+    case 501:
+      p->mp.meshbasedcheck=1;
       break;
 
 

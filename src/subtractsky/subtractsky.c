@@ -184,41 +184,23 @@ subtractsky(struct subtractskyparams *p)
     reporttiming(&t1, "Input image convolved with kernel.", 1);
 
 
+
   /* Find the sky value and its standard deviation on each mesh. */
   operateonmesh(mp, avestdonthread, sizeof(float), checkstd, 1);
-  if(p->interpname)
-    {
-      checkgarray(mp, &sky, &std);
-      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky, s0, s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
-      free(sky);
-      if(checkstd)
-        {
-          arraytofitsimg(p->interpname, "SkySTD", FLOAT_IMG, std, s0, s1,
-                         p->numblank, p->wcs, NULL, SPACK_STRING);
-          free(std);
-        }
-    }
+  if(p->skyname)
+    meshvaluefile(mp, p->skyname, "Sky value", "Sky STD", p->wcs,
+                  SPACK_STRING);
   if(p->cp.verb)
     reporttiming(&t1, "Sky and its STD found on some meshes.", 1);
+
 
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
   meshinterpolate(mp, "Interpolating the sky and its standard deviation");
-  if(p->interpname)
-    {
-      checkgarray(mp, &sky, &std);
-      arraytofitsimg(p->interpname, "Sky", FLOAT_IMG, sky, s0, s1, 0,
-                     p->wcs, NULL, SPACK_STRING);
-      free(sky);
-      if(checkstd)
-        {
-          arraytofitsimg(p->interpname, "SkySTD", FLOAT_IMG, std, s0, s1, 0,
-                         p->wcs, NULL, SPACK_STRING);
-          free(std);
-        }
-    }
+  if(p->skyname)
+    meshvaluefile(mp, p->skyname, "Sky Interpolated",
+                  "Sky STD interpolated", p->wcs, SPACK_STRING);
   if(p->cp.verb)
     reporttiming(&t1, "All blank meshs filled (interplated).", 1);
 
@@ -236,13 +218,8 @@ subtractsky(struct subtractskyparams *p)
   /* Make the sky array and save it if the user has asked for it: */
   checkgarray(mp, &sky, &std);
   if(p->skyname)
-    {
-      arraytofitsimg(p->skyname ,"Sky", FLOAT_IMG, sky, s0, s1, 0,
-                     p->wcs, NULL, SPACK_STRING);
-      if(checkstd)
-        arraytofitsimg(p->skyname, "SkySTD", FLOAT_IMG, std, s0, s1, 0,
-                       p->wcs, NULL, SPACK_STRING);
-    }
+    meshvaluefile(mp, p->skyname, "Sky Smoothed", "Sky STD smoothed",
+                  p->wcs, SPACK_STRING);
 
 
   /* Subtract the sky value */

@@ -178,33 +178,19 @@ findapplyqthreshold(struct noisechiselparams *p)
   /* Find the threshold on each mesh: */
   operateonmesh(mp, qthreshonmesh, sizeof(float), 0, 1);
   if(p->threshname)
-    {
-      checkgarray(mp, &thresh, NULL);
-      arraytofitsimg(p->threshname, "QuantileThreshold", FLOAT_IMG,
-                     thresh, s0, s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
-      free(thresh);
-    }
+    meshvaluefile(mp, p->threshname, "Quantile values", NULL,
+                  p->wcs, SPACK_STRING);
+
 
   meshinterpolate(mp, "Interpolating quantile threshold");
   if(p->threshname)
-    {
-      checkgarray(mp, &thresh, NULL);
-      arraytofitsimg(p->threshname, "Interpolated", FLOAT_IMG,
-                     thresh, s0, s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
-      free(thresh);
-    }
+    meshvaluefile(mp, p->threshname, "Interpolated", NULL,
+                  p->wcs, SPACK_STRING);
 
   meshsmooth(mp);
   if(p->threshname)
-    {
-      checkgarray(mp, &thresh, NULL);
-      arraytofitsimg(p->threshname, "smoothed", FLOAT_IMG,
-                     thresh, s0, s1, p->numblank, p->wcs, NULL,
-                     SPACK_STRING);
-      free(thresh);
-    }
+    meshvaluefile(mp, p->threshname, "smoothed", NULL,
+                  p->wcs, SPACK_STRING);
 
 
   /* Apply the threshold on all the pixels: */

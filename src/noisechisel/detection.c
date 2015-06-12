@@ -622,30 +622,17 @@ void
 findsnthreshongrid(struct meshparams *lmp, char *filename,
                    char *comment, struct wcsprm *wcs)
 {
-  float *sn;
-  size_t s0=lmp->s0, s1=lmp->s1;
-
-
   /* Find the Signal to noise ratio threshold for the good meshs. */
   if(filename)
-    {
-      checkgarray(lmp, &sn, NULL);
-      arraytofitsimg(filename, "S/N", FLOAT_IMG, sn, s0, s1,
-                     0, wcs, NULL, SPACK_STRING);
-      free(sn);
-    }
+    meshvaluefile(lmp, filename, "Calculated S/N", NULL, wcs, SPACK_STRING);
 
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
   meshinterpolate(lmp, comment);
   if(filename)
-    {
-      checkgarray(lmp, &sn, NULL);
-      arraytofitsimg(filename, "Interpolated", FLOAT_IMG, sn,
-                     s0, s1, 0, wcs, NULL, SPACK_STRING);
-      free(sn);
-    }
+    meshvaluefile(lmp, filename, "Interpolated S/N", NULL, wcs,
+                  SPACK_STRING);
 
 
   /* Smooth the interpolated array:  */
@@ -653,12 +640,8 @@ findsnthreshongrid(struct meshparams *lmp, char *filename,
     {
       meshsmooth(lmp);
       if(filename)
-        {
-          checkgarray(lmp, &sn, NULL);
-          arraytofitsimg(filename, "Smoothed", FLOAT_IMG, sn,
-                         s0, s1, 0, wcs, NULL, SPACK_STRING);
-          free(sn);
-        }
+        meshvaluefile(lmp, filename, "Smoothed S/N", NULL, wcs,
+                      SPACK_STRING);
     }
 }
 

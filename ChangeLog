@@ -1,3 +1,21 @@
+2015-06-12  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/subtractsky/args.h (options): Removed the
+	--checkinterpolation option.
+
+	* src/subtractsky/subtractsky.c (subtractsky): Similar to below.
+
+	* src/noisechisel/thresh.c (findapplyqthreshold): Similar to
+	below.
+
+	* src/noisechisel/sky.c (findavestdongrid): Similar to below.
+
+	* src/noisechisel/detection.c (findsnthreshongrid): Now using
+	meshvaluefile from mesh.h instead of checking its self. Once the
+	--meshbasedcheck was added, doing all the checks in each function
+	was too long and repetative. So I just made this function to do
+	the job with one call and not distract the readers.
+
 2015-06-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/args.h (options): `minbfrac' and `minnumfalse'
