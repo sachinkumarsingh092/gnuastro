@@ -169,18 +169,13 @@ applythreshold(struct noisechiselparams *p)
 void
 findapplyqthreshold(struct noisechiselparams *p)
 {
-  float *thresh=NULL;
-  struct meshparams *mp=&p->smp; /* `mp' instead of `smp' for you to */
-  size_t  s0=mp->s0,  s1=mp->s1; /* try this function with p->lmp if */
-                                 /* you like to see the effect. */
-
+  struct meshparams *mp=&p->smp;
 
   /* Find the threshold on each mesh: */
   operateonmesh(mp, qthreshonmesh, sizeof(float), 0, 1);
   if(p->threshname)
     meshvaluefile(mp, p->threshname, "Quantile values", NULL,
                   p->wcs, SPACK_STRING);
-
 
   meshinterpolate(mp, "Interpolating quantile threshold");
   if(p->threshname)
@@ -191,7 +186,6 @@ findapplyqthreshold(struct noisechiselparams *p)
   if(p->threshname)
     meshvaluefile(mp, p->threshname, "smoothed", NULL,
                   p->wcs, SPACK_STRING);
-
 
   /* Apply the threshold on all the pixels: */
   applythreshold(p);

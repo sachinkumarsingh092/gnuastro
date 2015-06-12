@@ -216,6 +216,12 @@ AC_ARG_ENABLE([imgwarp],
 	      [AS_IF([test "x$enable_imgwarp" != xno],
                      [enable_imgwarp=yes; ayes=true])],
               [enable_imgwarp=notset])
+AC_ARG_ENABLE([mkcatalog],
+              [AS_HELP_STRING([--enable-mkcatalog],
+  	            [Install MakeCatalog and other enabled packages only.])],
+	      [AS_IF([test "x$enable_mkcatalog" != xno],
+                     [enable_mkcatalog=yes; ayes=true])],
+              [enable_mkcatalog=notset])
 AC_ARG_ENABLE([mknoise],
               [AS_HELP_STRING([--enable-mknoise],
   	            [Install MakeNoise and other enabled packages only.])],
@@ -261,6 +267,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
        AS_IF([test $enable_imgstat = notset], [enable_imgstat=no])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
+       AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=no])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=no])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=no])
@@ -273,6 +280,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
        AS_IF([test $enable_imgstat = notset], [enable_imgstat=yes])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
+       AS_IF([test $enable_mkcatalog = notset], [enable_mkcatalog=yes])
        AS_IF([test $enable_mknoise = notset], [enable_mknoise=yes])
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=yes])
@@ -291,6 +299,7 @@ AM_CONDITIONAL([COND_HEADER], [test $enable_header = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
 AM_CONDITIONAL([COND_IMGSTAT], [test $enable_imgstat = yes])
 AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
+AM_CONDITIONAL([COND_MKCATALOG], [test $enable_mkcatalog = yes])
 AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 AM_CONDITIONAL([COND_NOISECHISEL], [test $enable_noisechisel = yes])
@@ -312,6 +321,7 @@ AC_CONFIG_FILES([Makefile
                  gnulib/tests/Makefile
                  src/convertt/Makefile
                  src/convolve/Makefile
+           	 src/mkcatalog/Makefile
                  src/noisechisel/Makefile
                  src/subtractsky/Makefile
                  ])

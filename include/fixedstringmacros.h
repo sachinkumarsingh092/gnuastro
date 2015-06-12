@@ -43,9 +43,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "following commands. They will respectively show you the `Invoking "	\
   SPACK_NAME"' subsection, the complete `"SPACK_NAME"' section, or the "\
   "full "PACKAGE_NAME" manual. In particular the first contains "       \
-  "a very complete explanation of each option.\n"                       \
-  "     info "SPACK"\n"                                                 \
-  "     info "SPACK_NAME"\n"						\
+  "a very complete explanation of each option.\n\n"                       \
+  "     info "SPACK"\n\n"                                                 \
+  "     info "SPACK_NAME"\n\n"						\
   "     info "PACKAGE_TARNAME"\n\n"                                     \
   "If you couldn't find your answer in the manual, you can get "        \
   "direct help from experienced Gnuastro users and developers. "        \

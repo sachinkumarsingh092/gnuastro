@@ -65,6 +65,9 @@ Texts.  A copy of the license is included in the section entitled
 * ImageWarp: (gnuastro)ImageWarp. Warp an image to a new grid.
 * astimgwarp: (gnuastro)Invoking astimgwarp. Options to ImageWarp.
 
+* MakeCatalog: (gnuastro)MakeCatalog. Make a catalog from labeled image.
+* astmkcatalog: (gnuastro)Invoking astmkcatalog. Options to MakeCatalog.
+
 * MakeNoise: (gnuastro)MakeNoise. Make (add) noise to an image.
 * astmknoise: (gnuastro)Invoking astmkprof. Options to MakeNoise.
 
@@ -351,6 +354,7 @@ Image analysis
 
 * ImageStatistics::             Calculate main image statistics.
 * NoiseChisel::                 Detect objects in an image.
+* MakeCatalog::                 Catalog from input and labeled images.
 
 ImageStatistics
 
@@ -7104,6 +7108,7 @@ sky value or detecting objects within an image.
 @menu
 * ImageStatistics::             Calculate main image statistics.
 * NoiseChisel::                 Detect objects in an image.
+* MakeCatalog::                 Catalog from input and labeled images.
 @end menu
 
 @node ImageStatistics, NoiseChisel, Image analysis, Image analysis
@@ -7668,7 +7673,7 @@ runs.
 
 
 
-@node NoiseChisel,  , ImageStatistics, Image analysis
+@node NoiseChisel, MakeCatalog, ImageStatistics, Image analysis
 @section NoiseChisel
 
 Once raw data have gone through the initial reduction process (through
@@ -8185,9 +8190,9 @@ By flipping through the extensions, a user can check how accurate the
 detection and segmentation process was.
 
 @item
-All the inputs to MakeCatalog (for generating a catalog from
-NoiseChisel's detections) are included in this one one which makes the
-running of MakeCatalog after NoiseChisel very easy.
+All the inputs to MakeCatalog (see @ref{MakeCatalog}) are included in
+this one file which makes the running of MakeCatalog after NoiseChisel
+very easy.
 
 @end itemize
 
@@ -8213,19 +8218,41 @@ pixel.
 
 @end enumerate
 
-NoiseChisel does not produce any catalog of the detected objects by
-its self only the FITS image explained above is created. The output of
-NoiseChisel can be directly fed into MakeCatalog to generate the
-catalog. Some of the reasons making the catalog is left for
-MakeCatalog are listed below:
+
+
+
+
+
+
+
+
+
+@node MakeCatalog,  , NoiseChisel, Image analysis
+@section MakeCatalog
+
+Detecting and segmenting signal over an image results in labeled
+images where each pixel is labeled with the ID (an integer) that is
+specified by the detector program. But this labeled image by its self
+can hardly be of any scientific use. The job of MakeProfiles is to
+combine the input image, the noise properties and the labels of pixels
+into a catalog (a text file table) which can easily be used for
+high-level scientific interpretations.
+
+NoiseChisel (Gnuastro's signal detection tool, see @ref{NoiseChisel})
+does not produce any catalog of the detected objects by its self only
+a labeled FITS image is output, see @ref{NoiseChisel output}. The
+output of NoiseChisel can be directly fed into MakeCatalog to generate
+the catalog. Some of the reasons making the catalog in a separate
+program@footnote{Most existing software that do object detection also
+output a catalog, so this is not a common practice.} are listed below:
 
 @itemize
 
 @item
-Complexity: Adding in a catalog functionality will add several more
-steps the NoiseChisel processings that can equally well be done
-outside of it. This makes following the code harder for a curious
-reader and also potentially adds bugs.
+Complexity: Adding in a catalog functionality to the detector program
+will add several more steps (and options) to its processings that can
+equally well be done outside of it. This makes following the code
+harder for a curious reader and also potentially adds bugs.
 
 @item
 Low level nature of Gnuastro: Making catalogs is a separate process
@@ -8235,18 +8262,37 @@ catalog for them. Another user might want the flux properties of the
 same pixels in another image (possibly from another broadband filter)
 for measuring the colors or SEDs for example.
 
-Here is an example of doing both. The image of one color might not lie
-exactly on another or even be in the same scale. However, it is
-imperative that the same pixels be used in measuring the colors of
-galaxies. Therefore NoiseChisel can be run on the reference image and
-ImageWarp (@ref{ImageWarp}) can be applied to the labeled images to
-find the pixels to use in the other image. Then MakeCatalog can
-generate the final catalog for both targets. It is currently customary
-to warp the images to the same pixel grid, however, this is very
-harmful for the data and creates correlated noise.
+Here is an example of doing both: suppose you have images in various
+broad band filters at various resolutions and orientations. The image
+of one color will thus not lie exactly on another or even be in the
+same scale. However, it is imperative that the same pixels be used in
+measuring the colors of galaxies.
 
+Therefore NoiseChisel can be run on the reference image and ImageWarp
+(@ref{ImageWarp}) can be applied to the labeled images to find the
+pixels to use in the other image. Then MakeCatalog can generate the
+final catalog for both targets. It is currently customary to warp the
+images to the same pixel grid, however, this is very harmful for the
+data and creates correlated noise. It is much more accurate to do the
+transformations on the labeled image.
 
 @end itemize
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @node Modeling and fittings, Table manipulation, Image analysis, Top
@@ -10692,43 +10738,57 @@ own purposes.
 
 GNU Astronomy Utilities @value{VERSION}, contains the following
 programs. They are sorted in alphabetical order and followed by their
-executable names along with a short description, see @ref{Naming
-convention}. Throughout this manual, they are discussed based on their
+version number. A short description is provided for each program which
+starts with the executable names in parenthesis, see @ref{Naming
+convention}. Throughout this manual, they are ordered based on their
 context, please see the manual contents for contextual ordering.
 
-@itemize
 
-@item
-@ref{ConvertType} (@file{astconvertt}) @value{CONVERTT_VERSION}:
-Convert data files.
-@item
-@ref{Convolve} (@file{astconvolve}) @value{CONVOLVE_VERSION}: Convolve
-(blur) data with a kernel.
-@item
-@ref{Header} (@file{astheader}) @value{HEADER_VERSION}: Print and
-manipulate data header.
-@item
-@ref{ImageCrop} (@file{astimgcrop}) @value{IMGCROP_VERSION}: Crop
-region(s) from image(s).
-@item
-@ref{ImageStatistics} (@file{astimgstat}) @value{IMGSTAT_VERSION}: Get pixel statistics.
-@item
-@ref{ImageWarp} (@file{astimgwarp}) @value{IMGWARP_VERSION}: Warp
-image to new pixel grid.
-@item
-@ref{MakeNoise} (@file{astmknoise}) @value{MKNOISE_VERSION}: Make
-(add) noise to an image.
-@item
-@ref{MakeProfiles} (@file{astmkprof}) @value{MKPROF_VERSION}: Make
-mock profiles in image.
-@item
-@ref{NoiseChisel} (@file{astnoisechisel}) @value{NOISECHISEL_VERSION}:
-Detect signal in noise.
-@item
-@ref{SubtractSky} (@file{astsubtractsky}) @value{SUBTRACTSKY_VERSION}:
-Find and subtract sky value.
+@table @asis
+@item ConvertType @value{CONVERTT_VERSION}
+(@file{astconvertt}) Convert astronomical data files (FITS or IMH) to
+and from several other standard image and data formats, for example
+JPEG, EPS or PDF (@ref{ConvertType}).
 
-@end itemize
+@item Convolve @value{CONVOLVE_VERSION}
+(@file{astconvolve}) Convolve (blur or smooth) data with a given
+kernel (@ref{Convolve}).
+
+@item Header @value{HEADER_VERSION}
+(@file{astheader}) Print and manipulate the header data of a FITS file
+(see @ref{Header}).
+
+@item ImageCrop @value{IMGCROP_VERSION}
+(@file{astimgcrop}) Crop region(s) from an image and stitch several
+images if necessary. Inputs can be in pixel coordinates or world
+coordinates (@ref{ImageCrop}).
+
+@item ImageStatistics @value{IMGSTAT_VERSION}
+(@file{astimgstat}) Get pixel statistics and save histogram and
+cumulative frequency plots (@ref{ImageStatistics}).
+
+@item ImageWarp @value{IMGWARP_VERSION}
+(@file{astimgwarp}) Warp image to new pixel grid (@ref{ImageWarp}).
+
+@item MakeCatalog @value{MKCATALOG_VERSION}
+(@file{astmkcatalog}) Make catalog of labeled image
+(@ref{MakeCatalog}).
+
+@item MakeNoise @value{MKNOISE_VERSION}
+(@file{astmknoise}) Make (add) noise to an image (@ref{MakeNoise}).
+
+@item MakeProfiles @value{MKPROF_VERSION}
+(@file{astmkprof}) Make mock profiles in image (@ref{MakeProfiles}).
+
+@item NoiseChisel @value{NOISECHISEL_VERSION}
+(@file{astnoisechisel}) Detect and segment signal in noise
+(@ref{NoiseChisel}).
+
+@item SubtractSky @value{SUBTRACTSKY_VERSION}
+(@file{astsubtractsky}) Find and subtract sky value by comparing the
+mode and median on a mesh grid (@ref{SubtractSky}).
+
+@end table
 
 
 
