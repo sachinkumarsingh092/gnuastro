@@ -372,6 +372,10 @@ Invoking NoiseChisel
 * NoiseChisel options::         The options specific to NoiseChisel.
 * NoiseChisel output::          NoiseChisel's output. Why no catalog?
 
+MakeCatalog
+
+* Invoking astmkcatalog::       Options and arguments to MakeCatalog
+
 Modeling and fitting
 
 * MakeProfiles::                Making mock galaxies and stars.
@@ -2049,11 +2053,11 @@ standard@footnote{Greisen E.W., Calabretta M.R. (2002) Representation
 of world coordinates in FITS. Astronomy and Astrophysics, 395,
 1061-1075.}, Mark Calabretta. It might be already built and ready in
 your distribution's package management system. Here installation from
-source is explained. To install WCSLIB you will need to have the
-CFITSIO already installed. WCSLIB also has plotting capabilities which
-use PGPLOT (a plotting library for C). However, if you will not be
-using its plotting functions, you can configure it such that pgplot is
-not required.
+source is explained. To install WCSLIB you will need to have CFITSIO
+already installed, see @ref{CFITSIO}. WCSLIB also has plotting
+capabilities which use PGPLOT (a plotting library for C). However, if
+you will not be using its plotting functions, you can configure it
+such that pgplot is not required.
 
 @vindex --without-pgplot
 If you do want to make plots with WCSLIB, there is an explanation in
@@ -3739,9 +3743,8 @@ sub-directories named @file{ABCproject/} and @file{DEFproject/} of our
 top data directory (@file{/mnt/data}). The following shell commands
 show how one image from the former is first converted to a JPEG image
 through ConvertType and then the objects from an image in the latter
-project are detected using NoiseChisel (which by default has two text
-catalog files and one multi-extension FITS detection map file). The
-text after the @command{#} sign are comments (not typed!).
+project are detected using NoiseChisel. The text after the @command{#}
+sign are comments (not typed!).
 
 @example
 $ pwd                                               # Current location
@@ -3757,7 +3760,7 @@ $ ls
 ABC01.jpg ABC02.jpg
 $ astnoisechisel /mnt/data/DEFproject/DEF01.fits              # Prog 2
 $ ls
-ABC01.jpg ABC02.jpg DEF01_c.txt DEF01_map.fits DEF01_o.txt
+ABC01.jpg ABC02.jpg DEF01_labeled.fits
 @end example
 
 
@@ -8198,14 +8201,17 @@ very easy.
 
 @item
 The object labels. Each pixel in the input image is given a label in
-this extension, the labels start from one. In verbose mode,
-NoiseChisel will report the final number of labels.
+this extension, the labels start from one. The total number of labels
+is stored as the value to the @code{NOBJS} keyword in the header of
+this extension. It is also printed in verbose mode.
 
 @item
 The clump labels. All the pixels in the input image that belong to a
 true clump are given a positive label in this extension. The detected
 regions that were not a clump are given a negative value to clearly
-identify the noise from the detections.
+identify the noise from the detections. The total number of clumps in
+this image is stored in the @code{NCLUMPS} keyword of this extension
+and printed in verbose output.
 
 @item
 The final sky value on each pixel. See @ref{Sky value} for a complete
@@ -8279,6 +8285,32 @@ transformations on the labeled image.
 @end itemize
 
 
+@menu
+* Invoking astmkcatalog::       Options and arguments to MakeCatalog
+@end menu
+
+@node Invoking astmkcatalog,  , MakeCatalog, MakeCatalog
+@subsection Invoking MakeCatalog
+
+MakeCatalog will make a catalog from an input image and a labeled
+image. The executable name is @file{astmkcatalog} with the following
+general template
+
+@example
+$ astmkcatalog [OPTION ...] InputImage.fits
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astmkcatalog input.fits
+@end example
+
+@cindex Gaussian
+@noindent
+If MakeCatalog is to do processing, an input image should be provided
+with the recognized extensions as input data, see @ref{Arguments}.
 
 
 

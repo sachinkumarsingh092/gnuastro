@@ -54,13 +54,61 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /******************         NoiseChisel        ***********************/
 /*********************************************************************/
 void
+makeoutput(struct noisechiselparams *p)
+{
+  long num[1];
+  float *sky=NULL, *std=NULL;
+  struct fitsheaderll *keys=NULL;
+  size_t s0=p->smp.s0, s1=p->smp.s1;
+
+
+  /* First put a copy of the input image. */
+  arraytofitsimg(p->cp.output, "Input", FLOAT_IMG, p->imgss,
+                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+
+
+  /* The object labels image with a keyword mentioning the number of
+     objects. */
+  num[0]=p->numobjects-1;
+  add_to_fitsheaderll(&keys, TLONG, "NOBJS", 0, num, 0,
+                      "Number of objects in the image.", 0, NULL);
+  arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
+                 s0, s1, 0, p->wcs, keys, SPACK_STRING);
+  keys=NULL;     /* keys was freed after writing. */
+
+
+  /* The clump labels, mentioning the total number of clumps. */
+  num[0]=p->numclumps-1;
+  add_to_fitsheaderll(&keys, TLONG, "NCLUMPS", 0, num, 0,
+                      "Number of clumps in the image.", 0, NULL);
+  arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
+                 s0, s1, 0, p->wcs, keys, SPACK_STRING);
+
+
+  /* The sky and its standard deviation: */
+  checkgarray(&p->smp, &sky, &std);
+  arraytofitsimg(p->cp.output, "Sky", FLOAT_IMG, sky,
+                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  arraytofitsimg(p->cp.output, "Standard deviation", FLOAT_IMG, std,
+                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+
+
+  /* Clean up: */
+  free(sky);
+  free(std);
+}
+
+
+
+
+
+void
 noisechisel(struct noisechiselparams *p)
 {
   struct meshparams *smp=&p->smp, *lmp=&p->lmp;
 
   struct timeval t1;
   int verb=p->cp.verb;
-  float *sky=NULL, *std=NULL;
   size_t i, s0=smp->s0, s1=smp->s1;
   char report[VERBMSGLENGTH_V], *oreport;
 
@@ -180,17 +228,7 @@ noisechisel(struct noisechiselparams *p)
 
   /* Make the output: */
   if(verb) gettimeofday(&t1, NULL);
-  checkgarray(&p->smp, &sky, &std);
-  arraytofitsimg(p->cp.output, "Input", FLOAT_IMG, p->imgss,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  arraytofitsimg(p->cp.output, "Sky", FLOAT_IMG, sky,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
-  arraytofitsimg(p->cp.output, "Standard deviation", FLOAT_IMG, std,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  makeoutput(p);
   if(verb)
     {
       errno=0; oreport=malloc(strlen(p->cp.output)+100*sizeof *oreport);
@@ -203,8 +241,6 @@ noisechisel(struct noisechiselparams *p)
     }
 
   /* Clean up: */
-  free(sky);                    /* Allocated in checkgarray.           */
-  free(std);                    /* Allocated in checkgarray.           */
   free(p->conv);                /* Allocated in spatialconvolveonmesh. */
   freemesh(smp);                /* Allocated here.                     */
   freemesh(lmp);                /* Allocated here.                     */

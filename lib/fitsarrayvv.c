@@ -763,8 +763,8 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
 /*************************************************************
  ******************         Header          ******************
  *************************************************************/
-/* Add on keyword to the list of header keywords that nee to be added
-   to a FITS file. In the end, they keywords will have to be freed, so
+/* Add on keyword to the list of header keywords that need to be added
+   to a FITS file. In the end, the keywords will have to be freed, so
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
