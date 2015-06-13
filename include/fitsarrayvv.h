@@ -175,6 +175,10 @@ atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
 /**********          Check prepare file            ************/
 /**************************************************************/
 void
+fileorextname(char *inputname, char *inhdu, int othernameset,
+              char **othername, char *ohdu, int ohduset, char *type);
+
+void
 setmaskname(char *inputname, char **maskname, char *inhdu, char *mhdu);
 
 void
@@ -182,6 +186,9 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
             float **img, int *inbitpix, size_t *numblank, size_t *ins0,
             size_t *ins1);
 
+void
+filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
+           size_t *numblank, size_t *ins0, size_t *ins1);
 void
 prepfloatkernel(char *inputname, char *inhdu, float **kernel,
                 size_t *ins0, size_t *ins1);

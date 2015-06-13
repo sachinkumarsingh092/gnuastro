@@ -450,7 +450,8 @@ void
 sanitycheck(struct subtractskyparams *p)
 {
   /* Set the maskname and mask hdu accordingly: */
-  CHECKMASKNAMEANDHDU(SPACK);
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
 
   /* Set the output name: */
   if(p->cp.output)

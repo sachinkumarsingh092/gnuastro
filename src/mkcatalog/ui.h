@@ -27,6 +27,6 @@ void
 setparams(int argc, char *argv[], struct mkcatalogparams *p);
 
 void
-freeandreport(struct mkcatalogparams *p);
+freeandreport(struct mkcatalogparams *p, struct timeval *t1);
 
 #endif

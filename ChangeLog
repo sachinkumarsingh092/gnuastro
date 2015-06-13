@@ -1,5 +1,9 @@
 2015-06-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
+	* lib/fitsarrayvv.c (fileorextname): New name for the setmaskname
+	function. This was done to be a generic check, for all kinds of
+	input, not just the mask.
+
 	* src/ : All the functions to make a copy of an input and print
 	string values were changed. These were mainly in ui.c and args.h
 	for each program.  Until now, for each option, I would allocate,

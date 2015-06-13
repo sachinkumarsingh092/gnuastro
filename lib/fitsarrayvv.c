@@ -1344,21 +1344,41 @@ atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
 /**************************************************************/
 /**********          Check prepare file            ************/
 /**************************************************************/
+/* We have the name of the input file. But in most cases, the files
+   that should be used (for example a mask image) are other extensions
+   in the same file. So the user only has to give the HDU. The job of
+   this function is to determine which is the case and set othername
+   to the appropriate value. */
 void
-setmaskname(char *inputname, char **maskname, char *inhdu, char *mhdu)
+fileorextname(char *inputname, char *inhdu, int othernameset,
+              char **othername, char *ohdu, int ohduset, char *type)
 {
-  if(*maskname)
+  if(othernameset)
     {
-      if(strcmp(inputname, *maskname)==0 && strcmp(inhdu, mhdu)==0)
-        *maskname=NULL;
+      /* In some cases, for example a mask image, both the name and
+         HDU are optional. So just to be safe, we will check this all
+         the time. */
+      if(ohduset==0)
+        error(EXIT_FAILURE, 0, "A %s image was specified (%s). However, "
+              "no HDU is given for it. Please add a HDU. If you regularly "
+              "use the same HDU as %s, you may consider adding it to "
+              "the configuration file. For more information, please see the "
+              "`Configuration files' section of the %s manual by running "
+              "` info gnuastro ' on the command-line.", type, *othername,
+              type, PACKAGE_NAME);
+      if(strcmp(inputname, *othername)==0)
+        {
+          if(strcmp(ohdu, inhdu)==0)
+            error(EXIT_FAILURE, 0, "The specified %s name and "
+                  "input image name (%s) are the same while the input "
+                  "image hdu name and mask hdu are also identical (%s)!",
+                  type, inputname, inhdu);
+        }
     }
-  else
-    {
-      if(mhdu && strcmp(inhdu, mhdu))
-        *maskname=inputname;
-      else
-        *maskname=NULL;
-    }
+    else if(ohduset && strcmp(ohdu, inhdu))
+      *othername=inputname;
+    else
+      *othername=NULL;
 }
 
 
@@ -1430,6 +1450,29 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
       fp=(f=*img)+s0*s1;
       do if(*ff++!=0.0f) {*f=NAN; ++(*numblank);} while(++f<fp);
       free(mask);
+    }
+}
+
+
+
+
+
+void
+filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
+           size_t *numblank, size_t *ins0, size_t *ins1)
+{
+  void *array;
+
+  /* Read the input array and convert it to float. */
+  *numblank=fitsimgtoarray(inputname, inhdu, inbitpix,
+                           &array, ins0, ins1);
+  if(*inbitpix==LONG_IMG)
+    *img=array;
+  else
+    {
+      changetype(array, *inbitpix, *ins0 * *ins1, *numblank,
+                 (void **)img, LONG_IMG);
+      free(array);
     }
 }
 

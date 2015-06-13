@@ -74,8 +74,15 @@ struct mkcatalogparams
   struct commonparams      cp;  /* Common parameters.                 */
 
   /* Input: */
+  float                  *img;  /* Input image.                       */
+  long               *objects;  /* Object labels on each pixel.       */
+  long                *clumps;  /* Clump labels on each pixel.        */
+  float                  *sky;  /* Sky value on each pixel.           */
+  float                  *std;  /* Sky STD value on each pixel.       */
   int                    nwcs;  /* Number of WCS structures.          */
   struct wcsprm          *wcs;  /* Pointer to WCS structures.         */
+  size_t                   s0;  /* Size of input (first C axis).      */
+  size_t                   s1;  /* Size of input (second C axis).     */
 
   /* Output: */
 

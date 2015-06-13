@@ -40,5 +40,7 @@ fi
 
 # Actual test script:
 #####################
+export GSL_RNG_SEED=1
+export GSL_RNG_TYPE=ranlxs2
 img=convolve_spatial_warped.fits
-$execname $img
+$execname --envseed $img

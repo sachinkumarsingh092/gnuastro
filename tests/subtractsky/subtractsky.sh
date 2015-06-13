@@ -49,5 +49,7 @@ fi
 # Actual test script:
 #####################
 base=convolve_spatial
-../src/mknoise/astmknoise $base".fits"
+export GSL_RNG_SEED=1
+export GSL_RNG_TYPE=ranlxs2
+../src/mknoise/astmknoise --envseed $base".fits"
 $execname $base"_noised.fits" --checksky

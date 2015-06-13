@@ -240,7 +240,21 @@ checkifset(struct mkcatalogparams *p)
 void
 sanitycheck(struct mkcatalogparams *p)
 {
-
+  /* Set the names of the files. */
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.objlabsnameset,
+                &p->up.objlabsname, p->up.objhdu, p->up.objhduset,
+                "object labels");
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.clumplabsnameset,
+                &p->up.clumplabsname, p->up.clumphdu, p->up.clumphduset,
+                "clump labels");
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.skynameset,
+                &p->up.skyname, p->up.skyhdu, p->up.skyhduset,
+                "sky value image");
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.stdnameset,
+                &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
+                "sky standard deviation");
 }
 
 
@@ -265,9 +279,83 @@ sanitycheck(struct mkcatalogparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 void
+checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
+             long **array)
+{
+  int bitpix;
+  size_t s0, s1, numblank;
+
+  /* Read the file: */
+  filetolong(filename, hdu, array, &bitpix, &numblank, &s0, &s1);
+
+  /* Make sure it has no blank pixels. */
+  if(numblank)
+    error(EXIT_FAILURE, 0, "The labels images should not have any blank "
+          "values. %s (hdu: %s) has %lu blank pixels.", filename,
+          hdu, numblank);
+
+  /* Make sure it has an integer type. */
+  if(bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG)
+    error(EXIT_FAILURE, 0, "The labels image can be any integer type "
+          "(BITPIX). However, %s (hdu: %s) is a %s precision floating "
+          "point image.", filename, hdu,
+          bitpix==FLOAT_IMG ? "single" : "double");
+
+  /* Make sure it is the same size as the input image. */
+  if(s0!=p->s0 && s1!=p->s1)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
+          "%s (hdu: %s) is %lu x %lu. The images should have the same "
+          "size.", filename, hdu, s1, s0, p->up.inputname,
+          p->cp.hdu, p->s1, p->s0);
+}
+
+
+
+
+
+void
+checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
+              float **array)
+{
+  int bitpix;
+  size_t s0, s1, numblank;
+
+  /* Read the array: */
+  filetofloat(filename, NULL, hdu, NULL, array, &bitpix, &numblank, &s0, &s1);
+
+  /* Make sure it has no blank pixels. */
+  if(numblank)
+    error(EXIT_FAILURE, 0, "The Sky and Sky standard deviation images "
+          "should not have any blank values. %s (hdu: %s) has %lu blank "
+          "pixels.", filename, hdu, numblank);
+
+  /* Make sure it has the same size as the image. */
+  if(s0!=p->s0 && s1!=p->s1)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
+          "%s (hdu: %s) is %lu x %lu. The images should have the same "
+          "size.", filename, hdu, s1, s0, p->up.inputname,
+          p->cp.hdu, p->s1, p->s0);
+}
+
+
+
+
+
+void
 preparearrays(struct mkcatalogparams *p)
 {
+  int bitpix;
+  size_t numblank;
 
+  /* Read the input image: */
+  filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
+              &p->img, &bitpix, &numblank, &p->s0, &p->s1);
+
+  /* Read and check the other arrays: */
+  checksetlong(p, p->up.objlabsname, p->up.objhdu, &p->objects);
+  checksetlong(p, p->up.clumplabsname, p->up.clumphdu, &p->clumps);
+  checksetfloat(p, p->up.skyname, p->up.skyhdu, &p->sky);
+  checksetfloat(p, p->up.stdname, p->up.stdhdu, &p->std);
 }
 
 
@@ -328,7 +416,15 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
+      printf("  - Input   %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
+      if(p->up.masknameset)
+        printf("  - Mask   %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
+      printf("  - Objects %s (hdu: %s)\n", p->up.objlabsname,
+             p->up.objhdu);
+      printf("  - Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
+             p->up.clumphdu);
+      printf("  - Sky     %s (hdu: %s)\n", p->up.skyname, p->up.skyhdu);
+      printf("  - Sky STD %s (hdu: %s)\n", p->up.stdname, p->up.stdhdu);
     }
 }
 
@@ -355,9 +451,14 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct mkcatalogparams *p)
+freeandreport(struct mkcatalogparams *p, struct timeval *t1)
 {
+  /* Free all the allocated spaces: */
+  free(p->sky);
+  free(p->std);
   free(p->cp.hdu);
+  free(p->clumps);
+  free(p->objects);
   free(p->up.objhdu);
   free(p->cp.output);
   free(p->up.skyhdu);
@@ -370,4 +471,7 @@ freeandreport(struct mkcatalogparams *p)
   if(p->up.masknameset) free(p->up.maskname);
   if(p->up.objlabsnameset) free(p->up.objlabsname);
   if(p->up.clumplabsnameset) free(p->up.clumplabsname);
+
+  /* Print the final message. */
+  reporttiming(t1, SPACK_NAME" finished in", 0);
 }

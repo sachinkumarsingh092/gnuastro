@@ -362,8 +362,9 @@ sanitycheck(struct imgstatparams *p)
 {
   char *basename;
 
-  /* Set the maskname and mask hdu accordingly: */
-  setmaskname(p->up.inputname, &p->up.maskname, p->cp.hdu, p->up.mhdu);
+  /* Set the p->up.maskname accordingly: */
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
 
   /* Set the names of the output files: */
   if(p->cp.outputset) basename=p->cp.output;

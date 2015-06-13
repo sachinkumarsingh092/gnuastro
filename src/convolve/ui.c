@@ -333,8 +333,9 @@ checkifset(struct convolveparams *p)
 void
 sanitycheck(struct convolveparams *p)
 {
-  /* Set the maskname and mask hdu accordingly: */
-  CHECKMASKNAMEANDHDU(SPACK);
+  /* Set maskname accordingly: */
+  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
 
   /* Check the output file name: */
   if(p->cp.outputset)

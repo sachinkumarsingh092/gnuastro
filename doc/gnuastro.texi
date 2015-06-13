@@ -8260,6 +8260,13 @@ will add several more steps (and options) to its processings that can
 equally well be done outside of it. This makes following the code
 harder for a curious reader and also potentially adds bugs.
 
+Another advantage of less complexity is when the parameter you want to
+measure over one profile is not provided by the developers of
+MakeCatalog. You can simply open this tiny little program and add your
+desired calculation easily. However, if making a catalog was part of
+NoiseChisel, it would require a lot of energy to understand all the
+steps in order to use make your desired catalog.
+
 @item
 Low level nature of Gnuastro: Making catalogs is a separate process
 from labeling (detecting and segmenting) the pixels. A user might want
