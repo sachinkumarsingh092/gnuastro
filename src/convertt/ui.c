@@ -94,61 +94,19 @@ readconfig(char *filename, struct converttparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
       else if(strcmp(name, "hdu2")==0)
-	{
-	  if(up->hdu2set) continue;
-	  errno=0;
-	  up->hdu2=malloc(strlen(value)+1);
-	  if(up->hdu2==NULL)
-	    error(EXIT_FAILURE, errno, "Space for hdu2.");
-	  strcpy(up->hdu2, value);
-	  up->hdu2set=1;
-	}
+        allocatecopyset(value, &up->hdu2, &up->hdu2set);
       else if(strcmp(name, "hdu3")==0)
-	{
-	  if(up->hdu3set) continue;
-	  errno=0;
-	  up->hdu3=malloc(strlen(value)+1);
-	  if(up->hdu3==NULL)
-	    error(EXIT_FAILURE, errno, "Space for hdu3.");
-	  strcpy(up->hdu3, value);
-	  up->hdu3set=1;
-	}
+        allocatecopyset(value, &up->hdu3, &up->hdu3set);
       else if(strcmp(name, "hdu4")==0)
-	{
-	  if(up->hdu4set) continue;
-	  errno=0;
-	  up->hdu4=malloc(strlen(value)+1);
-	  if(up->hdu4==NULL)
-	    error(EXIT_FAILURE, errno, "Space for hdu4.");
-	  strcpy(up->hdu4, value);
-	  up->hdu4set=1;
-	}
-
-
-
+        allocatecopyset(value, &up->hdu4, &up->hdu4set);
 
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        allocatecopyset(value, &cp->output, &cp->outputset);
+
       else if(strcmp(name, "quality")==0)
 	{
 	  if(up->qualityset) continue;
@@ -237,33 +195,13 @@ printvalues(FILE *fp, struct converttparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
   if(up->hdu2set)
-    {
-      if(stringhasspace(up->hdu2))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu2", up->hdu2);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu2", up->hdu2);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu2", up->hdu2);
   if(up->hdu3set)
-    {
-      if(stringhasspace(up->hdu3))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu3", up->hdu3);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu3", up->hdu3);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu3", up->hdu3);
   if(up->hdu4set)
-    {
-      if(stringhasspace(up->hdu4))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu4", up->hdu4);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu4", up->hdu4);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu4", up->hdu4);
 
 
   fprintf(fp, "\n# Output parameters:\n");

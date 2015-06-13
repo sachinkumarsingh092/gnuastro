@@ -542,40 +542,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'M':
-      errno=0;                  /* We want to free it in the end. */
-      p->up.maskname=malloc(strlen(arg)+1);
-      if(p->up.maskname==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for mask file name.",
-              strlen(arg)+1);
-      strcpy(p->up.maskname, arg);
-      p->up.masknameset=1;
+      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
       break;
     case 'H':
-      errno=0;                  /* We want to free it in the end. */
-      p->up.mhdu=malloc(strlen(arg)+1);
-      if(p->up.mhdu==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for mask HDU.",
-              strlen(arg)+1);
-      strcpy(p->up.mhdu, arg);
-      p->up.mhduset=1;
+      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
       break;
-    case 'k':
-      errno=0;                  /* We want to free it in the end. */
-      p->up.kernelname=malloc(strlen(arg)+1);
-      if(p->up.kernelname==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for kernel file name.",
-              strlen(arg)+1);
-      strcpy(p->up.kernelname, arg);
-      p->up.kernelnameset=1;
+    case 'K':
+      allocatecopyset(arg, &p->up.kernelname, &p->up.kernelnameset);
       break;
     case 'U':
-      errno=0;                  /* We want to free it in the end. */
-      p->up.khdu=malloc(strlen(arg)+1);
-      if(p->up.khdu==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for kernel HDU.",
-              strlen(arg)+1);
-      strcpy(p->up.khdu, arg);
-      p->up.khduset=1;
+      allocatecopyset(arg, &p->up.khdu, &p->up.khduset);
       break;
     case 'E':
       p->skysubtracted=1;

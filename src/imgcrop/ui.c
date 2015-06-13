@@ -151,15 +151,8 @@ readconfig(char *filename, struct imgcropparams *p)
 
       /* Inputs: */
       else if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
+
       else if(strcmp(name, "racol")==0)
 	{
 	  if(up->racolset) continue;
@@ -259,12 +252,7 @@ printvalues(FILE *fp, struct imgcropparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
 
 
   fprintf(fp, "\n# Output parameters:\n");

@@ -265,24 +265,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Inputs: */
     case 'M':
-      p->up.maskname=arg;
-      p->up.masknameset=1;
+      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
       break;
     case 'H':
-      errno=0;                  /* We want to free it in the end. */
-      p->up.mhdu=malloc(strlen(arg)+1);
-      if(p->up.mhdu==NULL)
-        error(EXIT_FAILURE, errno, "Space for mask HDU.");
-      strcpy(p->up.mhdu, arg);
-      p->up.mhduset=1;
+      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
       break;
     case 'k':
-      p->up.kernelname=arg;
-      p->up.kernelnameset=1;
+      allocatecopyset(arg, &p->up.kernelname, &p->up.kernelnameset);
       break;
     case 'U':
-      p->up.khdu=arg;
-      p->up.khduset=1;
+      allocatecopyset(arg, &p->up.khdu, &p->up.khduset);
       break;
     case 500:
       p->kernelflip=0;

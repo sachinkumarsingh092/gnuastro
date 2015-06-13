@@ -75,6 +75,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
   }
 
 
+#define PRINTSTINGMAYBEWITHSPACE(name,string) {                         \
+    if(stringhasspace(string))                                          \
+      fprintf(fp, CONF_SHOWFMT"\"%s\"\n", name, string);                \
+    else                                                                \
+      fprintf(fp, CONF_SHOWFMT"%s\n", name, string);                    \
+  }
+
 
 
 
@@ -182,7 +189,8 @@ stringhasspace(char *in);
 char *
 malloccat(char *inname, char *toappend);
 
-
+void
+allocatecopyset(char *arg, char **copy, int *set);
 
 
 

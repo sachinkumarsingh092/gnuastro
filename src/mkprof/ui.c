@@ -97,27 +97,12 @@ readconfig(char *filename, struct mkprofparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        allocatecopyset(value, &cp->output, &cp->outputset);
+
       else if(strcmp(name, "naxis1")==0)
 	{
 	  if(up->naxis1set) continue;
@@ -335,12 +320,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
 
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
 
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)

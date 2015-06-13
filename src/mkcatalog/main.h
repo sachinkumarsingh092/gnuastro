@@ -40,9 +40,27 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct uiparams
 {
   char             *inputname;  /* Name of input file.               */
-  struct stll         *rename;  /* Rename a keyword.                 */
-  struct stll         *update;  /* For keywords to update.           */
-  struct stll          *write;  /* Full argument for keywords to add.*/
+  char              *maskname;  /* Name of masked file.              */
+  char                  *mhdu;  /* HDU of mask image.                */
+  char           *objlabsname;  /* Name of object labels file.       */
+  char                *objhdu;  /* HDU of object labels image.       */
+  char         *clumplabsname;  /* Name of clump labels file .       */
+  char              *clumphdu;  /* HDU of clump labels image.        */
+  char               *skyname;  /* Sky value image file name.        */
+  char                *skyhdu;  /* Sky HDU name.                     */
+  char               *stdname;  /* Sky STD value image file name.    */
+  char                *stdhdu;  /* Sky STD HDU name.                 */
+
+  int             masknameset;
+  int                 mhduset;
+  int          objlabsnameset;
+  int               objhduset;
+  int        clumplabsnameset;
+  int             clumphduset;
+  int              skynameset;
+  int               skyhduset;
+  int              stdnameset;
+  int               stdhduset;
 };
 
 

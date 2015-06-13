@@ -335,11 +335,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.checkcenterset=1;
       break;
     case 'p':
-      errno=0;
-      p->suffix=malloc(strlen(arg)+1);
-      if(p->suffix==NULL) error(EXIT_FAILURE, 0, NULL);
-      strcpy(p->suffix, arg);
-      p->up.suffixset=1;
+      allocatecopyset(arg, &p->suffix, &p->up.suffixset);
       break;
 
 

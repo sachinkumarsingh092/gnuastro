@@ -100,15 +100,8 @@ readconfig(char *filename, struct mknoiseparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
+
       else if(strcmp(name, "background")==0)
 	{
 	  if(up->backgroundset) continue;
@@ -134,15 +127,7 @@ readconfig(char *filename, struct mknoiseparams *p)
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        allocatecopyset(value, &cp->output, &cp->outputset);
 
 
 
@@ -180,12 +165,7 @@ printvalues(FILE *fp, struct mknoiseparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
   if(up->backgroundset)
     fprintf(fp, CONF_SHOWFMT"%f\n", "background", p->mbackground);
   if(up->zeropointset)
@@ -259,8 +239,10 @@ checkifset(struct mknoiseparams *p)
 void
 sanitycheck(struct mknoiseparams *p)
 {
-  /* Set the output name if not specified: */
-  if(p->cp.output==NULL)
+  /* Set the output name: */
+  if(p->cp.output)
+    checkremovefile(p->cp.output, p->cp.dontdelete);
+  else
     automaticoutput(p->up.inputname, "_noised.fits", p->cp.removedirinfo,
                     p->cp.dontdelete, &p->cp.output);
 

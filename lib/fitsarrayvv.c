@@ -1349,19 +1349,16 @@ setmaskname(char *inputname, char **maskname, char *inhdu, char *mhdu)
 {
   if(*maskname)
     {
-      if(strcmp(inputname, *maskname)==0
-         && strcmp(inhdu, mhdu)==0)
-        error(EXIT_FAILURE, 0, "The specified mask name and input image "
-              "name are the same (%s). The input image hdu name and mask "
-              "hdu are also identical: (%s)! An image cannot be its own "
-              "mask.", inputname, inhdu);
+      if(strcmp(inputname, *maskname)==0 && strcmp(inhdu, mhdu)==0)
+        *maskname=NULL;
     }
-  else if(mhdu)
+  else
     {
-      if(strcmp(inhdu, mhdu))
+      if(mhdu && strcmp(inhdu, mhdu))
         *maskname=inputname;
+      else
+        *maskname=NULL;
     }
-  else *maskname=NULL;
 }
 
 

@@ -503,6 +503,30 @@ malloccat(char *inname, char *toappend)
 
 
 
+/* This function is mainly for reading in the arguments (from the
+   command line or configuration files) that need to be copied. The
+   set argument is for making sure that it has not already been set
+   before, see the main.h files of any program. */
+void
+allocatecopyset(char *arg, char **copy, int *set)
+{
+  /* Incase *set==1, then you shouldn't do anything, just return. */
+  if(*set) return;
+
+  /* The variable was not copied, copy it: */
+  errno=0;
+  *copy=malloc(strlen(arg)+1);
+  if(*copy==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes to copy %s",
+          strlen(arg)+1, arg);
+  strcpy(*copy, arg);
+  *set=1;
+}
+
+
+
+
+
 
 
 

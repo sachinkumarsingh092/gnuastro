@@ -277,25 +277,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input:  */
     case 500:
-      errno=0;
-      p->up.hdu2=malloc(strlen(arg)+1);
-      if(p->up.hdu2==NULL) error(EXIT_FAILURE, 0, "Space for hdu2");
-      strcpy(p->up.hdu2, arg);
-      p->up.hdu2set=1;
+      allocatecopyset(arg, &p->up.hdu2, &p->up.hdu2set);
       break;
     case 501:
-      errno=0;
-      p->up.hdu3=malloc(strlen(arg)+1);
-      if(p->up.hdu3==NULL) error(EXIT_FAILURE, 0, "Space for hdu3");
-      strcpy(p->up.hdu3, arg);
-      p->up.hdu3set=1;
+      allocatecopyset(arg, &p->up.hdu3, &p->up.hdu3set);
       break;
     case 502:
-      errno=0;
-      p->up.hdu4=malloc(strlen(arg)+1);
-      if(p->up.hdu4==NULL) error(EXIT_FAILURE, 0, "Space for hdu4");
-      strcpy(p->up.hdu4, arg);
-      p->up.hdu4set=1;
+      allocatecopyset(arg, &p->up.hdu4, &p->up.hdu4set);
       break;
 
 

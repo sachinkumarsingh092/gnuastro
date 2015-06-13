@@ -1,3 +1,12 @@
+2015-06-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/ : All the functions to make a copy of an input and print
+	string values were changed. These were mainly in ui.c and args.h
+	for each program.  Until now, for each option, I would allocate,
+	check and set the proper values, but now, I wrote a small function
+	in checkset.c (allocatecopyset) which does the job. This makes
+	reading the code significantly more easy and less bugy.
+
 2015-06-12  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/subtractsky/args.h (options): Removed the

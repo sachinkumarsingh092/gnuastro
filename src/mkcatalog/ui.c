@@ -68,7 +68,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
   FILE *fp;
   size_t lineno=0, len=200;
   char *line, *name, *value;
-  /*struct uiparams *up=&p->up;*/
+  struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
@@ -100,20 +100,33 @@ readconfig(char *filename, struct mkcatalogparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
+      else if (strcmp(name, "mask")==0)
+        allocatecopyset(value, &up->maskname, &up->masknameset);
+      else if (strcmp(name, "mhdu")==0)
+        allocatecopyset(value, &up->mhdu, &up->mhduset);
+      else if (strcmp(name, "objlabs")==0)
+        allocatecopyset(value, &up->objlabsname, &up->objlabsnameset);
+      else if (strcmp(name, "objhdu")==0)
+        allocatecopyset(value, &up->objhdu, &up->objhduset);
+      else if (strcmp(name, "clumplabs")==0)
+        allocatecopyset(value, &up->clumplabsname, &up->clumplabsnameset);
+      else if (strcmp(name, "clumphdu")==0)
+        allocatecopyset(value, &up->clumphdu, &up->clumphduset);
+      else if (strcmp(name, "sky")==0)
+        allocatecopyset(value, &up->skyname, &up->skynameset);
+      else if (strcmp(name, "skyhdu")==0)
+        allocatecopyset(value, &up->skyhdu, &up->skyhduset);
+      else if (strcmp(name, "std")==0)
+        allocatecopyset(value, &up->stdname, &up->stdnameset);
+      else if (strcmp(name, "stdhdu")==0)
+        allocatecopyset(value, &up->stdhdu, &up->stdhduset);
 
 
 
       /* Outputs */
-
+      else if(strcmp(name, "output")==0)
+        allocatecopyset(value, &cp->output, &cp->outputset);
 
 
 
@@ -143,19 +156,34 @@ readconfig(char *filename, struct mkcatalogparams *p)
 void
 printvalues(FILE *fp, struct mkcatalogparams *p)
 {
-  /*struct uiparams *up=&p->up;*/
+  struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+  if(up->masknameset)
+    PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
+  if(up->mhduset)
+    PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
+  if(up->objlabsnameset)
+    PRINTSTINGMAYBEWITHSPACE("objlabs", up->objlabsname);
+  if(up->objhduset)
+    PRINTSTINGMAYBEWITHSPACE("objhdu", up->objhdu);
+  if(up->clumplabsnameset)
+    PRINTSTINGMAYBEWITHSPACE("clumplabs", up->clumplabsname);
+  if(up->clumphduset)
+    PRINTSTINGMAYBEWITHSPACE("clumphdu", up->clumphdu);
+  if(up->skynameset)
+    PRINTSTINGMAYBEWITHSPACE("sky", up->skyname);
+  if(up->skyhduset)
+    PRINTSTINGMAYBEWITHSPACE("skyhdu", up->skyhdu);
+  if(up->stdnameset)
+    PRINTSTINGMAYBEWITHSPACE("std", up->stdname);
+  if(up->stdhduset)
+    PRINTSTINGMAYBEWITHSPACE("stdhdu", up->stdhdu);
 }
 
 
@@ -168,12 +196,20 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
 void
 checkifset(struct mkcatalogparams *p)
 {
-  /*struct uiparams *up=&p->up;*/
+  struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
+  if(up->objhduset==0)
+    REPORT_NOTSET("objhdu");
+  if(up->clumphduset==0)
+    REPORT_NOTSET("clumphdu");
+  if(up->skyhduset==0)
+    REPORT_NOTSET("skyhdu");
+  if(up->stdhduset==0)
+    REPORT_NOTSET("stdhdu");
 
 
   END_OF_NOTSET_REPORT;
@@ -321,10 +357,17 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
 void
 freeandreport(struct mkcatalogparams *p)
 {
-  /* Free the allocated arrays: */
   free(p->cp.hdu);
+  free(p->up.objhdu);
   free(p->cp.output);
-
-  if(p->wcs)
-    wcsvfree(&p->nwcs, &p->wcs);
+  free(p->up.skyhdu);
+  free(p->up.stdhdu);
+  free(p->up.clumphdu);
+  if(p->up.mhduset) free(p->up.mhdu);
+  if(p->wcs) wcsvfree(&p->nwcs, &p->wcs);
+  if(p->up.skynameset) free(p->up.skyname);
+  if(p->up.stdnameset) free(p->up.stdname);
+  if(p->up.masknameset) free(p->up.maskname);
+  if(p->up.objlabsnameset) free(p->up.objlabsname);
+  if(p->up.clumplabsnameset) free(p->up.clumplabsname);
 }

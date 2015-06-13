@@ -104,50 +104,20 @@ readconfig(char *filename, struct imgstatparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
-      else if(strcmp(name, "mask")==0)
-	{
-	  if(up->masknameset) continue;
-	  errno=0;
-	  up->maskname=malloc(strlen(value)+1);
-	  if(up->maskname==NULL)
-	    error(EXIT_FAILURE, errno, "Space for mask name.");
-	  strcpy(up->maskname, value);
-          up->masknameallocated=1;
-	  up->masknameset=1;
-	}
-      else if(strcmp(name, "mhdu")==0)
-	{
-	  if(up->mhduset) continue;
-	  errno=0;
-	  up->mhdu=malloc(strlen(value)+1);
-	  if(up->mhdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for mask HDU.");
-	  strcpy(up->mhdu, value);
-	  up->mhduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
+
+      else if (strcmp(name, "mask")==0)
+        allocatecopyset(value, &up->maskname, &up->masknameset);
+
+      else if (strcmp(name, "mhdu")==0)
+        allocatecopyset(value, &up->mhdu, &up->mhduset);
 
 
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        allocatecopyset(value, &cp->output, &cp->outputset);
+
       else if(strcmp(name, "mirrorplotdist")==0)
 	{
 	  if(up->mirrorplotdistset) continue;
@@ -282,26 +252,11 @@ printvalues(FILE *fp, struct imgstatparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
   if(up->masknameset)
-    {
-      if(stringhasspace(up->maskname))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
-    }
+    PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
   if(up->mhdu)
-    {
-      if(stringhasspace(up->mhdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
 
   /* Output: */
   fprintf(fp, "\n# Output:\n");

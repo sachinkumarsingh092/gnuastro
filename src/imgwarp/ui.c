@@ -99,15 +99,7 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
 
 
 
@@ -115,25 +107,10 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       /* Outputs */
       else if(strcmp(name, "matrix")==0)
-	{
-	  if(up->matrixstringset) continue;
-	  errno=0;
-	  up->matrixstring=malloc(strlen(value)+1);
-	  if(up->matrixstring==NULL)
-	    error(EXIT_FAILURE, errno, "Space for matrixstring");
-	  strcpy(up->matrixstring, value);
-	  up->matrixstringset=1;
-	}
+        allocatecopyset(value, &up->matrixstring, &up->matrixstringset);
+
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        allocatecopyset(value, &cp->output, &cp->outputset);
 
 
 
@@ -171,24 +148,15 @@ printvalues(FILE *fp, struct imgwarpparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
 
 
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
-    {
-      if(stringhasspace(up->matrixstring))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "matrix", up->matrixstring);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "matrix", up->matrixstring);
-    }
+    PRINTSTINGMAYBEWITHSPACE("matrix", up->matrixstring);
+
   if(cp->outputset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
+    PRINTSTINGMAYBEWITHSPACE("output", cp->output);
 
 
   fprintf(fp, "\n# Operating mode:\n");
@@ -318,13 +286,14 @@ sanitycheck(struct imgwarpparams *p)
 {
   double *d, *df, *tmp, *m=p->matrix;
 
-  /* If the output was not set, find it using automatic output. */
-  if(p->cp.outputset==0)
-    {
-      automaticoutput(p->up.inputname, "_warped.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->cp.output);
-      p->cp.outputset=1;
-    }
+
+  /* Set the output name: */
+  if(p->cp.output)
+    checkremovefile(p->cp.output, p->cp.dontdelete);
+  else
+    automaticoutput(p->up.inputname, "_warped.fits", p->cp.removedirinfo,
+                    p->cp.dontdelete, &p->cp.output);
+
 
   /* Check the size of the input matrix, note that it might only have
      the wrong numbers when it is read from a file. */

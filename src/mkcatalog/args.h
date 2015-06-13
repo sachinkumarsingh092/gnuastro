@@ -75,10 +75,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z
+   a b d e f g i j k l m n p r u v w x y z
+   A B C E F G I J L Q R T U W X Y Z
 
-   Number keys used: Nothing!
+   Number keys used: <=504
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -88,6 +88,86 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Input:",
+      1
+    },
+    {
+      "mask",
+      'M',
+      "STR",
+      0,
+      "Mask image file name.",
+      1
+    },
+    {
+      "mhdu",
+      'H',
+      "STR",
+      0,
+      "Mask image header name or number.",
+      1
+    },
+    {
+      "objlabs",
+      'O',
+      "STR",
+      0,
+      "Image specifying object labeles.",
+      1
+    },
+    {
+      "objhdu",
+      501,
+      "STR",
+      0,
+      "Object image header name or number.",
+      1
+    },
+    {
+      "clumplabs",
+      'c',
+      "STR",
+      0,
+      "Image specifying clump labeles.",
+      1
+    },
+    {
+      "clumphdu",
+      502,
+      "STR",
+      0,
+      "Clumps image header name or number.",
+      1
+    },
+    {
+      "sky",
+      's',
+      "STR",
+      0,
+      "Sky value image.",
+      1
+    },
+    {
+      "skyhdu",
+      503,
+      "STR",
+      0,
+      "Sky image header name or number.",
+      1
+    },
+    {
+      "std",
+      't',
+      "STR",
+      0,
+      "Sky standard deviation image.",
+      1
+    },
+    {
+      "stdhdu",
+      504,
+      "STR",
+      0,
+      "Sky STD image header name or number.",
       1
     },
 
@@ -144,9 +224,38 @@ parse_opt(int key, char *arg, struct argp_state *state)
   switch(key)
     {
 
-
     /* Input: */
-
+    case 'M':
+      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      break;
+    case 'H':
+      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
+      break;
+    case 'O':
+      allocatecopyset(arg, &p->up.objlabsname, &p->up.objlabsnameset);
+      break;
+    case 501:
+      allocatecopyset(arg, &p->up.objhdu, &p->up.objhduset);
+      break;
+    case 'c':
+      allocatecopyset(arg, &p->up.clumplabsname,
+                      &p->up.clumplabsnameset);
+      break;
+    case 502:
+      allocatecopyset(arg, &p->up.clumphdu, &p->up.clumphduset);
+      break;
+    case 's':
+      allocatecopyset(arg, &p->up.skyname, &p->up.skynameset);
+      break;
+    case 503:
+      allocatecopyset(arg, &p->up.skyhdu, &p->up.skyhduset);
+      break;
+    case 't':
+      allocatecopyset(arg, &p->up.stdname, &p->up.stdnameset);
+      break;
+    case 504:
+      allocatecopyset(arg, &p->up.stdhdu, &p->up.stdhduset);
+      break;
 
 
     /* Output: */

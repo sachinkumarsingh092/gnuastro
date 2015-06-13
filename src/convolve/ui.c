@@ -96,69 +96,21 @@ readconfig(char *filename, struct convolveparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for hdu");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
-      else if(strcmp(name, "mask")==0)
-	{
-	  if(up->masknameset) continue;
-	  errno=0;
-	  up->maskname=malloc(strlen(value)+1);
-	  if(up->maskname==NULL)
-	    error(EXIT_FAILURE, errno, "Space for mask name.");
-	  strcpy(up->maskname, value);
-	  up->masknameset=1;
-	}
-      else if(strcmp(name, "mhdu")==0)
-	{
-	  if(up->mhduset) continue;
-	  errno=0;
-	  up->mhdu=malloc(strlen(value)+1);
-	  if(up->mhdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for mask HDU.");
-	  strcpy(up->mhdu, value);
-	  up->mhduset=1;
-	}
-      else if(strcmp(name, "kernel")==0)
-	{
-	  if(up->kernelnameset) continue;
-	  errno=0;
-	  up->kernelname=malloc(strlen(value)+1);
-	  if(up->kernelname==NULL)
-	    error(EXIT_FAILURE, errno, "Space for kernelname");
-	  strcpy(up->kernelname, value);
-	  up->kernelnameset=1;
-	}
-      else if(strcmp(name, "khdu")==0)
-	{
-	  if(up->khduset) continue;
-	  errno=0;
-	  up->khdu=malloc(strlen(value)+1);
-	  if(up->khdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for khdu");
-	  strcpy(up->khdu, value);
-	  up->khduset=1;
-	}
+        allocatecopyset(value, &cp->hdu, &cp->hduset);
+      else if (strcmp(name, "mask")==0)
+        allocatecopyset(value, &up->maskname, &up->masknameset);
+      else if (strcmp(name, "mhdu")==0)
+        allocatecopyset(value, &up->mhdu, &up->mhduset);
+      else if (strcmp(name, "kernel")==0)
+        allocatecopyset(value, &up->kernelname, &up->kernelnameset);
+      else if (strcmp(name, "khdu")==0)
+        allocatecopyset(value, &up->khdu, &up->khduset);
 
 
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        allocatecopyset(value, &cp->output, &cp->outputset);
 
 
 
@@ -273,40 +225,15 @@ printvalues(FILE *fp, struct convolveparams *p)
 
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
   if(up->masknameset)
-    {
-      if(stringhasspace(up->maskname))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
-    }
-  if(up->mhdu)
-    {
-      if(stringhasspace(up->mhdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
+  if(up->mhduset)
+    PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
   if(up->kernelnameset)
-    {
-      if(stringhasspace(up->kernelname))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
-    }
-  if(up->khdu)
-    {
-      if(stringhasspace(up->khdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("kernel", up->kernelname);
+  if(up->khduset)
+    PRINTSTINGMAYBEWITHSPACE("khdu", up->khdu);
 
 
 

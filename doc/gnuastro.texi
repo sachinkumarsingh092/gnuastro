@@ -6958,7 +6958,10 @@ data and were only used for bias calculation. The detectors or the
 very early processing that is done on raw images clearly identifies
 such cases and usually assigns an integer (or flag or mask value) to
 those pixels. Pixels that are good for processing usually have a zero
-value in the mask image.
+value in the mask image. It goes without saying that the two images
+have to have the same size. Note that if the mask image has blank
+pixels, then they act like pixels with non-zero values and will be
+masked (see @ref{Blank pixels}).
 
 @cindex Binary mask image values
 The integer values in the mask images are usually sums of powers of
@@ -6991,22 +6994,14 @@ pixels}.
 
 @item -M
 @itemx --mask
-(@option{=STR}) Mask image file name. In case certain image pixels
-should not be considered, you can define a mask image file name with
-this option. Any pixel with a non-zero value in the specified mask
-image will not be considered in the input image. It goes without
-saying that the two images have to have the same size. If this option
-is not given and the @option{--mhdu} option has a different value from
-@option{--hdu}, then the input image name will be used. If a name is
-specified on the command line or in any of the configuration files, it
-will be used. If the program doesn't get any mask file name, it will
-use all the non-blank (see @ref{Blank pixels}) pixels in the
-image. Therefore, specifying a mask file name in any of the
-configuration files is not mandatory.
-
-Note that if the mask image has blank pixels, then they act like
-pixels with non-zero values and will be masked (see @ref{Blank
-pixels}).
+(@option{=STR}) Mask image file name. If this option is not given and
+the @option{--mhdu} option has a different value from @option{--hdu},
+then the input image name will be used. If a name is specified on the
+command line or in any of the configuration files, it will be used. If
+the program doesn't get any mask file name, it will use all the
+non-blank (see @ref{Blank pixels}) pixels in the image. Therefore,
+specifying a mask file name in any of the configuration files is not
+mandatory.
 
 @item -H
 @itemx --mhdu
@@ -8197,6 +8192,11 @@ All the inputs to MakeCatalog (see @ref{MakeCatalog}) are included in
 this one file which makes the running of MakeCatalog after NoiseChisel
 very easy.
 
+@item
+All masked pixels given to NoiseChisel will have a value of NaN in
+this image. So if you decide to run MakeCatalog after NoiseChisel,
+there is no more need to feed the mask image to MakeCatalog too.
+
 @end itemize
 
 @item
@@ -8310,7 +8310,12 @@ $ astmkcatalog input.fits
 @cindex Gaussian
 @noindent
 If MakeCatalog is to do processing, an input image should be provided
-with the recognized extensions as input data, see @ref{Arguments}.
+with the recognized extensions as input data, see
+@ref{Arguments}. Optionally a mask file can be specified to ignore the
+flux and positions of some of the pixels in the image, see @ref{Mask
+image}. Note that if you generated the labeled image using NoiseChisel
+with a mask image as input, there is no more need to inform
+MakeCatalog of the mask image, see @ref{NoiseChisel output}.
 
 
 
