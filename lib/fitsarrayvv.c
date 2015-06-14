@@ -745,6 +745,44 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
 
 
 
+/* Read one keyword from a FITS file. */
+void
+readkeyword(char *filename, char *hdu, char *keyname,
+            int datatype, void *value)
+{
+  size_t len;
+  int status=0;
+  char *ffname;
+  fitsfile *fptr;
+
+  /* Add hdu to filename: */
+  errno=0;
+  len=strlen(filename)+strlen(hdu)+4;
+  ffname=malloc(len*sizeof *ffname);
+  if(ffname==NULL)
+    error(EXIT_FAILURE, errno, "%lu characters", len);
+  sprintf(ffname, "%s[%s#]", filename, hdu);
+
+  /* Open the FITS file: */
+  if( fits_open_file(&fptr, ffname, READONLY, &status) )
+    fitsioerror(status, "Reading this FITS file.");
+
+  /* Get the desired keyword. */
+  if( fits_read_key(fptr, datatype, keyname, value, NULL, &status) )
+    fitsioerror(status, "Reading the keyword.");
+
+  /* Close the FITS file. */
+  fits_close_file(fptr, &status);
+  fitsioerror(status, NULL);
+
+  /* Clean up. */
+  free(ffname);
+}
+
+
+
+
+
 
 
 
@@ -1519,4 +1557,68 @@ prepfloatkernel(char *inputname, char *inhdu, float **outkernel,
       kernel[i]=kernel[size-i-1];
       kernel[size-i-1]=tmp;
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********              XY to RADEC               ************/
+/**************************************************************/
+/* Convert the X and y coordinates in a larger array to ra and dec
+   coordinates in that same array. xy points to the first element in
+   the X column and radec points to the first element in the RA
+   column. The columns for Y and Dec have to be immediately after X
+   and RA.
+
+   It appears that WCSLIB can only deal with static allocation. At
+   least in its tests it only uses static allocation. I tried dynamic
+   allocation, but it didn't work. So I can't use the vector
+   functionalities of WCSLIB and have to translate each point
+   separately.
+*/
+void
+xyarraytoradec(struct wcsprm *wcs, double *xy, double *radec,
+               size_t number, size_t width)
+{
+  size_t i;
+  double imgcrd[2], phi, theta;
+  int stat, status=0, ncoord=1, nelem=2;
+
+  for(i=0;i<number;++i)
+    {
+      if(isnan(xy[i*width]) || isnan(xy[i*width+1]))
+        radec[i*width]=radec[i*width+1]=NAN;
+      else
+        {
+          status=wcsp2s(wcs, ncoord, nelem, xy+i*width, imgcrd, &phi,
+                        &theta, radec+i*width, &stat);
+          if(status)
+            error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s.", status,
+                  wcs_errmsg[status]);
+
+          /* For a check:
+             printf("(%f, %f) --> (%f, %f)\n", xy[i*width], xy[i*width+1],
+                    radec[i*width], radec[i*width+1]);
+          */
+        }
+    }
+
+
 }

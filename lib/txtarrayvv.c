@@ -394,7 +394,10 @@ arraytotxt(double *array, size_t s0, size_t s1, char *comments,
     error(EXIT_FAILURE, errno, "%s", filename);
 
   /* Print the headers to file: */
-  fprintf(fp, "%s\n", comments);
+  if( comments[strlen(comments)-1]!='\n' )
+    fprintf(fp, "%s\n", comments);
+  else
+    fprintf(fp, "%s", comments);
 
   /* Print the data to file: */
   for(i=0;i<s0;++i)

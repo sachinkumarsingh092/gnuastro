@@ -8324,6 +8324,15 @@ image}. Note that if you generated the labeled image using NoiseChisel
 with a mask image as input, there is no more need to inform
 MakeCatalog of the mask image, see @ref{NoiseChisel output}.
 
+By default two catalogs will be made: one for the objects (suffixed
+with @file{_o.txt}) and another for the clumps (suffixed with
+@file{_c.txt}). Therefore if any value is given to the
+@option{--output} option, MakeCatalogs will simply append the two
+suffixes to it as the output file names. So if you want to specify an
+output name, it is best that it not have any suffix. If no value is
+given to the @option{--output} option, MakeCatalog will use the input
+name, see @ref{Automatic output}.
+
 
 
 

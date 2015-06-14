@@ -59,11 +59,7 @@ const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
   SPACK_NAME" will create a catalog from an input, labeled, and noise "
-  "identification images. For each pixel, there should at least be one "
-  "labeled image which has the same size as the input but each pixel is "
-  "labeled with the ID of the object. A clump labeled image can also be "
-  "optionally provided. If the noise mean and standard deviation are "
-  "provided, Signal to noise measures will also be output.\n"
+  "identification images.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -75,10 +71,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b d e f g i j k l m n p r u v w x y z
-   A B C E F G I J L Q R T U W X Y Z
+   b e g k l p u v w
+   A B E F G J L Q R T U W X Y Z
 
-   Number keys used: <=504
+   Number keys used: <=520
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -170,6 +166,14 @@ static struct argp_option options[] =
       "Sky STD image header name or number.",
       1
     },
+    {
+      "zeropoint",
+      'z',
+      "FLT",
+      0,
+      "Image zeropoint magnitude.",
+      1
+    },
 
 
 
@@ -178,6 +182,238 @@ static struct argp_option options[] =
       0, 0, 0, 0,
       "Output:",
       2
+    },
+    {
+      "intwidth",
+      516,
+      "INT",
+      0,
+      "Width of integer columns.",
+      2
+    },
+    {
+      "floatwidth",
+      517,
+      "INT",
+      0,
+      "Width of floating point columns.",
+      2
+    },
+    {
+      "accuwidth",
+      518,
+      "INT",
+      0,
+      "Width of more accurate floating point columns.",
+      2
+    },
+    {
+      "floatprecision",
+      519,
+      "INT",
+      0,
+      "Precision of floating point columns.",
+      2
+    },
+    {
+      "accuprecision",
+      520,
+      "INT",
+      0,
+      "Precision of more accurate floating pnt. cols.",
+      2
+    },
+
+
+
+    {
+      0, 0, 0, 0,
+      "Catalog columns:",
+      3
+    },
+    {
+      "id",
+      'i',
+      0,
+      0,
+      "Overall ID of this object or clump.",
+      3
+    },
+    {
+      "hostobjid",
+      'j',
+      0,
+      0,
+      "ID of object hosting this clump.",
+      3
+    },
+    {
+      "idinhostobj",
+      'I',
+      0,
+      0,
+      "ID of clump in host object.",
+      3
+    },
+    {
+      "numclumps",
+      'C',
+      0,
+      0,
+      "Number of clumps in this object.",
+      3
+    },
+    {
+      "area",
+      'a',
+      0,
+      0,
+      "Area of all object.",
+      3
+    },
+    {
+      "clumpsarea",
+      513,
+      0,
+      0,
+      "Area of clumps in this object.",
+      3
+    },
+    {
+      "x",
+      'x',
+      0,
+      0,
+      "All obj. flux weighted center (first FITS axis).",
+      3
+    },
+    {
+      "y",
+      'y',
+      0,
+      0,
+      "All obj. flux weighted center (second FITS axis).",
+      3
+    },
+    {
+      "clumpsx",
+      507,
+      0,
+      0,
+      "Clumps flux weighted center (first FITS axis).",
+      3
+    },
+    {
+      "clumpsy",
+      508,
+      0,
+      0,
+      "Clumps flux weighted center (second FITS axis).",
+      3
+    },
+    {
+      "ra",
+      'r',
+      0,
+      0,
+      "All object flux weighted center right ascension.",
+      3
+    },
+    {
+      "dec",
+      'd',
+      0,
+      0,
+      "All object flux weighted center declination.",
+      3
+    },
+    {
+      "clumpsra",
+      509,
+      0,
+      0,
+      "Clumps flux weighted center right ascension.",
+      3
+    },
+    {
+      "clumpsdec",
+      510,
+      0,
+      0,
+      "Clumps flux weighted center declination.",
+      3
+    },
+    {
+      "flux",
+      'f',
+      0,
+      0,
+      "Total flux of all object.",
+      3
+    },
+    {
+      "clumpsflux",
+      511,
+      0,
+      0,
+      "Total flux in clumps of this object.",
+      3
+    },
+    {
+      "magnitude",
+      'm',
+      0,
+      0,
+      "Total magnitude.",
+      3
+    },
+    {
+      "clumpsmagnitude",
+      512,
+      0,
+      0,
+      "Total magnitude of clumps in this object.",
+      3
+    },
+    {
+      "riverflux",
+      514,
+      0,
+      0,
+      "Average flux or river surrounding this clump.",
+      3
+    },
+    {
+      "rivernum",
+      515,
+      0,
+      0,
+      "Number of river pixels surrounding this clump.",
+      3
+    },
+    {
+      "sn",
+      'n',
+      0,
+      0,
+      "Signal to noise ratio column.",
+      3
+    },
+    {
+      "sky",
+      505,
+      0,
+      0,
+      "Sky value.",
+      3
+    },
+    {
+      "std",
+      506,
+      0,
+      0,
+      "Sky standard deviation.",
+      3
     },
 
 
@@ -256,9 +492,143 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 504:
       allocatecopyset(arg, &p->up.stdhdu, &p->up.stdhduset);
       break;
+    case 'z':
+      anyfloat(arg, &p->zeropoint, "zeropoint", key, SPACK, NULL, 0);
+      p->up.zeropointset=1;
+      break;
 
 
     /* Output: */
+    case 516:
+      intlzero(arg, &p->intwidth, "intwidth", key, SPACK, NULL, 0);
+      p->up.intwidthset=1;
+      break;
+    case 517:
+      intlzero(arg, &p->floatwidth, "floatwidth", key, SPACK, NULL, 0);
+      p->up.floatwidthset=1;
+      break;
+    case 518:
+      intlzero(arg, &p->accuwidth, "accuwidth", key, SPACK, NULL, 0);
+      p->up.floatwidthset=1;
+      break;
+    case 519:
+      intlzero(arg, &p->floatprecision, "flatprecision",
+               key, SPACK, NULL, 0);
+      p->up.floatprecisionset=1;
+      break;
+    case 520:
+      intlzero(arg, &p->accuprecision, "accuprecision",
+               key, SPACK, NULL, 0);
+      p->up.accuprecisionset=1;
+      break;
+
+
+    /* Catalog columns: */
+    case 'i':
+      add_to_sll(&p->objcolsll, CATID);
+      add_to_sll(&p->clumpcolsll, CATID);
+      p->up.idset=1;
+      break;
+    case 'j':
+      add_to_sll(&p->clumpcolsll, CATHOSTOBJID);
+      p->up.hostobjidset=1;
+      break;
+    case 'I':
+      add_to_sll(&p->clumpcolsll, CATIDINHOSTOBJ);
+      p->up.idinhostobjset=1;
+      break;
+    case 'C':
+      add_to_sll(&p->objcolsll, CATNUMCLUMPS);
+      p->up.numclumpsset=1;
+      break;
+    case 'a':
+      add_to_sll(&p->objcolsll, CATAREA);
+      add_to_sll(&p->clumpcolsll, CATAREA);
+      p->up.areaset=1;
+      break;
+    case 513:
+      add_to_sll(&p->objcolsll, CATCLUMPSAREA);
+      p->up.clumpsareaset=1;
+      break;
+    case 'x':
+      add_to_sll(&p->objcolsll, CATX);
+      add_to_sll(&p->clumpcolsll, CATX);
+      p->up.xset=1;
+      break;
+    case 'y':
+      add_to_sll(&p->objcolsll, CATY);
+      add_to_sll(&p->clumpcolsll, CATY);
+      p->up.yset=1;
+      break;
+    case 507:
+      add_to_sll(&p->objcolsll, CATCLUMPSX);
+      p->up.clumpsxset=1;
+      break;
+    case 508:
+      add_to_sll(&p->objcolsll, CATCLUMPSY);
+      p->up.clumpsyset=1;
+      break;
+    case 'r':
+      add_to_sll(&p->objcolsll, CATRA);
+      add_to_sll(&p->clumpcolsll, CATRA);
+      p->up.raset=1;
+      break;
+    case 'd':
+      add_to_sll(&p->objcolsll, CATDEC);
+      add_to_sll(&p->clumpcolsll, CATDEC);
+      p->up.decset=1;
+      break;
+    case 509:
+      add_to_sll(&p->objcolsll, CATCLUMPSRA);
+      p->up.clumpsraset=1;
+      break;
+    case 510:
+      add_to_sll(&p->objcolsll, CATCLUMPSDEC);
+      p->up.clumpsdecset=1;
+      break;
+    case 'f':
+      add_to_sll(&p->objcolsll, CATFLUX);
+      add_to_sll(&p->clumpcolsll, CATFLUX);
+      p->up.fluxset=1;
+      break;
+    case 511:
+      add_to_sll(&p->objcolsll, CATCLUMPSFLUX);
+      p->up.clumpsfluxset=1;
+      break;
+    case 'm':
+      add_to_sll(&p->objcolsll, CATMAGNITUDE);
+      add_to_sll(&p->clumpcolsll, CATMAGNITUDE);
+      p->up.magnitudeset=1;
+      break;
+    case 512:
+      add_to_sll(&p->objcolsll, CATCLUMPSMAGNITUDE);
+      p->up.clumpsmagnitudeset=1;
+      break;
+    case 514:
+      add_to_sll(&p->clumpcolsll, CATRIVERFLUX);
+      p->up.riverfluxset=1;
+      break;
+    case 515:
+      add_to_sll(&p->clumpcolsll, CATRIVERNUM);
+      p->up.rivernumset=1;
+      break;
+    case 'n':
+      add_to_sll(&p->objcolsll, CATSN);
+      add_to_sll(&p->clumpcolsll, CATSN);
+      p->up.snset=1;
+      break;
+    case 505:
+      add_to_sll(&p->objcolsll, CATSKY);
+      add_to_sll(&p->clumpcolsll, CATSKY);
+      p->up.skyset=1;
+      break;
+    case 506:
+      add_to_sll(&p->objcolsll, CATSTD);
+      add_to_sll(&p->clumpcolsll, CATSTD);
+      p->up.stdset=1;
+      break;
+
+
 
 
     /* Operating modes: */

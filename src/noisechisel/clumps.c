@@ -525,9 +525,9 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
   struct meshparams *smp=&p->smp;
 
   double *xys, *clumpinfo;
+  float *img=p->img, *smpstd=smp->garray2;
   size_t lab, is0=p->lmp.s0, is1=p->lmp.s1;
   long *clab=p->clab, wngb[WNGBSIZE], ngblab;
-  float *img=p->img, *smpstd=smp->garray2;
   size_t x0=ctp->x0, y0=ctp->y0, x1=ctp->x1, y1=ctp->y1;
   size_t i=0, ii=0, row, *n, *nf, ngb[8], *ind, *indf, numngb;
 

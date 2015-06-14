@@ -96,6 +96,10 @@ struct fitsheaderll
 };
 
 void
+readkeyword(char *filename, char *hdu, char *keyname,
+            int datatype, void *value);
+
+void
 add_to_fitsheaderll(struct fitsheaderll **list, int datatype,
                     char *keyname, int kfree, void *value, int vfree,
                     char *comment, int cfree, char *unit);
@@ -192,5 +196,17 @@ filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
 void
 prepfloatkernel(char *inputname, char *inhdu, float **kernel,
                 size_t *ins0, size_t *ins1);
+
+
+
+
+
+/**************************************************************/
+/**********              XY to RADEC               ************/
+/**************************************************************/
+void
+xyarraytoradec(struct wcsprm *wcs, double *xy, double *radec,
+               size_t number, size_t width);
+
 
 #endif

@@ -39,7 +39,7 @@ astmkcatalog_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 mkcatalog.c mkcatalog.h
 
 astmkcatalog_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
--lfitsarrayvv -lcheckset -ltiming -llinkedlist
+-lfitsarrayvv -lcheckset -ltiming -llinkedlist -ltxtarrayvv
 
 
 

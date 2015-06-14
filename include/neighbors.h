@@ -30,7 +30,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
    Inputs:
    ind        : Pointer to the index being considered.
-   (is0, is1) : Input image number of columns.
+   (is0, is1) : Input image number of rows and columns.
    (x0,y0)    : The bottom left corner of image or mesh box (included).
    (x1,y1)    : The Top right corner of image or mesh box (not included).
 
@@ -79,8 +79,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
       }								   \
   }
 
-/* Needs:
-      size_t ngb[8], is1, numngb*/
+
 #define FILL_NGB_8_ALLIMG {					   \
     unsigned char bl=0, br=0, tl=0, tr=0;			   \
     numngb=0;						           \

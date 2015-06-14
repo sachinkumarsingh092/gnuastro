@@ -23,6 +23,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MKCATALOG_H
 #define MKCATALOG_H
 
+#define WNGBSIZE        20      /* wngb: indexs of river neighbors. */
+#define COMMENTSIZE  10000
+
+#define COLINFOINT       1
+#define COLINFOFLOAT     2
+#define COLINFOACCU      3
+
 void
 mkcatalog(struct mkcatalogparams *p);
 
