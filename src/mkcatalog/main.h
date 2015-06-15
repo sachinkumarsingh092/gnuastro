@@ -60,13 +60,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define ONCLUMPS      1     /* Total number of clumps in this object.  */
 #define OTotFlux      2     /* Sum of (flux-sky) in object.            */
 #define OFlxWhtX      3     /* Sum of (flux-sky)*x of this object.     */
-#define OFlxWhtY  OFlxWhtX+1  /* Sum of (flux-sky)*y of this object.   */
+#define OFlxWhtY    OFlxWhtX+1  /* Sum of (flux-sky)*y of this object. */
 #define OFlxWhtRA     5     /* RA of (OFlxWhtX, OFlxWhtY).             */
-#define OFlxWhtDec OFlxWhtRA+1 /* Dec of (OFlxWhtX, OFlxWhtY).         */
+#define OFlxWhtDec  OFlxWhtRA+1 /* Dec of (OFlxWhtX, OFlxWhtY).        */
 #define OAREAC        7     /* Area of clumps in this object.          */
 #define OTotFluxC     8     /* Sum of (flux-sky) in object clumps.     */
 #define OFlxWhtCX     9     /* Sum of (flux-sky)*x on object clumps.   */
-#define OFlxWhtCY OFlxWhtCX+1 /* Sum of (flux-sky)*x on object clumps. */
+#define OFlxWhtCY   OFlxWhtCX+1 /* Sum of (flux-sky)*y on obj. clumps. */
 #define OFlxWhtCRA   11     /* RA of (OFlxWhtCX and OFlxWhtCY).        */
 #define OFlxWhtCDec OFlxWhtCRA+1 /* Dec of (OFlxWhtCX and OFlxWhtCY).  */
 #define OSKY         13     /* Sum of sky value on this object.        */
@@ -77,11 +77,11 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CINHOSTID     1     /* ID of clump in host object.             */
 #define CAREA         2     /* Area of this clump.                     */
 #define CFlxWhtX      3     /* Sum of flux*x of this clump.            */
-#define CFlxWhtY  CFlxWhtX+1 /* Sum of flux*y of this clump.           */
+#define CFlxWhtY    CFlxWhtX+1 /* Sum of flux*y of this clump.         */
 #define CFlxWhtRA     5     /* RA of (CFlxWhtX, CFlxWhtY).             */
-#define CFlxWhtDec CFlxWhtRA+1 /* Dec of (CFlxWhtX, CFlxWhtY).         */
+#define CFlxWhtDec  CFlxWhtRA+1 /* Dec of (CFlxWhtX, CFlxWhtY).        */
 #define CTotFlux      7     /* Sum of flux in this clump.              */
-#define CTotRivFlux   8     /* Sum of flux in rivers around this clump.*/
+#define CAveRivFlux   8     /* Sum of flux in rivers around this clump.*/
 #define CRivArea      9     /* Sum of flux in rivers around this clump.*/
 #define CSKY         10     /* Sum of sky value on this object.        */
 #define CSTD         11     /* Sum of sky STD value on this object.    */
@@ -121,10 +121,12 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Units: */
 #define CATDESCRIPTLENGTH         "%-60s"
 #define CATUNITCOUNTER            "counter"
-#define CATUNITMAG                "magnitude"
+#define CATUNITFLUX               "pixel value unit"
+#define CATUNITMAG                "log(pixel value unit)"
 #define CATUNITPIXAREA            "pixel area"
 #define CATUNITPIXPOS             "pixel position"
 #define CATUNITDEGREE             "degree"
+#define CATUNITRATIO              "ratio"
 
 
 
@@ -155,6 +157,7 @@ struct uiparams
   int              stdnameset;
   int               stdhduset;
   int            zeropointset;
+  int        skysubtractedset;
 
   int             intwidthset;
   int           floatwidthset;
@@ -208,6 +211,7 @@ struct mkcatalogparams
   size_t                   s0;  /* Size of input (first C axis).      */
   size_t                   s1;  /* Size of input (second C axis).     */
   float             zeropoint;  /* Zeropoint magnitude of input.      */
+  int           skysubtracted;  /* Input is already sky subtracted.   */
 
   /* Output: */
   char              *ocatname;  /* File name of object catalog.       */
@@ -226,8 +230,9 @@ struct mkcatalogparams
   double               *cinfo;  /* Information for all the clumps.    */
   size_t           numobjects;  /* Total number of objects.           */
   size_t            numclumps;  /* Total number of clumps.            */
-  struct sll       *objcolsll;  /* The columns in the objects catalog.*/
-  struct sll     *clumpcolsll;  /* The columns in the clumps catalog. */
+  struct sll       *allcolsll;  /* All the input columns.             */
+  size_t             *allcols;  /* Array keeping all the input cols.  */
+  size_t             allncols;  /* Total number of input columns.     */
   size_t             *objcols;  /* Array of objcolsll.                */
   size_t           *clumpcols;  /* Array of clumpcolsll.              */
   size_t             objncols;  /* Num. columns in objects catalog.   */
@@ -236,6 +241,7 @@ struct mkcatalogparams
   double            *clumpcat;  /* Output clump catalog.              */
   size_t            objcurcol;  /* Current column in object catalog.  */
   size_t          clumpcurcol;  /* Current column in clump catalog.   */
+  double              cpscorr;  /* Correction for counts/sec input.   */
 
   /* For going through the rows: */
   size_t               curcol;  /* Current column in the catalog.     */

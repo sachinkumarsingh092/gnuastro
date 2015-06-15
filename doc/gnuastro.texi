@@ -8239,16 +8239,16 @@ pixel.
 Detecting and segmenting signal over an image results in labeled
 images where each pixel is labeled with the ID (an integer) that is
 specified by the detector program. But this labeled image by its self
-can hardly be of any scientific use. The job of MakeProfiles is to
+can hardly be of any scientific use. The job of MakeCatalog is to
 combine the input image, the noise properties and the labels of pixels
 into a catalog (a text file table) which can easily be used for
 high-level scientific interpretations.
 
 NoiseChisel (Gnuastro's signal detection tool, see @ref{NoiseChisel})
-does not produce any catalog of the detected objects by its self only
+does not produce any catalog of the detected objects by its self. Only
 a labeled FITS image is output, see @ref{NoiseChisel output}. The
 output of NoiseChisel can be directly fed into MakeCatalog to generate
-the catalog. Some of the reasons making the catalog in a separate
+the catalog. Some of the reasons for making the catalog in a separate
 program@footnote{Most existing software that do object detection also
 output a catalog, so this is not a common practice.} are listed below:
 
@@ -8265,7 +8265,7 @@ measure over one profile is not provided by the developers of
 MakeCatalog. You can simply open this tiny little program and add your
 desired calculation easily. However, if making a catalog was part of
 NoiseChisel, it would require a lot of energy to understand all the
-steps in order to use make your desired catalog.
+steps in order to add desired parameter.
 
 @item
 Low level nature of Gnuastro: Making catalogs is a separate process
@@ -8311,18 +8311,23 @@ $ astmkcatalog [OPTION ...] InputImage.fits
 One line examples:
 
 @example
-$ astmkcatalog input.fits
+$ astmkcatalog -mdri input.fits
+$ astmkcatalog --floatprecision=5 input.fits
+$ astmkcatalog --output=cat input_labeled.fits
+$ astmkcatalog --objlabs=K_labeled.fits --objhdu=1 \
+               --clumplabs=K_labeled.fits --clumphdu=2 i_band.fits
 @end example
 
 @cindex Gaussian
 @noindent
 If MakeCatalog is to do processing, an input image should be provided
 with the recognized extensions as input data, see
-@ref{Arguments}. Optionally a mask file can be specified to ignore the
-flux and positions of some of the pixels in the image, see @ref{Mask
-image}. Note that if you generated the labeled image using NoiseChisel
-with a mask image as input, there is no more need to inform
-MakeCatalog of the mask image, see @ref{NoiseChisel output}.
+@ref{Arguments}. Optionally a mask file can be specified to ignore
+some of the pixels in the image, see @ref{Mask image}. Note that if
+you generated the labeled image using NoiseChisel with a mask image as
+input, there is no more need to inform MakeCatalog of the mask image,
+see @ref{NoiseChisel output}. The options common to all Gnuastro
+programs are explained in @ref{Common options}.
 
 By default two catalogs will be made: one for the objects (suffixed
 with @file{_o.txt}) and another for the clumps (suffixed with
@@ -8333,8 +8338,252 @@ output name, it is best that it not have any suffix. If no value is
 given to the @option{--output} option, MakeCatalog will use the input
 name, see @ref{Automatic output}.
 
+The first set of options specify the properties of the inputs. Other
+necessary input images are treated very much like a mask image, see
+@ref{Mask image}. If no name is specified for them, their HDU is
+checked and if that differs from the input HDU, then there is no need
+to specify a file name for them. The object and column label images or
+segmentation maps should not be of a floating point type
+(@code{BITPIX}).
 
+@table @option
 
+@item -O
+@itemx --objlabs
+(@option{=STR}) The file name of the object labels, if in the same
+file as input, it is not mandatory.
+
+@item --objhdu
+(@option{=STR}) The HDU of the object labels image, the header keyword
+@code{NOBJS} must be present in this extension. The value to this
+keyword is used as the final number of objects and the number of rows
+in the output objects catalog. Only pixels with values above zero will
+be considered.
+
+@item -c
+@itemx --clumplabs
+(@option{=STR}) Similar to @option{--objlabs} but for the labels of
+the clumps.
+
+@item --clumphdu
+(@option{=STR}) Similar to @option{--objhdu}, but for the clumps. The
+@code{NCLUMPS} keyword in this header specifies the number of
+recognized clumps.
+
+@item -s
+@itemx --skyfilename
+(@option{=STR}) File name of an image keeping the Sky value for each
+pixel.
+
+@item --skyhdu
+(@option{=STR}) The HDU of the Sky value image.
+
+@item -t
+@itemx --stdfilename
+(@option{=STR}) File name of image keeping the Sky value standard
+deviation for each pixel.
+
+@item --stdhdu
+(@option{=STR}) The HDU of the Sky value standard deviation image.
+
+@item -z
+@itemx --zeropoint
+(@option{=FLT}) The zero point magnitude for the input image, see
+@ref{Magnitude to flux conversion}.
+
+@item -E
+@itemx --skysubtracted
+If the image has already been sky subtracted by another program, then
+you need to notify MakeCatalog through this option. Note that this is
+only relevant when the Signal to noise ratio is to be calculated.
+
+@end table
+
+@noindent
+Through the next group of options, you can customize the general
+appearence of the output plain text catalog. The basic idea behind
+these options is for customization for all forms of input and the fact
+that some columns don't need too much space, while some do. The width
+is the number of text columns given to data of each type in the output
+plain text catalog.
+
+The precision is the number of digits to show after the decimal point
+in floating point numbers. We have defined two types of floating point
+numbers here, one is for less accurate precision, like magnitude,
+while the other is used when more accuracy is necessary. A common
+example of the latter is right ascension and declination. These
+variables usually need to be printed with more than 6 point
+accuracy. Note that all the values are calculated and stored
+internally as double precision floating point numbers, the distinction
+made here is only for printing them.
+
+@table @option
+
+@item --intwidth
+(@option{=INT}) The width of printing the integer values. In
+MakeCatalog, all IDs, numbers and areas are considered to be an
+integer.
+
+@item --floatwidth
+(@option{=INT}) The width of a normal precision floating point
+column. Any column that is not designated in @option{--intwidth} or
+@option{--accuwidth} is considered to be a normal precision floating
+point.
+
+@item --accuwidth
+(@option{=INT}) The width columns to be printed with extra
+accuracy. In MakeCatalog, all the right ascensions, declinations,
+river pixel fluxes (see Akhlaghi and Ichikawa 2015 for the definition
+of river pixels), the sky and the sky standard deviation.
+
+@item --floatprecision
+(@option{=INT}) The number of digits to the right of the decimal point
+in normal floating point display.
+
+@item --accuprecision
+(@option{=INT}) The number of digits to the right of the decimal point
+in more accurate floating point display.
+
+@end table
+
+@noindent
+The final group of options particular to MakeCatalog are those that
+specfy which columns should be displayed in the output catalogs. For
+each column there is an option, if it has been called on the command
+line or in any of the configuration files, it will included as a
+column in the output catalog. Some of the options apply to both
+objects and clumps and some are particular to only one of them. The
+latter cases are explicitly marked with [Objects] or [Clumps] to
+specify the catalog they will be placed in.
+
+The order of the columns in the output catalog is the inverse of the
+order their options are read in. For example see the following
+command@footnote{This command is practically identical to the first
+command in the one-line examples, see @ref{Options} for an explanation
+of the concatenation of the on/off options.}:
+
+@example
+$ astmkcatalog --magnitude --dec --ra --id input.fits
+@end example
+
+@noindent
+If no columns are specified in any of the configuration files (see
+@ref{Configuration files}), then the columns in the output catalogs
+will have the following order: ID, RA, Dec and Magnitude. Contrary to
+what it looks like, this is done to make life easier for the
+users. The configuration files can also keep any of the columns (so
+you don't have to specify your desired columns every time). This
+inverse ordering thus comes from their precedence, see
+@ref{Configuration file precedence}.
+
+For example catalogs usually have atleast an ID column and position
+columns (in the image and/or the world coordinate system). By reading
+the order of the columns in reverse you can have your fixed set of
+columns in your system wide configuration file and in any particular
+run, if you want some other information about objects or clumps, you
+can add those columns on the command line. Through the user and
+current directory configuration files, you can also have custom
+catalogs in each of your working directories, without bothering to
+specify the columns every time.
+
+@table @option
+
+@item --i
+@itemx --id
+The ID of the clump or object.
+
+@item -j
+@itemx hostobjid
+[Clumps] The ID of the object which hosts this clump.
+
+@item -I
+@itemx --idinhostobj
+[Clumps] The ID of this clump in its host object.
+
+@item -C
+@itemx --numclumps
+[Objects] The number of clumps in this object.
+
+@item -a
+@itemx --area
+The area (number of pixels) in any clump or object.
+
+@item --clumpsarea
+[Objects] The total area of all the clumps in this object.
+
+@item -x
+@itemx --x
+The flux weighted center of all objects and clumps along the first
+FITS axis (horizontal when viewed in SAO ds9).
+
+@item -y
+@itemx --y
+The flux weighted center of all objects and clumps along the second
+FITS axis (vertical when viewed in SAO ds9).
+
+@item --clumpsx
+[Objects] The flux weighted center of all the clumps in this
+object along the first FITS axis.
+
+@item --clumpsy
+[Objects] The flux weighted center of all the clumps in this
+object along the second FITS axis.
+
+@item -r
+@itemx --ra
+Right ascension of all objects or clumps.
+
+@item -d
+@itemx --dec
+Declination of all objects or clumps.
+
+@item --clumpsra
+[Objects] Right ascension of all clumps in this object.
+
+@item --clumpsdec
+[Objects] Declination of all clumps in this object.
+
+@item -f
+@itemx --flux
+The flux (sum of pixel values) in all clumps or objects.
+
+@item --clumpsflux
+[Objects] The flux in all clumps of this object.
+
+@item -m
+@itemx --magnitude
+The magnitude of all clumps or objects.
+
+@item --clumpsmagnitude
+[Objects] The magnitude of all clumps in this object.
+
+@item --riverflux
+[Clumps] The average flux of the river pixels of this clump. River
+pixels were defined in Akhlaghi and Ichiawa 2015, in short they are
+right on the boundaries of the clumps. This value is used internally
+to find the signal to noise ratio of the clumps and can also be used
+as a scale to guage the base flux of the flump.
+
+@item --rivernum
+[Clumps] The number of river pixels around this clump, see
+@option{--riverflux}.
+
+@item -n
+@itemx --sn
+The Signal to noise ratio (S/N) of all clumps or objects. See Akhlaghi
+and Ichikawa (2015) for the exact equations used.
+
+@item --sky
+The sky value under this object or clump. This is actually the mean
+value of of all the pixels in the sky image that lie on the same
+position as the object or clump.
+
+@item --std
+The sky value standard deviation for this clump or object. Like
+@option{--sky}, this is the average of the values in the input sky
+standard image pixels that lie over this object.
+
+@end table
 
 
 

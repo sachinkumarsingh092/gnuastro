@@ -63,7 +63,7 @@ makeoutput(struct noisechiselparams *p)
 
 
   /* First put a copy of the input image. */
-  arraytofitsimg(p->cp.output, "Input", FLOAT_IMG, p->imgss,
+  arraytofitsimg(p->cp.output, "Input", FLOAT_IMG, p->img,
                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
 

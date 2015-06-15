@@ -36,7 +36,7 @@ AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 bin_PROGRAMS = astmkcatalog
 
 astmkcatalog_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-mkcatalog.c mkcatalog.h
+mkcatalog.c mkcatalog.h columns.c columns.h
 
 astmkcatalog_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
 -lfitsarrayvv -lcheckset -ltiming -llinkedlist -ltxtarrayvv

@@ -26,6 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <float.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -35,6 +36,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
+#include "columns.h"
 #include "mkcatalog.h"
 
 
@@ -96,11 +98,12 @@ firstpass(struct mkcatalogparams *p)
           }
       }
 
-  /* Divide the total flux by the sum of flux*positions and add with
-     on to get the flux weighted center in the FITS standard. */
+  /* Make all the correctins (for the averages): */
   for(i=1;i<=p->numobjects;++i)
     {
       thisobj = p->oinfo + i*OCOLUMNS;
+      thisobj[ OSKY ] /= thisobj[ OAREA ];
+      thisobj[ OSTD ] /= thisobj[ OAREA ];
       thisobj[ OFlxWhtX ] = thisobj[ OFlxWhtX ] / thisobj[ OTotFlux ] + 1;
       thisobj[ OFlxWhtY ] = thisobj[ OFlxWhtY ] / thisobj[ OTotFlux ] + 1;
       if(thisobj[ OTotFluxC ]==0.0f)
@@ -170,9 +173,9 @@ secondpass(struct mkcatalogparams *p)
 
           /* Fill in this clump information:  */
           ++thisclump[ CAREA ];
+          thisclump[ CTotFlux ]  += img[i];
           thisclump[ CSKY ]      += sky[i];
           thisclump[ CSTD ]      += std[i];
-          thisclump[ CTotFlux ]  += img[i];
           thisclump[ CINHOSTID ]  = clumps[i];
           thisclump[ CHOSTOID ]   = objects[i];
           thisclump[ CFlxWhtX ]  += img[i] * (i%is1);
@@ -217,7 +220,7 @@ secondpass(struct mkcatalogparams *p)
                   if(j==ii) /* First time we are seeing this clump */
                     {       /* for this river pixel.               */
                       cinfo[ ( ofcrow[objects[i]] + clumps[*n] )
-                             * CCOLUMNS + CTotRivFlux ] += img[i];
+                             * CCOLUMNS + CAveRivFlux ] += img[i];
                       ++cinfo[ ( ofcrow[objects[i]] + clumps[*n] )
                                * CCOLUMNS + CRivArea ];
                       wngb[ii]=clumps[*n];
@@ -228,10 +231,17 @@ secondpass(struct mkcatalogparams *p)
           }
     }
 
-  /* Divide by total flux to get the flux weighted center: */
+  /* Make the proper corrections:
+
+     1. Divide by total flux to get the flux weighted center.
+     2. Divide the total river flux by the number of river pixels.
+  */
   for(i=1;i<=p->numclumps;++i)
     {
       thisclump = p->cinfo + i*CCOLUMNS;
+      thisclump[ CSKY ] /= thisclump[ CAREA ];
+      thisclump[ CSTD ] /= thisclump[ CAREA ];
+      thisclump[ CAveRivFlux ] /= thisclump[ CRivArea ];
       thisclump[ CFlxWhtX ] = thisclump[ CFlxWhtX ]/thisclump[ CTotFlux ] + 1;
       thisclump[ CFlxWhtY ] = thisclump[ CFlxWhtY ]/thisclump[ CTotFlux ] + 1;
     }
@@ -244,195 +254,24 @@ secondpass(struct mkcatalogparams *p)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************************************************************/
-/**************         Different operations           ****************/
-/*********************************************************************/
 void
-idcol(struct mkcatalogparams *p)
+setcpscorr(struct mkcatalogparams *p)
 {
   size_t i;
+  double minstd=FLT_MAX;
 
-  p->unitp=CATUNITCOUNTER;
-  sprintf(p->description, "%lu: Overall %s ID",
-          p->curcol, p->name);
-
-  for(i=0;i<p->num;++i)
-    p->cat[ i * p->numcols + p->curcol ] = i+1;
-
-  p->intcols[p->intcounter++]=p->curcol;
-}
-
-
-
-
-
-/* Store IDs related to the host object:
-
-   o1c0==1 --> hostobjid: The ID of object hosting this clump
-   o1c0==0 --> idinhostobj: The ID of clump in object
- */
-void
-hostobj(struct mkcatalogparams *p, int o1c0)
-{
-  char *des;
-  double counter;
-  size_t i, j, n, row=0;
-
-  /* This function is only for clumps. */
-  if(p->obj0clump1==0) return;
-
-  p->unitp=CATUNITCOUNTER;
-  des = ( o1c0 ? "ID of object hosting this clump"
-          : "ID of clump in host object" );
-  sprintf(p->description, "%lu: %s.",
-          p->curcol, des);
-
+  /* Go over all the objects and clumps to find the minimum relevant
+     standard deviation. */
   for(i=1;i<=p->numobjects;++i)
-    if( (n=p->oinfo[i*OCOLUMNS+ONCLUMPS]) > 0.0f)
-      {
-        counter=1.0f;
-        for(j=row;j<row+n;++j)
-          p->cat[ j * p->numcols + p->curcol] = o1c0 ? i : counter++;
-        row+=n;
-      }
+    if(p->oinfo[ i*OCOLUMNS+OSTD ]<minstd)
+      minstd=p->oinfo[ i*OCOLUMNS+OSTD ];
+  for(i=1;i<=p->numclumps;++i)
+    if(p->cinfo[ i*CCOLUMNS+CSTD ]<minstd)
+      minstd=p->cinfo[ i*CCOLUMNS+CSTD ];
 
-  p->intcols[p->intcounter++]=p->curcol;
+  /* Set the correction factor: */
+  p->cpscorr = minstd>1.0f ? 1.0f : minstd;
 }
-
-
-
-
-
-void
-numclumps(struct mkcatalogparams *p)
-{
-  size_t i;
-
-  /* This function is only for objects. */
-  if(p->obj0clump1) return;
-
-  p->unitp=CATUNITCOUNTER;
-  sprintf(p->description, "%lu: Number of clumps in this object.",
-          p->curcol);
-
-  for(i=0;i<p->numobjects;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->oinfo[(i+1)*OCOLUMNS+ONCLUMPS];
-
-  p->intcols[p->intcounter++]=p->curcol;
-}
-
-
-
-
-
-void
-area(struct mkcatalogparams *p, int cinobj)
-{
-  char *type;
-  size_t i, col = p->obj0clump1 ? CAREA : OAREA;
-
-  /* Set the proper column to use */
-  if(p->obj0clump1) /* It is a clump.                            */
-    {
-      type="This clump";
-      col = CAREA;
-    }
-  else
-    {               /* It is an object.                         */
-      if(cinobj)    /* It is the positions of clumps in object. */
-        {
-          type="Clumps in object";
-          col = OAREAC;
-        }
-      else          /* It is the position of the object itsself.*/
-        {
-          type="Full object";
-          col = OAREA;
-        }
-    }
-
-  p->unitp=CATUNITPIXAREA;
-  sprintf(p->description, "%lu: %s area.", p->curcol, type);
-
-  for(i=0;i<p->num;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
-
-  p->intcols[p->intcounter++]=p->curcol;
-}
-
-
-
-
-
-/* Find the positions:
-
-   x1y1==1: X axis.
-
-   cinobj==1: (only relevant when obj0clump1==0): clump in obj info,
-              not full object.
-
-   w1i0==1: We are dealing with world coordinates not image
-            coordinates. In the world coordinates x: ra and y: dec
- */
-void
-position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj)
-{
-  char *type;
-  size_t i, pcol;
-
-  /* Set the proper column to use */
-  if(p->obj0clump1) /* It is a clump.                            */
-    {
-      type="This clump";
-      if(w1i0)   pcol = x1y0 ? CFlxWhtRA : CFlxWhtDec;
-      else       pcol = x1y0 ? CFlxWhtX : CFlxWhtY;
-    }
-  else
-    {               /* It is an object.                         */
-      if(cinobj)    /* It is the positions of clumps in object. */
-        {
-          type="Clumps in object";
-          if(w1i0) pcol = x1y0 ? OFlxWhtCRA : OFlxWhtCDec;
-          else     pcol = x1y0 ? OFlxWhtCX : OFlxWhtCY;
-        }
-      else          /* It is the position of the object itsself.*/
-        {
-          type="Full object";
-          if(w1i0) pcol = x1y0 ? OFlxWhtRA : OFlxWhtDec;
-          else     pcol = x1y0 ? OFlxWhtX : OFlxWhtY;
-        }
-    }
-
-
-  p->unitp = w1i0 ? CATUNITDEGREE : CATUNITPIXPOS;
-  sprintf(p->description, "%lu: %s flux weighted center (%s).",
-          p->curcol, type,
-          w1i0 ? (x1y0?"RA":"Dec") : (x1y0?"X":"Y") );
-
-
-  for(i=0;i<p->num;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+pcol];
-
-
-  if(w1i0)
-    p->accucols[p->accucounter++]=p->curcol;
-}
-
 
 
 
@@ -470,7 +309,7 @@ makeoutput(struct mkcatalogparams *p)
 
       /* Do the preparations for this round: */
       p->intcounter=p->accucounter=p->curcol=0;
-      p->name     = p->obj0clump1 ? "Clump" : "Object";
+      p->name     = p->obj0clump1 ? "clump" : "object";
       p->icols    = p->obj0clump1 ? CCOLUMNS : OCOLUMNS;
       p->info     = p->obj0clump1 ? p->cinfo : p->oinfo;
       p->cat      = p->obj0clump1 ? p->clumpcat : p->objcat;
@@ -494,11 +333,28 @@ makeoutput(struct mkcatalogparams *p)
 
 
       /* Write the top of the comments: */
-      sprintf(comment, "# %s %s Catalog.\n", SPACK_STRING, p->name);
+      sprintf(comment, "# %s %s catalog.\n", SPACK_STRING, p->name);
       sprintf(p->line, "# %s started on %s", SPACK_NAME, ctime(&p->rawtime));
       strcat(comment, p->line);
 
 
+      /* If a magnitude is also desired, print the zero point
+         magnitude too: */
+      if(p->up.magnitudeset || p->up.clumpsmagnitudeset)
+        {
+          sprintf(p->line, "# The zero point magnitude is set to: %.3f\n",
+                  p->zeropoint);
+          strcat(comment, p->line);
+        }
+
+
+      /* If cpscorr was used, report it: */
+      if(p->up.snset && p->cpscorr<1.0f)
+        {
+          sprintf(p->line, "# Correction for counts-per-second "
+                  "input: %.3f (seconds)\n", 1/p->cpscorr);
+          strcat(comment, p->line);
+        }
 
       /* Fill the catalog array, in the end set the last elements in
          intcols and accucols to -1, so arraytotxt knows when to
@@ -525,11 +381,11 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATAREA:
-              area(p, 0);
+              area(p, 0, 0);
               break;
 
             case CATCLUMPSAREA:
-              area(p, 1);
+              area(p, 1, 0);
               break;
 
             case CATX:
@@ -562,6 +418,42 @@ makeoutput(struct mkcatalogparams *p)
 
             case CATCLUMPSDEC:
               position(p, 1, 0, 1);
+              break;
+
+            case CATFLUX:
+              fluxmag(p, 1, 0, 0);
+              break;
+
+            case CATCLUMPSFLUX:
+              fluxmag(p, 1, 1, 0);
+              break;
+
+            case CATMAGNITUDE:
+              fluxmag(p, 0, 0, 0);
+              break;
+
+            case CATCLUMPSMAGNITUDE:
+              fluxmag(p, 0, 1, 0);
+              break;
+
+            case CATRIVERFLUX:
+              fluxmag(p, 1, 0, 1);
+              break;
+
+            case CATRIVERNUM:
+              area(p, 0, 1);
+              break;
+
+            case CATSKY:
+              skystd(p, 1);
+              break;
+
+            case CATSTD:
+              skystd(p, 0);
+              break;
+
+            case CATSN:
+              sncol(p);
               break;
 
             default:
@@ -629,9 +521,11 @@ mkcatalog(struct mkcatalogparams *p)
           "(mkcatalog.c)", CCOLUMNS*(p->numclumps+1)*sizeof *p->cinfo);
 
 
+
   /* Run through the data for the first time: */
   firstpass(p);
   secondpass(p);
+
 
   /* If world coordinates are needed, then do the
      transformations. Note that we are passing the pointer to the
@@ -646,11 +540,17 @@ mkcatalog(struct mkcatalogparams *p)
                      p->cinfo+CCOLUMNS+CFlxWhtRA, p->numclumps,
                      CCOLUMNS);
     }
-
   if(p->up.clumpsraset || p->up.clumpsdecset)
     xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtCX,
                    p->oinfo+OCOLUMNS+OFlxWhtCRA, p->numobjects,
                    OCOLUMNS);
+
+
+  /* If the signal to noise is desired, then find the smallest
+     standard deviation for the counts/sec correction. Note that this
+     is only necessary if the user has asked for S/N calculation. */
+  if(p->up.snset)  setcpscorr(p);
+
 
   /* Write the output: */
   makeoutput(p);

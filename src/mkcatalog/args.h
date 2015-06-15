@@ -72,7 +72,7 @@ const char doc[] =
 /* Available letters for short options:
 
    b e g k l p u v w
-   A B E F G J L Q R T U W X Y Z
+   A B F G J L Q R T U W X Y Z
 
    Number keys used: <=520
 
@@ -135,7 +135,7 @@ static struct argp_option options[] =
       1
     },
     {
-      "sky",
+      "skyfilename",
       's',
       "STR",
       0,
@@ -151,7 +151,7 @@ static struct argp_option options[] =
       1
     },
     {
-      "std",
+      "stdfilename",
       't',
       "STR",
       0,
@@ -174,7 +174,14 @@ static struct argp_option options[] =
       "Image zeropoint magnitude.",
       1
     },
-
+    {
+      "skysubtracted",
+      'E',
+      0,
+      0,
+      "Input is already sky subtracted (for S/N).",
+      1
+    },
 
 
 
@@ -496,6 +503,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       anyfloat(arg, &p->zeropoint, "zeropoint", key, SPACK, NULL, 0);
       p->up.zeropointset=1;
       break;
+    case 'E':
+      p->skysubtracted=1;
+      p->up.skysubtractedset=1;
+      break;
 
 
     /* Output: */
@@ -525,106 +536,95 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Catalog columns: */
     case 'i':
-      add_to_sll(&p->objcolsll, CATID);
-      add_to_sll(&p->clumpcolsll, CATID);
+      add_to_sll(&p->allcolsll, CATID);
       p->up.idset=1;
       break;
     case 'j':
-      add_to_sll(&p->clumpcolsll, CATHOSTOBJID);
+      add_to_sll(&p->allcolsll, CATHOSTOBJID);
       p->up.hostobjidset=1;
       break;
     case 'I':
-      add_to_sll(&p->clumpcolsll, CATIDINHOSTOBJ);
+      add_to_sll(&p->allcolsll, CATIDINHOSTOBJ);
       p->up.idinhostobjset=1;
       break;
     case 'C':
-      add_to_sll(&p->objcolsll, CATNUMCLUMPS);
+      add_to_sll(&p->allcolsll, CATNUMCLUMPS);
       p->up.numclumpsset=1;
       break;
     case 'a':
-      add_to_sll(&p->objcolsll, CATAREA);
-      add_to_sll(&p->clumpcolsll, CATAREA);
+      add_to_sll(&p->allcolsll, CATAREA);
       p->up.areaset=1;
       break;
     case 513:
-      add_to_sll(&p->objcolsll, CATCLUMPSAREA);
+      add_to_sll(&p->allcolsll, CATCLUMPSAREA);
       p->up.clumpsareaset=1;
       break;
     case 'x':
-      add_to_sll(&p->objcolsll, CATX);
-      add_to_sll(&p->clumpcolsll, CATX);
+      add_to_sll(&p->allcolsll, CATX);
       p->up.xset=1;
       break;
     case 'y':
-      add_to_sll(&p->objcolsll, CATY);
-      add_to_sll(&p->clumpcolsll, CATY);
+      add_to_sll(&p->allcolsll, CATY);
       p->up.yset=1;
       break;
     case 507:
-      add_to_sll(&p->objcolsll, CATCLUMPSX);
+      add_to_sll(&p->allcolsll, CATCLUMPSX);
       p->up.clumpsxset=1;
       break;
     case 508:
-      add_to_sll(&p->objcolsll, CATCLUMPSY);
+      add_to_sll(&p->allcolsll, CATCLUMPSY);
       p->up.clumpsyset=1;
       break;
     case 'r':
-      add_to_sll(&p->objcolsll, CATRA);
-      add_to_sll(&p->clumpcolsll, CATRA);
+      add_to_sll(&p->allcolsll, CATRA);
       p->up.raset=1;
       break;
     case 'd':
-      add_to_sll(&p->objcolsll, CATDEC);
-      add_to_sll(&p->clumpcolsll, CATDEC);
+      add_to_sll(&p->allcolsll, CATDEC);
       p->up.decset=1;
       break;
     case 509:
-      add_to_sll(&p->objcolsll, CATCLUMPSRA);
+      add_to_sll(&p->allcolsll, CATCLUMPSRA);
       p->up.clumpsraset=1;
       break;
     case 510:
-      add_to_sll(&p->objcolsll, CATCLUMPSDEC);
+      add_to_sll(&p->allcolsll, CATCLUMPSDEC);
       p->up.clumpsdecset=1;
       break;
     case 'f':
-      add_to_sll(&p->objcolsll, CATFLUX);
-      add_to_sll(&p->clumpcolsll, CATFLUX);
+      add_to_sll(&p->allcolsll, CATFLUX);
       p->up.fluxset=1;
       break;
     case 511:
-      add_to_sll(&p->objcolsll, CATCLUMPSFLUX);
+      add_to_sll(&p->allcolsll, CATCLUMPSFLUX);
       p->up.clumpsfluxset=1;
       break;
     case 'm':
-      add_to_sll(&p->objcolsll, CATMAGNITUDE);
-      add_to_sll(&p->clumpcolsll, CATMAGNITUDE);
+      add_to_sll(&p->allcolsll, CATMAGNITUDE);
       p->up.magnitudeset=1;
       break;
     case 512:
-      add_to_sll(&p->objcolsll, CATCLUMPSMAGNITUDE);
+      add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
       p->up.clumpsmagnitudeset=1;
       break;
     case 514:
-      add_to_sll(&p->clumpcolsll, CATRIVERFLUX);
+      add_to_sll(&p->allcolsll, CATRIVERFLUX);
       p->up.riverfluxset=1;
       break;
     case 515:
-      add_to_sll(&p->clumpcolsll, CATRIVERNUM);
+      add_to_sll(&p->allcolsll, CATRIVERNUM);
       p->up.rivernumset=1;
       break;
     case 'n':
-      add_to_sll(&p->objcolsll, CATSN);
-      add_to_sll(&p->clumpcolsll, CATSN);
+      add_to_sll(&p->allcolsll, CATSN);
       p->up.snset=1;
       break;
     case 505:
-      add_to_sll(&p->objcolsll, CATSKY);
-      add_to_sll(&p->clumpcolsll, CATSKY);
+      add_to_sll(&p->allcolsll, CATSKY);
       p->up.skyset=1;
       break;
     case 506:
-      add_to_sll(&p->objcolsll, CATSTD);
-      add_to_sll(&p->clumpcolsll, CATSTD);
+      add_to_sll(&p->allcolsll, CATSTD);
       p->up.stdset=1;
       break;
 
