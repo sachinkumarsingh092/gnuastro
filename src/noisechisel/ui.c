@@ -386,6 +386,13 @@ readconfig(char *filename, struct noisechiselparams *p)
                    filename, lineno);
 	  up->gthreshset=1;
 	}
+      else if(strcmp(name, "minriverlength")==0)
+	{
+	  if(up->minriverlengthset) continue;
+          sizetlzero(value, &p->minriverlength, name, key, SPACK,
+                     filename, lineno);
+	  up->minriverlengthset=1;
+	}
       else if(strcmp(name, "objbordersn")==0)
 	{
 	  if(up->objbordersnset) continue;
@@ -542,6 +549,8 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnhistnbins", p->segsnhistnbins);
   if(up->gthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "gthresh", p->gthresh);
+  if(up->minriverlengthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "minriverlength", p->minriverlength);
   if(up->objbordersnset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "objbordersn", p->objbordersn);
 }
@@ -632,6 +641,8 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("segsnhistnbins");
   if(up->gthreshset==0)
     REPORT_NOTSET("gthresh");
+  if(up->minriverlengthset==0)
+    REPORT_NOTSET("minriverlength");
   if(up->objbordersnset==0)
     REPORT_NOTSET("objbordersn");
 
@@ -724,6 +735,18 @@ sanitycheck(struct noisechiselparams *p)
       p->clumpsnname=NULL;
       automaticoutput(p->up.inputname, "_clumpsn.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->clumpsnname);
+    }
+  if(p->skysubedname)
+    {
+      p->skysubedname=NULL;
+      automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->skysubedname);
+    }
+  if(p->maskdetname)
+    {
+      p->maskdetname=NULL;
+      automaticoutput(p->up.inputname, "_maskdet.fits", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->maskdetname);
     }
 
 
@@ -1063,6 +1086,8 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   free(p->skyname);
   free(p->meshname);
   free(p->threshname);
+  free(p->maskdetname);
+  free(p->skysubedname);
   free(p->detectionname);
   free(p->segmentationname);
   free(p->detectionskyname);

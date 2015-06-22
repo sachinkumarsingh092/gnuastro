@@ -906,7 +906,7 @@ clumpsnthreshonmesh(void *inparams)
           /* histname has to be set to NULL so automaticoutput can
              safey free it. */
           histname=NULL;
-          sprintf(suffix, "_%lu_detsn.txt", ind);
+          sprintf(suffix, "_%lu_segsn.txt", ind);
           sprintf(cline, "# %s\n# %s started on %s"
                   "# Input: %s (hdu: %s)\n"
                   "# Histogram for S/N distribution of false "

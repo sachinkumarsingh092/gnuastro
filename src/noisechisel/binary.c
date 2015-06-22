@@ -581,3 +581,15 @@ fillboundedholes(unsigned char *in, size_t s0, size_t s1)
   free(inv);
   free(hlab);
 }
+
+
+
+
+
+void
+maskbackorforeground(float *in, size_t size, unsigned char *byt,
+                     unsigned char b0f1)
+{
+  float *endin=in+size;
+  do if(*byt++==b0f1) *in=NAN; while(++in<endin);
+}

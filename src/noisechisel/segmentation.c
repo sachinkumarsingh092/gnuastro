@@ -40,6 +40,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
+
+
+
+
+
 /******************************************************************/
 /*****************     Growing preparations     *******************/
 /******************************************************************/
@@ -250,7 +257,7 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
 	}
 
   /* To check the matrix specific detected region:
-  if(ctp->thislabel==105)
+  if(ctp->thislabel==104)
     for(i=1;i<numclumps;++i)
       {
         printf("%lu: \n", i);
@@ -317,7 +324,8 @@ grownclumpstoobjects(struct clumpsthreadparams *ctp)
      connection is severed, its place in nums will be set to zero. */
   for(i=1;i<numclumps;++i)
     for(j=1;j<i;++j)
-      if( nums[ ii=i*numclumps+j ] && sns[ii] < ctp->p->objbordersn )
+      if( nums[ ii=i*numclumps+j ] < ctp->p->minriverlength
+          || sns[ii] < ctp->p->objbordersn )
 	nums[ ii ] = nums[ j*numclumps+i ]=0;
 
 

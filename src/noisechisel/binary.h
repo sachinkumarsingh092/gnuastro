@@ -47,4 +47,8 @@ opening(unsigned char *byt, size_t s0, size_t s1,
 void
 fillboundedholes(unsigned char *in, size_t s0, size_t s1);
 
+void
+maskbackorforeground(float *in, size_t size, unsigned char *byt,
+                     unsigned char b0f1);
+
 #endif

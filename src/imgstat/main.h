@@ -36,7 +36,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define PRINTFLT  "%.6f\n"
 #define PRINTINT  "%.0f\n"
 #define STRVAL    "   -- %-45s%s\n"
-#define FNAMEVAL  "   -- %-45s%g\n"
+#define FNAMEVAL  "   -- %-45s%f\n"
 #define SNAMEVAL  "   -- %-45s%lu\n"
 #define ASCIIHISTNUMBINS    60
 #define ASCIIHISTHEIGHT     10

@@ -82,6 +82,7 @@ struct uiparams
   int          segquantset;
   int    segsnhistnbinsset;
   int           gthreshset;
+  int    minriverlengthset;
   int       objbordersnset;
 };
 
@@ -113,6 +114,9 @@ struct noisechiselparams
   char            *skyname; /* !=NULL: Name of image showing sky and STD.  */
   char   *segmentationname; /* !=NULL: Name of segmentation steps.         */
   char        *clumpsnname; /* !=NULL: Name of clump S/N on grid.          */
+  int           detectonly; /* ==1: Only do detection, no segmentation.    */
+  char        *maskdetname; /* !=NULL: Save masked detections and sky.     */
+  char       *skysubedname; /* !=NULL: Save the sky subtracted image.      */
 
   /* Detection: */
   float              *conv; /* Convolved image.                            */
@@ -137,6 +141,7 @@ struct noisechiselparams
   size_t    segsnhistnbins; /* ==1: Save false clumps S/Ns histogram.      */
   size_t  keepmaxnearriver; /* ==1: Keep clumps with max touching river.   */
   float            gthresh; /* Threshold to stop growing objects.          */
+  size_t    minriverlength; /* Minimum length of river between grown clmps.*/
   float        objbordersn; /* S/N of rivers to define objects.            */
 
   /* Operating mode: */

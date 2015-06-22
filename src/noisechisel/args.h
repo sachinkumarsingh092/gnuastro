@@ -72,10 +72,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   f j w x y z
+   f j w x z
    A C J W X Y Z
 
-   Number keys free: >=517
+   Used numbers: <=519
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -149,6 +149,22 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
+      2
+    },
+    {
+      "detectonly",
+      517,
+      0,
+      0,
+      "Do not do any segmentation.",
+      2
+    },
+    {
+      "saveskysubed",
+      518,
+      0,
+      0,
+      "Save the sky subtracted image, `_skysubed.fits'.",
       2
     },
 
@@ -424,6 +440,15 @@ static struct argp_option options[] =
       "Final sky and its STD per pixel `_sky.fits'.",
       4
     },
+    {
+      "checkmaskdet",
+      519,
+      0,
+      0,
+      "Mask detections and sky, `_maskdet.fits'.",
+      4
+    },
+
 
 
     {
@@ -469,6 +494,14 @@ static struct argp_option options[] =
       0,
       0,
       "Threshold (STD multiple) to stop growing clumps.",
+      5
+    },
+    {
+      "minriverlength",
+      'y',
+      0,
+      0,
+      "Minimum length of useful rivers in grown clumps.",
       5
     },
     {
@@ -567,6 +600,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
 
     /* Output: */
+    case 517:
+      p->detectonly=1;
+      break;
+    case 518:
+      p->skysubedname="a";
+      break;
 
     /* Mesh grid: */
     case 's':
@@ -696,6 +735,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 512:
       p->skyname="a";
       break;
+    case 519:
+      p->maskdetname="a";
+      break;
 
 
     /* Segmentation: */
@@ -713,6 +755,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'G':
       anyfloat(arg, &p->gthresh, "gthresh", key, SPACK, NULL, 0);
       p->up.gthreshset=1;
+      break;
+    case 'y':
+      sizetlzero(arg, &p->minriverlength, "minriverlength",
+                 key, SPACK, NULL, 0);
+      p->up.minriverlengthset=1;
       break;
     case 'O':
       floatl0(arg, &p->objbordersn, "objbordersn", key, SPACK,

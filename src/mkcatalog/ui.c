@@ -610,7 +610,7 @@ sanitycheck(struct mkcatalogparams *p)
                 &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
                 "sky standard deviation");
 
-  /* Read the number of labels from the two labeled images. */
+  /* Read the number of labels from the two labeled images.  */
   readkeyword(p->up.objlabsname, p->up.objhdu, "NOBJS", TLONG, &tmp);
   p->numobjects=tmp;
   readkeyword(p->up.clumplabsname, p->up.clumphdu, "NCLUMPS", TLONG, &tmp);
@@ -721,19 +721,6 @@ preparearrays(struct mkcatalogparams *p)
 {
   int bitpix;
   size_t i, numblank;
-
-
-  /* Read the input image: */
-  filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              &p->img, &bitpix, &numblank, &p->s0, &p->s1);
-  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
-
-
-  /* Read and check the other arrays: */
-  checksetlong(p, p->up.objlabsname, p->up.objhdu, &p->objects);
-  checksetlong(p, p->up.clumplabsname, p->up.clumphdu, &p->clumps);
-  checksetfloat(p, p->up.skyname, p->up.skyhdu, &p->sky);
-  checksetfloat(p, p->up.stdname, p->up.stdhdu, &p->std);
 
 
   /* Prepare the columns and allocate the p->objcols and p->clumpcols
@@ -847,27 +834,45 @@ preparearrays(struct mkcatalogparams *p)
     }
 
 
-  /* Allocate the catalog arrays: */
-  if(p->objncols>0 && p->numobjects>0)
+  /* Read the input image. Note that after this step, everything
+     depends on having an input filename. If the user just wants to
+     check the parameters, there is no input file name. */
+  if(p->up.inputname)
     {
-      errno=0; p->objcat=malloc(p->objncols*p->numobjects*sizeof *p->objcat);
-      if(p->objcat==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for p->objcat in "
-              "preprarearrays (ui.c)",
-              p->objncols*p->numobjects*sizeof *p->objcat);
-    }
-  else p->objcat=NULL;
-  if(p->clumpncols>0 && p->numclumps>0)
-    {
-      errno=0;
-      p->clumpcat=malloc(p->clumpncols*p->numclumps*sizeof *p->clumpcat);
-      if(p->clumpcat==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for p->clumpcat in "
-              "preprarearrays (ui.c)",
-              p->clumpncols*p->numclumps*sizeof *p->clumpcat);
-    }
-  else p->clumpcat=NULL;
+      filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
+                  &p->img, &bitpix, &numblank, &p->s0, &p->s1);
+      readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 
+
+      /* Read and check the other arrays: */
+      checksetlong(p, p->up.objlabsname, p->up.objhdu, &p->objects);
+      checksetlong(p, p->up.clumplabsname, p->up.clumphdu, &p->clumps);
+      checksetfloat(p, p->up.skyname, p->up.skyhdu, &p->sky);
+      checksetfloat(p, p->up.stdname, p->up.stdhdu, &p->std);
+
+
+      /* Allocate the catalog arrays: */
+      if(p->objncols>0 && p->numobjects>0)
+        {
+          errno=0;
+          p->objcat=malloc(p->objncols*p->numobjects*sizeof *p->objcat);
+          if(p->objcat==NULL)
+            error(EXIT_FAILURE, errno, "%lu bytes for p->objcat in "
+                  "preprarearrays (ui.c)",
+                  p->objncols*p->numobjects*sizeof *p->objcat);
+        }
+      else p->objcat=NULL;
+      if(p->clumpncols>0 && p->numclumps>0)
+        {
+          errno=0;
+          p->clumpcat=malloc(p->clumpncols*p->numclumps*sizeof *p->clumpcat);
+          if(p->clumpcat==NULL)
+            error(EXIT_FAILURE, errno, "%lu bytes for p->clumpcat in "
+                  "preprarearrays (ui.c)",
+                  p->clumpncols*p->numclumps*sizeof *p->clumpcat);
+        }
+      else p->clumpcat=NULL;
+    }
 
   /* Clean up: */
   freesll(p->allcolsll);
@@ -918,8 +923,12 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
   /* Check if all the required parameters are set. */
   checkifset(p);
 
-  /* Do a sanity check. */
-  sanitycheck(p);
+  /* Do a sanity check. Note that if the user just wants to see the
+     parameters and hasn't given any file name, sanity check is
+     useless, because in MakeProfiles, sanitycheck just checks the
+     file names. So we first have to check if an input */
+  if(p->up.inputname)
+    sanitycheck(p);
 
   /* Make the array of input images. */
   preparearrays(p);

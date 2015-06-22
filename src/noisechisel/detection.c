@@ -413,7 +413,7 @@ detsnthreshonmesh(void *inparams)
 	{ bytparttolarge(p, thisbyt, startind, s0, s1); continue; }
 
 
-      /* Find the connected components */
+      /* Fill the bounded holes. */
       fillboundedholes(thisbyt, s0, s1);
       if(detectionname && p->stepnum==2)
 	{ bytparttolarge(p, thisbyt, startind, s0, s1); continue; }

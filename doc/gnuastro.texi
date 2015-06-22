@@ -8065,8 +8065,18 @@ the best guide in choosing the best set of parameters. Note that
 calling this function will significantly slow NoiseChisel.
 
 @item --checksky
-Check the final sky value on the mesh grid. Similar to
-@option{--checkdetectionsky}.
+Check the final sky and its standard deviation values on the mesh
+grid. Similar to @option{--checkdetectionsky}.
+
+@item --saveskysubed
+Save the sky subtracted image (where the sky was calculated from the
+average of undetected pixels, see @ref{Sky value}) into a file ending
+with @file{_skysubed.fits}.
+
+@item --checkmaskdet
+Mask (set to NaN) the undetected pixels in one extension and the
+detected pixels in the next extension of a file ending with
+@file{_maskdet.fits}.
 
 @end table
 
@@ -8088,6 +8098,27 @@ separate objects. Otherwise, the are considered to be part of the same
 object.
 
 @table @option
+
+@item --detectonly
+If this option is called, no segmentation will be done. The object
+labels extension in the output will simply be the detection (connected
+components) labels and the clumps image will be blank (see
+@ref{NoiseChisel output}).
+
+This option can result in faster processing when only the noise
+properties of the image are desired for a catalog using another
+image's labels. A common case is when you want to measure colors or
+SEDs in several images. Let's say you have images in two colors: A and
+B. For simplicity also assume that they are exactly on the same
+position in the sky with the same pixel scale.
+
+You choose to set A as a reference, so you run the full NoiseChisel on
+A. Then you run NoiseChisel on B with this option since you only need
+the noise properties of B (for the signal to noise column in its
+catalog). You can then run MakeCatalog on A normally, see
+@ref{MakeCatalog}. To run MakeCatalog on B, you simply set the object
+and clump labels images to those that NoiseChisel produced for A, see
+@ref{Invoking astmkcatalog}.
 
 @item -m
 @itemx --segsnminarea
@@ -8132,6 +8163,19 @@ in the clump will be immediately touching a river pixel.
 added with the sky) to stop growing true clumps. Once true clumps are
 found, they are set as the basis to segment the detected region. They
 are grown until the threshold specified by this option.
+
+@item -y
+@itemx --minriverlength
+(@option{=INT}) The minimum length of a river between two grown clumps
+for it to be considered in Signal to noise ratio estimations. Similar
+to @option{--segsnminarea} and @option{--detsnminarea}, if the length
+of the river is too short, the Signal to noise ratio can be noisy and
+unreliable. Any existing rivers shorter than this length will be
+considered as non-existant, independent of their Signal to noise
+ratio. Since the clumps are grown on the input image, this value
+should best be similar to the value of @option{--detsnminarea}. Recall
+that the clumps were defined on the convolved image so
+@option{--segsnminarea} was larger than @option{--detsnminarea}.
 
 @item -O
 @itemx --objbordersn
@@ -8559,10 +8603,10 @@ The magnitude of all clumps or objects.
 
 @item --riverflux
 [Clumps] The average flux of the river pixels of this clump. River
-pixels were defined in Akhlaghi and Ichiawa 2015, in short they are
+pixels were defined in Akhlaghi and Ichikawa 2015, in short they are
 right on the boundaries of the clumps. This value is used internally
 to find the signal to noise ratio of the clumps and can also be used
-as a scale to guage the base flux of the flump.
+as a scale to guage the base flux of the clump.
 
 @item --rivernum
 [Clumps] The number of river pixels around this clump, see
@@ -8575,8 +8619,8 @@ and Ichikawa (2015) for the exact equations used.
 
 @item --sky
 The sky value under this object or clump. This is actually the mean
-value of of all the pixels in the sky image that lie on the same
-position as the object or clump.
+value of all the pixels in the sky image that lie on the same position
+as the object or clump.
 
 @item --std
 The sky value standard deviation for this clump or object. Like

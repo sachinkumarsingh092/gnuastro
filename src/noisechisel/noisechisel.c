@@ -30,12 +30,14 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "timing.h"
 #include "binary.h"
+#include "arraymanip.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
 
 #include "sky.h"
 #include "label.h"
+#include "binary.h"
 #include "thresh.h"
 #include "detection.h"
 #include "noisechisel.h"
@@ -77,13 +79,15 @@ makeoutput(struct noisechiselparams *p)
   keys=NULL;     /* keys was freed after writing. */
 
 
-  /* The clump labels, mentioning the total number of clumps. */
-  num[0]=p->numclumps-1;
+  /* The clump labels, mentioning the total number of clumps. Note
+     that even if no segmentation is to be done, we need this
+     extension filled so the sky and its standard deviation can remain
+     on the 3rd and 4th extensions. */
+  num[0] = p->detectonly ? 0 : p->numclumps-1;
   add_to_fitsheaderll(&keys, TLONG, "NCLUMPS", 0, num, 0,
                       "Number of clumps in the image.", 0, NULL);
   arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
                  s0, s1, 0, p->wcs, keys, SPACK_STRING);
-
 
   /* The sky and its standard deviation: */
   checkgarray(&p->smp, &sky, &std);
@@ -92,6 +96,10 @@ makeoutput(struct noisechiselparams *p)
   arraytofitsimg(p->cp.output, "Standard deviation", FLOAT_IMG, std,
                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
+  /* Save the sky subtracted image if desired: */
+  if(p->skysubedname)
+    arraytofitsimg(p->skysubedname, "Sky subtracted", FLOAT_IMG, p->imgss,
+                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
   /* Clean up: */
   free(sky);
@@ -107,6 +115,7 @@ noisechisel(struct noisechiselparams *p)
 {
   struct meshparams *smp=&p->smp, *lmp=&p->lmp;
 
+  float *imgcopy;
   struct timeval t1;
   int verb=p->cp.verb;
   size_t i, s0=smp->s0, s1=smp->s1;
@@ -155,8 +164,6 @@ noisechisel(struct noisechiselparams *p)
       reporttiming(&t1, report, 1);
     }
 
-
-
   /* Dilate the byt array and find the new number of detections: */
   if(verb) gettimeofday(&t1, NULL);
   if(p->dilate)
@@ -174,18 +181,32 @@ noisechisel(struct noisechiselparams *p)
   if(p->detectionname)
     arraytofitsimg(p->detectionname, "Dilated", LONG_IMG, p->olab,
                    s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  if(p->maskdetname)
+    {
+      arraytofitsimg(p->maskdetname, "Input", FLOAT_IMG, p->img, s0, s1,
+                     p->numblank, p->wcs, NULL, SPACK_STRING);
+      floatcopy(p->img, s0*s1, &imgcopy);
+      maskbackorforeground(imgcopy, s0*s1, p->byt, 0);
+      arraytofitsimg(p->maskdetname, "Undetected masked", FLOAT_IMG,
+                     imgcopy, s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      free(imgcopy);
+      floatcopy(p->img, s0*s1, &imgcopy);
+      maskbackorforeground(imgcopy, s0*s1, p->byt, 1);
+      arraytofitsimg(p->maskdetname, "Detected masked", FLOAT_IMG,
+                     imgcopy, s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      free(imgcopy);
+    }
 
 
 
   /* Correct convolution if it was done on edges independently: */
-  if(smp->nch>1 && smp->fullconvolution==0)
+  if(smp->nch>1 && smp->fullconvolution==0 && p->detectonly==0)
     {
       if(verb) gettimeofday(&t1, NULL);
       changetofullconvolution(smp, p->conv);
       if(verb)
         reporttiming(&t1, "Convolved image internals corrected.", 1);
     }
-
 
   /* Subtract the sky from the image: */
 
@@ -201,27 +222,30 @@ noisechisel(struct noisechiselparams *p)
      the p->cpscorr value and we want that from the input image, not
      the convolved image.  */
   if(verb) gettimeofday(&t1, NULL);
-  findsubtractskyconv(p);
+  if(p->detectonly==0) findsubtractskyconv(p);
   findavestdongrid(p, p->skyname);
-  subtractskyimg(p);
+  if(p->detectonly==0) subtractskyimg(p);
   if(verb)
     reporttiming(&t1, "Final sky and its STD found and subtracted.", 1);
 
 
 
-  /* Segment the detections: */
-  if(verb)
+  /* Segment the detections if segmentation is to be done. */
+  if(p->detectonly==0)
     {
-      reporttiming(NULL, "Starting to find clumps and objects.", 1);
-      gettimeofday(&t1, NULL);
-    }
-  segmentation(p);
-  if(verb)
-    {
-      sprintf(report, "%lu object%s""containing %lu clump%s found.",
-              p->numobjects-1, p->numobjects==2 ? " " : "s ",
-              p->numclumps-1,  p->numclumps ==2 ? " " : "s ");
-      reporttiming(&t1, report, 1);
+      if(verb)
+        {
+          reporttiming(NULL, "Starting to find clumps and objects.", 1);
+          gettimeofday(&t1, NULL);
+        }
+      segmentation(p);
+      if(verb)
+        {
+          sprintf(report, "%lu object%s""containing %lu clump%s found.",
+                  p->numobjects-1, p->numobjects==2 ? " " : "s ",
+                  p->numclumps-1,  p->numclumps ==2 ? " " : "s ");
+          reporttiming(&t1, report, 1);
+        }
     }
 
 
