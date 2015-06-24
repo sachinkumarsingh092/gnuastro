@@ -26,6 +26,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <float.h>
 #include <stdlib.h>
 
 #include "fitsarrayvv.h"
@@ -187,32 +188,62 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 void
 setcsides(struct cropparams *crp)
 {
+  size_t i;
   double h, hr, r, d, dr;	/* The second r is for radians. */
   struct imgcropparams *p=crp->p;
+  double minra=FLT_MAX, mindec=FLT_MAX;
+  double maxra=-FLT_MAX, maxdec=-FLT_MAX;
 
-  if(p->up.raset)
+  /* Set the four corners of the WCS region. */
+  if(p->up.polygonset)
     {
-      r=crp->world[0]=p->ra;
-      d=crp->world[1]=p->dec;
+      /* Find their minimum and maximum values. */
+      for(i=0;i<p->nvertices;++i)
+        {
+          if(p->wpolygon[i*2]>maxra) maxra=p->wpolygon[i*2];
+          if(p->wpolygon[i*2]<minra) minra=p->wpolygon[i*2];
+          if(p->wpolygon[i*2+1]>maxdec) maxdec=p->wpolygon[i*2+1];
+          if(p->wpolygon[i*2+1]<mindec) mindec=p->wpolygon[i*2+1];
+        }
+
+      /* Set the corners: */
+      crp->corners[0] = maxra;  crp->corners[1] = mindec; /* Bottom Left  */
+      crp->corners[2] = minra;  crp->corners[3] = mindec; /* Bottom Right */
+      crp->corners[4] = maxra;  crp->corners[5] = maxdec; /* Top Left     */
+      crp->corners[6] = minra;  crp->corners[7] = maxdec; /* Top Right    */
     }
   else
     {
-      r=crp->world[0]=p->cat[ crp->outindex * p->cs1 + p->racol ];
-      d=crp->world[1]=p->cat[ crp->outindex * p->cs1 + p->deccol ];
+      if(p->up.raset)
+        {
+          r=crp->world[0]=p->ra;
+          d=crp->world[1]=p->dec;
+        }
+      else
+        {
+          r=crp->world[0]=p->cat[ crp->outindex * p->cs1 + p->racol ];
+          d=crp->world[1]=p->cat[ crp->outindex * p->cs1 + p->deccol ];
+        }
+      h=p->wwidth/2;
+      dr=d*M_PI/180;
+      hr=h*M_PI/180;
+
+      /* Set the four corners of this crop. */
+      crp->corners[0] = r+h/cos(dr-hr);  crp->corners[1] = d-h; /* Bt Lf */
+      crp->corners[2] = r-h/cos(dr-hr);  crp->corners[3] = d-h; /* Bt Rt */
+      crp->corners[4] = r+h/cos(dr+hr);  crp->corners[5] = d+h; /* Tp Lf */
+      crp->corners[6] = r-h/cos(dr+hr);  crp->corners[7] = d+h; /* Tp Rt */
     }
-  h=p->wwidth/2;
-  dr=d*M_PI/180;
-  hr=h*M_PI/180;
 
-  /* Set the four corners of this crop. */
-  crp->corners[0] = r+h/cos(dr-hr);  crp->corners[1] = d-h; /* Bottom Left  */
-  crp->corners[2] = r-h/cos(dr-hr);  crp->corners[3] = d-h; /* Bottom Right */
-  crp->corners[4] = r+h/cos(dr+hr);  crp->corners[5] = d+h; /* Top Left     */
-  crp->corners[6] = r-h/cos(dr+hr);  crp->corners[7] = d+h; /* Top Right    */
-
-  /* Set the size of the crop from the first pixel in the image: */
-  crp->sized[0]=p->wwidth/cos(crp->corners[1]*M_PI/180);
-  crp->sized[1]=p->wwidth;
+  /* Set the bottom width and height of the crop in degrees. Note that
+     the width changes as the height changes, so here we want the
+     height and the lowest declination. Note that on the bottom edge,
+     corners[0] is the maximum RA and corners[2] is the minimum RA.
+     For all the region, corners[5] is one of the maximum declinations
+     and corners[3] is one of the the minimum declinations.*/
+  crp->sized[0]=( (crp->corners[0]-crp->corners[2])
+                  / cos(crp->corners[1]*M_PI/180) );
+  crp->sized[1]=crp->corners[5]-crp->corners[3];
 
   /* In case the crop crosses the equator, then we need these two
      corrections. See the complete explanations below. */

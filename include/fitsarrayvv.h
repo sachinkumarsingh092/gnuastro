@@ -193,6 +193,7 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
 void
 filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
            size_t *numblank, size_t *ins0, size_t *ins1);
+
 void
 prepfloatkernel(char *inputname, char *inhdu, float **kernel,
                 size_t *ins0, size_t *ins1);
@@ -208,5 +209,8 @@ void
 xyarraytoradec(struct wcsprm *wcs, double *xy, double *radec,
                size_t number, size_t width);
 
+void
+radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
+               size_t number, size_t width);
 
 #endif

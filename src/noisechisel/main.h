@@ -79,6 +79,7 @@ struct uiparams
   int            dilateset;
 
   int      segsnminareaset;
+  int  keepmaxnearriverset;
   int          segquantset;
   int    segsnhistnbinsset;
   int           gthreshset;
@@ -139,7 +140,7 @@ struct noisechiselparams
   size_t      segsnminarea; /* Minimum area to find the S/N of a clump.    */
   float           segquant; /* S/N quantile for true clump.                */
   size_t    segsnhistnbins; /* ==1: Save false clumps S/Ns histogram.      */
-  size_t  keepmaxnearriver; /* ==1: Keep clumps with max touching river.   */
+  int     keepmaxnearriver; /* ==1: Keep clumps with max touching river.   */
   float            gthresh; /* Threshold to stop growing objects.          */
   size_t    minriverlength; /* Minimum length of river between grown clmps.*/
   float        objbordersn; /* S/N of rivers to define objects.            */

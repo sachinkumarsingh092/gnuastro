@@ -1619,6 +1619,36 @@ xyarraytoradec(struct wcsprm *wcs, double *xy, double *radec,
           */
         }
     }
+}
 
 
+
+
+
+void
+radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
+               size_t number, size_t width)
+{
+  size_t i;
+  double imgcrd[2], phi, theta;
+  int stat, status=0, ncoord=1, nelem=2;
+
+  for(i=0;i<number;++i)
+    {
+      if(isnan(xy[i*width]) || isnan(xy[i*width+1]))
+        radec[i*width]=radec[i*width+1]=NAN;
+      else
+        {
+          status=wcss2p(wcs, ncoord, nelem, radec+i*width, &phi, &theta,
+                        imgcrd, xy+i*width, &stat);
+          if(status)
+            error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s.", status,
+                  wcs_errmsg[status]);
+
+          /* For a check:
+             printf("(%f, %f) --> (%f, %f)\n", xy[i*width], xy[i*width+1],
+                    radec[i*width], radec[i*width+1]);
+          */
+        }
+    }
 }

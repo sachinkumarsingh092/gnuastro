@@ -64,7 +64,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    before D), we will always have a convex polygon (right case) or E
    won't exist!
 
-                 Convex Polygon        Concave Polygon
+                 Concave Polygon        Convex Polygon
 
                   D --------C          D------------- C
                     \      |         E /            |
@@ -176,11 +176,12 @@ polygonarea(double *v, size_t n)
 
 
 
-/* We have a polygon with `n' sides whose vertices are in the array
-   `v' (with 2*n elements). Such that v[0], v[1] are the two coordinates
-   of the first vertice. The vertices also have to be sorted in a
-   counter clockwise fashion. We also have a point (with coordinates
-   p[0], p[1]) and we want to see if it is inside the polygon or not.
+/* We have a polygon with `n' vertices whose vertices are in the array
+   `v' (with 2*n elements). Such that v[0], v[1] are the two
+   coordinates of the first vertice. The vertices also have to be
+   sorted in a counter clockwise fashion. We also have a point (with
+   coordinates p[0], p[1]) and we want to see if it is inside the
+   polygon or not.
 
    If the point is inside the polygon, it will always be to the left
    of the edge connecting the two vertices when the vertices are

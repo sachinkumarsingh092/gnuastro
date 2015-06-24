@@ -39,6 +39,7 @@ struct cropparams
   fitsfile       *infits;  /* Pointer to the input FITS image.         */
   long         fpixel[2];  /* Position of first pixel in input image.  */
   long         lpixel[2];  /* Position of last pixel in input image.   */
+  double       *ipolygon;  /* Input image based polygon vertices.      */
 
   /* Output (cropped) image. */
   double        world[2];  /* World coordinates of crop center.        */
@@ -53,6 +54,9 @@ struct cropparams
   size_t         *indexs;  /* Indexs to be used in this thread.        */
   pthread_barrier_t   *b;  /* pthread barrier to keep threads waiting. */
 };
+
+void
+polygonparser(struct imgcropparams *p);
 
 void
 sectionparser(char *section, long *naxes, long *fpixel, long *lpixel);

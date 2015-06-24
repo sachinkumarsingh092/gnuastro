@@ -33,11 +33,11 @@ AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 bin_PROGRAMS = astimgwarp
 
 astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-imgwarp.c imgwarp.h polygon.c polygon.h
+imgwarp.c imgwarp.h
 
 astimgwarp_LDADD = $(top_builddir)/gnulib/lib/libgnu.a	\
 -lconfigfiles -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming	\
--lastrthreads
+-lastrthreads -lpolygon
 
 
 

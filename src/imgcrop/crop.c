@@ -23,14 +23,17 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <math.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <float.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include "box.h"
 #include "timing.h"
+#include "polygon.h"
 #include "checkset.h"
 #include "fitsarrayvv.h"
 
@@ -166,6 +169,231 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
 
 
 
+void
+polygonparser(struct imgcropparams *p)
+{
+  size_t dim=0;
+  char *tailptr;
+  double read[2], *array;
+  struct tdll *tdll=NULL;
+  char *pt=p->up.polygon;
+
+  /* Parse the string. */
+  while(*pt!='\0')
+    {
+      switch(*pt)
+	{
+	case ',':
+	  ++dim;
+	  if(dim==2)
+	    error(EXIT_FAILURE, 0, "Extra `,` in `%s`.", p->up.polygon);
+	  ++pt;
+	  break;
+	case ':':
+          if(dim==0)
+            error(EXIT_FAILURE, 0, "Not enough coordinates for at least "
+                  "one polygon vertex (in %s).", p->up.polygon);
+          dim=0;
+	  ++pt;
+	  break;
+	default:
+          break;
+        }
+
+      /* strtod will skip white spaces if they are before a number,
+         but not when they are before a : or ,. So we need to remove
+         all white spaces. White spaces are usually put beside each
+         other, so if one is encountered, go along the string until
+         the white space characters finish.  */
+      if(isspace(*pt))
+        ++pt;
+      else
+        {
+          /* Read the number: */
+          read[dim]=strtod(pt, &tailptr);
+
+          /* Check if there actually was a number.
+          printf("\n\n------\n%lu: %f (%s)\n", dim, read[dim], tailptr);
+          */
+
+          /* Make sure if a number was read at all? */
+          if(tailptr==pt)	        /* No number was read!             */
+            error(EXIT_FAILURE, 0, "%s could not be parsed as a floating "
+                  "point number.", tailptr);
+
+          /* If this was the second dimension, then put the values
+             into the linked list: */
+          if(dim==1)
+            add_to_tdll(&tdll, read[0], read[1]);
+
+          /* The job here is done, start from tailptr */
+          pt=tailptr;
+        }
+    }
+
+  /* Convert the linked list to an array: */
+  tdlltoarrayinv(tdll, &array, &p->nvertices);
+  if(p->imgmode) { p->ipolygon=array; p->wpolygon=NULL;  }
+  else           { p->ipolygon=NULL;  p->wpolygon=array; }
+
+  /* Put them in the proper order in WCS mode: */
+
+  /* For a check:
+  {
+    size_t i;
+    for(i=0;i<p->nvertices;++i)
+      printf("(%f, %f)\n", p->polygon[i*2], p->polygon[i*2+1]);
+  }
+  */
+
+  /* Clean up: */
+  freetdll(tdll);
+}
+
+
+
+
+
+void
+imgpolygonparser(struct cropparams *crp, long *fpixel, long *lpixel)
+{
+  size_t i;
+  struct imgcropparams *p=crp->p;
+  double minx=FLT_MAX, miny=FLT_MAX;
+  double maxx=-FLT_MAX, maxy=-FLT_MAX;
+
+  /* Find their minimum and maximum values. */
+  for(i=0;i<p->nvertices;++i)
+    {
+      if(p->ipolygon[i*2]>maxx) maxx=p->ipolygon[i*2];
+      if(p->ipolygon[i*2]<minx) minx=p->ipolygon[i*2];
+      if(p->ipolygon[i*2+1]>maxy) maxy=p->ipolygon[i*2+1];
+      if(p->ipolygon[i*2+1]<miny) miny=p->ipolygon[i*2+1];
+    }
+
+  /* Set the first and last pixel. */
+  fpixel[0] = minx - (int)minx >=0.5 ? (int)minx + 1 : (int)minx;
+  fpixel[1] = miny - (int)miny >=0.5 ? (int)miny + 1 : (int)miny;
+  lpixel[0] = maxx - (int)maxx >=0.5 ? (int)maxx + 1 : (int)maxx;
+  lpixel[1] = maxy - (int)maxy >=0.5 ? (int)maxy + 1 : (int)maxy;
+}
+
+
+
+
+
+void
+polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
+            size_t s0, size_t s1)
+{
+  long *lb, *la=array;
+  short *sb, *sa=array;
+  float *fb, *fa=array;
+  LONGLONG *Lb, *La=array;
+  unsigned char *bb, *ba=array;
+  double *db, *ipolygon, point[2], *da=array;
+  int inpolygon=crp->p->inpolygon, bitpix=crp->p->bitpix;
+  size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
+
+
+  /* First of all, allocate enough space to put a copy of the input
+     coordinates (we will be using that after sorting in an
+     anti-clickwise manner.) */
+  errno=0; ipolygon=malloc(2*nvertices*sizeof *ipolygon);
+  if(ipolygon==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for ipolygon in polygonmask "
+          "(crop.c)", 2*nvertices*sizeof *ipolygon);
+  errno=0; ordinds=malloc(nvertices*sizeof *ordinds);
+  if(ordinds==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for ordinds in polygonmask "
+          "(crop.c)", nvertices*sizeof *ordinds);
+
+
+  /* Find the order of the polygons and put the elements in the proper
+     order. Also subtract the fpixel_i coordinates from all the
+     vertices to bring them into the crop image coordinates. */
+  orderedpolygoncorners(crp->ipolygon, crp->p->nvertices, ordinds);
+  for(i=0;i<crp->p->nvertices;++i)
+    {
+      ipolygon[i*2  ] = crp->ipolygon[ordinds[i]*2]   - fpixel_i[0];
+      ipolygon[i*2+1] = crp->ipolygon[ordinds[i]*2+1] - fpixel_i[1];
+    }
+
+
+  /* Go over all the pixels in the image and if they are within the
+     polygon keep them if the user has asked for it.*/
+  switch(bitpix)
+    {
+    case BYTE_IMG:
+      bb=bitpixblank(bitpix);
+      for(i=0;i<size;++i)
+        {
+          point[0]=i%s1+1; point[1]=i/s1+1;
+          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) ba[i]=*bb;
+        }
+      free(bb);
+      break;
+    case SHORT_IMG:
+      sb=bitpixblank(bitpix);
+      for(i=0;i<size;++i)
+        {
+          point[0]=i%s1+1; point[1]=i/s1+1;
+          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) sa[i]=*sb;
+        }
+      free(sb);
+      break;
+    case LONG_IMG:
+      lb=bitpixblank(bitpix);
+      for(i=0;i<size;++i)
+        {
+          point[0]=i%s1+1; point[1]=i/s1+1;
+          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) la[i]=*lb;
+        }
+      free(lb);
+      break;
+    case LONGLONG_IMG:
+      Lb=bitpixblank(bitpix);
+      for(i=0;i<size;++i)
+        {
+          point[0]=i%s1+1; point[1]=i/s1+1;
+          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) La[i]=*Lb;
+        }
+      free(Lb);
+      break;
+    case FLOAT_IMG:
+      fb=bitpixblank(bitpix);
+      for(i=0;i<size;++i)
+        {
+          point[0]=i%s1+1; point[1]=i/s1+1;
+          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) fa[i]=*fb;
+        }
+      free(fb);
+      break;
+    case DOUBLE_IMG:
+      db=bitpixblank(bitpix);
+      for(i=0;i<size;++i)
+        {
+          point[0]=i%s1+1; point[1]=i/s1+1;
+          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) da[i]=*db;
+        }
+      free(db);
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, so we "
+            "can fix the problem. For some reason, an unrecognized "
+            "bitpix value (%d) has been seen in polygonmask (crop.c).",
+            PACKAGE_BUGREPORT, bitpix);
+    }
+
+  /* Clean up: */
+  free(ordinds);
+  free(ipolygon);
+}
+
+
+
+
+
 
 
 
@@ -277,11 +505,15 @@ cropflpixel(struct cropparams *crp)
 	borderfromcenter(p->xc, p->yc, p->iwidth, fpixel, lpixel);
       else if(p->up.sectionset)
 	sectionparser(p->section, naxes, fpixel, lpixel);
+      else if(p->up.polygonset)
+        imgpolygonparser(crp, fpixel, lpixel);
       else
 	error(EXIT_FAILURE, 0, "A bug! In image mode, neither of the "
-	      "following has been set: a catalog, a central pixel or "
-	      "a section of the image. Please contact us to see how it "
-	      "got to this impossible place!");
+	      "following has been set: a catalog, a central pixel, "
+	      "a section or a polygon in the image. Please contact us "
+              "to see how it got to this impossible place! You should "
+              "have been warned of this condition long before ImageCrop "
+              "reaches this point.");
     }
   else if(p->wcsmode) /* In wcsmode, crp->world is already filled.       */
     {		      /* Note that p->iwidth was set based on p->wwidth. */
@@ -461,6 +693,31 @@ onecrop(struct cropparams *crp)
       if(p->zeroisnotblank==0
 	 && (bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG) )
 	changezerotonan(array, cropsize, bitpix);
+
+
+      /* If a polygon is given, remove all the pixels within or
+         outside of it. If we are in WCS mode, first use the
+         p->wpolygon array to fill p->ipolygon. Note that in image
+         mode, there is only one image, so we can easily work on the
+         main p->ipolygon array.*/
+      if(p->up.polygonset)
+        {
+          if(p->wcsmode)
+            {
+              errno=0;
+              crp->ipolygon=malloc(2*p->nvertices*sizeof *crp->ipolygon);
+              if(crp->ipolygon==NULL)
+                error(EXIT_FAILURE, errno, "%lu bytes for crpp->ipolygon in "
+                      "onecrop (crop.c)",
+                      2*p->nvertices*sizeof *crp->ipolygon);
+              radecarraytoxy(p->imgs[crp->imgindex].wcs, p->wpolygon,
+                             crp->ipolygon, p->nvertices, 2);
+            }
+          else  crp->ipolygon=p->ipolygon;
+          polygonmask(crp, array, fpixel_i, lpixel_i[1]-fpixel_i[1]+1,
+                      lpixel_i[0]-fpixel_i[0]+1);
+          if(p->wcsmode) free(crp->ipolygon);
+        }
 
 
       /* Write the array into the image. */
@@ -675,8 +932,8 @@ printlog(struct imgcropparams *p)
 
       /* Then print each output's information. */
       for(i=0;log[i].name;++i)
-	fprintf(logfile, "%s     %-8lu%-2d\n", log[i].name,
-		log[i].numimg, log[i].centerfilled);
+        fprintf(logfile, "%s     %-8lu%-2d\n", log[i].name,
+                log[i].numimg, log[i].centerfilled);
 
       /* Report Summary: */
       if(p->cp.verb && p->up.catset)

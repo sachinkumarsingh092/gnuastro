@@ -5193,6 +5193,34 @@ the crop box in single image mode.
 cropped. See @ref{Crop section syntax} for a complete explanation on
 the syntax required for this input.
 
+@item -l
+@itemx --polygon
+(@option{=STR}) String of crop polygon vertices. Note that currently
+only convex polygons should be used. In the future we will make it
+work for all kinds of polygons. Convex polygons are polygons that do
+not have an internal angle more than 180 degrees. This option can be
+used both in the image and WCS modes. The rectangular region that
+completely encompasses the polygon will be kept and all the pixels
+that are outside of it will be removed.
+
+The syntax for the polygon vertices is similar to and simpler than
+that for @option{--section}. In short, the dimentions of each
+coordinate are separated by a comma (@key{,}) and each vertice is
+separated by a colon (@key{:}). You can define as many vertices as you
+like. If you would like to use space characters between the dimentions
+and vertices to make them more human-readible, then you have to put
+the value to this option in double quotation marks.
+
+@item --inpolygon
+Mask all the regions outside the polygon with blank pixels (see
+@ref{Blank pixels}). This on/off option can be defined in the
+configuration file. Note that in the configuration files, if the value
+to this option is zero, it only works when you have only provided one
+input image. If multiple images are given, then the full area covered
+by all the images has to be shown and the polygon excluded. This will
+be very troublesome in terms of memory consumption and will hardly
+ever be useful.
+
 @item -r
 @itemx --ra
 (@option{=FLT}) The first FITS axis value of central position of the

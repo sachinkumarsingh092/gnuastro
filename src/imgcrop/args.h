@@ -73,10 +73,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   e l m n t u v
+   e m n t u v
    A B C E F G H J L M O Q R T U X Y Z
 
-   Number keys used: Nothing!
+   Number keys used<=500
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -257,6 +257,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "polygon",
+      'l',
+      "STR",
+      0,
+      "Polygon vertices of region to crop.",
+      3
+    },
+    {
+      "inpolygon",
+      500,
+      0,
+      0,
+      "Keep the regions within the polygon.",
+      3
+    },
+    {
       "zeroisnotblank",
       'z',
       0,
@@ -388,6 +404,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->section=arg;
       p->up.sectionset=1;
       break;
+    case 'l':
+      p->up.polygon=arg;
+      p->up.polygonset=1;
+      break;
+    case 500:
+      p->inpolygon=1;
+      p->up.inpolygonset=1;
+      break;
     case 'z':
       p->zeroisnotblank=1;
       break;
@@ -431,7 +455,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 	    argp_error(state, "No argument given!");
 	  if(p->up.catname==NULL && !(p->up.xcset    || p->up.ycset
 				      || p->up.raset || p->up.decset
-				      || p->up.sectionset))
+				      || p->up.sectionset
+                                      || p->up.polygonset))
 	    argp_error(state, "No catalog provided!");
 	  if(p->up.stll==NULL)
 	    argp_error(state, "No FITS image(s) provided!");

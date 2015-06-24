@@ -79,6 +79,7 @@ struct uiparams
 {
   char      *catname;  /* Catalog file name.                            */
   struct stll  *stll;  /* Linked list keeping input file names.         */
+  char      *polygon;  /* String of input polygon vertices.             */
 
   /* Check if all parameters are read (use .def file for
      comparison). The non optional parameters (like the catalog and
@@ -98,6 +99,8 @@ struct uiparams
   int      iwidthset;
   int      wwidthset;
   int     sectionset;
+  int     polygonset;
+  int   inpolygonset;
   int      suffixset;
   int checkcenterset;
 };
@@ -123,7 +126,10 @@ struct imgcropparams
   size_t            xcol;  /* Catalog X column                         */
   size_t            ycol;  /* Catalog Y column                         */
   int            noblank;  /* ==1: no blank (out of image) pixels.     */
-  char          *section;  /* Section string.            */
+  char          *section;  /* Section string.                          */
+  double       *wpolygon;  /* Array of WCS polygon vertices.           */
+  double       *ipolygon;  /* Array of image polygon vertices.         */
+  size_t       nvertices;  /* Number of polygon vertices.              */
   double              xc;  /* The center point, one crop (FITS stnrd). */
   double              yc;  /* The center point, one crop (FITS stnrd). */
   long         iwidth[2];  /* Image mode width (in pixels).            */
@@ -136,6 +142,7 @@ struct imgcropparams
   size_t     checkcenter;  /* width of a box to check for zeros        */
   int    keepblankcenter;  /* ==1: If center is not filled, remove.    */
   int     zeroisnotblank;  /* ==1: In float or double, keep 0.0 pixels.*/
+  int          inpolygon;  /* ==1: Keep the inner polygon region.      */
 
   /* Output: */
   char           *suffix;  /* Ending of output file name.              */
@@ -148,7 +155,7 @@ struct imgcropparams
   double            *cat;  /* Data of catalog.                         */
   size_t             cs0;  /* Number of rows in the catalog.           */
   size_t             cs1;  /* Number of columns in the catalog.        */
-  int             bitpix;  /* BITPIX value for this image.             */
+  int             bitpix;  /* BITPIX value for all images.             */
   void           *bitnul;  /* Null value for this data-type.           */
   int           datatype;  /* CFITSIO datatype value for this image.   */
 };

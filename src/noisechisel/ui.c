@@ -366,6 +366,13 @@ readconfig(char *filename, struct noisechiselparams *p)
                      filename, lineno);
 	  up->segsnminareaset=1;
 	}
+      else if(strcmp(name, "keepmaxnearriver")==0)
+	{
+	  if(up->keepmaxnearriverset) continue;
+          intzeroorone(value, &p->keepmaxnearriver, name, key, SPACK,
+                       filename, lineno);
+	  up->keepmaxnearriverset=1;
+	}
       else if(strcmp(name, "segquant")==0)
 	{
 	  if(up->segquantset) continue;
@@ -543,6 +550,8 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   fprintf(fp, "\n# Segmentation:\n");
   if(up->segsnminareaset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnminarea", p->segsnminarea);
+  if(up->keepmaxnearriverset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "keepmaxnearriver", p->keepmaxnearriver);
   if(up->segquantset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "segquant", p->segquant);
   if(up->segsnhistnbinsset)
@@ -635,6 +644,8 @@ checkifset(struct noisechiselparams *p)
   /* Segmentation: */
   if(up->segsnminareaset==0)
     REPORT_NOTSET("segsnminarea");
+  if(up->keepmaxnearriverset==0)
+    REPORT_NOTSET("keepmaxnearriver");
   if(up->segquantset==0)
     REPORT_NOTSET("segquant");
   if(up->segsnhistnbinsset==0)

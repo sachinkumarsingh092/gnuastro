@@ -196,7 +196,13 @@ readconfig(char *filename, struct imgcropparams *p)
 		   filename, lineno);
 	  up->wwidthset=1;
 	}
-
+      else if(strcmp(name, "inpolygon")==0)
+	{
+	  if(up->inpolygonset) continue;
+	  intzeroorone(value, &p->inpolygon, name, key, SPACK,
+                       filename, lineno);
+	  up->inpolygonset=1;
+	}
 
 
 
@@ -277,6 +283,8 @@ printvalues(FILE *fp, struct imgcropparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "deccol", p->deccol);
   if(up->wwidthset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "wwidth", p->wwidth);
+  if(up->inpolygonset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "inpolygon", p->inpolygon);
 
 
   fprintf(fp, "\n# Operating mode:\n");
@@ -319,6 +327,8 @@ checkifset(struct imgcropparams *p)
     REPORT_NOTSET("deccol");
   if(up->wwidthset==0)
     REPORT_NOTSET("wwidth");
+  if(up->inpolygonset==0)
+    REPORT_NOTSET("inpolygon");
   if(up->suffixset==0)
     REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
@@ -353,9 +363,10 @@ void
 sanitycheck(struct imgcropparams *p)
 {
   int checksum;
+  char forerr[100];
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
-  char *t1=NULL, *t2=NULL, *t3=NULL, *boxparam;
+
 
 
 
@@ -415,19 +426,26 @@ sanitycheck(struct imgcropparams *p)
 
   /* Make sure that the multiple one crop box options have not been
      called together. */
-  checksum=up->raset+up->xcset+up->sectionset;
+  checksum=up->raset+up->xcset+up->sectionset+up->polygonset;
   if(checksum)
     {
-      if(up->raset) t1="(`--ra` and `--dec`) ";
-      if(up->xcset) t2="(`--xc` and `--yc`) ";
-      if(up->sectionset) t3="(`--section) ";
-
       /* Only one of the three should be called. */
       if(checksum!=1)
-	error(EXIT_FAILURE, 0, "There are several ways to specify a crop "
-	      "box on the command line, see `--help`. But they should not "
-	      "be called together. You have asked for "
-	      "%s%s%s simultaneously!", t1?t1:"", t2?t2:"", t3?t3:"");
+        {
+          forerr[0]='\0';
+          if(up->raset)
+            strcat(forerr, "(`--ra' and `--dec'), ");
+          if(up->xcset)
+            strcat(forerr, "(`--xc' and `--yc'), ");
+          if(up->sectionset)
+            strcat(forerr, "(`--section'), ");
+          if(up->polygonset)
+            strcat(forerr, "(`--polygon'), ");
+          error(EXIT_FAILURE, 0, "There are several ways to specify a crop "
+                "box on the command line, see `--help`. But they should not "
+                "be called together. You have asked for %s simultaneously!",
+                forerr);
+        }
 
       /* Check if the value for --output is a file or a directory? */
       p->outnameisfile=dir0file1(cp->output, cp->dontdelete);
@@ -438,10 +456,13 @@ sanitycheck(struct imgcropparams *p)
       /* Not with a catalog. */
       if(up->catname)
 	{
-	  if(t1) boxparam=t1; else if(t2) boxparam=t2; else boxparam=t3;
-	  error(EXIT_FAILURE, 0, "A catalog name (%s) and one box parameters "
-		"%s""cannot be given together on the command line. ",
-		up->catname, boxparam);
+          if(up->sectionset) strcpy(forerr, "`--section'");
+          if(up->polygonset) strcpy(forerr, "`--polygon'");
+          if(up->xcset) strcpy(forerr, "`--xc' and `--yc'");
+	  if(up->raset) strcpy(forerr, "`--ra' and `--dec'");
+	  error(EXIT_FAILURE, 0, "A catalog name (%s) and command line crop "
+		"parameters (%s) cannot be given together.", up->catname,
+                forerr);
 	}
     }
   else
@@ -499,6 +520,21 @@ sanitycheck(struct imgcropparams *p)
   if(p->wcsmode && p->noblank)
     error(EXIT_FAILURE, 0, "`--noblanks` (`-b`) is only for image mode. "
 	  "You have called it with WCS mode.");
+
+
+
+  /* Parse the polygon vertices if they are given to make sure that
+     there is no error: */
+  if(p->up.polygonset)
+    {
+      polygonparser(p);
+      if(p->inpolygon==0 && p->numimg>1)
+        error(EXIT_FAILURE, 0, "Currently in WCS mode, inpolygon can only "
+              "be set to zero when there is one image. For multiple images "
+              "the region will be very large.");
+    }
+  else
+    p->wpolygon=p->ipolygon=NULL;
 
 
 
@@ -616,7 +652,7 @@ preparearrays(struct imgcropparams *p)
      numbers so that we can put a NULL character in the name section
      of it to sign its end (something like a string). This is done so
      we don't have to worry about the length calculation any more! */
-  if(p->up.xcset || p->up.sectionset || p->up.raset)
+  if(p->up.xcset || p->up.sectionset || p->up.raset || p->up.polygonset)
     num=1;
   else
     num=p->cs0;
@@ -743,6 +779,8 @@ freeandreport(struct imgcropparams *p, struct timeval *t1)
   free(p->cp.hdu);
   free(p->bitnul);
   free(p->suffix);
+  free(p->wpolygon);
+  free(p->ipolygon);
 
   /* If these two pointers point to the same place,, that plce will be
      freed below. */

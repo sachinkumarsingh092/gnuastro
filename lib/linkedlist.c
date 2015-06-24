@@ -32,6 +32,130 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
+
+
+
+
+
+/****************************************************************
+ *****************        Two doubles        ********************
+ ****************************************************************/
+void
+add_to_tdll(struct tdll **list, double a, double b)
+{
+  struct tdll *newnode;
+
+  errno=0;
+  newnode=malloc(sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno, "linkedlist: New element in tdll");
+
+  newnode->a=a;
+  newnode->b=b;
+  newnode->next=*list;
+  *list=newnode;
+}
+
+
+
+
+
+void
+pop_from_tdll(struct tdll **list, double *a, double *b)
+{
+  struct tdll *tmp=*list;
+
+  *a=tmp->a;
+  *b=tmp->b;
+  *list=tmp->next;
+  free(tmp);
+}
+
+
+
+
+
+size_t
+numintdll(struct tdll *list)
+{
+  size_t num=0;
+  struct tdll *tmp;
+  for(tmp=list;tmp!=NULL;tmp=tmp->next)
+    ++num;
+  return num;
+}
+
+
+
+
+
+void
+tdlltoarrayinv(struct tdll *list, double **d, size_t *num)
+{
+  size_t i;
+  double *td;
+  struct tdll *tmp;
+
+  /* Find the number of elements: */
+  if(*num==0)
+    *num=numintdll(list);
+
+  /* Allocate the space (every element of the list has two
+     elements.) */
+  errno=0;
+  td=*d=malloc(2 * *num * sizeof(double));
+  if(*d==NULL)
+    error(EXIT_FAILURE, errno, "linkedlist: array of tdll with %lu "
+	  "elements", *num);
+
+  /* Fill in the array in reverse order */
+  i = 2 * *num - 2;
+  for(tmp=list;tmp!=NULL;tmp=tmp->next)
+    {
+      td[i]=tmp->a;
+      td[i+1]=tmp->b;
+      i-=2;
+    }
+}
+
+
+
+
+
+void
+freetdll(struct tdll *list)
+{
+  struct tdll *tmp, *ttmp;
+  tmp=list;
+  while(tmp!=NULL)
+    {
+      ttmp=tmp->next;
+      free(tmp);
+      tmp=ttmp;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /****************************************************************
  *****************            Float          ********************
  ****************************************************************/

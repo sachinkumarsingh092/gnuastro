@@ -73,13 +73,13 @@ imgmodecrop(void *inparam)
       log->numimg=0;
       cropname(crp);
 
-
       /* Crop the image. */
       onecrop(crp);
 
       /* Check the final output: */
       if(log->numimg)
 	{
+          /* Check if the center of the crop is filled or not. */
 	  log->centerfilled=iscenterfilled(crp);
 
 	  /* Add the final headers and close output FITS image: */
@@ -217,6 +217,7 @@ wcsmodecrop(void *inparam)
   if(p->cp.numthreads>1)
     pthread_barrier_wait(crp->b);
 
+
   return NULL;
 }
 
@@ -329,7 +330,6 @@ imgcrop(struct imgcropparams *p)
       pthread_attr_destroy(&attr);
       pthread_barrier_destroy(&b);
     }
-
 
   /* Print the log file: */
   printlog(p);

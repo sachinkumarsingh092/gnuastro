@@ -24,6 +24,49 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SLL_H
 
 
+
+/******************* Two doubles (for coordinates) */
+struct tdll
+{
+    double a;
+    double b;
+    struct tdll *next;
+};
+
+void
+add_to_tdll(struct tdll **list, double a, double b);
+
+void
+pop_from_tdll(struct tdll **list, double *a, double *b);
+
+size_t
+numintdll(struct tdll *list);
+
+void
+tdlltoarrayinv(struct tdll *list, double **d, size_t *num);
+
+void
+freetdll(struct tdll *list);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /******************* float: */
 struct fll
 {
