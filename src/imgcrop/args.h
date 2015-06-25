@@ -265,11 +265,11 @@ static struct argp_option options[] =
       3
     },
     {
-      "inpolygon",
+      "outpolygon",
       500,
       0,
       0,
-      "Keep the regions within the polygon.",
+      "Keep the polygon's outside, mask the inside.",
       3
     },
     {
@@ -409,8 +409,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.polygonset=1;
       break;
     case 500:
-      p->inpolygon=1;
-      p->up.inpolygonset=1;
+      p->outpolygon=1;
       break;
     case 'z':
       p->zeroisnotblank=1;

@@ -1,5 +1,9 @@
 2015-06-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
+	* src/imgcrop/args.h (options): Changed inpolygon to
+	outpolygon. Everywhere that inpolygon appeared, it is now
+	outpolygon.
+
 	* src/imgcrop/wcsmode.c (wcscheckprepare): Check for both axises
 	having the same pixel scale now incorporates floating point
 	errors.

@@ -100,7 +100,6 @@ struct uiparams
   int      wwidthset;
   int     sectionset;
   int     polygonset;
-  int   inpolygonset;
   int      suffixset;
   int checkcenterset;
 };
@@ -142,7 +141,7 @@ struct imgcropparams
   size_t     checkcenter;  /* width of a box to check for zeros        */
   int    keepblankcenter;  /* ==1: If center is not filled, remove.    */
   int     zeroisnotblank;  /* ==1: In float or double, keep 0.0 pixels.*/
-  int          inpolygon;  /* ==1: Keep the inner polygon region.      */
+  int         outpolygon;  /* ==1: Keep the inner polygon region.      */
 
   /* Output: */
   char           *suffix;  /* Ending of output file name.              */

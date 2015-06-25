@@ -293,7 +293,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
   LONGLONG *Lb, *La=array;
   unsigned char *bb, *ba=array;
   double *db, *ipolygon, point[2], *da=array;
-  int inpolygon=crp->p->inpolygon, bitpix=crp->p->bitpix;
+  int outpolygon=crp->p->outpolygon, bitpix=crp->p->bitpix;
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
 
 
@@ -330,7 +330,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) ba[i]=*bb;
+          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) ba[i]=*bb;
         }
       free(bb);
       break;
@@ -339,7 +339,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) sa[i]=*sb;
+          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) sa[i]=*sb;
         }
       free(sb);
       break;
@@ -348,7 +348,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) la[i]=*lb;
+          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) la[i]=*lb;
         }
       free(lb);
       break;
@@ -357,7 +357,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) La[i]=*Lb;
+          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) La[i]=*Lb;
         }
       free(Lb);
       break;
@@ -366,7 +366,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) fa[i]=*fb;
+          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) fa[i]=*fb;
         }
       free(fb);
       break;
@@ -375,7 +375,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)!=inpolygon) da[i]=*db;
+          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) da[i]=*db;
         }
       free(db);
       break;
@@ -507,7 +507,10 @@ cropflpixel(struct cropparams *crp)
       else if(p->up.sectionset)
 	sectionparser(p->section, naxes, fpixel, lpixel);
       else if(p->up.polygonset)
-        imgpolygonflpixel(p->ipolygon, p->nvertices, fpixel, lpixel);
+        {
+          if(p->outpolygon==0)
+            imgpolygonflpixel(p->ipolygon, p->nvertices, fpixel, lpixel);
+        }
       else
 	error(EXIT_FAILURE, 0, "A bug! In image mode, neither of the "
 	      "following has been set: a catalog, a central pixel, "
@@ -521,7 +524,8 @@ cropflpixel(struct cropparams *crp)
       if(p->up.polygonset)
         { /* Fill crp->ipolygon in wcspolygonpixel, then set flpixel*/
           fillcrpipolygon(crp);
-          imgpolygonflpixel(crp->ipolygon, p->nvertices, fpixel, lpixel);
+          if(p->outpolygon==0)
+            imgpolygonflpixel(crp->ipolygon, p->nvertices, fpixel, lpixel);
         }
       else
         {
@@ -541,6 +545,15 @@ cropflpixel(struct cropparams *crp)
     error(EXIT_FAILURE, 0, "A bug! in cropflpixel (crop.c), "
 	  "neither imgmode or wcsmode are set. Please contact us so "
 	  "we can see how it got to this impossible place.");
+
+  /* If the user only wants regions outside to the polygon, then set
+     the fpixel and lpixel to cover the full input image. */
+  if(p->up.polygonset && p->outpolygon)
+    {
+      crp->lpixel[0]=naxes[0];
+      crp->lpixel[1]=naxes[1];
+      crp->fpixel[0]=crp->fpixel[1]=1;
+    }
 }
 
 
@@ -669,7 +682,8 @@ onecrop(struct cropparams *crp)
 
 
   /* Find the first and last pixel of this crop box from this input
-     image. */
+     image. If the outer polygon region is to be kept, then set the
+     sides to the image sides.*/
   cropflpixel(crp);
   fpixel_i[0]=crp->fpixel[0];      fpixel_i[1]=crp->fpixel[1];
   lpixel_i[0]=crp->lpixel[0];      lpixel_i[1]=crp->lpixel[1];
@@ -742,7 +756,8 @@ onecrop(struct cropparams *crp)
       free(array);
     }
   else
-    if(p->up.polygonset && p->wcsmode) free(crp->ipolygon);
+    if(p->up.polygonset && p->outpolygon==0 && p->wcsmode)
+      free(crp->ipolygon);
 
 
   return;

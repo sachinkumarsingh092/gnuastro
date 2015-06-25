@@ -5217,7 +5217,7 @@ and vertices to make them more human-readible, then you have to put
 the value to this option in double quotation marks.
 
 For example lets assume you want to work on the deepest part of the
-Hubble Space Telescope eXtreme Deep Field
+WFC3/IR images of Hubble Space Telescope eXtreme Deep Field
 (HST-XDF). @url{https://archive.stsci.edu/prepds/xdf/, According to
 the webpage}@footnote{@url{https://archive.stsci.edu/prepds/xdf/}} the
 deepest part is contained within the coordinates:
@@ -5227,25 +5227,32 @@ deepest part is contained within the coordinates:
   (53.134517,-27.787144), (53.161906,-27.807208) ]
 @end example
 
-Running ImageCrop with @option{--polygon} will thus easily pull out
-this region of the image for you (if you have set the operating mode
-to WCS mode, there is no need for @option{--wcsmode}):
+They have provided mask images with only these pixels in the WFC3/IR
+images, but what if you also need to work on the same region in the
+full resolution ACS images? Also what if you want to use the CANDELS
+data for the shallow region? Running ImageCrop with @option{--polygon}
+will easily pull out this region of the image for you irrespective of
+the resolution (if you have set the operating mode to WCS mode in your
+nearest configuration file, there is no need for @option{--wcsmode},
+you may also provide many FITS image or tiles and ImageCrop will
+stitch them all):
 
 @example
-$ astimgcrop --wcsmode yourdesiredxdffilter.fits           \
+$ astimgcrop --wcsmode desired-filter-image(s).fits        \
   --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
              53.134517,-27.787144 : 53.161906,-27.807208"
 @end example
 
-@item --inpolygon
-Mask all the regions outside the polygon with blank pixels (see
-@ref{Blank pixels}). This on/off option can be defined in the
-configuration file. Note that in the configuration files, if the value
-to this option is zero, it only works when you have only provided one
-input image. If multiple images are given, then the full area covered
-by all the images has to be shown and the polygon excluded. This will
-be very troublesome in terms of memory consumption and will hardly
-ever be useful.
+@item --outpolygon
+Keep all the regions outside the polygon and mask the inner ones with
+blank pixels (see @ref{Blank pixels}). This is practically the inverse
+of the default mode of treating polygons. Note that this option only
+works when you have only provided one input image. If multiple images
+are given (in WCS mode), then the full area covered by all the images
+has to be shown and the polygon excluded. This can lead to a very
+large area if large surveys like COSMOS are used. So ImageCrop will
+abort and notify you. In such cases, it is best to crop out the larger
+region you want, then mask the smaller region with this option.
 
 @item -r
 @itemx --ra

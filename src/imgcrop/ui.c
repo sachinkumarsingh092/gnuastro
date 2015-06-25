@@ -196,13 +196,6 @@ readconfig(char *filename, struct imgcropparams *p)
 		   filename, lineno);
 	  up->wwidthset=1;
 	}
-      else if(strcmp(name, "inpolygon")==0)
-	{
-	  if(up->inpolygonset) continue;
-	  intzeroorone(value, &p->inpolygon, name, key, SPACK,
-                       filename, lineno);
-	  up->inpolygonset=1;
-	}
 
 
 
@@ -283,8 +276,6 @@ printvalues(FILE *fp, struct imgcropparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "deccol", p->deccol);
   if(up->wwidthset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "wwidth", p->wwidth);
-  if(up->inpolygonset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "inpolygon", p->inpolygon);
 
 
   fprintf(fp, "\n# Operating mode:\n");
@@ -327,8 +318,6 @@ checkifset(struct imgcropparams *p)
     REPORT_NOTSET("deccol");
   if(up->wwidthset==0)
     REPORT_NOTSET("wwidth");
-  if(up->inpolygonset==0)
-    REPORT_NOTSET("inpolygon");
   if(up->suffixset==0)
     REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
@@ -528,10 +517,15 @@ sanitycheck(struct imgcropparams *p)
   if(p->up.polygonset)
     {
       polygonparser(p);
-      if(p->inpolygon==0 && p->numimg>1)
-        error(EXIT_FAILURE, 0, "Currently in WCS mode, inpolygon can only "
-              "be set to zero when there is one image. For multiple images "
-              "the region will be very large.");
+      if(p->nvertices<3)
+        error(EXIT_FAILURE, 0, "A polygon has to have 3 or more vertices, "
+              "you have only given %lu (%s).\n", p->nvertices, p->up.polygon);
+      if(p->outpolygon && p->numimg>1)
+        error(EXIT_FAILURE, 0, "Currently in WCS mode, outpolygon can only "
+              "be set to zero when there is one image, you have given %lu "
+              "images. For multiple images the region will be very large. "
+              "It is best if you first crop out the larger region you want "
+              "into one image, then mask the polygon.", p->numimg);
     }
   else
     p->wpolygon=p->ipolygon=NULL;
