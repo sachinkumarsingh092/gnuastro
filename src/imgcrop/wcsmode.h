@@ -29,6 +29,9 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img);
 void
 setcsides(struct cropparams *crp);
 
+void
+fillcrpipolygon(struct cropparams *crp);
+
 int
 radecoverlap(struct cropparams *crp);
 

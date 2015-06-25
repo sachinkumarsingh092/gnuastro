@@ -1,3 +1,16 @@
+2015-06-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/imgcrop/wcsmode.c (wcscheckprepare): Check for both axises
+	having the same pixel scale now incorporates floating point
+	errors.
+
+	* src/imgcrop/crop.c (imgpolygonflpixel): Now gets the vertices
+	and their number instead of the cropparams structure. This was
+	done to make it be more general and use it in both Image mode and
+	WCS mode.
+	(onecrop): Allocation of the crp->ipolygon array was moved to the
+	cropflpixel function.
+
 2015-06-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/fitsarrayvv.c (fileorextname): New name for the setmaskname

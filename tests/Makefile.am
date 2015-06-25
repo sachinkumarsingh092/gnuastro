@@ -33,15 +33,15 @@ export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh			\
 mkprof/mosaic3.sh mkprof/mosaic4.sh imgcrop/imgcat.sh			\
 imgcrop/wcscat.sh imgcrop/xcyc.sh imgcrop/xcycnoblank.sh		\
-imgcrop/section.sh imgcrop/radec.sh convertt/fitstotxt.sh		\
-convertt/fitstojpeg.sh convertt/blankch.sh convertt/jpegtotxt.sh	\
-convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh			\
-convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh		\
-imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh	\
-mkprof/ellipticalmasks.sh header/write.sh header/print.sh		\
-header/update.sh header/delete.sh imgstat/basicstats.sh			\
-subtractsky/subtractsky.sh noisechisel/noisechisel.sh			\
-mkcatalog/simple.sh
+imgcrop/section.sh imgcrop/radec.sh imgcrop/imgpolygon.sh		\
+imgcrop/wcspolygon.sh convertt/fitstotxt.sh convertt/fitstojpeg.sh	\
+convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh	\
+convertt/jpegtofits.sh convertt/fitstopdf.sh convolve/spatial.sh	\
+convolve/frequency.sh imgwarp/imgwarp_scale.sh imgwarp/homographic.sh	\
+mknoise/addnoise.sh mkprof/ellipticalmasks.sh header/write.sh		\
+header/print.sh header/update.sh header/delete.sh			\
+imgstat/basicstats.sh subtractsky/subtractsky.sh			\
+noisechisel/noisechisel.sh mkcatalog/simple.sh
 
 EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt			\
 mkprof/mkprofcat1_mask.txt mkprof/mkprofcat2.txt		\

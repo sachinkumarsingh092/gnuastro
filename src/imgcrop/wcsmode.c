@@ -75,7 +75,10 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 	  "increase in the declination. You have to flip the "
 	  "image along the first axis before running ImageCrop.",
 	  img->name, p->cp.hdu);
-  if(-1.0f*wcs->pc[0]!=wcs->pc[3])
+  /* Since we are dealing with very accurate values, a multiplication
+     by -1 might cause a floating point error. So we have to account
+     for the floating point error. */
+  if(-1.0f*wcs->pc[0]<wcs->pc[3]-1e-15 || -1.0f*wcs->pc[0]>wcs->pc[3]+1e-15)
     error(EXIT_FAILURE, 0, "%s: HDU %s: The pixel scale along "
 	  "the two image axises is not the same. The first axis "
 	  "is %f arcseconds/pixel, while the second is %f.",
@@ -258,15 +261,39 @@ setcsides(struct cropparams *crp)
     }
 
   /* Just to check:
-  printf("\n\nRA: %.10f, Dec: %.10f\n(%.10f, %.10f)\n"
-	 "(%.10f, %.10f)\n(%.10f, %.10f)\n(%.10f, %.10f)\n\n",
-	 r, d,
+  printf("\n\nCorner 1: (%.10f, %.10f)\n"
+	 "Corner 2: (%.10f, %.10f)\nCorner 3: (%.10f, %.10f)\n"
+         "Corner 4: (%.10f, %.10f)\n\n",
 	 crp->corners[0], crp->corners[1],
 	 crp->corners[2], crp->corners[3],
 	 crp->corners[4], crp->corners[5],
 	 crp->corners[6], crp->corners[7]);
   exit(0);
   */
+}
+
+
+
+
+
+/* We have the polygon coordinates */
+void
+fillcrpipolygon(struct cropparams *crp)
+{
+  struct imgcropparams *p=crp->p;
+
+  /* Allocate the array to keep the image based polygon sides */
+  errno=0;
+  crp->ipolygon=malloc(2*p->nvertices*sizeof *crp->ipolygon);
+  if(crp->ipolygon==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for crpp->ipolygon in "
+          "onecrop (crop.c)",
+          2*p->nvertices*sizeof *crp->ipolygon);
+
+  /* Fill in the crp->ipolygon array by converting the WCS polygon
+     vertices to this image's coordinates. */
+  radecarraytoxy(p->imgs[crp->imgindex].wcs, p->wpolygon,
+                 crp->ipolygon, p->nvertices, 2);
 }
 
 

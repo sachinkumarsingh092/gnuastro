@@ -4892,13 +4892,12 @@ crops between multiple threads to significantly reduce the run time.
 @cindex COSMOS survey
 @cindex Imaging surveys
 @cindex Hubble Space Telescope
-One of the main problems in achieving this goal is that astronomical
-surveys are usually extremely large. So large in fact, that the whole
-survey will not fit into a reasonably sized file. Because of this
-surveys usually cut the final image into separate tiles and store each
-tile in a file. For example the COSMOS survey's Hubble space
-telescope, ACS F814W image consists of 81 separate FITS images, with
-each one having a volume of 1.7 Giga bytes.
+Astronomical surveys are usually extremely large. So large in fact,
+that the whole survey will not fit into a reasonably sized
+file. Because of this surveys usually cut the final image into
+separate tiles and store each tile in a file. For example the COSMOS
+survey's Hubble space telescope, ACS F814W image consists of 81
+separate FITS images, with each one having a volume of 1.7 Giga bytes.
 
 @cindex Stitch multiple images
 Even though the tile sizes are chosen to be large enough that too many
@@ -4910,6 +4909,13 @@ stitch parts of the tiles that are relevant for a target (with the
 given width) from all the input images that cover that region into the
 output. Of course, the tiles have to be present in the list of input
 files.
+
+ImageCrop also has facilities to crop arbitrary polygons from a set of
+tiles by stitching the relevant parts of different tiles within the
+polygon, see @option{--polygon} in @ref{Invoking
+astimgcrop}. Alternatively, it can crop out rectangular regions from
+one image which can come in handy when removing the bias pixels in raw
+image processing, see @ref{Crop section syntax}.
 
 @menu
 * ImageCrop modes::             Basic ImageCrop modes.
@@ -5024,12 +5030,12 @@ execution.
 @subsection Crop section syntax
 
 @cindex Crop a given section of image
-When in image mode, one of the methods to crop only one box from the
-input image is to define a section. Instead of defining four
-parameters for you to specify the corners of your section, ImageCrop
-has a powerful syntax to read the box parameters from a string of
-characters. If you leave certain parts of the string to be empty,
-ImageCrop can fill them for you based on the input image sizes.
+When in image mode, one of the methods to crop only one rectangular
+section from the input image is to use the @option{--section}
+option. ImageCrop has a powerful syntax to read the box parameters
+from a string of characters. If you leave certain parts of the string
+to be empty, ImageCrop can fill them for you based on the input image
+sizes.
 
 @cindex Define section to crop
 To define a box, you need the coordinates of two points: the first
@@ -5073,7 +5079,6 @@ put your value in double quotes, for example
 the first space will not be seen by @option{--section}, because the
 unquoted space character is one of the characters that separates
 options on the command line.
-
 
 
 @node Blank pixels, Invoking astimgcrop, Crop section syntax, ImageCrop
@@ -5210,6 +5215,27 @@ separated by a colon (@key{:}). You can define as many vertices as you
 like. If you would like to use space characters between the dimentions
 and vertices to make them more human-readible, then you have to put
 the value to this option in double quotation marks.
+
+For example lets assume you want to work on the deepest part of the
+Hubble Space Telescope eXtreme Deep Field
+(HST-XDF). @url{https://archive.stsci.edu/prepds/xdf/, According to
+the webpage}@footnote{@url{https://archive.stsci.edu/prepds/xdf/}} the
+deepest part is contained within the coordinates:
+
+@example
+[ (53.187414,-27.779152), (53.159507,-27.759633),
+  (53.134517,-27.787144), (53.161906,-27.807208) ]
+@end example
+
+Running ImageCrop with @option{--polygon} will thus easily pull out
+this region of the image for you (if you have set the operating mode
+to WCS mode, there is no need for @option{--wcsmode}):
+
+@example
+$ astimgcrop --wcsmode yourdesiredxdffilter.fits           \
+  --polygon="53.187414,-27.779152 : 53.159507,-27.759633 : \
+             53.134517,-27.787144 : 53.161906,-27.807208"
+@end example
 
 @item --inpolygon
 Mask all the regions outside the polygon with blank pixels (see

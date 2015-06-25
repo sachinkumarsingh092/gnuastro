@@ -40,7 +40,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "crop.h"
-
+#include "wcsmode.h"
 
 
 
@@ -241,8 +241,9 @@ polygonparser(struct imgcropparams *p)
   /* For a check:
   {
     size_t i;
+    double *polygon=p->imgmode?p->ipolygon:p->wpolygon;
     for(i=0;i<p->nvertices;++i)
-      printf("(%f, %f)\n", p->polygon[i*2], p->polygon[i*2+1]);
+      printf("(%f, %f)\n", polygon[i*2], polygon[i*2+1]);
   }
   */
 
@@ -255,20 +256,20 @@ polygonparser(struct imgcropparams *p)
 
 
 void
-imgpolygonparser(struct cropparams *crp, long *fpixel, long *lpixel)
+imgpolygonflpixel(double *ipolygon, size_t nvertices, long *fpixel,
+                  long *lpixel)
 {
   size_t i;
-  struct imgcropparams *p=crp->p;
   double minx=FLT_MAX, miny=FLT_MAX;
   double maxx=-FLT_MAX, maxy=-FLT_MAX;
 
   /* Find their minimum and maximum values. */
-  for(i=0;i<p->nvertices;++i)
+  for(i=0;i<nvertices;++i)
     {
-      if(p->ipolygon[i*2]>maxx) maxx=p->ipolygon[i*2];
-      if(p->ipolygon[i*2]<minx) minx=p->ipolygon[i*2];
-      if(p->ipolygon[i*2+1]>maxy) maxy=p->ipolygon[i*2+1];
-      if(p->ipolygon[i*2+1]<miny) miny=p->ipolygon[i*2+1];
+      if(ipolygon[i*2]>maxx) maxx=ipolygon[i*2];
+      if(ipolygon[i*2]<minx) minx=ipolygon[i*2];
+      if(ipolygon[i*2+1]>maxy) maxy=ipolygon[i*2+1];
+      if(ipolygon[i*2+1]<miny) miny=ipolygon[i*2+1];
     }
 
   /* Set the first and last pixel. */
@@ -311,7 +312,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
 
   /* Find the order of the polygons and put the elements in the proper
      order. Also subtract the fpixel_i coordinates from all the
-     vertices to bring them into the crop image coordinates. */
+     vertices to bring them into the crop image coordinates.*/
   orderedpolygoncorners(crp->ipolygon, crp->p->nvertices, ordinds);
   for(i=0;i<crp->p->nvertices;++i)
     {
@@ -506,7 +507,7 @@ cropflpixel(struct cropparams *crp)
       else if(p->up.sectionset)
 	sectionparser(p->section, naxes, fpixel, lpixel);
       else if(p->up.polygonset)
-        imgpolygonparser(crp, fpixel, lpixel);
+        imgpolygonflpixel(p->ipolygon, p->nvertices, fpixel, lpixel);
       else
 	error(EXIT_FAILURE, 0, "A bug! In image mode, neither of the "
 	      "following has been set: a catalog, a central pixel, "
@@ -517,16 +518,24 @@ cropflpixel(struct cropparams *crp)
     }
   else if(p->wcsmode) /* In wcsmode, crp->world is already filled.       */
     {		      /* Note that p->iwidth was set based on p->wwidth. */
-      status=0;
-      if(wcss2p(p->imgs[crp->imgindex].wcs, ncoord, nelem, crp->world,
-		phi, theta, imgcrd, pixcrd, &status) )
-	error(EXIT_FAILURE, 0, "wcss2p error %d: %s", status,
-	      wcs_errmsg[status]);
-      borderfromcenter(pixcrd[0], pixcrd[1], p->iwidth, fpixel, lpixel);
-      /*
-      printf("\n(%f, %f): (%ld, %ld) -- (%ld, %ld)\n\n", pixcrd[0],
-	     pixcrd[1], fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
-      */
+      if(p->up.polygonset)
+        { /* Fill crp->ipolygon in wcspolygonpixel, then set flpixel*/
+          fillcrpipolygon(crp);
+          imgpolygonflpixel(crp->ipolygon, p->nvertices, fpixel, lpixel);
+        }
+      else
+        {
+          status=0;
+          if(wcss2p(p->imgs[crp->imgindex].wcs, ncoord, nelem, crp->world,
+                    phi, theta, imgcrd, pixcrd, &status) )
+            error(EXIT_FAILURE, 0, "wcss2p error %d: %s", status,
+                  wcs_errmsg[status]);
+          borderfromcenter(pixcrd[0], pixcrd[1], p->iwidth, fpixel, lpixel);
+          /*
+            printf("\n(%f, %f): (%ld, %ld) -- (%ld, %ld)\n\n", pixcrd[0],
+                   pixcrd[1], fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
+          */
+        }
     }
   else
     error(EXIT_FAILURE, 0, "A bug! in cropflpixel (crop.c), "
@@ -696,24 +705,12 @@ onecrop(struct cropparams *crp)
 
 
       /* If a polygon is given, remove all the pixels within or
-         outside of it. If we are in WCS mode, first use the
-         p->wpolygon array to fill p->ipolygon. Note that in image
-         mode, there is only one image, so we can easily work on the
-         main p->ipolygon array.*/
+         outside of it.*/
       if(p->up.polygonset)
         {
-          if(p->wcsmode)
-            {
-              errno=0;
-              crp->ipolygon=malloc(2*p->nvertices*sizeof *crp->ipolygon);
-              if(crp->ipolygon==NULL)
-                error(EXIT_FAILURE, errno, "%lu bytes for crpp->ipolygon in "
-                      "onecrop (crop.c)",
-                      2*p->nvertices*sizeof *crp->ipolygon);
-              radecarraytoxy(p->imgs[crp->imgindex].wcs, p->wpolygon,
-                             crp->ipolygon, p->nvertices, 2);
-            }
-          else  crp->ipolygon=p->ipolygon;
+          /* In WCS mode, crp->ipolygon was allocated and filled in
+             wcspolygonflpixel (wcsmode.c). */
+          if(p->imgmode) crp->ipolygon=p->ipolygon;
           polygonmask(crp, array, fpixel_i, lpixel_i[1]-fpixel_i[1]+1,
                       lpixel_i[0]-fpixel_i[0]+1);
           if(p->wcsmode) free(crp->ipolygon);
@@ -744,6 +741,10 @@ onecrop(struct cropparams *crp)
       /* Free the allocated array. */
       free(array);
     }
+  else
+    if(p->up.polygonset && p->wcsmode) free(crp->ipolygon);
+
+
   return;
 }
 
