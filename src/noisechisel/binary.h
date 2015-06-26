@@ -23,9 +23,31 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef BINARY_H
 #define BINARY_H
 
+
+
+
+
+/* For the FITSBYTEBLANK value: */
+#include "fitsarrayvv.h"
+
+
+
+
+
+/* Special values: */
+#define BINARYTMP 2
+
+
+
+
+
+void
+setbytblank(float *img, unsigned char *byt, size_t size);
+
 void
 count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
-                   size_t s1, size_t is1, size_t *numf, size_t *numb);
+                   size_t s1, size_t is1, size_t *numf, size_t *numb,
+                   int *anyblank);
 
 void
 index_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
@@ -45,7 +67,7 @@ opening(unsigned char *byt, size_t s0, size_t s1,
         size_t depth, int con_type);
 
 void
-fillboundedholes(unsigned char *in, size_t s0, size_t s1);
+fillboundedholes(unsigned char *in, size_t s0, size_t s1, int anyblank);
 
 void
 maskbackorforeground(float *in, size_t size, unsigned char *byt,

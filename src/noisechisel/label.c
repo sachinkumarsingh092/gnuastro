@@ -57,12 +57,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    pixels labeled b0_f1.*/
 size_t
 BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
-          const size_t connectivity)
+          int anyblank, const size_t connectivity)
 {
   struct sll *Q=NULL;
-  long curlab=1; /* Current label */
-  unsigned char counter, bl, br, tl, tr;
+  long *l=lab, curlab=1; /* Current label */
   size_t i, p, size=s0*s1, s0t1=s0-1, s1t1=s1-1;
+  unsigned char *b=byt, *bf=byt+s0*s1, counter, bl, br, tl, tr;
+
 
   /* A simple sanity check. */
   if(connectivity!=4 && connectivity!=8)
@@ -71,8 +72,14 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
           "BF_concmp (label.c) is %lu which is not recognized.",
           PACKAGE_BUGREPORT, connectivity);
 
-  /* Set all the labels to zero. */
-  memset(lab, 0, size*sizeof *lab);
+
+  /* Initialize the labels array. If we have blank pixels in the byt
+     array, then give them the blank labeled array. Note that since
+     their value will not be 0, they will also not be labeled. */
+  if(anyblank)
+    do *l++ = *b==FITSBYTEBLANK ? FITSLONGBLANK : 0; while(++b<bf);
+  else
+    memset(lab, 0, size*sizeof *lab);
 
   /* Go over all the pixels: */
   if(connectivity==4)
@@ -265,7 +272,7 @@ labareas(long *in, size_t size, size_t numlabs, size_t **outareas)
   /* Find the area of each label. In is a copy of the pointer to the
      input array only for this function. We don't need it any more, so
      we can simply use it instead for the increment variable. */
-  do ++areas[*in]; while(++in<last);
+  do if(*in!=FITSLONGBLANK) ++areas[*in]; while(++in<last);
 
   /* For a check:
   for(i=0;i<numlabs;++i)
@@ -302,10 +309,12 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
 
   if(byt)
     for(i=0;i<size;++i)
-      byt[i] = (in[i]=newlabs[in[i]]) > 0;
+      if(in[i]!=FITSLONGBLANK)
+        byt[i] = (in[i]=newlabs[in[i]]) > 0;
   else
     for(i=0;i<size;++i)
-      in[i]=newlabs[in[i]];
+      if(in[i]!=FITSLONGBLANK)
+        in[i]=newlabs[in[i]];
 
   *numlabs=curlab;
 
@@ -321,10 +330,10 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
    different labeled regions in the image. Note that the label zero
    is not going to be considered. */
 void
-labindexs(long *lab, size_t size, size_t numlabs, size_t **outareas,
-             size_t ***outlabinds)
+labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
+          size_t ***outlabinds)
 {
-  long *l, *lp;
+  long *lab, *lp;
   size_t i, *areas, *counters, **labinds;
 
   /* Allocate the pointers to the objects index array and set the
@@ -337,7 +346,7 @@ labindexs(long *lab, size_t size, size_t numlabs, size_t **outareas,
   labinds[0]=NULL;
 
   /* Find the area of each label: */
-  labareas(lab, size, numlabs, outareas);
+  labareas(inlab, size, numlabs, outareas);
   areas=*outareas;
   areas[0]=0;
 
@@ -360,8 +369,11 @@ labindexs(long *lab, size_t size, size_t numlabs, size_t **outareas,
     }
 
   /* Fill in the indexs array. */
-  lp=(l=lab)+size;
-  do if(*l) labinds[*l][counters[*l]++]=l-lab; while(++l<lp);
+  lp=(lab=inlab)+size;
+  do
+    if(ISINDEXABLELABEL)
+      labinds[*lab][counters[*lab]++]=lab-inlab;
+  while(++lab<lp);
   labinds[0]=NULL;
 
   /* For a check:

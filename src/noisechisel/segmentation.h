@@ -24,6 +24,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SEGMENTATION_H
 
 void
+clabwithnoseg(long *olab, long *clab, size_t size, int anyblank);
+
+void
 segmentation(struct noisechiselparams *p);
 
 #endif

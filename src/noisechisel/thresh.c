@@ -30,6 +30,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "mode.h"
 #include "timing.h"
 #include "forqsort.h"
+#include "checkset.h"
 #include "statistics.h"
 #include "spatialconvolve.h"
 
@@ -94,10 +95,13 @@ qthreshonmesh(void *inparam)
       while(row<s0);
 
       /* Do the desired operation on the mesh: */
-      qsort(oneforall, num, sizeof *oneforall, floatincreasing);
-      modeindexinsorted(oneforall, num, mirrordist, &modeindex, &modesym);
-      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq)
-        mp->garray1[ind]=oneforall[indexfromquantile(num, qthresh)];
+      if(num)
+        {
+          qsort(oneforall, num, sizeof *oneforall, floatincreasing);
+          modeindexinsorted(oneforall, num, mirrordist, &modeindex, &modesym);
+          if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq)
+            mp->garray1[ind]=oneforall[indexfromquantile(num, qthresh)];
+        }
     }
 
   /* Free alltype and if multiple threads were used, wait until all
@@ -222,9 +226,9 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
   struct meshparams *smp=&p->smp;
 
   size_t is0=smp->s0;
-  unsigned char *b, *dbyt;
+  float *f, *in, sky, std;
   float dthresh=p->dthresh;
-  float *f, *fp, *in, sky, std;
+  unsigned char *b, *bf, *dbyt;
   size_t gid, row, start, chbasedid, *types=smp->types;
   size_t s0, s1, is1=smp->s1, *ts0=smp->ts0, *ts1=smp->ts1;
 
@@ -250,34 +254,120 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
       start=smp->start[chbasedid];
       do
         {
-          b = dbyt + start + row*is1;
           in = p->img + start + row*is1;
-          fp= ( f = p->imgss + start + row++ * is1 ) + s1;
+          f = p->imgss + start + row*is1;
+          bf= ( b = dbyt + start + row++ * is1) + s1;
           do
             {
-              /*
-                The basic idea behind choosing this comparison is that
-                we want it to work for NaN values too.
+              /* The threshold is always very low. So for the majority
+                 of non-NaN pixels in the image, the condition above
+                 will be true. If we come over a NaN pixel, then by
+                 definition of NaN, all conditionals will fail.
 
-                (From the GNU C library manual) "In comparison
-                operations, ... NaN is `unordered': it is not equal
-                to, greater than, or less than anything, _including
-                itself_."
-
-                In this context, we want NaN pixels to be treated like
-                those that are above the threshold (a region that is
-                only NaN will be removed later because it has no
-                flux). So if the checking condition below fails, we
-                want *b=1. To make this work when *f!=NAN also, we
-                check if the flux is below the threshold (so when it
-                fails, *b=1). In this manner we don't have to add an
-                `isnan' check and make this a tiny bit faster.
-              */
-              *f = *in++ - sky;
-              *b++ = *f<dthresh*std ? 0 : 1;
+                 The benefit of this method of testing is that if an
+                 image doesn't have any NaN pixels, only the pixels
+                 below the threshold have to be checked for a NaN
+                 which are by definition a very small fraction of the
+                 total pixels. And if there are NaN pixels in the
+                 image, they will be checked. */
+              *b = ( (*f++=*in-sky) > dthresh*std
+                     ? 1
+                     : isnan(*in) ? FITSBYTEBLANK : 0 );
+              ++in;
             }
-          while(++f<fp);
+          while(++b<bf);
         }
       while(row<s0);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*********************************************************************/
+/***************      S/N Quantile threshold     *********************/
+/*********************************************************************/
+void
+snthresh(struct noisechiselparams *p, float *sntable, size_t size,
+         int det0seg1)
+{
+  char cline[1000];
+  char *job, *name, *suffix;
+  char *histname, report[200];
+  float quant = det0seg1 ? p->segquant : p->detquant;
+  size_t snhistnbins= det0seg1 ? p->segsnhistnbins : p->detsnhistnbins;
+
+  /* Set the name constants: */
+  if(det0seg1)
+    { job="Clump"; suffix="_segsn.txt"; name="clumps"; }
+  else
+    { job="Detection"; suffix="_detsn.txt"; name="pseudo-detections"; }
+
+
+  /* Sort the signal to noise ratios and remove their outliers */
+  qsort(sntable, size, sizeof *sntable, floatincreasing);
+  removeoutliers_flatcdf(sntable, &size);
+
+
+  /* Check if the number is acceptable to the user. */
+  if(size<p->minnumfalse)
+    error(EXIT_FAILURE, 0, "There are only %lu %s in the sky region of "
+          "the image. This is smaller than the minimum number you "
+          "specified: %lu. You can decrease this minimum with the "
+          "`--minnumfalse' (`-F') option or you can decrease the other "
+          "parameters that determine the %s. See the GNU Astronomy "
+          "Utilities manual (section on NoiseChisel) or Akhlaghi and "
+          "Ichikawa (2015) for more information.", size, name,
+          p->minnumfalse, name);
+
+
+  /* Store the SN value. */
+  p->sn=sntable[indexfromquantile(size, p->detquant)];
+  if(p->cp.verb)
+    {
+      sprintf(report, "%s S/N: %.3f (%.3f quantile of %lu %s.",
+              job, p->sn, quant, size, name);
+      reporttiming(NULL, report, 2);
+    }
+
+
+  /* If the user has asked for it, make the histogram of the S/N
+     distribution. */
+  if(snhistnbins)
+    {
+      /* For a check:
+         if(ind!=0) continue;
+         ff=(f=sntable)+numlabs; do printf("%f\n", *f++); while(f<ff);
+      */
+
+      /* histname has to be set to NULL so automaticoutput can
+         safey free it. */
+      histname=NULL;
+      sprintf(cline, "# %s\n# %s started on %s"
+              "# Input: %s (hdu: %s)\n"
+              "# S/N distribution histogram of %lu sky %s.\n"
+              "# The %.3f quantile has an S/N of %.4f.",
+              SPACK_STRING, SPACK_NAME, ctime(&p->rawtime),
+              p->up.inputname, p->cp.hdu, size, name, quant, p->sn);
+      automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
+                      p->cp.dontdelete, &histname);
+      savehist(sntable, size, snhistnbins, histname, cline);
+      free(histname);
     }
 }

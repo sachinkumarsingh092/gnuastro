@@ -467,7 +467,7 @@ static struct argp_option options[] =
     {
       "segquant",
       'g',
-      0,
+      "FLT",
       0,
       "Signal to noise ratio quantile for clumps.",
       5

@@ -23,9 +23,33 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef LABEL_H
 #define LABEL_H
 
+
+
+
+
+/* For the FITSLONGBLANK and FITSBYTEBLANK macros: */
+#include "fitsarrayvv.h"
+
+
+/* In case the blank value for the long type is negative, the only
+   necessary check to see if we are on a label or not is to see if its
+   value is positive. But since we don't want to impose this condition
+   on the fitsarrayvv.h macro (which is used by all Gnuastro programs)
+   we allow for it to be positive through this C preprocessor
+   check. The compiler has no idea of our convention to label things
+   with positive indices, so we can't rely on the compiler to optimize
+   this. */
+#if FITSLONGBLANK<0
+#define ISINDEXABLELABEL (*lab>0)
+#else
+#define ISINDEXABLELABEL (*lab && *lab!=FITSLONGBLANK)
+#endif
+
+
+
 size_t
 BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
-          const size_t connectivity);
+          int anyblank, const size_t connectivity);
 
 size_t
 BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs);

@@ -41,11 +41,4 @@ fi
 # Actual test script:
 #####################
 img=convolve_spatial_noised.fits
-
-# All of these conditions are put here because the image is relatively
-# small, so we can't get good statistics. But that doesn't matter too
-# much here, this is just a test to see if everything is working
-# properly.
-$execname $img --lmeshsize=100 --minbfrac=0.5 --detsnminarea=10   \
-          --minnumfalse=50 --numnearest=5 --segsnminarea=15       \
-          --checkdetection
+$execname $img --checkdetection --checksegmentation

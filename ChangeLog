@@ -1,3 +1,62 @@
+2015-06-26  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/thresh.c (qthreshonmesh): Only sort and find the
+	quantile if there actually is any pixels!
+	(applydetectionthresholdskysub): Now accounts for blank pixels.
+
+	* src/noisechisel/segmentation.c (segmentation): Now only works on
+	non-blank pixels.
+
+	* src/noisechisel/label.c (BF_concmp): Now accounts for blank
+	pixels in both unsigned char and long arrays.
+	(labareas): Accounts for blank pixels.
+	(removesmallarea_relabel): Accounts for blank pixels.
+	(labindexs): Accounts for blank pixels.
+
+	* src/noisechisel/detection.c (detlabelsn): Now also removes
+	detections in the sky area that cover a detection after filling
+	holes.
+	(removefalsedetections): Changed to applydetsn.
+	(detsnthreshonmesh): Changed to detectpsedos. Practically this
+	function just fills the holes in each large mesh and opens the
+	binary result then puts the field back into the main p->dbyt
+	array. It does not calculate anything any more. Such calculations
+	have now become full image wide to find one S/N value over the
+	full image.
+	(detsnthreshongrid): Changed to detsnthresh. This function now
+	does the image-wide calculations that were previously done by
+	detsnthreshonmesh.
+	(dbytolaboverlap): Now accounts for masked unsigned char and long
+	arrays.
+
+	* src/noisechisel/clumps.c (clumpsntableonmesh): Previously
+	clumpsnthreshonmesh. Moved all the countings and conditionals to
+	another function to find the S/N threshold from one distribution
+	over the image and not in the large meshs.
+	(findclumpsn): Previously clumpsngrid. Now it collects all the S/N
+	values from all the meshs into one array and uses that to find the
+	S/N threshold using a fixed function for both detection and
+	segmentation (snthresh in thresh.c).
+
+	* src/noisechisel/binary.c: The fixed value of 2 is changed
+	BINARYNAN which is defined in binary.h. This makes managing the
+	special values to use more easy, especially now that FITSBYTEBLANK
+	is also being used from fitsarrayvv.h.
+	(fh_makeinv): Replaced the old functions to fill the inverse array
+	with new ones that don't use an index variable but pointers. It is
+	much more cleaner, faster and easier to read now. It also now
+	accounts for blank pixels and completely ignores them.
+	(fillboundedholes): Similar to fh_makeinv.
+
+	* src/noisechisel/: The mesh based signal to noise calculations
+	are now gone and one value is calculated for the full image. This
+	allows for much better accuracy. Most of the steps in NoiseChisel
+	were modified to take this into account. Also blank pixels are now
+	included in the binary and labeled images too.
+
+	* lib/fitsarrayvv.c (arraytofitsimg): Moved the BLANK keyword
+	before EXTNAME.
+
 2015-06-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/imgcrop/args.h (options): Changed inpolygon to

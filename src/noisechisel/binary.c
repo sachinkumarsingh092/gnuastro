@@ -22,6 +22,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <math.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
@@ -30,7 +31,44 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "label.h"
+#include "binary.h"
 #include "fitsarrayvv.h"
+
+
+
+
+
+
+/****************************************************************
+ **************            Binary NAN           *****************
+ ****************************************************************/
+/* When the float image has NaN pixels, set the respective byt value
+   to FITSBYTEBLANK. */
+void
+setbytblank(float *img, unsigned char *byt, size_t size)
+{
+  float *end=img+size;
+  do
+    {
+      if(isnan(*img++))
+        *byt=FITSBYTEBLANK;
+      ++byt;
+    }
+  while(img<end);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -49,16 +87,18 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    and their width is here called `is1`. */
 void
 count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
-                   size_t s1, size_t is1, size_t *numf, size_t *numb)
+                   size_t s1, size_t is1, size_t *numf, size_t *numb,
+                   int *anyblank)
 {
   unsigned char *b, *fb;
   size_t nf=0, nb=0, row=0;
 
+  *anyblank=0;
   do
     {
       fb = ( b = byt + startind + is1*row++ ) + s1;
       do
-        *b ? ++nf : ++nb;
+        *b ? (*b==FITSBYTEBLANK ? *anyblank=1: ++nf) : ++nb;
       while(++b<fb);
     }
   while(row<s0);
@@ -133,31 +173,31 @@ dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
 
   /* Check the 4 corners: */
   if(byt[0]==b && (byt[1]==f || byt[nc]==f) )
-    byt[0]=2;
+    byt[0]=BINARYTMP;
 
   if(byt[nc-1]==b && (byt[nc-2]==f || byt[2*nc-1]==f))
-    byt[nc-1]=2;
+    byt[nc-1]=BINARYTMP;
 
   if(byt[(nr-1)*nc]==b
      && (byt[(nr-2)*nc]==f || byt[(nr-1)*nc+1]==f) )
-    byt[(nr-1)*nc]=2;
+    byt[(nr-1)*nc]=BINARYTMP;
 
   if(byt[nr*nc-1]==b
      && (byt[nr*nc-2]==f || byt[nr*nc-1-nc]==f) )
-    byt[nr*nc-1]=2;
+    byt[nr*nc-1]=BINARYTMP;
 
   /* Check the 4 sides: */
   for(j=1;j<nc-1;++j)
     if(byt[j]==b
        && (byt[j+1]==f || byt[j-1]==f || byt[j+nc]==f) )
-      byt[j]=2;
+      byt[j]=BINARYTMP;
 
   for(j=1;j<nc-1;++j)
     {
       ind=(nr-1)*nc+j;
       if(byt[ind]==b
 	 && (byt[ind+1]==f || byt[ind-1]==f || byt[ind-nc]==f) )
-	byt[ind]=2;
+	byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
@@ -165,7 +205,7 @@ dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
       ind=i*nc;
       if(byt[ind]==b
 	 && (byt[ind+1]==f || byt[ind+nc]==f || byt[ind-nc]==f) )
-	byt[ind]=2;
+	byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
@@ -173,7 +213,7 @@ dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
       ind=(i+1)*nc-1;
       if(byt[ind]==b
 	 && (byt[ind-1]==f || byt[ind+nc]==f || byt[ind-nc]==f) )
-	byt[ind]=2;
+	byt[ind]=BINARYTMP;
     }
 
   /* Check the body: */
@@ -184,12 +224,12 @@ dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
 	if(byt[ind]==b
 	   && (byt[ind-1]==f     || byt[ind+1]==f
 	       || byt[ind+nc]==f || byt[ind-nc]==f) )
-	  byt[ind]=2;
+	  byt[ind]=BINARYTMP;
       }
 
   /* Set all the changed pixels to the proper values: */
   fpt=(pt=byt)+nr*nc;
-  do *pt = *pt==2 ? f : *pt; while(++pt<fpt);
+  do *pt = *pt==BINARYTMP ? f : *pt; while(++pt<fpt);
 }
 
 
@@ -218,29 +258,29 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
   /* Check the 4 corners: */
   if(byt[0]==b && (byt[1]==f
 		   || byt[nc]==f || byt[nc+1]==f) )
-    byt[0]=2;
+    byt[0]=BINARYTMP;
 
   if(byt[nc-1]==b && (byt[nc-2]==f
 		      || byt[2*nc-1]==f
 		      || byt[2*nc-2]==f) )
-    byt[nc-1]=2;
+    byt[nc-1]=BINARYTMP;
 
   if(byt[(nr-1)*nc]==b
      && ( byt[(nr-2)*nc]==f || byt[(nr-1)*nc+1]==f
 	  || byt[(nr-2)*nc+1]==f) )
-    byt[(nr-1)*nc]=2;
+    byt[(nr-1)*nc]=BINARYTMP;
 
   if(byt[nr*nc-1]==b
      && ( byt[nr*nc-2]==f || byt[nr*nc-1-nc]==f
 	  || byt[nr*nc-2-nc]==f) )
-    byt[nr*nc-1]=2;
+    byt[nr*nc-1]=BINARYTMP;
 
   /* Check the 4 sides: */
   for(j=1;j<nc-1;++j)
     if(byt[j]==b
        && ( byt[j+1]==f || byt[j-1]==f || byt[j+nc]==f
 	    || byt[j-1+nc]==f || byt[j+1+nc]==f) )
-      byt[j]=2;
+      byt[j]=BINARYTMP;
 
   for(j=1;j<nc-1;++j)
     {
@@ -248,7 +288,7 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
       if(byt[ind]==b
 	 && ( byt[ind+1]==f || byt[ind-1]==f || byt[ind-nc]==f
 	      || byt[ind-1-nc]==f || byt[ind+1-nc]==f) )
-	byt[ind]=2;
+	byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
@@ -257,7 +297,7 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
       if(byt[ind]==b
 	 && ( byt[ind+1]==f || byt[ind+nc]==f || byt[ind-nc]==f
 	      || byt[ind+1-nc]==f || byt[ind+1+nc]==f) )
-	byt[ind]=2;
+	byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
@@ -266,7 +306,7 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
       if(byt[ind]==b
 	 && (byt[ind-1]==f || byt[ind+nc]==f || byt[ind-nc]==f
 	     || byt[ind-1-nc]==f || byt[ind-1+nc]==f) )
-	byt[ind]=2;
+	byt[ind]=BINARYTMP;
     }
 
   /* Check the body: */
@@ -279,12 +319,12 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
 	       || byt[ind+nc]==f    || byt[ind-nc]==f
 	       || byt[ind-1-nc]==f  || byt[ind+1+nc]==f
 	       || byt[ind-1+nc]==f  || byt[ind+1+nc]==f) )
-	  byt[ind]=2;
+	  byt[ind]=BINARYTMP;
       }
 
   /* Set all the changed pixels to the proper values: */
   fpt=(pt=byt)+nr*nc;
-  do *pt = *pt==2 ? f : *pt; while(++pt<fpt);
+  do *pt = *pt==BINARYTMP ? f : *pt; while(++pt<fpt);
 }
 
 
@@ -356,7 +396,7 @@ fillleftside(unsigned char *inv, size_t idx, size_t idy,
         {
 	  if(i+1-min_o<maxfill)
 	    for(j=min_o;j<=i+1;++j)
-	      inv[j*idy+1]=2;
+	      inv[j*idy+1]=BINARYTMP;
 	  min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+idy]==1)
@@ -364,7 +404,7 @@ fillleftside(unsigned char *inv, size_t idx, size_t idy,
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
-      inv[j*idy+1]=2;
+      inv[j*idy+1]=BINARYTMP;
 }
 
 
@@ -386,7 +426,7 @@ fillbottomside(unsigned char *inv, size_t idy,
         {
 	  if(i+1-min_o<maxfill)
 	    for(j=min_o;j<=i+1;++j)
-	      inv[idy+j]=2;
+	      inv[idy+j]=BINARYTMP;
 	  min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+1]==1)
@@ -394,7 +434,7 @@ fillbottomside(unsigned char *inv, size_t idy,
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
-      inv[idy+j]=2;
+      inv[idy+j]=BINARYTMP;
 }
 
 
@@ -416,7 +456,7 @@ fillrightside(unsigned char *inv, size_t idx, size_t idy,
         {
 	  if(i+1-min_o<maxfill)
 	    for(j=min_o;j<=i+1;++j)
-	      inv[j*idy+idy-2]=2;
+	      inv[j*idy+idy-2]=BINARYTMP;
 	  min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+idy]==1)
@@ -424,7 +464,7 @@ fillrightside(unsigned char *inv, size_t idx, size_t idy,
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
-      inv[j*idy+idy-2]=2;
+      inv[j*idy+idy-2]=BINARYTMP;
 }
 
 
@@ -446,7 +486,7 @@ filltopside(unsigned char *inv, size_t idx, size_t idy,
         {
 	  if(i+1-min_o<maxfill)
 	    for(j=min_o;j<=i+1;++j)
-	      inv[(idx-2)*idy+j]=2;
+	      inv[(idx-2)*idy+j]=BINARYTMP;
 	  min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+1]==1)
@@ -454,7 +494,7 @@ filltopside(unsigned char *inv, size_t idx, size_t idy,
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
-      inv[(idx-2)*idy+j]=2;
+      inv[(idx-2)*idy+j]=BINARYTMP;
 }
 
 
@@ -463,17 +503,17 @@ filltopside(unsigned char *inv, size_t idx, size_t idy,
 
 /* Make the array that is the inverse of the input byt of fill
    holes. The inverse array will also be 4 pixels larger in both
-   dimensions. This is because we also want to fill those holes that
-   are touching the side of the image. One pixel for a pixel that is
-   one pixel away from the image border. Another pixel for those
+   dimensions. This is because we might also want to fill those holes
+   that are touching the side of the image. One pixel for a pixel that
+   is one pixel away from the image border. Another pixel for those
    objects that are touching the image border. */
 void
 fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
 	   unsigned char **inv, size_t *oidx, size_t *oidy,
-	   size_t l, size_t b, size_t r, size_t t)
+	   size_t l, size_t b, size_t r, size_t t, int anyblank)
 {
-  unsigned char *tinv;
-  size_t i, j, idx, idy, size, tdiff=2;
+  unsigned char *tinv, *bp, *bf, *tp, *sp;
+  size_t i, row, start, idx, idy, size, tdiff=2;
 
   idx=s0+2*tdiff;
   idy=s1+2*tdiff;
@@ -485,12 +525,36 @@ fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
     error(EXIT_FAILURE, errno, "%lu bytes for tinv (label.c)",
           size*sizeof *tinv);
 
-  for(i=0;i<size;++i) tinv[i]=1;
-  for(i=0;i<s0;++i)
-    for(j=0;j<s1;++j)
-      if(byt[i*s1+j]==1)
-	tinv[(i+tdiff)*idy+j+tdiff]=0;
+  /* Fill in the central regions of the inverse array: */
+  row=0;
+  start=tdiff*idy+tdiff;
+  do
+    {
+      tp=tinv+start+row*idy;
+      bf = ( bp = byt + row++ * s1 ) + s1;
+      if(anyblank)
+        do *tp++ = *bp==FITSBYTEBLANK ? FITSBYTEBLANK : !*bp; while(++bp<bf);
+      else
+        do *tp++ = !*bp; while(++bp<bf);
+    }
+  while(row<s0);
 
+  /* Fill in the edges: */
+  row=0;
+  do
+    {
+      bf = ( bp = tinv + row * idy ) + idy;
+      if(row<tdiff || row>=idx-2)   /* Fill the full row if it is one of  */
+        do *bp++=1; while(bp<bf);   /* the first or last rows.            */
+      else
+        {                       /* Fill the start and end of the row. */
+          sp=bp; do *bp++=1; while(bp-sp<tdiff);
+          bp=sp+s1+tdiff; do *bp++=1; while(bp<bf);
+        }
+    }
+  while(++row<idx);
+
+  /* Fill the four sides if such holes are to be filled. */
   if(l!=0) fillleftside(tinv, idx, idy, l);
   if(b!=0) fillbottomside(tinv, idy, b);
   if(r!=0) fillrightside(tinv, idx, idy, r);
@@ -498,7 +562,7 @@ fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
 
   if(l!=0 || b!=0 || r!=0 || t!=0)
     for(i=0;i<size;++i)
-      if(tinv[i]==2) tinv[i]=0;
+      if(tinv[i]==BINARYTMP) tinv[i]=0;
 
   *inv=tinv;
   *oidx=idx;
@@ -535,47 +599,54 @@ fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
 
 */
 void
-fillboundedholes(unsigned char *in, size_t s0, size_t s1)
+fillboundedholes(unsigned char *in, size_t s0, size_t s1, int anyblank)
 {
-  long *hlab;
-  unsigned char *inv;
-  size_t i, j, idx, idy, diff;
+  long *h, *hlab;
+  unsigned char *inv, *n, *nf;
+  size_t row, idx, idy, diff, start;
 
 
   /* Make the inverse array: */
-  fh_makeinv(in, s0, s1, &inv, &idx, &idy, 0, 0, 0, 0);
+  fh_makeinv(in, s0, s1, &inv, &idx, &idy, 0, 0, 0, 0, anyblank);
   diff=(idx-s0)/2;
 
 
   /* Allocate the array to keep the hole indexs */
-  errno=0; hlab=calloc(idx*idy, sizeof *hlab);
+  errno=0; hlab=malloc(idx*idy*sizeof *hlab);
   if(hlab==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for hlab in filllabeledholes "
           "(label.c)", idx*idy*sizeof *hlab);
 
 
   /* Find the hole labels */
-  BF_concmp(inv, hlab, idx, idy, 8);
+  BF_concmp(inv, hlab, idx, idy, anyblank, 8);
 
 
   /* For a check
   arraytofitsimg("fbh.fits", "INPUT", BYTE_IMG, in,
-                 s0, s1, 0, NULL, NULL, "tmp");
+                 s0, s1, anyblank, NULL, NULL, "tmp");
   arraytofitsimg("fbh.fits", "INV", BYTE_IMG, inv,
-                 idx, idy, 0, NULL, NULL, "tmp");
+                 idx, idy, anyblank, NULL, NULL, "tmp");
   arraytofitsimg("fbh.fits", "HLAB", LONG_IMG, hlab,
-                 idx, idy, 0, NULL, NULL, "tmp");
+                 idx, idy, anyblank, NULL, NULL, "tmp");
   */
 
   /* Correct the labels: */
-  for(i=diff;i<idx-diff;++i)	/* Note that holes will always  */
-    for(j=diff;j<idy-diff;++j)	/* be in the inner diff pixels. */
-      if(hlab[i*idy+j]>1)
-	in[(i-diff)*s1+j-diff]=1;
+  row=0;
+  start=diff*idy+diff;
+  do                            /* Note that holes will always  */
+    {                           /* be in the inner diff pixels. */
+      h = hlab + start + row*idy;
+      nf = ( n = in + row++ * s1) + s1;
+      do *n = *h++>1 ? 1 : *n; while(++n<nf);
+    }
+  while(row<s0);
+
 
   /* For a check:
   arraytofitsimg("fbh.fits", "INPUT", BYTE_IMG, in,
-                 s0, s1, 0, NULL, NULL, "tmp");
+                 s0, s1, anyblank, NULL, NULL, "tmp");
+  exit(0);
   */
 
   free(inv);

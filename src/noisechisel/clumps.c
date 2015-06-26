@@ -42,7 +42,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "clumps.h"
 #include "binary.h"
-#include "detection.h"
+#include "thresh.h"
 
 
 
@@ -804,7 +804,7 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
 /*************           S/N threshold           ******************/
 /******************************************************************/
 void *
-clumpsnthreshonmesh(void *inparams)
+clumpsntableonmesh(void *inparams)
 {
   struct clumpsthreadparams ctp;
   struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
@@ -813,12 +813,10 @@ clumpsnthreshonmesh(void *inparams)
 
   size_t *mponeforall=mp->oneforall;
 
+  int anyblank;
   float *sntable;
-  char cline[1000];
-  long *clab=p->clab;
   size_t s0, s1, nf, ind, startind, is1=mp->s1;
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
-  char suffix[50], *histname, *segmentationname=p->segmentationname;
 
   /* Set the necessary pointers for the clumpsthreadparams
      structure. */
@@ -842,11 +840,12 @@ clumpsnthreshonmesh(void *inparams)
 
       /* Check to see if we have enough blank area for getting the
 	 background noise statistics. */
-      count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &ctp.area);
+      count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &ctp.area,
+                         &anyblank);
       if( (float)ctp.area < (float)(s0*s1)*p->minbfrac )
         {
-          if(segmentationname)
-            longinitonregion(clab, 0, startind, s0, s1, is1);
+          p->numclumpsarr[ind]=0;
+          p->sntablearr[ind]=NULL;
           continue;
         }
 
@@ -861,70 +860,15 @@ clumpsnthreshonmesh(void *inparams)
       /* Do the over-segmentation and put the number of clumps in
          ctp.numclumps */
       oversegment(&ctp);
-      if(ctp.numclumps<p->minnumfalse)
-        {
-          if(segmentationname)
-            longinitonregion(clab, 0, startind, s0, s1, is1);
-          continue;
-        }
 
 
       /* Find the signal to noise of all the clumps. */
       clumpsntable(&ctp, &sntable);
 
 
-      /* Continue if the number of clumps is enough: */
-      if(ctp.numclumps<p->minnumfalse)
-        {
-          free(sntable);
-          if(segmentationname)
-            longinitonregion(clab, 0, startind, s0, s1, is1);
-          continue;
-        }
-
-
-      /* Sort the Signal to noise ratio values and remove outliers. */
-      qsort(sntable, ctp.numclumps, sizeof *sntable, floatincreasing);
-      removeoutliers_flatcdf(sntable, &ctp.numclumps);
-      if(ctp.numclumps<p->minnumfalse)
-        {
-          free(sntable);
-          if(segmentationname)
-            longinitonregion(clab, 0, startind, s0, s1, is1);
-          continue;
-        }
-
-
-      /* Put the signal to noise quantile into the mesh grid. */
-      mp->garray1[ind]=sntable[indexfromquantile(ctp.numclumps, p->segquant)];
-
-
-      /* If the user has asked for it, make the histogram of the
-         S/N distribution. */
-      if(p->segsnhistnbins)
-        {
-          /* histname has to be set to NULL so automaticoutput can
-             safey free it. */
-          histname=NULL;
-          sprintf(suffix, "_%lu_segsn.txt", ind);
-          sprintf(cline, "# %s\n# %s started on %s"
-                  "# Input: %s (hdu: %s)\n"
-                  "# Histogram for S/N distribution of false "
-                  "clumps.\n"
-                  "# On large mesh id %lu.\n"
-                  "# The %.3f quantile has a value of %.4f on "
-                  "this bin.", SPACK_STRING, SPACK_NAME,
-                  ctime(&p->rawtime), p->up.inputname, p->cp.hdu,
-                  ind, p->segquant, mp->garray1[ind]);
-          automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
-                          p->cp.dontdelete, &histname);
-          savehist(sntable, ctp.numclumps, p->segsnhistnbins,
-                   histname, cline);
-          free(histname);
-        }
-
-      /* Cleanup: */
-      free(sntable);
+      /* Keep the relevant information for this mesh: */
+      p->sntablearr[ind]=sntable;
+      p->numclumpsarr[ind]=ctp.numclumps;
     }
 
   /* Free any allocated space and if multiple threads were used, wait
@@ -938,30 +882,79 @@ clumpsnthreshonmesh(void *inparams)
 
 
 
+/* The job of this function is to find the best signal to noise value
+   to use as a threshold to detect real clumps.
+
+   Each thread will find the useful signal to noise values for the
+   meshs that have been assigned to it. It will then store the pointer
+   to the S/N table into the sntablearr array (with the size of the
+   number of meshs). If no clumps could be found in a mesh, then
+   sntablearr[i]=NULL. Otherwise, it points to an array of the useful
+   S/N values in that clump. Note that we don't care about the order
+   of S/N values any more! There is also an accompanying array to keep
+   the number of elements in the final S/N array of each mesh:
+   numclumpsarr.
+
+   Using these two arrays, after all the threads are finished, we can
+   concatenate all the S/N values into one array and send it to the
+   main findsnthresh function in thresh.c.
+*/
 void
-clumpsngrid(struct noisechiselparams *p)
+findclumpsn(struct noisechiselparams *p)
 {
-  float snave;
-  char report[VERBMSGLENGTHS2_V];
+  float *sntable;
   struct meshparams *lmp=&p->lmp;
+  size_t i, j, numclumps=0, nmeshi=lmp->nmeshi;
+
 
   /* Set the convolved image as the basis for sorting the indexs and
      finding clumps. */
   forqsortindexarr=p->conv;
 
+
+  /* Allocate the two arrays to keep the number and values of the S/Ns
+     in each mesh. */
+  errno=0; p->numclumpsarr=malloc(nmeshi*sizeof*p->numclumpsarr);
+  if(p->numclumpsarr==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->numclumpsarr in "
+          "findclumpsn (clumps.c)", nmeshi*sizeof*p->numclumpsarr);
+  errno=0; p->sntablearr=malloc(nmeshi*sizeof*p->sntablearr);
+  if(p->sntablearr==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->sntablearr in "
+          "findclumpsn (clumps.c)", nmeshi*sizeof*p->sntablearr);
+
+
   /* Find the clump Signal to noise ratio on successful meshs then on
      all the meshs. findsnthreshongrid is in detection.c. */
-  operateonmesh(lmp, clumpsnthreshonmesh, sizeof(size_t), 0, 1);
-  findsnthreshongrid(&p->lmp, p->clumpsnname, "Interpolating the "
-                     "CLUMP Signal to noise ratio threshold", p->wcs);
-  if(p->cp.verb)
-    {
-      snave=floataverage(lmp->garray1, lmp->nmeshi);
-      sprintf(report, "Clump S/N limit found (Average: %.3f).",
-              snave);
-      reporttiming(NULL, report, 2);
-    }
+  operateonmesh(lmp, clumpsntableonmesh, sizeof(size_t), 0, 0);
 
+
+  /* Find the total number of useful clumps and allocate sntable.  */
+  for(i=0;i<nmeshi;++i) numclumps+=p->numclumpsarr[i];
+  errno=0; sntable=malloc(numclumps*sizeof*sntable);
+  if(sntable==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for sntable in "
+          "findclumpsn (clumps.c)", numclumps*sizeof*sntable);
+
+
+  /* Fill in the sntable array: */
+  numclumps=0;
+  for(i=0;i<nmeshi;++i)
+    for(j=0;j<p->numclumpsarr[i];++j)
+      sntable[numclumps++]=p->sntablearr[i][j];
+
+
+  /* Set the clump signal to noise value: */
+  snthresh(p, sntable, numclumps, 1);
+
+
+  /* Clean up. In clumpsntableonmesh we put an allocated array in each
+     member of p->sntablearr[i]. */
+  for(i=0;i<nmeshi;++i)
+    free(p->sntablearr[i]);
+  free(p->numclumpsarr);
+  free(p->sntablearr);
+  free(sntable);
 }
 
 
@@ -994,8 +987,6 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
 {
   struct meshparams *lmp=&ctp->p->lmp;
 
-  double *xys=ctp->xys;
-  float *snonmesh=lmp->garray1;
   long *newlabs, *clab=ctp->p->clab;
   size_t *n, *nf, is0=lmp->s0, is1=lmp->s1;
   size_t i, curlab=1, *ind, *indf, ngb[8], numngb;
@@ -1013,8 +1004,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
   if(ctp->p->keepmaxnearriver)
     {       /* `{' because We don't want to confuse the `else' below. */
       for(i=1;i<ctp->numclumps;++i)
-        if( !isnan(xys[2*i]) && sntable[i] >
-            snonmesh[ imgxytomeshid(lmp, xys[2*i], xys[2*i+1]) ] )
+        if( sntable[i] > ctp->p->sn )
           newlabs[i]=curlab++;
     }
   else
@@ -1031,14 +1021,13 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
           /* If the brightest pixel of this clump was not touching a
              river and its Signal to noise ratio is larger than the
              threshold, then give it a new label.*/
-          if(n==nf && !isnan(xys[2*i]) && sntable[i] >
-             snonmesh[ imgxytomeshid(lmp, xys[2*i], xys[2*i+1]) ] )
+          if( n==nf  &&  sntable[i] > ctp->p->sn )
             newlabs[i]=curlab++;
         }
   ctp->numclumps=curlab;
 
   /* Change the values of the false clumps. Note that the labels are
-     either SEGMENTRIVER or a label */
+     either SEGMENTRIVER or a label. */
   indf = (ind=ctp->inds) + ctp->area;
   do
     {

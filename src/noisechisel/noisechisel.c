@@ -75,7 +75,7 @@ makeoutput(struct noisechiselparams *p)
   add_to_fitsheaderll(&keys, TLONG, "NOBJS", 0, num, 0,
                       "Number of objects in the image.", 0, NULL);
   arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
-                 s0, s1, 0, p->wcs, keys, SPACK_STRING);
+                 s0, s1, p->numblank, p->wcs, keys, SPACK_STRING);
   keys=NULL;     /* keys was freed after writing. */
 
 
@@ -87,7 +87,7 @@ makeoutput(struct noisechiselparams *p)
   add_to_fitsheaderll(&keys, TLONG, "NCLUMPS", 0, num, 0,
                       "Number of clumps in the image.", 0, NULL);
   arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
-                 s0, s1, 0, p->wcs, keys, SPACK_STRING);
+                 s0, s1, p->numblank, p->wcs, keys, SPACK_STRING);
 
   /* The sky and its standard deviation: */
   checkgarray(&p->smp, &sky, &std);
@@ -99,7 +99,7 @@ makeoutput(struct noisechiselparams *p)
   /* Save the sky subtracted image if desired: */
   if(p->skysubedname)
     arraytofitsimg(p->skysubedname, "Sky subtracted", FLOAT_IMG, p->imgss,
-                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
 
   /* Clean up: */
   free(sky);
@@ -164,13 +164,15 @@ noisechisel(struct noisechiselparams *p)
       reporttiming(&t1, report, 1);
     }
 
+
+
   /* Dilate the byt array and find the new number of detections: */
   if(verb) gettimeofday(&t1, NULL);
   if(p->dilate)
     {
       for(i=0;i<p->dilate;++i)
         dilate0_erode1_8con(p->byt, s0, s1, 0);
-        p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, 4);
+      p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->numblank, 4);
       if(verb)
         {
           sprintf(report, "%lu detections after %lu dilation%s",
@@ -180,7 +182,7 @@ noisechisel(struct noisechiselparams *p)
     }
   if(p->detectionname)
     arraytofitsimg(p->detectionname, "Dilated", LONG_IMG, p->olab,
-                   s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
   if(p->maskdetname)
     {
       arraytofitsimg(p->maskdetname, "Input", FLOAT_IMG, p->img, s0, s1,
@@ -188,16 +190,16 @@ noisechisel(struct noisechiselparams *p)
       floatcopy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 0);
       arraytofitsimg(p->maskdetname, "Undetected masked", FLOAT_IMG,
-                     imgcopy, s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+                     imgcopy, s0, s1, p->numblank, p->wcs, NULL,
+                     SPACK_STRING);
       free(imgcopy);
       floatcopy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 1);
       arraytofitsimg(p->maskdetname, "Detected masked", FLOAT_IMG,
-                     imgcopy, s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+                     imgcopy, s0, s1, p->numblank, p->wcs, NULL,
+                     SPACK_STRING);
       free(imgcopy);
     }
-
-
 
   /* Correct convolution if it was done on edges independently: */
   if(smp->nch>1 && smp->fullconvolution==0 && p->detectonly==0)
@@ -207,9 +209,6 @@ noisechisel(struct noisechiselparams *p)
       if(verb)
         reporttiming(&t1, "Convolved image internals corrected.", 1);
     }
-
-  /* Subtract the sky from the image: */
-
 
   /* Find and subtract the final sky value for the input and convolved
      images.
@@ -230,8 +229,11 @@ noisechisel(struct noisechiselparams *p)
 
 
 
+
   /* Segment the detections if segmentation is to be done. */
-  if(p->detectonly==0)
+  if(p->detectonly)
+    clabwithnoseg(p->olab, p->clab, s0*s1, p->numblank);
+  else
     {
       if(verb)
         {
@@ -241,7 +243,7 @@ noisechisel(struct noisechiselparams *p)
       segmentation(p);
       if(verb)
         {
-          sprintf(report, "%lu object%s""containing %lu clump%s found.",
+          sprintf(report, "%lu object%s""containing %lu clump%sfound.",
                   p->numobjects-1, p->numobjects==2 ? " " : "s ",
                   p->numclumps-1,  p->numclumps ==2 ? " " : "s ");
           reporttiming(&t1, report, 1);

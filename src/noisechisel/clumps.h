@@ -79,7 +79,7 @@ void
 clumpsntable(struct clumpsthreadparams *ctp, float **sntable);
 
 void
-clumpsngrid(struct noisechiselparams *p);
+findclumpsn(struct noisechiselparams *p);
 
 void
 removefalseclumps(struct clumpsthreadparams *ctp, float *sntable);

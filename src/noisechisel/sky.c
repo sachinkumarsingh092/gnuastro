@@ -72,8 +72,9 @@ avestdonthread(void *inparam)
           byt = inbyt + start + row*is1;
           imgend=(img = inimg + start + row++ * is1 ) + s1;
           do
-            /* Only input pixels that have byt==0 and are not NaN. */
-            if(*byt++==0 && isnan(*img)==0)
+            /* Only input pixels that have byt==0 (note that NaN
+               pixels have a non-zero byt value.) */
+            if(*byt++==0)
               {
                 ++num;
                 *f++ = *img;

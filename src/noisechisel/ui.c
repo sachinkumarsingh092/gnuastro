@@ -922,7 +922,7 @@ preparearrays(struct noisechiselparams *p)
   if(p->olab==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for p->olab (ui.c)",
           s0*s1*sizeof *p->olab);
-  errno=0; p->clab=calloc(s0*s1, sizeof *p->clab);
+  errno=0; p->clab=malloc(s0*s1*sizeof *p->clab);
   if(p->clab==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for p->clab (ui.c)",
           s0*s1*sizeof *p->clab);

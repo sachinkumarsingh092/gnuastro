@@ -1283,9 +1283,6 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
   fits_create_img(fptr, bitpix, naxis, naxes, &status);
   fits_write_img(fptr, datatype, fpixel, nelements, array, &status);
 
-  fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
-  fitsioerror(status, NULL);
-
   if(numblank)
     if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
        || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
@@ -1295,6 +1292,9 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
                           "Pixels with no data.", &status) )
           fitsioerror(status, "Adding the BLANK keyword.");
       }
+
+  fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
+  fitsioerror(status, NULL);
 
   if(wcs)
     {

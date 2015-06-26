@@ -29,4 +29,8 @@ findapplyqthreshold(struct noisechiselparams *p);
 void
 applydetectionthresholdskysub(struct noisechiselparams *p);
 
+void
+snthresh(struct noisechiselparams *p, float *sntable, size_t size,
+         int det0seg1);
+
 #endif

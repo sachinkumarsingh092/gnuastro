@@ -703,15 +703,42 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
 /******************************************************************/
 /*****************         Main function        *******************/
 /******************************************************************/
+/* This function is intended for cases when the user doesn't want
+   segmentation. In such cases, a suitable clumps array is necessary
+   for consistency with cases when they do want clumps. So this array
+   will just initialize all the elements in clab that lie over an
+   object with SEGMENTINIT and it will set all the non-masked pixels
+   in it to zero.*/
+void
+clabwithnoseg(long *olab, long *clab, size_t size, int anyblank)
+{
+  long *end=olab+size;
+
+  if(anyblank)
+    do
+      *clab++ = ( *olab==FITSLONGBLANK ? FITSLONGBLANK
+                  : ( *olab>0 ? SEGMENTINIT : 0 ) );
+    while(++olab<end);
+  else
+    do
+      *clab++ =  *olab>0 ? SEGMENTINIT : 0 ;
+    while(++olab<end);
+}
+
+
+
+
+
 void
 segmentation(struct noisechiselparams *p)
 {
-  float *f, *fp;
+  unsigned char *b;
   char *extname=NULL;
-  long *forfits=NULL;
+  long *l, *lf, *forfits=NULL;
   size_t i, s0=p->smp.s0, s1=p->smp.s1;
   char *segmentationname=p->segmentationname;
   size_t *labareas, **labinds, numobjsinit=p->numobjects;
+
 
   /* Start off the counter for the number of objects and clumps. The
      value to these variables will be the label that is given to the
@@ -719,6 +746,7 @@ segmentation(struct noisechiselparams *p)
      initial number of objects in the numobjsinit variable above.*/
   p->numclumps=1;
   p->numobjects=1;
+
 
 
   /* Start the steps image: */
@@ -730,36 +758,46 @@ segmentation(struct noisechiselparams *p)
                      FLOAT_IMG, p->conv, s0, s1, p->numblank,
                      p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(segmentationname, "InitialLabels",
-                     LONG_IMG, p->olab, s0, s1, 0, p->wcs,
+                     LONG_IMG, p->olab, s0, s1, p->numblank, p->wcs,
                      NULL, SPACK_STRING);
     }
 
-  /* All possible NaN pixels should be given the largest possible
-     float flux in the convolved image (which is used for
-     over-segmentation). NOTE that the convolved image is used for
-     relative pixel values, not absolute ones. This is because NaN
-     pixels might be in the centers of stars or bright objects (they
-     might slice through a connected region). So we can't allow them
-     to cut our objects. The safest approach is to start segmentation
-     of each object or noise mesh with the NaNs it might contain. A
-     NaN region will never be calculated in any flux measurement any
-     way and if it is connecting two bright objects, they will be
-     segmented because on the two sides of the NaN region, they have
-     different fluxes.*/
+
+
+  /* p->clab was used once during detection, we have to reset it to
+     zero. Note that olab will be initialized for each object later
+     on. Since we don't want to care about how clab was set an used,
+     here we simply re-set all the blank pixels too. If there aren't
+     any blank pixels, then just do a memset with no conditionals.*/
   if(p->numblank)
     {
-      fp=(f=p->conv)+s0*s1;
-      do if(isnan(*f)) *f=FLT_MAX; while(++f<fp);
+      b=p->byt;lf=(l=p->clab)+s0*s1;
+      do *l = *b++==FITSBYTEBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+    }
+  else
+    memset(p->clab, 0, s0*s1*sizeof *p->clab);
+
+
+
+  /* Find the true clump S/N threshold over the image. */
+  p->b0f1=0;
+  findclumpsn(p);
+  if(p->segmentationname)
+    {
+      arraytofitsimg(p->segmentationname, "Noise Oversegmentaion",
+                     LONG_IMG, p->clab, p->smp.s0, p->smp.s1,
+                     p->numblank, p->wcs, NULL, SPACK_STRING);
     }
 
 
-  /* Find the true clump S/N threshold andput it in p->lmp.garray1. */
-  p->b0f1=0;
-  clumpsngrid(p);
-  if(p->segmentationname)
-    arraytofitsimg(p->segmentationname, "NoiseOversegmentaion",
-                   LONG_IMG, p->clab, p->smp.s0, p->smp.s1, 0, p->wcs,
-                   NULL, SPACK_STRING);
+
+  /* Initialize p->clab for the clumps within objects. */
+  if(p->numblank)
+    {
+      lf=(l=p->clab)+s0*s1;
+      do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+    }
+  else memset(p->clab, 0, s0*s1*sizeof *p->clab);
 
 
 
@@ -768,10 +806,6 @@ segmentation(struct noisechiselparams *p)
   labindexs(p->olab, s0*s1, numobjsinit, &labareas, &labinds);
 
 
-  /* p->clab was used for the noise clumps once, we have to reset it
-     to zero. Note that olab will be initialized for each object later
-     on. */
-  memset(p->clab, 0, s0*s1*sizeof *p->clab);
 
 
   /* Segment the detections. When the viewer wants to check the steps,
@@ -782,9 +816,17 @@ segmentation(struct noisechiselparams *p)
     {
       p->stepnum=1;
       while(p->stepnum<8)
-	{
-	  memset(p->clab, 0, s0*s1*sizeof *p->clab);
+        {
+
+          if(p->numblank)
+            {
+              lf=(l=p->clab)+s0*s1;
+              do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+            }
+          else memset(p->clab, 0, s0*s1*sizeof *p->clab);
+
           segmentdetections(p, numobjsinit, labareas, labinds);
+
           switch(p->stepnum)
             {
             case 1:
@@ -809,7 +851,7 @@ segmentation(struct noisechiselparams *p)
                     p->stepnum);
             }
           arraytofitsimg(p->segmentationname, extname, LONG_IMG, forfits,
-                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+                         s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
           ++p->stepnum;
         }
     }

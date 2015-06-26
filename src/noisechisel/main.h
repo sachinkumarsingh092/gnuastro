@@ -148,6 +148,7 @@ struct noisechiselparams
   /* Operating mode: */
 
   /* Internal: */
+  double                sn; /* Signal to noise threshold.                  */
   float               *img; /* Input image.                                */
   float             *imgss; /* Sky subtracted image.                       */
   time_t           rawtime; /* Starting time of the program.               */
@@ -161,6 +162,8 @@ struct noisechiselparams
   size_t        numobjects; /* Total number of objects (detections).       */
   size_t         numclumps; /* Total number of clumps.                     */
   size_t         relngb[8]; /* Indexs of relative neighbors.               */
+  size_t     *numclumpsarr; /* The number of clumps in each mesh.          */
+  float       **sntablearr; /* Array of pointers to sntable of each mesh.  */
 };
 
 #endif

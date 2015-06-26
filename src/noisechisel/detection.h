@@ -27,10 +27,6 @@ void
 initialdetection(struct noisechiselparams *p);
 
 void
-findsnthreshongrid(struct meshparams *lmp, char *filename,
-                   char *comment, struct wcsprm *wcs);
-
-void
 onlytruedetections(struct noisechiselparams *p);
 
 #endif
