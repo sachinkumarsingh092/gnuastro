@@ -140,7 +140,13 @@ readconfig(char *filename, struct mkcatalogparams *p)
       /* Outputs */
       else if(strcmp(name, "output")==0)
         allocatecopyset(value, &cp->output, &cp->outputset);
-
+      else if(strcmp(name, "nsigmag")==0)
+        {
+          if(up->nsigmagset) continue;
+          anydouble(value, &p->nsigmag, name, key, SPACK,
+                   filename, lineno);
+          up->nsigmagset=1;
+        }
       else if(strcmp(name, "intwidth")==0)
         {
           if(up->intwidthset) continue;
@@ -428,6 +434,8 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
     PRINTSTINGMAYBEWITHSPACE("output", cp->output);
+  if(up->nsigmagset)
+    fprintf(fp, CONF_SHOWFMT"%g\n", "nsigmag", p->nsigmag);
   if(up->intwidthset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "intwidth", p->intwidth);
   if(up->floatwidthset)
@@ -553,6 +561,8 @@ checkifset(struct mkcatalogparams *p)
     REPORT_NOTSET("skysubtracted");
 
   /* Output: */
+  if(up->nsigmagset==0)
+    REPORT_NOTSET("nsigmag");
   if(up->intwidthset==0)
     REPORT_NOTSET("intwidth");
   if(up->floatwidthset==0)
@@ -657,16 +667,10 @@ checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
              long **array)
 {
   int bitpix;
-  size_t s0, s1, numblank;
+  size_t s0, s1, anyblank;
 
   /* Read the file: */
-  filetolong(filename, hdu, array, &bitpix, &numblank, &s0, &s1);
-
-  /* Make sure it has no blank pixels. */
-  if(numblank)
-    error(EXIT_FAILURE, 0, "The labels images should not have any blank "
-          "values. %s (hdu: %s) has %lu blank pixels.", filename,
-          hdu, numblank);
+  filetolong(filename, hdu, array, &bitpix, &anyblank, &s0, &s1);
 
   /* Make sure it has an integer type. */
   if(bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG)

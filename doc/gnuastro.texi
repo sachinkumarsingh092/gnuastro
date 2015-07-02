@@ -8505,12 +8505,12 @@ only relevant when the Signal to noise ratio is to be calculated.
 @end table
 
 @noindent
-Through the next group of options, you can customize the general
-appearence of the output plain text catalog. The basic idea behind
-these options is for customization for all forms of input and the fact
-that some columns don't need too much space, while some do. The width
-is the number of text columns given to data of each type in the output
-plain text catalog.
+Through the next group of options, you can customize the general the
+output plain text catalog. The basic idea behind the options about the
+width and precision of the different types is the fact that some
+columns don't need too much space, while some do. The width is the
+number of text columns given to data of each type in the output plain
+text catalog.
 
 The precision is the number of digits to show after the decimal point
 in floating point numbers. We have defined two types of floating point
@@ -8524,10 +8524,20 @@ made here is only for printing them.
 
 @table @option
 
+@item --nsigmag
+(@option{=FLT}) The magnitude of the value to this option multiplied
+by the maximum standard deviation over the objects or clumps is
+reported in the output catalog. This value is a per-pixel value, not
+per object and is not found over an area or aperture, like the common
+@mymath{5\sigma} values that are commonly reported as a measure of
+depth. They are based on a certain area and are relics from the time
+of analog data collection and processing. Modern tools use digital
+imaging detectors and the area is that of a pixel.
+
 @item --intwidth
 (@option{=INT}) The width of printing the integer values. In
-MakeCatalog, all IDs, numbers and areas are considered to be an
-integer.
+MakeCatalog, all IDs, numbers (counters) and areas are considered to
+be an integer.
 
 @item --floatwidth
 (@option{=INT}) The width of a normal precision floating point

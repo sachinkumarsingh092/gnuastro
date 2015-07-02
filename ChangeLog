@@ -1,3 +1,12 @@
+2015-07-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/mkcatalog/mkcatalog.c (firstpass): Now accounts for blank
+	labeled pixels.
+	(setcpscorr): Now finds both the minimum and maximum of the STD,
+	maximum for finding the 5sigma magnitude.
+
+	* src/mkcatalog/main.h (CATUNITMAG): Changed unit for magnitudes.
+
 2015-06-26  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/thresh.c (qthreshonmesh): Only sort and find the

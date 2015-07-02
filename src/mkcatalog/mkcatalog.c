@@ -42,8 +42,15 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-
+/* Macro to see if the label is indexable (belongs to an object or
+   not). See the explanation in src/noisechisel/label.h. */
+#if FITSLONGBLANK<0
+#define ISINDEXABLEOBJLABEL (objects[i]>0)
+#define ISINDEXABLECLPLABEL (clumps[i]>0)
+#else
+#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=FITSLONGBLANK)
+#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=FITSLONGBLANK)
+#endif
 
 
 
@@ -67,7 +74,7 @@ firstpass(struct mkcatalogparams *p)
 
   /* Go over the pixels and fill the information array. */
   for(i=0;i<p->s0*p->s1;++i)
-    if(objects[i]>0)
+    if(ISINDEXABLEOBJLABEL)
       {
         /* thisobj is a pointer to the start of the row in the object
            information array (oinfo). It is mainly used to keep things
@@ -164,7 +171,7 @@ secondpass(struct mkcatalogparams *p)
   for(i=0;i<p->s0*p->s1;++i)
     {
       /* We are on a clump, save its properties. */
-      if(clumps[i]>0)
+      if(ISINDEXABLECLPLABEL)
         {
           /* This pointer really simplifies things below! */
           thisclump = ( cinfo
@@ -185,7 +192,7 @@ secondpass(struct mkcatalogparams *p)
       /* We are on a detected region but not a clump (with a negative
          label). This region can be used to find properties like the
          river fluxs in the vicinity of clumps. */
-      else
+      else if (clumps[i]!=FITSLONGBLANK)
         /* We want to check the river pixels in each object that has a
            clump. So first see if we are on an object (clumps[i]<0),
            then see if this object has any clumps at all. We don't
@@ -258,18 +265,28 @@ void
 setcpscorr(struct mkcatalogparams *p)
 {
   size_t i;
-  double minstd=FLT_MAX;
+  double minstd=FLT_MAX, maxstd=-FLT_MAX;
 
   /* Go over all the objects and clumps to find the minimum relevant
      standard deviation. */
   for(i=1;i<=p->numobjects;++i)
-    if(p->oinfo[ i*OCOLUMNS+OSTD ]<minstd)
-      minstd=p->oinfo[ i*OCOLUMNS+OSTD ];
+    {
+      if(p->oinfo[ i*OCOLUMNS+OSTD ]<minstd)
+        minstd=p->oinfo[ i*OCOLUMNS+OSTD ];
+      if(p->oinfo[ i*OCOLUMNS+OSTD ]>maxstd)
+        maxstd=p->oinfo[ i*OCOLUMNS+OSTD ];
+    }
+
   for(i=1;i<=p->numclumps;++i)
-    if(p->cinfo[ i*CCOLUMNS+CSTD ]<minstd)
-      minstd=p->cinfo[ i*CCOLUMNS+CSTD ];
+    {
+      if(p->cinfo[ i*CCOLUMNS+CSTD ]<minstd)
+        minstd=p->cinfo[ i*CCOLUMNS+CSTD ];
+      if(p->cinfo[ i*CCOLUMNS+CSTD ]>maxstd)
+        maxstd=p->cinfo[ i*CCOLUMNS+CSTD ];
+    }
 
   /* Set the correction factor: */
+  p->maxstd = maxstd;
   p->cpscorr = minstd>1.0f ? 1.0f : minstd;
 }
 
@@ -298,7 +315,7 @@ void
 makeoutput(struct mkcatalogparams *p)
 {
   size_t *cols;
-  char comment[COMMENTSIZE];
+  char comment[COMMENTSIZE], tline[100];
   int prec[2]={p->floatprecision, p->accuprecision};
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
 
@@ -338,12 +355,42 @@ makeoutput(struct mkcatalogparams *p)
       strcat(comment, p->line);
 
 
+      /* Write the input files: */
+      strcat(comment, "#\n# Input files and information:\n"
+             "# ----------------------------\n");
+      sprintf(p->line, "# Input   %s (hdu: %s)\n", p->up.inputname,
+              p->cp.hdu);
+      strcat(comment, p->line);
+      if(p->up.masknameset)
+        {
+          sprintf(p->line, "# Mask   %s (hdu: %s)\n", p->up.maskname,
+                  p->up.mhdu);
+          strcat(comment, p->line);
+        }
+      sprintf(p->line, "# Objects %s (hdu: %s)\n", p->up.objlabsname,
+             p->up.objhdu);
+      strcat(comment, p->line);
+      sprintf(p->line, "# Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
+             p->up.clumphdu);
+      strcat(comment, p->line);
+      sprintf(p->line, "# Sky     %s (hdu: %s)\n", p->up.skyname,
+             p->up.skyhdu);
+      strcat(comment, p->line);
+      sprintf(p->line, "# Sky STD %s (hdu: %s)\n", p->up.stdname,
+             p->up.stdhdu);
+      strcat(comment, p->line);
+
+
       /* If a magnitude is also desired, print the zero point
-         magnitude too: */
+         magnitude and the 5sigma magnitude: */
       if(p->up.magnitudeset || p->up.clumpsmagnitudeset)
         {
-          sprintf(p->line, "# The zero point magnitude is set to: %.3f\n",
-                  p->zeropoint);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+                  "Zero point magnitude:", p->zeropoint);
+          strcat(comment, p->line);
+          sprintf(tline, "%g sigma magnitude:", p->nsigmag);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+                  tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint);
           strcat(comment, p->line);
         }
 
@@ -351,10 +398,15 @@ makeoutput(struct mkcatalogparams *p)
       /* If cpscorr was used, report it: */
       if(p->up.snset && p->cpscorr<1.0f)
         {
-          sprintf(p->line, "# Correction for counts-per-second "
-                  "input: %.3f (seconds)\n", 1/p->cpscorr);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+                  "Counts-per-second correction:", 1/p->cpscorr);
           strcat(comment, p->line);
         }
+
+
+      /* Prepare for printing the columns: */
+      strcat(comment, "#\n# Columns:\n# --------\n");
+
 
       /* Fill the catalog array, in the end set the last elements in
          intcols and accucols to -1, so arraytotxt knows when to
@@ -525,6 +577,7 @@ mkcatalog(struct mkcatalogparams *p)
   /* Run through the data for the first time: */
   firstpass(p);
   secondpass(p);
+
 
 
   /* If world coordinates are needed, then do the

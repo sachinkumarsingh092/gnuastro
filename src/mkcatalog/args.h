@@ -74,7 +74,7 @@ const char doc[] =
    b e g k l p u v w
    A B F G J L Q R T U W X Y Z
 
-   Number keys used: <=520
+   Number keys used: <=521
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -188,6 +188,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
+      2
+    },
+    {
+      "nsigmag",
+      521,
+      "FLT",
+      0,
+      "Multiple of Sky STD to report magnitude of.",
       2
     },
     {
@@ -510,6 +518,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
+    case 521:
+      anydouble(arg, &p->nsigmag, "nsigmag", key, SPACK, NULL, 0);
+      p->up.nsigmagset=1;
+      break;
     case 516:
       intlzero(arg, &p->intwidth, "intwidth", key, SPACK, NULL, 0);
       p->up.intwidthset=1;

@@ -122,7 +122,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CATDESCRIPTLENGTH         "%-60s"
 #define CATUNITCOUNTER            "counter"
 #define CATUNITFLUX               "pixel value unit"
-#define CATUNITMAG                "log(pixel value unit)"
+#define CATUNITMAG                "magnitude"
 #define CATUNITPIXAREA            "pixel area"
 #define CATUNITPIXPOS             "pixel position"
 #define CATUNITDEGREE             "degree"
@@ -164,6 +164,7 @@ struct uiparams
   int            accuwidthset;
   int       floatprecisionset;
   int        accuprecisionset;
+  int              nsigmagset;
 
   int                   idset;
   int            hostobjidset;
@@ -212,6 +213,7 @@ struct mkcatalogparams
   size_t                   s1;  /* Size of input (second C axis).     */
   float             zeropoint;  /* Zeropoint magnitude of input.      */
   int           skysubtracted;  /* Input is already sky subtracted.   */
+  double              nsigmag;  /* Multiple of Sky STD to report mag. */
 
   /* Output: */
   char              *ocatname;  /* File name of object catalog.       */
@@ -242,6 +244,7 @@ struct mkcatalogparams
   size_t            objcurcol;  /* Current column in object catalog.  */
   size_t          clumpcurcol;  /* Current column in clump catalog.   */
   double              cpscorr;  /* Correction for counts/sec input.   */
+  double               maxstd;  /* Maximum STD value (5 sigma mag).   */
 
   /* For going through the rows: */
   size_t               curcol;  /* Current column in the catalog.     */
@@ -256,7 +259,7 @@ struct mkcatalogparams
   double                *info;  /* Either oinfo or cinfo.             */
   size_t                icols;  /* Either OCOLUMNS or CCOLUMNS.       */
   char                 *unitp;  /* Pointer to units array.            */
-  char              line[600];  /* Comment line.                      */
+  char             line[1500];  /* Comment line.                      */
   char       description[500];  /* The description of each row.       */
   int                *intcols;  /* Indexs of integer columns.         */
   int               *accucols;  /* Indexs of accurate columns.        */
