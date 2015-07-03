@@ -148,7 +148,8 @@ struct noisechiselparams
   /* Operating mode: */
 
   /* Internal: */
-  double                sn; /* Signal to noise threshold.                  */
+  double             detsn; /* Signal to noise threshold for detections.   */
+  double           clumpsn; /* Signal to noise threshold for clumps.       */
   float               *img; /* Input image.                                */
   float             *imgss; /* Sky subtracted image.                       */
   time_t           rawtime; /* Starting time of the program.               */

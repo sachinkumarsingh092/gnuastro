@@ -307,7 +307,7 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
 
 
   for(i=1;i<numpseudo;++i)
-    if(sntable[i] > p->sn)
+    if(sntable[i] > p->detsn)
       newlabs[i]=curlab++;
 
 

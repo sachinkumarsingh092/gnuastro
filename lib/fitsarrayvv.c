@@ -745,14 +745,18 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
 
 
 
-/* Read one keyword from a FITS file. */
+/* Read keywords from a FITS file. The readheaderkeys pointer is an
+   array of readheaderkeys structures, which keep the basic
+   information for each keyword that is to be read and also stores the
+   value in the appropriate type.*/
 void
-readkeyword(char *filename, char *hdu, char *keyname,
-            int datatype, void *value)
+readkeywords(char *filename, char *hdu, struct readheaderkeys *keys,
+             size_t num)
 {
-  size_t len;
   int status=0;
   char *ffname;
+  size_t i, len;
+  void *valueptr;
   fitsfile *fptr;
 
   /* Add hdu to filename: */
@@ -767,9 +771,40 @@ readkeyword(char *filename, char *hdu, char *keyname,
   if( fits_open_file(&fptr, ffname, READONLY, &status) )
     fitsioerror(status, "Reading this FITS file.");
 
-  /* Get the desired keyword. */
-  if( fits_read_key(fptr, datatype, keyname, value, NULL, &status) )
-    fitsioerror(status, "Reading the keyword.");
+  /* Get the desired keywords. */
+  for(i=0;i<num;++i)
+    {
+      switch(keys[i].datatype)
+        {
+        case TSTRING:
+          valueptr=&keys[i].c;
+          break;
+        case TBYTE:
+          valueptr=&keys[i].u;
+          break;
+        case TSHORT:
+          valueptr=&keys[i].s;
+          break;
+        case TLONG:
+          valueptr=&keys[i].l;
+          break;
+        case TLONGLONG:
+          valueptr=&keys[i].L;
+          break;
+        case TFLOAT:
+          valueptr=&keys[i].f;
+          break;
+        case TDOUBLE:
+          valueptr=&keys[i].d;
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "The value of keys[%lu].datatype (=%d) "
+                "is not recognized.", i, keys[i].datatype);
+        }
+      if( fits_read_key(fptr, keys[i].datatype, keys[i].keyname,
+                        valueptr, NULL, &status) )
+        fitsioerror(status, "Reading the keyword.");
+    }
 
   /* Close the FITS file. */
   fits_close_file(fptr, &status);
@@ -1087,7 +1122,6 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
   */
   fitsioerror(status, NULL);
 }
-
 
 
 

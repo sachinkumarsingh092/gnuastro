@@ -59,6 +59,7 @@ void
 makeoutput(struct noisechiselparams *p)
 {
   long num[1];
+  double sn[1];
   float *sky=NULL, *std=NULL;
   struct fitsheaderll *keys=NULL;
   size_t s0=p->smp.s0, s1=p->smp.s1;
@@ -74,6 +75,9 @@ makeoutput(struct noisechiselparams *p)
   num[0]=p->numobjects-1;
   add_to_fitsheaderll(&keys, TLONG, "NOBJS", 0, num, 0,
                       "Number of objects in the image.", 0, NULL);
+  sn[0]=p->detsn;
+  add_to_fitsheaderll(&keys, TDOUBLE, "DETSN", 0, sn, 0,
+                      "Signal to noise of true pseudo-detections.", 0, NULL);
   arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
                  s0, s1, p->numblank, p->wcs, keys, SPACK_STRING);
   keys=NULL;     /* keys was freed after writing. */
@@ -86,6 +90,9 @@ makeoutput(struct noisechiselparams *p)
   num[0] = p->detectonly ? 0 : p->numclumps-1;
   add_to_fitsheaderll(&keys, TLONG, "NCLUMPS", 0, num, 0,
                       "Number of clumps in the image.", 0, NULL);
+  sn[0]=p->clumpsn;
+  add_to_fitsheaderll(&keys, TDOUBLE, "CLUMPSN", 0, sn, 0,
+                      "Signal to noise of true clumps.", 0, NULL);
   arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
                  s0, s1, p->numblank, p->wcs, keys, SPACK_STRING);
 

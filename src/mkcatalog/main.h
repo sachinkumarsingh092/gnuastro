@@ -245,6 +245,8 @@ struct mkcatalogparams
   size_t          clumpcurcol;  /* Current column in clump catalog.   */
   double              cpscorr;  /* Correction for counts/sec input.   */
   double               maxstd;  /* Maximum STD value (5 sigma mag).   */
+  double                detsn;  /* Detection S/N threshold.           */
+  double              clumpsn;  /* Clumps S/N threshold.              */
 
   /* For going through the rows: */
   size_t               curcol;  /* Current column in the catalog.     */

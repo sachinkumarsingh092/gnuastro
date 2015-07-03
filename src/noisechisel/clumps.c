@@ -1004,7 +1004,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
   if(ctp->p->keepmaxnearriver)
     {       /* `{' because We don't want to confuse the `else' below. */
       for(i=1;i<ctp->numclumps;++i)
-        if( sntable[i] > ctp->p->sn )
+        if( sntable[i] > ctp->p->clumpsn )
           newlabs[i]=curlab++;
     }
   else
@@ -1021,7 +1021,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
           /* If the brightest pixel of this clump was not touching a
              river and its Signal to noise ratio is larger than the
              threshold, then give it a new label.*/
-          if( n==nf  &&  sntable[i] > ctp->p->sn )
+          if( n==nf  &&  sntable[i] > ctp->p->clumpsn )
             newlabs[i]=curlab++;
         }
   ctp->numclumps=curlab;

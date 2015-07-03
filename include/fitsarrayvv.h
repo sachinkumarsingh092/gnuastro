@@ -32,6 +32,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcsfix.h>
 #include <wcslib/wcs.h>
 
+#define FITSSTRINGBLANK   NULL
 #define FITSBYTEBLANK     UCHAR_MAX	/* 0 is often meaningful here! */
 #define FITSSHORTBLANK    INT16_MIN
 #define FITSLONGBLANK     INT32_MIN
@@ -96,9 +97,30 @@ struct fitsheaderll
   struct fitsheaderll *next;   /* Pointer to the next element.         */
 };
 
+
+
+
+
+struct readheaderkeys
+{
+  char   *keyname;
+  int    datatype;
+  char         *c;
+  unsigned char u;
+  short         s;
+  long          l;
+  LONGLONG      L;
+  float         f;
+  double        d;
+};
+
+
+
+
+
 void
-readkeyword(char *filename, char *hdu, char *keyname,
-            int datatype, void *value);
+readkeywords(char *filename, char *hdu, struct readheaderkeys *out,
+             size_t num);
 
 void
 add_to_fitsheaderll(struct fitsheaderll **list, int datatype,

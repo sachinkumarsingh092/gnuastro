@@ -307,6 +307,7 @@ void
 snthresh(struct noisechiselparams *p, float *sntable, size_t size,
          int det0seg1)
 {
+  double sn;
   char cline[1000];
   char *job, *name, *suffix;
   char *histname, report[200];
@@ -338,13 +339,17 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
 
 
   /* Store the SN value. */
-  p->sn=sntable[indexfromquantile(size, p->detquant)];
+  sn=sntable[indexfromquantile(size, p->detquant)];
   if(p->cp.verb)
     {
       sprintf(report, "%s S/N: %.3f (%.3f quantile of %lu %s.",
-              job, p->sn, quant, size, name);
+              job, sn, quant, size, name);
       reporttiming(NULL, report, 2);
     }
+
+  /* Put the S/N value in its proper place. */
+  if(det0seg1) p->clumpsn = sn;
+  else         p->detsn   = sn;
 
 
   /* If the user has asked for it, make the histogram of the S/N
@@ -364,7 +369,7 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
               "# S/N distribution histogram of %lu sky %s.\n"
               "# The %.3f quantile has an S/N of %.4f.",
               SPACK_STRING, SPACK_NAME, ctime(&p->rawtime),
-              p->up.inputname, p->cp.hdu, size, name, quant, p->sn);
+              p->up.inputname, p->cp.hdu, size, name, quant, sn);
       automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
                       p->cp.dontdelete, &histname);
       savehist(sntable, size, snhistnbins, histname, cline);

@@ -602,7 +602,7 @@ checkifset(struct mkcatalogparams *p)
 void
 sanitycheck(struct mkcatalogparams *p)
 {
-  long tmp;
+  struct readheaderkeys keys[2];
 
   /* Set the names of the files. */
   fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
@@ -620,11 +620,19 @@ sanitycheck(struct mkcatalogparams *p)
                 &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
                 "sky standard deviation");
 
-  /* Read the number of labels from the two labeled images.  */
-  readkeyword(p->up.objlabsname, p->up.objhdu, "NOBJS", TLONG, &tmp);
-  p->numobjects=tmp;
-  readkeyword(p->up.clumplabsname, p->up.clumphdu, "NCLUMPS", TLONG, &tmp);
-  p->numclumps=tmp;
+  /* Read the number of labels for the objects:  */
+  keys[0].keyname="DETSN";        keys[0].datatype=TDOUBLE;
+  keys[1].keyname="NOBJS";        keys[1].datatype=TLONG;
+  readkeywords(p->up.objlabsname, p->up.objhdu, keys, 2);
+  p->detsn=keys[0].d;
+  p->numobjects=keys[1].l;
+
+  /* Read the clumps information. Note that the datatypes don't change. */
+  keys[0].keyname="CLUMPSN";
+  keys[1].keyname="NCLUMPS";
+  readkeywords(p->up.clumplabsname, p->up.clumphdu, keys, 2);
+  p->clumpsn=keys[0].d;
+  p->numclumps=keys[1].l;
 
   /* Set the output names: */
   if(p->cp.outputset)

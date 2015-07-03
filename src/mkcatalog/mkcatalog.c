@@ -314,6 +314,7 @@ setcpscorr(struct mkcatalogparams *p)
 void
 makeoutput(struct mkcatalogparams *p)
 {
+  double sn;
   size_t *cols;
   char comment[COMMENTSIZE], tline[100];
   int prec[2]={p->floatprecision, p->accuprecision};
@@ -388,9 +389,17 @@ makeoutput(struct mkcatalogparams *p)
           sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
                   "Zero point magnitude:", p->zeropoint);
           strcat(comment, p->line);
-          sprintf(tline, "%g sigma magnitude:", p->nsigmag);
+          sprintf(tline, "Maximum %g sigma magnitude over catalog "
+                  "(per pixel):", p->nsigmag);
           sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
                   tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint);
+          strcat(comment, p->line);
+
+          sprintf(tline, "%s limiting magnitude: ",
+                  p->obj0clump1 ? "Clump" : "Object");
+          sn = p->obj0clump1 ? p->clumpsn : p->detsn;
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+                  tline, -2.5f*log10(sn*p->maxstd)+p->zeropoint);
           strcat(comment, p->line);
         }
 

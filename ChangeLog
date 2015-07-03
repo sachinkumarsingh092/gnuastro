@@ -1,3 +1,7 @@
+2015-07-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/fitsarrayvv.c (readkeywords): Now reads multiple keywords.
+
 2015-07-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkcatalog/mkcatalog.c (firstpass): Now accounts for blank

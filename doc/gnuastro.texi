@@ -374,7 +374,8 @@ Invoking NoiseChisel
 
 MakeCatalog
 
-* Invoking astmkcatalog::       Options and arguments to MakeCatalog
+* Depth and limiting magnitude::  For comparing different catalogs.
+* Invoking astmkcatalog::       Options and arguments to MakeCatalog.
 
 Modeling and fitting
 
@@ -8398,10 +8399,97 @@ transformations on the labeled image.
 
 
 @menu
-* Invoking astmkcatalog::       Options and arguments to MakeCatalog
+* Depth and limiting magnitude::  For comparing different catalogs.
+* Invoking astmkcatalog::       Options and arguments to MakeCatalog.
 @end menu
 
-@node Invoking astmkcatalog,  , MakeCatalog, MakeCatalog
+
+
+
+@node Depth and limiting magnitude, Invoking astmkcatalog, MakeCatalog, MakeCatalog
+@subsection Depth and limiting magnitude
+
+@cindex Depth
+@cindex Clump magnitude limit
+@cindex Object magnitude limit
+@cindex Limit, object/clump magnitude
+@cindex Magnitude, object/clump detection limit
+Different observations have different signal and noise
+properties. Therefore it is very important that there be a certain
+absolute scale on which we can compare different observations (images)
+and objectively quantify the noise and our ability to detect signal in
+it. The first is known as the @emph{depth} and the second is the
+@emph{Object/Clump magnitude limit}. In astronomy, it is common to use
+the magnitude (a unit-less scale) and not the actual pixel units.
+
+@table @asis
+
+@item Depth
+As we make further observations on one region of the sky and add the
+images over each other, we are able to decrease the standard deviation
+of the noise. This decrease manifests its self by making fainter parts
+of the objects in the image more visible. You can think of the noise
+as muddy water that is completely covering the ground@footnote{The
+ground is the sky value in this analogy, see @ref{Sky value}. Note
+that this analogy only holds for a flat sky value across the surface
+of the image or ground.}. As the mud settles down in the water (the
+@emph{depth} of the transparent water increases as you wait and make
+more observations) the summits of bumps @footnote{The bumps are
+objects in this analogy. Brighter parts of the object are higher from
+the ground.} begin to appear. As the depth of clear water increases,
+the parts of the bumps with lower hights can be seen more clearly.
+
+The outputs of NoiseChisel include the Sky standard deviation
+(@mymath{\sigma}) on every pixel, see @ref{NoiseChisel output}. In
+MakeCatalog, the average @mymath{\sigma} over all the objects and
+clumps are found (in order to later find their Signal to noise
+ratio). Let's take @mymath{\sigma_m} as the maximum (worst)
+@mymath{\sigma} over all the objects and clumps. Then the magnitude of
+@mymath{\sigma_m} represents the depth of the data set for this
+catalog.
+
+@item Object/Clump magnitude limit
+@cindex False detections
+@cindex Detections false
+No detection algorithm can be perfect. For any algorithm or set of
+input parameters, there is always a certain magnitude limit below
+which the detections (pseudo-detections or clumps in NoiseChisel, see
+@ref{NoiseChisel}) are no longer reliable and are most probably just
+noise (false detections or clumps).
+
+@cindex Correlated noise
+While adding more data sets does have the advantage of decreasing the
+standard deviation of the noise, it also produces correlated
+noise. Correlated noise is produced because the raw data sets are
+usually warped (rotated, shifted or resamapled in general, see
+@ref{ImageWarp}) before they are added with each other. This
+correlated noise manifests as a `smoothing' or `blurring' over the
+image. Therefore pixels in added images are no longer clearly separate
+data elements, they are `correlated' and this produces a hurdle in our
+ability to detect objects in them.
+
+In order to remove false detections, NoiseChisel finds the Signal to
+noise ratio where the probability of the pseudo-detections or clumps
+being true is larger than a certain user defined value, see
+@ref{NoiseChisel}. This value also incorporates the image correlated
+noise. By multipliying that Signal to noise ratio with the same
+@mymath{\sigma_m} that was used in finding the depth, we are able to
+find the object or clump limiting magnitude.
+
+@end table
+
+@cindex Zero-point magnitude
+@noindent
+For any data-set and catalog these parameters can differ. Therefore
+they are reported in the comments section of the catalog plain text
+file. The depth is the same in both catalogs and is thus included. For
+objects, only the Object magnitude limit is printed and for the clumps
+only the magnitude limit for clumps. Note that the accuracy in
+estimating the zero-point magnitude is a very important factor in an
+accurate comparison between different images, on possibly different
+instruments and cameras, see @ref{Magnitude to flux conversion}.
+
+@node Invoking astmkcatalog,  , Depth and limiting magnitude, MakeCatalog
 @subsection Invoking MakeCatalog
 
 MakeCatalog will make a catalog from an input image and a labeled
