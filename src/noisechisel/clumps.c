@@ -512,9 +512,9 @@ growclumps(struct clumpsthreadparams *ctp, int withrivers)
 
    The output is an array of size numseg*INFOTABCOLS. INFOTABCOLS=4. The
    columns are:
-   0: Average signal in clump.
+   0: Average signal (flux) in clump.
    1: Number of pixels in clump.
-   2: Average signal around clump.
+   2: Average signal (flux) around clump.
    3: Number of pixels around clump.
    4: Standard deviation on flux weighted center of clump.
 */
@@ -677,7 +677,8 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
 
           /* Convert sum to average. IMPORTANT NOTE: This has to be
              done after the step above, because there, we need the
-             total flux to find the flux weighted center positions. */
+             brightness (sum of all pixel values) to find the flux
+             weighted center positions. */
           clumpinfo[row  ] /= clumpinfo[row+1];
           clumpinfo[row+2] /= clumpinfo[row+3];
         }

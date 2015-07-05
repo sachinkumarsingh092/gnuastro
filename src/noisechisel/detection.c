@@ -157,7 +157,7 @@ void
 detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 {
   float *imgss=p->imgss;
-  double *fluxs, err, *xys;
+  double *brightnesses, err, *xys;
   struct meshparams *smp=&p->smp;
   size_t i, ind, is1=p->smp.s1, counter=0;
   float *f, *ff, ave, *sntable, cpscorr=p->cpscorr;
@@ -170,10 +170,10 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
   if(sntable==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for sntable in detlabelsn "
           "(detection.c)", *numlabs*sizeof *sntable);
-  errno=0; fluxs=calloc(*numlabs, sizeof *fluxs);
-  if(fluxs==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for fluxs in detlabelsn "
-          "(detection.c)", *numlabs*sizeof *fluxs);
+  errno=0; brightnesses=calloc(*numlabs, sizeof *brightnesses);
+  if(brightnesses==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for brightnesses in detlabelsn "
+          "(detection.c)", *numlabs*sizeof *brightnesses);
   errno=0; xys=calloc(*numlabs*2, sizeof *xys);
   if(xys==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for xys in detlabelsn "
@@ -213,7 +213,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
             error(EXIT_FAILURE, 0, "*f was nan!!!");
 
           ++areas[*lab];
-          fluxs[*lab]   += *f;
+          brightnesses[*lab]   += *f;
           xys[*lab*2]   += (double)((f-imgss)/is1) * *f;
           xys[*lab*2+1] += (double)((f-imgss)%is1) * *f;
         }
@@ -233,7 +233,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
       do
         {
           if( ISINDEXABLELABEL
-              && (areas[*lab]<detsnminarea || fluxs[*lab]<0) )
+              && (areas[*lab]<detsnminarea || brightnesses[*lab]<0) )
               *b=0;
           ++b;
         }
@@ -247,7 +247,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 
   /* calculate the signal to noise for successful detections: */
   for(i=1;i<*numlabs;++i)
-    if(areas[i]>detsnminarea && (ave=fluxs[i]/areas[i]) >0 )
+    if(areas[i]>detsnminarea && (ave=brightnesses[i]/areas[i]) >0 )
       {
         /* Find the flux weighted center of this object in each
            dimension to find the mesh it belongs to and get the
@@ -255,8 +255,8 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
            deviation on the grid was stored in smp->garray2. The error
            should then be taken to the power of two and if the sky is
            subtracted, a 2 should be multiplied to it.*/
-        err = smp->garray2[imgxytomeshid(smp, xys[i*2]/fluxs[i],
-                                         xys[i*2+1]/fluxs[i])];
+        err = smp->garray2[imgxytomeshid(smp, xys[i*2]/brightnesses[i],
+                                         xys[i*2+1]/brightnesses[i])];
         err *= p->skysubtracted ? err : 2.0f*err;
 
         /* Set the index in the sntable to store the Signal to noise
@@ -272,18 +272,18 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 
 
   /* For a check, note that in the background mode, the sntable is not
-     ordered like the areas, fluxes and coversdet arrays.
+     ordered like the areas, brightnesses and coversdet arrays.
   if(b0f1)
     {
       for(i=0;i<*numlabs;++i)
         printf("%lu: %-10ld %-10.3f %-10.3f\n",
-               i, areas[i], fluxs[i], sntable[i]);
+               i, areas[i], brightnesses[i], sntable[i]);
     }
   */
   /* Clean up */
   free(xys);
-  free(fluxs);
   free(areas);
+  free(brightnesses);
   if(b0f1==0) free(coversdet);
 }
 

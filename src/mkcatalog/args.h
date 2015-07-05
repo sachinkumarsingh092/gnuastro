@@ -71,10 +71,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   b e g k l p u v w
+   e g k l p u v w
    A B F G J L Q R T U W X Y Z
 
-   Number keys used: <=521
+   Number keys used: <=522
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -243,7 +243,7 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Catalog columns:",
+      "Catalog columns: (Flux: Brightness per pixel area)",
       3
     },
     {
@@ -283,7 +283,7 @@ static struct argp_option options[] =
       'a',
       0,
       0,
-      "Area of all object.",
+      "Number of pixels.",
       3
     },
     {
@@ -291,7 +291,7 @@ static struct argp_option options[] =
       513,
       0,
       0,
-      "Area of clumps in this object.",
+      "Area of clumps in an object.",
       3
     },
     {
@@ -359,11 +359,27 @@ static struct argp_option options[] =
       3
     },
     {
+      "brightness",
+      'b',
+      0,
+      0,
+      "Brightness (sum of pixel values).",
+      3
+    },
+    {
+      "clumpbrightness",
+      522,
+      0,
+      0,
+      "Brightness in clumps of an object.",
+      3
+    },
+    {
       "flux",
       'f',
       0,
       0,
-      "Total flux of all object.",
+      "Flux (Brightness/area).",
       3
     },
     {
@@ -371,7 +387,7 @@ static struct argp_option options[] =
       511,
       0,
       0,
-      "Total flux in clumps of this object.",
+      "Flux in clumps of an object.",
       3
     },
     {
@@ -395,7 +411,7 @@ static struct argp_option options[] =
       514,
       0,
       0,
-      "Average flux or river surrounding this clump.",
+      "Flux (B/pixel) river surrounding this clump.",
       3
     },
     {
@@ -602,6 +618,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 510:
       add_to_sll(&p->allcolsll, CATCLUMPSDEC);
       p->up.clumpsdecset=1;
+      break;
+    case 'b':
+      add_to_sll(&p->allcolsll, CATBRIGHTNESS);
+      p->up.brightnessset=1;
+      break;
+    case 522:
+      add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
+      p->up.clumpsbrightnessset=1;
       break;
     case 'f':
       add_to_sll(&p->allcolsll, CATFLUX);

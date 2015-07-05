@@ -246,7 +246,12 @@ sanitycheck(struct mknoiseparams *p)
     automaticoutput(p->up.inputname, "_noised.fits", p->cp.removedirinfo,
                     p->cp.dontdelete, &p->cp.output);
 
-  /* Convert the background value from magnitudes to flux: */
+  /* Convert the background value from magnitudes to flux. Note that
+     magnitudes are actually calculated from the ratio of brightness,
+     not flux. But in the context of MakeNoise where everything is
+     done on pixels independently, brightness and flux are the same
+     (flux is multiplied by the area of one pixel (=1) to give
+     brightness).*/
   p->background=pow(10, (p->zeropoint-p->mbackground)/2.5f);
 }
 

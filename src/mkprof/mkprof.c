@@ -466,7 +466,8 @@ writelog(struct mkprofparams *p)
 	  "# Column 1: Overlap magnitude with final image "
 	  "(zeropoint: %.3f).\n"
 	  "# Column 2: Number of Monte Carlo integration pixels.\n"
-	  "# Column 3: Fraction of flux in Monte Carlo integration pixels.\n"
+	  "# Column 3: Fraction of brightness in Monte Carlo "
+          "integrated pixels.\n"
 	  "# Column 4: An individual image was created.\n",
 	  ctime(&p->rawtime), p->zeropoint);
 

@@ -294,6 +294,22 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATCLUMPSDEC);
           up->clumpsdecset=1;
         }
+      else if(strcmp(name, "brightness")==0)
+        {
+          if(up->brightnessset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATBRIGHTNESS);
+          up->brightnessset=1;
+        }
+      else if(strcmp(name, "clumpsbrightness")==0)
+        {
+          if(up->clumpsbrightnessset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
+          p->up.clumpsbrightnessset=1;
+        }
       else if(strcmp(name, "flux")==0)
         {
           if(up->fluxset) continue;
@@ -495,6 +511,12 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
         break;
       case CATCLUMPSDEC:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsdec", 1);
+        break;
+      case CATBRIGHTNESS:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "brightness", 1);
+        break;
+      case CATCLUMPSBRIGHTNESS:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsbrightness", 1);
         break;
       case CATFLUX:
         fprintf(fp, CONF_SHOWFMT"%d\n", "flux", 1);
@@ -804,6 +826,13 @@ preparearrays(struct mkcatalogparams *p)
           break;
         case CATCLUMPSDEC:
           p->objcols[p->objncols++]=CATCLUMPSDEC;
+          break;
+        case CATBRIGHTNESS:
+          p->objcols[p->objncols++]=CATBRIGHTNESS;
+          p->clumpcols[p->clumpncols++]=CATBRIGHTNESS;
+          break;
+        case CATCLUMPSBRIGHTNESS:
+          p->objcols[p->objncols++]=CATCLUMPSBRIGHTNESS;
           break;
         case CATFLUX:
           p->objcols[p->objncols++]=CATFLUX;

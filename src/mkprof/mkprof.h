@@ -47,7 +47,7 @@ struct mkonthread
   double         intruncr;   /* Inner truncation radius in pixels.    */
   long           width[2];   /* The width of the enclosing box.       */
   float          peakflux;   /* Flux at profile peak.                 */
-  float           totflux;   /* The total flux of the profile.        */
+  float        brightness;   /* The brightness of the profile.        */
   int                type;   /* The type of the profile.              */
   long            *onaxes;   /* Sides of the unover-sampled image.    */
   long        fpixel_i[2];   /* fpixel_i before running overlap.      */

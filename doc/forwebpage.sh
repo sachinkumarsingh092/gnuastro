@@ -99,9 +99,7 @@ do
             fi
             echo "<link rel=\"stylesheet\" type=\"text/css\" href=\""$cssbase"style.css\">" >> tmp.html
             if [ $hasjavascript = "yes" ]; then
-                echo "<script type=\"text/javascript\"" >> tmp.html
-                echo "src=\""$jsbase"MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">" >> tmp.html
-                echo "</script>" >> tmp.html
+                echo "<script src=\""$jsbase"MathJax/MathJax.js?config=TeX-AMS_HTML\"></script>" >> tmp.html
                 echo "" >> tmp.html
             fi
         fi

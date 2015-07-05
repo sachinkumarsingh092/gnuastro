@@ -1686,3 +1686,58 @@ radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
         }
     }
 }
+
+
+
+
+/* The distance (along a great circle) on a sphere between two points
+   is calculated here. Since the pixel sides are usually very small,
+   we won't be using the direct formula:
+
+   cos(distance)=sin(d1)*sin(d2)+cos(d1)*cos(d2)*cos(r1-r2)
+
+   We will be using the haversine formula which better considering
+   floating point errors (from Wikipedia:)
+
+   sin^2(distance)/2=sin^2( (d1-d2)/2 )+cos(d1)*cos(d2)*sin^2( (r1-r2)/2 )
+*/
+double
+angulardistance(double r1, double d1, double r2, double d2)
+{
+  double a=sin( (d1-d2)/2 );
+  double b=sin( (r1-r2)/2 );
+
+  return 2*asin( sqrt( a*a + cos(d1)*cos(d2)*b*b) );
+}
+
+
+
+
+
+/* We want the stradian value of the pixels in the image. We assume
+   that the pixel size is completely negligible (so its position on
+   the celestial sphere does not matter). So simply multiplying the  */
+double
+pixelsteradians(struct wcsprm *wcs)
+{
+  double *d, *df, radec[6];
+  double xy[]={0,0,1,0,0,1};
+
+  /* Get the RA and Dec of the bottom left, bottom right and top left
+     sides of the first pixel in the image. */
+  xyarraytoradec(wcs, xy, radec, 3, 2);
+
+  /* Covert the RA and dec values to radians for easy calculation: */
+  df=(d=radec)+6; do *d++ *= M_PI/180.0f; while(d<df);
+
+  /* For a check:
+  printf("\n\nAlong first axis: %g\nAlong second axis: %g\n\n",
+         ( angulardistance(radec[0], radec[1], radec[2], radec[3])
+           *180/M_PI*3600 ),
+         ( angulardistance(radec[0], radec[1], radec[4], radec[5])
+           *180/M_PI*3600 ) );
+  */
+
+  return ( angulardistance(radec[0], radec[1], radec[2], radec[3]) *
+           angulardistance(radec[0], radec[1], radec[4], radec[5]) );
+}

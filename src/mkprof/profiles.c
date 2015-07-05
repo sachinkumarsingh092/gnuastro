@@ -28,7 +28,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <gsl/gsl_sf_gamma.h>	/* For total Sersic flux. */
+#include <gsl/gsl_sf_gamma.h>	/* For total Sersic brightness. */
 
 #include "main.h"
 #include "mkprof.h"             /* Needs main.h, astrthreads.h */
@@ -140,9 +140,9 @@ Sersic(struct mkonthread *mkp)
 
 
 
-/* Find the total flux in a Sersic profile. From equation 4 in Peng
-   2010. This assumes the surface brightness at the effective radius
-   is 1.*/
+/* Find the total brightness in a Sersic profile. From equation 4 in
+   Peng 2010. This assumes the surface brightness at the effective
+   radius is 1.*/
 double
 totsersic(double n, double re, double b, double q)
 {

@@ -427,7 +427,7 @@ setprofparams(struct mkonthread *mkp)
   mkp->c          = cos((90-cat[p->pcol])*DEGREESTORADIANS);
   mkp->s          = sin((90-cat[p->pcol])*DEGREESTORADIANS);
   mkp->q          = cat[p->qcol];
-  mkp->totflux    = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
+  mkp->brightness = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
   mkp->ibq->ispsf = ispsf(cat[p->fcol]);
   mkp->type       = mkp->ibq->type=cat[p->fcol];
 
@@ -450,7 +450,7 @@ setprofparams(struct mkonthread *mkp)
       mkp->moffat_alphasq  *= mkp->moffat_alphasq;
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
       if(p->psfinimg==0 && p->individual==0)
-	{ mkp->totflux=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
+	{ mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
       break;
 
     case GAUSSIANCODE:
@@ -459,7 +459,7 @@ setprofparams(struct mkonthread *mkp)
       mkp->gaussian_c       = -1.0f/(2.0f*sigma*sigma);
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
       if(p->psfinimg==0 && p->individual==0)
-	{ mkp->totflux=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
+	{ mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
       break;
 
     case POINTCODE:
@@ -564,8 +564,8 @@ makeoneprofile(struct mkonthread *mkp)
       sum=floatsum(mkp->ibq->img, size);
       mkp->ibq->accufrac/=sum;
       if(p->magatpeak)
-        fmultipconst(mkp->ibq->img, size, mkp->totflux/mkp->peakflux);
+        fmultipconst(mkp->ibq->img, size, mkp->brightness/mkp->peakflux);
       else
-        fmultipconst(mkp->ibq->img, size, mkp->totflux/sum);
+        fmultipconst(mkp->ibq->img, size, mkp->brightness/sum);
     }
 }

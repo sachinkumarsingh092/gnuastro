@@ -62,8 +62,8 @@ prepfirstgrowth(struct clumpsthreadparams *ctp)
   struct meshparams *smp=&ctp->p->smp;
 
   size_t *ind, *indf, is1=smp->s1;
-  double x=0.0f, y=0.0f, fluxsum=0.0f;
   float growlimit, *imgss=ctp->p->imgss;
+  double x=0.0f, y=0.0f, brightness=0.0f;
   long *olab=ctp->p->olab, *clab=ctp->p->clab;
 
   /* Try to find the flux weighted center (only on the pixels with
@@ -72,7 +72,7 @@ prepfirstgrowth(struct clumpsthreadparams *ctp)
   do
     if(imgss[*ind]>0.0f)
       {
-        fluxsum+=imgss[*ind];
+        brightness+=imgss[*ind];
         x+=(*ind/is1)*imgss[*ind];
         y+=(*ind%is1)*imgss[*ind];
       }
@@ -80,7 +80,7 @@ prepfirstgrowth(struct clumpsthreadparams *ctp)
 
   /* Calculate the center, if no pixels were positive, use the
      geometric center (irrespective of flux). */
-  if(fluxsum==0.0f)
+  if(brightness==0.0f)
     {
       ind=ctp->inds;
       do { x+=*ind/is1; y+=*ind%is1; } while(++ind<indf);
@@ -89,8 +89,8 @@ prepfirstgrowth(struct clumpsthreadparams *ctp)
     }
   else
     {
-      x/=fluxsum;
-      y/=fluxsum;
+      x/=brightness;
+      y/=brightness;
     }
 
   /* First find the standard deviation on this detection, then use
@@ -277,12 +277,13 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
 
 
 /* The true clumps were expanded. Here the job is to create two
-   adjacency matrixs, which will keep the total flux on the rivers
-   between two neighbouring objects. Note that since growth was not
-   extended to cover the whole image, some objects might be totally
-   isolated from others with no rivers existing between them. To find
-   the unique neighbours of each river pixel, I will be using the same
-   `wngb[]` and `ii` introduced in segmentinfo() of clumps.c.
+   adjacency matrixs, which will keep the brightness (sum of pixel
+   values) on the rivers between two neighbouring objects. Note that
+   since growth was not extended to cover the whole image, some
+   objects might be totally isolated from others with no rivers
+   existing between them. To find the unique neighbours of each river
+   pixel, I will be using the same `wngb[]` and `ii` introduced in
+   segmentinfo() of clumps.c.
 */
 void
 grownclumpstoobjects(struct clumpsthreadparams *ctp)

@@ -236,4 +236,7 @@ void
 radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
                size_t number, size_t width);
 
+double
+pixelsteradians(struct wcsprm *wcs);
+
 #endif

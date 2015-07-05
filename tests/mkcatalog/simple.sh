@@ -40,4 +40,4 @@ fi
 
 # Actual test script:
 #####################
-$execname convolve_spatial_noised_labeled.fits
+$execname convolve_spatial_noised_labeled.fits --sn --magnitude --x --y

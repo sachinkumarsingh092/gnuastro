@@ -24,6 +24,8 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
 #include <stdio.h>
+#include <errno.h>
+#include <error.h>
 #include <stdlib.h>
 
 
@@ -256,11 +258,12 @@ position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj)
 
 
 void
-fluxmag(struct mkcatalogparams *p, int f1m0, int cinobj, int isriver)
+brightnessfluxmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
+                  int isriver)
 {
-  double flux;
-  size_t i, col;
-  char *type, *fm=f1m0?"flux":"magnitude";
+  double bright, *value;
+  size_t i, col, acol=(size_t)(-1);
+  char *type, *fbm=m0b1f2 ? (m0b1f2==1 ? "brightness" : "flux") :"magnitude";
 
   /* Set the proper column to use */
   if(p->obj0clump1) /* It is a clump.                            */
@@ -268,14 +271,15 @@ fluxmag(struct mkcatalogparams *p, int f1m0, int cinobj, int isriver)
       if(cinobj) { --p->curcol; return; } /* cinobj is only for objects. */
       if(isriver)
         {
-          if(f1m0==0) { --p->curcol; return; }
+          if(m0b1f2==0 || m0b1f2==1) { --p->curcol; return; }
           type="Rivers around this clump, average";
           col=CAveRivFlux;
         }
       else
         {
-          type="This clump";
-          col = CTotFlux;
+          acol = CAREA;
+          col  = CBrightness;
+          type = "This clump";
         }
     }
   else
@@ -283,39 +287,52 @@ fluxmag(struct mkcatalogparams *p, int f1m0, int cinobj, int isriver)
       if(isriver) { --p->curcol; return; }
       if(cinobj)    /* It is the positions of clumps in object. */
         {
-          type="Clumps in object";
-          col = OTotFluxC;
+          acol = OAREAC;
+          col  = OBrightnessC;
+          type = "Clumps in object";
         }
       else          /* It is the position of the object itsself.*/
         {
-          type="Full object";
-          col = OTotFlux;
+          acol = OAREA;
+          col  = OBrightness;
+          type = "Full object";
         }
     }
 
   /* For the comments: */
-  p->unitp = f1m0 ? CATUNITFLUX : CATUNITMAG;
+  p->unitp = ( m0b1f2 ?
+               (m0b1f2==1 ? CATUNITBRIGHTNESS : CATUNITFLUX)
+               : CATUNITMAG );
   sprintf(p->description, "%lu: %s %s.",
-          p->curcol, type, fm);
+          p->curcol, type, fbm);
 
   /* Fill the column: */
   for(i=0;i<p->num;++i)
     {
-      flux=p->info[(i+1)*p->icols+col];
+      bright = p->info[ (i+1) * p->icols + col ];
+      value  = &p->cat[i * p->numcols + p->curcol ];
 
-      /* For the clumps, the flux was not sky subtracted (for the
-         signal to noise ratio calculation), so do that here. Note
-         that the sky is the average value, so multiply it by the
-         number of pixels. */
-      if(p->obj0clump1)
-        flux -= p->info[(i+1)*p->icols+CSKY]*p->info[(i+1)*p->icols+CAREA];
-
-      p->cat[i * p->numcols + p->curcol ] =
-        f1m0 ? flux : (flux<=0.0f ? NAN : -2.5f*log10(flux)+p->zeropoint );
+      switch(m0b1f2)
+        {
+        case 0:
+          *value = bright<=0.0f ? NAN : -2.5f*log10(bright)+p->zeropoint;
+          break;
+        case 1:
+          *value = bright;
+          break;
+        case 2:
+          *value = bright / ( isriver ? 1.0f : p->info[(i+1)*p->icols+acol] );
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+                "fix this issue. For some reason, the value to m0b1f2 in "
+                "brightnessfluxmag (columns.c) is %d, which is not "
+                "recognized.", PACKAGE_BUGREPORT, m0b1f2);
+        }
     }
 
-  /* For rivers, set the flux to accurate mode: */
-  if(isriver)
+  /* When dealing with flux set the column to accurate mode: */
+  if(m0b1f2==2)
     p->accucols[p->accucounter++]=p->curcol;
 }
 
@@ -353,9 +370,9 @@ sncol(struct mkcatalogparams *p)
 {
   size_t i;
   double ave, err, rave, area;
-  size_t stdcol  = p->obj0clump1 ? CSTD     : OSTD;
-  size_t areacol = p->obj0clump1 ? CAREA    : OAREA;
-  size_t fluxcol = p->obj0clump1 ? CTotFlux : OTotFlux;
+  size_t stdcol        = p->obj0clump1 ? CSTD        : OSTD;
+  size_t areacol       = p->obj0clump1 ? CAREA       : OAREA;
+  size_t brightnesscol = p->obj0clump1 ? CBrightness : OBrightness;
 
   /* For the comments: */
   p->unitp = CATUNITRATIO;
@@ -368,18 +385,19 @@ sncol(struct mkcatalogparams *p)
     {
       err=p->info[(i+1)*p->icols+stdcol];
       area=p->info[(i+1)*p->icols+areacol];
-      ave=p->info[(i+1)*p->icols+fluxcol]/area;
+      ave=p->info[(i+1)*p->icols+brightnesscol]/area;
 
       if(p->obj0clump1)
         {
-          /* Note that the flux of the clumps and rivers were not sky
-             subtracted in p->cinfo. So if the original image was not
-             sky subtracted, then there is no need for the sky
-             error. */
+          /* Note that the brightness in the clump was already
+             separated from that of the river*clump_area around it in
+             p->cinfo. Also, they were not sky subtracted. So if the
+             original image was not sky subtracted, then there is no
+             need for the sky error. */
           err *= p->skysubtracted ? 2.0f*err : 0.0f;
           rave=p->cinfo[(i+1)*CCOLUMNS+CAveRivFlux];
           p->cat[i * p->numcols + p->curcol ] =
-            ( sqrt(area/p->cpscorr)*(ave-rave)
+            ( sqrt(area/p->cpscorr)*(ave)
               / sqrt( (ave>0?ave:-1*ave) + (rave>0?rave:-1*rave) + err ) );
         }
       else

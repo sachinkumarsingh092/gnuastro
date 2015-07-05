@@ -46,7 +46,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    image, we fill in this information array. Then we build the catalog
    based on what the user has requested.
 
-   Note: the total area nad total flux of clumps in the objects can be
+   Note: the total area and brightness of clumps in the objects can be
    found by using the clump information table in the end.
 
    The X and Y columns have to be immediately after each other. This
@@ -58,13 +58,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define OCOLUMNS     15     /* Total number of columns in object info. */
 #define OAREA         0     /* Area of this object.                    */
 #define ONCLUMPS      1     /* Total number of clumps in this object.  */
-#define OTotFlux      2     /* Sum of (flux-sky) in object.            */
+#define OBrightness   2     /* Sum of (flux-sky) in object.            */
 #define OFlxWhtX      3     /* Sum of (flux-sky)*x of this object.     */
 #define OFlxWhtY    OFlxWhtX+1  /* Sum of (flux-sky)*y of this object. */
 #define OFlxWhtRA     5     /* RA of (OFlxWhtX, OFlxWhtY).             */
 #define OFlxWhtDec  OFlxWhtRA+1 /* Dec of (OFlxWhtX, OFlxWhtY).        */
 #define OAREAC        7     /* Area of clumps in this object.          */
-#define OTotFluxC     8     /* Sum of (flux-sky) in object clumps.     */
+#define OBrightnessC  8     /* Brightness  in object clumps.     */
 #define OFlxWhtCX     9     /* Sum of (flux-sky)*x on object clumps.   */
 #define OFlxWhtCY   OFlxWhtCX+1 /* Sum of (flux-sky)*y on obj. clumps. */
 #define OFlxWhtCRA   11     /* RA of (OFlxWhtCX and OFlxWhtCY).        */
@@ -80,9 +80,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CFlxWhtY    CFlxWhtX+1 /* Sum of flux*y of this clump.         */
 #define CFlxWhtRA     5     /* RA of (CFlxWhtX, CFlxWhtY).             */
 #define CFlxWhtDec  CFlxWhtRA+1 /* Dec of (CFlxWhtX, CFlxWhtY).        */
-#define CTotFlux      7     /* Sum of flux in this clump.              */
+#define CBrightness   7     /* Brightness in this clump.               */
 #define CAveRivFlux   8     /* Sum of flux in rivers around this clump.*/
-#define CRivArea      9     /* Sum of flux in rivers around this clump.*/
+#define CRivArea      9     /* Num river pixels around this clump.     */
 #define CSKY         10     /* Sum of sky value on this object.        */
 #define CSTD         11     /* Sum of sky STD value on this object.    */
 
@@ -106,23 +106,26 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CATDEC                     12
 #define CATCLUMPSRA                13
 #define CATCLUMPSDEC               14
-#define CATFLUX                    15
-#define CATCLUMPSFLUX              16
-#define CATMAGNITUDE               17
-#define CATCLUMPSMAGNITUDE         18
-#define CATRIVERFLUX               19
-#define CATRIVERNUM                20
-#define CATSN                      21
-#define CATSKY                     22
-#define CATSTD                     23
+#define CATBRIGHTNESS              15
+#define CATCLUMPSBRIGHTNESS        16
+#define CATFLUX                    17
+#define CATCLUMPSFLUX              18
+#define CATMAGNITUDE               19
+#define CATCLUMPSMAGNITUDE         20
+#define CATRIVERFLUX               21
+#define CATRIVERNUM                22
+#define CATSN                      23
+#define CATSKY                     24
+#define CATSTD                     25
 
 
 
 /* Units: */
 #define CATDESCRIPTLENGTH         "%-60s"
 #define CATUNITCOUNTER            "counter"
-#define CATUNITFLUX               "pixel value unit"
-#define CATUNITMAG                "magnitude"
+#define CATUNITBRIGHTNESS         "image unit"
+#define CATUNITFLUX               CATUNITBRIGHTNESS"/pixel"
+#define CATUNITMAG                "scale (log)"
 #define CATUNITPIXAREA            "pixel area"
 #define CATUNITPIXPOS             "pixel position"
 #define CATUNITDEGREE             "degree"
@@ -180,6 +183,8 @@ struct uiparams
   int                  decset;
   int             clumpsraset;
   int            clumpsdecset;
+  int           brightnessset;
+  int     clumpsbrightnessset;
   int                 fluxset;
   int           clumpsfluxset;
   int            magnitudeset;

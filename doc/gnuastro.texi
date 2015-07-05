@@ -386,8 +386,8 @@ MakeProfiles
 
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
-* Profile total magnitude::     Definition of total profile magnitude.
-* Magnitude to flux conversion::  Converting magnitude to flux.
+* Flux Brightness and magnitude::  About these measures of energy.
+* Profile magnitude::     Definition of total profile magnitude.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 
 Modeling basics
@@ -1870,18 +1870,19 @@ to go and try scripting on his own computer.
 
 Sufi could now get back to his own work and see if the simulated
 nebula which resembled the one in the Andromeda constellation could be
-detected or not. Although it was extremely faint@footnote{The total
-flux of a diffuse object is added over all its pixels to give its
-final magnitude. So although the magnitude 3.44 (of the mock nebula)
-is orders of magnitude brighter than 6 (of the stars), the central
-galaxy is much fainter. Put another way, the flux is distributed over
-a large area in the case of a nebula.}, fortunately it passed his
-detection tests and he wrote it in the draft manuscript that would
-later become ``Book of fixed stars''. He still had to check the other
-nebula he saw from Yemen and several other such objects, but they
-could wait until tomorrow (thanks to the shell script, he only has to
-define a new catalog). It was nearly sunset and they had to begin
-preparing for the night's measurements on the ecliptic.
+detected or not. Although it was extremely faint@footnote{The
+brightness of a diffuse object is added over all its pixels to give
+its final magnitude, see @ref{Flux Brightness and magnitude}. So
+although the magnitude 3.44 (of the mock nebula) is orders of
+magnitude brighter than 6 (of the stars), the central galaxy is much
+fainter. Put another way, the brightness is distributed over a large
+area in the case of a nebula.}, fortunately it passed his detection
+tests and he wrote it in the draft manuscript that would later become
+``Book of fixed stars''. He still had to check the other nebula he saw
+from Yemen and several other such objects, but they could wait until
+tomorrow (thanks to the shell script, he only has to define a new
+catalog). It was nearly sunset and they had to begin preparing for the
+night's measurements on the ecliptic.
 
 
 
@@ -5217,7 +5218,7 @@ like. If you would like to use space characters between the dimentions
 and vertices to make them more human-readible, then you have to put
 the value to this option in double quotation marks.
 
-For example lets assume you want to work on the deepest part of the
+For example let's assume you want to work on the deepest part of the
 WFC3/IR images of Hubble Space Telescope eXtreme Deep Field
 (HST-XDF). @url{https://archive.stsci.edu/prepds/xdf/, According to
 the webpage}@footnote{@url{https://archive.stsci.edu/prepds/xdf/}} the
@@ -5542,8 +5543,9 @@ it is known as @emph{Correlation}.
 To be a weighted average, the sum of the weights (the pixels in the
 kernel) have to be unity. This will have the consequence that the
 convolved image of an object and unconvolved object will have the same
-total flux, which is natural, because convolution should not eat up
-the object photons, it only disperses them.
+brightness (see @ref{Flux Brightness and magnitude}), which is
+natural, because convolution should not eat up the object photons, it
+only disperses them.
 
 @cindex Fast Fourier Transform
 @cindex GNU Scientific Library
@@ -5574,10 +5576,11 @@ explanation.}. The problem originates from the fact that on the edges,
 in practice@footnote{Because we assumed the overlapping pixels outside
 the input image have a value of zero.}, the sum of the weights we use
 on the actual image pixels is not unity. For example, as discussed
-above, a profile in the center of an image will have the same total
-flux before and after convolution. However, for a profile on the side
-of the image, the total flux (sum of its pixels within the image) will
-not be equal, some flux is going to be `eaten' by the edges.
+above, a profile in the center of an image will have the same
+brightness before and after convolution. However, for a profile on the
+edge of the image, the brightness (sum of its pixel fluxes within the
+image, see @ref{Flux Brightness and magnitude}) will not be equal,
+some of the flux is going to be `eaten' by the edges.
 
 If you ran @command{$ make check} on the source files of Gnuastro, you
 can see the this effect by comparing the
@@ -5595,11 +5598,12 @@ equation in @ref{Convolution process} will become:
 
 @noindent
 In this manner, objects which are near the sides of the image or blank
-pixels will also have the same flux (within the image) before and
-after convolution. This correction is applied by default in Convolve
-when convolving in the spatial domain. To disable it, you can use the
-@option{--noedgecorrection} option. In the frequency domain, there is
-no way to avoid this loss of flux near the edges of the image.
+pixels will also have the same brightness (within the image) before
+and after convolution. This correction is applied by default in
+Convolve when convolving in the spatial domain. To disable it, you can
+use the @option{--noedgecorrection} option. In the frequency domain,
+there is no way to avoid this loss of flux near the edges of the
+image.
 
 Note that the edge effect discussed here is different from the one in
 @ref{If convolving afterwards}. In making mock images we want to
@@ -5960,12 +5964,12 @@ be projected onto the focal plane before further analysis.
 
 @cindex Scaling
 @cindex Coordinate transformation
-Lets take @mymath{\left[\matrix{u&v}\right]} as the coordinates of
+Let's take @mymath{\left[\matrix{u&v}\right]} as the coordinates of
 a point in the input image and @mymath{\left[\matrix{x&y}\right]} as the
 coordinates of that same point in the output image@footnote{These can
 be any real number, we are not necessarily talking about integer
 pixels here.}. The simplest form of coordinate transformation (or
-warping) is the scaling of the coordinates, lets assume we want to
+warping) is the scaling of the coordinates, let's assume we want to
 scale the first axis by @mymath{M} and the second by @mymath{N}, the
 output coordinates of that point can be calculated by
 
@@ -6227,8 +6231,8 @@ covered. To find the output pixel value, you simply sum the value of
 each input pixel weighted by the overlap fraction (between 0 to 1) of
 the output pixel and that input pixel. Through this process, pixels
 are treated as an area not as a point (which is how detectors create
-the image), also the total flux of an object will be left completely
-unchanged.
+the image), also the brightness (see @ref{Flux Brightness and
+magnitude}) of an object will be left completely unchanged.
 
 If there are very high spatial-frequency signals in the image (for
 example fringes) which vary on a scale smaller than your output image
@@ -6368,7 +6372,7 @@ usually have a uniform `sky' value over their surface prior to
 processing, see @ref{Sky value} for a complete definition of the sky
 value. However, a uniform sky value over the image is vital for
 further processing. For ground based images (particularly at longer
-wavelengths) this can be due to actual variations of flux in the
+wavelengths) this can be due to actual variations in the
 atmosphere. Another cause might be systematic biases in the instrument
 or prior processing. For example stray light in the telescope/camera
 or bad flat-fielding or bias subtraction. The latter is a major issue
@@ -6400,14 +6404,14 @@ The discussion here is taken from Akhlaghi and Ichikawa
 (2015)@footnote{See the section on sky in Akhlaghi M.,
 Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Let's
 assume that all instrument defects -- bias, dark and flat -- have been
-corrected and the total flux of a detected object, @mymath{O}, is
-desired. The sources of flux on pixel @mymath{i}@footnote{For this
-analysis the dimentionality of the data (image) is irrelevant. So if
-the data is an image (2D) with width of @mymath{w} pixels, then a
-pixel located on column @mymath{x} and row @mymath{y} (where all
-counting starts from zero and (0, 0) is located on the bottom left
-corner of the image), would have an index: @mymath{i=x+y\times{}w}.}
-of the image can be written as follows:
+corrected and the brightness (see @ref{Flux Brightness and magnitude})
+of a detected object, @mymath{O}, is desired. The sources of flux on
+pixel @mymath{i}@footnote{For this analysis the dimentionality of the
+data (image) is irrelevant. So if the data is an image (2D) with width
+of @mymath{w} pixels, then a pixel located on column @mymath{x} and
+row @mymath{y} (where all counting starts from zero and (0, 0) is
+located on the bottom left corner of the image), would have an index:
+@mymath{i=x+y\times{}w}.}  of the image can be written as follows:
 
 @itemize
 @item
@@ -6463,16 +6467,16 @@ object flux in the data can be calculated with
 @noindent
 @cindex photo-electrons
 Hence, the more accurately @mymath{S_i} is measured, the more
-accurately the flux of the target object can be measured
-(photometry). Similarly, any under-(over-)estimation in the sky will
-directly translate to an over(under) estimation of the measured
-object's flux.  In the fainter outskirts of an object a very small
-fraction of the photo-electrons in the pixels actually belong to
-objects. Therefore even a small over estimation of the sky value will
-result in the loss of a very large portion of most galaxies. Based on
-the definition above, the sky value is only correctly found when all
-the detected objects (@mymath{D_i} and @mymath{C_i}) have been removed
-from the data.
+accurately the brightness (sum of pixel values) of the target object
+can be measured (photometry). Similarly, any under-(over-)estimation
+in the sky will directly translate to an over(under) estimation of the
+measured object's brightness.  In the fainter outskirts of an object a
+very small fraction of the photo-electrons in the pixels actually
+belong to objects. Therefore even a small over estimation of the sky
+value will result in the loss of a very large portion of most
+galaxies. Based on the definition above, the sky value is only
+correctly found when all the detected objects (@mymath{D_i} and
+@mymath{C_i}) have been removed from the data.
 
 
 @menu
@@ -6498,10 +6502,10 @@ Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}.
 
 Note that through the difference of the mode and median we have
 actually `detected' data in the distribution. However this detection
-was only based on the flux of the data, not its spatial position in
-each mesh. So we adhere to the definition of Sky value in @ref{Sky
-value}. Finding the median is very easy, the main problem is in
-finding the mode through a robust method. In Appendix C of Akhlaghi
+was only based on the total distribution of the data, not its spatial
+position in each mesh. So we adhere to the definition of Sky value in
+@ref{Sky value}. Finding the median is very easy, the main problem is
+in finding the mode through a robust method. In Appendix C of Akhlaghi
 and Ichikawa (2015) a new approach to finding the mode in any
 astronomically relevant distribution is introduced.
 
@@ -6701,11 +6705,10 @@ background is subtracted and is zero.
 Data always has a positive value and will never become negative, see
 Figure 1 in Akhlaghi and Ichikawa (2015). Therefore, as data is buried
 into the noise, the mean, median and mode shift to the positive. The
-mean is the fastest in this shift, since it is most reliant on the
-flux values. The median is slower since it is defined based on an
-ordered distribution and so is not affected by a small (less than
-half) number of outliers. Finally, the mode is the slowest to shift to
-the positive.
+mean is the fastest in this shift. The median is slower since it is
+defined based on an ordered distribution and so is not affected by a
+small (less than half) number of outliers. Finally, the mode is the
+slowest to shift to the positive.
 
 Inversing the argument above provides us with the basis of Gnuastro's
 algorithm to quantify the presence of signal in a mesh. Namely, when
@@ -6981,7 +6984,7 @@ interpolation and smoothing}.
 @itemx --numnearest
 (@option{=INT}) The number of nearest grid elements with a successful
 sky value to use for interpolating over blank mesh elements (those
-that had a significant contribution of flux), see @ref{Grid
+that had a significant contribution of signal), see @ref{Grid
 interpolation and smoothing}.
 
 @item --fullinterpolation
@@ -7251,8 +7254,8 @@ except the last one. The last interval is closed or [a, b].
 @node  Sigma clipping, Mirror distribution, Histogram and Cumulative Freqency Plot, ImageStatistics
 @subsection Sigma clipping
 
-Lets assume that you have pure noise (centered on zero) with a clear
-Gaussian distribution, see @ref{Photon counting noise}. Now lets
+Let's assume that you have pure noise (centered on zero) with a clear
+Gaussian distribution, see @ref{Photon counting noise}. Now let's
 assume you add very bright objects (signal) on the image which have a
 very sharp boundary. By a sharp boundary, we mean that there is a
 clear cutoff at the place the objects finish. In other words, at their
@@ -7401,7 +7404,7 @@ file name was @file{input.fits}, and you want to see how its mirror
 distribution would look like if the mirror was placed at the 0.8
 quantile (or the value which is above 80 percent of your data) you can
 run the following sequence of commands to see the combined cumulative
-frequency plot and histogram together in one PDF file. Lets assume you
+frequency plot and histogram together in one PDF file. Let's assume you
 have put the Python script above into the file
 @file{mirrorplot.py}. The second command makes the Python script an
 executable file.
@@ -7432,7 +7435,7 @@ is called, the given ranges will also shift accordingly).
 @subsection Invoking ImageStatistics
 
 ImageStatistics will print the major statistical measures of an
-image's pixel flux distribution. The executable name is
+image's pixel value distribution. The executable name is
 @file{astimgstat} with the following general template
 
 @example
@@ -7463,7 +7466,7 @@ configuration file, ImageStatistics will not run, see
 @ref{Configuration files}. However, for some others this is not so:
 @option{--histmin}, @option{--histmax}, @option{--histquant},
 @option{--cfpmin}, @option{--cfpmax}, @option{--cfpquant}. These are
-options to do with the range of flux in the histogram and cumulative
+options to do with the range of values in the histogram and cumulative
 frequency plots. If no value is given for these options when
 ImageStatistics is about to start processing the data, then the full
 data range will be used. Such that the minimum image value will be set
@@ -7679,19 +7682,19 @@ be plotted together, this is very useful, since the first axis
 @item -p
 @itemx --cfpnum
 (@option{=INT}) The number of points to store the cumulative frequency
-plot. They will be evenly distributed between the range of flux
+plot. They will be evenly distributed between the range of pixel
 values.
 
 @item -a
 @itemx --cfpmin
-(@option{=FLT}) The minimum value to use for the cumulative flux
-range. If @option{--cfpquant} is given, then any value given
+(@option{=FLT}) The minimum value to use for the cumulative pixel
+value range. If @option{--cfpquant} is given, then any value given
 @option{--cfpmin} or @option{--cfpmax} is ignored.
 
 @item -n
 @itemx --cfpmax
-(@option{=FLT}) The maximum value to use for the cumulative flux
-range. Similar to @option{--cfpmin}.
+(@option{=FLT}) The maximum value to use for the cumulative pixel
+value range. Similar to @option{--cfpmin}.
 
 @item -U
 @itemx --cfpquant
@@ -7806,15 +7809,8 @@ with the recognized extensions as input data, see @ref{Arguments}.
 The options that are shared by all Gnuastro programs can be seen in
 @ref{Common options}. In order to ignore some pixels during the
 analysis, you can specify a mask image, see @ref{Mask image} for an
-explanation and the relevant options. A masked pixel is treated as
-being above the threshold in detection and is assumed to have the
-largest possible flux during the definition of clumps. The reason for
-this is that the centers of bright stars and galaxies are often masked
-(due to saturation). It causes no problems when other parts of the
-image are masked, for example cosmic rays or the edges of raw
-images. No flux is ever assigned to any masked pixel and it is not
-counted in any of the areas. In short masked pixels in a detection or
-clump are ignored while calculating the Signal to noise ratio.
+explanation and the relevant options. A masked pixel is completely
+ignored.
 
 A convolution kernel can also be optionally given. If a value (file
 name) is given to @option{--kernel} on the command line or in a
@@ -8213,11 +8209,12 @@ undetected regions.
 @itemx --keepmaxnearriver
 Keep a clump whose maximum flux is 8-connected to a river pixel. By
 default such clumps over detections are considered to be noise and are
-removed irrespective of their flux. Over large profiles, that sink
-into the noise very slowly, noise can cause part of the profile (which
-was flat without noise) to become a very large and with a very high
-Signal to noise ratio. In such cases, the pixel with the maximum flux
-in the clump will be immediately touching a river pixel.
+removed irrespective of their brightness (see @ref{Flux Brightness and
+magnitude}). Over large profiles, that sink into the noise very
+slowly, noise can cause part of the profile (which was flat without
+noise) to become a very large and with a very high Signal to noise
+ratio. In such cases, the pixel with the maximum flux in the clump
+will be immediately touching a river pixel.
 
 @item -G
 @itemx --gthresh
@@ -8377,9 +8374,9 @@ steps in order to add desired parameter.
 Low level nature of Gnuastro: Making catalogs is a separate process
 from labeling (detecting and segmenting) the pixels. A user might want
 to do certain operations on the labed regions before creating a
-catalog for them. Another user might want the flux properties of the
-same pixels in another image (possibly from another broadband filter)
-for measuring the colors or SEDs for example.
+catalog for them. Another user might want the properties of the same
+pixels in another image (possibly from another broadband filter) for
+measuring the colors or SEDs for example.
 
 Here is an example of doing both: suppose you have images in various
 broad band filters at various resolutions and orientations. The image
@@ -8420,7 +8417,8 @@ absolute scale on which we can compare different observations (images)
 and objectively quantify the noise and our ability to detect signal in
 it. The first is known as the @emph{depth} and the second is the
 @emph{Object/Clump magnitude limit}. In astronomy, it is common to use
-the magnitude (a unit-less scale) and not the actual pixel units.
+the magnitude (a unit-less scale) and not the actual pixel units, see
+@ref{Flux Brightness and magnitude}.
 
 @table @asis
 
@@ -8487,7 +8485,7 @@ objects, only the Object magnitude limit is printed and for the clumps
 only the magnitude limit for clumps. Note that the accuracy in
 estimating the zero-point magnitude is a very important factor in an
 accurate comparison between different images, on possibly different
-instruments and cameras, see @ref{Magnitude to flux conversion}.
+instruments and cameras, see @ref{Flux Brightness and magnitude}.
 
 @node Invoking astmkcatalog,  , Depth and limiting magnitude, MakeCatalog
 @subsection Invoking MakeCatalog
@@ -8582,7 +8580,7 @@ deviation for each pixel.
 @item -z
 @itemx --zeropoint
 (@option{=FLT}) The zero point magnitude for the input image, see
-@ref{Magnitude to flux conversion}.
+@ref{Flux Brightness and magnitude}.
 
 @item -E
 @itemx --skysubtracted
@@ -8635,9 +8633,10 @@ point.
 
 @item --accuwidth
 (@option{=INT}) The width columns to be printed with extra
-accuracy. In MakeCatalog, all the right ascensions, declinations,
-river pixel fluxes (see Akhlaghi and Ichikawa 2015 for the definition
-of river pixels), the sky and the sky standard deviation.
+accuracy. In MakeCatalog the following columns are printed with extra
+accuracy: right ascensions, declinations, river pixel fluxes (see
+Akhlaghi and Ichikawa 2015 for the definition of river pixels), the
+sky and the sky standard deviation.
 
 @item --floatprecision
 (@option{=INT}) The number of digits to the right of the decimal point
@@ -8746,26 +8745,43 @@ Declination of all objects or clumps.
 @item --clumpsdec
 [Objects] Declination of all clumps in this object.
 
+@item -b
+@itemx --brightness
+The brightness (sum of all pixel values), see @ref{Flux Brightness and
+magnitude}. For each clump in the clumps catalog, the ambient
+brightness (flux of river pixels around the clump multiplied by the
+area of the clump) is removed, see @option{--riverflux}. So the sum of
+clump brightnesses in the clump catalog will be smaller than the total
+clump brightness in the @option{--clumpbrightness} column of the
+objects catalog.
+
+@item --clumpbrightness
+[Objects] The total brightness of the clumps within an object. This is
+simply the sum of the pixels associated with clumps in the object.
+
 @item -f
 @itemx --flux
-The flux (sum of pixel values) in all clumps or objects.
+The flux (Brightness divided by area) in all clumps or objects, see
+@option{--brightness}.
 
 @item --clumpsflux
-[Objects] The flux in all clumps of this object.
+[Objects] The flux in all clumps of this object, see
+@option{--clumpbrightness}.
 
 @item -m
 @itemx --magnitude
-The magnitude of all clumps or objects.
+The magnitude of all clumps or objects, see @option{--brightness}.
 
 @item --clumpsmagnitude
-[Objects] The magnitude of all clumps in this object.
+[Objects] The magnitude of all clumps in this object, see
+@option{--clumpbrightness}.
 
 @item --riverflux
 [Clumps] The average flux of the river pixels of this clump. River
-pixels were defined in Akhlaghi and Ichikawa 2015, in short they are
+pixels were defined in Akhlaghi and Ichikawa 2015. In short they are
 right on the boundaries of the clumps. This value is used internally
 to find the signal to noise ratio of the clumps and can also be used
-as a scale to guage the base flux of the clump.
+as a scale to guage the base (ambient) flux of the clump.
 
 @item --rivernum
 [Clumps] The number of river pixels around this clump, see
@@ -8777,14 +8793,14 @@ The Signal to noise ratio (S/N) of all clumps or objects. See Akhlaghi
 and Ichikawa (2015) for the exact equations used.
 
 @item --sky
-The sky value under this object or clump. This is actually the mean
-value of all the pixels in the sky image that lie on the same position
-as the object or clump.
+The sky flux (per pixel) value under this object or clump. This is
+actually the mean value of all the pixels in the sky image that lie on
+the same position as the object or clump.
 
 @item --std
-The sky value standard deviation for this clump or object. Like
-@option{--sky}, this is the average of the values in the input sky
-standard image pixels that lie over this object.
+The sky value standard deviation (per pixel) for this clump or
+object. Like @option{--sky}, this is the average of the values in the
+input sky standard deviation image pixels that lie over this object.
 
 @end table
 
@@ -8881,8 +8897,8 @@ convolution and adding noise.
 @menu
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
-* Profile total magnitude::     Definition of total profile magnitude.
-* Magnitude to flux conversion::  Converting magnitude to flux.
+* Flux Brightness and magnitude::  About these measures of energy.
+* Profile magnitude::     Definition of total profile magnitude.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 @end menu
 
@@ -8988,9 +9004,10 @@ namely the pixels, also produces a very small `spread' in the image.
 @cindex Image blurring
 @cindex PSF image size
 Convolution is the mathematical process by which we can apply a
-`spread' to an image, or in other words blur the image. The total
-flux of an object should remain unchanged after
-convolution. Therefore, it is important that the sum of all the pixels
+`spread' to an image, or in other words blur the image, see
+@ref{Convolution process}. The Brightness of an object should remain
+unchanged after convolution, see @ref{Flux Brightness and
+magnitude}. Therefore, it is important that the sum of all the pixels
 of the PSF be unity. The image also has to have an odd number of
 pixels on its sides so one pixel can be defined as the center. In
 MakeProfiles, the PSF can be set by the two methods explained below.
@@ -9111,34 +9128,33 @@ image.
 @cindex S@'ersic profile
 @cindex Profiles, galaxies
 @cindex Generalized de Vaucouleur profile
-Today, most practitioners agree that galaxy profiles can be modeled
-with one or a few generalized de Vaucouleur's (or S@'ersic) profiles.
+Today, most practitioners agree that the flux of galaxies can be
+modeled with one or a few generalized de Vaucouleur's (or S@'ersic)
+profiles.
 
 @dispmath{I(r) = I_e exp \left ( -b_n \left[ \left( r \over r_e \right)^{1/n} -1 \right] \right )}
 
+@cindex Brightness
 @cindex S@'ersic, J. L.
 @cindex S@'ersic index
+@cindex Effective radius
+@cindex Radius, effective
 @cindex de Vaucouleur profile
 @cindex G@'erard de Vaucouleurs
 G@'erard de Vaucouleurs (1918-1995) was first to show in 1948 that
 this function best fits the galaxy light profiles, with the only
 difference that he held @mymath{n} fixed to a value of 4. 20 years
 later in 1968, J. L. S@'ersic showed that @mymath{n} can have a
-variety of values and does not necessarily need to be 4.
-
-@cindex Effective radius
-@cindex Radius, effective
-@cindex Total profile flux
-This profile depends on the effective radius (@mymath{r_e}) which is
-defined as the radius which contains half of the total brightness of
-the object. The total profile flux is defined as the integration of
-the profile to infinity. @mymath{I_e} is the surface brightness at the
-effective radius.  The S@'ersic index @mymath{n} is used to define the
-concentration of the profile within @mymath{r_e} and @mymath{b_n} is a
-constant dependent on @mymath{n}. MacArthur et al.@footnote{MacArthur,
-L. A., S. Courteau, and J. A. Holtzman (2003). ``Structure of
-Disk-dominated Galaxies. I. Bulge/Disk Parameters, Simulations, and
-Secular Evolution''. In: ApJ 582, pp. 689---722.} show that for
+variety of values and does not necessarily need to be 4. This profile
+depends on the effective radius (@mymath{r_e}) which is defined as the
+radius which contains half of the profile brightness (see @ref{Profile
+magnitude}). @mymath{I_e} is the flux at the effective radius.  The
+S@'ersic index @mymath{n} is used to define the concentration of the
+profile within @mymath{r_e} and @mymath{b_n} is a constant dependent
+on @mymath{n}. MacArthur et al.@footnote{MacArthur, L. A.,
+S. Courteau, and J. A. Holtzman (2003). ``Structure of Disk-dominated
+Galaxies. I. Bulge/Disk Parameters, Simulations, and Secular
+Evolution''. In: ApJ 582, pp. 689---722.} show that for
 @mymath{n>0.35}, @mymath{b_n} can be accurately approximated using
 this equation:
 
@@ -9264,7 +9280,7 @@ a continuous space like all the prior steps.
 
 
 
-@node If convolving afterwards, Profile total magnitude, Modeling basics, MakeProfiles
+@node If convolving afterwards, Flux Brightness and magnitude, Modeling basics, MakeProfiles
 @subsection If convolving afterwards
 
 In case you want to convolve the image later with a given point spread
@@ -9288,19 +9304,104 @@ facilitate this shift, MakeProfiles has the options @option{--xshift},
 astmkprof}.
 
 
-@node Profile total magnitude, Magnitude to flux conversion, If convolving afterwards, MakeProfiles
-@subsection Profile total magnitude
 
+
+@node Flux Brightness and magnitude, Profile magnitude, If convolving afterwards, MakeProfiles
+@subsection Flux Brightness and magnitude
+
+@cindex ADU
+@cindex Gain
+@cindex Counts
+Astronomical data pixels are usually in units of
+counts@footnote{Counts are also known as analog to ditigal units
+(ADU).} or electrons or either one divided by seconds. To convert from
+the counts to electrons, you will need to know the instrument gain. In
+any case, they can be directly converted to energy or energy/sec using
+the basic hardware (telescope, camera and filter) information. We will
+contiue the discussion assuming the pixels are in units of energy/sec,
+but everything discussed here equally holds for energy.
+
+@cindex Flux
+@cindex Luminosity
+@cindex Brightness
+The @emph{brightness} of an object is defined as its total detected
+energy which is the sum of the pixels that are associated with it by
+our detection tool for example @ref{NoiseChisel}. The @emph{flux} of
+an object is defined as its brightness divided by its detected area
+(for example in @mymath{cm^2} on the detector). Knowing the flux
+(@mymath{f}) and distance to the object (@mymath{r}), we can calculate
+its @emph{luminosity}: @mymath{L=4{\pi}r^2f}. Therefore, flux and
+luminosity are intrinsic properties of the object, while brightness
+depends on our detecting tools (hardware and software). Here we will
+not be discussing luminosity, but brightness. However, since
+luminosity is the astrophysically interesting quantity, we also
+defined it here to avoid possible confusion between these two terms
+because they both have the same units.
+
+@cindex Solid Angle
+For one detector, the pixels all have the same area. So finding the
+area of an object, simply means counting how many pixels it covers and
+multiplying that with the area of one pixel. The fixed area of all the
+pixels also allows us to incorporate the pixel area in the hardware
+conversion factor (from counts or electrons to energy) so the
+conversion factor can be in units of energy/area (e.g.,
+@mymath{erg/cm^2}). With this conversion factor, we can find the flux
+of the object simply by dividing the object's brightness by the number
+of pixels it covers. Another useful consequece is that the value of
+one pixel is both its brightness and flux. However, this is only true
+when all the pixels have the same solid angle on the celestial
+sphere@footnote{In wide field images, the pixels on the edges of the
+image are not going to cover the same solid angle as those in the
+center of the image due to optical distortion. In such cases, the
+distortion has to be corrected before these measurements.}.
+
+@cindex Magnitude zero-point
+@cindex Magnitudes from flux
+@cindex Flux to magnitude conversion
+@cindex Astronomical Magnitude system
+Images of astronomical objects span over a very large range of
+brightness. With the Sun (as the brightest object) being roughly
+@mymath{2.5^{60}=10^{24}} times brighter than the faintest galaxies we
+can currently detect. Therefore discussing brightness will be very
+hard, and astronomers have chosen to use a logarithmic scale to talk
+about the brightness of astronomical objects. But the logarithm can
+only be usable with a unit-less and always positive value. Fortunately
+brightness is always positive and to remove the units we divide the
+brightness of the object (@mymath{B}) by a reference brightness
+(@mymath{B_r}). We then define the resulting logarithmic scale as
+@mymath{magnitude} through the following relation@footnote{The
+@mymath{-2.5} factor in the definition of magnitudes is a legacy of
+the our ancient colleagues and in particular Hipparchus of Nicaea
+(190-120 BC).}
+
+@dispmath{m-m_r=-2.5\log_{10} \left( B \over B_r \right)}
+
+@cindex Zero-point magnitude
+@noindent
+@mymath{m} is defined as the magnitude of the object and @mymath{m_r}
+is the pre-defined magnitude of the reference brightness. One
+particularly easy condition is when @mymath{B_r=1}. This will allow us
+to summarize all the hardware specific parameters discussed above into
+one number as the reference magnitude which is commonly known as the
+Zero-point@footnote{When @mymath{B=Br=1}, the right side of the
+magnitude definition will be zero. Hence the name, ``zero-point''.}
+magnitude.
+
+
+@node Profile magnitude, Invoking astmkprof, Flux Brightness and magnitude, MakeProfiles
+@subsection Profile magnitude
+
+@cindex Brightness
 @cindex Truncation radius
-@cindex Total profile flux
 @cindex Sum for total flux
-It is customary to use the 2D integration to infinity of a profile as
-its total magnitude. However, in MakeProfiles, we do not follow this
-idealistic approach and apply a more realistic method to find the
-total magnitude: the sum of all the pixels belonging to a profile
-within its predefined truncation radius. Note that if the truncation
-radius is not large enough, this can be significantly different from
-the total integrated light to infinity.
+To find the profile brightness or its magnitude, (see @ref{Flux
+Brightness and magnitude}), it is customary to use the 2D integration
+of the flux to infinity. However, in MakeProfiles we do not follow
+this idealistic approach and apply a more realistic method to find the
+total brightness or magnitude: the sum of all the pixels belonging to
+a profile within its predefined truncation radius. Note that if the
+truncation radius is not large enough, this can be significantly
+different from the total integrated light to infinity.
 
 @cindex Integration to infinity
 An integration to infinity is not a realistic condition because no
@@ -9311,45 +9412,24 @@ integration to infinity, especially in small and high S@'ersic index
 profiles. To be safe, you can specify a large enough truncation radius
 for such compact high S@'ersic index profiles.
 
-If oversampling is used then the total flux is calculated using the
+If oversampling is used then the brightness is calculated using the
 over-sampled image, see @ref{Oversampling} which is much more
 accurate. The profile is first built in an array completely bounding
-it with a normalization constant of unity. Taking @mymath{F} to be the
-desired total flux and @mymath{S} to be the sum of the pixels in the
-created profile, every pixel is then multiplied by @mymath{F/S} so the
-sum is exactly @mymath{F}.
+it with a normalization constant of unity (see @ref{Galaxies}). Taking
+@mymath{B} to be the desired brightness and @mymath{S} to be the sum
+of the pixels in the created profile, every pixel is then multiplied
+by @mymath{B/S} so the sum is exactly @mymath{B}.
 
 If the @option{--individual} option is called, this same array is
 written to a FITS file. If not, only the overlapping pixels of this
 array and the output image are kept and added to the output array.
 
 
-@node Magnitude to flux conversion, Invoking astmkprof, Profile total magnitude, MakeProfiles
-@subsection Magnitude to flux conversion
-
-@cindex Magnitude zero-point
-@cindex Magnitudes from flux
-@cindex Flux to magnitude conversion
-@cindex Astronomical Magnitude system
-The total brightness of the object is not specified in units of flux,
-but in magnitudes. The magnitude scale is a relative measure of
-brightness. When a reference object has magnitude @mymath{m_r} with
-flux @mymath{F_r}, then the magnitude of an object with a flux of
-@mymath{F} is calculated by:
-
-@dispmath{m-m_r=-2.5\log_{10} \left( F \over F_r \right)}
-
-@cindex Zero-point magnitude
-The @emph{zero-point} magnitude (@mymath{m_z}) is defined as the
-magnitude in which @mymath{F_r=1}. So when you specify the magnitude
-of your desired object in the @option{--mcol} of your input catalog,
-then it will have a total flux of:
-
-@dispmath{\log_{10}F={m_z-m \over 2.5} \rightarrow
-          F=10^{m_z-m \over 2.5}}
 
 
-@node Invoking astmkprof,  , Magnitude to flux conversion, MakeProfiles
+
+
+@node Invoking astmkprof,  , Profile magnitude, MakeProfiles
 @subsection Invoking MakeProfiles
 
 MakeProfiles will make any number of profiles specified in a catalog
@@ -9377,14 +9457,13 @@ separated by space, tab or comma (@key{,}) characters. See @ref{Common
 behavior} for a complete explanation of some common behaviour and
 options in all Gnuastro programs including MakeProfiles.
 
-If a data image file (see @ref{Arguments}) is given, that image is
-used as the background. The flux value of each profile pixel will be
-added to the pixel in that background value. In this case the values
-to all options relating to the output size and WCS will be ignored if
-specified (for example @option{--naxis1}, @option{--naxis2} and
-@option{--prepforconv}) on the command line or in the configuration
-files. The profiles will be made on the background image (their values
-will be added to the background image pixels). Note that
+If a data image file (see @ref{Arguments}) is given, the pixels of
+that image are used as the background value for every pixel. The flux
+value of each profile pixel will be added to the pixel in that
+background value. In this case the values to all options relating to
+the output size and WCS will be ignored if specified (for example
+@option{--naxis1}, @option{--naxis2} and @option{--prepforconv}) on
+the command line or in the configuration files. Note that
 @option{--oversample} will remain active even if a background image is
 specified.
 
@@ -9418,15 +9497,16 @@ If PSF profiles (Moffat or Gaussian) are in the catalog and the
 profiles are to be built in one image (when @option{--individual} is
 not used), it is assumed they are the PSF(s) you want to convolve your
 created image with. So by default, they will not be built in the
-output image but as separate files. The total flux of these separate
-files will also be set to unity (1) so you are ready to convolve. As a
-summary, their position and magnitude will be ignored. This behaviour
-can be disabled with the @option{--psfinimg} option. If you want to
-create all the profiles separately (with @option{--individual}) and
-you want the total flux of your PSF profiles to be unity, you have to
-set their magnitudes in the catalog to the zero-point magnitude and be
-sure that the central positions of the profiles don't have any
-fractional part (the PSF center has to be in the center of the pixel).
+output image but as separate files. The sum of pixels of these
+separate files will also be set to unity (1) so you are ready to
+convolve, see @ref{Convolution process}. As a summary, their position
+and magnitude will be ignored. This behaviour can be disabled with the
+@option{--psfinimg} option. If you want to create all the profiles
+separately (with @option{--individual}) and you want the sum of the
+PSF profile pixels to be unity, you have to set their magnitudes in
+the catalog to the zero-point magnitude and be sure that the central
+positions of the profiles don't have any fractional part (the PSF
+center has to be in the center of the pixel).
 
 
 @node MakeProfiles options, MakeProfiles output, MakeProfiles catalog, Invoking astmkprof
@@ -9559,11 +9639,11 @@ background image is specified, any possible value to this option is
 ignored.
 
 @item --magatpeak
-Use the flux specified by the magnitude column in the catalog (see
-@ref{MakeProfiles catalog}) only for the peak profile pixel, not the
-full profile. Note that this is the flux of the profile's peak pixel
-in the final output of MakeProfiles. So the specified oversampling,
-see @ref{Oversampling} has no affect.
+The magnitude column in the catalog (see @ref{MakeProfiles catalog})
+will be used to find the brightness only for the peak profile pixel,
+not the full profile. Note that this is the flux of the profile's peak
+pixel in the final output of MakeProfiles. So beware of the
+oversampling, see @ref{Oversampling}.
 
 This option can be useful if you want to check a mock profile's total
 magnitude at various truncation radii. Without this option, no matter
@@ -9572,9 +9652,9 @@ that given in the catalog. But with this option, the total magnitude
 will become brighter as you increase the truncation radius.
 
 In sharper profiles, sometimes the accuracy of measuring the peak
-profile flux is more than the total profile flux. In such cases, with
-this option, the final profile will be built such that its peak has
-the given magnitude, not the total profile.
+profile flux is more than the overall object brightness. In such
+cases, with this option, the final profile will be built such that its
+peak has the given magnitude, not the total profile.
 
 @cartouche
 @strong{CAUTION:} If you want to use this option for comparing with
@@ -9682,7 +9762,7 @@ the major axis).
 
 @item --mcol
 (@option{=INT}) The total pixelated magnitude of the profile within the
-truncation radius, see @ref{Profile total magnitude}.
+truncation radius, see @ref{Profile magnitude}.
 
 @item --tcol
 (@option{=INT}) The truncation radius of this profile. By default it
@@ -9874,21 +9954,21 @@ value.
 
 @cindex Simulating noise
 @cindex Noise simulation
-In each pixel of the canvas of pixels the flux is the sum of
+In each pixel of the canvas of pixels, the flux is the sum of
 contributions from various sources after convolution. Let's name this
 flux of the convolved sum of possibly overlapping objects,
-@mymath{I_{nn}}.  @mymath{nn} representing `no noise'. For now,
-let's assume the background is constant and represented by
-@mymath{B}. In practice the background values are larger than
-@mymath{\sim1,000} counts. Then the flux after adding noise is a
-random value taken from a Gaussian distribution with the following
-mean (@mymath{\mu}) and standard deviation (@mymath{\sigma}):
+@mymath{I_{nn}}.  @mymath{nn} representing `no noise'. For now, let's
+assume the background is constant and represented by @mymath{B}. In
+practice the background values are larger than @mymath{\sim1,000}
+counts. Then the flux after adding noise is a random value taken from
+a Gaussian distribution with the following mean (@mymath{\mu}) and
+standard deviation (@mymath{\sigma}):
 
 @dispmath{\mu=B+I_{nn}, \quad \sigma=\sqrt{B+I_{nn}}}
 
 Since this type of noise is inherent in the objects we study, it is
 usually measured on the same scale as the astronomical objects, namely
-the magnitude system, see @ref{Magnitude to flux conversion}. It is
+the magnitude system, see @ref{Flux Brightness and magnitude}. It is
 then internally converted to the flux scale for further processing.
 
 @node Instrumental noise, Final noised pixel value, Photon counting noise, Noise basics
@@ -9901,21 +9981,25 @@ While taking images with a camera, a dark current is fed to the
 pixels, the variation of the value of this dark current over the
 pixels, also adds to the final image noise. Another source of noise is
 the readout noise that is produced by the electronics in the CCD that
-attempt to read the amount of flux that was recorded. In deep
-extra-galactic studies these sources of noise are not as significant
-as the noise of the background sky. Let @mymath{C} represent the
-combined standard deviation of all these sources of noise. If only
-this source of noise is present, the noised pixel value would be a
-random value chosen from a Gaussian distribution with
+attempt to digitize the voltage produced by teh photo-electrons in the
+analog to digital converter. In deep extra-galactic studies these
+sources of noise are not as significant as the noise of the background
+sky. Let @mymath{C} represent the combined standard deviation of all
+these sources of noise. If only this source of noise is present, the
+noised pixel value would be a random value chosen from a Gaussian
+distribution with
 
 @dispmath{\mu=I_{nn}, \quad \sigma=\sqrt{C^2+I_{nn}}}
 
+@cindex ADU
+@cindex Gain
+@cindex Counts
 This type of noise is completley independent of the type of objects
 being studied, it is completely determined by the instrument. So the
 flux scale (and not magnitude scale) is most commonly used for this
 type of noise. In practice, this value is usually reported in ADUs not
 flux or electron counts. The gain value of the device can be used to
-convert between these two.
+convert between these two, see @ref{Flux Brightness and magnitude}.
 
 @node Final noised pixel value, Generating random numbers, Instrumental noise, Noise basics
 @subsubsection Final noised pixel value
@@ -9948,7 +10032,7 @@ affordable!}!
 @cindex Numbers, psudo-random
 @cindex Seed, psudo-random numbers
 Using only software, we can only produce what is called a psudo-random
-sequence of numbers. A true random number generator a hardware (lets
+sequence of numbers. A true random number generator a hardware (let's
 assume we have made sure it has no systematic biases), for examle
 throwing dice or flipping coins (which have remained from the ancient
 times). More modern hardware methods use atmospheric noise, thermal
@@ -10083,15 +10167,15 @@ making it. This is done for future reproducability.
 
 @item -b
 @itemx --background
-(@option{=FLT}) The background value for the image in units of
-magnitudes, see @ref{Photon counting noise} and @ref{Magnitude to flux
-conversion}.
+(@option{=FLT}) The background pixel value for the image in units of
+magnitudes, see @ref{Photon counting noise} and @ref{Flux Brightness
+and magnitude}.
 
 @item -z
 @itemx --zeropoint
 (@option{=FLT}) The zeropoint magnitude used to convert the value of
 @option{--background} (in units of magnitude) to flux, see
-@ref{Magnitude to flux conversion}.
+@ref{Flux Brightness and magnitude}.
 
 @item -s
 @itemx --stdadd
@@ -10468,7 +10552,7 @@ various GNU Autoconf macros in the GNU Autoconf
 archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
 
 To get the Gnulib and the Autoconf archives, just run these commands
-in any directory you want to store them in (lets assume you are in
+in any directory you want to store them in (let's assume you are in
 @file{~/Development} directory):
 
 @example

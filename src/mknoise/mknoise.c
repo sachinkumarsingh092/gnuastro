@@ -79,8 +79,7 @@ convertsaveoutput(struct mknoiseparams *p)
                          "Zeropoint magnitude of image.", 0, NULL);
   strcpy(keyname3, "STDADD");
   add_to_fitsheaderllend(&headers, TDOUBLE, keyname3, 0, &p->stdadd, 0,
-                         "Instrumental noise in units of flux.",
-                         0, NULL);
+                         "Instrumental noise in units of flux.", 0, NULL);
   strcpy(keyname4, "RNGTYPE");
   add_to_fitsheaderllend(&headers, TSTRING, keyname4, 0, &p->rng_type, 0,
                          "Random number generator (by GSL) type.", 0, NULL);

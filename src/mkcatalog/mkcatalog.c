@@ -33,6 +33,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "timing.h"
 #include "neighbors.h"
 #include "txtarrayvv.h"
+#include "fitsarrayvv.h"
 
 #include "main.h"
 
@@ -84,11 +85,11 @@ firstpass(struct mkcatalogparams *p)
 
         /* Add to the flux weighted center: */
         ++thisobj[OAREA];
-        thisobj[ OSKY ]     += p->sky[i];
-        thisobj[ OSTD ]     += p->std[i];
-        thisobj[ OTotFlux ] += imgss;
-        thisobj[ OFlxWhtX ] += imgss * (i%s1);
-        thisobj[ OFlxWhtY ] += imgss * (i/s1);
+        thisobj[ OBrightness ] += imgss;
+        thisobj[ OSKY ]        += p->sky[i];
+        thisobj[ OSTD ]        += p->std[i];
+        thisobj[ OFlxWhtX ]    += imgss * (i%s1);
+        thisobj[ OFlxWhtY ]    += imgss * (i/s1);
 
         if(clumps[i]>0)
           {
@@ -99,9 +100,9 @@ firstpass(struct mkcatalogparams *p)
 
             /* Find the flux weighted center of the clumps. */
             ++thisobj [ OAREAC ];
-            thisobj[ OTotFluxC ] += imgss;
-            thisobj[ OFlxWhtCX ] += imgss * (i%s1);
-            thisobj[ OFlxWhtCY ] += imgss * (i/s1);
+            thisobj[ OBrightnessC ] += imgss;
+            thisobj[ OFlxWhtCX ]    += imgss * (i%s1);
+            thisobj[ OFlxWhtCY ]    += imgss * (i/s1);
           }
       }
 
@@ -111,16 +112,16 @@ firstpass(struct mkcatalogparams *p)
       thisobj = p->oinfo + i*OCOLUMNS;
       thisobj[ OSKY ] /= thisobj[ OAREA ];
       thisobj[ OSTD ] /= thisobj[ OAREA ];
-      thisobj[ OFlxWhtX ] = thisobj[ OFlxWhtX ] / thisobj[ OTotFlux ] + 1;
-      thisobj[ OFlxWhtY ] = thisobj[ OFlxWhtY ] / thisobj[ OTotFlux ] + 1;
-      if(thisobj[ OTotFluxC ]==0.0f)
+      thisobj[ OFlxWhtX ] = thisobj[ OFlxWhtX ] / thisobj[ OBrightness ] + 1;
+      thisobj[ OFlxWhtY ] = thisobj[ OFlxWhtY ] / thisobj[ OBrightness ] + 1;
+      if(thisobj[ OBrightnessC ]==0.0f)
         thisobj[ OFlxWhtCX ] = thisobj[ OFlxWhtCY ] = NAN;
       else
         {
           thisobj[ OFlxWhtCX ] = ( thisobj[ OFlxWhtCX ]
-                                   / thisobj[ OTotFluxC ] + 1 );
+                                   / thisobj[ OBrightnessC ] + 1 );
           thisobj[ OFlxWhtCY ] = ( thisobj[ OFlxWhtCY ]
-                                   / thisobj[ OTotFluxC ] + 1 );
+                                   / thisobj[ OBrightnessC ] + 1 );
         }
     }
 }
@@ -180,13 +181,13 @@ secondpass(struct mkcatalogparams *p)
 
           /* Fill in this clump information:  */
           ++thisclump[ CAREA ];
-          thisclump[ CTotFlux ]  += img[i];
-          thisclump[ CSKY ]      += sky[i];
-          thisclump[ CSTD ]      += std[i];
-          thisclump[ CINHOSTID ]  = clumps[i];
-          thisclump[ CHOSTOID ]   = objects[i];
-          thisclump[ CFlxWhtX ]  += img[i] * (i%is1);
-          thisclump[ CFlxWhtY ]  += img[i] * (i/is1);
+          thisclump[ CBrightness ]  += img[i];
+          thisclump[ CSKY ]         += sky[i];
+          thisclump[ CSTD ]         += std[i];
+          thisclump[ CINHOSTID ]     = clumps[i];
+          thisclump[ CHOSTOID ]      = objects[i];
+          thisclump[ CFlxWhtX ]     += img[i] * (i%is1);
+          thisclump[ CFlxWhtY ]     += img[i] * (i/is1);
         }
 
       /* We are on a detected region but not a clump (with a negative
@@ -242,15 +243,22 @@ secondpass(struct mkcatalogparams *p)
 
      1. Divide by total flux to get the flux weighted center.
      2. Divide the total river flux by the number of river pixels.
+     3. Subtract the (average river flux)*(clump area) from the clump
+        brightness.
   */
   for(i=1;i<=p->numclumps;++i)
     {
+      /* Do the initial corrections: */
       thisclump = p->cinfo + i*CCOLUMNS;
       thisclump[ CSKY ] /= thisclump[ CAREA ];
       thisclump[ CSTD ] /= thisclump[ CAREA ];
       thisclump[ CAveRivFlux ] /= thisclump[ CRivArea ];
-      thisclump[ CFlxWhtX ] = thisclump[ CFlxWhtX ]/thisclump[ CTotFlux ] + 1;
-      thisclump[ CFlxWhtY ] = thisclump[ CFlxWhtY ]/thisclump[ CTotFlux ] + 1;
+      thisclump[ CFlxWhtX ] = thisclump[CFlxWhtX]/thisclump[ CBrightness ]+1;
+      thisclump[ CFlxWhtY ] = thisclump[CFlxWhtY]/thisclump[ CBrightness ]+1;
+
+      /* Note that this should be done after the clump center is
+         found, since the center used the non-sky subtracted value. */
+      thisclump[ CBrightness ] -= thisclump[CAveRivFlux]*thisclump[CAREA];
     }
 
   /* Clean up: */
@@ -314,11 +322,16 @@ setcpscorr(struct mkcatalogparams *p)
 void
 makeoutput(struct mkcatalogparams *p)
 {
-  double sn;
   size_t *cols;
+  double sn, st;
   char comment[COMMENTSIZE], tline[100];
   int prec[2]={p->floatprecision, p->accuprecision};
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
+
+
+  /* Calculate the pixel area in steradians: */
+  st=pixelsteradians(p->wcs);
+
 
   /* First make the objects catalog, then the clumps catalog. */
   for(p->obj0clump1=0;p->obj0clump1<2;++p->obj0clump1)
@@ -395,9 +408,13 @@ makeoutput(struct mkcatalogparams *p)
                   tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint);
           strcat(comment, p->line);
 
+          sn = p->obj0clump1 ? p->clumpsn : p->detsn;
+          sprintf(tline, "%s limiting Signal to noise ratio: ",
+                  p->obj0clump1 ? "Clump" : "Object");
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", tline, sn);
+          strcat(comment, p->line);
           sprintf(tline, "%s limiting magnitude: ",
                   p->obj0clump1 ? "Clump" : "Object");
-          sn = p->obj0clump1 ? p->clumpsn : p->detsn;
           sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
                   tline, -2.5f*log10(sn*p->maxstd)+p->zeropoint);
           strcat(comment, p->line);
@@ -411,6 +428,13 @@ makeoutput(struct mkcatalogparams *p)
                   "Counts-per-second correction:", 1/p->cpscorr);
           strcat(comment, p->line);
         }
+
+
+
+      /* Report the area of each pixel in stradians: */
+      sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n",
+              "Pixel area (steradians)", st);
+      strcat(comment, p->line);
 
 
       /* Prepare for printing the columns: */
@@ -481,24 +505,32 @@ makeoutput(struct mkcatalogparams *p)
               position(p, 1, 0, 1);
               break;
 
+            case CATBRIGHTNESS:
+              brightnessfluxmag(p, 1, 0, 0);
+              break;
+
+            case CATCLUMPSBRIGHTNESS:
+              brightnessfluxmag(p, 1, 1, 0);
+              break;
+
             case CATFLUX:
-              fluxmag(p, 1, 0, 0);
+              brightnessfluxmag(p, 2, 0, 0);
               break;
 
             case CATCLUMPSFLUX:
-              fluxmag(p, 1, 1, 0);
+              brightnessfluxmag(p, 2, 1, 0);
               break;
 
             case CATMAGNITUDE:
-              fluxmag(p, 0, 0, 0);
+              brightnessfluxmag(p, 0, 0, 0);
               break;
 
             case CATCLUMPSMAGNITUDE:
-              fluxmag(p, 0, 1, 0);
+              brightnessfluxmag(p, 0, 1, 0);
               break;
 
             case CATRIVERFLUX:
-              fluxmag(p, 1, 0, 1);
+              brightnessfluxmag(p, 2, 0, 1);
               break;
 
             case CATRIVERNUM:
@@ -586,7 +618,6 @@ mkcatalog(struct mkcatalogparams *p)
   /* Run through the data for the first time: */
   firstpass(p);
   secondpass(p);
-
 
 
   /* If world coordinates are needed, then do the

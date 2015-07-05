@@ -1,3 +1,18 @@
+2015-07-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/mkcatalog/columns.c (brightnessfluxmag): Previously
+	fluxmag. Now this function gives the brightness, flux and
+	magnitude depending on its input parameters.
+
+	* src/mkcatalog/args.h (options): Corrected all usage of "flux"
+	and "brightness".
+
+	* doc/gnuastro.texi: Corrected all usage of "flux" and
+	"brightness".
+
+	* doc/forwebpage.sh (thismonth): Removed type=\"text/javascript\""
+	from the string since it seemed to be interfering with LibreJS.
+
 2015-07-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/fitsarrayvv.c (readkeywords): Now reads multiple keywords.
