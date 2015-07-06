@@ -106,7 +106,7 @@ prepfirstgrowth(struct clumpsthreadparams *ctp)
   ctp->blankinds=malloc(ctp->area*sizeof *ctp->blankinds);
   if(ctp->blankinds==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for ctp->blankpixels in "
-          "growclumps (clumps.c)", ctp->area*sizeof *ctp->blankinds);
+          "prepfirstgrowth (clumps.c)", ctp->area*sizeof *ctp->blankinds);
   ctp->numblanks=0;
   indf=(ind=ctp->inds)+ctp->area;
   do
@@ -222,8 +222,8 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
               for(j=0;j<ii;++j)
                 if(i!=j)
                   {
-                    nums[ wngb[i]* numclumps + wngb[j] ]++;
-                    sums[ wngb[i]* numclumps + wngb[j] ]+=rpave;
+                    nums[ wngb[i] * numclumps + wngb[j] ]++;
+                    sums[ wngb[i] * numclumps + wngb[j] ]+=rpave;
                   }
           }
       }
@@ -489,9 +489,9 @@ segmentonthread(void *inparam)
 
 
         /* Allocate the space for the indexs of the brightest pixels
-           in each clump. We don't know how many clumps there are
-           before hand, so to be safe just allocate a space equal to
-           the number of pixels*/
+           in each clump of this detection. We don't know how many
+           clumps there are before hand, so to be safe just allocate a
+           space equal to the number of pixels*/
         errno=0; ctp->topinds=malloc(ctp->area*sizeof *ctp->topinds);
         if(ctp->topinds==NULL)
           error(EXIT_FAILURE, errno, "%lu bytes for ctp->topinds in "
@@ -509,13 +509,11 @@ segmentonthread(void *inparam)
            detection. */
         clumpsntable(ctp, &sntable);
 
-
         /* Remove clumps with smaller signal to noise ratios and free
            all the nolonger necessary arrays: */
         removefalseclumps(ctp, sntable);
-        free(sntable);
-        free(ctp->xys);
         free(ctp->topinds);
+        free(sntable);
         if(segmentationname && p->stepnum==2) continue;
 
 
@@ -541,14 +539,12 @@ segmentonthread(void *inparam)
             if(segmentationname && p->stepnum==3)
               { free(ctp->blankinds); continue; }
 
-
             /* Identify the objects within the grown clumps and set
                ctp->numobjects. This function allocates
                ctp->segtoobjlabs. */
             grownclumpstoobjects(ctp);
             if(segmentationname && p->stepnum==4)
               { free(ctp->blankinds); free(ctp->segtoobjlabs); continue; }
-
 
             /* Fill in the full detected area. */
             if(ctp->numclumps<=2)
@@ -805,7 +801,6 @@ segmentation(struct noisechiselparams *p)
   /* Save the indexs of all the detected labels. We will be working on
      each label independently: */
   labindexs(p->olab, s0*s1, numobjsinit, &labareas, &labinds);
-
 
 
 

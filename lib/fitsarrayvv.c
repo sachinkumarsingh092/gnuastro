@@ -1325,6 +1325,7 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           fitsioerror(status, "Adding the BLANK keyword.");
+        free(blank);
       }
 
   fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);

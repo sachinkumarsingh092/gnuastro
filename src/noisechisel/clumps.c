@@ -235,46 +235,14 @@ oversegment(struct clumpsthreadparams *ctp)
             /* Set the label that is to be given to this equal flux
                region. If n1 was set to any value, then that label
                should be used for the whole region. Otherwise, this is
-               a new label.
-
-               About the topinds checks:
-               =========================
-
-               The knowing the top index of a profile is very
-               important in order to be able to successfully remove
-               false detections. However, our convention of setting
-               the masked pixels as the maximum floating point value
-               is going to make some troubles in this regard.
-
-               Masked pixels will always be checked first for each
-               clump. The moment a new label is definied (curlab++),
-               we are on the top index of a profile. If it is a NaN
-               pixel (note that the NaN pixels do not change after
-               convolution), then we can't assign it to the top flux
-               of that profile. So we mark this by setting the value
-               to the topinds for this profile to NOTOPIND which is an
-               impossible index. later on, for every other pixel, we
-               check to see if topinds has been set for this clump or
-               not. If it hasn't, then since the pixels are ordered by
-               flux, this index is the top index.
-            */
+               a new label, see the case for a non-flat region. */
             if(n1)
-              {
-                rlab = n1;
-                if(ctp->topinds && ctp->topinds[rlab]==NOTOPIND
-                   && n1>0 && !isnan(p->img[*pind]))
-                  ctp->topinds[rlab]=*pind;
-              }
+              rlab = n1;
             else
               {
                 rlab = curlab++;
                 if( ctp->topinds)
-                  {
-                    if( isnan(p->img[*pind]) )
-                      ctp->topinds[rlab]=NOTOPIND;
-                    else
-                      ctp->topinds[rlab]=*pind;
-                  }
+                  ctp->topinds[rlab]=*pind;
               }
 
             /* Give the same label to the whole connected equal flux
@@ -346,26 +314,16 @@ oversegment(struct clumpsthreadparams *ctp)
                one of its neighbors. If n1 equals zero, then it is a
                new peak, and a new label should be created.  But if
                n1!=0, it is either a river pixel (has more than one
-               labeled neighbor) or all its neighbors have the same
-               label. */
+               labeled neighbor and has been set to SEGMENTRIVER) or
+               all its neighbors have the same label. In both such
+               cases, rlab should be set to n1.*/
             if(n1)
-              {
-                rlab = n1;
-                if(ctp->topinds && ctp->topinds[rlab]==NOTOPIND
-                   && n1>0 && !isnan(p->img[*pind]))
-                  ctp->topinds[rlab]=*pind;
-              }
+              rlab = n1;
             else
               {
                 rlab = curlab++;
                 if( ctp->topinds )
-                  {
-                    if( isnan(p->img[*pind]) )
-                      ctp->topinds[rlab]=NOTOPIND;
-                    else
-                      ctp->topinds[rlab]=*pind;
-                  }
-
+                  ctp->topinds[rlab]=*pind;
               }
 
             /* Put the found label in the pixel. */
@@ -542,22 +500,27 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
   errno=0;
   clumpinfo=calloc(ctp->numclumps*INFOTABCOLS, sizeof *clumpinfo);
   if(clumpinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for clumpinfo (clumps.c)",
-          ctp->numclumps*INFOTABCOLS*sizeof *clumpinfo);
+    error(EXIT_FAILURE, errno, "%lu bytes for clumpinfo in getclumpinfo "
+          "(clumps.c)", ctp->numclumps*INFOTABCOLS*sizeof *clumpinfo);
   *outclumpinfo=clumpinfo;
 
-  /* If the image is sky subtracted or if we are working on the
-     detections (not noise), we will need the light weighted center of
-     each clump. In the former, for finding the error in measuring the
-     sky (through the smp->garray2) which is done in this same
-     function. In the latter case, in order to find the signal to
-     noise threshold on lmp->garray1. */
-  if(p->skysubtracted || p->b0f1)
+  /* If the image is sky subtracted, we will need the light weighted
+     center of each clump for finding the error in measuring the sky
+     (through the smp->garray2).
+
+     Since we are also segmenting the undetected regions, negative
+     pixel values are common and they will mess up the flux weighted
+     center (since all the weights have to be positive). So the xys
+     array has three columns: the first is the total flux calculated
+     from the positive pixels. The second is the x axis center and the
+     third is the y axis center.
+  */
+  if(p->skysubtracted)
     {
-      errno=0; xys=ctp->xys=calloc(2*ctp->numclumps, sizeof *xys);
+      errno=0; xys=calloc(3*ctp->numclumps, sizeof *xys);
       if(xys==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for xys (clumps.c)",
-              2*ctp->numclumps*sizeof *xys);
+              3*ctp->numclumps*sizeof *xys);
     }
   else xys=NULL; /* To check if it is needed below. */
 
@@ -615,10 +578,11 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
             lab=clab[*ind];
             ++clumpinfo[ lab * INFOTABCOLS + 1 ];
             clumpinfo[ lab * INFOTABCOLS ] += img[*ind];
-            if(xys)
+            if(p->skysubtracted && img[*ind]>0.0f)
               {
-                xys[ 2 * lab     ] += (*ind/is1) * img[*ind];
-                xys[ 2 * lab + 1 ] += (*ind%is1) * img[*ind];
+                xys[ 3 * lab     ] += img[*ind];
+                xys[ 3 * lab + 1 ] += (*ind/is1) * img[*ind];
+                xys[ 3 * lab + 2 ] += (*ind%is1) * img[*ind];
               }
 
           }
@@ -639,51 +603,40 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
              subtracted. If it wasn't, then we are not subtracting the
              sky to worry about its error! The error in a pixel flux
              measurement is simply its square root. */
-          if(xys)
+          if(p->skysubtracted)
             {
-              /* Especially for noise, it might happen that the total
-                 flux or any of the positions multiplied by flux
-                 becomes negative. If left unchecked, it will result
-                 in checking the wrong pointers, so we need to check
-                 them at this point. */
-              if(clumpinfo[row]<0.0f || xys[2*lab]<0.0f
-                 || xys[2*lab+1]<0.0f)
+              /* Especially for noise, it might happen that no pixel
+                 within the clump was positive! If so, then the center
+                 cannot be calculated and the clump must not be
+                 used, so just set its area to zero. */
+              if(xys[3*lab]==0.0f)
                 {
                   clumpinfo[row+1]=0;
-                  xys[2*lab]=xys[2*lab+1]=NAN;
                   continue;
                 }
               else
                 {
-                  /* It is important that xys are corrected
-                     (divided by the total flux here). Because they
-                     are used later when we don't have access to
-                     clumpinfo any more. */
-                  xys[2*lab  ] /= clumpinfo[row];
-                  xys[2*lab+1] /= clumpinfo[row];
+                  xys[3*lab+1] /= xys[3*lab];
+                  xys[3*lab+2] /= xys[3*lab];
                   if(p->skysubtracted)
-                    clumpinfo[row+4]=
-                      smpstd[imgxytomeshid(smp, xys[2*lab],
-                                           xys[2*lab+1])];
+                      clumpinfo[row+4]=
+                        smpstd[imgxytomeshid(smp,xys[3*lab+1],xys[3*lab+2])];
 
                   /* For a check:
                   printf("%lu: (%lu, %lu) --> %f\n", lab,
-                         (size_t)(xys[2*lab+1] / clumpinfo[row]) +1,
-                         (size_t)(xys[2*lab] / clumpinfo[row]) +1,
+                         (size_t)(xys[3*lab+2] / clumpinfo[row]) +1,
+                         (size_t)(xys[3*lab+1] / clumpinfo[row]) +1,
                          clumpinfo[row+4]);
                   */
                 }
             }
 
-          /* Convert sum to average. IMPORTANT NOTE: This has to be
-             done after the step above, because there, we need the
-             brightness (sum of all pixel values) to find the flux
-             weighted center positions. */
+          /* Convert sum to average. We are doing this after so if a
+             clump should be ignored, control doesn't get to this
+             point. */
           clumpinfo[row  ] /= clumpinfo[row+1];
           clumpinfo[row+2] /= clumpinfo[row+3];
         }
-      else
-        if(xys) xys[2*lab]=xys[2*lab+1]=NAN;
     }
 
   /* To check a specific detection (p->b0f1==1) or a noise mesh grid
@@ -698,7 +651,7 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
 
   /* If we are on the noise clumps, then xys is not needed any more.
      So if it was allocated, fre the space. */
-  if(p->b0f1==0 && xys) free(xys);
+  if(p->skysubtracted) free(xys);
 }
 
 
@@ -775,10 +728,9 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
      (p->b0f1==0):
   if(p->b0f1==1 && ctp->thislabel==1)
     for(i=1;i<ctp->numclumps;++i)
-      printf("%lu: %-10.3f %-5.0f %-10.3f --> %-10.3f (%-6.0f, %-6.0f)\n", i,
+      printf("%lu: %-10.3f %-5.0f %-10.3f --> %-10.3f\n", i,
              clumpinfo[i*INFOTABCOLS], clumpinfo[i*INFOTABCOLS+1],
-             clumpinfo[i*INFOTABCOLS+2], sntab[i],
-             ctp->xys[i*2], ctp->xys[i*2+1]);
+             clumpinfo[i*INFOTABCOLS+2], sntab[i]);
   */
   /* Clean up */
   free(clumpinfo);

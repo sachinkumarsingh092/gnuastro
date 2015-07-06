@@ -43,7 +43,6 @@ struct clumpsthreadparams
   size_t              y0; /* Bottom left corner on y axis.               */
   size_t              x1; /* Top right corner on x axis.                 */
   size_t              y1; /* Top right corner on y axis.                 */
-  double            *xys; /* The light weighted center of each clump.    */
 
   /* Other basic parameters: */
   float              std; /* Standard deviation on this detection.       */

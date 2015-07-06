@@ -342,7 +342,7 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
   sn=sntable[indexfromquantile(size, p->detquant)];
   if(p->cp.verb)
     {
-      sprintf(report, "%s S/N: %.3f (%.3f quantile of %lu %s.",
+      sprintf(report, "%s S/N: %.3f (%.3f quantile of %lu %s).",
               job, sn, quant, size, name);
       reporttiming(NULL, report, 2);
     }

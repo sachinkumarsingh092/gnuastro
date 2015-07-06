@@ -257,10 +257,10 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
    the number of labels in the array has to be one larger than the
    largest label in the array. */
 void
-labareas(long *in, size_t size, size_t numlabs, size_t **outareas)
+labareas(long *lab, size_t size, size_t numlabs, size_t **outareas)
 {
   size_t *areas;
-  long *last=in+size;
+  long *last=lab+size;
 
   /* Allocate the areas array: */
   errno=0;
@@ -269,10 +269,8 @@ labareas(long *in, size_t size, size_t numlabs, size_t **outareas)
     error(EXIT_FAILURE, errno, "%lu bytes for areas in labareas (label.c)",
           numlabs*sizeof *areas);
 
-  /* Find the area of each label. In is a copy of the pointer to the
-     input array only for this function. We don't need it any more, so
-     we can simply use it instead for the increment variable. */
-  do if(*in!=FITSLONGBLANK) ++areas[*in]; while(++in<last);
+  /* Find the area of each label. */
+  do if(ISINDEXABLELABEL) ++areas[*lab]; while(++lab<last);
 
   /* For a check:
   for(i=0;i<numlabs;++i)
@@ -383,8 +381,7 @@ labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
       {
 	printf("Lab: %lu\n", i);
 	for(j=0;j<areas[i];++j)
-	  printf("%lu, ", labinds[i][j]);
-	printf("\b\b.\n\n\n");
+	  printf("  %lu\n", labinds[i][j]);
       }
     exit(0);
   }

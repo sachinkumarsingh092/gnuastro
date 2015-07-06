@@ -1,3 +1,26 @@
+2015-07-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/noisechisel.c (noisechisel): After dilation, 4
+	connectivity was used to find the labels of the connected
+	components. However, when we are looking around the river pixels
+	in the segmentation process, we are looking in their 8-connected
+	neighbors. So when two 4-connected labeled regions are separate,
+	they can still be 8-connected and this will mess up the river flux
+	association functions where the flux of a river is given to the
+	clump that is touching it. It took me several frustrating hours to
+	find this very simple bug!
+
+	* src/noisechisel/clumps.c (oversegment): NaN (masked) pixels are
+	no longer fed into this function. So the conditions to check for
+	them, especially in setting the top index are removed.
+	(getclumpinfo): Now uses a different number for the sum of flux
+	when trying to find the flux weighted center of the clump. This
+	sum is made of only positive values. Negative values cannot act as
+	weights and will mess up the center calculations. The new number
+	for each column is stored in a third column to the xys
+	array. Also, the xys array is no longer needed outside this
+	function.
+
 2015-07-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkcatalog/columns.c (brightnessfluxmag): Previously

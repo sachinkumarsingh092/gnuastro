@@ -173,13 +173,19 @@ noisechisel(struct noisechiselparams *p)
 
 
 
-  /* Dilate the byt array and find the new number of detections: */
+  /* Dilate the byt array and find the new number of detections. Note
+     that the connectivity has to be 8 connected. This is because we
+     check the eight neighbors of every river pixel within each
+     detection during the segmentation. Therefore if 4 connectivity is
+     used here, two detection might be four connected and so their
+     labels will be mixed during the checking of neighbors in the
+     segmentation. */
   if(verb) gettimeofday(&t1, NULL);
   if(p->dilate)
     {
       for(i=0;i<p->dilate;++i)
         dilate0_erode1_8con(p->byt, s0, s1, 0);
-      p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->numblank, 4);
+      p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->numblank, 8);
       if(verb)
         {
           sprintf(report, "%lu detections after %lu dilation%s",
