@@ -696,8 +696,8 @@ void
 checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
              long **array)
 {
-  int bitpix;
-  size_t s0, s1, anyblank;
+  size_t s0, s1;
+  int bitpix, anyblank;
 
   /* Read the file: */
   filetolong(filename, hdu, array, &bitpix, &anyblank, &s0, &s1);
@@ -725,17 +725,17 @@ void
 checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
               float **array)
 {
-  int bitpix;
-  size_t s0, s1, numblank;
+  size_t s0, s1;
+  int bitpix, anyblank;
 
   /* Read the array: */
-  filetofloat(filename, NULL, hdu, NULL, array, &bitpix, &numblank, &s0, &s1);
+  filetofloat(filename, NULL, hdu, NULL, array, &bitpix, &anyblank, &s0, &s1);
 
   /* Make sure it has no blank pixels. */
-  if(numblank)
+  if(anyblank)
     error(EXIT_FAILURE, 0, "The Sky and Sky standard deviation images "
-          "should not have any blank values. %s (hdu: %s) has %lu blank "
-          "pixels.", filename, hdu, numblank);
+          "should not have any blank values. %s (hdu: %s) has blank pixels.",
+          filename, hdu);
 
   /* Make sure it has the same size as the image. */
   if(s0!=p->s0 && s1!=p->s1)
@@ -753,8 +753,8 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
 void
 preparearrays(struct mkcatalogparams *p)
 {
-  int bitpix;
-  size_t i, numblank;
+  size_t i;
+  int bitpix, anyblank;
 
 
   /* Prepare the columns and allocate the p->objcols and p->clumpcols
@@ -881,7 +881,7 @@ preparearrays(struct mkcatalogparams *p)
   if(p->up.inputname)
     {
       filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-                  &p->img, &bitpix, &numblank, &p->s0, &p->s1);
+                  &p->img, &bitpix, &anyblank, &p->s0, &p->s1);
       readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 
 

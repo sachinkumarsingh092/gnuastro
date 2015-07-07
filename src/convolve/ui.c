@@ -390,25 +390,25 @@ sanitycheck(struct convolveparams *p)
 void
 preparearrays(struct convolveparams *p)
 {
-  int bitpix;
-  size_t numblank, i, size;
+  size_t i, size;
+  int bitpix, anyblank;
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
   float *f, *fp, tmp, *kernel, sum;
 
   /* First read the input image: */
   filetofloat(up->inputname, up->maskname, cp->hdu, up->mhdu, &p->input,
-              &bitpix, &p->numblank, &p->is0, &p->is1);
-  if(p->frequency && p->numblank)
+              &bitpix, &p->anyblank, &p->is0, &p->is1);
+  if(p->frequency && p->anyblank)
     fprintf(stderr, "\n----------------------------------------\n"
             "######## %s WARNING ########\n"
-            "There are %lu blank (masked) pixels in %s (hdu: %s) and you "
+            "There are blank (masked) pixels in %s (hdu: %s) and you "
             "have asked for frequency domain convolution.%s All the "
             "convolved pixels will become blank. Only spatial domain "
             "convolution can account for blank (masked) pixels in the "
             "input data.\n"
             "----------------------------------------\n\n",
-            SPACK_NAME, p->numblank, up->inputname, cp->hdu, up->maskname ?
+            SPACK_NAME, up->inputname, cp->hdu, up->maskname ?
             "" : " Even though you have not provided any mask image, "
             "these are the blank pixels in the input image, see the `Blank "
             "pixels' section of the Gnuastro manual for more information.");
@@ -422,7 +422,7 @@ preparearrays(struct convolveparams *p)
     {
       /* Read in the kernel array: */
       filetofloat(up->kernelname, NULL, up->khdu, NULL, &p->kernel,
-                  &bitpix, &numblank, &p->ks0, &p->ks1);
+                  &bitpix, &anyblank, &p->ks0, &p->ks1);
       size=p->ks0*p->ks1;
       kernel=p->kernel;
 
@@ -432,8 +432,10 @@ preparearrays(struct convolveparams *p)
               "center). %s (hdu: %s) is %lu by %lu.", p->up.kernelname,
               p->up.khdu, p->ks1, p->ks0);
 
-      /* Convert all the NaN pixels to zero. */
-      fp=(f=kernel)+size; do if(isnan(*f)) *f=0.0f; while(++f<fp);
+      /* Convert all the NaN pixels to zero if the kernel contains
+         blank pixels. */
+      if(anyblank)
+        { fp=(f=kernel)+size; do if(isnan(*f)) *f=0.0f; while(++f<fp); }
 
       /* Normalize the kernel: */
       if(p->kernelnorm)

@@ -283,13 +283,13 @@ preparearrays(struct mknoiseparams *p)
   void *array;
 
   /* Read in the input image: */
-  p->numblank=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
+  p->anyblank=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
                         &array, &p->is0, &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else
     {
-      changetype(array, p->inputbitpix, p->is0*p->is1, p->numblank,
+      changetype(array, p->inputbitpix, p->is0*p->is1, p->anyblank,
                  (void **)&p->input, DOUBLE_IMG);
       free(array);
     }

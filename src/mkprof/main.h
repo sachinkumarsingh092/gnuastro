@@ -168,7 +168,7 @@ struct mkprofparams
   gsl_rng           *rng;  /* Main instance of random number generator.*/
 
   /* Output */
-  size_t        numblank;  /* Number of blank pixels in image.         */
+  int           anyblank;  /* ==1: there are blanks in back.           */
   int             bitpix;  /* bitpix of backgroud/output image.        */
   int           nomerged;  /* ==1: Don't make a merged image of all.   */
   long          naxes[2];  /* Size of the output image.                */

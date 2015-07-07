@@ -82,7 +82,7 @@ struct convolveparams
   /* Inputs: */
   float           *input;   /* Input image array.                       */
   float          *kernel;   /* Input Kernel array.                      */
-  size_t        numblank;   /* Number of blank pixels in input.         */
+  int           anyblank;   /* If there are blank pixels in input.      */
   size_t             is0;   /* Input image size along C's first axis.   */
   size_t             is1;   /* Input image size along C's second axis.  */
   size_t             ks0;   /* Kernel size along C's first axis.        */

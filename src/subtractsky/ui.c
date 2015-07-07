@@ -522,7 +522,7 @@ preparearrays(struct subtractskyparams *p)
 
   /* Read the input image. */
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              (float **)&p->mp.img, &p->bitpix, &p->numblank, &mp->s0,
+              (float **)&p->mp.img, &p->bitpix, &p->anyblank, &mp->s0,
               &mp->s1);
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
 

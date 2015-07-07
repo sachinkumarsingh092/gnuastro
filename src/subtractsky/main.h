@@ -78,7 +78,7 @@ struct subtractskyparams
   int               nwcs;  /* Number of WCS structures.                  */
   struct wcsprm     *wcs;  /* Pointer to WCS structures.                 */
   int             bitpix;  /* Input image bitpix value.                  */
-  size_t        numblank;  /* Number of blank pixels in image.           */
+  int           anyblank;  /* ==1: thereare blank pixels in input image. */
 
   /* output: */
   int           checkstd;  /* ==1: include the sky STD in checks.        */

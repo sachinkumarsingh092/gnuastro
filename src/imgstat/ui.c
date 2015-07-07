@@ -448,13 +448,13 @@ void
 preparearrays(struct imgstatparams *p)
 {
   float min;
-  int bitpix;
-  size_t numblank, s0, s1;
+  size_t s0, s1;
+  int bitpix, anyblank;
   struct uiparams *up=&p->up;
 
   /* Read the input and mask arrays: */
   filetofloat(up->inputname, up->maskname, p->cp.hdu, up->mhdu,
-              &p->img, &bitpix, &numblank, &s0, &s1);
+              &p->img, &bitpix, &anyblank, &s0, &s1);
   p->size=s0*s1;
 
   /* If the minimum value is to be used as a mask then do it: */

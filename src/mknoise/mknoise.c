@@ -66,7 +66,7 @@ convertsaveoutput(struct mknoiseparams *p)
     }
   else
     changetype((void **)p->input, DOUBLE_IMG, p->is0*p->is1,
-               p->numblank, &array, p->inputbitpix);
+               p->anyblank, &array, p->inputbitpix);
 
   /* Add the proper information to the header of the output: */
   filenameinkeywords("INF", p->up.inputname, &headers);
@@ -89,7 +89,7 @@ convertsaveoutput(struct mknoiseparams *p)
 
   /* Save the output: */
   arraytofitsimg(p->cp.output, "NoiseAdded", p->inputbitpix, array,
-                 p->is0, p->is1, p->numblank, p->wcs, headers,
+                 p->is0, p->is1, p->anyblank, p->wcs, headers,
                  SPACK_STRING);
 
   if(array!=p->input)

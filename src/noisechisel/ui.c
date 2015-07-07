@@ -860,7 +860,7 @@ preparearrays(struct noisechiselparams *p)
      need to change the mesh's img value some times and the p->img
      will be used to keep its actual value. */
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              (float **)&smp->img, &p->bitpix, &p->numblank, &smp->s0,
+              (float **)&smp->img, &p->bitpix, &p->anyblank, &smp->s0,
               &smp->s1);
   readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
   s0=smp->s0; s1=smp->s1;
@@ -967,7 +967,7 @@ preparearrays(struct noisechiselparams *p)
   if(p->meshname)
     {
       arraytofitsimg(p->meshname, "Input", FLOAT_IMG, smp->img, s0, s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
+                     p->anyblank, p->wcs, NULL, SPACK_STRING);
       checkmeshid(smp, &meshindexs);
       arraytofitsimg(p->meshname, "SmallMeshIndexs", LONG_IMG, meshindexs,
                      s0, s1, 0, p->wcs, NULL, SPACK_STRING);

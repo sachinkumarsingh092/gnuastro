@@ -158,7 +158,7 @@ subtractsky(struct subtractskyparams *p)
     {
       checkmeshid(mp, &meshindexs);
       arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img, s0, s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
+                     p->anyblank, p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
                      s0, s1, 0, p->wcs, NULL, SPACK_STRING);
       free(meshindexs);
@@ -174,9 +174,9 @@ subtractsky(struct subtractskyparams *p)
       if(p->convname)
         {
           arraytofitsimg(p->convname, "Input", FLOAT_IMG, p->mp.img, s0, s1,
-                         p->numblank, p->wcs, NULL, SPACK_STRING);
+                         p->anyblank, p->wcs, NULL, SPACK_STRING);
           arraytofitsimg(p->convname, "Input", FLOAT_IMG, p->conv, s0, s1,
-                         p->numblank, p->wcs, NULL, SPACK_STRING);
+                         p->anyblank, p->wcs, NULL, SPACK_STRING);
         }
     }
   else p->conv=p->mp.img;
@@ -226,7 +226,7 @@ subtractsky(struct subtractskyparams *p)
   fmultipconst(sky, s0*s1, -1.0f);
   skysubtracted=fsumarrays(mp->img, sky, s0*s1);
   arraytofitsimg(p->cp.output ,"SkySubtracted", FLOAT_IMG, skysubtracted,
-                 s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                 s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
 
 
   /* Clean up: */

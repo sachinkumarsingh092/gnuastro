@@ -750,12 +750,12 @@ segmentation(struct noisechiselparams *p)
   if(segmentationname)
     {
       arraytofitsimg(segmentationname, "Input", FLOAT_IMG, p->img,
-                     s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                     s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(segmentationname, "Convolved-SkySubtracted",
-                     FLOAT_IMG, p->conv, s0, s1, p->numblank,
+                     FLOAT_IMG, p->conv, s0, s1, p->anyblank,
                      p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(segmentationname, "InitialLabels",
-                     LONG_IMG, p->olab, s0, s1, p->numblank, p->wcs,
+                     LONG_IMG, p->olab, s0, s1, p->anyblank, p->wcs,
                      NULL, SPACK_STRING);
     }
 
@@ -766,7 +766,7 @@ segmentation(struct noisechiselparams *p)
      on. Since we don't want to care about how clab was set an used,
      here we simply re-set all the blank pixels too. If there aren't
      any blank pixels, then just do a memset with no conditionals.*/
-  if(p->numblank)
+  if(p->anyblank)
     {
       b=p->byt;lf=(l=p->clab)+s0*s1;
       do *l = *b++==FITSBYTEBLANK ? FITSLONGBLANK : 0; while(++l<lf);
@@ -783,13 +783,13 @@ segmentation(struct noisechiselparams *p)
     {
       arraytofitsimg(p->segmentationname, "Noise Oversegmentaion",
                      LONG_IMG, p->clab, p->smp.s0, p->smp.s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
+                     p->anyblank, p->wcs, NULL, SPACK_STRING);
     }
 
 
 
   /* Initialize p->clab for the clumps within objects. */
-  if(p->numblank)
+  if(p->anyblank)
     {
       lf=(l=p->clab)+s0*s1;
       do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
@@ -814,7 +814,7 @@ segmentation(struct noisechiselparams *p)
       while(p->stepnum<8)
         {
 
-          if(p->numblank)
+          if(p->anyblank)
             {
               lf=(l=p->clab)+s0*s1;
               do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
@@ -847,7 +847,7 @@ segmentation(struct noisechiselparams *p)
                     p->stepnum);
             }
           arraytofitsimg(p->segmentationname, extname, LONG_IMG, forfits,
-                         s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                         s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
           ++p->stepnum;
         }
     }

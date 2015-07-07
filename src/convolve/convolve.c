@@ -600,7 +600,7 @@ convolve(struct convolveparams *p)
         {
           checkmeshid(mp, &meshindexs);
           arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img,
-                         mp->s0, mp->s1, p->numblank, p->wcs, NULL,
+                         mp->s0, mp->s1, p->anyblank, p->wcs, NULL,
                          SPACK_STRING);
           arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
                          mp->s0, mp->s1, 0, p->wcs, NULL, SPACK_STRING);
@@ -620,5 +620,5 @@ convolve(struct convolveparams *p)
   /* Save the output (which is in p->input) array. Note that p->input
      will be freed in ui.c. */
   arraytofitsimg(p->cp.output, "Convolved", FLOAT_IMG, p->input,
-                 p->is0, p->is1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                 p->is0, p->is1, p->anyblank, p->wcs, NULL, SPACK_STRING);
 }

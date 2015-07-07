@@ -73,10 +73,10 @@ initialdetection(struct noisechiselparams *p)
   /* Find the threshold and apply it, if there are blank pixels in the
      image, set those pixels to the binary blank value too: */
   findapplyqthreshold(p);
-  if(p->numblank)  setbytblank(p->img, p->byt, s0*s1);
+  if(p->anyblank)  setbytblank(p->img, p->byt, s0*s1);
   if(detectionname)
     arraytofitsimg(detectionname, "Thresholded", BYTE_IMG, p->byt,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
       sprintf(report, "%.2f quantile threshold found and applied.",
@@ -95,7 +95,7 @@ initialdetection(struct noisechiselparams *p)
       dilate0_erode1_8con(p->byt, s0, s1, 1);
   if(detectionname)
     arraytofitsimg(detectionname, "Eroded", BYTE_IMG, p->byt,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
       sprintf(report, "Eroded %lu times (%s connectivity).",
@@ -109,7 +109,7 @@ initialdetection(struct noisechiselparams *p)
   opening(p->byt, s0, s1, p->opening, p->openingngb);
   if(detectionname)
     arraytofitsimg(detectionname, "Opened", BYTE_IMG, p->byt,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
       sprintf(report, "Opened (depth: %lu, %s connectivity).",
@@ -121,10 +121,10 @@ initialdetection(struct noisechiselparams *p)
 
   /* Label the connected regions. Note that p->olab was allocated in
      ui.c and will be freed there. */
-  p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->numblank, 4);
+  p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->anyblank, 4);
   if(detectionname)
     arraytofitsimg(detectionname, "Labeled", LONG_IMG, p->olab,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
 }
 
 
@@ -239,7 +239,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
         }
       while(++lab<lf);
       arraytofitsimg(p->detectionname, "For S/N", BYTE_IMG, p->dbyt,
-                     p->smp.s0, p->smp.s1, p->numblank, p->wcs,
+                     p->smp.s0, p->smp.s1, p->anyblank, p->wcs,
                      NULL, SPACK_STRING);
     }
 
@@ -323,7 +323,7 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
 
   if(p->detectionname)
     arraytofitsimg(p->detectionname, "True pseudo-detections", BYTE_IMG,
-                   p->dbyt, p->smp.s0, p->smp.s1, p->numblank, p->wcs,
+                   p->dbyt, p->smp.s0, p->smp.s1, p->anyblank, p->wcs,
                    NULL, SPACK_STRING);
 
   free(newlabs);
@@ -442,7 +442,7 @@ detectpseudos(void *inparams)
 
       /* If there were NaN pixels in the image, make sure if this
          mesh has any or not. */
-      if(p->numblank)
+      if(p->anyblank)
         {
           bf=(b=thisbyt)+s0*s1;
           do if(*b++==FITSBYTEBLANK) { anyblank=1; break; } while(b<bf);
@@ -533,7 +533,7 @@ detsnthresh(struct noisechiselparams *p)
                     "(detection.c).", PACKAGE_BUGREPORT, p->stepnum);
             }
           arraytofitsimg(p->detectionname, extname, BYTE_IMG, p->dbyt,
-                         s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                         s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
           ++p->stepnum;
         }
       free(tmp);
@@ -547,10 +547,10 @@ detsnthresh(struct noisechiselparams *p)
      pixels in p->byt, the order of sntable is no longer valid, since
      we don't care any more, we just want their sorted values for the
      quantile. */
-  numpseudo=BF_concmp(p->dbyt, p->clab, s0, s1, p->numblank, 4);
+  numpseudo=BF_concmp(p->dbyt, p->clab, s0, s1, p->anyblank, 4);
   if(p->detectionname)
     arraytofitsimg(p->detectionname, "Labeled", LONG_IMG, p->clab,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
   detlabelsn(p, &numpseudo, &sntable);
 
 
@@ -695,7 +695,7 @@ onlytruedetections(struct noisechiselparams *p)
   applydetectionthresholdskysub(p);
   if(detectionname)
     arraytofitsimg(detectionname, "InitalSkySubtracted", FLOAT_IMG,
-                   p->imgss, s0, s1, p->numblank, p->wcs, NULL,
+                   p->imgss, s0, s1, p->anyblank, p->wcs, NULL,
                    SPACK_STRING);
   if(verb)
     {
@@ -716,7 +716,7 @@ onlytruedetections(struct noisechiselparams *p)
   dbytolaboverlap(p);
   if(detectionname)
     arraytofitsimg(detectionname, "TrueDetections", BYTE_IMG, p->byt,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
   if(verb)
     {            /* p->numobjects changed in dbytlaboverlap. */
       sprintf(report, "%lu false detections removed.",

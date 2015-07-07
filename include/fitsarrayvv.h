@@ -171,7 +171,7 @@ void *
 bitpixalloc(size_t size, int bitpix);
 
 void
-changetype(void *in, int inbitpix, size_t size, size_t numblank,
+changetype(void *in, int inbitpix, size_t size, int anyblank,
            void **out, int outbitpix);
 
 void
@@ -180,13 +180,13 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs);
 void
 readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs);
 
-size_t
+int
 fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
                size_t *s0, size_t *s1);
 
 void
 arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
-	       size_t s0, size_t s1, size_t numblank, struct wcsprm *wcs,
+	       size_t s0, size_t s1, int anyblank, struct wcsprm *wcs,
 	       struct fitsheaderll *headers, char *spack_string);
 
 void
@@ -210,12 +210,12 @@ setmaskname(char *inputname, char **maskname, char *inhdu, char *mhdu);
 
 void
 filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
-            float **img, int *inbitpix, size_t *numblank, size_t *ins0,
+            float **img, int *inbitpix, int *anyblank, size_t *ins0,
             size_t *ins1);
 
 void
 filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
-           size_t *numblank, size_t *ins0, size_t *ins1);
+           int *anyblank, size_t *ins0, size_t *ins1);
 
 void
 prepfloatkernel(char *inputname, char *inhdu, float **kernel,

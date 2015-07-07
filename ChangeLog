@@ -1,3 +1,11 @@
+2015-07-07  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/fitsarrayvv.c: The numblank variable did not actually store
+	the `number' of blank pixels, it was only a 0 or 1 value to
+	specify if there are any blank pixels or not. It is now changed to
+	`anyblank' to be more clear and not confuse the readers. All the
+	Gnuastro programs that used this variable, were also corrected.
+
 2015-07-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/noisechisel.c (noisechisel): After dilation, 4

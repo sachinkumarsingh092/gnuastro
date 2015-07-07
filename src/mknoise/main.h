@@ -66,7 +66,7 @@ struct mknoiseparams
   int        inputbitpix;  /* Input BITPIX header keyword value.       */
   size_t             is0;  /* The number of rows in the input image.   */
   size_t             is1;  /* The number of columns in the input image.*/
-  size_t        numblank;  /* Number of blank pixels.                  */
+  int           anyblank;  /* ==1: There are blank pixels in input.    */
   int               nwcs;  /* Number of WCS structures.                */
   struct wcsprm     *wcs;  /* Pointer to WCS structures.               */
   double      background;  /* Mean of noise probability distribution.  */

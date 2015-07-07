@@ -79,7 +79,7 @@ makeoutput(struct noisechiselparams *p)
   add_to_fitsheaderll(&keys, TDOUBLE, "DETSN", 0, sn, 0,
                       "Signal to noise of true pseudo-detections.", 0, NULL);
   arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
-                 s0, s1, p->numblank, p->wcs, keys, SPACK_STRING);
+                 s0, s1, p->anyblank, p->wcs, keys, SPACK_STRING);
   keys=NULL;     /* keys was freed after writing. */
 
 
@@ -94,7 +94,7 @@ makeoutput(struct noisechiselparams *p)
   add_to_fitsheaderll(&keys, TDOUBLE, "CLUMPSN", 0, sn, 0,
                       "Signal to noise of true clumps.", 0, NULL);
   arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
-                 s0, s1, p->numblank, p->wcs, keys, SPACK_STRING);
+                 s0, s1, p->anyblank, p->wcs, keys, SPACK_STRING);
 
   /* The sky and its standard deviation: */
   checkgarray(&p->smp, &sky, &std);
@@ -106,7 +106,7 @@ makeoutput(struct noisechiselparams *p)
   /* Save the sky subtracted image if desired: */
   if(p->skysubedname)
     arraytofitsimg(p->skysubedname, "Sky subtracted", FLOAT_IMG, p->imgss,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
 
   /* Clean up: */
   free(sky);
@@ -135,9 +135,9 @@ noisechisel(struct noisechiselparams *p)
   if(p->detectionname)
     {
       arraytofitsimg(p->detectionname, "Input", FLOAT_IMG, smp->img,
-                     s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                     s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
       arraytofitsimg(p->detectionname, "Convolved", FLOAT_IMG, p->conv,
-                     s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                     s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
     }
   if(verb) reporttiming(&t1, "Convolved with kernel.", 1);
 
@@ -185,7 +185,7 @@ noisechisel(struct noisechiselparams *p)
     {
       for(i=0;i<p->dilate;++i)
         dilate0_erode1_8con(p->byt, s0, s1, 0);
-      p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->numblank, 8);
+      p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->anyblank, 8);
       if(verb)
         {
           sprintf(report, "%lu detections after %lu dilation%s",
@@ -195,21 +195,21 @@ noisechisel(struct noisechiselparams *p)
     }
   if(p->detectionname)
     arraytofitsimg(p->detectionname, "Dilated", LONG_IMG, p->olab,
-                   s0, s1, p->numblank, p->wcs, NULL, SPACK_STRING);
+                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
   if(p->maskdetname)
     {
       arraytofitsimg(p->maskdetname, "Input", FLOAT_IMG, p->img, s0, s1,
-                     p->numblank, p->wcs, NULL, SPACK_STRING);
+                     p->anyblank, p->wcs, NULL, SPACK_STRING);
       floatcopy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 0);
       arraytofitsimg(p->maskdetname, "Undetected masked", FLOAT_IMG,
-                     imgcopy, s0, s1, p->numblank, p->wcs, NULL,
+                     imgcopy, s0, s1, p->anyblank, p->wcs, NULL,
                      SPACK_STRING);
       free(imgcopy);
       floatcopy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 1);
       arraytofitsimg(p->maskdetname, "Detected masked", FLOAT_IMG,
-                     imgcopy, s0, s1, p->numblank, p->wcs, NULL,
+                     imgcopy, s0, s1, p->anyblank, p->wcs, NULL,
                      SPACK_STRING);
       free(imgcopy);
     }
@@ -245,7 +245,7 @@ noisechisel(struct noisechiselparams *p)
 
   /* Segment the detections if segmentation is to be done. */
   if(p->detectonly)
-    clabwithnoseg(p->olab, p->clab, s0*s1, p->numblank);
+    clabwithnoseg(p->olab, p->clab, s0*s1, p->anyblank);
   else
     {
       if(verb)

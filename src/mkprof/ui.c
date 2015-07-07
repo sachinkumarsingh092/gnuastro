@@ -624,7 +624,7 @@ preparearrays(struct mkprofparams *p)
   if(p->up.backname)
     {
       /* Read in the background image and its coordinates: */
-      p->numblank=fitsimgtoarray(p->up.backname, p->cp.hdu, &p->bitpix,
+      p->anyblank=fitsimgtoarray(p->up.backname, p->cp.hdu, &p->bitpix,
                                  &array, &naxes[1], &naxes[0]);
       readfitswcs(p->up.backname, p->cp.hdu, &p->nwcs, &p->wcs);
       p->naxes[1]=naxes[1];
@@ -636,7 +636,7 @@ preparearrays(struct mkprofparams *p)
         p->out=array;
       else
         {
-          changetype(array, p->bitpix, p->naxes[1]*p->naxes[0], p->numblank,
+          changetype(array, p->bitpix, p->naxes[1]*p->naxes[0], p->anyblank,
                      (void **)(&p->out), FLOAT_IMG);
           free(array);
         }

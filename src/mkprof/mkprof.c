@@ -620,9 +620,9 @@ write(struct mkprofparams *p)
         {
           if(bitpix==FLOAT_IMG) array=out;
           else changetype(p->out, FLOAT_IMG, p->naxes[1]*p->naxes[0],
-                          p->numblank, &array, bitpix);
+                          p->anyblank, &array, bitpix);
           arraytofitsimg(p->mergedimgname, "MockImg on back", bitpix,
-                         array, p->naxes[1], p->naxes[0], p->numblank,
+                         array, p->naxes[1], p->naxes[0], p->anyblank,
                          p->wcs, NULL, SPACK_STRING);
           if(bitpix!=FLOAT_IMG) free(array);
         }

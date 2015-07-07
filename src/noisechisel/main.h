@@ -103,7 +103,7 @@ struct noisechiselparams
   int                 nwcs; /* Number of WCS structures.                   */
   struct wcsprm       *wcs; /* Pointer to WCS structures.                  */
   int               bitpix; /* Input image bitpix value.                   */
-  size_t          numblank; /* Number of blank pixels in image.            */
+  int             anyblank; /* ==1 There are blank pixels in input image.  */
   int        skysubtracted; /* ==1: the input image is already sky subted. */
 
   /* output: */
