@@ -309,9 +309,19 @@ brightnessfluxmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
   /* Fill the column: */
   for(i=0;i<p->num;++i)
     {
+      /* Set the basic values: */
       bright = p->info[ (i+1) * p->icols + col ];
       value  = &p->cat[i * p->numcols + p->curcol ];
 
+      /* If we are dealing with a clump, then you have to subtract the
+         average river flux multiplied by the the area of the
+         clump. The value in the CBrightness column is simply the sum
+         of pixels. */
+      if(p->obj0clump1 && isriver==0)
+        bright -= ( p->info[ (i+1) * p->icols + CAveRivFlux ]
+                    * p->info[ (i+1) * p->icols + CAREA ] );
+
+      /* Do the job: */
       switch(m0b1f2)
         {
         case 0:
@@ -369,7 +379,7 @@ void
 sncol(struct mkcatalogparams *p)
 {
   size_t i;
-  double ave, err, rave, area;
+  double I, O, Ni, err;
   size_t stdcol        = p->obj0clump1 ? CSTD        : OSTD;
   size_t areacol       = p->obj0clump1 ? CAREA       : OAREA;
   size_t brightnesscol = p->obj0clump1 ? CBrightness : OBrightness;
@@ -384,27 +394,23 @@ sncol(struct mkcatalogparams *p)
   for(i=0;i<p->num;++i)
     {
       err=p->info[(i+1)*p->icols+stdcol];
-      area=p->info[(i+1)*p->icols+areacol];
-      ave=p->info[(i+1)*p->icols+brightnesscol]/area;
+      Ni=p->info[(i+1)*p->icols+areacol];
+      I=p->info[(i+1)*p->icols+brightnesscol]/Ni;
 
       if(p->obj0clump1)
         {
-          /* Note that the brightness in the clump was already
-             separated from that of the river*clump_area around it in
-             p->cinfo. Also, they were not sky subtracted. So if the
-             original image was not sky subtracted, then there is no
-             need for the sky error. */
           err *= p->skysubtracted ? 2.0f*err : 0.0f;
-          rave=p->cinfo[(i+1)*CCOLUMNS+CAveRivFlux];
+          O=p->cinfo[ (i+1) * CCOLUMNS + CAveRivFlux ];
+
           p->cat[i * p->numcols + p->curcol ] =
-            ( sqrt(area/p->cpscorr)*(ave)
-              / sqrt( (ave>0?ave:-1*ave) + (rave>0?rave:-1*rave) + err ) );
+            ( sqrt(Ni/p->cpscorr)*(I-O)
+              / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + err ) );
         }
       else
         {
           err *= p->skysubtracted ? err : 2.0f*err;
           p->cat[i * p->numcols + p->curcol ] =
-            sqrt( area/p->cpscorr ) * ave / sqrt(ave+err);
+            sqrt( Ni/p->cpscorr ) * I / sqrt(I+err);
         }
     }
 

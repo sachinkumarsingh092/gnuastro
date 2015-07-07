@@ -1,5 +1,31 @@
 2015-07-07  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
+	* src/mkcatalog/mkcatalog.c (firstpass): Use only positive (after
+	subtracting sky) fluxes as weights for the flux weighted
+	center. Also calculate the geometric center (irrespective of
+	flux), so in case there are no positive pixels, the geometric
+	center is output instead (after all, the object should be
+	represented by some position and the NaN values that were used
+	before are not useful).
+	(secondpass): Similar to the above. Also I had simply replaced the
+	getclumpinfo method of NoiseChisel's clumps.c here. But I had
+	forgot that over there, all the neighboring clumps were within one
+	detection. But here, two clumps could be one river pixel appart
+	but belong to separate objects. So the wngb array has to have two
+	values for each clump, not one, see the comments for more. Also I
+	had to check the object IDs from the neighbors, not the river
+	pixel.
+	(setcpscorr): Removed. The minimum and maximum Standard deviations
+	are now stored by NoiseChisel into the header of the standard
+	deviation image. MakeProfiles then gets the value from those
+	header parameters, so there was no need for this function.
+	(makeoutput): The magnitude and S/N information is printed even if
+	the user has not asked for magnitudes and S/Ns.
+
+	* src/mkcatalog/columns.c (sncol): Renamed variables to fit the
+	clumpsntable function in src/noisechisel/clumps.c. Also, the river
+	flux is subtracted here, not before.
+
 	* lib/fitsarrayvv.c: The numblank variable did not actually store
 	the `number' of blank pixels, it was only a 0 or 1 value to
 	specify if there are any blank pixels or not. It is now changed to

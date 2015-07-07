@@ -85,11 +85,17 @@ firstpass(struct mkcatalogparams *p)
 
         /* Add to the flux weighted center: */
         ++thisobj[OAREA];
+        thisobj[ OGeoX ]       += i%s1;
+        thisobj[ OGeoY ]       += i/s1;
         thisobj[ OBrightness ] += imgss;
         thisobj[ OSKY ]        += p->sky[i];
         thisobj[ OSTD ]        += p->std[i];
-        thisobj[ OFlxWhtX ]    += imgss * (i%s1);
-        thisobj[ OFlxWhtY ]    += imgss * (i/s1);
+        if(imgss>0)
+          {
+            thisobj[ OPosBright ]  += imgss;
+            thisobj[ OFlxWhtX ]    += imgss * (i%s1);
+            thisobj[ OFlxWhtY ]    += imgss * (i/s1);
+          }
 
         if(clumps[i]>0)
           {
@@ -98,30 +104,52 @@ firstpass(struct mkcatalogparams *p)
             thisobj[ ONCLUMPS ] = ( clumps[i] > thisobj[ONCLUMPS]
                                     ? clumps[i] : thisobj[ONCLUMPS] );
 
-            /* Find the flux weighted center of the clumps. */
+            /* Save the information. */
             ++thisobj [ OAREAC ];
             thisobj[ OBrightnessC ] += imgss;
-            thisobj[ OFlxWhtCX ]    += imgss * (i%s1);
-            thisobj[ OFlxWhtCY ]    += imgss * (i/s1);
+            thisobj[ OGeoCX ]       += i%s1;
+            thisobj[ OGeoCY ]       += i/s1;
+            if(imgss>0)
+              {
+                thisobj[ OPosBrightC ]  += imgss;
+                thisobj[ OFlxWhtCX ]    += imgss * (i%s1);
+                thisobj[ OFlxWhtCY ]    += imgss * (i/s1);
+              }
           }
       }
 
   /* Make all the correctins (for the averages): */
   for(i=1;i<=p->numobjects;++i)
     {
+      /* Set the average sky and its STD: */
       thisobj = p->oinfo + i*OCOLUMNS;
       thisobj[ OSKY ] /= thisobj[ OAREA ];
       thisobj[ OSTD ] /= thisobj[ OAREA ];
-      thisobj[ OFlxWhtX ] = thisobj[ OFlxWhtX ] / thisobj[ OBrightness ] + 1;
-      thisobj[ OFlxWhtY ] = thisobj[ OFlxWhtY ] / thisobj[ OBrightness ] + 1;
-      if(thisobj[ OBrightnessC ]==0.0f)
-        thisobj[ OFlxWhtCX ] = thisobj[ OFlxWhtCY ] = NAN;
+
+      /* Set the flux weighted center of the object. The flux weighted
+         center is only meaningful when there was positive flux inside
+         the detection. */
+      if(OPosBright>0.0f)
+        {
+          thisobj[ OFlxWhtX ] = thisobj[ OFlxWhtX ]/thisobj[ OPosBright ]+1;
+          thisobj[ OFlxWhtY ] = thisobj[ OFlxWhtY ]/thisobj[ OPosBright ]+1;
+        }
       else
         {
-          thisobj[ OFlxWhtCX ] = ( thisobj[ OFlxWhtCX ]
-                                   / thisobj[ OBrightnessC ] + 1 );
-          thisobj[ OFlxWhtCY ] = ( thisobj[ OFlxWhtCY ]
-                                   / thisobj[ OBrightnessC ] + 1 );
+          thisobj[ OFlxWhtX ] = thisobj[ OGeoX ] / thisobj[ OAREA ] + 1;
+          thisobj[ OFlxWhtY ] = thisobj[ OGeoY ] / thisobj[ OAREA ] + 1;
+        }
+
+      /* Set the over-all clump information: */
+      if(OPosBrightC>0.0f)
+        {
+          thisobj[ OFlxWhtCX ] = thisobj[ OFlxWhtCX ]/thisobj[OPosBrightC]+1;
+          thisobj[ OFlxWhtCY ] = thisobj[ OFlxWhtCY ]/thisobj[OPosBrightC]+1;
+        }
+      else
+        {
+          thisobj[ OFlxWhtCX ] = thisobj[ OGeoCX ] / thisobj[ OAREAC ] + 1;
+          thisobj[ OFlxWhtCY ] = thisobj[ OGeoCY ] / thisobj[ OAREAC ] + 1;
         }
     }
 }
@@ -136,7 +164,8 @@ firstpass(struct mkcatalogparams *p)
 void
 secondpass(struct mkcatalogparams *p)
 {
-  long wngb[WNGBSIZE];
+  float imgss;
+  long wngb[2*WNGBSIZE];
   size_t ii, *n, *nf, numngb, ngb[8];
   double *thisclump, *cinfo=p->cinfo;
   long *objects=p->objects, *clumps=p->clumps;
@@ -181,28 +210,44 @@ secondpass(struct mkcatalogparams *p)
 
           /* Fill in this clump information:  */
           ++thisclump[ CAREA ];
+          thisclump[ CGeoX ]        += i%is1;
+          thisclump[ CGeoY ]        += i/is1;
           thisclump[ CBrightness ]  += img[i];
           thisclump[ CSKY ]         += sky[i];
           thisclump[ CSTD ]         += std[i];
           thisclump[ CINHOSTID ]     = clumps[i];
           thisclump[ CHOSTOID ]      = objects[i];
-          thisclump[ CFlxWhtX ]     += img[i] * (i%is1);
-          thisclump[ CFlxWhtY ]     += img[i] * (i/is1);
+          if( (imgss=img[i]-sky[i]) > 0 )
+            {
+              thisclump[ CPosBright ]   += imgss;
+              thisclump[ CFlxWhtX ]     += imgss * (i%is1);
+              thisclump[ CFlxWhtY ]     += imgss * (i/is1);
+            }
         }
 
       /* We are on a detected region but not a clump (with a negative
          label). This region can be used to find properties like the
          river fluxs in the vicinity of clumps. */
       else if (clumps[i]!=FITSLONGBLANK)
-        /* We want to check the river pixels in each object that has a
-           clump. So first see if we are on an object (clumps[i]<0),
-           then see if this object has any clumps at all. We don't
-           want to go around the neighbors of each non-clump pixel in
-           objects that don't have any clumps ;-).
 
-           The process that keeps the labels of the clumps that have
-           already been used for each river pixel in wngb is inherited
-           from the getclumpinfo function in NoiseChisel's clump.c.
+        /* We want to check the river pixels in each detection that
+           has a clump. Recall that each detection can host more than
+           one object. Since all the detection's pixels are given to
+           one object, you can check if we are on an object or not
+           with the clumps[i]<0 test.
+
+           The process that keeps the labels of the clumps and their
+           host object that have already been used for each river
+           pixel in wngb wngb is inherited from the getclumpinfo
+           function in NoiseChisel's clump.c.
+
+           There is one big difference. When NoiseChisel was
+           identifying the clumps, there were no `object's. The clumps
+           were all within one detection. But here, the clumps can be
+           separated by a one pixel thick river, but belong to
+           different objects. So wngb has to keep two value for each
+           neighboring clump: the object it belongs to and the clump
+           within that object.
         */
         if(clumps[i]<0 && p->oinfo[objects[i]*OCOLUMNS+ONCLUMPS] > 0.0f)
           {
@@ -222,16 +267,27 @@ secondpass(struct mkcatalogparams *p)
                   /* Go over wngb to see if this river pixel's value
                      has been added to a segment or not. */
                   for(j=0;j<ii;++j)
-                    if(wngb[j]==clumps[*n])
+                    if(wngb[j*2]==objects[*n] && wngb[j*2+1]==clumps[*n])
                       /* It is already present. break out. */
                       break;
-                  if(j==ii) /* First time we are seeing this clump */
-                    {       /* for this river pixel.               */
-                      cinfo[ ( ofcrow[objects[i]] + clumps[*n] )
+
+                  /* First time we are seeing this clump for this
+                     river pixel. */
+                  if(j==ii)
+                    {
+                      /* Note that the object label has to come from
+                         the object label on the neighbor, not the
+                         object label of the river. This river pixel
+                         might be immediately between two clumps on
+                         separate objects, so it will read it
+                         correctly for one clump and incorrectly for
+                         the next. */
+                      cinfo[ ( ofcrow[objects[*n]] + clumps[*n] )
                              * CCOLUMNS + CAveRivFlux ] += img[i];
-                      ++cinfo[ ( ofcrow[objects[i]] + clumps[*n] )
+                      ++cinfo[ ( ofcrow[objects[*n]] + clumps[*n] )
                                * CCOLUMNS + CRivArea ];
-                      wngb[ii]=clumps[*n];
+                      wngb[ii*2]=objects[*n];
+                      wngb[ii*2+1]=clumps[*n];
                       ++ii;
                     }
                 }
@@ -243,8 +299,6 @@ secondpass(struct mkcatalogparams *p)
 
      1. Divide by total flux to get the flux weighted center.
      2. Divide the total river flux by the number of river pixels.
-     3. Subtract the (average river flux)*(clump area) from the clump
-        brightness.
   */
   for(i=1;i<=p->numclumps;++i)
     {
@@ -253,49 +307,21 @@ secondpass(struct mkcatalogparams *p)
       thisclump[ CSKY ] /= thisclump[ CAREA ];
       thisclump[ CSTD ] /= thisclump[ CAREA ];
       thisclump[ CAveRivFlux ] /= thisclump[ CRivArea ];
-      thisclump[ CFlxWhtX ] = thisclump[CFlxWhtX]/thisclump[ CBrightness ]+1;
-      thisclump[ CFlxWhtY ] = thisclump[CFlxWhtY]/thisclump[ CBrightness ]+1;
 
-      /* Note that this should be done after the clump center is
-         found, since the center used the non-sky subtracted value. */
-      thisclump[ CBrightness ] -= thisclump[CAveRivFlux]*thisclump[CAREA];
+      if(thisclump [ CPosBright ]>0.0f)
+        {
+          thisclump[ CFlxWhtX ] = thisclump[CFlxWhtX]/thisclump[CPosBright]+1;
+          thisclump[ CFlxWhtY ] = thisclump[CFlxWhtY]/thisclump[CPosBright]+1;
+        }
+      else
+        {
+          thisclump[ CFlxWhtX ] = thisclump[ CGeoX ] / thisclump[ CAREA ] + 1;
+          thisclump[ CFlxWhtY ] = thisclump[ CGeoY ] / thisclump[ CAREA ] + 1;
+        }
     }
 
   /* Clean up: */
   free(ofcrow);
-}
-
-
-
-
-
-void
-setcpscorr(struct mkcatalogparams *p)
-{
-  size_t i;
-  double minstd=FLT_MAX, maxstd=-FLT_MAX;
-
-  /* Go over all the objects and clumps to find the minimum relevant
-     standard deviation. */
-  for(i=1;i<=p->numobjects;++i)
-    {
-      if(p->oinfo[ i*OCOLUMNS+OSTD ]<minstd)
-        minstd=p->oinfo[ i*OCOLUMNS+OSTD ];
-      if(p->oinfo[ i*OCOLUMNS+OSTD ]>maxstd)
-        maxstd=p->oinfo[ i*OCOLUMNS+OSTD ];
-    }
-
-  for(i=1;i<=p->numclumps;++i)
-    {
-      if(p->cinfo[ i*CCOLUMNS+CSTD ]<minstd)
-        minstd=p->cinfo[ i*CCOLUMNS+CSTD ];
-      if(p->cinfo[ i*CCOLUMNS+CSTD ]>maxstd)
-        maxstd=p->cinfo[ i*CCOLUMNS+CSTD ];
-    }
-
-  /* Set the correction factor: */
-  p->maxstd = maxstd;
-  p->cpscorr = minstd>1.0f ? 1.0f : minstd;
 }
 
 
@@ -382,52 +408,49 @@ makeoutput(struct mkcatalogparams *p)
           strcat(comment, p->line);
         }
       sprintf(p->line, "# Objects %s (hdu: %s)\n", p->up.objlabsname,
-             p->up.objhdu);
+              p->up.objhdu);
       strcat(comment, p->line);
       sprintf(p->line, "# Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
-             p->up.clumphdu);
+              p->up.clumphdu);
       strcat(comment, p->line);
       sprintf(p->line, "# Sky     %s (hdu: %s)\n", p->up.skyname,
-             p->up.skyhdu);
+              p->up.skyhdu);
       strcat(comment, p->line);
       sprintf(p->line, "# Sky STD %s (hdu: %s)\n", p->up.stdname,
-             p->up.stdhdu);
+              p->up.stdhdu);
       strcat(comment, p->line);
 
 
       /* If a magnitude is also desired, print the zero point
          magnitude and the 5sigma magnitude: */
-      if(p->up.magnitudeset || p->up.clumpsmagnitudeset)
-        {
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-                  "Zero point magnitude:", p->zeropoint);
-          strcat(comment, p->line);
-          sprintf(tline, "Maximum %g sigma magnitude over catalog "
-                  "(per pixel):", p->nsigmag);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-                  tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint);
-          strcat(comment, p->line);
+      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+              "Zero point magnitude:", p->zeropoint);
+      strcat(comment, p->line);
+      sprintf(tline, "Maximum %g sigma magnitude over image"
+              "(per pixel):", p->nsigmag);
+      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+              tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint);
+      strcat(comment, p->line);
 
-          sn = p->obj0clump1 ? p->clumpsn : p->detsn;
-          sprintf(tline, "%s limiting Signal to noise ratio: ",
-                  p->obj0clump1 ? "Clump" : "Object");
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", tline, sn);
-          strcat(comment, p->line);
-          sprintf(tline, "%s limiting magnitude: ",
-                  p->obj0clump1 ? "Clump" : "Object");
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-                  tline, -2.5f*log10(sn*p->maxstd)+p->zeropoint);
-          strcat(comment, p->line);
-        }
+      sn = p->obj0clump1 ? p->clumpsn : p->detsn;
+      sprintf(tline, "%s limiting Signal to noise ratio: ",
+              p->obj0clump1 ? "Clump" : "Detection");
+      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", tline, sn);
+      strcat(comment, p->line);
+      sprintf(tline, "%s limiting magnitude: ",
+              p->obj0clump1 ? "Clump" : "Detection");
+      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+              tline, -2.5f*log10(sn*p->maxstd)+p->zeropoint);
+      strcat(comment, p->line);
+      if(p->obj0clump1==0)
+          strcat(comment, "# (NOTE: limits above are for detections, not "
+                 "objects)\n");
 
 
       /* If cpscorr was used, report it: */
-      if(p->up.snset && p->cpscorr<1.0f)
-        {
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-                  "Counts-per-second correction:", 1/p->cpscorr);
-          strcat(comment, p->line);
-        }
+      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
+              "Counts-per-second correction:", 1/p->cpscorr);
+      strcat(comment, p->line);
 
 
 
@@ -637,12 +660,6 @@ mkcatalog(struct mkcatalogparams *p)
     xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtCX,
                    p->oinfo+OCOLUMNS+OFlxWhtCRA, p->numobjects,
                    OCOLUMNS);
-
-
-  /* If the signal to noise is desired, then find the smallest
-     standard deviation for the counts/sec correction. Note that this
-     is only necessary if the user has asked for S/N calculation. */
-  if(p->up.snset)  setcpscorr(p);
 
 
   /* Write the output: */

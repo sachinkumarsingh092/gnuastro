@@ -139,12 +139,15 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
 
 
 
-  /* In case the image is in electrons or counts per second the
+  /* In case the image is in electrons or counts per second, the
      standard deviation of the noise will become smaller than
      unity. You have to find the minimum STD value (which is always
-     positive) for later corrections. */
-  floatmin(smp->garray2, smp->nmeshi, &p->cpscorr);
-  if(p->cpscorr>1) p->cpscorr=1.0f;
+     positive) for later corrections. The maximum STD is only
+     calculated here to include in the output headers so MakeCatalog
+     can read it and not have to go through the whole STD array (which
+     is the size of the full image for it). */
+  fminmax(smp->garray2, smp->nmeshi, &p->minstd, &p->maxstd);
+  p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
 
 
 

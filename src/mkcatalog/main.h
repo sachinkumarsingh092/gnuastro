@@ -55,7 +55,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    explicitly, so there is no chance of mistakenly putting two
    noncontiguous columns.
 */
-#define OCOLUMNS     15     /* Total number of columns in object info. */
+#define OCOLUMNS     21     /* Total number of columns in object info. */
 #define OAREA         0     /* Area of this object.                    */
 #define ONCLUMPS      1     /* Total number of clumps in this object.  */
 #define OBrightness   2     /* Sum of (flux-sky) in object.            */
@@ -71,8 +71,15 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define OFlxWhtCDec OFlxWhtCRA+1 /* Dec of (OFlxWhtCX and OFlxWhtCY).  */
 #define OSKY         13     /* Sum of sky value on this object.        */
 #define OSTD         14     /* Sum of sky STD value on this object.    */
+#define OPosBright   15     /* Sum of positive image pixels for wht.   */
+#define OPosBrightC  16     /* Sum of positive image pixels for wht.   */
+#define OGeoX        17     /* Geometric center of object in X.        */
+#define OGeoY        18     /* Geometric center of object in Y.        */
+#define OGeoCX       19     /* Geometric center of clumps in object X. */
+#define OGeoCY       20     /* Geometric center of clumps in object Y. */
 
-#define CCOLUMNS     12     /* Total number of columns in clump info.  */
+
+#define CCOLUMNS     15     /* Total number of columns in clump info.  */
 #define CHOSTOID      0     /* ID of object hosting this clump.        */
 #define CINHOSTID     1     /* ID of clump in host object.             */
 #define CAREA         2     /* Area of this clump.                     */
@@ -85,6 +92,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CRivArea      9     /* Num river pixels around this clump.     */
 #define CSKY         10     /* Sum of sky value on this object.        */
 #define CSTD         11     /* Sum of sky STD value on this object.    */
+#define CPosBright   12     /* Sum of positive image pixels for wht.   */
+#define CGeoX        13     /* Geometric center of clump in X.         */
+#define CGeoY        14     /* Geometric center of clump in Y.         */
 
 
 
@@ -248,8 +258,9 @@ struct mkcatalogparams
   double            *clumpcat;  /* Output clump catalog.              */
   size_t            objcurcol;  /* Current column in object catalog.  */
   size_t          clumpcurcol;  /* Current column in clump catalog.   */
-  double              cpscorr;  /* Correction for counts/sec input.   */
-  double               maxstd;  /* Maximum STD value (5 sigma mag).   */
+  float                minstd;  /* For correction for counts/sec.     */
+  float                maxstd;  /* Maximum STD value (5 sigma mag).   */
+  double              cpscorr;  /* Correction for counts/sec.         */
   double                detsn;  /* Detection S/N threshold.           */
   double              clumpsn;  /* Clumps S/N threshold.              */
 

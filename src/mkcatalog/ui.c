@@ -656,6 +656,14 @@ sanitycheck(struct mkcatalogparams *p)
   p->clumpsn=keys[0].d;
   p->numclumps=keys[1].l;
 
+  /* Read the minimum and maximum standard deviation values. */
+  keys[0].keyname="MINSTD";       keys[0].datatype=TFLOAT;
+  keys[1].keyname="MAXSTD";       keys[1].datatype=TFLOAT;
+  readkeywords(p->up.stdname, p->up.stdhdu, keys, 2);
+  p->minstd=keys[0].f;
+  p->maxstd=keys[1].f;
+  p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
+
   /* Set the output names: */
   if(p->cp.outputset)
     {

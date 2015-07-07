@@ -726,11 +726,14 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
 
   /* To check a specific detection (p->b0f1==1) or a noise mesh grid
      (p->b0f1==0):
-  if(p->b0f1==1 && ctp->thislabel==1)
-    for(i=1;i<ctp->numclumps;++i)
-      printf("%lu: %-10.3f %-5.0f %-10.3f --> %-10.3f\n", i,
-             clumpinfo[i*INFOTABCOLS], clumpinfo[i*INFOTABCOLS+1],
-             clumpinfo[i*INFOTABCOLS+2], sntab[i]);
+  if(p->b0f1==1 && ctp->thislabel==151)
+    {
+      for(i=1;i<ctp->numclumps;++i)
+        printf("%lu: %-10.3g %-5.0f %-10.3g(%-5.0f) --> %-10.3g\n", i,
+               clumpinfo[i*INFOTABCOLS], clumpinfo[i*INFOTABCOLS+1],
+               clumpinfo[i*INFOTABCOLS+2], clumpinfo[i*INFOTABCOLS+3],
+               sntab[i]);
+    }
   */
   /* Clean up */
   free(clumpinfo);

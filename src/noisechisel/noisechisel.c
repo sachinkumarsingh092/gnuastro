@@ -58,8 +58,9 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 makeoutput(struct noisechiselparams *p)
 {
-  long num[1];
-  double sn[1];
+  float *fpt;
+  double *dpt;
+  long num[0];
   float *sky=NULL, *std=NULL;
   struct fitsheaderll *keys=NULL;
   size_t s0=p->smp.s0, s1=p->smp.s1;
@@ -75,8 +76,8 @@ makeoutput(struct noisechiselparams *p)
   num[0]=p->numobjects-1;
   add_to_fitsheaderll(&keys, TLONG, "NOBJS", 0, num, 0,
                       "Number of objects in the image.", 0, NULL);
-  sn[0]=p->detsn;
-  add_to_fitsheaderll(&keys, TDOUBLE, "DETSN", 0, sn, 0,
+  dpt=&p->detsn;
+  add_to_fitsheaderll(&keys, TDOUBLE, "DETSN", 0, dpt, 0,
                       "Signal to noise of true pseudo-detections.", 0, NULL);
   arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
                  s0, s1, p->anyblank, p->wcs, keys, SPACK_STRING);
@@ -90,18 +91,31 @@ makeoutput(struct noisechiselparams *p)
   num[0] = p->detectonly ? 0 : p->numclumps-1;
   add_to_fitsheaderll(&keys, TLONG, "NCLUMPS", 0, num, 0,
                       "Number of clumps in the image.", 0, NULL);
-  sn[0]=p->clumpsn;
-  add_to_fitsheaderll(&keys, TDOUBLE, "CLUMPSN", 0, sn, 0,
+  dpt=&p->clumpsn;
+  add_to_fitsheaderll(&keys, TDOUBLE, "CLUMPSN", 0, dpt, 0,
                       "Signal to noise of true clumps.", 0, NULL);
   arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
                  s0, s1, p->anyblank, p->wcs, keys, SPACK_STRING);
+  keys=NULL;
 
-  /* The sky and its standard deviation: */
+  /* The sky image: */
   checkgarray(&p->smp, &sky, &std);
   arraytofitsimg(p->cp.output, "Sky", FLOAT_IMG, sky,
                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+
+
+  /* The sky standard deviation image. Note that since this is a
+     linked list, the minimum will be written to the FITS header
+     first. */
+  fpt=&p->maxstd;
+  add_to_fitsheaderll(&keys, TFLOAT, "MAXSTD", 0, fpt, 0,
+                      "Maximum sky standard deviation.", 0, NULL);
+  fpt=&p->minstd;
+  add_to_fitsheaderll(&keys, TFLOAT, "MINSTD", 0, fpt, 0,
+                      "Minimum sky standard deviation.", 0, NULL);
   arraytofitsimg(p->cp.output, "Standard deviation", FLOAT_IMG, std,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+                 s0, s1, 0, p->wcs, keys, SPACK_STRING);
+  keys=NULL;
 
   /* Save the sky subtracted image if desired: */
   if(p->skysubedname)
