@@ -258,12 +258,11 @@ position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj)
 
 
 void
-brightnessfluxmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
-                  int isriver)
+brightnessmag(struct mkcatalogparams *p, int m0b1, int cinobj, int isriver)
 {
   double bright, *value;
   size_t i, col, acol=(size_t)(-1);
-  char *type, *fbm=m0b1f2 ? (m0b1f2==1 ? "brightness" : "flux") :"magnitude";
+  char *type, *mb=m0b1 ? "brightness" :"magnitude";
 
   /* Set the proper column to use */
   if(p->obj0clump1) /* It is a clump.                            */
@@ -271,9 +270,9 @@ brightnessfluxmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
       if(cinobj) { --p->curcol; return; } /* cinobj is only for objects. */
       if(isriver)
         {
-          if(m0b1f2==0 || m0b1f2==1) { --p->curcol; return; }
+          if(m0b1==0) { --p->curcol; return; }
           type="Rivers around this clump, average";
-          col=CAveRivFlux;
+          col=CRivAve;
         }
       else
         {
@@ -300,11 +299,11 @@ brightnessfluxmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
     }
 
   /* For the comments: */
-  p->unitp = ( m0b1f2 ?
-               (m0b1f2==1 ? CATUNITBRIGHTNESS : CATUNITFLUX)
+  p->unitp = ( m0b1 ?
+               (isriver==1 ? CATUNITAVE : CATUNITBRIGHTNESS)
                : CATUNITMAG );
   sprintf(p->description, "%lu: %s %s.",
-          p->curcol, type, fbm);
+          p->curcol, type, mb);
 
   /* Fill the column: */
   for(i=0;i<p->num;++i)
@@ -318,31 +317,28 @@ brightnessfluxmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
          clump. The value in the CBrightness column is simply the sum
          of pixels. */
       if(p->obj0clump1 && isriver==0)
-        bright -= ( p->info[ (i+1) * p->icols + CAveRivFlux ]
+        bright -= ( p->info[ (i+1) * p->icols + CRivAve ]
                     * p->info[ (i+1) * p->icols + CAREA ] );
 
       /* Do the job: */
-      switch(m0b1f2)
+      switch(m0b1)
         {
         case 0:
           *value = bright<=0.0f ? NAN : -2.5f*log10(bright)+p->zeropoint;
           break;
         case 1:
-          *value = bright;
-          break;
-        case 2:
           *value = bright / ( isriver ? 1.0f : p->info[(i+1)*p->icols+acol] );
           break;
         default:
           error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
-                "fix this issue. For some reason, the value to m0b1f2 in "
+                "fix this issue. For some reason, the value to m0b1 in"
                 "brightnessfluxmag (columns.c) is %d, which is not "
-                "recognized.", PACKAGE_BUGREPORT, m0b1f2);
+                "recognized.", PACKAGE_BUGREPORT, m0b1);
         }
     }
 
-  /* When dealing with flux set the column to accurate mode: */
-  if(m0b1f2==2)
+  /* When dealing with brightness set the column to accurate mode: */
+  if(m0b1)
     p->accucols[p->accucounter++]=p->curcol;
 }
 
@@ -359,7 +355,7 @@ skystd(struct mkcatalogparams *p, int issky)
   col = p->obj0clump1 ? (issky ? CSKY : CSTD) : (issky ? OSKY : OSTD);
 
   /* For the comments: */
-  p->unitp = CATUNITFLUX;
+  p->unitp = CATUNITAVE;
   sprintf(p->description, "%lu: Average %s over this %s.",
           p->curcol, issky ? "sky" : "sky standard deviation", p->name);
 
@@ -400,7 +396,7 @@ sncol(struct mkcatalogparams *p)
       if(p->obj0clump1)
         {
           err *= p->skysubtracted ? 2.0f*err : 0.0f;
-          O=p->cinfo[ (i+1) * CCOLUMNS + CAveRivFlux ];
+          O=p->cinfo[ (i+1) * CCOLUMNS + CRivAve ];
 
           p->cat[i * p->numcols + p->curcol ] =
             ( sqrt(Ni/p->cpscorr)*(I-O)

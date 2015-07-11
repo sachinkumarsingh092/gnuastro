@@ -8634,9 +8634,9 @@ point.
 @item --accuwidth
 (@option{=INT}) The width columns to be printed with extra
 accuracy. In MakeCatalog the following columns are printed with extra
-accuracy: right ascensions, declinations, river pixel fluxes (see
-Akhlaghi and Ichikawa 2015 for the definition of river pixels), the
-sky and the sky standard deviation.
+accuracy: right ascensions, declinations, brightnesses, river pixel
+averages (see Akhlaghi and Ichikawa 2015 for the definition of river
+pixels), the sky and the sky standard deviation.
 
 @item --floatprecision
 (@option{=INT}) The number of digits to the right of the decimal point
@@ -8759,15 +8759,6 @@ objects catalog.
 [Objects] The total brightness of the clumps within an object. This is
 simply the sum of the pixels associated with clumps in the object.
 
-@item -f
-@itemx --flux
-The flux (Brightness divided by area) in all clumps or objects, see
-@option{--brightness}.
-
-@item --clumpsflux
-[Objects] The flux in all clumps of this object, see
-@option{--clumpbrightness}.
-
 @item -m
 @itemx --magnitude
 The magnitude of all clumps or objects, see @option{--brightness}.
@@ -8776,7 +8767,7 @@ The magnitude of all clumps or objects, see @option{--brightness}.
 [Objects] The magnitude of all clumps in this object, see
 @option{--clumpbrightness}.
 
-@item --riverflux
+@item --riverave
 [Clumps] The average flux of the river pixels of this clump. River
 pixels were defined in Akhlaghi and Ichikawa 2015. In short they are
 right on the boundaries of the clumps. This value is used internally
@@ -9330,10 +9321,18 @@ associated with that detection by our detection tool for example
 @ref{NoiseChisel}@footnote{If further processing is done, for example
 the Kron or Petrosian radii are calculated, then the detected area is
 not sufficient and the total area that was within the respective
-radius must be used.}. The @emph{flux} of an object is defined as its
-brightness divided by its detected area (for example in @mymath{cm^2}
-on the detector). Knowing the flux (@mymath{f}) and distance to the
-object (@mymath{r}), we can calculate its @emph{luminosity}:
+radius must be used.}. The @emph{flux} of an object is in units of
+energy/time/area and for a detected object, it is defined as its
+brightness divided by the area used to collect the light from that
+star or the telescope aperture (for example in
+@mymath{cm^2})@footnote{For a full object that spans over several
+pixels, the telescope area should be used to find the flux. However,
+sometimes, only the brightness per pixel is desired. In such cases
+this manual also @emph{loosely} uses the term flux. This is only
+approximately accurate however, since while all the pixels have a
+fixed area, the pixel size can vary with camera on the
+telescope.}. Knowing the flux (@mymath{f}) and distance to the object
+(@mymath{r}), we can calculate its @emph{luminosity}:
 @mymath{L=4{\pi}r^2f}. Therefore, flux and luminosity are intrinsic
 properties of the object, while brightness depends on our detecting
 tools (hardware and software). Here we will not be discussing
@@ -9341,23 +9340,6 @@ luminosity, but brightness. However, since luminosity is the
 astrophysically interesting quantity, we also defined it here to avoid
 possible confusion between these two terms because they both have the
 same units.
-
-@cindex Solid Angle
-For one detector, the pixels all have the same area. So finding the
-area of an object, simply means counting how many pixels it covers and
-multiplying that with the area of one pixel. The fixed area of all the
-pixels also allows us to incorporate the pixel area in the hardware
-conversion factor (from counts or electrons to energy) so the
-conversion factor can be in units of energy/area (e.g.,
-@mymath{erg/cm^2}). With this conversion factor, we can find the flux
-of the object simply by dividing the object's brightness by the number
-of pixels it covers. Another useful consequece is that the value of
-one pixel is both its brightness and flux. However, this is only true
-when all the pixels have the same solid angle on the celestial
-sphere@footnote{In wide field images, the pixels on the edges of the
-image are not going to cover the same solid angle as those in the
-center of the image due to optical distortion. In such cases, the
-distortion has to be corrected before these measurements.}.
 
 @cindex Magnitude zero-point
 @cindex Magnitudes from flux

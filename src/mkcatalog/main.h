@@ -88,7 +88,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CFlxWhtRA     5     /* RA of (CFlxWhtX, CFlxWhtY).             */
 #define CFlxWhtDec  CFlxWhtRA+1 /* Dec of (CFlxWhtX, CFlxWhtY).        */
 #define CBrightness   7     /* Brightness in this clump.               */
-#define CAveRivFlux   8     /* Sum of flux in rivers around this clump.*/
+#define CRivAve       8     /* Average value in rivers around clump.   */
 #define CRivArea      9     /* Num river pixels around this clump.     */
 #define CSKY         10     /* Sum of sky value on this object.        */
 #define CSTD         11     /* Sum of sky STD value on this object.    */
@@ -118,15 +118,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CATCLUMPSDEC               14
 #define CATBRIGHTNESS              15
 #define CATCLUMPSBRIGHTNESS        16
-#define CATFLUX                    17
-#define CATCLUMPSFLUX              18
-#define CATMAGNITUDE               19
-#define CATCLUMPSMAGNITUDE         20
-#define CATRIVERFLUX               21
-#define CATRIVERNUM                22
-#define CATSN                      23
-#define CATSKY                     24
-#define CATSTD                     25
+#define CATMAGNITUDE               17
+#define CATCLUMPSMAGNITUDE         18
+#define CATRIVERAVE                19
+#define CATRIVERNUM                20
+#define CATSN                      21
+#define CATSKY                     22
+#define CATSTD                     23
 
 
 
@@ -134,7 +132,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CATDESCRIPTLENGTH         "%-60s"
 #define CATUNITCOUNTER            "counter"
 #define CATUNITBRIGHTNESS         "image unit"
-#define CATUNITFLUX               CATUNITBRIGHTNESS"/pixel"
+#define CATUNITAVE                CATUNITBRIGHTNESS"/pixel"
 #define CATUNITMAG                "scale (log)"
 #define CATUNITPIXAREA            "pixel area"
 #define CATUNITPIXPOS             "pixel position"
@@ -195,11 +193,9 @@ struct uiparams
   int            clumpsdecset;
   int           brightnessset;
   int     clumpsbrightnessset;
-  int                 fluxset;
-  int           clumpsfluxset;
   int            magnitudeset;
   int      clumpsmagnitudeset;
-  int            riverfluxset;
+  int             riveraveset;
   int             rivernumset;
   int                   snset;
   int                  skyset;

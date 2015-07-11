@@ -39,7 +39,7 @@ void
 position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj);
 
 void
-brightnessfluxmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
+brightnessmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
                   int isriver);
 
 void

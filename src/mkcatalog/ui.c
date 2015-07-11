@@ -310,22 +310,6 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
           p->up.clumpsbrightnessset=1;
         }
-      else if(strcmp(name, "flux")==0)
-        {
-          if(up->fluxset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
-          if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATFLUX);
-          up->fluxset=1;
-        }
-      else if(strcmp(name, "clumpsflux")==0)
-        {
-          if(up->clumpsfluxset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
-          if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSFLUX);
-          p->up.clumpsfluxset=1;
-        }
       else if(strcmp(name, "magnitude")==0)
         {
           if(up->magnitudeset) continue;
@@ -342,13 +326,13 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
           up->clumpsmagnitudeset=1;
         }
-      else if(strcmp(name, "riverflux")==0)
+      else if(strcmp(name, "riverave")==0)
         {
-          if(up->riverfluxset) continue;
+          if(up->riveraveset) continue;
           intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATRIVERFLUX);
-          up->riverfluxset=1;
+          add_to_sll(&p->allcolsll, CATRIVERAVE);
+          up->riveraveset=1;
         }
       else if(strcmp(name, "rivernum")==0)
         {
@@ -518,20 +502,14 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
       case CATCLUMPSBRIGHTNESS:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsbrightness", 1);
         break;
-      case CATFLUX:
-        fprintf(fp, CONF_SHOWFMT"%d\n", "flux", 1);
-        break;
-      case CATCLUMPSFLUX:
-        fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsflux", 1);
-        break;
       case CATMAGNITUDE:
         fprintf(fp, CONF_SHOWFMT"%d\n", "magnitude", 1);
         break;
       case CATCLUMPSMAGNITUDE:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsmagnitude", 1);
         break;
-      case CATRIVERFLUX:
-        fprintf(fp, CONF_SHOWFMT"%d\n", "riverflux", 1);
+      case CATRIVERAVE:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "riverave", 1);
         break;
       case CATRIVERNUM:
         fprintf(fp, CONF_SHOWFMT"%d\n", "rivernum", 1);
@@ -842,13 +820,6 @@ preparearrays(struct mkcatalogparams *p)
         case CATCLUMPSBRIGHTNESS:
           p->objcols[p->objncols++]=CATCLUMPSBRIGHTNESS;
           break;
-        case CATFLUX:
-          p->objcols[p->objncols++]=CATFLUX;
-          p->clumpcols[p->clumpncols++]=CATFLUX;
-          break;
-        case CATCLUMPSFLUX:
-          p->objcols[p->objncols++]=CATCLUMPSFLUX;
-          break;
         case CATMAGNITUDE:
           p->objcols[p->objncols++]=CATMAGNITUDE;
           p->clumpcols[p->clumpncols++]=CATMAGNITUDE;
@@ -856,8 +827,8 @@ preparearrays(struct mkcatalogparams *p)
         case CATCLUMPSMAGNITUDE:
           p->objcols[p->objncols++]=CATCLUMPSMAGNITUDE;
           break;
-        case CATRIVERFLUX:
-          p->clumpcols[p->clumpncols++]=CATRIVERFLUX;
+        case CATRIVERAVE:
+          p->clumpcols[p->clumpncols++]=CATRIVERAVE;
           break;
         case CATRIVERNUM:
           p->clumpcols[p->clumpncols++]=CATRIVERNUM;
@@ -978,6 +949,7 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
      file names. So we first have to check if an input */
   if(p->up.inputname)
     sanitycheck(p);
+
 
   /* Make the array of input images. */
   preparearrays(p);

@@ -283,7 +283,7 @@ secondpass(struct mkcatalogparams *p)
                          correctly for one clump and incorrectly for
                          the next. */
                       cinfo[ ( ofcrow[objects[*n]] + clumps[*n] )
-                             * CCOLUMNS + CAveRivFlux ] += img[i];
+                             * CCOLUMNS + CRivAve ] += img[i];
                       ++cinfo[ ( ofcrow[objects[*n]] + clumps[*n] )
                                * CCOLUMNS + CRivArea ];
                       wngb[ii*2]=objects[*n];
@@ -306,7 +306,7 @@ secondpass(struct mkcatalogparams *p)
       thisclump = p->cinfo + i*CCOLUMNS;
       thisclump[ CSKY ] /= thisclump[ CAREA ];
       thisclump[ CSTD ] /= thisclump[ CAREA ];
-      thisclump[ CAveRivFlux ] /= thisclump[ CRivArea ];
+      thisclump[ CRivAve ] /= thisclump[ CRivArea ];
 
       if(thisclump [ CPosBright ]>0.0f)
         {
@@ -529,31 +529,23 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATBRIGHTNESS:
-              brightnessfluxmag(p, 1, 0, 0);
+              brightnessmag(p, 1, 0, 0);
               break;
 
             case CATCLUMPSBRIGHTNESS:
-              brightnessfluxmag(p, 1, 1, 0);
-              break;
-
-            case CATFLUX:
-              brightnessfluxmag(p, 2, 0, 0);
-              break;
-
-            case CATCLUMPSFLUX:
-              brightnessfluxmag(p, 2, 1, 0);
+              brightnessmag(p, 1, 1, 0);
               break;
 
             case CATMAGNITUDE:
-              brightnessfluxmag(p, 0, 0, 0);
+              brightnessmag(p, 0, 0, 0);
               break;
 
             case CATCLUMPSMAGNITUDE:
-              brightnessfluxmag(p, 0, 1, 0);
+              brightnessmag(p, 0, 1, 0);
               break;
 
-            case CATRIVERFLUX:
-              brightnessfluxmag(p, 2, 0, 1);
+            case CATRIVERAVE:
+              brightnessmag(p, 1, 0, 1);
               break;
 
             case CATRIVERNUM:

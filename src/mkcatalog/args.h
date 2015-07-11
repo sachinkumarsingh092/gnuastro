@@ -71,10 +71,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   e g k l p u v w
+   e f g k l p u v w
    A B F G J L Q R T U W X Y Z
 
-   Number keys used: <=522
+   Number keys used: <=521
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -243,7 +243,7 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Catalog columns: (Flux: Brightness per pixel area)",
+      "Catalog columns:",
       3
     },
     {
@@ -368,26 +368,10 @@ static struct argp_option options[] =
     },
     {
       "clumpbrightness",
-      522,
-      0,
-      0,
-      "Brightness in clumps of an object.",
-      3
-    },
-    {
-      "flux",
-      'f',
-      0,
-      0,
-      "Flux (Brightness/area).",
-      3
-    },
-    {
-      "clumpsflux",
       511,
       0,
       0,
-      "Flux in clumps of an object.",
+      "Brightness in clumps of an object.",
       3
     },
     {
@@ -407,11 +391,11 @@ static struct argp_option options[] =
       3
     },
     {
-      "riverflux",
+      "riverave",
       514,
       0,
       0,
-      "Flux (B/pixel) river surrounding this clump.",
+      "Average river value surrounding this clump.",
       3
     },
     {
@@ -623,17 +607,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_to_sll(&p->allcolsll, CATBRIGHTNESS);
       p->up.brightnessset=1;
       break;
-    case 522:
+    case 511:
       add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
       p->up.clumpsbrightnessset=1;
-      break;
-    case 'f':
-      add_to_sll(&p->allcolsll, CATFLUX);
-      p->up.fluxset=1;
-      break;
-    case 511:
-      add_to_sll(&p->allcolsll, CATCLUMPSFLUX);
-      p->up.clumpsfluxset=1;
       break;
     case 'm':
       add_to_sll(&p->allcolsll, CATMAGNITUDE);
@@ -644,8 +620,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.clumpsmagnitudeset=1;
       break;
     case 514:
-      add_to_sll(&p->allcolsll, CATRIVERFLUX);
-      p->up.riverfluxset=1;
+      add_to_sll(&p->allcolsll, CATRIVERAVE);
+      p->up.riveraveset=1;
       break;
     case 515:
       add_to_sll(&p->allcolsll, CATRIVERNUM);
