@@ -1,3 +1,13 @@
+2015-07-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* lib/fitsarrayvv.c (pixelareaarcsec2): Previously called
+	pixelsteradians. Changed the units to arcsec^2 because it is more
+	useful.
+
+	* src/noisechisel/detection.c (detlabelsn): Now using a new sum of
+	pixel values for flux weighted center of profile. The values are
+	stored as one column in the
+
 2015-07-07  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkcatalog/mkcatalog.c (firstpass): Use only positive (after

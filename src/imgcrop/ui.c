@@ -196,7 +196,20 @@ readconfig(char *filename, struct imgcropparams *p)
 		   filename, lineno);
 	  up->wwidthset=1;
 	}
-
+      else if(strcmp(name, "hstartwcs")==0)
+	{
+	  if(up->hstartwcsset) continue;
+	  sizetelzero(value, &p->hstartwcs, name, key, SPACK,
+                      filename, lineno);
+	  up->hstartwcsset=1;
+	}
+      else if(strcmp(name, "hendwcs")==0)
+	{
+	  if(up->hendwcsset) continue;
+	  sizetelzero(value, &p->hendwcs, name, key, SPACK,
+                      filename, lineno);
+	  up->hendwcsset=1;
+	}
 
 
 
@@ -276,6 +289,10 @@ printvalues(FILE *fp, struct imgcropparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "deccol", p->deccol);
   if(up->wwidthset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "wwidth", p->wwidth);
+  if(up->hstartwcsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "hstartwcs", p->hstartwcs);
+  if(up->hendwcsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "hendwcs", p->hendwcs);
 
 
   fprintf(fp, "\n# Operating mode:\n");
@@ -322,6 +339,11 @@ checkifset(struct imgcropparams *p)
     REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
     REPORT_NOTSET("checkcenter");
+  if(up->hstartwcsset==0)
+    REPORT_NOTSET("hstartwcs");
+  if(up->hendwcsset==0)
+    REPORT_NOTSET("hendwcs");
+
   END_OF_NOTSET_REPORT;
 }
 
@@ -605,10 +627,10 @@ preparearrays(struct imgcropparams *p)
       pop_from_stll(&p->up.stll, &img->name);
       readfitshdu(img->name, p->cp.hdu, IMAGE_HDU, &tmpfits);
       imgbitpixsize(tmpfits, &p->bitpix, img->naxes);
-      readwcs(tmpfits, &img->nwcs, &img->wcs);
+      readwcs(tmpfits, &img->nwcs, &img->wcs, p->hstartwcs, p->hendwcs);
       if(img->wcs)
         {
-          status=wcshdo(WCSHDO_safe, img->wcs, &img->nwcskeys, &img->wcstxt);
+          status=wcshdo(0, img->wcs, &img->nwcskeys, &img->wcstxt);
           if(status)
             error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
                   wcs_errmsg[status]);

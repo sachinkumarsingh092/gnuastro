@@ -175,7 +175,8 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
            void **out, int outbitpix);
 
 void
-readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs);
+readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstart,
+        size_t hend);
 
 void
 readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs);
@@ -237,6 +238,6 @@ radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
                size_t number, size_t width);
 
 double
-pixelsteradians(struct wcsprm *wcs);
+pixelareaarcsec2(struct wcsprm *wcs);
 
 #endif

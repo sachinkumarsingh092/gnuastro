@@ -349,14 +349,14 @@ void
 makeoutput(struct mkcatalogparams *p)
 {
   size_t *cols;
-  double sn, st;
+  double sn, pixarea;
   char comment[COMMENTSIZE], tline[100];
   int prec[2]={p->floatprecision, p->accuprecision};
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
 
 
   /* Calculate the pixel area in steradians: */
-  st=pixelsteradians(p->wcs);
+  pixarea=pixelareaarcsec2(p->wcs);
 
 
   /* First make the objects catalog, then the clumps catalog. */
@@ -426,10 +426,10 @@ makeoutput(struct mkcatalogparams *p)
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
               "Zero point magnitude:", p->zeropoint);
       strcat(comment, p->line);
-      sprintf(tline, "Maximum %g sigma magnitude over image"
-              "(per pixel):", p->nsigmag);
+      sprintf(tline, "Pixel %g sigma surface brightness "
+              "(magnitude/arcsec^2):", p->nsigmag);
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-              tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint);
+              tline, -2.5f*log10(p->nsigmag*p->maxstd/pixarea)+p->zeropoint );
       strcat(comment, p->line);
 
       sn = p->obj0clump1 ? p->clumpsn : p->detsn;
@@ -456,7 +456,7 @@ makeoutput(struct mkcatalogparams *p)
 
       /* Report the area of each pixel in stradians: */
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n",
-              "Pixel area (steradians)", st);
+              "Pixel area (arcsec^2)", pixarea);
       strcat(comment, p->line);
 
 

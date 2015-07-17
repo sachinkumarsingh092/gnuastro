@@ -157,10 +157,10 @@ void
 detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 {
   float *imgss=p->imgss;
-  double *brightnesses, err, *xys;
   struct meshparams *smp=&p->smp;
-  size_t i, ind, is1=p->smp.s1, counter=0;
+  double *brightnesses, err, *xys;
   float *f, *ff, ave, *sntable, cpscorr=p->cpscorr;
+  size_t i, ind, xyscol=3, is1=p->smp.s1, counter=0;
   unsigned char *coversdet=NULL, b0f1=p->b0f1, *b=p->byt;
   long *areas, *lab=p->clab, *lf, detsnminarea=p->detsnminarea;
 
@@ -174,7 +174,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
   if(brightnesses==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for brightnesses in detlabelsn "
           "(detection.c)", *numlabs*sizeof *brightnesses);
-  errno=0; xys=calloc(*numlabs*2, sizeof *xys);
+  errno=0; xys=calloc(*numlabs*xyscol, sizeof *xys);
   if(xys==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for xys in detlabelsn "
           "(detection.c)", *numlabs*sizeof *xys);
@@ -214,8 +214,12 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 
           ++areas[*lab];
           brightnesses[*lab]   += *f;
-          xys[*lab*2]   += (double)((f-imgss)/is1) * *f;
-          xys[*lab*2+1] += (double)((f-imgss)%is1) * *f;
+          if(f-imgss>0)
+            {
+              xys[*lab*xyscol+2] += f-imgss;
+              xys[*lab*xyscol  ] += (double)((f-imgss)/is1) * *f;
+              xys[*lab*xyscol+1] += (double)((f-imgss)%is1) * *f;
+            }
         }
       ++lab;
       if(b0f1==0) ++b;
@@ -247,7 +251,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 
   /* calculate the signal to noise for successful detections: */
   for(i=1;i<*numlabs;++i)
-    if(areas[i]>detsnminarea && (ave=brightnesses[i]/areas[i]) >0 )
+    if(areas[i]>detsnminarea &&  xys[i*xyscol+2]>0.0f)
       {
         /* Find the flux weighted center of this object in each
            dimension to find the mesh it belongs to and get the
@@ -255,8 +259,8 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
            deviation on the grid was stored in smp->garray2. The error
            should then be taken to the power of two and if the sky is
            subtracted, a 2 should be multiplied to it.*/
-        err = smp->garray2[imgxytomeshid(smp, xys[i*2]/brightnesses[i],
-                                         xys[i*2+1]/brightnesses[i])];
+        err = smp->garray2[imgxytomeshid(smp, xys[i*xyscol]/xys[i*xyscol+2],
+                                         xys[i*xyscol+1]/xys[i*xyscol+2])];
         err *= p->skysubtracted ? err : 2.0f*err;
 
         /* Set the index in the sntable to store the Signal to noise
@@ -265,6 +269,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
            counter. But for initial detections, it is very important
            that their Signal to noise ratio be placed in the same
            index as their label. */
+        ave=brightnesses[i]/areas[i];
         ind = p->b0f1 ? i : counter++;
         sntable[ind]=sqrt( (float)(areas[i])/cpscorr ) * ave / sqrt(ave+err);
       }

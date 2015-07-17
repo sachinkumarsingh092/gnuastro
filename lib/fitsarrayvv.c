@@ -1160,11 +1160,12 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
    Don't call this function within a thread or use a mutex.
 */
 void
-readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
+readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstartwcs,
+        size_t hendwcs)
 {
   /* Declaratins: */
-  char *fullheader;
   int nkeys=0, status=0;
+  char *fullheader, *to, *from;
   int relax    = WCSHDR_all; /* Macro: use all informal WCS extensions. */
   int ctrl     = 0;          /* Don't report why a keyword wasn't used. */
   int nreject  = 0;          /* Number of keywords rejected for syntax. */
@@ -1172,6 +1173,36 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs)
   /* CFITSIO function: */
   if( fits_hdr2str(fptr, 1, NULL, 0, &fullheader, &nkeys, &status) )
     fitsioerror(status, NULL);
+
+  /* Only consider the header keywords in the current range: */
+  if(hendwcs>hstartwcs)
+    {
+      /* Mark the last character in the desired region. */
+      fullheader[hendwcs*(FLEN_CARD-1)]='\0';
+      /*******************************************************/
+      /******************************************************
+      printf("%s\n", fullheader);
+      ******************************************************/
+      /*******************************************************/
+
+      /* Shift all the characters to the start of the string. */
+      if(hstartwcs)                /* hstartwcs!=0 */
+        {
+          to=fullheader;
+          from=&fullheader[hstartwcs*(FLEN_CARD-1)-1];
+          while(*from++!='\0') *to++=*from;
+        }
+
+      nkeys=hendwcs-hstartwcs;
+
+      /*******************************************************/
+      /******************************************************
+      printf("\n\n\n###############\n\n\n\n\n\n");
+      printf("%s\n", &fullheader[1*(FLEN_CARD-1)]);
+      exit(0);
+      ******************************************************/
+      /*******************************************************/
+    }
 
   /* WCSlib function */
   status=wcspih(fullheader, nkeys, relax, ctrl, &nreject, nwcs, wcs);
@@ -1219,7 +1250,7 @@ readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs)
   readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
 
   /* Read the WCS information: */
-  readwcs(fptr, nwcs, wcs);
+  readwcs(fptr, nwcs, wcs, 0, 0);
 
   /* Close the FITS file: */
   fits_close_file(fptr, &status);
@@ -1670,7 +1701,7 @@ radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
 
   for(i=0;i<number;++i)
     {
-      if(isnan(xy[i*width]) || isnan(xy[i*width+1]))
+      if(isnan(radec[i*width]) || isnan(radec[i*width+1]))
         radec[i*width]=radec[i*width+1]=NAN;
       else
         {
@@ -1679,7 +1710,6 @@ radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
           if(status)
             error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s.", status,
                   wcs_errmsg[status]);
-
           /* For a check:
              printf("(%f, %f) --> (%f, %f)\n", xy[i*width], xy[i*width+1],
                     radec[i*width], radec[i*width+1]);
@@ -1715,14 +1745,16 @@ angulardistance(double r1, double d1, double r2, double d2)
 
 
 
-/* We want the stradian value of the pixels in the image. We assume
-   that the pixel size is completely negligible (so its position on
-   the celestial sphere does not matter). So simply multiplying the  */
+/* Report the arcsec^2 area of the pixels in the image based on the
+   WCS information in that image. We first use the angular distance of
+   two edges of one pixel in radians. Then the radians are multiplied
+   to give stradians and finally, the stradians are converted to
+   arcsec^2. */
 double
-pixelsteradians(struct wcsprm *wcs)
+pixelareaarcsec2(struct wcsprm *wcs)
 {
-  double *d, *df, radec[6];
   double xy[]={0,0,1,0,0,1};
+  double st, *d, *df, radec[6];
 
   /* Get the RA and Dec of the bottom left, bottom right and top left
      sides of the first pixel in the image. */
@@ -1739,6 +1771,14 @@ pixelsteradians(struct wcsprm *wcs)
            *180/M_PI*3600 ) );
   */
 
-  return ( angulardistance(radec[0], radec[1], radec[2], radec[3]) *
-           angulardistance(radec[0], radec[1], radec[4], radec[5]) );
+  /* Get the area in stradians. */
+  st= ( angulardistance(radec[0], radec[1], radec[2], radec[3]) *
+        angulardistance(radec[0], radec[1], radec[4], radec[5]) );
+
+  /* Convert the stradians to arcsec^2:
+
+     1deg^2 = (180/PI)^2 * 1stradian.
+     1arcsec^2 = (3600*3600) * 1degree^2
+   */
+  return st*180.0f*180.0f*3600.0f*3600.0f/(M_PI*M_PI);
 }

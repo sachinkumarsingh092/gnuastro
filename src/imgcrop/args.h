@@ -76,7 +76,7 @@ const char doc[] =
    e m n t u v
    A B C E F G H J L M O Q R T U X Y Z
 
-   Number keys used<=500
+   Number keys used<=502
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -115,7 +115,22 @@ static struct argp_option options[] =
       "Input:",
       1
     },
-
+    {
+      "hstartwcs",
+      501,
+      "INT",
+      0,
+      "Header keyword number to start reading WCS.",
+      1
+    },
+    {
+      "hendwcs",
+      502,
+      "INT",
+      0,
+      "Header keyword number to stop reading WCS.",
+      1
+    },
 
 
 
@@ -333,6 +348,20 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->imgmode=0;
       p->wcsmode=1;
       p->up.imgmodeset=p->up.wcsmodeset=1;
+      break;
+
+
+
+
+
+    /* Input */
+    case 501:
+      sizetelzero(arg, &p->hstartwcs, "hstartwcs", key, SPACK, NULL, 0);
+      p->up.hstartwcsset=1;
+      break;
+    case 502:
+      sizetelzero(arg, &p->hendwcs, "hendwcs", key, SPACK, NULL, 0);
+      p->up.hendwcsset=1;
       break;
 
 

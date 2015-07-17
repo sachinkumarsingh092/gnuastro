@@ -102,6 +102,8 @@ struct uiparams
   int     polygonset;
   int      suffixset;
   int checkcenterset;
+  int   hstartwcsset;
+  int     hendwcsset;
 };
 
 
@@ -142,6 +144,8 @@ struct imgcropparams
   int    keepblankcenter;  /* ==1: If center is not filled, remove.    */
   int     zeroisnotblank;  /* ==1: In float or double, keep 0.0 pixels.*/
   int         outpolygon;  /* ==1: Keep the inner polygon region.      */
+  size_t       hstartwcs;  /* Header keyword No. to start reading WCS. */
+  size_t         hendwcs;  /* Header keyword No. to end reading WCS.   */
 
   /* Output: */
   char           *suffix;  /* Ending of output file name.              */

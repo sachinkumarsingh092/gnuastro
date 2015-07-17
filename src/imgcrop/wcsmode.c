@@ -268,7 +268,6 @@ setcsides(struct cropparams *crp)
 	 crp->corners[2], crp->corners[3],
 	 crp->corners[4], crp->corners[5],
 	 crp->corners[6], crp->corners[7]);
-  exit(0);
   */
 }
 
