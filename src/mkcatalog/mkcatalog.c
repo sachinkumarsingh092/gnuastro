@@ -299,6 +299,9 @@ secondpass(struct mkcatalogparams *p)
 
      1. Divide by total flux to get the flux weighted center.
      2. Divide the total river flux by the number of river pixels.
+
+     Note that it might happen that there are no river pixels (when
+     grown clumps were used).
   */
   for(i=1;i<=p->numclumps;++i)
     {
@@ -306,7 +309,8 @@ secondpass(struct mkcatalogparams *p)
       thisclump = p->cinfo + i*CCOLUMNS;
       thisclump[ CSKY ] /= thisclump[ CAREA ];
       thisclump[ CSTD ] /= thisclump[ CAREA ];
-      thisclump[ CRivAve ] /= thisclump[ CRivArea ];
+      if(thisclump[ CRivArea ] > 0.0f)
+        thisclump[ CRivAve ] /= thisclump[ CRivArea ];
 
       if(thisclump [ CPosBright ]>0.0f)
         {

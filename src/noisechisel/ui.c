@@ -184,6 +184,13 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  strcpy(cp->output, value);
 	  cp->outputset=1;
 	}
+      else if(strcmp(name, "grownclumps")==0)
+	{
+	  if(up->grownclumpsset) continue;
+          intzeroorone(value, &p->grownclumps, name, key, SPACK,
+                       filename, lineno);
+	  up->grownclumpsset=1;
+	}
 
 
       /* Mesh grid: */
@@ -488,6 +495,8 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
+  if(up->grownclumpsset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "grownclumps", p->grownclumps);
 
 
   fprintf(fp, "\n# Mesh grid:\n");
@@ -588,6 +597,10 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("minbfrac");
   if(up->minnumfalseset==0)
     REPORT_NOTSET("minnumfalse");
+
+  /* Output */
+  if(up->grownclumpsset==0)
+    REPORT_NOTSET("grownclumps");
 
   /* Mesh grid: */
   if(up->smeshsizeset==0)

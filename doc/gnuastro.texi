@@ -8256,6 +8256,13 @@ added with the sky) to stop growing true clumps. Once true clumps are
 found, they are set as the basis to segment the detected region. They
 are grown until the threshold specified by this option.
 
+@item --grownclumps
+In the output (see @ref{NoiseChisel output}) store the grown clumps
+(or full detected region if only one clump was present in that
+detection). By default the original clumps are stored as the third
+extension of the output, if this option is called, it is replaced with
+the grown clump labels.
+
 @item -y
 @itemx --minriverlength
 (@option{=INT}) The minimum length of a river between two grown clumps
@@ -8348,6 +8355,12 @@ regions that were not a clump are given a negative value to clearly
 identify the noise from the detections. The total number of clumps in
 this image is stored in the @code{NCLUMPS} keyword of this extension
 and printed in verbose output.
+
+If the @option{--grownclumps} option is called, or a value of @code{1}
+is given to it in any of the configuration files, then instead of the
+original clump regions, the grown clumps will be stored in this
+extension. Note that if there is only one clump (or no clumps) over a
+detected region, then the whole detected region is given a label of 1.
 
 @item
 The final sky value on each pixel. See @ref{Sky value} for a complete

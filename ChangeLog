@@ -1,3 +1,11 @@
+2015-07-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/segmentation.c (nextavailablelabel): Now
+	accounts for the `--grownclumps' option.
+
+	* src/noisechisel/args.h (options): Corrected the type of output
+	for `--gthresh'. I had forgot to include any for it!
+
 2015-07-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* lib/fitsarrayvv.c (pixelareaarcsec2): Previously called

@@ -425,6 +425,9 @@ newclumplabels(struct clumpsthreadparams *ctp)
 void
 nextavailablelabel(struct clumpsthreadparams *ctp)
 {
+  size_t numclumps = ( (ctp->p->grownclumps && ctp->numclumps<3) ?
+                       1 : ctp->numclumps-1 );
+
   /* If we are using multiple threads, lock the mutex, so only this
      thread can change the p->numobjects and p->numclumps values. */
   if(ctp->p->cp.numthreads>1)
@@ -432,7 +435,7 @@ nextavailablelabel(struct clumpsthreadparams *ctp)
 
   ctp->firstavailablelab  = ctp->p->numobjects;
   ctp->p->numobjects     += ctp->numobjects-1;
-  ctp->p->numclumps      += ctp->numclumps-1;
+  ctp->p->numclumps      += numclumps;
 
   /* This thread is finished with the mutex, unlock it for the
      other threads: */
@@ -530,6 +533,15 @@ segmentonthread(void *inparam)
             thisdetectionisoneobject(ctp);
             if(segmentationname && ( p->stepnum>=3 && p->stepnum<=6) )
               continue;
+
+            /* If the grown clumps are desired in the output, then
+               replace all these grown clumps with those in
+               p->clab. */
+            if(p->grownclumps)
+              {
+                indf=(ind=ctp->inds)+ctp->area;
+                do p->clab[*ind]=p->olab[*ind]; while(++ind<indf);
+              }
           }
         else
           {
@@ -538,6 +550,15 @@ segmentonthread(void *inparam)
             growclumps(ctp, 1);
             if(segmentationname && p->stepnum==3)
               { free(ctp->blankinds); continue; }
+
+            /* If the grown clumps are desired in the output, then
+               replace all these grown clumps with those in
+               p->clab. */
+            if(p->grownclumps)
+              {
+                indf=(ind=ctp->inds)+ctp->area;
+                do p->clab[*ind]=p->olab[*ind]; while(++ind<indf);
+              }
 
             /* Identify the objects within the grown clumps and set
                ctp->numobjects. This function allocates

@@ -367,10 +367,18 @@ oversegment(struct clumpsthreadparams *ctp)
 void
 growclumps(struct clumpsthreadparams *ctp, int withrivers)
 {
-  long n1, *olab=ctp->p->olab;
+  struct noisechiselparams *p=ctp->p;
+
+  long n1, *olab=p->olab;
   size_t *ind, *indf, thisround, numngb;
   size_t *n, *nf, numblanks=ctp->numblanks;
-  size_t ngb[8], is0=ctp->p->lmp.s0, is1=ctp->p->lmp.s1;
+  size_t ngb[8], is0=p->lmp.s0, is1=p->lmp.s1;
+
+  /* It might happen that the growth threshold is larger than any of
+     the non-clump pixels. So, if the number of blanks is zero, just
+     leave this function. */
+  if(numblanks==0) return;
+
 
   /* The basic idea is this: after growing, not all the blank pixels
      are necessarily filled, for example the pixels might belong to

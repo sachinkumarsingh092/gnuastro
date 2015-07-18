@@ -49,8 +49,8 @@ struct clumpsthreadparams
   size_t        *topinds; /* Indexs of the top flux in each clump.       */
   size_t       numclumps; /* Number of clumps in this set of pixels.     */
   size_t      numobjects; /* Number of objects in this detected region.  */
-  size_t            area; /* Array keeping the areas of all detections.  */
-  size_t           *inds; /* Array of pointers to the indexs of all dets.*/
+  size_t            area; /* Area of the current region for this thread. */
+  size_t           *inds; /* Indexs of the current region for this thrd. */
   size_t      *blankinds; /* Array of pixels which should be grown.      */
   size_t       numblanks; /* Number of blank pixels.                     */
   long     *segtoobjlabs; /* Convert from grown segments to object label.*/

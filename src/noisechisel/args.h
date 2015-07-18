@@ -73,7 +73,7 @@ const char doc[] =
 /* Available letters for short options:
 
    f j w x z
-   A C J W X Y Z
+   A J W X Y Z
 
    Used numbers: <=519
 
@@ -165,6 +165,14 @@ static struct argp_option options[] =
       0,
       0,
       "Save the sky subtracted image, `_skysubed.fits'.",
+      2
+    },
+    {
+      "grownclumps",
+      'C',
+      0,
+      0,
+      "Save grownclumps instead of original clumps.",
       2
     },
 
@@ -491,7 +499,7 @@ static struct argp_option options[] =
     {
       "gthresh",
       'G',
-      0,
+      "FLT",
       0,
       "Threshold (STD multiple) to stop growing clumps.",
       5
@@ -605,6 +613,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 518:
       p->skysubedname="a";
+      break;
+    case 'C':
+      p->grownclumps=1;
+      p->up.grownclumpsset=1;
       break;
 
     /* Mesh grid: */

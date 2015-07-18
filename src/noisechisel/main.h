@@ -52,6 +52,7 @@ struct uiparams
   int        kernelnameset;
   int              khduset;
   int     skysubtractedset;
+  int       grownclumpsset;
 
   int         smeshsizeset;
   int         lmeshsizeset;
@@ -118,6 +119,7 @@ struct noisechiselparams
   int           detectonly; /* ==1: Only do detection, no segmentation.    */
   char        *maskdetname; /* !=NULL: Save masked detections and sky.     */
   char       *skysubedname; /* !=NULL: Save the sky subtracted image.      */
+  int          grownclumps; /* ==1: Save the grown clumps in output.       */
 
   /* Detection: */
   float              *conv; /* Convolved image.                            */
