@@ -1,3 +1,21 @@
+2015-07-22  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/thresh.c (snthresh): Had mistakenly used
+	`p->detquant', for both detection and segmentation! This is now
+	corrected.
+
+	* src/mkcatalog/mkcatalog.c (secondpass): Sets the river flux to
+	Sky for when the grown clumps are used, see the explanation
+	bellow.
+
+	* src/mkcatalog/columns.c (brightnessmag): Corrected the
+	definition of brightness. It was incorrectly dividing the total
+	brightness by the area when the user asked for brightness.
+	(sncol): Can now work accurately when grown clumps are also
+	included. In a grown clump image, full detections that aren't
+	harmed by deblending are are fully labeled. So there is no river
+	pixels there and the S/N equations had to incorporate this.
+
 2015-07-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/segmentation.c (nextavailablelabel): Now

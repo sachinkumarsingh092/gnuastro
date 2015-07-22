@@ -959,6 +959,7 @@ indexfromquantile(size_t size, float quant)
 
   /* Find the index of the quantile. */
   floatindex=(float)size*quant;
+
   /*
   printf("quant: %f, size: %lu, findex: %f\n", quant, size, floatindex);
   */

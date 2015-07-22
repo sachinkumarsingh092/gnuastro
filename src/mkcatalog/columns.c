@@ -260,8 +260,8 @@ position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj)
 void
 brightnessmag(struct mkcatalogparams *p, int m0b1, int cinobj, int isriver)
 {
+  size_t i, col;
   double bright, *value;
-  size_t i, col, acol=(size_t)(-1);
   char *type, *mb=m0b1 ? "brightness" :"magnitude";
 
   /* Set the proper column to use */
@@ -276,7 +276,6 @@ brightnessmag(struct mkcatalogparams *p, int m0b1, int cinobj, int isriver)
         }
       else
         {
-          acol = CAREA;
           col  = CBrightness;
           type = "This clump";
         }
@@ -286,13 +285,11 @@ brightnessmag(struct mkcatalogparams *p, int m0b1, int cinobj, int isriver)
       if(isriver) { --p->curcol; return; }
       if(cinobj)    /* It is the positions of clumps in object. */
         {
-          acol = OAREAC;
           col  = OBrightnessC;
           type = "Clumps in object";
         }
       else          /* It is the position of the object itsself.*/
         {
-          acol = OAREA;
           col  = OBrightness;
           type = "Full object";
         }
@@ -327,7 +324,7 @@ brightnessmag(struct mkcatalogparams *p, int m0b1, int cinobj, int isriver)
           *value = bright<=0.0f ? NAN : -2.5f*log10(bright)+p->zeropoint;
           break;
         case 1:
-          *value = bright / ( isriver ? 1.0f : p->info[(i+1)*p->icols+acol] );
+          *value = bright;
           break;
         default:
           error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
@@ -338,7 +335,7 @@ brightnessmag(struct mkcatalogparams *p, int m0b1, int cinobj, int isriver)
     }
 
   /* When dealing with brightness set the column to accurate mode: */
-  if(m0b1)
+  if(isriver)
     p->accucols[p->accucounter++]=p->curcol;
 }
 
@@ -389,24 +386,37 @@ sncol(struct mkcatalogparams *p)
      was not subtracted. */
   for(i=0;i<p->num;++i)
     {
-      err=p->info[(i+1)*p->icols+stdcol];
       Ni=p->info[(i+1)*p->icols+areacol];
       I=p->info[(i+1)*p->icols+brightnesscol]/Ni;
+      err=p->info[(i+1)*p->icols+stdcol]*p->info[(i+1)*p->icols+stdcol];
 
       if(p->obj0clump1)
         {
-          err *= p->skysubtracted ? 2.0f*err : 0.0f;
+          /* Set the "outer" flux (average river flux or sky
+             background flux if there were no river pixels.) */
           O=p->cinfo[ (i+1) * CCOLUMNS + CRivAve ];
 
+          /* Note that the sky error is not needed when there were
+             rivers. However, if the grownclumps were used, full
+             detections can be considered as a clump and there will be
+             no rivers. In such cases, the average river flux is set
+             to the sky value in the secondpass function
+             (mkcatalog.). So here we need to use the sky error as
+             it was calculated above and leave err untouched. */
+          if(p->cinfo[ (i+1) * CCOLUMNS + CRivArea ] > 0.0f)
+            err = (O>0?O:-1*O) + err*(p->skysubtracted ? 2.0f : 0.0f);
+
           p->cat[i * p->numcols + p->curcol ] =
-            ( sqrt(Ni/p->cpscorr)*(I-O)
-              / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + err ) );
+            ( sqrt(Ni/p->cpscorr)*(I-O) / sqrt( (I>0?I:-1*I) + err ) );
         }
       else
         {
-          err *= p->skysubtracted ? err : 2.0f*err;
+          err *= p->skysubtracted ? 1.0f : 2.0f;
+
+          /* Note that `I' was sky subtracted for objects in firstpass
+             (mkcatalog.) */
           p->cat[i * p->numcols + p->curcol ] =
-            sqrt( Ni/p->cpscorr ) * I / sqrt(I+err);
+            sqrt( Ni/p->cpscorr ) * I / sqrt( (I>0?I:-1*I) + err );
         }
     }
 

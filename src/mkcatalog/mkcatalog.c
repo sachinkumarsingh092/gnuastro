@@ -311,6 +311,8 @@ secondpass(struct mkcatalogparams *p)
       thisclump[ CSTD ] /= thisclump[ CAREA ];
       if(thisclump[ CRivArea ] > 0.0f)
         thisclump[ CRivAve ] /= thisclump[ CRivArea ];
+      else
+        thisclump[ CRivAve ] = thisclump[ CSKY ];
 
       if(thisclump [ CPosBright ]>0.0f)
         {
