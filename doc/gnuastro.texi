@@ -320,9 +320,20 @@ Convolve
 
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
+* Frequency domain and Fourier operations::  Fourier operations basics.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
-* Convolution kernel::
+* Convolution kernel::          Make and specify the kernel.
 * Invoking astconvolve::        Options and arguments to Convolve.
+
+Frequency domain and Fourier operations
+
+* Fourier series historical background::  Historical background.
+* Circles and the complex plane::  Interpreting complex numbers.
+* Fourier series::              Fourier Series definition.
+* Fourier transform::           Fourier Transform definition.
+* Dirac delta and comb::        Dirac delta and Dirac comb.
+* Convolution theorem::         Derivation of Convolution theorem.
+* Sampling theorem::            Sampling theorem (Nyquist frequency).
 
 ImageWarp
 
@@ -387,7 +398,7 @@ MakeProfiles
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
 * Flux Brightness and magnitude::  About these measures of energy.
-* Profile magnitude::     Definition of total profile magnitude.
+* Profile magnitude::           Definition of total profile magnitude.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 
 Modeling basics
@@ -5531,8 +5542,9 @@ removing small frequencies}.
 @menu
 * Convolution process::         More basic explanations.
 * Convolution on the edges::    Dealing with the edges of an image.
+* Frequency domain and Fourier operations::  Fourier operations basics.
 * Spatial vs. Frequency domain::  Comparison of the two domains.
-* Convolution kernel::
+* Convolution kernel::          Make and specify the kernel.
 * Invoking astconvolve::        Options and arguments to Convolve.
 @end menu
 
@@ -5597,7 +5609,7 @@ Discrete Fourier Transform which will be slower.
 
 
 
-@node Convolution on the edges, Spatial vs. Frequency domain, Convolution process, Convolve
+@node Convolution on the edges, Frequency domain and Fourier operations, Convolution process, Convolve
 @subsection Convolution on the edges
 
 In purely `linear' spatial filtering (convolution), there are problems
@@ -5652,7 +5664,610 @@ observed images (where we don't have any more data on the edges) and
 not in modeling.
 
 
-@node Spatial vs. Frequency domain, Convolution kernel, Convolution on the edges, Convolve
+
+@node Frequency domain and Fourier operations, Spatial vs. Frequency domain, Convolution on the edges, Convolve
+@subsection Frequency domain and Fourier operations
+
+Getting a good grip on the frequency domain is usually not an easy
+job! It envolves a space that is very unfamiliar to most beginners. So
+we have decided to give the issue a complete review here. It has
+become something of a clich@'e for people to say that the Fourier
+series and transform is breaking up the functions into sines and
+cosines. However, sines and cosines them selves are functions, so this
+really adds no extra layer of physical insight for a new
+commer. Therefore, before juming into the equations and proofs we will
+begin with a historical background.
+
+@menu
+* Fourier series historical background::  Historical background.
+* Circles and the complex plane::  Interpreting complex numbers.
+* Fourier series::              Fourier Series definition.
+* Fourier transform::           Fourier Transform definition.
+* Dirac delta and comb::        Dirac delta and Dirac comb.
+* Convolution theorem::         Derivation of Convolution theorem.
+* Sampling theorem::            Sampling theorem (Nyquist frequency).
+@end menu
+
+@node Fourier series historical background, Circles and the complex plane, Frequency domain and Fourier operations, Frequency domain and Fourier operations
+@subsubsection Fourier series historical background
+Ever since the ancient times, the circle has been (and still is) the
+simplest shape for abstract comprehention. All you need is a center
+point and a radius and you are done. All the points on a circle are at
+a fixed distance from the center. However, the moment you try to
+connect this elegantly simple and beautiful abstract construct (the
+circle) with the real world (for example compute its area or its
+circumference), things become really hard (ideally, impossible)
+because the irrational number @mymath{\pi} gets involved.
+
+The key to understanding the Fourier series (thus the Fourier
+transform and finally the Discrete Fourier Transform) is our ancient
+desire to express everthing in terms of circles or the most
+exceptionally simple and elegant abstract human construct. Most people
+prefer to say the same thing in a more ahistorical manner: to break a
+function into sines and cosines. As the term ``ancient'' in the
+previous sentence implies, Jean-Baptiste Joseph Fourier (1768 -- 1830
+A.D.) was not the first person to do this. The main reason we know
+this process by his name today is that he came up with an ingenious
+method to find the necessary coefficients (radius) and frequencies
+(``speed'' of rotation) of the circles for any generic (integrable)
+function.
+
+@float Figure,epicycle
+@image{gnuastro-figures/epicycles, 15.2cm, , Middle ages epicycles
+along with two demonstrations of breaking a generic function using
+epicycles.} @caption{Epicycles and the Fourier series. Left: A
+demonstration of Mercury's epicycles relative to the ``center of the
+world'' by Qutb al-Din al-Shirazi (1236 -- 1311 A.D.)  retrieved from
+Wikipedia
+(@url{https://commons.wikimedia.org/wiki/File:Ghotb2.jpg}). Middle and
+Right: A snapshot from an animation Showing how adding more epicycles
+(or terms in the fourier series) will be able to approximate any
+function. Animations can be found at:
+(@url{https://commons.wikimedia.org/wiki/File:Fourier_series_square_wave_circles_animation.gif})
+and
+(@url{https://commons.wikimedia.org/wiki/File:Fourier_series_sawtooth_wave_circles_animation.gif}).}
+@end float
+
+Like most aspects of mathematics, this process of interpretting
+everything in terms of circles, began for astronomical purposes. When
+astronomers noticed that the orbit of Mars and other outer planets,
+did not appear to be a simple circle (as everything should have been
+in the heavens). At some point during their orbit, the revolution of
+these planets would become slower, stop, go back a little (in what is
+known as the retrograde motion) and then continue going forward
+again.
+
+The correction proposed by Ptolemy (90 -- 168 A.D.) was the most
+agreed upon. He put the planets on Epicycles or circles whose center
+itself rotates on a circle whose center is the earth. Eventually, as
+observations became more and more precise, it was necessary to add
+more and more epicycles in order to explain the complex motions of the
+planets@footnote{See the Wikipedia page on ``Deferent and epicycle''
+for a more complete historical review.}. @ref{epicycle}(Left) shows an
+example depiction of the epicycles of Mercury in the late 13th
+century.
+
+Ofcourse we now know that if they had abdicated the Earth from its
+throne in the center of the heavens and allowed the Sun to take its
+place, everything would become much simpler and true. But there wasn't
+enough observational evidence for changing the ``professional
+consensus'' of the time to this radical view suggested by a small
+minority@footnote{Aristarchus of Samos (310 -- 230 B.C.) appears to be
+one of the first peole to suggest the Sun being in the center of the
+universe. This approach to science (that the standard model is defined
+by concensus) and the fact that this consensus might be completely
+wrong still applies equally well to our models of particle physics and
+cosmology today.}. So the pre-Galilean astronomers chose to keep Earth
+in the center and find a correction to the models (while keeping the
+heavens a purely ``circular'' order).
+
+The main reason we are giving this historical background which might
+appear off topic is to give historical evidence that while such
+``approximations'' do work and are very useful for pragmatic reasons
+(like measuring the calendar from the movement of astronomical
+bodies). They offer no physical insight. Historically, the western
+astronomers (European, Middle Eastern and north African astronomers wo
+were involved with the Ptolemic world view, as opposed to Chinese in
+the east or the Maya in the Americas) were only forced to abandon
+these approximations because of the huge number of epicycles they had
+to add to explain more accurate observations. Finally the death knell
+of this world-view was Galileo's observations with his new instrument
+(the telescope). So the main physical insight which is what
+Astronomers and Physicists are interested in (as opposed to
+Mathematicians and Engineers who just like proving and optimizing or
+calculating!)  comes from being creative and not limiting our selves
+to such approximations. Even when they work.
+
+@node Circles and the complex plane, Fourier series, Fourier series historical background, Frequency domain and Fourier operations
+@subsubsection Circles and the complex plane
+Before going onto the derivation, it is also useful to review how the
+complex numbers and their plane relate to the circles we talked about
+above. The two schematics in the middle and right of @ref{epicycle}
+show how a 1D function of time can be made using the 2D real and
+imaginary surface. Seeing the animation in Wikipedia will really help
+in understanding this important concept. At each point in time, we
+take the vertical coordinate of the point and use it to find the value
+of the function at that point in time. @ref{iandtime} shows this
+relation with the axises marked. Leonhard Euler@footnote{Other forms
+of this equation were known before Euler. For example in 1707
+A.D. (the year of Euler's birth) Abraham de Moivre (1667 -- 1754 A.D.)
+showed that @mymath{(\cos{x}+i\sin{x})^n=\cos(nx)+i\sin(nx)}. In 1714
+A.D., Roger Cotes (1682 -- 1716 A.D. a colleague of Newton who
+proofread the second edition of Principia) showed that:
+@mymath{ix=\ln(\cos{x}+i\sin{x})}.}  (1707 -- 1783 A.D.)  showed that
+the complex exponential (@mymath{e^{ix}} where @mymath{x} is real) is
+periodic (can be represented with a circle) and can be written as:
+@mymath{e^{ix}=\cos{x}+isin{x}}.  Therefore,
+@mymath{e^{x+2\pi}=e^x}. Since it is periodic (lets assume with a
+period of @mymath{P}), it is customary to write a complex exponential
+in the form of @mymath{e^{2{\pi}inx/P}} where @mymath{n} is an
+integer) instead of simply @mymath{e^{ix}}. The advantage is of this
+notation is that the period (@mymath{P}) is clearly visible and the
+frequency (@mymath{2{\pi}n \over P}) is defined through the integer
+@mymath{n}.
+
+As we see from the examples in @ref{epicycle}, for each constituting
+frequency, we need a respective `magnitude' or the radius of the
+circle in order to accurately approximate the desired function.
+
+@float Figure,iandtime
+@image{gnuastro-figures/iandtime, 15.2cm, , } @caption{Relation
+between the real (signal), imaginary (@mymath{i\equiv\sqrt{-1}}) and
+time axises at two snapshots of time.}
+@end float
+
+
+
+
+@node Fourier series, Fourier transform, Circles and the complex plane, Frequency domain and Fourier operations
+@subsubsection Fourier series
+In astronomical images, our variable (brightness, or number of
+photo-electrons, or signal to be more generic) is recorded over the 2D
+spatial surface of a camera pixel. However to make things easier to
+understand, here we will assume that the signal is recorded in units
+of time (1D), for example like a microphone recording sound.  Let's
+assume that we have the function @mymath{f(t)} which is integrable in
+the interval @mymath{[t_0, t_0+T]} (always true in practical cases
+like images and sound). To approximate @mymath{f(t)}, we need to find
+a set of frequencies and their corresponding `magnitude's (see
+@ref{Circles and the complex plane}). From the same section, recall
+that the complex exponential is a periodic function. Therefore our aim
+is to show @mymath{f(t)} in the following manner:
+
+
+@dispmath{
+f(t)=\displaystyle\sum_{n=-\infty}^{\infty}c_ne^{{2{\pi}in\over T}t}
+}
+
+@noindent
+Note that the different angular frequencies (@mymath{2{\pi}n/T}, in
+units of cycles per second) are not arbitrary. They are all multiples
+of the fundamental frequency of @mymath{\omega_0=2\pi/T}. @mymath{T}
+was the duration of the signal we want to model. Therefore, we see
+that the smallest possible frequency (or the frequency resolution) in
+the end, depends on the time period we observed the signal or
+@mymath{T}. In the case of each dimension on an image, this is the
+size of the image in the respective dimension. The frequencies have
+been defined in this fashion to insure that the final sum is periodic
+outside of the @mymath{[t_0, t_0+T]} interval too.
+
+The frequencies are thus determined by definition. So all we need to
+do is to find the coefficients (@mymath{c_n}), or magnitudes, or radii
+of the circles for each frequency which is identified with the integer
+@mymath{n}.  Fourier's approach was to multiply both sides with a
+fixed term:
+
+@dispmath{
+f(t)e^{-{2{\pi}im\over T}t}=\displaystyle\sum_{n=-\infty}^{\infty}c_ne^{{2{\pi}i(n-m)\over T}t}
+}
+
+@noindent
+where @mymath{m>0}@footnote{ We could have assumed @mymath{m<0} and
+set the exponential to positive, but this is more clear.}. We can then
+integrate both sides over the observation period:
+
+@dispmath{
+\int_{0}^{T}f(t)e^{-{2{\pi}im\over T}t}dt=\int_{0}^{T}\displaystyle\sum_{n=-\infty}^{\infty}c_ne^{{2{\pi}i(n-m)\over T}t}dt=\displaystyle\sum_{n=-\infty}^{\infty}c_n\int_{0}^{T}e^{{2{\pi}i(n-m)\over T}t}dt
+}
+
+@noindent
+Both @mymath{n} and @mymath{m} are positive integers. Also, we know
+that a complex exponential is periodic so after one period
+(@mymath{T}) it comes back to its starting point. Therefore
+@mymath{\int_0^Te^{2{\pi}k/T}dt=0} for any @mymath{k>0}, However, when
+@mymath{k=0}, this integral becomes:
+@mymath{\int_0^Te^0dt=\int_0^Tdt=T}. Hence since the integral will be
+zero for all @mymath{n{\neq}m} we get:
+
+@dispmath{
+\displaystyle\sum_{n=-\infty}^{\infty}c_n\int_{0}^{T}e^{{2{\pi}i(n-m)\over T}t}dt=Tc_m
+}
+
+@noindent
+So we can find the ``magnitude'' of the frequency @mymath{2{\pi}m/T}
+within @mymath{f(t)} through the relation:
+
+@dispmath{
+c_m={1\over T}\int_{0}^{T}f(t)e^{-{2{\pi}im\over T}t}dt
+}
+
+
+
+@node Fourier transform, Dirac delta and comb, Fourier series, Frequency domain and Fourier operations
+@subsubsection Fourier transform
+In @ref{Fourier series}, we had to assume that the function is
+periodic outside of the desired interval with a period of
+@mymath{T}. With the approximation that @mymath{T\rightarrow\infty} we
+can work with any function. However, with this approximation, the
+fundamental frequency (@mymath{\omega_0}) or the frequency resolution
+that we discussed in @ref{Fourier series} will tend to zero:
+@mymath{\omega_0\rightarrow0}. In the equation to find @mymath{c_m},
+every @mymath{m} represented a frequency (multiple of
+@mymath{\omega_0}) and the integration on @mymath{t} removes the
+dependance of the right side of the equation on @mymath{t}, making it
+only a function of @mymath{m} or frequency. So after defining the
+following two variables:
+
+@dispmath{\omega{\equiv}m\omega_0}
+@dispmath{F(\omega){\equiv}Tc_m}
+
+@noindent
+we get:
+
+@dispmath{
+  F(\omega)=\int_{-\infty}^{\infty}f(t)e^{-i{\omega}t}dt.
+}
+
+@noindent
+The function @mymath{F(\omega)} is thus the @emph{Fourier transform}
+of @mymath{f(t)} in the frequency domain. So through this
+transformation, we can find the magnitudes of the constituting
+frequencies or the value in the frequency space@footnote{As we
+discussed before, this `magnitude' can be interpreted as the radius of
+the circle rotating at this frequency in the epicyclic interpretation
+of the Fourier series, see @ref{epicycle} and @ref{iandtime}.}  of our
+time-based input function. The great thing is that we can also do the
+reverse: with the approximations above, lets multiply the right side
+of the definition of the Fourier Series (@ref{Fourier series}) with
+@mymath{1=T/T=({\omega_0}T)/(2\pi)}:
+
+@dispmath{
+f(t)={1\over 2\pi}\displaystyle\sum_{n=-\infty}^{\infty}Tc_ne^{{2{\pi}in\over T}t}\omega_0={1\over 2\pi}\displaystyle\sum_{n=-\infty}^{\infty}F(\omega)e^{i{\omega}t}\Delta\omega
+}
+
+
+@noindent
+To find the right most side of this equation, we renamed
+@mymath{\omega_0} as @mymath{\Delta\omega} because it was our
+resolution, @mymath{2{\pi}n/T} was written as @mymath{\omega} and
+finally, @mymath{Tc_n} was written as @mymath{F(\omega)} as we defined
+above. Now, as @mymath{T\rightarrow\infty},
+@mymath{\Delta\omega\rightarrow0} so we can write:
+
+@dispmath{
+  f(t)={1\over 2\pi}\int_{-\infty}^{\infty}F(\omega)e^{i{\omega}t}d\omega
+}
+
+Together, these two equations provide us with a very powerful set of
+tools that we can use to process (analyze) and manipulate (synthesize)
+signal in time or in space. Ofcourse, when dealing with space, we have
+to note that frequency is no longer in inverse temporal units like
+seconds, but in inverse spatial units like meters. Through the first
+equation, we can break up our input function into its constituent
+frequencies and analyze it, hence it is also known as
+@emph{analysis}. Using the second equation, we can synthesize or make
+the input function from the known frequencies and their
+magnitudes. Thus it is known as @emph{synthesis}. Here, we symbolize
+the Fourier transform (analysis) and its inverse (synthesis) of a
+function @mymath{f(t)} and its Fourier Transform @mymath{F(\omega)} as
+@mymath{\wp[f]} and @mymath{\wp^{-1}[F]}.
+
+
+@node Dirac delta and comb, Convolution theorem, Fourier transform, Frequency domain and Fourier operations
+@subsubsection Dirac delta and comb
+The Dirac @mymath{\delta} (delta) function (also known as an impulse)
+is the way that we convert a continuous function into a discrete
+one. It is defined to satisfy the following integral:
+
+@dispmath{\int_{-\infty}^{\infty}\delta(t)dt=1}
+
+@noindent
+When integrated with another function, it gives that function's value
+at @mymath{t=0}:
+
+@dispmath{\int_{-\infty}^{\infty}f(t)\delta(t)dt=f(0)}
+
+@noindent
+For an impulse positioned at another point (say @mymath{t_0}) or
+@mymath{\delta(t-t_0)} we can write:
+
+@dispmath{\int_{-\infty}^{\infty}f(t)\delta(t-t_0)dt=f(t_0)}
+
+@noindent
+The Dirac @mymath{\delta} function also operates similarly if we use
+summations instead of integrals. The Fourier transform of the delta
+function is:
+
+@dispmath{\wp[\delta(t)]=\int_{-\infty}^{\infty}\delta(t)e^{-i{\omega}t}dt=e^{-i{\omega}0}=1}
+
+@dispmath{\wp[\delta(t-t_0)]=\int_{-\infty}^{\infty}\delta(t-t_0)e^{-i{\omega}t}dt=e^{-i{\omega}t_0}}
+
+@noindent
+From the definition of the Dirac @mymath{\delta} we can also define a
+Dirac comb or an impulse train:
+
+@dispmath{
+III_P(t)\equiv\displaystyle\sum_{k=-\infty}^{\infty}\delta(t-kP)
+}
+
+
+@noindent
+The Dirac comb consists of infinite Dirac @mymath{\delta} functions
+that are separated periodically by @mymath{P} (@mymath{P} is chosen to
+represent ``pixel width'' later in @ref{Sampling theorem}). The
+Fourier transform of the Dirac comb will be necessary later, so let's
+derive it. By its definition, it is periodic, with a period of
+@mymath{P}, so the Fourier coefficients of its Fourier Series
+(@ref{Fourier series}) can be calculated within one period:
+
+@dispmath{III_P=\displaystyle\sum_{n=-\infty}^{\infty}c_ne^{i{2{\pi}n\over P}t}}
+
+@noindent
+We can now find the @mymath{c_n} from @ref{Fourier series}:
+
+@dispmath{
+c_n={1\over P}\int_{-P/2}^{P/2}\delta(t)e^{-i{2{\pi}n\over P}t}
+={1\over P}\quad\quad \rightarrow \quad\quad
+III_P={1\over P}\displaystyle\sum_{n=-\infty}^{\infty}e^{i{2{\pi}n\over P}t}
+}
+
+@noindent
+So we can write the Fourier transform of the Dirac comb as:
+
+@dispmath{
+\wp[III_P]=\int_{-\infty}^{\infty}III_Pe^{-i{\omega}t}dt
+={1\over P}\displaystyle\sum_{n=-\infty}^{\infty}\int_{-\infty}^{\infty}e^{-i(\omega-{2{\pi}n\over P})t}dt={1\over P}\displaystyle\sum_{n=-\infty}^{\infty}\delta\left(\omega-{2{\pi}n\over P}\right)
+}
+
+
+@noindent
+In the last step, we used the fact that the complex exponential is a
+periodic function, that @mymath{n} is an integer and that as we
+defined in @ref{Fourier transform}, @mymath{\omega{\equiv}m\omega_0},
+where @mymath{m} was an integer. The integral will be zero for any
+@mymath{\omega} that is not equal to @mymath{2{\pi}n/P}, a more
+complete explanation can be seen in @ref{Fourier series}. Therefore,
+in the time domain the impulses had spacings of @mymath{P} seconds, in
+the frequency space, the spacings between the different impulses are
+proportional to @mymath{1/P} Hertz (1/seconds).
+
+
+@node Convolution theorem, Sampling theorem, Dirac delta and comb, Frequency domain and Fourier operations
+@subsubsection Convolution theorem
+
+The convolution (shown with the @mymath{\ast} operator) of the two
+functions @mymath{f(t)} and @mymath{h(t)} is defined as:
+
+@dispmath{
+c(t)\equiv[f{\ast}h](t)=\int_{-\infty}^{\infty}f(\tau)h(t-\tau)d\tau
+}
+
+@noindent
+See @ref{Convolution process} for a more detailed physical (pixel
+based) interpretation of this definition. The fourier transform of
+convolution (@mymath{C(\omega)}) can be written as:
+
+@dispmath{
+  C(\omega)=\int_{-\infty}^{\infty}[f{\ast}h](t)e^{-i{\omega}t}dt=
+  \int_{-\infty}^{\infty}f(\tau)\left[\int_{-\infty}^{\infty}h(t-\tau)e^{-i{\omega}t}dt\right]d\tau
+}
+
+@noindent
+To solve the inner integral, lets define @mymath{s{\equiv}t-\tau}, so
+that @mymath{ds=dt} and @mymath{t=s+\tau} then the inner integral
+becomes:
+
+@dispmath{
+\int_{-\infty}^{\infty}h(t-\tau)e^{-i{\omega}t}dt=
+\int_{-\infty}^{\infty}h(s)e^{-i{\omega}(s+\tau)}ds=e^{-i{\omega}\tau}\int_{-\infty}^{\infty}h(s)e^{-i{\omega}s}ds=H(\omega)e^{-i{\omega}\tau}
+}
+
+@noindent
+where @mymath{H(\omega)} is the Fourier transform of
+@mymath{h(t)}. Substituting this result for the inner integral above,
+we get:
+
+@dispmath{
+C(\omega)=H(\omega)\int_{-\infty}^{\infty}f(\tau)e^{-i{\omega}\tau}d\tau=H(\omega)F(\omega)=F(\omega)H(\omega)
+}
+
+@noindent
+where @mymath{F(\omega)} is the Fourier transform of @mymath{f(t)}. So
+multiplying the Fourier transform of two functions individually, we
+get the Fourier transform of their convolution. The convolution
+theorem also proves a relation between the convolutions in the
+frequency space. Let's define:
+
+@dispmath{C(\omega){\equiv}F(\omega){\ast}H(\omega)}
+
+@noindent
+Applying the inverse Fourier Transform or synthesis equation
+(@ref{Fourier transform}) to both sides and following the same steps
+above, we get:
+
+@dispmath{c(t)=f(t)h(t)}
+
+@noindent
+We can therefore re-write the two equations above formally as the
+convolution theorem:
+
+@dispmath{
+  \wp[f{\ast}h]=\wp[f]\times\wp[h]
+}
+
+@dispmath{
+  f{\times}h=\wp^{-1}[\wp[f]\ast\wp[h]]
+}
+
+
+
+
+@node Sampling theorem,  , Convolution theorem, Frequency domain and Fourier operations
+@subsubsection Sampling theorem
+
+Our mathematical functions are continuous, however, our data
+collecting and measuring tools are discrete. Here we want to give a
+mathematical formulation for digitizing the continuous mathematical
+functions so that later, we can retrieve the continuous function from
+the digitized input. Assuming that we have a continuous function
+@mymath{f(t)}, then we can define @mymath{f_s(t)} as the `sampled'
+@mymath{f(t)} through the Dirac comb (see @ref{Dirac delta and comb}):
+
+@dispmath{
+f_s=f(t)III_P=\displaystyle\sum_{n=-\infty}^{\infty}f(t)\delta(t-nP)
+}
+
+@noindent
+The discrete data-element @mymath{f_k} (for example, a pixel in an
+image), where @mymath{k} is an integer, can thus be represented as:
+
+@dispmath{f_k=\int_{-\infty}^{\infty}f_s(t)dt=\int_{-\infty}^{\infty}f(t)\delta(t-kP)dt=f(kP)}
+
+Note that in practice, our discrete data points are not found in this
+fashion. Each detector pixel (in an image for example) has an area and
+averages the signal it receives over that area, not a mathematical
+point as the Dirac @mymath{\delta} function defines. However, as long
+as the variation in the signal over one detector pixel is not
+significant, this can be a good approximation. Having put this issue
+to the side, we can now try to find the relation between the fourier
+transforms of the unsampled @mymath{f(t)} and the sampled
+@mymath{f_s(t)}. For a more clear notation, let's define:
+
+@dispmath{F_s(\omega)=\wp[f_s(t)]}
+
+@dispmath{S(\omega)=\wp[III_P]}
+
+@noindent
+Then using the Convolution theorem (see @ref{Convolution theorem}),
+@mymath{F_s(\omega)} can be written as:
+
+@dispmath{F_s(\omega)=\wp[f(t)III_P]=F(\omega){\ast}S(\omega)}
+
+@noindent
+Finally, from the definition of convolution and the Fourier transform
+of the Dirac comb (see @ref{Dirac delta and comb}), we get:
+
+@dispmath{
+\eqalign{
+F_s(\omega) &= \int_{-\infty}^{\infty}F(\omega)S(\omega-\mu)d\mu \cr
+&= {1\over P}\displaystyle\sum_{n=-\infty}^{\infty}\int_{-\infty}^{\infty}F(\omega)\delta\left(\omega-\mu-{2{\pi}n\over P}\right)d\mu \cr
+&= {1\over P}\displaystyle\sum_{n=-\infty}^{\infty}F\left(
+   \omega-{2{\pi}n\over P}\right).\cr }
+}
+
+@float Figure,samplingfreq
+@image{gnuastro-figures/samplingfreq, 15.2cm, , } @caption{Sampling
+    causes infinite repetation in the frequency domain. FT is an
+    abbreviation for `Fourier transform'. @mymath{\omega_m} represents
+    the maximum frequency present in the input. @mymath{F(\omega)} is
+    only symmetric on both sides of 0 when the input is real (not
+    complex). In general @mymath{F(\omega)} is complex and thus cannot
+    be simply plotted like this. Here we have assumed a real Gaussian
+    @mymath{f(t)} which has produced a real Gaussian
+    @mymath{F(\omega)}.}
+@end float
+
+@mymath{F(\omega)} was only a simple function, see
+@ref{samplingfreq}(left). However, from the sampled Fourier transform
+function we see that @mymath{F_s(\omega)} is the superposition of
+infinite copies of @mymath{F(\omega)} that have been shifted, see
+@ref{samplingfreq}(right). From the equation and the figure, it is
+clear that the shift in each copy is @mymath{2\pi/P}. The input
+@mymath{f(t)} can have any distribution of frequencies in it, in the
+example of @ref{samplingfreq}(left), the input consisted of a range of
+frequencies equal to @mymath{\Delta\omega=2\omega_m}. Fortunately as
+@ref{samplingfreq}(right) shows, the assumed pixel size (@mymath{P})
+we used to sample this hypothetical function was such that
+@mymath{2\pi/P>\Delta\omega}. The consequence is that each copy of
+@mymath{F(\omega)} has become completely separate from the surrounding
+copies. Such a digitized (sampled) dataset is thus called
+@emph{over-sampled}. When @mymath{2\pi/P=\Delta\omega}, the dataset is
+just enough to finely separte even the most extremely frequencies and
+thus it is known as @emph{critically-sampled}. Finally if
+@mymath{2\pi/P<\Delta\omega} we are dealing with an
+@emph{under-sampled} dataset.  In an under-sampled dataset, the
+separate copies of @mymath{F(\omega)} are going to overlap and this
+will deprive us of recovering high constituent frequencies of
+@mymath{f(t)}.
+
+When the input @mymath{f(t)} is composed of a finite range of
+frequencies, @mymath{f(t)} is known as a @emph{band-limited}
+function. The example in @ref{samplingfreq}(left) was a nice
+demonstration of such a case: for all @mymath{\omega<-\omega_m} or
+@mymath{\omega>\omega_m}, we have @mymath{F(\omega)=0}. Therefore,
+when the input function is band-limited and our detector's pixels are
+placed such that we have critically (or over-) sampled it, then we can
+exactly reproduce the continuous @mymath{f(t)} from the descrete or
+digitized samples. To do that, we just have to isolate one copy of
+@mymath{F(\omega)} from the infinite copies and take its inverse
+Fourier transform.
+
+This ability to exactly reproduce the continuous input from the
+sampled or digitized data leads us to the sampling theorem which
+connects the inherent property of the continuous signal (its maximum
+frequency) to that of the detector (the spacings between its
+pixels). In order to do that, recall that @mymath{\omega=2\pi/T} where
+@mymath{T} is the period. Since they are anti-correlated, we can write
+@mymath{\omega_m=2\pi/T_m}. Where @mymath{T_m} is the shortest
+periodic rate of change in the signal. Recall that when we are talking
+about an image, this is the minimum ``spatial'' rate of
+change@footnote{The minimum spatial rate of change in an astronomical
+image is usually due to the noise: two neighboring pixels can have
+very different values.}. So the condition for a critically sampled
+input above becomes @mymath{2\pi/P=2{\times}2\pi/T_m} which leads to
+the following relation between these two fundamental properties of the
+signal and detector:
+
+@dispmath{T_m=2P}
+
+@noindent
+This relation was first formulated by Harry Nyquist (1889 -- 1976
+A.D.) in 1928 and formally proved in 1949 by Claude E. Shannon (1916
+-- 2001 A.D.) in what is now known as the Nyquist-Shannon sampling
+theorem. In signal processing, the signal is produced (synthesized) by
+a transmitter and is received and de-coded (analyzed) by a
+receiver. Therefore producing a band-limited signal is necessary.
+
+In astronomy, we do not produce the shapes of our targets, we are only
+observers. Galaxies can have any shape and size, therefore ideally,
+our signal is not band-limited. However, since we are always confined
+to observing through an aperture, the aperture will cause a point
+source (for which @mymath{T_m=0} pixel) to be spread over several
+pixels. This spread is quantitatively known as the point spread
+function or PSF. This spread does blur the image which is undesirable;
+however, for this analysis it produces the positive outcome that there
+will be a non-zero minimum spatial rate of change (or
+@mymath{T_m}). Though we should caution that any detector will have
+noise which will add lots of very high frequency changes between the
+pixels. However, the coefficients of noise are usually very small and
+can thus be identified.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Spatial vs. Frequency domain, Convolution kernel, Frequency domain and Fourier operations, Convolve
 @subsection Spatial vs. Frequency domain
 
 With the discussions above it might not be clear when to choose the
@@ -8982,7 +9597,7 @@ convolution and adding noise.
 * Modeling basics::             Astronomical modeling basics.
 * If convolving afterwards::    Considerations for convolving later.
 * Flux Brightness and magnitude::  About these measures of energy.
-* Profile magnitude::     Definition of total profile magnitude.
+* Profile magnitude::           Definition of total profile magnitude.
 * Invoking astmkprof::          Inputs and Options for MakeProfiles.
 @end menu
 
@@ -10620,15 +11235,28 @@ $ git clone git://git.sv.gnu.org/gnuastro.git
 The version controlled source code lacks the source files that we have
 not written or are automatically built (and included in the
 distributed @file{gnuastro-@value{VERSION}.tar.gz}) for configuration
-and building. There are two types of files that we have not
-written. To ensure portability for a wider range of operating systems
-(those that don't include GNU C Library, namely glibc), we have used
-the GNU Portability Library (Gnulib). Gnulib keeps a copy of all the
-functions in glibc and you can include them in the source code to
-replace system wide functions on other compilers. To test for various
-system architectures and compiler configurations we make use of the
-various GNU Autoconf macros in the GNU Autoconf
+and building. There are three types of files that we have not written:
+
+@itemize
+@item
+To ensure portability for a wider range of operating systems (those
+that don't include GNU C Library, namely glibc), we have used the GNU
+Portability Library (Gnulib). Gnulib keeps a copy of all the functions
+in glibc and you can include them in the source code to replace system
+wide functions on other compilers.
+
+@item
+To test for various system architectures and compiler configurations
+we make use of the various GNU Autoconf macros in the GNU Autoconf
 archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
+
+@item
+Figures in the manual. Some of them are built by @LaTeX{} (using
+the TikZ package) and some are actual rasterized images. An automatic
+script will do the job of drawing the plots with @LaTeX{} and
+converting all the figures into all the formats that are necessary for
+all the various formats of the manual.
+@end itemize
 
 To get the Gnulib and the Autoconf archives, just run these commands
 in any directory you want to store them in (let's assume you are in
@@ -10666,19 +11294,33 @@ Autoconf archives to this directory:
 $ cp ~/Development/autoconf-archive/m4/ax_pthread.m4 ./m4/
 @end example
 
+@noindent
+The last thing you have to do is to make/convert all the figures in
+all the necessary formats. We use @LaTeX{} (along with TikZ) to create
+some of the figures and ImageMagick's @command{convert} tool for the
+conversion into various types. So make sure you have them
+installed. All the necessary scripts are ready and you just have to
+run a @command{make} command in the appropriate directory.
+
+@example
+$ cd doc/plotsrc
+$ make
+$ cd ../../
+@end example
+
 @cindex GNU Texinfo
 @cindex GNU Libtool
 @cindex GNU Autoconf
 @cindex GNU Automake
 @cindex GNU build system
 @noindent
-All the necessary GNU C Library functions and Autoconf macros are now
-available. Now you can add the automatically generated files used to
-build Gnuastro using the GNU build system. To generate those files you
-have to run the following command in the cloned @file{gnuastro}
-directory. @command{autoreconf} is part of GNU Autoconf and also
-requires GNU Automake, GNU Libtool and GNU Texinfo to create all the
-necessary files, see @ref{Building}.
+All the necessary GNU C Library functions, Autoconf macros and manual
+figures are now available. The GNU build system will do the rest of
+the job. To generate all the other necessary files you have to run the
+following command in the cloned @file{gnuastro}
+directory@footnote{@command{autoreconf} is part of GNU Autoconf and
+also requires GNU Automake, GNU Libtool and GNU Texinfo to create all
+the necessary files, see @ref{Building}}.
 
 @example
 $ autoreconf --install

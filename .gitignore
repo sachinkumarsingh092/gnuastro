@@ -62,7 +62,10 @@ doc/stamp-vti
 autom4te.cache
 doc/texinfo.tex
 doc/version.texi
+doc/plotsrc/tikz/
 doc/www/gnuastro/CVS/
 doc/www/gnuastro/manual/
 doc/www/gnuastro/MathJax/
 doc/subpackageversions.texi
+doc/gnuastro-figures/iandtime.png
+doc/gnuastro-figures/samplingfreq.png

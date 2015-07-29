@@ -38,3 +38,8 @@ EXTRA_DIST = findversions.sh README
 
 subpackageversions.texi: ${headers}
 	./findversions.sh ${headers}
+
+
+## Images:
+infognuastrodir=${infodir}/gnuastro-figures/
+dist_infognuastro_DATA = ${top_srcdir}/doc/gnuastro-figures/*

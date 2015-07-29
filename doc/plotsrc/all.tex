@@ -1,0 +1,149 @@
+% This TeX document is part of the manual of the GNU Astronomy
+% Utilities (Gnuastro). A Makefile is also distributed which allows
+% you to compile this TeX file in the desired manner.
+%
+% Original author:
+%     Mohammad Akhlaghi <akhlaghi@gnu.org>
+% Contributing author(s):
+% Copyright (C) 2015, Free Software Foundation, Inc.
+%
+% Gnuastro is free software: you can redistribute it and/or modify it
+% under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% Gnuastro is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
+\documentclass[a4paper]{article}
+
+\usepackage[body={17.4cm, 24cm}]{geometry}
+
+%% For the Fourier F:
+\usepackage{mathrsfs}
+
+%% For extra mathematics:
+\usepackage{amsmath}
+
+% Hyperref:
+\usepackage[colorlinks,urlcolor=blue, citecolor=blue,
+            linkcolor=blue]{hyperref}
+\hypersetup
+{
+    pdfauthor={Mohammad Akhlaghi},
+    pdfsubject={Used to make the plots for the manual},
+    pdftitle={Plots for GNU Astronomy Utilities manual.},
+    pdfkeywords={GNU Astronomy Utilities, Gnuastro, manual, plots}
+}
+\renewcommand\UrlFont{\rmfamily}
+
+% Caption:
+\usepackage{caption}
+\captionsetup{labelfont={bf}, skip=3pt}
+\captionsetup[figure]{font={footnotesize}}
+
+%Bibliography:
+\usepackage[
+    style=authoryear,
+    hyperref=true,
+    doi=false,
+    url=true,
+    eprint=true,
+    uniquelist=false,
+    maxbibnames=5,
+    minbibnames=3,
+    maxcitenames=2,
+    mincitenames=1,
+    backend=biber,natbib]{biblatex}
+\AtEveryCitekey{\clearfield{title}}
+%\AtEveryBibitem{\clearfield{title}}
+\DeclareFieldFormat[article]{pages}{#1}
+\DeclareFieldFormat{pages}{\mkfirstpage[{\mkpageprefix[bookpagination]}]{#1}}
+\addbibresource{./Ref.bib}
+\renewbibmacro{in:}{}
+\renewcommand*{\bibfont}{\footnotesize}
+%\DefineBibliographyStrings{english}{references = {REFERENCES}}
+
+%For a tikz (drawing) environment:
+%For a tikz environment:
+\usepackage{tikz}
+\usepackage{pgffor}
+\usetikzlibrary{spy}
+\usetikzlibrary{graphs}
+\usetikzlibrary{arrows}
+\usetikzlibrary{shadows}
+\usetikzlibrary{shapes.misc}
+\usetikzlibrary{backgrounds}
+\usepgflibrary{shapes.symbols}
+\usetikzlibrary{shapes.geometric}
+\tikzset{ mybox/.style = { rectangle, rounded corners=1.5mm,
+                           minimum width=2cm, minimum height=0.5cm,
+                           anchor=north, align=center, draw=black },
+                           mydiamond/.style = {diamond, aspect=3,
+                           draw=black}, hv path/.style = {rounded
+                           corners=0.8mm, to path={-|
+                           (\tikztotarget)}}, vh path/.style =
+                           {rounded corners=0.8mm, to path={|-
+                           (\tikztotarget)}} }
+\usetikzlibrary{external}
+\tikzset{external/system call={latex \tikzexternalcheckshellescape -halt-on-error
+-interaction=batchmode -jobname "\image" "\texsource";
+dvips -o "\image".ps "\image".dvi;
+ps2eps "\image.ps"}}
+\tikzexternalize
+
+
+%For drawing plots:
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.10}
+\usepgfplotslibrary{groupplots}
+\tikzsetexternalprefix{./tikz/}
+\pgfplotsset{axis line style={thick}, tick style={semithick}}
+
+% Titles:
+\author{GNU Astronomy Utilities team}
+
+\title{Plots for the manual}
+
+%\date{}
+
+
+
+
+
+
+
+
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}\label{intro}
+
+This PDF is just a place to make all the necessary \TeX{} plots. The
+TikZ package externalization facility allows for the figures to be
+made separately. We then put those figures into the proper directory
+for use in the GNU astro manual. It can also be used for generating
+bibliography.
+
+The \LaTeX{} code for each plot is in the \texttt{tex/} directory. The
+names of the source code is the same as the base file name of the
+image that is to be used in the manual. However, when TikZ makes the
+EPS (or PDF is you comment the appropriate lines in the preamble)
+files, labels them based on their order. So it is best that you just
+add the next plot to be made after all the current ones. Even if it
+belongs to an earlier part of the manual. The \texttt{Makefile} is in
+charge or renaming the EPS files and putting them into their
+appropriate directory.
+
+\input{tex/iandtime.tex}
+
+\input{tex/samplingfreq.tex}
+
+\end{document}

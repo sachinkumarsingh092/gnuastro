@@ -34,34 +34,63 @@
 # You should have received a copy of the GNU General Public License
 # along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
+
+# Initial settings:
+set -o nounset                  # Stop if a variable is not set.
+set -o errexit                  # Stop if a program returns false.
+
+
+
+
+
 # For the permissions of the output:
 umask 002
+
+
+
+
 
 # So Bash's `read' will read white space characters too:
 IFS=''
 
 
+
+
+
+# Remove the manual/ directory if it exists (because gendocs.sh will
+# write everything there).
 if [ -d ./manual ]; then rm -rf ./manual; fi
+
+
 
 
 # Run gendocs.sh to generate all the files:
 ./gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
-             "GNU Astronomy Utilities manual"
+             "GNU Astronomy Utilities manual" --html " "
 rm gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
    gnuastro.log gnuastro.pg gnuastro.toc gnuastro.tp gnuastro.vr
 
+
+
+
+
 # Copy the two necessary files in the manual directory:
 cp javascript.html style.css ./manual/
+
+
+
+
 
 # Get the current month to put under all the pages.
 thismonth=$(date +"%B %Y")
 
 
+
+
+
 # Make the proper corrections to the HTML files:
 echo
 echo %%%%% Correcting the HTMLs %%%%%
-
-
 # Correct the address of the `(dir)' links on the top pages of both
 # HTML outputs. In the ./manual/gnuastro.html, it is `dir.html#top'
 # which should be change to index.html. In
@@ -154,11 +183,18 @@ do
 done
 echo %%%%% DONE %%%%%
 
+
+
+
+
 # Copy the generated files to the proper directory. We do not want to
 # copy the full directory there because the CVS information will be
 # removed.
 cp -R manual/* www/gnuastro/manual/
 rm -rf ./manual
+
+
+
 
 
 # Run CVS to upload the page to the GNU server

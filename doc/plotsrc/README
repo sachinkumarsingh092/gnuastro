@@ -1,0 +1,8 @@
+This directory has all the necessary information to make the plots
+that are to be drawn by LaTeX (TikZ) and will also convert all the
+manual images to the necessary formats for all the Texinfo output
+formats.
+
+To do everything, simply run:
+
+    make
