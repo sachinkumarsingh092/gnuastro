@@ -1,3 +1,10 @@
+2015-07-31  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/convolve/convolve.c (makepaddedcomplex): Added a check to
+	make the padded image size an even number in both dimensions by
+	adding one pixel if it is odd. This was done because FFT
+	operations work much faster on even sized arrays.
+
 2015-07-22  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/thresh.c (snthresh): Had mistakenly used

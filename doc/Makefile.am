@@ -3,9 +3,10 @@
 ## This is part of GNU Astronomy Utilities (gnuastro). It will be
 ## called by the Makefile.am in the top directory.
 ##
-## Copyright (C) 2013-2015 Mohammad Akhlaghi
-## Tohoku University Astronomical Institute, Sendai, Japan.
-## http://astr.tohoku.ac.jp/~akhlaghi/
+## Original author:
+##     Mohammad Akhlaghi <akhlaghi@gnu.org>
+## Contributing author(s):
+## Copyright (C) 2015, Free Software Foundation, Inc.
 ##
 ## GNU Astronomy Utilities is free software: you can redistribute it
 ## and/or modify it under the terms of the GNU General Public License

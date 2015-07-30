@@ -137,10 +137,16 @@ makepaddedcomplex(struct convolveparams *p)
   /* Find the sizes of the padded image, note that since the kernel
      sizes are always odd, the extra padding on the input image is
      always going to be an even number (clearly divisable). */
-  ps0=p->ps0=p->is0+p->ks0-1;   /* Find the padded image size. */
+  ps0=p->ps0=p->is0+p->ks0-1;
   ps1=p->ps1=p->is1+p->ks1-1;
 
-  errno=0;                      /* Pad the input image.        */
+  /* The Discrete Fourier transforms operate faster on even-sized
+     arrays. So if the padded sides are not even, make them so: */
+  if(ps0%2) ps0=p->ps0=ps0+1;
+  if(ps1%2) ps1=p->ps1=ps1+1;
+
+  /* Allocate the space for the padded input image and fill it. */
+  errno=0;
   pimg=p->pimg=malloc(2*ps0*ps1*sizeof *pimg);
   if(pimg==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for pimg.", ps0*ps1*sizeof *pimg);
@@ -156,7 +162,8 @@ makepaddedcomplex(struct convolveparams *p)
     }
 
 
-  errno=0;                      /* Pad the Kernel.             */
+  /* Allocate the space for the padded Kernel and fill it. */
+  errno=0;
   pker=p->pker=malloc(2*ps0*ps1*sizeof *pker);
   if(pker==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for pimg.", ps0*ps1*sizeof *pker);
@@ -474,6 +481,7 @@ frequencyconvolve(struct convolveparams *p)
   int verb=p->cp.verb;
   struct fftonthreadparams *fp;
 
+
   /* Make the padded arrays. */
   if(verb) gettimeofday(&t1, NULL);
   makepaddedcomplex(p);
@@ -551,8 +559,6 @@ frequencyconvolve(struct convolveparams *p)
   if(verb) gettimeofday(&t1, NULL);
   removepaddingcorrectroundoff(p);
   if(verb) reporttiming(&t1, "Padded parts removed.", 1);
-
-
 
 
   /* Free all the allocated space. */
