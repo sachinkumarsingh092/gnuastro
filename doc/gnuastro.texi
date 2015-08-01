@@ -318,12 +318,16 @@ Invoking ImageCrop
 
 Convolve
 
+* Spatial domain convolution::  Only using the input image values.
+* Frequency domain and Fourier operations::  Using frequencies in input.
+* Spatial vs. Frequency domain::  When to use which?
+* Convolution kernel::          How to specify the convolution kernel.
+* Invoking astconvolve::        Options and argument to Convolve.
+
+Spatial domain convolution
+
 * Convolution process::         More basic explanations.
-* Convolution on the edges::    Dealing with the edges of an image.
-* Frequency domain and Fourier operations::  Fourier operations basics.
-* Spatial vs. Frequency domain::  Comparison of the two domains.
-* Convolution kernel::          Make and specify the kernel.
-* Invoking astconvolve::        Options and arguments to Convolve.
+* Edges in the spatial domain::    Dealing with the edges of an image.
 
 Frequency domain and Fourier operations
 
@@ -335,7 +339,8 @@ Frequency domain and Fourier operations
 * Convolution theorem::         Derivation of Convolution theorem.
 * Sampling theorem::            Sampling theorem (Nyquist frequency).
 * Discrete Fourier transform::  Derivation and explanation of DFT.
-* Fourier operations in two dimensions::  Extend to 2D images.ccccu
+* Fourier operations in two dimensions::  Extend to 2D images.
+* Edges in the frequency domain::  Interpretation of edge effects.
 
 ImageWarp
 
@@ -5479,18 +5484,26 @@ cases.
 @cindex Weighted average
 @cindex Average, weighted
 @cindex Kernel, convolution
-Convolution is the process of changing the value of one pixel to the
-@emph{weighted} average of all the pixels in its
-@emph{neighborhood}@footnote{The definition here is the specific
-definition that is most commonly used in image processing and
-astronomy. Mathematically speaking, convolution is a far more general
-process of merging two functions.}. We define the `neighborhood' of
-each pixel (how many pixels) and the `weight' function (how much each
-neighboring pixel should contribute depending on its position) through
-a second image which is known as a spatial kernel@footnote{Also known
-as filter, here we will use `kernel'.}. A nice and fully illustrated
-introduction to convolution has been provided by
-ImageMagick@footnote{@url{http://www.imagemagick.org/Usage/convolve/}}.
+On an image, convolution can be thought of as a process to blur or
+remove the contrast in an image. If you are already familiar with the
+concept and just want to run Convolve, you can jump to
+@ref{Convolution kernel} and @ref{Invoking astconvolve} and skip the
+lengthy introduction on the basic definitions and concepts of
+convolution.
+
+There are generally two methods to convolve an image. The first and
+more intuitive one is in the ``spatial domain'' or using the actual
+image pixel values, see @ref{Spatial domain convolution}. The second
+method is when we manipulate the ``frequency domain'', or work on the
+magnitudes of the different frequencies that constitute the image, see
+@ref{Frequency domain and Fourier operations}. Understanding
+convolution in the spatial domain is more intuitive and thus
+recommended if you are just starting to learn about
+convolution. However, getting a good grasp of the frequency domain is
+a little more involved and needs some concentration and some
+mathematical proofs. However, its reward is a faster operation and
+more importantly a very fundamental understanding of this very
+important operation.
 
 @cindex Detection
 @cindex Atmosphere
@@ -5505,64 +5518,68 @@ only major time we confront such sharp borders in signal are cosmic
 rays. All other sources of signal in an image are already blurred by
 the atmosphere or the optics of the instrument.}, those sharp
 differences will become smoother. This has very good consequences in
-detection for example, because in an actual observed image, the
-variation in neighboring pixel values due to noise can be very
+detection of signal in noise for example. In an actual observed image,
+the variation in neighboring pixel values due to noise can be very
 high. But after convolution, those variations will decrease and we
 have a better hope in detecting the possible underlying
 signal. Another case where convolution is extensively used is in mock
 images and modelling in general, convolution can be used to simulate
 the effect of the atmosphere or the optical system on the mock
-profiles that we create, see @ref{PSF}.
+profiles that we create, see @ref{PSF}. Convolution is a very
+interesting and important topic in any form of signal analysis
+(including astronomical observations). So we have
+thoroughly@footnote{A mathematicial will certainly consider this
+explanation is incomplete and inaccurate. However this text is written
+for an understanding on the operations that are done on a real (not
+complex, discrete and noisy) astronomical image, not any general form
+of abstract function} explained the concepts behind it in the
+following sub-sections.
 
-@cindex Spatial domain
-@cindex Frequency domain
-Convolution is a very interesting and important topic in any form of
-signal analysis (including astronomical observations). So we strongly
-recommend going through any good image processing book to get a good
-understanding of it@footnote{Our main reference for this chapter was:
-Gonzalez, R. C., Woods, R. E., 2008, Digital image processing (third
-edition), Pearson Prentice Hall.}. We will just have a fast summary
-here.  In discussing convolution, understanding the spatial and
-frequency domains is the key. An image viewed in the spatial domain is
-the same image you are observing: each pixel has a certain flux value
-and the pixel (which has a fixed spatial position) with the highest
-flux value can be seen first@footnote{Assuming that the highest flux
-is the easiest to see}. In the frequency domain, the spatial change of
-flux values is emphasized, with the lowest frequency (related to the
-sum of the pixels in the image) occupying the first pixel (in FITS on
-the bottom left of the image) and higher frequencies extending
-outwards@footnote{In the frequency domain of a real image, we will
-actually be dealing with complex pixel values we can view either the
-amplitude or phase.}@footnote{Chapter 4 of Gonzalez and woods (2008)
-introduces the concepts of sampling and the frequency domain very
-nicely. The nicely illustrated guide by ImageMagick is also very
-educative: @url{http://www.imagemagick.org/Usage/fourier/}}.  Removing
-(filtering) certain frequency ranges is the source of the term
-filtering@footnote{For example ``low pass filtering'' which refers to
-removing small frequencies}.
+@menu
+* Spatial domain convolution::  Only using the input image values.
+* Frequency domain and Fourier operations::  Using frequencies in input.
+* Spatial vs. Frequency domain::  When to use which?
+* Convolution kernel::          How to specify the convolution kernel.
+* Invoking astconvolve::        Options and argument to Convolve.
+@end menu
+
+@node Spatial domain convolution, Frequency domain and Fourier operations, Convolve, Convolve
+@subsection Spatial domain convolution
+
+The pixels in an input image represent different ``spatial''
+positions, therefore when convolution is done only using the actual
+input pixel values, we name the process as being done in the ``Spatial
+domain''. In particular this is in contrast to the ``frequency
+domain'' that we will discuss later in @ref{Frequency domain and
+Fourier operations}. In the spatial domain (and in realistic
+situations where the image and the convolution kernel don't extend to
+infinity), convolution is the process of changing the value of one
+pixel to the @emph{weighted} average of all the pixels in its
+@emph{neighborhood}.
+
+The `neighborhood' of each pixel (how many pixels in which direction)
+and the `weight' function (how much each neighboring pixel should
+contribute depending on its position) are given through a second image
+which is known as a ``kernel''@footnote{Also known as filter, here we
+will use `kernel'.}.
 
 @menu
 * Convolution process::         More basic explanations.
-* Convolution on the edges::    Dealing with the edges of an image.
-* Frequency domain and Fourier operations::  Fourier operations basics.
-* Spatial vs. Frequency domain::  Comparison of the two domains.
-* Convolution kernel::          Make and specify the kernel.
-* Invoking astconvolve::        Options and arguments to Convolve.
+* Edges in the spatial domain::    Dealing with the edges of an image.
 @end menu
 
-@node Convolution process, Convolution on the edges, Convolve, Convolve
-@subsection Convolution process
+@node Convolution process, Edges in the spatial domain, Spatial domain convolution, Spatial domain convolution
+@subsubsection Convolution process
 
 In convolution, the kernel specifies the weight and positions of the
-neighbors of each pixel. Visualizing convolution in the spatial domain
-might be easier. To find the convolved value of a pixel, the central
-pixel of the kernel is placed on that pixel. The values of each
-overlapping pixel in the kernel and image are multiplied by each other
-and summed for all the kernel pixels. To have one pixel in the center,
-the sides of the convolution kernel have to be an odd number. This
-process effectively mixes the pixel values of each pixel with its
-neighbors, resulting in a blurred image compared to the sharper input
-image.
+neighbors of each pixel. To find the convolved value of a pixel, the
+central pixel of the kernel is placed on that pixel. The values of
+each overlapping pixel in the kernel and image are multiplied by each
+other and summed for all the kernel pixels. To have one pixel in the
+center, the sides of the convolution kernel have to be an odd
+number. This process effectively mixes the pixel values of each pixel
+with its neighbors, resulting in a blurred image compared to the
+sharper input image.
 
 @cindex Linear spatial filtering
 Formally, convolution is one kind of linear `spatial filtering' in
@@ -5582,10 +5599,10 @@ about its center the blurred image has the same orientation as the
 original image. However, if the kernel is not symmetric, the image
 will be affected in the opposite manner, this is a natural consequence
 of the definition of spatial filtering. In order to avoid this we can
-rotate the kernel about its center by 180 degrees so convolution can
-have the same original orentation. Technically speaking, only if the
-kernel is flipped the process is known @emph{Convolution}. If it isn't
-it is known as @emph{Correlation}.
+rotate the kernel about its center by 180 degrees so the convolved
+output can have the same original orentation. Technically speaking,
+only if the kernel is flipped the process is known
+@emph{Convolution}. If it isn't it is known as @emph{Correlation}.
 
 To be a weighted average, the sum of the weights (the pixels in the
 kernel) have to be unity. This will have the consequence that the
@@ -5594,33 +5611,18 @@ brightness (see @ref{Flux Brightness and magnitude}), which is
 natural, because convolution should not eat up the object photons, it
 only disperses them.
 
-@cindex Fast Fourier Transform
-@cindex GNU Scientific Library
-In the frequency domain, no rotating is necessary. The two images have
-to be padded with zero valued pixels such that the number of pixels on
-the sides of the two images are identical. The sides of the padded
-image have to be at least equal to the sum of the sides of each image
-minus one. The speed of the algorithms for Fast Fourier Transform
-(FFT) depend on the size of the paded images. If the final sides are a
-factor of 2, 3, 4, 5, 6, 7 the GNU Scientific Library provides
-efficient algorithms for the fourier transform. In case the size is
-not a multiple of any of these, then it will fall back to the standard
-Discrete Fourier Transform which will be slower.
 
 
 
 
-
-@node Convolution on the edges, Frequency domain and Fourier operations, Convolution process, Convolve
-@subsection Convolution on the edges
+@node Edges in the spatial domain,  , Convolution process, Spatial domain convolution
+@subsubsection Edges in the spatial domain
 
 In purely `linear' spatial filtering (convolution), there are problems
-on the edges of the input image. Explaining the problem in the spatial
-domain might be easier@footnote{Once a good understanding of the
-frequency domain is achieved the reason in that domain is also very
-enlightening, see any image processing book for a good
-explanation.}. The problem originates from the fact that on the edges,
-in practice@footnote{Because we assumed the overlapping pixels outside
+on the edges of the input image. Here we will explain the problem in
+the spatial domain, see @ref{Edges in the frequency domain}. The
+problem originates from the fact that on the edges, in
+practice@footnote{Because we assumed the overlapping pixels outside
 the input image have a value of zero.}, the sum of the weights we use
 on the actual image pixels is not unity. For example, as discussed
 above, a profile in the center of an image will have the same
@@ -5632,14 +5634,17 @@ some of the flux is going to be `eaten' by the edges.
 If you ran @command{$ make check} on the source files of Gnuastro, you
 can see the this effect by comparing the
 @file{convolve_frequency.fits} with @file{convolve_spatial.fits} in
-the @file{./tests/} directory. In the spatial domain, any blank pixel
-in the image will not be used in the convolution, see @ref{Blank
-pixels}, so the problem explained above will also occur on the sides
-of blank regions (which might be masked for example). The solution to
-this edge effect problem (only in the spatial domain) is to not assume
-that the sum of the kernel pixels is unity, so taking @mymath{W} as
-the sum of the kernel pixels that used non-blank image pixels, the
-equation in @ref{Convolution process} will become:
+the @file{./tests/} directory. In the spatial domain, by default, no
+assumption will be made about pixels outside of the image or any blank
+pixels in the image, see @ref{Blank pixels}. The problem explained
+above will also occur on the sides of blank regions (which might be
+masked for example). The solution to this edge effect problem is only
+possible in the spatial domain. We have to discard the assumption that
+the sum of the kernel pixels is unity during the convolution
+process@footnote{ofcourse the sum of the kernel pixels still have to
+be unity.}. So taking @mymath{W} as the sum of the kernel pixels that
+used non-blank and in-image pixels, the equation in @ref{Convolution
+process} will become:
 
 @dispmath{C_{x,y}= { \sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t} \over W}.}
 
@@ -5650,7 +5655,7 @@ and after convolution. This correction is applied by default in
 Convolve when convolving in the spatial domain. To disable it, you can
 use the @option{--noedgecorrection} option. In the frequency domain,
 there is no way to avoid this loss of flux near the edges of the
-image.
+image, see @ref{Edges in the frequency domain}.
 
 Note that the edge effect discussed here is different from the one in
 @ref{If convolving afterwards}. In making mock images we want to
@@ -5667,15 +5672,20 @@ not in modeling.
 
 
 
-@node Frequency domain and Fourier operations, Spatial vs. Frequency domain, Convolution on the edges, Convolve
+@node Frequency domain and Fourier operations, Spatial vs. Frequency domain, Spatial domain convolution, Convolve
 @subsection Frequency domain and Fourier operations
 
 Getting a good grip on the frequency domain is usually not an easy
-job! So we have decided to give the issue a complete review here. It
-has become something of a clich@'e for people to say that the Fourier
-series and transform is breaking up the functions into sines and
-cosines. However, sines and cosines themselves are abstract functions,
-so this statement really adds no extra layer of physical insight.
+job! So we have decided to give the issue a complete review
+here. Convolution in the frequency domain (see @ref{Convolution
+theorem}) heavily relies on the concepts of Fourier transform
+(@ref{Fourier transform}) and Fourier series (@ref{Fourier series}) so
+we will be investigating these important operations first. It has
+become something of a clich@'e for people to say that the Fourier
+series ``is a way to represent a (wave-like) function as the sum of
+simple sine waves'' (from Wikipedia). However, sines themselves are
+abstract functions, so this statement really adds no extra layer of
+physical insight.
 
 Before jumping head-first into the equations and proofs we will begin
 with a historical background to see how the importance of frequencies
@@ -5687,11 +5697,13 @@ transform.  Our final aim is to explain descrete Fourier transform,
 however some very important concepts need to be solidified first: The
 Dirac comb, convolution theorem and sampling theorem. So each of these
 topics are explained in their own separate sub-sub-section before
-going on to the descrete Fourier transform. Understanding the sampling
-theorem and the descrete Fourier transform is very important in order
-to be able to pull out valuable science from the ``descrete'' image
-pixels. Therefore we have included the mathematical proofs and figures
-so you can have a clear understanding of these very important
+going on to the descrete Fourier transform. Finally we revisit (after
+@ref{Edges in the spatial domain}) the problem of convolution on the
+edges, but this time in the frequency domain. Understanding the
+sampling theorem and the descrete Fourier transform is very important
+in order to be able to pull out valuable science from the ``descrete''
+image pixels. Therefore we have included the mathematical proofs and
+figures so you can have a clear understanding of these very important
 concepts.
 
 @menu
@@ -5704,6 +5716,7 @@ concepts.
 * Sampling theorem::            Sampling theorem (Nyquist frequency).
 * Discrete Fourier transform::  Derivation and explanation of DFT.
 * Fourier operations in two dimensions::  Extend to 2D images.
+* Edges in the frequency domain::  Interpretation of edge effects.
 @end menu
 
 @node Fourier series historical background, Circles and the complex plane, Frequency domain and Fourier operations, Frequency domain and Fourier operations
@@ -5726,8 +5739,8 @@ function into sines and cosines. As the term ``ancient'' in the
 previous sentence implies, Jean-Baptiste Joseph Fourier (1768 -- 1830
 A.D.) was not the first person to do this. The main reason we know
 this process by his name today is that he came up with an ingenious
-method to find the necessary coefficients (radius) and frequencies
-(``speed'' of rotation) of the circles for any generic (integrable)
+method to find the necessary coefficients (radius of) and frequencies
+(``speed'' of rotation on) the circles for any generic (integrable)
 function.
 
 @float Figure,epicycle
@@ -5825,7 +5838,7 @@ defined through the integer @mymath{n}. In this notation, @mymath{t}
 is in units of ``cycles''. Later, Caspar Wessel (mathematician and
 cartographer 1745 -- 1818 A.D.)  showed how complex numbers can be
 displayed as vectors on a plane and therefore how @mymath{e^{it}} can
-be interpretted as a circle.
+be interpretted as an angle on a circle.
 
 As we see from the examples in @ref{epicycle} and @ref{iandtime}, for
 each constituting frequency, we need a respective `magnitude' or the
@@ -5834,9 +5847,9 @@ function. The concepts of ``period'' and ``frequency'' are relatively
 easy to grasp when using temporal units like time because this is how
 we define them in every-day life. However, in an image (astronomical
 data), we are dealing with spatial units like distance. Therefore, by
-one ``period'' we mean the distance at which the signal is identical
-and frequency is defined as the inverse of that spatial ``period''.
-The complex circle of @ref{iandtime} looks so much like the Moon
+one ``period'' we mean the @emph{distance} at which the signal is
+identical and frequency is defined as the inverse of that spatial
+``period''.  The complex circle of @ref{iandtime} resembles the Moon
 rotating about Earth which is rotating around the Sun; so the ``Real
 (signal)'' axis shows the Moon's position as seen by a distant
 observer positioned on @mymath{-\infty} on the Imaginary (@mymath{i})
@@ -5871,10 +5884,14 @@ continuous function @mymath{f(l)} which is integrable in the interval
 @mymath{[l_0, l_0+L]} (always true in practical cases like
 images). Take @mymath{l_0} as the position of the first pixel in the
 assumed row of the image and @mymath{L} as the width of the image
-along that row. To approximate @mymath{f(l)}, we need to find a set of
-frequencies and their corresponding `magnitude's (see @ref{Circles and
-the complex plane}). Therefore our aim is to show @mymath{f(l)} as the
-following sum of periodic functions:
+along that row. The units of @mymath{l_0} and @mymath{L} can be in any
+spatial units (for example meters) or an angular unit (like radians)
+multiplied by a fixed distance which is more common.
+
+To approximate @mymath{f(l)} over this interval, we need to find a set
+of frequencies and their corresponding `magnitude's (see @ref{Circles
+and the complex plane}). Therefore our aim is to show @mymath{f(l)} as
+the following sum of periodic functions:
 
 
 @dispmath{
@@ -5882,7 +5899,7 @@ f(l)=\displaystyle\sum_{n=-\infty}^{\infty}c_ne^{i{2{\pi}n\over L}l} }
 
 @noindent
 Note that the different frequencies (@mymath{2{\pi}n/L}, in units of
-cycles per meters for example) are not arbitrary. They are all
+cycles per meters for example) are not arbitrary. They are all integer
 multiples of the fundamental frequency of
 @mymath{\omega_0=2\pi/L}. Recall that @mymath{L} was the length of the
 signal we want to model. Therefore, we see that the smallest possible
@@ -5891,12 +5908,13 @@ length we observed the signal or @mymath{L}. In the case of each
 dimension on an image, this is the size of the image in the respective
 dimension. The frequencies have been defined in this ``harmonic''
 fashion to insure that the final sum is periodic outside of the
-@mymath{[l_0, l_0+L]} interval too@footnote{At this point, you might
-be thinking that the sky is not periodic with the same period as my
-camera's view angle. You are absolutely right. The important thing is
+@mymath{[l_0, l_0+L]} interval too. At this point, you might be
+thinking that the sky is not periodic with the same period as my
+camera's view angle. You are absolutely right! The important thing is
 that since your camera's observed region is the only region we are
-``observing'' and will be using we don't care about the rest of the
-sky. So there is no harm in assuming it to be periodic. }.
+``observing'' and will be using, the rest of the sky is irrelevant; so
+we can safely assume the is periodic outside of it. However, working
+assumption will haunt us later in @ref{Edges in the frequency domain}.
 
 The frequencies are thus determined by definition. So all we need to
 do is to find the coefficients (@mymath{c_n}), or magnitudes, or radii
@@ -5955,7 +5973,7 @@ dependance of the right side of the equation on @mymath{l}, making it
 only a function of @mymath{m} or frequency. Let's define the following
 two variables:
 
-@dispmath{\omega{\equiv}m\omega_0={2{\pi}m\over T}}
+@dispmath{\omega{\equiv}m\omega_0={2{\pi}m\over L}}
 
 @dispmath{F(\omega){\equiv}Lc_m}
 
@@ -6248,16 +6266,17 @@ we used to sample this hypothetical function was such that
 @mymath{2\pi/P>\Delta\omega}. The consequence is that each copy of
 @mymath{F(\omega)} has become completely separate from the surrounding
 copies. Such a digitized (sampled) dataset is thus called
-@emph{over-sampled}. When @mymath{2\pi/P=\Delta\omega}, @mymath{P} was
-just small enough to finely separte even the largest frequencies and
-thus it is known as @emph{critically-sampled}. Finally if
-@mymath{2\pi/P<\Delta\omega} we are dealing with an
-@emph{under-sampled} dataset. In an under-sampled dataset, the
-separate copies of @mymath{F(\omega)} are going to overlap and this
-will deprive us of recovering high constituent frequencies of
-@mymath{f(l)}. The effects of under-sampling in an image with high
-rates of change (for example a brick wall imaged from a distance) can
-clearly be visually seen and is known as @emph{aliasing}.
+@emph{over-sampled}. When @mymath{2\pi/P=\Delta\omega}, @mymath{P} is
+just small enough to finely separte even the largest frequencies in
+the input signal and thus it is known as
+@emph{critically-sampled}. Finally if @mymath{2\pi/P<\Delta\omega} we
+are dealing with an @emph{under-sampled} dataset. In an under-sampled
+dataset, the separate copies of @mymath{F(\omega)} are going to
+overlap and this will deprive us of recovering high constituent
+frequencies of @mymath{f(l)}. The effects of under-sampling in an
+image with high rates of change (for example a brick wall imaged from
+a distance) can clearly be visually seen and is known as
+@emph{aliasing}.
 
 When the input @mymath{f(l)} is composed of a finite range of
 frequencies, @mymath{f(l)} is known as a @emph{band-limited}
@@ -6341,14 +6360,13 @@ of @mymath{n}) we get:
 
 @noindent
 Where @mymath{f_x} is the value of @mymath{f(l)} on the point
-@mymath{x} or the value of the pixel whose center is at a distance of
-@mymath{x}, see @ref{Sampling theorem}. As shown in @ref{Sampling
-theorem} this function is infinitely periodic with a period of
-@mymath{2\pi/P}. So all we need is the values within one period:
-@mymath{0<\omega<2\pi/P}, see @ref{samplingfreq}. We want @mymath{X}
-samples within this interval, so the frequency difference between each
-frequency sample or freq-pixel is @mymath{1/XP}. Hence we will
-evaluate the equation above on the points at:
+@mymath{x} or the value of the @mymath{x}th pixel. As shown in
+@ref{Sampling theorem} this function is infinitely periodic with a
+period of @mymath{2\pi/P}. So all we need is the values within one
+period: @mymath{0<\omega<2\pi/P}, see @ref{samplingfreq}. We want
+@mymath{X} samples within this interval, so the frequency difference
+between each frequency sample or freq-pixel is @mymath{1/XP}. Hence we
+will evaluate the equation above on the points at:
 
 @dispmath{\omega={u\over XP} \quad\quad u = 0, 1, 2, ..., X-1}
 
@@ -6370,17 +6388,17 @@ exactly recover the @mymath{x}th pixel with the following summation:
 
 When the input pixel row (we are still only working on 1D data) has
 @mymath{X} pixels, then it is @mymath{L=XP} spatial units
-wide. @mymath{L} or the length of the input data was defined in
+wide. @mymath{L}, or the length of the input data was defined in
 @ref{Fourier series} and @mymath{P} or the space between the pixels in
 the input was defined in @ref{Dirac delta and comb}. As we saw in
-@ref{Sampling theorem}, the input (spatial) pixel spacing specifies
-the range of frequencies that can be studied and the length of the
-input (spatial) data determines the resolution (or size of the
-freq-pixels) in our descrete fourier transform image. Both result from
-the fact that the frequency domain is the inverse of the spatial
-domain.
+@ref{Sampling theorem}, the input (spatial) pixel spacing (@mymath{P})
+specifies the range of frequencies that can be studied and in
+@ref{Fourier series} we saw that the length of the (spatial) input,
+(@mymath{L}) determines the resolution (or size of the freq-pixels) in
+our descrete fourier transformed image. Both result from the fact that
+the frequency domain is the inverse of the spatial domain.
 
-@node Fourier operations in two dimensions,  , Discrete Fourier transform, Frequency domain and Fourier operations
+@node Fourier operations in two dimensions, Edges in the frequency domain, Discrete Fourier transform, Frequency domain and Fourier operations
 @subsubsection Fourier operations in two dimensions
 
 Once all the relations in the previous sections have been clearly
@@ -6430,13 +6448,70 @@ pixels on the second dimension. Then the two dimensional discrete
 Fourier transform and its inverse (see @ref{Discrete Fourier
 transform}) can be written as:
 
-@dispmath{F_{uv}=\displaystyle\sum_{x=0}^{X-1}\displaystyle\sum_{y=0}^{Y-1}
-f_{xy}e^{-i({ux\over X}+{vy\over Y})} }
+@dispmath{F_{u,v}=\displaystyle\sum_{x=0}^{X-1}\displaystyle\sum_{y=0}^{Y-1}
+f_{x,y}e^{-i({ux\over X}+{vy\over Y})} }
 
-@dispmath{f_{xy}={1\over XY}\displaystyle\sum_{u=0}^{X-1}\displaystyle\sum_{v=0}^{Y-1}
-F_{uv}e^{i({ux\over X}+{vy\over Y})} }
+@dispmath{f_{x,y}={1\over XY}\displaystyle\sum_{u=0}^{X-1}\displaystyle\sum_{v=0}^{Y-1}
+F_{u,v}e^{i({ux\over X}+{vy\over Y})} }
 
 
+@node Edges in the frequency domain,  , Fourier operations in two dimensions, Frequency domain and Fourier operations
+@subsubsection Edges in the frequency domain
+
+With a good grasp of the frequency domain, we can revist the problem
+of convolution on the image edges, see @ref{Edges in the spatial
+domain}.  When we apply the convolution theorem (see @ref{Convolution
+theorem}) to convolve an image, we first take the discrete Fourier
+transforms (DFT, @ref{Discrete Fourier transform}) of both the input
+image and the kernel, then we multiply them with each other and then
+take the inverse DFT to construct the convolved image. Ofcourse, in
+order to multiply them with each other in the frequency domain, the
+two images have to be the same size, so let's assume that we pad the
+kernel (it is usually smaller than the input image) with zero valued
+pixels in both dimensions so it becomes the same size as the input
+image before the DFT.
+
+Having multiplied the two DFTs, we now apply the inverse DFT which is
+where the problem is usually created. If the DFT of the kernel only
+had values of 1 (unrealistic condition!) then there would be no
+problem and the inverse DFT of the multiplication would be identical
+with the input. However in real situations, the kernel's DFT has a
+maximum of 1 (because the sum of the kernel has to be one, see
+@ref{Convolution process}) and decreases something like the
+hypothetical profile of @ref{samplingfreq}. So when multiplied with
+the input image's DFT, the coefficients or magnitudes (see
+@ref{Circles and the complex plane}) of the smallest frequency (or the
+sum of the input image pixels) remains unchanged, while the magnitudes
+of the higher frequencies are significantly reduced.
+
+As we saw in @ref{Sampling theorem}, the Fourier tranform of a
+discrete input will be infinitely repeated. In the final inverse DFT
+step, the input is in the frequency domain (the multiplied DFT of the
+input image and the kernel DFT). So the result (our output convolved
+image) will be infinitely repeated. In order to accurately reconstruct
+the input image, we need all the frequencies with the correct
+magnitudes. However, when the magnitudes of higher frequencies are
+decreased, longer periods (shorter frequencies) will dominate in the
+reconstructed pixel values. Therefore, when constructing a pixel on
+the edge of the image, the newly empowered longer periods will look
+beyond the input image edges and will find the repeated input image
+there. So if you convolve an image in this fashion using the
+convolution theorem, when a bright object exists on one edge of the
+image, its blurred wings will be present on the other side of the
+convolved image.
+
+So as long as we are dealing with convolution in the frequency domain,
+there is nothing we can do about the image edges. The least we can do
+is to eliminate the ghosts of the other side of the image. So, we add
+zero valued pixels to both the input image and the kernel in both
+dimentions so the image that will be covolved has the a size equal to
+the sum of both images in each dimention. Ofcourse, the effect of this
+zero-padding is that the sides of the output convolved image will
+become dark. To put it another way, the edges are going to drain the
+flux from nearby objects. But at least it is consistent across all the
+edges of the image and is predictable. In Convolve, you can see the
+padded images when inspecting the frequency domain convolution steps
+with the @option{--viewfreqsteps} option.
 
 @node Spatial vs. Frequency domain, Convolution kernel, Frequency domain and Fourier operations, Convolve
 @subsection Spatial vs. Frequency domain
@@ -6449,8 +6524,8 @@ try to list the benefits of each.
 The spatial domain,
 @itemize
 @item
-Can correct for the edge effects of convolution, see @ref{Convolution
-on the edges}.
+Can correct for the edge effects of convolution, see @ref{Edges in the
+spatial domain}.
 
 @item
 Can operate on blank pixels.
@@ -6617,7 +6692,7 @@ product to give the final convolved image.
 
 For large images, this process will be more efficient than convolving
 in the spatial domain. However, the edges of the image will loose some
-flux, see @ref{Convolution on the edges}.
+flux, see @ref{Edges in the spatial domain}.
 
 @item -p
 @itemx --spatial
