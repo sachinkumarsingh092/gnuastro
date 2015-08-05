@@ -87,6 +87,15 @@ complextoreal(double *c, size_t size, int action, double **output)
 /* Multily two complex arrays and save the result in the first:
 
    (a+ib)*(c+id)=ac+iad+ibc-bd=(ac-bd)+i(ad-bc)
+
+   The loop is easy to understand: we want to replace two
+   variables. But changing one, will affect the other. So what we do,
+   is to store the final value of one, then replace the second, then
+   finally replace the first one.
+
+   Here, we first get the real component but don't put it in the
+   output. Then we find and replace the imaginary component, finally,
+   we put the new real component in the image.
  */
 void
 complexarraymultiply(double *a, double *b, size_t size)
@@ -98,10 +107,53 @@ complexarraymultiply(double *a, double *b, size_t size)
     {
       r      = (*a * *b) - (*(a+1) * *(b+1));
       *(a+1) = (*(a+1) * *b) + (*a * *(b+1));
-      *a++=r;     /* Go onto the imaginary part of a. */
+      *a++=r;            /* Go onto (set) the imaginary part of a. */
       b+=2;
     }
   while(++a<af);  /* Go onto the next complex number. */
+}
+
+
+
+
+
+/* Divide the elements of the first array by the elements of the
+   second array and put the result into the elements of the first
+   array.
+
+   (a+ib)/(c+id)=[(a+ib)*(c-id)]/[(c+id)*(c-id)]
+                =(ac-iad+ibc+bd)/(c^2+d^2)
+                =[(ac+bd)+i(bc-ad)]/(c^2+d^2)
+
+   See the explanations above complexarraymultiply for an explanation
+   on the loop.
+ */
+void
+complexarraydivide(double *a, double *b, size_t size)
+{
+  double r, *af;
+
+  af=a+2*size;
+  do
+    {
+      if (sqrt(*b**b + *(b+1)**(b+1))>0.05)
+        {
+          r      = ( ( (*a * *b) + (*(a+1) * *(b+1)) )
+                     / ( *b * *b + *(b+1) * *(b+1) ) );
+          *(a+1) = ( ( (*(a+1) * *b) - (*a * *(b+1)) )
+                     / ( *b * *b + *(b+1) * *(b+1) ) );
+          *a=r;
+        }
+      else
+        {
+          *a=0;
+          *(a+1)=0;
+        }
+
+      a+=2;
+      b+=2;
+    }
+  while(a<af);  /* Go onto the next complex number. */
 }
 
 
@@ -137,8 +189,8 @@ makepaddedcomplex(struct convolveparams *p)
   /* Find the sizes of the padded image, note that since the kernel
      sizes are always odd, the extra padding on the input image is
      always going to be an even number (clearly divisable). */
-  ps0=p->ps0=p->is0+p->ks0-1;
-  ps1=p->ps1=p->is1+p->ks1-1;
+  ps0=p->ps0 = p->makekernel ? p->is0 : p->is0+p->ks0-1;
+  ps1=p->ps1 = p->makekernel ? p->is1 : p->is1+p->ks1-1;
 
   /* The Discrete Fourier transforms operate faster on even-sized
      arrays. So if the padded sides are not even, make them so: */
@@ -198,8 +250,13 @@ removepaddingcorrectroundoff(struct convolveparams *p)
   double *d, *df, *start, *pimg=p->pimg;
   size_t i, hi0, hi1, is0=p->is0, is1=p->is1;
 
-  hi0=(p->ks0-1)/2;
-  hi1=(p->ks1-1)/2;
+  if(p->makekernel)
+    hi0=hi1=0;
+  else
+    {
+      hi0=(p->ks0-1)/2;
+      hi1=(p->ks1-1)/2;
+    }
 
   /* To start with, `start' points to the first pixel in the final
      image: */
@@ -215,6 +272,10 @@ removepaddingcorrectroundoff(struct convolveparams *p)
       while (++d<df);
     }
 }
+
+
+
+
 
 /* Allocate the necessary arrays, note that we put everything in the
    first element of the fftonthreadparams structure array. All the
@@ -269,6 +330,75 @@ freefp(struct fftonthreadparams *fp)
 }
 
 
+
+
+
+/* Unfortunately I don't understand why the division operation in
+   deconvolution (makekernel) does not produce a centered image, the
+   image is translated by half the input size in both dimensions. So I
+   am correcting this in the spatial domain here. */
+void
+correctdeconvolve(struct convolveparams *p, double **spatial)
+{
+  double r, *s, *n, *d, *df, sum=0.0f;
+  size_t i, j, ps0=p->ps0, ps1=p->ps1;
+  int ii, jj, ci=p->ps0/2-1, cj=p->ps1/2-1;
+
+  /* Check if the image has even sides. */
+  if(ps0%2 || ps1%2)
+    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s. In "
+          "correctdeconvolve, the padded image sides are not an "
+          "even number!", PACKAGE_BUGREPORT);
+
+  /* First convert the complex image to a real image: */
+  complextoreal(p->pimg, ps0*ps1, COMPLEXTOREALSPEC, &s);
+
+  /* Allocate the array to put in the new values: */
+  errno=0;
+  n=malloc(ps0*ps1*sizeof *n);
+  if(n==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for n in correctdeconvolve "
+          "(convolve.c). ", ps0*ps1*sizeof *n);
+
+  /* Put the elements in their proper place: For example in one
+     dimention where the values are actually the true distances:
+
+        s[0]=0, s[1]=1, s[2]=2, s[3]=3, s[4]=4, s[5]=5
+
+     We want the value 0 to be in the `center'. Note that `s' is
+     periodic, for example the next 6 elements have distances:
+
+        s[6]=0, s[7]=1, s[8]=2, s[9]=3, s[10]=4, s[11]=5
+
+     So a `center'ed array would be like:
+
+        s[0]=4, s[1]=5, s[2]=0, s[3]=1, s[4]=2, s[5]=3
+
+     The relations between the old (i and j) and new (ii and jj) come
+     from something like the above line.
+   */
+  for(i=0;i<p->ps0;++i)
+    {
+      ii= i>ps0/2 ? i-(ps0/2+1) : i+ps0/2-1;
+      for(j=0;j<p->ps1;++j)
+        {
+          jj = j>ps1/2 ? j-(ps1/2+1) : j+ps1/2-1;
+          /*printf("(%lu, %lu) --> (%lu, %lu)\n", i, j, ii, jj);*/
+
+          /* If the pixel is too distant from the center, then set it
+             to zero: */
+          r=sqrt( (ii-ci)*(ii-ci) + (jj-cj)*(jj-cj) );
+          sum += n[ii*ps1+jj] = r < 8 ? s[i*ps1+j] : 0;
+        }
+    }
+
+  /* Divide all elements by the sum so the kernel is normalized: */
+  df=(d=n)+ps0*ps1; do *d++/=sum; while(d<df);
+
+  /* Clean up: */
+  free(s);
+  *spatial=n;
+}
 
 
 
@@ -519,11 +649,18 @@ frequencyconvolve(struct convolveparams *p)
       free(tmp);
     }
 
-
   /* Multiply the two arrays and save them in the output.*/
   if(verb) gettimeofday(&t1, NULL);
-  complexarraymultiply(p->pimg, p->pker, p->ps0*p->ps1);
-  if(verb) reporttiming(&t1, "Multiplied in the frequency domain.", 1);
+  if(p->makekernel)
+    {
+      complexarraydivide(p->pimg, p->pker, p->ps0*p->ps1);
+      if(verb) reporttiming(&t1, "Divided in the frequency domain.", 1);
+    }
+  else
+    {
+      complexarraymultiply(p->pimg, p->pker, p->ps0*p->ps1);
+      if(verb) reporttiming(&t1, "Multiplied in the frequency domain.", 1);
+    }
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
@@ -532,12 +669,11 @@ frequencyconvolve(struct convolveparams *p)
       free(tmp);
     }
 
-
-
   /* Forward (in practice inverse) 2D FFT on each image. */
   if(verb) gettimeofday(&t1, NULL);
   twodimensionfft(p, fp, -1);
-  complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
+  if(p->makekernel) correctdeconvolve(p, &tmp);
+  else complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
   if(verb) reporttiming(&t1, "Converted back to the spatial domain.", 1);
   if(p->viewfreqsteps)
     {
@@ -546,13 +682,11 @@ frequencyconvolve(struct convolveparams *p)
       free(tmp);
     }
 
-
   /* Free the padded arrays (they are no longer needed) and put the
      converted array (that is real, not complex) in p->pimg. */
   free(p->pimg);
   free(p->pker);
   p->pimg=tmp;
-
 
   /* Crop out the center, numbers smaller than 10^{-17} are errors,
      remove them. */
@@ -564,7 +698,6 @@ frequencyconvolve(struct convolveparams *p)
   /* Free all the allocated space. */
   freefp(fp);
 }
-
 
 
 

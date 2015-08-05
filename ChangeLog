@@ -1,3 +1,11 @@
+2015-08-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/convolve/convolve.c (frequencyconvolve): Divide the arrays
+	when the kernel should be made, multiply them when convolution is
+	to be done.
+	(frequencyconvolve): When in deconvolution mode, it will go to
+	another function to make the final product.
+
 2015-07-31  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/convolve.c (makepaddedcomplex): Added a check to

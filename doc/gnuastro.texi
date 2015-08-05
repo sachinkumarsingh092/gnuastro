@@ -327,7 +327,7 @@ Convolve
 Spatial domain convolution
 
 * Convolution process::         More basic explanations.
-* Edges in the spatial domain::    Dealing with the edges of an image.
+* Edges in the spatial domain::  Dealing with the edges of an image.
 
 Frequency domain and Fourier operations
 
@@ -5067,8 +5067,10 @@ string in this format: @command{X1:X2,Y1:Y2}. It is given to the
 that are @math{\geq}@command{X1} and <@command{X2} will be included in
 the cropped image. The same goes for the second axis. Note that each
 different term will be read as an integer, not a float (there are no
-sub-pixels). Also, following the FITS standard, pixel indexes along
-each axis start from unity(1) not zero(0).
+sub-pixels in ImageCrop, you can use ImageWarp to shift the matrix
+with any subpixel distance, then crop the warped image, see
+@ref{ImageWarp}). Also, following the FITS standard, pixel indexes
+along each axis start from unity(1) not zero(0).
 
 @cindex Crop section format
 You can omit any of the values and they will be filled automatically.
@@ -5565,7 +5567,7 @@ will use `kernel'.}.
 
 @menu
 * Convolution process::         More basic explanations.
-* Edges in the spatial domain::    Dealing with the edges of an image.
+* Edges in the spatial domain::  Dealing with the edges of an image.
 @end menu
 
 @node Convolution process, Edges in the spatial domain, Spatial domain convolution, Spatial domain convolution
@@ -5693,15 +5695,15 @@ actually roots in our ancient desire to see everything in terms of
 circles. A short review of how the complex plane should be
 interpretted is then given. Having paved the way with these two
 basics, we define the Fourier series and subsequently the Fourier
-transform.  Our final aim is to explain descrete Fourier transform,
+transform.  Our final aim is to explain discrete Fourier transform,
 however some very important concepts need to be solidified first: The
 Dirac comb, convolution theorem and sampling theorem. So each of these
 topics are explained in their own separate sub-sub-section before
-going on to the descrete Fourier transform. Finally we revisit (after
+going on to the discrete Fourier transform. Finally we revisit (after
 @ref{Edges in the spatial domain}) the problem of convolution on the
 edges, but this time in the frequency domain. Understanding the
-sampling theorem and the descrete Fourier transform is very important
-in order to be able to pull out valuable science from the ``descrete''
+sampling theorem and the discrete Fourier transform is very important
+in order to be able to pull out valuable science from the ``discrete''
 image pixels. Therefore we have included the mathematical proofs and
 figures so you can have a clear understanding of these very important
 concepts.
@@ -5913,8 +5915,9 @@ thinking that the sky is not periodic with the same period as my
 camera's view angle. You are absolutely right! The important thing is
 that since your camera's observed region is the only region we are
 ``observing'' and will be using, the rest of the sky is irrelevant; so
-we can safely assume the is periodic outside of it. However, working
-assumption will haunt us later in @ref{Edges in the frequency domain}.
+we can safely assume the is periodic outside of it. However, this
+working assumption will haunt us later in @ref{Edges in the frequency
+domain}.
 
 The frequencies are thus determined by definition. So all we need to
 do is to find the coefficients (@mymath{c_n}), or magnitudes, or radii
@@ -6182,8 +6185,51 @@ formally as the convolution theorem:
   {\cal F}[fh]={\cal F}[f]\ast{\cal F}[h]
 }
 
+Besides its usefulness in blurring an image by convolving it with a
+given kernel, the convolution theorem also enables us to do another
+very useful operation in data analysis: to match the blur (or PSF)
+between two images taken with different telescopes/cameras or under
+different atmospheric conditions. This process is also known as
+de-convolution. Let's take @mymath{f(l)} as the image with a narrower
+PSF (less blurry) and @mymath{c(l)} as the image with a wider PSF
+which appears more blurred. Also let's take @mymath{h(l)} to represent
+the kernel that should be convolved with the sharper image to create
+the more blurry image. Above, we proved the relation between these
+three images through the convolution theorem. But there, we assumed
+that @mymath{f(l)} and @mymath{h(l)} are known (given) and the
+convolved image is desired.
 
+In deconvolution, we have @mymath{f(l)} --the sharper image-- and
+@mymath{f*h(l)} --the more blurry image-- and we want to find the kernel
+@mymath{h(l)}. The solution is a direct result of the convolution
+theorem:
 
+@dispmath{
+  {\cal F}[h]={{\cal F}[f{\ast}h]\over {\cal F}[f]}
+  \quad\quad
+  {\rm or}
+  \quad\quad
+  h(l)={\cal F}^{-1}\left[{{\cal F}[f{\ast}h]\over {\cal F}[f]}\right]
+}
+
+While this works really nice, it has two problems:
+
+@itemize
+
+@item
+If @mymath{{\cal F}[f]} has any zero values, then the inverse Fourier
+transform will not be a number!
+
+@item
+If there is significant noise in the image, then the high frequencies
+of the noise are going to significantly reduce the quanlity of the
+final result.
+
+@end itemize
+
+A standard solution to both these problems is the Weiner
+deconovolution
+algorithm@footnote{@url{https://en.wikipedia.org/wiki/Wiener_deconvolution}}.
 
 @node Sampling theorem, Discrete Fourier transform, Convolution theorem, Frequency domain and Fourier operations
 @subsubsection Sampling theorem
@@ -6285,7 +6331,7 @@ demonstration of such a case: for all @mymath{\omega<-\omega_m} or
 @mymath{\omega>\omega_m}, we have @mymath{F(\omega)=0}. Therefore,
 when the input function is band-limited and our detector's pixels are
 placed such that we have critically (or over-) sampled it, then we can
-exactly reproduce the continuous @mymath{f(l)} from the descrete or
+exactly reproduce the continuous @mymath{f(l)} from the discrete or
 digitized samples. To do that, we just have to isolate one copy of
 @mymath{F(\omega)} from the infinite copies and take its inverse
 Fourier transform.
@@ -6395,7 +6441,7 @@ the input was defined in @ref{Dirac delta and comb}. As we saw in
 specifies the range of frequencies that can be studied and in
 @ref{Fourier series} we saw that the length of the (spatial) input,
 (@mymath{L}) determines the resolution (or size of the freq-pixels) in
-our descrete fourier transformed image. Both result from the fact that
+our discrete fourier transformed image. Both result from the fact that
 the frequency domain is the inverse of the spatial domain.
 
 @node Fourier operations in two dimensions, Edges in the frequency domain, Discrete Fourier transform, Frequency domain and Fourier operations
@@ -6488,17 +6534,18 @@ As we saw in @ref{Sampling theorem}, the Fourier tranform of a
 discrete input will be infinitely repeated. In the final inverse DFT
 step, the input is in the frequency domain (the multiplied DFT of the
 input image and the kernel DFT). So the result (our output convolved
-image) will be infinitely repeated. In order to accurately reconstruct
-the input image, we need all the frequencies with the correct
-magnitudes. However, when the magnitudes of higher frequencies are
-decreased, longer periods (shorter frequencies) will dominate in the
-reconstructed pixel values. Therefore, when constructing a pixel on
-the edge of the image, the newly empowered longer periods will look
-beyond the input image edges and will find the repeated input image
-there. So if you convolve an image in this fashion using the
-convolution theorem, when a bright object exists on one edge of the
-image, its blurred wings will be present on the other side of the
-convolved image.
+image) will be infinitely repeated in the spatial domain. In order to
+accurately reconstruct the input image, we need all the frequencies
+with the correct magnitudes. However, when the magnitudes of higher
+frequencies are decreased, longer periods (shorter frequencies) will
+dominate in the reconstructed pixel values. Therefore, when
+constructing a pixel on the edge of the image, the newly empowered
+longer periods will look beyond the input image edges and will find
+the repeated input image there. So if you convolve an image in this
+fashion using the convolution theorem, when a bright object exists on
+one edge of the image, its blurred wings will be present on the other
+side of the convolved image. This is often termed as circular
+convolution or cyclic convolution.
 
 So as long as we are dealing with convolution in the frequency domain,
 there is nothing we can do about the image edges. The least we can do
@@ -6512,6 +6559,7 @@ flux from nearby objects. But at least it is consistent across all the
 edges of the image and is predictable. In Convolve, you can see the
 padded images when inspecting the frequency domain convolution steps
 with the @option{--viewfreqsteps} option.
+
 
 @node Spatial vs. Frequency domain, Convolution kernel, Frequency domain and Fourier operations, Convolve
 @subsection Spatial vs. Frequency domain
@@ -6652,6 +6700,8 @@ One line examples:
 
 @example
 $ astconvolve --kernel=psf.fits mockimg.fits
+$ astconvolve --kernel=sharperimage.fits --makekernel\
+              blurryimage.fits
 @end example
 
 The only argument accepted by Convolve is an input image file. Some of
@@ -6752,6 +6802,32 @@ of the image), we also remove any pixel with a value less than
 @mymath{10^{-17}}.
 
 @end enumerate
+
+@item -m
+@itemx --makekernel
+If this option is called, Convolve will do deconvolution (see
+@ref{Convolution theorem}). The image specified by the
+@option{--kernel} option is assumed to be the sharper (less blurry)
+image and the input image is assumed to be the more blurry image. The
+two images have to be the same size. Some notes to take into account
+for a good result:
+
+@itemize
+
+@item
+Choose a bright (unsaturated) star and use a region box (with
+ImageCrop for example, see @ref{ImageCrop}) that is sufficiently above
+the noise.
+
+@item
+Use ImageWarp (see @ref{ImageWarp}) to warp the pixel grid so the
+star's center is exactly on the center of a pixel. This will certainly
+slightly degrade the result, however, it is necessary. If there are
+multiple good stars, you can shift all of them, then normalize them
+(so the sum of each star's pixels is one) and then take their average
+to decrease this effect.
+
+@end itemize
 @end table
 
 
@@ -7052,7 +7128,7 @@ multiplication below:
 @cindex Photoelectrons
 @cindex Picture element
 @cindex Mixing pixel values
-A digital image is composed of descrete `picture elements' or
+A digital image is composed of discrete `picture elements' or
 `pixels'. When a real image is created from a camera or detector, each
 pixel's area is used to store the number of photoelectrons that were
 created when incident photons collided with that pixel's surface

@@ -363,6 +363,16 @@ sanitycheck(struct convolveparams *p)
       automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->meshname);
     }
+
+  /* makekernel can only operate in frequency mode: */
+  if(p->makekernel && p->spatial)
+    error(EXIT_FAILURE, 0, "`--makekernel' (`-m') can only be defined "
+          "in frequency domain operations, not spatial domain. You can "
+          "either explicitly call for frequency mode on the command line "
+          "or change your nearest configuration file so Convolve defaults "
+          "to the frequency domain. Please see the Gnuastro for more "
+          "information. On the command line, the manual can be seen with "
+          "the `info gnuastro' command.");
 }
 
 
@@ -413,49 +423,78 @@ preparearrays(struct convolveparams *p)
             "these are the blank pixels in the input image, see the `Blank "
             "pixels' section of the Gnuastro manual for more information.");
 
+
+  /* Read the file specified by --kernel. If makekernel is specified,
+     then this is actually the low resolution image. */
+  if(p->makekernel)
+    {
+      /* Read in the kernel array: */
+      filetofloat(up->kernelname, NULL, up->khdu, NULL, &p->kernel,
+                  &bitpix, &anyblank, &p->ks0, &p->ks1);
+      if(p->ks0!=p->is0 || p->ks1!=p->is1)
+        error(EXIT_FAILURE, 0, "With the `--makekernel' (`-m') option, "
+              "the input image and the image specified with the kernel "
+              "option should have the same size. The lower resolution "
+              "input image (%s) has %lux%lu pixels while the higher "
+              "resolution image (%s) specified with the kernel option has "
+              "%lux%lu pixels.", up->inputname, p->is1, p->is0,
+              up->kernelname, p->ks1, p->ks0);
+
+      /* Divide both images by their sum so their lowest frequency
+         becomes 1 (and their division would be meaningful!).*/
+      size=p->is0*p->is1;
+      sum=floatsum(p->input, size);
+      fmultipconst(p->input, size, 1/sum);
+      sum=floatsum(p->kernel, size);
+      fmultipconst(p->kernel, size, 1/sum);
+
+    }
   /* Read the kernel. If there is anything particular to Convolve,
      then don't use the standard kernel reading function in
      fitsarrayvv.c. Otherwise just use the same one that all programs
      use. The standard one is faster because it mixes the NaN
      conversion and also the normalization into one loop.*/
-  if(p->kernelnorm==0 || p->kernelflip==0)
-    {
-      /* Read in the kernel array: */
-      filetofloat(up->kernelname, NULL, up->khdu, NULL, &p->kernel,
-                  &bitpix, &anyblank, &p->ks0, &p->ks1);
-      size=p->ks0*p->ks1;
-      kernel=p->kernel;
-
-      if(p->ks0%2==0 || p->ks1%2==0)
-        error(EXIT_FAILURE, 0, "The kernel image has to have an odd number "
-              "of pixels on both sides (there has to be on pixel in the "
-              "center). %s (hdu: %s) is %lu by %lu.", p->up.kernelname,
-              p->up.khdu, p->ks1, p->ks0);
-
-      /* Convert all the NaN pixels to zero if the kernel contains
-         blank pixels. */
-      if(anyblank)
-        { fp=(f=kernel)+size; do if(isnan(*f)) *f=0.0f; while(++f<fp); }
-
-      /* Normalize the kernel: */
-      if(p->kernelnorm)
-        {
-          sum=floatsum(kernel, size);
-          fmultipconst(kernel, size, 1/sum);
-        }
-
-      /* Flip the kernel: */
-      if(p->spatial && p->kernelflip)
-        for(i=0;i<size/2;++i)
-          {
-            tmp=kernel[i];
-            kernel[i]=kernel[size-i-1];
-            kernel[size-i-1]=tmp;
-          }
-    }
   else
-    prepfloatkernel(up->kernelname, up->khdu, &p->kernel,
-                    &p->ks0, &p->ks1);
+    {
+      if(p->kernelnorm==0 || p->kernelflip==0)
+        {
+          /* Read in the kernel array: */
+          filetofloat(up->kernelname, NULL, up->khdu, NULL, &p->kernel,
+                      &bitpix, &anyblank, &p->ks0, &p->ks1);
+          size=p->ks0*p->ks1;
+          kernel=p->kernel;
+
+          if(p->ks0%2==0 || p->ks1%2==0)
+            error(EXIT_FAILURE, 0, "The kernel image has to have an odd "
+                  "number of pixels on both sides (there has to be on pixel "
+                  "in the center). %s (hdu: %s) is %lu by %lu.",
+                  p->up.kernelname, p->up.khdu, p->ks1, p->ks0);
+
+          /* Convert all the NaN pixels to zero if the kernel contains
+             blank pixels. */
+          if(anyblank)
+            { fp=(f=kernel)+size; do if(isnan(*f)) *f=0.0f; while(++f<fp); }
+
+          /* Normalize the kernel: */
+          if(p->kernelnorm)
+            {
+              sum=floatsum(kernel, size);
+              fmultipconst(kernel, size, 1/sum);
+            }
+
+          /* Flip the kernel: */
+          if(p->spatial && p->kernelflip)
+            for(i=0;i<size/2;++i)
+              {
+                tmp=kernel[i];
+                kernel[i]=kernel[size-i-1];
+                kernel[size-i-1]=tmp;
+              }
+        }
+      else
+        prepfloatkernel(up->kernelname, up->khdu, &p->kernel,
+                        &p->ks0, &p->ks1);
+    }
 }
 
 

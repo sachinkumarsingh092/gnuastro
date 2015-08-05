@@ -80,6 +80,7 @@ struct convolveparams
   struct meshparams   mp;   /* meshparams structure.                    */
 
   /* Inputs: */
+  int         makekernel;   /* ==1: Make a kernel to create input.      */
   float           *input;   /* Input image array.                       */
   float          *kernel;   /* Input Kernel array.                      */
   int           anyblank;   /* If there are blank pixels in input.      */

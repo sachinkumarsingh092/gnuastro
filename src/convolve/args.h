@@ -55,7 +55,7 @@ const char doc[] =
 
 /* Free letters for options:
 
-   c d e g i j l m n r t u w x y z
+   c d e g i j l n r t u w x y z
    A B C E F G H I J O Q R T W X Y Z
 
    Free numbers: >=504
@@ -113,6 +113,14 @@ static struct argp_option options[] =
       0,
       0,
       "Do not normalize the kernel image.",
+      1
+    },
+    {
+      "makekernel",
+      'm',
+      0,
+      0,
+      "Make kernel to create input image.",
       1
     },
 
@@ -275,6 +283,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'U':
       allocatecopyset(arg, &p->up.khdu, &p->up.khduset);
+      break;
+    case 'm':
+      p->makekernel=1;
       break;
     case 500:
       p->kernelflip=0;
