@@ -193,6 +193,13 @@ readconfig(char *filename, struct convolveparams *p)
 		}
 	    }
 	}
+      else if(strcmp(name, "makekernel")==0)
+	{
+	  if(up->makekernelset) continue;
+          intelzero(value, &p->makekernel, name, key, SPACK,
+                     filename, lineno);
+	  up->makekernelset=1;
+	}
       else if(strcmp(name, "numthreads")==0)
 	{
 	  if(cp->numthreadsset) continue;
@@ -261,6 +268,8 @@ printvalues(FILE *fp, struct convolveparams *p)
     fprintf(fp, CONF_SHOWFMT"%d\n", "spatial", p->spatial);
   if(up->frequencyset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "frequency", p->frequency);
+  if(up->makekernelset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "makekernel", p->makekernel);
   /* Number of threads doesn't need to be checked, it is set by
      default */
   fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads);
@@ -304,6 +313,8 @@ checkifset(struct convolveparams *p)
   /* Operating mode: */
   if(up->spatialset==0 && up->frequencyset==0)
     REPORT_NOTSET("spatial or frequency");
+  if(up->makekernelset==0)
+    REPORT_NOTSET("makekernel");
 
 
   END_OF_NOTSET_REPORT;
@@ -333,6 +344,8 @@ checkifset(struct convolveparams *p)
 void
 sanitycheck(struct convolveparams *p)
 {
+  char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
+
   /* Set maskname accordingly: */
   fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
                 &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
@@ -346,9 +359,8 @@ sanitycheck(struct convolveparams *p)
     }
   else
     {
-      automaticoutput(p->up.inputname, "_convolved.fits",
-                      p->cp.removedirinfo, p->cp.dontdelete,
-                      &p->cp.output);
+      automaticoutput(p->up.inputname, outsuffix, p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->cp.output);
       p->cp.outputset=1;
     }
   if(p->frequency && p->viewfreqsteps)
@@ -447,8 +459,8 @@ preparearrays(struct convolveparams *p)
       fmultipconst(p->input, size, 1/sum);
       sum=floatsum(p->kernel, size);
       fmultipconst(p->kernel, size, 1/sum);
-
     }
+
   /* Read the kernel. If there is anything particular to Convolve,
      then don't use the standard kernel reading function in
      fitsarrayvv.c. Otherwise just use the same one that all programs

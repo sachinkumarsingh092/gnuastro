@@ -1,3 +1,13 @@
+2015-08-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/thresh.c (snthresh): The check on the number of
+	objects in finding the S/N threshold is now done before sorting
+	the S/N table.
+
+	* src/convolve/convolve.c (removepaddingcorrectroundoff): When the
+	maximum radius is smaller than the input images, then the final
+	kernel will be shrinked to have no only-zero column or row.
+
 2015-08-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/convolve/convolve.c (frequencyconvolve): Divide the arrays

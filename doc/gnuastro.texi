@@ -78,7 +78,7 @@ Texts.  A copy of the license is included in the section entitled
 * astnoisechisel: (gnuastro)Invoking astnoisechisel. Options to NoiseChisel.
 
 * SubtractSky: (gnuastro)SubtractSky. Find and subtract the sky value.
-* astmkprof: (gnuastro)Invoking astsubtractsky. Options to SubtractSky.
+* astsubtractsky: (gnuastro)Invoking astsubtractsky. Options to SubtractSky.
 
 @end direntry
 
@@ -5336,7 +5336,10 @@ the vertical axis.
 (@option{=INT}) Width the square box to crop in image mode in units of
 pixels. In order for the chosen central pixel to be in the center of
 the cropped image, the final width has to be an odd number, therefore
-if the width
+if the value to this option is an even number, the final crop width
+will be one pixel larger in each dimention. If you want an even sided
+crop box, use the @option{--section} option to specify the boudaries
+of the box, see @ref{Crop section syntax}.
 
 @item -f
 @itemx --racol
@@ -6805,13 +6808,21 @@ of the image), we also remove any pixel with a value less than
 
 @item -m
 @itemx --makekernel
-If this option is called, Convolve will do deconvolution (see
-@ref{Convolution theorem}). The image specified by the
-@option{--kernel} option is assumed to be the sharper (less blurry)
-image and the input image is assumed to be the more blurry image. The
-two images have to be the same size. Some notes to take into account
-for a good result:
+(@option{INT}) If this option is called, Convolve will do
+deconvolution (see @ref{Convolution theorem}). The image specified by
+the @option{--kernel} option is assumed to be the sharper (less
+blurry) image and the input image is assumed to be the more blurry
+image. The two images have to be the same size. Some notes to take
+into account for a good result:
 
+Noise has large frequencies which can make the result less reliable
+for the higher frequencies of the kernel. So all the frequencies which
+have a spectrum smaller than 0.005 in the frequency domain are set to
+zero and not divided. This will cause the wings of the final kernel to
+be flatter than they would ideally be which will make the convolved
+image result unreliable. The value given to this option will be used
+as the maximum radius of the kernel. Any pixel in the final kernel
+that is larger than this distance from the center will be set to zero.
 @itemize
 
 @item
@@ -6821,11 +6832,16 @@ the noise.
 
 @item
 Use ImageWarp (see @ref{ImageWarp}) to warp the pixel grid so the
-star's center is exactly on the center of a pixel. This will certainly
-slightly degrade the result, however, it is necessary. If there are
-multiple good stars, you can shift all of them, then normalize them
-(so the sum of each star's pixels is one) and then take their average
-to decrease this effect.
+star's center is exactly on the center of the central pixel in the
+cropped image. This will certainly slightly degrade the result,
+however, it is necessary. If there are multiple good stars, you can
+shift all of them, then normalize them (so the sum of each star's
+pixels is one) and then take their average to decrease this effect.
+
+@item
+The shifting might move the center of the star by one pixel in any
+direction, so crop the central pixel of the warped image to have a
+clean image for the deconvolution.
 
 @end itemize
 @end table

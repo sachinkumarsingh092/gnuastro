@@ -136,13 +136,16 @@ complexarraydivide(double *a, double *b, size_t size)
   af=a+2*size;
   do
     {
-      if (sqrt(*b**b + *(b+1)**(b+1))>0.05)
+      if (sqrt(*b**b + *(b+1)**(b+1))>MINGOODDIVSPEC)
         {
           r      = ( ( (*a * *b) + (*(a+1) * *(b+1)) )
                      / ( *b * *b + *(b+1) * *(b+1) ) );
           *(a+1) = ( ( (*(a+1) * *b) - (*a * *(b+1)) )
                      / ( *b * *b + *(b+1) * *(b+1) ) );
           *a=r;
+
+          if(sqrt(*a**a + *(a+1)**(a+1))>1.00001f)
+            *a=*(a+1)=0.0f;
         }
       else
         {
@@ -218,7 +221,7 @@ makepaddedcomplex(struct convolveparams *p)
   errno=0;
   pker=p->pker=malloc(2*ps0*ps1*sizeof *pker);
   if(pker==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for pimg.", ps0*ps1*sizeof *pker);
+    error(EXIT_FAILURE, errno, "%lu bytes for pker.", ps0*ps1*sizeof *pker);
   for(i=0;i<ps0;++i)
     {
       op=(o=pker+i*2*ps1)+2*ps1; /* pker is complex.            */
@@ -247,16 +250,28 @@ removepaddingcorrectroundoff(struct convolveparams *p)
 {
   size_t ps1=p->ps1;
   float *o, *input=p->input;
+  size_t i, hi0, hi1, is0, is1;
   double *d, *df, *start, *pimg=p->pimg;
-  size_t i, hi0, hi1, is0=p->is0, is1=p->is1;
 
+  /* Set all the necessary parameters to crop the desired region. hi0
+     and hi1 are the coordinates of the first pixel in the output
+     image. In the case of deconvolution, if the maximum radius is
+     larger smaller than the input image, we will also only be using
+     region that contains non-zero rows and columns.*/
   if(p->makekernel)
-    hi0=hi1=0;
+    {
+      hi0 = 2*p->makekernel-1<p->is0 ? p->ps0/2-p->makekernel : 0;
+      hi1 = 2*p->makekernel-1<p->is1 ? p->ps1/2-p->makekernel : 0;
+      p->is0 = 2*p->makekernel-1<p->is0 ? 2*p->makekernel-1 : p->is0;
+      p->is1 = 2*p->makekernel-1<p->is1 ? 2*p->makekernel-1 : p->is1;
+    }
   else
     {
       hi0=(p->ks0-1)/2;
       hi1=(p->ks1-1)/2;
     }
+  is0=p->is0;
+  is1=p->is1;
 
   /* To start with, `start' points to the first pixel in the final
      image: */
@@ -353,12 +368,13 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
   /* First convert the complex image to a real image: */
   complextoreal(p->pimg, ps0*ps1, COMPLEXTOREALSPEC, &s);
 
-  /* Allocate the array to put in the new values: */
+  /* Allocate the array to keep the new values */
   errno=0;
   n=malloc(ps0*ps1*sizeof *n);
   if(n==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for n in correctdeconvolve "
           "(convolve.c). ", ps0*ps1*sizeof *n);
+
 
   /* Put the elements in their proper place: For example in one
      dimention where the values are actually the true distances:
@@ -377,23 +393,24 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
      The relations between the old (i and j) and new (ii and jj) come
      from something like the above line.
    */
-  for(i=0;i<p->ps0;++i)
+  for(i=0;i<ps0;++i)
     {
       ii= i>ps0/2 ? i-(ps0/2+1) : i+ps0/2-1;
-      for(j=0;j<p->ps1;++j)
+      for(j=0;j<ps1;++j)
         {
           jj = j>ps1/2 ? j-(ps1/2+1) : j+ps1/2-1;
-          /*printf("(%lu, %lu) --> (%lu, %lu)\n", i, j, ii, jj);*/
 
-          /* If the pixel is too distant from the center, then set it
-             to zero: */
           r=sqrt( (ii-ci)*(ii-ci) + (jj-cj)*(jj-cj) );
-          sum += n[ii*ps1+jj] = r < 8 ? s[i*ps1+j] : 0;
+          sum += n[ii*ps1+jj] = r < p->makekernel ? s[i*ps1+j] : 0;
+
+          /*printf("(%lu, %lu) --> (%lu, %lu)\n", i, j, ii, jj);*/
         }
     }
 
+
   /* Divide all elements by the sum so the kernel is normalized: */
   df=(d=n)+ps0*ps1; do *d++/=sum; while(d<df);
+
 
   /* Clean up: */
   free(s);
@@ -468,7 +485,7 @@ onedimensionfft(void *inparam)
     {
       data = ( indexs[i]<maxindex
                ? &pimg[ 2*indexs[i]*indmultip ]   /* *2 because complex. */
-               : &pker[ 2*(indexs[i]-maxindex)*indmultip ]);
+               : &pker[ 2*(indexs[i]-maxindex)*indmultip ] );
 
       gsl_fft_complex_transform(data, stride, size, wavetable, work,
                                 forward1backwardn1);
@@ -610,6 +627,7 @@ frequencyconvolve(struct convolveparams *p)
   struct timeval t1;
   int verb=p->cp.verb;
   struct fftonthreadparams *fp;
+  char *operation = p->makekernel ? "Divided" : "Multiplied";
 
 
   /* Make the padded arrays. */
@@ -619,11 +637,11 @@ frequencyconvolve(struct convolveparams *p)
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      arraytofitsimg(p->up.freqstepsname, "Input transform", DOUBLE_IMG,
+      arraytofitsimg(p->up.freqstepsname, "Input padded", DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      arraytofitsimg(p->up.freqstepsname, "Kernel transform", DOUBLE_IMG,
+      arraytofitsimg(p->up.freqstepsname, "Kernel padded", DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
     }
@@ -649,7 +667,7 @@ frequencyconvolve(struct convolveparams *p)
       free(tmp);
     }
 
-  /* Multiply the two arrays and save them in the output.*/
+  /* Multiply or divide the two arrays and save them in the output.*/
   if(verb) gettimeofday(&t1, NULL);
   if(p->makekernel)
     {
@@ -664,7 +682,7 @@ frequencyconvolve(struct convolveparams *p)
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      arraytofitsimg(p->up.freqstepsname, "Multiplied", DOUBLE_IMG,
+      arraytofitsimg(p->up.freqstepsname, operation, DOUBLE_IMG,
                      tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
       free(tmp);
     }

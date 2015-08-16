@@ -314,16 +314,12 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
   float quant = det0seg1 ? p->segquant : p->detquant;
   size_t snhistnbins= det0seg1 ? p->segsnhistnbins : p->detsnhistnbins;
 
+
   /* Set the name constants: */
   if(det0seg1)
     { job="Clump"; suffix="_segsn.txt"; name="clumps"; }
   else
     { job="Detection"; suffix="_detsn.txt"; name="pseudo-detections"; }
-
-
-  /* Sort the signal to noise ratios and remove their outliers */
-  qsort(sntable, size, sizeof *sntable, floatincreasing);
-  removeoutliers_flatcdf(sntable, &size);
 
 
   /* Check if the number is acceptable to the user. */
@@ -336,6 +332,11 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
           "Utilities manual (section on NoiseChisel) or Akhlaghi and "
           "Ichikawa (2015) for more information.", size, name,
           p->minnumfalse, name);
+
+
+  /* Sort the signal to noise ratios and remove their outliers */
+  qsort(sntable, size, sizeof *sntable, floatincreasing);
+  removeoutliers_flatcdf(sntable, &size);
 
 
   /* Store the SN value. */

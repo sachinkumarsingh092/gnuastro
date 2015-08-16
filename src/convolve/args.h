@@ -115,14 +115,6 @@ static struct argp_option options[] =
       "Do not normalize the kernel image.",
       1
     },
-    {
-      "makekernel",
-      'm',
-      0,
-      0,
-      "Make kernel to create input image.",
-      1
-    },
 
 
 
@@ -221,6 +213,14 @@ static struct argp_option options[] =
       "Frequency domain convolution.",
       -1
     },
+    {
+      "makekernel",
+      'm',
+      "INT",
+      0,
+      "Make 2*INT kernel to create input image.",
+      -1
+    },
 
     {0}
   };
@@ -284,9 +284,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'U':
       allocatecopyset(arg, &p->up.khdu, &p->up.khduset);
       break;
-    case 'm':
-      p->makekernel=1;
-      break;
     case 500:
       p->kernelflip=0;
       break;
@@ -344,6 +341,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'v':
       p->viewfreqsteps=1;
+      break;
+    case 'm':
+      intelzero(arg, &p->makekernel, "makekernel", key, SPACK, NULL, 0);
+      p->up.makekernelset=1;
       break;
 
 

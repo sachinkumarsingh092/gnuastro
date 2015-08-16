@@ -39,6 +39,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+#define MINGOODDIVSPEC       0.005
 #define CONVFLOATINGPOINTERR 1e-10
 #define COMPLEXTOREALSPEC    1  /* Spectrum of complex number.  */
 #define COMPLEXTOREALPHASE   2  /* Phase of the complex number. */
@@ -67,6 +68,7 @@ struct uiparams
   int            nch2set;
   int    lastmeshfracset;
   int fullconvolutionset;
+  int      makekernelset;
 };
 
 
