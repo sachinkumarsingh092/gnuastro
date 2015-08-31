@@ -30,7 +30,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Progarm name macros: */
-#define SPACK_VERSION   "0.1"
+#define SPACK_VERSION   "0.0"
 #define SPACK           "astconvertt" /* Subpackage executable name. */
 #define SPACK_NAME      "ConvertType" /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION

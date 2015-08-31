@@ -57,11 +57,13 @@ config.h.in
 doc/mdate-sh
 gnuastro.t2p
 config.guess
+doc/plotsrc/
 config.status
 doc/stamp-vti
 autom4te.cache
 doc/texinfo.tex
 doc/version.texi
+doc/gnuastro-figures/
 doc/www/gnuastro/CVS/
 doc/www/gnuastro/manual/
 doc/www/gnuastro/MathJax/
