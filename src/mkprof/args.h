@@ -61,7 +61,7 @@ const char doc[] =
    Available letters (-V which is used by GNU is also removed):
 
    a d f g j k l u v
-   A B C E F G H I J L O Q T U W Z
+   B C E F G H I J L O Q T U W Z
 
    Maximum integer used so far: 515.
 */
@@ -218,6 +218,14 @@ static struct argp_option options[] =
       0,
       0,
       "Set constant profile values to input minimum",
+      3
+    },
+    {
+      "setconsttonan",
+      'A',
+      0,
+      0,
+      "Set constant profile values to NaN.",
       3
     },
     {
@@ -462,6 +470,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'M':
       p->setconsttomin=1;
+      break;
+    case 'A':
+      p->setconsttonan=1;
       break;
     case 'R':
       p->replace=1;

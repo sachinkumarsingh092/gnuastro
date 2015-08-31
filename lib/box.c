@@ -194,7 +194,7 @@ overlap(long *naxes, long *fpixel_i, long *lpixel_i,
 
   /* In case you want to see how things are going:
   printf("\n\nImage size: [%ld,  %ld]\n", naxes[0], naxes[1]);
-  printf("fpixel_i -- lpixel_i: (%ld, %ld) -- (%ld, %ld)\n", fpixel_i[0],
+  printf("fpixel_i -- lpixel_i: (%ld, %ld) -- (%ld, %ld)\n\n", fpixel_i[0],
          fpixel_i[1], lpixel_i[0], lpixel_i[1]);
   */
 

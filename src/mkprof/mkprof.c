@@ -218,6 +218,8 @@ saveindividual(struct mkonthread *mkp)
 
   /* Change NaN values to 0.0f: */
   freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], NAN, 0.0f);
+  if(p->setconsttonan)
+    freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], CONSTFORNAN, NAN);
 
   /* Write the array to file (A separately built PSF doesn't need WCS
      coordinates): */
@@ -232,6 +234,8 @@ saveindividual(struct mkonthread *mkp)
   ibq->indivcreated=1;
 
   /* Change 0.0f values to NAN: */
+  if(p->setconsttonan)
+    freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], NAN, CONSTFORNAN);
   freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], 0.0f, NAN);
 
   /* Report if in verbose mode. */
@@ -567,12 +571,13 @@ write(struct mkprofparams *p)
               colend=to+jw;
               do
                 {
-                if(!isnan(*from))
-                  {
-                    sum+=*from;
-                    *to = replace ? *from : *to+*from;
-                  }
-                ++from;
+                  if(!isnan(*from))
+                    {
+                      *from = p->setconsttonan ? NAN : *from;
+                      sum+=*from;
+                      *to = replace ? *from : *to+*from;
+                    }
+                  ++from;
                 }
               while(++to<colend);
               to+=w-jw; from+=ow-jw;	     /* Go to next row. */

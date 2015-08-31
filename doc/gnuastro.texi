@@ -10709,6 +10709,14 @@ masks. When displaying the images in a document (and inverting the
 images as is automatically done in ConvertType), the masked pixels
 will become white.
 
+@item -A
+@itemx --setconsttonan
+Similar to @option{--setconsttomin}, but the constant value is a NaN
+value. Since all Gnuastro programs treat NaN valued pixels as masked,
+this is useful for immediately masking some pixels in the image that
+have an elliptical shape without the need to creating a new mask
+image.
+
 @item -R
 @itemx --replace
 Do not add pixel values to each other, replace them. By default, when

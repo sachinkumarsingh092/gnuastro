@@ -361,7 +361,7 @@ makeoutput(struct mkcatalogparams *p)
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
 
 
-  /* Calculate the pixel area in steradians: */
+  /* Calculate the pixel area in arcseconds^2: */
   pixarea=pixelareaarcsec2(p->wcs);
 
 

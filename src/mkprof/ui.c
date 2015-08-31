@@ -479,6 +479,14 @@ sanitycheck(struct mkprofparams *p)
   p->naxes[1] *= p->oversample;
 
 
+
+  /* Check if the set constant options are not called together: */
+  if(p->setconsttomin && p->setconsttonan)
+    error(EXIT_FAILURE, 0, "`--setconsttomin' and `--setconsttonan' have "
+          "been called together! The constant profile values can only have "
+          "one value. So these two options cannot be called together.");
+
+
   /* If the column numbers are not equal. */
   columns[0]=p->xcol; columns[1]=p->ycol; columns[2]=p->fcol;
   columns[3]=p->rcol; columns[4]=p->ncol; columns[5]=p->pcol;
@@ -653,6 +661,9 @@ preparearrays(struct mkprofparams *p)
               "called when an input background image is also provided.");
     }
 
+
+  /* If the constant is to be NaN, then set it: */
+  if(p->setconsttonan) p->constant=CONSTFORNAN;
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();

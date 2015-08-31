@@ -558,8 +558,10 @@ makeoneprofile(struct mkonthread *mkp)
   makepixbypix(mkp);
 
 
-  /* Correct the sum of pixels in it. */
-  if(p->setconsttomin==0)
+  /* Correct the sum of pixels in it. If the profile is a fixed
+     constant, then its value is set in the Fixed function in
+     profiles.c. */
+  if(p->setconsttomin==0 && p->setconsttonan==0)
     {
       sum=floatsum(mkp->ibq->img, size);
       mkp->ibq->accufrac/=sum;
