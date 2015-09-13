@@ -112,17 +112,20 @@ readconfig(char *filename, struct imgwarpparams *p)
       else if(strcmp(name, "output")==0)
         allocatecopyset(value, &cp->output, &cp->outputset);
 
+      else if(strcmp(name, "maxblankfrac")==0)
+        {
+	  if(up->maxblankfracset) continue;
+	  floatl0s1(value, &p->maxblankfrac, name, key, SPACK,
+		       filename, lineno);
+	  up->maxblankfracset=1;
+        }
+
 
 
 
       /* Operating modes: */
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -150,7 +153,6 @@ printvalues(FILE *fp, struct imgwarpparams *p)
   if(cp->hduset)
     PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
 
-
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
     PRINTSTINGMAYBEWITHSPACE("matrix", up->matrixstring);
@@ -158,11 +160,15 @@ printvalues(FILE *fp, struct imgwarpparams *p)
   if(cp->outputset)
     PRINTSTINGMAYBEWITHSPACE("output", cp->output);
 
+  if(up->maxblankfracset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "maxblankfrac", p->maxblankfrac);
 
+
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program). */
   fprintf(fp, "\n# Operating mode:\n");
-  /* Number of threads doesn't need to be checked, it is set by
-     default */
-  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", cp->numthreads);
+  PRINT_COMMONOPTIONS;
 }
 
 
@@ -183,6 +189,8 @@ checkifset(struct imgwarpparams *p)
     REPORT_NOTSET("hdu");
   if(up->matrixstringset==0)
     REPORT_NOTSET("matrix");
+  if(up->maxblankfracset==0)
+    REPORT_NOTSET("maxblankfrac");
 
   END_OF_NOTSET_REPORT;
 }

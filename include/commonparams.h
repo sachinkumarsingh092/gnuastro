@@ -44,9 +44,12 @@ struct commonparams
   int     setdirconf;  /* ==1: Set the current directory default values.*/
   int     setusrconf;  /* ==1: Set the user default values.             */
   size_t  numthreads;  /* Number of threads to use.                     */
+  int    onlydirconf;  /* Only check current directory conf. file.      */
+  char  *onlyversion;  /* The string of the requested version.          */
 
   /* Check: */
   int  numthreadsset;  /* If the number of threads are set.             */
+  int onlyversionset;  /* If the only version option is set.            */
   int         hduset;  /* If the input image extension is set.          */
   int      outputset;  /* If the output is set.                         */
 };

@@ -60,18 +60,18 @@ reportsimplestats(struct imgstatparams *p)
 	 "Standard deviation", std, "Median", med);
 
   /* The mode: */
-  modeindexinsorted(p->sorted, p->size, 1.5f, &modeindex, &modesym);
+  modeindexinsorted(p->sorted, p->size, p->mirrordist, &modeindex, &modesym);
   modequant=(float)(modeindex)/(float)(p->size);
 
   /* Report the values: */
-  printf("   -- %-45s%.4f, %g\n",
-         (modesym>MODESYMGOOD
-          ? "Mode (quantile, value)"
-          : "Mode (quantile, value) ## NOT ACCURATE ##"),
+  printf("   -- %-45s%.4f   %g\n", "Mode (quantile, value)",
          modequant, p->sorted[modeindex]);
   symvalue=valuefromsym(p->sorted, p->size, modeindex, modesym);
-  printf("   -- %-45s%.4f, %g\n", "Mode symmetricity and its cutoff"
+  printf("   -- %-45s%.4f   %g\n", "Mode symmetricity and its cutoff"
          " value", modesym, symvalue);
+  if(modesym<MODESYMGOOD)
+    printf("      ## MODE SYMMETRICITY IS TOO LOW ##\n");
+
   /* Save the mode histogram and cumulative frequency plot. Note
      that if the histograms are to be built, then
      mhistname!=NULL. */

@@ -52,7 +52,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 
-   Numbers: 1000
+   Used numbers <= 1002
 
    You can use this above list to set short options for the different
    utilities.
@@ -108,7 +108,22 @@ static struct argp_option coptions[] =
       "BibTeX citation for "SPACK_NAME".",
       -1
     },
-
+    {
+      "onlydirconf",
+      1001,
+      0,
+      0,
+      "Only read current directory configuration file.",
+      -1
+    },
+    {
+      "onlyversion",
+      1002,
+      "STR",
+      0,
+      "Only run if the program version is this.",
+      -1
+    },
 
 
 
@@ -206,6 +221,13 @@ cparse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 1000:
       PRINTCITEABORT;
+      break;
+    case 1001:
+      cp->onlydirconf=1;
+      break;
+    case 1002:
+      cp->onlyversion=arg;
+      cp->onlyversionset=1;
       break;
 
     /* Input/output: */

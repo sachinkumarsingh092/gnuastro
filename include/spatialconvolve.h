@@ -24,6 +24,17 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SPATIALCONVOLVE_H
 
 
+
+
+
+/* For pthread_barrier_t: */
+#include "astrthreads.h"
+
+
+
+
+
+/* Main structure: */
 struct sconvparams
 {
   /* General input parameters: */
@@ -46,6 +57,11 @@ struct sconvparams
   pthread_barrier_t   *b;     /* Barrier to keep threads waiting.      */
 };
 
+
+
+
+
+/* Functions: */
 void
 scpparams(float *input, size_t is0, size_t is1, float *kernel, size_t ks0,
           size_t ks1, size_t nt, int edgecorrection, float *out,

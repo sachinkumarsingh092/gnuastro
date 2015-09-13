@@ -53,6 +53,7 @@ struct uiparams
   int             masknameset;
   int       masknameallocated;
   int                 mhduset;
+  int           mirrordistset;
   int          onebinvalueset;
   int          histnumbinsset;
   int              histminset;
@@ -84,6 +85,7 @@ struct imgstatparams
   float            *sorted;  /* Sorted input data.                      */
   size_t              size;  /* Number of non-blank data elements.      */
   int            ignoremin;  /* Ignore all data with minimum value.     */
+  float         mirrordist;  /* Distance to go out for mode check.      */
 
   /* Output: */
   int            asciihist;  /* ==1: print an ASCII histogram.          */

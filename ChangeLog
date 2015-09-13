@@ -1,3 +1,32 @@
+2015-09-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/imgwarp/imgwarp.c (imgwarponthread): Now calculates the
+	fraction of area that is blank (NaN) and if that fraction is
+	larger than a user defined value, then the output pixel will be
+	blank. Before the blank fraction was ignored.
+
+	* src/imgstat/imgstat.c (reportsimplestats): Now uses the value to
+	the `--mirrordist' option instead of the fixed value of 1.5.
+	(reportsimplestats): Report the `NOT ACCURATE' warning in a
+	separate line to make reading by AWK easier, also removed comma
+	between outputs for the same reason.
+
+	* src/*/ui.c (readconfig): Now uses macros for common options.
+	(printvalues): Similarly uses macros for common options.
+
+	* lib/statistics.c (sigmaclip_converge): Removed commas between
+	the outputs to make reading by AWK easier.
+	(sigmaclip_certainnum): Similar to above.
+
+	* include/fixedstringmacros.h (GNUASTROBIBTEX): New name from
+	ASTRUTILSBIBTEX. Also the content was updated to the full ADS
+	BibTeX output after the paper was published.
+
+	* include/configfiles.h (CHECKSETCONFIG): Now checks for the
+	version of the program and also has a more cleaner/readable path
+	for reading/writing to the user configuration directory and
+	reading from the system configuration directory.
+
 2015-08-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/thresh.c (snthresh): The check on the number of

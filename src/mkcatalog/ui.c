@@ -370,13 +370,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
 
 
       /* Operating modes */
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -529,6 +524,12 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
               "the value %lu which is not recognized in preparearrays "
               "(ui.c).", PACKAGE_BUGREPORT, i, p->allcols[i]);
       }
+
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program). */
+  fprintf(fp, "\n# Operating mode:\n");
+  PRINT_COMMONOPTIONS;
 }
 
 

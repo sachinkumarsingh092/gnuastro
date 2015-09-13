@@ -118,13 +118,8 @@ readconfig(char *filename, struct headerparams *p)
 
 
       /* Operating modes: */
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -146,16 +141,19 @@ printvalues(FILE *fp, struct headerparams *p)
   /*struct uiparams *up=&p->up;*/
   struct commonparams *cp=&p->cp;
 
+
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+
+
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program). */
+  fprintf(fp, "\n# Operating mode:\n");
+  PRINT_COMMONOPTIONS;
 }
 
 
