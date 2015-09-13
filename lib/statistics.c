@@ -1024,7 +1024,7 @@ sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
       favestd(start, num_elem, &ave, &std, NULL);
 
       if(print)
-        printf("      %lu: %f, %f, %f, %lu\n",
+        printf("      %lu: %f  %f  %f  %lu\n",
                counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are NaN. If so, stop the
@@ -1098,7 +1098,7 @@ sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
       favestd(start, num_elem, &ave, &std, NULL);
 
       if(print)
-        printf("      %lu: %f, %f, %f, %lu\n",
+        printf("      %lu: %f  %f  %f  %lu\n",
                counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are nan. If so, stop the

@@ -115,8 +115,8 @@ imgwarponthread(void *inparam)
   struct iwpparams *iwp=(struct iwpparams*)inparam;
   struct imgwarpparams *p=iwp->p;
 
-  double *input=p->input, v;
   long is0=p->is0, is1=p->is1;
+  double area, nanarea, *input=p->input, v=NAN;
   size_t *extinds=p->extinds, *ordinds=p->ordinds;
   size_t i, j, ind, os1=p->onaxes[0], numcrn, numinput;
   double ocrn[8], icrn_base[8], icrn[8], *output=p->output;
@@ -127,7 +127,7 @@ imgwarponthread(void *inparam)
     {
       /* Initialize the output pixel value: */
       numinput=0;
-      output[ind]=0.0f;
+      output[ind]=nanarea=0.0f;
 
       /* Set the corners of this output pixel. The ind/os1 and ind%os1
          start from 0. Note that the outfpixval already contains the
@@ -158,7 +158,6 @@ imgwarponthread(void *inparam)
       icrn[4]=icrn_base[ordinds[2]*2]; icrn[5]=icrn_base[ordinds[2]*2+1];
       icrn[6]=icrn_base[ordinds[3]*2]; icrn[7]=icrn_base[ordinds[3]*2+1];
 
-
       /* For a check:
       if(ind==9999)
         {
@@ -188,19 +187,30 @@ imgwarponthread(void *inparam)
           for(x=xstart;x<xend;++x)
             {
               if( x<1 || x>is1 ) continue;
-              if( isnan(v=input[(y-1)*is1+x-1]) ) continue;
+
+              /* Read the value of the input pixel. */
+              v=input[(y-1)*is1+x-1];
 
               pcrn[0]=x-0.5f;          pcrn[2]=x+0.5f;
               pcrn[4]=x+0.5f;          pcrn[6]=x-0.5f;
 
               /* Find the overlapping (clipped) polygon: */
               polygonclip(icrn, 4, pcrn, 4, ccrn, &numcrn);
+              area=polygonarea(ccrn, numcrn);
 
-              /* Add the fractional value of this pixel: */
-              output[ind]+=v*polygonarea(ccrn, numcrn);
-              ++numinput;
+              /* Add the fractional value of this pixel. If this
+                 output pixel covers a NaN pixel in the input grid,
+                 then calculate the area of this NaN pixel to account
+                 for it later. */
+              if( isnan(v) )
+                nanarea+=area;
+              else
+                {
+                  ++numinput;
+                  output[ind]+=v*area;
+                }
 
-              /* For a check:
+              /* For a polygon check:
               if(ind==9999)
                 {
                   printf("%lu -- (%ld, %ld):\n", ind, x, y);
@@ -218,8 +228,33 @@ imgwarponthread(void *inparam)
                          input[(y-1)*is1+x-1]);
                 }
               */
+
+              /* For a simple pixel value check:
+              if(ind==97387)
+                printf("%f --> (%lu) %f\n", v*polygonarea(ccrn, numcrn),
+                       numinput, output[ind]);
+              */
             }
         }
+
+      /* Correct for the area covered by a NaN. The basic idea is
+         this: The full pixel (with area `A') would have a value of
+         `F'. But we have only measured the value `f' over the area
+         `a', so a simple linear extrapolation would give: F=fA/a. */
+      if(numinput && nanarea!=0.0f)
+        {
+          /* For a check:
+          printf("%lu: %f/%f --> %f\n", ind, nanarea, p->opixarea,
+                 nanarea/p->opixarea);
+          */
+
+          if(nanarea/p->opixarea<p->maxblankfrac)
+            output[ind]*=p->opixarea/(p->opixarea-nanarea);
+          else
+            numinput=0;
+        }
+
+      /* Write the final value to disk: */
       if(numinput==0 && p->zerofornoinput==0)
         {
           output[ind]=NAN;
@@ -272,7 +307,7 @@ imgwarponthread(void *inparam)
 void
 imgwarppreparations(struct imgwarpparams *p)
 {
-  double output[8];
+  double output[8], forarea[8];
   double icrn[8]={0,0,0,0,0,0,0,0};
   size_t i, *extinds=p->extinds, size;
   double xmin=DBL_MAX, xmax=-DBL_MAX, ymin=DBL_MAX, ymax=-DBL_MAX;
@@ -338,9 +373,19 @@ imgwarppreparations(struct imgwarpparams *p)
       mappoint(&ocrn[i*2], p->inverse, &icrn[i*2]);
     }
 
-
   /* Order the transformed output pixel. */
   orderedpolygoncorners(icrn, 4, p->ordinds);
+
+
+  /* Find the area of the output pixel in units of the input pixel,
+     this is necessary if we are going to have NAN pixels in the image
+     to account for the area lost due to a NAN value. */
+  for(i=0;i<4;++i)
+    {
+      forarea[2*i]=icrn[2*p->ordinds[i]];
+      forarea[2*i+1]=icrn[2*p->ordinds[i]+1];
+    }
+  p->opixarea=polygonarea(forarea, 4);
 
 
   /* Find which index after transformation will have the minimum and

@@ -55,23 +55,26 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define ASTRUTILSBIBTEX 						\
+#define GNUASTROBIBTEX                                                  \
   "@ARTICLE{noisechisel,\n"                                             \
   "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"                  \
-  "    title = \"{Noise Based Detection and Segmentation of Nebulous "  \
-  "Objects}\",\n"                                                       \
-  "  journal = {ArXiv e-prints},\n"                                     \
-  " archivePrefix = \"arXiv\",\n"                                       \
+  "    title = \"{Noise-based Detection and Segmentation of Nebulous Objects}\",\n" \
+  "  journal = {\apjs},\n"                                              \
+  "archivePrefix = \"arXiv\",\n"                                        \
   "   eprint = {1505.01664},\n"                                         \
   " primaryClass = \"astro-ph.IM\",\n"                                  \
-  " keywords = {Astrophysics - Instrumentation and Methods for "        \
-  "Astrophysics, Astrophysics - Cosmology and Nongalactic "             \
-  "Astrophysics, Astrophysics - Astrophysics of Galaxies},\n"           \
+  " keywords = {galaxies: irregular, galaxies: photometry, "            \
+  "galaxies: structure, methods: data analysis, "                       \
+  "techniques: image processing, techniques: photometric},\n"           \
   "     year = 2015,\n"                                                 \
-  "    month = may,\n"                                                  \
-  "   adsurl = {http://adsabs.harvard.edu/abs/2015arXiv150501664A},\n"  \
+  "    month = sep,\n"                                                  \
+  "   volume = 220,\n"                                                  \
+  "      eid = {1},\n"                                                  \
+  "    pages = {1},\n"                                                  \
+  "      doi = {10.1088/0067-0049/220/1/1},\n"                          \
+  "   adsurl = {http://adsabs.harvard.edu/abs/2015ApJS..220....1A},\n"  \
   "  adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"   \
-  "}\n"
+  "}"
 
 
 /* This can be used in the end of error messages related to option

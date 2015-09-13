@@ -3275,6 +3275,35 @@ the program will not run).
 Update the user configuration file from the command line options and
 quit. See explanation under @option{--setdirconf} for more details.
 
+@item --onlydirconf
+Only read the current (local) directory configuration file and ignore
+the rest of the configuration files, see @ref{Configuration file
+precedence} and @ref{Current directory and User wide}. This can be
+very useful when you want your results to be exactly reproducible. All
+the configuration files can be put in the hidden @file{./.gnuastro/}
+directory in the current directory, or the hidden directory can be a
+symbolic link to the directory containing the configuration
+files. Then with this option you can ensure that no other
+configuration file is read. So if your local configuration file lacks
+some parameters, which ever Gnuastro utility you are using will will
+warn you and abort, enabling you to exactly set all the necessary
+parameters without unknowningly relying on some user or system wide
+option values.
+
+@option{onlydirconf} can also be used in the configuration files (with
+a value of @option{0} or @option{1}), see @ref{Configuration file
+format}. If it is present in the local configuration file, other
+configuration files will not be read. In the other configuration
+files, it is irrelevant.
+
+@item --onlyversion
+(@option{=STR}) Only run the program if its version is equal with the
+string of characters given to this option. Note that it is not
+compared as a number, but as a string of characters, so @option{0}, or
+@option{0.0} and @option{0.00} are different. This is useful if you
+want your results to be exactly reproducible and not mistakenly run
+with an updated or older version of the program.
+
 @cindex CPU threads, set number
 @cindex Number of CPU threads to use
 @item -N
@@ -3402,17 +3431,19 @@ be ignored.
 Command line options, for this particular execution.
 
 @item
-Current directory, for all executions in this directory
-(@file{./.gnuastro/}).
+Current (local) directory, for all executions in the directory from
+which any of the utilities is run (@file{./.gnuastro/}).
 
 @item
 The user's home directory, for all the executions of a particular
-user:@*(@file{$HOME/.local/etc/}, see below).
+user:@*(@file{$HOME/.local/etc/}, see below). It is only read if
+@option{--onlydirconf} is not called, see @ref{Operating modes}.
 
 @item
 In a system wide directory for any user on that computer
-(@file{prefix/etc/}, see @ref{Installation directory} for
-the value of @file{prefix}).
+(@file{prefix/etc/}, see @ref{Installation directory} for the value of
+@file{prefix}). It is only read if @option{--onlydirconf} is not
+called, see @ref{Operating modes}.
 @end enumerate
 @noindent
 
@@ -3437,16 +3468,16 @@ worry about this issue any more.
 @cindex @file{HOME}
 @cindex @file{./.gnuastro/}
 @cindex @file{HOME/.local/etc/}
-For these two directories, the configuration files are stored in a
-hidden sub-directory named @file{./.gnuastro/} and
-@file{HOME/.local/etc/} respectively. Unless you have changed it, the
-@file{HOME} environment variable should point to your home
-directory. You can check it by running @command{$ echo $HOME}. Each
-time you run any of the programs in Gnuastro, this environment
-variable is read and placed in the above address. So if you suddenly
-see that your home configuration files are not being read, probably
-you (or some other program) has changed the value of this environment
-variable.
+For the current (local) and user-wide directories, the configuration
+files are stored in the hidden sub-directories named
+@file{./.gnuastro/} and @file{HOME/.local/etc/} respectively. Unless
+you have changed it, the @file{HOME} environment variable should point
+to your home directory. You can check it by running @command{$ echo
+$HOME}. Each time you run any of the programs in Gnuastro, this
+environment variable is read and placed in the above address. So if
+you suddenly see that your home configuration files are not being
+read, probably you (or some other program) has changed the value of
+this environment variable.
 
 @vindex --setdirconf
 @vindex --setusrconf
@@ -6278,6 +6309,22 @@ untouched to the output image.
 @itemx --zerofornoinput
 Set output pixels which do not correspond to any input to zero. By
 default they are set to blank pixel values, see @ref{Blank pixels}.
+
+@item -b
+@itemx --maxblankfrac
+(@option{=FLT}) The maximum fractional area of blank pixels over the
+output pixel. If an output pixel is covered by blank pixels (see
+@ref{Blank pixels}) for a larger fraction than the value to this
+option, the output pixel will be set to a blank pixel its self.
+
+When the fraction is lower, the sum of non-blank pixel values over
+that pixel will be multiplied by the inverse of this fraction to
+correct for its flux and not cause discontinuties on the edges of
+blank regions. Note that even with this correction, discontinuities
+(very low non-blank values touching blank regions in the output image)
+might arise depending on the transformation and the blank pixels. So
+if there are blank pixels in the image, a good value to this option
+has to be found for that particular image and warp.
 
 @item -d
 @itemx --doubletype

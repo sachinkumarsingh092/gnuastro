@@ -288,14 +288,8 @@ readconfig(char *filename, struct mkprofparams *p)
 
 
 
-      /* Operating modes: */
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -377,10 +371,10 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%g\n", "resolution", p->resolution);
 
 
-  fprintf(fp, "\n# Operating modes:\n");
-  /* Number of threads doesn't need to be checked, it is set by
-     default */
-  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", cp->numthreads);
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program) */
+  PRINT_COMMONOPTIONS;
 }
 
 

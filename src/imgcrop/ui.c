@@ -137,13 +137,6 @@ readconfig(char *filename, struct imgcropparams *p)
 		}
 	    }
 	}
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if (cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
 
 
 
@@ -229,6 +222,12 @@ readconfig(char *filename, struct imgcropparams *p)
 	  strcpy(p->suffix, value);
 	  up->suffixset=1;
 	}
+
+
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
+
+
       else
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,
 		      "`%s` not recognized.\n", name);
@@ -279,14 +278,14 @@ printvalues(FILE *fp, struct imgcropparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "wwidth", p->wwidth);
 
 
-  fprintf(fp, "\n# Operating mode:\n");
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program) */
+  PRINT_COMMONOPTIONS;
   if(up->imgmodeset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "imgmode", p->imgmode);
   if(up->wcsmodeset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "wcsmode", p->wcsmode);
-  /* Number of threads doesn't need to be checked, it is set by
-     default */
-  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", cp->numthreads);
 }
 
 

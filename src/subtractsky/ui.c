@@ -262,14 +262,8 @@ readconfig(char *filename, struct subtractskyparams *p)
 	}
 
 
-      /* Operating modes: */
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -370,6 +364,11 @@ printvalues(FILE *fp, struct subtractskyparams *p)
   if(up->sigcliptoleranceset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
             p->sigcliptolerance);
+
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program) */
+  PRINT_COMMONOPTIONS;
 }
 
 

@@ -111,7 +111,13 @@ readconfig(char *filename, struct imgstatparams *p)
 
       else if (strcmp(name, "mhdu")==0)
         allocatecopyset(value, &up->mhdu, &up->mhduset);
-
+      else if(strcmp(name, "mirrordist")==0)
+	{
+	  if(up->mirrordistset) continue;
+          floatl0(value, &p->mirrordist, name, key, SPACK,
+                     filename, lineno);
+          up->mirrordistset=1;
+	}
 
 
       /* Outputs */
@@ -219,14 +225,8 @@ readconfig(char *filename, struct imgstatparams *p)
 	}
 
 
-      /* Operating modes: */
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -257,6 +257,8 @@ printvalues(FILE *fp, struct imgstatparams *p)
     PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
   if(up->mhdu)
     PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
+  if(up->mirrordistset)
+    fprintf(fp, CONF_SHOWFMT"%.2f\n", "mirrordist", p->mirrordist);
 
   /* Output: */
   fprintf(fp, "\n# Output:\n");
@@ -297,6 +299,11 @@ printvalues(FILE *fp, struct imgstatparams *p)
             p->sigcliptolerance);
   if(up->sigclipnumset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "sigclipnum", p->sigclipnum);
+
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program) */
+  PRINT_COMMONOPTIONS;
 }
 
 
@@ -316,6 +323,8 @@ checkifset(struct imgstatparams *p)
   int intro=0;
   if(cp->hduset==0)
     REPORT_NOTSET("hdu");
+  if(up->mirrordistset==0)
+    REPORT_NOTSET("mirrordist");
   if(up->mirrorplotdistset==0)
     REPORT_NOTSET("mirrorplotdist");
   if(up->onebinvalueset==0)

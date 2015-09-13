@@ -72,7 +72,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c d e f j k m s t v w y z
+   c e f j k m s t v w y z
    C E F G I J L O R T W X Y Z
 
    Number keys used: <=511
@@ -109,6 +109,14 @@ static struct argp_option options[] =
       0,
       0,
       "Ignore data with values equal to minimum.",
+      1
+    },
+    {
+      "mirrordist",
+      'd',
+      "FLT",
+      0,
+      "Distance beyond mirror point. Multiple of std.",
       1
     },
 
@@ -405,6 +413,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'r':
       p->ignoremin=1;
+      break;
+    case 'd':
+      floatl0(arg, &p->mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      p->up.mirrordistset=1;
       break;
 
     /* Output: */

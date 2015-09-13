@@ -193,13 +193,9 @@ readconfig(char *filename, struct convolveparams *p)
 		}
 	    }
 	}
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -256,14 +252,14 @@ printvalues(FILE *fp, struct convolveparams *p)
             mp->fullconvolution);
 
 
-  fprintf(fp, "\n# Operating modes:\n");
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program) */
+  PRINT_COMMONOPTIONS;
   if(up->spatialset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "spatial", p->spatial);
   if(up->frequencyset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "frequency", p->frequency);
-  /* Number of threads doesn't need to be checked, it is set by
-     default */
-  fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads);
 }
 
 

@@ -71,7 +71,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c e f g i j k l p r s t u v w x y
+   a c e f g i j k l p r s t u v w x y
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
@@ -126,6 +126,14 @@ static struct argp_option options[] =
       0,
       0,
       "Do not convert output to input image type.",
+      2
+    },
+    {
+      "maxblankfrac",
+      'b',
+      "FLT",
+      0,
+      "Maximum fraction of area covered by blank.",
       2
     },
 
@@ -189,7 +197,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'd':
       p->doubletype=1;
       break;
-
+    case 'b':
+      floatl0s1(arg, &p->maxblankfrac, "maxblankfrac", key, SPACK, NULL, 0);
+      p->up.maxblankfracset=1;
+      break;
 
 
     /* Read the non-option arguments: */

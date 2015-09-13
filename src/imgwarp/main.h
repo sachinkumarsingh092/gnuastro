@@ -51,6 +51,7 @@ struct uiparams
   char     *matrixstring;  /* String containing transform elements.    */
 
   int    matrixstringset;
+  int    maxblankfracset;
 };
 
 
@@ -79,6 +80,7 @@ struct imgwarpparams
   int          correctwcs;  /* Wrap the warped/transfomed pixels.        */
   int          doubletype;  /* Save output in double not in input type.  */
   int      zerofornoinput;  /* Set the pixels with no input to zero.     */
+  float      maxblankfrac;  /* Maximum fraction of blank pixel in out.   */
 
   /* Internal parameters: */
   double          *output;  /* Warped image array.                       */
@@ -89,6 +91,7 @@ struct imgwarpparams
   size_t       extinds[4];  /* Indexs of the minimum and maximum values. */
   size_t       ordinds[4];  /* Indexs of anticlockwise vertices.         */
   double    outfpixval[2];  /* Pixel value of first output pixel.        */
+  double         opixarea;  /* Area of output pix in units of input pix. */
 };
 
 #endif

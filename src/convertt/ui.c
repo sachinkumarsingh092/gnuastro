@@ -162,14 +162,8 @@ readconfig(char *filename, struct converttparams *p)
 
 
 
-      /* Operating modes: */
-      else if(strcmp(name, "numthreads")==0)
-	{
-	  if(cp->numthreadsset) continue;
-	  sizetlzero(value, &cp->numthreads, name, key, SPACK,
-		     filename, lineno);
-	  cp->numthreadsset=1;
-	}
+      /* Read options common to all programs */
+      READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -222,6 +216,11 @@ printvalues(FILE *fp, struct converttparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "fluxhigh", p->fluxhigh);
   if(up->maxbyteset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "maxbyte", (int)(p->maxbyte));
+
+  /* For the operating mode, first put the macro to print the common
+     options, then the (possible options particular to this
+     program) */
+  PRINT_COMMONOPTIONS;
 }
 
 

@@ -68,31 +68,39 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define CHECKSETCONFIG {				                \
+#define CHECKSETCONFIG {                                                \
     char *userconfig_dir, *userconfig_file;				\
-    userconfig_dir=addhomedir(USERCONFIG_DIR);				\
-    userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
-    if(cp->setdirconf || cp->setusrconf)				\
-      {									\
-	if(cp->setdirconf)						\
-	  {								\
-	    readconfig(CURDIRCONFIG_FILE, p);				\
-	    SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);			\
-	  }								\
-	if(cp->setusrconf)						\
-	  {								\
-	    readconfig(userconfig_file, p);				\
-	    SAVE_LOCAL_CONFIG(userconfig_dir);				\
-	  }								\
-      }									\
-    else								\
-      {									\
-	readconfig(CURDIRCONFIG_FILE, p);			        \
-	readconfig(userconfig_file, p);					\
-	readconfig(SYSCONFIG_FILE, p);					\
-      }									\
-    free(userconfig_file);						\
-    free(userconfig_dir);						\
+                                                                        \
+    readconfig(CURDIRCONFIG_FILE, p);                                   \
+    if(cp->setdirconf)                                                  \
+      SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);                              \
+    if(cp->onlyversionset && strcmp(cp->onlyversion, SPACK_VERSION))    \
+      error(EXIT_FAILURE, 0, "The running version of %s is `%s'. "      \
+            "However, you have asked for this %s run to be with "       \
+            "version `%s'. Either through the command line or in a "    \
+            "configuration file with the `--onlyversion' option. "      \
+            "Please either remove it, or set it to `%s' with a command " \
+            "like:\n\n"                                                 \
+            "    %s --onlyversion=%s --setdirconf\n\n"                  \
+            "Alternatively, you can install %s %s.\n"                   \
+            "NOTE: If this option was in a configuration file (you "    \
+            "didn't set it on the command line), then probably it was " \
+            "intended for reproducability. If so, to be exactly "       \
+            "reproducible, it is advised to install the requested "     \
+            "version.", SPACK_NAME, SPACK_VERSION, SPACK_NAME,          \
+            cp->onlyversion, SPACK_VERSION, SPACK, SPACK_VERSION,       \
+            SPACK_NAME, SPACK_VERSION);                                 \
+                                                                        \
+    if(cp->onlydirconf==0)                                              \
+      {                                                                 \
+        userconfig_dir=addhomedir(USERCONFIG_DIR);                      \
+        userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
+        readconfig(userconfig_file, p);                                 \
+        if(cp->setusrconf) SAVE_LOCAL_CONFIG(userconfig_dir);           \
+        readconfig(SYSCONFIG_FILE, p);                                  \
+        free(userconfig_file);						\
+        free(userconfig_dir);						\
+      }                                                                 \
   }
 
 
@@ -133,12 +141,53 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
       }									\
   }
 
+
+
+
+
 #define REPORT_PARAMETERS_SET {			                        \
     fprintf(stdout, "# "SPACK_STRING"\n");				\
     fprintf(stdout, "# Configured on "CONFIGDATE" at "CONFIGTIME"\n");	\
     fprintf(stdout, "# Written on %s", ctime(&p->rawtime));	        \
     printvalues(stdout, p);						\
     exit(EXIT_SUCCESS);							\
+  }
+
+
+
+
+
+/* Read the options that are common to all programs from the
+   configuration file. Since these two checks are within an if-else
+   structure, they should not be placed within an `{' and `}'. */
+#define READ_COMMONOPTIONS_FROM_CONF                                    \
+    else if(strcmp(name, "numthreads")==0)                              \
+      {                                                                 \
+        if(cp->numthreadsset) continue;                                 \
+        sizetlzero(value, &cp->numthreads, name, key, SPACK,            \
+                   filename, lineno);                                   \
+        cp->numthreadsset=1;                                            \
+      }                                                                 \
+    else if(strcmp(name, "onlydirconf")==0)                             \
+      {                                                                 \
+        if(cp->onlydirconf==0)                                          \
+          intzeroorone(value, &cp->onlydirconf, name, key, SPACK,       \
+                       filename, lineno);                               \
+      }                                                                 \
+    else if(strcmp(name, "onlyversion")==0)                             \
+        allocatecopyset(value, &cp->onlyversion, &cp->onlyversionset);  \
+
+
+
+
+
+/* Write common options: */
+#define PRINT_COMMONOPTIONS {                                           \
+    fprintf(fp, "\n# Operating modes:\n");                              \
+    if(cp->numthreadsset)                                               \
+      fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads); \
+    if(cp->onlyversionset)                                              \
+      PRINTSTINGMAYBEWITHSPACE("onlyversion", cp->onlyversion);         \
   }
 
 

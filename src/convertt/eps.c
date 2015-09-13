@@ -438,9 +438,9 @@ saveepsorpdf(struct converttparams *p)
               " -dDEVICEHEIGHTPOINTS=%lu -dPDFFitPage %s", p->cp.output,
               winpt+2*p->borderwidth, hinpt+2*p->borderwidth, epsfilename);
       if(system(command))
-        error(EXIT_FAILURE, 0, "The command to conert a PostScript file to "
+        error(EXIT_FAILURE, 0, "The command to convert a PostScript file to "
               "PDF (%s) was not successful! The PostScript file (%s) is left "
-              "if you want to covert or use it through any other means.",
+              "if you want to convert or use it through any other means.",
               command, epsfilename);
       sprintf(command, "rm %s", epsfilename);
       if(system(command))
