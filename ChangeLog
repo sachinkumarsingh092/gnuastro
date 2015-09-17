@@ -1,3 +1,18 @@
+2015-09-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/mkprof/main.h (mkprofparams): Removed the p->dir0file1
+	parameter from the main structure.
+
+	* tests/mkprof/mosaic1.sh: Corrected the name of the first output
+	for the new individual name configuration (where the output file
+	name is suffixed to the row number).
+
+	* src/mkprof/ui.c (sanitycheck): Now everything based on the
+	situation the basic information for the next steps is set here.
+
+	* src/mkprof/mkprof.c (saveindividual): Removed the name checking
+	here. All the necessary information is now set in ui.c.
+
 2015-09-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/imgwarp/imgwarp.c (imgwarponthread): Now calculates the

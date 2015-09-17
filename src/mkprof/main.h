@@ -170,6 +170,8 @@ struct mkprofparams
   gsl_rng           *rng;  /* Main instance of random number generator.*/
 
   /* Output */
+  char         *basename;  /* Merged image name with no directory.     */
+  char           *outdir;  /* Output directory.                        */
   int           anyblank;  /* ==1: there are blanks in back.           */
   int             bitpix;  /* bitpix of backgroud/output image.        */
   int           nomerged;  /* ==1: Don't make a merged image of all.   */
@@ -191,7 +193,6 @@ struct mkprofparams
   size_t             cs0;  /* Number of rows in input catalog.         */
   size_t             cs1;  /* Number of columns in input catalog.      */
   double            *log;  /* Log data to be printed.                  */
-  int          dir0file1;  /* Output is: ==0: a Dir. ==1: a file.      */
   struct builtqueue  *bq;  /* Top (last) elem of build queue.          */
   pthread_cond_t  qready;  /* bq is ready to be written.               */
   pthread_mutex_t  qlock;  /* Mutex lock to change builtq.             */

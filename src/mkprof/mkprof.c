@@ -185,23 +185,14 @@ saveindividual(struct mkonthread *mkp)
   struct mkprofparams *p=mkp->p;
 
   size_t len;
-  char *jobname;
   double crpix[2];
   long os=p->oversample;
   struct builtqueue *ibq=mkp->ibq;
-  char *outname, *outdir=p->cp.output;
-
-  /* Save the array to an image. */
-  if(p->dir0file1==0)
-    len=strlen(outdir)+NUMBERNAMESTRLEN;
-  else
-    {
-      outdir="";
-      len=NUMBERNAMESTRLEN;
-    }
+  char *outname, *jobname, *outdir=p->outdir;
 
   /* Allocate the space for the name of this file. */
   errno=0;
+  len=strlen(outdir)+NUMBERNAMESTRLEN+strlen(p->mergedimgname);
   outname=malloc(len*sizeof *outname);
   if(outname==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for name of object in "
@@ -213,7 +204,7 @@ saveindividual(struct mkonthread *mkp)
   crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
 
   /* Write the name and save the FITS image: */
-  sprintf(outname, "%s%lu.fits", outdir, ibq->id);
+  sprintf(outname, "%s%lu_%s", outdir, ibq->id, p->basename);
   checkremovefile(outname, p->cp.dontdelete);
 
   /* Change NaN values to 0.0f: */

@@ -188,6 +188,12 @@ void
 automaticoutput(char *inname, char *suffix, int removedirinfo,
 		int dontdelete, char **outname);
 
+char *
+dirpart(char *input);
+
+char *
+notdirpart(char *input);
+
 void
 checkdirwriteaddslash(char **dirname);
 

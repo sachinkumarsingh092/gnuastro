@@ -44,4 +44,4 @@ fi
 #####################
 cat=$topsrc/tests/$prog/mkprofcat1.txt
 $execname $cat --naxis1=100 --naxis2=100
-mv 0.fits psf.fits
+mv 0_mkprofcat1.fits psf.fits

@@ -460,7 +460,9 @@ checkifset(struct mkprofparams *p)
 void
 sanitycheck(struct mkprofparams *p)
 {
+  int d0f1;
   long width[2]={1,1};
+  char *tmpname=NULL;
   double truncr, *cat=p->cat, *row;
   size_t i, j, columns[9], cs1=p->cs1;
 
@@ -575,16 +577,27 @@ sanitycheck(struct mkprofparams *p)
 
 
   /* Check the output name: */
-  p->dir0file1=dir0file1(p->cp.output, p->cp.dontdelete);
-  if(p->dir0file1)		/* --output is a file name. */
-    p->mergedimgname=p->cp.output;
+  d0f1=dir0file1(p->cp.output, p->cp.dontdelete);
+  if(d0f1)		        /* --output is a file name. */
+    {
+      p->mergedimgname=p->cp.output;
+      p->outdir=dirpart(p->mergedimgname);
+    }
   else				/* --output is a directory name. */
     {
-      if(p->individual || p->psfinimg==0)
-	checkdirwriteaddslash(&p->cp.output);
+      errno=0;
+      p->outdir=malloc((strlen(p->cp.output)+1)*sizeof *p->outdir);
+      if(p->outdir==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for p->outdir in ui.c",
+              (strlen(p->cp.output)+1)*sizeof *p->outdir);
+      strcpy(p->outdir, p->cp.output);
+      checkdirwriteaddslash(&p->outdir);
       automaticoutput(p->up.catname, ".fits", p->cp.removedirinfo,
-		      p->cp.dontdelete, &p->mergedimgname);
+		      p->cp.dontdelete, &tmpname);
+      p->mergedimgname=malloccat(p->outdir, tmpname);
+      free(tmpname);
     }
+  p->basename=notdirpart(p->mergedimgname);
 }
 
 
@@ -794,6 +807,8 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
   /* Free all the allocated arrays. */
   free(p->cat);
   free(p->cp.hdu);
+  free(p->outdir);
+  free(p->basename);
   if(p->individual==0) free(p->log);
 
   /* p->cp.output might be equal to p->mergedimgname. In this case, if

@@ -730,6 +730,78 @@ automaticoutput(char *inname, char *suffix, int removedirinfo,
 
 
 
+/* Given a filename, this function will separate its directory name
+   part. */
+char *
+dirpart(char *input)
+{
+  char *out;
+  size_t i, l;
+
+  /* Find the first slash. */
+  l=strlen(input);
+  for(i=l;i!=0;--i)
+    if(input[i]=='/')
+      break;
+
+  /* If there was no slash, then the current directory should be
+     given: */
+  if(i==0)
+    {
+      errno=0;
+      out=malloc(3*sizeof *out);
+      if(out==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for current directory dirpart",
+              3*sizeof *out);
+      strcpy(out, "./");
+    }
+  else
+    {
+      errno=0;
+      out=malloc((l+1)*sizeof *out);
+      if(out==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for dirpart", (l+1)*sizeof *out);
+      strcpy(out, input);
+      out[i+1]='\0';
+    }
+
+  return out;
+}
+
+
+
+
+
+/* Given a file name, keep the non-directory part. Note that if there
+   is no forward slash in the input name, the full input name is
+   considered to be the notdir output.*/
+char *
+notdirpart(char *input)
+{
+  size_t i, l;
+  char *out, *tmp=input;
+
+  /* Find the first `/' to identify the directory */
+  l=strlen(input);
+  for(i=l;i!=0;--i)
+    if(input[i]=='/')
+      { tmp=&input[i+1]; break; }
+
+  /* Get the length of the notdir name: */
+  l=strlen(tmp);
+  errno=0;
+  out=malloc(l*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for notdir", l*sizeof *out);
+
+  strcpy(out, tmp);
+  return out;
+}
+
+
+
+
+
 /* Check if dirname is actually a real directory and that we can
    actually write inside of it. To insure all conditions an actual
    file will be made */

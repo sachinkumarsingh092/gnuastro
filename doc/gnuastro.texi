@@ -273,6 +273,7 @@ Configuration files
 Threads in GNU Astronomy Utilities
 
 * A note on threads::           Caution and suggestion on using threads.
+* How to run simultaneous operations::  How to run things simultaneously.
 
 Getting help
 
@@ -3588,9 +3589,10 @@ configuration file will be used, not the internal value.
 
 @menu
 * A note on threads::           Caution and suggestion on using threads.
+* How to run simultaneous operations::  How to run things simultaneously.
 @end menu
 
-@node A note on threads,  , Threads in GNU Astronomy Utilities, Threads in GNU Astronomy Utilities
+@node A note on threads, How to run simultaneous operations, Threads in GNU Astronomy Utilities, Threads in GNU Astronomy Utilities
 @subsection A note on threads
 
 @cindex Using multiple threads
@@ -3607,7 +3609,8 @@ threads internally and each thread cuts out those parts which are
 assigned to it from the same image. On the other hand, if you have
 multiple images and you want to crop the same region out of all of
 them, it is much more efficient to set @option{--numthreads=1} (so no
-threads spin off) and run ImageCrop multiple times simultaneously.
+threads spin off) and run ImageCrop multiple times simultaneously, see
+@ref{How to run simultaneous operations}.
 
 @cindex Wall-clock time
 You can check the boost in speed by first running a program on one of
@@ -3633,12 +3636,46 @@ runs.
 $ sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
 @end example
 
+@cartouche
+@noindent
+@strong{SUMMARY: Should I use multiple threads?} Depends:
+@itemize
+@item
+If you only have @strong{one} data set (image in most cases!), then
+yes, the more threads you use (with a maximum of the number of threads
+available to your OS) the faster you will get your results.
+
+@item
+If you want to run the same operation on @strong{multiple} data sets,
+it is best to set the number of threads to 1 and use GNU Parallel as
+explained above.
+@end itemize
+@end cartouche
+
+
+
+
+
+@node How to run simultaneous operations,  , A note on threads, Threads in GNU Astronomy Utilities
+@subsection How to run simultaneous operations
+
+There are two approaches to simultaneously execute a program: using
+GNU Parallel or Make (GNU Make is the most common implementation). The
+first is very useful when you only want to do one job multiple times
+and want to get back to your work without actually keeping the command
+you ran. The second is usually for (very) complicated processes, with
+lots of dependancies between the different products (for example a
+data-production pipeline).
+
+@table @asis
+
+@item GNU Parallel
 @cindex GNU Parallel
-The best method to run multiple instances of a command on different
-threads is to use GNU parallel. Surprisingly GNU Parallel is one of
-the few GNU packages that has no Info documentation but only a Man
-page, see @ref{Info}. So to see the documentation after installing it
-please run
+When you only want to run multiple instances of a command on different
+threads and get on with the rest of your work, the best method is to
+use GNU parallel. Surprisingly GNU Parallel is one of the few GNU
+packages that has no Info documentation but only a Man page, see
+@ref{Info}. So to see the documentation after installing it please run
 
 @example
 $ man parallel
@@ -3661,21 +3698,32 @@ beginners: the backslash (@command{\}) is only a line breaker to fit
 nicely in the page. If you type the whole command in one line, you
 should remove it.
 
-@cartouche
-@noindent
-@strong{SUMMARY: Should I use multiple threads?} Depends:
-@itemize
-@item
-If you only have @strong{one} data set (image in most cases!), then
-yes, the more threads you use (with a maximum of the number of threads
-available to your OS) the faster you will get your results.
+@item Make
+Make is a utility built for specifying ``targets'', ``prerequisites''
+and ``receipts''. It allows you to define very complicated dependancy
+structures for complicated processes that commonly start off with a
+large list of inputs and builds them based on the dependancies you
+define. GNU Make@footnote{@url{https://www.gnu.org/software/make/}} is
+the most common implementation which (like nearly all GNU programs
+comes with a wonderful
+manual@footnote{@url{https://www.gnu.org/software/make/manual/}}). It
+is very basic and short (the most important part is about 100 pages).
 
-@item
-If you want to run the same operation on @strong{multiple} data sets,
-it is best to set the number of threads to 1 and use GNU Parallel as
-explained above.
-@end itemize
-@end cartouche
+Make has the @option{--jobs} (@option{-j}) which allows you to specify
+the maximum number of jobs that can be done simultaneously. For
+example a common 4 physical core CPU usually has 8 processing
+threads. So you can run:
+
+@example
+$ make -j8
+@end example
+
+Once the dependancy tree for your processes is built, Make will run
+the independent targets simultaneously.
+
+@end table
+
+
 
 
 
@@ -10640,15 +10688,23 @@ convolution it will be the PSF.
 @cindex Individual profiles
 @cindex Build individual profiles
 If this option is called, each profile is created in a separate FITS
-image named with the row number of the profile in the catalog. In this
-case, only the sub-pixel position of the profile center is
-important.
+file within the same directory as the output and the row number of the
+profile (starting from zero) in the name. The file for each row's
+profile will be in the same directory as the final combined image of
+all the profiles and will have the final image's name as a suffix. So
+for example if the final combined image is named
+@file{./out/fromcatalog.fits}, then the first profile that will be
+created with this option will be named
+@file{./out/0_fromcatalog.fits}.
 
-The output will have an odd number of pixels. If there is no
-oversampling, the central pixel will contain the profile center. If
-the value to @option{--oversample} is larger than unity, then the
-profile center is on any of the central @option{--oversample}'d pixels
-depending on the fractional value of the profile center.
+Since each image only has one full profile out to the truncation
+radius the profile is centered and so, only the sub-pixel position of
+the profile center is important for the outputs of this option. The
+output will have an odd number of pixels. If there is no oversampling,
+the central pixel will contain the profile center. If the value to
+@option{--oversample} is larger than unity, then the profile center is
+on any of the central @option{--oversample}'d pixels depending on the
+fractional value of the profile center.
 
 If the fractional value is larger than half, it is on the bottom half
 of the central region. This is due to the FITS definition of a real
