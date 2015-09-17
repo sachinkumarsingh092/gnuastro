@@ -3325,6 +3325,10 @@ compared as a number, but as a string of characters, so @option{0}, or
 want your results to be exactly reproducible and not mistakenly run
 with an updated or older version of the program.
 
+@item --nolog
+For programs which generate Log files, if this option is called, no
+Log file will be generated.
+
 @cindex CPU threads, set number
 @cindex Number of CPU threads to use
 @item -N

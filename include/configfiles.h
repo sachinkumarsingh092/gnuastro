@@ -167,6 +167,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
                    filename, lineno);                                   \
         cp->numthreadsset=1;                                            \
       }                                                                 \
+    else if(strcmp(name, "nolog")==0)                                   \
+      {                                                                 \
+        if(cp->nologset) continue;                                      \
+        intzeroorone(value, &cp->nolog, name, key, SPACK,               \
+                     filename, lineno);                                 \
+        cp->nologset=1;                                                 \
+      }                                                                 \
     else if(strcmp(name, "onlydirconf")==0)                             \
       {                                                                 \
         if(cp->onlydirconf==0)                                          \
@@ -180,10 +187,13 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
 /* Write common options: */
 #define PRINT_COMMONOPTIONS {                                           \
     if(cp->numthreadsset)                                               \
       fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads); \
+    if(cp->nologset)                                                    \
+      fprintf(fp, CONF_SHOWFMT"%d\n", "nolog", p->cp.nolog);            \
     if(cp->onlyversionset)                                              \
       PRINTSTINGMAYBEWITHSPACE("onlyversion", cp->onlyversion);         \
   }

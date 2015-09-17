@@ -46,12 +46,14 @@ struct commonparams
   size_t  numthreads;  /* Number of threads to use.                     */
   int    onlydirconf;  /* Only check current directory conf. file.      */
   char  *onlyversion;  /* The string of the requested version.          */
+  int          nolog;  /* ==1: do not make a log file.                  */
 
   /* Check: */
   int  numthreadsset;  /* If the number of threads are set.             */
   int onlyversionset;  /* If the only version option is set.            */
   int         hduset;  /* If the input image extension is set.          */
   int      outputset;  /* If the output is set.                         */
+  int       nologset;  /* If nolog is set. */
 };
 
 #endif

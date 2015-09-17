@@ -332,7 +332,9 @@ imgcrop(struct imgcropparams *p)
     }
 
   /* Print the log file: */
-  printlog(p);
+  if(p->cp.nolog==0)
+    printlog(p);
+
 
   free(crp);
   free(indexs);

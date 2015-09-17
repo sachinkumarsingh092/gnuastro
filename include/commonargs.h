@@ -52,7 +52,7 @@ along with gnuastro. If not, see <http://www.gnu.org/licenses/>.
    a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 
-   Used numbers <= 1002
+   Used numbers <= 1003
 
    You can use this above list to set short options for the different
    utilities.
@@ -122,6 +122,14 @@ static struct argp_option coptions[] =
       "STR",
       0,
       "Only run if the program version is this.",
+      -1
+    },
+    {
+      "nolog",
+      1003,
+      0,
+      0,
+      "No log file for programs which make one.",
       -1
     },
 
@@ -228,6 +236,10 @@ cparse_opt(int key, char *arg, struct argp_state *state)
     case 1002:
       cp->onlyversion=arg;
       cp->onlyversionset=1;
+      break;
+    case 1003:
+      cp->nolog=1;
+      cp->nologset=1;
       break;
 
     /* Input/output: */

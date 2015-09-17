@@ -740,7 +740,8 @@ mkprof(struct mkprofparams *p)
 
   /* Write the created arrays into the image. */
   write(p);
-  writelog(p);
+  if(p->cp.nolog==0)
+    writelog(p);
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy
      the attribute and barrier. */

@@ -418,6 +418,7 @@ preparearrays(struct convolveparams *p)
   /* First read the input image: */
   filetofloat(up->inputname, up->maskname, cp->hdu, up->mhdu, &p->input,
               &bitpix, &p->anyblank, &p->is0, &p->is1);
+  readfitswcs(up->inputname, cp->hdu, &p->nwcs, &p->wcs);
   if(p->frequency && p->anyblank)
     fprintf(stderr, "\n----------------------------------------\n"
             "######## %s WARNING ########\n"

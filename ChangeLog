@@ -1,5 +1,11 @@
 2015-09-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
+	* src/mkprof/mkprof.c (mkprof): Only print a log file if the
+	`--nolog' option is not called.
+
+	* src/imgcrop/imgcrop.c (imgcrop): Only print a log file if the
+	`--nolog' option is not called.
+
 	* src/mkprof/main.h (mkprofparams): Removed the p->dir0file1
 	parameter from the main structure.
 
