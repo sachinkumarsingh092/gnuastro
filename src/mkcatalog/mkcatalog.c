@@ -432,21 +432,16 @@ makeoutput(struct mkcatalogparams *p)
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
               "Zero point magnitude:", p->zeropoint);
       strcat(comment, p->line);
-      sprintf(tline, "Pixel %g sigma surface brightness "
-              "(magnitude/arcsec^2):", p->nsigmag);
+      sprintf(tline, "Pixel %g sigma surface brightness (magnitude)",
+              p->nsigmag);
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-              tline, -2.5f*log10(p->nsigmag*p->maxstd/pixarea)+p->zeropoint );
+              tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint );
       strcat(comment, p->line);
 
       sn = p->obj0clump1 ? p->clumpsn : p->detsn;
       sprintf(tline, "%s limiting Signal to noise ratio: ",
               p->obj0clump1 ? "Clump" : "Detection");
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", tline, sn);
-      strcat(comment, p->line);
-      sprintf(tline, "%s limiting magnitude: ",
-              p->obj0clump1 ? "Clump" : "Detection");
-      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-              tline, -2.5f*log10(sn*p->maxstd)+p->zeropoint);
       strcat(comment, p->line);
       if(p->obj0clump1==0)
           strcat(comment, "# (NOTE: limits above are for detections, not "

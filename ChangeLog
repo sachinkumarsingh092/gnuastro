@@ -1,3 +1,16 @@
+2015-09-23  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* doc/gnuastro.texi (Depth and limiting magnitude): Updated
+	explanations in for the depth and limiting magnitude to be more
+	realistic.
+
+	* src/mkcatalog/mkcatalog.c (makeoutput): Removed the limiting
+	magnitude calculation that was previously defined since it's
+	physical meaning is very unclear (it was mainly put as a
+	test). Also changed the surface brightness limit to a per-pixel
+	basis (independent of the projected area of the pixel) as
+	explained in the manual.
+
 2015-09-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/mkprof/mkprof.c (mkprof): Only print a log file if the

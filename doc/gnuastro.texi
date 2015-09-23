@@ -9521,26 +9521,26 @@ Due to the presence of correlated noise in processed images (which are
 used for scientific deductions), we cannot simply deduce the limiting
 signal properties from those of the noise. Hence a different measure
 is needed for each. To quantify the level of noise, we define
-@emph{depth} and to quantify our ability to detect signal, we define
-the @emph{magnitude limit}. In astronomy, it is common to use the
-magnitude (a unit-less scale) and not physical units, see @ref{Flux
-Brightness and magnitude}. Therefore both these measures will involve
-magnitudes, but since magnitudes don't have units, we are just
-including them in the units as a place holder for clarity.
+@emph{depth} and to quantify the ability to reliably detect/study
+objects with that methodology we define the magnitude limit. In
+astronomy, it is common to use the magnitude (a unit-less scale) and
+not physical units, see @ref{Flux Brightness and magnitude}. Therefore
+both these measures will be in units of magnitudes, but since
+magnitudes don't have units, we are just showing them like units as a
+place holder for clarity.
 
 @table @asis
 
 @item Depth
-[magnitude/arcsec@mymath{^2}] As we make further observations on one
-region of the sky and add the images over each other, we are able to
-decrease the standard deviation of the noise in each
-pixel@footnote{This is true for any noisy data, not just astronomical
-images}. Qualitatively, this decrease manifests its self by making
-fainter (per pixel) parts of the objects in the image more
-visible. Quantitatively, it increases the Signal to noise ratio, since
-the signal is fixed but the noise is decreased. It is very important
-to have in mind that noise is defined per pixel (or independent data
-measurement unit), not per object.
+[magnitude] As we make more observations on one region of the sky and
+add the images over each other, we are able to decrease the standard
+deviation of the noise in each pixel@footnote{This is true for any
+noisy data, not just astronomical images}. Qualitatively, this
+decrease manifests its self by making fainter (per pixel) parts of the
+objects in the image more visible. Quantitatively, it increases the
+Signal to noise ratio, since the signal is fixed but the noise is
+decreased. It is very important to have in mind that noise is defined
+per pixel (or independent data measurement unit), not per object.
 
 You can think of the noise as muddy water that is completely covering
 a flat ground@footnote{The ground is the sky value in this analogy,
@@ -9560,12 +9560,11 @@ The outputs of NoiseChisel include the Sky standard deviation
 (@mymath{\sigma}) on every pixel that were calculated from the
 undetected pixels in the image, see @ref{NoiseChisel output}. Let's
 take @mymath{\sigma_m} as the maximum (worst) @mymath{\sigma} in the
-image. All the pixels have a fixed area and different observations
-(usually with different hardware) have different pixel
-sizes. Therefore, we also have to incorporate the area of one pixel
-(@mymath{A_p}). We define the @emph{depth} of each dataset as the
-magnitude of @mymath{\sigma_m/A_p} and emphasize that it is measured
-from one pixel.
+image. Note that even though on different instruments, pixels have
+different sizes, nevertheless, a pixel is the unit of data collection,
+so as far as noise is considered, the physical or projected size of
+the pixels is irrelevant. We thus define the @emph{depth} of each
+dataset as the magnitude of @mymath{\sigma_m}.
 
 As an example, the XDF survey covers part of the sky that the Hubble
 space telescope has observed the most (for a few hundred orbits) and
@@ -9574,11 +9573,10 @@ other hand, the CANDELS survey, is one of the widest multi-color
 surveys covering several fields (about 720 arcmin@mymath{^2}) but its
 deepest fields have only 12 orbits observation. The depth of the XDF
 and CANDELS-deep surveys in the near infrared WFC3/F160W filter are
-respectively 27.87mag/arcsec@mymath{^2} and
-25.79mag/arcsec@mymath{^2}. Note that a larger magnitude corresponds
-to less brightness so the noise level in the latter is about 2
-magnitudes brighter and thus it is harder to detect faint objects in
-it, see @ref{Flux Brightness and magnitude}.
+respectively 33.98 and 32.22 magnitudes. In a single orbit image, this
+same field has a depth of 30.70. Note that a larger magnitude
+corresponds to less brightness, see @ref{Flux Brightness and
+magnitude}.
 
 @item Magnitude limit
 @cindex False detections
@@ -9586,11 +9584,10 @@ it, see @ref{Flux Brightness and magnitude}.
 [magnitude] Because of noise and methodology, no detection algorithm
 can be perfect and this parameter specifies the limits of the combined
 data and methodology used for detection. Assuming a fixed shape for
-all the targets, for any algorithm or set of input parameters, there
-is always a certain magnitude limit below which the detections
-(pseudo-detections or clumps in NoiseChisel, see @ref{NoiseChisel})
-are no longer reliable and are most probably just noise (false
-detections or clumps).
+all the targets, for any algorithm and its accompanying set of input
+parameters, there is always a certain magnitude limit below which the
+detections (pseudo-detections or clumps in NoiseChisel, see
+@ref{NoiseChisel}) are no longer usable/reliable.
 
 @cindex Correlated noise
 While adding more data sets does have the advantage of decreasing the
@@ -9603,34 +9600,26 @@ image. Therefore pixels in added images are no longer separate or
 independently measured data elements, they are `correlated' and this
 produces a hurdle in our ability to detect objects in them.
 
-In order to remove false detections, NoiseChisel finds the Signal to
-noise ratio where the probability of the pseudo-detections or clumps
-being true is larger than a certain user defined value, see
-@ref{NoiseChisel}. This value also incorporates the image correlated
-noise. By multiplying that Signal to noise ratio with the same
-@mymath{\sigma_m} that was used in finding the depth, we are able to
-find the object or clump limiting magnitude. Note that astronomical
-targets and in particular galaxies have a very large diversity of
-shapes and sizes while this number includes the area and the total
-brightness together.
-
-As an example for the XDF and CANDELS-deep survey introduced above,
-the clump limiting magnitudes are (S/N ratios in parenthesis): 31.50
-(9.78) and 29.40 (10.12).
+@cindex Number count
+To find the limiting magnitude, you have to use the output of
+MakeCatalog and plot the number of objects as a function of magnitude
+with your favoriate plotting tool, this is called a ``number count''
+plot. It is simply a histogram of the catalog in each magnitude
+bin. This histogram can be used in many ways to specify a magnitude
+limit, for example see Akhlaghi et al. (2015, in preparation) for one
+method of using multiple depth images in order to find this limit.
 
 @end table
 
 @cindex Zero-point magnitude
 @noindent
 For any data-set and detection algorithm (with a specific set of
-parameters), the depth and limiting magnitudes can differ. Therefore
-they are reported in the comments section of the catalog plain text
-file. The depth is the same in both catalogs and is thus included. For
-objects, only the Object magnitude limit is printed and for the clumps
-only the magnitude limit for clumps. Note that the accuracy in
-estimating the zero-point magnitude is a very important factor in an
-accurate comparison between different images, on possibly different
-instruments and cameras, see @ref{Flux Brightness and magnitude}.
+parameters), the depth and limiting magnitudes can differ. The first
+is reported in the comments section of the catalog plain text
+file. Note that the accuracy in estimating the zero-point magnitude is
+a very important factor in an accurate comparison between magnitudes
+measured for different images, on possibly different instruments and
+cameras, see @ref{Flux Brightness and magnitude}.
 
 @node Invoking astmkcatalog,  , Depth and limiting magnitude, MakeCatalog
 @subsection Invoking MakeCatalog
