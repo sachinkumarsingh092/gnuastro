@@ -618,5 +618,6 @@ freeandreport(struct convolveparams *p, struct timeval *t1)
     free(p->up.maskname);
 
   /* Print the final message. */
-  reporttiming(t1, SPACK_NAME" finished in: ", 0);
+  if(p->cp.verb)
+    reporttiming(t1, SPACK_NAME" finished in: ", 0);
 }

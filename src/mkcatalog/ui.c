@@ -1027,5 +1027,6 @@ freeandreport(struct mkcatalogparams *p, struct timeval *t1)
   if(p->up.clumplabsnameset) free(p->up.clumplabsname);
 
   /* Print the final message. */
-  reporttiming(t1, SPACK_NAME" finished in", 0);
+  if(p->cp.verb)
+    reporttiming(t1, SPACK_NAME" finished in", 0);
 }
