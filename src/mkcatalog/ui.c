@@ -862,7 +862,7 @@ preparearrays(struct mkcatalogparams *p)
     {
       filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
                   &p->img, &bitpix, &anyblank, &p->s0, &p->s1);
-      readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+      readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
 
 
       /* Read and check the other arrays: */

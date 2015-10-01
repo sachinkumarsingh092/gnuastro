@@ -74,7 +74,7 @@ const char doc[] =
    a c e f g i j k l p r s t u v w x y
    A B C E F G H I J L M O Q R T U W X Y Z
 
-   Number keys used: Nothing!
+   Number keys used: <=502
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -92,6 +92,22 @@ static struct argp_option options[] =
       "STR",
       0,
       "Warp/Transform matrix elements.",
+      1
+    },
+    {
+      "hstartwcs",
+      501,
+      "INT",
+      0,
+      "Header keyword number to start reading WCS.",
+      1
+    },
+    {
+      "hendwcs",
+      502,
+      "INT",
+      0,
+      "Header keyword number to stop reading WCS.",
       1
     },
 
@@ -184,6 +200,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'm':
       p->up.matrixstring=arg;
       p->up.matrixstringset=1;
+      break;
+    case 501:
+      sizetelzero(arg, &p->hstartwcs, "hstartwcs", key, SPACK, NULL, 0);
+      p->up.hstartwcsset=1;
+      break;
+    case 502:
+      sizetelzero(arg, &p->hendwcs, "hendwcs", key, SPACK, NULL, 0);
+      p->up.hendwcsset=1;
       break;
 
 

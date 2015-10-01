@@ -337,10 +337,6 @@ checkifset(struct imgcropparams *p)
     REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
     REPORT_NOTSET("checkcenter");
-  if(up->hstartwcsset==0)
-    REPORT_NOTSET("hstartwcs");
-  if(up->hendwcsset==0)
-    REPORT_NOTSET("hendwcs");
 
   END_OF_NOTSET_REPORT;
 }

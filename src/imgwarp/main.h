@@ -52,6 +52,8 @@ struct uiparams
 
   int    matrixstringset;
   int    maxblankfracset;
+  int       hstartwcsset;
+  int         hendwcsset;
 };
 
 
@@ -74,6 +76,8 @@ struct imgwarpparams
   int         inputbitpix;  /* The type of the input array.              */
   int                nwcs;  /* Number of WCS structures.                 */
   struct wcsprm      *wcs;  /* Pointer to WCS structures.                */
+  size_t        hstartwcs;  /* Header keyword No. to start reading WCS.  */
+  size_t          hendwcs;  /* Header keyword No. to end reading WCS.    */
 
   /* Output: */
   size_t           numnul;  /* Number of blank pixels in output.         */

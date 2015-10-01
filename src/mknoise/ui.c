@@ -288,7 +288,7 @@ preparearrays(struct mknoiseparams *p)
                  (void **)&p->input, DOUBLE_IMG);
       free(array);
     }
-  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+  readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();

@@ -179,7 +179,8 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstart,
         size_t hend);
 
 void
-readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs);
+readfitswcs(char *filename, char *hdu, size_t hstartwcs,
+            size_t hendwcs, int *nwcs, struct wcsprm **wcs);
 
 int
 fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,

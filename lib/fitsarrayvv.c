@@ -1241,7 +1241,8 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstartwcs,
 
 
 void
-readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs)
+readfitswcs(char *filename, char *hdu, size_t hstartwcs,
+            size_t hendwcs, int *nwcs, struct wcsprm **wcs)
 {
   int status=0;
   fitsfile *fptr;
@@ -1250,7 +1251,7 @@ readfitswcs(char *filename, char *hdu, int *nwcs, struct wcsprm **wcs)
   readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
 
   /* Read the WCS information: */
-  readwcs(fptr, nwcs, wcs, 0, 0);
+  readwcs(fptr, nwcs, wcs, hstartwcs, hendwcs);
 
   /* Close the FITS file: */
   fits_close_file(fptr, &status);

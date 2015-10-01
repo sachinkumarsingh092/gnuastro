@@ -877,7 +877,7 @@ preparearrays(struct noisechiselparams *p)
   filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
               (float **)&smp->img, &p->bitpix, &p->anyblank, &smp->s0,
               &smp->s1);
-  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+  readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
   s0=smp->s0; s1=smp->s1;
 
   /* make sure the channel sizes fit the channel sizes. */

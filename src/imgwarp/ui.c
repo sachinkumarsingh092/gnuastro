@@ -100,6 +100,20 @@ readconfig(char *filename, struct imgwarpparams *p)
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
         allocatecopyset(value, &cp->hdu, &cp->hduset);
+      else if(strcmp(name, "hstartwcs")==0)
+	{
+	  if(up->hstartwcsset) continue;
+	  sizetelzero(value, &p->hstartwcs, name, key, SPACK,
+                      filename, lineno);
+	  up->hstartwcsset=1;
+	}
+      else if(strcmp(name, "hendwcs")==0)
+	{
+	  if(up->hendwcsset) continue;
+	  sizetelzero(value, &p->hendwcs, name, key, SPACK,
+                      filename, lineno);
+	  up->hendwcsset=1;
+	}
 
 
 
@@ -152,6 +166,10 @@ printvalues(FILE *fp, struct imgwarpparams *p)
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
     PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+  if(up->hstartwcsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "hstartwcs", p->hstartwcs);
+  if(up->hendwcsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "hendwcs", p->hendwcs);
 
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
@@ -391,7 +409,8 @@ preparearrays(struct imgwarpparams *p)
                  (void **)&p->input, DOUBLE_IMG);
       free(array);
     }
-  readfitswcs(p->up.inputname, p->cp.hdu, &p->nwcs, &p->wcs);
+  readfitswcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
+              p->hendwcs, &p->nwcs, &p->wcs);
 
   /* Make the inverse matrix: */
   errno=0;

@@ -7402,6 +7402,16 @@ elements of the matrix have to be written row by row. So for the
 general homography matrix of @ref{Warping basics}, it should be called
 with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
+@item --hstartwcs
+(@option{=INT}) Specify the first header keyword number (line) that
+should be used to read the WCS information, see the full explantion in
+@ref{Invoking astimgcrop}.
+
+@item --hendwcs
+(@option{=INT}) Specify the last header keyword number (line) that
+should be used to read the WCS information, see the full explantion in
+@ref{Invoking astimgcrop}.
+
 @item -n
 @itemx --nowcscorrection
 Do not correct the WCS information of the input image and save it

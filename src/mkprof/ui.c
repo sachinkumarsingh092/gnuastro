@@ -642,7 +642,7 @@ preparearrays(struct mkprofparams *p)
       /* Read in the background image and its coordinates: */
       p->anyblank=fitsimgtoarray(p->up.backname, p->cp.hdu, &p->bitpix,
                                  &array, &naxes[1], &naxes[0]);
-      readfitswcs(p->up.backname, p->cp.hdu, &p->nwcs, &p->wcs);
+      readfitswcs(p->up.backname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
       p->naxes[1]=naxes[1];
       p->naxes[0]=naxes[0];
 

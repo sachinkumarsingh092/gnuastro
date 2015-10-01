@@ -1,3 +1,15 @@
+2015-10-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/imgcrop/ui.c (checkifset): Removed the hstartwcs and hendwcs
+	options as mandatory arguments.
+
+	* lib/fitsarrayvv.c (readfitswcs): Now applies the hstartwcs and
+	hendwcs options.
+
+	* include/fitsarrayvv.h: readfitswcs now takes the hstartwcs and
+	hendwcs values as arguments. This was done so all programs could
+	take in these options.
+
 2015-09-23  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* doc/gnuastro.texi (Depth and limiting magnitude): Updated
