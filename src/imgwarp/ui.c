@@ -503,6 +503,8 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+      printf(" Using %lu CPU thread%s\n", p->cp.numthreads,
+             p->cp.numthreads==1 ? "." : "s.");
       printf(" Input image: %s\n", p->up.inputname);
       printf(" matrix:"
              "\n\t%.4f   %.4f   %.4f"
