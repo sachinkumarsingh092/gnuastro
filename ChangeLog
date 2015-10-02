@@ -1,3 +1,18 @@
+2015-10-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+	* src/noisechisel/noisechisel.c (makeoutput): Added a "raw" term
+	in the comments of the noise statistics so emphasize that this is
+	from the raw mesh grid and not the interpolated and smoothed grid.
+
+	* src/mkcatalog/mkcatalog.c (makeoutput): As explained below.
+
+	* doc/gnuastro.texi (Depth and limiting magnitude): Changed the
+	sigma which representes depth from the maximum to the median. The
+	maximum has a strong scatter and even one mesh can completely push
+	to unreasonable values. But the median is not affected by such
+	minor mesh variations, so it is a more robust measure of the
+	dispersion.
+
 2015-10-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/imgcrop/ui.c (checkifset): Removed the hstartwcs and hendwcs

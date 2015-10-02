@@ -105,14 +105,19 @@ makeoutput(struct noisechiselparams *p)
 
 
   /* The sky standard deviation image. Note that since this is a
-     linked list, the minimum will be written to the FITS header
-     first. */
+     linked list, the median will be written to the FITS header
+     first. Also note that these values were found before
+     interpolating or smoothing the image, so we have put a "raw" in
+     the comments of each variable.*/
   fpt=&p->maxstd;
   add_to_fitsheaderll(&keys, TFLOAT, "MAXSTD", 0, fpt, 0,
-                      "Maximum sky standard deviation.", 0, NULL);
+                      "Maximum raw mesh sky standard deviation.", 0, NULL);
   fpt=&p->minstd;
   add_to_fitsheaderll(&keys, TFLOAT, "MINSTD", 0, fpt, 0,
-                      "Minimum sky standard deviation.", 0, NULL);
+                      "Minimum raw mesh sky standard deviation.", 0, NULL);
+  fpt=&p->medstd;
+  add_to_fitsheaderll(&keys, TFLOAT, "MEDSTD", 0, fpt, 0,
+                      "Median raw mesh standard deviation.", 0, NULL);
   arraytofitsimg(p->cp.output, "Standard deviation", FLOAT_IMG, std,
                  s0, s1, 0, p->wcs, keys, SPACK_STRING);
   keys=NULL;

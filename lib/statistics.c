@@ -676,6 +676,45 @@ floatavestdmaskbyt0inregion(float *in, unsigned char *byt,
 
 
 /****************************************************************
+ *****************           Median            ******************
+ ****************************************************************/
+float
+median(float *array, size_t insize)
+{
+  float *copy, median;
+  size_t size=insize, medind;
+
+  /* Make a copy of the input, shift all its non-NaN elements to the
+     start of the array, then sort them and find the median. */
+  floatcopy(array, insize, &copy);
+  nonans(copy, &size);
+  medind=indexfromquantile(size, 0.5);
+  qsort(copy, size, sizeof*copy, floatincreasing);
+  median=copy[medind];
+
+  /* Clean up */
+  free(copy);
+  return median;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
  ********     Histogram and Cumulative Frequency Plot     *******
  ****************************************************************/
 /* Set the bin lower values for all the bins. If the minimum and

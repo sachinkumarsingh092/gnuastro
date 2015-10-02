@@ -161,6 +161,7 @@ struct noisechiselparams
   unsigned char      *dbyt; /* False detection removal thresholded array.  */
   float             minstd; /* For correction to counts per second data.   */
   float             maxstd; /* To store in output header.                  */
+  float             medstd; /* Median Standard deviation over image.       */
   float            cpscorr; /* correction to counts per second data.       */
   unsigned char       b0f1; /* ==1: we are now working on data, not noise. */
   int              stepnum; /* Number of step if user wants to see steps.  */

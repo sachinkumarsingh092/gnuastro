@@ -9567,24 +9567,27 @@ the hills with lower hights can be seen more clearly.
 
 @cindex Depth
 The outputs of NoiseChisel include the Sky standard deviation
-(@mymath{\sigma}) on every pixel that were calculated from the
-undetected pixels in the image, see @ref{NoiseChisel output}. Let's
-take @mymath{\sigma_m} as the maximum (worst) @mymath{\sigma} in the
-image. Note that even though on different instruments, pixels have
-different sizes, nevertheless, a pixel is the unit of data collection,
-so as far as noise is considered, the physical or projected size of
-the pixels is irrelevant. We thus define the @emph{depth} of each
-dataset as the magnitude of @mymath{\sigma_m}.
+(@mymath{\sigma}) on every group of pixels (a mesh) that were
+calculated from the undetected pixels in that mesh, see @ref{Tiling an
+image} and @ref{NoiseChisel output}. Let's take @mymath{\sigma_m} as
+the median @mymath{\sigma} over the successful meshes in the image
+(prior to interpolation or smoothing, see @ref{Grid interpolation and
+smoothing}). Note that even though on different instruments, pixels
+have different physical sizes (for example in @mymath{\mu}m),
+nevertheless, a pixel is the unit of data collection. Therefore, as
+far as noise is considered, the physical or projected size of the
+pixels is irrelevant. We thus define the @emph{depth} of each dataset
+as the magnitude of @mymath{\sigma_m}.
 
 As an example, the XDF survey covers part of the sky that the Hubble
-space telescope has observed the most (for a few hundred orbits) and
-is consequently very small (@mymath{\sim4} arcmin@mymath{^2}). On the
+space telescope has observed the most (for 85 orbits) and is
+consequently very small (@mymath{\sim4} arcmin@mymath{^2}). On the
 other hand, the CANDELS survey, is one of the widest multi-color
 surveys covering several fields (about 720 arcmin@mymath{^2}) but its
-deepest fields have only 12 orbits observation. The depth of the XDF
+deepest fields have only 9 orbits observation. The depth of the XDF
 and CANDELS-deep surveys in the near infrared WFC3/F160W filter are
-respectively 33.98 and 32.22 magnitudes. In a single orbit image, this
-same field has a depth of 30.70. Note that a larger magnitude
+respectively 34.40 and 32.45 magnitudes. In a single orbit image, this
+same field has a depth of 31.32. Note that a larger magnitude
 corresponds to less brightness, see @ref{Flux Brightness and
 magnitude}.
 

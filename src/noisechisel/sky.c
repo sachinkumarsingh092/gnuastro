@@ -146,6 +146,7 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
      calculated here to include in the output headers so MakeCatalog
      can read it and not have to go through the whole STD array (which
      is the size of the full image for it). */
+  p->medstd=median(smp->garray2, smp->nmeshi);
   fminmax(smp->garray2, smp->nmeshi, &p->minstd, &p->maxstd);
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
 

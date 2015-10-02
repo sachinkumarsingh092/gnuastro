@@ -435,7 +435,7 @@ makeoutput(struct mkcatalogparams *p)
       sprintf(tline, "Pixel %g sigma surface brightness (magnitude)",
               p->nsigmag);
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n",
-              tline, -2.5f*log10(p->nsigmag*p->maxstd)+p->zeropoint );
+              tline, -2.5f*log10(p->nsigmag*p->medstd)+p->zeropoint );
       strcat(comment, p->line);
 
       sn = p->obj0clump1 ? p->clumpsn : p->detsn;

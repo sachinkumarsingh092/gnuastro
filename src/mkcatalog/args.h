@@ -107,7 +107,7 @@ static struct argp_option options[] =
       'O',
       "STR",
       0,
-      "Image specifying object labeles.",
+      "Image specifying object labels.",
       1
     },
     {
@@ -123,7 +123,7 @@ static struct argp_option options[] =
       'c',
       "STR",
       0,
-      "Image specifying clump labeles.",
+      "Image specifying clump labels.",
       1
     },
     {

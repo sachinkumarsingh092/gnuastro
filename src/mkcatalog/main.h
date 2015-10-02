@@ -255,7 +255,7 @@ struct mkcatalogparams
   size_t            objcurcol;  /* Current column in object catalog.  */
   size_t          clumpcurcol;  /* Current column in clump catalog.   */
   float                minstd;  /* For correction for counts/sec.     */
-  float                maxstd;  /* Maximum STD value (5 sigma mag).   */
+  float                medstd;  /* Median STD value (5 sigma mag).    */
   double              cpscorr;  /* Correction for counts/sec.         */
   double                detsn;  /* Detection S/N threshold.           */
   double              clumpsn;  /* Clumps S/N threshold.              */
