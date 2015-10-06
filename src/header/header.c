@@ -207,6 +207,12 @@ header(struct headerparams *p)
         writeupdatekeys(p->fptr, &p->update, 1);
       if(p->write)
         writeupdatekeys(p->fptr, &p->write, 2);
+      if(p->asis)
+        for(tstll=p->asis; tstll!=NULL; tstll=tstll->next)
+          {
+            fits_write_record(p->fptr, tstll->v, &status);
+            if(status) r=haserror(p, 1, tstll->v, status);
+          }
       if(p->history)
         {
           fits_write_history(p->fptr, p->history, &status);

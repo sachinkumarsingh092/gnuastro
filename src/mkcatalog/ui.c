@@ -697,7 +697,7 @@ checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
           bitpix==FLOAT_IMG ? "single" : "double");
 
   /* Make sure it is the same size as the input image. */
-  if(s0!=p->s0 && s1!=p->s1)
+  if(s0!=p->s0 || s1!=p->s1)
     error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
           "%s (hdu: %s) is %lu x %lu. The images should have the same "
           "size.", filename, hdu, s1, s0, p->up.inputname,
@@ -725,7 +725,7 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
           filename, hdu);
 
   /* Make sure it has the same size as the image. */
-  if(s0!=p->s0 && s1!=p->s1)
+  if(s0!=p->s0 || s1!=p->s1)
     error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
           "%s (hdu: %s) is %lu x %lu. The images should have the same "
           "size.", filename, hdu, s1, s0, p->up.inputname,

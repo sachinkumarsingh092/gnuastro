@@ -202,8 +202,8 @@ checkifset(struct headerparams *p)
 void
 sanitycheck(struct headerparams *p)
 {
-  if(p->delete || p->up.update || p->up.write || p->comment || p->history
-     || p->date || p->up.rename)
+  if(p->delete || p->up.update || p->up.write || p->asis || p->comment
+     || p->history || p->date || p->up.rename)
     p->onlyview=0;
   else
     p->onlyview=1;

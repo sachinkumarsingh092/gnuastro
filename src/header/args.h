@@ -72,7 +72,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b e f g i j k l m n p s v x y z
+   b e f g i j k l m n p s v x y z
    A B C E F G I J L M O R T U W X Y Z
 
    Number keys used: Nothing!
@@ -94,6 +94,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
+      2
+    },
+    {
+      "asis",
+      'a',
+      "STR",
+      0,
+      "Write the argument string as is into the header.",
       2
     },
     {
@@ -209,6 +217,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Output: */
+    case 'a':
+      add_to_stll(&p->asis, arg);
+      break;
     case 'd':
       add_to_stll(&p->delete, arg);
       break;

@@ -64,6 +64,7 @@ struct headerparams
   int                    date;  /* Set DATE to current time.          */
   char               *comment;  /* COMMENT value.                     */
   char               *history;  /* HISTORY value.                     */
+  struct stll           *asis;  /* Strings to write as is into header.*/
   struct stll         *delete;  /* Keywords to remove.                */
   struct stll     *renamefrom;  /* The initial value of the keyword.  */
   struct stll       *renameto;  /* The final value of the keyword.    */

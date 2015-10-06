@@ -643,7 +643,7 @@ telescope. Astronomical objects could not be seen with the Dutch
 military design of the telescope. In the beginning of his ``The
 Sidereal Messenger'' (1610) he cautions the readers on this issue and
 instructs them on how to build a suitable instrument. Before he
-actually saw the moons of Jupiter, the mountains or the Moon or the
+actually saw the moons of Jupiter, the mountains on the Moon or the
 crescent of Venus, he was an anti-Copernican and was “evasive” to
 Kepler@footnote{Galileo G. (Translated by Maurice
 A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing
@@ -4326,6 +4326,8 @@ operations are going to take effect then the update operations.
 @item
 @option{--write}
 @item
+@option{--asis}
+@item
 @option{--history}
 @item
 @option{--comment}
@@ -4356,6 +4358,34 @@ The options particular to Header can be seen below. See @ref{Common
 options} for a list of the options that are common to all Gnuastro
 programs, they are not repeated here.
 @table @option
+
+@item -a
+@itemx --asis
+(@option{=STR}) Write the string within this argument exactly into the
+FITS file header with no modifications. If it does not conform to the
+FITS standards, then it might cause trouble, so please be very careful
+with this option. If you want to define the keyword from scratch, it
+is best to use the @option{--write} option (see below) and let CFITSIO
+worry about the standards. The best way to use this option is when you
+want to add a keyword from one FITS file to another unchanged and
+untouched. Below is an example of such a case that can be very useful
+sometimes:
+
+@example
+$ key=$(astheader firstimage.fits | grep KEYWORD)
+$ astheader --asis="$key" secondimage.fits
+@end example
+
+@cindex GNU Bash
+In particular note the double quotation signs (@key{"}) around the
+reference to the @command{key} shell variable (@command{$key}), since
+FITS keywords usually have lots of space characters, if this variable
+is not enclosed within double quotation marks, the shell will only
+give the first word in the full keyword to this option, which will
+definitely be a non-standard FITS keyword and will make it hard to
+work on the file afterwords. See the ``Quoting'' section of the GNU
+Bash manual for more information if your keyword has the special
+characters @key{$}, @key{`}, or @key{\}.
 
 @item -d
 @itemx --delete
@@ -8309,7 +8339,7 @@ accurate, but needs a good level of experience for interpretation.
 @cindex Normalizing histogram
 @cindex Probability distribution function
 A histogram shows the number of data points which lie within
-pre-defined intervals (bins). It is used to get a genral view of the
+pre-defined intervals (bins). It is used to get a general view of the
 distribution and its shape. The width of the bins is one of the most
 important parameters for a histogram. In the limiting case that the
 bin-widths tend to zero (and assuming there is data for each bin),
@@ -12293,7 +12323,7 @@ idea is completely embedded in the general context of the manual with
 no sence of discontinuity for a first time reader. This will allow you
 to plan the idea much more accurately and in the general context of
 Gnuastro or a particular program. Later on, when you are coding, this
-genral context will significantly help you as a road-map.
+general context will significantly help you as a road-map.
 
 A very important part of this process is the program introduction,
 which explains the purposes of the program. Before actually starting
