@@ -1,5 +1,8 @@
 2015-10-16  Mosè Giordano  <mose@gnu.org>
 
+	* ./*: Change in many files the name of the package from
+	"gnuastro" to "Gnuastro".  Fixes bug#46212.
+
 	* doc/forwebpage.sh: Use canonical path for bash shell.
 
 	* doc/plotsrc/conversions.sh: Ditto.
