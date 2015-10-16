@@ -1,4 +1,4 @@
-#! /usr/bin/bash
+#! /bin/bash
 
 # This shell script will first run gendocs.sh on the Texinfo source
 # which creates the standrard GNU webpage style documentation

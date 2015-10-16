@@ -1,3 +1,9 @@
+2015-10-16  Mosè Giordano  <mose@gnu.org>
+
+	* doc/forwebpage.sh: Use canonical path for bash shell.
+
+	* doc/plotsrc/conversions.sh: Ditto.
+
 2015-10-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* src/noisechisel/noisechisel.c (makeoutput): Added a "raw" term

@@ -1,4 +1,4 @@
-#! /usr/bin/bash
+#! /bin/bash
 
 # This shell script will convert all the images into all the necessary
 # formats that Texinfo accepts so the manual can be created in any
