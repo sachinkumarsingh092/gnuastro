@@ -1,3 +1,9 @@
+2015-10-18  Mosè Giordano  <mose@gnu.org>
+
+	* src/imgcrop/imgcrop.c (imgcrop): Do not use modefunction to set
+	the function, run the functions manually instead.  Fixes
+	bug#45380.
+
 2015-10-16  Mosè Giordano  <mose@gnu.org>
 
 	* ./*: Change in many files the name of the package from

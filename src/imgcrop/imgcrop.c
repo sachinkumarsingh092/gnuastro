@@ -250,25 +250,18 @@ wcsmodecrop(void *inparam)
 void
 imgcrop(struct imgcropparams *p)
 {
-  int err;
+  int err=0;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct cropparams *crp;
   size_t i, *indexs, thrdcols;
   size_t nt=p->cp.numthreads, nb;
-  void *(*modefunction)(void *)=NULL;
 
-  /* Set the function to run: */
-  if(p->imgmode)
-    modefunction=&imgmodecrop;
-  else if(p->wcsmode)
-    modefunction=&wcsmodecrop;
-  else
+  if(!p->imgmode && !p->wcsmode)
     error(EXIT_FAILURE, 0, "A bug! Somehow in imgcrop (imgcrop.c), "
 	  "neither the imgmode is on or the wcsmode! Please contact us "
 	  "so we can fix it, thanks.");
-
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. */
@@ -292,15 +285,16 @@ imgcrop(struct imgcropparams *p)
   else
     distinthreads(1, nt, &indexs, &thrdcols);
 
-
-
   /* Run the job, if there is only one thread, don't go through the
      trouble of spinning off a thread! */
   if(nt==1)
     {
       crp[0].p=p;
       crp[0].indexs=indexs;
-      modefunction(&crp[0]);
+      if(p->imgmode)
+	imgmodecrop(&crp[0]);
+      else if(p->wcsmode)
+	wcsmodecrop(&crp[0]);
     }
   else
     {
@@ -320,7 +314,10 @@ imgcrop(struct imgcropparams *p)
 	    crp[i].b=&b;
 	    crp[i].outlen=crp[0].outlen;
 	    crp[i].indexs=&indexs[i*thrdcols];
-	    err=pthread_create(&t, &attr, modefunction, &crp[i]);
+	    if(p->imgmode)
+	      err=pthread_create(&t, &attr, imgmodecrop, &crp[i]);
+	    else if(p->wcsmode)
+	      err=pthread_create(&t, &attr, wcsmodecrop, &crp[i]);
 	    if(err)
 	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
 	  }
@@ -334,7 +331,6 @@ imgcrop(struct imgcropparams *p)
   /* Print the log file: */
   if(p->cp.nolog==0)
     printlog(p);
-
 
   free(crp);
   free(indexs);
