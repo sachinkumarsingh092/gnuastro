@@ -2948,6 +2948,9 @@ formats.
 @file{.fits.gz}: A FITS image compressed with GNU zip (gzip).
 
 @item
+@file{.fits.fz}: A FITS image compressed with @command{fpack}.
+
+@item
 @file{.imh}: IRAF format image file.
 
 @end itemize
