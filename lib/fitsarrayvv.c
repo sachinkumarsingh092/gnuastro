@@ -84,7 +84,8 @@ nameisfits(char *name)
   if ( ( len>=4 && strcmp(&name[len-4], "fits") == 0 )
        || ( len>=7 && strcmp(&name[len-7], "fits.gz") == 0 )
        || ( len>=6 && strcmp(&name[len-6], "fits.Z") == 0 )
-       || ( len>=3 && strcmp(&name[len-3], "imh") == 0 ) )
+       || ( len>=3 && strcmp(&name[len-3], "imh") == 0 )
+       || ( len>=7 && strcmp(&name[len-7], "fits.fz") == 0 ) )
     return 1;
   else
     return 0;
@@ -97,10 +98,11 @@ nameisfits(char *name)
 int
 nameisfitssuffix(char *name)
 {
- if (strcmp(name, "fits") == 0 || strcmp(name, ".fits") == 0
+  if (strcmp(name, "fits") == 0 || strcmp(name, ".fits") == 0
       || strcmp(name, "fits.gz") == 0 || strcmp(name, ".fits.gz") == 0
       || strcmp(name, "fits.Z") == 0 || strcmp(name, ".fits.Z") == 0
-      || strcmp(name, "imh") == 0 || strcmp(name, ".imh") == 0)
+      || strcmp(name, "imh") == 0 || strcmp(name, ".imh") == 0
+      || strcmp(name, "fits.fz") == 0 || strcmp(name, ".fits.fz") == 0)
    return 1;
  else
    return 0;

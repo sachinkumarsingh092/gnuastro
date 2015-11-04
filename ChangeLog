@@ -1,3 +1,9 @@
+2015-11-04  Mosè Giordano  <mose@gnu.org>
+
+	* lib/fitsarrayvv.c (nameisfits): Add "fits.fz" to the list of
+	accepted extensions.  Fixes task#13767.
+	(nameisfitssuffix): Ditto.
+
 2015-10-18  Mosè Giordano  <mose@gnu.org>
 
 	* src/imgcrop/imgcrop.c (imgcrop): Do not use modefunction to set
