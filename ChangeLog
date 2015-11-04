@@ -1,5 +1,7 @@
 2015-11-04  Mosè Giordano  <mose@gnu.org>
 
+	* .gitignore: Add new regexps to the list of ignored files.
+
 	* doc/gnuastro.texi (Arguments): Mention new accepted extension.
 
 	* lib/fitsarrayvv.c (nameisfits): Add "fits.fz" to the list of

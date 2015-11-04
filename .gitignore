@@ -3,9 +3,19 @@
 #
 
 *~
+.\#*
+*.aux
+*.cp
+*.fn
+*.ky
 *.la
 *.lo
 *.in
+*.pg
+*.gz
+*.toc
+*.tp
+*.vr
 *.log
 *.trs
 *.eps
