@@ -447,7 +447,8 @@ Developing
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
-* After making changes::        What to do after you have finished you changes.
+* After making changes::        Checklist to finalize your changes.
+* Contributing to Gnuastro::    Share your changes with all users.
 
 Program source
 
@@ -460,6 +461,11 @@ Mandatory source code files
 
 * Coding conventions::          Conventions used for coding
 * Multithreaded programming::   Gnuastro uses POSIX threads.
+
+Contributing to Gnuastro
+
+* Commit guidelines::           Standards for commit messages.
+* Production workflow::         Incorporating changes into Gnuastro.
 
 Other useful software
 
@@ -7927,7 +7933,7 @@ might be strong differences from one grid element to the next. By
 smoothing the grid, the variation between grid element to grid element
 will be far less. To smooth the mesh values, Gnuastro uses an average
 filter. An average filter is just a convolution of the mesh grid
-(spatial convolution with edge correction) by a kernel will all
+(spatial convolution with edge correction) by a kernel with all
 elements having an equal weight, see @ref{Convolution process}. The
 kernel is a square. The length of the kernel edge can be set in units
 of meshs through the @option{--smoothwidth} option (which has to be an
@@ -11450,7 +11456,8 @@ discussed. Finally some notes on the building process are given.
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
-* After making changes::        What to do after you have finished you changes.
+* After making changes::        Checklist to finalize your changes.
+* Contributing to Gnuastro::    Share your changes with all users.
 @end menu
 
 
@@ -11466,23 +11473,24 @@ scientific applications is C++, and more recently Python. One of the
 main reasons behind this choice is that through the Object oriented
 programming paradigm, they offer a much higher level of
 abstraction. However, GNU Astronomy Utilities are written in the C
-programming language. The reasons can be summarized with simplicity
-and speed. Both are extremely important in a scientific software.
+programming language. The reasons can be summarized with simplicity,
+portability and speed. All three are very important in a scientific
+software.
 
 @cindex ANSI C
 @cindex ISO C90
 @cindex Ritchie, Dennis
 @cindex Kernighan, Brian
 @cindex Stroustrup, Bjarne
-A simple comparison of the main books of C++ and C can act as a
-guide. The ``C programming language''@footnote{Brian Kernighan, Dennis
-Ritchie. @emph{The C programming language}. Prentice Hall, Inc.,
-Second edition, 1988. It is also commonly known as K&R and is based on
-the ANSI C and ISO C90 standards.} book, written by the authors of C,
-is only 286 pages and covers a very good fraction of the language, it
-has also remained unchanged from 1988. C is the main programming
-language of nearly all operating systems and there is no plan of any
-significant update. The most recent ``C++ programming
+Simplicity can best be demonstrated in a comparison of the main books
+of C++ and C. The ``C programming language''@footnote{Brian Kernighan,
+Dennis Ritchie. @emph{The C programming language}. Prentice Hall,
+Inc., Second edition, 1988. It is also commonly known as K&R and is
+based on the ANSI C and ISO C90 standards.} book, written by the
+authors of C, is only 286 pages and covers a very good fraction of the
+language, it has also remained unchanged from 1988. C is the main
+programming language of nearly all operating systems and there is no
+plan of any significant update. The most recent ``C++ programming
 language''@footnote{Bjarne Stroustrup. @emph{The C++ programming
 language}. Addison-Wesley Professional; 4 edition, 2013.}  book, also
 written by its author, on the other hand has 1366 pages and its fourth
@@ -11541,16 +11549,38 @@ out. This stems from the core principles of Python, which are very
 useful when you look in the `on the go' basis as described before
 and not future usage.
 
+The portability of C is best demonstrated by the fact that both C++
+and Python are part of the C-family of programming languages which
+also include Java, Perl, and many other languages. C libraries can be
+immediately included in C++ and with tools like
+SWIG@footnote{@url{http://swig.org/}} it is easily possible to use the
+C libraries in programs that are written in those languages. This will
+allow other scientists to use the libraries in Gnuastro with any of
+those languages. Gnuastro's libraries are currently static and not
+installed, but we are working on making them shared and
+installable@footnote{@url{http://savannah.gnu.org/task/?13765}}. Following
+that we will be working on allowing the creation of libraries in
+different languages at configure time
+@footnote{@url{http://savannah.gnu.org/task/?13786}}.
+
 @cindex Low level programming
 @cindex Programming, low level
-Being a very low level (closer to the hardware) language, C is much
-less complex for both the human reader and the computer. It thus
-allows for closer relation between the programmer (program) and the
-actual data in our disposal. This is contrary to the illusion of
-abstractions that the higher level languages provide. The GNU coding
+The final reason was speed. This is another very important aspect of C
+which is not independant of simplicity (first reason discussed
+above). The abstractions provided by the higher-level languages (which
+also makes learning them harder for a newcomer) comes at the cost of
+speed. Since C is a low-level language@footnote{Low-level languages
+are those that directly operate the hardware like assembly
+languages. So C is actually a high-level language, but it can be
+considered the lowest-level high-level language.}(closer to the
+hardware), it is much less complex for both the human reader and the
+computer. The former was dicussed above in simplicity and the latter
+helps in making the program run more efficiently (faster). This thus
+allows for a closer relation between the scientist/programmer
+(program) and the actual data/processing. The GNU coding
 standards@footnote{@url{http://www.gnu.org/prep/standards/}} also
 encourage the use of C over all other languages when generality of
-usage and `high speed' is desired.
+usage and ``high speed'' is desired.
 
 
 
@@ -11706,8 +11736,7 @@ ready to be configured and built. To be able to develop successfully,
 the revision history of the code can be very useful, also some updates
 that are not yet released might be in it.  We use Git for the version
 control of Gnuastro. For those who are not familiar with it, we
-suggest the Pro Git
-book@footnote{@url{http://git-scm.com/book/en/v2}}. The whole book is
+suggest Pro Git@footnote{@url{https://progit.org/}}. The whole book is
 publicly available for online reading and downloading. The latest
 version of Gnuastro can be cloned by running
 
@@ -11850,11 +11879,6 @@ This directory keeps all the tests (checks) which are executed when
 @command{make check} is run.
 
 @end table
-
-Until Gnuastro grows large enough to define its own, we strive to
-follow the version control guidelines of the Git project as our
-base. You can find it in the Git project's submitting patches
-guideline@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}.
 
 
 
@@ -12464,7 +12488,7 @@ can get you started off.
 
 
 
-@node After making changes,  , Building, Developing
+@node After making changes, Contributing to Gnuastro, Building, Developing
 @section After making changes
 After you have made your your changes/additions, please take the
 following steps:
@@ -12518,10 +12542,114 @@ own purposes.
 
 
 
+@node Contributing to Gnuastro,  , After making changes, Developing
+@section Contributing to Gnuastro
 
+After you have checked your changes (see @ref{After making changes}),
+you might want to share them with the larger community. In this
+section we describe the Commit guidelines and the general workflow
+that is currently planned for Gnuastro. This workflow is currently
+mostly borrowed from the general recommendations of
+Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
+and GitHub. But since Gnuastro is under heavy development currently,
+these might change and evolve to better suite our needs.
 
+@menu
+* Commit guidelines::           Standards for commit messages.
+* Production workflow::         Incorporating changes into Gnuastro.
+@end menu
 
+@node Commit guidelines, Production workflow, Contributing to Gnuastro, Contributing to Gnuastro
+@subsection Commit guidelines
 
+We strive to follow these standards for the commit messages in
+Gnuastro.
+
+@table @asis
+
+@item Commit title
+The commits have to start with one short descriptive title. This will
+help when getting a log output of all the commits, since most emulated
+command line terminals are about 80 characters wide, it is best for
+this title to be less than about 60 (or even 50) characters to also
+allow for the commit labels and branches. The title should also not
+finish with any full-stops or periods.
+
+@item Commit body
+The body of the commit message should be separated with the title by
+one empty line. The body should be very descriptive. Try to explain
+the committed contents as best as you can. Try to remember that the
+people (or even your self) who will be reading this later don't have
+the background that you currently have. So be very descriptive and
+explain as much as possible: what the bug/task was, justify the way
+you fixed it and discuss other possible solutions that you might not
+have included. For the last item, it is best to discuss them
+thoroughly as comments in the appropriate section of the code, but
+only give a short summary in the commit message.
+
+A reference to a bug or task ID on Savannah is necessary when the
+commit has to do with such issues. If the commit is a fix to a bug,
+start the commit body with ``@code{Fixed bug #ID:}'' and if it is a
+task, ``@code{Finished task #ID:}'' followed by a description of what
+the bug/task was. Although giving URL references in the description
+can be very good to help others understand the issue, it is best to
+also accompany each such URL with a description of the relevant point
+within it (assume that the reader doesn't have internet access when
+reading the commit message).
+
+@end table
+
+@node Production workflow,  , Commit guidelines, Contributing to Gnuastro
+@subsection Production workflow
+
+Fortunately Pro Git has done a wonderful job in explaining the
+different workflows in Chapter
+5@footnote{@url{http://git-scm.com/book/en/v2/Distributed-Git-Distributed-Workflows}}
+and in particular the ``Integration-Manager Workflow'' explained
+there. The implementation of this workflow is nicely explained in
+Section
+5.2@footnote{@url{http://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project}}
+under ``Forked-Public-Project''. Upon a release, a tag will be put on
+the appropriate commit in master marking the release version. So,
+whomever clones Gnuastro will automatically go onto the ready to be
+used master branch that contains bug-fixes or additions that might not
+yet be released. Anything on the master branch should always be tested
+and ready to be used.
+
+As fully elaborated in Pro Git, there are two methods for you to
+contribute to Gnuastro in this workflow:
+
+@enumerate
+
+@item
+You can send commit patches by email as fully explained in Pro
+Git. This is good for your first few contributions, if you would like
+to get more heavily involved in Gnuastro's development, then you can
+try the next solution.
+
+@item
+You can have your own forked copy of Gnuastro on any hosting site you
+like (GitHub, GitLab, BitBucket, or etc) and inform us when your
+changes are ready so we merge them in Gnuastro. This is more suited
+for people who commonly contribute to the code.
+
+Just please follow the feature branch methodology: create a new branch
+for every feature you want to add from the most recent master commit
+in the main repo, when your work is done, inform us of your repository
+and the branch. After testing it and if everything is working fine, we
+will merge it into the main repository. If you have made temporary
+branches within that branch, it is best to rebase them into one branch
+before you inform us.
+
+@end enumerate
+
+In both cases, your commits (with your name and information) will be
+preserved and your contributions will thus be fully recorded in the
+history of Gnuastro. Needless to say that in such cases, be sure to
+follow the bug or task trackers and contact us before hand so you
+don't do something that someone else is already working on. In that
+case, you can get in touch with them and help the job go on faster,
+see @ref{Gnuastro project webpage}.
 
 
 
