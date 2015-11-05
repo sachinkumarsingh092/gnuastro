@@ -12286,6 +12286,37 @@ very important for easily understanding the code.
 
 @end itemize
 
+Regarding naming of exported header files, functions, variables, macros,
+and installed libraries, we adopted similar conventions to those used by
+the GSL
+project@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
+In particular, in order to avoid clashes with the names of functions and
+variables coming from other libraries we decided to use the namespace
+@code{gal}, which stands for @emph{G}NU @emph{A}stronomy @emph{L}ibrary.
+@itemize
+@item
+All exported header files should have a filename with the prefix @code{gal_}.
+
+@item
+All function names, variables, etc should be in lower case.  Macros and
+preprocessor variables should be in upper case.
+
+@item
+@cindex GNU coding standards
+For all exported functions and variables use as prefix the base name of
+the file in which they are defined, followed by the rest of the name,
+using underscores to separate words@footnote{The convention to use
+underscores to separate words, called ``snake case'' (or
+``snake_case''), is the one suggested by the GNU coding standards.}.
+The same applies to exported macros, but in upper case.  For example,
+the prototype of function @code{gal_box_border_from_center} is in
+@code{gal_box.h}, and the macro @code{GAL_POLYGON_MAX_CORNERS} is
+defined in @code{gal_polygon.h}.  This makes also easier to look up
+their definitions.
+
+@item
+All installed libraries should have a name like @code{libgalbox.a}.
+@end itemize
 
 @node Multithreaded programming, Documentation, Coding conventions, Program source
 @subsection Multithreaded programming
@@ -13013,3 +13044,8 @@ $ ./pgdemoXX
 
 
 @bye
+
+@c Local Variables:
+@c mode: texinfo
+@c TeX-master: t
+@c End:
