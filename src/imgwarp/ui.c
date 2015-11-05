@@ -99,19 +99,19 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if(strcmp(name, "hstartwcs")==0)
 	{
 	  if(up->hstartwcsset) continue;
-	  sizetelzero(value, &p->hstartwcs, name, key, SPACK,
-                      filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key, SPACK,
+                                     filename, lineno);
 	  up->hstartwcsset=1;
 	}
       else if(strcmp(name, "hendwcs")==0)
 	{
 	  if(up->hendwcsset) continue;
-	  sizetelzero(value, &p->hendwcs, name, key, SPACK,
-                      filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
+                                     filename, lineno);
 	  up->hendwcsset=1;
 	}
 
@@ -121,16 +121,17 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       /* Outputs */
       else if(strcmp(name, "matrix")==0)
-        allocatecopyset(value, &up->matrixstring, &up->matrixstringset);
+        gal_checkset_allocate_copy_set(value, &up->matrixstring,
+                                       &up->matrixstringset);
 
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "maxblankfrac")==0)
         {
 	  if(up->maxblankfracset) continue;
-	  floatl0s1(value, &p->maxblankfrac, name, key, SPACK,
-		       filename, lineno);
+	  gal_checkset_float_l_0_s_1(value, &p->maxblankfrac, name, key, SPACK,
+                                     filename, lineno);
 	  up->maxblankfracset=1;
         }
 
@@ -315,10 +316,11 @@ sanitycheck(struct imgwarpparams *p)
 
   /* Set the output name: */
   if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_warped.fits", p->cp.removedirinfo,
-                    p->cp.dontdelete, &p->cp.output);
+    gal_checkset_automatic_output(p->up.inputname, "_warped.fits",
+                                  p->cp.removedirinfo, p->cp.dontdelete,
+                                  &p->cp.output);
 
 
   /* Check the size of the input matrix, note that it might only have
@@ -399,18 +401,19 @@ preparearrays(struct imgwarpparams *p)
   double *inv, *m=p->matrix;
 
   /* Read in the input image: */
-  numnul=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
-                        &array, &p->is0, &p->is1);
+  numnul=gal_fitsarray_fits_img_to_array(p->up.inputname, p->cp.hdu,
+                                         &p->inputbitpix, &array, &p->is0,
+                                         &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else
     {
-      changetype(array, p->inputbitpix, p->is0*p->is1, numnul,
-                 (void **)&p->input, DOUBLE_IMG);
+      gal_fitsarray_change_type(array, p->inputbitpix, p->is0*p->is1, numnul,
+                                (void **)&p->input, DOUBLE_IMG);
       free(array);
     }
-  readfitswcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
-              p->hendwcs, &p->nwcs, &p->wcs);
+  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
+                              p->hendwcs, &p->nwcs, &p->wcs);
 
   /* Make the inverse matrix: */
   errno=0;
@@ -491,13 +494,13 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
 
   /* Read catalog if given. */
   if(p->up.matrixname)
-    txttoarray(p->up.matrixname, &p->matrix, &p->ms0, &p->ms1);
+    gal_txtarray_txt_to_array(p->up.matrixname, &p->matrix, &p->ms0, &p->ms1);
   else
     readmatrixoption(p);
 
   /* Do a sanity check. */
   sanitycheck(p);
-  checkremovefile(TXTARRAYVVLOG, 0);
+  gal_checkset_check_remove_file(TXTARRAYVVLOG, 0);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
@@ -556,5 +559,5 @@ freeandreport(struct imgwarpparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

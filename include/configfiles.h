@@ -36,7 +36,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define STARTREADINGLINE {						\
   ++lineno;								\
   if(*line=='#') continue;						\
-  else readnamevalue(line, filename, lineno, &name, &value);		\
+  else gal_configfiles_read_name_value(line, filename, lineno,          \
+                                       &name, &value);                  \
   if(name==NULL && value==NULL) continue;				\
 }
 
@@ -48,13 +49,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SAVE_LOCAL_CONFIG(INDIR) {					\
     FILE *fp;								\
     char *outfilename, *command;		 			\
-    fp=writelocalconfigstop(INDIR, CONFIG_FILE, SPACK,			\
-			     SPACK_NAME, &outfilename);			\
+    fp=gal_configfiles_write_local_config_stop(INDIR, CONFIG_FILE,      \
+                                               SPACK, SPACK_NAME,       \
+                                               &outfilename);           \
     printvalues(fp, p);							\
     errno=0;								\
     if(fclose(fp)==-1)							\
       error(EXIT_FAILURE, errno, "%s", outfilename);                    \
-    command=malloccat("cat ", outfilename);				\
+    command=gal_checkset_malloc_cat("cat ", outfilename);               \
     printf("Values saved in %s:\n\n", outfilename);			\
     if(system(command))                                                 \
       error(EXIT_FAILURE, 0, "The `%s` command could not be run or "    \
@@ -92,8 +94,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                                                                         \
     if(cp->onlydirconf==0)                                              \
       {                                                                 \
-        userconfig_dir=addhomedir(USERCONFIG_DIR);                      \
-        userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
+        userconfig_dir=gal_configfiles_add_home_dir(USERCONFIG_DIR);    \
+        userconfig_file=                                                \
+          gal_configfiles_add_home_dir(USERCONFIG_FILEEND);             \
         readconfig(userconfig_file, p);                                 \
         if(cp->setusrconf) SAVE_LOCAL_CONFIG(userconfig_dir);           \
         readconfig(SYSCONFIG_FILE, p);                                  \
@@ -131,7 +134,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 		"system wide default files. Otherwise you have to "	\
 		"explicitly call them each time. See `"SPACK" --help` "	\
 		"or `info "SPACK"` for more information.\n\n");		\
-	userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
+	userconfig_file=                                                \
+        gal_configfiles_add_home_dir(USERCONFIG_FILEEND);               \
 	fprintf(stderr, "Default files checked (existing or not):\n"	\
 		"   %s\n   %s\n   %s\n", CURDIRCONFIG_FILE,		\
 		userconfig_file, SYSCONFIG_FILE);			\
@@ -163,25 +167,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
     else if(strcmp(name, "numthreads")==0)                              \
       {                                                                 \
         if(cp->numthreadsset) continue;                                 \
-        sizetlzero(value, &cp->numthreads, name, key, SPACK,            \
-                   filename, lineno);                                   \
+        gal_checkset_sizet_l_zero(value, &cp->numthreads, name, key,    \
+                                  SPACK, filename, lineno);             \
         cp->numthreadsset=1;                                            \
       }                                                                 \
     else if(strcmp(name, "nolog")==0)                                   \
       {                                                                 \
         if(cp->nologset) continue;                                      \
-        intzeroorone(value, &cp->nolog, name, key, SPACK,               \
-                     filename, lineno);                                 \
+        gal_checkset_int_zero_or_one(value, &cp->nolog, name, key,      \
+                                     SPACK, filename, lineno);          \
         cp->nologset=1;                                                 \
       }                                                                 \
     else if(strcmp(name, "onlydirconf")==0)                             \
       {                                                                 \
         if(cp->onlydirconf==0)                                          \
-          intzeroorone(value, &cp->onlydirconf, name, key, SPACK,       \
-                       filename, lineno);                               \
+          gal_checkset_int_zero_or_one(value, &cp->onlydirconf, name,   \
+                                       key, SPACK, filename, lineno);   \
       }                                                                 \
     else if(strcmp(name, "onlyversion")==0)                             \
-        allocatecopyset(value, &cp->onlyversion, &cp->onlyversionset);  \
+      gal_checkset_allocate_copy_set(value, &cp->onlyversion,           \
+                                     &cp->onlyversionset);              \
 
 
 
@@ -209,14 +214,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************       Function declarations         *************/
 /**************************************************************/
 char *
-addhomedir(char *dir);
+gal_configfiles_add_home_dir(char *dir);
 
 void
-readnamevalue(char *line, char *filename, size_t lineno,
-	      char **name, char **value);
+gal_configfiles_read_name_value(char *line, char *filename, size_t lineno,
+                                char **name, char **value);
 
 FILE *
-writelocalconfigstop(char *indir, char *filename, char *spack,
-		     char *spack_name, char **outfilename);
+gal_configfiles_write_local_config_stop(char *indir, char *filename,
+                                        char *spack, char *spack_name,
+                                        char **outfilename);
 
 #endif

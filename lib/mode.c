@@ -101,9 +101,10 @@ makemirrored(float *in, size_t mi, float **outmirror, size_t *outsize)
 
 
 void
-makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
-                float min, float max, size_t numbins, char *histsname,
-                char *cfpsname, float mirrorplotdist)
+gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
+                           float min, float max, size_t numbins,
+                           char *histsname, char *cfpsname,
+                           float mirrorplotdist)
 {
   FILE *fp;
   size_t i, msize;
@@ -114,7 +115,7 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
 
   /* Find the index of the mirror and make the mirror array: */
   mf=sorted[mirrorindex];
-  floatcopy(sorted, size, &actual);
+  gal_arraymanip_float_copy(sorted, size, &actual);
   makemirrored(sorted, mirrorindex, &mirror, &msize);
 
 
@@ -122,7 +123,7 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
      1/3 of the image scale. */
   if(mirrorplotdist!=0.0f)
     {
-      min=actual[indexfromquantile(size, 0.001f)];
+      min=actual[gal_statistics_index_from_quantile(size, 0.001f)];
       max=mf+mirrorplotdist*(mf-min);
     }
 
@@ -130,26 +131,27 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
   /* set the mirror pixel to have the value of zero.*/
   min-=mf;
   max-=mf;
-  fsumconst(actual, size, -1.0f*mf);
-  fsumconst(mirror, msize, -1.0f*mf);
+  gal_arraymanip_fsum_const(actual, size, -1.0f*mf);
+  gal_arraymanip_fsum_const(mirror, msize, -1.0f*mf);
 
 
   /* Allocate space for the 3 column array keeping the histograms:*/
   errno=0;
   out=malloc(numbins*3*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out in makemirrorplots "
-          "(mode.c)", numbins*3*sizeof *out);
+    error(EXIT_FAILURE, errno, "%lu bytes for out in gal_mode_make_mirror_plots"
+          " (mode.c)", numbins*3*sizeof *out);
 
 
   /* Define the bin sides: */
-  setbins(actual, size, numbins, min, max, onebinvalue, 0, &bins);
+  gal_statistics_set_bins(actual, size, numbins, min,
+                          max, onebinvalue, 0, &bins);
 
 
   /* Find the histogram of the actual data and put it in out. Note
      that maxhistone=0, because here we want to use one value for both
      histograms so they are comparable. */
-  histogram(actual, size, bins, numbins, normhist, maxhistone);
+  gal_statistics_histogram(actual, size, bins, numbins, normhist, maxhistone);
   for(i=0;i<numbins;++i)
     if(bins[i*2+1]>maxhist) maxhist=bins[i*2+1];
   for(i=0;i<numbins;++i)
@@ -160,7 +162,7 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
 
   /* Find the histogram of the mirrired distribution and put it in
      out: */
-  histogram(mirror, msize, bins, numbins, normhist, maxhistone);
+  gal_statistics_histogram(mirror, msize, bins, numbins, normhist, maxhistone);
   for(i=0;i<numbins;++i)
     { out[i*3+2]=bins[i*2+1]/maxhist; bins[i*2+1]=0.0f;}
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
@@ -184,11 +186,11 @@ makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
 
 
   /* Find the cumulative frequency plots of the two distributions: */
-  cumulativefp(actual, size, bins, numbins, normcfp);
+  gal_statistics_cumulative_fp(actual, size, bins, numbins, normcfp);
   for(i=0;i<numbins;++i)
     { out[i*3+1]=bins[i*2+1]; bins[i*2+1]=0.0f; }
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
-  cumulativefp(mirror, msize, bins, numbins, normcfp);
+  gal_statistics_cumulative_fp(mirror, msize, bins, numbins, normcfp);
   for(i=0;i<numbins;++i)
     { out[i*3+2]=bins[i*2+1]; bins[i*2+1]=0.0f;}
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
@@ -386,7 +388,7 @@ modegoldenselection(struct modeparams *mp)
   sprintf(outname, "%dcmp.pdf", counter);
   sprintf(cfpsname, "%dcfps.txt", counter);
   sprintf(histsname, "%dhists.txt", counter);
-  makemirrorplots(mp->sorted, mp->size, di, histsname, cfpsname);
+  gal_mode_make_mirror_plots(mp->sorted, mp->size, di, histsname, cfpsname);
   sprintf(command, "./plot.py %s %s %s", histsname, cfpsname, outname);
   system(command);
   -------------------------------------------------------------------*/
@@ -476,7 +478,7 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
   mf=a[mi];
   errdiff=errorstdm*sqrt(mi);
   topi = 2*mi>size-1 ? size-1 : 2*mi;
-  af=a[indexfromquantile(2*mi+1,   SYMMETRICITYLOWQUANT)];
+  af=a[gal_statistics_index_from_quantile(2*mi+1,   SYMMETRICITYLOWQUANT)];
 
   /* This loop is very similar to that of mirrormaxdiff(). It will
      find the index where the difference between the two cumulative
@@ -531,10 +533,11 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
    it just finds bf from the equation to calculate symmetricity in
    modesymmetricity. */
 float
-valuefromsym(float *sorted, size_t size, size_t modeindex, float sym)
+gal_mode_value_from_sym(float *sorted, size_t size, size_t modeindex, float sym)
 {
   float mf=sorted[modeindex];
-  float af=sorted[indexfromquantile(2*modeindex+1, SYMMETRICITYLOWQUANT)];
+  float af=sorted[gal_statistics_index_from_quantile(2*modeindex+1,
+                                                     SYMMETRICITYLOWQUANT)];
   return sym*(mf-af)+mf;
 }
 
@@ -553,8 +556,8 @@ valuefromsym(float *sorted, size_t size, size_t modeindex, float sym)
    modesym>MODESYMGOOD && modequant>MODELOWQUANTGOOD
 */
 void
-modeindexinsorted(float *sorted, size_t size, float errorstdm,
-                  size_t *modeindex, float *modesym)
+gal_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
+                         size_t *modeindex, float *modesym)
 {
   struct modeparams mp;
 
@@ -567,8 +570,8 @@ modeindexinsorted(float *sorted, size_t size, float errorstdm,
   if(mp.numcheck>1000)
     mp.interval=mp.numcheck/1000;
   else mp.interval=1;
-  mp.lowi  = indexfromquantile(size, MODELOWQUANTILE);
-  mp.highi = indexfromquantile(size, MODEHIGHQUANTILE);
+  mp.lowi  = gal_statistics_index_from_quantile(size, MODELOWQUANTILE);
+  mp.highi = gal_statistics_index_from_quantile(size, MODEHIGHQUANTILE);
   mp.midi  = ((float)mp.highi+GOLDENRATIO*(float)mp.lowi)/(1+GOLDENRATIO);
   mp.midd  = mirrormaxdiff(mp.sorted, mp.size, mp.midi, mp.numcheck,
 			   mp.interval, mp.errorstdm);

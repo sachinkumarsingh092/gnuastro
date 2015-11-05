@@ -91,7 +91,7 @@ oversegment(struct clumpsthreadparams *ctp)
   size_t ng, *rn, *rnf, numngb, ngb[8], *relngb=p->relngb;
 
   /* Sort the indexs based on the flux within them. */
-  qsort(ctp->inds, ctp->area, sizeof(size_t), indexfloatdecreasing);
+  qsort(ctp->inds, ctp->area, sizeof(size_t), gal_qsort_index_float_decreasing);
 
   /* Initialize the region you want to over-segment. */
   indf=(pind=ctp->inds)+ctp->area;
@@ -628,7 +628,8 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
                   xys[3*lab+2] /= xys[3*lab];
                   if(p->skysubtracted)
                       clumpinfo[row+4]=
-                        smpstd[imgxytomeshid(smp,xys[3*lab+1],xys[3*lab+2])];
+                        smpstd[gal_mesh_img_xy_to_mesh_id(smp,xys[3*lab+1],
+                                                          xys[3*lab+2])];
 
                   /* For a check:
                   printf("%lu: (%lu, %lu) --> %f\n", lab,
@@ -890,7 +891,7 @@ findclumpsn(struct noisechiselparams *p)
 
   /* Find the clump Signal to noise ratio on successful meshs then on
      all the meshs. findsnthreshongrid is in detection.c. */
-  operateonmesh(lmp, clumpsntableonmesh, sizeof(size_t), 0, 0);
+  gal_mesh_operate_on_mesh(lmp, clumpsntableonmesh, sizeof(size_t), 0, 0);
 
 
   /* Find the total number of useful clumps and allocate sntable.  */
@@ -962,7 +963,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
           "removefalsedetections (clumps.c)", ctp->numclumps*sizeof *newlabs);
 
   /* We want the removed regions to become SEGMENTINIT. */
-  longinit(newlabs, ctp->numclumps, SEGMENTINIT);
+  gal_arraymanip_long_init(newlabs, ctp->numclumps, SEGMENTINIT);
 
   /* Set the new labels: */
   if(ctp->p->keepmaxnearriver)

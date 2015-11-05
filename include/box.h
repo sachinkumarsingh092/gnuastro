@@ -28,14 +28,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 */
 
 void
-ellipseinbox(double a, double b, double theta_rad, long *width);
+gal_box_ellipse_in_box(double a, double b, double theta_rad, long *width);
 
 void
-borderfromcenter(double xc, double yc, long *width,
-		 long *fpixel, long *lpixel);
+gal_box_border_from_center(double xc, double yc, long *width,
+                           long *fpixel, long *lpixel);
 
 int
-overlap(long *naxes, long *fpixel_i, long *lpixel_i,
-	long *fpixel_o, long *lpixel_o);
+gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
+                long *fpixel_o, long *lpixel_o);
 
 #endif

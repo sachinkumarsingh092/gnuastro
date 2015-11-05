@@ -362,7 +362,7 @@ makeoutput(struct mkcatalogparams *p)
 
 
   /* Calculate the pixel area in arcseconds^2: */
-  pixarea=pixelareaarcsec2(p->wcs);
+  pixarea=gal_fitsarray_pixel_area_arcsec2(p->wcs);
 
 
   /* First make the objects catalog, then the clumps catalog. */
@@ -465,9 +465,8 @@ makeoutput(struct mkcatalogparams *p)
       strcat(comment, "#\n# Columns:\n# --------\n");
 
 
-      /* Fill the catalog array, in the end set the last elements in
-         intcols and accucols to -1, so arraytotxt knows when to
-         stop. */
+      /* Fill the catalog array, in the end set the last elements in intcols and
+         accucols to -1, so gal_txtarray_array_to_txt knows when to stop. */
       for(p->curcol=0;p->curcol<p->numcols;++p->curcol)
         {
           switch(cols[p->curcol])
@@ -581,8 +580,8 @@ makeoutput(struct mkcatalogparams *p)
 
 
       /* Write the catalog to file: */
-      arraytotxt(p->cat, p->num, p->numcols, comment, p->intcols,
-                 p->accucols, space, prec, 'f', p->filename);
+      gal_txtarray_array_to_txt(p->cat, p->num, p->numcols, comment, p->intcols,
+                                p->accucols, space, prec, 'f', p->filename);
 
       /* Clean up: */
       free(p->intcols);
@@ -642,17 +641,17 @@ mkcatalog(struct mkcatalogparams *p)
      wcsp2s in wcslib. */
   if(p->up.raset || p->up.decset)
     {
-      xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtX,
-                     p->oinfo+OCOLUMNS+OFlxWhtRA, p->numobjects,
-                     OCOLUMNS);
-      xyarraytoradec(p->wcs, p->cinfo+CCOLUMNS+CFlxWhtX,
-                     p->cinfo+CCOLUMNS+CFlxWhtRA, p->numclumps,
-                     CCOLUMNS);
+      gal_fitsarray_xy_array_to_radec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtX,
+                                      p->oinfo+OCOLUMNS+OFlxWhtRA,
+                                      p->numobjects, OCOLUMNS);
+      gal_fitsarray_xy_array_to_radec(p->wcs, p->cinfo+CCOLUMNS+CFlxWhtX,
+                                      p->cinfo+CCOLUMNS+CFlxWhtRA,
+                                      p->numclumps, CCOLUMNS);
     }
   if(p->up.clumpsraset || p->up.clumpsdecset)
-    xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtCX,
-                   p->oinfo+OCOLUMNS+OFlxWhtCRA, p->numobjects,
-                   OCOLUMNS);
+    gal_fitsarray_xy_array_to_radec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtCX,
+                                    p->oinfo+OCOLUMNS+OFlxWhtCRA, p->numobjects,
+                                    OCOLUMNS);
 
 
   /* Write the output: */

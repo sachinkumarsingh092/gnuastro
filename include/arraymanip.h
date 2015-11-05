@@ -24,41 +24,42 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define ARRAYMANIP_H
 
 void
-ucharinitonregion(unsigned char *in, const unsigned char v,
-		  size_t start, size_t s0, size_t s1, size_t is1);
+gal_arraymanip_uchar_init_on_region(unsigned char *in, const unsigned char v,
+                                    size_t start, size_t s0, size_t s1,
+                                    size_t is1);
 
 void
-longinit(long *in, size_t size, const long v);
+gal_arraymanip_long_init(long *in, size_t size, const long v);
 
 void
-longinitonregion(long *in, const long v, size_t start, size_t s0,
-                 size_t s1, size_t is1);
+gal_arraymanip_long_init_on_region(long *in, const long v, size_t start,
+                                   size_t s0, size_t s1, size_t is1);
 
 void
-ucharcopy(unsigned char *in, size_t size, unsigned char **out);
+gal_arraymanip_uchar_copy(unsigned char *in, size_t size, unsigned char **out);
 
 void
-floatcopy(float *in, size_t size, float **out);
+gal_arraymanip_float_copy(float *in, size_t size, float **out);
 
 void
-floatcopyvalues(float *in, size_t size, float **out);
+gal_arraymanip_float_copy_values(float *in, size_t size, float **out);
 
 void
-fsetconst(float *in, size_t size, float a);
+gal_arraymanip_fset_const(float *in, size_t size, float a);
 
 void
-freplacevalue(float *in, size_t size, float from, float to);
+gal_arraymanip_freplace_value(float *in, size_t size, float from, float to);
 
 void
-nonans(float *in, size_t *size);
+gal_arraymanip_no_nans(float *in, size_t *size);
 
 void
-fmultipconst(float *in, size_t size, float a);
+gal_arraymanip_fmultip_const(float *in, size_t size, float a);
 
 void
-fsumconst(float *in, size_t size, float a);
+gal_arraymanip_fsum_const(float *in, size_t size, float a);
 
 float *
-fsumarrays(float *in1, float *in2, size_t size);
+gal_arraymanip_fsum_arrays(float *in1, float *in2, size_t size);
 
 #endif

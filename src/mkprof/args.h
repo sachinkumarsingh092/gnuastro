@@ -446,26 +446,26 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output: */
     case 'x':
-      sizetlzero(arg, &tmp, "naxis1", key, p->cp.spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &tmp, "naxis1", key, p->cp.spack, NULL, 0);
       p->naxes[0]=tmp;
       p->up.naxis1set=1;
       break;
     case 'y':
-      sizetlzero(arg, &tmp, "naxis2", key, p->cp.spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &tmp, "naxis2", key, p->cp.spack, NULL, 0);
       p->naxes[1]=tmp;
       p->up.naxis2set=1;
       break;
     case 's':
-      sizetlzero(arg, &p->oversample, "oversample", key,
-		 p->cp.spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->oversample, "oversample", key,
+                                p->cp.spack, NULL, 0);
       p->up.oversampleset=1;
       break;
     case 'm':
       p->nomerged=1;
       break;
     case 'w':
-      doublelvalue(arg, &p->circumwidth, "circumwidth", key, p->cp.spack,
-                   MINCIRCUMWIDTH, NULL, 0);
+      gal_checkset_double_l_value(arg, &p->circumwidth, "circumwidth", key,
+                                  p->cp.spack, MINCIRCUMWIDTH, NULL, 0);
       p->up.circumwidthset=1;
       break;
     case 'M':
@@ -480,15 +480,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Profiles: */
     case 'r':
-      sizetlzero(arg, &p->numrandom, "numrandom", key, p->cp.spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->numrandom, "numrandom", key,
+                                p->cp.spack, NULL, 0);
       p->up.numrandomset=1;
       break;
     case 't':
-      floatl0(arg, &p->tolerance, "tolerance", key, p->cp.spack, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->tolerance, "tolerance", key, p->cp.spack,
+                             NULL, 0);
       p->up.toleranceset=1;
       break;
     case 'z':
-      anyfloat(arg, &p->zeropoint, "zeropoint", key, p->cp.spack, NULL, 0);
+      gal_checkset_any_float(arg, &p->zeropoint, "zeropoint", key, p->cp.spack,
+                             NULL, 0);
       p->up.zeropointset=1;
       break;
     case 'p':
@@ -500,12 +503,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.prepforconvset=1;
       break;
     case 'X':
-      sizetelzero(arg, &tmp, "xshift", key, p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &tmp, "xshift", key, p->cp.spack,
+                                 NULL, 0);
       p->shift[0]=tmp;
       p->up.xshiftset=1;
       break;
     case 'Y':
-      sizetelzero(arg, &tmp, "yshift", key, p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &tmp, "yshift", key, p->cp.spack,
+                                 NULL, 0);
       p->shift[1]=tmp;
       p->up.yshiftset=1;
       break;
@@ -518,39 +523,48 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
    /* Catalog */
     case 500:
-      sizetelzero(arg, &p->xcol, "xcol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->xcol, "xcol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.xcolset=1;
       break;
     case 501:
-      sizetelzero(arg, &p->ycol, "ycol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->ycol, "ycol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.ycolset=1;
       break;
     case 502:
-      sizetelzero(arg, &p->fcol, "fcol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->fcol, "fcol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.fcolset=1;
       break;
     case 503:
-      sizetelzero(arg, &p->rcol, "rcol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->rcol, "rcol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.rcolset=1;
       break;
     case 504:
-      sizetelzero(arg, &p->ncol, "ncol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->ncol, "ncol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.ncolset=1;
       break;
     case 505:
-      sizetelzero(arg, &p->pcol, "pcol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->pcol, "pcol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.pcolset=1;
       break;
     case 506:
-      sizetelzero(arg, &p->qcol, "qcol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->qcol, "qcol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.qcolset=1;
       break;
     case 507:
-      sizetelzero(arg, &p->mcol, "mcol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->mcol, "mcol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.mcolset=1;
       break;
     case 508:
-      sizetelzero(arg, &p->tcol, "tcol", ' ', p->cp.spack, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->tcol, "tcol", ' ', p->cp.spack,
+                                 NULL, 0);
       p->up.tcolset=1;
       break;
 
@@ -558,23 +572,28 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* WCS parameters: */
     case 510:
-      anydouble(arg, &p->crpix[0], "crpix1", key, p->cp.spack, NULL, 0);
+      gal_checkset_any_double(arg, &p->crpix[0], "crpix1", key, p->cp.spack,
+                              NULL, 0);
       p->up.crpix1set=1;
       break;
     case 511:
-      anydouble(arg, &p->crpix[1], "crpix2", key, p->cp.spack, NULL, 0);
+      gal_checkset_any_double(arg, &p->crpix[1], "crpix2", key, p->cp.spack,
+                              NULL, 0);
       p->up.crpix2set=1;
       break;
     case 512:
-      anydouble(arg, &p->crval[0], "crval1", key, p->cp.spack, NULL, 0);
+      gal_checkset_any_double(arg, &p->crval[0], "crval1", key, p->cp.spack,
+                              NULL, 0);
       p->up.crval1set=1;
       break;
     case 513:
-      anydouble(arg, &p->crval[1], "crval2", key, p->cp.spack, NULL, 0);
+      gal_checkset_any_double(arg, &p->crval[1], "crval2", key, p->cp.spack,
+                              NULL, 0);
       p->up.crval2set=1;
       break;
     case 514:
-      floatl0(arg, &p->resolution, "resolution", key, p->cp.spack, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->resolution, "resolution", key,
+                             p->cp.spack, NULL, 0);
       p->up.resolutionset=1;
       break;
 
@@ -587,7 +606,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
 	{
 	  if(p->up.backname)
 	    argp_error(state, "Only one input FITS image (the background) "

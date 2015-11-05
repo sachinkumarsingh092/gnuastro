@@ -61,8 +61,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  *****************      Check the numbers    ********************
  ****************************************************************/
 void
-intzeroorone(char *optarg, int *var, char *lo, char so, char *spack,
-	     char *filename, size_t lineno)
+gal_checkset_int_zero_or_one(char *optarg, int *var, char *lo, char so,
+                             char *spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -86,8 +86,8 @@ intzeroorone(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
-int4or8(char *optarg, int *var, char *lo, char so, char *spack,
-        char *filename, size_t lineno)
+gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so, char *spack,
+                        char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -111,8 +111,8 @@ int4or8(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
-intelzero(char *optarg, int *var, char *lo, char so, char *spack,
-	  char *filename, size_t lineno)
+gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so, char *spack,
+                         char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -135,8 +135,8 @@ intelzero(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
-intlzero(char *optarg, int *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno)
+gal_checkset_int_l_zero(char *optarg, int *var, char *lo, char so, char *spack,
+                        char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -159,8 +159,9 @@ intlzero(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
-intsmallerequalto(char *optarg, int *var, char *lo, char so, char *spack,
-                  char *filename, size_t lineno, long maxvalue)
+gal_checkset_int_smaller_equal_to(char *optarg, int *var, char *lo, char so,
+                                  char *spack, char *filename, size_t lineno,
+                                  long maxvalue)
 {
   long tmp;
   char *tailptr;
@@ -183,8 +184,8 @@ intsmallerequalto(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
-longelzero(char *optarg, long *var, char *lo, char so, char *spack,
-	  char *filename, size_t lineno)
+gal_checkset_long_el_zero(char *optarg, long *var, char *lo, char so,
+                          char *spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -207,8 +208,8 @@ longelzero(char *optarg, long *var, char *lo, char so, char *spack,
 
 
 void
-anylong(char *optarg, long *var, char *lo, char so, char *spack,
-	char *filename, size_t lineno)
+gal_checkset_any_long(char *optarg, long *var, char *lo, char so, char *spack,
+                      char *filename, size_t lineno)
 {
   char *tailptr;
   *var=strtol(optarg, &tailptr, 0);
@@ -226,8 +227,8 @@ anylong(char *optarg, long *var, char *lo, char so, char *spack,
    negative values, then we check that value before placing it in the
    size_t pointer.*/
 void
-sizetelzero(char *optarg, size_t *var, char *lo, char so, char* spack,
-	    char *filename, size_t lineno)
+gal_checkset_sizet_el_zero(char *optarg, size_t *var, char *lo, char so,
+                           char* spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -248,10 +249,10 @@ sizetelzero(char *optarg, size_t *var, char *lo, char so, char* spack,
 
 
 
-/* See explanation for sizetlzero above. */
+/* See explanation for gal_checkset_sizet_l_zero above. */
 void
-sizetlzero(char *optarg, size_t *var, char *lo, char so, char* spack,
-	   char *filename, size_t lineno)
+gal_checkset_sizet_l_zero(char *optarg, size_t *var, char *lo, char so,
+                          char* spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -275,8 +276,8 @@ sizetlzero(char *optarg, size_t *var, char *lo, char so, char* spack,
 
 /* Positive and odd size_t. */
 void
-sizetpodd(char *optarg, size_t *var, char *lo, char so, char* spack,
-          char *filename, size_t lineno)
+gal_checkset_sizet_p_odd(char *optarg, size_t *var, char *lo, char so,
+                         char* spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -299,8 +300,8 @@ sizetpodd(char *optarg, size_t *var, char *lo, char so, char* spack,
 
 
 void
-floatl0(char *optarg, float *var, char *lo, char so, char* spack,
-	char *filename, size_t lineno)
+gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so, char* spack,
+                       char *filename, size_t lineno)
 {
   float tmp;
   char *tailptr;
@@ -323,8 +324,8 @@ floatl0(char *optarg, float *var, char *lo, char so, char* spack,
 
 
 void
-floatl0s1(char *optarg, float *var, char *lo, char so, char* spack,
-	  char *filename, size_t lineno)
+gal_checkset_float_l_0_s_1(char *optarg, float *var, char *lo, char so,
+                         char* spack, char *filename, size_t lineno)
 {
   float tmp;
   char *tailptr;
@@ -346,8 +347,8 @@ floatl0s1(char *optarg, float *var, char *lo, char so, char* spack,
 
 
 void
-anyfloat(char *optarg, float *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno)
+gal_checkset_any_float(char *optarg, float *var, char *lo, char so, char *spack,
+                       char *filename, size_t lineno)
 {
   char *tailptr;
   *var=strtof(optarg, &tailptr);
@@ -359,8 +360,8 @@ anyfloat(char *optarg, float *var, char *lo, char so, char *spack,
 
 
 void
-doublel0(char *optarg, double *var, char *lo, char so, char* spack,
-	 char *filename, size_t lineno)
+gal_checkset_double_l_0(char *optarg, double *var, char *lo, char so,
+                        char* spack, char *filename, size_t lineno)
 {
   double tmp;
   char *tailptr;
@@ -407,8 +408,9 @@ doublele0(char *optarg, double *var, char *lo, char so, char* spack,
 
 
 void
-doublelvalue(char *optarg, double *var, char *lo, char so, char* spack,
-             double value, char *filename, size_t lineno)
+gal_checkset_double_l_value(char *optarg, double *var, char *lo, char so,
+                            char* spack, double value, char *filename,
+                            size_t lineno)
 {
   float tmp;
   char *tailptr;
@@ -431,8 +433,8 @@ doublelvalue(char *optarg, double *var, char *lo, char so, char* spack,
 
 
 void
-anydouble(char *optarg, double *var, char *lo, char so, char *spack,
-	  char *filename, size_t lineno)
+gal_checkset_any_double(char *optarg, double *var, char *lo, char so,
+                        char *spack, char *filename, size_t lineno)
 {
   char *tailptr;
   *var=strtod(optarg, &tailptr);
@@ -463,7 +465,7 @@ anydouble(char *optarg, double *var, char *lo, char so, char *spack,
 /**********          My String functions:          ************/
 /**************************************************************/
 int
-stringhasspace(char *in)
+gal_checkset_string_has_space(char *in)
 {
   do
     switch(*in)
@@ -480,7 +482,7 @@ stringhasspace(char *in)
 
 
 char *
-malloccat(char *inname, char *toappend)
+gal_checkset_malloc_cat(char *inname, char *toappend)
 {
   char *out;
   size_t inl, apl;
@@ -491,8 +493,8 @@ malloccat(char *inname, char *toappend)
   errno=0;
   out=malloc(inl+apl+1);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "Allocating %lu bytes in malloccat",
-	  inl+apl+1);
+    error(EXIT_FAILURE, errno,
+          "Allocating %lu bytes in gal_checkset_malloc_cat", inl+apl+1);
 
   strcpy(out, inname);
   strcat(out, toappend);
@@ -508,7 +510,7 @@ malloccat(char *inname, char *toappend)
    set argument is for making sure that it has not already been set
    before, see the main.h files of any program. */
 void
-allocatecopyset(char *arg, char **copy, int *set)
+gal_checkset_allocate_copy_set(char *arg, char **copy, int *set)
 {
   /* Incase *set==1, then you shouldn't do anything, just return. */
   if(*set) return;
@@ -547,7 +549,7 @@ allocatecopyset(char *arg, char **copy, int *set)
 /**************************************************************/
 /* Check if a file exists and report if it doesn't: */
 void
-checkfile(char *filename)
+gal_checkset_check_file(char *filename)
 {
   FILE *tmpfile;
   errno=0;
@@ -567,7 +569,7 @@ checkfile(char *filename)
 
 /* Check if a file exists. If so, remove it. */
 void
-checkremovefile(char *filename, int dontdelete)
+gal_checkset_check_remove_file(char *filename, int dontdelete)
 {
   FILE *tmpfile;
 
@@ -609,14 +611,14 @@ checkremovefile(char *filename, int dontdelete)
    a directory) it will return 0. Finally, if it exists but cannot be
    deleted, report an error and abort. */
 int
-dir0file1(char *name, int dontdelete)
+gal_checkset_dir_0_file_1(char *name, int dontdelete)
 {
   FILE *tmpfile;
   struct stat nameinfo;
 
   if(name==NULL)
-    error(EXIT_FAILURE, 0, "A bug! The input to the dir0file1 function in "
-          "checkset.c should not be NULL. Please contact us at "
+    error(EXIT_FAILURE, 0, "A bug! The input to the gal_checkset_dir_0_file_1 "
+          "function in checkset.c should not be NULL. Please contact us at "
           PACKAGE_BUGREPORT" so we can see what went wrong and fix it in "
           "future updates.");
 
@@ -649,13 +651,13 @@ dir0file1(char *name, int dontdelete)
     return 0;
   else if (S_ISREG(nameinfo.st_mode)) /* It is a file, GOOD. */
     {
-      checkremovefile(name, dontdelete);
+      gal_checkset_check_remove_file(name, dontdelete);
       return 1;
     }
   else 				/* Not a file or a dir, ABORT */
     error(EXIT_FAILURE, 0, "%s not a file or a directory.", name);
 
-  error(EXIT_FAILURE, 0, "A bug! In dir0file1, (in checkset.c) "
+  error(EXIT_FAILURE, 0, "A bug! In gal_checkset_dir_0_file_1, (in checkset.c) "
 	"The process should not reach the end of the function! Please "
         "contact us at "PACKAGE_BUGREPORT" so we can see what went wrong "
         "and fix it in future updates.");
@@ -670,23 +672,23 @@ dir0file1(char *name, int dontdelete)
    input name (inname). The suffix of the input name (if present) will
    be removed and the given suffix will be put in the end. */
 void
-automaticoutput(char *inname, char *suffix, int removedirinfo,
+gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
 		int dontdelete, char **outname)
 {
   char *out;
   size_t i, l, offset=0;
 
   /* Check if the input file is actually a readable file or not! */
-  checkfile(inname);
+  gal_checkset_check_file(inname);
 
-  /* Note that we are just using malloccat here to allocate the right
-     space! The contents of the allocated space will be changed after
+  /* Note that we are just using gal_checkset_malloc_cat here to allocate the
+     right space!  The contents of the allocated space will be changed after
      this.*/
-  out=malloccat(inname, suffix);
+  out=gal_checkset_malloc_cat(inname, suffix);
 
-  /* Put the input in the space and remove all elements including and
-     after '.'. Note that if there is no '.' in the name, malloccat
-     has already appended inname and suffix.*/
+  /* Put the input in the space and remove all elements including and after '.'.
+     Note that if there is no '.' in the name, gal_checkset_malloc_cat has
+     already appended inname and suffix.*/
   l=strlen(inname);
   strcpy(out, inname);
   for(i=l;i!=0;--i)
@@ -719,7 +721,7 @@ automaticoutput(char *inname, char *suffix, int removedirinfo,
     }
 
   /* Remove the created filename if it already exits. */
-  checkremovefile(out, dontdelete);
+  gal_checkset_check_remove_file(out, dontdelete);
 
   /* Free the outname if it was already allocated before. */
   free(*outname);
@@ -733,7 +735,7 @@ automaticoutput(char *inname, char *suffix, int removedirinfo,
 /* Given a filename, this function will separate its directory name
    part. */
 char *
-dirpart(char *input)
+gal_checkset_dir_part(char *input)
 {
   char *out;
   size_t i, l;
@@ -751,8 +753,8 @@ dirpart(char *input)
       errno=0;
       out=malloc(3*sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for current directory dirpart",
-              3*sizeof *out);
+        error(EXIT_FAILURE, errno, "%lu bytes for current directory "
+              "gal_checkset_dir_part", 3*sizeof *out);
       strcpy(out, "./");
     }
   else
@@ -760,7 +762,8 @@ dirpart(char *input)
       errno=0;
       out=malloc((l+1)*sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for dirpart", (l+1)*sizeof *out);
+        error(EXIT_FAILURE, errno, "%lu bytes for gal_checkset_dir_part",
+              (l+1)*sizeof *out);
       strcpy(out, input);
       out[i+1]='\0';
     }
@@ -776,7 +779,7 @@ dirpart(char *input)
    is no forward slash in the input name, the full input name is
    considered to be the notdir output.*/
 char *
-notdirpart(char *input)
+gal_checkset_not_dir_part(char *input)
 {
   size_t i, l;
   char *out, *tmp=input;
@@ -806,16 +809,16 @@ notdirpart(char *input)
    actually write inside of it. To insure all conditions an actual
    file will be made */
 void
-checkdirwriteaddslash(char **dirname)
+gal_checkset_check_dir_write_add_slash(char **dirname)
 {
   int file_d;
   char *tmpname, *indir=*dirname/*, buf[]="A test"*/;
 
   /* Set the template for the temporary file: */
   if(indir[strlen(indir)-1]=='/')
-    tmpname=malloccat(indir, "gnuastroXXXXXX");
+    tmpname=gal_checkset_malloc_cat(indir, "gnuastroXXXXXX");
   else
-    tmpname=malloccat(indir, "/gnuastroXXXXXX");
+    tmpname=gal_checkset_malloc_cat(indir, "/gnuastroXXXXXX");
 
   /* Make a temporary file name and try openning it. */
   errno=0;

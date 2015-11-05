@@ -49,7 +49,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define PRINTSTINGMAYBEWITHSPACE(name,string) {                         \
-    if(stringhasspace(string))                                          \
+    if(gal_checkset_string_has_space(string))                           \
       fprintf(fp, CONF_SHOWFMT"\"%s\"\n", name, string);                \
     else                                                                \
       fprintf(fp, CONF_SHOWFMT"%s\n", name, string);                    \
@@ -77,72 +77,74 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /********* Read arguments and check their values **************/
 /**************************************************************/
 void
-intzeroorone(char *optarg, int *var, char *lo, char so, char* spack,
-	     char *filename, size_t lineno);
+gal_checkset_int_zero_or_one(char *optarg, int *var, char *lo, char so,
+                             char* spack, char *filename, size_t lineno);
 
 void
-int4or8(char *optarg, int *var, char *lo, char so, char *spack,
-        char *filename, size_t lineno);
+gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so, char *spack,
+                        char *filename, size_t lineno);
 
 void
-intelzero(char *optarg, int *var, char *lo, char so, char *spack,
-	  char *filename, size_t lineno);
+gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so, char *spack,
+                         char *filename, size_t lineno);
 
 void
-intlzero(char *optarg, int *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
+gal_checkset_int_l_zero(char *optarg, int *var, char *lo, char so, char *spack,
+                        char *filename, size_t lineno);
 
 void
-intsmallerequalto(char *optarg, int *var, char *lo, char so, char *spack,
-                  char *filename, size_t lineno, long maxvalue);
+gal_checkset_int_smaller_equal_to(char *optarg, int *var, char *lo, char so,
+                                  char *spack, char *filename, size_t lineno,
+                                  long maxvalue);
 
 void
-longelzero(char *optarg, long *var, char *lo, char so, char *spack,
-           char *filename, size_t lineno);
+gal_checkset_long_el_zero(char *optarg, long *var, char *lo, char so,
+                          char *spack, char *filename, size_t lineno);
 
 void
-anylong(char *optarg, long *var, char *lo, char so, char *spack,
-	char *filename, size_t lineno);
+gal_checkset_any_long(char *optarg, long *var, char *lo, char so, char *spack,
+                      char *filename, size_t lineno);
 
 void
-sizetelzero(char *optarg, size_t *var, char *lo, char so, char *spack,
-            char *filename, size_t lineno);
+gal_checkset_sizet_el_zero(char *optarg, size_t *var, char *lo, char so,
+                           char *spack, char *filename, size_t lineno);
 
 void
-sizetlzero(char *optarg, size_t *var, char *lo, char so, char *spack,
-           char *filename, size_t lineno);
+gal_checkset_sizet_l_zero(char *optarg, size_t *var, char *lo, char so,
+                          char *spack, char *filename, size_t lineno);
 
 void
-sizetpodd(char *optarg, size_t *var, char *lo, char so, char* spack,
-          char *filename, size_t lineno);
+gal_checkset_sizet_p_odd(char *optarg, size_t *var, char *lo, char so,
+                         char* spack, char *filename, size_t lineno);
 
 void
-floatl0(char *optarg, float *var, char *lo, char so, char *spack,
-	char *filename, size_t lineno);
+gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so, char *spack,
+                       char *filename, size_t lineno);
 
 void
-floatl0s1(char *optarg, float *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
+gal_checkset_float_l_0_s_1(char *optarg, float *var, char *lo, char so,
+                           char *spack, char *filename, size_t lineno);
 
 void
-anyfloat(char *optarg, float *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
+gal_checkset_any_float(char *optarg, float *var, char *lo, char so, char *spack,
+                       char *filename, size_t lineno);
 
 void
-doublel0(char *optarg, double *var, char *lo, char so, char *spack,
-	 char *filename, size_t lineno);
+gal_checkset_double_l_0(char *optarg, double *var, char *lo, char so,
+                        char *spack, char *filename, size_t lineno);
 
 void
 doublele0(char *optarg, double *var, char *lo, char so, char* spack,
           char *filename, size_t lineno);
 
 void
-doublelvalue(char *optarg, double *var, char *lo, char so, char* spack,
-             double value, char *filename, size_t lineno);
+gal_checkset_double_l_value(char *optarg, double *var, char *lo, char so,
+                            char* spack, double value, char *filename,
+                            size_t lineno);
 
 void
-anydouble(char *optarg, double *var, char *lo, char so, char *spack,
-	  char *filename, size_t lineno);
+gal_checkset_any_double(char *optarg, double *var, char *lo, char so,
+                        char *spack, char *filename, size_t lineno);
 
 
 
@@ -157,13 +159,13 @@ anydouble(char *optarg, double *var, char *lo, char so, char *spack,
 /**********          My String functions:          ************/
 /**************************************************************/
 int
-stringhasspace(char *in);
+gal_checkset_string_has_space(char *in);
 
 char *
-malloccat(char *inname, char *toappend);
+gal_checkset_malloc_cat(char *inname, char *toappend);
 
 void
-allocatecopyset(char *arg, char **copy, int *set);
+gal_checkset_allocate_copy_set(char *arg, char **copy, int *set);
 
 
 
@@ -176,25 +178,25 @@ allocatecopyset(char *arg, char **copy, int *set);
 /********** Set file names and check if they exist ************/
 /**************************************************************/
 void
-checkfile(char *filename);
+gal_checkset_check_file(char *filename);
 
 void
-checkremovefile(char *filename, int dontdelete);
+gal_checkset_check_remove_file(char *filename, int dontdelete);
 
 int
-dir0file1(char *name, int dontdelete);
+gal_checkset_dir_0_file_1(char *name, int dontdelete);
 
 void
-automaticoutput(char *inname, char *suffix, int removedirinfo,
-		int dontdelete, char **outname);
+gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
+                              int dontdelete, char **outname);
 
 char *
-dirpart(char *input);
+gal_checkset_dir_part(char *input);
 
 char *
-notdirpart(char *input);
+gal_checkset_not_dir_part(char *input);
 
 void
-checkdirwriteaddslash(char **dirname);
+gal_checkset_check_dir_write_add_slash(char **dirname);
 
 #endif

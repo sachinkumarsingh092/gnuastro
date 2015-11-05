@@ -51,15 +51,17 @@ struct modeparams
 };
 
 void
-makemirrorplots(float *sorted, size_t size, size_t mirrorindex,
-                float min, float max, size_t numbins, char *histsname,
-                char *cfpsname, float mirrorplotdist);
+gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
+                           float min, float max, size_t numbins,
+                           char *histsname, char *cfpsname,
+                           float mirrorplotdist);
 
 float
-valuefromsym(float *sorted, size_t size, size_t modeindex, float sym);
+gal_mode_value_from_sym(float *sorted, size_t size, size_t modeindex,
+                        float sym);
 
 void
-modeindexinsorted(float *sorted, size_t size, float errorstdm,
-                  size_t *modeindex, float *modesym);
+gal_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
+                         size_t *modeindex, float *modesym);
 
 #endif

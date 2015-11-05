@@ -81,14 +81,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    the polygon can't really have too many vertices.
 */
 void
-orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
+gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
 {
   double angles[MAXPOLYGONCORNERS];
   size_t i, tmp, aindexs[MAXPOLYGONCORNERS], tindexs[MAXPOLYGONCORNERS];
 
   if(n>MAXPOLYGONCORNERS)
     error(EXIT_FAILURE, 0, "Most probably a bug! The number of corners "
-          "given to `orderedpolygoncorners' is more than %d. This is an "
+          "given to `gal_polygon_ordered_corners' is more than %d. This is an "
           "internal value and cannot be set from the outside. Most probably "
           "Some bug has caused this un-normal value. Please contact us at "
           PACKAGE_BUGREPORT" so we can solve this problem.",
@@ -159,7 +159,7 @@ orderedpolygoncorners(double *in, size_t n, size_t *ordinds)
    going to be one less than i.
  */
 double
-polygonarea(double *v, size_t n)
+gal_polygon_area(double *v, size_t n)
 {
   double sum=0.0f;
   size_t i=0, j=n-1;
@@ -185,10 +185,10 @@ polygonarea(double *v, size_t n)
 
    If the point is inside the polygon, it will always be to the left
    of the edge connecting the two vertices when the vertices are
-   traversed in order. See the comments above `polygonarea' for an
+   traversed in order. See the comments above `gal_polygon_area' for an
    explanation about i and j and the loop.*/
 int
-pinpolygon(double *v, double *p, size_t n)
+gal_polygon_pin(double *v, double *p, size_t n)
 {
   size_t i=0, j=n-1;
 
@@ -205,10 +205,10 @@ pinpolygon(double *v, double *p, size_t n)
 
 
 
-/* Similar to pinpolygon, except that if the point is on one of the
+/* Similar to gal_polygon_pin, except that if the point is on one of the
    edges of a polygon, this will return 0. */
 int
-ppropinpolygon(double *v, double *p, size_t n)
+gal_polygon_ppropin(double *v, double *p, size_t n)
 {
   size_t i=0, j=n-1;
 
@@ -337,8 +337,8 @@ seginfintersection(double *Aa, double *Ab, double *Ba, double *Bb,
    output are stored in what `*numcrn' (for number of corners) points
    to.*/
 void
-polygonclip(double *s, size_t n, double *c, size_t m,
-            double *o, size_t *numcrn)
+gal_polygon_clip(double *s, size_t n, double *c, size_t m,
+                 double *o, size_t *numcrn)
 {
   double in[2*MAXPOLYGONCORNERS], *S, *E;
   size_t t, ii=m-1, i=0, jj, j, outnum, innum;
@@ -346,8 +346,8 @@ polygonclip(double *s, size_t n, double *c, size_t m,
   /*
   if(n>MAXPOLYGONCORNERS || m>MAXPOLYGONCORNERS)
     error(EXIT_FAILURE, 0, "The two polygons given to the function "
-          "polygonclip in polygon.c have %lu and %lu vertices. They cannot "
-          "have any values larger than %lu.", n, m, MAXPOLYGONCORNERS);
+          "gal_polygon_clip in polygon.c have %lu and %lu vertices. They cannot"
+          " have any values larger than %lu.", n, m, MAXPOLYGONCORNERS);
   */
 
   /* 2*outnum because for each vertice, there are two elements. */

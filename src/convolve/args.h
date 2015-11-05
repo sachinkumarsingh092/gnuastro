@@ -273,16 +273,17 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Inputs: */
     case 'M':
-      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname, &p->up.masknameset);
       break;
     case 'H':
-      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
       break;
     case 'k':
-      allocatecopyset(arg, &p->up.kernelname, &p->up.kernelnameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.kernelname,
+                                     &p->up.kernelnameset);
       break;
     case 'U':
-      allocatecopyset(arg, &p->up.khdu, &p->up.khduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.khdu, &p->up.khduset);
       break;
     case 500:
       p->kernelflip=0;
@@ -297,20 +298,21 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
    /* Mesh grid: */
     case 's':
-      sizetlzero(arg, &p->mp.meshsize, "meshsize", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.meshsize, "meshsize", key, SPACK,
+                                NULL, 0);
       p->up.meshsizeset=1;
       break;
     case 'a':
-      sizetlzero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
       p->up.nch1set=1;
       break;
     case 'b':
-      sizetlzero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
       p->up.nch2set=1;
       break;
     case 'L':
-      floatl0s1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key, SPACK,
-                NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key,
+                                 SPACK, NULL, 0);
       p->up.lastmeshfracset=1;
       break;
     case 503:
@@ -343,7 +345,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->viewfreqsteps=1;
       break;
     case 'm':
-      intelzero(arg, &p->makekernel, "makekernel", key, SPACK, NULL, 0);
+      gal_checkset_int_el_zero(arg, &p->makekernel, "makekernel", key,
+                               SPACK, NULL, 0);
       p->up.makekernelset=1;
       break;
 

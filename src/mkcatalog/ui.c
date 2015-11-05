@@ -101,82 +101,88 @@ readconfig(char *filename, struct mkcatalogparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if (strcmp(name, "mask")==0)
-        allocatecopyset(value, &up->maskname, &up->masknameset);
+        gal_checkset_allocate_copy_set(value, &up->maskname, &up->masknameset);
       else if (strcmp(name, "mhdu")==0)
-        allocatecopyset(value, &up->mhdu, &up->mhduset);
+        gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
       else if (strcmp(name, "objlabs")==0)
-        allocatecopyset(value, &up->objlabsname, &up->objlabsnameset);
+        gal_checkset_allocate_copy_set(value, &up->objlabsname,
+                                       &up->objlabsnameset);
       else if (strcmp(name, "objhdu")==0)
-        allocatecopyset(value, &up->objhdu, &up->objhduset);
+        gal_checkset_allocate_copy_set(value, &up->objhdu, &up->objhduset);
       else if (strcmp(name, "clumplabs")==0)
-        allocatecopyset(value, &up->clumplabsname, &up->clumplabsnameset);
+        gal_checkset_allocate_copy_set(value, &up->clumplabsname,
+                                       &up->clumplabsnameset);
       else if (strcmp(name, "clumphdu")==0)
-        allocatecopyset(value, &up->clumphdu, &up->clumphduset);
+        gal_checkset_allocate_copy_set(value, &up->clumphdu, &up->clumphduset);
       else if (strcmp(name, "skyfilename")==0)
-        allocatecopyset(value, &up->skyname, &up->skynameset);
+        gal_checkset_allocate_copy_set(value, &up->skyname, &up->skynameset);
       else if (strcmp(name, "skyhdu")==0)
-        allocatecopyset(value, &up->skyhdu, &up->skyhduset);
+        gal_checkset_allocate_copy_set(value, &up->skyhdu, &up->skyhduset);
       else if (strcmp(name, "stdfilename")==0)
-        allocatecopyset(value, &up->stdname, &up->stdnameset);
+        gal_checkset_allocate_copy_set(value, &up->stdname, &up->stdnameset);
       else if (strcmp(name, "stdhdu")==0)
-        allocatecopyset(value, &up->stdhdu, &up->stdhduset);
+        gal_checkset_allocate_copy_set(value, &up->stdhdu, &up->stdhduset);
       else if (strcmp(name, "zeropoint")==0)
         {
           if(up->zeropointset) continue;
-          anyfloat(value, &p->zeropoint, name, key, SPACK, filename, lineno);
+          gal_checkset_any_float(value, &p->zeropoint, name, key, SPACK,
+                                 filename, lineno);
           up->zeropointset=1;
         }
       else if (strcmp(name, "skysubtracted")==0)
         {
           if(up->skysubtractedset) continue;
-          intzeroorone(value, &p->skysubtracted, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->skysubtracted, name, key,
+                                       SPACK, filename, lineno);
           up->skysubtractedset=1;
         }
 
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
       else if(strcmp(name, "nsigmag")==0)
         {
           if(up->nsigmagset) continue;
-          anydouble(value, &p->nsigmag, name, key, SPACK,
-                   filename, lineno);
+          gal_checkset_any_double(value, &p->nsigmag, name, key, SPACK,
+                                  filename, lineno);
           up->nsigmagset=1;
         }
       else if(strcmp(name, "intwidth")==0)
         {
           if(up->intwidthset) continue;
-          intlzero(value, &p->intwidth, name, key, SPACK, filename, lineno);
+          gal_checkset_int_l_zero(value, &p->intwidth, name, key, SPACK,
+                                  filename, lineno);
           up->intwidthset=1;
         }
       else if(strcmp(name, "floatwidth")==0)
         {
           if(up->floatwidthset) continue;
-          intlzero(value, &p->floatwidth, name, key, SPACK, filename, lineno);
+          gal_checkset_int_l_zero(value, &p->floatwidth, name, key, SPACK,
+                                  filename, lineno);
           up->floatwidthset=1;
         }
       else if(strcmp(name, "accuwidth")==0)
         {
           if(up->accuwidthset) continue;
-          intlzero(value, &p->accuwidth, name, key, SPACK, filename, lineno);
+          gal_checkset_int_l_zero(value, &p->accuwidth, name, key, SPACK,
+                                  filename, lineno);
           up->accuwidthset=1;
         }
       else if(strcmp(name, "floatprecision")==0)
         {
           if(up->floatprecisionset) continue;
-          intlzero(value, &p->floatprecision, name, key, SPACK,
-                   filename, lineno);
+          gal_checkset_int_l_zero(value, &p->floatprecision, name, key, SPACK,
+                                  filename, lineno);
           up->floatprecisionset=1;
         }
       else if(strcmp(name, "accuprecision")==0)
         {
           if(up->accuprecisionset) continue;
-          intlzero(value, &p->accuprecision, name, key, SPACK,
-                   filename, lineno);
+          gal_checkset_int_l_zero(value, &p->accuprecision, name, key, SPACK,
+                                  filename, lineno);
           up->accuprecisionset=1;
         }
 
@@ -185,7 +191,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "id")==0)
         {
           if(up->idset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATID);
           up->idset=1;
@@ -193,7 +200,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "hostobjid")==0)
         {
           if(up->hostobjidset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATHOSTOBJID);
           up->hostobjidset=1;
@@ -201,7 +209,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "idinhostobj")==0)
         {
           if(up->idinhostobjset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATIDINHOSTOBJ);
           up->idinhostobjset=1;
@@ -209,7 +218,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "numclumps")==0)
         {
           if(up->numclumpsset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATNUMCLUMPS);
           up->numclumpsset=1;
@@ -217,7 +227,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "area")==0)
         {
           if(up->areaset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATAREA);
           up->areaset=1;
@@ -225,7 +236,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "clumpsarea")==0)
         {
           if(up->clumpsareaset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSAREA);
           up->clumpsareaset=1;
@@ -233,7 +245,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "x")==0)
         {
           if(up->xset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATX);
           up->xset=1;
@@ -241,7 +254,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "y")==0)
         {
           if(up->yset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATY);
           up->yset=1;
@@ -249,7 +263,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "clumpsx")==0)
         {
           if(up->clumpsxset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSX);
           up->clumpsxset=1;
@@ -257,7 +272,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "clumpsy")==0)
         {
           if(up->clumpsyset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSY);
           up->clumpsyset=1;
@@ -265,7 +281,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "ra")==0)
         {
           if(up->raset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATRA);
           up->raset=1;
@@ -273,7 +290,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "dec")==0)
         {
           if(up->decset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATDEC);
           up->decset=1;
@@ -281,7 +299,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "clumpsra")==0)
         {
           if(up->clumpsraset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSRA);
           up->clumpsraset=1;
@@ -289,7 +308,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "clumpsdec")==0)
         {
           if(up->clumpsdecset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSDEC);
           up->clumpsdecset=1;
@@ -297,7 +317,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "brightness")==0)
         {
           if(up->brightnessset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATBRIGHTNESS);
           up->brightnessset=1;
@@ -305,7 +326,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "clumpsbrightness")==0)
         {
           if(up->clumpsbrightnessset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
           p->up.clumpsbrightnessset=1;
@@ -313,7 +335,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "magnitude")==0)
         {
           if(up->magnitudeset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATMAGNITUDE);
           up->magnitudeset=1;
@@ -321,7 +344,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "clumpsmagnitude")==0)
         {
           if(up->clumpsmagnitudeset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
           up->clumpsmagnitudeset=1;
@@ -329,7 +353,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "riverave")==0)
         {
           if(up->riveraveset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATRIVERAVE);
           up->riveraveset=1;
@@ -337,7 +362,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "rivernum")==0)
         {
           if(up->rivernumset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATRIVERNUM);
           up->rivernumset=1;
@@ -345,7 +371,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "sn")==0)
         {
           if(up->snset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATSN);
           up->snset=1;
@@ -353,7 +380,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "sky")==0)
         {
           if(up->skyset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATSKY);
           up->skyset=1;
@@ -361,7 +389,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "std")==0)
         {
           if(up->stdset) continue;
-          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATSTD);
           up->stdset=1;
@@ -606,39 +635,42 @@ sanitycheck(struct mkcatalogparams *p)
   struct readheaderkeys keys[2];
 
   /* Set the names of the files. */
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.objlabsnameset,
-                &p->up.objlabsname, p->up.objhdu, p->up.objhduset,
-                "object labels");
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.clumplabsnameset,
-                &p->up.clumplabsname, p->up.clumphdu, p->up.clumphduset,
-                "clump labels");
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.skynameset,
-                &p->up.skyname, p->up.skyhdu, p->up.skyhduset,
-                "sky value image");
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.stdnameset,
-                &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
-                "sky standard deviation");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                                 &p->up.maskname, p->up.mhdu, p->up.mhduset,
+                                 "mask");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu,
+                                 p->up.objlabsnameset, &p->up.objlabsname,
+                                 p->up.objhdu, p->up.objhduset,
+                                 "object labels");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu,
+                                 p->up.clumplabsnameset, &p->up.clumplabsname,
+                                 p->up.clumphdu, p->up.clumphduset,
+                                 "clump labels");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.skynameset,
+                                 &p->up.skyname, p->up.skyhdu, p->up.skyhduset,
+                                 "sky value image");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.stdnameset,
+                                 &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
+                                 "sky standard deviation");
 
   /* Read the number of labels for the objects:  */
   keys[0].keyname="DETSN";        keys[0].datatype=TDOUBLE;
   keys[1].keyname="NOBJS";        keys[1].datatype=TLONG;
-  readkeywords(p->up.objlabsname, p->up.objhdu, keys, 2);
+  gal_fitsarray_read_keywords(p->up.objlabsname, p->up.objhdu, keys, 2);
   p->detsn=keys[0].d;
   p->numobjects=keys[1].l;
 
   /* Read the clumps information. Note that the datatypes don't change. */
   keys[0].keyname="CLUMPSN";
   keys[1].keyname="NCLUMPS";
-  readkeywords(p->up.clumplabsname, p->up.clumphdu, keys, 2);
+  gal_fitsarray_read_keywords(p->up.clumplabsname, p->up.clumphdu, keys, 2);
   p->clumpsn=keys[0].d;
   p->numclumps=keys[1].l;
 
   /* Read the minimum and maximum standard deviation values. */
   keys[0].keyname="MINSTD";       keys[0].datatype=TFLOAT;
   keys[1].keyname="MEDSTD";       keys[1].datatype=TFLOAT;
-  readkeywords(p->up.stdname, p->up.stdhdu, keys, 2);
+  gal_fitsarray_read_keywords(p->up.stdname, p->up.stdhdu, keys, 2);
   p->minstd=keys[0].f;
   p->medstd=keys[1].f;
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
@@ -646,15 +678,17 @@ sanitycheck(struct mkcatalogparams *p)
   /* Set the output names: */
   if(p->cp.outputset)
     {
-      p->ocatname=malloccat(p->cp.output, "_o.txt");
-      p->ccatname=malloccat(p->cp.output, "_c.txt");
+      p->ocatname=gal_checkset_malloc_cat(p->cp.output, "_o.txt");
+      p->ccatname=gal_checkset_malloc_cat(p->cp.output, "_c.txt");
     }
   else
     {
-      automaticoutput(p->up.inputname, "_o.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->ocatname);
-      automaticoutput(p->up.inputname, "_c.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->ccatname);
+      gal_checkset_automatic_output(p->up.inputname, "_o.txt",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->ocatname);
+      gal_checkset_automatic_output(p->up.inputname, "_c.txt",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->ccatname);
     }
 }
 
@@ -687,7 +721,8 @@ checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
   int bitpix, anyblank;
 
   /* Read the file: */
-  filetolong(filename, hdu, array, &bitpix, &anyblank, &s0, &s1);
+  gal_fitsarray_file_to_long(filename, hdu, array, &bitpix,
+                             &anyblank, &s0, &s1);
 
   /* Make sure it has an integer type. */
   if(bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG)
@@ -716,7 +751,8 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
   int bitpix, anyblank;
 
   /* Read the array: */
-  filetofloat(filename, NULL, hdu, NULL, array, &bitpix, &anyblank, &s0, &s1);
+  gal_fitsarray_file_to_float(filename, NULL, hdu, NULL, array, &bitpix,
+                              &anyblank, &s0, &s1);
 
   /* Make sure it has no blank pixels. */
   if(anyblank)
@@ -746,7 +782,7 @@ preparearrays(struct mkcatalogparams *p)
 
   /* Prepare the columns and allocate the p->objcols and p->clumpcols
      arrays to keep the macros of what output they should keep. */
-  slltoarray(p->allcolsll, &p->allcols, &p->allncols);
+  gal_linkedlist_sll_to_array(p->allcolsll, &p->allcols, &p->allncols);
   if(p->allncols==0)
     error(EXIT_FAILURE, 0, "No columns specified for output.");
   errno=0; p->objcols=malloc(p->allncols*sizeof *p->objcols);
@@ -860,9 +896,11 @@ preparearrays(struct mkcatalogparams *p)
      check the parameters, there is no input file name. */
   if(p->up.inputname)
     {
-      filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-                  &p->img, &bitpix, &anyblank, &p->s0, &p->s1);
-      readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+      gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
+                                  p->up.mhdu, &p->img, &bitpix, &anyblank,
+                                  &p->s0, &p->s1);
+      gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
+                                  &p->nwcs, &p->wcs);
 
 
       /* Read and check the other arrays: */
@@ -896,7 +934,7 @@ preparearrays(struct mkcatalogparams *p)
     }
 
   /* Clean up: */
-  freesll(p->allcolsll);
+  gal_linkedlist_free_sll(p->allcolsll);
 }
 
 
@@ -1028,5 +1066,5 @@ freeandreport(struct mkcatalogparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in", 0);
 }

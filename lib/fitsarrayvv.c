@@ -41,7 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  **************        Reporting errors:       ***************
  *************************************************************/
 void
-fitsioerror(int status, char *message)
+gal_fitsarray_io_error(int status, char *message)
 {
   char defmessage[]="Error in CFITSIO, see above.";
   if(status)
@@ -77,7 +77,7 @@ fitsioerror(int status, char *message)
  **************      Acceptable FITS names     ***************
  *************************************************************/
 int
-nameisfits(char *name)
+gal_fitsarray_name_is_fits(char *name)
 {
   size_t len;
   len=strlen(name);
@@ -96,7 +96,7 @@ nameisfits(char *name)
 
 
 int
-nameisfitssuffix(char *name)
+gal_fitsarray_name_is_fits_suffix(char *name)
 {
   if (strcmp(name, "fits") == 0 || strcmp(name, ".fits") == 0
       || strcmp(name, "fits.gz") == 0 || strcmp(name, ".fits.gz") == 0
@@ -130,12 +130,12 @@ nameisfitssuffix(char *name)
  **************      BITPIX Dependancies       ***************
  *************************************************************/
 void
-imgbitpixsize(fitsfile *fptr, int *bitpix, long *naxes)
+gal_fitsarray_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxes)
 {
   int status=0, maxdim=10, naxis;
 
   if( fits_get_img_param(fptr, maxdim, bitpix, &naxis, naxes, &status) )
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   if(naxis!=2)
     error(EXIT_FAILURE, 0, "Currently only a 2 dimensional image array "
@@ -152,7 +152,7 @@ imgbitpixsize(fitsfile *fptr, int *bitpix, long *naxes)
 
 /* Set datatype (in CFITSIO) based on BITPIX. */
 int
-bitpixtodtype(int bitpix)
+gal_fitsarray_bitpix_to_dtype(int bitpix)
 {
   switch(bitpix)
     {
@@ -180,7 +180,7 @@ bitpixtodtype(int bitpix)
 
 
 void *
-bitpixblank(int bitpix)
+gal_fitsarray_bitpix_blank(int bitpix)
 {
   unsigned char *b;
   short *s;
@@ -248,7 +248,7 @@ bitpixblank(int bitpix)
 
 /* Allocate an array based on the value of bitpix. */
 void *
-bitpixalloc(size_t size, int bitpix)
+gal_fitsarray_bitpix_alloc(size_t size, int bitpix)
 {
   void *array;
 
@@ -358,8 +358,8 @@ blanktovalue(void *array, int bitpix, size_t size, void *value)
 
 
 void
-changetype(void *in, int inbitpix, size_t size, int anyblank,
-           void **out, int outbitpix)
+gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
+                          void **out, int outbitpix)
 {
   size_t i=0;
   unsigned char *b, *bf, *ib=in, *iib=in;
@@ -370,7 +370,7 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
   double *d, *df, *id=in, *iid=in;
 
   /* Allocate space for the output and start filling it. */
-  *out=bitpixalloc(size, outbitpix);
+  *out=gal_fitsarray_bitpix_alloc(size, outbitpix);
   switch(outbitpix)
     {
     case BYTE_IMG:
@@ -409,9 +409,9 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
-		"BITPIX=%d of input not recognized. Please contact us so "
-		"we can fix it.", inbitpix);
+	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+                "(fitsarrayvv.c). BITPIX=%d of input not recognized.  Please "
+                "contact us so we can fix it.", inbitpix);
 	}
       break;
 
@@ -451,9 +451,9 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
-		"BITPIX=%d of input not recognized. Please contact us so "
-		"we can fix it.", inbitpix);
+	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+                "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
+                "contact us so we can fix it", inbitpix);
 	}
       break;
 
@@ -493,9 +493,9 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
-		"BITPIX=%d of input not recognized. Please contact us so "
-		"we can fix it.", inbitpix);
+	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+                "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
+                "contact us so we can fix it.", inbitpix);
 	}
       break;
 
@@ -535,9 +535,9 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
-		"BITPIX=%d of input not recognized. Please contact us so "
-		"we can fix it.", inbitpix);
+	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+                "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
+                "contact us so we can fix it.", inbitpix);
 	}
       break;
 
@@ -573,9 +573,9 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
 	case DOUBLE_IMG:
 	  ff=(f=*out)+size; do *f=*id++; while(++f<ff); return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
-		"BITPIX=%d of input not recognized. Please contact us so "
-		"we can fix it.", inbitpix);
+	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+                "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
+                "contact us so we can fix it.", inbitpix);
 	}
       break;
 
@@ -611,16 +611,16 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
 	case DOUBLE_IMG:
 	  df=(d=*out)+size; do *d=*id++; while(++d<df); return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug! In changetype (fitsarrayvv.c). "
-		"BITPIX=%d of input not recognized. Please contact us so "
-		"we can fix it.", inbitpix);
+	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+                "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
+                "contact us so we can fix it.", inbitpix);
 	}
       break;
 
 
     default:
       error(EXIT_FAILURE, 0, "A bug! Output Bitpix value of %d is not "
-	    "recognized. This should not happen here (changetype in "
+	    "recognized. This should not happen here (gal_fitsarray_change_type in "
 	    "fitsarrayvv.c). Please contact us to see how this happened.",
 	    outbitpix);
     }
@@ -645,7 +645,7 @@ changetype(void *in, int inbitpix, size_t size, int anyblank,
  **************      Number of extensions:     ***************
  *************************************************************/
 void
-numhduensions(char *filename, int *numhdu)
+gal_fitsarray_num_hdus(char *filename, int *numhdu)
 {
   int status=0;
   fitsfile *fptr;
@@ -660,7 +660,7 @@ numhduensions(char *filename, int *numhdu)
 
   fits_close_file(fptr, &status);
 
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 }
 
 
@@ -711,7 +711,8 @@ hdutypestring(int hdutype)
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
 void
-readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
+gal_fitsarray_read_fits_hdu(char *filename, char *hdu, int desiredtype,
+                            fitsfile **outfptr)
 {
   size_t len;
   char *ffname;
@@ -728,12 +729,12 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
 
   /* Open the FITS file: */
   if( fits_open_file(outfptr, ffname, READONLY, &status) )
-    fitsioerror(status, "Reading this FITS file.");
+    gal_fitsarray_io_error(status, "Reading this FITS file.");
   fptr=*outfptr;
 
   /* Check the Type of the given HDU: */
   if (fits_get_hdu_type(fptr, &hdutype, &status) )
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   if(hdutype!=desiredtype)
     error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not %s.",
@@ -752,8 +753,8 @@ readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr)
    information for each keyword that is to be read and also stores the
    value in the appropriate type.*/
 void
-readkeywords(char *filename, char *hdu, struct readheaderkeys *keys,
-             size_t num)
+gal_fitsarray_read_keywords(char *filename, char *hdu,
+                            struct readheaderkeys *keys, size_t num)
 {
   int status=0;
   char *ffname;
@@ -771,7 +772,7 @@ readkeywords(char *filename, char *hdu, struct readheaderkeys *keys,
 
   /* Open the FITS file: */
   if( fits_open_file(&fptr, ffname, READONLY, &status) )
-    fitsioerror(status, "Reading this FITS file.");
+    gal_fitsarray_io_error(status, "Reading this FITS file.");
 
   /* Get the desired keywords. */
   for(i=0;i<num;++i)
@@ -805,12 +806,12 @@ readkeywords(char *filename, char *hdu, struct readheaderkeys *keys,
         }
       if( fits_read_key(fptr, keys[i].datatype, keys[i].keyname,
                         valueptr, NULL, &status) )
-        fitsioerror(status, "Reading the keyword.");
+        gal_fitsarray_io_error(status, "Reading the keyword.");
     }
 
   /* Close the FITS file. */
   fits_close_file(fptr, &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 
   /* Clean up. */
   free(ffname);
@@ -843,9 +844,10 @@ readkeywords(char *filename, char *hdu, struct readheaderkeys *keys,
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
-add_to_fitsheaderll(struct fitsheaderll **list, int datatype,
-                    char *keyname, int kfree, void *value, int vfree,
-                    char *comment, int cfree, char *unit)
+gal_fitsarray_add_to_fits_header_ll(struct fitsheaderll **list, int datatype,
+                                    char *keyname, int kfree, void *value,
+                                    int vfree, char *comment, int cfree,
+                                    char *unit)
 {
   struct fitsheaderll *newnode;
 
@@ -873,9 +875,10 @@ add_to_fitsheaderll(struct fitsheaderll **list, int datatype,
 
 
 void
-add_to_fitsheaderllend(struct fitsheaderll **list, int datatype,
-		       char *keyname, int kfree, void *value, int vfree,
-		       char *comment, int cfree, char *unit)
+gal_fitsarray_add_to_fits_header_ll_end(struct fitsheaderll **list,
+                                        int datatype, char *keyname, int kfree,
+                                        void *value, int vfree, char *comment,
+                                        int cfree, char *unit)
 {
   struct fitsheaderll *newnode, *tmp;
 
@@ -913,8 +916,8 @@ add_to_fitsheaderllend(struct fitsheaderll **list, int datatype,
 
 
 void
-filenameinkeywords(char *keynamebase, char *filename,
-		  struct fitsheaderll **list)
+gal_fitsarray_file_name_in_keywords(char *keynamebase, char *filename,
+                                    struct fitsheaderll **list)
 {
   char *keyname, *value;
   size_t numkey=1, maxlength;
@@ -950,8 +953,8 @@ filenameinkeywords(char *keynamebase, char *filename,
 	 length was copied. */
       if(value[maxlength-1]=='\0')
 	{
-	  add_to_fitsheaderllend(list, TSTRING, keyname, 1, value, 1,
-				 NULL, 0, NULL);
+	  gal_fitsarray_add_to_fits_header_ll_end(list, TSTRING, keyname, 1,
+                                                  value, 1, NULL, 0, NULL);
 	  break;
 	}
       else
@@ -972,8 +975,8 @@ filenameinkeywords(char *keynamebase, char *filename,
 		  maxlength);
 
 	  /* Convert the last useful character and save the file name.*/
-	  add_to_fitsheaderllend(list, TSTRING, keyname, 1, value, 1,
-				 NULL, 0, NULL);
+	  gal_fitsarray_add_to_fits_header_ll_end(list, TSTRING, keyname, 1,
+                                                  value, 1, NULL, 0, NULL);
 	  i+=j+1;
 	}
     }
@@ -986,7 +989,7 @@ filenameinkeywords(char *keynamebase, char *filename,
 /* Write the WCS and begin the part on this particular program's
    key words. */
 void
-addwcstoheader(fitsfile *fptr, char *wcsheader, int nkeyrec)
+gal_fitsarray_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec)
 {
   size_t i;
   int h, status=0;
@@ -1001,17 +1004,17 @@ addwcstoheader(fitsfile *fptr, char *wcsheader, int nkeyrec)
 
   /* Print the first two lines before the WCS header information. */
   if(fits_write_record(fptr, blankrec, &status))
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
   sprintf(titlerec, "%sWCS information", startblank);
   for(i=strlen(titlerec);i<79;++i)
     titlerec[i]=' ';
   if(fits_write_record(fptr, titlerec, &status))
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   /* Write the keywords one by one: */
   for(h=0;h<nkeyrec-1;++h)
     fits_write_record(fptr, &wcsheader[h*80], &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 }
 
 
@@ -1022,7 +1025,7 @@ addwcstoheader(fitsfile *fptr, char *wcsheader, int nkeyrec)
    file. Every keyword that is written is freed, that is why we need
    the pointer to the linked list (to correct it after we finish). */
 void
-updatekeys(fitsfile *fptr, struct fitsheaderll **keylist)
+gal_fitsarray_update_keys(fitsfile *fptr, struct fitsheaderll **keylist)
 {
   int status=0;
   struct fitsheaderll *tmp, *ttmp;
@@ -1035,16 +1038,16 @@ updatekeys(fitsfile *fptr, struct fitsheaderll **keylist)
         {
           if( fits_update_key(fptr, tmp->datatype, tmp->keyname, tmp->value,
                               tmp->comment, &status) )
-            fitsioerror(status, NULL);
+            gal_fitsarray_io_error(status, NULL);
         }
       else
         {
           if(fits_update_key_null(fptr, tmp->keyname, tmp->comment, &status))
-            fitsioerror(status, NULL);
+            gal_fitsarray_io_error(status, NULL);
         }
       if(tmp->unit && fits_write_key_unit(fptr, tmp->keyname,
 					  tmp->unit, &status) )
-	fitsioerror(status, NULL);
+	gal_fitsarray_io_error(status, NULL);
 
       /* Free the value pointer if desired: */
       if(tmp->kfree) free(tmp->keyname);
@@ -1065,8 +1068,8 @@ updatekeys(fitsfile *fptr, struct fitsheaderll **keylist)
 
 
 void
-copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
-                char *spack_string)
+gal_fitsarray_copyright_end(fitsfile *fptr, struct fitsheaderll *headers,
+                            char *spack_string)
 {
   size_t i;
   int status=0;
@@ -1095,11 +1098,11 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
   sprintf(titlerec, "%s%s:", startblank, spack_string);
   for(i=strlen(titlerec);i<79;++i) titlerec[i]=' ';
   fits_write_record(fptr, titlerec, &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 
   /* If any header keywords are specified add them: */
   if(headers)
-    updatekeys(fptr, &headers);
+    gal_fitsarray_update_keys(fptr, &headers);
 
   /* Set the version of CFITSIO as a string. */
   sprintf(cfitsioversion, "%-.2f", CFITSIO_VERSION);
@@ -1122,7 +1125,7 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
   fits_write_comment(fptr, SHORTCOPYRIGHT, &status);
   fits_write_comment(fptr, SHORTLICENSE, &status);
   */
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 }
 
 
@@ -1162,8 +1165,8 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
    Don't call this function within a thread or use a mutex.
 */
 void
-readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstartwcs,
-        size_t hendwcs)
+gal_fitsarray_read_wcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
+                       size_t hstartwcs, size_t hendwcs)
 {
   /* Declaratins: */
   int nkeys=0, status=0;
@@ -1174,7 +1177,7 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstartwcs,
 
   /* CFITSIO function: */
   if( fits_hdr2str(fptr, 1, NULL, 0, &fullheader, &nkeys, &status) )
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   /* Only consider the header keywords in the current range: */
   if(hendwcs>hstartwcs)
@@ -1217,8 +1220,8 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstartwcs,
       *wcs=NULL; *nwcs=0;
     }
   if (fits_free_memory(fullheader, &status) )
-    fitsioerror(status, "Problem in fitsarrayvv.c for freeing the memory "
-                "used to keep all the headers.");
+    gal_fitsarray_io_error(status, "Problem in fitsarrayvv.c for freeing "
+                           "the memory used to keep all the headers.");
 
   /* Set the internal structure: */
   status=wcsset(*wcs);
@@ -1243,21 +1246,21 @@ readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstartwcs,
 
 
 void
-readfitswcs(char *filename, char *hdu, size_t hstartwcs,
-            size_t hendwcs, int *nwcs, struct wcsprm **wcs)
+gal_fitsarray_read_fits_wcs(char *filename, char *hdu, size_t hstartwcs,
+                            size_t hendwcs, int *nwcs, struct wcsprm **wcs)
 {
   int status=0;
   fitsfile *fptr;
 
   /* Check HDU for realistic conditions: */
-  readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
+  gal_fitsarray_read_fits_hdu(filename, hdu, IMAGE_HDU, &fptr);
 
   /* Read the WCS information: */
-  readwcs(fptr, nwcs, wcs, hstartwcs, hendwcs);
+  gal_fitsarray_read_wcs(fptr, nwcs, wcs, hstartwcs, hendwcs);
 
   /* Close the FITS file: */
   fits_close_file(fptr, &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 }
 
 
@@ -1272,8 +1275,8 @@ readfitswcs(char *filename, char *hdu, size_t hstartwcs,
    function. The value that is placed for those pixels is defined by
    the macros in fitsarrayvv.h and depends on the type of the data.*/
 int
-fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
-               size_t *s0, size_t *s1)
+gal_fitsarray_fits_img_to_array(char *filename, char *hdu, int *bitpix,
+                                void **array, size_t *s0, size_t *s1)
 {
   void *bitblank;
   fitsfile *fptr;
@@ -1281,26 +1284,26 @@ fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
   long naxes[2], fpixel[]={1,1};
 
   /* Check HDU for realistic conditions: */
-  readfitshdu(filename, hdu, IMAGE_HDU, &fptr);
+  gal_fitsarray_read_fits_hdu(filename, hdu, IMAGE_HDU, &fptr);
 
   /* Get the bitpix and size of the image: */
-  imgbitpixsize(fptr, bitpix, naxes);
+  gal_fitsarray_img_bitpix_size(fptr, bitpix, naxes);
   *s0=naxes[1];
   *s1=naxes[0];
 
   /* Allocate space for the array. */
-  bitblank=bitpixblank(*bitpix);
-  *array=bitpixalloc(*s0 * *s1, *bitpix);
+  bitblank=gal_fitsarray_bitpix_blank(*bitpix);
+  *array=gal_fitsarray_bitpix_alloc(*s0 * *s1, *bitpix);
 
   /* Read the image into the allocated array: */
-  fits_read_pix(fptr, bitpixtodtype(*bitpix), fpixel, *s0 * *s1,
+  fits_read_pix(fptr, gal_fitsarray_bitpix_to_dtype(*bitpix), fpixel, *s0 * *s1,
 		bitblank, *array, &anyblank, &status);
-  if(status) fitsioerror(status, NULL);
+  if(status) gal_fitsarray_io_error(status, NULL);
   free(bitblank);
 
   /* Close the FITS file: */
   fits_close_file(fptr, &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 
   /* Return the number of blank pixels: */
   return anyblank;
@@ -1329,9 +1332,11 @@ fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
  ******************      Array to FITS      ******************
  *************************************************************/
 void
-arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
-	       size_t s0, size_t s1, int anyblank, struct wcsprm *wcs,
-	       struct fitsheaderll *headers, char *spack_string)
+gal_fitsarray_array_to_fits_img(char *filename, char *hdu, int bitpix,
+                                void *array, size_t s0, size_t s1, int anyblank,
+                                struct wcsprm *wcs,
+                                struct fitsheaderll *headers,
+                                char *spack_string)
 {
   int nkeyrec;
   void *blank;
@@ -1340,7 +1345,7 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
   int status=0, datatype;
   long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
 
-  datatype=bitpixtodtype(bitpix);
+  datatype=gal_fitsarray_bitpix_to_dtype(bitpix);
   nelements=naxes[0]*naxes[1];
 
   if(access(filename,F_OK) != -1 )
@@ -1355,15 +1360,15 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
     if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
        || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
       {
-        blank=bitpixblank(bitpix);
+        blank=gal_fitsarray_bitpix_blank(bitpix);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
-          fitsioerror(status, "Adding the BLANK keyword.");
+          gal_fitsarray_io_error(status, "Adding the BLANK keyword.");
         free(blank);
       }
 
   fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 
   if(wcs)
     {
@@ -1372,13 +1377,13 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
       if(status)
 	error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
 	      wcs_errmsg[status]);
-      addwcstoheader(fptr, wcsheader, nkeyrec);
+      gal_fitsarray_add_wcs_to_header(fptr, wcsheader, nkeyrec);
     }
 
-  copyrightandend(fptr, headers, spack_string);
+  gal_fitsarray_copyright_end(fptr, headers, spack_string);
 
   fits_close_file(fptr, &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 }
 
 
@@ -1386,15 +1391,16 @@ arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
 
 
 void
-atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
-	       size_t s0, size_t s1, char *wcsheader, int wcsnkeyrec,
-	       double *crpix, char *spack_string)
+gal_fitsarray_atof_correct_wcs(char *filename, char *hdu, int bitpix,
+                               void *array, size_t s0, size_t s1,
+                               char *wcsheader, int wcsnkeyrec,
+                               double *crpix, char *spack_string)
 {
   fitsfile *fptr;
   int status=0, datatype;
   long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
 
-  datatype=bitpixtodtype(bitpix);
+  datatype=gal_fitsarray_bitpix_to_dtype(bitpix);
   nelements=naxes[0]*naxes[1];
 
   if(access(filename,F_OK) != -1 )
@@ -1406,27 +1412,27 @@ atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
   fits_write_img(fptr, datatype, fpixel, nelements, array, &status);
 
   fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 
   fits_delete_key(fptr, "COMMENT", &status);
   fits_delete_key(fptr, "COMMENT", &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 
   if(wcsheader)
     {
-      addwcstoheader(fptr, wcsheader, wcsnkeyrec);
+      gal_fitsarray_add_wcs_to_header(fptr, wcsheader, wcsnkeyrec);
       if(crpix)
 	{
 	  fits_update_key(fptr, TDOUBLE, "CRPIX1", &crpix[0], NULL, &status);
 	  fits_update_key(fptr, TDOUBLE, "CRPIX2", &crpix[1], NULL, &status);
-	  fitsioerror(status, NULL);
+	  gal_fitsarray_io_error(status, NULL);
 	}
     }
 
-  copyrightandend(fptr, NULL, spack_string);
+  gal_fitsarray_copyright_end(fptr, NULL, spack_string);
 
   fits_close_file(fptr, &status);
-  fitsioerror(status, NULL);
+  gal_fitsarray_io_error(status, NULL);
 }
 
 
@@ -1457,8 +1463,9 @@ atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
    this function is to determine which is the case and set othername
    to the appropriate value. */
 void
-fileorextname(char *inputname, char *inhdu, int othernameset,
-              char **othername, char *ohdu, int ohduset, char *type)
+gal_fitsarray_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
+                               char **othername, char *ohdu, int ohduset,
+                               char *type)
 {
   if(othernameset)
     {
@@ -1500,9 +1507,9 @@ fileorextname(char *inputname, char *inhdu, int othernameset,
    original input bitpix will be stored so if you want to, you can
    return it back to the input type if you please. */
 void
-filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
-            float **img, int *inbitpix, int *anyblank, size_t *ins0,
-            size_t *ins1)
+gal_fitsarray_file_to_float(char *inputname, char *maskname, char *inhdu,
+                            char *mhdu, float **img, int *inbitpix,
+                            int *anyblank, size_t *ins0, size_t *ins1)
 {
   void *array;
   int maskbitpix;
@@ -1510,14 +1517,14 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
   size_t maskanyblank, s0, s1;
 
   /* Read the input array and convert it to float. */
-  *anyblank=fitsimgtoarray(inputname, inhdu, inbitpix,
-                           &array, ins0, ins1);
+  *anyblank=gal_fitsarray_fits_img_to_array(inputname, inhdu, inbitpix,
+                                            &array, ins0, ins1);
   if(*inbitpix==FLOAT_IMG)
     *img=array;
   else
     {
-      changetype(array, *inbitpix, *ins0 * *ins1, *anyblank,
-                 (void **)img, FLOAT_IMG);
+      gal_fitsarray_change_type(array, *inbitpix, *ins0 * *ins1, *anyblank,
+                                (void **)img, FLOAT_IMG);
       free(array);
     }
 
@@ -1525,8 +1532,8 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
      the corresponding pixels of the input image to NaN. */
   if(maskname)
     {
-      maskanyblank=fitsimgtoarray(maskname, mhdu, &maskbitpix,
-                                  &array, &s0, &s1);
+      maskanyblank=gal_fitsarray_fits_img_to_array(maskname, mhdu, &maskbitpix,
+                                                   &array, &s0, &s1);
 
       if(maskbitpix==FLOAT_IMG || maskbitpix==DOUBLE_IMG)
         fprintf(stderr, "WARNING: the mask image (%s, hdu: %s) has a %s "
@@ -1548,8 +1555,8 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
         mask=array;
       else
         {
-          changetype(array, maskbitpix, *ins0 * *ins1, maskanyblank,
-                     (void **)(&mask), FLOAT_IMG);
+          gal_fitsarray_change_type(array, maskbitpix, *ins0 * *ins1,
+                                    maskanyblank, (void **)(&mask), FLOAT_IMG);
           free(array);
         }
 
@@ -1565,20 +1572,21 @@ filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
 
 
 void
-filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
-           int *anyblank, size_t *ins0, size_t *ins1)
+gal_fitsarray_file_to_long(char *inputname, char *inhdu, long **img,
+                           int *inbitpix, int *anyblank, size_t *ins0,
+                           size_t *ins1)
 {
   void *array;
 
   /* Read the input array and convert it to float. */
-  *anyblank=fitsimgtoarray(inputname, inhdu, inbitpix,
-                           &array, ins0, ins1);
+  *anyblank=gal_fitsarray_fits_img_to_array(inputname, inhdu, inbitpix,
+                                            &array, ins0, ins1);
   if(*inbitpix==LONG_IMG)
     *img=array;
   else
     {
-      changetype(array, *inbitpix, *ins0 * *ins1, *anyblank,
-                 (void **)img, LONG_IMG);
+      gal_fitsarray_change_type(array, *inbitpix, *ins0 * *ins1, *anyblank,
+                                (void **)img, LONG_IMG);
       free(array);
     }
 }
@@ -1588,8 +1596,8 @@ filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
 
 
 void
-prepfloatkernel(char *inputname, char *inhdu, float **outkernel,
-                size_t *ins0, size_t *ins1)
+gal_fitsarray_prep_float_kernel(char *inputname, char *inhdu, float **outkernel,
+                                size_t *ins0, size_t *ins1)
 {
   size_t i, size;
   double sum=0.0f;
@@ -1597,8 +1605,8 @@ prepfloatkernel(char *inputname, char *inhdu, float **outkernel,
   float *f, *fp, *kernel, tmp;
 
   /* Read the kernel as a float array: */
-  filetofloat(inputname, NULL, inhdu, NULL, outkernel, &bitpix,
-              &anyblank, ins0, ins1);
+  gal_fitsarray_file_to_float(inputname, NULL, inhdu, NULL, outkernel, &bitpix,
+                              &anyblank, ins0, ins1);
   size = *ins0 * *ins1;
   kernel=*outkernel;
 
@@ -1663,8 +1671,8 @@ prepfloatkernel(char *inputname, char *inhdu, float **outkernel,
    separately.
 */
 void
-xyarraytoradec(struct wcsprm *wcs, double *xy, double *radec,
-               size_t number, size_t width)
+gal_fitsarray_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
+                                size_t number, size_t width)
 {
   size_t i;
   double imgcrd[2], phi, theta;
@@ -1695,8 +1703,8 @@ xyarraytoradec(struct wcsprm *wcs, double *xy, double *radec,
 
 
 void
-radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
-               size_t number, size_t width)
+gal_fitsarray_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
+                                size_t number, size_t width)
 {
   size_t i;
   double imgcrd[2], phi, theta;
@@ -1754,14 +1762,14 @@ angulardistance(double r1, double d1, double r2, double d2)
    to give stradians and finally, the stradians are converted to
    arcsec^2. */
 double
-pixelareaarcsec2(struct wcsprm *wcs)
+gal_fitsarray_pixel_area_arcsec2(struct wcsprm *wcs)
 {
   double xy[]={0,0,1,0,0,1};
   double st, *d, *df, radec[6];
 
   /* Get the RA and Dec of the bottom left, bottom right and top left
      sides of the first pixel in the image. */
-  xyarraytoradec(wcs, xy, radec, 3, 2);
+  gal_fitsarray_xy_array_to_radec(wcs, xy, radec, 3, 2);
 
   /* Covert the RA and dec values to radians for easy calculation: */
   df=(d=radec)+6; do *d++ *= M_PI/180.0f; while(d<df);

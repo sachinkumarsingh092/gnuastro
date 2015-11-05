@@ -238,14 +238,15 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
 
 
 void
-txttoarray(char *filename, double **array, size_t *s0, size_t *s1)
+gal_txtarray_txt_to_array(char *filename, double **array,
+                          size_t *s0, size_t *s1)
 {
   /* Find the size of the table and allocate space for it: */
   errno=0;
   txttablesize(filename, s0, s1);
   if( (*array=malloc(*s0 * *s1 * sizeof **array)) == NULL)
-    error(EXIT_FAILURE, errno, "txttoarray: space for array with %lu "
-	  "elements", *s0 * *s1);
+    error(EXIT_FAILURE, errno, "gal_txtarray_txt_to_array: space for array "
+          "with %lu elements", *s0 * *s1);
 
   /* Fill in the table with the contents of the text file: */
   filltable(filename, *array, *s0, *s1);
@@ -351,9 +352,9 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
 
  */
 void
-arraytotxt(double *array, size_t s0, size_t s1, char *comments,
-	   int *int_cols, int *accu_cols, int *space, int *prec,
-	   char forg, const char *filename)
+gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
+                          int *int_cols, int *accu_cols, int *space, int *prec,
+                          char forg, const char *filename)
 {
   int i,j;
   FILE *fp;
@@ -362,19 +363,19 @@ arraytotxt(double *array, size_t s0, size_t s1, char *comments,
   /* Do a small sanity check: */
   for(i=0;int_cols[i]>0;++i)
     if(int_cols[i]>=s1)
-      error(EXIT_FAILURE, 0, "arraytotxt: In int_cols[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In int_cols[], %d is "
 	    "larger than the number of columns: %lu.", int_cols[i], s1);
   for(i=0;accu_cols[i]>0;++i)
     if(accu_cols[i]>=s1)
-      error(EXIT_FAILURE, 0, "arraytotxt: In accu_cols[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In accu_cols[], %d is "
 	    "larger than the number of columns: %lu.", accu_cols[i], s1);
   for(i=0;i<3;++i)
     if(space[i]<=0)
-      error(EXIT_FAILURE, 0, "arraytotxt: In space[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In space[], %d is "
 	    "smaller or equal to zero.", space[i]);
   for(i=0;i<2;++i)
     if(prec[i]<0)
-      error(EXIT_FAILURE, 0, "arraytotxt: In prec[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In prec[], %d is "
 	    "smaller than zero.", space[i]);
 
   /* Allocate the spaces: */

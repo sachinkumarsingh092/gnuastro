@@ -38,20 +38,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************     Function declarations     ******************/
 /***************************************************************/
 void
-orderedpolygoncorners(double *in, size_t n, size_t *ordinds);
+gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds);
 
 double
-polygonarea(double *v, size_t n);
+gal_polygon_area(double *v, size_t n);
 
 int
-pinpolygon(double *v, double *p, size_t n);
+gal_polygon_pin(double *v, double *p, size_t n);
 
 int
-ppropinpolygon(double *v, double *p, size_t n);
+gal_polygon_ppropin(double *v, double *p, size_t n);
 
 void
-polygonclip(double *s, size_t n, double *c, size_t m,
-            double *o, size_t *numcrn);
+gal_polygon_clip(double *s, size_t n, double *c, size_t m,
+                 double *o, size_t *numcrn);
 
 
 

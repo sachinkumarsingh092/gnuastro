@@ -46,9 +46,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************             Each thread             ****************/
 /*******************************************************************/
 void
-scpparams(float *input, size_t is0, size_t is1, float *kernel, size_t ks0,
-          size_t ks1, size_t nt, int edgecorrection, float *out,
-          size_t *indexs, struct sconvparams *scp)
+gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
+                            size_t ks0, size_t ks1, size_t nt,
+                            int edgecorrection, float *out, size_t *indexs,
+                            struct sconvparams *scp)
 {
   /* Put the simple values in: */
   scp->is0=is0;
@@ -69,7 +70,7 @@ scpparams(float *input, size_t is0, size_t is1, float *kernel, size_t ks0,
 
 
 void *
-sconvonthread(void *inparam)
+gal_spatialconvolve_thread(void *inparam)
 {
   struct sconvparams *scp=(struct sconvparams *)inparam;
 
@@ -101,7 +102,7 @@ sconvonthread(void *inparam)
       lpixel_o[0]=ks1;              lpixel_o[1]=ks0;
       fpixel_i[0]=ind%is1+1-ks1/2;  fpixel_i[1]=ind/is1+1-ks0/2;
       lpixel_i[0]=ind%is1+1+ks1/2;  lpixel_i[1]=ind/is1+1+ks0/2;
-      overlap(naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o);
+      gal_box_overlap(naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o);
 
       /* fpixels and lpixels now point to the overlap's starting and
          ending both on the image and on the kernel. */
@@ -159,9 +160,9 @@ sconvonthread(void *inparam)
 /**************           Outside function          ****************/
 /*******************************************************************/
 void
-spatialconvolve(float *input, size_t is0, size_t is1,
-                float *kernel, size_t ks0, size_t ks1,
-                size_t nt, int edgecorrection, float **out)
+gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
+                             float *kernel, size_t ks0, size_t ks1,
+                             size_t nt, int edgecorrection, float **out)
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
@@ -175,7 +176,7 @@ spatialconvolve(float *input, size_t is0, size_t is1,
   errno=0;
   scp=malloc(nt*sizeof *scp);
   if(scp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in spatialconvolve "
+    error(EXIT_FAILURE, errno, "%lu bytes in gal_spatialconvolve_convolve "
           "(spatialconvolve.c) for scp", nt*sizeof *scp);
 
 
@@ -188,14 +189,14 @@ spatialconvolve(float *input, size_t is0, size_t is1,
 
 
   /* Distribute the image pixels into the threads: */
-  distinthreads(is0*is1, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(is0*is1, nt, &indexs, &thrdcols);
 
   /* Start the convolution. */
   if(nt==1)
     {
-      scpparams(input, is0, is1, kernel, ks0, ks1, nt,
-                edgecorrection, *out, indexs, &scp[0]);
-      sconvonthread(&scp[0]);
+      gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0, ks1, nt,
+                                  edgecorrection, *out, indexs, &scp[0]);
+      gal_spatialconvolve_thread(&scp[0]);
     }
   else
     {
@@ -205,16 +206,17 @@ spatialconvolve(float *input, size_t is0, size_t is1,
 	 threads spinned off. */
       if(is0*is1<nt) nb=is0*is1+1;
       else nb=nt+1;
-      attrbarrierinit(&attr, &b, nb);
+      gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
         if(indexs[i*thrdcols]!=NONTHRDINDEX)
           {
             scp[i].b=&b;
-            scpparams(input, is0, is1, kernel, ks0, ks1, nt,
-                      edgecorrection, *out, &indexs[i*thrdcols], &scp[i]);
-	    err=pthread_create(&t, &attr, sconvonthread, &scp[i]);
+            gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0, ks1, nt,
+                                        edgecorrection, *out,
+                                        &indexs[i*thrdcols], &scp[i]);
+	    err=pthread_create(&t, &attr, gal_spatialconvolve_thread, &scp[i]);
 	    if(err)
 	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
           }

@@ -28,24 +28,24 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 extern float *forqsortindexarr;
 
 int
-indexfloatdecreasing(const void * a, const void * b);
+gal_qsort_index_float_decreasing(const void * a, const void * b);
 
 int
-intdecreasing(const void * a, const void * b);
+gal_qsort_int_decreasing(const void * a, const void * b);
 
 int
-intincreasing(const void * a, const void * b);
+gal_qsort_int_increasing(const void * a, const void * b);
 
 int
-floatdecreasing(const void * a, const void * b);
+gal_qsort_float_decreasing(const void * a, const void * b);
 
 int
-floatincreasing(const void * a, const void * b);
+gal_qsort_float_increasing(const void * a, const void * b);
 
 int
-doubledecreasing(const void * a, const void * b);
+gal_qsort_double_decreasing(const void * a, const void * b);
 
 int
-doubleincreasing(const void * a, const void * b);
+gal_qsort_double_increasing(const void * a, const void * b);
 
 #endif

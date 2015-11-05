@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 float *forqsortindexarr;
 
 int
-indexfloatdecreasing(const void * a, const void * b)
+gal_qsort_index_float_decreasing(const void * a, const void * b)
 {
   float ta=forqsortindexarr[ *(size_t *)a ];
   float tb=forqsortindexarr[ *(size_t *)b ];
@@ -41,19 +41,19 @@ indexfloatdecreasing(const void * a, const void * b)
 
 
 int
-intdecreasing(const void * a, const void * b)
+gal_qsort_int_decreasing(const void * a, const void * b)
 {
   return ( *(int*)b - *(int*)a );
 }
 
 int
-intincreasing(const void * a, const void * b)
+gal_qsort_int_increasing(const void * a, const void * b)
 {
   return ( *(int*)a - *(int*)b );
 }
 
 int
-floatdecreasing(const void * a, const void * b)
+gal_qsort_float_decreasing(const void * a, const void * b)
 {
   float ta=*(float*)a;
   float tb=*(float*)b;
@@ -61,7 +61,7 @@ floatdecreasing(const void * a, const void * b)
 }
 
 int
-floatincreasing(const void * a, const void * b)
+gal_qsort_float_increasing(const void * a, const void * b)
 {
   float ta=*(float*)a;
   float tb=*(float*)b;
@@ -69,7 +69,7 @@ floatincreasing(const void * a, const void * b)
 }
 
 int
-doubledecreasing(const void * a, const void * b)
+gal_qsort_double_decreasing(const void * a, const void * b)
 {
   double ta=*(double*)a;
   double tb=*(double*)b;
@@ -77,7 +77,7 @@ doubledecreasing(const void * a, const void * b)
 }
 
 int
-doubleincreasing(const void * a, const void * b)
+gal_qsort_double_increasing(const void * a, const void * b)
 {
   double ta=*(double*)a;
   double tb=*(double*)b;

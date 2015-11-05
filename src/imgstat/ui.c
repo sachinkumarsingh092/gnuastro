@@ -104,18 +104,18 @@ readconfig(char *filename, struct imgstatparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
       else if (strcmp(name, "mask")==0)
-        allocatecopyset(value, &up->maskname, &up->masknameset);
+        gal_checkset_allocate_copy_set(value, &up->maskname, &up->masknameset);
 
       else if (strcmp(name, "mhdu")==0)
-        allocatecopyset(value, &up->mhdu, &up->mhduset);
+        gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mirrordist, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_float_l_0(value, &p->mirrordist, name, key, SPACK,
+                                 filename, lineno);
           up->mirrordistset=1;
 	}
 
@@ -123,20 +123,20 @@ readconfig(char *filename, struct imgstatparams *p)
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "mirrorplotdist")==0)
 	{
 	  if(up->mirrorplotdistset) continue;
-          floatl0(value, &p->mirrorplotdist, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0(value, &p->mirrorplotdist, name, key, SPACK,
+                                 filename, lineno);
           up->mirrorplotdistset=1;
 	}
       else if(strcmp(name, "onebinvalue")==0)
 	{
 	  if(up->onebinvalueset) continue;
-          anyfloat(value, &p->onebinvalue, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_any_float(value, &p->onebinvalue, name, key, SPACK,
+                                 filename, lineno);
           up->onebinvalueset=1;
 	}
 
@@ -145,29 +145,29 @@ readconfig(char *filename, struct imgstatparams *p)
       else if(strcmp(name, "histnumbins")==0)
 	{
 	  if(up->histnumbinsset) continue;
-          sizetlzero(value, &p->histnumbins, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->histnumbins, name, key, SPACK,
+                                    filename, lineno);
           up->histnumbinsset=1;
 	}
       else if(strcmp(name, "histmin")==0)
 	{
 	  if(up->histminset) continue;
-          anyfloat(value, &p->histmin, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_any_float(value, &p->histmin, name, key, SPACK,
+                                 filename, lineno);
           up->histminset=1;
 	}
       else if(strcmp(name, "histmax")==0)
 	{
 	  if(up->histmaxset) continue;
-          anyfloat(value, &p->histmax, name, key, SPACK,
-                   filename, lineno);
+          gal_checkset_any_float(value, &p->histmax, name, key, SPACK,
+                                 filename, lineno);
           up->histmaxset=1;
 	}
       else if(strcmp(name, "histquant")==0)
 	{
 	  if(up->histquantset) continue;
-          floatl0s1(value, &p->histquant, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->histquant, name, key, SPACK,
+                                     filename, lineno);
           up->histquantset=1;
 	}
 
@@ -176,29 +176,29 @@ readconfig(char *filename, struct imgstatparams *p)
       else if(strcmp(name, "cfpnum")==0)
 	{
 	  if(up->cfpnumset) continue;
-          sizetlzero(value, &p->cfpnum, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->cfpnum, name, key, SPACK,
+                                    filename, lineno);
           up->cfpnumset=1;
 	}
       else if(strcmp(name, "cfpmin")==0)
 	{
 	  if(up->cfpminset) continue;
-          anyfloat(value, &p->cfpmin, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_any_float(value, &p->cfpmin, name, key, SPACK,
+                                 filename, lineno);
           up->cfpminset=1;
 	}
       else if(strcmp(name, "cfpmax")==0)
 	{
 	  if(up->cfpmaxset) continue;
-          anyfloat(value, &p->cfpmax, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_any_float(value, &p->cfpmax, name, key, SPACK,
+                                 filename, lineno);
           up->cfpmaxset=1;
 	}
       else if(strcmp(name, "cfpquant")==0)
 	{
 	  if(up->cfpquantset) continue;
-          floatl0s1(value, &p->cfpquant, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->cfpquant, name, key, SPACK,
+                                     filename, lineno);
           up->cfpquantset=1;
 	}
 
@@ -206,22 +206,22 @@ readconfig(char *filename, struct imgstatparams *p)
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->sigclipmultip, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0(value, &p->sigclipmultip, name, key, SPACK,
+                                 filename, lineno);
           up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0(value, &p->sigcliptolerance, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0(value, &p->sigcliptolerance, name, key, SPACK,
+                                 filename, lineno);
           up->sigcliptoleranceset=1;
 	}
       else if(strcmp(name, "sigclipnum")==0)
 	{
 	  if(up->sigclipnumset) continue;
-          sizetlzero(value, &p->sigclipnum, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->sigclipnum, name, key, SPACK,
+                                    filename, lineno);
           up->sigclipnumset=1;
 	}
 
@@ -376,8 +376,9 @@ sanitycheck(struct imgstatparams *p)
   char *basename;
 
   /* Set the p->up.maskname accordingly: */
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                                 &p->up.maskname, p->up.mhdu,
+                                 p->up.mhduset, "mask");
 
   /* Set the names of the output files: */
   if(p->cp.outputset) basename=p->cp.output;
@@ -385,30 +386,34 @@ sanitycheck(struct imgstatparams *p)
   if(p->histname)
     {
       p->histname=NULL;         /* It wasn't allocated. */
-      automaticoutput(basename, "_hist.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->histname);
+      gal_checkset_automatic_output(basename, "_hist.txt", p->cp.removedirinfo,
+                                    p->cp.dontdelete, &p->histname);
     }
   if(p->cfpname)
     {
       p->cfpname=NULL;         /* It wasn't allocated. */
-      automaticoutput(basename, "_cfp.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->cfpname);
+      gal_checkset_automatic_output(basename, "_cfp.txt", p->cp.removedirinfo,
+                                    p->cp.dontdelete, &p->cfpname);
     }
   if(p->mhistname)              /* The mode mirror distribution will need */
     {                           /* both a histogram and cfp.              */
       p->mcfpname=p->mhistname=NULL;
-      automaticoutput(basename, "_modehist.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->mhistname);
-      automaticoutput(basename, "_modecfp.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->mcfpname);
+      gal_checkset_automatic_output(basename, "_modehist.txt",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->mhistname);
+      gal_checkset_automatic_output(basename, "_modecfp.txt",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->mcfpname);
     }
   if(isnan(p->mirror)==0)
     {
       p->mirrorhist=p->mirrorcfp=NULL;
-      automaticoutput(basename, "_mirrorhist.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->mirrorhist);
-      automaticoutput(basename, "_mirrorcfp.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->mirrorcfp);
+      gal_checkset_automatic_output(basename, "_mirrorhist.txt",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->mirrorhist);
+      gal_checkset_automatic_output(basename, "_mirrorcfp.txt",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->mirrorcfp);
     }
 
 
@@ -466,23 +471,23 @@ preparearrays(struct imgstatparams *p)
   struct uiparams *up=&p->up;
 
   /* Read the input and mask arrays: */
-  filetofloat(up->inputname, up->maskname, p->cp.hdu, up->mhdu,
-              &p->img, &bitpix, &anyblank, &s0, &s1);
+  gal_fitsarray_file_to_float(up->inputname, up->maskname, p->cp.hdu, up->mhdu,
+                              &p->img, &bitpix, &anyblank, &s0, &s1);
   p->size=s0*s1;
 
   /* If the minimum value is to be used as a mask then do it: */
   if(p->ignoremin)
     {
-      floatmin(p->img, p->size, &min);
-      freplacevalue(p->img, p->size, min, NAN);
+      gal_statistics_float_min(p->img, p->size, &min);
+      gal_arraymanip_freplace_value(p->img, p->size, min, NAN);
     }
 
   /* Move all the non-nan elements to the start of the array: */
-  nonans(p->img, &p->size);
+  gal_arraymanip_no_nans(p->img, &p->size);
 
   /* Make a sorted array for most of the jobs: */
-  floatcopy(p->img, p->size, &p->sorted);
-  qsort(p->sorted, p->size, sizeof *p->sorted, floatincreasing);
+  gal_arraymanip_float_copy(p->img, p->size, &p->sorted);
+  qsort(p->sorted, p->size, sizeof *p->sorted, gal_qsort_float_increasing);
 
   /* Check the given range: */
   if(p->histname || p->asciihist || p->mhistname || p->mirrorhist)
@@ -493,8 +498,12 @@ preparearrays(struct imgstatparams *p)
             error(EXIT_FAILURE, 0, "The value to `--histquant' (-Q) must "
                   "Be smaller than 0.5, because it sets the lower limit of "
                   "the value range. The higher limit will be 1-Q.");
-          p->histmin=p->sorted[indexfromquantile(p->size, p->histquant)];
-          p->histmax=p->sorted[indexfromquantile(p->size, 1 - p->histquant)];
+          p->histmin=
+            p->sorted[gal_statistics_index_from_quantile(p->size,
+                                                         p->histquant)];
+          p->histmax=
+            p->sorted[gal_statistics_index_from_quantile(p->size,
+                                                         1 - p->histquant)];
         }
       else
         {
@@ -545,8 +554,11 @@ preparearrays(struct imgstatparams *p)
             error(EXIT_FAILURE, 0, "The value to `--cfpquant' (-U) must "
                   "Be smaller than 0.5, because it sets the lower limit of "
                   "the value range. The higher limit will be 1-U.");
-          p->cfpmin=p->sorted[indexfromquantile(p->size, p->cfpquant)];
-          p->cfpmax=p->sorted[indexfromquantile(p->size, 1 - p->cfpquant)];
+          p->cfpmin=p->sorted[gal_statistics_index_from_quantile(p->size,
+                                                                 p->cfpquant)];
+          p->cfpmax=
+            p->sorted[gal_statistics_index_from_quantile(p->size,
+                                                         1 - p->cfpquant)];
         }
       else
         {
@@ -693,5 +705,5 @@ freeandreport(struct imgstatparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

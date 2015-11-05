@@ -142,7 +142,7 @@ pthread_barrier_wait(pthread_barrier_t *b)
    array of `outthrdcols` columns and each row will finish with a
    (size_t) -1, which is larger than any possible index!. */
 void
-distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
+gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
 	      size_t *outthrdcols)
 {
   size_t *sp, *fp;
@@ -181,7 +181,7 @@ distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
 
 
 void
-attrbarrierinit(pthread_attr_t *attr, pthread_barrier_t *b,
+gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
 		size_t numthreads)
 {
   int err;

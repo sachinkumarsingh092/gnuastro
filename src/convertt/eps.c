@@ -356,13 +356,13 @@ saveepsorpdf(struct converttparams *p)
     epsfilename=p->cp.output;
   else if (p->outputtype==PDFFORMAT)
     {
-      /* In ui.c we removed the output if it already existed, so it
-         doesn't exist now. But automaticoutput is based on an input
+      /* In ui.c we removed the output if it already existed, so it doesn't
+         exist now.  But gal_checkset_automatic_output is based on an input
          (which must exist), so temporarily make the file. */
       sprintf(command, "touch %s", p->cp.output);
       if(system(command))
         error(EXIT_FAILURE, 0, "The command `%s` could not be run!", command);
-      automaticoutput(p->cp.output, ".ps", 0, p->cp.dontdelete,
+      gal_checkset_automatic_output(p->cp.output, ".ps", 0, p->cp.dontdelete,
                       &epsfilename);
       sprintf(command, "rm %s", p->cp.output);
       if(system(command))

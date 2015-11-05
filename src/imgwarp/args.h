@@ -202,11 +202,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.matrixstringset=1;
       break;
     case 501:
-      sizetelzero(arg, &p->hstartwcs, "hstartwcs", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->hstartwcs, "hstartwcs", key, SPACK,
+                                 NULL, 0);
       p->up.hstartwcsset=1;
       break;
     case 502:
-      sizetelzero(arg, &p->hendwcs, "hendwcs", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->hendwcs, "hendwcs", key, SPACK,
+                                 NULL, 0);
       p->up.hendwcsset=1;
       break;
 
@@ -222,7 +224,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->doubletype=1;
       break;
     case 'b':
-      floatl0s1(arg, &p->maxblankfrac, "maxblankfrac", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->maxblankfrac, "maxblankfrac", key,
+                                 SPACK, NULL, 0);
       p->up.maxblankfracset=1;
       break;
 
@@ -232,7 +235,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
         {
           if(p->up.inputname)
             argp_error(state, "Only one input image should be given.");

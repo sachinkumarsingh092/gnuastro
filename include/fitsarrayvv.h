@@ -65,16 +65,16 @@ Because of this we have to stick to this wrong convention too.
  ******************         Basic          *******************
  *************************************************************/
 void
-fitsioerror(int status, char *message);
+gal_fitsarray_io_error(int status, char *message);
 
 int
-nameisfits(char *name);
+gal_fitsarray_name_is_fits(char *name);
 
 int
-nameisfitssuffix(char *name);
+gal_fitsarray_name_is_fits_suffix(char *name);
 
 void
-numhduensions(char *filename, int *numhdu);
+gal_fitsarray_num_hdus(char *filename, int *numhdu);
 
 
 
@@ -119,31 +119,34 @@ struct readheaderkeys
 
 
 void
-readkeywords(char *filename, char *hdu, struct readheaderkeys *out,
-             size_t num);
+gal_fitsarray_read_keywords(char *filename, char *hdu,
+                            struct readheaderkeys *out, size_t num);
 
 void
-add_to_fitsheaderll(struct fitsheaderll **list, int datatype,
-                    char *keyname, int kfree, void *value, int vfree,
-                    char *comment, int cfree, char *unit);
+gal_fitsarray_add_to_fits_header_ll(struct fitsheaderll **list, int datatype,
+                                    char *keyname, int kfree, void *value,
+                                    int vfree, char *comment, int cfree,
+                                    char *unit);
 
 void
-add_to_fitsheaderllend(struct fitsheaderll **list, int datatype,
-		       char *keyname, int kfree, void *value, int vfree,
-		       char *comment, int cfree, char *unit);
-void
-filenameinkeywords(char *keynamebase, char *filename,
-		   struct fitsheaderll **list);
+gal_fitsarray_add_to_fits_header_ll_end(struct fitsheaderll **list,
+                                        int datatype, char *keyname, int kfree,
+                                        void *value, int vfree, char *comment,
+                                        int cfree, char *unit);
 
 void
-addwcstoheader(fitsfile *fptr, char *wcsheader, int nkeyrec);
+gal_fitsarray_file_name_in_keywords(char *keynamebase, char *filename,
+                                    struct fitsheaderll **list);
 
 void
-updatekeys(fitsfile *fptr, struct fitsheaderll **keylist);
+gal_fitsarray_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec);
 
 void
-copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
-                char *spack_string);
+gal_fitsarray_update_keys(fitsfile *fptr, struct fitsheaderll **keylist);
+
+void
+gal_fitsarray_copyright_end(fitsfile *fptr, struct fitsheaderll *headers,
+                              char *spack_string);
 
 
 
@@ -153,48 +156,52 @@ copyrightandend(fitsfile *fptr, struct fitsheaderll *headers,
  ******************        Read/Write        *****************
  *************************************************************/
 void *
-bitpixblank(int bitpix);
+gal_fitsarray_bitpix_blank(int bitpix);
 
 void
-convertblank(void *array, int bitpix, size_t size, void *value);
+gal_fitsarray_convert_blank(void *array, int bitpix, size_t size, void *value);
 
 int
-bitpixtodtype(int bitpix);
+gal_fitsarray_bitpix_to_dtype(int bitpix);
 
 void
-imgbitpixsize(fitsfile *fptr, int *bitpix, long *naxis);
+gal_fitsarray_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxis);
 
 void
-readfitshdu(char *filename, char *hdu, int desiredtype, fitsfile **outfptr);
+gal_fitsarray_read_fits_hdu(char *filename, char *hdu, int desiredtype,
+                            fitsfile **outfptr);
 
 void *
-bitpixalloc(size_t size, int bitpix);
+gal_fitsarray_bitpix_alloc(size_t size, int bitpix);
 
 void
-changetype(void *in, int inbitpix, size_t size, int anyblank,
-           void **out, int outbitpix);
+gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
+                          void **out, int outbitpix);
 
 void
-readwcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs, size_t hstart,
-        size_t hend);
+gal_fitsarray_read_wcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
+                       size_t hstart, size_t hend);
 
 void
-readfitswcs(char *filename, char *hdu, size_t hstartwcs,
-            size_t hendwcs, int *nwcs, struct wcsprm **wcs);
+gal_fitsarray_read_fits_wcs(char *filename, char *hdu, size_t hstartwcs,
+                            size_t hendwcs, int *nwcs, struct wcsprm **wcs);
 
 int
-fitsimgtoarray(char *filename, char *hdu, int *bitpix, void **array,
-               size_t *s0, size_t *s1);
+gal_fitsarray_fits_img_to_array(char *filename, char *hdu, int *bitpix,
+                                void **array, size_t *s0, size_t *s1);
 
 void
-arraytofitsimg(char *filename, char *hdu, int bitpix, void *array,
-	       size_t s0, size_t s1, int anyblank, struct wcsprm *wcs,
-	       struct fitsheaderll *headers, char *spack_string);
+gal_fitsarray_array_to_fits_img(char *filename, char *hdu, int bitpix,
+                                void *array, size_t s0, size_t s1, int anyblank,
+                                struct wcsprm *wcs,
+                                struct fitsheaderll *headers,
+                                char *spack_string);
 
 void
-atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
-	       size_t s0, size_t s1, char *wcsheader, int wcsnkeyrec,
-	       double *crpix, char *spack_string);
+gal_fitsarray_atof_correct_wcs(char *filename, char *hdu, int bitpix,
+                               void *array, size_t s0, size_t s1,
+                               char *wcsheader, int wcsnkeyrec,
+                               double *crpix, char *spack_string);
 
 
 
@@ -204,24 +211,27 @@ atofcorrectwcs(char *filename, char *hdu, int bitpix, void *array,
 /**********          Check prepare file            ************/
 /**************************************************************/
 void
-fileorextname(char *inputname, char *inhdu, int othernameset,
-              char **othername, char *ohdu, int ohduset, char *type);
+gal_fitsarray_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
+                               char **othername, char *ohdu, int ohduset,
+                               char *type);
 
 void
-setmaskname(char *inputname, char **maskname, char *inhdu, char *mhdu);
+gal_fitsarray_set_mask_name(char *inputname, char **maskname, char *inhdu,
+                            char *mhdu);
 
 void
-filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
-            float **img, int *inbitpix, int *anyblank, size_t *ins0,
-            size_t *ins1);
+gal_fitsarray_file_to_float(char *inputname, char *maskname, char *inhdu,
+                            char *mhdu, float **img, int *inbitpix,
+                            int *anyblank, size_t *ins0, size_t *ins1);
 
 void
-filetolong(char *inputname, char *inhdu, long **img, int *inbitpix,
-           int *anyblank, size_t *ins0, size_t *ins1);
+gal_fitsarray_file_to_long(char *inputname, char *inhdu, long **img,
+                           int *inbitpix, int *anyblank, size_t *ins0,
+                           size_t *ins1);
 
 void
-prepfloatkernel(char *inputname, char *inhdu, float **kernel,
-                size_t *ins0, size_t *ins1);
+gal_fitsarray_prep_float_kernel(char *inputname, char *inhdu, float **kernel,
+                                size_t *ins0, size_t *ins1);
 
 
 
@@ -231,14 +241,14 @@ prepfloatkernel(char *inputname, char *inhdu, float **kernel,
 /**********              XY to RADEC               ************/
 /**************************************************************/
 void
-xyarraytoradec(struct wcsprm *wcs, double *xy, double *radec,
-               size_t number, size_t width);
+gal_fitsarray_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
+                                size_t number, size_t width);
 
 void
-radecarraytoxy(struct wcsprm *wcs, double *radec, double *xy,
-               size_t number, size_t width);
+gal_fitsarray_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
+                                size_t number, size_t width);
 
 double
-pixelareaarcsec2(struct wcsprm *wcs);
+gal_fitsarray_pixel_area_arcsec2(struct wcsprm *wcs);
 
 #endif

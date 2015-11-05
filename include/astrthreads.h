@@ -94,11 +94,11 @@ pthread_barrier_wait(pthread_barrier_t *b);
 /****************      gnuastro functions       ******************/
 /*****************************************************************/
 void
-distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
-	      size_t *outthrdcols);
+gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
+                            size_t *outthrdcols);
 
 void
-attrbarrierinit(pthread_attr_t *attr, pthread_barrier_t *b,
-		size_t numthreads);
+gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
+                              size_t numthreads);
 
 #endif

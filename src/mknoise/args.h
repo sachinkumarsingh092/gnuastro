@@ -179,7 +179,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'b':
-      anydouble(arg, &p->mbackground, "background", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->mbackground, "background", key, SPACK,
+                              NULL, 0);
       p->up.backgroundset=1;
       break;
     case 's':
@@ -187,7 +188,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.stdaddset=1;
       break;
     case 'z':
-      anydouble(arg, &p->zeropoint, "zeropoint", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->zeropoint, "zeropoint", key, SPACK,
+                              NULL, 0);
       p->up.zeropointset=1;
       break;
     case 'e':
@@ -205,7 +207,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
         {
           if(p->up.inputname)
             argp_error(state, "Only one input image should be given.");

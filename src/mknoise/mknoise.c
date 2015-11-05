@@ -65,32 +65,37 @@ convertsaveoutput(struct mknoiseparams *p)
       p->inputbitpix=DOUBLE_IMG; /* In case it wasn't and p->doubletype==1 */
     }
   else
-    changetype((void **)p->input, DOUBLE_IMG, p->is0*p->is1,
-               p->anyblank, &array, p->inputbitpix);
+    gal_fitsarray_change_type((void **)p->input, DOUBLE_IMG, p->is0*p->is1,
+                              p->anyblank, &array, p->inputbitpix);
 
   /* Add the proper information to the header of the output: */
-  filenameinkeywords("INF", p->up.inputname, &headers);
+  gal_fitsarray_file_name_in_keywords("INF", p->up.inputname, &headers);
   strcpy(keyname1, "BCKGRND");
-  add_to_fitsheaderllend(&headers, TDOUBLE, keyname1, 0, &p->mbackground, 0,
-                         "Background value (in magnitude) for noise.",
-                         0, NULL);
+  gal_fitsarray_add_to_fits_header_ll_end(&headers, TDOUBLE, keyname1, 0,
+                                          &p->mbackground, 0, "Background "
+                                          "value (in magnitude) for noise.",
+                                          0, NULL);
   strcpy(keyname2, "BZRPNT");
-  add_to_fitsheaderllend(&headers, TDOUBLE, keyname2, 0, &p->zeropoint, 0,
-                         "Zeropoint magnitude of image.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll_end(&headers, TDOUBLE, keyname2, 0,
+                                          &p->zeropoint, 0, "Zeropoint "
+                                          "magnitude of image.", 0, NULL);
   strcpy(keyname3, "STDADD");
-  add_to_fitsheaderllend(&headers, TDOUBLE, keyname3, 0, &p->stdadd, 0,
-                         "Instrumental noise in units of flux.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll_end(&headers, TDOUBLE, keyname3, 0,
+                                          &p->stdadd, 0, "Instrumental noise "
+                                          "in units of flux.", 0, NULL);
   strcpy(keyname4, "RNGTYPE");
-  add_to_fitsheaderllend(&headers, TSTRING, keyname4, 0, &p->rng_type, 0,
-                         "Random number generator (by GSL) type.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll_end(&headers, TSTRING, keyname4, 0,
+                                          &p->rng_type, 0, "Random number "
+                                          "generator (by GSL) type.", 0, NULL);
   strcpy(keyname5, "RNGSEED");
-  add_to_fitsheaderllend(&headers, TLONG, keyname5, 0, &p->rng_seed, 0,
-                         "Random number generator (by GSL) seed.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll_end(&headers, TLONG, keyname5, 0,
+                                          &p->rng_seed, 0, "Random number "
+                                          "generator (by GSL) seed.", 0, NULL);
 
   /* Save the output: */
-  arraytofitsimg(p->cp.output, "NoiseAdded", p->inputbitpix, array,
-                 p->is0, p->is1, p->anyblank, p->wcs, headers,
-                 SPACK_STRING);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "NoiseAdded", p->inputbitpix,
+                                  array, p->is0, p->is1, p->anyblank, p->wcs,
+                                  headers, SPACK_STRING);
 
   if(array!=p->input)
     free(array);

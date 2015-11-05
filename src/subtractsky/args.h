@@ -340,16 +340,17 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'M':
-      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname, &p->up.masknameset);
       break;
     case 'H':
-      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
       break;
     case 'K':
-      allocatecopyset(arg, &p->up.kernelname, &p->up.kernelnameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.kernelname,
+                                     &p->up.kernelnameset);
       break;
     case 'U':
-      allocatecopyset(arg, &p->up.khdu, &p->up.khduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.khdu, &p->up.khduset);
       break;
 
     /* Output: */
@@ -362,39 +363,44 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Mesh grid: */
     case 's':
-      sizetlzero(arg, &p->mp.meshsize, "meshsize", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.meshsize, "meshsize", key, SPACK,
+                                NULL, 0);
       p->up.meshsizeset=1;
       break;
     case 'a':
-      sizetlzero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.nch1, "nch1", key, SPACK, NULL, 0);
       p->up.nch1set=1;
       break;
     case 'b':
-      sizetlzero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.nch2, "nch2", key, SPACK, NULL, 0);
       p->up.nch2set=1;
       break;
     case 'L':
-      floatl0s1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key, SPACK,
-                NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->mp.lastmeshfrac, "lastmeshfrac", key,
+                                 SPACK, NULL, 0);
       p->up.lastmeshfracset=1;
       break;
     case 'd':
-      floatl0(arg, &p->mp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->mp.mirrordist, "mirrordist", key, SPACK,
+                             NULL, 0);
       p->up.mirrordistset=1;
       break;
     case 'Q':
-      floatl0s1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->mp.minmodeq, "minmodeq", key, SPACK,
+                                 NULL, 0);
       p->up.minmodeqset=1;
       break;
     case 508:
       p->mp.interponlyblank=1;
       break;
     case 'n':
-      sizetlzero(arg, &p->mp.numnearest, "numnearest", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->mp.numnearest, "numnearest", key,
+                                SPACK, NULL, 0);
       p->up.numnearestset=1;
       break;
     case 'T':
-      sizetpodd(arg, &p->mp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
+      gal_checkset_sizet_p_odd(arg, &p->mp.smoothwidth, "smoothwidth", key,
+                               SPACK, NULL, 0);
       p->up.smoothwidthset=1;
       break;
     case 506:
@@ -422,13 +428,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Statistics */
     case 'u':
-      floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
-              NULL, 0);
+      gal_checkset_float_l_0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
+                             NULL, 0);
       p->up.sigclipmultipset=1;
       break;
     case 't':
-      floatl0s1(arg, &p->sigcliptolerance, "sigcliptolerance", key, SPACK,
-              NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->sigcliptolerance, "sigcliptolerance",
+                                 key, SPACK, NULL, 0);
       p->up.sigcliptoleranceset=1;
       break;
 
@@ -440,7 +446,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
         {
           if(p->up.inputname)
             argp_error(state, "Only one input image should be given.");

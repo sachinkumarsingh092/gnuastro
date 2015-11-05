@@ -63,16 +63,17 @@ struct sconvparams
 
 /* Functions: */
 void
-scpparams(float *input, size_t is0, size_t is1, float *kernel, size_t ks0,
-          size_t ks1, size_t nt, int edgecorrection, float *out,
-          size_t *indexs, struct sconvparams *scp);
+gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
+                            size_t ks0, size_t ks1, size_t nt,
+                            int edgecorrection, float *out, size_t *indexs,
+                            struct sconvparams *scp);
 
 void *
-sconvonthread(void *inparam);
+gal_spatialconvolve_thread(void *inparam);
 
 void
-spatialconvolve(float *input, size_t is0, size_t is1,
-                float *kernel, size_t ks0, size_t ks1,
-                size_t nt, int edgecorrection, float **out);
+gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
+                             float *kernel, size_t ks0, size_t ks1,
+                             size_t nt, int edgecorrection, float **out);
 
 #endif

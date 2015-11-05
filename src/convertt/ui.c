@@ -94,24 +94,24 @@ readconfig(char *filename, struct converttparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if(strcmp(name, "hdu2")==0)
-        allocatecopyset(value, &up->hdu2, &up->hdu2set);
+        gal_checkset_allocate_copy_set(value, &up->hdu2, &up->hdu2set);
       else if(strcmp(name, "hdu3")==0)
-        allocatecopyset(value, &up->hdu3, &up->hdu3set);
+        gal_checkset_allocate_copy_set(value, &up->hdu3, &up->hdu3set);
       else if(strcmp(name, "hdu4")==0)
-        allocatecopyset(value, &up->hdu4, &up->hdu4set);
+        gal_checkset_allocate_copy_set(value, &up->hdu4, &up->hdu4set);
 
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "quality")==0)
 	{
 	  if(up->qualityset) continue;
-          intsmallerequalto(value, &p->quality, name, key,
-                            p->cp.spack, filename, lineno, 100);
+          gal_checkset_int_smaller_equal_to(value, &p->quality, name, key,
+                                            p->cp.spack, filename, lineno, 100);
           if(p->quality<0)
             error(EXIT_FAILURE, 0, "The quality option should be positive.");
 	  up->qualityset=1;
@@ -119,14 +119,15 @@ readconfig(char *filename, struct converttparams *p)
       else if(strcmp(name, "widthincm")==0)
 	{
 	  if(up->widthincmset) continue;
-          floatl0(value, &p->widthincm, name, key, SPACK, filename, lineno);
+          gal_checkset_float_l_0(value, &p->widthincm, name, key, SPACK,
+                                 filename, lineno);
 	  up->widthincmset=1;
 	}
       else if(strcmp(name, "borderwidth")==0)
 	{
 	  if(up->borderwidthset) continue;
-          intelzero(value, &p->borderwidth, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_int_el_zero(value, &p->borderwidth, name, key, SPACK,
+                                   filename, lineno);
 	  up->borderwidthset=1;
 	}
 
@@ -138,22 +139,22 @@ readconfig(char *filename, struct converttparams *p)
       else if(strcmp(name, "fluxlow")==0)
 	{
 	  if(up->fluxlowset) continue;
-          anydouble(value, &p->fluxlow, name, key, p->cp.spack,
-                   filename, lineno);
+          gal_checkset_any_double(value, &p->fluxlow, name, key, p->cp.spack,
+                                  filename, lineno);
           up->fluxlowset=1;
 	}
       else if(strcmp(name, "fluxhigh")==0)
 	{
 	  if(up->fluxhighset) continue;
-          anydouble(value, &p->fluxhigh, name, key, p->cp.spack,
-                   filename, lineno);
+          gal_checkset_any_double(value, &p->fluxhigh, name, key, p->cp.spack,
+                                  filename, lineno);
           up->fluxhighset=1;
 	}
       else if(strcmp(name, "maxbyte")==0)
 	{
 	  if(up->maxbyteset) continue;
-          intsmallerequalto(value, &tmp, "maxbyte", key,
-                            p->cp.spack, NULL, 0, UINT8_MAX);
+          gal_checkset_int_smaller_equal_to(value, &tmp, "maxbyte", key,
+                                            p->cp.spack, NULL, 0, UINT8_MAX);
           if(tmp<0)
             error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive.");
           p->maxbyte=tmp;
@@ -383,9 +384,9 @@ adddotautomaticoutput(struct converttparams *p)
     }
 
   /* Set the automatic output and make sure we have write access. */
-  automaticoutput(basename, cp->output, cp->removedirinfo,
+  gal_checkset_automatic_output(basename, cp->output, cp->removedirinfo,
                   cp->dontdelete, &cp->output);
-  if( dir0file1(cp->output, cp->dontdelete)==0 )
+  if( gal_checkset_dir_0_file_1(cp->output, cp->dontdelete)==0 )
     error(EXIT_FAILURE, 0, "%s is a directory.", cp->output);
 }
 
@@ -457,10 +458,10 @@ sanitycheck(struct converttparams *p)
   /* The output file name. First find the first non-blank file name: */
   if(cp->outputset)
     {
-      if(nameisfits(cp->output))
+      if(gal_fitsarray_name_is_fits(cp->output))
         {
           p->outputtype=FITSFORMAT;
-          if( nameisfitssuffix(cp->output) )
+          if( gal_fitsarray_name_is_fits_suffix(cp->output) )
             adddotautomaticoutput(p);
         }
       else if(nameisjpeg(cp->output))
@@ -570,7 +571,7 @@ preparearrays(struct converttparams *p)
               "than one color channel.");
 
       /* FITS: */
-      if( nameisfits(names[i]) )
+      if( gal_fitsarray_name_is_fits(names[i]) )
         {
           switch(p->numch) /* Get the HDU value for this channel. */
             {
@@ -581,13 +582,15 @@ preparearrays(struct converttparams *p)
                            "contact us so we can see what caused this "
                            "problem and fix it.");
             }
-          p->numnul[p->numch]=fitsimgtoarray(names[i], hdu,
-                                             &p->bitpixs[p->numch], &array,
-                                             &p->s0[p->numch],
-                                             &p->s1[p->numch]);
-          changetype(array, p->bitpixs[p->numch],
-                     p->s0[p->numch]*p->s1[p->numch], p->numnul[p->numch],
-                     (void **)(&p->ch[p->numch]), DOUBLE_IMG);
+          p->numnul[p->numch]=
+            gal_fitsarray_fits_img_to_array(names[i], hdu,
+                                            &p->bitpixs[p->numch], &array,
+                                            &p->s0[p->numch],
+                                            &p->s1[p->numch]);
+          gal_fitsarray_change_type(array, p->bitpixs[p->numch],
+                                    p->s0[p->numch]*p->s1[p->numch],
+                                    p->numnul[p->numch],
+                                    (void **)(&p->ch[p->numch]), DOUBLE_IMG);
           free(array);
           ++p->numch;
         }
@@ -638,12 +641,12 @@ preparearrays(struct converttparams *p)
       /* Text: */
       else
         {
-          txttoarray(names[i], &p->ch[p->numch],
-                     &p->s0[p->numch], &p->s1[p->numch]);
+          gal_txtarray_txt_to_array(names[i], &p->ch[p->numch],
+                                    &p->s0[p->numch], &p->s1[p->numch]);
           df = (d=p->ch[p->numch]) + p->s0[p->numch]*p->s1[p->numch];
           do if(isnan(*d++)) break; while(d<df);
           if(d==df)
-            checkremovefile(TXTARRAYVVLOG, 0);
+            gal_checkset_check_remove_file(TXTARRAYVVLOG, 0);
           else
             error(EXIT_FAILURE, 0, "%s contains non-numeric data, see %s.",
                   names[i], TXTARRAYVVLOG);

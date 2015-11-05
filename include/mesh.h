@@ -154,47 +154,47 @@ struct meshparams
 };
 
 size_t
-chbasedidfromgid(struct meshparams *mp, size_t gid);
+gal_mesh_ch_based_id_from_gid(struct meshparams *mp, size_t gid);
 
 size_t
-gidfromchbasedid(struct meshparams *mp, size_t chbasedid);
+gal_mesh_gid_from_ch_based_id(struct meshparams *mp, size_t chbasedid);
 
 size_t
-imgxytomeshid(struct meshparams *mp, size_t x, size_t y);
+gal_mesh_img_xy_to_mesh_id(struct meshparams *mp, size_t x, size_t y);
 
 void
-checkmeshid(struct meshparams *mp, long **out);
+gal_check_mesh_id(struct meshparams *mp, long **out);
 
 void
-checkgarray(struct meshparams *mp, float **out1, float **out2);
+gal_mesh_check_garray(struct meshparams *mp, float **out1, float **out2);
 
 void
-meshvaluefile(struct meshparams *mp, char *filename, char *extname1,
-              char *extname2, struct wcsprm *wcs, char *spack_string);
+gal_mesh_value_file(struct meshparams *mp, char *filename, char *extname1,
+                    char *extname2, struct wcsprm *wcs, char *spack_string);
 
 void
-fullgarray(struct meshparams *mp, int reverse);
+gal_mesh_full_garray(struct meshparams *mp, int reverse);
 
 void
-makemesh(struct meshparams *mp);
+gal_mesh_make_mesh(struct meshparams *mp);
 
 void
-freemesh(struct meshparams *mp);
+gal_mesh_free_mesh(struct meshparams *mp);
 
 void
-operateonmesh(struct meshparams *mp, void *(*meshfunc)(void *),
-              size_t oneforallsize, int makegarray2, int initialize);
+gal_mesh_operate_on_mesh(struct meshparams *mp, void *(*meshfunc)(void *),
+                         size_t oneforallsize, int makegarray2, int initialize);
 
 void
-meshinterpolate(struct meshparams *mp, char *errstart);
+gal_mesh_interpolate(struct meshparams *mp, char *errstart);
 
 void
-meshsmooth(struct meshparams *mp);
+gal_mesh_smooth(struct meshparams *mp);
 
 void
-spatialconvolveonmesh(struct meshparams *mp, float **conv);
+gal_mesh_spatial_convolve_on_mesh(struct meshparams *mp, float **conv);
 
 void
-changetofullconvolution(struct meshparams *mp, float *conv);
+gal_mesh_change_to_full_convolution(struct meshparams *mp, float *conv);
 
 #endif

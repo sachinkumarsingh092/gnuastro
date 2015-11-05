@@ -34,19 +34,19 @@ struct tdll
 };
 
 void
-add_to_tdll(struct tdll **list, double a, double b);
+gal_linkedlist_add_to_tdll(struct tdll **list, double a, double b);
 
 void
-pop_from_tdll(struct tdll **list, double *a, double *b);
+gal_linkedlist_pop_from_tdll(struct tdll **list, double *a, double *b);
 
 size_t
-numintdll(struct tdll *list);
+gal_linkedlist_num_int_dll(struct tdll *list);
 
 void
-tdlltoarrayinv(struct tdll *list, double **d, size_t *num);
+gal_linkedlist_tdll_to_array_inv(struct tdll *list, double **d, size_t *num);
 
 void
-freetdll(struct tdll *list);
+gal_linkedlist_free_tdll(struct tdll *list);
 
 
 
@@ -75,25 +75,25 @@ struct fll
 };
 
 void
-printarrayoffll(struct fll **afll, size_t num);
+gal_linkedlist_print_fll_array(struct fll **afll, size_t num);
 
 void
-add_to_fll(struct fll **list, float value);
+gal_linkedlist_add_to_fll(struct fll **list, float value);
 
 void
-pop_from_fll(struct fll **list, float *value);
+gal_linkedlist_pop_from_fll(struct fll **list, float *value);
 
 size_t
-numinfll(struct fll *list);
+gal_linkedlist_num_in_fll(struct fll *list);
 
 void
-flltoarray(struct fll *list, float **f, size_t *num);
+gal_linkedlist_fll_to_array(struct fll *list, float **f, size_t *num);
 
 void
-freefll(struct fll *list);
+gal_linkedlist_free_fll(struct fll *list);
 
 void
-freearrayoffll(struct fll **afll, size_t num);
+gal_linkedlist_free_fll_array(struct fll **afll, size_t num);
 
 
 
@@ -121,16 +121,16 @@ struct stll
     struct stll *next;
 };
 void
-add_to_stll(struct stll **list, char *value);
+gal_linkedlist_add_to_stll(struct stll **list, char *value);
 
 void
-pop_from_stll(struct stll **list, char **value);
+gal_linkedlist_pop_from_stll(struct stll **list, char **value);
 
 void
-print_stll(struct stll *list);
+gal_linkedlist_print_stll(struct stll *list);
 
 size_t
-numinstll(struct stll *list);
+gal_linkedlist_num_in_stll(struct stll *list);
 
 
 
@@ -165,13 +165,13 @@ size_t
 numinsll(struct sll *list);
 
 void
-printsll(struct sll *list);
+gal_linkedlist_print_sll(struct sll *list);
 
 void
-slltoarray(struct sll *list, size_t **f, size_t *num);
+gal_linkedlist_sll_to_array(struct sll *list, size_t **f, size_t *num);
 
 void
-freesll(struct sll *list);
+gal_linkedlist_free_sll(struct sll *list);
 
 
 
@@ -201,10 +201,10 @@ struct tsll
 };
 
 void
-add_to_tsll_end(struct tsll **last, size_t value);
+gal_linkedlist_add_to_tsll_end(struct tsll **last, size_t value);
 
 void
-pop_from_tsll_start(struct tsll **first,  size_t *value);
+gal_linkedlist_pop_from_tsll_start(struct tsll **first,  size_t *value);
 
 
 
@@ -234,13 +234,14 @@ struct osll
 };
 
 void
-add_to_osll(struct osll **list, size_t value, float tosort);
+gal_linkedlist_add_to_osll(struct osll **list, size_t value, float tosort);
 
 void
-pop_from_osll(struct osll **list,  size_t *value, float *sortvalue);
+gal_linkedlist_pop_from_osll(struct osll **list,  size_t *value,
+                             float *sortvalue);
 
 void
-osll_into_sll(struct osll *in, struct sll **out);
+gal_linkedlist_osll_into_sll(struct osll *in, struct sll **out);
 
 
 
@@ -271,23 +272,24 @@ struct tosll
 };
 
 void
-print_tosll(struct tosll *l, struct tosll *s);
+gal_linkedlist_print_tosll(struct tosll *l, struct tosll *s);
 
 void
-add_to_tosll_end(struct tosll **largest, struct tosll **smallest,
-		  size_t value, float tosort);
+gal_linkedlist_add_to_tosll_end(struct tosll **largest, struct tosll **smallest,
+                                size_t value, float tosort);
 
 void
-pop_from_tosll_start(struct tosll **lartest, struct tosll **smallest,
-		      size_t *value, float *tosort);
+gal_linkedlist_pop_from_tosll_start(struct tosll **lartest,
+                                    struct tosll **smallest,
+                                    size_t *value, float *tosort);
 
 void
-smallest_tosll(struct tosll *largest, struct tosll **smallest);
+gal_linkedlist_smallest_tosll(struct tosll *largest, struct tosll **smallest);
 
 void
-tosll_into_sll(struct tosll *in, struct sll **out);
+gal_linkedlist_tosll_into_sll(struct tosll *in, struct sll **out);
 
 void
-tosll_free(struct tosll *largest);
+gal_linkedlist_tosll_free(struct tosll *largest);
 
 #endif

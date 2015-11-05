@@ -169,78 +169,78 @@ readconfig(char *filename, struct subtractskyparams *p)
       else if(strcmp(name, "meshsize")==0)
 	{
 	  if(up->meshsizeset) continue;
-          sizetlzero(value, &p->mp.meshsize, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name, key, SPACK,
+                                    filename, lineno);
 	  up->meshsizeset=1;
 	}
       else if(strcmp(name, "nch1")==0)
 	{
 	  if(up->nch1set) continue;
-          sizetlzero(value, &p->mp.nch1, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.nch1, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch1set=1;
 	}
       else if(strcmp(name, "nch2")==0)
 	{
 	  if(up->nch2set) continue;
-          sizetlzero(value, &p->mp.nch2, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.nch2, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch2set=1;
 	}
       else if(strcmp(name, "lastmeshfrac")==0)
 	{
 	  if(up->lastmeshfracset) continue;
-          floatl0s1(value, &p->mp.lastmeshfrac, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name, key, SPACK,
+                                     filename, lineno);
 	  up->lastmeshfracset=1;
 	}
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mp.mirrordist, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0(value, &p->mp.mirrordist, name, key, SPACK,
+                                 filename, lineno);
 	  up->mirrordistset=1;
 	}
       else if(strcmp(name, "minmodeq")==0)
 	{
 	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->mp.minmodeq, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->mp.minmodeq, name, key, SPACK,
+                                     filename, lineno);
 	  up->minmodeqset=1;
 	}
       else if(strcmp(name, "numnearest")==0)
 	{
 	  if(up->numnearestset) continue;
-          sizetlzero(value, &p->mp.numnearest, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.numnearest, name, key, SPACK,
+                                    filename, lineno);
 	  up->numnearestset=1;
 	}
       else if(strcmp(name, "smoothwidth")==0)
 	{
 	  if(up->smoothwidthset) continue;
-          sizetpodd(value, &p->mp.smoothwidth, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_sizet_p_odd(value, &p->mp.smoothwidth, name, key, SPACK,
+                                   filename, lineno);
 	  up->smoothwidthset=1;
 	}
       else if(strcmp(name, "fullconvolution")==0)
 	{
 	  if(up->fullconvolutionset) continue;
-          intzeroorone(value, &p->mp.fullconvolution, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->mp.fullconvolution, name, key,
+                                       SPACK, filename, lineno);
 	  up->fullconvolutionset=1;
 	}
       else if(strcmp(name, "fullinterpolation")==0)
 	{
 	  if(up->fullinterpolationset) continue;
-          intzeroorone(value, &p->mp.fullinterpolation, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->mp.fullinterpolation, name,
+                                       key, SPACK, filename, lineno);
 	  up->fullinterpolationset=1;
 	}
       else if(strcmp(name, "fullsmooth")==0)
 	{
 	  if(up->fullsmoothset) continue;
-          intzeroorone(value, &p->mp.fullsmooth, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->mp.fullsmooth, name, key,
+                                       SPACK, filename, lineno);
 	  up->fullsmoothset=1;
 	}
 
@@ -249,15 +249,15 @@ readconfig(char *filename, struct subtractskyparams *p)
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->sigclipmultip, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0(value, &p->sigclipmultip, name, key, SPACK,
+                                 filename, lineno);
 	  up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0s1(value, &p->sigcliptolerance, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->sigcliptolerance, name, key,
+                                     SPACK, filename, lineno);
 	  up->sigcliptoleranceset=1;
 	}
 
@@ -292,35 +292,35 @@ printvalues(FILE *fp, struct subtractskyparams *p)
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
     {
-      if(stringhasspace(cp->hdu))
+      if(gal_checkset_string_has_space(cp->hdu))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
     }
   if(up->masknameset)
     {
-      if(stringhasspace(up->maskname))
+      if(gal_checkset_string_has_space(up->maskname))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
     }
   if(up->mhdu)
     {
-      if(stringhasspace(up->mhdu))
+      if(gal_checkset_string_has_space(up->mhdu))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
   if(up->kernelnameset)
     {
-      if(stringhasspace(up->kernelname))
+      if(gal_checkset_string_has_space(up->kernelname))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
     }
   if(up->khdu)
     {
-      if(stringhasspace(up->khdu))
+      if(gal_checkset_string_has_space(up->khdu))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
@@ -451,15 +451,17 @@ void
 sanitycheck(struct subtractskyparams *p)
 {
   /* Set the maskname and mask hdu accordingly: */
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                                 &p->up.maskname, p->up.mhdu, p->up.mhduset,
+                                 "mask");
 
   /* Set the output name: */
   if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
-		p->cp.dontdelete, &p->cp.output);
+    gal_checkset_automatic_output(p->up.inputname, "_skysubed.fits",
+                                  p->cp.removedirinfo, p->cp.dontdelete,
+                                  &p->cp.output);
 
   /* Set the sky image name: */
 
@@ -467,20 +469,23 @@ sanitycheck(struct subtractskyparams *p)
   if(p->meshname)
     {
       p->meshname=NULL;           /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->meshname);
+      gal_checkset_automatic_output(p->up.inputname, "_mesh.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->meshname);
     }
   if(p->convname)
     {
       p->convname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_conv.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->convname);
+      gal_checkset_automatic_output(p->up.inputname, "_conv.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->convname);
     }
   if(p->skyname)
     {
       p->skyname=NULL;            /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_sky.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->skyname);
+      gal_checkset_automatic_output(p->up.inputname, "_sky.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->skyname);
     }
 
 
@@ -522,15 +527,16 @@ preparearrays(struct subtractskyparams *p)
   struct meshparams *mp=&p->mp;
 
   /* Read the input image. */
-  filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              (float **)&p->mp.img, &p->bitpix, &p->anyblank, &mp->s0,
-              &mp->s1);
-  readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+  gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
+                              p->up.mhdu, (float **)&p->mp.img, &p->bitpix,
+                              &p->anyblank, &mp->s0, &mp->s1);
+  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
+                              &p->nwcs, &p->wcs);
 
   /* Read the kernel: */
   if(p->up.kernelnameset)
-    prepfloatkernel(p->up.kernelname, p->up.khdu, &mp->kernel,
-                    &mp->ks0, &mp->ks1);
+    gal_fitsarray_prep_float_kernel(p->up.kernelname, p->up.khdu, &mp->kernel,
+                                    &mp->ks0, &mp->ks1);
 
   /* Check if the input sizes and channel sizes are exact
      multiples. */
@@ -654,5 +660,5 @@ freeandreport(struct subtractskyparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

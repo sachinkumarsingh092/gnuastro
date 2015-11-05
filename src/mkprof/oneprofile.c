@@ -259,7 +259,7 @@ makepixbypix(struct mkonthread *mkp)
 
   /* Start the queue: */
   byt[p]=1;
-  add_to_tosll_end( &lQ, &sQ, p, r_circle(p, mkp) );
+  gal_linkedlist_add_to_tosll_end( &lQ, &sQ, p, r_circle(p, mkp) );
 
   /* If random points are necessary, then do it: */
   if(mkp->type==SERSICCODE || mkp->type==MOFFATCODE
@@ -277,7 +277,8 @@ makepixbypix(struct mkonthread *mkp)
              over sampled image. But all the profile parameters are in the
              non-oversampled image. So we divide the distance by os
              (p->oversample in double type) */
-          pop_from_tosll_start(&lQ, &sQ, ind, &circ_r); /* ind=&p */
+          gal_linkedlist_pop_from_tosll_start(&lQ, &sQ,
+                                              ind, &circ_r); /* ind=&p */
           mkp->x=(p/is1-xc)/os;
           mkp->y=(p%is1-yc)/os;
           r_el(mkp);
@@ -309,7 +310,7 @@ makepixbypix(struct mkonthread *mkp)
           /*
             printf("\tac: %f, ap: %f, frac: %f\n", img[p], approx,
             fabs(img[p]-approx)/img[p]);
-            arraytofitsimg("tmp.fits", "", FLOAT_IMG, img, is0, is1,
+            gal_fitsarray_array_to_fits_img("tmp.fits", "", FLOAT_IMG, img, is0, is1,
             NULL, SPACK_STRING);
           */
 
@@ -321,7 +322,8 @@ makepixbypix(struct mkonthread *mkp)
             if(byt[*n]==0)
               {
                 byt[*n]=1;
-                add_to_tosll_end( &lQ, &sQ, *n, r_circle(*n, mkp) );
+                gal_linkedlist_add_to_tosll_end( &lQ, &sQ, *n,
+                                                 r_circle(*n, mkp) );
               }
           while(++n<nf);
 
@@ -332,7 +334,7 @@ makepixbypix(struct mkonthread *mkp)
 
   /* All the pixels that required integration or random points are now
      done, so we don't need an ordered array any more. */
-  tosll_into_sll(lQ, &Q);
+  gal_linkedlist_tosll_into_sll(lQ, &Q);
 
 
   /* Order doesn't matter any more, add all the pixels you find. */
@@ -358,7 +360,7 @@ makepixbypix(struct mkonthread *mkp)
       if(ispeak) { mkp->peakflux=img[p]; ispeak=0; }
 
       /*
-      arraytofitsimg("tmp.fits", "", FLOAT_IMG, img, is0, is1,
+      gal_fitsarray_array_to_fits_img("tmp.fits", "", FLOAT_IMG, img, is0, is1,
 		     NULL, SPACK_STRING);
       */
       /* Go over the neighbours and add them to queue of elements
@@ -551,7 +553,7 @@ makeoneprofile(struct mkonthread *mkp)
   if(mkp->ibq->img==NULL)
     error(EXIT_FAILURE, 0, "%lu bytes for object in row %lu of data in %s.",
 	  size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
-  fsetconst(mkp->ibq->img, size, NAN);
+  gal_arraymanip_fset_const(mkp->ibq->img, size, NAN);
 
 
   /* Build the profile in the image. */
@@ -563,11 +565,13 @@ makeoneprofile(struct mkonthread *mkp)
      profiles.c. */
   if(p->setconsttomin==0 && p->setconsttonan==0)
     {
-      sum=floatsum(mkp->ibq->img, size);
+      sum=gal_statistics_float_sum(mkp->ibq->img, size);
       mkp->ibq->accufrac/=sum;
       if(p->magatpeak)
-        fmultipconst(mkp->ibq->img, size, mkp->brightness/mkp->peakflux);
+        gal_arraymanip_fmultip_const(mkp->ibq->img, size,
+                                     mkp->brightness/mkp->peakflux);
       else
-        fmultipconst(mkp->ibq->img, size, mkp->brightness/sum);
+        gal_arraymanip_fmultip_const(mkp->ibq->img, size,
+                                     mkp->brightness/sum);
     }
 }

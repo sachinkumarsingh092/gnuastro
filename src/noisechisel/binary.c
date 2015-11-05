@@ -623,11 +623,11 @@ fillboundedholes(unsigned char *in, size_t s0, size_t s1, int anyblank)
 
 
   /* For a check
-  arraytofitsimg("fbh.fits", "INPUT", BYTE_IMG, in,
+  gal_fitsarray_array_to_fits_img("fbh.fits", "INPUT", BYTE_IMG, in,
                  s0, s1, anyblank, NULL, NULL, "tmp");
-  arraytofitsimg("fbh.fits", "INV", BYTE_IMG, inv,
+  gal_fitsarray_array_to_fits_img("fbh.fits", "INV", BYTE_IMG, inv,
                  idx, idy, anyblank, NULL, NULL, "tmp");
-  arraytofitsimg("fbh.fits", "HLAB", LONG_IMG, hlab,
+  gal_fitsarray_array_to_fits_img("fbh.fits", "HLAB", LONG_IMG, hlab,
                  idx, idy, anyblank, NULL, NULL, "tmp");
   */
 
@@ -644,7 +644,7 @@ fillboundedholes(unsigned char *in, size_t s0, size_t s1, int anyblank)
 
 
   /* For a check:
-  arraytofitsimg("fbh.fits", "INPUT", BYTE_IMG, in,
+  gal_fitsarray_array_to_fits_img("fbh.fits", "INPUT", BYTE_IMG, in,
                  s0, s1, anyblank, NULL, NULL, "tmp");
   exit(0);
   */

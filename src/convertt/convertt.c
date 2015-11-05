@@ -142,7 +142,7 @@ takelog(struct converttparams *p)
   size=p->s0[0]*p->s1[0];
   for(i=0;i<p->numch;++i)
     {
-      dminmax(ch[i], size, &min, &max);
+      gal_statistics_d_min_max(ch[i], size, &min, &max);
       if(p->isblank[i]) continue;
       if(min<=0.0f)
         {
@@ -193,11 +193,11 @@ savetxt(struct converttparams *p)
 
   if(p->bitpixs[0]==BYTE_IMG || p->bitpixs[0]==SHORT_IMG
      || p->bitpixs[0]==LONG_IMG || p->bitpixs[0]==LONGLONG_IMG )
-    arraytotxt(p->ch[0], p->s0[0], p->s1[0], comments, int_cols,
-               accu_cols, ispace, iprec, 'f', p->cp.output);
+    gal_txtarray_array_to_txt(p->ch[0], p->s0[0], p->s1[0], comments, int_cols,
+                              accu_cols, ispace, iprec, 'f', p->cp.output);
   else
-    arraytotxt(p->ch[0], p->s0[0], p->s1[0], comments, int_cols,
-               accu_cols, fspace, fprec, 'g', p->cp.output);
+    gal_txtarray_array_to_txt(p->ch[0], p->s0[0], p->s1[0], comments, int_cols,
+                              accu_cols, fspace, fprec, 'g', p->cp.output);
 
 }
 
@@ -217,15 +217,16 @@ savefits(struct converttparams *p)
     {
       /* Make sure array is in the correct format. */
       if(p->bitpixs[i]!=DOUBLE_IMG)
-        changetype(p->ch[i], DOUBLE_IMG, size, p->numnul[i],
-                   &array, p->bitpixs[i]);
+        gal_fitsarray_change_type(p->ch[i], DOUBLE_IMG, size, p->numnul[i],
+                                  &array, p->bitpixs[i]);
       else
         array=p->ch[i];
 
       /* Write array to a FITS file.*/
       sprintf(hdu, "Channel%lu", i+1);
-      arraytofitsimg(p->cp.output, hdu, p->bitpixs[i], array,
-                     p->s0[i], p->s1[i], 0, NULL, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->cp.output, hdu, p->bitpixs[i], array,
+                                      p->s0[i], p->s1[i], 0, NULL, NULL,
+                                      SPACK_STRING);
 
       /* If array was allocated separately, free it. */
       if(p->bitpixs[i]!=DOUBLE_IMG)
@@ -276,7 +277,7 @@ doubleto8bit(struct converttparams *p)
   /* Find the minimum and maximum of all the color channels. */
   for(i=0;i<numch;++i)
     {
-      dminmax(p->ch[i], size, &tmin, &tmax);
+      gal_statistics_d_min_max(p->ch[i], size, &tmin, &tmax);
       if(i)
         {
           if(tmin<min) min=tmin;

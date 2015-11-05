@@ -191,7 +191,7 @@ static struct argp_option coptions[] =
 
 
 static error_t
-cparse_opt(int key, char *arg, struct argp_state *state)
+gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
   struct commonparams *cp=state->input;
@@ -224,7 +224,8 @@ cparse_opt(int key, char *arg, struct argp_state *state)
       cp->setusrconf=1;
       break;
     case 'N':
-      sizetlzero(arg, &cp->numthreads, "numthreads", key, cp->spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &cp->numthreads, "numthreads", key,
+                                cp->spack, NULL, 0);
       cp->numthreadsset=1;
       break;
     case 1000:
@@ -290,7 +291,7 @@ cparse_opt(int key, char *arg, struct argp_state *state)
 
 
 
-static struct argp commonargp = {coptions, cparse_opt, NULL,
-				 NULL, NULL, NULL, NULL};
+static struct argp commonargp = {coptions, gal_checkset_commonargs_cparse_opt,
+                                 NULL, NULL, NULL, NULL, NULL};
 
 #endif

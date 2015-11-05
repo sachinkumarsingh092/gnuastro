@@ -96,21 +96,22 @@ readconfig(char *filename, struct convolveparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if (strcmp(name, "mask")==0)
-        allocatecopyset(value, &up->maskname, &up->masknameset);
+        gal_checkset_allocate_copy_set(value, &up->maskname, &up->masknameset);
       else if (strcmp(name, "mhdu")==0)
-        allocatecopyset(value, &up->mhdu, &up->mhduset);
+        gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
       else if (strcmp(name, "kernel")==0)
-        allocatecopyset(value, &up->kernelname, &up->kernelnameset);
+        gal_checkset_allocate_copy_set(value, &up->kernelname,
+                                       &up->kernelnameset);
       else if (strcmp(name, "khdu")==0)
-        allocatecopyset(value, &up->khdu, &up->khduset);
+        gal_checkset_allocate_copy_set(value, &up->khdu, &up->khduset);
 
 
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
 
 
@@ -119,36 +120,36 @@ readconfig(char *filename, struct convolveparams *p)
       else if(strcmp(name, "meshsize")==0)
 	{
 	  if(up->meshsizeset) continue;
-          sizetlzero(value, &p->mp.meshsize, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name, key, SPACK,
+                                    filename, lineno);
 	  up->meshsizeset=1;
 	}
       else if(strcmp(name, "nch1")==0)
 	{
 	  if(up->nch1set) continue;
-          sizetlzero(value, &p->mp.nch1, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.nch1, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch1set=1;
 	}
       else if(strcmp(name, "nch2")==0)
 	{
 	  if(up->nch2set) continue;
-          sizetlzero(value, &p->mp.nch2, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.nch2, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch2set=1;
 	}
       else if(strcmp(name, "lastmeshfrac")==0)
 	{
 	  if(up->lastmeshfracset) continue;
-          floatl0s1(value, &p->mp.lastmeshfrac, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name, key, SPACK,
+                                     filename, lineno);
 	  up->lastmeshfracset=1;
 	}
       else if(strcmp(name, "fullconvolution")==0)
 	{
 	  if(up->fullconvolutionset) continue;
-          intzeroorone(value, &p->mp.fullconvolution, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->mp.fullconvolution, name,
+                                       key, SPACK, filename, lineno);
 	  up->fullconvolutionset=1;
 	}
 
@@ -157,8 +158,8 @@ readconfig(char *filename, struct convolveparams *p)
       /* Operating modes: */
       else if(strcmp(name, "spatial")==0)
 	{
-	  intzeroorone(value, &zeroorone, name, key, SPACK,
-		       filename, lineno);
+	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
+                                       filename, lineno);
 	  if(zeroorone)
 	    {
 	      spatialset=1;
@@ -176,8 +177,8 @@ readconfig(char *filename, struct convolveparams *p)
 	}
       else if(strcmp(name, "frequency")==0)
 	{
-	  intzeroorone(value, &zeroorone, name, key, SPACK,
-		       filename, lineno);
+	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
+                                       filename, lineno);
 	  if(zeroorone)
 	    {
 	      frequencyset=1;
@@ -196,8 +197,8 @@ readconfig(char *filename, struct convolveparams *p)
       else if(strcmp(name, "makekernel")==0)
 	{
 	  if(up->makekernelset) continue;
-          intelzero(value, &p->makekernel, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_int_el_zero(value, &p->makekernel, name, key, SPACK,
+                                   filename, lineno);
 	  up->makekernelset=1;
 	}
 
@@ -344,24 +345,26 @@ sanitycheck(struct convolveparams *p)
   char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
 
   /* Set maskname accordingly: */
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                                 &p->up.maskname, p->up.mhdu,
+                                 p->up.mhduset, "mask");
 
   /* Check the output file name: */
   if(p->cp.outputset)
     {
-      if( dir0file1(p->cp.output, p->cp.dontdelete) == 0 )
+      if( gal_checkset_dir_0_file_1(p->cp.output, p->cp.dontdelete) == 0 )
         error(EXIT_FAILURE, 0, "Your output name (%s) is a directory.",
               p->cp.output);
     }
   else
     {
-      automaticoutput(p->up.inputname, outsuffix, p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->cp.output);
+      gal_checkset_automatic_output(p->up.inputname, outsuffix,
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->cp.output);
       p->cp.outputset=1;
     }
   if(p->frequency && p->viewfreqsteps)
-    automaticoutput(p->up.inputname, "_freqsteps.fits",
+    gal_checkset_automatic_output(p->up.inputname, "_freqsteps.fits",
                     p->cp.removedirinfo, p->cp.dontdelete,
                     &p->up.freqstepsname);
 
@@ -369,8 +372,9 @@ sanitycheck(struct convolveparams *p)
   if(p->meshname)
     {
       p->meshname=NULL;           /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->meshname);
+      gal_checkset_automatic_output(p->up.inputname, "_mesh.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->meshname);
     }
 
   /* makekernel can only operate in frequency mode: */
@@ -416,9 +420,10 @@ preparearrays(struct convolveparams *p)
   float *f, *fp, tmp, *kernel, sum;
 
   /* First read the input image: */
-  filetofloat(up->inputname, up->maskname, cp->hdu, up->mhdu, &p->input,
-              &bitpix, &p->anyblank, &p->is0, &p->is1);
-  readfitswcs(up->inputname, cp->hdu, 0, 0, &p->nwcs, &p->wcs);
+  gal_fitsarray_file_to_float(up->inputname, up->maskname, cp->hdu, up->mhdu,
+                              &p->input, &bitpix, &p->anyblank,
+                              &p->is0, &p->is1);
+  gal_fitsarray_read_fits_wcs(up->inputname, cp->hdu, 0, 0, &p->nwcs, &p->wcs);
   if(p->frequency && p->anyblank)
     fprintf(stderr, "\n----------------------------------------\n"
             "######## %s WARNING ########\n"
@@ -439,8 +444,9 @@ preparearrays(struct convolveparams *p)
   if(p->makekernel)
     {
       /* Read in the kernel array: */
-      filetofloat(up->kernelname, NULL, up->khdu, NULL, &p->kernel,
-                  &bitpix, &anyblank, &p->ks0, &p->ks1);
+      gal_fitsarray_file_to_float(up->kernelname, NULL, up->khdu, NULL,
+                                  &p->kernel, &bitpix, &anyblank,
+                                  &p->ks0, &p->ks1);
       if(p->ks0!=p->is0 || p->ks1!=p->is1)
         error(EXIT_FAILURE, 0, "With the `--makekernel' (`-m') option, "
               "the input image and the image specified with the kernel "
@@ -453,10 +459,10 @@ preparearrays(struct convolveparams *p)
       /* Divide both images by their sum so their lowest frequency
          becomes 1 (and their division would be meaningful!).*/
       size=p->is0*p->is1;
-      sum=floatsum(p->input, size);
-      fmultipconst(p->input, size, 1/sum);
-      sum=floatsum(p->kernel, size);
-      fmultipconst(p->kernel, size, 1/sum);
+      sum=gal_statistics_float_sum(p->input, size);
+      gal_arraymanip_fmultip_const(p->input, size, 1/sum);
+      sum=gal_statistics_float_sum(p->kernel, size);
+      gal_arraymanip_fmultip_const(p->kernel, size, 1/sum);
     }
 
   /* Read the kernel. If there is anything particular to Convolve,
@@ -469,8 +475,9 @@ preparearrays(struct convolveparams *p)
       if(p->kernelnorm==0 || p->kernelflip==0)
         {
           /* Read in the kernel array: */
-          filetofloat(up->kernelname, NULL, up->khdu, NULL, &p->kernel,
-                      &bitpix, &anyblank, &p->ks0, &p->ks1);
+          gal_fitsarray_file_to_float(up->kernelname, NULL, up->khdu, NULL,
+                                      &p->kernel, &bitpix, &anyblank,
+                                      &p->ks0, &p->ks1);
           size=p->ks0*p->ks1;
           kernel=p->kernel;
 
@@ -488,8 +495,8 @@ preparearrays(struct convolveparams *p)
           /* Normalize the kernel: */
           if(p->kernelnorm)
             {
-              sum=floatsum(kernel, size);
-              fmultipconst(kernel, size, 1/sum);
+              sum=gal_statistics_float_sum(kernel, size);
+              gal_arraymanip_fmultip_const(kernel, size, 1/sum);
             }
 
           /* Flip the kernel: */
@@ -502,8 +509,8 @@ preparearrays(struct convolveparams *p)
               }
         }
       else
-        prepfloatkernel(up->kernelname, up->khdu, &p->kernel,
-                        &p->ks0, &p->ks1);
+        gal_fitsarray_prep_float_kernel(up->kernelname, up->khdu, &p->kernel,
+                                        &p->ks0, &p->ks1);
     }
 }
 
@@ -561,7 +568,7 @@ setparams(int argc, char *argv[], struct convolveparams *p)
     REPORT_PARAMETERS_SET;
 
   /* Do a sanity check, then remove the possibly existing log file
-     created by txttoarray. */
+     created by gal_txtarray_txt_to_array. */
   sanitycheck(p);
 
   /* Prepare the necessary arrays: */
@@ -619,5 +626,5 @@ freeandreport(struct convolveparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

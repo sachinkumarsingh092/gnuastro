@@ -41,7 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Add the HOME environment variable to the given directory. */
 char *
-addhomedir(char *dir)
+gal_configfiles_add_home_dir(char *dir)
 {
   char *home;
 
@@ -52,7 +52,7 @@ addhomedir(char *dir)
 	  "is not defined.");
 
   /* Concatenate the two strings together: */
-  return malloccat(home, dir);
+  return gal_checkset_malloc_cat(home, dir);
 }
 
 
@@ -60,8 +60,8 @@ addhomedir(char *dir)
 
 
 void
-readnamevalue(char *line, char *filename, size_t lineno,
-	      char **name, char **value)
+gal_configfiles_read_name_value(char *line, char *filename, size_t lineno,
+                                char **name, char **value)
 {
   int notyetfinished=1, inword=0, inquote=0;
 
@@ -142,8 +142,9 @@ readnamevalue(char *line, char *filename, size_t lineno,
 
 
 FILE *
-writelocalconfigstop(char *indir, char *filename, char *spack,
-		     char *spack_name, char **outfilename)
+gal_configfiles_write_local_config_stop(char *indir, char *filename,
+                                        char *spack, char *spack_name,
+                                        char **outfilename)
 {
   DIR *dp;
   FILE *fp;
@@ -177,7 +178,7 @@ writelocalconfigstop(char *indir, char *filename, char *spack,
 
   /* Make the local defaults file and put the top information in
      it. */
-  *outfilename=malloccat(indir, filename);
+  *outfilename=gal_checkset_malloc_cat(indir, filename);
 
   /* Check if the file opening was successful: */
   errno=0;

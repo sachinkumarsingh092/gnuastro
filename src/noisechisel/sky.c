@@ -89,12 +89,14 @@ avestdonthread(void *inparam)
       if( (float)num/(float)(s0*s1)>minbfrac )
         {
           /* Sort the array of values: */
-          qsort(oneforall, num, sizeof *oneforall, floatincreasing);
+          qsort(oneforall, num, sizeof *oneforall, gal_qsort_float_increasing);
 
           /* Do sigma-clipping and save the result if it is
              accurate. */
-          if(sigmaclip_converge(oneforall, 1, num, p->sigclipmultip,
-                                p->sigcliptolerance, &ave, &med, &std, 0))
+          if(gal_statistics_sigma_clip_converge(oneforall, 1, num,
+                                                p->sigclipmultip,
+                                                p->sigcliptolerance, &ave,
+                                                &med, &std, 0))
             {
               mp->garray1[ind]=ave;
               mp->garray2[ind]=std;
@@ -127,14 +129,14 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
 
 
   /* Find the average and standard deviation */
-  operateonmesh(smp, avestdonthread, sizeof(float), 1, 1);
+  gal_mesh_operate_on_mesh(smp, avestdonthread, sizeof(float), 1, 1);
   if(outname)
     {
       if(smp->meshbasedcheck==0)
-        arraytofitsimg(outname, "Detected", BYTE_IMG, p->byt, s0, s1,
-                       0, p->wcs, NULL, SPACK_STRING);
-      meshvaluefile(smp, outname, "Calculated Sky", "Calculated Sky STD",
-                    p->wcs, SPACK_STRING);
+        gal_fitsarray_array_to_fits_img(outname, "Detected", BYTE_IMG, p->byt,
+                                        s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      gal_mesh_value_file(smp, outname, "Calculated Sky", "Calculated Sky STD",
+                          p->wcs, SPACK_STRING);
     }
 
 
@@ -146,28 +148,29 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
      calculated here to include in the output headers so MakeCatalog
      can read it and not have to go through the whole STD array (which
      is the size of the full image for it). */
-  p->medstd=median(smp->garray2, smp->nmeshi);
-  fminmax(smp->garray2, smp->nmeshi, &p->minstd, &p->maxstd);
+  p->medstd=gal_statistics_median(smp->garray2, smp->nmeshi);
+  gal_statistics_f_min_max(smp->garray2, smp->nmeshi, &p->minstd, &p->maxstd);
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
 
 
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
-  meshinterpolate(smp, "Interpolating sky value and its standard deviation");
+  gal_mesh_interpolate(smp,
+                       "Interpolating sky value and its standard deviation");
   if(outname)
-    meshvaluefile(smp, outname, "Interpolated Sky", "Interpolated Sky STD",
-                  p->wcs, SPACK_STRING);
+    gal_mesh_value_file(smp, outname, "Interpolated Sky",
+                        "Interpolated Sky STD", p->wcs, SPACK_STRING);
 
 
 
   /* Smooth the interpolated array:  */
   if(smp->smoothwidth>1)
     {
-      meshsmooth(smp);
+      gal_mesh_smooth(smp);
       if(outname)
-        meshvaluefile(smp, outname, "Smoothed Sky", "Smoothed Sky STD",
-                      p->wcs, SPACK_STRING);
+        gal_mesh_value_file(smp, outname, "Smoothed Sky", "Smoothed Sky STD",
+                            p->wcs, SPACK_STRING);
     }
 }
 
@@ -215,7 +218,7 @@ findsubtractskyconv(struct noisechiselparams *p)
   for(gid=0;gid<smp->nmeshi;++gid)
     {
       /* Get the meshid from i: */
-      chbasedid=chbasedidfromgid(smp, gid);
+      chbasedid=gal_mesh_ch_based_id_from_gid(smp, gid);
 
       /* Subtract the sky for each pixel. */
       row=0;
@@ -251,7 +254,7 @@ subtractskyimg(struct noisechiselparams *p)
   for(gid=0;gid<smp->nmeshi;++gid)
     {
       /* Get the meshid from i: */
-      chbasedid=chbasedidfromgid(smp, gid);
+      chbasedid=gal_mesh_ch_based_id_from_gid(smp, gid);
 
       /* Subtract the sky for each pixel. */
       row=0;

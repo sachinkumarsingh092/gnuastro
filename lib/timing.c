@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Used to generate random numbers. */
 unsigned long int
-timebasedrngseed()
+gal_timing_time_based_rng_seed()
 {
   struct timeval tv;
   gettimeofday(&tv,0);
@@ -43,7 +43,7 @@ timebasedrngseed()
 
 /* Used to report the time it takes for an action to be done. */
 void
-reporttiming(struct timeval *t1, char *jobname, size_t level)
+gal_timing_report(struct timeval *t1, char *jobname, size_t level)
 {
   double dt=1e30;
   struct timeval t2;

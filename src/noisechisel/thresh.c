@@ -97,10 +97,12 @@ qthreshonmesh(void *inparam)
       /* Do the desired operation on the mesh: */
       if(num)
         {
-          qsort(oneforall, num, sizeof *oneforall, floatincreasing);
-          modeindexinsorted(oneforall, num, mirrordist, &modeindex, &modesym);
+          qsort(oneforall, num, sizeof *oneforall, gal_qsort_float_increasing);
+          gal_mode_index_in_sorted(oneforall, num, mirrordist, &modeindex,
+                                   &modesym);
           if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq)
-            mp->garray1[ind]=oneforall[indexfromquantile(num, qthresh)];
+            mp->garray1[ind]=
+              oneforall[gal_statistics_index_from_quantile(num, qthresh)];
         }
     }
 
@@ -117,7 +119,7 @@ qthreshonmesh(void *inparam)
 
 /* The threshold values are stored in the garray1 array of the
    meshparams structure. This function is basically identical to the
-   checkgarray function in mesh.c, only in the middle, it does
+   gal_mesh_check_garray function in mesh.c, only in the middle, it does
    something else.
 
    See the comments there to better understand the process.
@@ -176,20 +178,20 @@ findapplyqthreshold(struct noisechiselparams *p)
   struct meshparams *mp=&p->smp;
 
   /* Find the threshold on each mesh: */
-  operateonmesh(mp, qthreshonmesh, sizeof(float), 0, 1);
+  gal_mesh_operate_on_mesh(mp, qthreshonmesh, sizeof(float), 0, 1);
   if(p->threshname)
-    meshvaluefile(mp, p->threshname, "Quantile values", NULL,
-                  p->wcs, SPACK_STRING);
+    gal_mesh_value_file(mp, p->threshname, "Quantile values", NULL,
+                        p->wcs, SPACK_STRING);
 
-  meshinterpolate(mp, "Interpolating quantile threshold");
+  gal_mesh_interpolate(mp, "Interpolating quantile threshold");
   if(p->threshname)
-    meshvaluefile(mp, p->threshname, "Interpolated", NULL,
-                  p->wcs, SPACK_STRING);
+    gal_mesh_value_file(mp, p->threshname, "Interpolated", NULL,
+                        p->wcs, SPACK_STRING);
 
-  meshsmooth(mp);
+  gal_mesh_smooth(mp);
   if(p->threshname)
-    meshvaluefile(mp, p->threshname, "smoothed", NULL,
-                  p->wcs, SPACK_STRING);
+    gal_mesh_value_file(mp, p->threshname, "smoothed", NULL,
+                        p->wcs, SPACK_STRING);
 
   /* Apply the threshold on all the pixels: */
   applythreshold(p);
@@ -217,7 +219,7 @@ findapplyqthreshold(struct noisechiselparams *p)
 /*********************************************************************/
 /**************      Average and STD threshold     *******************/
 /*********************************************************************/
-/* This is very similar to the checkgarray function. The sky and its
+/* This is very similar to the gal_mesh_check_garray function. The sky and its
    Standard deviation are stored in the garray1 and garray2 arrays of
    smp meshparams structure. */
 void
@@ -243,7 +245,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
   for(gid=0;gid<smp->nmeshi;++gid)
     {
       /* Get the meshid from i: */
-      chbasedid=chbasedidfromgid(smp, gid);
+      chbasedid=gal_mesh_ch_based_id_from_gid(smp, gid);
 
       /* Fill the output array with the value in this mesh: */
       row=0;
@@ -335,17 +337,17 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
 
 
   /* Sort the signal to noise ratios and remove their outliers */
-  qsort(sntable, size, sizeof *sntable, floatincreasing);
-  removeoutliers_flatcdf(sntable, &size);
+  qsort(sntable, size, sizeof *sntable, gal_qsort_float_increasing);
+  gal_statistics_remove_outliers_flat_cdf(sntable, &size);
 
 
   /* Store the SN value. */
-  sn=sntable[indexfromquantile(size, quant)];
+  sn=sntable[gal_statistics_index_from_quantile(size, quant)];
   if(p->cp.verb)
     {
       sprintf(report, "%s S/N: %.3f (%.3f quantile of %lu %s).",
               job, sn, quant, size, name);
-      reporttiming(NULL, report, 2);
+      gal_timing_report(NULL, report, 2);
     }
 
   /* Put the S/N value in its proper place. */
@@ -362,7 +364,7 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
          ff=(f=sntable)+numlabs; do printf("%f\n", *f++); while(f<ff);
       */
 
-      /* histname has to be set to NULL so automaticoutput can
+      /* histname has to be set to NULL so gal_checkset_automatic_output can
          safey free it. */
       histname=NULL;
       sprintf(cline, "# %s\n# %s started on %s"
@@ -371,9 +373,10 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
               "# The %.3f quantile has an S/N of %.4f.",
               SPACK_STRING, SPACK_NAME, ctime(&p->rawtime),
               p->up.inputname, p->cp.hdu, size, name, quant, sn);
-      automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
-                      p->cp.dontdelete, &histname);
-      savehist(sntable, size, snhistnbins, histname, cline);
+      gal_checkset_automatic_output(p->up.inputname, suffix,
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &histname);
+      gal_statistics_save_hist(sntable, size, snhistnbins, histname, cline);
       free(histname);
     }
 }

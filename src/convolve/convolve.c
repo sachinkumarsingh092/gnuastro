@@ -538,7 +538,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
   /* ==================== */
   /* 1D FFT on each row. */
   /* ==================== */
-  distinthreads(multiple*p->ps0, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(multiple*p->ps0, nt, &indexs, &thrdcols);
   if(nt==1)
     {
       fp[0].stride=1;
@@ -554,7 +554,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
 	 threads spinned off. */
       if( multiple*p->ps0 < nt ) nb=multiple*p->ps0+1;
       else nb=nt+1;
-      attrbarrierinit(&attr, &b, nb);
+      gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
@@ -584,7 +584,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
   /* 1D FFT on each column. */
   /* ====================== */
   /* No comments, exact duplicate, except the p->ps1s! */
-  distinthreads(multiple*p->ps1, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(multiple*p->ps1, nt, &indexs, &thrdcols);
   if(nt==1)
     {
       fp[0].stride=p->ps1;
@@ -596,7 +596,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
     {
       if( multiple*p->ps1 < nt ) nb=multiple*p->ps1+1;
       else nb=nt+1;
-      attrbarrierinit(&attr, &b, nb);
+      gal_threads_attr_barrier_init(&attr, &b, nb);
       for(i=0;i<nt;++i)
         if(indexs[i*thrdcols]!=NONTHRDINDEX)
           {
@@ -633,16 +633,18 @@ frequencyconvolve(struct convolveparams *p)
   /* Make the padded arrays. */
   if(verb) gettimeofday(&t1, NULL);
   makepaddedcomplex(p);
-  if(verb) reporttiming(&t1, "Input and Kernel images padded.", 1);
+  if(verb) gal_timing_report(&t1, "Input and Kernel images padded.", 1);
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      arraytofitsimg(p->up.freqstepsname, "Input padded", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Input padded",
+                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                                      NULL, NULL, SPACK_STRING);
       free(tmp);
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      arraytofitsimg(p->up.freqstepsname, "Kernel padded", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Kernel padded",
+                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                                      NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -654,16 +656,18 @@ frequencyconvolve(struct convolveparams *p)
   /* Forward 2D FFT on each image. */
   if(verb) gettimeofday(&t1, NULL);
   twodimensionfft(p, fp, 1);
-  if(verb) reporttiming(&t1, "Images converted to frequency domain.", 1);
+  if(verb) gal_timing_report(&t1, "Images converted to frequency domain.", 1);
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      arraytofitsimg(p->up.freqstepsname, "Input transform", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Input transform",
+                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                                      NULL, NULL, SPACK_STRING);
       free(tmp);
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      arraytofitsimg(p->up.freqstepsname, "Kernel transform", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Kernel transform",
+                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                                      NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -672,18 +676,19 @@ frequencyconvolve(struct convolveparams *p)
   if(p->makekernel)
     {
       complexarraydivide(p->pimg, p->pker, p->ps0*p->ps1);
-      if(verb) reporttiming(&t1, "Divided in the frequency domain.", 1);
+      if(verb) gal_timing_report(&t1, "Divided in the frequency domain.", 1);
     }
   else
     {
       complexarraymultiply(p->pimg, p->pker, p->ps0*p->ps1);
-      if(verb) reporttiming(&t1, "Multiplied in the frequency domain.", 1);
+      if(verb) gal_timing_report(&t1, "Multiplied in the frequency domain.", 1);
     }
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      arraytofitsimg(p->up.freqstepsname, operation, DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, operation,
+                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                                      NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -692,11 +697,12 @@ frequencyconvolve(struct convolveparams *p)
   twodimensionfft(p, fp, -1);
   if(p->makekernel) correctdeconvolve(p, &tmp);
   else complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-  if(verb) reporttiming(&t1, "Converted back to the spatial domain.", 1);
+  if(verb) gal_timing_report(&t1, "Converted back to the spatial domain.", 1);
   if(p->viewfreqsteps)
     {
-      arraytofitsimg(p->up.freqstepsname, "Spatial", DOUBLE_IMG,
-                     tmp, p->ps0, p->ps1, 0, NULL, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Spatial",
+                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                                      NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -710,7 +716,7 @@ frequencyconvolve(struct convolveparams *p)
      remove them. */
   if(verb) gettimeofday(&t1, NULL);
   removepaddingcorrectroundoff(p);
-  if(verb) reporttiming(&t1, "Padded parts removed.", 1);
+  if(verb) gal_timing_report(&t1, "Padded parts removed.", 1);
 
 
   /* Free all the allocated space. */
@@ -752,20 +758,22 @@ convolve(struct convolveparams *p)
       mp->img=p->input;      mp->s0=p->is0;      mp->s1=p->is1;
       mp->kernel=p->kernel;  mp->ks0=p->ks0;     mp->ks1=p->ks1;
       mp->numthreads=p->cp.numthreads;
-      makemesh(mp);
+      gal_mesh_make_mesh(mp);
       if(p->meshname)
         {
-          checkmeshid(mp, &meshindexs);
-          arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img,
-                         mp->s0, mp->s1, p->anyblank, p->wcs, NULL,
-                         SPACK_STRING);
-          arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
-                         mp->s0, mp->s1, 0, p->wcs, NULL, SPACK_STRING);
+          gal_check_mesh_id(mp, &meshindexs);
+          gal_fitsarray_array_to_fits_img(p->meshname, "Input", FLOAT_IMG,
+                                          p->mp.img, mp->s0, mp->s1,
+                                          p->anyblank, p->wcs, NULL,
+                                          SPACK_STRING);
+          gal_fitsarray_array_to_fits_img(p->meshname, "MeshIndexs", LONG_IMG,
+                                          meshindexs, mp->s0, mp->s1, 0, p->wcs,
+                                          NULL, SPACK_STRING);
           free(meshindexs);
         }
 
       /* Do the spatial convolution on the mesh: */
-      spatialconvolveonmesh(mp, &convolved);
+      gal_mesh_spatial_convolve_on_mesh(mp, &convolved);
 
       /* Replace the input image array with the convolved array: */
       free(p->input);
@@ -776,6 +784,7 @@ convolve(struct convolveparams *p)
 
   /* Save the output (which is in p->input) array. Note that p->input
      will be freed in ui.c. */
-  arraytofitsimg(p->cp.output, "Convolved", FLOAT_IMG, p->input,
-                 p->is0, p->is1, p->anyblank, p->wcs, NULL, SPACK_STRING);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "Convolved", FLOAT_IMG,
+                                  p->input, p->is0, p->is1, p->anyblank, p->wcs,
+                                  NULL, SPACK_STRING);
 }

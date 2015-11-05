@@ -246,8 +246,8 @@ setuprename(struct headerparams *p)
       strcpy(c, tmp->v);
 
       /* Tokenize the input. */
-      add_to_stll(&p->renamefrom, strtok(tmp->v, ", "));
-      add_to_stll(&p->renameto, strtok(NULL, ", "));
+      gal_linkedlist_add_to_stll(&p->renamefrom, strtok(tmp->v, ", "));
+      gal_linkedlist_add_to_stll(&p->renameto, strtok(NULL, ", "));
       if(p->renamefrom->v==NULL || p->renameto->v==NULL)
         error(EXIT_FAILURE, 0, "`%s' could not be tokenized in order to "
               "complete rename. There should be a space character "
@@ -381,8 +381,8 @@ fillfitsheaderll(struct stll *input, struct fitsheaderll **output)
         }
 
 
-      add_to_fitsheaderll(output, datatype, keyname, 0, fvalue, vfree,
-                          comment, 0, unit);
+      gal_fitsarray_add_to_fits_header_ll(output, datatype, keyname, 0,
+                                          fvalue, vfree, comment, 0, unit);
       free(original);
     }
 }
@@ -412,7 +412,7 @@ preparearrays(struct headerparams *p)
   else
     iomode=READWRITE;
   if( fits_open_file(&p->fptr, ffname, iomode, &status) )
-    fitsioerror(status, "Reading file.");
+    gal_fitsarray_io_error(status, "Reading file.");
   free(ffname);
 
   /* Separate the comma-separated values:  */
@@ -513,7 +513,7 @@ freeandreport(struct headerparams *p)
 
   /* Close the FITS file: */
   if(fits_close_file(p->fptr, &status))
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   if(p->wcs)
     wcsvfree(&p->nwcs, &p->wcs);

@@ -32,9 +32,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define VERBMSGLENGTHS2_T "65"
 
 unsigned long int
-timebasedrngseed();
+gal_timing_time_based_rng_seed();
 
 void
-reporttiming(struct timeval *t1, char *jobname, size_t level);
+gal_timing_report(struct timeval *t1, char *jobname, size_t level);
 
 #endif

@@ -100,20 +100,20 @@ readconfig(char *filename, struct mknoiseparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
       else if(strcmp(name, "background")==0)
 	{
 	  if(up->backgroundset) continue;
-          anydouble(value, &p->mbackground, value, key, SPACK, filename,
-                    lineno);
+          gal_checkset_any_double(value, &p->mbackground, value, key, SPACK,
+                                  filename, lineno);
 	  up->backgroundset=1;
 	}
       else if(strcmp(name, "zeropoint")==0)
 	{
 	  if(up->zeropointset) continue;
-          anydouble(value, &p->zeropoint, value, key, SPACK, filename,
-                    lineno);
+          gal_checkset_any_double(value, &p->zeropoint, value, key, SPACK,
+                                  filename, lineno);
 	  up->zeropointset=1;
 	}
       else if(strcmp(name, "stdadd")==0)
@@ -127,7 +127,7 @@ readconfig(char *filename, struct mknoiseparams *p)
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
 
 
@@ -236,10 +236,11 @@ sanitycheck(struct mknoiseparams *p)
 {
   /* Set the output name: */
   if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_noised.fits", p->cp.removedirinfo,
-                    p->cp.dontdelete, &p->cp.output);
+    gal_checkset_automatic_output(p->up.inputname, "_noised.fits",
+                                  p->cp.removedirinfo, p->cp.dontdelete,
+                                  &p->cp.output);
 
   /* Convert the background value from magnitudes to flux. Note that
      magnitudes are actually calculated from the ratio of brightness,
@@ -278,23 +279,26 @@ preparearrays(struct mknoiseparams *p)
   void *array;
 
   /* Read in the input image: */
-  p->anyblank=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
-                        &array, &p->is0, &p->is1);
+  p->anyblank=gal_fitsarray_fits_img_to_array(p->up.inputname, p->cp.hdu,
+                                              &p->inputbitpix, &array,
+                                              &p->is0, &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else
     {
-      changetype(array, p->inputbitpix, p->is0*p->is1, p->anyblank,
-                 (void **)&p->input, DOUBLE_IMG);
+      gal_fitsarray_change_type(array, p->inputbitpix, p->is0*p->is1,
+                                p->anyblank, (void **)&p->input,
+                                DOUBLE_IMG);
       free(array);
     }
-  readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
+                              &p->nwcs, &p->wcs);
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
   p->rng=gsl_rng_alloc(gsl_rng_default);
   if(p->envseed==0)
-    gsl_rng_set(p->rng, timebasedrngseed());
+    gsl_rng_set(p->rng, gal_timing_time_based_rng_seed());
   p->rng_seed=gsl_rng_default_seed;
   strcpy(p->rng_type, gsl_rng_name(p->rng));
 }
@@ -360,12 +364,12 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
       sprintf(message, "Random number generator type: %s",
               gsl_rng_name(p->rng));
-      reporttiming(NULL, message, 1);
+      gal_timing_report(NULL, message, 1);
       if(p->envseed)
         {
           sprintf(message, "Random number generator seed: %lu",
                   gsl_rng_default_seed);
-          reporttiming(NULL, message, 1);
+          gal_timing_report(NULL, message, 1);
         }
     }
 }
@@ -409,5 +413,5 @@ freeandreport(struct mknoiseparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

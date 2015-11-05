@@ -61,7 +61,7 @@ imgmodecrop(void *inparam)
   /* The whole catalog is from one image, so you can get the
      information here:*/
   img=&p->imgs[crp->imgindex];
-  readfitshdu(img->name, cp->hdu, IMAGE_HDU, &crp->infits);
+  gal_fitsarray_read_fits_hdu(img->name, cp->hdu, IMAGE_HDU, &crp->infits);
 
   /* Go over all the outputs that are assigned to this thread: */
   for(i=0;crp->indexs[i]!=NONTHRDINDEX;++i)
@@ -83,10 +83,11 @@ imgmodecrop(void *inparam)
 	  log->centerfilled=iscenterfilled(crp);
 
 	  /* Add the final headers and close output FITS image: */
-	  copyrightandend(crp->outfits, NULL, SPACK_STRING);
+	  gal_fitsarray_copyright_end(crp->outfits, NULL, SPACK_STRING);
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
-	    fitsioerror(status, "CFITSIO could not close the opened file.");
+	    gal_fitsarray_io_error(status, "CFITSIO could not close "
+                                   "the opened file.");
 
 	  /* Remove the output image if its center was not filled. */
 	  if(log->centerfilled==0 && p->keepblankcenter==0)
@@ -105,15 +106,15 @@ imgmodecrop(void *inparam)
 	{
 	  sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
 		  log->centerfilled);
-	  reporttiming(NULL, msg, 2);
+	  gal_timing_report(NULL, msg, 2);
 	}
     }
 
   /* Close the input image. */
   status=0;
   if( fits_close_file(crp->infits, &status) )
-    fitsioerror(status, "imgmode.c: imgcroponthreads could "
-		"not close FITS file.");
+    gal_fitsarray_io_error(status, "imgmode.c: imgcroponthreads could "
+                           "not close FITS file.");
 
   /* Wait until all other threads finish. */
   if(cp->numthreads>1)
@@ -158,8 +159,8 @@ wcsmodecrop(void *inparam)
       do
 	if(radecoverlap(crp))
 	  {
-	    readfitshdu(p->imgs[crp->imgindex].name, p->cp.hdu,
-			IMAGE_HDU, &crp->infits);
+	    gal_fitsarray_read_fits_hdu(p->imgs[crp->imgindex].name, p->cp.hdu,
+                                        IMAGE_HDU, &crp->infits);
 
 	    if(log->name==NULL) cropname(crp);
 
@@ -167,8 +168,8 @@ wcsmodecrop(void *inparam)
 
 	    status=0;
 	    if( fits_close_file(crp->infits, &status) )
-	      fitsioerror(status, "imgmode.c: imgcroponthreads could "
-			  "not close FITS file.");
+	      gal_fitsarray_io_error(status, "imgmode.c: imgcroponthreads "
+                                     "could not close FITS file.");
 	  }
       while ( ++(crp->imgindex) < p->numimg );
 
@@ -178,10 +179,11 @@ wcsmodecrop(void *inparam)
 	{
 	  log->centerfilled=iscenterfilled(crp);
 
-	  copyrightandend(crp->outfits, NULL, SPACK_STRING);
+	  gal_fitsarray_copyright_end(crp->outfits, NULL, SPACK_STRING);
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
-	    fitsioerror(status, "CFITSIO could not close the opened file.");
+	    gal_fitsarray_io_error(status, "CFITSIO could not close the "
+                                     "opened file.");
 
 	  if(log->centerfilled==0 && p->keepblankcenter==0)
 	    {
@@ -209,7 +211,7 @@ wcsmodecrop(void *inparam)
 	{
 	  sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
 		  log->centerfilled);
-	  reporttiming(NULL, msg, 2);
+	  gal_timing_report(NULL, msg, 2);
 	}
     }
 
@@ -281,9 +283,9 @@ imgcrop(struct imgcropparams *p)
   /* Distribute the indexs into the threads (this is needed even if we
      only have one object where p->cs0 is not defined): */
   if(p->up.catset)
-    distinthreads(p->cs0, nt, &indexs, &thrdcols);
+    gal_threads_dist_in_threads(p->cs0, nt, &indexs, &thrdcols);
   else
-    distinthreads(1, nt, &indexs, &thrdcols);
+    gal_threads_dist_in_threads(1, nt, &indexs, &thrdcols);
 
   /* Run the job, if there is only one thread, don't go through the
      trouble of spinning off a thread! */
@@ -304,7 +306,7 @@ imgcrop(struct imgcropparams *p)
 	 threads spinned off. */
       if(p->cs0<nt) nb=p->cs0+1;
       else          nb=nt+1;
-      attrbarrierinit(&attr, &b, nb);
+      gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
