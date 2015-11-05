@@ -11465,23 +11465,24 @@ scientific applications is C++, and more recently Python. One of the
 main reasons behind this choice is that through the Object oriented
 programming paradigm, they offer a much higher level of
 abstraction. However, GNU Astronomy Utilities are written in the C
-programming language. The reasons can be summarized with simplicity
-and speed. Both are extremely important in a scientific software.
+programming language. The reasons can be summarized with simplicity,
+portability and speed. All three are very important in a scientific
+software.
 
 @cindex ANSI C
 @cindex ISO C90
 @cindex Ritchie, Dennis
 @cindex Kernighan, Brian
 @cindex Stroustrup, Bjarne
-A simple comparison of the main books of C++ and C can act as a
-guide. The ``C programming language''@footnote{Brian Kernighan, Dennis
-Ritchie. @emph{The C programming language}. Prentice Hall, Inc.,
-Second edition, 1988. It is also commonly known as K&R and is based on
-the ANSI C and ISO C90 standards.} book, written by the authors of C,
-is only 286 pages and covers a very good fraction of the language, it
-has also remained unchanged from 1988. C is the main programming
-language of nearly all operating systems and there is no plan of any
-significant update. The most recent ``C++ programming
+Simplicity can best be demonstrated in a comparison of the main books
+of C++ and C. The ``C programming language''@footnote{Brian Kernighan,
+Dennis Ritchie. @emph{The C programming language}. Prentice Hall,
+Inc., Second edition, 1988. It is also commonly known as K&R and is
+based on the ANSI C and ISO C90 standards.} book, written by the
+authors of C, is only 286 pages and covers a very good fraction of the
+language, it has also remained unchanged from 1988. C is the main
+programming language of nearly all operating systems and there is no
+plan of any significant update. The most recent ``C++ programming
 language''@footnote{Bjarne Stroustrup. @emph{The C++ programming
 language}. Addison-Wesley Professional; 4 edition, 2013.}  book, also
 written by its author, on the other hand has 1366 pages and its fourth
@@ -11540,16 +11541,38 @@ out. This stems from the core principles of Python, which are very
 useful when you look in the `on the go' basis as described before
 and not future usage.
 
+The portability of C is best demonstrated by the fact that both C++
+and Python are part of the C-family of programming languages which
+also include Java, Perl, and many other languages. C libraries can be
+immediately included in C++ and with tools like
+SWIG@footnote{@url{http://swig.org/}} it is easily possible to use the
+C libraries in programs that are written in those languages. This will
+allow other scientists to use the libraries in Gnuastro with any of
+those languages. Gnuastro's libraries are currently static and not
+installed, but we are working on making them shared and
+installable@footnote{@url{http://savannah.gnu.org/task/?13765}}. Following
+that we will be working on allowing the creation of libraries in
+different languages at configure time
+@footnote{@url{http://savannah.gnu.org/task/?13786}}.
+
 @cindex Low level programming
 @cindex Programming, low level
-Being a very low level (closer to the hardware) language, C is much
-less complex for both the human reader and the computer. It thus
-allows for closer relation between the programmer (program) and the
-actual data in our disposal. This is contrary to the illusion of
-abstractions that the higher level languages provide. The GNU coding
+The final reason was speed. This is another very important aspect of C
+which is not independant of simplicity (first reason discussed
+above). The abstractions provided by the higher-level languages (which
+also makes learning them harder for a newcomer) comes at the cost of
+speed. Since C is a low-level language@footnote{Low-level languages
+are those that directly operate the hardware like assembly
+languages. So C is actually a high-level language, but it can be
+considered the lowest-level high-level language.}(closer to the
+hardware), it is much less complex for both the human reader and the
+computer. The former was dicussed above in simplicity and the latter
+helps in making the program run more efficiently (faster). This thus
+allows for a closer relation between the scientist/programmer
+(program) and the actual data/processing. The GNU coding
 standards@footnote{@url{http://www.gnu.org/prep/standards/}} also
 encourage the use of C over all other languages when generality of
-usage and `high speed' is desired.
+usage and ``high speed'' is desired.
 
 
 
@@ -12516,11 +12539,6 @@ own purposes.
 
 
 
-
-
-
-
-
 @node Production workflow,  , After making changes, Developing
 @section Production workflow
 
@@ -12579,6 +12597,11 @@ follow the bug or task trackers and contact us before hand so you
 don't do something that someone else is already working on. In that
 case, you can get in touch with them and help the job go on faster,
 see @ref{Gnuastro project webpage}.
+
+
+
+
+
 
 
 
