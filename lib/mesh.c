@@ -422,8 +422,8 @@ checkgarray(struct meshparams *mp, float **out1, float **out2)
 {
   int ngarrays=mp->ngarrays;
   size_t gid, row, start, chbasedid, *types=mp->types;
-  float *f, *fp, *ff, garray1=FLT_MAX, garray2=FLT_MAX;
   size_t s0, s1, is1=mp->s1, *ts0=mp->ts0, *ts1=mp->ts1;
+  float *f, *fp, *ff=NULL, garray1=FLT_MAX, garray2=FLT_MAX;
 
   /* Allocate the array to keep the mesh indexs. Calloc is used so we
      can add all the indexes to the existing value to make sure that

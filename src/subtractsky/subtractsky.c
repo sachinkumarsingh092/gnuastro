@@ -48,14 +48,14 @@ avestdonthread(void *inparam)
   float *mponeforall=mp->oneforall;
   float *oneforall=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
-  float *cofa;                   /* convolved-oneforall */
+  float *f, *cofa, *c=NULL;       /* cofa: convolved-oneforall */
   size_t modeindex=(size_t)(-1);
   size_t s0, s1, ind, row, num, start, is1=mp->s1;
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
   float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
   float ave, med, std, *sorted, sigclipmultip=p->sigclipmultip;
   float *imgend, *inimg=mp->img, *inconv=p->conv, modesym=0.0f;
-  float *f, *c=NULL, *conv, *img, sigcliptolerance=p->sigcliptolerance;
+  float *conv=NULL, *img, sigcliptolerance=p->sigcliptolerance;
 
   /* Allocate the oneforall array for the convolved image, since we
      only want to use those meshs whose convolved image mode is larger

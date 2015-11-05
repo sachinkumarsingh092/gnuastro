@@ -306,13 +306,17 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
       newlabs[i]=curlab++;
 
   if(byt)
-    for(i=0;i<size;++i)
-      if(in[i]!=FITSLONGBLANK)
-        byt[i] = (in[i]=newlabs[in[i]]) > 0;
+    {
+      for(i=0;i<size;++i)
+        if(in[i]!=FITSLONGBLANK)
+          byt[i] = (in[i]=newlabs[in[i]]) > 0;
+    }
   else
-    for(i=0;i<size;++i)
-      if(in[i]!=FITSLONGBLANK)
-        in[i]=newlabs[in[i]];
+    {
+      for(i=0;i<size;++i)
+        if(in[i]!=FITSLONGBLANK)
+          in[i]=newlabs[in[i]];
+    }
 
   *numlabs=curlab;
 
