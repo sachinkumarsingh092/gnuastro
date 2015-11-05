@@ -448,6 +448,7 @@ Developing
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
 * After making changes::        What to do after you have finished you changes.
+* Production workflow::         Implementing changes/additions.
 
 Program source
 
@@ -11448,6 +11449,7 @@ discussed. Finally some notes on the building process are given.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
 * After making changes::        What to do after you have finished you changes.
+* Production workflow::         Implementing changes/additions.
 @end menu
 
 
@@ -11703,8 +11705,7 @@ ready to be configured and built. To be able to develop successfully,
 the revision history of the code can be very useful, also some updates
 that are not yet released might be in it.  We use Git for the version
 control of Gnuastro. For those who are not familiar with it, we
-suggest the Pro Git
-book@footnote{@url{http://git-scm.com/book/en/v2}}. The whole book is
+suggest Pro Git@footnote{@url{https://progit.org/}}. The whole book is
 publicly available for online reading and downloading. The latest
 version of Gnuastro can be cloned by running
 
@@ -12461,7 +12462,7 @@ can get you started off.
 
 
 
-@node After making changes,  , Building, Developing
+@node After making changes, Production workflow, Building, Developing
 @section After making changes
 After you have made your your changes/additions, please take the
 following steps:
@@ -12520,11 +12521,64 @@ own purposes.
 
 
 
+@node Production workflow,  , After making changes, Developing
+@section Production workflow
 
+After you have checked your changes (see @ref{After making changes}),
+you might want to share them with the larger community. In this
+section we describe the general workflow that is currently planned for
+Gnuastro. This workflow is now mostly borrowed from the general
+recommendations of GitHub. But since Gnuastro is under heavy
+development currently, these might change and evolve to better suite
+our needs.
 
+Fortunately Pro Git has done a wonderful job in explaining the
+different workflows in Chapter
+5@footnote{@url{http://git-scm.com/book/en/v2/Distributed-Git-Distributed-Workflows}}
+and in particular the ``Integration-Manager Workflow'' explained
+there. The implementation of this workflow is nicely explained in
+Section
+5.2@footnote{@url{http://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project}}
+under ``Forked-Public-Project''. Upon a release, a tag will be put on
+the appropriate commit in master marking the release version. So,
+whomever clones Gnuastro will automatically go onto the fully useful
+master branch that contains bug-fixes or additions that might not yet
+be released.
 
+As fully elaborated in Pro Git, there are two methods for you to
+contribute to Gnuastro in this workflow:
 
+@enumerate
 
+@item
+You can send commit patches by email as fully explained in Pro
+Git. This is good for your first few commits, if you would like to get
+more heavily involved in Gnuastro's development, then you can try the
+next solution.
+
+@item
+You can have your own forked copy of Gnuastro on any hosting site you
+like (GitHub, GitLab, BitBucket, or etc) and inform us of your changes
+so we merge them in. This is more suited for people who commonly
+contribute to the code.
+
+Just please follow the feature branch methodology: create a new branch
+for every feature you want to add from the most recent master commit
+in the main repo, when your work is done, inform us of your repository
+and the branch. After testing it and if everything is working fine, we
+will merge it into the main repository. If you have made temporary
+branches within that branch, it is best to rebase them into one branch
+before you inform us.
+
+@end enumerate
+
+In both cases, your commits (with your name and information) will be
+preserved and your contributions will thus be fully recorded in the
+history of Gnuastro. Needless to say that in such cases, be sure to
+follow the bug or task trackers and contact us before hand so you
+don't do something that someone else is already working on. In that
+case, you can get in touch with them and help the job go on faster,
+see @ref{Gnuastro project webpage}.
 
 
 
