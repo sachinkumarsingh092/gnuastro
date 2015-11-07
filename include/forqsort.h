@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Pointer used to sort the indexs of an array based on their flux
    (value in this array). */
-extern float *forqsortindexarr;
+extern float *gal_qsort_index_arr;
 
 int
 gal_qsort_index_float_decreasing(const void * a, const void * b);

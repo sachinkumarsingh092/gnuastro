@@ -78,8 +78,8 @@ struct uiparams
 struct convolveparams
 {
   struct uiparams     up;   /* user interface structure.                */
-  struct commonparams cp;   /* commonparams structure.                  */
-  struct meshparams   mp;   /* meshparams structure.                    */
+  struct gal_commonparams cp; /* gal_commonparams structure.            */
+  struct gal_mesh_params mp; /* gal_mesh_params structure.              */
 
   /* Inputs: */
   int         makekernel;   /* ==1: Make a kernel to create input.      */

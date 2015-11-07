@@ -57,7 +57,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    You can use this above list to set short options for the different
    utilities.
  */
-static struct argp_option coptions[] =
+static struct argp_option gal_commonargs_options[] =
   {
     /* -1 is the code for operating modes: */
     {
@@ -194,7 +194,7 @@ static error_t
 gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
-  struct commonparams *cp=state->input;
+  struct gal_commonparams *cp=state->input;
 
   /* In case the user incorrectly uses the equal sign (for example
      with a short format or with space in the long format, then `arg`
@@ -291,7 +291,8 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
 
 
 
-static struct argp commonargp = {coptions, gal_checkset_commonargs_cparse_opt,
+static struct argp commonargp = {gal_commonargs_options,
+                                 gal_checkset_commonargs_cparse_opt,
                                  NULL, NULL, NULL, NULL, NULL};
 
 #endif

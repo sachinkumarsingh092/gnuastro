@@ -224,7 +224,7 @@ void
 makepixbypix(struct mkonthread *mkp)
 {
   float circ_r;
-  struct sll *Q=NULL;
+  struct gal_linkedlist_sll *Q=NULL;
   unsigned char *byt;
   float *img=mkp->ibq->img;
   int use_rand_points=1, ispeak=1;
@@ -235,7 +235,7 @@ makepixbypix(struct mkonthread *mkp)
   double (*profile)(struct mkonthread *)=mkp->profile;
   double xc=mkp->xc, yc=mkp->yc, os=mkp->p->oversample;
   double truncr=mkp->truncr, approx, hp=mkp->p->halfpixel;
-  struct tosll *lQ=NULL, *sQ;	/* lQ: Largest. sQ: Smallest in queue */
+  struct gal_linkedlist_tosll *lQ=NULL, *sQ; /* lQ: Largest. sQ: Smallest in queue */
 
   /* Find the nearest pixel to the profile center and add it to the
      queue. */

@@ -66,7 +66,7 @@ readconfig(char *filename, struct converttparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -185,7 +185,7 @@ void
 printvalues(FILE *fp, struct converttparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
@@ -236,7 +236,7 @@ void
 checkifset(struct converttparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
@@ -359,7 +359,7 @@ void
 adddotautomaticoutput(struct converttparams *p)
 {
   size_t i;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char *tmp, *basename="output.txt";
 
   /* Find the first file name in the input(s). */
@@ -398,7 +398,7 @@ void
 sanitycheck(struct converttparams *p)
 {
   size_t i, j;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* The flux range: */
   if(p->fluxlow>p->fluxhigh)
@@ -553,7 +553,7 @@ preparearrays(struct converttparams *p)
   size_t i;
   void *array;
   double *d, *df;
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
   char *hdu=NULL, **names=p->names;
 
   /* Put the names in the correct order. */
@@ -679,7 +679,7 @@ preparearrays(struct converttparams *p)
 void
 setparams(int argc, char *argv[], struct converttparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -737,7 +737,7 @@ void
 freeandreport(struct converttparams *p)
 {
   size_t i;
-  struct stll *tmp, *ttmp;
+  struct gal_linkedlist_stll *tmp, *ttmp;
 
   free(p->cp.hdu);
   free(p->up.hdu2);

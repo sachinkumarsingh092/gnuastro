@@ -54,7 +54,7 @@ void
 convertsaveoutput(struct mknoiseparams *p)
 {
   void *array;
-  struct fitsheaderll *headers=NULL;
+  struct gal_fitsarray_header_ll *headers=NULL;
   char keyname1[FLEN_KEYWORD], keyname2[FLEN_KEYWORD];
   char keyname3[FLEN_KEYWORD], keyname4[FLEN_KEYWORD], keyname5[FLEN_KEYWORD];
 

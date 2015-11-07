@@ -47,7 +47,7 @@ imgmodecrop(void *inparam)
 {
   struct cropparams *crp=(struct cropparams *)inparam;
   struct imgcropparams *p=crp->p;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   size_t i;
   int status;

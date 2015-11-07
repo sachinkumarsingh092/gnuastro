@@ -41,8 +41,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void *
 avestdonthread(void *inparam)
 {
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparam;
+  struct gal_mesh_params *mp=mtp->mp;
   struct subtractskyparams *p=(struct subtractskyparams *)mp->params;
 
   float *mponeforall=mp->oneforall;
@@ -144,7 +144,7 @@ avestdonthread(void *inparam)
 void
 subtractsky(struct subtractskyparams *p)
 {
-  struct meshparams *mp=&p->mp;
+  struct gal_mesh_params *mp=&p->mp;
 
   long *meshindexs;
   struct timeval t1;

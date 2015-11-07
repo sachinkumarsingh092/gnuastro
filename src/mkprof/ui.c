@@ -69,7 +69,7 @@ readconfig(char *filename, struct mkprofparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   size_t lineno=0, len=200, tmp;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -324,7 +324,7 @@ void
 printvalues(FILE *fp, struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
@@ -720,7 +720,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   char *jobname;
   struct timeval t1;
   char message[GAL_TIMING_VERB_MSG_LENGTH_V];
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */

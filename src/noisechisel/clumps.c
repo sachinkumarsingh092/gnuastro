@@ -84,7 +84,7 @@ oversegment(struct clumpsthreadparams *ctp)
   size_t pix;
 
   float *arr=p->conv;
-  struct sll *Q=NULL, *cleanup=NULL;
+  struct gal_linkedlist_sll *Q=NULL, *cleanup=NULL;
   long n1, rlab, nlab, curlab=1, *clab=p->clab;
   size_t x0=ctp->x0, y0=ctp->y0, x1=ctp->x1, y1=ctp->y1;
   size_t *n, *nf, *indf, *pind, *ind=&pix, is1=p->lmp.s1;
@@ -488,7 +488,7 @@ void
 getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
 {
   struct noisechiselparams *p=ctp->p;
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
 
   double *xys, *clumpinfo;
   float *img=p->img, *smpstd=smp->garray2;
@@ -772,8 +772,8 @@ void *
 clumpsntableonmesh(void *inparams)
 {
   struct clumpsthreadparams ctp;
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparams;
+  struct gal_mesh_params *mp=mtp->mp;
   struct noisechiselparams *p=(struct noisechiselparams *)mp->params;
 
   size_t *mponeforall=mp->oneforall;
@@ -868,13 +868,13 @@ void
 findclumpsn(struct noisechiselparams *p)
 {
   float *sntable;
-  struct meshparams *lmp=&p->lmp;
+  struct gal_mesh_params *lmp=&p->lmp;
   size_t i, j, numclumps=0, nmeshi=lmp->nmeshi;
 
 
   /* Set the convolved image as the basis for sorting the indexs and
      finding clumps. */
-  forqsortindexarr=p->conv;
+  gal_qsort_index_arr=p->conv;
 
 
   /* Allocate the two arrays to keep the number and values of the S/Ns
@@ -950,7 +950,7 @@ findclumpsn(struct noisechiselparams *p)
 void
 removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
 {
-  struct meshparams *lmp=&ctp->p->lmp;
+  struct gal_mesh_params *lmp=&ctp->p->lmp;
 
   long *newlabs, *clab=ctp->p->clab;
   size_t *n, *nf, is0=lmp->s0, is1=lmp->s1;

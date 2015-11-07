@@ -71,7 +71,7 @@ readconfig(char *filename, struct subtractskyparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -284,8 +284,8 @@ void
 printvalues(FILE *fp, struct subtractskyparams *p)
 {
   struct uiparams *up=&p->up;
-  struct meshparams *mp=&p->mp;
-  struct commonparams *cp=&p->cp;
+  struct gal_mesh_params *mp=&p->mp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
@@ -384,7 +384,7 @@ void
 checkifset(struct subtractskyparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
@@ -495,7 +495,7 @@ sanitycheck(struct subtractskyparams *p)
           "(`-n') is %d. You have asked for: %lu.",
           GAL_MESH_MIN_ACCEPTABLE_NEAREST, p->mp.numnearest);
 
-  /* Set the constants in the meshparams structure. */
+  /* Set the constants in the gal_mesh_params structure. */
   p->mp.params=p;
   p->mp.numthreads=p->cp.numthreads;
 }
@@ -524,7 +524,7 @@ sanitycheck(struct subtractskyparams *p)
 void
 preparearrays(struct subtractskyparams *p)
 {
-  struct meshparams *mp=&p->mp;
+  struct gal_mesh_params *mp=&p->mp;
 
   /* Read the input image. */
   gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
@@ -570,7 +570,7 @@ preparearrays(struct subtractskyparams *p)
 void
 setparams(int argc, char *argv[], struct subtractskyparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */

@@ -36,7 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #define GAL_MODE_MIRROR_IS_ABOVE_RESULT    (size_t)(-1)
 
-struct modeparams
+struct gal_mode_params
 {
   float     *sorted;		/* Sorted array to be used.                */
   size_t       size;		/* Number of elements in the sorted array. */

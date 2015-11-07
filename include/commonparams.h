@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    could be part of commonargs.h, but since main.h in all those
    programs will need this structure, there will be problems about the
    unused `commonargp` structure.*/
-struct commonparams
+struct gal_commonparams
 {
   char        *spack;  /* Subpackage name.                              */
 

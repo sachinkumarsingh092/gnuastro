@@ -62,7 +62,7 @@ makeoutput(struct noisechiselparams *p)
   double *dpt;
   long num[0];
   float *sky=NULL, *std=NULL;
-  struct fitsheaderll *keys=NULL;
+  struct gal_fitsarray_header_ll *keys=NULL;
   size_t s0=p->smp.s0, s1=p->smp.s1;
 
 
@@ -149,7 +149,7 @@ makeoutput(struct noisechiselparams *p)
 void
 noisechisel(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
+  struct gal_mesh_params *smp=&p->smp, *lmp=&p->lmp;
 
   float *imgcopy;
   struct timeval t1;

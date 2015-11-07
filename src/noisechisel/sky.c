@@ -38,8 +38,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void *
 avestdonthread(void *inparam)
 {
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparam;
+  struct gal_mesh_params *mp=mtp->mp;
   struct noisechiselparams *p=(struct noisechiselparams *)mp->params;
 
   float *mponeforall=mp->oneforall;
@@ -123,7 +123,7 @@ avestdonthread(void *inparam)
 void
 findavestdongrid(struct noisechiselparams *p, char *outname)
 {
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
   size_t s0=smp->s0, s1=smp->s1;
 
 
@@ -184,7 +184,7 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
 void
 findsubtractskyconv(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
 
   float *f, *fp, *tmpg1, *tmpg2, *tmpimg;
   size_t gid, s0, s1, row, start, chbasedid, is1=smp->s1;
@@ -245,7 +245,7 @@ findsubtractskyconv(struct noisechiselparams *p)
 void
 subtractskyimg(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
 
   float *f, *fp, *in, sky;
   size_t gid, s0, s1, row, start, chbasedid, is1=smp->s1;

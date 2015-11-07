@@ -768,13 +768,14 @@ gal_fitsarray_read_fits_hdu(char *filename, char *hdu, int desiredtype,
 
 
 
-/* Read keywords from a FITS file. The readheaderkeys pointer is an
-   array of readheaderkeys structures, which keep the basic
+/* Read keywords from a FITS file. The gal_fitsarray_read_header_keys pointer is
+   an array of gal_fitsarray_read_header_keys structures, which keep the basic
    information for each keyword that is to be read and also stores the
    value in the appropriate type.*/
 void
 gal_fitsarray_read_keywords(char *filename, char *hdu,
-                            struct readheaderkeys *keys, size_t num)
+                            struct gal_fitsarray_read_header_keys *keys,
+                            size_t num)
 {
   int status=0;
   char *ffname;
@@ -864,19 +865,19 @@ gal_fitsarray_read_keywords(char *filename, char *hdu,
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
-gal_fitsarray_add_to_fits_header_ll(struct fitsheaderll **list, int datatype,
-                                    char *keyname, int kfree, void *value,
-                                    int vfree, char *comment, int cfree,
-                                    char *unit)
+gal_fitsarray_add_to_fits_header_ll(struct gal_fitsarray_header_ll **list,
+                                    int datatype, char *keyname, int kfree,
+                                    void *value, int vfree, char *comment,
+                                    int cfree, char *unit)
 {
-  struct fitsheaderll *newnode;
+  struct gal_fitsarray_header_ll *newnode;
 
   /* Allocate space for the new node and fill it in. */
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
-	  "linkedlist: New element in fitsheaderll");
+	  "linkedlist: New element in gal_fitsarray_header_ll");
   newnode->datatype=datatype;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -895,19 +896,19 @@ gal_fitsarray_add_to_fits_header_ll(struct fitsheaderll **list, int datatype,
 
 
 void
-gal_fitsarray_add_to_fits_header_ll_end(struct fitsheaderll **list,
+gal_fitsarray_add_to_fits_header_ll_end(struct gal_fitsarray_header_ll **list,
                                         int datatype, char *keyname, int kfree,
                                         void *value, int vfree, char *comment,
                                         int cfree, char *unit)
 {
-  struct fitsheaderll *newnode, *tmp;
+  struct gal_fitsarray_header_ll *newnode, *tmp;
 
   /* Allocate space for the new node and fill it in. */
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
-	  "linkedlist: New element in fitsheaderll");
+	  "linkedlist: New element in gal_fitsarray_header_ll");
   newnode->datatype=datatype;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -937,7 +938,7 @@ gal_fitsarray_add_to_fits_header_ll_end(struct fitsheaderll **list,
 
 void
 gal_fitsarray_file_name_in_keywords(char *keynamebase, char *filename,
-                                    struct fitsheaderll **list)
+                                    struct gal_fitsarray_header_ll **list)
 {
   char *keyname, *value;
   size_t numkey=1, maxlength;
@@ -1041,14 +1042,15 @@ gal_fitsarray_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec)
 
 
 
-/* Write the keywords in the fitsheaderll linked list to the FITS
+/* Write the keywords in the gal_fitsarray_header_ll linked list to the FITS
    file. Every keyword that is written is freed, that is why we need
    the pointer to the linked list (to correct it after we finish). */
 void
-gal_fitsarray_update_keys(fitsfile *fptr, struct fitsheaderll **keylist)
+gal_fitsarray_update_keys(fitsfile *fptr,
+                          struct gal_fitsarray_header_ll **keylist)
 {
   int status=0;
-  struct fitsheaderll *tmp, *ttmp;
+  struct gal_fitsarray_header_ll *tmp, *ttmp;
 
   tmp=*keylist;
   while(tmp!=NULL)
@@ -1088,7 +1090,8 @@ gal_fitsarray_update_keys(fitsfile *fptr, struct fitsheaderll **keylist)
 
 
 void
-gal_fitsarray_copyright_end(fitsfile *fptr, struct fitsheaderll *headers,
+gal_fitsarray_copyright_end(fitsfile *fptr,
+                            struct gal_fitsarray_header_ll *headers,
                             char *spack_string)
 {
   size_t i;
@@ -1355,7 +1358,7 @@ void
 gal_fitsarray_array_to_fits_img(char *filename, char *hdu, int bitpix,
                                 void *array, size_t s0, size_t s1, int anyblank,
                                 struct wcsprm *wcs,
-                                struct fitsheaderll *headers,
+                                struct gal_fitsarray_header_ll *headers,
                                 char *spack_string)
 {
   int nkeyrec;

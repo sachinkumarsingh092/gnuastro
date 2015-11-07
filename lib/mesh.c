@@ -124,7 +124,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
        know what ID to use for garray.
 */
 size_t
-gal_mesh_ch_based_id_from_gid(struct meshparams *mp, size_t gid)
+gal_mesh_ch_based_id_from_gid(struct gal_mesh_params *mp, size_t gid)
 {
   if(mp->nch==1 || mp->garray1==mp->cgarray1)
     return gid;
@@ -161,7 +161,7 @@ gal_mesh_ch_based_id_from_gid(struct meshparams *mp, size_t gid)
 /* Get the garray-based ID from the channel-based ID. See the comments above
    gal_mesh_ch_based_id_from_gid for a complete explanation. */
 size_t
-gal_mesh_gid_from_ch_based_id(struct meshparams *mp, size_t chbasedid)
+gal_mesh_gid_from_ch_based_id(struct gal_mesh_params *mp, size_t chbasedid)
 {
   if(mp->nch==1 || mp->garray1==mp->cgarray1)
     return chbasedid;
@@ -205,7 +205,7 @@ gal_mesh_gid_from_ch_based_id(struct meshparams *mp, size_t chbasedid)
        mp->garray[imgindextomeshid(mp, ind)]
  */
 size_t
-gal_mesh_img_xy_to_mesh_id(struct meshparams *mp, size_t x, size_t y)
+gal_mesh_img_xy_to_mesh_id(struct gal_mesh_params *mp, size_t x, size_t y)
 {
   /* Take the proper action. The ternary conditional is here because
      when the meshsize is not an exact multiple of the the channel
@@ -282,7 +282,7 @@ gal_mesh_img_xy_to_mesh_id(struct meshparams *mp, size_t x, size_t y)
    equal to 1 (or any non-zero number), then
 */
 void
-gal_mesh_full_garray(struct meshparams *mp, int reverse)
+gal_mesh_full_garray(struct gal_mesh_params *mp, int reverse)
 {
   size_t nch1=mp->nch1;
   size_t ind, gs1=mp->gs1, gs0=mp->gs0;
@@ -381,7 +381,7 @@ gal_mesh_full_garray(struct meshparams *mp, int reverse)
 /*********************************************************************/
 /* Save the meshid of each pixel into an array the size of the image. */
 void
-gal_check_mesh_id(struct meshparams *mp, long **out)
+gal_check_mesh_id(struct gal_mesh_params *mp, long **out)
 {
   long i, *l, *lp;
   size_t row, start, *types=mp->types;
@@ -419,7 +419,7 @@ gal_check_mesh_id(struct meshparams *mp, long **out)
    input image. Note that the check arrays are only the size of the
    number of meshs, not the actual input image size. */
 void
-gal_mesh_check_garray(struct meshparams *mp, float **out1, float **out2)
+gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1, float **out2)
 {
   int ngarrays=mp->ngarrays;
   size_t gid, row, start, chbasedid, *types=mp->types;
@@ -482,7 +482,7 @@ gal_mesh_check_garray(struct meshparams *mp, float **out1, float **out2)
 
 /* Save the mesh grid values into an output file. */
 void
-gal_mesh_value_file(struct meshparams *mp, char *filename, char *extname1,
+gal_mesh_value_file(struct gal_mesh_params *mp, char *filename, char *extname1,
                     char *extname2, struct wcsprm *wcs, char *spack_string)
 {
   float *tmp1=NULL, *tmp2=NULL;
@@ -575,7 +575,7 @@ gal_mesh_value_file(struct meshparams *mp, char *filename, char *extname1,
    the types are found.
  */
 void
-fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
+fillmeshinfo(struct gal_mesh_params *mp, size_t chs0, size_t chs1,
              size_t lasts0, size_t lasts1)
 {
   size_t i, j, chi, chj, gs0=mp->gs0, gs1=mp->gs1;
@@ -708,7 +708,7 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
 
 
 /* In the explanation below, all the parameters named are from the
-   `struct meshparams` of `mesh.h`.
+   `struct gal_mesh_params` of `mesh.h`.
 
    An image contians `s0*s1` pixels in s0 rows and s1 columns. A mesh
    is a box of pixels within the image. A channel is defined as large
@@ -732,7 +732,7 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
    channel should be interpolated over.
 */
 void
-gal_mesh_make_mesh(struct meshparams *mp)
+gal_mesh_make_mesh(struct gal_mesh_params *mp)
 {
   size_t meshsize=mp->meshsize, lasts0, lasts1;
   size_t i, chs0=mp->s0/mp->nch2, chs1=mp->s1/mp->nch1;
@@ -805,7 +805,7 @@ gal_mesh_make_mesh(struct meshparams *mp)
 
 
 void
-gal_mesh_free_mesh(struct meshparams *mp)
+gal_mesh_free_mesh(struct gal_mesh_params *mp)
 {
   free(mp->start);
   free(mp->types);
@@ -847,7 +847,7 @@ gal_mesh_free_mesh(struct meshparams *mp)
 
    The arguments are:
 
-   1. A pointer to the meshparams structure that keeps all the
+   1. A pointer to the gal_mesh_params structure that keeps all the
       information.
 
    2. A pointer to a function that returns and gets a `void *' as its
@@ -857,7 +857,7 @@ gal_mesh_free_mesh(struct meshparams *mp)
 
    3. The size of each element to copy the mesh grid into, this has to
       be type size of the same type that constitutes `img' in
-      meshparams. If the value to this argument is non-zero, an array
+      gal_mesh_params. If the value to this argument is non-zero, an array
       will be allocated that can contain all the pixels in all the
       meshs and can be used by threads to manipute the pixels (for
       example sort them) in each mesh.
@@ -866,7 +866,7 @@ gal_mesh_free_mesh(struct meshparams *mp)
       allocated in case your operation needs one.
 */
 void
-gal_mesh_operate_on_mesh(struct meshparams *mp, void *(*meshfunc)(void *),
+gal_mesh_operate_on_mesh(struct gal_mesh_params *mp, void *(*meshfunc)(void *),
                          size_t oneforallsize, int makegarray2, int initialize)
 {
   int err;
@@ -874,7 +874,7 @@ gal_mesh_operate_on_mesh(struct meshparams *mp, void *(*meshfunc)(void *),
   float *f, *fp;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
-  struct meshthreadparams *mtp;
+  struct gal_mesh_thread_params *mtp;
   size_t numthreads=mp->numthreads;
 
   /* Allocate the arrays to keep the thread and parameters for each
@@ -918,7 +918,7 @@ gal_mesh_operate_on_mesh(struct meshparams *mp, void *(*meshfunc)(void *),
 
      float *oneforall=&mp->oneforall[mtp->id*mp->maxs0*mp->maxs1];
 
-     In meshparams, `oneforall' is defined as a `void *', so the
+     In gal_mesh_params, `oneforall' is defined as a `void *', so the
      caller function, can cast it to any type it wants. The size of
      each type is given to `fillmesh' through the `oneforallsize'
      argument.
@@ -993,7 +993,7 @@ gal_mesh_operate_on_mesh(struct meshparams *mp, void *(*meshfunc)(void *),
 /********************         Interpolate         ********************/
 /*********************************************************************/
 void
-preparemeshinterparrays(struct meshparams *mp)
+preparemeshinterparrays(struct gal_mesh_params *mp)
 {
   size_t bs0=mp->gs0, bs1=mp->gs1;
   size_t numthreads=mp->numthreads;
@@ -1088,14 +1088,14 @@ manhattandistance(long ind, long xc, long yc, long s1)
 
 
 
-/* Some of the variables have different names than the meshparams
+/* Some of the variables have different names than the gal_mesh_params
    structure because they are to be fed into the GAL_NEIGHBORS_FILL_4_ALLIMG
    macro. */
 void *
 meshinterponthread(void *inparams)
 {
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparams;
+  struct gal_mesh_params *mp=mtp->mp;
 
   /* Basic variables used in other definitions: */
   size_t numnearest=mp->numnearest;
@@ -1103,7 +1103,7 @@ meshinterponthread(void *inparams)
   size_t is1=mp->fullinterpolation ? mp->gs1*mp->nch1 : mp->gs1;
 
   /* Variables for this function: */
-  struct tosll *lQ, *sQ;
+  struct gal_linkedlist_tosll *lQ, *sQ;
   int ngarrays=mp->ngarrays;
   size_t xc, yc, *n, *nf, currentnum, thisind;
   unsigned char *byt=&mp->byt[mtp->id*is0*is1];
@@ -1236,16 +1236,16 @@ meshinterponthread(void *inparams)
 
 
 void
-gal_mesh_interpolate(struct meshparams *mp, char *errstart)
+gal_mesh_interpolate(struct gal_mesh_params *mp, char *errstart)
 {
   int err;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   size_t i, nb;
   pthread_attr_t attr;
-  struct meshthreadparams *mtp;
+  struct gal_mesh_thread_params *mtp;
   size_t numthreads=mp->numthreads;
 
-  /* Prepare all the meshparams arrays: */
+  /* Prepare all the gal_mesh_params arrays: */
   mp->errstart=errstart;
   preparemeshinterparrays(mp);
 
@@ -1343,7 +1343,7 @@ gal_mesh_interpolate(struct meshparams *mp, char *errstart)
 /********************           Smooth            ********************/
 /*********************************************************************/
 void
-gal_mesh_smooth(struct meshparams *mp)
+gal_mesh_smooth(struct gal_mesh_params *mp)
 {
   float *charray;
   float *f, *o, *fp, *tmp, *kernel, *sgarray1, *sgarray2;
@@ -1444,8 +1444,8 @@ gal_mesh_smooth(struct meshparams *mp)
 void*
 meshspatialconvonthreads(void *inparam)
 {
-  struct meshthreadparams *mtp = (struct meshthreadparams *) inparam;
-  struct meshparams *mp = mtp->mp;
+  struct gal_mesh_thread_params *mtp = (struct gal_mesh_thread_params *)inparam;
+  struct gal_mesh_params *mp = mtp->mp;
   const size_t ks0=mp->ks0, ks1=mp->ks1, is1=mp->s1;
 
   double sum, ksum;
@@ -1551,13 +1551,13 @@ meshspatialconvonthreads(void *inparam)
 
 
 void
-gal_mesh_spatial_convolve_on_mesh(struct meshparams *mp, float **conv)
+gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
 {
   int err;
   pthread_t t; /* We don't use the thread id, so all are saved here. */
   pthread_attr_t attr;
   size_t i, nb, *chbrd;
-  struct meshthreadparams *mtp;
+  struct gal_mesh_thread_params *mtp;
   size_t numthreads=mp->numthreads;
 
 
@@ -1662,7 +1662,7 @@ gal_mesh_spatial_convolve_on_mesh(struct meshparams *mp, float **conv)
    gal_mesh_change_to_full_convolution, where it is explained how to count the
    number of pixels that should be re-convolved. */
 void
-corrconvindexs(struct meshparams *mp, size_t **indexs, size_t *numpix,
+corrconvindexs(struct gal_mesh_params *mp, size_t **indexs, size_t *numpix,
                size_t *thrdcols)
 {
   size_t i, j, a, b;
@@ -1791,13 +1791,13 @@ corrconvindexs(struct meshparams *mp, size_t **indexs, size_t *numpix,
    the indexs are not over the full image but only a select number of pixels.
 */
 void
-gal_mesh_change_to_full_convolution(struct meshparams *mp, float *conv)
+gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
   pthread_attr_t attr;
   pthread_barrier_t b;
-  struct sconvparams *scp;
+  struct gal_spatialconvolve_params *scp;
   size_t i, nb, *indexs, numpix, thrdcols;
 
   /* If convolution was done over the full image, then there is

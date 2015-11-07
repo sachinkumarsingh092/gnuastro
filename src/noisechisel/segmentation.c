@@ -59,7 +59,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 prepfirstgrowth(struct clumpsthreadparams *ctp)
 {
-  struct meshparams *smp=&ctp->p->smp;
+  struct gal_mesh_params *smp=&ctp->p->smp;
 
   size_t *ind, *indf, is1=smp->s1;
   float growlimit, *imgss=ctp->p->imgss;

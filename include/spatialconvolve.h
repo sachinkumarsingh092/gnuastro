@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Main structure: */
-struct sconvparams
+struct gal_spatialconvolve_params
 {
   /* General input parameters: */
   float           *input;     /* Input image array.                    */
@@ -66,7 +66,7 @@ void
 gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
                             size_t ks0, size_t ks1, size_t nt,
                             int edgecorrection, float *out, size_t *indexs,
-                            struct sconvparams *scp);
+                            struct gal_spatialconvolve_params *scp);
 
 void *
 gal_spatialconvolve_thread(void *inparam);

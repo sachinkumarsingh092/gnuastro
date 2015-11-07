@@ -175,7 +175,7 @@ polygonparser(struct imgcropparams *p)
   size_t dim=0;
   char *tailptr;
   double read[2], *array;
-  struct tdll *tdll=NULL;
+  struct gal_linkedlist_tdll *gal_linkedlist_tdll=NULL;
   char *pt=p->up.polygon;
 
   /* Parse the string. */
@@ -224,7 +224,7 @@ polygonparser(struct imgcropparams *p)
           /* If this was the second dimension, then put the values
              into the linked list: */
           if(dim==1)
-            gal_linkedlist_add_to_tdll(&tdll, read[0], read[1]);
+            gal_linkedlist_add_to_tdll(&gal_linkedlist_tdll, read[0], read[1]);
 
           /* The job here is done, start from tailptr */
           pt=tailptr;
@@ -232,7 +232,7 @@ polygonparser(struct imgcropparams *p)
     }
 
   /* Convert the linked list to an array: */
-  gal_linkedlist_tdll_to_array_inv(tdll, &array, &p->nvertices);
+  gal_linkedlist_tdll_to_array_inv(gal_linkedlist_tdll, &array, &p->nvertices);
   if(p->imgmode) { p->ipolygon=array; p->wpolygon=NULL;  }
   else           { p->ipolygon=NULL;  p->wpolygon=array; }
 
@@ -248,7 +248,7 @@ polygonparser(struct imgcropparams *p)
   */
 
   /* Clean up: */
-  gal_linkedlist_free_tdll(tdll);
+  gal_linkedlist_free_tdll(gal_linkedlist_tdll);
 }
 
 
@@ -451,7 +451,7 @@ void
 cropname(struct cropparams *crp)
 {
   struct imgcropparams *p=crp->p;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   struct imgcroplog *log=&crp->p->log[crp->outindex];
 
   /* Set the output name and crop sides: */
@@ -676,7 +676,7 @@ onecrop(struct cropparams *crp)
   char basename[FLEN_KEYWORD];
   long fpixel_i[2] , lpixel_i[2];
   fitsfile *ifp=crp->infits, *ofp;
-  struct fitsheaderll *headers=NULL;
+  struct gal_fitsarray_header_ll *headers=NULL;
   int status=0, anynul=0, bitpix=p->bitpix;
   long fpixel_o[2], lpixel_o[2], inc[2]={1,1};
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];

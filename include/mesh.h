@@ -46,14 +46,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-struct meshthreadparams
+struct gal_mesh_thread_params
 {
   /* For convolve: */
   float           *conv; /* The convolved array.                        */
   size_t         *chbrd; /* Bordering x and y values all channels.      */
 
   /* For all: */
-  struct meshparams *mp; /* Pointer to meshparams structure.            */
+  struct gal_mesh_params *mp; /* Pointer to gal_mesh_params structure.  */
   size_t             id; /* The thread ID starting from zero.           */
 };
 
@@ -79,7 +79,7 @@ struct meshthreadparams
    and two nearest arrays. So the garrays have to be used such that
    they are both either valid on one mesh or not.
 */
-struct meshparams
+struct gal_mesh_params
 {
   /* Image: */
   void              *img; /* Input image array.                          */
@@ -154,47 +154,47 @@ struct meshparams
 };
 
 size_t
-gal_mesh_ch_based_id_from_gid(struct meshparams *mp, size_t gid);
+gal_mesh_ch_based_id_from_gid(struct gal_mesh_params *mp, size_t gid);
 
 size_t
-gal_mesh_gid_from_ch_based_id(struct meshparams *mp, size_t chbasedid);
+gal_mesh_gid_from_ch_based_id(struct gal_mesh_params *mp, size_t chbasedid);
 
 size_t
-gal_mesh_img_xy_to_mesh_id(struct meshparams *mp, size_t x, size_t y);
+gal_mesh_img_xy_to_mesh_id(struct gal_mesh_params *mp, size_t x, size_t y);
 
 void
-gal_check_mesh_id(struct meshparams *mp, long **out);
+gal_check_mesh_id(struct gal_mesh_params *mp, long **out);
 
 void
-gal_mesh_check_garray(struct meshparams *mp, float **out1, float **out2);
+gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1, float **out2);
 
 void
-gal_mesh_value_file(struct meshparams *mp, char *filename, char *extname1,
+gal_mesh_value_file(struct gal_mesh_params *mp, char *filename, char *extname1,
                     char *extname2, struct wcsprm *wcs, char *spack_string);
 
 void
-gal_mesh_full_garray(struct meshparams *mp, int reverse);
+gal_mesh_full_garray(struct gal_mesh_params *mp, int reverse);
 
 void
-gal_mesh_make_mesh(struct meshparams *mp);
+gal_mesh_make_mesh(struct gal_mesh_params *mp);
 
 void
-gal_mesh_free_mesh(struct meshparams *mp);
+gal_mesh_free_mesh(struct gal_mesh_params *mp);
 
 void
-gal_mesh_operate_on_mesh(struct meshparams *mp, void *(*meshfunc)(void *),
+gal_mesh_operate_on_mesh(struct gal_mesh_params *mp, void *(*meshfunc)(void *),
                          size_t oneforallsize, int makegarray2, int initialize);
 
 void
-gal_mesh_interpolate(struct meshparams *mp, char *errstart);
+gal_mesh_interpolate(struct gal_mesh_params *mp, char *errstart);
 
 void
-gal_mesh_smooth(struct meshparams *mp);
+gal_mesh_smooth(struct gal_mesh_params *mp);
 
 void
-gal_mesh_spatial_convolve_on_mesh(struct meshparams *mp, float **conv);
+gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv);
 
 void
-gal_mesh_change_to_full_convolution(struct meshparams *mp, float *conv);
+gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv);
 
 #endif

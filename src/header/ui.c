@@ -69,7 +69,7 @@ readconfig(char *filename, struct headerparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   /*struct uiparams *up=&p->up;*/
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -139,7 +139,7 @@ void
 printvalues(FILE *fp, struct headerparams *p)
 {
   /*struct uiparams *up=&p->up;*/
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
 
   /* Print all the options that are set. Separate each group with a
@@ -167,7 +167,7 @@ void
 checkifset(struct headerparams *p)
 {
   /*struct uiparams *up=&p->up;*/
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
@@ -234,7 +234,7 @@ void
 setuprename(struct headerparams *p)
 {
   char *c;
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
 
   for(tmp=p->up.rename; tmp!=NULL; tmp=tmp->next)
     {
@@ -258,7 +258,7 @@ setuprename(struct headerparams *p)
     }
   /*
   {
-    struct stll *tmp2=p->renameto;
+    struct gal_linkedlist_stll *tmp2=p->renameto;
     for(tmp=p->renamefrom; tmp!=NULL; tmp=tmp->next)
       {
         printf("%s to %s\n", tmp->v, tmp2->v);
@@ -273,12 +273,13 @@ setuprename(struct headerparams *p)
 
 
 void
-fillfitsheaderll(struct stll *input, struct fitsheaderll **output)
+fillfitsheaderll(struct gal_linkedlist_stll *input,
+                 struct gal_fitsarray_header_ll **output)
 {
   long l, *lp;
   void *fvalue;
   double d, *dp;
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
   int i=0, datatype, vfree;
   char *c, *cf, *start, *tailptr;
   char *original, *keyname, *value, *comment, *unit;
@@ -449,7 +450,7 @@ preparearrays(struct headerparams *p)
 void
 setparams(int argc, char *argv[], struct headerparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */

@@ -84,7 +84,7 @@ gal_fitsarray_num_hdus(char *filename, int *numhdu);
  ******************         Header          ******************
  *************************************************************/
 /* To create a linked list of headers. */
-struct fitsheaderll
+struct gal_fitsarray_header_ll
 {
   int                 kfree;   /* ==1, keyname will be freed.          */
   int                 vfree;   /* ==1, value will be freed.            */
@@ -94,14 +94,14 @@ struct fitsheaderll
   void               *value;   /* Pointer to the value of the keyword. */
   char             *comment;   /* Comment for the keyword.             */
   char                *unit;   /* Units of the keyword.                */
-  struct fitsheaderll *next;   /* Pointer to the next element.         */
+  struct gal_fitsarray_header_ll *next;   /* Pointer to the next element.         */
 };
 
 
 
 
 
-struct readheaderkeys
+struct gal_fitsarray_read_header_keys
 {
   char   *keyname;
   int    datatype;
@@ -120,33 +120,36 @@ struct readheaderkeys
 
 void
 gal_fitsarray_read_keywords(char *filename, char *hdu,
-                            struct readheaderkeys *out, size_t num);
+                            struct gal_fitsarray_read_header_keys *out,
+                            size_t num);
 
 void
-gal_fitsarray_add_to_fits_header_ll(struct fitsheaderll **list, int datatype,
-                                    char *keyname, int kfree, void *value,
-                                    int vfree, char *comment, int cfree,
-                                    char *unit);
+gal_fitsarray_add_to_fits_header_ll(struct gal_fitsarray_header_ll **list,
+                                    int datatype, char *keyname, int kfree,
+                                    void *value, int vfree, char *comment,
+                                    int cfree, char *unit);
 
 void
-gal_fitsarray_add_to_fits_header_ll_end(struct fitsheaderll **list,
+gal_fitsarray_add_to_fits_header_ll_end(struct gal_fitsarray_header_ll **list,
                                         int datatype, char *keyname, int kfree,
                                         void *value, int vfree, char *comment,
                                         int cfree, char *unit);
 
 void
 gal_fitsarray_file_name_in_keywords(char *keynamebase, char *filename,
-                                    struct fitsheaderll **list);
+                                    struct gal_fitsarray_header_ll **list);
 
 void
 gal_fitsarray_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec);
 
 void
-gal_fitsarray_update_keys(fitsfile *fptr, struct fitsheaderll **keylist);
+gal_fitsarray_update_keys(fitsfile *fptr,
+                          struct gal_fitsarray_header_ll **keylist);
 
 void
-gal_fitsarray_copyright_end(fitsfile *fptr, struct fitsheaderll *headers,
-                              char *spack_string);
+gal_fitsarray_copyright_end(fitsfile *fptr,
+                            struct gal_fitsarray_header_ll *headers,
+                            char *spack_string);
 
 
 
@@ -194,7 +197,7 @@ void
 gal_fitsarray_array_to_fits_img(char *filename, char *hdu, int bitpix,
                                 void *array, size_t s0, size_t s1, int anyblank,
                                 struct wcsprm *wcs,
-                                struct fitsheaderll *headers,
+                                struct gal_fitsarray_header_ll *headers,
                                 char *spack_string);
 
 void

@@ -356,7 +356,7 @@ mirrormaxdiff(float *a, size_t size, size_t m,
    fourth point to be placed between. With this configuration, the probing point
    is located at: */
 size_t
-modegoldenselection(struct modeparams *mp)
+modegoldenselection(struct gal_mode_params *mp)
 {
   size_t di, dd;
   /*static int counter=1;*/
@@ -560,9 +560,9 @@ void
 gal_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
                          size_t *modeindex, float *modesym)
 {
-  struct modeparams mp;
+  struct gal_mode_params mp;
 
-  /* Initialize the modeparams structure: */
+  /* Initialize the gal_mode_params structure: */
   mp.size=size;
   mp.sorted=sorted;
   mp.tolerance=0.01;

@@ -749,7 +749,7 @@ convolve(struct convolveparams *p)
 {
   float *convolved;
   long *meshindexs;
-  struct meshparams *mp=&p->mp;
+  struct gal_mesh_params *mp=&p->mp;
 
   /* Do the convolution. */
   if(p->spatial)

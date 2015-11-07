@@ -39,10 +39,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct uiparams
 {
-  char             *inputname;  /* Name of input file.               */
-  struct stll         *rename;  /* Rename a keyword.                 */
-  struct stll         *update;  /* For keywords to update.           */
-  struct stll          *write;  /* Full argument for keywords to add.*/
+  char                     *inputname;  /* Name of input file.               */
+  struct gal_linkedlist_stll  *rename;  /* Rename a keyword.                 */
+  struct gal_linkedlist_stll  *update;  /* For keywords to update.           */
+  struct gal_linkedlist_stll   *write;  /* Full argument for keywords to add.*/
 };
 
 
@@ -53,7 +53,7 @@ struct headerparams
 {
   /* Other structures: */
   struct uiparams          up;  /* User interface parameters.         */
-  struct commonparams      cp;  /* Common parameters.                 */
+  struct gal_commonparams  cp;  /* Common parameters.                 */
 
   /* Input: */
   int                    nwcs;  /* Number of WCS structures.          */
@@ -64,12 +64,12 @@ struct headerparams
   int                    date;  /* Set DATE to current time.          */
   char               *comment;  /* COMMENT value.                     */
   char               *history;  /* HISTORY value.                     */
-  struct stll           *asis;  /* Strings to write as is into header.*/
-  struct stll         *delete;  /* Keywords to remove.                */
-  struct stll     *renamefrom;  /* The initial value of the keyword.  */
-  struct stll       *renameto;  /* The final value of the keyword.    */
-  struct fitsheaderll *update;  /* Linked list of keywords to update. */
-  struct fitsheaderll  *write;  /* Linked list of keywords to add.    */
+  struct gal_linkedlist_stll *asis; /* Strings to write as is into header.*/
+  struct gal_linkedlist_stll *delete; /* Keywords to remove.          */
+  struct gal_linkedlist_stll *renamefrom; /* The initial value of the keyword. */
+  struct gal_linkedlist_stll *renameto; /* The final value of the keyword. */
+  struct gal_fitsarray_header_ll *update; /* Linked list of keywords to update. */
+  struct gal_fitsarray_header_ll *write; /* Linked list of keywords to add. */
 
   /* Operating mode: */
   int             quitonerror;  /* Quit if an error occurs.           */

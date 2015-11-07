@@ -27,13 +27,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "forqsort.h"
 
 /* Initialize the array for sorting indexs to NULL. */
-float *forqsortindexarr;
+float *gal_qsort_index_arr;
 
 int
 gal_qsort_index_float_decreasing(const void * a, const void * b)
 {
-  float ta=forqsortindexarr[ *(size_t *)a ];
-  float tb=forqsortindexarr[ *(size_t *)b ];
+  float ta=gal_qsort_index_arr[ *(size_t *)a ];
+  float tb=gal_qsort_index_arr[ *(size_t *)b ];
   return (tb > ta) - (tb < ta);
 }
 

@@ -68,7 +68,7 @@ readconfig(char *filename, struct imgwarpparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -160,7 +160,7 @@ void
 printvalues(FILE *fp, struct imgwarpparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
@@ -201,7 +201,7 @@ void
 checkifset(struct imgwarpparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
@@ -467,7 +467,7 @@ preparearrays(struct imgwarpparams *p)
 void
 setparams(int argc, char *argv[], struct imgwarpparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */

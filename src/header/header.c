@@ -79,10 +79,11 @@ haserror(struct headerparams *p, int actionid, char *string, int status)
 
 
 void
-writeupdatekeys(fitsfile *fptr, struct fitsheaderll **keylist, int u1w2)
+writeupdatekeys(fitsfile *fptr, struct gal_fitsarray_header_ll **keylist,
+                int u1w2)
 {
   int status=0;
-  struct fitsheaderll *tmp, *ttmp;
+  struct gal_fitsarray_header_ll *tmp, *ttmp;
 
   tmp=*keylist;
   while(tmp!=NULL)
@@ -157,7 +158,7 @@ header(struct headerparams *p)
   int r=EXIT_SUCCESS;
   int nkeys, status=0;
   char *fullheader, *c, *cf;
-  struct stll *tstll, *ttstll;
+  struct gal_linkedlist_stll *tstll, *ttstll;
 
   if(p->onlyview)
     {

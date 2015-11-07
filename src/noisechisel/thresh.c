@@ -52,8 +52,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void *
 qthreshonmesh(void *inparam)
 {
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparam;
+  struct gal_mesh_params *mp=mtp->mp;
   struct noisechiselparams *p=(struct noisechiselparams *)mp->params;
 
   float *mponeforall=mp->oneforall;
@@ -118,7 +118,7 @@ qthreshonmesh(void *inparam)
 
 
 /* The threshold values are stored in the garray1 array of the
-   meshparams structure. This function is basically identical to the
+   gal_mesh_params structure. This function is basically identical to the
    gal_mesh_check_garray function in mesh.c, only in the middle, it does
    something else.
 
@@ -127,8 +127,8 @@ qthreshonmesh(void *inparam)
 void
 applythreshold(struct noisechiselparams *p)
 {
-  struct meshparams *mp=&p->smp; /* `mp' instead of `smp' so you can try */
-                                 /* with p->lmp if you like.             */
+  struct gal_mesh_params *mp=&p->smp; /* `mp' instead of `smp' so you can try */
+                                      /* with p->lmp if you like.             */
   unsigned char *b, *byt=p->byt;
   size_t gs0=mp->gs0, gs1=mp->gs1, nch1=mp->nch1;
   size_t s0, s1, fs1=mp->gs1*mp->nch1, chid, inchid;
@@ -175,7 +175,7 @@ applythreshold(struct noisechiselparams *p)
 void
 findapplyqthreshold(struct noisechiselparams *p)
 {
-  struct meshparams *mp=&p->smp;
+  struct gal_mesh_params *mp=&p->smp;
 
   /* Find the threshold on each mesh: */
   gal_mesh_operate_on_mesh(mp, qthreshonmesh, sizeof(float), 0, 1);
@@ -221,11 +221,11 @@ findapplyqthreshold(struct noisechiselparams *p)
 /*********************************************************************/
 /* This is very similar to the gal_mesh_check_garray function. The sky and its
    Standard deviation are stored in the garray1 and garray2 arrays of
-   smp meshparams structure. */
+   smp gal_mesh_params structure. */
 void
 applydetectionthresholdskysub(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
 
   size_t is0=smp->s0;
   float *f, *in, sky, std;

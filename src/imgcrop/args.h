@@ -460,7 +460,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       /* See what type of input value it is and put it in. */
       if( gal_fitsarray_name_is_fits(arg) )
 	{
-	  gal_linkedlist_add_to_stll(&p->up.stll, arg);
+	  gal_linkedlist_add_to_stll(&p->up.gal_linkedlist_stll, arg);
 	  ++p->numimg;
 	}
       else
@@ -491,7 +491,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 				      || p->up.sectionset
                                       || p->up.polygonset))
 	    argp_error(state, "No catalog provided!");
-	  if(p->up.stll==NULL)
+	  if(p->up.gal_linkedlist_stll==NULL)
 	    argp_error(state, "No FITS image(s) provided!");
 	}
       break;

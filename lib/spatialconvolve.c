@@ -49,7 +49,7 @@ void
 gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
                             size_t ks0, size_t ks1, size_t nt,
                             int edgecorrection, float *out, size_t *indexs,
-                            struct sconvparams *scp)
+                            struct gal_spatialconvolve_params *scp)
 {
   /* Put the simple values in: */
   scp->is0=is0;
@@ -72,7 +72,8 @@ gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
 void *
 gal_spatialconvolve_thread(void *inparam)
 {
-  struct sconvparams *scp=(struct sconvparams *)inparam;
+  struct gal_spatialconvolve_params *scp=
+    (struct gal_spatialconvolve_params *)inparam;
 
   double sum, ksum;
   long naxes[2]={scp->is1, scp->is0};
@@ -168,7 +169,7 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
   pthread_t t;          /* All thread ids saved in this, not used. */
   pthread_attr_t attr;
   pthread_barrier_t b;
-  struct sconvparams *scp;
+  struct gal_spatialconvolve_params *scp;
   size_t i, nb, *indexs, thrdcols;
 
 

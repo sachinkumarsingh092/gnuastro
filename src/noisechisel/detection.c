@@ -161,7 +161,7 @@ void
 detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 {
   float *imgss=p->imgss;
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
   double *brightnesses, err, *xys;
   float *f, *ff, ave, *sntable, cpscorr=p->cpscorr;
   size_t i, ind, xyscol=3, is1=p->smp.s1, counter=0;
@@ -418,8 +418,8 @@ bytparttolarge(struct noisechiselparams *p, unsigned char *in,
 void*
 detectpseudos(void *inparams)
 {
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparams;
+  struct gal_mesh_params *mp=mtp->mp;
   struct noisechiselparams *p=(struct noisechiselparams *)mp->params;
 
   unsigned char *mponeforall=mp->oneforall;
@@ -503,7 +503,7 @@ detectpseudos(void *inparams)
 void
 detsnthresh(struct noisechiselparams *p)
 {
-  struct meshparams *lmp=&p->lmp;
+  struct gal_mesh_params *lmp=&p->lmp;
 
   float *sntable;
   static int b0f1;
@@ -695,7 +695,7 @@ dbytolaboverlap(struct noisechiselparams *p)
 void
 onlytruedetections(struct noisechiselparams *p)
 {
-  struct meshparams *lmp=&p->lmp;
+  struct gal_mesh_params *lmp=&p->lmp;
 
   int verb=p->cp.verb;
   char report[GAL_TIMING_VERB_MSG_LENGTHS_2_V];

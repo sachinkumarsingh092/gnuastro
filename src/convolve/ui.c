@@ -65,7 +65,7 @@ readconfig(char *filename, struct convolveparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   int zeroorone, spatialset=0, frequencyset=0;
   char key='a';	/* Not used, just a place holder. */
 
@@ -224,8 +224,8 @@ void
 printvalues(FILE *fp, struct convolveparams *p)
 {
   struct uiparams *up=&p->up;
-  struct meshparams *mp=&p->mp;
-  struct commonparams *cp=&p->cp;
+  struct gal_mesh_params *mp=&p->mp;
+  struct gal_commonparams *cp=&p->cp;
 
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
@@ -281,7 +281,7 @@ void
 checkifset(struct convolveparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
 
@@ -416,7 +416,7 @@ preparearrays(struct convolveparams *p)
   size_t i, size;
   int bitpix, anyblank;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   float *f, *fp, tmp, *kernel, sum;
 
   /* First read the input image: */
@@ -539,7 +539,7 @@ preparearrays(struct convolveparams *p)
 void
 setparams(int argc, char *argv[], struct convolveparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */

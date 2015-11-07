@@ -427,7 +427,7 @@ correctwcssaveoutput(struct imgwarpparams *p)
   void *array;
   double *m=p->matrix;
   char keyword[9*FLEN_KEYWORD];
-  struct fitsheaderll *headers=NULL;
+  struct gal_fitsarray_header_ll *headers=NULL;
   double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};

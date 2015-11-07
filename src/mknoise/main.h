@@ -58,7 +58,7 @@ struct mknoiseparams
 {
   /* Other structures: */
   struct uiparams     up;  /* User interface parameters.               */
-  struct commonparams cp;  /* Common parameters.                       */
+  struct gal_commonparams cp; /* Common parameters.                    */
 
   /* Input: */
   int            envseed;  /* ==1, generate a random seed.             */

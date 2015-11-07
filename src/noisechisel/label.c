@@ -59,7 +59,7 @@ size_t
 BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
           int anyblank, const size_t connectivity)
 {
-  struct sll *Q=NULL;
+  struct gal_linkedlist_sll *Q=NULL;
   long *l=lab, curlab=1; /* Current label */
   size_t i, p, size=s0*s1, s0t1=s0-1, s1t1=s1-1;
   unsigned char *b=byt, *bf=byt+s0*s1, counter, bl, br, tl, tr;
@@ -196,7 +196,7 @@ size_t
 BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
 {
   size_t i, j, p;
-  struct sll *Q=NULL;
+  struct gal_linkedlist_sll *Q=NULL;
   long *newlabs, curlab=1;
 
   errno=0;
