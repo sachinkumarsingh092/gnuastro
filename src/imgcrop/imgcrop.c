@@ -53,7 +53,7 @@ imgmodecrop(void *inparam)
   int status;
   struct inputimgs *img;
   struct imgcroplog *log;
-  char msg[VERBMSGLENGTH_V];
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
 
   /* In image mode, we always only have one image. */
   crp->imgindex=0;
@@ -64,7 +64,7 @@ imgmodecrop(void *inparam)
   gal_fitsarray_read_fits_hdu(img->name, cp->hdu, IMAGE_HDU, &crp->infits);
 
   /* Go over all the outputs that are assigned to this thread: */
-  for(i=0;crp->indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set all the output parameters: */
       crp->outindex=crp->indexs[i];
@@ -136,10 +136,10 @@ wcsmodecrop(void *inparam)
   size_t i;
   int status, tcatset=0;
   struct imgcroplog *log;
-  char msg[VERBMSGLENGTH_V];
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
 
   /* Go over all the output objects for this thread. */
-  for(i=0;crp->indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set all the output parameters: */
       crp->outindex=crp->indexs[i];
@@ -310,7 +310,7 @@ imgcrop(struct imgcropparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-	if(indexs[i*thrdcols]!=NONTHRDINDEX)
+	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
 	    crp[i].p=p;
 	    crp[i].b=&b;

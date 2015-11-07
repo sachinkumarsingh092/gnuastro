@@ -952,7 +952,7 @@ gal_mesh_operate_on_mesh(struct meshparams *mp, void *(*meshfunc)(void *),
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(mp->indexs[i*mp->thrdcols]!=NONTHRDINDEX)
+	if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
             mtp[i].id=i;
 	    mtp[i].mp=mp;
@@ -1089,7 +1089,7 @@ manhattandistance(long ind, long xc, long yc, long s1)
 
 
 /* Some of the variables have different names than the meshparams
-   structure because they are to be fed into the FILL_NGB_4_ALLIMG
+   structure because they are to be fed into the GAL_NEIGHBORS_FILL_4_ALLIMG
    macro. */
 void *
 meshinterponthread(void *inparams)
@@ -1116,7 +1116,7 @@ meshinterponthread(void *inparams)
 
 
   /* Go over all the meshes for this thread. */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Get the index of this NaN mesh: */
       thisind=indexs[i];
@@ -1177,7 +1177,7 @@ meshinterponthread(void *inparams)
 
           /* Check the four neighbors and if they have not already
              been checked, put them into the queue. */
-          FILL_NGB_4_ALLIMG;
+          GAL_NEIGHBORS_FILL_4_ALLIMG;
           nf=(n=ngb)+numngb;
           do
             if(byt[*n]==0)
@@ -1275,7 +1275,7 @@ gal_mesh_interpolate(struct meshparams *mp, char *errstart)
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(mp->indexs[i*mp->thrdcols]!=NONTHRDINDEX)
+	if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
             mtp[i].id=i;
 	    mtp[i].mp=mp;
@@ -1459,7 +1459,7 @@ meshspatialconvonthreads(void *inparam)
   float *img=mp->img, *conv=mtp->conv, *kernel=mp->kernel;
 
   /* For each mesh in this thread, convolve the mesh */
-  for(i=0; (meshid=indexs[i])!=NONTHRDINDEX; ++i)
+  for(i=0; (meshid=indexs[i])!=GAL_THREADS_NON_THRD_INDEX; ++i)
     {
       /* Get the channel ID and the relevant information for this mesh. */
       chid=meshid/nmeshc;
@@ -1628,7 +1628,7 @@ gal_mesh_spatial_convolve_on_mesh(struct meshparams *mp, float **conv)
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(mp->indexs[i*mp->thrdcols]!=NONTHRDINDEX)
+	if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
             mtp[i].id=i;
 	    mtp[i].mp=mp;
@@ -1711,7 +1711,7 @@ corrconvindexs(struct meshparams *mp, size_t **indexs, size_t *numpix,
       for(a=alow; a<ahigh; ++a)
         for(b=0;b<s1;++b)
           {
-            while(*ind==NONTHRDINDEX) ++ind;
+            while(*ind==GAL_THREADS_NON_THRD_INDEX) ++ind;
             *ind++=a*s1+b;
           }
     }
@@ -1739,7 +1739,7 @@ corrconvindexs(struct meshparams *mp, size_t **indexs, size_t *numpix,
               */
               for(a=alow;a<ahigh;++a)
                 {
-                  while(*ind==NONTHRDINDEX) ++ind;
+                  while(*ind==GAL_THREADS_NON_THRD_INDEX) ++ind;
                   *ind++=a*s1+b;
                 }
               /* This alow is actually the ahigh in the FIRST LOOP. */
@@ -1759,7 +1759,7 @@ corrconvindexs(struct meshparams *mp, size_t **indexs, size_t *numpix,
           */
           for(a=alow;a<ahigh;++a)
             {
-              while(*ind==NONTHRDINDEX) ++ind;
+              while(*ind==GAL_THREADS_NON_THRD_INDEX) ++ind;
               *ind++=a*s1+b;
             }
         }
@@ -1841,7 +1841,7 @@ gal_mesh_change_to_full_convolution(struct meshparams *mp, float *conv)
 
       /* Spin off the threads: */
       for(i=0;i<mp->numthreads;++i)
-        if(indexs[i*thrdcols]!=NONTHRDINDEX)
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
           {
             scp[i].b=&b;
             gal_spatialconvolve_pparams(mp->img, mp->s0, mp->s1, mp->kernel,

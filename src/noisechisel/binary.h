@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* For the FITSBYTEBLANK value: */
+/* For the GAL_FITSARRAY_BYTE_BLANK value: */
 #include "fitsarrayvv.h"
 
 

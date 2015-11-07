@@ -45,7 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "[ASCIIcatalog] ASTRdata ...";
@@ -56,13 +56,13 @@ static char args_doc[] = "[ASCIIcatalog] ASTRdata ...";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" will create cutouts, thumbnails, postage stamps or crops of "
   "region(s) from input image(s) using image or celestial coordinates. "
   "If muliple crops are desired, a catalog must be provided. When in WCS "
   "mode, if the cut out covers more than one input image, all overlapping "
   "input images will be stitched in the output.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;

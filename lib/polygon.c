@@ -76,23 +76,24 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    the overlap between a quadrilateral and the pixel grid or the
    quadrilaterral its self.
 
-   MAXPOLYGONCORNERS is defined so there will be no need to allocate
+   GAL_POLYGON_MAX_CORNERS is defined so there will be no need to allocate
    these temporary arrays seprately. Since we are dealing with pixels,
    the polygon can't really have too many vertices.
 */
 void
 gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
 {
-  double angles[MAXPOLYGONCORNERS];
-  size_t i, tmp, aindexs[MAXPOLYGONCORNERS], tindexs[MAXPOLYGONCORNERS];
+  double angles[GAL_POLYGON_MAX_CORNERS];
+  size_t i, tmp, aindexs[GAL_POLYGON_MAX_CORNERS],
+    tindexs[GAL_POLYGON_MAX_CORNERS];
 
-  if(n>MAXPOLYGONCORNERS)
+  if(n>GAL_POLYGON_MAX_CORNERS)
     error(EXIT_FAILURE, 0, "Most probably a bug! The number of corners "
           "given to `gal_polygon_ordered_corners' is more than %d. This is an "
           "internal value and cannot be set from the outside. Most probably "
           "Some bug has caused this un-normal value. Please contact us at "
           PACKAGE_BUGREPORT" so we can solve this problem.",
-          MAXPOLYGONCORNERS);
+          GAL_POLYGON_MAX_CORNERS);
 
   /* For a check:
   printf("\n\nBefore sorting:\n");
@@ -166,7 +167,7 @@ gal_polygon_area(double *v, size_t n)
 
   while(i<n)
     {
-      sum+=crossproduct(v+j*2, v+i*2);
+      sum+=GAL_POLYGON_CROSS_PRODUCT(v+j*2, v+i*2);
       j=i++;
     }
   return fabs(sum)/2.0f;
@@ -194,7 +195,7 @@ gal_polygon_pin(double *v, double *p, size_t n)
 
   while(i<n)
     {
-      if( pleftofline(&v[j*2], &v[i*2], p) )
+      if( GAL_POLYGON_LEFT_OF_LINE(&v[j*2], &v[i*2], p) )
         j=i++;
       else return 0;
     }
@@ -217,9 +218,9 @@ gal_polygon_ppropin(double *v, double *p, size_t n)
       /* For a check:
       printf("(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)=%f\n",
              v[j*2], v[j*2+1], v[i*2], v[i*2+1], p[0], p[1],
-             tricrossproduct(&v[j*2], &v[i*2], p));
+             GAL_POLYGON_TRI_CROSS_PRODUCT(&v[j*2], &v[i*2], p));
       */
-      if( ppropleftofline(&v[j*2], &v[i*2], p) )
+      if( GAL_POLYGON_PROP_LEFT_OF_LINE(&v[j*2], &v[i*2], p) )
         j=i++;
       else
         return 0;
@@ -245,8 +246,8 @@ int
 seginfintersection(double *Aa, double *Ab, double *Ba, double *Bb,
                    double *o)
 {
-  int Aacollinear=pcollinearwithline(Ba, Bb, Aa);
-  int Abcollinear=pcollinearwithline(Ba, Bb, Ab);
+  int Aacollinear=GAL_POLYGON_COLLINEAR_WITH_LINE(Ba, Bb, Aa);
+  int Abcollinear=GAL_POLYGON_COLLINEAR_WITH_LINE(Ba, Bb, Ab);
 
   /* If all four points lie on the same line, there is infinite
      intersections, so return -1. If three of the points are
@@ -276,7 +277,8 @@ seginfintersection(double *Aa, double *Ab, double *Ba, double *Bb,
      Note that the denominators and the parenthesis with the
      subtraction of multiples are the same.
   */
-  if ( ppropleftofline(Ba, Bb, Aa) ^ ppropleftofline(Ba, Bb, Ab) )
+  if ( GAL_POLYGON_PROP_LEFT_OF_LINE(Ba, Bb, Aa)
+       ^ GAL_POLYGON_PROP_LEFT_OF_LINE(Ba, Bb, Ab) )
     {
       /* Find the intersection point of two infinite lines (we assume
          Aa-Ab is infinite in calculating this): */
@@ -290,10 +292,10 @@ seginfintersection(double *Aa, double *Ab, double *Ba, double *Bb,
              );
 
       /* Now check if the output is in the same range as Aa--Ab. */
-      if( o[0]>=minoftwo(Aa[0], Ab[0])-ROUNDERR
-          && o[0]<=maxoftwo(Aa[0], Ab[0])+ROUNDERR
-          && o[1]>=minoftwo(Aa[1], Ab[1])-ROUNDERR
-          && o[1]<=maxoftwo(Aa[1], Ab[1])+ROUNDERR )
+      if( o[0]>=GAL_POLYGON_MIN_OF_TWO(Aa[0], Ab[0])-GAL_POLYGON_ROUND_ERR
+          && o[0]<=GAL_POLYGON_MAX_OF_TWO(Aa[0], Ab[0])+GAL_POLYGON_ROUND_ERR
+          && o[1]>=GAL_POLYGON_MIN_OF_TWO(Aa[1], Ab[1])-GAL_POLYGON_ROUND_ERR
+          && o[1]<=GAL_POLYGON_MAX_OF_TWO(Aa[1], Ab[1])+GAL_POLYGON_ROUND_ERR )
         return 1;
       else
         return 0;
@@ -340,14 +342,14 @@ void
 gal_polygon_clip(double *s, size_t n, double *c, size_t m,
                  double *o, size_t *numcrn)
 {
-  double in[2*MAXPOLYGONCORNERS], *S, *E;
+  double in[2*GAL_POLYGON_MAX_CORNERS], *S, *E;
   size_t t, ii=m-1, i=0, jj, j, outnum, innum;
 
   /*
-  if(n>MAXPOLYGONCORNERS || m>MAXPOLYGONCORNERS)
+  if(n>GAL_POLYGON_MAX_CORNERS || m>GAL_POLYGON_MAX_CORNERS)
     error(EXIT_FAILURE, 0, "The two polygons given to the function "
           "gal_polygon_clip in polygon.c have %lu and %lu vertices. They cannot"
-          " have any values larger than %lu.", n, m, MAXPOLYGONCORNERS);
+          " have any values larger than %lu.", n, m, GAL_POLYGON_MAX_CORNERS);
   */
 
   /* 2*outnum because for each vertice, there are two elements. */
@@ -370,14 +372,14 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
           S=&in[jj*2];                      /* Starting point. */
           E=&in[j*2];                       /* Ending point.   */
 
-          if( ppropleftofline(&c[ii*2], &c[i*2], E) )
+          if( GAL_POLYGON_PROP_LEFT_OF_LINE(&c[ii*2], &c[i*2], E) )
             {
-              if( ppropleftofline(&c[ii*2], &c[i*2], S)==0 )
+              if( GAL_POLYGON_PROP_LEFT_OF_LINE(&c[ii*2], &c[i*2], S)==0 )
                 if( seginfintersection(S, E, &c[ii*2], &c[i*2], &o[2*outnum])
                     >0) ++outnum;
               o[2*outnum]=E[0]; o[2*outnum+1]=E[1]; ++outnum;
             }
-          else if( ppropleftofline(&c[ii*2], &c[i*2], S) )
+          else if( GAL_POLYGON_PROP_LEFT_OF_LINE(&c[ii*2], &c[i*2], S) )
             if( seginfintersection(S, E, &c[ii*2], &c[i*2], &o[2*outnum])>0 )
               ++outnum;
           /*

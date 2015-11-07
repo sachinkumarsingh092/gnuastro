@@ -66,7 +66,7 @@ void
 initialdetection(struct noisechiselparams *p)
 {
   int verb=p->cp.verb;
-  char report[VERBMSGLENGTHS2_V];
+  char report[GAL_TIMING_VERB_MSG_LENGTHS_2_V];
   size_t i, s0=p->smp.s0, s1=p->smp.s1;
   char *detectionname=p->detectionname;
 
@@ -325,7 +325,7 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
   lf= (lab=clab) + p->smp.s0*p->smp.s1;
   do
     {
-      if(*lab!=FITSLONGBLANK)
+      if(*lab!=GAL_FITSARRAY_LONG_BLANK)
         *b = newlabs[*lab] > 0;
       ++b;
     }
@@ -380,7 +380,8 @@ bytpartfromlarge(struct noisechiselparams *p, unsigned char *out,
       bf = ( b = p->byt + start + r++ * is1 ) + s1;
       do
         {
-          *out++ = *b==b0f1 ? *d : (*b==FITSBYTEBLANK ? FITSBYTEBLANK : 0);
+          *out++ = *b==b0f1 ? *d : (*b==GAL_FITSARRAY_BYTE_BLANK
+                                    ? GAL_FITSARRAY_BYTE_BLANK : 0);
           ++d;
         }
       while(++b<bf);
@@ -433,7 +434,7 @@ detectpseudos(void *inparams)
 
 
   /* Do the job for each mesh: */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set the necesary parameters: */
       ind=indexs[i];
@@ -456,7 +457,8 @@ detectpseudos(void *inparams)
       if(p->anyblank)
         {
           bf=(b=thisbyt)+s0*s1;
-          do if(*b++==FITSBYTEBLANK) { anyblank=1; break; } while(b<bf);
+          do if(*b++==GAL_FITSARRAY_BYTE_BLANK) { anyblank=1; break; }
+          while(b<bf);
         }
 
 
@@ -646,7 +648,7 @@ dbytolaboverlap(struct noisechiselparams *p)
   if(p->dilate)
     do
       {
-        if(*lab!=FITSLONGBLANK)
+        if(*lab!=GAL_FITSARRAY_LONG_BLANK)
           *byt=tokeep[*lab]>0;
         ++byt;
       }
@@ -654,7 +656,7 @@ dbytolaboverlap(struct noisechiselparams *p)
   else
     do
       {
-        if(*lab!=FITSLONGBLANK)
+        if(*lab!=GAL_FITSARRAY_LONG_BLANK)
           *byt = ( *lab = tokeep[*lab] ) > 0;
         ++byt;
       }
@@ -696,7 +698,7 @@ onlytruedetections(struct noisechiselparams *p)
   struct meshparams *lmp=&p->lmp;
 
   int verb=p->cp.verb;
-  char report[VERBMSGLENGTHS2_V];
+  char report[GAL_TIMING_VERB_MSG_LENGTHS_2_V];
   char *detectionname=p->detectionname;
   size_t s0=lmp->s0, s1=lmp->s1, numobjects=p->numobjects;
 

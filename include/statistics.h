@@ -20,11 +20,11 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef STATISTICS_H
-#define STATISTICS_H
+#ifndef __GAL_STATISTICS_H__
+#define __GAL_STATISTICS_H__
 
 
-#define MAXSIGCLIPCONVERGE 50
+#define GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE 50
 
 
 /****************************************************************

@@ -1066,7 +1066,7 @@ gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
   else orderedarray=array;
 
   start=orderedarray;
-  while(counter<MAXSIGCLIPCONVERGE)
+  while(counter<GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE)
     {
       oldstart=start;
 

@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef ASTRTHREADS_H
-#define ASTRTHREADS_H
+#ifndef __GAL_THREADS_H__
+#define __GAL_THREADS_H__
 
 
 
@@ -33,7 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define NONTHRDINDEX (size_t)(-1)
+#define GAL_THREADS_NON_THRD_INDEX (size_t)(-1)
 
 
 

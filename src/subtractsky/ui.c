@@ -95,7 +95,7 @@ readconfig(char *filename, struct subtractskyparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
       /* Inputs: */
@@ -264,7 +264,7 @@ readconfig(char *filename, struct subtractskyparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -370,7 +370,7 @@ printvalues(FILE *fp, struct subtractskyparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -388,41 +388,41 @@ checkifset(struct subtractskyparams *p)
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->khduset==0)
-    REPORT_NOTSET("khdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("khdu");
 
   /* Mesh grid: */
   if(up->meshsizeset==0)
-    REPORT_NOTSET("meshsize");
+    GAL_CONFIGFILES_REPORT_NOTSET("meshsize");
   if(up->nch1set==0)
-    REPORT_NOTSET("nch1");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch1");
   if(up->nch2set==0)
-    REPORT_NOTSET("nch2");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
-    REPORT_NOTSET("lastmeshfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("lastmeshfrac");
   if(up->mirrordistset==0)
-    REPORT_NOTSET("mirrordist");
+    GAL_CONFIGFILES_REPORT_NOTSET("mirrordist");
   if(up->minmodeqset==0)
-    REPORT_NOTSET("minmodeq");
+    GAL_CONFIGFILES_REPORT_NOTSET("minmodeq");
   if(up->numnearestset==0)
-    REPORT_NOTSET("numnearest");
+    GAL_CONFIGFILES_REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
-    REPORT_NOTSET("smoothwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("smoothwidth");
   if(up->fullconvolutionset==0)
-    REPORT_NOTSET("fullconvolution");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullconvolution");
   if(up->fullinterpolationset==0)
-    REPORT_NOTSET("fullinterpolation");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullinterpolation");
   if(up->fullsmoothset==0)
-    REPORT_NOTSET("fullsmooth");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullsmooth");
 
   /* Statistics: */
   if(up->sigclipmultipset==0)
-    REPORT_NOTSET("sigclipmultip");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
-    REPORT_NOTSET("sigcliptolerance");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigcliptolerance");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -490,10 +490,10 @@ sanitycheck(struct subtractskyparams *p)
 
 
   /* Other checks: */
-  if(p->mp.numnearest<MINACCEPTABLENEAREST)
+  if(p->mp.numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
     error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
-          p->mp.numnearest);
+          "(`-n') is %d. You have asked for: %lu.",
+          GAL_MESH_MIN_ACCEPTABLE_NEAREST, p->mp.numnearest);
 
   /* Set the constants in the meshparams structure. */
   p->mp.params=p;
@@ -585,14 +585,14 @@ setparams(int argc, char *argv[], struct subtractskyparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check. */
   sanitycheck(p);

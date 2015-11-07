@@ -901,7 +901,7 @@ printlog(struct imgcropparams *p)
 {
   size_t i;
   FILE *logfile;
-  char msg[VERBMSGLENGTH_V];
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
   struct imgcroplog *log=p->log;
   size_t numfiles=0, numcentfilled=0, numstitched=0;
 

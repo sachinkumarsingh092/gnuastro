@@ -96,7 +96,7 @@ readconfig(char *filename, struct imgcropparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
       /* Operating modes: */
       if(strcmp(name, "imgmode")==0)
@@ -236,7 +236,7 @@ readconfig(char *filename, struct imgcropparams *p)
 	}
 
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
       else
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,
@@ -261,7 +261,7 @@ printvalues(FILE *fp, struct imgcropparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
 
 
   fprintf(fp, "\n# Output parameters:\n");
@@ -296,7 +296,7 @@ printvalues(FILE *fp, struct imgcropparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
   if(up->imgmodeset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "imgmode", p->imgmode);
   if(up->wcsmodeset)
@@ -318,27 +318,27 @@ checkifset(struct imgcropparams *p)
 
   int intro=0;
   if(up->imgmodeset==0 && up->wcsmodeset==0)
-    REPORT_NOTSET("imgmode or wcsmode");
+    GAL_CONFIGFILES_REPORT_NOTSET("imgmode or wcsmode");
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->xcolset==0)
-    REPORT_NOTSET("xcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("xcol");
   if(up->ycolset==0)
-    REPORT_NOTSET("ycol");
+    GAL_CONFIGFILES_REPORT_NOTSET("ycol");
   if(up->iwidthset==0)
-    REPORT_NOTSET("iwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("iwidth");
   if(up->racolset==0)
-    REPORT_NOTSET("racol");
+    GAL_CONFIGFILES_REPORT_NOTSET("racol");
   if(up->deccolset==0)
-    REPORT_NOTSET("deccol");
+    GAL_CONFIGFILES_REPORT_NOTSET("deccol");
   if(up->wwidthset==0)
-    REPORT_NOTSET("wwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("wwidth");
   if(up->suffixset==0)
-    REPORT_NOTSET("suffix");
+    GAL_CONFIGFILES_REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
-    REPORT_NOTSET("checkcenter");
+    GAL_CONFIGFILES_REPORT_NOTSET("checkcenter");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -501,13 +501,13 @@ sanitycheck(struct imgcropparams *p)
 	 columns: */
       if(p->imgmode)
 	{
-	  CHECKCOLINCAT(p->xcol, "xcol");
-	  CHECKCOLINCAT(p->ycol, "ycol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, "xcol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, "ycol");
 	}
       else
 	{
-	  CHECKCOLINCAT(p->racol, "racol");
-	  CHECKCOLINCAT(p->deccol, "deccol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->racol, "racol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->deccol, "deccol");
 	}
     }
 
@@ -593,7 +593,7 @@ preparearrays(struct imgcropparams *p)
   fitsfile *tmpfits;
   struct timeval t1;
   struct inputimgs *img;
-  char msg[VERBMSGLENGTH_V];
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
   int i, status, firstbitpix=0;
 
   if(p->cp.verb) gettimeofday(&t1, NULL);
@@ -720,14 +720,14 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
   if(p->up.catname)
@@ -747,7 +747,7 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
 
   /* Do a sanity check. */
   sanitycheck(p);
-  gal_checkset_check_remove_file(TXTARRAYVVLOG, 0);
+  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)

@@ -310,7 +310,7 @@ build(void *inparam)
   pthread_cond_t *qready=&p->qready;
 
   /* Make each profile that was specified for this thread. */
-  for(i=0;mkp->indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;mkp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Create a new builtqueue element with all the information. fbq
 	 will be used when we want to add ibq to p->bq. It is defined
@@ -408,7 +408,7 @@ build(void *inparam)
              this thread to add up its built profiles). So we have to
              lock the mutex to pass on this built structure to the
              builtqueue. */
-          else if (mkp->indexs[i+1]==NONTHRDINDEX)
+          else if (mkp->indexs[i+1]==GAL_THREADS_NON_THRD_INDEX)
             {
 	      pthread_mutex_lock(qlock);
 	      fbq->next=p->bq;
@@ -731,7 +731,7 @@ mkprof(struct mkprofparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-	if(indexs[i*thrdcols]!=NONTHRDINDEX)
+	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
 	    mkp[i].p=p;
 	    mkp[i].b=&b;

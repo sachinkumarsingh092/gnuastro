@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef ARRAYMANIP_H
-#define ARRAYMANIP_H
+#ifndef __GAL_ARRAYMANIP_H__
+#define __GAL_ARRAYMANIP_H__
 
 void
 gal_arraymanip_uchar_init_on_region(unsigned char *in, const unsigned char v,

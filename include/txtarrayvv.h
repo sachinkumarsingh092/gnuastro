@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef TXTARRAYVV_H
-#define TXTARRAYVV_H
+#ifndef __GAL_TXTARRAY_H__
+#define __GAL_TXTARRAY_H__
 
 #include <float.h>
 
@@ -31,9 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Simple macros: */
-#define FMTLENGTH     50
-#define DELIMITERS    " ,\t\n"
-#define TXTARRAYVVLOG "txtarrayvv.log"
+#define GAL_TXTARRAY_FMT_LENGTH     50
+#define GAL_TXTARRAY_DELIMITERS    " ,\t\n"
+#define GAL_TXTARRAY_LOG "txtarray.log"
 
 
 

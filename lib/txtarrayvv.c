@@ -74,7 +74,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
   while( getline(&line, &len, fp) != -1 )
     {
       /* Read the first token: */
-      firsttoken=strtok(line, DELIMITERS);
+      firsttoken=strtok(line, GAL_TXTARRAY_DELIMITERS);
 
       /* If there are no non-delimters in the line (can happen if the
 	 line is a blank line in the end of the file). */
@@ -89,7 +89,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
       if(s0==0)  /* We are on the first row of data, find s1. */
 	{
 	  s1=1;
-	  while( strtok(NULL, DELIMITERS) != NULL )
+	  while( strtok(NULL, GAL_TXTARRAY_DELIMITERS) != NULL )
 	    ++s1;
 	}
       ++s0;
@@ -120,7 +120,7 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
   else				/* Not yet created.          */
     {
       errno=0;
-      *log=fopen(TXTARRAYVVLOG, "w");
+      *log=fopen(GAL_TXTARRAY_LOG, "w");
       if(*log==NULL)
 	error(EXIT_FAILURE, errno, "%s", filename);
       fprintf(*log, "# Elements in %s which could not be read as a \n"
@@ -189,7 +189,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
       ++lineno;
 
       /* Read the first token: */
-      token=strtok(line, DELIMITERS);
+      token=strtok(line, GAL_TXTARRAY_DELIMITERS);
 
       /* If there are no non-delimters in the line (can happen if the
 	 line is a blank line in the end of the file). */
@@ -204,7 +204,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
       CONVERTANDSAVE;
 
       /* Read the rest of the tokens: */
-      while( (token=strtok(NULL, DELIMITERS))!=NULL )
+      while( (token=strtok(NULL, GAL_TXTARRAY_DELIMITERS))!=NULL )
 	{
 	  if(ts1>=s1)
 	    error_at_line(EXIT_FAILURE, 0, filename, lineno,
@@ -229,7 +229,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
     {
       errno=0;
       if(fclose(log)==EOF)
-	error(EXIT_FAILURE, errno, "%s", TXTARRAYVVLOG);
+	error(EXIT_FAILURE, errno, "%s", GAL_TXTARRAY_LOG);
     }
 }
 
@@ -288,10 +288,10 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
     {
       /* Allocate space for the format string of each column: */
       errno=0;
-      fmt[i]=malloc(FMTLENGTH * sizeof(char));
+      fmt[i]=malloc(GAL_TXTARRAY_FMT_LENGTH * sizeof(char));
       if(fmt[i]==NULL)
 	error(EXIT_FAILURE, errno, "txtarrayvv, space for format "
-	      "string %d, with %d elements", i, FMTLENGTH);
+	      "string %d, with %d elements", i, GAL_TXTARRAY_FMT_LENGTH);
 
       /* See if this is an int column. */
       found=0;

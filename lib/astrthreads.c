@@ -156,7 +156,7 @@ gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
 
   /* Initialize all the elements to NONINDEX. */
   fp=(sp=thrds)+nthrds*thrdcols;
-  do *sp=NONTHRDINDEX; while(++sp<fp);
+  do *sp=GAL_THREADS_NON_THRD_INDEX; while(++sp<fp);
 
   /* Distribute the labels in the threads.  */
   for(i=0;i<nindexs;++i)
@@ -168,7 +168,7 @@ gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
       size_t j;
       printf("\n\n############################\n");
       printf("THREAD %lu: \n", i);
-      for(j=0;thrds[i*thrdcols+j]!=NONTHRDINDEX;j++)
+      for(j=0;thrds[i*thrdcols+j]!=GAL_THREADS_NON_THRD_INDEX;j++)
 	printf("%lu, ", thrds[i*thrdcols+j]);
       printf("\b\b.\n");
     }

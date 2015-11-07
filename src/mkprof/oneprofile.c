@@ -316,7 +316,7 @@ makepixbypix(struct mkonthread *mkp)
 
           /* Go over the neighbours and add them to queue of elements
              to check. */
-          FILL_NGB_4_ALLIMG;
+          GAL_NEIGHBORS_FILL_4_ALLIMG;
           nf=(n=ngb)+numngb;
           do
             if(byt[*n]==0)
@@ -365,7 +365,7 @@ makepixbypix(struct mkonthread *mkp)
       */
       /* Go over the neighbours and add them to queue of elements
 	 to check. */
-      FILL_NGB_4_ALLIMG;
+      GAL_NEIGHBORS_FILL_4_ALLIMG;
       nf=(n=ngb)+numngb;
       do
 	if(byt[*n]==0)

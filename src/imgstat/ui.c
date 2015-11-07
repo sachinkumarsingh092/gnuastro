@@ -97,7 +97,7 @@ readconfig(char *filename, struct imgstatparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
@@ -228,7 +228,7 @@ readconfig(char *filename, struct imgstatparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -254,11 +254,11 @@ printvalues(FILE *fp, struct imgstatparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->masknameset)
-    PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mask", up->maskname);
   if(up->mhdu)
-    PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
   if(up->mirrordistset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "mirrordist", p->mirrordist);
 
@@ -307,7 +307,7 @@ printvalues(FILE *fp, struct imgstatparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -326,26 +326,26 @@ checkifset(struct imgstatparams *p)
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->mirrordistset==0)
-    REPORT_NOTSET("mirrordist");
+    GAL_CONFIGFILES_REPORT_NOTSET("mirrordist");
   if(up->mirrorplotdistset==0)
-    REPORT_NOTSET("mirrorplotdist");
+    GAL_CONFIGFILES_REPORT_NOTSET("mirrorplotdist");
   if(up->onebinvalueset==0)
-    REPORT_NOTSET("onebinvalue");
+    GAL_CONFIGFILES_REPORT_NOTSET("onebinvalue");
   if(up->histnumbinsset==0)
-    REPORT_NOTSET("histnumbins");
+    GAL_CONFIGFILES_REPORT_NOTSET("histnumbins");
   if(up->cfpnumset==0)
-    REPORT_NOTSET("cfpnum");
+    GAL_CONFIGFILES_REPORT_NOTSET("cfpnum");
   if(up->sigclipmultipset==0)
-    REPORT_NOTSET("sigclipmultip");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
-    REPORT_NOTSET("sigcliptolerance");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigcliptolerance");
   if(up->sigclipnumset==0)
-    REPORT_NOTSET("sigclipnum");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigclipnum");
 
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -516,19 +516,19 @@ preparearrays(struct imgstatparams *p)
             case 1:
               error(EXIT_FAILURE, 0, "The options `--histmin' (-i) and "
                     "`--histmax' (-x) should both be specified. You have "
-                    "only given the %s."HOWTOCHECKVALUES,
+                    "only given the %s."GAL_STRINGS_HOW_TO_CHECK_VALUES,
                     up->histminset==1 ? "former" : "latter");
               break;
             case 2:
               if(p->histmin>=p->histmax)
                 error(EXIT_FAILURE, 0, "The value to `--histmin' (-i) (%f) "
                       "is larger or equal to that of `--histmax' (-x) (%f)."
-                      HOWTOCHECKVALUES, p->histmin, p->histmax);
+                      GAL_STRINGS_HOW_TO_CHECK_VALUES, p->histmin, p->histmax);
               if(p->histmin>p->sorted[p->size-1] || p->histmax<p->sorted[0])
                 error(EXIT_FAILURE, 0, "The range of data is %.5f to %.5f. "
                       "However, you have set `--histmin' (-i) and "
                       "`--histmax' (-x) to %.5f and %.5f respectively. "
-                      "They do not overlap!"HOWTOCHECKVALUES,
+                      "They do not overlap!"GAL_STRINGS_HOW_TO_CHECK_VALUES,
                       p->sorted[0], p->sorted[p->size-1], p->histmin,
                       p->histmax);
               break;
@@ -571,19 +571,19 @@ preparearrays(struct imgstatparams *p)
             case 1:
               error(EXIT_FAILURE, 0, "The options `--cfpmin' (-a) and "
                     "`--cfpmax' (-b) should both be specified. You have "
-                    "only given the %s."HOWTOCHECKVALUES,
+                    "only given the %s."GAL_STRINGS_HOW_TO_CHECK_VALUES,
                     up->cfpminset==1 ? "former" : "latter");
               break;
             case 2:
               if(p->cfpmin>p->cfpmax)
                 error(EXIT_FAILURE, 0, "The value to `--cfpmin' (-a) (%.f) "
                       "is larger than that of `--cfpmax' (-b) (%f)."
-                      HOWTOCHECKVALUES, p->cfpmin, p->cfpmax);
+                      GAL_STRINGS_HOW_TO_CHECK_VALUES, p->cfpmin, p->cfpmax);
               if(p->cfpmin>p->sorted[p->size-1] || p->cfpmax<p->sorted[0])
                 error(EXIT_FAILURE, 0, "The range of data is %.5f to %.5f. "
                       "However, you have set `--cfpmin' (-a) and "
                       "`--cfpmax' (-b) to %.5f and %.5f respectively. "
-                      "They do not overlap!"HOWTOCHECKVALUES,
+                      "They do not overlap!"GAL_STRINGS_HOW_TO_CHECK_VALUES,
                       p->sorted[0], p->sorted[p->size-1], p->cfpmin,
                       p->cfpmax);
               break;
@@ -642,14 +642,14 @@ setparams(int argc, char *argv[], struct imgstatparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check. */
   sanitycheck(p);

@@ -95,7 +95,7 @@ readconfig(char *filename, struct noisechiselparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
       /* Inputs: */
@@ -421,7 +421,7 @@ readconfig(char *filename, struct noisechiselparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -575,7 +575,7 @@ printvalues(FILE *fp, struct noisechiselparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -593,89 +593,89 @@ checkifset(struct noisechiselparams *p)
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->khduset==0)
-    REPORT_NOTSET("khdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("khdu");
   if(up->skysubtractedset==0)
-    REPORT_NOTSET("skysubtracted");
+    GAL_CONFIGFILES_REPORT_NOTSET("skysubtracted");
   if(up->minbfracset==0)
-    REPORT_NOTSET("minbfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("minbfrac");
   if(up->minnumfalseset==0)
-    REPORT_NOTSET("minnumfalse");
+    GAL_CONFIGFILES_REPORT_NOTSET("minnumfalse");
 
   /* Output */
   if(up->grownclumpsset==0)
-    REPORT_NOTSET("grownclumps");
+    GAL_CONFIGFILES_REPORT_NOTSET("grownclumps");
 
   /* Mesh grid: */
   if(up->smeshsizeset==0)
-    REPORT_NOTSET("smeshsize");
+    GAL_CONFIGFILES_REPORT_NOTSET("smeshsize");
   if(up->lmeshsizeset==0)
-    REPORT_NOTSET("lmeshsize");
+    GAL_CONFIGFILES_REPORT_NOTSET("lmeshsize");
   if(up->nch1set==0)
-    REPORT_NOTSET("nch1");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch1");
   if(up->nch2set==0)
-    REPORT_NOTSET("nch2");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
-    REPORT_NOTSET("lastmeshfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("lastmeshfrac");
   if(up->mirrordistset==0)
-    REPORT_NOTSET("mirrordist");
+    GAL_CONFIGFILES_REPORT_NOTSET("mirrordist");
   if(up->minmodeqset==0)
-    REPORT_NOTSET("minmodeq");
+    GAL_CONFIGFILES_REPORT_NOTSET("minmodeq");
   if(up->numnearestset==0)
-    REPORT_NOTSET("numnearest");
+    GAL_CONFIGFILES_REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
-    REPORT_NOTSET("smoothwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("smoothwidth");
   if(up->fullconvolutionset==0)
-    REPORT_NOTSET("fullconvolution");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullconvolution");
   if(up->fullinterpolationset==0)
-    REPORT_NOTSET("fullinterpolation");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullinterpolation");
   if(up->fullsmoothset==0)
-    REPORT_NOTSET("fullsmooth");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullsmooth");
 
   /* Detection: */
   if(up->qthreshset==0)
-    REPORT_NOTSET("qthresh");
+    GAL_CONFIGFILES_REPORT_NOTSET("qthresh");
   if(up->erodeset==0)
-    REPORT_NOTSET("erode");
+    GAL_CONFIGFILES_REPORT_NOTSET("erode");
   if(up->erodengbset==0)
-    REPORT_NOTSET("erodengb");
+    GAL_CONFIGFILES_REPORT_NOTSET("erodengb");
   if(up->openingset==0)
-    REPORT_NOTSET("opening");
+    GAL_CONFIGFILES_REPORT_NOTSET("opening");
   if(up->openingngbset==0)
-    REPORT_NOTSET("openingngb");
+    GAL_CONFIGFILES_REPORT_NOTSET("openingngb");
   if(up->sigclipmultipset==0)
-    REPORT_NOTSET("sigclipmultip");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
-    REPORT_NOTSET("sigcliptolerance");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigcliptolerance");
   if(up->dthreshset==0)
-    REPORT_NOTSET("dthresh");
+    GAL_CONFIGFILES_REPORT_NOTSET("dthresh");
   if(up->detsnminareaset==0)
-    REPORT_NOTSET("detsnminarea");
+    GAL_CONFIGFILES_REPORT_NOTSET("detsnminarea");
   if(up->detsnhistnbinsset==0)
-    REPORT_NOTSET("detsnhistnbins");
+    GAL_CONFIGFILES_REPORT_NOTSET("detsnhistnbins");
   if(up->detquantset==0)
-    REPORT_NOTSET("detquant");
+    GAL_CONFIGFILES_REPORT_NOTSET("detquant");
   if(up->dilateset==0)
-    REPORT_NOTSET("dilate");
+    GAL_CONFIGFILES_REPORT_NOTSET("dilate");
 
   /* Segmentation: */
   if(up->segsnminareaset==0)
-    REPORT_NOTSET("segsnminarea");
+    GAL_CONFIGFILES_REPORT_NOTSET("segsnminarea");
   if(up->keepmaxnearriverset==0)
-    REPORT_NOTSET("keepmaxnearriver");
+    GAL_CONFIGFILES_REPORT_NOTSET("keepmaxnearriver");
   if(up->segquantset==0)
-    REPORT_NOTSET("segquant");
+    GAL_CONFIGFILES_REPORT_NOTSET("segquant");
   if(up->segsnhistnbinsset==0)
-    REPORT_NOTSET("segsnhistnbins");
+    GAL_CONFIGFILES_REPORT_NOTSET("segsnhistnbins");
   if(up->gthreshset==0)
-    REPORT_NOTSET("gthresh");
+    GAL_CONFIGFILES_REPORT_NOTSET("gthresh");
   if(up->minriverlengthset==0)
-    REPORT_NOTSET("minriverlength");
+    GAL_CONFIGFILES_REPORT_NOTSET("minriverlength");
   if(up->objbordersnset==0)
-    REPORT_NOTSET("objbordersn");
+    GAL_CONFIGFILES_REPORT_NOTSET("objbordersn");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -792,10 +792,10 @@ sanitycheck(struct noisechiselparams *p)
 
 
   /* Other checks: */
-  if(smp->numnearest<MINACCEPTABLENEAREST)
+  if(smp->numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
     error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
-          smp->numnearest);
+          "(`-n') is %d. You have asked for: %lu.",
+          GAL_MESH_MIN_ACCEPTABLE_NEAREST, smp->numnearest);
 }
 
 
@@ -1052,14 +1052,14 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check. */
   sanitycheck(p);

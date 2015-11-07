@@ -66,7 +66,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    nearestint_halfhigher(0.5f) --> 1.0f
 */
 #define nearestint_halfhigher(D)                                        \
-  ( ceil((D)) - (D) > 0.5f + ROUNDERR ? ceil((D))-1.0f : ceil((D)) )
+  (ceil((D)) - (D) > 0.5f + GAL_POLYGON_ROUND_ERR ? ceil((D))-1.0f : ceil((D)))
 
 
 
@@ -77,14 +77,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    nearestint_halflower(0.5f) --> 0.0f;
  */
 #define nearestint_halflower(D)                                        \
-  ( ceil((D)) - (D) > 0.5f - ROUNDERR ? ceil((D))-1.0f : ceil((D)) )
+  (ceil((D)) - (D) > 0.5f - GAL_POLYGON_ROUND_ERR ? ceil((D))-1.0f : ceil((D)))
 
 
 
 
 
-#define ceilwitherr(D)                          \
-  ( fabs( nearbyint((D)) - (D) ) < ROUNDERR     \
+#define ceilwitherr(D)                                       \
+  ( fabs( nearbyint((D)) - (D) ) < GAL_POLYGON_ROUND_ERR     \
     ? nearbyint((D)) : nearbyint((D))+1  )
 
 
@@ -121,9 +121,9 @@ imgwarponthread(void *inparam)
   size_t i, j, ind, os1=p->onaxes[0], numcrn, numinput;
   double ocrn[8], icrn_base[8], icrn[8], *output=p->output;
   long x, y, xstart, xend, ystart, yend; /* Might be negative */
-  double pcrn[8], *outfpixval=p->outfpixval, ccrn[MAXPOLYGONCORNERS];
+  double pcrn[8], *outfpixval=p->outfpixval, ccrn[GAL_POLYGON_MAX_CORNERS];
 
-  for(i=0;(ind=iwp->indexs[i])!=NONTHRDINDEX;++i)
+  for(i=0;(ind=iwp->indexs[i])!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Initialize the output pixel value: */
       numinput=0;
@@ -554,7 +554,7 @@ imgwarp(struct imgwarpparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=NONTHRDINDEX)
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
           {
             iwp[i].p=p;
             iwp[i].b=&b;

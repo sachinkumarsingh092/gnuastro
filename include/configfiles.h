@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef CONFIGFILES_H
-#define CONFIGFILES_H
+#ifndef __GAL_CONFIGFILES_H__
+#define __GAL_CONFIGFILES_H__
 
 
 
@@ -29,11 +29,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************               Macros                *************/
 /**************************************************************/
 /* Simple macros: */
-#define CONFIG_DELIMITERS " ,=:\t\n"
+#define GAL_CONFIGFILES_DELIMITERS " ,=:\t\n"
 
 
 
-#define STARTREADINGLINE {						\
+#define GAL_CONFIGFILES_START_READING_LINE {                            \
   ++lineno;								\
   if(*line=='#') continue;						\
   else gal_configfiles_read_name_value(line, filename, lineno,          \
@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Functional macros: These are not actual functions, because they
    depend on functions that are different for different programs. So
    they have to be written into the functions with a macro. */
-#define SAVE_LOCAL_CONFIG(INDIR) {					\
+#define GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(INDIR) {                      \
     FILE *fp;								\
     char *outfilename, *command;		 			\
     fp=gal_configfiles_write_local_config_stop(INDIR, CONFIG_FILE,      \
@@ -70,12 +70,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define CHECKSETCONFIG {                                                \
+#define GAL_CONFIGFILES_CHECK_SET_CONFIG {                              \
     char *userconfig_dir, *userconfig_file;				\
                                                                         \
     readconfig(CURDIRCONFIG_FILE, p);                                   \
     if(cp->setdirconf)                                                  \
-      SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);                              \
+      GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);              \
     if(cp->onlyversionset && strcmp(cp->onlyversion, SPACK_VERSION))    \
       error(EXIT_FAILURE, 0, "The running version of %s is `%s'. "      \
             "However, you have asked for this %s run to be with "       \
@@ -98,7 +98,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
         userconfig_file=                                                \
           gal_configfiles_add_home_dir(USERCONFIG_FILEEND);             \
         readconfig(userconfig_file, p);                                 \
-        if(cp->setusrconf) SAVE_LOCAL_CONFIG(userconfig_dir);           \
+        if(cp->setusrconf)                                              \
+          GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(userconfig_dir);            \
         readconfig(SYSCONFIG_FILE, p);                                  \
         free(userconfig_file);						\
         free(userconfig_dir);						\
@@ -111,7 +112,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define REPORT_NOTSET(var_name) {					\
+#define GAL_CONFIGFILES_REPORT_NOTSET(var_name) {                       \
     if(intro==0)							\
       {									\
 	fprintf(stderr, SPACK": Parameter(s) not set: %s", (var_name));	\
@@ -125,7 +126,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define END_OF_NOTSET_REPORT {			                        \
+#define GAL_CONFIGFILES_END_OF_NOTSET_REPORT {                          \
     if(intro)								\
       {									\
 	char *userconfig_file;						\
@@ -148,7 +149,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define REPORT_PARAMETERS_SET {			                        \
+#define GAL_CONFIGFILES_REPORT_PARAMETERS_SET {                         \
     fprintf(stdout, "# "SPACK_STRING"\n");				\
     fprintf(stdout, "# Configured on "CONFIGDATE" at "CONFIGTIME"\n");	\
     fprintf(stdout, "# Written on %s", ctime(&p->rawtime));	        \
@@ -163,7 +164,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Read the options that are common to all programs from the
    configuration file. Since these two checks are within an if-else
    structure, they should not be placed within an `{' and `}'. */
-#define READ_COMMONOPTIONS_FROM_CONF                                    \
+#define GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF                    \
     else if(strcmp(name, "numthreads")==0)                              \
       {                                                                 \
         if(cp->numthreadsset) continue;                                 \
@@ -194,13 +195,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Write common options: */
-#define PRINT_COMMONOPTIONS {                                           \
+#define GAL_CONFIGFILES_PRINT_COMMONOPTIONS {                           \
     if(cp->numthreadsset)                                               \
       fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads); \
     if(cp->nologset)                                                    \
       fprintf(fp, CONF_SHOWFMT"%d\n", "nolog", p->cp.nolog);            \
     if(cp->onlyversionset)                                              \
-      PRINTSTINGMAYBEWITHSPACE("onlyversion", cp->onlyversion);         \
+      GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("onlyversion",         \
+                                                 cp->onlyversion);      \
   }
 
 

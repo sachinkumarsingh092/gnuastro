@@ -67,7 +67,7 @@ qthreshonmesh(void *inparam)
   float mirrordist=mp->mirrordist, minmodeq=mp->minmodeq;
 
   /* Start this thread's work: */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Prepare the values: */
       num=row=0;
@@ -100,7 +100,7 @@ qthreshonmesh(void *inparam)
           qsort(oneforall, num, sizeof *oneforall, gal_qsort_float_increasing);
           gal_mode_index_in_sorted(oneforall, num, mirrordist, &modeindex,
                                    &modesym);
-          if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq)
+          if( modesym>GAL_MODE_SYM_GOOD && (float)modeindex/(float)num>minmodeq)
             mp->garray1[ind]=
               oneforall[gal_statistics_index_from_quantile(num, qthresh)];
         }
@@ -274,7 +274,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
                  image, they will be checked. */
               *b = ( (*f++=*in-sky) > dthresh*std
                      ? 1
-                     : isnan(*in) ? FITSBYTEBLANK : 0 );
+                     : isnan(*in) ? GAL_FITSARRAY_BYTE_BLANK : 0 );
               ++in;
             }
           while(++b<bf);

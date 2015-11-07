@@ -61,9 +61,10 @@ gal_timing_report(struct timeval *t1, char *jobname, size_t level)
   else if(level==1)
     {
       if(t1)
-	printf("  - %-"VERBMSGLENGTH_T"s %f seconds\n", jobname, dt);
+	printf("  - %-"GAL_TIMING_VERB_MSG_LENGTH_T"s %f seconds\n",
+               jobname, dt);
       else
-	printf("  - %-"VERBMSGLENGTH_T"s\n", jobname);
+	printf("  - %-"GAL_TIMING_VERB_MSG_LENGTH_T"s\n", jobname);
     }
   else if(level==2)
     printf("  ---- %s\n", jobname);

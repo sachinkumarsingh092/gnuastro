@@ -94,7 +94,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
@@ -400,7 +400,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
 
       /* Operating modes */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -428,27 +428,27 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->masknameset)
-    PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mask", up->maskname);
   if(up->mhduset)
-    PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
   if(up->objlabsnameset)
-    PRINTSTINGMAYBEWITHSPACE("objlabs", up->objlabsname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("objlabs", up->objlabsname);
   if(up->objhduset)
-    PRINTSTINGMAYBEWITHSPACE("objhdu", up->objhdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("objhdu", up->objhdu);
   if(up->clumplabsnameset)
-    PRINTSTINGMAYBEWITHSPACE("clumplabs", up->clumplabsname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("clumplabs", up->clumplabsname);
   if(up->clumphduset)
-    PRINTSTINGMAYBEWITHSPACE("clumphdu", up->clumphdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("clumphdu", up->clumphdu);
   if(up->skynameset)
-    PRINTSTINGMAYBEWITHSPACE("skyfilename", up->skyname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("skyfilename", up->skyname);
   if(up->skyhduset)
-    PRINTSTINGMAYBEWITHSPACE("skyhdu", up->skyhdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("skyhdu", up->skyhdu);
   if(up->stdnameset)
-    PRINTSTINGMAYBEWITHSPACE("stdfilename", up->stdname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("stdfilename", up->stdname);
   if(up->stdhduset)
-    PRINTSTINGMAYBEWITHSPACE("stdhdu", up->stdhdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("stdhdu", up->stdhdu);
   if(up->zeropointset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "zeropoint", p->zeropoint);
   if(up->skysubtractedset)
@@ -457,7 +457,7 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
   /* Output: */
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
-    PRINTSTINGMAYBEWITHSPACE("output", cp->output);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("output", cp->output);
   if(up->nsigmagset)
     fprintf(fp, CONF_SHOWFMT"%g\n", "nsigmag", p->nsigmag);
   if(up->intwidthset)
@@ -558,7 +558,7 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -576,35 +576,35 @@ checkifset(struct mkcatalogparams *p)
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->objhduset==0)
-    REPORT_NOTSET("objhdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("objhdu");
   if(up->clumphduset==0)
-    REPORT_NOTSET("clumphdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("clumphdu");
   if(up->skyhduset==0)
-    REPORT_NOTSET("skyhdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("skyhdu");
   if(up->stdhduset==0)
-    REPORT_NOTSET("stdhdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("stdhdu");
   if(up->zeropointset==0)
-    REPORT_NOTSET("zeropoint");
+    GAL_CONFIGFILES_REPORT_NOTSET("zeropoint");
   if(up->skysubtractedset==0)
-    REPORT_NOTSET("skysubtracted");
+    GAL_CONFIGFILES_REPORT_NOTSET("skysubtracted");
 
   /* Output: */
   if(up->nsigmagset==0)
-    REPORT_NOTSET("nsigmag");
+    GAL_CONFIGFILES_REPORT_NOTSET("nsigmag");
   if(up->intwidthset==0)
-    REPORT_NOTSET("intwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("intwidth");
   if(up->floatwidthset==0)
-    REPORT_NOTSET("floatwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("floatwidth");
   if(up->accuwidthset==0)
-    REPORT_NOTSET("accuwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("accuwidth");
   if(up->floatprecisionset==0)
-    REPORT_NOTSET("floatprecision");
+    GAL_CONFIGFILES_REPORT_NOTSET("floatprecision");
   if(up->accuprecisionset==0)
-    REPORT_NOTSET("accuprecision");
+    GAL_CONFIGFILES_REPORT_NOTSET("accuprecision");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -977,7 +977,7 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
 
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
@@ -995,7 +995,7 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)

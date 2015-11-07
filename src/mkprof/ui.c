@@ -93,7 +93,7 @@ readconfig(char *filename, struct mkprofparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
@@ -303,7 +303,7 @@ readconfig(char *filename, struct mkprofparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -328,7 +328,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
 
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
 
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
@@ -388,7 +388,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating modes:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -402,50 +402,50 @@ checkifset(struct mkprofparams *p)
 
   int intro=0;
   if(p->cp.hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->tunitinpset==0)
-    REPORT_NOTSET("tunitinp");
+    GAL_CONFIGFILES_REPORT_NOTSET("tunitinp");
   if(up->numrandomset==0)
-    REPORT_NOTSET("numrandom");
+    GAL_CONFIGFILES_REPORT_NOTSET("numrandom");
   if(up->toleranceset==0)
-    REPORT_NOTSET("tolerance");
+    GAL_CONFIGFILES_REPORT_NOTSET("tolerance");
   if(up->zeropointset==0)
-    REPORT_NOTSET("zeropoint");
+    GAL_CONFIGFILES_REPORT_NOTSET("zeropoint");
   if(up->xcolset==0)
-    REPORT_NOTSET("xcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("xcol");
   if(up->ycolset==0)
-    REPORT_NOTSET("ycol");
+    GAL_CONFIGFILES_REPORT_NOTSET("ycol");
   if(up->fcolset==0)
-    REPORT_NOTSET("fcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("fcol");
   if(up->rcolset==0)
-    REPORT_NOTSET("rcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("rcol");
   if(up->ncolset==0)
-    REPORT_NOTSET("ncol");
+    GAL_CONFIGFILES_REPORT_NOTSET("ncol");
   if(up->pcolset==0)
-    REPORT_NOTSET("pcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("pcol");
   if(up->qcolset==0)
-    REPORT_NOTSET("qcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("qcol");
   if(up->mcolset==0)
-    REPORT_NOTSET("mcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("mcol");
   if(up->naxis1set==0)
-    REPORT_NOTSET("naxis1");
+    GAL_CONFIGFILES_REPORT_NOTSET("naxis1");
   if(up->naxis2set==0)
-    REPORT_NOTSET("naxis2");
+    GAL_CONFIGFILES_REPORT_NOTSET("naxis2");
   if(up->oversampleset==0)
-    REPORT_NOTSET("oversample");
+    GAL_CONFIGFILES_REPORT_NOTSET("oversample");
   if(up->circumwidthset==0)
-    REPORT_NOTSET("circumwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("circumwidth");
   if(up->crpix1set==0)
-    REPORT_NOTSET("crpix1");
+    GAL_CONFIGFILES_REPORT_NOTSET("crpix1");
   if(up->crpix2set==0)
-    REPORT_NOTSET("crpix2");
+    GAL_CONFIGFILES_REPORT_NOTSET("crpix2");
   if(up->crval1set==0)
-    REPORT_NOTSET("crval1");
+    GAL_CONFIGFILES_REPORT_NOTSET("crval1");
   if(up->crval2set==0)
-    REPORT_NOTSET("crval2");
+    GAL_CONFIGFILES_REPORT_NOTSET("crval2");
   if(up->resolutionset==0)
-    REPORT_NOTSET("resolution");
-  END_OF_NOTSET_REPORT;
+    GAL_CONFIGFILES_REPORT_NOTSET("resolution");
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -511,15 +511,15 @@ sanitycheck(struct mkprofparams *p)
 
 
   /* If all the columns are within the catalog: */
-  CHECKCOLINCAT(p->xcol, "xcol");
-  CHECKCOLINCAT(p->ycol, "ycol");
-  CHECKCOLINCAT(p->fcol, "fcol");
-  CHECKCOLINCAT(p->rcol, "rcol");
-  CHECKCOLINCAT(p->ncol, "ncol");
-  CHECKCOLINCAT(p->pcol, "pcol");
-  CHECKCOLINCAT(p->qcol, "qcol");
-  CHECKCOLINCAT(p->mcol, "mcol");
-  CHECKCOLINCAT(p->tcol, "tcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, "xcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, "ycol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->fcol, "fcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->rcol, "rcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ncol, "ncol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->pcol, "pcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->qcol, "qcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->mcol, "mcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->tcol, "tcol");
 
 
   /* Check if all the profile codes are within the desired range: */
@@ -719,7 +719,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 {
   char *jobname;
   struct timeval t1;
-  char message[VERBMSGLENGTH_V];
+  char message[GAL_TIMING_VERB_MSG_LENGTH_V];
   struct commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
@@ -737,14 +737,14 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
   gal_txtarray_txt_to_array(p->up.catname, &p->cat, &p->cs0, &p->cs1);
@@ -765,7 +765,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
      created by gal_txtarray_txt_to_array. */
   gettimeofday(&t1, NULL);
   sanitycheck(p);
-  gal_checkset_check_remove_file(TXTARRAYVVLOG, 0);
+  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
   /* Prepare the necessary arrays: */
   preparearrays(p);

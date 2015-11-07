@@ -92,7 +92,7 @@ readconfig(char *filename, struct imgwarpparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
@@ -140,7 +140,7 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -166,7 +166,7 @@ printvalues(FILE *fp, struct imgwarpparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->hstartwcsset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "hstartwcs", p->hstartwcs);
   if(up->hendwcsset)
@@ -174,10 +174,10 @@ printvalues(FILE *fp, struct imgwarpparams *p)
 
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
-    PRINTSTINGMAYBEWITHSPACE("matrix", up->matrixstring);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("matrix", up->matrixstring);
 
   if(cp->outputset)
-    PRINTSTINGMAYBEWITHSPACE("output", cp->output);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("output", cp->output);
 
   if(up->maxblankfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "maxblankfrac", p->maxblankfrac);
@@ -187,7 +187,7 @@ printvalues(FILE *fp, struct imgwarpparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -205,13 +205,13 @@ checkifset(struct imgwarpparams *p)
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->matrixstringset==0)
-    REPORT_NOTSET("matrix");
+    GAL_CONFIGFILES_REPORT_NOTSET("matrix");
   if(up->maxblankfracset==0)
-    REPORT_NOTSET("maxblankfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("maxblankfrac");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -483,14 +483,14 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
   if(p->up.matrixname)
@@ -500,7 +500,7 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
 
   /* Do a sanity check. */
   sanitycheck(p);
-  gal_checkset_check_remove_file(TXTARRAYVVLOG, 0);
+  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)

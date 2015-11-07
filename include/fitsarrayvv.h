@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef FITSMATRIX_H
-#define FITSMATRIX_H
+#ifndef __GAL_FITSMATRIX_H__
+#define __GAL_FITSMATRIX_H__
 
 #include <math.h>
 #include <float.h>
@@ -32,12 +32,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcsfix.h>
 #include <wcslib/wcs.h>
 
-#define FITSSTRINGBLANK   NULL
-#define FITSBYTEBLANK     UCHAR_MAX	/* 0 is often meaningful here! */
-#define FITSSHORTBLANK    INT16_MIN
-#define FITSLONGBLANK     INT32_MIN
-#define FITSLLONGBLANK    INT64_MIN
-#define FITSFLOATBLANK    NAN
+#define GAL_FITSARRAY_STRING_BLANK   NULL
+#define GAL_FITSARRAY_BYTE_BLANK     UCHAR_MAX /* 0 is often meaningful here! */
+#define GAL_FITSARRAY_SHORT_BLANK    INT16_MIN
+#define GAL_FITSARRAY_LONG_BLANK     INT32_MIN
+#define GAL_FITSARRAY_LLONG_BLANK    INT64_MIN
+#define GAL_FITSARRAY_FLOAT_BLANK    NAN
 
 
 

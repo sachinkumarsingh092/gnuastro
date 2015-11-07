@@ -52,7 +52,7 @@ avestdonthread(void *inparam)
   size_t i, num, row, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
 
   /* Start this thread's work: */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Prepare the values: */
       num=row=0;

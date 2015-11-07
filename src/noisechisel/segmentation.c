@@ -190,7 +190,7 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
 	memset(wngb, 0, sizeof(wngb));
 
 	/* Find which grown clumps this river pixel touches.      */
-	FILL_NGB_8_ALLIMG;
+	GAL_NEIGHBORS_FILL_8_ALLIMG;
 	nf=(n=ngb)+numngb;
 	do
 	  if( olab[*n]>0 )
@@ -481,7 +481,7 @@ segmentonthread(void *inparam)
 
   /* Go over all the initial detections that were assigned to this
      thread. */
-  for(i=0;ctp->indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;ctp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     if(ctp->indexs[i])   /* sp->indexs[i]==0 for the background. */
       {
         /* Keep the initial label of this detection. The initial label
@@ -675,7 +675,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(indexs[i*thrdcols]!=NONTHRDINDEX)
+	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
             ctp[i].p=p;
             ctp[i].id=i;
@@ -734,7 +734,7 @@ clabwithnoseg(long *olab, long *clab, size_t size, int anyblank)
 
   if(anyblank)
     do
-      *clab++ = ( *olab==FITSLONGBLANK ? FITSLONGBLANK
+      *clab++ = ( *olab==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
                   : ( *olab>0 ? SEGMENTINIT : 0 ) );
     while(++olab<end);
   else
@@ -792,7 +792,8 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       b=p->byt;lf=(l=p->clab)+s0*s1;
-      do *l = *b++==FITSBYTEBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+      do *l = *b++==GAL_FITSARRAY_BYTE_BLANK ? GAL_FITSARRAY_LONG_BLANK
+           : 0; while(++l<lf);
     }
   else
     memset(p->clab, 0, s0*s1*sizeof *p->clab);
@@ -816,7 +817,8 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       lf=(l=p->clab)+s0*s1;
-      do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+      do *l = *l==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
+           : 0; while(++l<lf);
     }
   else memset(p->clab, 0, s0*s1*sizeof *p->clab);
 
@@ -841,7 +843,8 @@ segmentation(struct noisechiselparams *p)
           if(p->anyblank)
             {
               lf=(l=p->clab)+s0*s1;
-              do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+              do *l = *l==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
+                   : 0; while(++l<lf);
             }
           else memset(p->clab, 0, s0*s1*sizeof *p->clab);
 

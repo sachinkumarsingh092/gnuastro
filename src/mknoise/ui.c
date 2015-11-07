@@ -93,7 +93,7 @@ readconfig(char *filename, struct mknoiseparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
@@ -134,7 +134,7 @@ readconfig(char *filename, struct mknoiseparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -160,7 +160,7 @@ printvalues(FILE *fp, struct mknoiseparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->backgroundset)
     fprintf(fp, CONF_SHOWFMT"%f\n", "background", p->mbackground);
   if(up->zeropointset)
@@ -178,7 +178,7 @@ printvalues(FILE *fp, struct mknoiseparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -196,17 +196,17 @@ checkifset(struct mknoiseparams *p)
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
 
   if(up->backgroundset==0)
-    REPORT_NOTSET("background");
+    GAL_CONFIGFILES_REPORT_NOTSET("background");
   if(up->zeropointset==0)
-    REPORT_NOTSET("zeropoint");
+    GAL_CONFIGFILES_REPORT_NOTSET("zeropoint");
   if(up->stdaddset==0)
-    REPORT_NOTSET("stdadd");
+    GAL_CONFIGFILES_REPORT_NOTSET("stdadd");
 
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -327,7 +327,7 @@ preparearrays(struct mknoiseparams *p)
 void
 setparams(int argc, char *argv[], struct mknoiseparams *p)
 {
-  char message[VERBMSGLENGTH_V];
+  char message[GAL_TIMING_VERB_MSG_LENGTH_V];
   struct commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
@@ -343,14 +343,14 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Make the array of input images. */
   preparearrays(p);

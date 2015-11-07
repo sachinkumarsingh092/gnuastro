@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* For the FITSLONGBLANK and FITSBYTEBLANK macros: */
+/* For the GAL_FITSARRAY_LONG_BLANK and GAL_FITSARRAY_BYTE_BLANK macros: */
 #include "fitsarrayvv.h"
 
 
@@ -39,10 +39,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    check. The compiler has no idea of our convention to label things
    with positive indices, so we can't rely on the compiler to optimize
    this. */
-#if FITSLONGBLANK<0
+#if GAL_FITSARRAY_LONG_BLANK<0
 #define ISINDEXABLELABEL (*lab>0)
 #else
-#define ISINDEXABLELABEL (*lab && *lab!=FITSLONGBLANK)
+#define ISINDEXABLELABEL (*lab && *lab!=GAL_FITSARRAY_LONG_BLANK)
 #endif
 
 

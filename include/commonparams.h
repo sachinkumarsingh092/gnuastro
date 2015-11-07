@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef COMMONPARAMS_H
-#define COMMONPARAMS_H
+#ifndef __GAL_COMMONPARAMS_H__
+#define __GAL_COMMONPARAMS_H__
 
 
 /* The structure keeping all the common parameters in gnuastro. This

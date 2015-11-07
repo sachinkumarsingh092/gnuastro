@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata";
@@ -57,11 +57,11 @@ static char args_doc[] = "ASTRdata";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" print the header information in any astronomical data file"
   "header. It can also manipulate (add, remove or modify) any of the "
   "existing keywords in a data header. \n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;

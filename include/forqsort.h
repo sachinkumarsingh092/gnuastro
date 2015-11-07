@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef FORQSORT_H
-#define FORQSORT_H
+#ifndef __GAL_QSORT_H__
+#define __GAL_QSORT_H__
 
 /* Pointer used to sort the indexs of an array based on their flux
    (value in this array). */

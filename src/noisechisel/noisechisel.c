@@ -155,7 +155,7 @@ noisechisel(struct noisechiselparams *p)
   struct timeval t1;
   int verb=p->cp.verb;
   size_t i, s0=smp->s0, s1=smp->s1;
-  char report[VERBMSGLENGTH_V], *oreport;
+  char report[GAL_TIMING_VERB_MSG_LENGTH_V], *oreport;
 
 
   /* Convolve the image: */

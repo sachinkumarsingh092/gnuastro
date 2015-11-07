@@ -70,7 +70,7 @@ reportsimplestats(struct imgstatparams *p)
   symvalue=gal_mode_value_from_sym(p->sorted, p->size, modeindex, modesym);
   printf("   -- %-45s%.4f   %g\n", "Mode symmetricity and its cutoff"
          " value", modesym, symvalue);
-  if(modesym<MODESYMGOOD)
+  if(modesym<GAL_MODE_SYM_GOOD)
     printf("      ## MODE SYMMETRICITY IS TOO LOW ##\n");
 
   /* Save the mode histogram and cumulative frequency plot. Note

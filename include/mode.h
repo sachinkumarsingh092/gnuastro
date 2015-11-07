@@ -20,21 +20,21 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef MODE_H
-#define MODE_H
+#ifndef __GAL_MODE_H__
+#define __GAL_MODE_H__
 
-#define MODELOWQUANTILE  0.01f
-#define MODEHIGHQUANTILE 0.51f
+#define GAL_MODE_LOW_QUANTILE  0.01f
+#define GAL_MODE_HIGH_QUANTILE 0.51f
 
-#define MODESYMGOOD       0.2f
-#define MODELOWQUANTGOOD  0.02f
+#define GAL_MODE_SYM_GOOD        0.2f
+#define GAL_MODE_LOW_QUANT_GOOD  0.02f
 
-#define SYMMETRICITYLOWQUANT 0.01f
+#define GAL_MODE_SYMMETRICITY_LOW_QUANT 0.01f
 
-#define GOLDENRATIO        1.618034f
-#define TWOTAKEGOLDENRATIO 0.38197f
+#define GAL_MODE_GOLDEN_RATIO          1.618034f
+#define GAL_MODE_TWO_TAKE_GOLDEN_RATIO 0.38197f
 
-#define MIRRORISABOVERESULT    (size_t)(-1)
+#define GAL_MODE_MIRROR_IS_ABOVE_RESULT    (size_t)(-1)
 
 struct modeparams
 {

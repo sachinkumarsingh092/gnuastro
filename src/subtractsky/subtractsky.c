@@ -71,7 +71,7 @@ avestdonthread(void *inparam)
   else cofa=NULL;
 
   /* Start this thread's work: */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Prepare the values: */
       num=row=0;
@@ -108,7 +108,7 @@ avestdonthread(void *inparam)
       /* Do the desired operation on the mesh: */
       qsort(sorted, num, sizeof *oneforall, gal_qsort_float_increasing);
       gal_mode_index_in_sorted(sorted, num, mirrordist, &modeindex, &modesym);
-      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq )
+      if( modesym>GAL_MODE_SYM_GOOD && (float)modeindex/(float)num>minmodeq )
         {
           /* If cofa was defined, then oneforall was not sorted. */
           if(cofa)

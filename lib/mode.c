@@ -325,7 +325,7 @@ mirrormaxdiff(float *a, size_t size, size_t m,
 	 result is not acceptable! */
       if(i>j+errordiff)
 	{
-	  maxdiff=MIRRORISABOVERESULT;
+	  maxdiff=GAL_MODE_MIRROR_IS_ABOVE_RESULT;
 	  break;
 	}
       absdiff  = i>j ? i-j : j-i;
@@ -349,13 +349,12 @@ mirrormaxdiff(float *a, size_t size, size_t m,
    middle points in the given interval and thus decreasing the
    interval until a certain tolerance is reached.
 
-   If the input interval is on points `a` and `b`, then the middle
-   point (lets call it `c`, where c>a and c<b) to test should be
-   positioned such that (b-c)/(c-a)=GOLDENRATIO. Once we open up this
-   relation, we can find c using:
-   c=(b+GOLDENRATIO*a)/(1+GOLDENRATIO). We need a fourth point to be
-   placed between. With this configuration, the probing point is
-   located at:  */
+   If the input interval is on points `a` and `b`, then the middle point (lets
+   call it `c`, where c>a and c<b) to test should be positioned such that
+   (b-c)/(c-a)=GAL_MODE_GOLDEN_RATIO. Once we open up this relation, we can find
+   c using: c=(b+GAL_MODE_GOLDEN_RATIO*a)/(1+GAL_MODE_GOLDEN_RATIO). We need a
+   fourth point to be placed between. With this configuration, the probing point
+   is located at: */
 size_t
 modegoldenselection(struct modeparams *mp)
 {
@@ -368,9 +367,9 @@ modegoldenselection(struct modeparams *mp)
 
   /* Find the probing point in the larger interval. */
   if(mp->highi-mp->midi > mp->midi-mp->lowi)
-    di = mp->midi + TWOTAKEGOLDENRATIO * (float)(mp->highi-mp->midi);
+    di = mp->midi + GAL_MODE_TWO_TAKE_GOLDEN_RATIO *(float)(mp->highi-mp->midi);
   else
-    di = mp->midi - TWOTAKEGOLDENRATIO * (float)(mp->midi-mp->lowi);
+    di = mp->midi - GAL_MODE_TWO_TAKE_GOLDEN_RATIO * (float)(mp->midi-mp->lowi);
 
   /* Since these are all indexs (and positive) we don't need an
      absolute value, highi is also always larger than lowi! In some
@@ -399,11 +398,11 @@ modegoldenselection(struct modeparams *mp)
   */
   /* +++++++++++++ The mirrored distribution's cumulative frequency
      plot has be lower than the actual's cfp. If it isn't, `di` will
-     be MIRRORISABOVERESULT. In this case, the normal golden section
-     minimization is not going to give us what we want. So I have
-     added this modification to it. In such cases, we want the search
-     to go to the lower intervals.*/
-  if(dd==MIRRORISABOVERESULT)
+     be GAL_MODE_MIRROR_IS_ABOVE_RESULT. In this case, the normal golden section
+     minimization is not going to give us what we want. So I have added this
+     modification to it. In such cases, we want the search to go to the lower
+     intervals.*/
+  if(dd==GAL_MODE_MIRROR_IS_ABOVE_RESULT)
     {
       if(mp->midi < di)
 	{
@@ -478,7 +477,8 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
   mf=a[mi];
   errdiff=errorstdm*sqrt(mi);
   topi = 2*mi>size-1 ? size-1 : 2*mi;
-  af=a[gal_statistics_index_from_quantile(2*mi+1,   SYMMETRICITYLOWQUANT)];
+  af=a[gal_statistics_index_from_quantile(2*mi+1,
+                                          GAL_MODE_SYMMETRICITY_LOW_QUANT)];
 
   /* This loop is very similar to that of mirrormaxdiff(). It will
      find the index where the difference between the two cumulative
@@ -536,8 +536,9 @@ float
 gal_mode_value_from_sym(float *sorted, size_t size, size_t modeindex, float sym)
 {
   float mf=sorted[modeindex];
-  float af=sorted[gal_statistics_index_from_quantile(2*modeindex+1,
-                                                     SYMMETRICITYLOWQUANT)];
+  float af=
+    sorted[gal_statistics_index_from_quantile(2*modeindex+1,
+                                              GAL_MODE_SYMMETRICITY_LOW_QUANT)];
   return sym*(mf-af)+mf;
 }
 
@@ -553,7 +554,7 @@ gal_mode_value_from_sym(float *sorted, size_t size, size_t modeindex, float sym)
    A good mode will have:
 
    modequant=(float)(modeindex)/(float)size;
-   modesym>MODESYMGOOD && modequant>MODELOWQUANTGOOD
+   modesym>GAL_MODE_SYM_GOOD && modequant>GAL_MODE_LOW_QUANT_GOOD
 */
 void
 gal_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
@@ -570,9 +571,10 @@ gal_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
   if(mp.numcheck>1000)
     mp.interval=mp.numcheck/1000;
   else mp.interval=1;
-  mp.lowi  = gal_statistics_index_from_quantile(size, MODELOWQUANTILE);
-  mp.highi = gal_statistics_index_from_quantile(size, MODEHIGHQUANTILE);
-  mp.midi  = ((float)mp.highi+GOLDENRATIO*(float)mp.lowi)/(1+GOLDENRATIO);
+  mp.lowi  = gal_statistics_index_from_quantile(size, GAL_MODE_LOW_QUANTILE);
+  mp.highi = gal_statistics_index_from_quantile(size, GAL_MODE_HIGH_QUANTILE);
+  mp.midi  = ((float)mp.highi
+              +GAL_MODE_GOLDEN_RATIO*(float)mp.lowi)/(1+GAL_MODE_GOLDEN_RATIO);
   mp.midd  = mirrormaxdiff(mp.sorted, mp.size, mp.midi, mp.numcheck,
 			   mp.interval, mp.errorstdm);
 

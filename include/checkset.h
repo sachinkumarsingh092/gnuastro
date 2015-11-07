@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef CHECKSET_H
-#define CHECKSET_H
+#ifndef __GAL_CHECKSET_H__
+#define __GAL_CHECKSET_H__
 
 #include <math.h>
 #include <fitsio.h>
@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /*********                 Macros                **************/
 /**************************************************************/
-#define CHECKCOLINCAT(INCOL,NAME) {					\
+#define GAL_CHECKSET_CHECK_COL_IN_CAT(INCOL,NAME) {                     \
     size_t i;								\
     									\
     if( (INCOL) >= p->cs1 )						\
@@ -43,12 +43,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 	error(EXIT_FAILURE, 0, "%s: Column %lu (--%s) in row %lu "	\
 	      "could not be read as a number. See %s. Note that "	\
 	      "counting starts from zero.",				\
-	      p->up.catname, (INCOL), (NAME), i, TXTARRAYVVLOG);	\
+	      p->up.catname, (INCOL), (NAME), i, GAL_TXTARRAY_LOG);	\
   }
 
 
 
-#define PRINTSTINGMAYBEWITHSPACE(name,string) {                         \
+#define GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE(name,string) {       \
     if(gal_checkset_string_has_space(string))                           \
       fprintf(fp, CONF_SHOWFMT"\"%s\"\n", name, string);                \
     else                                                                \

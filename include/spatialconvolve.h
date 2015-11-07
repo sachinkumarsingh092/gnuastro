@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef SPATIALCONVOLVE_H
-#define SPATIALCONVOLVE_H
+#ifndef __GAL_SPATIALCONVOLVE_H__
+#define __GAL_SPATIALCONVOLVE_H__
 
 
 

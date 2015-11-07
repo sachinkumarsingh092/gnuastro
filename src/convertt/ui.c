@@ -90,7 +90,7 @@ readconfig(char *filename, struct converttparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
@@ -165,7 +165,7 @@ readconfig(char *filename, struct converttparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -191,13 +191,13 @@ printvalues(FILE *fp, struct converttparams *p)
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->hdu2set)
-    PRINTSTINGMAYBEWITHSPACE("hdu2", up->hdu2);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu2", up->hdu2);
   if(up->hdu3set)
-    PRINTSTINGMAYBEWITHSPACE("hdu3", up->hdu3);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu3", up->hdu3);
   if(up->hdu4set)
-    PRINTSTINGMAYBEWITHSPACE("hdu4", up->hdu4);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu4", up->hdu4);
 
 
   fprintf(fp, "\n# Output parameters:\n");
@@ -223,7 +223,7 @@ printvalues(FILE *fp, struct converttparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating modes:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -240,27 +240,27 @@ checkifset(struct converttparams *p)
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->hdu2set==0)
-    REPORT_NOTSET("hdu2");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu2");
   if(up->hdu3set==0)
-    REPORT_NOTSET("hdu3");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu3");
   if(up->hdu4set==0)
-    REPORT_NOTSET("hdu4");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu4");
   if(up->qualityset==0)
-    REPORT_NOTSET("quality");
+    GAL_CONFIGFILES_REPORT_NOTSET("quality");
   if(up->widthincmset==0)
-    REPORT_NOTSET("widthincm");
+    GAL_CONFIGFILES_REPORT_NOTSET("widthincm");
   if(up->borderwidthset==0)
-    REPORT_NOTSET("borderwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("borderwidth");
   if(up->fluxlowset==0)
-    REPORT_NOTSET("fluxlow");
+    GAL_CONFIGFILES_REPORT_NOTSET("fluxlow");
   if(up->fluxhighset==0)
-    REPORT_NOTSET("fluxhigh");
+    GAL_CONFIGFILES_REPORT_NOTSET("fluxhigh");
   if(up->maxbyteset==0)
-    REPORT_NOTSET("maxbyte");
+    GAL_CONFIGFILES_REPORT_NOTSET("maxbyte");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -646,10 +646,10 @@ preparearrays(struct converttparams *p)
           df = (d=p->ch[p->numch]) + p->s0[p->numch]*p->s1[p->numch];
           do if(isnan(*d++)) break; while(d<df);
           if(d==df)
-            gal_checkset_check_remove_file(TXTARRAYVVLOG, 0);
+            gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
           else
             error(EXIT_FAILURE, 0, "%s contains non-numeric data, see %s.",
-                  names[i], TXTARRAYVVLOG);
+                  names[i], GAL_TXTARRAY_LOG);
           p->bitpixs[p->numch]=DOUBLE_IMG;
           ++p->numch;
         }
@@ -695,14 +695,14 @@ setparams(int argc, char *argv[], struct converttparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Prepare the arrays: */
   preparearrays(p);

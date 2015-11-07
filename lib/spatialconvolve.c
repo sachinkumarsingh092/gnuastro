@@ -85,7 +85,7 @@ gal_spatialconvolve_thread(void *inparam)
   float *input=scp->input, *kernel=scp->kernel, *out=scp->out;
 
   /* Go over all the pixels associated with this thread. */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set the index, if it is a NaN pixel, then set the output to
          be NaN too. */
@@ -210,7 +210,7 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=NONTHRDINDEX)
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
           {
             scp[i].b=&b;
             gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0, ks1, nt,

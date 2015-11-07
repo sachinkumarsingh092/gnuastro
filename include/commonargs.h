@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef COMMONARGS_H
-#define COMMONARGS_H
+#ifndef __GAL_COMMONARGS_H__
+#define __GAL_COMMONARGS_H__
 
 #include <argp.h>
 #include <string.h>

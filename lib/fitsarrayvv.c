@@ -196,42 +196,42 @@ gal_fitsarray_bitpix_blank(int bitpix)
       b=malloc(sizeof(unsigned char));
       if(b==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(unsigned char));
-      *b=FITSBYTEBLANK;
+      *b=GAL_FITSARRAY_BYTE_BLANK;
       return b;
 
     case SHORT_IMG:
       s=malloc(sizeof(short));
       if(s==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(short));
-      *s=FITSSHORTBLANK;
+      *s=GAL_FITSARRAY_SHORT_BLANK;
       return s;
 
     case LONG_IMG:
       l=malloc(sizeof(long));
       if(l==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(long));
-      *l=FITSLONGBLANK;
+      *l=GAL_FITSARRAY_LONG_BLANK;
       return l;
 
     case LONGLONG_IMG:
       L=malloc(sizeof(LONGLONG));
       if(L==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(LONGLONG));
-      *L=FITSLLONGBLANK;
+      *L=GAL_FITSARRAY_LLONG_BLANK;
       return L;
 
     case FLOAT_IMG:
       f=malloc(sizeof(float));
       if(f==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(float));
-      *f=FITSFLOATBLANK;
+      *f=GAL_FITSARRAY_FLOAT_BLANK;
       return f;
 
     case DOUBLE_IMG:
       d=malloc(sizeof(double));
       if(d==NULL)
 	error(EXIT_FAILURE, errno, "%lu bytes", sizeof(double));
-      *d=FITSFLOATBLANK;
+      *d=GAL_FITSARRAY_FLOAT_BLANK;
       return d;
 
     default:
@@ -317,32 +317,32 @@ blanktovalue(void *array, int bitpix, size_t size, void *value)
     {
     case BYTE_IMG:
       bf=(b=array)+size;
-      do if(*b==FITSBYTEBLANK) *b=bv; while(++b<bf);
+      do if(*b==GAL_FITSARRAY_BYTE_BLANK) *b=bv; while(++b<bf);
       break;
 
     case SHORT_IMG:
       sf=(s=array)+size;
-      do if(*s==FITSSHORTBLANK) *s=sv; while(++s<sf);
+      do if(*s==GAL_FITSARRAY_SHORT_BLANK) *s=sv; while(++s<sf);
       break;
 
     case LONG_IMG:
       lf=(l=array)+size;
-      do if(*l==FITSLONGBLANK) *l=lv; while(++l<lf);
+      do if(*l==GAL_FITSARRAY_LONG_BLANK) *l=lv; while(++l<lf);
       break;
 
     case LONGLONG_IMG:
       Lf=(L=array)+size;
-      do if(*L==FITSLLONGBLANK) *L=Lv; while(++L<Lf);
+      do if(*L==GAL_FITSARRAY_LLONG_BLANK) *L=Lv; while(++L<Lf);
       break;
 
     case FLOAT_IMG:
       ff=(f=array)+size;
-      do if(*f==FITSFLOATBLANK) *f=fv; while(++f<ff);
+      do if(*f==GAL_FITSARRAY_FLOAT_BLANK) *f=fv; while(++f<ff);
       break;
 
     case DOUBLE_IMG:
       df=(d=array)+size;
-      do if(*d==FITSFLOATBLANK) *d=dv; while(++d<df);
+      do if(*d==GAL_FITSARRAY_FLOAT_BLANK) *d=dv; while(++d<df);
       break;
 
     default:
@@ -381,31 +381,34 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case SHORT_IMG:
 	  bf=(b=*out)+size; do *b=*is++; while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=(iis[i]==FITSSHORTBLANK)?FITSBYTEBLANK:b[i];}
+            {b=*out; do {b[i]=(iis[i]==GAL_FITSARRAY_SHORT_BLANK)
+                         ?GAL_FITSARRAY_BYTE_BLANK:b[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  bf=(b=*out)+size; do *b=*il++; while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=(iil[i]==FITSLONGBLANK)?FITSBYTEBLANK:b[i];}
+            {b=*out; do {b[i]=(iil[i]==GAL_FITSARRAY_LONG_BLANK)
+                         ?GAL_FITSARRAY_BYTE_BLANK:b[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  bf=(b=*out)+size; do *b=*iL++; while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=(iiL[i]==FITSLLONGBLANK)?FITSBYTEBLANK:b[i];}
+            {b=*out; do {b[i]=(iiL[i]==GAL_FITSARRAY_LLONG_BLANK)
+                         ?GAL_FITSARRAY_BYTE_BLANK:b[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
 	  bf=(b=*out)+size; do *b=roundf(*iif++); while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=isnan(iiif[i])?FITSBYTEBLANK:b[i];}
+            {b=*out; do {b[i]=isnan(iiif[i])?GAL_FITSARRAY_BYTE_BLANK:b[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  bf=(b=*out)+size; do *b=round(*id++); while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=isnan(iid[i])?FITSBYTEBLANK:b[i];}
+            {b=*out; do {b[i]=isnan(iid[i])?GAL_FITSARRAY_BYTE_BLANK:b[i];}
               while(++i!=size);}
           return;
 	default:
@@ -421,7 +424,8 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case BYTE_IMG:
 	  sf=(s=*out)+size; do *s=*ib++; while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=(iib[i]==FITSBYTEBLANK)?FITSSHORTBLANK:s[i];}
+            {s=*out; do {s[i]=(iib[i]==GAL_FITSARRAY_BYTE_BLANK)
+                         ?GAL_FITSARRAY_SHORT_BLANK:s[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
@@ -429,25 +433,27 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case LONG_IMG:
 	  sf=(s=*out)+size; do *s=*il++; while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=(iil[i]==FITSLONGBLANK)?FITSSHORTBLANK:s[i];}
+            {s=*out; do {s[i]=(iil[i]==GAL_FITSARRAY_LONG_BLANK)
+                         ?GAL_FITSARRAY_SHORT_BLANK:s[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  sf=(s=*out)+size; do *s=*iL++; while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=(iiL[i]==FITSLLONGBLANK)?FITSSHORTBLANK:s[i];}
+            {s=*out; do {s[i]=(iiL[i]==GAL_FITSARRAY_LLONG_BLANK)
+                         ?GAL_FITSARRAY_SHORT_BLANK:s[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
 	  sf=(s=*out)+size; do *s=roundf(*iif++); while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=isnan(iiif[i])?FITSSHORTBLANK:s[i];}
+            {s=*out; do {s[i]=isnan(iiif[i])?GAL_FITSARRAY_SHORT_BLANK:s[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  sf=(s=*out)+size; do *s=round(*id++); while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=isnan(iid[i])?FITSSHORTBLANK:s[i];}
+            {s=*out; do {s[i]=isnan(iid[i])?GAL_FITSARRAY_SHORT_BLANK:s[i];}
               while(++i!=size);}
           return;
 	default:
@@ -463,13 +469,15 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case BYTE_IMG:
 	  lf=(l=*out)+size; do *l=*ib++; while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=(iib[i]==FITSBYTEBLANK)?FITSLONGBLANK:l[i];}
+            {l=*out; do {l[i]=(iib[i]==GAL_FITSARRAY_BYTE_BLANK)
+                         ?GAL_FITSARRAY_LONG_BLANK:l[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  lf=(l=*out)+size; do *l=*is++; while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=(iis[i]==FITSSHORTBLANK)?FITSLONGBLANK:l[i];}
+            {l=*out; do {l[i]=(iis[i]==GAL_FITSARRAY_SHORT_BLANK)
+                         ?GAL_FITSARRAY_LONG_BLANK:l[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
@@ -477,19 +485,20 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case LONGLONG_IMG:
 	  lf=(l=*out)+size; do *l=*iL++; while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=(iiL[i]==FITSLLONGBLANK)?FITSLONGBLANK:l[i];}
+            {l=*out; do {l[i]=(iiL[i]==GAL_FITSARRAY_LLONG_BLANK)
+                         ?GAL_FITSARRAY_LONG_BLANK:l[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
 	  lf=(l=*out)+size; do *l=roundf(*iif++); while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=isnan(iiif[i])?FITSLONGBLANK:l[i];}
+            {l=*out; do {l[i]=isnan(iiif[i])?GAL_FITSARRAY_LONG_BLANK:l[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  lf=(l=*out)+size; do *l=round(*id++); while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=isnan(iid[i])?FITSLONGBLANK:l[i];}
+            {l=*out; do {l[i]=isnan(iid[i])?GAL_FITSARRAY_LONG_BLANK:l[i];}
               while(++i!=size);}
           return;
 	default:
@@ -505,19 +514,22 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case BYTE_IMG:
 	  Lf=(L=*out)+size; do *L=*ib++; while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=(iib[i]==FITSBYTEBLANK)?FITSLLONGBLANK:L[i];}
+            {L=*out; do {L[i]=(iib[i]==GAL_FITSARRAY_BYTE_BLANK)
+                         ?GAL_FITSARRAY_LLONG_BLANK:L[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  Lf=(L=*out)+size; do *L=*is++; while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=(iis[i]==FITSSHORTBLANK)?FITSLLONGBLANK:L[i];}
+            {L=*out; do {L[i]=(iis[i]==GAL_FITSARRAY_SHORT_BLANK)
+                         ?GAL_FITSARRAY_LLONG_BLANK:L[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  Lf=(L=*out)+size; do *L=*il++; while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=(iil[i]==FITSLONGBLANK)?FITSLLONGBLANK:L[i];}
+            {L=*out; do {L[i]=(iil[i]==GAL_FITSARRAY_LONG_BLANK)
+                         ?GAL_FITSARRAY_LLONG_BLANK:L[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
@@ -525,13 +537,13 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case FLOAT_IMG:
 	  Lf=(L=*out)+size; do *L=roundf(*iif++); while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=isnan(iiif[i])?FITSLLONGBLANK:L[i];}
+            {L=*out; do {L[i]=isnan(iiif[i])?GAL_FITSARRAY_LLONG_BLANK:L[i];}
               while(++i!=size);}
           return;
 	case DOUBLE_IMG:
 	  Lf=(L=*out)+size; do *L=round(*id++); while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=isnan(iid[i])?FITSLLONGBLANK:L[i];}
+            {L=*out; do {L[i]=isnan(iid[i])?GAL_FITSARRAY_LLONG_BLANK:L[i];}
               while(++i!=size);}
           return;
 	default:
@@ -547,25 +559,29 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case BYTE_IMG:
 	  ff=(f=*out)+size; do *f=*ib++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iib[i]==FITSBYTEBLANK?FITSFLOATBLANK:f[i];}
+            {f=*out; do {f[i]=iib[i]==GAL_FITSARRAY_BYTE_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:f[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  ff=(f=*out)+size; do *f=*is++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iis[i]==FITSSHORTBLANK?FITSFLOATBLANK:f[i];}
+            {f=*out; do {f[i]=iis[i]==GAL_FITSARRAY_SHORT_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:f[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  ff=(f=*out)+size; do *f=*il++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iil[i]==FITSLONGBLANK?FITSFLOATBLANK:f[i];}
+            {f=*out; do {f[i]=iil[i]==GAL_FITSARRAY_LONG_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:f[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  ff=(f=*out)+size; do *f=*iL++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iiL[i]==FITSLLONGBLANK?FITSFLOATBLANK:f[i];}
+            {f=*out; do {f[i]=iiL[i]==GAL_FITSARRAY_LLONG_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:f[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
@@ -585,25 +601,29 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case BYTE_IMG:
 	  df=(d=*out)+size; do *d=*ib++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iib[i]==FITSBYTEBLANK?FITSFLOATBLANK:d[i];}
+            {d=*out; do {d[i]=iib[i]==GAL_FITSARRAY_BYTE_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:d[i];}
               while(++i!=size);}
           return;
 	case SHORT_IMG:
 	  df=(d=*out)+size; do *d=*is++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iis[i]==FITSSHORTBLANK?FITSFLOATBLANK:d[i];}
+            {d=*out; do {d[i]=iis[i]==GAL_FITSARRAY_SHORT_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:d[i];}
               while(++i!=size);}
           return;
 	case LONG_IMG:
 	  df=(d=*out)+size; do *d=*il++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iil[i]==FITSLONGBLANK?FITSFLOATBLANK:d[i];}
+            {d=*out; do {d[i]=iil[i]==GAL_FITSARRAY_LONG_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:d[i];}
               while(++i!=size);}
           return;
 	case LONGLONG_IMG:
 	  df=(d=*out)+size; do *d=*iL++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iiL[i]==FITSLLONGBLANK?FITSFLOATBLANK:d[i];}
+            {d=*out; do {d[i]=iiL[i]==GAL_FITSARRAY_LLONG_BLANK
+                         ?GAL_FITSARRAY_FLOAT_BLANK:d[i];}
               while(++i!=size);}
           return;
 	case FLOAT_IMG:
@@ -1122,8 +1142,8 @@ gal_fitsarray_copyright_end(fitsfile *fptr, struct fitsheaderll *headers,
   fits_write_comment(fptr, PACKAGE_STRING, &status);
   fits_write_comment(fptr, PACKAGE_URL, &status);
   /*
-  fits_write_comment(fptr, SHORTCOPYRIGHT, &status);
-  fits_write_comment(fptr, SHORTLICENSE, &status);
+  fits_write_comment(fptr, GAL_STRINGS_SHORT_COPYRIGHT, &status);
+  fits_write_comment(fptr, GAL_STRINGS_SHORT_LICENSE, &status);
   */
   gal_fitsarray_io_error(status, NULL);
 }

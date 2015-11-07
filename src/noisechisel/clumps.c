@@ -77,7 +77,7 @@ oversegment(struct clumpsthreadparams *ctp)
   struct noisechiselparams *p=ctp->p;
 
   /* pix is not actually used its self, however, the pointer to it
-     will be extensively used (ind) for the macro FILL_NGB_8_REGION.
+     will be extensively used (ind) for the macro GAL_NEIGHBORS_FILL_8_REGION.
      This macro works on the pointer to the index, not the index its
      self. `pix` is filled with different index values, so the pointer
      to it doesn't change. */
@@ -182,7 +182,7 @@ oversegment(struct clumpsthreadparams *ctp)
                 /* Check the vicinity of this pixel that was just
                    popped to see if it can find any already labeled
                    neighbour or not. */
-                FILL_NGB_8_REGION;
+                GAL_NEIGHBORS_FILL_8_REGION;
 
                 /* If the pixel is on the side of the region, set it
                    as a river, no more need to look around it. */
@@ -413,7 +413,7 @@ growclumps(struct clumpsthreadparams *ctp, int withrivers)
 	  n1=0;
 
 	  /* Check the 4 connected neighbors of the pixel: */
-          FILL_NGB_4_ALLIMG;
+          GAL_NEIGHBORS_FILL_4_ALLIMG;
 	  nf=(n=ngb)+numngb;
 	  do
             if( olab[*n]>0 )	             /* This neighbor is labeled. */
@@ -545,8 +545,8 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
                the neighbors within a region. Otherwise (when working
                on the detections) we want the neighbors on the full
                image.*/
-            if(p->b0f1) {FILL_NGB_8_ALLIMG}
-            else        {FILL_NGB_8_REGION}
+            if(p->b0f1) {GAL_NEIGHBORS_FILL_8_ALLIMG}
+            else        {GAL_NEIGHBORS_FILL_8_REGION}
 
 
             /* We are on a river pixel. So its value has to be added
@@ -790,7 +790,7 @@ clumpsntableonmesh(void *inparams)
   ctp.inds=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
   /* Go over all the meshs that are assigned to this thread. */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set index of this mesh: */
       ind=ctp.thislabel=indexs[i];
@@ -979,7 +979,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
           /* Check to see if the brightest pixel in this clump is
              touching a river or not. */
           ind=&ctp->topinds[i];
-          FILL_NGB_8_ALLIMG;
+          GAL_NEIGHBORS_FILL_8_ALLIMG;
           nf=(n=ngb)+numngb;
           do if(clab[*n++]==SEGMENTRIVER) break; while(n<nf);
 

@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef MESHGRID_H
-#define MESHGRID_H
+#ifndef __GAL_MESH_H__
+#define __GAL_MESH_H__
 
 
 
@@ -36,13 +36,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Operations to do on each mesh. If input parameters are needed (for
    example the quantile), they are given as other argument(s) to the
    fillcharray function. */
-#define MAXNUMCHARRAY    2  /* Maximum number of charrays.                */
-#define INTERPALL        1  /* Interpolate over the whole image as one.   */
-#define INTERPCHANNEL    2  /* Interpolate over each channel individually.*/
+#define GAL_MESH_MAX_NUM_CHARRAY  2 /* Maximum number of charrays.                */
+#define GAL_MESH_INTERP_ALL       1 /* Interpolate over the whole image as one.   */
+#define GAL_MESH_INTERP_CHANNEL   2 /* Interpolate over each channel individually.*/
 
 
 /* The minimum number of acceptable nearest pixels. */
-#define MINACCEPTABLENEAREST 3
+#define GAL_MESH_MIN_ACCEPTABLE_NEAREST 3
 
 
 

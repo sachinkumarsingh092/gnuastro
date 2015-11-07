@@ -90,7 +90,7 @@ readconfig(char *filename, struct convolveparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
@@ -203,7 +203,7 @@ readconfig(char *filename, struct convolveparams *p)
 	}
 
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -229,15 +229,15 @@ printvalues(FILE *fp, struct convolveparams *p)
 
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->masknameset)
-    PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mask", up->maskname);
   if(up->mhduset)
-    PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
   if(up->kernelnameset)
-    PRINTSTINGMAYBEWITHSPACE("kernel", up->kernelname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("kernel", up->kernelname);
   if(up->khduset)
-    PRINTSTINGMAYBEWITHSPACE("khdu", up->khdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("khdu", up->khdu);
 
 
 
@@ -264,7 +264,7 @@ printvalues(FILE *fp, struct convolveparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating modes:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
   if(up->spatialset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "spatial", p->spatial);
   if(up->frequencyset)
@@ -288,34 +288,34 @@ checkifset(struct convolveparams *p)
 
   /* Input: */
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->kernelnameset==0)
-    REPORT_NOTSET("kernel");
+    GAL_CONFIGFILES_REPORT_NOTSET("kernel");
   if(up->khduset==0)
-    REPORT_NOTSET("khdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("khdu");
 
 
   /* Mesh grid: */
   if(up->meshsizeset==0)
-    REPORT_NOTSET("meshsize");
+    GAL_CONFIGFILES_REPORT_NOTSET("meshsize");
   if(up->nch1set==0)
-    REPORT_NOTSET("nch1");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch1");
   if(up->nch2set==0)
-    REPORT_NOTSET("nch2");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
-    REPORT_NOTSET("lastmeshfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("lastmeshfrac");
   if(up->fullconvolutionset==0)
-    REPORT_NOTSET("fullconvolution");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullconvolution");
 
 
   /* Operating mode: */
   if(up->spatialset==0 && up->frequencyset==0)
-    REPORT_NOTSET("spatial or frequency");
+    GAL_CONFIGFILES_REPORT_NOTSET("spatial or frequency");
   if(up->makekernelset==0)
-    REPORT_NOTSET("makekernel");
+    GAL_CONFIGFILES_REPORT_NOTSET("makekernel");
 
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -558,14 +558,14 @@ setparams(int argc, char *argv[], struct convolveparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check, then remove the possibly existing log file
      created by gal_txtarray_txt_to_array. */
