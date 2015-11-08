@@ -36,7 +36,7 @@ noisechisel.c noisechisel.h thresh.c thresh.h binary.c binary.h		\
 label.c label.h detection.c detection.h sky.c sky.h segmentation.c	\
 segmentation.h clumps.c clumps.h
 
-astnoisechisel_LDADD = $(top_builddir)/gnulib/lib/libgnu.a		\
+astnoisechisel_LDADD = $(top_builddir)/gnulib/lib/libgnu.la		\
 -lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh			\
 -lspatialconvolve -lastrthreads -lmode -lstatistics -larraymanip	\
 -lforqsort -llinkedlist -lbox

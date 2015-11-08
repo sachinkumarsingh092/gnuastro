@@ -36,7 +36,7 @@ bin_PROGRAMS = astimgcrop
 astimgcrop_SOURCES = main.c main.h cite.h ui.c ui.h args.h imgcrop.c	\
 imgcrop.h wcsmode.c wcsmode.h crop.c crop.h
 
-astimgcrop_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
+astimgcrop_LDADD = $(top_builddir)/gnulib/lib/libgnu.la -lconfigfiles	\
 -lfitsarrayvv -ltxtarrayvv -lcheckset -llinkedlist -ltiming		\
 -lastrthreads -lbox -lpolygon
 

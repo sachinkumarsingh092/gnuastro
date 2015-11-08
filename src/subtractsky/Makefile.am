@@ -34,7 +34,7 @@ bin_PROGRAMS = astsubtractsky
 astsubtractsky_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 subtractsky.c subtractsky.h
 
-astsubtractsky_LDADD = $(top_builddir)/gnulib/lib/libgnu.a		\
+astsubtractsky_LDADD = $(top_builddir)/gnulib/lib/libgnu.la		\
 -lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh			\
 -lspatialconvolve -lastrthreads -lmode -lstatistics -larraymanip	\
 -lforqsort -llinkedlist -lbox

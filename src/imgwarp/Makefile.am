@@ -35,7 +35,7 @@ bin_PROGRAMS = astimgwarp
 astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 imgwarp.c imgwarp.h
 
-astimgwarp_LDADD = $(top_builddir)/gnulib/lib/libgnu.a	\
+astimgwarp_LDADD = $(top_builddir)/gnulib/lib/libgnu.la	\
 -lconfigfiles -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming	\
 -lastrthreads -lpolygon
 
