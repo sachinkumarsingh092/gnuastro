@@ -2056,12 +2056,28 @@ source and unpack it, the following configure script should be enough
 for most purposes. Don't forget to read chapter two of the manual
 though, for example the second option is only for 64bit systems. The
 manual also explains how to check if it has been installed correctly.
+
+CFITSIO comes with two executables called fpack and funpack. From
+their manual: they ``are standalone programs for compressing and
+uncompressing images and tables that are stored in the FITS (Flexible
+Image Transport System) data format.  They are analogous to the gzip
+and gunzip compression programs except that they are optimized for the
+types of astronomical images that are often stored in FITS
+format''. The instruction below explain how to compile and install
+them on your system along with CFITSIO. Incase you don't want them,
+just ignore the commands that include their names. They are not
+essential for Gnuastro, since they are just wrappers for functions
+within CFITSIO.
+
 @example
 $ tar -vxzf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
+$ make fpack
+$ make funpack
 $ sudo make install
+$ sudo cp fpack funpack /usr/local/bin/
 @end example
 
 
