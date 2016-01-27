@@ -19,8 +19,8 @@ fi
 
 
 #For each program bring in the configuration file:
-for prog in convertt convolve header imgcrop imgstat imgwarp \
-                     mkcatalog mknoise mkprof noisechisel    \
+for prog in convertt convolve header imgarith imgcrop imgstat     \
+                     imgwarp mkcatalog mknoise mkprof noisechisel \
                      subtractsky
 do
     if [ ! -f .gnuastro/ast$prog.conf ]; then

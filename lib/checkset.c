@@ -56,6 +56,45 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/****************************************************************
+ ************      Check and convert strings    *****************
+ ****************************************************************/
+/* See if a given string is a floating point number, if so, put it in
+   the number.*/
+int
+strisdouble(char *string, double *out)
+{
+  char *tailptr;
+  double tmp=*out;
+  *out=strtod(string, &tailptr);
+
+  /* If the tail pointer (tailptr) is the string NULL character, then
+     the string was a single double precision floating point
+     number. However, if it is any other character, then put the
+     initial value of out back inside of it and return 0. */
+  if(*tailptr=='\0') return 1;
+  *out=tmp;
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /****************************************************************
  *****************      Check the numbers    ********************

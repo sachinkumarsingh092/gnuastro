@@ -109,23 +109,50 @@ readconfig(char *filename, struct imgarithparams *p)
       else if (strcmp(name, "mhdu")==0)
         allocatecopyset(value, &up->mhdu, &up->mhduset);
       else if (strcmp(name, "hdu1")==0)
-        allocatecopyset(value, &up->hdus[1], &junkset);
+        {
+          if(up->hdus[1]) junkset=1;
+          allocatecopyset(value, &up->hdus[1], &junkset);
+        }
       else if (strcmp(name, "hdu2")==0)
-        allocatecopyset(value, &up->hdus[2], &junkset);
+        {
+          if(up->hdus[2]) junkset=1;
+          allocatecopyset(value, &up->hdus[2], &junkset);
+        }
       else if (strcmp(name, "hdu3")==0)
-        allocatecopyset(value, &up->hdus[3], &junkset);
+        {
+          if(up->hdus[3]) junkset=1;
+          allocatecopyset(value, &up->hdus[3], &junkset);
+        }
       else if (strcmp(name, "hdu4")==0)
-        allocatecopyset(value, &up->hdus[4], &junkset);
+        {
+          if(up->hdus[4]) junkset=1;
+          allocatecopyset(value, &up->hdus[4], &junkset);
+        }
       else if (strcmp(name, "hdu5")==0)
-        allocatecopyset(value, &up->hdus[5], &junkset);
+        {
+          if(up->hdus[5]) junkset=1;
+          allocatecopyset(value, &up->hdus[5], &junkset);
+        }
       else if (strcmp(name, "hdu6")==0)
-        allocatecopyset(value, &up->hdus[6], &junkset);
+        {
+          if(up->hdus[6]) junkset=1;
+          allocatecopyset(value, &up->hdus[6], &junkset);
+        }
       else if (strcmp(name, "hdu7")==0)
-        allocatecopyset(value, &up->hdus[7], &junkset);
+        {
+          if(up->hdus[7]) junkset=1;
+          allocatecopyset(value, &up->hdus[7], &junkset);
+        }
       else if (strcmp(name, "hdu8")==0)
-        allocatecopyset(value, &up->hdus[8], &junkset);
+        {
+          if(up->hdus[8]) junkset=1;
+          allocatecopyset(value, &up->hdus[8], &junkset);
+        }
       else if (strcmp(name, "hdu9")==0)
-        allocatecopyset(value, &up->hdus[9], &junkset);
+        {
+          if(up->hdus[9]) junkset=1;
+          allocatecopyset(value, &up->hdus[9], &junkset);
+        }
 
 
 
@@ -220,50 +247,58 @@ checkifset(struct imgarithparams *p)
   struct commonparams *cp=&p->cp;
 
   for(t=p->tokens; t!=NULL; t=t->next)
-    if(nameisfits(t->v))
-      {
-        p->firstname=t->v;
-        switch(counter)
-          {
-          case 0:
-            if(cp->hduset==0) REPORT_NOTSET("hdu");
-            break;
-          case 1:
-            if(up->hdus[1]==NULL) REPORT_NOTSET("hdu1");
-            break;
-          case 2:
-            if(up->hdus[2]==NULL) REPORT_NOTSET("hdu2");
-            break;
-          case 3:
-            if(up->hdus[3]==NULL) REPORT_NOTSET("hdu3");
-            break;
-          case 4:
-            if(up->hdus[4]==NULL) REPORT_NOTSET("hdu4");
-            break;
-          case 5:
-            if(up->hdus[5]==NULL) REPORT_NOTSET("hdu5");
-            break;
-          case 6:
-            if(up->hdus[6]==NULL) REPORT_NOTSET("hdu6");
-            break;
-          case 7:
-            if(up->hdus[7]==NULL) REPORT_NOTSET("hdu7");
-            break;
-          case 8:
-            if(up->hdus[8]==NULL) REPORT_NOTSET("hdu8");
-            break;
-          case 9:
-            if(up->hdus[9]==NULL) REPORT_NOTSET("hdu9");
-            break;
+    {
+      if(nameisfits(t->v))
+        {
+          p->firstname=t->v;
+          switch(counter)
+            {
+            case 0:
+              if(cp->hduset==0) REPORT_NOTSET("hdu");
+              break;
+            case 1:
+              if(up->hdus[1]==NULL) REPORT_NOTSET("hdu1");
+              break;
+            case 2:
+              if(up->hdus[2]==NULL) REPORT_NOTSET("hdu2");
+              break;
+            case 3:
+              if(up->hdus[3]==NULL) REPORT_NOTSET("hdu3");
+              break;
+            case 4:
+              if(up->hdus[4]==NULL) REPORT_NOTSET("hdu4");
+              break;
+            case 5:
+              if(up->hdus[5]==NULL) REPORT_NOTSET("hdu5");
+              break;
+            case 6:
+              if(up->hdus[6]==NULL) REPORT_NOTSET("hdu6");
+              break;
+            case 7:
+              if(up->hdus[7]==NULL) REPORT_NOTSET("hdu7");
+              break;
+            case 8:
+              if(up->hdus[8]==NULL) REPORT_NOTSET("hdu8");
+              break;
+            case 9:
+              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu9");
+              break;
 
-          default:
-            error(EXIT_FAILURE, 0, "Only %d FITS HDUs are given as options, "
-                  "but there are more input FITS images. Please specify the "
-                  "HDU values for those images with the --hduN options "
-                  "(where N stands for the image number).", counter);
-          }
-        ++counter;
-      }
+            default:
+              error(EXIT_FAILURE, 0, "Only %d FITS HDUs are given as  "
+                    "options, but there are more input FITS images. Please "
+                    "specify the HDU values for those images with the "
+                    "--hduN options (where N stands for the image number).",
+                    counter);
+            }
+          ++counter;
+        }
+      else
+        /* The token is not a file name, also no operators begin with
+           `n', so if the token starts with `n', it must be a negative
+           number. */
+        if(t->v[0]==NEGDASHREPLACE && isdigit(t->v[1])) t->v[0]='-';
+    }
 
 
   END_OF_NOTSET_REPORT;
@@ -291,6 +326,25 @@ checkifset(struct imgarithparams *p)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+
+/* The dash of a negative number will cause problems for the users,
+   so to work properly we will go over all the options/arguments and
+   if any one starts with a dash and is followed by a number, then
+   the dash is replaced by NEGDASHREPLACE. */
+void
+correctnegativedash(int argc, char *argv[])
+{
+  size_t i;
+  for(i=0;i<argc;++i)
+    if(argv[i][0]=='-' && isdigit(argv[i][1]))
+      argv[i][0]=NEGDASHREPLACE;
+}
+
+
+
+
+
+/* Standard sanity checks. */
 void
 sanitycheck(struct imgarithparams *p)
 {
@@ -307,7 +361,9 @@ sanitycheck(struct imgarithparams *p)
                 &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
 
   /* Set the names of the output files: */
-  if(p->cp.outputset==0)
+  if(p->cp.outputset)
+    checkremovefile(p->cp.output, p->cp.dontdelete);
+  else
     automaticoutput(p->firstname, "_arith.fits", p->cp.removedirinfo,
                     p->cp.dontdelete, &p->cp.output);
 
@@ -358,7 +414,13 @@ setparams(int argc, char *argv[], struct imgarithparams *p)
 
   p->tokens         = NULL;
   p->firstname      = NULL;
+  p->up.maskname    = NULL;
   for(i=0;i<MAXNUMIMAGES;++i) p->up.hdus[i]=NULL;
+
+  /* The hyphen of a negative number can be confused with a dash, so
+     we will temporarily replace such hyphens with other
+     characters. */
+  correctnegativedash(argc, argv);
 
   /* Read the arguments. */
   errno=0;

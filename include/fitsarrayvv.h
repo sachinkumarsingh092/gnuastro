@@ -211,6 +211,11 @@ void
 setmaskname(char *inputname, char **maskname, char *inhdu, char *mhdu);
 
 void
+filetodouble(char *inputname, char *maskname, char *inhdu, char *mhdu,
+             double **img, int *inbitpix, int *anyblank, size_t *ins0,
+             size_t *ins1);
+
+void
 filetofloat(char *inputname, char *maskname, char *inhdu, char *mhdu,
             float **img, int *inbitpix, int *anyblank, size_t *ins0,
             size_t *ins1);

@@ -224,7 +224,7 @@ subtractsky(struct subtractskyparams *p)
 
   /* Subtract the sky value */
   fmultipconst(sky, s0*s1, -1.0f);
-  skysubtracted=fsumarrays(mp->img, sky, s0*s1);
+  skysubtracted=fsumarrays_return(mp->img, sky, s0*s1);
   arraytofitsimg(p->cp.output ,"SkySubtracted", FLOAT_IMG, skysubtracted,
                  s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
 

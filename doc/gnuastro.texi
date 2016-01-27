@@ -5641,16 +5641,16 @@ The most common notation for arithmetic operations is the infix
 notation@footnote{@url{https://en.wikipedia.org/wiki/Infix_notation}}
 where the operator goes between the two operands. While the infix
 notation is the perferred way in most programming languages, currently
-it is not used since it will require parenthesis which can complicate
-the implementation of the code. In the near future we do plan to adopt
-this
+ImageArithmetic does not use it since it will require parenthesis
+which can complicate the implementation of the code. In the near
+future we do plan to adopt this
 notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}},
 but for the time being, ImageArithmetic uses the postfix or reverse
 polish
 notation@footnote{@url{https://en.wikipedia.org/wiki/Reverse_Polish_notation}}. The
 referenced wikipedia article provides some excellent explanation on
 this notation but here we will give a short summary for
-self-sufficiency of this manual.
+self-sufficiency.
 
 In the postfix notation, the operator is placed after the operands, as
 we will see below this removes the need to define parenthesis for most
@@ -5665,13 +5665,13 @@ are:
 
 @enumerate
 @item
-@command{5} is an operand, so push it onto the top of the stack.
+@command{5} is an operand, so it is pushed to the top of the stack.
 @item
-@command{6} is an operand, so push it onto the top of the stack.
+@command{6} is an operand, so it is pushed to the top of the stack.
 @item
-@command{+} is a binary operator, so pull the two elements ontop of
-the stack and perform addition on them (the order is @command{5+6} in
-the example above). The result is @command{11}, push it ontop of the
+@command{+} is a binary operator, so pull the top two elements of the
+stack and perform addition on them (the order is @command{5+6} in the
+example above). The result is @command{11}, push it ontop of the
 stack.
 @item
 @command{2} is an operand so push it onto the top of the stack.
@@ -5706,9 +5706,19 @@ $ astconvolve [OPTION...] ASTRdata1 ASTRdata2 (or number) OPERATOR ...
 One line examples:
 
 @example
+$ astimgarith image.fits -1 * --out=multiply.fits
 $ astimgarith image1.fits image2.fits + 2 / --out=average.fits
 $ astimgarith image.fits image.fits - --out=skysub.fits --hdu=0 --hdu2=3
 @end example
+
+@cartouche
+@noindent
+For multiplication please quote the @command{*} sign (for example,
+@command{"*"}). Without quotation, the shell will replace it with a
+list of all the files in your working directory which can produce
+unpredictable outputs. In any case, the input images are not affected,
+they are only read.
+@end cartouche
 
 At least one image has to be present in the given expression, if there
 are only numbers, ImageArithmetic will halt with an error. Currently
@@ -5716,10 +5726,93 @@ ImageArithmetic only operates on floating point images but in the near
 future it will also operate on integer (labeled or masked) images with
 bitwise operators so certain mask layers can also be separated.
 
+@cindex NaN
+@cindex Mask image
+A mask image can also be specified, see @ref{Mask image}. In that
+case, when reading the first FITS image, all the masked pixels will be
+changed to a NaN value. Therefore in any further operations with other
+images, the output for those pixels will always be a NaN value which
+is also the value of those pixels in the output.
 
+Currently all the operations in ImageArithmetic are done in double
+precision floating point type. However, if none of the input images
+have this type, the output will be stored as a single precision
+floating point type. We are planning to later do all operations based
+on the file types so integer outputs can be
+produced@footnote{@url{https://savannah.gnu.org/task/?13869}} (for
+example to enable the manipulation of mask image bit layers). But due
+to time constraints on the developers, this is currently postponed.
 
+@cindex Options
+The hyphen (@command{-}) can be used both to specify options (see
+@ref{Options}) and also to specify a negative number which might be
+necessary in your arithmetic. In order to enable you to do this,
+ImageArithmetic will first parse all the input strings and if the
+first character after a hyphen is a digit, then that hyphen is
+temporarily replaced by the vertical tab character which is not
+commonly used. The arguments are then parsed and these strings will
+not be specified as an option. Then the given arguments are parsed and
+any vertical tabs are replaced back with a hyphen so they can be read
+as negative numbers. So as long as the names of the files you want to
+work on do not start with a vertical tab followed by a digit, there is
+no problem and you can safely use negative numbers on the command line
+along with other options. On the other hand, do not write negative
+numbers like this: @command{-.3}, instead write them as
+@command{-0.3}.
 
+See @ref{Common options} for a review of the options in all Gnuastro
+programs, the two options related to a mask image are also specified
+in @ref{Mask image}. Besides those, the only options particular to
+ImageArithmetic are several HDU options to specify which HDU to use in
+each image. The common @option{--hdu} option is used for the first
+image encountered in the arguments. @option{--hdu1} is used for the
+second FITS image name encountered in the arguments, @option{--hdu2}
+for the third and so on. Note that since one FITS file may have
+multiple extensions, the same filename can be used multiple times with
+only the HDU option differing. We have tried to keep the short option
+name as alphabetically ordered as possible but in some cases it
+interfered with the common short options, so beyond the first few, its
+best to check or use the long options. Currently 10 input images are
+supported, but if the need arises adding more is very easy, please let
+us know if you need more than 10.
 
+@table @option
+@item -a
+@itemx --hdu1
+(@option{=STR}) The HDU of second FITS image in list of arguments.
+
+@item -b
+@itemx --hdu2
+(@option{=STR}) The HDU of third FITS image in list of arguments.
+
+@item -c
+@itemx --hdu3
+(@option{=STR}) The HDU of fourth FITS image in list of arguments.
+
+@item -d
+@itemx --hdu4
+(@option{=STR}) The HDU of fifth FITS image in list of arguments.
+
+@item -e
+@itemx --hdu5
+(@option{=STR}) The HDU of sixth FITS image in list of arguments.
+
+@item -f
+@itemx --hdu6
+(@option{=STR}) The HDU of seventh FITS image in list of arguments.
+
+@item -g
+@itemx --hdu7
+(@option{=STR}) The HDU of eighth FITS image in list of arguments.
+
+@item -i
+@itemx --hdu8
+(@option{=STR}) The HDU of ninth FITS image in list of arguments.
+
+@item -j
+@itemx --hdu9
+(@option{=STR}) The HDU of tenth FITS image in list of arguments.
+@end table
 
 
 
@@ -12813,7 +12906,7 @@ kernel (@ref{Convolve}).
 (@file{astheader}) Print and manipulate the header data of a FITS file
 (see @ref{Header}).
 
-@item ImageCrop @value{IMGARITH_VERSION}
+@item ImageArithmetic @value{IMGARITH_VERSION}
 (@file{astimgarith}) For arithmetic operations on data (image) pixels
 (@ref{ImageArithmetic}).
 

@@ -70,6 +70,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/****************************************************************
+ ************      Check and convert strings    *****************
+ ****************************************************************/
+int
+strisdouble(char *string, double *out);
+
+
 
 
 

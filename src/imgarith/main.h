@@ -24,6 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 #include "linkedlist.h"
+#include "fitsarrayvv.h"
 #include "commonparams.h"
 
 /* Progarm name macros: */
@@ -34,7 +35,32 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Constants: */
-#define MAXNUMIMAGES       10
+#define NEGDASHREPLACE 11  /* A vertical tab (ASCII=11) for negative dash */
+#define NOOPTARRAY     NULL
+#define NOOPTNUMBER    NAN
+#define MAXNUMIMAGES   10
+#define NOOPTFILENAME  ""
+
+
+/* The operands can be in three ways:
+
+      1. A file name which is not read yet. When inactive, NOOPTFILENAME.
+      2. A number which is not used yet. When inactive, NOOPTNUMBER.
+      3. An array (operator output). When inactive, NOOPTARRAY.
+
+   In every node of the operand linked list, only one of these should
+   be active. The other two should be inactive. Otherwise it will be a
+   bug and will cause problems. All the operands operate on this
+   premise.
+*/
+struct operand
+{
+  char  *filename;
+  char       *hdu;
+  double   number;
+  double   *array;
+  struct operand *next;
+};
 
 
 struct uiparams
@@ -48,9 +74,6 @@ struct uiparams
 };
 
 
-
-
-
 struct imgarithparams
 {
   /* Other structures: */
@@ -59,11 +82,17 @@ struct imgarithparams
 
   /* Input: */
   struct stll      *tokens;  /* Tokens to do arithmetic.                */
+  char          *firstname;  /* Name of first input for output name.    */
   float             *array;  /* Main array to keep results.             */
   float               *tmp;  /* Secondary array for temporary reading.  */
-  char          *firstname;  /* First image name.                       */
+  size_t        addcounter;  /* The number of FITS images added.        */
+  size_t        popcounter;  /* The number of FITS images popped.       */
   size_t                s0;  /* Length of image along first C axis.     */
   size_t                s1;  /* Length of image along second C axis.    */
+  int              obitpix;  /* The type of the output image.           */
+  int                 nwcs;  /* The number of WCS coordinates.          */
+  struct wcsprm       *wcs;  /* The WCS structure.                      */
+  int             anyblank;  /* If there are blank pixels in the image. */
 
   /* Output: */
 
@@ -71,6 +100,7 @@ struct imgarithparams
   /* Operating mode: */
 
   /* Internal: */
+  struct operand *operands;  /* The operands linked list.               */
   time_t           rawtime;  /* Starting time of the program.           */
 };
 

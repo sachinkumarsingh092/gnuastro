@@ -58,7 +58,13 @@ static char args_doc[] = "ASTRdata ASTRdata OPERATOR ...";
 const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
-  SPACK_NAME" will do arithmetic operations on one or multiple images.\n"
+  SPACK_NAME" will do arithmetic operations on one or multiple images. "
+  "Simply put the name of the image (and its extension as an option) along "
+  "with the arithmetic operators. Please note that currently ImageArithmetic "
+  "only supports postfix or reverse polish notation. For example to get the "
+  "result of `5+6', you should write `5 6 +', or to get the average of two "
+  "images, you should write `a.fits b.fits + 2 /'. At least one image should "
+  "be present in the list of arguments.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"
@@ -71,7 +77,7 @@ const char doc[] =
 /* Available letters for short options:
 
    k l m n p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z
+   A B C E F G H I J L O Q R T U W X Y Z
 
    Number keys used: <=500
 
@@ -83,6 +89,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Input:",
+      1
+    },
+    {
+      "mask",
+      'M',
+      "STR",
+      0,
+      "Mask image file name.",
       1
     },
     {
@@ -219,9 +233,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     {
 
     /* Input: */
+    case 'M':
+      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      break;
     case 'H':
       allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
       break;
+
+
     case 'a':
       allocatecopyset(arg, &p->up.hdus[1], &junkset);
       break;

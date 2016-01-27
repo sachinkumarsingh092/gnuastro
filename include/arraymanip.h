@@ -59,6 +59,36 @@ void
 fsumconst(float *in, size_t size, float a);
 
 float *
-fsumarrays(float *in1, float *in2, size_t size);
+fsumarrays_return(float *in1, float *in2, size_t size);
+
+void
+dmultipconst(double *in, size_t size, double a);
+
+void
+ddivideconst(double *in, size_t size, double a);
+
+void
+dconstdivide(double *in, size_t size, double a);
+
+void
+dsumconst(double *in, size_t size, double a);
+
+void
+dsubtractconst(double *in, size_t size, double a);
+
+void
+dconstsubtract(double *in, size_t size, double a);
+
+void
+dmultiparrays(double *in1, double *in2, size_t size);
+
+void
+ddividearrays(double *in1, double *in2, size_t size);
+
+void
+dsumarrays(double *in1, double *in2, size_t size);
+
+void
+dsubtractarrays(double *in1, double *in2, size_t size);
 
 #endif

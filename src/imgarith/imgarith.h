@@ -23,14 +23,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef IMGARITH_H
 #define IMGARITH_H
 
-struct operand
-{
-  int      isname;       /* ==1 filename, ==0: number. */
-  char  *filename;
-  double   number;
-  struct operand *next;
-};
-
 void
 imgarith(struct imgarithparams *p);
 

@@ -274,7 +274,7 @@ fsumconst(float *in, size_t size, float a)
 
 
 float *
-fsumarrays(float *in1, float *in2, size_t size)
+fsumarrays_return(float *in1, float *in2, size_t size)
 {
   float *out, *o, *op;
 
@@ -288,4 +288,122 @@ fsumarrays(float *in1, float *in2, size_t size)
   do *o = *in1++ + *in2++; while(++o<op);
 
   return out;
+}
+
+
+
+
+
+void
+dmultipconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in *= a; while(++in<dpt);
+}
+
+
+
+
+
+void
+ddivideconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in /= a; while(++in<dpt);
+}
+
+
+
+
+
+void
+dconstdivide(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in = a / *in; while(++in<dpt);
+}
+
+
+
+
+
+void
+dsumconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in += a; while(++in<dpt);
+}
+
+
+
+
+
+void
+dsubtractconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in -= a; while(++in<dpt);
+}
+
+
+
+
+
+void
+dconstsubtract(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in = a - *in; while(++in<dpt);
+}
+
+
+
+
+
+void
+dmultiparrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 *= *in2++; while(++in1<dpt);
+}
+
+
+
+
+void
+ddividearrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 /= *in2++; while(++in1<dpt);
+}
+
+
+
+
+
+void
+dsumarrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 += *in2++; while(++in1<dpt);
+}
+
+
+
+
+void
+dsubtractarrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 -= *in2++; while(++in1<dpt);
 }
