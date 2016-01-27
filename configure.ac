@@ -198,6 +198,12 @@ AC_ARG_ENABLE([header],
 	      [AS_IF([test "x$enable_header" != xno],
                      [enable_header=yes; ayes=true])],
               [enable_header=notset])
+AC_ARG_ENABLE([imgarith],
+              [AS_HELP_STRING([--enable-imgarith],
+  	            [Install ImageArithmetic and other enabled packages only.])],
+	      [AS_IF([test "x$enable_imgarith" != xno],
+                     [enable_imgarith=yes; ayes=true])],
+              [enable_imgarith=notset])
 AC_ARG_ENABLE([imgcrop],
               [AS_HELP_STRING([--enable-imgcrop],
   	            [Install ImageCrop and other enabled packages only.])],
@@ -264,6 +270,7 @@ AS_IF([test $ayes = true ],
       [AS_IF([test $enable_convertt = notset], [enable_convertt=no])
        AS_IF([test $enable_convolve = notset], [enable_convolve=no])
        AS_IF([test $enable_header = notset], [enable_header=no])
+       AS_IF([test $enable_imgarith = notset], [enable_imgarith=no])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
        AS_IF([test $enable_imgstat = notset], [enable_imgstat=no])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
@@ -277,6 +284,7 @@ AS_IF([test $ayes = true ],
       [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
        AS_IF([test $enable_header = notset], [enable_header=yes])
+       AS_IF([test $enable_imgarith = notset], [enable_imgarith=yes])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
        AS_IF([test $enable_imgstat = notset], [enable_imgstat=yes])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
@@ -297,6 +305,7 @@ AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_HEADER], [test $enable_header = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
+AM_CONDITIONAL([COND_IMGARITH], [test $enable_imgarith = yes])
 AM_CONDITIONAL([COND_IMGSTAT], [test $enable_imgstat = yes])
 AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKCATALOG], [test $enable_mkcatalog = yes])
@@ -318,6 +327,7 @@ AC_CONFIG_FILES([Makefile
 		 src/imgcrop/Makefile
            	 src/imgstat/Makefile
        		 src/imgwarp/Makefile
+                 src/imgarith/Makefile
                  gnulib/tests/Makefile
                  src/convertt/Makefile
                  src/convolve/Makefile

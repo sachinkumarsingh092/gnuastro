@@ -38,6 +38,7 @@ astmknoise
 astimgcrop
 astimgstat
 astimgwarp
+astimgarith
 astconvertt
 astconvolve
 astmkcatalog
