@@ -351,22 +351,21 @@ sanitycheck(struct imgarithparams *p)
   char *token;
   struct stll *correctorder=NULL;
 
-  /* Check if a FITS image exists in the given expression. */
-  if(p->firstname==NULL)
-    error(EXIT_FAILURE, 0, "There are no FITS images given in the "
-          "expression.");
+  /* An output file name or mask are only necessary when there is a
+     FITS image in the arguments. */
+  if(p->firstname)
+    {
+      /* Set the p->up.maskname accordingly: */
+      fileorextname(p->firstname, p->cp.hdu, p->up.masknameset,
+                    &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
 
-  /* Set the p->up.maskname accordingly: */
-  fileorextname(p->firstname, p->cp.hdu, p->up.masknameset,
-                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
-
-  /* Set the names of the output files: */
-  if(p->cp.outputset)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
-  else
-    automaticoutput(p->firstname, "_arith.fits", p->cp.removedirinfo,
-                    p->cp.dontdelete, &p->cp.output);
-
+      /* Set the names of the output files: */
+      if(p->cp.outputset)
+        checkremovefile(p->cp.output, p->cp.dontdelete);
+      else
+        automaticoutput(p->firstname, "_arith.fits", p->cp.removedirinfo,
+                        p->cp.dontdelete, &p->cp.output);
+    }
   /* Reorder the tokens so the first one that pops out in imgarith.c
      is the first one that was written by the user. */
   while(p->tokens!=NULL)

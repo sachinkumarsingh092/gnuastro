@@ -61,8 +61,13 @@ fsumconst(float *in, size_t size, float a);
 float *
 fsumarrays_return(float *in1, float *in2, size_t size);
 
+
 void
 dmultipconst(double *in, size_t size, double a);
+
+void
+dmultiparrays(double *in1, double *in2, size_t size);
+
 
 void
 ddivideconst(double *in, size_t size, double a);
@@ -71,7 +76,15 @@ void
 dconstdivide(double *in, size_t size, double a);
 
 void
+ddividearrays(double *in1, double *in2, size_t size);
+
+
+void
 dsumconst(double *in, size_t size, double a);
+
+void
+dsumarrays(double *in1, double *in2, size_t size);
+
 
 void
 dsubtractconst(double *in, size_t size, double a);
@@ -80,15 +93,27 @@ void
 dconstsubtract(double *in, size_t size, double a);
 
 void
-dmultiparrays(double *in1, double *in2, size_t size);
-
-void
-ddividearrays(double *in1, double *in2, size_t size);
-
-void
-dsumarrays(double *in1, double *in2, size_t size);
-
-void
 dsubtractarrays(double *in1, double *in2, size_t size);
+
+
+void
+dpowerconst(double *in, size_t size, double a);
+
+void
+dconstpower(double *in, size_t size, double a);
+
+void
+dpowerarrays(double *in1, double *in2, size_t size);
+
+
+
+void
+dlogarray(double *in1, size_t size);
+
+void
+dlog10array(double *in1, size_t size);
+
+void
+dabsarray(double *in1, size_t size);
 
 #endif

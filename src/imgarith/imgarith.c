@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "checkset.h"
 #include "arraymanip.h"
+#include "statistics.h"
 #include "fitsarrayvv.h"
 
 #include "main.h"
@@ -386,6 +387,206 @@ divide(struct imgarithparams *p)
 
 
 
+void
+topower(struct imgarithparams *p)
+{
+  size_t size;
+  char *operator="+";
+  double fnum, snum;            /* First or second number.    */
+  double *farr, *sarr;          /* First or second array.     */
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+  pop_operand(p, &snum, &sarr, operator);
+
+  /* Set the total number of pixels, note that we can't do this in the
+     definition of the variable because p->s0 and p->s1 will be set in
+     pop_operand for the first image. */
+  size=p->s0*p->s1;
+
+  /* Do the operation: */
+  if(farr && sarr)              /* Both are arrays. */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      dpowerarrays(sarr, farr, size);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
+
+      /* Clean up. */
+      free(farr);
+    }
+  else if(farr)                 /* Only the first is an array. */
+    {
+      dconstpower(farr, size, snum);
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+    }
+  else if(sarr)                 /* Only the first is an array. */
+    {
+      dpowerconst(sarr, size, fnum);
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
+    }
+  else                          /* Both are numbers.           */
+    add_operand(p, NOOPTFILENAME, pow(snum, fnum), NOOPTARRAY);
+}
+
+
+
+
+
+void
+takelog(struct imgarithparams *p)
+{
+  char *operator="+";
+  double fnum, *farr;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+
+  /* Do the operation: */
+  if(farr)                       /* Operand is array.        */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      dlogarray(farr, p->s0*p->s1);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+    }
+  else                          /* Operand is a number.      */
+    add_operand(p, NOOPTFILENAME, log(fnum), NOOPTARRAY);
+}
+
+
+
+
+
+void
+takelog10(struct imgarithparams *p)
+{
+  char *operator="+";
+  double fnum, *farr;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+
+  /* Do the operation: */
+  if(farr)                       /* Operand is array.        */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      dlog10array(farr, p->s0*p->s1);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+    }
+  else                          /* Operand is a number.      */
+    add_operand(p, NOOPTFILENAME, log10(fnum), NOOPTARRAY);
+}
+
+
+
+
+
+void
+takeabs(struct imgarithparams *p)
+{
+  char *operator="+";
+  double fnum, *farr;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+
+  /* Do the operation: */
+  if(farr)                       /* Operand is array.        */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      dabsarray(farr, p->s0*p->s1);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+    }
+  else                          /* Operand is a number.      */
+    add_operand(p, NOOPTFILENAME, fabs(fnum), NOOPTARRAY);
+}
+
+
+
+
+
+void
+findmin(struct imgarithparams *p)
+{
+  char *operator="+";
+  double min, fnum, *farr;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+
+  /* Do the operation: */
+  if(farr)                       /* Operand is array.        */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      doublemin(farr, p->s0*p->s1, &min);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, min, NOOPTARRAY);
+
+      /* Clean up. */
+      free(farr);
+    }
+  else                          /* Operand is a number.      */
+    add_operand(p, NOOPTFILENAME, fnum, NOOPTARRAY);
+}
+
+
+
+
+
+void
+findmax(struct imgarithparams *p)
+{
+  char *operator="+";
+  double max, fnum, *farr;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+
+  /* Do the operation: */
+  if(farr)                       /* Operand is array.        */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      doublemax(farr, p->s0*p->s1, &max);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, max, NOOPTARRAY);
+
+      /* Clean up. */
+      free(farr);
+    }
+  else                          /* Operand is a number.      */
+    add_operand(p, NOOPTFILENAME, fnum, NOOPTARRAY);
+}
+
+
+
+
 
 
 
@@ -433,34 +634,21 @@ reversepolish(struct imgarithparams *p)
         add_operand(p, NOOPTFILENAME, number, NOOPTARRAY);
       else
         {
-          /* Currently all operators are a single character length, we
-             don't have bitwise operators or functions yet, so to make
-             things easy, we just do a sanity check here */
-          if(strlen(token->v)!=1)
-            error(EXIT_FAILURE, 0, "The argument \"%s\" could not be read "
-                  "as a FITS file, number or an operator.", token->v);
-
-          switch(token->v[0])
-            {
-            case '+':
-              sum(p);
-              break;
-            case '-':
-              subtract(p);
-              break;
-            case '*':
-              multiply(p);
-              break;
-            case '/':
-              divide(p);
-              break;
-            default:
-              error(EXIT_FAILURE, 0, "The argument \"%s\" could not be "
-                    "interpretted as an operator.", token->v);
-            }
+          if     (strcmp(token->v, "+")==0)     sum(p);
+          else if(strcmp(token->v, "-")==0)     subtract(p);
+          else if(strcmp(token->v, "*")==0)     multiply(p);
+          else if(strcmp(token->v, "/")==0)     divide(p);
+          else if(strcmp(token->v, "pow")==0)   topower(p);
+          else if(strcmp(token->v, "log")==0)   takelog(p);
+          else if(strcmp(token->v, "abs")==0)   takeabs(p);
+          else if(strcmp(token->v, "min")==0)   findmin(p);
+          else if(strcmp(token->v, "max")==0)   findmax(p);
+          else if(strcmp(token->v, "log10")==0) takelog10(p);
+          else
+            error(EXIT_FAILURE, 0, "The argument \"%s\" could not be "
+                  "interpretted as an operator.", token->v);
         }
     }
-
 
   /* If there is more than one node in the operands stack, then the
      user has given too many operands and there is an error. */
@@ -469,21 +657,28 @@ reversepolish(struct imgarithparams *p)
           "in the given expression.");
 
 
-  /* There is only one operand left and that is the output. So write
-     it to a file and finish. If none of the inputs had a double type,
-     then convert the output array into a float and then save it. Note
-     that the last operand must be an array. */
-  if(p->obitpix==FLOAT_IMG)
+  /* If the remaining operand is an array then save the array as a
+     FITS image, if not, simply print the floating point number. */
+  if(p->operands->array)
     {
-      changetype(p->operands->array, DOUBLE_IMG, p->s0*p->s1, p->anyblank,
-                 (void **)(&farray), FLOAT_IMG);
-      arraytofitsimg(p->cp.output, "astimgarith", FLOAT_IMG, farray,
-                     p->s0, p->s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
+      /* If none of the inputs had a double type, then convert the
+         output array into a float and then save it. Note that the
+         last operand must be an array. */
+      if(p->obitpix==FLOAT_IMG)
+        {
+          changetype(p->operands->array, DOUBLE_IMG, p->s0*p->s1,
+                     p->anyblank, (void **)(&farray), FLOAT_IMG);
+          arraytofitsimg(p->cp.output, "astimgarith", FLOAT_IMG, farray,
+                         p->s0, p->s1, p->anyblank, p->wcs, NULL,
+                         SPACK_STRING);
+        }
+      else
+        arraytofitsimg(p->cp.output, "astimgarith", DOUBLE_IMG,
+                       p->operands->array, p->s0, p->s1, p->anyblank,
+                       p->wcs, NULL, SPACK_STRING);
     }
   else
-    arraytofitsimg(p->cp.output, "astimgarith", DOUBLE_IMG,
-                   p->operands->array, p->s0, p->s1, p->anyblank,
-                   p->wcs, NULL, SPACK_STRING);
+    printf("%g\n", p->operands->number);
 }
 
 

@@ -305,6 +305,17 @@ dmultipconst(double *in, size_t size, double a)
 
 
 
+void
+dmultiparrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 *= *in2++; while(++in1<dpt);
+}
+
+
+
+
 
 void
 ddivideconst(double *in, size_t size, double a)
@@ -329,6 +340,16 @@ dconstdivide(double *in, size_t size, double a)
 
 
 
+void
+ddividearrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 /= *in2++; while(++in1<dpt);
+}
+
+
+
 
 void
 dsumconst(double *in, size_t size, double a)
@@ -339,6 +360,16 @@ dsumconst(double *in, size_t size, double a)
 }
 
 
+
+
+
+void
+dsumarrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 += *in2++; while(++in1<dpt);
+}
 
 
 
@@ -367,43 +398,87 @@ dconstsubtract(double *in, size_t size, double a)
 
 
 void
-dmultiparrays(double *in1, double *in2, size_t size)
-{
-  double *dpt;
-  dpt=in1+size;
-  do *in1 *= *in2++; while(++in1<dpt);
-}
-
-
-
-
-void
-ddividearrays(double *in1, double *in2, size_t size)
-{
-  double *dpt;
-  dpt=in1+size;
-  do *in1 /= *in2++; while(++in1<dpt);
-}
-
-
-
-
-
-void
-dsumarrays(double *in1, double *in2, size_t size)
-{
-  double *dpt;
-  dpt=in1+size;
-  do *in1 += *in2++; while(++in1<dpt);
-}
-
-
-
-
-void
 dsubtractarrays(double *in1, double *in2, size_t size)
 {
   double *dpt;
   dpt=in1+size;
   do *in1 -= *in2++; while(++in1<dpt);
+}
+
+
+
+void
+dpowerconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+
+  /* Since simply multiplying or taking the square root are more
+     efficient than calling the power function. */
+  if(a==2.0f)      do *in *= *in; while(++in<dpt);
+  else if(a==0.5f) do *in = sqrt(*in); while(++in<dpt);
+  else             do *in = pow(*in, a); while(++in<dpt);
+}
+
+
+
+
+
+void
+dconstpower(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in = pow(a, *in); while(++in<dpt);
+}
+
+
+
+
+
+void
+dpowerarrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 = pow(*in1, *in2++); while(++in1<dpt);
+}
+
+
+
+
+
+void
+dlogarray(double *in, size_t size)
+{
+  double *dpt;
+  dpt=in+size;
+
+  do *in = log(*in); while(++in<dpt);
+}
+
+
+
+
+
+void
+dlog10array(double *in, size_t size)
+{
+  double *dpt;
+  dpt=in+size;
+
+  do *in = log10(*in); while(++in<dpt);
+}
+
+
+
+
+
+void
+dabsarray(double *in, size_t size)
+{
+  double *dpt;
+  dpt=in+size;
+
+  do *in = fabs(*in); while(++in<dpt);
 }

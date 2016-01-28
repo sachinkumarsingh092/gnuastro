@@ -5694,19 +5694,24 @@ files) uses this notation style, see the EPS and PDF part of
 @node Invoking astimgarith,  , Reverse polish notation, ImageArithmetic
 @subsection Invoking ImageArithmetic
 
-ImageArithmetic will do arithmetic operations on the individual pixels
-of identically sized images. The WCS information will be taken from
-the first input image. The general template for ImageArithmetic is:
+ImageArithmetic will do pixel to pixel arithmetic operations on the
+individual pixels of identically sized images. The WCS information
+will be taken from the first input image. If the output is a single
+number, that number will be printed in the output. See @ref{Reverse
+polish notation} for the notation currently used. The general template
+for ImageArithmetic is:
 
 @example
-$ astconvolve [OPTION...] ASTRdata1 ASTRdata2 (or number) OPERATOR ...
+$ astimgarith [OPTION...] ASTRdata1 ASTRdata2 OPERATOR ...
 @end example
 
 @noindent
 One line examples:
 
 @example
-$ astimgarith image.fits -1 * --out=multiply.fits
+$ astimgarith 10.32 3.84 - 2.7 pow
+  155.329
+$ astimgarith image.fits -1 "*" --out=inverse.fits
 $ astimgarith image1.fits image2.fits + 2 / --out=average.fits
 $ astimgarith image.fits image.fits - --out=skysub.fits --hdu=0 --hdu2=3
 @end example
@@ -5720,28 +5725,23 @@ unpredictable outputs. In any case, the input images are not affected,
 they are only read.
 @end cartouche
 
-At least one image has to be present in the given expression, if there
-are only numbers, ImageArithmetic will halt with an error. Currently
-ImageArithmetic only operates on floating point images but in the near
-future it will also operate on integer (labeled or masked) images with
-bitwise operators so certain mask layers can also be separated.
-
 @cindex NaN
 @cindex Mask image
-A mask image can also be specified, see @ref{Mask image}. In that
-case, when reading the first FITS image, all the masked pixels will be
-changed to a NaN value. Therefore in any further operations with other
-images, the output for those pixels will always be a NaN value which
-is also the value of those pixels in the output.
-
-Currently all the operations in ImageArithmetic are done in double
-precision floating point type. However, if none of the input images
-have this type, the output will be stored as a single precision
-floating point type. We are planning to later do all operations based
-on the file types so integer outputs can be
-produced@footnote{@url{https://savannah.gnu.org/task/?13869}} (for
-example to enable the manipulation of mask image bit layers). But due
-to time constraints on the developers, this is currently postponed.
+Currently ImageArithmetic will convert the input image into double
+precision floating point arrays for the operations. But there are
+plans to allow it to also operate on integer (labeled or masked)
+images with bitwise operators so certain mask layers can also be
+separated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Any
+blank pixels in the input image will automatically be set as blank in
+the output. To ignore certain pixels (see @ref{Blank pixels}), you can
+specify a mask image, see @ref{Mask image}. In that case, when reading
+the first FITS image, all the masked pixels will be changed to a NaN
+value. Therefore in any further operations with other images, the
+output for those pixels will always be a NaN (blank pixel value for
+floating point data type). Currently all the operations in
+ImageArithmetic are done in double precision floating point
+type. However, if none of the input images have this type, the output
+will be stored as a single precision floating point type.
 
 @cindex Options
 The hyphen (@command{-}) can be used both to specify options (see
@@ -5756,9 +5756,71 @@ any vertical tabs are replaced back with a hyphen so they can be read
 as negative numbers. So as long as the names of the files you want to
 work on do not start with a vertical tab followed by a digit, there is
 no problem and you can safely use negative numbers on the command line
-along with other options. On the other hand, do not write negative
-numbers like this: @command{-.3}, instead write them as
-@command{-0.3}.
+along with other options. Also, because of this implementation, do not
+write negative fractions like this: @command{-.3}, instead write them
+as @command{-0.3}.
+
+The recognized operators in ImageArithmetic are listed below. See
+@ref{Reverse polish notation} for more on the ordering and notation
+used.
+
+@table @command
+
+@item +
+Addition, so ``@command{4 5 +}'' is equivalent to @mymath{4+5}.
+
+@item -
+Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
+
+@item *
+Multiplication, so ``@command{4 5 *}'' is equivalent to
+@mymath{4\times5}.
+
+@item /
+Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
+
+@item pow
+First operand to the power of the second, so ``@command{4 5
+pow}'' is equivalent to @mymath{4^5}.
+
+@item log
+Natural logarithm of first operand, so ``@command{4 log}'' is
+equivalent to @mymath{ln(4)}.
+
+@item log10
+Base-10 logarithm of first operand, so ``@command{4 log10}'' is
+equivalent to @mymath{log(4)}.
+
+@item abs
+Absolute value of first operand, so ``@command{4 abs}'' is
+equivalent to @mymath{|4|}.
+
+@item min
+Minimum value of first operand, so ``@command{4 a.fits}'' will push
+the the minimum pixel value in this image onto the stack. On a number,
+this operator just returns the number without any change. So note that
+if this operator (along with @command{max}) acts on a single image on
+the command line, the output will no longer be an image, but a number.
+
+@item max
+Maximum value of first operand, similar to @command{min}.
+@end table
+
+@cindex AWK
+@cindex GNU AWK
+Without any images, ImageArithmetic will act like a simple calculator
+and print the resulting output on the standard output like the first
+example above. If you really want such calculator operations on the
+command line, AWK (GNU AWK is the most common implementation) is much
+faster, easier and powerful. For example the example above can be done
+with the following command. In general AWK is a fantastic tool and GNU
+AWK has a wonderful manual. So if you confront situations like this a
+lot, be sure to learnt AWK and simplify your life.
+
+@example
+echo "" | awk '@{print (10.32-3.84)^2.7@}'
+@end example
+
 
 See @ref{Common options} for a review of the options in all Gnuastro
 programs, the two options related to a mask image are also specified
