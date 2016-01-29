@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "fitsarrayvv.h"
 
 #include "main.h"
-#include "imgarith.h"            /* needs main.h.                  */
+#include "arithmetic.h"            /* needs main.h.                  */
 
 
 
@@ -243,7 +243,7 @@ void
 subtract(struct imgarithparams *p)
 {
   size_t size;
-  char *operator="+";
+  char *operator="-";
   double fnum, snum;            /* First or second number.    */
   double *farr, *sarr;          /* First or second array.     */
 
@@ -294,7 +294,7 @@ void
 multiply(struct imgarithparams *p)
 {
   size_t size;
-  char *operator="+";
+  char *operator="*";
   double fnum, snum;            /* First or second number.    */
   double *farr, *sarr;          /* First or second array.     */
 
@@ -341,7 +341,7 @@ void
 divide(struct imgarithparams *p)
 {
   size_t size;
-  char *operator="+";
+  char *operator="/";
   double fnum, snum;            /* First or second number.    */
   double *farr, *sarr;          /* First or second array.     */
 
@@ -388,10 +388,10 @@ divide(struct imgarithparams *p)
 
 
 void
-topower(struct imgarithparams *p)
+topower(struct imgarithparams *p, char *op)
 {
   size_t size;
-  char *operator="+";
+  char *operator = op?op:"pow";
   double fnum, snum;            /* First or second number.    */
   double *farr, *sarr;          /* First or second array.     */
 
@@ -438,9 +438,25 @@ topower(struct imgarithparams *p)
 
 
 void
+takesqrt(struct imgarithparams *p)
+{
+  char *operator="sqrt";
+
+  /* Add a 0.5 number to the operand stack */
+  add_operand(p, NOOPTFILENAME, 0.5f, NOOPTARRAY);
+
+  /* Call the power operator. */
+  topower(p, operator);
+}
+
+
+
+
+
+void
 takelog(struct imgarithparams *p)
 {
-  char *operator="+";
+  char *operator="log";
   double fnum, *farr;
 
   /* Pop out the number of operands needed. */
@@ -469,7 +485,7 @@ takelog(struct imgarithparams *p)
 void
 takelog10(struct imgarithparams *p)
 {
-  char *operator="+";
+  char *operator="log10";
   double fnum, *farr;
 
   /* Pop out the number of operands needed. */
@@ -498,7 +514,7 @@ takelog10(struct imgarithparams *p)
 void
 takeabs(struct imgarithparams *p)
 {
-  char *operator="+";
+  char *operator="abs";
   double fnum, *farr;
 
   /* Pop out the number of operands needed. */
@@ -527,7 +543,7 @@ takeabs(struct imgarithparams *p)
 void
 findmin(struct imgarithparams *p)
 {
-  char *operator="+";
+  char *operator="min";
   double min, fnum, *farr;
 
   /* Pop out the number of operands needed. */
@@ -559,7 +575,7 @@ findmin(struct imgarithparams *p)
 void
 findmax(struct imgarithparams *p)
 {
-  char *operator="+";
+  char *operator="max";
   double max, fnum, *farr;
 
   /* Pop out the number of operands needed. */
@@ -638,11 +654,12 @@ reversepolish(struct imgarithparams *p)
           else if(strcmp(token->v, "-")==0)     subtract(p);
           else if(strcmp(token->v, "*")==0)     multiply(p);
           else if(strcmp(token->v, "/")==0)     divide(p);
-          else if(strcmp(token->v, "pow")==0)   topower(p);
+          else if(strcmp(token->v, "pow")==0)   topower(p, NULL);
           else if(strcmp(token->v, "log")==0)   takelog(p);
           else if(strcmp(token->v, "abs")==0)   takeabs(p);
           else if(strcmp(token->v, "min")==0)   findmin(p);
           else if(strcmp(token->v, "max")==0)   findmax(p);
+          else if(strcmp(token->v, "sqrt")==0)  takesqrt(p);
           else if(strcmp(token->v, "log10")==0) takelog10(p);
           else
             error(EXIT_FAILURE, 0, "The argument \"%s\" could not be "

@@ -29,8 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Progarm name macros: */
 #define SPACK_VERSION   "0.1"
-#define SPACK           "astimgarith"       /* Subpackage executable name. */
-#define SPACK_NAME      "ImageArithmetic"  /* Subpackage full name.       */
+#define SPACK           "astarithmetic"   /* Subpackage executable name. */
+#define SPACK_NAME      "Arithmetic"      /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION
 
 

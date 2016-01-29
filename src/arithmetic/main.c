@@ -31,7 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "ui.h"		        /* needs main.h.                  */
-#include "imgarith.h"            /* needs main.h.                  */
+#include "arithmetic.h"         /* needs main.h.                  */
 
 int
 main (int argc, char *argv[])

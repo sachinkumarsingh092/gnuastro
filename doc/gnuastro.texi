@@ -59,8 +59,8 @@ Texts.  A copy of the license is included in the section entitled
 * ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
 * astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
 
-* ImageArithmetic: (gnuastro)ImageArithmetic. Arithmetic operations on pixels.
-* astimgarith: (gnuastro)Invoking astimgarith. Options to ImageArithmetic.
+* Arithmetic: (gnuastro)Arithmetic. Arithmetic operations on pixels.
+* astarithmetic: (gnuastro)Invoking astarithmetic. Options to Arithmetic.
 
 * ImageStatistics: (gnuastro)ImageStatistics. Get image Statistics.
 * astimgstat: (gnuastro)Invoking astimgstat. Options to ImageStatistics.
@@ -304,7 +304,7 @@ ConvertType
 Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
-* ImageArithmetic::
+* Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
 * SubtractSky::                 Find the sky and subtract it from image.
@@ -321,10 +321,10 @@ Invoking ImageCrop
 * astimgcrop options::          A list of all the options with explanation.
 * astimgcrop output::           The outputs of ImageCrop.
 
-ImageArithmetic
+Arithmetic
 
-* Reverse polish notation::     The current notation style for ImageArithmetic
-* Invoking astimgarith::        How to run ImageArithmetic
+* Reverse polish notation::     The current notation style for Arithmetic
+* Invoking astarithmetic::      How to run Arithmetic
 
 Convolve
 
@@ -5017,13 +5017,13 @@ given kernel or applying a transformation to it.
 
 @menu
 * ImageCrop::                   Crop region(s) from FITS image(s).
-* ImageArithmetic::
+* Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
 * SubtractSky::                 Find the sky and subtract it from image.
 @end menu
 
-@node ImageCrop, ImageArithmetic, Image manipulation, Image manipulation
+@node ImageCrop, Arithmetic, Image manipulation, Image manipulation
 @section ImageCrop
 
 @cindex Section of an image
@@ -5612,8 +5612,8 @@ cases.
 
 
 
-@node ImageArithmetic, Convolve, ImageCrop, Image manipulation
-@section ImageArithmetic
+@node Arithmetic, Convolve, ImageCrop, Image manipulation
+@section Arithmetic
 
 It is commonly necessary to do arithmetic operations on the
 astronomical data. For example in the reduction of raw data it is
@@ -5621,32 +5621,32 @@ necessary to subtract the Sky value (@ref{Sky value}) from each image
 image. Later (once the images as warped into a single grid using
 ImageWarp for example, see @ref{ImageWarp}), the images can be coadded
 or the output pixel grid is the average of the pixels of the
-individual input images. ImageArithmetic currently uses the reverse
+individual input images. Arithmetic currently uses the reverse
 polish or postfix notation, see @ref{Reverse polish notation}, for
-more information on how to run ImageArithmetic, please see
-@ref{Invoking astimgarith}.
+more information on how to run Arithmetic, please see
+@ref{Invoking astarithmetic}.
 
 
 @menu
-* Reverse polish notation::     The current notation style for ImageArithmetic
-* Invoking astimgarith::        How to run ImageArithmetic
+* Reverse polish notation::     The current notation style for Arithmetic
+* Invoking astarithmetic::      How to run Arithmetic
 @end menu
 
-@node Reverse polish notation, Invoking astimgarith, ImageArithmetic, ImageArithmetic
+@node Reverse polish notation, Invoking astarithmetic, Arithmetic, Arithmetic
 @subsection Reverse polish notation
 
 @cindex Postfix notation
 @cindex Reverse Polish Notation
 The most common notation for arithmetic operations is the infix
 notation@footnote{@url{https://en.wikipedia.org/wiki/Infix_notation}}
-where the operator goes between the two operands. While the infix
-notation is the perferred way in most programming languages, currently
-ImageArithmetic does not use it since it will require parenthesis
-which can complicate the implementation of the code. In the near
-future we do plan to adopt this
+where the operator goes between the two operands, for example
+@mymath{4+5}. While the infix notation is the perferred way in most
+programming languages, currently Arithmetic does not use it since it
+will require parenthesis which can complicate the implementation of
+the code. In the near future we do plan to adopt this
 notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}},
-but for the time being, ImageArithmetic uses the postfix or reverse
-polish
+but for the time being (due to time constraints on the developers),
+Arithmetic uses the postfix or reverse polish
 notation@footnote{@url{https://en.wikipedia.org/wiki/Reverse_Polish_notation}}. The
 referenced wikipedia article provides some excellent explanation on
 this notation but here we will give a short summary for
@@ -5656,12 +5656,12 @@ In the postfix notation, the operator is placed after the operands, as
 we will see below this removes the need to define parenthesis for most
 ordinary operators. For example, instead of writing @command{5+6}, we
 write @command{5 6 +}. To easily understand how this notation works,
-you can think of each token of the expression as an item in a stack
-and such that every time an operator is confronted, it pulls two
-operands from the top of the stack, does the operation and pushes the
-result back on top of the stack. So if you want the average of 5 and
-6, you would write: @command{5 6 + 2 /}. The operations that are done
-are:
+you can think of each operand a node in a stack first-in-first-out
+stack. Every time an operator is confronted, it pops the number of
+operands it needs from the top of the stack (so they don't exist in
+the stack any more), does its operation and pushes the result back on
+top of the stack. So if you want the average of 5 and 6, you would
+write: @command{5 6 + 2 /}. The operations that are done are:
 
 @enumerate
 @item
@@ -5677,92 +5677,86 @@ stack.
 @command{2} is an operand so push it onto the top of the stack.
 @item
 @command{/} is a binary operator, so pull out the top two elements of
-the stack (first @command{2}, then @command{11}) and divide the second
-one by the first.
+the stack (top-most is @command{2}, then @command{11}) and divide the
+second one by the first.
 @end enumerate
 
-In ImageArithmetic, the operands can be FITS images or numbers. But
-note that at least one FITS image must be present in the full
-expression. As you can see, very complicated procedures can be created
+In Gnuastro's Arithmetic, the operands can be FITS images or
+numbers. As you can see, very complicated procedures can be created
 without the need for parenthesis. Even functions which take an
 arbitrary number of arguments can be defined in this notation. For
-example the Postscript language (the programming language for PDF
-files) uses this notation style, see the EPS and PDF part of
-@ref{Recognized file types}.
+example the Postscript language@footnote{See the EPS and PDF part of
+@ref{Recognized file types} for a little more on the Postscript
+language.} (the programming language for PDF files) uses this notation
+style
 
 
-@node Invoking astimgarith,  , Reverse polish notation, ImageArithmetic
-@subsection Invoking ImageArithmetic
+@node Invoking astarithmetic,  , Reverse polish notation, Arithmetic
+@subsection Invoking Arithmetic
 
-ImageArithmetic will do pixel to pixel arithmetic operations on the
-individual pixels of identically sized images. The WCS information
-will be taken from the first input image. If the output is a single
-number, that number will be printed in the output. See @ref{Reverse
-polish notation} for the notation currently used. The general template
-for ImageArithmetic is:
+Arithmetic will do pixel to pixel arithmetic operations on the
+individual pixels of input data and/or numbers. All input data files
+must have the same dimensions. The WCS information will be taken from
+the first input image encountered. If the output is a single number,
+that number will be printed in the standard output. See @ref{Reverse
+polish notation} for the notation. The general template is:
 
 @example
-$ astimgarith [OPTION...] ASTRdata1 ASTRdata2 OPERATOR ...
+$ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
 @end example
 
 @noindent
 One line examples:
 
 @example
-$ astimgarith 10.32 3.84 - 2.7 pow
-  155.329
-$ astimgarith image.fits -1 "*" --out=inverse.fits
-$ astimgarith image1.fits image2.fits + 2 / --out=average.fits
-$ astimgarith image.fits image.fits - --out=skysub.fits --hdu=0 --hdu2=3
+$ astarithmetic 10.32 3.84 - 2.7 pow            # will print 155.329
+$ astarithmetic 1 image.fits / --out=inverse.fits
+$ astarithmetic image.fits -1 "*" --out=negative.fits
+$ astarithmetic image1.fits image2.fits + 2 / --out=average.fits
+$ astarithmetic image.fits image.fits - --out=skysub.fits          \
+                --hdu=0 --hdu1=3
 @end example
-
-@cartouche
-@noindent
-For multiplication please quote the @command{*} sign (for example,
-@command{"*"}). Without quotation, the shell will replace it with a
-list of all the files in your working directory which can produce
-unpredictable outputs. In any case, the input images are not affected,
-they are only read.
-@end cartouche
 
 @cindex NaN
 @cindex Mask image
-Currently ImageArithmetic will convert the input image into double
+Currently Arithmetic will convert the input image into double
 precision floating point arrays for the operations. But there are
 plans to allow it to also operate on integer (labeled or masked)
-images with bitwise operators so certain mask layers can also be
-separated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Any
+images with bitwise operators so mask layers can also be
+manipulated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Any
 blank pixels in the input image will automatically be set as blank in
 the output. To ignore certain pixels (see @ref{Blank pixels}), you can
 specify a mask image, see @ref{Mask image}. In that case, when reading
 the first FITS image, all the masked pixels will be changed to a NaN
 value. Therefore in any further operations with other images, the
 output for those pixels will always be a NaN (blank pixel value for
-floating point data type). Currently all the operations in
-ImageArithmetic are done in double precision floating point
-type. However, if none of the input images have this type, the output
-will be stored as a single precision floating point type.
+floating point data type). Currently all the operations in Arithmetic
+are done in double precision floating point type. However, if none of
+the input images have this type, the output will be stored as a single
+precision floating point type.
 
 @cindex Options
 The hyphen (@command{-}) can be used both to specify options (see
 @ref{Options}) and also to specify a negative number which might be
 necessary in your arithmetic. In order to enable you to do this,
-ImageArithmetic will first parse all the input strings and if the
-first character after a hyphen is a digit, then that hyphen is
-temporarily replaced by the vertical tab character which is not
-commonly used. The arguments are then parsed and these strings will
-not be specified as an option. Then the given arguments are parsed and
-any vertical tabs are replaced back with a hyphen so they can be read
-as negative numbers. So as long as the names of the files you want to
-work on do not start with a vertical tab followed by a digit, there is
-no problem and you can safely use negative numbers on the command line
-along with other options. Also, because of this implementation, do not
-write negative fractions like this: @command{-.3}, instead write them
-as @command{-0.3}.
+Arithmetic will first parse all the input strings and if the first
+character after a hyphen is a digit, then that hyphen is temporarily
+replaced by the vertical tab character which is not commonly used. The
+arguments are then parsed and these strings will not be specified as
+an option. Then the given arguments are parsed and any vertical tabs
+are replaced back with a hyphen so they can be read as negative
+numbers. So as long as the names of the files you want to work on do
+not start with a vertical tab followed by a digit, there is no
+problem. An important consequence of this implementation is that you
+should not write negative fractions like this: @command{-.3}, instead
+write them as @command{-0.3}.
 
-The recognized operators in ImageArithmetic are listed below. See
+The recognized operators in Arithmetic are listed below. See
 @ref{Reverse polish notation} for more on the ordering and notation
-used.
+used. The operands to all operators can be a data array (for example a
+FITS image) or a number, the output will be an array or number
+according to the inputs. For example a number multiplied by an array
+will produce an array.
 
 @table @command
 
@@ -5774,7 +5768,8 @@ Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
 
 @item *
 Multiplication, so ``@command{4 5 *}'' is equivalent to
-@mymath{4\times5}.
+@mymath{4\times5}. On the command line or in scripts, be sure to quote
+the multiplication sign (for example @command{"*"}).
 
 @item /
 Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
@@ -5782,6 +5777,10 @@ Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
 @item pow
 First operand to the power of the second, so ``@command{4 5
 pow}'' is equivalent to @mymath{4^5}.
+
+@item sqrt
+The square root of the first operand, so ``@command{4 sqrt}'' is
+equivalent to @mymath{\sqrt{4}}.
 
 @item log
 Natural logarithm of first operand, so ``@command{4 log}'' is
@@ -5796,47 +5795,60 @@ Absolute value of first operand, so ``@command{4 abs}'' is
 equivalent to @mymath{|4|}.
 
 @item min
-Minimum value of first operand, so ``@command{4 a.fits}'' will push
+Minimum value of first operand, so ``@command{a.fits min}'' will push
 the the minimum pixel value in this image onto the stack. On a number,
-this operator just returns the number without any change. So note that
-if this operator (along with @command{max}) acts on a single image on
-the command line, the output will no longer be an image, but a number.
+this operator just returns the number without any change. So if this
+operator acts on a single image on the command line, the output will
+no longer be an image, but a number.
 
 @item max
 Maximum value of first operand, similar to @command{min}.
 @end table
 
+@cartouche
+@noindent
+@strong{Important reminder for multiplication:} please quote the
+@command{*} sign (for example, @command{"*"} or
+@command{'*'}). Without quotation, the shell will replace @command{*}
+with a list of all the files in your working directory which can
+produce unpredictable outputs. In any case, the input images are not
+affected, they are only read.
+@end cartouche
+
 @cindex AWK
 @cindex GNU AWK
-Without any images, ImageArithmetic will act like a simple calculator
-and print the resulting output on the standard output like the first
-example above. If you really want such calculator operations on the
-command line, AWK (GNU AWK is the most common implementation) is much
-faster, easier and powerful. For example the example above can be done
-with the following command. In general AWK is a fantastic tool and GNU
-AWK has a wonderful manual. So if you confront situations like this a
-lot, be sure to learnt AWK and simplify your life.
+Without any images, Arithmetic will act like a simple calculator and
+print the resulting output number on the standard output like the
+first example above. If you really want such calculator operations on
+the command line, AWK (GNU AWK is the most common implementation) is
+much faster, easier and much more powerful. For example, the numerical
+one-line example above can be done with the following command. In
+general AWK is a fantastic tool and GNU AWK has a wonderful manual
+(@url{https://www.gnu.org/software/gawk/manual/}). So if you confront
+situations like this a lot or have to work with large text
+tables/catalogs, be sure to checkout AWK and simplify your life.
 
 @example
-echo "" | awk '@{print (10.32-3.84)^2.7@}'
+$ echo "" | awk '@{print (10.32-3.84)^2.7@}'
+155.329
 @end example
 
 
 See @ref{Common options} for a review of the options in all Gnuastro
 programs, the two options related to a mask image are also specified
 in @ref{Mask image}. Besides those, the only options particular to
-ImageArithmetic are several HDU options to specify which HDU to use in
-each image. The common @option{--hdu} option is used for the first
-image encountered in the arguments. @option{--hdu1} is used for the
-second FITS image name encountered in the arguments, @option{--hdu2}
-for the third and so on. Note that since one FITS file may have
-multiple extensions, the same filename can be used multiple times with
-only the HDU option differing. We have tried to keep the short option
-name as alphabetically ordered as possible but in some cases it
-interfered with the common short options, so beyond the first few, its
-best to check or use the long options. Currently 10 input images are
-supported, but if the need arises adding more is very easy, please let
-us know if you need more than 10.
+Arithmetic are several HDU options to specify which HDU to use in each
+image. The common @option{--hdu} option is used for the first image
+encountered in the arguments. @option{--hdu1} is used for the second
+FITS image name encountered in the arguments, @option{--hdu2} for the
+third and so on. Note that since one FITS file may have multiple
+extensions, the same filename may be used multiple times with only the
+HDU option differing. We have tried to keep the short option name as
+alphabetically ordered as possible but in some cases it interfered
+with the common short options, so its best to check the short options
+or use the long options for less ambiguity. Currently 10 input images
+are supported, but if the need arises, adding more is very
+easy. Please let us know if you need more than 10 input images.
 
 @table @option
 @item -a
@@ -5887,7 +5899,7 @@ us know if you need more than 10.
 
 
 
-@node Convolve, ImageWarp, ImageArithmetic, Image manipulation
+@node Convolve, ImageWarp, Arithmetic, Image manipulation
 @section Convolve
 
 @cindex Convolution
@@ -12968,9 +12980,9 @@ kernel (@ref{Convolve}).
 (@file{astheader}) Print and manipulate the header data of a FITS file
 (see @ref{Header}).
 
-@item ImageArithmetic @value{IMGARITH_VERSION}
-(@file{astimgarith}) For arithmetic operations on data (image) pixels
-(@ref{ImageArithmetic}).
+@item Arithmetic @value{ARITHMETIC_VERSION}
+(@file{astarithmetic}) For arithmetic operations on data (image) pixels
+(@ref{Arithmetic}).
 
 @item ImageCrop @value{IMGCROP_VERSION}
 (@file{astimgcrop}) Crop region(s) from an image and stitch several

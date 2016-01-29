@@ -19,7 +19,7 @@ fi
 
 
 #For each program bring in the configuration file:
-for prog in convertt convolve header imgarith imgcrop imgstat     \
+for prog in convertt convolve header arithmetic imgcrop imgstat   \
                      imgwarp mkcatalog mknoise mkprof noisechisel \
                      subtractsky
 do

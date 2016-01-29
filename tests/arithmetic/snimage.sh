@@ -1,4 +1,4 @@
-# Get basic image statistics.
+# Make an S/N image to test Arithmetic.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -21,7 +21,7 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=imgarith
+prog=arithmetic
 execname=../src/$prog/ast$prog
 
 

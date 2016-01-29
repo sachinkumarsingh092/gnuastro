@@ -49,7 +49,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "ASTRdata ASTRdata OPERATOR ...";
+static char args_doc[] = "ASTRdata or number [ASTRdata] OPERATOR ...";
 
 
 
@@ -58,13 +58,17 @@ static char args_doc[] = "ASTRdata ASTRdata OPERATOR ...";
 const char doc[] =
   /* Before the list of options: */
   TOPHELPINFO
-  SPACK_NAME" will do arithmetic operations on one or multiple images. "
-  "Simply put the name of the image (and its extension as an option) along "
-  "with the arithmetic operators. Please note that currently ImageArithmetic "
-  "only supports postfix or reverse polish notation. For example to get the "
-  "result of `5+6', you should write `5 6 +', or to get the average of two "
-  "images, you should write `a.fits b.fits + 2 /'. At least one image should "
-  "be present in the list of arguments.\n"
+  SPACK_NAME" will do arithmetic operations on one or multiple images and "
+  "numbers. Simply put, the name of the image along with the arithmetic "
+  "operators and possible numbers are given as arguments. The extensions of "
+  "each input image are expected as options (starting with `hdu') listed "
+  "below. Please note that currently ImageArithmetic only supports postfix "
+  "or reverse polish notation. For example to get the result of `5+6', you "
+  "should write `5 6 +', or to get the average of two images, you should "
+  "write `a.fits b.fits + 2 /'. Please see the manual for more information. "
+  "\n\nThe operators/functions recognized by "SPACK_NAME" are: +, -, *, /, "
+  "pow, log, abs, min, max, sqrt and log10. Note that multiplication should "
+  "be quoted like \"*\" to avoid shell expansion.\n"
   MOREHELPINFO
   /* After the list of options: */
   "\v"

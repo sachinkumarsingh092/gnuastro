@@ -30,12 +30,12 @@ AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
 
 
 ## ImageCrop:
-bin_PROGRAMS = astimgarith
+bin_PROGRAMS = astarithmetic
 
-astimgarith_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-imgarith.c imgarith.h
+astarithmetic_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
+arithmetic.c arithmetic.h
 
-astimgarith_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
+astarithmetic_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
 -lfitsarrayvv -lcheckset -ltiming -llinkedlist -lmode -lstatistics	\
 -larraymanip -lforqsort
 
@@ -44,14 +44,14 @@ astimgarith_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
 
 
 # To destribute the defaults file.
-dist_sysconf_DATA = astimgarith.conf
+dist_sysconf_DATA = astarithmetic.conf
 
 
 
 
 
 ## Generally for the man pages:
-dist_man_MANS = astimgarith.1
+dist_man_MANS = astarithmetic.1
 
-astimgarith.1: args.h $(top_srcdir)/include/commonargs.h
-	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astimgarith
+astarithmetic.1: args.h $(top_srcdir)/include/commonargs.h
+	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astarithmetic
