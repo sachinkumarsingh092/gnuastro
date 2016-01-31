@@ -9556,11 +9556,6 @@ calling this function will significantly slow NoiseChisel.
 Check the final sky and its standard deviation values on the mesh
 grid. Similar to @option{--checkdetectionsky}.
 
-@item --saveskysubed
-Save the sky subtracted image (where the sky was calculated from the
-average of undetected pixels, see @ref{Sky value}) into a file ending
-with @file{_skysubed.fits}.
-
 @item --checkmaskdet
 Mask (set to NaN) the undetected pixels in one extension and the
 detected pixels in the next extension of a file ending with

@@ -75,7 +75,7 @@ const char doc[] =
    f j w x z
    A J W X Y Z
 
-   Used numbers: <=519
+   Used numbers: <=518
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -157,14 +157,6 @@ static struct argp_option options[] =
       0,
       0,
       "Do not do any segmentation.",
-      2
-    },
-    {
-      "saveskysubed",
-      518,
-      0,
-      0,
-      "Save the sky subtracted image, `_skysubed.fits'.",
       2
     },
     {
@@ -450,7 +442,7 @@ static struct argp_option options[] =
     },
     {
       "checkmaskdet",
-      519,
+      518,
       0,
       0,
       "Mask detections and sky, `_maskdet.fits'.",
@@ -611,9 +603,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 517:
       p->detectonly=1;
       break;
-    case 518:
-      p->skysubedname="a";
-      break;
     case 'C':
       p->grownclumps=1;
       p->up.grownclumpsset=1;
@@ -747,7 +736,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 512:
       p->skyname="a";
       break;
-    case 519:
+    case 518:
       p->maskdetname="a";
       break;
 

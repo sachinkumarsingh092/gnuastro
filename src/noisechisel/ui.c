@@ -762,12 +762,6 @@ sanitycheck(struct noisechiselparams *p)
       automaticoutput(p->up.inputname, "_clumpsn.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->clumpsnname);
     }
-  if(p->skysubedname)
-    {
-      p->skysubedname=NULL;
-      automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->skysubedname);
-    }
   if(p->maskdetname)
     {
       p->maskdetname=NULL;
@@ -1113,7 +1107,6 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   free(p->meshname);
   free(p->threshname);
   free(p->maskdetname);
-  free(p->skysubedname);
   free(p->detectionname);
   free(p->segmentationname);
   free(p->detectionskyname);
