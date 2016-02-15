@@ -24,7 +24,7 @@
 
 @c Copyright information:
 @copying
-This manual documents version @value{VERSION} of the GNU Astronomy
+This book documents version @value{VERSION} of the GNU Astronomy
 Utilities, providing various individual tools with similar user
 interface for astronomical data manipulation and analysis.
 
@@ -202,7 +202,7 @@ Introduction
 * Report a bug::                Search and report the bug you found.
 * Suggest new feature::         How to suggest a new feature.
 * Announcements::               How to stay up to date with Gnuastro.
-* Conventions::                 Conventions used in this manual.
+* Conventions::                 Conventions used in this book.
 * Acknowledgments::             People who helped in the production.
 
 Version numbering
@@ -235,7 +235,7 @@ Installing GNU Astronomy Utilities
 
 * Configuring::                 Configure Gnuastro
 * Tests::                       Run tests to see if it is working.
-* A4 print manual::             Customize the print manual.
+* A4 print book::               Customize the print book.
 * Known issues::                Issues you might encounter.
 
 Configuring
@@ -283,7 +283,7 @@ Getting help
 * --usage::                     View option names and value formats.
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
-* Info::                        View complete manual in terminal.
+* Info::                        View complete book in terminal.
 * help-gnuastro mailing list::  Contacting experienced users.
 
 Files
@@ -514,13 +514,13 @@ software, for example installation, managing command line options or
 getting help. So if you are new to this environment, we encourage you
 to go through these chapters carefully. They can be a starting point
 from which you can continue to learn more from each program's own
-manual and fully enjoy this wonderful environment. This manual is
+manual and fully enjoy this wonderful environment. This book is
 written so someone who is completely new to GNU/Linux can get going
 very soon, see @ref{New to GNU/Linux?}.
 
 Finally it must be mentioned that in Gnuastro, no change to any
 program will be released before it has been fully documented in this
-manual first. As discussed in @ref{Science and its tools} this is the
+here first. As discussed in @ref{Science and its tools} this is the
 founding basis of the Gnuastro.
 
 @menu
@@ -533,7 +533,7 @@ founding basis of the Gnuastro.
 * Report a bug::                Search and report the bug you found.
 * Suggest new feature::         How to suggest a new feature.
 * Announcements::               How to stay up to date with Gnuastro.
-* Conventions::                 Conventions used in this manual.
+* Conventions::                 Conventions used in this book.
 * Acknowledgments::             People who helped in the production.
 @end menu
 
@@ -568,7 +568,7 @@ $ rm -rf gnuastro-@value{VERSION} gnuastro-@value{VERSION}.tar.gz
 @noindent
 
 See @ref{Known issues} if you confront any complications.  For each
-program there is an `Invoke ProgramName' sub-section in this manual
+program there is an `Invoke ProgramName' sub-section in this book
 which explains how the programs should be run on the command line. It
 can be read on the command line by running the command @command{$ info
 astprogname}, see @ref{Naming convention} and @ref{Getting help}. The
@@ -636,7 +636,7 @@ This approach to scientific software only helps in producing dogmas
 and an ``obscurantist faith in the expert’s special skill, and in his
 personal knowledge and authority''@footnote{Karl Popper. The logic of
 scientific discovery. 1959. Larger quote is given at the start of the
-PDF manual.}.
+PDF (for print) version of this book.}.
 
 It is obviously impractical for any one human being to gain the
 intricate knowledge explained above for every step of an analysis. On
@@ -726,7 +726,7 @@ things that the experiment was competent to find.
 @cindex GNU Texinfo
 The paragraphs below, in this section, belong to the GNU
 Texinfo@footnote{Texinfo is the GNU documentation system. It is used
-to create this manual in all the various formats.} manual and are not
+to create this book in all the various formats.} manual and are not
 written by us! The name ``Texinfo'' is just changed to ``GNU Astronomy
 Utilities'' or ``Gnuastro'' because they are released under the same
 licenses and it is beautifully written to inform you of your rights.
@@ -768,7 +768,7 @@ reputation.
 The precise conditions of the licenses for the programs currently
 being distributed that relate to Gnuastro are found in the
 @url{http://www.gnu.org/copyleft/gpl.html, GNU General Public license}
-that accompany them.  This manual is covered by the
+that accompany them.  This book is covered by the
 @url{http://www.gnu.org/copyleft/fdl.html, GNU Free Documentation
 License}.
 
@@ -791,7 +791,7 @@ example @file{astnoisechisel} or @file{astimgcrop}, see
 @pindex ProgramName
 @pindex @file{astprogname}
 We will use ``ProgramName'' for a generic official program name and
-@file{astprogname} for a generic executable name. In this manual, the
+@file{astprogname} for a generic executable name. In this book, the
 programs are classified based on what they do and thoroughly
 explained. An alphabetical list of the utilities that are installed on
 your system with this installation are given in @ref{GNU Astronomy
@@ -1174,7 +1174,7 @@ date with new releases. To subscribe to this list, please visit
 
 @node Conventions, Acknowledgments, Announcements, Introduction
 @section Conventions
-In this manual we have the following conventions:
+In this book we have the following conventions:
 
 @itemize
 
@@ -1224,7 +1224,7 @@ available for the astronomical community. The very critical view
 points of Professor Takashi Ichikawa (at Tohoku University) were also
 instrumental in the creation of Gnuastro.
 
-Mohammad-reza Khellat and Alan Lefor kindly studied the manual
+Mohammad-reza Khellat and Alan Lefor kindly studied the book
 multiple times and provided very useful suggestions. Alan and
 Mohammad-reza also helped in testing Gnuastro on other operating
 systems. Brandon Invergo, Karl Berry and Richard Stallman also
@@ -1265,12 +1265,12 @@ the various tools in Gnuastro for your scientific purposes. In these
 tutorials, we have intentionally avoided too many cross references to
 make it more easily readable. To get more information about a
 particular program, you can visit the section with the same name as
-the program in this manual. Each program section starts by explaning
+the program in this book. Each program section starts by explaning
 the general concepts behind what it does. If you only want to see an
 explanation of the options and arguments of any program, see the
 subsection titled `Invoking ProgramName'. See @ref{Conventions}, for
 an explanation of the conventions we use in the example codes through
-the manual.
+the book.
 
 The tutorials in this section use a fictional setting of some
 historical figures in the history of astronomy. We have tried to show
@@ -2188,7 +2188,7 @@ commands given in @ref{Quick start}. If you want to have all the
 programs of Gnuastro installed in your system, you don't want to
 change the executable names during or after installation, you have
 root access to install the programs in a system wide directory, the
-Letter paper size of the print manual is fine for you or as a summary
+Letter paper size of the print book is fine for you or as a summary
 you don't feel like going into the details when everything is working
 seamlessly, you can safely skip this section. If you have any of the
 above problems or you want to understand the details for a better
@@ -2208,7 +2208,7 @@ explanation. Once you uncompress the source file the directory
 @menu
 * Configuring::                 Configure Gnuastro
 * Tests::                       Run tests to see if it is working.
-* A4 print manual::             Customize the print manual.
+* A4 print book::               Customize the print book.
 * Known issues::                Issues you might encounter.
 @end menu
 
@@ -2605,7 +2605,7 @@ $ ./configure --program-transform-name='s/ast/ /'
 
 
 
-@node Tests, A4 print manual, Configuring, Installing Gnuastro
+@node Tests, A4 print book, Configuring, Installing Gnuastro
 @subsection Tests
 
 @cindex @command{make check}
@@ -2646,28 +2646,29 @@ want to inspect them.
 
 
 
-@node A4 print manual, Known issues, Tests, Installing Gnuastro
-@subsection A4 print manual
+@node A4 print book, Known issues, Tests, Installing Gnuastro
+@subsection A4 print book
 
-@cindex A4 print manual
-@cindex Modifying print manual
+@cindex A4 print book
+@cindex Modifying print book
 @cindex A4 paper size
 @cindex US letter paper size
 @cindex Paper size, A4
 @cindex Paper size, US letter
-The default print manual is provided in the letter paper size. If you
-would like to have the print version of this manual on paper and you
-are living in a country which uses A4, then you can rebuild the
-manual. The great thing about the GNU build system is that the manual
-source code which is in Texinfo is also distributed with the program
-source code, enabling you to do such customizations (hacking).
+The default print version of this book is provided in the letter paper
+size. If you would like to have the print version of this book on
+paper and you are living in a country which uses A4, then you can
+rebuild the book. The great thing about the GNU build system is that
+the book source code which is in Texinfo is also distributed with
+the program source code, enabling you to do such customizations
+(hacking).
 
 @cindex GNU Texinfo
 In order to change the paper size, you will need to have GNU Texinfo
 installed. For simplicity, let's assume @file{SRCdir} is equivalent to
 @file{DOWLD/gnuastro-@value{VERSION}}. Open
 @file{SRCdir/doc/gnuastro.texi} with any text editor. This is the
-source file that created this manual. In the first few lines you will
+source file that created this book. In the first few lines you will
 see this line:
 
 @example
@@ -2691,17 +2692,17 @@ $ make pdf
 @end example
 
 @noindent
-and the new PDF manual will be available in
+and the new PDF book will be available in
 @file{SRCdir/doc/gnuastro.pdf}. By changing the @command{pdf} in
 @command{$ make pdf} to @command{ps} or @command{dvi} you can have the
-manual in those formats. Note that you can do this for any manual that
+book in those formats. Note that you can do this for any book that
 is in Texinfo format, they might not have @code{@@afourpaper} line, so
 you can add it close to the top of the Texinfo source file.
 
 
 
 
-@node Known issues,  , A4 print manual, Installing Gnuastro
+@node Known issues,  , A4 print book, Installing Gnuastro
 @subsection Known issues
 
 Depending on your operating system and the version of the compiler you
@@ -2796,8 +2797,8 @@ test result.
 @item
 @cindex @TeX{}
 @cindex GNU Texinfo
-@command{$ make pdf}: @emph{The PDF manual cannot be made.} To make a
-PDF manual, you need to have the GNU Texinfo program (like any
+@command{$ make pdf}: @emph{The PDF book cannot be made.} To make a
+PDF book, you need to have the GNU Texinfo program (like any
 program, the more recent the better). A working @TeX{} program is also
 necessary, which you can get from Tex
 Live@footnote{@url{https://www.tug.org/texlive/}}.
@@ -2973,7 +2974,7 @@ formats.
 
 @end itemize
 
-Through out this manual and in the command line outputs, whenever we
+Through out this book and in the command line outputs, whenever we
 want to generalize all such astronomical data formats in a text place
 holder, we will use @file{ASTRdata}, we will assume that the extension
 is also part of this name. Any file ending with these names is
@@ -3894,10 +3895,10 @@ ABC01.jpg ABC02.jpg DEF01_labeled.fits
 @section Getting help
 
 @cindex Help
-@cindex Manual formats
+@cindex Book formats
 @cindex Remembering options
-@cindex Convenient manual formats
-Probably the first time you read this manual, it is either in the PDF
+@cindex Convenient book formats
+Probably the first time you read this book, it is either in the PDF
 or HTML formats. These two formats are very convenient for when you
 are not actually working, but when you are only reading. Later on,
 when you start to use the programs and you are deep in the middle of
@@ -3921,7 +3922,7 @@ Another major advantage of such command line based help routines is
 that they are installed with the software in your computer, therefore
 they are always in sync with the executable you are actually
 running. Three of them are actually part of the executable. You don't
-have to worry about the version of the manual or program. If you rely
+have to worry about the version of the book or program. If you rely
 on external help (a PDF in your personal print or digital archive or
 HTML from the official webpage) you have to check to see if their
 versions fit with your installed program.
@@ -3929,7 +3930,7 @@ versions fit with your installed program.
 If you only need to remember the short or long names of the options,
 @option{--usage} is advised. If it is what the options do, then
 @option{--help} is a great tool. Man pages are also provided for those
-who are use to this older system of documentation. This full manual is
+who are use to this older system of documentation. This full book is
 also available to you on the command line in Info format. If none of
 these seems to resolve the problems, there is a mailing list which
 enables you to get in touch with experienced Gnuastro users. In the
@@ -3940,7 +3941,7 @@ subsections below each of these methods are reviewed.
 * --usage::                     View option names and value formats.
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
-* Info::                        View complete manual in terminal.
+* Info::                        View complete book in terminal.
 * help-gnuastro mailing list::  Contacting experienced users.
 @end menu
 
@@ -4108,18 +4109,18 @@ standard manner.
 @subsection Info
 
 @cindex GNU Info
-@cindex Command line, viewing full manual
+@cindex Command line, viewing full book
 Info is the standard documentation format for all GNU software. It is
 a very useful command line document viewing format, fully equipped
 with links between the various pages and menus and search
 capabilities. As explained before, the best thing about it is that it
 is available for you the moment you need to refresh your memory on any
 command line tool in the middle of your work without having to take
-your hands off the keyboard. This complete manual is available in Info
+your hands off the keyboard. This complete book is available in Info
 format and can be accessed from anywhere on the command line.
 
 To open the Info format of any installed programs or library on your
-system which has an Info format manual, you can simply run the command
+system which has an Info format book, you can simply run the command
 below (change @command{executablename} to the executable name of the
 program or library):
 
@@ -4140,7 +4141,7 @@ improve.
 @cindex GNU Emacs
 @cindex GNU C Library
 Once you've become an efficient navigator in Info, you can go to any
-part of this manual or any other GNU software or library manual, no
+part of this book or any other GNU software or library manual, no
 matter how long it is, in a matter of seconds. It also blends nicely
 with GNU Emacs (a text editor) and you can search manuals while you
 are writing your document or programs without taking your hands off
@@ -4148,7 +4149,7 @@ the keyboard, this is most useful for libraries like the GNU C
 library. To be able to access all the Info manuals installed in your
 GNU/Linux within Emacs, type @key{Ctrl-H + i}.
 
-To see this whole manual from the beginning in Info, you can run
+To see this whole book from the beginning in Info, you can run
 
 @example
 $ info gnuastro
@@ -7176,7 +7177,7 @@ It is also possible to specify a mask image for the input. In that
 case, see @ref{Mask image}. Here we will only explain the options
 particular to Convolve. Run Convolve with @option{--help} in order to
 see the full list of options Convolve accepts, irrespective of where
-they are explained in this manual.
+they are explained in this book.
 
 @table @option
 
@@ -8588,7 +8589,7 @@ the kernel related options. The @option{--kernel} option is not
 mandatory and if not specified anywhere prior to running, the original
 image will be used. Please run SubtractSky with the @option{--help}
 option to list all the recognized options, irrespective of which part
-of the manual they are fully explained in.
+of the book they are fully explained in.
 
 @table @option
 
@@ -9317,7 +9318,7 @@ ratio analysis.
 @noindent
 Please run NoiseChisel with the @option{--help} option to list all the
 recognized options with a short explanation, irrespective of which
-part of the Gnuastro manual they are fully explained in, see
+part of the Gnuastro book they are fully explained in, see
 @ref{Getting help}.
 
 
@@ -10436,7 +10437,7 @@ ellipse @mymath{a}, and its minor axis with @mymath{b}, the axis ratio
 is defined as: @mymath{q\equiv b/a}. The major axis of an ellipse can
 be aligned in any direction, therefore define the angle of the major
 axis to the horizontal axis of the image is defined to be the position
-angle of the ellipse and in this manual, we show it with
+angle of the ellipse and in this book, we show it with
 @mymath{\theta}.
 
 @cindex Radial profile on ellipse
@@ -10485,7 +10486,7 @@ dealing with.
 
 
 @node PSF, Stars, Defining an ellipse, Modeling basics
-@subsubsection Point Spread function
+@subsubsection Point Spread Function
 
 @cindex PSF
 @cindex Point source
@@ -10841,7 +10842,7 @@ source or the telescope aperture (for example in
 @mymath{cm^2})@footnote{For a full object that spans over several
 pixels, the telescope area should be used to find the flux. However,
 sometimes, only the brightness per pixel is desired. In such cases
-this manual also @emph{loosely} uses the term flux. This is only
+this book also @emph{loosely} uses the term flux. This is only
 approximately accurate however, since while all the pixels have a
 fixed area, the pixel size can vary with camera on the
 telescope.}. Knowing the flux (@mymath{f}) and distance to the object
@@ -12095,11 +12096,11 @@ we make use of the various GNU Autoconf macros in the GNU Autoconf
 archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
 
 @item
-Figures in the manual. Some of them are built by @LaTeX{} (using
+Figures in the book. Some of them are built by @LaTeX{} (using
 the TikZ package) and some are actual rasterized images. An automatic
 script will do the job of drawing the plots with @LaTeX{} and
 converting all the figures into all the formats that are necessary for
-all the various formats of the manual.
+all the various formats of the book.
 @end itemize
 
 To get the Gnulib and the Autoconf archives, just run these commands
@@ -12158,7 +12159,7 @@ $ cd ../../
 @cindex GNU Automake
 @cindex GNU build system
 @noindent
-All the necessary GNU C Library functions, Autoconf macros and manual
+All the necessary GNU C Library functions, Autoconf macros and book
 figures are now available. The GNU build system will do the rest of
 the job. To generate all the other necessary files you have to run the
 following command in the cloned @file{gnuastro}
@@ -12174,7 +12175,7 @@ $ autoreconf --install
 Now you can easily configure, build and start hacking into the code
 and you have the full revision history under your fingers.
 
-The hand-written (version controlled) code for Gnuastro, this manual
+The hand-written (version controlled) code for Gnuastro, this book
 and the tests are divided in the following sub-directories of the top
 directory. Their names are standard and descriptive enough, but a
 short summary is given here:
@@ -12184,7 +12185,7 @@ short summary is given here:
 @table @file
 
 @item doc
-The Texinfo source files for this manual and the Gnuastro webpage
+The Texinfo source files for this book and the Gnuastro webpage
 file(s).
 
 @item include
@@ -12655,15 +12656,15 @@ introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}
 @node Documentation,  , Multithreaded programming, Program source
 @subsection Documentation
 
-Documentation (this manual) is an integral part of Gnuastro.
+Documentation (this book) is an integral part of Gnuastro.
 Documentation is not considered a separate project. So, no change is
 considered valid for implementation unless the respective parts of the
-manual have also been updated. The following procedure can be a good
+book have also been updated. The following procedure can be a good
 suggestion to take when you have a new idea and are about to start
 implementing it.
 
 The steps below are not a requirement, the important thing is that
-when you send the program to be included in Gnuastro, the manual and
+when you send the program to be included in Gnuastro, the book and
 the code have to both be fully up-to-date and compatible and the
 purpose should be very clearly explained. You can follow any path you
 choose to do this, the following path was what we found to be most
@@ -12672,8 +12673,8 @@ Gnuastro.
 
 @enumerate
 @item
-Edit the manual and fully explain your desired change, such that your
-idea is completely embedded in the general context of the manual with
+Edit the book and fully explain your desired change, such that your
+idea is completely embedded in the general context of the book with
 no sence of discontinuity for a first time reader. This will allow you
 to plan the idea much more accurately and in the general context of
 Gnuastro or a particular program. Later on, when you are coding, this
@@ -12711,16 +12712,16 @@ write it here will really help you later when you are coding.
 
 @item
 After you have finished adding your initial intended plan to the
-manual, then start coding your change or new program within the
+book, then start coding your change or new program within the
 Gnuastro source files. While you are coding, you will notice that
-somethings should be different from what you wrote in the manual (your
+somethings should be different from what you wrote in the book (your
 initial plan). So correct them as you are actually coding.
 
 @item
-In the end, read the section in the manual that you edited completely
+In the end, read the section in the book that you edited completely
 and see if you didn't miss any change in the coding and to see if the
 context is fairly continuous for a first time reader (who hasn't seen
-the manual or had known of Gnuastro before you made your change).
+the book or had known of Gnuastro before you made your change).
 @end enumerate
 
 @node Test scripts, Building, Program source, Developing
@@ -12829,8 +12830,8 @@ change(s)/addition(s) you have made. Then add their file names to
 everything is working correctly.
 
 @item
-Make sure the manual is completely up to date with your changes, see
-@ref{Documentation}.
+Make sure the manual (this book) is completely up to date with your
+changes, see @ref{Documentation}.
 
 @cindex GNU Emacs
 @cindex @file{ChangeLog}
@@ -12993,8 +12994,8 @@ GNU Astronomy Utilities @value{VERSION}, contains the following
 programs. They are sorted in alphabetical order and followed by their
 version number. A short description is provided for each program which
 starts with the executable names in parenthesis, see @ref{Naming
-convention}. Throughout this manual, they are ordered based on their
-context, please see the manual contents for contextual ordering.
+convention}. Throughout this book, they are ordered based on their
+context, please see the book contents for contextual ordering.
 
 
 @table @asis
