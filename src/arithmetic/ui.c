@@ -153,6 +153,56 @@ readconfig(char *filename, struct imgarithparams *p)
           if(up->hdus[9]) junkset=1;
           allocatecopyset(value, &up->hdus[9], &junkset);
         }
+      else if (strcmp(name, "hdu10")==0)
+        {
+          if(up->hdus[10]) junkset=1;
+          allocatecopyset(value, &up->hdus[10], &junkset);
+        }
+      else if (strcmp(name, "hdu11")==0)
+        {
+          if(up->hdus[11]) junkset=1;
+          allocatecopyset(value, &up->hdus[11], &junkset);
+        }
+      else if (strcmp(name, "hdu12")==0)
+        {
+          if(up->hdus[12]) junkset=1;
+          allocatecopyset(value, &up->hdus[12], &junkset);
+        }
+      else if (strcmp(name, "hdu13")==0)
+        {
+          if(up->hdus[13]) junkset=1;
+          allocatecopyset(value, &up->hdus[13], &junkset);
+        }
+      else if (strcmp(name, "hdu14")==0)
+        {
+          if(up->hdus[14]) junkset=1;
+          allocatecopyset(value, &up->hdus[14], &junkset);
+        }
+      else if (strcmp(name, "hdu15")==0)
+        {
+          if(up->hdus[15]) junkset=1;
+          allocatecopyset(value, &up->hdus[15], &junkset);
+        }
+      else if (strcmp(name, "hdu16")==0)
+        {
+          if(up->hdus[16]) junkset=1;
+          allocatecopyset(value, &up->hdus[16], &junkset);
+        }
+      else if (strcmp(name, "hdu17")==0)
+        {
+          if(up->hdus[17]) junkset=1;
+          allocatecopyset(value, &up->hdus[17], &junkset);
+        }
+      else if (strcmp(name, "hdu18")==0)
+        {
+          if(up->hdus[18]) junkset=1;
+          allocatecopyset(value, &up->hdus[18], &junkset);
+        }
+      else if (strcmp(name, "hdu19")==0)
+        {
+          if(up->hdus[19]) junkset=1;
+          allocatecopyset(value, &up->hdus[19], &junkset);
+        }
 
 
 
@@ -216,6 +266,26 @@ printvalues(FILE *fp, struct imgarithparams *p)
     PRINTSTINGMAYBEWITHSPACE("hdu8", up->hdus[8]);
   if(up->hdus[9])
     PRINTSTINGMAYBEWITHSPACE("hdu9", up->hdus[9]);
+  if(up->hdus[10])
+    PRINTSTINGMAYBEWITHSPACE("hdu10", up->hdus[10]);
+  if(up->hdus[1])
+    PRINTSTINGMAYBEWITHSPACE("hdu11", up->hdus[11]);
+  if(up->hdus[2])
+    PRINTSTINGMAYBEWITHSPACE("hdu12", up->hdus[12]);
+  if(up->hdus[3])
+    PRINTSTINGMAYBEWITHSPACE("hdu13", up->hdus[13]);
+  if(up->hdus[4])
+    PRINTSTINGMAYBEWITHSPACE("hdu14", up->hdus[14]);
+  if(up->hdus[5])
+    PRINTSTINGMAYBEWITHSPACE("hdu15", up->hdus[15]);
+  if(up->hdus[6])
+    PRINTSTINGMAYBEWITHSPACE("hdu16", up->hdus[16]);
+  if(up->hdus[7])
+    PRINTSTINGMAYBEWITHSPACE("hdu17", up->hdus[17]);
+  if(up->hdus[8])
+    PRINTSTINGMAYBEWITHSPACE("hdu18", up->hdus[18]);
+  if(up->hdus[9])
+    PRINTSTINGMAYBEWITHSPACE("hdu19", up->hdus[19]);
 
   /* Output: */
   fprintf(fp, "\n# Output:\n");
@@ -254,35 +324,45 @@ checkifset(struct imgarithparams *p)
           switch(counter)
             {
             case 0:
-              if(cp->hduset==0) REPORT_NOTSET("hdu");
-              break;
+              if(cp->hduset==0) REPORT_NOTSET("hdu"); break;
             case 1:
-              if(up->hdus[1]==NULL) REPORT_NOTSET("hdu1");
-              break;
+              if(up->hdus[1]==NULL) REPORT_NOTSET("hdu1"); break;
             case 2:
-              if(up->hdus[2]==NULL) REPORT_NOTSET("hdu2");
-              break;
+              if(up->hdus[2]==NULL) REPORT_NOTSET("hdu2"); break;
             case 3:
-              if(up->hdus[3]==NULL) REPORT_NOTSET("hdu3");
-              break;
+              if(up->hdus[3]==NULL) REPORT_NOTSET("hdu3"); break;
             case 4:
-              if(up->hdus[4]==NULL) REPORT_NOTSET("hdu4");
-              break;
+              if(up->hdus[4]==NULL) REPORT_NOTSET("hdu4"); break;
             case 5:
-              if(up->hdus[5]==NULL) REPORT_NOTSET("hdu5");
-              break;
+              if(up->hdus[5]==NULL) REPORT_NOTSET("hdu5"); break;
             case 6:
-              if(up->hdus[6]==NULL) REPORT_NOTSET("hdu6");
-              break;
+              if(up->hdus[6]==NULL) REPORT_NOTSET("hdu6"); break;
             case 7:
-              if(up->hdus[7]==NULL) REPORT_NOTSET("hdu7");
-              break;
+              if(up->hdus[7]==NULL) REPORT_NOTSET("hdu7"); break;
             case 8:
-              if(up->hdus[8]==NULL) REPORT_NOTSET("hdu8");
-              break;
+              if(up->hdus[8]==NULL) REPORT_NOTSET("hdu8"); break;
             case 9:
-              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu9");
-              break;
+              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu9"); break;
+            case 10:
+              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu10"); break;
+            case 11:
+              if(up->hdus[1]==NULL) REPORT_NOTSET("hdu11"); break;
+            case 12:
+              if(up->hdus[2]==NULL) REPORT_NOTSET("hdu12"); break;
+            case 13:
+              if(up->hdus[3]==NULL) REPORT_NOTSET("hdu13"); break;
+            case 14:
+              if(up->hdus[4]==NULL) REPORT_NOTSET("hdu14"); break;
+            case 15:
+              if(up->hdus[5]==NULL) REPORT_NOTSET("hdu15"); break;
+            case 16:
+              if(up->hdus[6]==NULL) REPORT_NOTSET("hdu16"); break;
+            case 17:
+              if(up->hdus[7]==NULL) REPORT_NOTSET("hdu17"); break;
+            case 18:
+              if(up->hdus[8]==NULL) REPORT_NOTSET("hdu18"); break;
+            case 19:
+              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu19"); break;
 
             default:
               error(EXIT_FAILURE, 0, "Only %d FITS HDUs are given as  "

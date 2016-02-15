@@ -38,7 +38,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define NEGDASHREPLACE 11  /* A vertical tab (ASCII=11) for negative dash */
 #define NOOPTARRAY     NULL
 #define NOOPTNUMBER    NAN
-#define MAXNUMIMAGES   10
+#define MAXNUMIMAGES   20
 #define NOOPTFILENAME  ""
 
 

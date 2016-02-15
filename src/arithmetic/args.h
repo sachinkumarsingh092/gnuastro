@@ -83,7 +83,7 @@ const char doc[] =
    k l m n p r s t u v w x y z
    A B C E F G H I J L O Q R T U W X Y Z
 
-   Number keys used: <=500
+   Number keys used: <=509
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -183,7 +183,86 @@ static struct argp_option options[] =
       "10th image extension name.",
       1
     },
-
+    {
+      "hdu10",
+      500,
+      "STR",
+      0,
+      "11th image extension name.",
+      1
+    },
+    {
+      "hdu11",
+      501,
+      "STR",
+      0,
+      "12th image extension name.",
+      1
+    },
+    {
+      "hdu12",
+      502,
+      "STR",
+      0,
+      "13th image extension name.",
+      1
+    },
+    {
+      "hdu13",
+      503,
+      "STR",
+      0,
+      "14th image extension name.",
+      1
+    },
+    {
+      "hdu14",
+      504,
+      "STR",
+      0,
+      "15th image extension name.",
+      1
+    },
+    {
+      "hdu15",
+      505,
+      "STR",
+      0,
+      "16th image extension name.",
+      1
+    },
+    {
+      "hdu16",
+      506,
+      "STR",
+      0,
+      "17th image extension name.",
+      1
+    },
+    {
+      "hdu17",
+      507,
+      "STR",
+      0,
+      "18th image extension name.",
+      1
+    },
+    {
+      "hdu18",
+      508,
+      "STR",
+      0,
+      "19th image extension name.",
+      1
+    },
+    {
+      "hdu19",
+      509,
+      "STR",
+      0,
+      "20th image extension name.",
+      1
+    },
 
 
 
@@ -271,6 +350,36 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'j':
       allocatecopyset(arg, &p->up.hdus[9], &junkset);
+      break;
+    case 500:
+      allocatecopyset(arg, &p->up.hdus[10], &junkset);
+      break;
+    case 501:
+      allocatecopyset(arg, &p->up.hdus[11], &junkset);
+      break;
+    case 502:
+      allocatecopyset(arg, &p->up.hdus[12], &junkset);
+      break;
+    case 503:
+      allocatecopyset(arg, &p->up.hdus[13], &junkset);
+      break;
+    case 504:
+      allocatecopyset(arg, &p->up.hdus[14], &junkset);
+      break;
+    case 505:
+      allocatecopyset(arg, &p->up.hdus[15], &junkset);
+      break;
+    case 506:
+      allocatecopyset(arg, &p->up.hdus[16], &junkset);
+      break;
+    case 507:
+      allocatecopyset(arg, &p->up.hdus[17], &junkset);
+      break;
+    case 508:
+      allocatecopyset(arg, &p->up.hdus[18], &junkset);
+      break;
+    case 509:
+      allocatecopyset(arg, &p->up.hdus[19], &junkset);
       break;
 
 

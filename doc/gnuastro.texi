@@ -26,9 +26,9 @@
 @copying
 This manual documents version @value{VERSION} of the GNU Astronomy
 Utilities, providing various individual tools with similar user
-interface for astronomical data manipulation and  analysis.
+interface for astronomical data manipulation and analysis.
 
-Copyright @copyright{} 2015 Free Software Foundation, Inc.
+Copyright @copyright{} 2016 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -503,7 +503,10 @@ standards so it integrates finely with the GNU/Linux operating
 system. This also enables astronomers to expect a fully familiar
 experience in the source code, building, installing and command line
 user interaction that they have seen in all the other GNU software
-that they use.
+that they use. The official and always up to date version of
+book/manual is freely available under @ref{GNU Free Documentation
+License} in various formats (pdf, html, plain text, info, and as its
+Texinfo source) at @url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
 specified most of the topics in chapters 2 and 3 are common to all GNU
@@ -518,7 +521,7 @@ very soon, see @ref{New to GNU/Linux?}.
 Finally it must be mentioned that in Gnuastro, no change to any
 program will be released before it has been fully documented in this
 manual first. As discussed in @ref{Science and its tools} this is the
-founding basis of the GNU Astronomy Utilities.
+founding basis of the Gnuastro.
 
 @menu
 * Quick start::                 A quick start to installation.
@@ -543,12 +546,12 @@ founding basis of the GNU Astronomy Utilities.
 @cindex Compile
 @cindex Check
 @cindex Test
-Let's assume you have just downloaded the
-@file{gnuastro-@value{VERSION}.tar.gz} in the @file{DOWLD} directory
-and you already have the requirements (see
+All releases of Gnuastro are available at
+@url{https://www.gnu.org/software/gnuastro/}. Let's assume
+@file{gnuastro-@value{VERSION}.tar.gz} is in the @file{DOWLD}
+directory and you already have the requirements (see
 @ref{Requirements}). Running the following commands will unpack,
-compile, check and install all the GNU Astronomy Utilities so you can
-use them anywhere in your system.
+compile, check and install Gnuastro.
 
 @example
 $ cd DOWLD
@@ -5846,9 +5849,11 @@ extensions, the same filename may be used multiple times with only the
 HDU option differing. We have tried to keep the short option name as
 alphabetically ordered as possible but in some cases it interfered
 with the common short options, so its best to check the short options
-or use the long options for less ambiguity. Currently 10 input images
-are supported, but if the need arises, adding more is very
-easy. Please let us know if you need more than 10 input images.
+or use the long options for less ambiguity. Currently 20 input images
+are supported and you must specify each header explicitly@footnote{As
+defined in task #13887, this is slated to change and repeated calls to
+a single header option will allow you to specify the headers of each
+input image for any number of input images.}.
 
 @table @option
 @item -a
@@ -5886,6 +5891,37 @@ easy. Please let us know if you need more than 10 input images.
 @item -j
 @itemx --hdu9
 (@option{=STR}) The HDU of tenth FITS image in list of arguments.
+
+@item --hdu10
+(@option{=STR}) The HDU of 11th FITS image in list of arguments.
+
+@item --hdu11
+(@option{=STR}) The HDU of 12th FITS image in list of arguments.
+
+@item --hdu12
+(@option{=STR}) The HDU of 13th FITS image in list of arguments.
+
+@item --hdu13
+(@option{=STR}) The HDU of 14th FITS image in list of arguments.
+
+@item --hdu14
+(@option{=STR}) The HDU of 15th FITS image in list of arguments.
+
+@item --hdu15
+(@option{=STR}) The HDU of 16th FITS image in list of arguments.
+
+@item --hdu16
+(@option{=STR}) The HDU of 17th FITS image in list of arguments.
+
+@item --hdu17
+(@option{=STR}) The HDU of 18th FITS image in list of arguments.
+
+@item --hdu18
+(@option{=STR}) The HDU of 19th FITS image in list of arguments.
+
+@item --hdu19
+(@option{=STR}) The HDU of 20th FITS image in list of arguments.
+
 @end table
 
 
