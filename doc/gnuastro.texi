@@ -1166,7 +1166,9 @@ consider how your desired job can best be broken into separate steps.
 @cindex Mailing list: info-gnuastro
 Gnuastro has a dedicated mailing list for making announcements. Anyone
 that is interested can subscribe to this mailing list to stay upto
-date with new releases. To subscribe to this list, please visit
+date with new releases or when the dependencies (see
+@ref{Requirements}) have been updated. To subscribe to this list,
+please visit
 @url{https://lists.gnu.org/mailman/listinfo/info-gnuastro}.
 
 
@@ -1970,9 +1972,9 @@ conjunction with it is discussed.
 
 @cindex Dependencies, Gnuastro
 @cindex GNU build system
-GNU Astronomy Utilities @value{VERSION} have several dependencies,
-they all follow the same basic GNU based build system (like that shown
-in @ref{Quick start}), so even if you don't have them, installing them
+GNU Astronomy Utilities @value{VERSION} has several dependencies, they
+all follow the same basic GNU based build system (like that shown in
+@ref{Quick start}), so even if you don't have them, installing them
 should be pretty straightforward. In this section we explain each
 program and any specific note that might be necessary in the
 installation.
@@ -1983,23 +1985,38 @@ installation.
 @cindex Source code compilation
 @cindex Package managers
 The most basic choice is to build the packages from source your self
-instead of relying on your distribution's pre-built packages. These
-packages might already be available by your distribution's package
-management system. You can also use those, just note the following two
-issues:
+instead of relying on your distribution's pre-built packages. You can
+use the pre-built packages, however, because of the reasons below, we
+recommend that you build them your self. We will send out
+notifications in the @command{info-gnuastro} mailing list, see
+@ref{Announcements} when these requirements are updated so you can
+update them your self when you need to.
 
 @enumerate
-@item
-They might not be the most recent release.
 
 @item
-For each package, Gnuastro might require certain configuration options
-that the your distribution's package managers didn't add for
-you. Those configuration options are explained below.
+For each package, Gnuastro might preform better (or require) certain
+configuration options that the your distribution's package managers
+didn't add for you. If present, these configuration options are
+explained during the installation of each. When the proper
+configuration has not been set, the programs should complain and
+inform you of it.
+
+@item
+Your distribution's prebuilt package might not be the most recent
+release.
 
 @item
 For the libraries, they might separate the binary file from the header
 files, see @ref{Known issues}.
+
+@item
+Like any other tool, the science you derive from Gnuastro's tools
+highly depend on these lower level dependencies, so generally it is
+much better to have a close connection with them. By reading their
+manuals, installing them and staying up to date with changes/bugs in
+them, your scientific results and understanding will also
+correspondingly improve.
 @end enumerate
 
 
@@ -2014,9 +2031,8 @@ files, see @ref{Known issues}.
 @subsection GNU Scientific library
 
 @cindex GNU Scientific Library
-The GNU Scientific Library is probably already present in your
-distribution's package management system. To install it from source,
-you can run the following commands after you have
+To install the GNU Scientific Library from source, you can run the
+following commands after you have
 downloaded@footnote{@url{http://www.gnu.org/software/gsl/}}
 @file{gsl-X.X.tar.gz}:
 
@@ -2073,6 +2089,10 @@ $ tar -vxzf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
+$ make testprog
+$ ./testprog > testprog.lis
+$ diff testprog.lis testprog.out
+$ cmp testprog.fit testprog.std
 $ sudo make install
 @end example
 
