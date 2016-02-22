@@ -59,7 +59,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "@ARTICLE{noisechisel,\n"                                             \
   "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"                  \
   "    title = \"{Noise-based Detection and Segmentation of Nebulous Objects}\",\n" \
-  "  journal = {\apjs},\n"                                              \
+  "  journal = {\\apjs},\n"                                               \
   "archivePrefix = \"arXiv\",\n"                                        \
   "   eprint = {1505.01664},\n"                                         \
   " primaryClass = \"astro-ph.IM\",\n"                                  \
