@@ -1671,8 +1671,11 @@ as a visual scale.
 Using all the information above, he creates the catalog of mock
 profiles he wants in a file named @file{cat.txt} (short for catalog)
 using his favorite text editor and stores it in a directory named
-@file{simulationtest} in his home directory@footnote{The @command{cat}
-command prints the contents of a file, short for concatenation.}:
+@file{simulationtest} in his home directory. [The @command{cat}
+command prints the contents of a file, short for concatenation. So
+please copy-paste the outputs of the command ``@command{cat cat.txt}''
+into @file{cat.txt} when the editor opens in the steps above it, note
+that there are 6 lines]:
 
 @example
 $ mkdir ~/simulationtest
@@ -1692,8 +1695,7 @@ $ cat cat.txt
 @end example
 
 @noindent
-He looked into his observation logs and found that the night he was
-observing, the zeropoint magnitude was 18. Now he has all the
+The zeropoint magnitude for his observation was 18. Now he has all the
 necessary parameters and runs MakeProfiles with the following command:
 
 @example
