@@ -1708,13 +1708,13 @@ MakeProfiles started on Sat Oct  6 16:26:56 953
   ---- Row 3 complete, 4 left to go.
   ---- Row 2 complete, 3 left to go.
   ---- Row 4 complete, 2 left to go.
-  ---- ./0.fits created.
+  ---- ./0_cat.fits created.
   ---- Row 0 complete, 1 left to go.
   ---- Row 1 complete, 0 left to go.
   - cat.fits created.                        in 0.024811 seconds
 MakeProfiles finished in:  0.236629 (seconds)
 $ls
-0.fits  astmkprof.log  cat.fits  cat.txt
+0_cat.fits  astmkprof.log  cat.fits  cat.txt
 @end example
 
 @cindex Oversample
@@ -1737,7 +1737,7 @@ convolving we will resample the image to get our originally desired
 size. To convolve the image, Sufi ran the following command:
 
 @example
-$ astconvolve --kernel=0.fits cat.fits
+$ astconvolve --kernel=0_cat.fits cat.fits
 Convolve started on Mon Apr  6 16:35:32 953
 Convolving cat.fits (hdu: 0)
  with the kernel 0.fits (hdu: 0).
@@ -1749,7 +1749,7 @@ Convolving cat.fits (hdu: 0)
   - Padded parts removed.                    in 0.011880 seconds
 Convolve finished in:  15.972771 (seconds)
 $ls
-0.fits  astmkprof.log  cat_convolved.fits  cat.fits  cat.txt
+0_cat.fits  astmkprof.log  cat_convolved.fits  cat.fits  cat.txt
 @end example
 
 @noindent
@@ -1769,7 +1769,7 @@ $ astimgwarp cat_convolved.fits --matrix="0.2,0,0.4  0,0.2,0.4  0,0,1"
 ImageWarp started on Mon Apr  6 16:51:59 953
 ImageWarp finished in:  0.481421 (seconds)
 $ ls
-0.fits         cat_convolved.fits         cat.fits
+0_cat.fits        cat_convolved.fits         cat.fits
 astmkprof.log  cat_convolved_warped.fits  cat.txt
 @end example
 
@@ -1786,13 +1786,14 @@ convolution is done Sufi can remove those extra pixels using
 ImageCrop:
 
 @example
-$ astimgcrop cat_convolved_warped.fits --section=13:*-13,13:*-13
+$ astimgcrop cat_convolved_warped.fits --section=13:*-13,13:*-13  \
+             --zeroisnotblank
 ImageCrop started on Sat Oct  6 17:03:24 953
   - Read metadata of 1 images.               in 0.000560 seconds
   ---- cat_convolved_warped_crop.fits 1 1
 ImageCrop finished in:  0.018917 (seconds)
 $ls
-0.fits          astmkprof.log           cat_convolved_warped.fits
+0_cat.fits      astmkprof.log           cat_convolved_warped.fits
 0_warped.fits   cat_convolved.fits              cat.fits
 astimgcrop.log  cat_convolved_warped_crop.fits  cat.txt
 @end example
@@ -1817,7 +1818,7 @@ MakeNoise started on Mon Apr  6 17:05:06 953
   - Generator seed: 1428318100
 MakeNoise finished in:  0.033491 (seconds)
 $ls
-0.fits          cat_convolved.fits              cat.txt
+0_cat.fits      cat_convolved.fits              cat.txt
 0_warped.fits   cat_convolved_warped_crop.fits  out.fits
 astimgcrop.log  cat_convolved_warped.fits
 astmkprof.log   cat.fits
