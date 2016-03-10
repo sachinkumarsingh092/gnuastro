@@ -49,7 +49,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "     info "PACKAGE_TARNAME"\n\n"                                     \
   "If you couldn't find your answer in the manual, you can get "        \
   "direct help from experienced Gnuastro users and developers. "        \
-  "For more information, please run:\n"                                 \
+  "For more information, please run:\n\n"                               \
   "     info help-gnuastro\n\n"                                         \
   SPACK_NAME" options:"                                                 \
 

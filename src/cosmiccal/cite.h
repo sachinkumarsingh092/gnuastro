@@ -1,11 +1,11 @@
 /*********************************************************************
-Header - View and manipulate a data file header
-Header is part of GNU Astronomy Utilities (Gnuastro) package.
+CosmicCalculator - Calculate cosmological parameters
+CosmicCalculator is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,13 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef UI_H
-#define UI_H
+#ifndef CITE_H
+#define CITE_H
 
-void
-setparams(int argc, char *argv[], struct headerparams *p);
+#define HEADERBIBTEX ""
 
-void
-freeandreport(struct headerparams *p);
+#define PRINTCITEABORT {						\
+    printf("\nWe hope %s has been useful for your research.\n"		\
+	   "Citations are vital for the continued work on %s.\n"	\
+	   "Thank you for citing it in your research paper.\n"		\
+	   "\nPlease cite as \"%s\":\n\n%s\n\n%s",			\
+	   SPACK_NAME, SPACK_NAME, SPACK_STRING, GNUASTROBIBTEX,	\
+	   HEADERBIBTEX);						\
+    exit(EXIT_SUCCESS);							\
+}
 
 #endif

@@ -53,6 +53,9 @@ Texts.  A copy of the license is included in the section entitled
 * Convolve: (gnuastro)Convolve. Convolve an input file with kernel.
 * astconvolve: (gnuastro)Invoking astconvolve. Options to Convolve.
 
+* CosmicCalculator: (gnuastro)CosmicCalculator. For cosmological params.
+* astcosmiccal: (gnuastro)Invoking astcosmiccal. Options to CosmicCalculator.
+
 * Header: (gnuastro)Header. Print and manipulate data header info.
 * astheader: (gnuastro)Invoking astheader. Options to Header.
 
@@ -182,6 +185,7 @@ sub-component to a title is present.
 * Image analysis::              Analyze images.
 * Modeling and fittings::       Make and fit models.
 * Table manipulation::          Read/Write tables.
+* High-level calculations::     Physical calculations.
 * Developing::                  The development environment.
 * GNU Astronomy Utilities list::  List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
@@ -444,6 +448,15 @@ Noise basics
 * Instrumental noise::          Readout, dark current and other sources.
 * Final noised pixel value::    How the final noised value is calculated.
 * Generating random numbers::   How random numbers are generated.
+
+High-level calculations
+
+* CosmicCalculator::            Calculate cosmological variables
+
+CosmicCalculator
+
+* Basic cosmology::             A review of basic cosmology
+* Invoking astcosmiccal::       How to run CosmicCalculator
 
 Developing
 
@@ -11743,7 +11756,7 @@ were of integer types.
 
 
 
-@node Table manipulation, Developing, Modeling and fittings, Top
+@node Table manipulation, High-level calculations, Modeling and fittings, Top
 @chapter Table manipulation
 
 @cindex Table manipulation
@@ -11773,8 +11786,145 @@ The software for this section have to be added ....
 
 
 
+@node High-level calculations, Developing, Table manipulation, Top
+@chapter High-level calculations
 
-@node Developing, GNU Astronomy Utilities list, Table manipulation, Top
+After the reduction of raw data (for example with the utilities in
+@ref{Image manipulation}) you will have reduced images/data ready for
+processing/analysing (for example with the utilities in @ref{Image
+analysis}). But the processed/analysed data (or catalogs) are still
+not enough to derive any scientific result. Even higher-level analysis
+is still needed to convert the observed magnitudes, sizes or volumes
+into physical quantities that we associate with each catalog entry or
+detected object which is the purpose of the tools in this section.
+
+
+
+
+
+@menu
+* CosmicCalculator::            Calculate cosmological variables
+@end menu
+
+@node CosmicCalculator,  , High-level calculations, High-level calculations
+@section CosmicCalculator
+
+In extra-galactic studies, various cosmological parameters must be
+considered to derive higher-level information regarding our sources.
+For example, in a static Universe, the distance that is subtended by
+an angle and the distance that light travels to reach us are the same
+and we use them interchangably. However, in an expanding universe
+(which is the most commonly held belief today) these two are no longer
+the same and vary differently. The first is known as the ``Angular
+diameter distance'' (@mymath{d_A}) while the second is called the
+``Luminosity distance'' or @mymath{d_L}. These different definitions
+of distance are necessary when we want to find the angular size of our
+targets or their absolute magnitudes. Cosmology is Gnuastro's utility
+for such calculations.
+
+@menu
+* Basic cosmology::             A review of basic cosmology
+* Invoking astcosmiccal::       How to run CosmicCalculator
+@end menu
+
+@node Basic cosmology, Invoking astcosmiccal, CosmicCalculator, CosmicCalculator
+@subsection Basic cosmology
+
+This section will later provide a full description of the concepts and
+parameters that will be produced by Cosmology, for now it is just an
+expression for the equations used in the program:
+
+@dispmath{H(z){\equiv}\left(\dot{a}\over a\right)(z)=H_0E(z) }
+
+@dispmath{E(z)=[ \Omega_{\Lambda,0} + \Omega_{C,0}(1+z)^2 +
+\Omega_{m,0}(1+z)^3 + \Omega_{r,0}(1+z)^4 ]^{1/2}}
+
+Lets take @mymath{r} to be the radial coordinate of the emitting
+source, which emitted its light at redshift $z$. Then the comoving
+distance of this object would be:
+
+@dispmath{ \chi(r)={c\over H_0a_0}\int_0^z{dz'\over E(z')} }
+
+@noindent
+So the proper distance at the current time to that object is:
+@mymath{a_0\chi(r)}, therefore the angular diameter distance
+(@mymath{d_A}) and luminosity distance (@mymath{d_L}) can be written
+as:
+
+@dispmath{ d_A={a_0\chi(r)\over 1+z}, \quad d_L=a_0\chi(r)(1+z) }
+
+
+
+
+@node Invoking astcosmiccal,  , Basic cosmology, CosmicCalculator
+@subsection Invoking CosmicCalculator
+
+CosmicCalculator will calculate cosmological variables based on the
+input parameters. The executable name is @file{astcosmiccal} with the
+following general template
+
+@example
+$ astcosmiccal [OPTION...] ...
+@end example
+
+
+@noindent
+One line examples:
+
+@example
+$ astcosmiccal -l=0.6964 -m=0.3036 -z=2.1
+$ astcosmiccal --olambda=0.6964 --omatter=0.3036 --redshift=2.1
+@end example
+
+The input parameters can be given as command line options or in the
+configuration files, see @ref{Configuration files}. For a definition
+of the different parameters, please see @ref{Basic cosmology}.
+
+@table @option
+
+@item -z
+@itemx --redshift
+(@option{=FLT}) The redshift of interest.
+
+@item -C
+@itemx --curvature
+(@option{=FLT}) The curvature of the space.
+
+@item -H
+@itemx --H0
+(@option{=FLT}) Current expansion rate (in km sec@mymath{^{-1}}
+Mpc@mymath{^{-1}}).
+
+@item -l
+@itemx --olambda
+(@option{=FLT}) Cosmological constant density divided by the critical
+density in the current Universe (@mymath{\Omega_{\Lambda,0}}).
+
+@item -m
+@itemx --omatter
+(@option{=FLT}) Matter (including massive neutrinos) density divided
+by the critical density in the current Universe
+(@mymath{\Omega_{m,0}}).
+
+@item -r
+@itemx --oradiation
+(@option{=FLT}) Radiation density divided by the critical density in
+the current Universe (@mymath{\Omega_{r,0}}).
+
+
+@end table
+
+
+
+
+
+
+
+
+
+
+
+@node Developing, GNU Astronomy Utilities list, High-level calculations, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested
@@ -13030,6 +13180,10 @@ JPEG, EPS or PDF (@ref{ConvertType}).
 @item Convolve @value{CONVOLVE_VERSION}
 (@file{astconvolve}) Convolve (blur or smooth) data with a given
 kernel (@ref{Convolve}).
+
+@item CosmicCalculator @value{COSMICCAL_VERSION}
+(@file{astconvolve}) Find cosmological variables from input parameters
+(@ref{CosmicCalculator}).
 
 @item Header @value{HEADER_VERSION}
 (@file{astheader}) Print and manipulate the header data of a FITS file
