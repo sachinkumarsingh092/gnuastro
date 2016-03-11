@@ -44,6 +44,9 @@ struct uiparams
   int              olambdaset;
   int              omatterset;
   int           oradiationset;
+
+  int           onlyvolumeset;
+  int          onlydistmodset;
 };
 
 
@@ -53,25 +56,30 @@ struct uiparams
 struct cosmiccalparams
 {
   /* Other structures: */
-  struct uiparams          up;  /* User interface parameters.         */
-  struct commonparams      cp;  /* Common parameters.                 */
+  struct uiparams          up;  /* User interface parameters.           */
+  struct commonparams      cp;  /* Common parameters.                   */
 
   /* Input: */
-  double             redshift;  /* Redshift of interest.              */
-  double            curvature;  /* Curvature of the universe.         */
-  double                   H0;  /* Current expansion rate.            */
-  double              olambda;  /* Current cosmological constant dens.*/
-  double              omatter;  /* Current matter density.            */
-  double           oradiation;  /* Current radiation density.         */
+  double             redshift;  /* Redshift of interest.                */
+  double                   H0;  /* Current expansion rate (km/sec/Mpc). */
+  double              olambda;  /* Current cosmological constant dens.  */
+  double              omatter;  /* Current matter density.              */
+  double           oradiation;  /* Current radiation density.           */
+  double           solidangle;  /* Solid angle for volume (in stradian).*/
 
   /* Output: */
+  int              onlyvolume;  /* Only print the volume in Mpc^3.      */
+  int             onlydistmod;  /* Only print the distance modulus.     */
 
   /* Operating mode: */
 
   /* Internal: */
-  double                ocurv;  /* Curvature density today.           */
+  double                    K;  /* Curvature constant.                  */
+  double                    c;  /* Speed of light.                      */
+  double                  H0s;  /* Current expansion rate (1/sec).      */
+  double                ocurv;  /* Curvature density today.             */
 
-  time_t              rawtime;  /* Starting time of the program.      */
+  time_t              rawtime;  /* Starting time of the program.        */
 };
 
 #endif

@@ -23,6 +23,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef COSMICCAL_H
 #define COSMICCAL_H
 
+/* For the GSL integrations */
+#define GSLILIMIT  1000
+#define GSLIEPSABS 0
+#define GSLIEPSREL 1e-7
+
+/* Format of final outputs */
+# define FLTFORMAT " - %-55s%f\n"
+# define EXPFORMAT " - %-55s%e\n"
+
 void
 cosmiccal(struct cosmiccalparams *p);
 

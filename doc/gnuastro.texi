@@ -11872,23 +11872,53 @@ $ astcosmiccal [OPTION...] ...
 One line examples:
 
 @example
+$ astcosmiccal --onlyvolume -z=0.8
 $ astcosmiccal -l=0.6964 -m=0.3036 -z=2.1
 $ astcosmiccal --olambda=0.6964 --omatter=0.3036 --redshift=2.1
 @end example
 
 The input parameters can be given as command line options or in the
 configuration files, see @ref{Configuration files}. For a definition
-of the different parameters, please see @ref{Basic cosmology}.
+of the different parameters, please see @ref{Basic cosmology}. By
+default, all the cosmological calculations will be printed in the
+standard output (the command-line mainly) along with a short
+description and units.
 
+The options starting with @option{--only} will only do that single
+desired calculation and only print the final number (in the same units
+as reported by default). These options are very useful when you want
+to call CosmicCalculator from a script. The resulting number can
+simply be put into a shell variable (for example @code{vol}) with the
+following line, which will allow you to use the value for any other
+subsequent operation.
+
+@example
+z=3.12
+vol=$(astcosmiccal --redshift=$z --onlyvolume)
+@end example
+
+@cindex GNU Grep
+@noindent
+In a script, this operation might be necessary for a very large number
+of objects (thousands of galaxies in a catalog for example). So the
+fact that all the other default calculations are ignored will also
+help you get to your result faster. If you just want to inspect the
+value of a variable, the description (which comes with units) might be
+more useful. In that case, the following command might be better. The
+other parameters will also be calculated, but they are so fast that
+you will not notice on modern computers.
+
+@example
+$ astcosmiccal --redshift=0.832 | grep volume
+@end example
+
+@noindent
+The full list of options is shown and described below:
 @table @option
 
 @item -z
 @itemx --redshift
 (@option{=FLT}) The redshift of interest.
-
-@item -C
-@itemx --curvature
-(@option{=FLT}) The curvature of the space.
 
 @item -H
 @itemx --H0
@@ -11911,6 +11941,17 @@ by the critical density in the current Universe
 (@option{=FLT}) Radiation density divided by the critical density in
 the current Universe (@mymath{\Omega_{r,0}}).
 
+@item -v
+@itemx --onlyvolume
+Only print the comoving volume (in units of Mpc@mymath{^3}) until the
+desired redshift based on the input parameters. See explanations above
+for more on these types of options and how to effectively use them.
+
+@item -d
+@itemx --onlydistmod
+Only print the distance modulus for the the desired redshift based on
+the input parameters. See explanations above for more on these types
+of options and how to effectively use them.
 
 @end table
 

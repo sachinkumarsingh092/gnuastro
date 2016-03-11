@@ -30,6 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
+#include <gsl/gsl_const_mksa.h>
+
 #include "timing.h"	/* Includes time.h and sys/time.h   */
 #include "checkset.h"
 #include "txtarrayvv.h"
@@ -106,13 +108,6 @@ readconfig(char *filename, struct cosmiccalparams *p)
                     filename, lineno);
 	  up->redshiftset=1;
 	}
-      else if(strcmp(name, "curvature")==0)
-	{
-	  if(up->curvatureset) continue;
-          doublele0(value, &p->curvature, name, key, SPACK,
-                    filename, lineno);
-	  up->curvatureset=1;
-	}
       else if(strcmp(name, "H0")==0)
 	{
 	  if(up->H0set) continue;
@@ -145,7 +140,20 @@ readconfig(char *filename, struct cosmiccalparams *p)
 
 
       /* Outputs */
-
+      else if(strcmp(name, "onlyvolume")==0)
+	{
+	  if(up->onlyvolumeset) continue;
+          intzeroorone(value, &p->onlyvolume, name, key, SPACK,
+                    filename, lineno);
+	  up->onlyvolumeset=1;
+	}
+      else if(strcmp(name, "onlydistmod")==0)
+	{
+	  if(up->onlydistmodset) continue;
+          intzeroorone(value, &p->onlydistmod, name, key, SPACK,
+                    filename, lineno);
+	  up->onlydistmodset=1;
+	}
 
 
 
@@ -179,8 +187,6 @@ printvalues(FILE *fp, struct cosmiccalparams *p)
   fprintf(fp, "\n# Input:\n");
   if(up->redshiftset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "redshift", p->redshift);
-  if(up->curvatureset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "curvature", p->curvature);
   if(up->H0set)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "H0", p->H0);
 
@@ -217,8 +223,6 @@ checkifset(struct cosmiccalparams *p)
   int intro=0;
   if(up->redshiftset==0)
     REPORT_NOTSET("redshift");
-  if(up->curvatureset==0)
-    REPORT_NOTSET("curvature");
   if(up->H0set==0)
     REPORT_NOTSET("H0");
   if(up->olambdaset==0)
@@ -230,6 +234,77 @@ checkifset(struct cosmiccalparams *p)
 
 
   END_OF_NOTSET_REPORT;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************            Sanity check             *************/
+/**************************************************************/
+void
+sanitycheck(struct cosmiccalparams *p)
+{
+  int check=p->onlyvolume+p->onlydistmod;
+
+  /* If only one of the single output options are called, then check
+     should be 1, if none are called, then it should be zero. However,
+     if more than one is called, check will be larger than one. So in
+     this case, report an error. */
+  if(check>1)
+    error(EXIT_FAILURE, 0, "Only a single option starting with `--only' "
+          "can be called.");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************             Preparations            *************/
+/**************************************************************/
+void
+preparations(struct cosmiccalparams *p)
+{
+  /* Speed of light: */
+  p->c=GSL_CONST_MKSA_SPEED_OF_LIGHT;
+
+  /* The curvature fractional density: */
+  p->ocurv=1-(p->olambda+p->omatter+p->oradiation);
+
+  /* Convert H0 from km/sec/Mpc to 1/sec: */
+  p->H0s=p->H0/1000/GSL_CONST_MKSA_PARSEC;
 }
 
 
@@ -277,8 +352,13 @@ setparams(int argc, char *argv[], struct cosmiccalparams *p)
   /* Check if all the required parameters are set. */
   checkifset(p);
 
+  /* Do a sanity check */
+  sanitycheck(p);
+
+  /* Make the preparations */
+  preparations(p);
+
   /* Print the values for each parameter. */
   if(cp->printparams)
     REPORT_PARAMETERS_SET;
-
 }

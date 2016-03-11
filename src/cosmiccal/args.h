@@ -70,8 +70,8 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g i j k m n p s t u v w x y
-   A B E F G I J L M O Q R T U W X Y Z
+   a b c e f g i j k m n p s t u w x y
+   A B C E F G I J L M O Q R T U W X Y Z
 
    Number keys used: <=500
 
@@ -91,14 +91,6 @@ static struct argp_option options[] =
       "FLT",
       0,
       "Redshift of interest.",
-      1
-    },
-    {
-      "curvature",
-      'C',
-      "FLT",
-      0,
-      "Curvature: < 0 (Open), 0 (Flat), > 0 (Closed).",
       1
     },
     {
@@ -136,10 +128,25 @@ static struct argp_option options[] =
 
 
 
-
     {
       0, 0, 0, 0,
       "Output:",
+      2
+    },
+    {
+      "onlyvolume",
+      'v',
+      0,
+      0,
+      "Only print comoving volume in Mpc^3",
+      2
+    },
+    {
+      "onlydistmod",
+      'd',
+      0,
+      0,
+      "Only print the distance modulus.",
       2
     },
 
@@ -188,24 +195,36 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Input: */
     case 'z':
       doublele0(arg, &p->redshift, "redshift", key, SPACK, NULL, 0);
-      break;
-    case 'C':
-      doublele0(arg, &p->curvature, "curvature", key, SPACK, NULL, 0);
+      p->up.redshiftset=1;
       break;
     case 'H':
       doublele0(arg, &p->H0, "H0", key, SPACK, NULL, 0);
+      p->up.H0set=1;
       break;
     case 'l':
       doublele0(arg, &p->olambda, "olambda", key, SPACK, NULL, 0);
+      p->up.olambdaset=1;
       break;
     case 'm':
-      doublele0(arg, &p->omatter, "matter", key, SPACK, NULL, 0);
+      doublele0(arg, &p->omatter, "omatter", key, SPACK, NULL, 0);
+      p->up.omatterset=1;
       break;
     case 'r':
       doublele0(arg, &p->oradiation, "oradiation", key, SPACK, NULL, 0);
+      p->up.oradiationset=1;
       break;
 
+
     /* Output: */
+    case 'v':
+      p->onlyvolume=1;
+      p->up.onlyvolumeset=1;
+      break;
+    case 'd':
+      p->onlydistmod=1;
+      p->up.onlydistmodset=1;
+      break;
+
 
     /* Operating modes: */
 
