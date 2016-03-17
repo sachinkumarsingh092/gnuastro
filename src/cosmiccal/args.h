@@ -70,7 +70,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c e f g i j k m n p s t u w x y
+   b c d e f g i j k m n p s t u w x y
    A B C E F G I J L M O Q R T U W X Y Z
 
    Number keys used: <=500
@@ -142,11 +142,11 @@ static struct argp_option options[] =
       2
     },
     {
-      "onlydistmod",
-      'd',
+      "onlyabsmagconv",
+      'a',
       0,
       0,
-      "Only print the distance modulus.",
+      "Only print conversion to absolute magnitude.",
       2
     },
 
@@ -220,9 +220,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->onlyvolume=1;
       p->up.onlyvolumeset=1;
       break;
-    case 'd':
-      p->onlydistmod=1;
-      p->up.onlydistmodset=1;
+    case 'a':
+      p->onlyabsmagconv=1;
+      p->up.onlyabsmagconvset=1;
       break;
 
 

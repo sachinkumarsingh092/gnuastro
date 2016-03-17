@@ -11831,8 +11831,8 @@ for such calculations.
 @subsection Basic cosmology
 
 This section will later provide a full description of the concepts and
-parameters that will be produced by Cosmology, for now it is just an
-expression for the equations used in the program:
+parameters that will be produced by Cosmology, for now it is just a
+place-honder with some of the equations used that are used.
 
 @dispmath{H(z){\equiv}\left(\dot{a}\over a\right)(z)=H_0E(z) }
 
@@ -11948,8 +11948,10 @@ desired redshift based on the input parameters. See explanations above
 for more on these types of options and how to effectively use them.
 
 @item -d
-@itemx --onlydistmod
-Only print the distance modulus for the the desired redshift based on
+@itemx --onlyabsmagconv
+Only print the conversion factor for apparent magnitude to absolute
+magnitude. Note that this is practically the distance modulus added
+with @mymath{-2.5\log{(1+z)}} for the the desired redshift based on
 the input parameters. See explanations above for more on these types
 of options and how to effectively use them.
 

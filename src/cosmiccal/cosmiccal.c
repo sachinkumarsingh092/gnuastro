@@ -180,6 +180,25 @@ comovingvolume(struct cosmiccalparams *p, double z)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************        Intermediary functions       *************/
+/**************************************************************/
 /* Critical density at redshift z in units of gram/cm^3*/
 double
 criticaldensity(struct cosmiccalparams *p, double z)
@@ -218,21 +237,21 @@ criticaldensity(struct cosmiccalparams *p, double z)
 void
 cosmiccal(struct cosmiccalparams *p)
 {
-  double ad, ld, vz, pd;
+  double ad, ld, vz, pd, absmagconv;
   double curage, ccritd, distmod, outage, zcritd;
 
   /* In case the user just wants one number, only print that and
      return. */
   if(p->onlyvolume){
-    vz=comovingvolume(p,p->redshift);
-    printf("%f\n", vz);
+    printf("%f\n", comovingvolume(p,p->redshift));
     return;
   }
-  if(p->onlydistmod){
+  if(p->onlyabsmagconv){
     pd=properdistance(p, p->redshift);
     ld=pd*(1+p->redshift);
     distmod=5*(log10(ld*1000000)-1);
-    printf("%f\n", distmod);
+    absmagconv=distmod-2.5*log10(1+p->redshift);
+    printf("%f\n", absmagconv);
     return;
   }
 
@@ -248,6 +267,7 @@ cosmiccal(struct cosmiccalparams *p)
   ad=pd/(1+p->redshift);
   ld=pd*(1+p->redshift);
   distmod=5*(log10(ld*1000000)-1);
+  absmagconv=distmod-2.5*log10(1+p->redshift);
 
   /* Print out results: */
   printf("%s\n", SPACK_STRING);
@@ -273,7 +293,8 @@ cosmiccal(struct cosmiccalparams *p)
          ad*1000*M_PI/3600/180);
   printf(FLTFORMAT, "Luminosity distance to z (Mpc):", ld);
   printf(FLTFORMAT, "Distance modulus at z (no unit):", distmod);
-  printf(FLTFORMAT, "Comoving volume over 4pi stradian to z (Mpc^3):", vz);
+  printf(FLTFORMAT, "Conversion to absolute magnitude (no unit):",
+         absmagconv);
 
 
   printf("\n\n Universe at desired redshift z\n");
@@ -281,4 +302,8 @@ cosmiccal(struct cosmiccalparams *p)
   printf(FLTFORMAT, "Age of Universe at z (Gyr):", outage);
   printf(FLTFORMAT, "Look-back time to z (Gyr):", curage-outage);
   printf(EXPFORMAT, "Critical density at z (g/cm^3):",  zcritd);
+
+  printf("\n\n Comoving universe (time independent)\n");
+  printf(    " ------------------------------------\n");
+  printf(FLTFORMAT, "Comoving volume over 4pi stradian to z (Mpc^3):", vz);
 }

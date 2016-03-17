@@ -147,12 +147,12 @@ readconfig(char *filename, struct cosmiccalparams *p)
                     filename, lineno);
 	  up->onlyvolumeset=1;
 	}
-      else if(strcmp(name, "onlydistmod")==0)
+      else if(strcmp(name, "onlyabsmagconv")==0)
 	{
-	  if(up->onlydistmodset) continue;
-          intzeroorone(value, &p->onlydistmod, name, key, SPACK,
+	  if(up->onlyabsmagconvset) continue;
+          intzeroorone(value, &p->onlyabsmagconv, name, key, SPACK,
                     filename, lineno);
-	  up->onlydistmodset=1;
+	  up->onlyabsmagconvset=1;
 	}
 
 
@@ -261,7 +261,7 @@ checkifset(struct cosmiccalparams *p)
 void
 sanitycheck(struct cosmiccalparams *p)
 {
-  int check=p->onlyvolume+p->onlydistmod;
+  int check=p->onlyvolume+p->onlyabsmagconv;
 
   /* If only one of the single output options are called, then check
      should be 1, if none are called, then it should be zero. However,

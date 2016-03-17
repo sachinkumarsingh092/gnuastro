@@ -46,7 +46,7 @@ struct uiparams
   int           oradiationset;
 
   int           onlyvolumeset;
-  int          onlydistmodset;
+  int       onlyabsmagconvset;
 };
 
 
@@ -69,7 +69,7 @@ struct cosmiccalparams
 
   /* Output: */
   int              onlyvolume;  /* Only print the volume in Mpc^3.      */
-  int             onlydistmod;  /* Only print the distance modulus.     */
+  int          onlyabsmagconv;  /* Only print conversion to abs. mag.   */
 
   /* Operating mode: */
 
