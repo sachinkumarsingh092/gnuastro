@@ -5,7 +5,7 @@ MakeCatalog is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -35,109 +35,132 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Columns in the object and clump information tables
-   ==================================================
-
-   The information tables are not the final catalog, they keep all the
-   necessary information to make the catalogs in a later step. The
-   columns of that catalog can be specified by the user.
-
-   The basic idea is that through the first or second pass through the
-   image, we fill in this information array. Then we build the catalog
-   based on what the user has requested.
-
-   Note: the total area and brightness of clumps in the objects can be
-   found by using the clump information table in the end.
-
-   The X and Y columns have to be immediately after each other. This
-   is why I have used the X column indexs +1 for the Y column
-   indexs. This is necessary for the WCS conversion and done so
-   explicitly, so there is no chance of mistakenly putting two
-   noncontiguous columns.
-*/
-#define OCOLUMNS     21     /* Total number of columns in object info. */
-#define OAREA         0     /* Area of this object.                    */
-#define ONCLUMPS      1     /* Total number of clumps in this object.  */
-#define OBrightness   2     /* Sum of (flux-sky) in object.            */
-#define OFlxWhtX      3     /* Sum of (flux-sky)*x of this object.     */
-#define OFlxWhtY    OFlxWhtX+1  /* Sum of (flux-sky)*y of this object. */
-#define OFlxWhtRA     5     /* RA of (OFlxWhtX, OFlxWhtY).             */
-#define OFlxWhtDec  OFlxWhtRA+1 /* Dec of (OFlxWhtX, OFlxWhtY).        */
-#define OAREAC        7     /* Area of clumps in this object.          */
-#define OBrightnessC  8     /* Brightness  in object clumps.     */
-#define OFlxWhtCX     9     /* Sum of (flux-sky)*x on object clumps.   */
-#define OFlxWhtCY   OFlxWhtCX+1 /* Sum of (flux-sky)*y on obj. clumps. */
-#define OFlxWhtCRA   11     /* RA of (OFlxWhtCX and OFlxWhtCY).        */
-#define OFlxWhtCDec OFlxWhtCRA+1 /* Dec of (OFlxWhtCX and OFlxWhtCY).  */
-#define OSKY         13     /* Sum of sky value on this object.        */
-#define OSTD         14     /* Sum of sky STD value on this object.    */
-#define OPosBright   15     /* Sum of positive image pixels for wht.   */
-#define OPosBrightC  16     /* Sum of positive image pixels for wht.   */
-#define OGeoX        17     /* Geometric center of object in X.        */
-#define OGeoY        18     /* Geometric center of object in Y.        */
-#define OGeoCX       19     /* Geometric center of clumps in object X. */
-#define OGeoCY       20     /* Geometric center of clumps in object Y. */
-
-
-#define CCOLUMNS     15     /* Total number of columns in clump info.  */
-#define CHOSTOID      0     /* ID of object hosting this clump.        */
-#define CINHOSTID     1     /* ID of clump in host object.             */
-#define CAREA         2     /* Area of this clump.                     */
-#define CFlxWhtX      3     /* Sum of flux*x of this clump.            */
-#define CFlxWhtY    CFlxWhtX+1 /* Sum of flux*y of this clump.         */
-#define CFlxWhtRA     5     /* RA of (CFlxWhtX, CFlxWhtY).             */
-#define CFlxWhtDec  CFlxWhtRA+1 /* Dec of (CFlxWhtX, CFlxWhtY).        */
-#define CBrightness   7     /* Brightness in this clump.               */
-#define CRivAve       8     /* Average value in rivers around clump.   */
-#define CRivArea      9     /* Num river pixels around this clump.     */
-#define CSKY         10     /* Sum of sky value on this object.        */
-#define CSTD         11     /* Sum of sky STD value on this object.    */
-#define CPosBright   12     /* Sum of positive image pixels for wht.   */
-#define CGeoX        13     /* Geometric center of clump in X.         */
-#define CGeoY        14     /* Geometric center of clump in Y.         */
-
-
-
-
-
-/* These macros are used to identify the nature of the appropriate
-   column in the output catalog.*/
-#define CATID                       1
-#define CATHOSTOBJID                2
-#define CATIDINHOSTOBJ              3
-#define CATNUMCLUMPS                4
-#define CATAREA                     5
-#define CATCLUMPSAREA               6
-#define CATX                        7
-#define CATY                        8
-#define CATCLUMPSX                  9
-#define CATCLUMPSY                 10
-#define CATRA                      11
-#define CATDEC                     12
-#define CATCLUMPSRA                13
-#define CATCLUMPSDEC               14
-#define CATBRIGHTNESS              15
-#define CATCLUMPSBRIGHTNESS        16
-#define CATMAGNITUDE               17
-#define CATCLUMPSMAGNITUDE         18
-#define CATRIVERAVE                19
-#define CATRIVERNUM                20
-#define CATSN                      21
-#define CATSKY                     22
-#define CATSTD                     23
-
-
 
 /* Units: */
 #define CATDESCRIPTLENGTH         "%-60s"
 #define CATUNITCOUNTER            "counter"
-#define CATUNITBRIGHTNESS         "image unit"
-#define CATUNITAVE                CATUNITBRIGHTNESS"/pixel"
+#define CATUNITBRIGHTNESS         "input data unit"
+#define CATUNITAVE                "("CATUNITBRIGHTNESS")/pixel"
 #define CATUNITMAG                "scale (log)"
 #define CATUNITPIXAREA            "pixel area"
 #define CATUNITPIXPOS             "pixel position"
 #define CATUNITDEGREE             "degree"
 #define CATUNITRATIO              "ratio"
+
+
+
+
+
+/* Columns in the object and clump information tables
+   ==================================================
+
+   The information tables are not the final catalog, they keep all the
+   necessary information to make the catalogs in a later step. The
+   columns of that catalog can be specified by the user, while the
+   information catalog colums are fixed.
+
+   The basic idea is that through the first and second pass through
+   the image, we fill in this information array. Then we build the
+   catalog based on what the user has requested.
+
+   Note: the total area and brightness of clumps in the objects can be
+   found by using the clump information table in the end.
+
+   According to the C standard, the first enum variable has a value of
+   0 (int), and when none are explicitly set (with an = sign), the
+   values of the subsequent enum variables are 1 larger. We want
+   column indexs that also start with zero, but setting the values by
+   hand manually as preprocessor macros can be buggy (repeated
+   numbers). So defining them as an enum is the perfect solution. Any
+   future column that is to be added (or if any are removed), we (the
+   developers) don't have to worry.
+*/
+enum objectcols
+  {
+    OAREA,               /* Area of this object.                    */
+    ONCLUMPS,            /* Total number of clumps in this object.  */
+    OBrightness,         /* Sum of (flux-sky) in object.            */
+    OFlxWhtX,            /* Sum of (flux-sky)*x of this object.     */
+    OFlxWhtY,            /* Sum of (flux-sky)*y of this object.     */
+    OFlxWhtRA,           /* RA of (OFlxWhtX, OFlxWhtY).             */
+    OFlxWhtDec,          /* Dec of (OFlxWhtX, OFlxWhtY).            */
+    OAREAC,              /* Area of clumps in this object.          */
+    OBrightnessC,        /* Brightness  in object clumps.           */
+    OFlxWhtCX,           /* Sum of (flux-sky)*x on object clumps.   */
+    OFlxWhtCY,           /* Sum of (flux-sky)*y on obj. clumps.     */
+    OFlxWhtCRA,          /* RA of (OFlxWhtCX and OFlxWhtCY).        */
+    OFlxWhtCDec,         /* Dec of (OFlxWhtCX and OFlxWhtCY).       */
+    OSKY,                /* Sum of sky value on this object.        */
+    OSTD,                /* Sum of sky STD value on this object.    */
+    OPosBright,          /* Sum of positive image pixels for wht.   */
+    OPosBrightC,         /* Sum of positive image pixels for wht.   */
+    OGeoX,               /* Geometric center of object in X.        */
+    OGeoY,               /* Geometric center of object in Y.        */
+    OGeoCX,              /* Geometric center of clumps in object X. */
+    OGeoCY,              /* Geometric center of clumps in object Y. */
+
+    OCOLUMNS,            /* Keep this last: total number of columns.*/
+  };
+
+enum clumpcols
+  {
+    CHOSTOID,            /* ID of object hosting this clump.        */
+    CINHOSTID,           /* ID of clump in host object.             */
+    CAREA,               /* Area of this clump.                     */
+    CFlxWhtX,            /* Sum of flux*x of this clump.            */
+    CFlxWhtY,            /* Sum of flux*y of this clump.         */
+    CFlxWhtRA,           /* ra of (CFlxWhtX, CFlxWhtY).             */
+    CFlxWhtDec,          /* Dec of (CFlxWhtX, CFlxWhtY).        */
+    CBrightness,         /* Brightness in this clump.               */
+    CRivAve,             /* Average value in rivers around clump.   */
+    CRivArea,            /* Num river pixels around this clump.     */
+    CSKY,                /* Sum of sky value on this object.        */
+    CSTD,                /* Sum of sky STD value on this object.    */
+    CPosBright,          /* Sum of positive image pixels for wht.   */
+    CGeoX,               /* Geometric center of clump in X.         */
+    CGeoY,               /* Geometric center of clump in Y.         */
+
+    CCOLUMNS,            /* Keep this last: total number of columns.*/
+  };
+
+
+
+
+
+/* Codes for output columns
+   ========================
+
+   The user can ask for any columns in any order, to enable that, we
+   need a fixed number ID for each column. Again (similar to the
+   argument for the information array columns), it is just important
+   that these numbers be separate and defining them by hand can cause
+   bugs. So we are defining them as enums here. */
+enum outcols
+  {
+    CATID,
+    CATHOSTOBJID,
+    CATIDINHOSTOBJ,
+    CATNUMCLUMPS,
+    CATAREA,
+    CATCLUMPSAREA,
+    CATX,
+    CATY,
+    CATCLUMPSX,
+    CATCLUMPSY,
+    CATRA,
+    CATDEC,
+    CATCLUMPSRA,
+    CATCLUMPSDEC,
+    CATBRIGHTNESS,
+    CATCLUMPSBRIGHTNESS,
+    CATMAGNITUDE,
+    CATCLUMPSMAGNITUDE,
+    CATRIVERAVE,
+    CATRIVERNUM,
+    CATSN,
+    CATSKY,
+    CATSTD,
+  };
 
 
 
