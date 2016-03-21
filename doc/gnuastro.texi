@@ -10141,7 +10141,7 @@ only relevant when the Signal to noise ratio is to be calculated.
 @end table
 
 @noindent
-Through the next group of options, you can customize the general the
+Through the next group of options, you can customize the general
 output plain text catalog. The basic idea behind the options about the
 width and precision of the different types is the fact that some
 columns don't need too much space, while some do. The width is the
@@ -10219,14 +10219,14 @@ $ astmkcatalog --magnitude --dec --ra --id input.fits
 @end example
 
 @noindent
-If no columns are specified in any of the configuration files (see
-@ref{Configuration files}), then the columns in the output catalogs
-will have the following order: ID, RA, Dec and Magnitude. Contrary to
-what it looks like, this is done to make life easier for the
-users. The configuration files can also keep any of the columns (so
-you don't have to specify your desired columns every time). This
-inverse ordering thus comes from their precedence, see
-@ref{Configuration file precedence}.
+In this example, if no columns are specified in any of the
+configuration files (see @ref{Configuration files}), then the columns
+in the catalogs produced by this command will have the following
+order: ID, RA, Dec and Magnitude. Contrary to what it looks like, this
+is done to make life easier for the users. The configuration files can
+also keep any of the columns (so you don't have to specify your
+desired columns every time). This inverse ordering thus comes from
+their precedence, see @ref{Configuration file precedence}.
 
 For example catalogs usually have atleast an ID column and position
 columns (in the image and/or the world coordinate system). By reading
@@ -10236,7 +10236,8 @@ run, if you want some other information about objects or clumps, you
 can add those columns on the command line. Through the user and
 current directory configuration files, you can also have custom
 catalogs in each of your working directories, without bothering to
-specify the columns every time.
+specify the columns every time you run MakeCatalog in those
+directories.
 
 @table @option
 

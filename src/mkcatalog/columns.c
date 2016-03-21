@@ -214,13 +214,24 @@ position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj)
   char *type;
   size_t i, pcol;
 
+
+
+  /* Read these columns as i-to-w-xcol for example. They are the
+     columns to use in the conversion from image to world coordinate
+     systems, when they are needed. The numbers are by default -1
+     (largest possible number in size_t) so if they are not set, we
+     get a segmentation fault. */
+  size_t itowxcol=-1, itowracol=-1, itowdeccol=-1;
+
+
+
   /* Set the proper column to use */
   if(p->obj0clump1) /* It is a clump.                            */
     {
       if(cinobj) { --p->curcol; return; } /* cinobj is only for objects. */
       type="This clump";
       if(w1i0)   pcol = x1y0 ? CFlxWhtRA : CFlxWhtDec;
-      else       pcol = x1y0 ? CFlxWhtX : CFlxWhtY;
+      else       pcol = x1y0 ? CFlxWhtX  : CFlxWhtY;
     }
   else
     {               /* It is an object.                         */
@@ -228,27 +239,62 @@ position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj)
         {
           type="Clumps in object";
           if(w1i0) pcol = x1y0 ? OFlxWhtCRA : OFlxWhtCDec;
-          else     pcol = x1y0 ? OFlxWhtCX : OFlxWhtCY;
+          else     pcol = x1y0 ? OFlxWhtCX  : OFlxWhtCY;
         }
       else          /* It is the position of the object itsself.*/
         {
           type="Full object";
           if(w1i0) pcol = x1y0 ? OFlxWhtRA : OFlxWhtDec;
-          else     pcol = x1y0 ? OFlxWhtX : OFlxWhtY;
+          else     pcol = x1y0 ? OFlxWhtX  : OFlxWhtY;
         }
     }
 
 
+
+  /* Prepare the comments for the top of the output ASCII catalog */
   p->unitp = w1i0 ? CATUNITDEGREE : CATUNITPIXPOS;
   sprintf(p->description, "%lu: %s flux weighted center (%s).",
           p->curcol, type,
           w1i0 ? (x1y0?"RA":"Dec") : (x1y0?"X":"Y") );
 
 
+
+  /* Convert the X and Y positions to RA and Dec if necessary. */
+  if(w1i0 && p->info[pcol]==0.0f)
+    {
+      /* Set the proper columns to use for the conversion. */
+      if(pcol==CFlxWhtRA || pcol==CFlxWhtDec)
+        {itowxcol=CFlxWhtX; itowracol=CFlxWhtRA; itowdeccol=CFlxWhtDec;}
+      else if(pcol==OFlxWhtCRA || pcol==OFlxWhtCDec)
+        {itowxcol=OFlxWhtCX; itowracol=OFlxWhtCRA; itowdeccol=OFlxWhtCDec;}
+      else if(pcol==OFlxWhtRA || pcol==OFlxWhtDec)
+        {itowxcol=OFlxWhtX; itowracol=OFlxWhtRA; itowdeccol=OFlxWhtDec;}
+      else
+        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+              "fix this. While w1i0 was set, the column was not recognized "
+              "by position().", PACKAGE_BUGREPORT);
+
+      /* Do the conversion. Note that the p->icols is added because
+         the first row is not used by any object or colump (since
+         their indexes begin from 1).*/
+      xyarraytoradec(p->wcs, p->info+p->icols+itowxcol,
+                     p->info+p->icols+itowracol, p->num, p->icols);
+
+      /* Set the flag of the converted columns to 1.0f, so the
+         calculations are not repeated if any of the columns is needed
+         again. */
+      p->info[itowracol]=p->info[itowdeccol]=1.0f;
+    }
+
+
+
+
+  /* Write the proper information into the output. */
   for(i=0;i<p->num;++i)
     p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+pcol];
 
 
+  /* Set the decimal point accuracy for printing. */
   if(w1i0)
     p->accucols[p->accucounter++]=p->curcol;
 }

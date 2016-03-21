@@ -90,11 +90,17 @@ firstpass(struct mkcatalogparams *p)
         thisobj[ OBrightness ] += imgss;
         thisobj[ OSKY ]        += p->sky[i];
         thisobj[ OSTD ]        += p->std[i];
+        thisobj[ OGeoXX ]      += (i%s1) * (i%s1);
+        thisobj[ OGeoYY ]      += (i/s1) * (i/s1);
+        thisobj[ OGeoXY ]      += (i%s1) * (i/s1);
         if(imgss>0)
           {
             thisobj[ OPosBright ]  += imgss;
-            thisobj[ OFlxWhtX ]    += imgss * (i%s1);
-            thisobj[ OFlxWhtY ]    += imgss * (i/s1);
+            thisobj[ OFlxWhtX   ]  += imgss * (i%s1);
+            thisobj[ OFlxWhtY   ]  += imgss * (i/s1);
+            thisobj[ OFlxWhtXX  ]  += imgss * (i%s1) * (i%s1);
+            thisobj[ OFlxWhtYY  ]  += imgss * (i/s1) * (i/s1);
+            thisobj[ OFlxWhtXY  ]  += imgss * (i%s1) * (i/s1);
           }
 
         if(clumps[i]>0)
@@ -106,14 +112,20 @@ firstpass(struct mkcatalogparams *p)
 
             /* Save the information. */
             ++thisobj [ OAREAC ];
-            thisobj[ OBrightnessC ] += imgss;
-            thisobj[ OGeoCX ]       += i%s1;
-            thisobj[ OGeoCY ]       += i/s1;
+            thisobj[ OBrightnessC ]  += imgss;
+            thisobj[ OGeoCX  ]       += i%s1;
+            thisobj[ OGeoCY  ]       += i/s1;
+            thisobj[ OGeoCXX ]       += (i%s1) * (i%s1);
+            thisobj[ OGeoCYY ]       += (i/s1) * (i/s1);
+            thisobj[ OGeoCXY ]       += (i%s1) * (i/s1);
             if(imgss>0)
               {
                 thisobj[ OPosBrightC ]  += imgss;
-                thisobj[ OFlxWhtCX ]    += imgss * (i%s1);
-                thisobj[ OFlxWhtCY ]    += imgss * (i/s1);
+                thisobj[ OFlxWhtCX   ]  += imgss * (i%s1);
+                thisobj[ OFlxWhtCY   ]  += imgss * (i/s1);
+                thisobj[ OFlxWhtCXX  ]  += imgss * (i%s1) * (i%s1);
+                thisobj[ OFlxWhtCYY  ]  += imgss * (i/s1) * (i/s1);
+                thisobj[ OFlxWhtCXY  ]  += imgss * (i%s1) * (i/s1);
               }
           }
       }
@@ -129,28 +141,59 @@ firstpass(struct mkcatalogparams *p)
       /* Set the flux weighted center of the object. The flux weighted
          center is only meaningful when there was positive flux inside
          the detection. */
-      if(OPosBright>0.0f)
+      if(thisobj[ OPosBright ]>0.0f)
         {
-          thisobj[ OFlxWhtX ] = thisobj[ OFlxWhtX ]/thisobj[ OPosBright ]+1;
-          thisobj[ OFlxWhtY ] = thisobj[ OFlxWhtY ]/thisobj[ OPosBright ]+1;
+          thisobj[ OFlxWhtX  ] /= thisobj[ OPosBright ];
+          thisobj[ OFlxWhtY  ] /= thisobj[ OPosBright ];
+          thisobj[ OFlxWhtXX ] = (thisobj[OFlxWhtXX]/thisobj[OPosBright]
+                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtX]);
+          thisobj[ OFlxWhtYY ] = (thisobj[OFlxWhtYY]/thisobj[OPosBright]
+                                  - thisobj[OFlxWhtY] * thisobj[OFlxWhtY]);
+          thisobj[ OFlxWhtXY ] = (thisobj[OFlxWhtXY]/thisobj[OPosBright]
+                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtY]);
         }
       else
         {
-          thisobj[ OFlxWhtX ] = thisobj[ OGeoX ] / thisobj[ OAREA ] + 1;
-          thisobj[ OFlxWhtY ] = thisobj[ OGeoY ] / thisobj[ OAREA ] + 1;
+          thisobj[ OFlxWhtX ] = thisobj[ OGeoX ] / thisobj[ OAREA ];
+          thisobj[ OFlxWhtY ] = thisobj[ OGeoY ] / thisobj[ OAREA ];
+          thisobj[ OFlxWhtXX ] = (thisobj[OGeoXX]/thisobj[OPosBright]
+                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtX]);
+          thisobj[ OFlxWhtYY ] = (thisobj[OGeoYY]/thisobj[OPosBright]
+                                  - thisobj[OFlxWhtY] * thisobj[OFlxWhtY]);
+          thisobj[ OFlxWhtXY ] = (thisobj[OGeoXY]/thisobj[OPosBright]
+                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtY]);
         }
 
       /* Set the over-all clump information: */
-      if(OPosBrightC>0.0f)
+      if(thisobj[ OPosBrightC ] >0.0f)
         {
-          thisobj[ OFlxWhtCX ] = thisobj[ OFlxWhtCX ]/thisobj[OPosBrightC]+1;
-          thisobj[ OFlxWhtCY ] = thisobj[ OFlxWhtCY ]/thisobj[OPosBrightC]+1;
+          thisobj[ OFlxWhtCX ] /= thisobj[OPosBrightC];
+          thisobj[ OFlxWhtCY ] /= thisobj[OPosBrightC];
+          thisobj[ OFlxWhtCXX ] = (thisobj[OFlxWhtCXX]/thisobj[OPosBright]
+                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCX]);
+          thisobj[ OFlxWhtCYY ] = (thisobj[OFlxWhtCYY]/thisobj[OPosBright]
+                                   - thisobj[OFlxWhtCY] * thisobj[OFlxWhtCY]);
+          thisobj[ OFlxWhtCXY ] = (thisobj[OFlxWhtCXY]/thisobj[OPosBright]
+                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCY]);
         }
       else
         {
-          thisobj[ OFlxWhtCX ] = thisobj[ OGeoCX ] / thisobj[ OAREAC ] + 1;
-          thisobj[ OFlxWhtCY ] = thisobj[ OGeoCY ] / thisobj[ OAREAC ] + 1;
+          thisobj[ OFlxWhtCX ] = thisobj[ OGeoCX ] / thisobj[ OAREAC ];
+          thisobj[ OFlxWhtCY ] = thisobj[ OGeoCY ] / thisobj[ OAREAC ];
+          thisobj[ OFlxWhtCXX ] = (thisobj[OGeoCXX]/thisobj[OPosBright]
+                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCX]);
+          thisobj[ OFlxWhtCYY ] = (thisobj[OGeoCYY]/thisobj[OPosBright]
+                                   - thisobj[OFlxWhtCY] * thisobj[OFlxWhtCY]);
+          thisobj[ OFlxWhtCXY ] = (thisobj[OGeoCXY]/thisobj[OPosBright]
+                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCY]);
         }
+
+      /* Convert the coordinates to the FITS standard (which starts
+         from 1 not zero) */
+      thisobj[ OFlxWhtX  ] += 1;
+      thisobj[ OFlxWhtY  ] += 1;
+      thisobj[ OFlxWhtCX ] += 1;
+      thisobj[ OFlxWhtCY ] += 1;
     }
 }
 
@@ -629,31 +672,9 @@ mkcatalog(struct mkcatalogparams *p)
     error(EXIT_FAILURE, errno, "%lu bytes for p->cinfo in mkcatalog "
           "(mkcatalog.c)", CCOLUMNS*(p->numclumps+1)*sizeof *p->cinfo);
 
-
-
   /* Run through the data for the first time: */
   firstpass(p);
   secondpass(p);
-
-
-  /* If world coordinates are needed, then do the
-     transformations. Note that we are passing the pointer to the
-     first X axis value so this function can immediately start calling
-     wcsp2s in wcslib. */
-  if(p->up.raset || p->up.decset)
-    {
-      xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtX,
-                     p->oinfo+OCOLUMNS+OFlxWhtRA, p->numobjects,
-                     OCOLUMNS);
-      xyarraytoradec(p->wcs, p->cinfo+CCOLUMNS+CFlxWhtX,
-                     p->cinfo+CCOLUMNS+CFlxWhtRA, p->numclumps,
-                     CCOLUMNS);
-    }
-  if(p->up.clumpsraset || p->up.clumpsdecset)
-    xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtCX,
-                   p->oinfo+OCOLUMNS+OFlxWhtCRA, p->numobjects,
-                   OCOLUMNS);
-
 
   /* Write the output: */
   makeoutput(p);

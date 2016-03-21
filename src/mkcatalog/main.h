@@ -63,7 +63,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    the image, we fill in this information array. Then we build the
    catalog based on what the user has requested.
 
-   Note: the total area and brightness of clumps in the objects can be
+   FIRST ROW IS FLAG ROW: The object/clump IDs begin from one (1), not
+   zero (0). So the first row in the oinfo, or cinfo arrays is not
+   filled and we need to start from the second row (which as index
+   1). So we can use the first row as a flag for the appropriate
+   columns. For example, the RA and Dec need to be calculated
+   together, so once they are both calculated by RA (for example),
+   there is no more need to calculate them again for Dec, or vice
+   versa. So in this case, we set the first row of this column to 1 so
+   if it is needed again, it is not recalculated.
+
+   NOTE: The X and Y columns should be immediately after each other,
+   this is necessary for converting to RA and Dec.
+
+   NOTE: the total area and brightness of clumps in the objects can be
    found by using the clump information table in the end.
 
    According to the C standard, the first enum variable has a value of
@@ -82,12 +95,18 @@ enum objectcols
     OBrightness,         /* Sum of (flux-sky) in object.            */
     OFlxWhtX,            /* Sum of (flux-sky)*x of this object.     */
     OFlxWhtY,            /* Sum of (flux-sky)*y of this object.     */
+    OFlxWhtXX,           /* Sum of (flux-sky)*x*x of this object.   */
+    OFlxWhtYY,           /* Sum of (flux-sky)*y*y of this object.   */
+    OFlxWhtXY,           /* Sum of (flux-sky)*x*y of this object.   */
     OFlxWhtRA,           /* RA of (OFlxWhtX, OFlxWhtY).             */
     OFlxWhtDec,          /* Dec of (OFlxWhtX, OFlxWhtY).            */
     OAREAC,              /* Area of clumps in this object.          */
     OBrightnessC,        /* Brightness  in object clumps.           */
     OFlxWhtCX,           /* Sum of (flux-sky)*x on object clumps.   */
     OFlxWhtCY,           /* Sum of (flux-sky)*y on obj. clumps.     */
+    OFlxWhtCXX,          /* Sum of (flux-sky)*x*x on object clumps. */
+    OFlxWhtCYY,          /* Sum of (flux-sky)*y*y on obj. clumps.   */
+    OFlxWhtCXY,          /* Sum of (flux-sky)*x*y on obj. clumps.   */
     OFlxWhtCRA,          /* RA of (OFlxWhtCX and OFlxWhtCY).        */
     OFlxWhtCDec,         /* Dec of (OFlxWhtCX and OFlxWhtCY).       */
     OSKY,                /* Sum of sky value on this object.        */
@@ -96,8 +115,14 @@ enum objectcols
     OPosBrightC,         /* Sum of positive image pixels for wht.   */
     OGeoX,               /* Geometric center of object in X.        */
     OGeoY,               /* Geometric center of object in Y.        */
+    OGeoXX,              /* Second order geometric variable: X*X.   */
+    OGeoYY,              /* Second order geometric variable: Y*Y.   */
+    OGeoXY,              /* Second order geometric variable: X*Y.   */
     OGeoCX,              /* Geometric center of clumps in object X. */
     OGeoCY,              /* Geometric center of clumps in object Y. */
+    OGeoCXX,             /* Second order geometric variable: X*X.   */
+    OGeoCYY,             /* Second order geometric variable: Y*Y.   */
+    OGeoCXY,             /* Second order geometric variable: X*Y.   */
 
     OCOLUMNS,            /* Keep this last: total number of columns.*/
   };
@@ -108,9 +133,12 @@ enum clumpcols
     CINHOSTID,           /* ID of clump in host object.             */
     CAREA,               /* Area of this clump.                     */
     CFlxWhtX,            /* Sum of flux*x of this clump.            */
-    CFlxWhtY,            /* Sum of flux*y of this clump.         */
+    CFlxWhtY,            /* Sum of flux*y of this clump.            */
+    CFlxWhtXX,           /* Sum of flux*x*x of this clump.          */
+    CFlxWhtYY,           /* Sum of flux*y*y of this clump.          */
+    CFlxWhtXY,           /* Sum of flux*x*y of this clump.          */
     CFlxWhtRA,           /* ra of (CFlxWhtX, CFlxWhtY).             */
-    CFlxWhtDec,          /* Dec of (CFlxWhtX, CFlxWhtY).        */
+    CFlxWhtDec,          /* Dec of (CFlxWhtX, CFlxWhtY).            */
     CBrightness,         /* Brightness in this clump.               */
     CRivAve,             /* Average value in rivers around clump.   */
     CRivArea,            /* Num river pixels around this clump.     */
@@ -293,7 +321,7 @@ struct mkcatalogparams
   char              *filename;  /* Either ocatname or ccatname.       */
   size_t                  num;  /* Either numobjects or numclumps.    */
   size_t              numcols;  /* Either objncols or clumpncols.     */
-  double                *info;  /* Either oinfo or cinfo.             */
+  double                *info;  /* Pointer to either oinfo or cinfo.  */
   size_t                icols;  /* Either OCOLUMNS or CCOLUMNS.       */
   char                 *unitp;  /* Pointer to units array.            */
   char             line[1500];  /* Comment line.                      */

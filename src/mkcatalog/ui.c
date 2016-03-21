@@ -643,6 +643,25 @@ sanitycheck(struct mkcatalogparams *p)
   p->medstd=keys[1].f;
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
 
+  /* When the RA and Dec are needed, make sure that the X and Y
+     columns and the RA and Dec columns in the information array are
+     immediately after each other and in this order. This is not set
+     by the user, but by the programmer. Nevertheless, it is a very
+     important issue to check. Since the enum values are constants,
+     the compiler will know immediately and stop.
+
+     NOTE: the information array is separate from the output array
+  */
+  if(p->up.raset || p->up.decset)
+    {
+      if( OFlxWhtX!=OFlxWhtY-1 || OFlxWhtRA!=OFlxWhtDec-1 )
+        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+              "fix the problem. X(%d) and Y(%d), or Ra(%d) and Dec(%d) "
+              "columns in the information array are not immediately after "
+              "each other.", PACKAGE_BUGREPORT, OFlxWhtX, OFlxWhtY,
+              OFlxWhtRA, OFlxWhtDec);
+    }
+
   /* Set the output names: */
   if(p->cp.outputset)
     {
