@@ -129,72 +129,6 @@ firstpass(struct mkcatalogparams *p)
               }
           }
       }
-
-  /* Make all the correctins (for the averages): */
-  for(i=1;i<=p->numobjects;++i)
-    {
-      /* Set the average sky and its STD: */
-      thisobj = p->oinfo + i*OCOLUMNS;
-      thisobj[ OSKY ] /= thisobj[ OAREA ];
-      thisobj[ OSTD ] /= thisobj[ OAREA ];
-
-      /* Set the flux weighted center of the object. The flux weighted
-         center is only meaningful when there was positive flux inside
-         the detection. */
-      if(thisobj[ OPosBright ]>0.0f)
-        {
-          thisobj[ OFlxWhtX  ] /= thisobj[ OPosBright ];
-          thisobj[ OFlxWhtY  ] /= thisobj[ OPosBright ];
-          thisobj[ OFlxWhtXX ] = (thisobj[OFlxWhtXX]/thisobj[OPosBright]
-                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtX]);
-          thisobj[ OFlxWhtYY ] = (thisobj[OFlxWhtYY]/thisobj[OPosBright]
-                                  - thisobj[OFlxWhtY] * thisobj[OFlxWhtY]);
-          thisobj[ OFlxWhtXY ] = (thisobj[OFlxWhtXY]/thisobj[OPosBright]
-                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtY]);
-        }
-      else
-        {
-          thisobj[ OFlxWhtX ] = thisobj[ OGeoX ] / thisobj[ OAREA ];
-          thisobj[ OFlxWhtY ] = thisobj[ OGeoY ] / thisobj[ OAREA ];
-          thisobj[ OFlxWhtXX ] = (thisobj[OGeoXX]/thisobj[OPosBright]
-                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtX]);
-          thisobj[ OFlxWhtYY ] = (thisobj[OGeoYY]/thisobj[OPosBright]
-                                  - thisobj[OFlxWhtY] * thisobj[OFlxWhtY]);
-          thisobj[ OFlxWhtXY ] = (thisobj[OGeoXY]/thisobj[OPosBright]
-                                  - thisobj[OFlxWhtX] * thisobj[OFlxWhtY]);
-        }
-
-      /* Set the over-all clump information: */
-      if(thisobj[ OPosBrightC ] >0.0f)
-        {
-          thisobj[ OFlxWhtCX ] /= thisobj[OPosBrightC];
-          thisobj[ OFlxWhtCY ] /= thisobj[OPosBrightC];
-          thisobj[ OFlxWhtCXX ] = (thisobj[OFlxWhtCXX]/thisobj[OPosBright]
-                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCX]);
-          thisobj[ OFlxWhtCYY ] = (thisobj[OFlxWhtCYY]/thisobj[OPosBright]
-                                   - thisobj[OFlxWhtCY] * thisobj[OFlxWhtCY]);
-          thisobj[ OFlxWhtCXY ] = (thisobj[OFlxWhtCXY]/thisobj[OPosBright]
-                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCY]);
-        }
-      else
-        {
-          thisobj[ OFlxWhtCX ] = thisobj[ OGeoCX ] / thisobj[ OAREAC ];
-          thisobj[ OFlxWhtCY ] = thisobj[ OGeoCY ] / thisobj[ OAREAC ];
-          thisobj[ OFlxWhtCXX ] = (thisobj[OGeoCXX]/thisobj[OPosBright]
-                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCX]);
-          thisobj[ OFlxWhtCYY ] = (thisobj[OGeoCYY]/thisobj[OPosBright]
-                                   - thisobj[OFlxWhtCY] * thisobj[OFlxWhtCY]);
-          thisobj[ OFlxWhtCXY ] = (thisobj[OGeoCXY]/thisobj[OPosBright]
-                                   - thisobj[OFlxWhtCX] * thisobj[OFlxWhtCY]);
-        }
-
-      /* Convert the coordinates to the FITS standard (which starts
-         from 1 not zero) */
-      thisobj[ OFlxWhtX  ] += 1;
-      thisobj[ OFlxWhtY  ] += 1;
-      thisobj[ OFlxWhtCX ] += 1;
-      thisobj[ OFlxWhtCY ] += 1;
-    }
 }
 
 
@@ -338,10 +272,9 @@ secondpass(struct mkcatalogparams *p)
           }
     }
 
-  /* Make the proper corrections:
+  /* Make the proper corrections (this will be removed later).
 
-     1. Divide by total flux to get the flux weighted center.
-     2. Divide the total river flux by the number of river pixels.
+     1. Divide the total river flux by the number of river pixels.
 
      Note that it might happen that there are no river pixels (when
      grown clumps were used).
@@ -350,23 +283,11 @@ secondpass(struct mkcatalogparams *p)
     {
       /* Do the initial corrections: */
       thisclump = p->cinfo + i*CCOLUMNS;
-      thisclump[ CSKY ] /= thisclump[ CAREA ];
-      thisclump[ CSTD ] /= thisclump[ CAREA ];
+
       if(thisclump[ CRivArea ] > 0.0f)
         thisclump[ CRivAve ] /= thisclump[ CRivArea ];
       else
         thisclump[ CRivAve ] = thisclump[ CSKY ];
-
-      if(thisclump [ CPosBright ]>0.0f)
-        {
-          thisclump[ CFlxWhtX ] = thisclump[CFlxWhtX]/thisclump[CPosBright]+1;
-          thisclump[ CFlxWhtY ] = thisclump[CFlxWhtY]/thisclump[CPosBright]+1;
-        }
-      else
-        {
-          thisclump[ CFlxWhtX ] = thisclump[ CGeoX ] / thisclump[ CAREA ] + 1;
-          thisclump[ CFlxWhtY ] = thisclump[ CGeoY ] / thisclump[ CAREA ] + 1;
-        }
     }
 
   /* Clean up: */
@@ -397,9 +318,9 @@ secondpass(struct mkcatalogparams *p)
 void
 makeoutput(struct mkcatalogparams *p)
 {
-  size_t *cols;
   double sn, pixarea;
-  char comment[COMMENTSIZE], tline[100];
+  size_t *cols, tmpcol;
+  char comment[COMMENTSIZE], tline[100], *target;
   int prec[2]={p->floatprecision, p->accuprecision};
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
 
@@ -423,6 +344,7 @@ makeoutput(struct mkcatalogparams *p)
       cols        = p->obj0clump1 ? p->clumpcols : p->objcols;
       p->numcols  = p->obj0clump1 ? p->clumpncols : p->objncols;
       p->num      = p->obj0clump1 ? p->numclumps : p->numobjects;
+      target      = p->obj0clump1 ? "Clump" : "Full object";
 
 
 
@@ -540,36 +462,45 @@ makeoutput(struct mkcatalogparams *p)
               area(p, 1, 0);
               break;
 
+
             case CATX:
-              position(p, 0, 1, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtX : OFlxWhtX;
+              position(p, tmpcol, target, "weighted center", MKCATX);
               break;
 
             case CATY:
-              position(p, 0, 0, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtY : OFlxWhtY;
+              position(p, tmpcol, target, "weighted center", MKCATY);
               break;
 
             case CATCLUMPSX:
-              position(p, 0, 1, 1);
+              position(p, OFlxWhtCX, "Clumps in object",
+                       "weighted center", MKCATX);
               break;
 
             case CATCLUMPSY:
-              position(p, 0, 0, 1);
+              position(p, OFlxWhtCY, "Clumps in object",
+                       "weighted center", MKCATY);
               break;
 
             case CATRA:
-              position(p, 1, 1, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtRA : OFlxWhtRA;
+              position(p, tmpcol, target, "weighted center", MKCATRA);
               break;
 
             case CATDEC:
-              position(p, 1, 0, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtDec : OFlxWhtDec;
+              position(p, tmpcol, target, "weighted center", MKCATDEC);
               break;
 
             case CATCLUMPSRA:
-              position(p, 1, 1, 1);
+              position(p, OFlxWhtCRA, "Clumps in object", "weighted center",
+                       MKCATRA);
               break;
 
             case CATCLUMPSDEC:
-              position(p, 1, 0, 1);
+              position(p, OFlxWhtCDec, "Clumps in object", "weighted center",
+                       MKCATDEC);
               break;
 
             case CATBRIGHTNESS:

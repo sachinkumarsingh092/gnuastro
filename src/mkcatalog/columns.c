@@ -2,6 +2,14 @@
 MakeCatalog - Make a catalog from an input and labeled image.
 MakeCatalog is part of GNU Astronomy Utilities (Gnuastro) package.
 
+ABOUT THIS FILE: The information tables are fully explained in the
+  comments of main.h. After the raw information is read in the first
+  and second pass, the job of the functions here is to process the raw
+  columns that are needed into useful knowledge and print them. for
+  example those functions will only record the weighted sum of pixel
+  positions and the total weight, here the weighted sum is divided by
+  the total weight to yeild an average.
+
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
@@ -26,6 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <string.h>
 #include <stdlib.h>
 
 
@@ -43,21 +52,228 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* MakeCatalogs and these column functions:
-   ========================================
+/******************************************************************/
+/*******        Information table modifications       *************/
+/******************************************************************/
+/* Find the geometric center of the profile (average position,
+   ignoring any flux of the pixels). */
+void
+geoxy(struct mkcatalogparams *p, size_t col)
+{
+  size_t ac=-1;
+  double *row = p->info + p->icols;
+  double *end = row + (p->icols * p->num);
 
-   In order to print the information in any of the desired columns
-   this is the procedure we have taken:
+  /* Only if this column is not flagged as already done (==1.0f). */
+  if(p->info[col]==0.0f)
+    {
 
-   There is a base array for information on objects (p->oinfo) and
-   clumps (p->cinfo) which is filled in mkcatalog.c's first and second
-   pass functions. Most of the necessary information can be found in
-   two passes and if the desired calculation doesn't exist, adding it
-   is very easy: just add to the macros of main.h and include the
-   calculation in any of the passes.
+      /* First, set the columns to use for the conversion. */
+      if(p->obj0clump1)                         ac=CAREA;
+      else
+        {
+          if      (col==OGeoX || col==OGeoY)    ac=OAREA;
+          else if (col==OGeoCX || col==OGeoCY)  ac=OAREAC;
+          else
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix this. The given column in the --OBJECTS-- "
+                  "information table was not recognized for calculating the "
+                  "geometric X and/or Y.", PACKAGE_BUGREPORT);
+        }
 
-   These information arrays keep the raw data that is then converted
-   into the output catalog through the functions in this file. */
+      /* Go over all the rows and correct this column. */
+      do
+        {
+          /* Set the value for this row. Note that unlike the
+             calculations here that start counting with zero, the FITS
+             standard starts counting from 1, so add a one after
+             dividing by the area. If the area is zero, then set
+             NaN. */
+          row[col] = row[ac]>0.0f ? row[col] / row[ac] + 1 : NAN;
+
+          /* Go onto the next row: */
+          row+=p->icols;
+        }
+      while(row<end);
+
+      /* Flag this column as complete for future reference. */
+      p->info[col]=1.0f;
+    }
+}
+
+
+
+
+
+/* A low-level function used to find the flux weighted center, since
+   it is needed by multiple columns. The geometric center for this
+   axis colum (geocol) and area column (areacol) are needed for backup
+   (when there might not be any positive flux pixel/data values to use
+   for weight). */
+void
+flxwhtimg(struct mkcatalogparams *p, size_t col)
+{
+  size_t wc=-1, gc=-1;
+  double *row = p->info + p->icols;
+  double *end = row + (p->icols * p->num);;
+
+
+  /* Only if this column is not flagged as already done (==1.0f). */
+  if(p->info[col]==0.0f)
+    {
+
+      /* First, set the columns to use for the conversion. */
+      if(p->obj0clump1)
+        {
+          wc=CPosBright;
+          if     (col==CFlxWhtX) gc=CGeoX;
+          else if(col==CFlxWhtY) gc=CGeoY;
+          else
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix this. The given column in the --CLUMPS-- "
+                  "information table was not recognized for calculating the "
+                  "final flux weighted X and/or Y.", PACKAGE_BUGREPORT);
+        }
+      else
+        {
+          if (col==OFlxWhtX || col==OFlxWhtY)
+            {
+              wc=OPosBright;
+              gc = col==OFlxWhtX ? OGeoX : OGeoY;
+            }
+          else if (col==OFlxWhtCX || col==OFlxWhtCY)
+            {
+              wc=OPosBrightC;
+              gc = col==OFlxWhtCX ? OGeoCX : OGeoCY;
+            }
+          else
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix this. The given column in the --OBJECTS-- "
+                  "information table was not recognized for calculating the "
+                  "final flux weighted X and/or Y.", PACKAGE_BUGREPORT);
+        }
+
+
+      /* The geometric positions act as a backup for the flux weighted
+         centers, so make sure the appropriate geometric center is
+         defined. */
+      geoxy(p, gc);
+
+      /* For a check, uncomment these two lines:
+      printf("\n\nInfocol: %lu (%s, %lu)\n", col,
+             p->info==p->oinfo?"Objects":"Clumps", p->num);
+      Then add these two lines before and after row[col] in the loop*/
+      /*printf("%lu: %f --> ", (row-p->info)/p->icols, row[col]);*/
+      /*printf("%f\n", row[col]);*/
+
+      /* Go over all the rows and correct this column. */
+      do
+        {
+          /* Set the value for this row. When a positive weight is
+             present, we are adding with one (1) because of the FITS
+             standard. */
+          row[col] = row[wc]>0.0f ? (row[col]/row[wc])+1 : row[gc];
+
+          /* Go onto the next row: */
+          row+=p->icols;
+        }
+      while(row<end);
+
+      /* Set the flag for this column to one, so this whole proces is
+         not done again. */
+      p->info[col]=1.0f;
+    }
+}
+
+
+
+
+
+/* Fill in the RA and Dec columns, note that we will need the X and Y
+   colums first for this. */
+void
+flxwhtwcs(struct mkcatalogparams *p, size_t col)
+{
+  /* Initialize all the columns to -1 (largest possible number in the
+     C's unsigned char, so if there is any bugs, we get a good error. */
+  size_t xc=-1, yc=-1, rc=-1, dc=-1;
+
+
+  /* RA and Dec are usually needed together and must also be
+     calculated together, but here, we are giving the user complete
+     freedom in setting the columns in which ever order they want. So
+     after calculating the RA and Dec once for either of the two,
+     there is no more need to do the calculation again.  */
+  if(p->info[col]==0.0f)
+    {
+
+      /* First, set the columns to use for the conversion. */
+      if(p->obj0clump1)
+        {
+          if(col==CFlxWhtRA || col==CFlxWhtDec)
+            {
+              xc=CFlxWhtX;  yc=CFlxWhtY;
+              rc=CFlxWhtRA; dc=CFlxWhtDec;
+            }
+          else
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix this. The given column in the --CLUMPS-- "
+                  "information table was not recognized for calculating the "
+                  "RA and Dec.", PACKAGE_BUGREPORT);
+        }
+      else
+        {
+          if(col==OFlxWhtCRA || col==OFlxWhtCDec)
+            {
+              xc=OFlxWhtCX;  yc=OFlxWhtCY;
+              rc=OFlxWhtCRA; dc=OFlxWhtCDec;
+            }
+          else if(col==OFlxWhtRA || col==OFlxWhtDec)
+            {
+              xc=OFlxWhtX;  yc=OFlxWhtY;
+              rc=OFlxWhtRA; dc=OFlxWhtDec;
+            }
+          else
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix this. The given column in the --OBJECT-- "
+                  "information table was not recognized for calculating the "
+                  "RA and Dec.", PACKAGE_BUGREPORT);
+        }
+
+
+      /* Finalize the relevant X and Y positions first (which are
+         needed for the WCS conversion). Note that if they are ready
+         to use (their flag is 1.0f), flxwhtxy will not do
+         anything. But if the user hasn't already asked for X and Y,
+         then these columns will be corrected here.*/
+      flxwhtimg(p, xc);
+      flxwhtimg(p, yc);
+
+
+      /* Do the conversion. Note that the p->icols is added because
+         the first row is not used by any object or colump (since
+         their indexes begin from 1).*/
+      xyarraytoradec(p->wcs, p->info+p->icols+xc, p->info+p->icols+rc,
+                     p->num, p->icols);
+
+
+      /* Set the flag of the converted columns to 1.0f, so the
+         calculations are not repeated if any of the columns is needed
+         again. Note that it is irrelevant which one of the RA or Dec
+         were calculated, so we are not using `col' here. */
+      p->info[rc]=p->info[dc]=1.0f;
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -69,7 +285,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /******************************************************************/
-/***************      Operations on columns     *******************/
+/***************    Add columns for printing    *******************/
 /******************************************************************/
 void
 idcol(struct mkcatalogparams *p)
@@ -102,9 +318,6 @@ hostobj(struct mkcatalogparams *p, int o1c0)
   double counter;
   size_t i, j, n, row=0;
 
-  /* This function is only for clumps. */
-  if(p->obj0clump1==0) { --p->curcol; return; }
-
   p->unitp=CATUNITCOUNTER;
   des = ( o1c0 ? "ID of object hosting this clump"
           : "ID of clump in host object" );
@@ -132,9 +345,6 @@ numclumps(struct mkcatalogparams *p)
 {
   size_t i;
 
-  /* This function is only for objects. */
-  if(p->obj0clump1) return;
-
   p->unitp=CATUNITCOUNTER;
   sprintf(p->description, "%lu: Number of clumps in this object.",
           p->curcol);
@@ -156,9 +366,8 @@ area(struct mkcatalogparams *p, int cinobj, int isriver)
   size_t i, col;
 
   /* Set the proper column to use */
-  if(p->obj0clump1) /* It is a clump.                            */
+  if(p->obj0clump1)
     {
-      if(cinobj) { --p->curcol; return; } /* cinobj is only for objects. */
       if(isriver)
         {
           type="Number of river pixels around this clump";
@@ -171,8 +380,7 @@ area(struct mkcatalogparams *p, int cinobj, int isriver)
         }
     }
   else
-    {               /* It is an object.                         */
-      if(isriver) { --p->curcol; return; }
+    {
       if(cinobj)    /* It is the positions of clumps in object. */
         {
           type="Clumps in object area";
@@ -185,12 +393,15 @@ area(struct mkcatalogparams *p, int cinobj, int isriver)
         }
     }
 
+  /* Set the unit and print the header. */
   p->unitp = isriver ? CATUNITCOUNTER : CATUNITPIXAREA;
   sprintf(p->description, "%lu: %s.", p->curcol, type);
 
+  /* Fill in the output array. */
   for(i=0;i<p->num;++i)
     p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
 
+  /* Set the precision for printing. */
   p->intcols[p->intcounter++]=p->curcol;
 }
 
@@ -198,105 +409,33 @@ area(struct mkcatalogparams *p, int cinobj, int isriver)
 
 
 
-/* Find the positions:
-
-   x1y1==1: X axis.
-
-   cinobj==1: (only relevant when obj0clump1==0): clump in obj info,
-              not full object.
-
-   w1i0==1: We are dealing with world coordinates not image
-            coordinates. In the world coordinates x: ra and y: dec
- */
 void
-position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj)
+position(struct mkcatalogparams *p, size_t col, char *target,
+         char *type, char *axis)
 {
-  char *type;
-  size_t i, pcol;
+  size_t i;
+  int wcsax = ( !strcmp(axis, MKCATRA) || !strcmp(axis, MKCATDEC) ) ? 1 : 0;
 
+  /* Set the header information. */
+  sprintf(p->description, "%lu: %s %s (%s).", p->curcol, target, type, axis);
 
-
-  /* Read these columns as i-to-w-xcol for example. They are the
-     columns to use in the conversion from image to world coordinate
-     systems, when they are needed. The numbers are by default -1
-     (largest possible number in size_t) so if they are not set, we
-     get a segmentation fault. */
-  size_t itowxcol=-1, itowracol=-1, itowdeccol=-1;
-
-
-
-  /* Set the proper column to use */
-  if(p->obj0clump1) /* It is a clump.                            */
+  /* Prepare the respective column, set the units and also the
+     printing accuracy if we are in RA/Dec mode (wcsax==1). */
+  if(wcsax)
     {
-      if(cinobj) { --p->curcol; return; } /* cinobj is only for objects. */
-      type="This clump";
-      if(w1i0)   pcol = x1y0 ? CFlxWhtRA : CFlxWhtDec;
-      else       pcol = x1y0 ? CFlxWhtX  : CFlxWhtY;
+      flxwhtwcs(p, col);
+      p->unitp = CATUNITDEGREE;
+      p->accucols[p->accucounter++]=p->curcol;
     }
   else
-    {               /* It is an object.                         */
-      if(cinobj)    /* It is the positions of clumps in object. */
-        {
-          type="Clumps in object";
-          if(w1i0) pcol = x1y0 ? OFlxWhtCRA : OFlxWhtCDec;
-          else     pcol = x1y0 ? OFlxWhtCX  : OFlxWhtCY;
-        }
-      else          /* It is the position of the object itsself.*/
-        {
-          type="Full object";
-          if(w1i0) pcol = x1y0 ? OFlxWhtRA : OFlxWhtDec;
-          else     pcol = x1y0 ? OFlxWhtX  : OFlxWhtY;
-        }
-    }
-
-
-
-  /* Prepare the comments for the top of the output ASCII catalog */
-  p->unitp = w1i0 ? CATUNITDEGREE : CATUNITPIXPOS;
-  sprintf(p->description, "%lu: %s flux weighted center (%s).",
-          p->curcol, type,
-          w1i0 ? (x1y0?"RA":"Dec") : (x1y0?"X":"Y") );
-
-
-
-  /* Convert the X and Y positions to RA and Dec if necessary. */
-  if(w1i0 && p->info[pcol]==0.0f)
     {
-      /* Set the proper columns to use for the conversion. */
-      if(pcol==CFlxWhtRA || pcol==CFlxWhtDec)
-        {itowxcol=CFlxWhtX; itowracol=CFlxWhtRA; itowdeccol=CFlxWhtDec;}
-      else if(pcol==OFlxWhtCRA || pcol==OFlxWhtCDec)
-        {itowxcol=OFlxWhtCX; itowracol=OFlxWhtCRA; itowdeccol=OFlxWhtCDec;}
-      else if(pcol==OFlxWhtRA || pcol==OFlxWhtDec)
-        {itowxcol=OFlxWhtX; itowracol=OFlxWhtRA; itowdeccol=OFlxWhtDec;}
-      else
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
-              "fix this. While w1i0 was set, the column was not recognized "
-              "by position().", PACKAGE_BUGREPORT);
-
-      /* Do the conversion. Note that the p->icols is added because
-         the first row is not used by any object or colump (since
-         their indexes begin from 1).*/
-      xyarraytoradec(p->wcs, p->info+p->icols+itowxcol,
-                     p->info+p->icols+itowracol, p->num, p->icols);
-
-      /* Set the flag of the converted columns to 1.0f, so the
-         calculations are not repeated if any of the columns is needed
-         again. */
-      p->info[itowracol]=p->info[itowdeccol]=1.0f;
+      flxwhtimg(p, col);
+      p->unitp = CATUNITPIXPOS;
     }
 
-
-
-
-  /* Write the proper information into the output. */
+  /* Write respective column of the information table into the output. */
   for(i=0;i<p->num;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+pcol];
-
-
-  /* Set the decimal point accuracy for printing. */
-  if(w1i0)
-    p->accucols[p->accucounter++]=p->curcol;
+    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
 }
 
 
@@ -392,19 +531,23 @@ brightnessmag(struct mkcatalogparams *p, int m0b1, int cinobj, int isriver)
 void
 skystd(struct mkcatalogparams *p, int issky)
 {
-  size_t i, col;
+  size_t i, scol, acol;
 
   /* Set the proper column to use */
-  col = p->obj0clump1 ? (issky ? CSKY : CSTD) : (issky ? OSKY : OSTD);
+  acol = p->obj0clump1 ? CAREA : OAREA;
+  scol = p->obj0clump1 ? (issky ? CSKY : CSTD) : (issky ? OSKY : OSTD);
 
   /* For the comments: */
   p->unitp = CATUNITAVE;
   sprintf(p->description, "%lu: Average %s over this %s.",
           p->curcol, issky ? "sky" : "sky standard deviation", p->name);
 
-  /* Fill the column: */
+  /* Fill the sky value, note that in the information array, we have
+     only calculated the sum. So here, we need to divide by the area
+     to find the average. */
   for(i=0;i<p->num;++i)
-    p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
+    p->cat[i * p->numcols + p->curcol ] =
+      p->info[(i+1)*p->icols+scol]/p->info[(i+1)*p->icols+acol];
 
   /* This column should be accurate: */
   p->accucols[p->accucounter++]=p->curcol;

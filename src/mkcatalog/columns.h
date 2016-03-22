@@ -36,7 +36,8 @@ void
 area(struct mkcatalogparams *p, int cinobj, int isriver);
 
 void
-position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj);
+position(struct mkcatalogparams *p, size_t col, char *target,
+         char *type, char *axis);
 
 void
 brightnessmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,

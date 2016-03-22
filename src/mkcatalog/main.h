@@ -48,6 +48,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define CATUNITRATIO              "ratio"
 
 
+/* Fixed names */
+#define MKCATX                    "X"
+#define MKCATY                    "Y"
+#define MKCATRA                   "RA"
+#define MKCATDEC                  "Dec"
 
 
 
