@@ -53,7 +53,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MKCATY                    "Y"
 #define MKCATRA                   "RA"
 #define MKCATDEC                  "Dec"
-
+#define MKCATCLUMP                "Clump"
+#define MKCATMAG                  "magnitude"
+#define MKCATBRIGHT               "brightness"
+#define MKCATOBJECT               "Full object"
+#define MKRIVERSSUR               "Rivers surrounding clump, average"
 
 
 /* Columns in the object and clump information tables
@@ -144,7 +148,7 @@ enum clumpcols
     CFlxWhtXY,           /* Sum of flux*x*y of this clump.          */
     CFlxWhtRA,           /* ra of (CFlxWhtX, CFlxWhtY).             */
     CFlxWhtDec,          /* Dec of (CFlxWhtX, CFlxWhtY).            */
-    CBrightness,         /* Brightness in this clump.               */
+    CBrightness,         /* Clump brightness, not sky subtracted.   */
     CRivAve,             /* Average value in rivers around clump.   */
     CRivArea,            /* Num river pixels around this clump.     */
     CSKY,                /* Sum of sky value on this object.        */

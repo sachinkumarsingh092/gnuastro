@@ -40,11 +40,11 @@ position(struct mkcatalogparams *p, size_t col, char *target,
          char *type, char *axis);
 
 void
-brightnessmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
-                  int isriver);
+brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
+              char *scale);
 
 void
-skystd(struct mkcatalogparams *p, int issky);
+skystd(struct mkcatalogparams *p, size_t col);
 
 void
 sncol(struct mkcatalogparams *p);

@@ -10267,34 +10267,44 @@ The area (number of pixels) in any clump or object.
 @item -x
 @itemx --x
 The flux weighted center of all objects and clumps along the first
-FITS axis (horizontal when viewed in SAO ds9).
+FITS axis (horizontal when viewed in SAO ds9). The weight has to have
+a positive value (pixel value larger than the Sky value) to be
+meaningful! Specially when doing matched photometry, this might not
+happen: no pixel value might be above the Sky value. In such cases,
+where there was no pixel with a value larger than the Sky in the
+object or clump, the geometric center (ignoring pixel values, only
+their positions) over the object or clump is used instead of the flux
+weighted center.
 
 @item -y
 @itemx --y
 The flux weighted center of all objects and clumps along the second
-FITS axis (vertical when viewed in SAO ds9).
+FITS axis (vertical when viewed in SAO ds9). See @option{--x}.
 
 @item --clumpsx
 [Objects] The flux weighted center of all the clumps in this
-object along the first FITS axis.
+object along the first FITS axis. See @option{--x}
 
 @item --clumpsy
 [Objects] The flux weighted center of all the clumps in this
-object along the second FITS axis.
+object along the second FITS axis. See @option{--x}
 
 @item -r
 @itemx --ra
-Right ascension of all objects or clumps.
+Flux weighted right ascension of all objects or clumps, see
+@option{--x}.
 
 @item -d
 @itemx --dec
-Declination of all objects or clumps.
+Flux weighted declination of all objects or clumps, see @option{--x}.
 
 @item --clumpsra
-[Objects] Right ascension of all clumps in this object.
+[Objects] Flux weighted right ascension of all clumps in this object,
+see @option{--x}.
 
 @item --clumpsdec
-[Objects] Declination of all clumps in this object.
+[Objects] Flux weighted declination of all clumps in this object, see
+@option{--x}.
 
 @item -b
 @itemx --brightness
@@ -10319,11 +10329,15 @@ The magnitude of all clumps or objects, see @option{--brightness}.
 @option{--clumpbrightness}.
 
 @item --riverave
-[Clumps] The average flux of the river pixels of this clump. River
-pixels were defined in Akhlaghi and Ichikawa 2015. In short they are
-right on the boundaries of the clumps. This value is used internally
-to find the signal to noise ratio of the clumps and can also be used
-as a scale to guage the base (ambient) flux of the clump.
+[Clumps] The average Sky subtracted flux of the river pixels of this
+clump. River pixels were defined in Akhlaghi and Ichikawa 2015. In
+short they are the pixels immediately outside of the clumps. This
+value is used internally to find the brightness (or magnitude) and
+signal to noise ratio of the clumps. It can generally also be used as
+a scale to guage the base (ambient) flux surrounding the clump. In
+case there was no river pixels, then this column will have the value
+of the Sky under the clump. So note that this value is @emph{not} sky
+subtracted.
 
 @item --rivernum
 [Clumps] The number of river pixels around this clump, see

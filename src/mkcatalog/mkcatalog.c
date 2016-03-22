@@ -43,6 +43,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+/*********************************************************************/
+/*****************     Fill information tables     *******************/
+/*********************************************************************/
+
 /* Macro to see if the label is indexable (belongs to an object or
    not). See the explanation in src/noisechisel/label.h. */
 #if FITSLONGBLANK<0
@@ -56,9 +61,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/*********************************************************************/
-/*****************     Fill information tables     *******************/
-/*********************************************************************/
+
 /* In the first pass, the most basic properties (mainly about the
    objects) are found. The primary reason is that we still don't know
    how many objects there are in order to be able to put the clump
@@ -185,7 +188,11 @@ secondpass(struct mkcatalogparams *p)
                         + ( ofcrow[objects[i]] + clumps[i] )
                         * CCOLUMNS );
 
-          /* Fill in this clump information:  */
+          /* Fill in this clump information. IMPORTANT NOTE: The Sky
+             is not subtracted from the clump brightness or river,
+             because later, we will subtract the river flux from the
+             clump brightness and therefore we don't need to know the
+             Sky for the clump brightness. */
           ++thisclump[ CAREA ];
           thisclump[ CGeoX ]        += i%is1;
           thisclump[ CGeoY ]        += i/is1;
@@ -272,24 +279,6 @@ secondpass(struct mkcatalogparams *p)
           }
     }
 
-  /* Make the proper corrections (this will be removed later).
-
-     1. Divide the total river flux by the number of river pixels.
-
-     Note that it might happen that there are no river pixels (when
-     grown clumps were used).
-  */
-  for(i=1;i<=p->numclumps;++i)
-    {
-      /* Do the initial corrections: */
-      thisclump = p->cinfo + i*CCOLUMNS;
-
-      if(thisclump[ CRivArea ] > 0.0f)
-        thisclump[ CRivAve ] /= thisclump[ CRivArea ];
-      else
-        thisclump[ CRivAve ] = thisclump[ CSKY ];
-    }
-
   /* Clean up: */
   free(ofcrow);
 }
@@ -322,6 +311,7 @@ makeoutput(struct mkcatalogparams *p)
   size_t *cols, tmpcol;
   char comment[COMMENTSIZE], tline[100], *target;
   int prec[2]={p->floatprecision, p->accuprecision};
+  char *whtc="weighted center", *cino="Clumps in object";
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
 
 
@@ -340,11 +330,11 @@ makeoutput(struct mkcatalogparams *p)
       p->icols    = p->obj0clump1 ? CCOLUMNS : OCOLUMNS;
       p->info     = p->obj0clump1 ? p->cinfo : p->oinfo;
       p->cat      = p->obj0clump1 ? p->clumpcat : p->objcat;
+      target      = p->obj0clump1 ? MKCATCLUMP : MKCATOBJECT;
       p->filename = p->obj0clump1 ? p->ccatname : p->ocatname;
       cols        = p->obj0clump1 ? p->clumpcols : p->objcols;
       p->numcols  = p->obj0clump1 ? p->clumpncols : p->objncols;
       p->num      = p->obj0clump1 ? p->numclumps : p->numobjects;
-      target      = p->obj0clump1 ? "Clump" : "Full object";
 
 
 
@@ -465,62 +455,60 @@ makeoutput(struct mkcatalogparams *p)
 
             case CATX:
               tmpcol = p->obj0clump1 ? CFlxWhtX : OFlxWhtX;
-              position(p, tmpcol, target, "weighted center", MKCATX);
+              position(p, tmpcol, target, whtc, MKCATX);
               break;
 
             case CATY:
               tmpcol = p->obj0clump1 ? CFlxWhtY : OFlxWhtY;
-              position(p, tmpcol, target, "weighted center", MKCATY);
+              position(p, tmpcol, target, whtc, MKCATY);
               break;
 
             case CATCLUMPSX:
-              position(p, OFlxWhtCX, "Clumps in object",
-                       "weighted center", MKCATX);
+              position(p, OFlxWhtCX, cino, whtc, MKCATX);
               break;
 
             case CATCLUMPSY:
-              position(p, OFlxWhtCY, "Clumps in object",
-                       "weighted center", MKCATY);
+              position(p, OFlxWhtCY, cino, whtc, MKCATY);
               break;
 
             case CATRA:
               tmpcol = p->obj0clump1 ? CFlxWhtRA : OFlxWhtRA;
-              position(p, tmpcol, target, "weighted center", MKCATRA);
+              position(p, tmpcol, target, whtc, MKCATRA);
               break;
 
             case CATDEC:
               tmpcol = p->obj0clump1 ? CFlxWhtDec : OFlxWhtDec;
-              position(p, tmpcol, target, "weighted center", MKCATDEC);
+              position(p, tmpcol, target, whtc, MKCATDEC);
               break;
 
             case CATCLUMPSRA:
-              position(p, OFlxWhtCRA, "Clumps in object", "weighted center",
-                       MKCATRA);
+              position(p, OFlxWhtCRA, cino, whtc, MKCATRA);
               break;
 
             case CATCLUMPSDEC:
-              position(p, OFlxWhtCDec, "Clumps in object", "weighted center",
-                       MKCATDEC);
+              position(p, OFlxWhtCDec, cino, whtc, MKCATDEC);
               break;
 
             case CATBRIGHTNESS:
-              brightnessmag(p, 1, 0, 0);
+              tmpcol = p->obj0clump1 ? CBrightness : OBrightness;
+              brightnessmag(p, tmpcol, target, MKCATBRIGHT);
               break;
 
             case CATCLUMPSBRIGHTNESS:
-              brightnessmag(p, 1, 1, 0);
+              brightnessmag(p, OBrightnessC, cino, MKCATBRIGHT);
               break;
 
             case CATMAGNITUDE:
-              brightnessmag(p, 0, 0, 0);
+              tmpcol = p->obj0clump1 ? CBrightness : OBrightness;
+              brightnessmag(p, tmpcol, target, MKCATMAG);
               break;
 
             case CATCLUMPSMAGNITUDE:
-              brightnessmag(p, 0, 1, 0);
+              brightnessmag(p, OBrightnessC, cino, MKCATMAG);
               break;
 
             case CATRIVERAVE:
-              brightnessmag(p, 1, 0, 1);
+              brightnessmag(p, CRivAve, MKRIVERSSUR, MKCATBRIGHT);
               break;
 
             case CATRIVERNUM:
@@ -528,11 +516,11 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATSKY:
-              skystd(p, 1);
+              skystd(p, p->obj0clump1 ? CSKY : OSKY);
               break;
 
             case CATSTD:
-              skystd(p, 0);
+              skystd(p, p->obj0clump1 ? CSTD : OSTD);
               break;
 
             case CATSN:
