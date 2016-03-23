@@ -408,6 +408,7 @@ MakeCatalog
 
 * Depth and limiting magnitude::  For comparing different catalogs.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
+* Adding new columns to MakeCatalog::  How to add new columns.
 
 Modeling and fitting
 
@@ -9877,7 +9878,9 @@ harder for a curious reader and also potentially adds bugs.
 Another advantage of less complexity is when the parameter you want to
 measure over one profile is not provided by the developers of
 MakeCatalog. You can simply open this tiny little program and add your
-desired calculation easily. However, if making a catalog was part of
+desired calculation easily. In @ref{Adding new columns to
+MakeCatalog}, we have explained all the necessary steps to add a new
+column to MakeCatalog. However, if making a catalog was part of
 NoiseChisel, it would require a lot of energy to understand all the
 steps in order to add desired parameter.
 
@@ -9909,6 +9912,7 @@ transformations on the labeled image.
 @menu
 * Depth and limiting magnitude::  For comparing different catalogs.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
+* Adding new columns to MakeCatalog::  How to add new columns.
 @end menu
 
 
@@ -10037,7 +10041,7 @@ a very important factor in an accurate comparison between magnitudes
 measured for different images, on possibly different instruments and
 cameras, see @ref{Flux Brightness and magnitude}.
 
-@node Invoking astmkcatalog,  , Depth and limiting magnitude, MakeCatalog
+@node Invoking astmkcatalog, Adding new columns to MakeCatalog, Depth and limiting magnitude, MakeCatalog
 @subsection Invoking MakeCatalog
 
 MakeCatalog will make a catalog from an input image and a labeled
@@ -10392,6 +10396,102 @@ object. Like @option{--sky}, this is the average of the values in the
 input sky standard deviation image pixels that lie over this object.
 
 @end table
+
+
+
+
+
+@node Adding new columns to MakeCatalog,  , Invoking astmkcatalog, MakeCatalog
+@subsection Adding new columns to MakeCatalog
+
+The common development characteristics of MakeCatalog and other
+Gnuastro utilities is explained in @ref{Developing}. This section
+might be more clearly understood after reading that
+chapter. MakeCatalog has been designed to allow easy addition of new
+columns, here we will give a fast over-view of the steps you need to
+take to define a new output column. After adding and testing your
+column, you most welcome to share it with us so we can add to the next
+release of Gnuastro for everyone else to also benefit from your
+efforts.
+
+MakeCatalg will first have two passes over the input pixels: in the
+first pass it will gather mainly object information and in the second
+run, it will mainly focus on the clumps, or any other measurement that
+needs an output from the first pass. These two passes are designed to
+be raw summations: no extra processing. This will allow parallel
+processing and simplicity/clarity. Once the passes are done, depending
+on the order of options that the user has defined the appropriate
+function will be called to add a processed column from the raw
+calculations to the output array (which will be printed). So if your
+new calculation, needs new raw information from the pixels, then you
+will need to also modify the respective @code{firstpass} and
+@code{secondpass} functions and define new information table columns
+in @file{main.h}. For all the steps below, it is easiest to just copy
+and paste an existing option and update the values.
+
+@table @file
+
+@item main.h
+The @code{objectcols} and @code{clumpcols} enumerated variables
+(@code{enum}) define the labels for the separate information table
+columns (the raw pixel calculations). If your new calculation requires
+new raw columns, the add them. The @code{outcols} enumerated variables
+define the recognized output columns. You will need to add a new name
+for your desired column here, then add a row for your new parameter in
+the @code{uiparams} structure, the name should be the same as the one
+you used in @code{outcols} (in small caps).
+
+@cindex GNU C library
+@item args.h
+This file specifies all the parameters for the GNU C library, Argp
+structure that is in charge of reading the user's options. It is best
+that the option name be the same as the name you put in @code{outcols}
+(in @file{main.h}), like the other options that are already
+defined.
+
+Define a new option in @code{argp_option} (rows between the @code{@{}
+and @code{@}}). The first is the name of the option, the second is its
+short option name (see @ref{Options}), it is best to use a number (so
+no short option is defined for the user) which in Gnuastro is defined
+to be a number larger than 500. All the used numbers are shown in the
+comment immediately above @code{argp_option} structure, increase that
+number by one and use that number for your new option. The next two
+values should be @code{0} and the last should be a short description
+of your option.
+
+Go down to the @code{parse_opt} function and add a @code{case} for
+your specific option (using the same number you specified above), then
+update the contents.
+
+@item ui.c
+In the @code{readconfig} function, add an @code{else if} for your
+option (easiest to just copy and paste, then update). In the
+@code{printvalues} function's @code{switch} structure, add a
+@code{case} for your option. Finally, in the @code{preparearrays}
+function, add a @code{case} for your new output column.
+
+@item mkcatalog.c
+If your procedure needs new raw calculations, add a new line to
+appropriate parts of the @code{firstpass}, and/or @code{secondpass}
+functions, they should be clear and are fully commented. Then add a
+@code{case} for your column in the @code{makeoutput} function, here
+you will need to call a function (which should be defined in
+@file{columns.c}).
+
+@item columns.c
+Define the function that will write your desired column in the output
+column using the raw input calculations here. There are a lot of
+functions in this file which you can use to model and they are
+commented, in short you have to specify a header (commented column),
+the units of your variable, the possible accuracy to print and finally
+the actual columns.
+
+@end table
+
+
+
+
+
 
 
 
