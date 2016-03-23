@@ -246,6 +246,22 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATY);
           up->yset=1;
         }
+      else if(strcmp(name, "geox")==0)
+        {
+          if(up->geoxset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATGEOX);
+          up->geoxset=1;
+        }
+      else if(strcmp(name, "geoy")==0)
+        {
+          if(up->geoyset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATGEOY);
+          up->geoyset=1;
+        }
       else if(strcmp(name, "clumpsx")==0)
         {
           if(up->clumpsxset) continue;
@@ -261,6 +277,22 @@ readconfig(char *filename, struct mkcatalogparams *p)
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSY);
           up->clumpsyset=1;
+        }
+      else if(strcmp(name, "clumpsgeox")==0)
+        {
+          if(up->clumpsgeoxset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
+          up->clumpsgeoxset=1;
+        }
+      else if(strcmp(name, "clumpsgeoy")==0)
+        {
+          if(up->clumpsgeoyset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
+          up->clumpsgeoyset=1;
         }
       else if(strcmp(name, "ra")==0)
         {
@@ -278,6 +310,22 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATDEC);
           up->decset=1;
         }
+      else if(strcmp(name, "geora")==0)
+        {
+          if(up->georaset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATGEORA);
+          up->georaset=1;
+        }
+      else if(strcmp(name, "geodec")==0)
+        {
+          if(up->geodecset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATGEODEC);
+          up->geodecset=1;
+        }
       else if(strcmp(name, "clumpsra")==0)
         {
           if(up->clumpsraset) continue;
@@ -293,6 +341,22 @@ readconfig(char *filename, struct mkcatalogparams *p)
           if(!yes) continue;
           add_to_sll(&p->allcolsll, CATCLUMPSDEC);
           up->clumpsdecset=1;
+        }
+      else if(strcmp(name, "clumpsgeora")==0)
+        {
+          if(up->clumpsgeoraset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
+          up->clumpsgeoraset=1;
+        }
+      else if(strcmp(name, "clumpsgeodec")==0)
+        {
+          if(up->clumpsgeodecset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
+          up->clumpsgeodecset=1;
         }
       else if(strcmp(name, "brightness")==0)
         {
@@ -473,11 +537,23 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
       case CATY:
         fprintf(fp, CONF_SHOWFMT"%d\n", "y", 1);
         break;
+      case CATGEOX:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "x", 1);
+        break;
+      case CATGEOY:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "y", 1);
+        break;
       case CATCLUMPSX:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsx", 1);
         break;
       case CATCLUMPSY:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsy", 1);
+        break;
+      case CATCLUMPSGEOX:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsgeox", 1);
+        break;
+      case CATCLUMPSGEOY:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsgeoy", 1);
         break;
       case CATRA:
         fprintf(fp, CONF_SHOWFMT"%d\n", "ra", 1);
@@ -485,11 +561,23 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
       case CATDEC:
         fprintf(fp, CONF_SHOWFMT"%d\n", "dec", 1);
         break;
+      case CATGEORA:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "geora", 1);
+        break;
+      case CATGEODEC:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "geodec", 1);
+        break;
       case CATCLUMPSRA:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsra", 1);
         break;
       case CATCLUMPSDEC:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsdec", 1);
+        break;
+      case CATCLUMPSGEORA:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsgeora", 1);
+        break;
+      case CATCLUMPSGEODEC:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsgeodec", 1);
         break;
       case CATBRIGHTNESS:
         fprintf(fp, CONF_SHOWFMT"%d\n", "brightness", 1);
@@ -813,11 +901,25 @@ preparearrays(struct mkcatalogparams *p)
           p->objcols[p->objncols++]=CATY;
           p->clumpcols[p->clumpncols++]=CATY;
           break;
+        case CATGEOX:
+          p->objcols[p->objncols++]=CATGEOX;
+          p->clumpcols[p->clumpncols++]=CATGEOX;
+          break;
+        case CATGEOY:
+          p->objcols[p->objncols++]=CATGEOY;
+          p->clumpcols[p->clumpncols++]=CATGEOY;
+          break;
         case CATCLUMPSX:
           p->objcols[p->objncols++]=CATCLUMPSX;
           break;
         case CATCLUMPSY:
           p->objcols[p->objncols++]=CATCLUMPSY;
+          break;
+        case CATCLUMPSGEOX:
+          p->objcols[p->objncols++]=CATCLUMPSGEOX;
+          break;
+        case CATCLUMPSGEOY:
+          p->objcols[p->objncols++]=CATCLUMPSGEOY;
           break;
         case CATRA:
           p->objcols[p->objncols++]=CATRA;
@@ -827,11 +929,25 @@ preparearrays(struct mkcatalogparams *p)
           p->objcols[p->objncols++]=CATDEC;
           p->clumpcols[p->clumpncols++]=CATDEC;
           break;
+        case CATGEORA:
+          p->objcols[p->objncols++]=CATGEORA;
+          p->clumpcols[p->clumpncols++]=CATGEORA;
+          break;
+        case CATGEODEC:
+          p->objcols[p->objncols++]=CATGEODEC;
+          p->clumpcols[p->clumpncols++]=CATGEODEC;
+          break;
         case CATCLUMPSRA:
           p->objcols[p->objncols++]=CATCLUMPSRA;
           break;
         case CATCLUMPSDEC:
           p->objcols[p->objncols++]=CATCLUMPSDEC;
+          break;
+        case CATCLUMPSGEORA:
+          p->objcols[p->objncols++]=CATCLUMPSGEORA;
+          break;
+        case CATCLUMPSGEODEC:
+          p->objcols[p->objncols++]=CATCLUMPSGEODEC;
           break;
         case CATBRIGHTNESS:
           p->objcols[p->objncols++]=CATBRIGHTNESS;

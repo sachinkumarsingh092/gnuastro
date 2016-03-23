@@ -201,11 +201,16 @@ secondpass(struct mkcatalogparams *p)
           thisclump[ CSTD ]         += std[i];
           thisclump[ CINHOSTID ]     = clumps[i];
           thisclump[ CHOSTOID ]      = objects[i];
+          thisclump[ CGeoXX ]       += (i%is1)*(i%is1);
+          thisclump[ CGeoYY ]       += (i/is1)*(i/is1);
+          thisclump[ CGeoXY ]       += (i%is1)*(i/is1);
           if( (imgss=img[i]-sky[i]) > 0 )
             {
               thisclump[ CPosBright ]   += imgss;
               thisclump[ CFlxWhtX ]     += imgss * (i%is1);
               thisclump[ CFlxWhtY ]     += imgss * (i/is1);
+              thisclump[ CFlxWhtXX ]    += imgss * (i%is1) * (i%is1);
+              thisclump[ CFlxWhtYY ]    += imgss * (i/is1) * (i%is1);
             }
         }
 
@@ -309,9 +314,9 @@ makeoutput(struct mkcatalogparams *p)
 {
   double sn, pixarea;
   size_t *cols, tmpcol;
+  char *cino="Clumps in object";
   char comment[COMMENTSIZE], tline[100], *target;
   int prec[2]={p->floatprecision, p->accuprecision};
-  char *whtc="weighted center", *cino="Clumps in object";
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
 
 
@@ -455,38 +460,74 @@ makeoutput(struct mkcatalogparams *p)
 
             case CATX:
               tmpcol = p->obj0clump1 ? CFlxWhtX : OFlxWhtX;
-              position(p, tmpcol, target, whtc, MKCATX);
+              position(p, tmpcol, target, MKCATWHTC, MKCATX);
               break;
 
             case CATY:
               tmpcol = p->obj0clump1 ? CFlxWhtY : OFlxWhtY;
-              position(p, tmpcol, target, whtc, MKCATY);
+              position(p, tmpcol, target, MKCATWHTC, MKCATY);
+              break;
+
+            case CATGEOX:
+              tmpcol = p->obj0clump1 ? CGeoX : OGeoX;
+              position(p, tmpcol, target, MKCATGEOC, MKCATX);
+              break;
+
+            case CATGEOY:
+              tmpcol = p->obj0clump1 ? CGeoY : OGeoY;
+              position(p, tmpcol, target, MKCATGEOC, MKCATY);
               break;
 
             case CATCLUMPSX:
-              position(p, OFlxWhtCX, cino, whtc, MKCATX);
+              position(p, OFlxWhtCX, cino, MKCATWHTC, MKCATX);
               break;
 
             case CATCLUMPSY:
-              position(p, OFlxWhtCY, cino, whtc, MKCATY);
+              position(p, OFlxWhtCY, cino, MKCATWHTC, MKCATY);
+              break;
+
+            case CATCLUMPSGEOX:
+              position(p, OGeoCX, cino, MKCATGEOC, MKCATX);
+              break;
+
+            case CATCLUMPSGEOY:
+              position(p, OGeoCY, cino, MKCATGEOC, MKCATY);
               break;
 
             case CATRA:
               tmpcol = p->obj0clump1 ? CFlxWhtRA : OFlxWhtRA;
-              position(p, tmpcol, target, whtc, MKCATRA);
+              position(p, tmpcol, target, MKCATWHTC, MKCATRA);
               break;
 
             case CATDEC:
               tmpcol = p->obj0clump1 ? CFlxWhtDec : OFlxWhtDec;
-              position(p, tmpcol, target, whtc, MKCATDEC);
+              position(p, tmpcol, target, MKCATWHTC, MKCATDEC);
+              break;
+
+            case CATGEORA:
+              tmpcol = p->obj0clump1 ? CGeoRA : OGeoRA;
+              position(p, tmpcol, target, MKCATGEOC, MKCATRA);
+              break;
+
+            case CATGEODEC:
+              tmpcol = p->obj0clump1 ? CGeoDec : OGeoDec;
+              position(p, tmpcol, target, MKCATGEOC, MKCATDEC);
               break;
 
             case CATCLUMPSRA:
-              position(p, OFlxWhtCRA, cino, whtc, MKCATRA);
+              position(p, OFlxWhtCRA, cino, MKCATWHTC, MKCATRA);
               break;
 
             case CATCLUMPSDEC:
-              position(p, OFlxWhtCDec, cino, whtc, MKCATDEC);
+              position(p, OFlxWhtCDec, cino, MKCATWHTC, MKCATDEC);
+              break;
+
+            case CATCLUMPSGEORA:
+              position(p, OGeoCRA, cino, MKCATGEOC, MKCATRA);
+              break;
+
+            case CATCLUMPSGEODEC:
+              position(p, OGeoCDec, cino, MKCATGEOC, MKCATDEC);
               break;
 
             case CATBRIGHTNESS:

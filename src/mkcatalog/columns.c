@@ -305,10 +305,11 @@ flxwhtimg(struct mkcatalogparams *p, size_t col)
 /* Fill in the RA and Dec columns, note that we will need the X and Y
    colums first for this. */
 void
-flxwhtwcs(struct mkcatalogparams *p, size_t col)
+preparewcs(struct mkcatalogparams *p, size_t col)
 {
   /* Initialize all the columns to -1 (largest possible number in the
      C's unsigned char, so if there is any bugs, we get a good error. */
+  int wht0geo1=-1;
   size_t xc=-1, yc=-1, rc=-1, dc=-1;
 
 
@@ -323,10 +324,19 @@ flxwhtwcs(struct mkcatalogparams *p, size_t col)
       /* First, set the columns to use for the conversion. */
       if(p->obj0clump1)
         {
+          /* Clump, flux weighted: */
           if(col==CFlxWhtRA || col==CFlxWhtDec)
             {
               xc=CFlxWhtX;  yc=CFlxWhtY;
               rc=CFlxWhtRA; dc=CFlxWhtDec;
+              wht0geo1=0;
+            }
+          /* Clump, geometric: */
+          else if(col==CGeoRA || col==CGeoDec)
+            {
+              xc=CGeoX;     yc=CGeoY;
+              rc=CGeoRA;    dc=CGeoDec;
+              wht0geo1=1;
             }
           else
             error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
@@ -336,15 +346,33 @@ flxwhtwcs(struct mkcatalogparams *p, size_t col)
         }
       else
         {
+          /* All clumps in object, flux weighted: */
           if(col==OFlxWhtCRA || col==OFlxWhtCDec)
             {
               xc=OFlxWhtCX;  yc=OFlxWhtCY;
               rc=OFlxWhtCRA; dc=OFlxWhtCDec;
+              wht0geo1=0;
             }
+          /* All clumps in object, geometric: */
+          else if(col==OGeoCRA || col==OGeoCDec)
+            {
+              xc=OGeoCX;  yc=OGeoCY;
+              rc=OGeoCRA; dc=OGeoCDec;
+              wht0geo1=1;
+            }
+          /* All object, flux weighted */
           else if(col==OFlxWhtRA || col==OFlxWhtDec)
             {
               xc=OFlxWhtX;  yc=OFlxWhtY;
               rc=OFlxWhtRA; dc=OFlxWhtDec;
+              wht0geo1=0;
+            }
+          /* All object, geometric */
+          else if(col==OGeoRA || col==OGeoDec)
+            {
+              xc=OGeoX;     yc=OGeoY;
+              rc=OGeoRA;    dc=OGeoDec;
+              wht0geo1=1;
             }
           else
             error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
@@ -356,11 +384,24 @@ flxwhtwcs(struct mkcatalogparams *p, size_t col)
 
       /* Finalize the relevant X and Y positions first (which are
          needed for the WCS conversion). Note that if they are ready
-         to use (their flag is 1.0f), flxwhtxy will not do
+         to use (their flag is 1.0f), these functions will not do
          anything. But if the user hasn't already asked for X and Y,
          then these columns will be corrected here.*/
-      flxwhtimg(p, xc);
-      flxwhtimg(p, yc);
+      switch(wht0geo1)
+        {
+        case 0:
+          flxwhtimg(p, xc);
+          flxwhtimg(p, yc);
+          break;
+        case 1:
+          geoxy(p, xc);
+          geoxy(p, yc);
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                "can fix this. The value of the wht0geo1 variable (%d) is "
+                "not recognized.", PACKAGE_BUGREPORT, wht0geo1);
+        }
 
 
       /* Do the conversion. Note that the p->icols is added because
@@ -536,13 +577,26 @@ position(struct mkcatalogparams *p, size_t col, char *target,
      printing accuracy if we are in RA/Dec mode (wcsax==1). */
   if(wcsax)
     {
-      flxwhtwcs(p, col);
+      /* Run the respective function to prepare the information table,
+         then set the units and print accuracy. */
+      preparewcs(p, col);
       p->unitp = CATUNITDEGREE;
       p->accucols[p->accucounter++]=p->curcol;
     }
   else
     {
-      flxwhtimg(p, col);
+      /* Run the respective function to prepare the information table. */
+      if(!strcmp(type, MKCATGEOC))
+        geoxy(p, col);
+      else if(!strcmp(type, MKCATWHTC))
+        flxwhtimg(p, col);
+      else
+        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+              "solve this problem. The value to `type' (%s) is not "
+              "recognized in position (image mode).", PACKAGE_BUGREPORT,
+              type);
+
+      /* Set the units. */
       p->unitp = CATUNITPIXPOS;
     }
 

@@ -35,31 +35,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-/* Units: */
-#define CATDESCRIPTLENGTH         "%-60s"
-#define CATUNITCOUNTER            "counter"
-#define CATUNITBRIGHTNESS         "input data unit"
-#define CATUNITAVE                "("CATUNITBRIGHTNESS")/pixel"
-#define CATUNITMAG                "scale (log)"
-#define CATUNITPIXAREA            "pixel area"
-#define CATUNITPIXPOS             "pixel position"
-#define CATUNITDEGREE             "degree"
-#define CATUNITRATIO              "ratio"
-
-
-/* Fixed names */
-#define MKCATX                    "X"
-#define MKCATY                    "Y"
-#define MKCATRA                   "RA"
-#define MKCATDEC                  "Dec"
-#define MKCATCLUMP                "Clump"
-#define MKCATMAG                  "magnitude"
-#define MKCATBRIGHT               "brightness"
-#define MKCATOBJECT               "Full object"
-#define MKRIVERSSUR               "Rivers surrounding clump, average"
-
-
 /* Columns in the object and clump information tables
    ==================================================
 
@@ -124,11 +99,15 @@ enum objectcols
     OPosBrightC,         /* Sum of positive image pixels for wht.   */
     OGeoX,               /* Geometric center of object in X.        */
     OGeoY,               /* Geometric center of object in Y.        */
+    OGeoRA,              /* RA of Geometric center of object.       */
+    OGeoDec,             /* Dec of Geometric center of object.      */
     OGeoXX,              /* Second order geometric variable: X*X.   */
     OGeoYY,              /* Second order geometric variable: Y*Y.   */
     OGeoXY,              /* Second order geometric variable: X*Y.   */
     OGeoCX,              /* Geometric center of clumps in object X. */
     OGeoCY,              /* Geometric center of clumps in object Y. */
+    OGeoCRA,             /* Geometric center of clumps in obj. RA.  */
+    OGeoCDec,            /* Geometric center of clumps in obj. Dec. */
     OGeoCXX,             /* Second order geometric variable: X*X.   */
     OGeoCYY,             /* Second order geometric variable: Y*Y.   */
     OGeoCXY,             /* Second order geometric variable: X*Y.   */
@@ -156,6 +135,11 @@ enum clumpcols
     CPosBright,          /* Sum of positive image pixels for wht.   */
     CGeoX,               /* Geometric center of clump in X.         */
     CGeoY,               /* Geometric center of clump in Y.         */
+    CGeoRA,              /* RA of Geometric center of clump.        */
+    CGeoDec,             /* Dec of Geometric center of clump.       */
+    CGeoXX,              /* Second order geometric moment.          */
+    CGeoYY,              /* Second order geometric moment.          */
+    CGeoXY,              /* Second order geometric moment.          */
 
     CCOLUMNS,            /* Keep this last: total number of columns.*/
   };
@@ -182,12 +166,20 @@ enum outcols
     CATCLUMPSAREA,
     CATX,
     CATY,
+    CATGEOX,
+    CATGEOY,
     CATCLUMPSX,
     CATCLUMPSY,
+    CATCLUMPSGEOX,
+    CATCLUMPSGEOY,
     CATRA,
     CATDEC,
+    CATGEORA,
+    CATGEODEC,
     CATCLUMPSRA,
     CATCLUMPSDEC,
+    CATCLUMPSGEORA,
+    CATCLUMPSGEODEC,
     CATBRIGHTNESS,
     CATCLUMPSBRIGHTNESS,
     CATMAGNITUDE,
@@ -245,12 +237,20 @@ struct uiparams
   int           clumpsareaset;
   int                    xset;
   int                    yset;
+  int                 geoxset;
+  int                 geoyset;
   int              clumpsxset;
   int              clumpsyset;
+  int           clumpsgeoxset;
+  int           clumpsgeoyset;
   int                   raset;
   int                  decset;
+  int                georaset;
+  int               geodecset;
   int             clumpsraset;
   int            clumpsdecset;
+  int          clumpsgeoraset;
+  int         clumpsgeodecset;
   int           brightnessset;
   int     clumpsbrightnessset;
   int            magnitudeset;

@@ -10281,13 +10281,30 @@ weighted center.
 The flux weighted center of all objects and clumps along the second
 FITS axis (vertical when viewed in SAO ds9). See @option{--x}.
 
+@item --geox
+The geometric center of all objects and clumps along the first FITS
+axis axis. The geometric center is the average pixel positions
+irrespective of their pixel values.
+
+@item --geoy
+The geometric center of all objects and clumps along the second FITS
+axis axis, see @option{--geox}.
+
 @item --clumpsx
 [Objects] The flux weighted center of all the clumps in this
-object along the first FITS axis. See @option{--x}
+object along the first FITS axis. See @option{--x}.
 
 @item --clumpsy
 [Objects] The flux weighted center of all the clumps in this
-object along the second FITS axis. See @option{--x}
+object along the second FITS axis. See @option{--x}.
+
+@item --clumpsgeox
+[Objects] The geometric center of all the clumps in this object along
+the first FITS axis. See @option{--geox}.
+
+@item --clumpsgeoy
+[Objects] The geometric center of all the clumps in this object along
+the second FITS axis. See @option{--geox}.
 
 @item -r
 @itemx --ra
@@ -10298,6 +10315,14 @@ Flux weighted right ascension of all objects or clumps, see
 @itemx --dec
 Flux weighted declination of all objects or clumps, see @option{--x}.
 
+@item --geora
+Geometric center right ascension of all objects or clumps, see
+@option{--geox}.
+
+@item --geodec
+Geometric center declination of all objects or clumps, see
+@option{--geox}.
+
 @item --clumpsra
 [Objects] Flux weighted right ascension of all clumps in this object,
 see @option{--x}.
@@ -10305,6 +10330,14 @@ see @option{--x}.
 @item --clumpsdec
 [Objects] Flux weighted declination of all clumps in this object, see
 @option{--x}.
+
+@item --clumpsgeora
+[Objects] Geometric center right ascension of all clumps in this
+object, see @option{--geox}.
+
+@item --clumpsgeodec
+[Objects] Geometric center declination of all clumps in this object,
+see @option{--geox}.
 
 @item -b
 @itemx --brightness

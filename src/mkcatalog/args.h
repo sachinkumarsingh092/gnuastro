@@ -74,7 +74,7 @@ const char doc[] =
    e f g k l p u v w
    A B F G J L Q R T U W X Y Z
 
-   Number keys used: <=521
+   Number keys used: <=529
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -311,6 +311,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "geox",
+      522,
+      0,
+      0,
+      "All obj. geometric center (first FITS axis).",
+      3
+    },
+    {
+      "geoy",
+      523,
+      0,
+      0,
+      "All obj. geometric center (second FITS axis).",
+      3
+    },
+    {
       "clumpsx",
       507,
       0,
@@ -324,6 +340,22 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps flux weighted center (second FITS axis).",
+      3
+    },
+    {
+      "clumpsgeox",
+      524,
+      0,
+      0,
+      "Clumps geometric center (first FITS axis).",
+      3
+    },
+    {
+      "clumpsgeoy",
+      525,
+      0,
+      0,
+      "Clumps geometric center (second FITS axis).",
       3
     },
     {
@@ -343,6 +375,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "geora",
+      526,
+      0,
+      0,
+      "All object geometric center right ascension.",
+      3
+    },
+    {
+      "geodec",
+      527,
+      0,
+      0,
+      "All object geometric center declination.",
+      3
+    },
+    {
       "clumpsra",
       509,
       0,
@@ -356,6 +404,22 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps flux weighted center declination.",
+      3
+    },
+    {
+      "clumpsgeora",
+      528,
+      0,
+      0,
+      "Clumps geometric center right ascension.",
+      3
+    },
+    {
+      "clumpsgeodec",
+      529,
+      0,
+      0,
+      "Clumps geometric center declination.",
       3
     },
     {
@@ -579,6 +643,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_to_sll(&p->allcolsll, CATY);
       p->up.yset=1;
       break;
+    case 522:
+      add_to_sll(&p->allcolsll, CATGEOX);
+      p->up.geoxset=1;
+      break;
+    case 523:
+      add_to_sll(&p->allcolsll, CATGEOY);
+      p->up.geoyset=1;
+      break;
     case 507:
       add_to_sll(&p->allcolsll, CATCLUMPSX);
       p->up.clumpsxset=1;
@@ -586,6 +658,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 508:
       add_to_sll(&p->allcolsll, CATCLUMPSY);
       p->up.clumpsyset=1;
+      break;
+    case 524:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
+      p->up.clumpsgeoxset=1;
+      break;
+    case 525:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
+      p->up.clumpsgeoyset=1;
       break;
     case 'r':
       add_to_sll(&p->allcolsll, CATRA);
@@ -595,6 +675,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_to_sll(&p->allcolsll, CATDEC);
       p->up.decset=1;
       break;
+    case 526:
+      add_to_sll(&p->allcolsll, CATGEORA);
+      p->up.georaset=1;
+      break;
+    case 527:
+      add_to_sll(&p->allcolsll, CATGEODEC);
+      p->up.geodecset=1;
+      break;
     case 509:
       add_to_sll(&p->allcolsll, CATCLUMPSRA);
       p->up.clumpsraset=1;
@@ -602,6 +690,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 510:
       add_to_sll(&p->allcolsll, CATCLUMPSDEC);
       p->up.clumpsdecset=1;
+      break;
+    case 528:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
+      p->up.clumpsgeoraset=1;
+      break;
+    case 529:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
+      p->up.clumpsgeodecset=1;
       break;
     case 'b':
       add_to_sll(&p->allcolsll, CATBRIGHTNESS);
