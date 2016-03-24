@@ -430,6 +430,54 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATSTD);
           up->stdset=1;
         }
+      else if(strcmp(name, "semimajor")==0)
+        {
+          if(up->semimajorset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATSEMIMAJOR);
+          up->semimajorset=1;
+        }
+      else if(strcmp(name, "semiminor")==0)
+        {
+          if(up->semiminorset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATSEMIMINOR);
+          up->semiminorset=1;
+        }
+      else if(strcmp(name, "positionangle")==0)
+        {
+          if(up->positionangleset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
+          up->positionangleset=1;
+        }
+      else if(strcmp(name, "geosemimajor")==0)
+        {
+          if(up->geosemimajorset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
+          up->geosemimajorset=1;
+        }
+      else if(strcmp(name, "geosemiminor")==0)
+        {
+          if(up->geosemiminorset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
+          up->geosemiminorset=1;
+        }
+      else if(strcmp(name, "geopositionangle")==0)
+        {
+          if(up->geopositionangleset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
+          up->geopositionangleset=1;
+        }
 
 
 
@@ -605,6 +653,24 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
         break;
       case CATSTD:
         fprintf(fp, CONF_SHOWFMT"%d\n", "std", 1);
+        break;
+      case CATSEMIMAJOR:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "semimajor", 1);
+        break;
+      case CATSEMIMINOR:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "semiminor", 1);
+        break;
+      case CATPOSITIONANGLE:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "positionangle", 1);
+        break;
+      case CATGEOSEMIMAJOR:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "geosemimajor", 1);
+        break;
+      case CATGEOSEMIMINOR:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "geosemiminor", 1);
+        break;
+      case CATGEOPOSITIONANGLE:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "geopositionangle", 1);
         break;
       default:
         error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
@@ -980,6 +1046,30 @@ preparearrays(struct mkcatalogparams *p)
         case CATSTD:
           p->objcols[p->objncols++]=CATSTD;
           p->clumpcols[p->clumpncols++]=CATSTD;
+          break;
+        case CATSEMIMAJOR:
+          p->objcols[p->objncols++]=CATSEMIMAJOR;
+          p->clumpcols[p->clumpncols++]=CATSEMIMAJOR;
+          break;
+        case CATSEMIMINOR:
+          p->objcols[p->objncols++]=CATSEMIMINOR;
+          p->clumpcols[p->clumpncols++]=CATSEMIMINOR;
+          break;
+        case CATPOSITIONANGLE:
+          p->objcols[p->objncols++]=CATPOSITIONANGLE;
+          p->clumpcols[p->clumpncols++]=CATPOSITIONANGLE;
+          break;
+        case CATGEOSEMIMAJOR:
+          p->objcols[p->objncols++]=CATGEOSEMIMAJOR;
+          p->clumpcols[p->clumpncols++]=CATGEOSEMIMAJOR;
+          break;
+        case CATGEOSEMIMINOR:
+          p->objcols[p->objncols++]=CATGEOSEMIMINOR;
+          p->clumpcols[p->clumpncols++]=CATGEOSEMIMINOR;
+          break;
+        case CATGEOPOSITIONANGLE:
+          p->objcols[p->objncols++]=CATGEOPOSITIONANGLE;
+          p->clumpcols[p->clumpncols++]=CATGEOPOSITIONANGLE;
           break;
         default:
           error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "

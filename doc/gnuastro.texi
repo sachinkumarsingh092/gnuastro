@@ -10278,7 +10278,7 @@ happen: no pixel value might be above the Sky value. In such cases,
 where there was no pixel with a value larger than the Sky in the
 object or clump, the geometric center (ignoring pixel values, only
 their positions) over the object or clump is used instead of the flux
-weighted center.
+weighted center (see @option{--geox}).
 
 @item -y
 @itemx --y
@@ -10395,6 +10395,33 @@ The sky value standard deviation (per pixel) for this clump or
 object. Like @option{--sky}, this is the average of the values in the
 input sky standard deviation image pixels that lie over this object.
 
+@item -A
+@itemx --semimajor
+The pixel-value weighted semi-major axis of the profile (assuming it
+is an ellipse) in units of pixels.
+
+@item -B
+@itemx --semiminor
+The pixel-value weighted semi-minor axis of the profile (assuming it
+is an ellipse) in units of pixels.
+
+@item -p
+@itemx --positionangle
+The pixel-value weighted angle of the semi-major axis with the first
+FITS axis in degrees.
+
+@item --geosemimajor
+The geometric (ignoring pixel values) semi-major axis of the profile,
+assuming it is an ellipse.
+
+@item --geosemiminor
+The geometric (ignoring pixel values) semi-mainor axis of the profile,
+assuming it is an ellipse.
+
+@item --geopositionangle
+The geometric (ignoring pixel values) angle of the semi-major axis
+with the first FITS axis in degrees.
+
 @end table
 
 
@@ -10410,9 +10437,9 @@ might be more clearly understood after reading that
 chapter. MakeCatalog has been designed to allow easy addition of new
 columns, here we will give a fast over-view of the steps you need to
 take to define a new output column. After adding and testing your
-column, you most welcome to share it with us so we can add to the next
-release of Gnuastro for everyone else to also benefit from your
-efforts.
+column, you are most welcome (and encouraged) to share it with us so
+we can add to the next release of Gnuastro for everyone else to also
+benefit from your efforts.
 
 MakeCatalg will first have two passes over the input pixels: in the
 first pass it will gather mainly object information and in the second
@@ -10426,8 +10453,16 @@ calculations to the output array (which will be printed). So if your
 new calculation, needs new raw information from the pixels, then you
 will need to also modify the respective @code{firstpass} and
 @code{secondpass} functions and define new information table columns
-in @file{main.h}. For all the steps below, it is easiest to just copy
-and paste an existing option and update the values.
+in @file{main.h}.
+
+For all the steps below, it is easiest to just copy and paste an
+existing option and change the variables in each step. In all these
+different places, the options are sorted in the same order (same order
+as @ref{Invoking astmkcatalog}). This allows a particular option to be
+easily found in all steps. Therefore in adding your new option, be
+sure to keep it in the same relative place in the list (it doesn't
+necessarily have to be in the end), and near conceptually similar
+options.
 
 @table @file
 

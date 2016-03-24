@@ -189,6 +189,12 @@ enum outcols
     CATSN,
     CATSKY,
     CATSTD,
+    CATSEMIMAJOR,
+    CATSEMIMINOR,
+    CATPOSITIONANGLE,
+    CATGEOSEMIMAJOR,
+    CATGEOSEMIMINOR,
+    CATGEOPOSITIONANGLE,
   };
 
 
@@ -260,6 +266,12 @@ struct uiparams
   int                   snset;
   int                  skyset;
   int                  stdset;
+  int            semimajorset;
+  int            semiminorset;
+  int        positionangleset;
+  int         geosemimajorset;
+  int         geosemiminorset;
+  int     geopositionangleset;
 };
 
 

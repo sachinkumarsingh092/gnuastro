@@ -202,7 +202,7 @@ geoxy(struct mkcatalogparams *p, size_t col)
              standard starts counting from 1, so add a one after
              dividing by the area. If the area is zero, then set
              NaN. */
-          row[col] = row[ac]>0.0f ? row[col] / row[ac] + 1 : NAN;
+          row[col] = row[ac]>0.0f ? row[col] / row[ac] : NAN;
 
           /* Go onto the next row: */
           row+=p->icols;
@@ -285,7 +285,122 @@ flxwhtimg(struct mkcatalogparams *p, size_t col)
           /* Set the value for this row. When a positive weight is
              present, we are adding with one (1) because of the FITS
              standard. */
-          row[col] = row[wc]>0.0f ? (row[col]/row[wc])+1 : row[gc];
+          row[col] = row[wc]>0.0f ? (row[col]/row[wc]) : row[gc];
+
+          /* Go onto the next row: */
+          row+=p->icols;
+        }
+      while(row<end);
+
+      /* Set the flag for this column to one, so this whole proces is
+         not done again. */
+      p->info[col]=1.0f;
+    }
+}
+
+
+
+
+
+/* To correct the second moment, we need three variables: the first
+   moment in first axis, first moment in second axis and the total
+   weight. The first two are the same when the second moment is a
+   power of one axis. The weight is either the total positive flux
+   used for the weights, or is the area. */
+void
+setsecondmoment(struct mkcatalogparams *p, size_t col)
+{
+  size_t fc=-1, sc=-1, wc=-1;
+  double *row = p->info + p->icols;
+  double *end = row + (p->icols * p->num);;
+
+
+  /* Only if this column is not flagged as already done (==1.0f). */
+  if(p->info[col]==0.0f)
+    {
+
+      /* First, set the columns to use for the conversion. Note that
+         since we also need to correct the column, we have merged the
+         setting of fc and sc and the calling of the flxwhtimg
+         function into one call.  */
+      if(p->obj0clump1)
+        switch(col)
+          {
+          /* Clump brightness weighted */
+          case CFlxWhtXX:
+            wc=CPosBright; fc=sc=CFlxWhtX; flxwhtimg(p, fc);       break;
+          case CFlxWhtYY:
+            wc=CPosBright; fc=sc=CFlxWhtY; flxwhtimg(p, fc);       break;
+          case CFlxWhtXY:
+            wc=CPosBright;
+            flxwhtimg(p, fc=CFlxWhtX); flxwhtimg(p, sc=CFlxWhtY);  break;
+
+          /* Clump geometric: */
+          case CGeoXX:
+            wc=CAREA;       fc=sc=CGeoX;    geoxy(p, fc);          break;
+          case CGeoYY:
+            wc=CAREA;       fc=sc=CGeoY;    geoxy(p, fc);          break;
+          case CGeoXY:
+            wc=CAREA; geoxy(p, fc=CGeoX); geoxy(p, sc=CGeoY);      break;
+
+          default:
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix this. The given column in setsecondmoment's "
+                  "--CLUMP-- information table (%lu) was not recognized for "
+                  "correcting the second moment.", PACKAGE_BUGREPORT, col);
+          }
+      else
+        switch(col)
+          {
+          /* All object brightness weighted: */
+          case OFlxWhtXX:
+            wc=OPosBright;  fc=sc=OFlxWhtX; flxwhtimg(p, fc);       break;
+          case OFlxWhtYY:
+            wc=OPosBright;  fc=sc=OFlxWhtY; flxwhtimg(p, fc);       break;
+          case OFlxWhtXY:
+            wc=OPosBright;
+            flxwhtimg(p, fc=OFlxWhtX); flxwhtimg(p, sc=OFlxWhtY);   break;
+
+          /* All object geometric: */
+          case OGeoXX:
+            wc=OAREA;       fc=sc=OGeoX;    geoxy(p, fc);           break;
+          case OGeoYY:
+            wc=OAREA;       fc=sc=OGeoY;    geoxy(p, fc);           break;
+          case OGeoXY:
+            wc=OAREA; geoxy(p, fc=OGeoX); geoxy(p, sc=OGeoY);       break;
+
+          /* Clumps in object brightness weighted: */
+          case OFlxWhtCXX:
+            wc=OPosBrightC; fc=sc=OFlxWhtCX; flxwhtimg(p, fc);      break;
+          case OFlxWhtCYY:
+            wc=OPosBrightC; fc=sc=OFlxWhtCY; flxwhtimg(p, fc);      break;
+          case OFlxWhtCXY:
+            wc=OPosBrightC;
+            flxwhtimg(p, fc=OFlxWhtCX); flxwhtimg(p, sc=OFlxWhtCY); break;
+
+          /* Clumps in object geometric: */
+          case OGeoCXX:
+            wc=OAREAC;      fc=sc=OGeoCX;    geoxy(p, fc);          break;
+          case OGeoCYY:
+            wc=OAREAC;      fc=sc=OGeoCY;    geoxy(p, fc);          break;
+          case OGeoCXY:
+            wc=OAREAC; geoxy(p, fc=OGeoCX); geoxy(p, sc=OGeoCY);    break;
+
+          default:
+            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+                  "can fix this. The given column in setsecondmoment's "
+                  "--OBJECT-- information table (%lu) was not recognized for "
+                  "correcting the second moment.", PACKAGE_BUGREPORT, col);
+          }
+
+      /* Go over all the rows and correct this column. */
+      do
+        {
+
+          /* Set the value for this row. When a positive weight is
+             present, we are adding with one (1) because of the FITS
+             standard. */
+          row[col] = row[col]/row[wc] - row[fc]*row[sc];
 
           /* Go onto the next row: */
           row+=p->icols;
@@ -597,12 +712,101 @@ position(struct mkcatalogparams *p, size_t col, char *target,
               type);
 
       /* Set the units. */
-      p->unitp = CATUNITPIXPOS;
+      p->unitp = CATUNITPIXLENGTH;
     }
 
   /* Write respective column of the information table into the output. */
   for(i=0;i<p->num;++i)
     p->cat[i * p->numcols + p->curcol ] = p->info[(i+1)*p->icols+col];
+}
+
+
+
+
+
+/* Note that here, the output column is used, not the input one. */
+void
+secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target)
+{
+  double a, *row;
+  char *name=NULL, *type=NULL;
+  size_t i, xxc=-1, yyc=-1, xyc=-1;
+
+  /* Set the necessary columns, and the type of output: */
+  switch(ocol)
+    {
+    /* The brightness weighted second moments. */
+    case CATSEMIMAJOR: case CATSEMIMINOR: case CATPOSITIONANGLE:
+      type="weighted";
+      if(p->obj0clump1) {xxc=CFlxWhtXX; yyc=CFlxWhtYY; xyc=CFlxWhtXY;}
+      else              {xxc=OFlxWhtXX; yyc=OFlxWhtYY; xyc=OFlxWhtXY;}
+      break;
+
+    /* The geometric second moments. */
+    case CATGEOSEMIMAJOR: case CATGEOSEMIMINOR: case CATGEOPOSITIONANGLE:
+      type="geometric";
+      if(p->obj0clump1) {xxc=CGeoXX; yyc=CGeoYY; xyc=CGeoXY;}
+      else              {xxc=OGeoXX; yyc=OGeoYY; xyc=OGeoXY;}
+      break;
+
+    /* Output column not recognized */
+    default:
+      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+            "solve this problem. The value to `ocol' (%lu) is not "
+            "recognized in secondordermoment (first).", PACKAGE_BUGREPORT,
+            ocol);
+    }
+
+  /* Prepare the columns which will be needed in the next step. */
+  setsecondmoment(p, xxc);
+  setsecondmoment(p, yyc);
+  setsecondmoment(p, xyc);
+
+  /* Set output name and do the calculation, the calculations are
+     taken from the SExtractor manual. */
+  switch(ocol)
+    {
+    case CATSEMIMAJOR: case CATGEOSEMIMAJOR:
+      name="semi major axis";
+      p->unitp = CATUNITPIXLENGTH;
+      for(i=0;i<p->num;++i)
+        {
+          row = p->info + (i+1)*p->icols;
+          a=(row[xxc]-row[yyc])*(row[xxc]-row[yyc])/4;
+          p->cat[i * p->numcols + p->curcol ] =
+            sqrt( (row[xxc]+row[yyc])/2 + sqrt( a + row[xyc]*row[xyc]) );
+        }
+      break;
+    case CATSEMIMINOR: case CATGEOSEMIMINOR:
+      name="semi minor axis";
+      p->unitp = CATUNITPIXLENGTH;
+      for(i=0;i<p->num;++i)
+        {
+          row = p->info + (i+1)*p->icols;
+          a=(row[xxc]-row[yyc])*(row[xxc]-row[yyc])/4;
+          p->cat[i * p->numcols + p->curcol ] =
+            sqrt( (row[xxc]+row[yyc])/2 - sqrt( a + row[xyc]*row[xyc]) );
+        }
+      break;
+    case CATPOSITIONANGLE: case CATGEOPOSITIONANGLE:
+      name="position angle";
+      p->unitp = CATUNITDEGREE;
+      for(i=0;i<p->num;++i)
+        {
+          row = p->info + (i+1)*p->icols;
+          p->cat[i * p->numcols + p->curcol ] =
+            0.5*atan2(2*row[xyc], row[xxc]-row[yyc]) * 180/M_PI;
+        }
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+            "solve this problem. The value to `ocol' (%lu) is not "
+            "recognized in secondordermoment (second).", PACKAGE_BUGREPORT,
+            ocol);
+    }
+
+  /* Set the header value */
+  sprintf(p->description, "%lu: %s %s %s.", p->curcol, target, type, name);
 }
 
 

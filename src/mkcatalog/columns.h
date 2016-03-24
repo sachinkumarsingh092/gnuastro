@@ -25,14 +25,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Units: */
 #define CATDESCRIPTLENGTH         "%-60s"
+#define CATUNITRATIO              "ratio"
+#define CATUNITPIXLENGTH          "pixel length"
+#define CATUNITDEGREE             "degree"
 #define CATUNITCOUNTER            "counter"
+#define CATUNITPIXAREA            "pixel area"
+#define CATUNITMAG                "scale (log)"
 #define CATUNITBRIGHTNESS         "input data unit"
 #define CATUNITAVE                "("CATUNITBRIGHTNESS")/pixel"
-#define CATUNITMAG                "scale (log)"
-#define CATUNITPIXAREA            "pixel area"
-#define CATUNITPIXPOS             "pixel position"
-#define CATUNITDEGREE             "degree"
-#define CATUNITRATIO              "ratio"
 
 
 /* Fixed names */
@@ -46,6 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MKCATOBJECT               "Full object"
 #define MKCATWHTC                 "weighted center"
 #define MKCATGEOC                 "geometric center"
+#define MKCATCINO                 "Clumps in object"
 #define MKRIVERSSUR               "Rivers surrounding clump, average"
 
 void
@@ -63,6 +64,9 @@ area(struct mkcatalogparams *p, int cinobj, int isriver);
 void
 position(struct mkcatalogparams *p, size_t col, char *target,
          char *type, char *axis);
+
+void
+secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target);
 
 void
 brightnessmag(struct mkcatalogparams *p, size_t col, char *target,

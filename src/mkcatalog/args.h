@@ -71,10 +71,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   e f g k l p u v w
-   A B F G J L Q R T U W X Y Z
+   e f g k l u v w
+   F G J L Q R T U W X Y Z
 
-   Number keys used: <=529
+   Number keys used: <=532
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -494,6 +494,54 @@ static struct argp_option options[] =
       "Sky standard deviation.",
       3
     },
+    {
+      "semimajor",
+      'A',
+      0,
+      0,
+      "Flux weighted Semi-major axis.",
+      3
+    },
+    {
+      "semiminor",
+      'B',
+      0,
+      0,
+      "Flux weighted Semi-minor axis.",
+      3
+    },
+    {
+      "positionangle",
+      'p',
+      0,
+      0,
+      "Flux weighted Position angle.",
+      3
+    },
+    {
+      "geosemimajor",
+      530,
+      0,
+      0,
+      "Flux weighted Semi-major axis.",
+      3
+    },
+    {
+      "geosemiminor",
+      531,
+      0,
+      0,
+      "Flux weighted Semi-minor axis.",
+      3
+    },
+    {
+      "geopositionangle",
+      532,
+      0,
+      0,
+      "Flux weighted Position angle.",
+      3
+    },
 
 
 
@@ -734,6 +782,30 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 506:
       add_to_sll(&p->allcolsll, CATSTD);
       p->up.stdset=1;
+      break;
+    case 'A':
+      add_to_sll(&p->allcolsll, CATSEMIMAJOR);
+      p->up.semimajorset=1;
+      break;
+    case 'B':
+      add_to_sll(&p->allcolsll, CATSEMIMINOR);
+      p->up.semiminorset=1;
+      break;
+    case 'p':
+      add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
+      p->up.positionangleset=1;
+      break;
+    case 530:
+      add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
+      p->up.geosemimajorset=1;
+      break;
+    case 531:
+      add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
+      p->up.geosemiminorset=1;
+      break;
+    case 532:
+      add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
+      p->up.geopositionangleset=1;
       break;
 
 

@@ -72,8 +72,8 @@ void
 firstpass(struct mkcatalogparams *p)
 {
   float imgss;
-  double *thisobj;
   size_t i, s1=p->s1;
+  double x, y, *thisobj;
   long *objects=p->objects, *clumps=p->clumps;
 
   /* Go over the pixels and fill the information array. */
@@ -87,23 +87,25 @@ firstpass(struct mkcatalogparams *p)
         thisobj = p->oinfo + objects[i]*OCOLUMNS;
 
         /* Add to the flux weighted center: */
+        x=i%s1+1;
+        y=i/s1+1;
         ++thisobj[OAREA];
-        thisobj[ OGeoX ]       += i%s1;
-        thisobj[ OGeoY ]       += i/s1;
+        thisobj[ OGeoX ]       += x;
+        thisobj[ OGeoY ]       += y;
+        thisobj[ OGeoXX ]      += x * x;
+        thisobj[ OGeoYY ]      += y * y;
+        thisobj[ OGeoXY ]      += x * y;
         thisobj[ OBrightness ] += imgss;
         thisobj[ OSKY ]        += p->sky[i];
         thisobj[ OSTD ]        += p->std[i];
-        thisobj[ OGeoXX ]      += (i%s1) * (i%s1);
-        thisobj[ OGeoYY ]      += (i/s1) * (i/s1);
-        thisobj[ OGeoXY ]      += (i%s1) * (i/s1);
         if(imgss>0)
           {
             thisobj[ OPosBright ]  += imgss;
-            thisobj[ OFlxWhtX   ]  += imgss * (i%s1);
-            thisobj[ OFlxWhtY   ]  += imgss * (i/s1);
-            thisobj[ OFlxWhtXX  ]  += imgss * (i%s1) * (i%s1);
-            thisobj[ OFlxWhtYY  ]  += imgss * (i/s1) * (i/s1);
-            thisobj[ OFlxWhtXY  ]  += imgss * (i%s1) * (i/s1);
+            thisobj[ OFlxWhtX   ]  += imgss * x;
+            thisobj[ OFlxWhtY   ]  += imgss * y;
+            thisobj[ OFlxWhtXX  ]  += imgss * x * x;
+            thisobj[ OFlxWhtYY  ]  += imgss * y * y;
+            thisobj[ OFlxWhtXY  ]  += imgss * x * y;
           }
 
         if(clumps[i]>0)
@@ -116,19 +118,19 @@ firstpass(struct mkcatalogparams *p)
             /* Save the information. */
             ++thisobj [ OAREAC ];
             thisobj[ OBrightnessC ]  += imgss;
-            thisobj[ OGeoCX  ]       += i%s1;
-            thisobj[ OGeoCY  ]       += i/s1;
-            thisobj[ OGeoCXX ]       += (i%s1) * (i%s1);
-            thisobj[ OGeoCYY ]       += (i/s1) * (i/s1);
-            thisobj[ OGeoCXY ]       += (i%s1) * (i/s1);
+            thisobj[ OGeoCX  ]       += x;
+            thisobj[ OGeoCY  ]       += y;
+            thisobj[ OGeoCXX ]       += x * x;
+            thisobj[ OGeoCYY ]       += y * y;
+            thisobj[ OGeoCXY ]       += x * y;
             if(imgss>0)
               {
                 thisobj[ OPosBrightC ]  += imgss;
-                thisobj[ OFlxWhtCX   ]  += imgss * (i%s1);
-                thisobj[ OFlxWhtCY   ]  += imgss * (i/s1);
-                thisobj[ OFlxWhtCXX  ]  += imgss * (i%s1) * (i%s1);
-                thisobj[ OFlxWhtCYY  ]  += imgss * (i/s1) * (i/s1);
-                thisobj[ OFlxWhtCXY  ]  += imgss * (i%s1) * (i/s1);
+                thisobj[ OFlxWhtCX   ]  += imgss * x;
+                thisobj[ OFlxWhtCY   ]  += imgss * y;
+                thisobj[ OFlxWhtCXX  ]  += imgss * x * x;
+                thisobj[ OFlxWhtCYY  ]  += imgss * y * y;
+                thisobj[ OFlxWhtCXY  ]  += imgss * x * y;
               }
           }
       }
@@ -145,6 +147,7 @@ void
 secondpass(struct mkcatalogparams *p)
 {
   float imgss;
+  double x, y;
   long wngb[2*WNGBSIZE];
   size_t ii, *n, *nf, numngb, ngb[8];
   double *thisclump, *cinfo=p->cinfo;
@@ -188,30 +191,35 @@ secondpass(struct mkcatalogparams *p)
                         + ( ofcrow[objects[i]] + clumps[i] )
                         * CCOLUMNS );
 
+
           /* Fill in this clump information. IMPORTANT NOTE: The Sky
              is not subtracted from the clump brightness or river,
              because later, we will subtract the river flux from the
              clump brightness and therefore we don't need to know the
              Sky for the clump brightness. */
+          x=i%is1+1;
+          y=i/is1+1;
           ++thisclump[ CAREA ];
-          thisclump[ CGeoX ]        += i%is1;
-          thisclump[ CGeoY ]        += i/is1;
+          thisclump[ CGeoX ]        += x;
+          thisclump[ CGeoY ]        += y;
+          thisclump[ CGeoXX ]       += x * x;
+          thisclump[ CGeoYY ]       += y * y;
+          thisclump[ CGeoXY ]       += x * y;
           thisclump[ CBrightness ]  += img[i];
           thisclump[ CSKY ]         += sky[i];
           thisclump[ CSTD ]         += std[i];
           thisclump[ CINHOSTID ]     = clumps[i];
           thisclump[ CHOSTOID ]      = objects[i];
-          thisclump[ CGeoXX ]       += (i%is1)*(i%is1);
-          thisclump[ CGeoYY ]       += (i/is1)*(i/is1);
-          thisclump[ CGeoXY ]       += (i%is1)*(i/is1);
           if( (imgss=img[i]-sky[i]) > 0 )
             {
               thisclump[ CPosBright ]   += imgss;
-              thisclump[ CFlxWhtX ]     += imgss * (i%is1);
-              thisclump[ CFlxWhtY ]     += imgss * (i/is1);
-              thisclump[ CFlxWhtXX ]    += imgss * (i%is1) * (i%is1);
-              thisclump[ CFlxWhtYY ]    += imgss * (i/is1) * (i%is1);
+              thisclump[ CFlxWhtX ]     += imgss * x;
+              thisclump[ CFlxWhtY ]     += imgss * y;
+              thisclump[ CFlxWhtXX ]    += imgss * x * x;
+              thisclump[ CFlxWhtYY ]    += imgss * y * y;
+              thisclump[ CFlxWhtXY ]    += imgss * x * y;
             }
+
         }
 
       /* We are on a detected region but not a clump (with a negative
@@ -313,8 +321,7 @@ void
 makeoutput(struct mkcatalogparams *p)
 {
   double sn, pixarea;
-  size_t *cols, tmpcol;
-  char *cino="Clumps in object";
+  size_t col, *cols, tmpcol;
   char comment[COMMENTSIZE], tline[100], *target;
   int prec[2]={p->floatprecision, p->accuprecision};
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
@@ -430,7 +437,8 @@ makeoutput(struct mkcatalogparams *p)
          stop. */
       for(p->curcol=0;p->curcol<p->numcols;++p->curcol)
         {
-          switch(cols[p->curcol])
+          col=cols[p->curcol];
+          switch(col)
             {
 
             case CATID:
@@ -479,19 +487,19 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATCLUMPSX:
-              position(p, OFlxWhtCX, cino, MKCATWHTC, MKCATX);
+              position(p, OFlxWhtCX, MKCATCINO, MKCATWHTC, MKCATX);
               break;
 
             case CATCLUMPSY:
-              position(p, OFlxWhtCY, cino, MKCATWHTC, MKCATY);
+              position(p, OFlxWhtCY, MKCATCINO, MKCATWHTC, MKCATY);
               break;
 
             case CATCLUMPSGEOX:
-              position(p, OGeoCX, cino, MKCATGEOC, MKCATX);
+              position(p, OGeoCX, MKCATCINO, MKCATGEOC, MKCATX);
               break;
 
             case CATCLUMPSGEOY:
-              position(p, OGeoCY, cino, MKCATGEOC, MKCATY);
+              position(p, OGeoCY, MKCATCINO, MKCATGEOC, MKCATY);
               break;
 
             case CATRA:
@@ -515,19 +523,19 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATCLUMPSRA:
-              position(p, OFlxWhtCRA, cino, MKCATWHTC, MKCATRA);
+              position(p, OFlxWhtCRA, MKCATCINO, MKCATWHTC, MKCATRA);
               break;
 
             case CATCLUMPSDEC:
-              position(p, OFlxWhtCDec, cino, MKCATWHTC, MKCATDEC);
+              position(p, OFlxWhtCDec, MKCATCINO, MKCATWHTC, MKCATDEC);
               break;
 
             case CATCLUMPSGEORA:
-              position(p, OGeoCRA, cino, MKCATGEOC, MKCATRA);
+              position(p, OGeoCRA, MKCATCINO, MKCATGEOC, MKCATRA);
               break;
 
             case CATCLUMPSGEODEC:
-              position(p, OGeoCDec, cino, MKCATGEOC, MKCATDEC);
+              position(p, OGeoCDec, MKCATCINO, MKCATGEOC, MKCATDEC);
               break;
 
             case CATBRIGHTNESS:
@@ -536,7 +544,7 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATCLUMPSBRIGHTNESS:
-              brightnessmag(p, OBrightnessC, cino, MKCATBRIGHT);
+              brightnessmag(p, OBrightnessC, MKCATCINO, MKCATBRIGHT);
               break;
 
             case CATMAGNITUDE:
@@ -545,7 +553,7 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATCLUMPSMAGNITUDE:
-              brightnessmag(p, OBrightnessC, cino, MKCATMAG);
+              brightnessmag(p, OBrightnessC, MKCATCINO, MKCATMAG);
               break;
 
             case CATRIVERAVE:
@@ -556,6 +564,10 @@ makeoutput(struct mkcatalogparams *p)
               area(p, 0, 1);
               break;
 
+            case CATSN:
+              sncol(p);
+              break;
+
             case CATSKY:
               skystd(p, p->obj0clump1 ? CSKY : OSKY);
               break;
@@ -564,8 +576,10 @@ makeoutput(struct mkcatalogparams *p)
               skystd(p, p->obj0clump1 ? CSTD : OSTD);
               break;
 
-            case CATSN:
-              sncol(p);
+            case CATSEMIMAJOR: case CATSEMIMINOR: case CATPOSITIONANGLE:
+            case CATGEOSEMIMAJOR: case CATGEOSEMIMINOR:
+            case CATGEOPOSITIONANGLE:
+              secondordermoment(p, col, target);
               break;
 
             default:
