@@ -1120,6 +1120,27 @@ preparearrays(struct mkcatalogparams *p)
       else p->clumpcat=NULL;
     }
 
+
+  /* Allocate two arrays to keep all the basic information about each
+     object and clump. Note that there should be one row more than the
+     total number of objects or clumps. This is because we want each
+     label to be its row number and we don't have any object label of
+     zero.*/
+  errno=0; p->oinfo=calloc(OCOLUMNS*(p->numobjects+1), sizeof *p->oinfo);
+  if(p->oinfo==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->oinfo in mkcatalog "
+          "(mkcatalog.c)", OCOLUMNS*(p->numobjects+1)*sizeof *p->oinfo);
+  errno=0; p->cinfo=calloc(CCOLUMNS*(p->numclumps+1), sizeof *p->cinfo);
+  if(p->cinfo==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->cinfo in mkcatalog "
+          "(mkcatalog.c)", CCOLUMNS*(p->numclumps+1)*sizeof *p->cinfo);
+
+  /* Set the shift values to NAN for all the objects and clumps: */
+  for(i=1;i<=p->numobjects;++i)
+    p->oinfo[i*OCOLUMNS+OPOSSHIFTX]=p->oinfo[i*OCOLUMNS+OPOSSHIFTY]=NAN;
+  for(i=1;i<=p->numclumps;++i)
+    p->cinfo[i*CCOLUMNS+CPOSSHIFTX]=p->cinfo[i*CCOLUMNS+CPOSSHIFTY]=NAN;
+
   /* Clean up: */
   freesll(p->allcolsll);
 }

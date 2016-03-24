@@ -91,6 +91,8 @@ enum objectcols
     OFlxWhtCXX,          /* Sum of (flux-sky)*x*x on object clumps. */
     OFlxWhtCYY,          /* Sum of (flux-sky)*y*y on obj. clumps.   */
     OFlxWhtCXY,          /* Sum of (flux-sky)*x*y on obj. clumps.   */
+    OPOSSHIFTX,          /* Shift in X to avoid rounding errors.    */
+    OPOSSHIFTY,          /* Shift in Y to avoid rounding errors.    */
     OFlxWhtCRA,          /* RA of (OFlxWhtCX and OFlxWhtCY).        */
     OFlxWhtCDec,         /* Dec of (OFlxWhtCX and OFlxWhtCY).       */
     OSKY,                /* Sum of sky value on this object.        */
@@ -125,6 +127,8 @@ enum clumpcols
     CFlxWhtXX,           /* Sum of flux*x*x of this clump.          */
     CFlxWhtYY,           /* Sum of flux*y*y of this clump.          */
     CFlxWhtXY,           /* Sum of flux*x*y of this clump.          */
+    CPOSSHIFTX,          /* Shift in X to avoid rounding errors.    */
+    CPOSSHIFTY,          /* Shift in Y to avoid rounding errors.    */
     CFlxWhtRA,           /* ra of (CFlxWhtX, CFlxWhtY).             */
     CFlxWhtDec,          /* Dec of (CFlxWhtX, CFlxWhtY).            */
     CBrightness,         /* Clump brightness, not sky subtracted.   */
@@ -345,6 +349,8 @@ struct mkcatalogparams
   double                *info;  /* Pointer to either oinfo or cinfo.  */
   size_t                icols;  /* Either OCOLUMNS or CCOLUMNS.       */
   char                 *unitp;  /* Pointer to units array.            */
+  size_t            xshiftcol;  /* Column to correct/shift positions. */
+  size_t            yshiftcol;  /* Column to correct/shift positions. */
   char             line[1500];  /* Comment line.                      */
   char       description[500];  /* The description of each row.       */
   int                *intcols;  /* Indexs of integer columns.         */

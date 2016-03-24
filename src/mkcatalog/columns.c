@@ -310,9 +310,9 @@ flxwhtimg(struct mkcatalogparams *p, size_t col)
 void
 setsecondmoment(struct mkcatalogparams *p, size_t col)
 {
-  size_t fc=-1, sc=-1, wc=-1;
   double *row = p->info + p->icols;
-  double *end = row + (p->icols * p->num);;
+  double *end = row + (p->icols * p->num);
+  size_t fc=-1, sc=-1, wc=-1, sfc=-1, ssc=-1;
 
 
   /* Only if this column is not flagged as already done (==1.0f). */
@@ -328,20 +328,26 @@ setsecondmoment(struct mkcatalogparams *p, size_t col)
           {
           /* Clump brightness weighted */
           case CFlxWhtXX:
-            wc=CPosBright; fc=sc=CFlxWhtX; flxwhtimg(p, fc);       break;
+            wc=CPosBright; fc=sc=CFlxWhtX; flxwhtimg(p, fc);
+            sfc=ssc=CPOSSHIFTX;                   break;
           case CFlxWhtYY:
-            wc=CPosBright; fc=sc=CFlxWhtY; flxwhtimg(p, fc);       break;
+            wc=CPosBright; fc=sc=CFlxWhtY; flxwhtimg(p, fc);
+            sfc=ssc=CPOSSHIFTY;                   break;
           case CFlxWhtXY:
             wc=CPosBright;
-            flxwhtimg(p, fc=CFlxWhtX); flxwhtimg(p, sc=CFlxWhtY);  break;
+            flxwhtimg(p, fc=CFlxWhtX); flxwhtimg(p, sc=CFlxWhtY);
+            sfc=CPOSSHIFTX;  ssc=CPOSSHIFTY;      break;
 
           /* Clump geometric: */
           case CGeoXX:
-            wc=CAREA;       fc=sc=CGeoX;    geoxy(p, fc);          break;
+            wc=CAREA;       fc=sc=CGeoX;    geoxy(p, fc);
+            sfc=ssc=CPOSSHIFTX;                   break;
           case CGeoYY:
-            wc=CAREA;       fc=sc=CGeoY;    geoxy(p, fc);          break;
+            wc=CAREA;       fc=sc=CGeoY;    geoxy(p, fc);
+            sfc=ssc=CPOSSHIFTY;                   break;
           case CGeoXY:
-            wc=CAREA; geoxy(p, fc=CGeoX); geoxy(p, sc=CGeoY);      break;
+            wc=CAREA; geoxy(p, fc=CGeoX); geoxy(p, sc=CGeoY);
+            sfc=CPOSSHIFTX;  ssc=CPOSSHIFTY;      break;
 
           default:
             error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
@@ -354,38 +360,49 @@ setsecondmoment(struct mkcatalogparams *p, size_t col)
           {
           /* All object brightness weighted: */
           case OFlxWhtXX:
-            wc=OPosBright;  fc=sc=OFlxWhtX; flxwhtimg(p, fc);       break;
+            wc=OPosBright;  fc=sc=OFlxWhtX; flxwhtimg(p, fc);
+            sfc=ssc=OPOSSHIFTX;                   break;
           case OFlxWhtYY:
-            wc=OPosBright;  fc=sc=OFlxWhtY; flxwhtimg(p, fc);       break;
+            wc=OPosBright;  fc=sc=OFlxWhtY; flxwhtimg(p, fc);
+            sfc=ssc=OPOSSHIFTY;                   break;
           case OFlxWhtXY:
             wc=OPosBright;
-            flxwhtimg(p, fc=OFlxWhtX); flxwhtimg(p, sc=OFlxWhtY);   break;
+            flxwhtimg(p, fc=OFlxWhtX); flxwhtimg(p, sc=OFlxWhtY);
+            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
 
           /* All object geometric: */
           case OGeoXX:
-            wc=OAREA;       fc=sc=OGeoX;    geoxy(p, fc);           break;
+            wc=OAREA;       fc=sc=OGeoX;    geoxy(p, fc);
+            sfc=ssc=OPOSSHIFTX;                   break;
           case OGeoYY:
-            wc=OAREA;       fc=sc=OGeoY;    geoxy(p, fc);           break;
+            wc=OAREA;       fc=sc=OGeoY;    geoxy(p, fc);
+            sfc=ssc=OPOSSHIFTY;                   break;
           case OGeoXY:
-            wc=OAREA; geoxy(p, fc=OGeoX); geoxy(p, sc=OGeoY);       break;
+            wc=OAREA; geoxy(p, fc=OGeoX); geoxy(p, sc=OGeoY);
+            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
 
           /* Clumps in object brightness weighted: */
           case OFlxWhtCXX:
-            wc=OPosBrightC; fc=sc=OFlxWhtCX; flxwhtimg(p, fc);      break;
+            wc=OPosBrightC; fc=sc=OFlxWhtCX; flxwhtimg(p, fc);
+            sfc=ssc=OPOSSHIFTX;                   break;
           case OFlxWhtCYY:
-            wc=OPosBrightC; fc=sc=OFlxWhtCY; flxwhtimg(p, fc);      break;
+            wc=OPosBrightC; fc=sc=OFlxWhtCY; flxwhtimg(p, fc);
+            sfc=ssc=OPOSSHIFTY;                   break;
           case OFlxWhtCXY:
             wc=OPosBrightC;
-            flxwhtimg(p, fc=OFlxWhtCX); flxwhtimg(p, sc=OFlxWhtCY); break;
+            flxwhtimg(p, fc=OFlxWhtCX); flxwhtimg(p, sc=OFlxWhtCY);
+            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
 
           /* Clumps in object geometric: */
           case OGeoCXX:
-            wc=OAREAC;      fc=sc=OGeoCX;    geoxy(p, fc);          break;
+            wc=OAREAC;      fc=sc=OGeoCX;    geoxy(p, fc);
+            sfc=ssc=OPOSSHIFTX;                   break;
           case OGeoCYY:
-            wc=OAREAC;      fc=sc=OGeoCY;    geoxy(p, fc);          break;
+            wc=OAREAC;      fc=sc=OGeoCY;    geoxy(p, fc);
+            sfc=ssc=OPOSSHIFTY;                   break;
           case OGeoCXY:
-            wc=OAREAC; geoxy(p, fc=OGeoCX); geoxy(p, sc=OGeoCY);    break;
-
+            wc=OAREAC; geoxy(p, fc=OGeoCX); geoxy(p, sc=OGeoCY);
+            sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
           default:
             error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
                   "can fix this. The given column in setsecondmoment's "
@@ -397,10 +414,10 @@ setsecondmoment(struct mkcatalogparams *p, size_t col)
       do
         {
 
-          /* Set the value for this row. When a positive weight is
-             present, we are adding with one (1) because of the FITS
-             standard. */
-          row[col] = row[col]/row[wc] - row[fc]*row[sc];
+          /* Set the value for this row, including the shift in
+             calculating the second order moments. */
+          row[col] = ( row[col]/row[wc] -
+                       (row[fc]-row[sfc]) * (row[sc]-row[ssc]) );
 
           /* Go onto the next row: */
           row+=p->icols;

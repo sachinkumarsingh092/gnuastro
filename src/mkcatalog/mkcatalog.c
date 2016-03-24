@@ -72,8 +72,8 @@ void
 firstpass(struct mkcatalogparams *p)
 {
   float imgss;
-  size_t i, s1=p->s1;
-  double x, y, *thisobj;
+  size_t i, is1=p->s1;
+  double x, y, sx, sy, *thisobj;
   long *objects=p->objects, *clumps=p->clumps;
 
   /* Go over the pixels and fill the information array. */
@@ -86,15 +86,43 @@ firstpass(struct mkcatalogparams *p)
         imgss = p->img[i] - p->sky[i];
         thisobj = p->oinfo + objects[i]*OCOLUMNS;
 
+        /* Set the shifts to avoid round-off errors in large numbers
+           for the non-linear calculations. We are using the first
+           pixel of each object as the shift parameter to keep the
+           mean reasonably near to the standard deviation. Otherwise,
+           when the object is far out in the image (large x and y
+           positions), then roundoff errors are going to decrease the
+           accuracy of the second order calculations.
+
+           When the object and clumps columns were allocated, the
+           shift columns were set to NaN so we know when to set them
+           for each object/clump. For later parallelization, a mutex
+           can be set up within the `if' statement below and another
+           check can be done within the mutex, this way, only if
+           separate threads get to the start of an object in their
+           respective mesh, for an object that doesn't have a shift
+           already assigned to it, at the same time (highly unlikely)
+           will the process be slightly slowed down. Otherwise, there
+           will be no speed penalty. */
+        if(isnan(thisobj[ OPOSSHIFTX ]))
+          {
+            thisobj[ OPOSSHIFTX ] = i%is1+1;
+            thisobj[ OPOSSHIFTY ] = i/is1+1;
+          }
+
+        /* Set the positional variables: */
+        x = i%is1+1;
+        y = i/is1+1;
+        sx = x - thisobj[ OPOSSHIFTX ];
+        sy = y - thisobj[ OPOSSHIFTY ];
+
         /* Add to the flux weighted center: */
-        x=i%s1+1;
-        y=i/s1+1;
         ++thisobj[OAREA];
         thisobj[ OGeoX ]       += x;
         thisobj[ OGeoY ]       += y;
-        thisobj[ OGeoXX ]      += x * x;
-        thisobj[ OGeoYY ]      += y * y;
-        thisobj[ OGeoXY ]      += x * y;
+        thisobj[ OGeoXX ]      += sx * sx;
+        thisobj[ OGeoYY ]      += sy * sy;
+        thisobj[ OGeoXY ]      += sx * sy;
         thisobj[ OBrightness ] += imgss;
         thisobj[ OSKY ]        += p->sky[i];
         thisobj[ OSTD ]        += p->std[i];
@@ -103,9 +131,9 @@ firstpass(struct mkcatalogparams *p)
             thisobj[ OPosBright ]  += imgss;
             thisobj[ OFlxWhtX   ]  += imgss * x;
             thisobj[ OFlxWhtY   ]  += imgss * y;
-            thisobj[ OFlxWhtXX  ]  += imgss * x * x;
-            thisobj[ OFlxWhtYY  ]  += imgss * y * y;
-            thisobj[ OFlxWhtXY  ]  += imgss * x * y;
+            thisobj[ OFlxWhtXX  ]  += imgss * sx * sx;
+            thisobj[ OFlxWhtYY  ]  += imgss * sy * sy;
+            thisobj[ OFlxWhtXY  ]  += imgss * sx * sy;
           }
 
         if(clumps[i]>0)
@@ -120,17 +148,17 @@ firstpass(struct mkcatalogparams *p)
             thisobj[ OBrightnessC ]  += imgss;
             thisobj[ OGeoCX  ]       += x;
             thisobj[ OGeoCY  ]       += y;
-            thisobj[ OGeoCXX ]       += x * x;
-            thisobj[ OGeoCYY ]       += y * y;
-            thisobj[ OGeoCXY ]       += x * y;
+            thisobj[ OGeoCXX ]       += sx * sx;
+            thisobj[ OGeoCYY ]       += sy * sy;
+            thisobj[ OGeoCXY ]       += sx * sy;
             if(imgss>0)
               {
                 thisobj[ OPosBrightC ]  += imgss;
                 thisobj[ OFlxWhtCX   ]  += imgss * x;
                 thisobj[ OFlxWhtCY   ]  += imgss * y;
-                thisobj[ OFlxWhtCXX  ]  += imgss * x * x;
-                thisobj[ OFlxWhtCYY  ]  += imgss * y * y;
-                thisobj[ OFlxWhtCXY  ]  += imgss * x * y;
+                thisobj[ OFlxWhtCXX  ]  += imgss * sx * sx;
+                thisobj[ OFlxWhtCYY  ]  += imgss * sy * sy;
+                thisobj[ OFlxWhtCXY  ]  += imgss * sx * sy;
               }
           }
       }
@@ -147,7 +175,7 @@ void
 secondpass(struct mkcatalogparams *p)
 {
   float imgss;
-  double x, y;
+  double x, y, sx, sy;
   long wngb[2*WNGBSIZE];
   size_t ii, *n, *nf, numngb, ngb[8];
   double *thisclump, *cinfo=p->cinfo;
@@ -191,20 +219,31 @@ secondpass(struct mkcatalogparams *p)
                         + ( ofcrow[objects[i]] + clumps[i] )
                         * CCOLUMNS );
 
+          /* Set the shifts for this object if not already set, see
+             the explanations in the firstpass function. */
+          if(isnan(thisclump[ CPOSSHIFTX ]))
+            {
+              thisclump[ CPOSSHIFTX ] = i%is1+1;
+              thisclump[ CPOSSHIFTY ] = i/is1+1;
+            }
+
+          /* Set the positional variables: */
+          x = i%is1+1;
+          y = i/is1+1;
+          sx = x - thisclump[ CPOSSHIFTX ];
+          sy = y - thisclump[ CPOSSHIFTY ];
 
           /* Fill in this clump information. IMPORTANT NOTE: The Sky
              is not subtracted from the clump brightness or river,
              because later, we will subtract the river flux from the
              clump brightness and therefore we don't need to know the
              Sky for the clump brightness. */
-          x=i%is1+1;
-          y=i/is1+1;
           ++thisclump[ CAREA ];
           thisclump[ CGeoX ]        += x;
           thisclump[ CGeoY ]        += y;
-          thisclump[ CGeoXX ]       += x * x;
-          thisclump[ CGeoYY ]       += y * y;
-          thisclump[ CGeoXY ]       += x * y;
+          thisclump[ CGeoXX ]       += sx * sx;
+          thisclump[ CGeoYY ]       += sy * sy;
+          thisclump[ CGeoXY ]       += sx * sy;
           thisclump[ CBrightness ]  += img[i];
           thisclump[ CSKY ]         += sky[i];
           thisclump[ CSTD ]         += std[i];
@@ -215,9 +254,9 @@ secondpass(struct mkcatalogparams *p)
               thisclump[ CPosBright ]   += imgss;
               thisclump[ CFlxWhtX ]     += imgss * x;
               thisclump[ CFlxWhtY ]     += imgss * y;
-              thisclump[ CFlxWhtXX ]    += imgss * x * x;
-              thisclump[ CFlxWhtYY ]    += imgss * y * y;
-              thisclump[ CFlxWhtXY ]    += imgss * x * y;
+              thisclump[ CFlxWhtXX ]    += imgss * sx * sx;
+              thisclump[ CFlxWhtYY ]    += imgss * sy * sy;
+              thisclump[ CFlxWhtXY ]    += imgss * sx * sy;
             }
 
         }
@@ -338,15 +377,15 @@ makeoutput(struct mkcatalogparams *p)
 
       /* Do the preparations for this round: */
       p->intcounter=p->accucounter=p->curcol=0;
-      p->name     = p->obj0clump1 ? "clump" : "object";
-      p->icols    = p->obj0clump1 ? CCOLUMNS : OCOLUMNS;
-      p->info     = p->obj0clump1 ? p->cinfo : p->oinfo;
-      p->cat      = p->obj0clump1 ? p->clumpcat : p->objcat;
-      target      = p->obj0clump1 ? MKCATCLUMP : MKCATOBJECT;
-      p->filename = p->obj0clump1 ? p->ccatname : p->ocatname;
-      cols        = p->obj0clump1 ? p->clumpcols : p->objcols;
-      p->numcols  = p->obj0clump1 ? p->clumpncols : p->objncols;
-      p->num      = p->obj0clump1 ? p->numclumps : p->numobjects;
+      p->name      = p->obj0clump1 ? "clump" : "object";
+      p->icols     = p->obj0clump1 ? CCOLUMNS : OCOLUMNS;
+      p->info      = p->obj0clump1 ? p->cinfo : p->oinfo;
+      p->cat       = p->obj0clump1 ? p->clumpcat : p->objcat;
+      target       = p->obj0clump1 ? MKCATCLUMP : MKCATOBJECT;
+      p->filename  = p->obj0clump1 ? p->ccatname : p->ocatname;
+      cols         = p->obj0clump1 ? p->clumpcols : p->objcols;
+      p->numcols   = p->obj0clump1 ? p->clumpncols : p->objncols;
+      p->num       = p->obj0clump1 ? p->numclumps : p->numobjects;
 
 
 
@@ -632,20 +671,6 @@ makeoutput(struct mkcatalogparams *p)
 void
 mkcatalog(struct mkcatalogparams *p)
 {
-  /* Allocate two arrays to keep all the basic information about each
-     object and clump. Note that there should be one row more than the
-     total number of objects or clumps. This is because we want each
-     label to be its row number and we don't have any object label of
-     zero.*/
-  errno=0; p->oinfo=calloc(OCOLUMNS*(p->numobjects+1), sizeof *p->oinfo);
-  if(p->oinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->oinfo in mkcatalog "
-          "(mkcatalog.c)", OCOLUMNS*(p->numobjects+1)*sizeof *p->oinfo);
-  errno=0; p->cinfo=calloc(CCOLUMNS*(p->numclumps+1), sizeof *p->cinfo);
-  if(p->cinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->cinfo in mkcatalog "
-          "(mkcatalog.c)", CCOLUMNS*(p->numclumps+1)*sizeof *p->cinfo);
-
   /* Run through the data for the first time: */
   firstpass(p);
   secondpass(p);

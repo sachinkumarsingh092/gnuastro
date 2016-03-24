@@ -26,11 +26,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Units: */
 #define CATDESCRIPTLENGTH         "%-60s"
 #define CATUNITRATIO              "ratio"
-#define CATUNITPIXLENGTH          "pixel length"
 #define CATUNITDEGREE             "degree"
 #define CATUNITCOUNTER            "counter"
 #define CATUNITPIXAREA            "pixel area"
 #define CATUNITMAG                "scale (log)"
+#define CATUNITPIXLENGTH          "pixel length"
 #define CATUNITBRIGHTNESS         "input data unit"
 #define CATUNITAVE                "("CATUNITBRIGHTNESS")/pixel"
 
