@@ -407,6 +407,7 @@ Invoking NoiseChisel
 MakeCatalog
 
 * Depth and limiting magnitude::  For comparing different catalogs.
+* Measuring elliptical parameters::  Estimating elliptical parameters.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
 * Adding new columns to MakeCatalog::  How to add new columns.
 
@@ -9911,6 +9912,7 @@ transformations on the labeled image.
 
 @menu
 * Depth and limiting magnitude::  For comparing different catalogs.
+* Measuring elliptical parameters::  Estimating elliptical parameters.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
 * Adding new columns to MakeCatalog::  How to add new columns.
 @end menu
@@ -9918,7 +9920,7 @@ transformations on the labeled image.
 
 
 
-@node Depth and limiting magnitude, Invoking astmkcatalog, MakeCatalog, MakeCatalog
+@node Depth and limiting magnitude, Measuring elliptical parameters, MakeCatalog, MakeCatalog
 @subsection Depth and limiting magnitude
 
 @cindex Depth
@@ -10041,7 +10043,179 @@ a very important factor in an accurate comparison between magnitudes
 measured for different images, on possibly different instruments and
 cameras, see @ref{Flux Brightness and magnitude}.
 
-@node Invoking astmkcatalog, Adding new columns to MakeCatalog, Depth and limiting magnitude, MakeCatalog
+
+
+@node Measuring elliptical parameters, Invoking astmkcatalog, Depth and limiting magnitude, MakeCatalog
+@subsection Measuring elliptical parameters
+
+One of the most important class of parameters that are important for
+astronomical image analysis is the shape or morphology of the
+objects. In the case of galaxies (with a very rich variety of
+morphologies) studying the morphology of the detected objects is its
+self a is very complicated research subject which is a very active
+field of research now. So in this section, we will just discuss how
+the most basic morphological parameters are estimated: the elliptical
+parameters for a set of labeled pixels (that will be studied together
+and define our object of interest). These are: the major axis, the
+minor axis and the position angle along with the central position of
+the profile. The derivations below follow the SExtractor manual
+derivations but include more explanations.
+
+@cindex Moments
+Let's begin with one dimension for simplicity: Assume we have a set of
+@mymath{N} values (brightness for example) @mymath{B_i}, each at
+position @mymath{x_i}. The simplest parameter we can define is the
+geometric center of the object (@mymath{x_g}) (ignoring the brightness
+values): @mymath{x_g=(\sum_ix_i)/N}. @emph{Moments} are defined to
+incorporate both the value (brightness) and position of the data. The
+first moment can be written as:
+
+@dispmath{\overline{x}={\sum_iB_ix_i \over \sum_iB_i}}
+
+@cindex Variance
+@cindex Second moment
+@noindent
+This is essentially the weighted (by @mymath{B_i}) average
+position. The geometric center (@mymath{x_g}, defined above) is a
+special case of this with all @mymath{B_i=1}. The second moment is
+essentially the variance of the distributions:
+
+@dispmath{\overline{x^2}\equiv{\sum_i(B_ix_i-\overline{x})^2 \over
+        \sum_iB_i} ={\sum_iB_i^2x_i^2 \over \sum_iB_i} -
+        2\overline{x}{\sum_iB_ix_i\over\sum_iB_i} + \overline{x}^2
+        ={\sum_iB_i^2x_i^2 \over \sum_iB_i} - \overline{x}^2}
+
+@cindex Standard deviation
+@noindent
+The last step was done from the definition of
+@mymath{\overline{x}}. So the square root of @mymath{\overline{x^2}}
+is the positional standard deviation (along the one-dimensional) of
+this particular brightness distribution (@mymath{B_i}). Crudely (or
+qualitatively), you can think of its square root as the distance (from
+@mymath{\overline{x}}) which contains a specific amount of the flux
+(depending on the @mymath{B_i} distribution). Similar to the first
+moment, the geometric second moment can be found by setting all
+@mymath{B_i=1}. So while the first moment quantified the position of
+the brightness distribution, the second moment quantifies how that
+brightness is dispersed about the first moment. In other words, it
+quantifies how ``sharp'' the object's image is.
+
+@cindex Floating point error
+Before continuing to two dimensions and the derivation of the
+elliptical parameters we will pause for an implementation
+technicality. You can ignore this paragraph if you don't want to
+implement these concepts. The basic definition (first fraction for
+@mymath{\overline{x^2}}) can be used without any major
+problem. However, using this fraction requires two runs over the data:
+one run to specify @mymath{\overline{x}} and one run for
+@mymath{\overline{x^2}}, this can be slow. However, using the last
+fraction above, we can estimate both the first and second moments in
+one run (since the @mymath{-\overline{x}^2} term can easily be added
+later). Using the last form creates a major technical issue however:
+due to the floating point accuracy. Suppose the object is located
+between pixels 10000 and 10020. While the object pixels are only
+distributed over 20 pixels (with a standard deviation6 @mymath{<20}),
+the mean has a value of @mymath{\sim10000}. The
+@mymath{\sum_iB_i^2x_i^2} will go to very very large values while the
+individual pixel differences will be much smaller, this will lower the
+accuracy of our calculation due to the limited accuracy of floating
+point operations. Since the variance only depends on the distance of
+each point from the mean, and for a constant/arbitrary @mymath{K},
+@mymath{\overline{x-K}=\overline{x}-K}, we can calculate the second
+order moment using:
+
+@dispmath{\overline{x^2}={\sum_iB_i^2(x_i-K)^2 \over \sum_iB_i} -
+             (\overline{x}-K)^2}
+
+@noindent
+The closer @mymath{K} is to @mymath{\overline{x}}, the better (the
+sums of squares will involve smaller numbers), as long as @mymath{K}
+is within the object limits (in the example above:
+@mymath{10000\leq{K}\leq10020}), the floating point error induced in
+our calculation will be negligible. For the most simplest
+implementation, in order to find the second moments (variance) in each
+dimension, MakeCatalog takes @mymath{K} to be the position of the
+first pixel that is assigned to the object under each dimension. Since
+@mymath{K} is arbitrary and an implementation/technical detail, we
+will ignore it for the remainder of this discussion.
+
+In two dimensions, the mean and variances can be written as:
+
+@dispmath{\overline{x}={\sum_iB_ix_i\over B_i}, \quad
+          \overline{x^2}={\sum_iB_i^2x_i^2 \over \sum_iB_i} -
+          \overline{x}^2}
+@dispmath{\overline{y}={\sum_iB_iy_i\over B_i}, \quad
+          \overline{y^2}={\sum_iB_i^2y_i^2 \over \sum_iB_i} -
+          \overline{y}^2}
+@dispmath{\quad\quad\quad\quad\quad\quad\quad\quad\quad
+          \overline{xy}={\sum_iB_i^2x_iy_i \over \sum_iB_i} -
+          \overline{x}\times\overline{y}}
+
+If an elliptical profile's major axis lies exactly along the
+@mymath{x} axis, then @mymath{\overline{x^2}} will be directly
+proportional with the major axis, @mymath{\overline{y^2}} with its
+minor axis and @mymath{\overline{xy}=0}. However, in reality we are
+not that lucky and (assuming galaxies can be parametrized as an
+ellipse) the major axis of galaxies can be in any direction on the
+image (infact this is one of the core principles behind weak-lensing
+by shear estimation). So the purpose of the remainder of this section
+is to define a strategy to measure the position angle and axis ratio
+of some randomly positioned ellipses in an image, using the raw second
+moments that we have calculated above in our image coordinates.
+
+Let's assume we have rotated the galaxy by @mymath{\theta}, then the
+new second order moments can be written as:
+@dispmath{\overline{x_\theta^2} = \overline{x^2}\cos^2\theta +
+           \overline{y^2}\sin^2\theta -
+           2\overline{xy}\cos\theta\sin\theta }
+@dispmath{\overline{y_\theta^2} = \overline{x^2}\sin^2\theta +
+           \overline{y^2}\cos^2\theta +
+           2\overline{xy}\cos\theta\sin\theta}
+@dispmath{\overline{xy_\theta} = \overline{x^2}\cos\theta\sin\theta -
+           \overline{y^2}\cos\theta\sin\theta +
+           \overline{xy}(\cos^2\theta-\sin^2\theta)}
+We can now find the best @mymath{\theta} (@mymath{\theta_0}) such that
+the major axis lies along the @mymath{x_\theta} axis. This can be
+found by setting:
+@dispmath{\left.{\partial \overline{x_\theta^2} \over \partial \theta}\right|_{\theta_0}=0}
+Taking the derivative, we get:
+@dispmath{2\cos\theta_0\sin\theta_0(\overline{y^2}-\overline{x^2}) +
+2(\cos^2\theta_0-\sin^2\theta_0)\overline{xy}=0} When
+@mymath{\overline{x^2}\neq\overline{y^2}}, we can write:
+@dispmath{\tan2\theta_0 =
+2{\overline{xy} \over \overline{x^2}-\overline{y^2}}.}
+@cindex Position angle
+@noindent
+MakeCatalog uses the standard C math library's @code{atan2} function
+to estimate @mymath{\theta_0}, which we define as the position angle
+of the ellipse. To recall, this is the angle of the major axis of the
+ellipse with the @mymath{x} axis. By definition, when the elliptical
+profile is rotated by @mymath{\theta_0}, then
+@mymath{\overline{xy_{\theta_0}}=0},
+@mymath{\overline{x_{\theta_0}^2}} will be the extent of the maximum
+variance and @mymath{\overline{y_{\theta_0}^2}} the extent of the
+minimum variance (which are perpendicular for an ellipse). Replacing
+@mymath{\theta_0} in the equations above for
+@mymath{\overline{x_\theta}} and @mymath{\overline{y_\theta}}, we can
+get the semi-major (@mymath{A}) and semi-minor (@mymath{B}) lengths:
+
+@dispmath{A^2\equiv\overline{x_{\theta_0}^2}= {\overline{x^2} +
+\overline{y^2} \over 2} + \sqrt{\left({\overline{x^2}-\overline{y^2} \over 2}\right)^2 + \overline{xy}^2}}
+
+@dispmath{B^2\equiv\overline{y_{\theta_0}^2}= {\overline{x^2} +
+\overline{y^2} \over 2} - \sqrt{\left({\overline{x^2}-\overline{y^2} \over 2}\right)^2 + \overline{xy}^2}}
+
+So as a summary, it is important to remember that the units of
+@mymath{A} and @mymath{B} are in pixels (same as the standard
+deviation) and that they represent the spatial light distribution of
+the object in both image dimensions if the object could be
+approximated as an ellipse. When the object cannot be represented as
+an ellipse, this interpretation breaks down:
+@mymath{\overline{xy_{\theta_0}}\neq0} and
+@mymath{\overline{y_{\theta_0}^2}} will not be the direction of
+minimum variance.
+
+@node Invoking astmkcatalog, Adding new columns to MakeCatalog, Measuring elliptical parameters, MakeCatalog
 @subsection Invoking MakeCatalog
 
 MakeCatalog will make a catalog from an input image and a labeled
