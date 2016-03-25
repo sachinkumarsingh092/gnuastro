@@ -41,6 +41,8 @@ all.pdf: all.tex ./tex/*.tex ./conversions.sh
 # 	Put all the EPS files in their appropriate place:
 	cp tikz/all-figure0.eps ../gnuastro-figures/iandtime.eps
 	cp tikz/all-figure1.eps ../gnuastro-figures/samplingfreq.eps
+	cp tikz/all-figure2.eps ../gnuastro-figures/flatplane.eps
+	cp tikz/all-figure3.eps ../gnuastro-figures/sphericalplane.eps
 
 #	Make all the conversions:
 	./conversions.sh ../gnuastro-figures/

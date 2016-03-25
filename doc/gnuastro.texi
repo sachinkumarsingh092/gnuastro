@@ -457,7 +457,7 @@ High-level calculations
 
 CosmicCalculator
 
-* Basic cosmology::             A review of basic cosmology
+* Distance on a 2D curved space::
 * Invoking astcosmiccal::       How to run CosmicCalculator
 
 Developing
@@ -12166,54 +12166,242 @@ detected object which is the purpose of the tools in this section.
 @node CosmicCalculator,  , High-level calculations, High-level calculations
 @section CosmicCalculator
 
-In extra-galactic studies, various cosmological parameters must be
-considered to derive higher-level information regarding our sources.
-For example, in a static Universe, the distance that is subtended by
-an angle and the distance that light travels to reach us are the same
-and we use them interchangably. However, in an expanding universe
-(which is the most commonly held belief today) these two are no longer
-the same and vary differently. The first is known as the ``Angular
-diameter distance'' (@mymath{d_A}) while the second is called the
-``Luminosity distance'' or @mymath{d_L}. These different definitions
-of distance are necessary when we want to find the angular size of our
-targets or their absolute magnitudes. Cosmology is Gnuastro's utility
-for such calculations.
+To derive higher-level information regarding our sources in
+extra-galactic astronomy cosmological calculations are necessary. In
+Gnuastro, CosmicCalculator is in charge of such calculations. Before
+discussing how CosmicCalculator is called and operates (in
+@ref{Invoking astcosmiccal}), it is important to provide a rough but
+mostly self sufficient (for the purpose of a homogenous and isotropic
+universe) review of the basics and the equations used in the
+analysis. In @ref{Distance on a 2D curved space} we provide a basic
+review of how distances can be defined and used on a curved space. The
+derivations and mathematics presented here are only desired to be
+enough for an observational astronomer, dealing with a homogenous and
+isotropic (on large scales) universe, a rigorous, and mathematically
+complete discussion/proof of all these concepts is far beyond the
+desired scope here. In short, although the mathematical derivations
+are correct (for the assumed situation), the emphasis here is to
+provide a qualitative and physical understanding of those equations.
 
 @menu
-* Basic cosmology::             A review of basic cosmology
+* Distance on a 2D curved space:: Distances in 2D for simplicity
 * Invoking astcosmiccal::       How to run CosmicCalculator
 @end menu
 
-@node Basic cosmology, Invoking astcosmiccal, CosmicCalculator, CosmicCalculator
-@subsection Basic cosmology
+@node Distance on a 2D curved space, Invoking astcosmiccal, CosmicCalculator, CosmicCalculator
+@subsection Distance on a 2D curved space
 
-This section will later provide a full description of the concepts and
-parameters that will be produced by Cosmology, for now it is just a
-place-honder with some of the equations used that are used.
+The observations to date (for example the Plank 2013 results), have
+not measured the presence of a significant curvature in the universe.
+However to be generic (and allow its measurement if it does infact
+exist), it is very important to create a framework that allows
+curvature. It is impossible to create a good mental picture of the
+curvature of a 3D volume in a 4D space, so for the major part of this
+analysis, we will assume a 2D surface and discuss distances on that 2D
+surface, when it is flat, or when the 2D surface is curved (in a 3D
+space). To further simplify the analysis we will assume that we have a
+2D friend living on that 2D space (which @emph{might} be curved in 3D)
+and we want to help it analyze the curvature of its 2D universe. The
+start of the analysis might seem too mundane, but since it is
+impossible to imagine as 3D curved space, it is important to review
+all the concepts thoroughly for our imaginary friend first. The
+equations can then easily be extended to 3D.
 
-@dispmath{H(z){\equiv}\left(\dot{a}\over a\right)(z)=H_0E(z) }
+@float Figure,flatplane
+@center@image{gnuastro-figures/flatplane, 8cm, , }
 
-@dispmath{E(z)=[ \Omega_{\Lambda,0} + \Omega_{C,0}(1+z)^2 +
-\Omega_{m,0}(1+z)^3 + \Omega_{r,0}(1+z)^4 ]^{1/2}}
+@caption{Two dimentional cartesian and polar coordinates on a flat
+plane.}
+@end float
 
-Lets take @mymath{r} to be the radial coordinate of the emitting
-source, which emitted its light at redshift $z$. Then the comoving
-distance of this object would be:
+To start, let's assume a static (not expanding or shrinking), flat 2D
+surface (see @ref{flatplane}) and that our 2D friend is observing the
+universe from point @mymath{A}. One of the most basic ways to
+parametrize this space is through the cartesian coordinates
+(@mymath{x}, @mymath{y}). In @ref{flatplane}, the basic axises of
+these two coordinates are plotted. An infinitesmial change the the
+direction of each axis is written as @mymath{dx} and @mymath{dy}. For
+each point the infinitesimal changes are parallel with the respective
+axises and are not shown for clarity. Another very contenient way of
+parametrizing this space is through polar coordinates. For each point,
+we define a radius (@mymath{r}) and angle (@mymath{\phi}) from a fixed
+(but arbitrary) reference axis. In @ref{flatplane} the infinitesimal
+changes for each polar coordinate are plotted for a random point and a
+dashed circle is shown for all points with the same radius. The very
+important point here is to recall that @mymath{d\phi} is always
+perpendicular to @mymath{dr} and only touches the circle (of fixed
+@mymath{r}) tangentially, so unlike the curve (circle) it produces,
+@mymath{d\phi} is a straight line. In general, any infinitesimal
+change is a streight line by definition, even if it produces a curved
+line over a large interval (we define curvature by the change in those
+streight lines). This will become important later when assuming a
+curved space, so it was emphasized here.
 
-@dispmath{ \chi(r)={c\over H_0a_0}\int_0^z{dz'\over E(z')} }
+As a summary, assuming a certain position, which can be parametrized
+as @mymath{(x,y)}, or @mymath{(r,\phi)}, a new point at an
+infinitesimal distance away will have the coordinates
+@mymath{(x+dx,y+dy)} and @mymath{(r+dr,\phi+d\phi)}. The distance (on
+the flat 2D surface) that is covered by this infinitesimal change in
+the static universe (@mymath{ds_s}, the subscript signifies the static
+nature of this universe) can be written as
+@dispmath{ds_s=dx^2+dy^2=dr^2+r^2d\phi^2}The main question is this:
+how can a 2D creature on the point @mymath{A}, know if the flat and
+easy to understand universe of @ref{flatplane} corresponds to its real
+2D universe? The universe it lives in might equally be a locally flat
+but globally curved surface like @ref{sphericalplane}. The answer to
+this question but for a 3D being (us) is the whole purpose to this
+discussion and one of the main questions still alive in Cosmology. So
+here we want to give that creature (and later, ourselves) the tools to
+discover the curvature of the universe it lives in by measuring
+distances.
 
+@float Figure,sphericalplane
+@center@image{gnuastro-figures/sphericalplane, 8cm, , }
+
+@caption{2D spherical plane (centered on @mymath{O}) and flat plane
+(gray) tangent to it at point @mymath{A}.}
+@end float
+
+@ref{sphericalplane} assumes a spherical shell with radius @mymath{R}
+as the curved 2D plane for simplicity. The result will be generalizd
+afterwards. The first step in creating those tools is to imagine a
+third dimension along the @mymath{z} axis as shown in
+@ref{sphericalplane}. For simplicity, the curved 2D space is assumed
+to be a spherical shell and the the @mymath{z} axis is assumed to pass
+through its center. Our imaginary 2D friend cannot imagine the third
+dimension or a curved 2D surface within it, so the remainder of this
+discussion is purely abstract for it (similar to us being unable to
+visualize a 3D curved space in 4D). But since we are 3D creatures, we
+have the advantage of visualizing the following steps. Fortunately our
+2D friend knows the mathematics, so it can follow along with us.
+
+With the third axis added, a generic infinitesimal change over the
+full 3D space corresponds to the distance:
+@dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2d\phi^2+dz^2.}It is very
+important to recognize that this distance is for @emph{any} point in
+the 3D space, not just those points on the 2D spherical shell of
+@ref{sphericalplane}. Recall that our 2D friend can only do
+measurements in the 2D spherical shell, not the full 3D space. So we
+have to limit our distance measurements to points on the 2D shperical
+shell. To do that, let's look at the arbitrary point @mymath{P} on the
+2D spherical shell. Its image (@mymath{P'}) on the flat plain is also
+displayed. From the dark triangle, we see that
+@dispmath{\sin\theta={r\over R},\quad\cos\theta={R-z\over R}.}From
+these relations our 2D friend can find @mymath{z} as as function of r
+(recall that our 2D friend can only imagine two dimensions, so with
+this relation, @mymath{z} will be eliminated). From
+@mymath{\sin^2\theta+\cos^2\theta=1}, we get @mymath{z^2-2Rz+r^2=0}
+and solving for @mymath{z}, we find:
+@dispmath{z=R\left(1\pm\sqrt{1-{r^2\over R^2}}\right).}The
+@mymath{\pm} can be understood from @ref{sphericalplane}: For each
+@mymath{r}, there are two points on the sphere, one in the upper
+hemisphere and one in the lower hemisphere. An infinitesimal change in
+@mymath{r}, will create the following infinitesimal change in
+@mymath{z}:
+
+@dispmath{dz={\mp r\over R}\left(1\over \sqrt{1-{r^2/R^2}}\right)dr.}
 @noindent
-So the proper distance at the current time to that object is:
-@mymath{a_0\chi(r)}, therefore the angular diameter distance
-(@mymath{d_A}) and luminosity distance (@mymath{d_L}) can be written
-as:
+Using this (its positive sign) instead of @mymath{dz} in the
+@mymath{ds_s^2} equation above, we get:
 
-@dispmath{ d_A={a_0\chi(r)\over 1+z}, \quad d_L=a_0\chi(r)(1+z) }
+@dispmath{ds_s^2={dr^2\over 1-r^2/R^2}+r^2d\phi^2.}
+
+The derivation above was done for a spherical shell of radius
+@mymath{R} as a curved 2D surface. To generalize it to any surface, we
+can define @mymath{K=1/R^2} as the curvature parameter. Then the
+general infinitesimal change in a static universe can be written as:
+@dispmath{ds_s^2={dr^2\over 1-Kr^2}+r^2d\phi^2.}Therefore, we see that
+a positive @mymath{K} represents a real @mymath{R} which signifies a
+closed 2D spherical shell like @ref{sphericalplane}. When
+@mymath{K=0}, we have a flat plane (@ref{flatplane}) and a negative
+@mymath{K} will correspond to an imaginary @mymath{R}. The latter two
+cases are open universes (where @mymath{r} can extend to infinity).
+However, when @mymath{K>0}, we have a closed universe, where
+@mymath{r} cannot become larger than @mymath{R}.
+
+@cindex Comoving distance
+A very important issue that surfaces now (while we are still in 2D and
+can actually visualize things) is that @mymath{\overrightarrow{r}} is
+tangent to the curved space at the observer's position. In other
+words, it is on the gray flat surface of @ref{sphericalplane}, even
+when the universe if curved. Therefore for the point @mymath{P}, the
+raw coordinate @mymath{r} is the distance to @mymath{P'}, not
+@mymath{P}. The distance to the point @mymath{P} (at a specific
+coordinate @mymath{r}) on the curved surface (thick line) is called
+the comoving distance (reason discussed below) and is displayed with
+@mymath{\chi}. For the specific example of @ref{sphericalplane}, the
+comoving distance can be calculated with: @mymath{\chi=R\theta}
+(@mymath{\theta} is in radians). using the @mymath{\sin\theta}
+relation found above, we can find @mymath{\chi} as a function of
+@mymath{r}:
+
+@dispmath{\theta=\sin^{-1}\left({r\over R}\right)\quad\rightarrow\quad
+\chi(r)=R\sin^{-1}\left({r\over R}\right)}
+@noindent
+@mymath{R} is just an arbitrary constant and can be directly
+found from @mymath{K}, so for cleaner equations, it is common practice
+to set @mymath{R=1}, which gives:
+@mymath{\chi(r)=\sin^{-1}r}. Generally, depending on the the
+curvature, the comoving distance can be written as a function of the
+coordinate @mymath{r} as (from now on we are assuming @mymath{R=1}):
+@dispmath{\chi(r)=\sin^{-1}(r)\quad(K>0),\quad\quad\chi(r)=r\quad(K=0),\quad\quad\chi(r)=\sinh^{-1}(r)\quad(K<0).}The
+comoving distance allows us to write the the infinitesimal change of
+distance in a more simpler and abstract form of
+@dispmath{ds_s^2=d\chi^2+d\phi^2.}One easy way that @mymath{\chi} can
+be found is through the apparent brightness of an object: the distance
+light covers to reach us on the curved space is defined by
+@mymath{\chi}, not @mymath{r}. Therefore in a static universe, if the
+intrinsic luminosity of an object (@mymath{L}) is already known, its
+apparent brightness (@mymath{B}) can be used to find @mymath{\chi}
+from the equation @mymath{B=L/(4\pi\chi^2)}. One class of such objects
+with a-priori known intrinsic luminosities are supernovae.
+
+@cindex Proper distance
+Until now, we assumed a static universe (not changing with time). But
+our observations so far appear to indicate that the universe is
+expanding (isn't static). Since we expect the universe to be expanding
+at all points in our 2D space at the same time, to add a time
+dependence to our distance measurements, we can simply add a scaling
+factor, @mymath{a(t)}, which is a function of time. Since time
+dependence involves speed, let's assume that we are only thinking
+about the change in distance caused by something moving at the speed
+of light (light) which is postulated as the only constant and
+frame-of-reference-independent speed in the universe:
+@dispmath{ds^2=c^2dt^2+a^2(t)ds_s^2 =
+c^2dt^2+a^2(t)(d\chi^2+d\phi^2).}We can now see why @mymath{\chi} is
+called the comoving distance: it is the distance of the object at a
+reference time: @mymath{t=t_r} (the @mymath{r} subscript signifies
+``reference'') such that @mymath{a(t_r)=1}. At any arbitrary moment
+(@mymath{t\neq{t_r}}) before or after @mymath{t_r}, the distance to
+the object will be scaled as @mymath{a(t)}. This time-dependent
+distance (at a fixed moment in time) is known as the proper
+distance. In other words, the comoving distance doesn't change with
+time (co-moves with the universe), while the proper distance changes
+(expands or shrinks).
+
+@c@dispmath{H(z){\equiv}\left(\dot{a}\over a\right)(z)=H_0E(z) }
+
+@c@dispmath{E(z)=[ \Omega_{\Lambda,0} + \Omega_{C,0}(1+z)^2 +
+@c\Omega_{m,0}(1+z)^3 + \Omega_{r,0}(1+z)^4 ]^{1/2}}
+
+@c Lets take @mymath{r} to be the radial coordinate of the emitting
+@c source, which emitted its light at redshift $z$. Then the comoving
+@c distance of this object would be:
+
+@c@dispmath{ \chi(r)={c\over H_0a_0}\int_0^z{dz'\over E(z')} }
+
+@c@noindent
+@c So the proper distance at the current time to that object is:
+@c @mymath{a_0\chi(r)}, therefore the angular diameter distance
+@c (@mymath{d_A}) and luminosity distance (@mymath{d_L}) can be written
+@c as:
+
+@c@dispmath{ d_A={a_0\chi(r)\over 1+z}, \quad d_L=a_0\chi(r)(1+z) }
 
 
 
 
-@node Invoking astcosmiccal,  , Basic cosmology, CosmicCalculator
+@node Invoking astcosmiccal,  , Distance on a 2D curved space, CosmicCalculator
 @subsection Invoking CosmicCalculator
 
 CosmicCalculator will calculate cosmological variables based on the
@@ -12236,7 +12424,7 @@ $ astcosmiccal --olambda=0.6964 --omatter=0.3036 --redshift=2.1
 
 The input parameters can be given as command line options or in the
 configuration files, see @ref{Configuration files}. For a definition
-of the different parameters, please see @ref{Basic cosmology}. By
+of the different parameters, please see the sections prior to this. By
 default, all the cosmological calculations will be printed in the
 standard output (the command-line mainly) along with a short
 description and units.

@@ -81,4 +81,6 @@ doc/www/gnuastro/manual/
 doc/www/gnuastro/MathJax/
 doc/subpackageversions.texi
 doc/gnuastro-figures/iandtime.png
+doc/gnuastro-figures/flatplane.png
 doc/gnuastro-figures/samplingfreq.png
+doc/gnuastro-figures/sphericalplane.png
