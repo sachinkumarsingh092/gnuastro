@@ -116,7 +116,7 @@ setaveriver(struct mkcatalogparams *p)
       do
         {
           row[CRivAve] = ( row[CRivArea]>0.0f
-                           ? row[CRivAve]/row[CRivArea] : CSKY );
+                           ? row[CRivAve]/row[CRivArea] : row[CSKY] );
           row+=p->icols;
         }
       while(row<end);
