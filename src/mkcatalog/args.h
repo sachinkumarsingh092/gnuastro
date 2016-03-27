@@ -72,7 +72,7 @@ const char doc[] =
 /* Available letters for short options:
 
    e f g k l u v w
-   F G J L Q R T U W X Y Z
+   F G J L Q R U W X Y Z
 
    Number keys used: <=532
 
@@ -180,6 +180,14 @@ static struct argp_option options[] =
       0,
       0,
       "Input is already sky subtracted (for S/N).",
+      1
+    },
+    {
+      "threshold",
+      'T',
+      "FLT",
+      0,
+      "Only values larger than this multiple of STD.",
       1
     },
 
@@ -626,6 +634,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'E':
       p->skysubtracted=1;
       p->up.skysubtractedset=1;
+      break;
+    case 'T':
+      anydouble(arg, &p->threshold, "threshold", key, SPACK, NULL, 0);
+      p->up.thresholdset=1;
       break;
 
 

@@ -231,6 +231,7 @@ struct uiparams
   int               stdhduset;
   int            zeropointset;
   int        skysubtractedset;
+  int            thresholdset;
 
   int             intwidthset;
   int           floatwidthset;
@@ -301,6 +302,7 @@ struct mkcatalogparams
   float             zeropoint;  /* Zeropoint magnitude of input.      */
   int           skysubtracted;  /* Input is already sky subtracted.   */
   double              nsigmag;  /* Multiple of Sky STD to report mag. */
+  double            threshold;  /* Only pixels larger than this *STD. */
 
   /* Output: */
   char              *ocatname;  /* File name of object catalog.       */

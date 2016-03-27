@@ -82,7 +82,7 @@ firstpass(struct mkcatalogparams *p)
       {
         /* thisobj is a pointer to the start of the row in the object
            information array (oinfo). It is mainly used to keep things
-           short, simple, less bugy and most importantly elegant. */
+           short, simple, less bugy and most importantly: elegant. */
         imgss = p->img[i] - p->sky[i];
         thisobj = p->oinfo + objects[i]*OCOLUMNS;
 
@@ -116,24 +116,38 @@ firstpass(struct mkcatalogparams *p)
         sx = x - thisobj[ OPOSSHIFTX ];
         sy = y - thisobj[ OPOSSHIFTY ];
 
-        /* Add to the flux weighted center: */
-        ++thisobj[OAREA];
-        thisobj[ OGeoX ]       += x;
-        thisobj[ OGeoY ]       += y;
-        thisobj[ OGeoXX ]      += sx * sx;
-        thisobj[ OGeoYY ]      += sy * sy;
-        thisobj[ OGeoXY ]      += sx * sy;
-        thisobj[ OBrightness ] += imgss;
-        thisobj[ OSKY ]        += p->sky[i];
-        thisobj[ OSTD ]        += p->std[i];
-        if(imgss>0)
+        /* Only if the pixel is above the desired threshold.
+
+           REASON: The reason this condition is given like this that
+           we don't want to do multiple checks. The basic idea is
+           this: when the user doesn't want any thresholds applied,
+           then p->threshold=NAN and any conditional that involves a
+           NaN will fail, so its logical negation will be positive and
+           the calculations below will be done. However, if the user
+           does specify a threhold and the pixel is above the
+           threshold, then (imgss<p->threshold*p->std[i]) will be
+           false and its logigal negation will be positive, so the
+           pixel will be included.*/
+        if(!(imgss<p->threshold*p->std[i]))
           {
-            thisobj[ OPosBright ]  += imgss;
-            thisobj[ OFlxWhtX   ]  += imgss * x;
-            thisobj[ OFlxWhtY   ]  += imgss * y;
-            thisobj[ OFlxWhtXX  ]  += imgss * sx * sx;
-            thisobj[ OFlxWhtYY  ]  += imgss * sy * sy;
-            thisobj[ OFlxWhtXY  ]  += imgss * sx * sy;
+            ++thisobj[OAREA];
+            thisobj[ OGeoX ]       += x;
+            thisobj[ OGeoY ]       += y;
+            thisobj[ OGeoXX ]      += sx * sx;
+            thisobj[ OGeoYY ]      += sy * sy;
+            thisobj[ OGeoXY ]      += sx * sy;
+            thisobj[ OBrightness ] += imgss;
+            thisobj[ OSKY ]        += p->sky[i];
+            thisobj[ OSTD ]        += p->std[i];
+            if(imgss>0)
+              {
+                thisobj[ OPosBright ]  += imgss;
+                thisobj[ OFlxWhtX   ]  += imgss * x;
+                thisobj[ OFlxWhtY   ]  += imgss * y;
+                thisobj[ OFlxWhtXX  ]  += imgss * sx * sx;
+                thisobj[ OFlxWhtYY  ]  += imgss * sy * sy;
+                thisobj[ OFlxWhtXY  ]  += imgss * sx * sy;
+              }
           }
 
         if(clumps[i]>0)
@@ -143,22 +157,27 @@ firstpass(struct mkcatalogparams *p)
             thisobj[ ONCLUMPS ] = ( clumps[i] > thisobj[ONCLUMPS]
                                     ? clumps[i] : thisobj[ONCLUMPS] );
 
-            /* Save the information. */
-            ++thisobj [ OAREAC ];
-            thisobj[ OBrightnessC ]  += imgss;
-            thisobj[ OGeoCX  ]       += x;
-            thisobj[ OGeoCY  ]       += y;
-            thisobj[ OGeoCXX ]       += sx * sx;
-            thisobj[ OGeoCYY ]       += sy * sy;
-            thisobj[ OGeoCXY ]       += sx * sy;
-            if(imgss>0)
+            /* Only if the pixel is above the desired threshold, see
+               explanation under similar condition above. */
+            if(!(imgss<p->threshold*p->std[i]))
               {
-                thisobj[ OPosBrightC ]  += imgss;
-                thisobj[ OFlxWhtCX   ]  += imgss * x;
-                thisobj[ OFlxWhtCY   ]  += imgss * y;
-                thisobj[ OFlxWhtCXX  ]  += imgss * sx * sx;
-                thisobj[ OFlxWhtCYY  ]  += imgss * sy * sy;
-                thisobj[ OFlxWhtCXY  ]  += imgss * sx * sy;
+                /* Save the information. */
+                ++thisobj [ OAREAC ];
+                thisobj[ OBrightnessC ]  += imgss;
+                thisobj[ OGeoCX  ]       += x;
+                thisobj[ OGeoCY  ]       += y;
+                thisobj[ OGeoCXX ]       += sx * sx;
+                thisobj[ OGeoCYY ]       += sy * sy;
+                thisobj[ OGeoCXY ]       += sx * sy;
+                if(imgss>0)
+                  {
+                    thisobj[ OPosBrightC ]  += imgss;
+                    thisobj[ OFlxWhtCX   ]  += imgss * x;
+                    thisobj[ OFlxWhtCY   ]  += imgss * y;
+                    thisobj[ OFlxWhtCXX  ]  += imgss * sx * sx;
+                    thisobj[ OFlxWhtCYY  ]  += imgss * sy * sy;
+                    thisobj[ OFlxWhtCXY  ]  += imgss * sx * sy;
+                  }
               }
           }
       }
@@ -233,30 +252,35 @@ secondpass(struct mkcatalogparams *p)
           sx = x - thisclump[ CPOSSHIFTX ];
           sy = y - thisclump[ CPOSSHIFTY ];
 
-          /* Fill in this clump information. IMPORTANT NOTE: The Sky
-             is not subtracted from the clump brightness or river,
-             because later, we will subtract the river flux from the
-             clump brightness and therefore we don't need to know the
-             Sky for the clump brightness. */
-          ++thisclump[ CAREA ];
-          thisclump[ CGeoX ]        += x;
-          thisclump[ CGeoY ]        += y;
-          thisclump[ CGeoXX ]       += sx * sx;
-          thisclump[ CGeoYY ]       += sy * sy;
-          thisclump[ CGeoXY ]       += sx * sy;
-          thisclump[ CBrightness ]  += img[i];
-          thisclump[ CSKY ]         += sky[i];
-          thisclump[ CSTD ]         += std[i];
-          thisclump[ CINHOSTID ]     = clumps[i];
-          thisclump[ CHOSTOID ]      = objects[i];
-          if( (imgss=img[i]-sky[i]) > 0 )
+          /* Only if the pixel is above the desired threshold, see
+             explanation under similar condition above. */
+          if(!(img[i]-sky[i]<p->threshold*p->std[i]))
             {
-              thisclump[ CPosBright ]   += imgss;
-              thisclump[ CFlxWhtX ]     += imgss * x;
-              thisclump[ CFlxWhtY ]     += imgss * y;
-              thisclump[ CFlxWhtXX ]    += imgss * sx * sx;
-              thisclump[ CFlxWhtYY ]    += imgss * sy * sy;
-              thisclump[ CFlxWhtXY ]    += imgss * sx * sy;
+              /* Fill in this clump information. IMPORTANT NOTE: The
+                 Sky is not subtracted from the clump brightness or
+                 river, because later, we will subtract the river flux
+                 from the clump brightness and therefore we don't need
+                 to know the Sky for the clump brightness. */
+              ++thisclump[ CAREA ];
+              thisclump[ CGeoX ]        += x;
+              thisclump[ CGeoY ]        += y;
+              thisclump[ CGeoXX ]       += sx * sx;
+              thisclump[ CGeoYY ]       += sy * sy;
+              thisclump[ CGeoXY ]       += sx * sy;
+              thisclump[ CBrightness ]  += img[i];
+              thisclump[ CSKY ]         += sky[i];
+              thisclump[ CSTD ]         += std[i];
+              thisclump[ CINHOSTID ]     = clumps[i];
+              thisclump[ CHOSTOID ]      = objects[i];
+              if( (imgss=img[i]-sky[i]) > 0 )
+                {
+                  thisclump[ CPosBright ]   += imgss;
+                  thisclump[ CFlxWhtX ]     += imgss * x;
+                  thisclump[ CFlxWhtY ]     += imgss * y;
+                  thisclump[ CFlxWhtXX ]    += imgss * sx * sx;
+                  thisclump[ CFlxWhtYY ]    += imgss * sy * sy;
+                  thisclump[ CFlxWhtXY ]    += imgss * sx * sy;
+                }
             }
 
         }
@@ -465,6 +489,15 @@ makeoutput(struct mkcatalogparams *p)
       sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n",
               "Pixel area (arcsec^2)", pixarea);
       strcat(comment, p->line);
+
+      /* if a threshold was used then report it: */
+      if(!isnan(p->threshold))
+        {
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n", "**IMPORTANT** "
+                  "Threshold to use pixels (multiple of local std)",
+                  p->threshold);
+          strcat(comment, p->line);
+        }
 
 
       /* Prepare for printing the columns: */

@@ -135,6 +135,13 @@ readconfig(char *filename, struct mkcatalogparams *p)
                        filename, lineno);
           up->skysubtractedset=1;
         }
+      else if(strcmp(name, "threshold")==0)
+        {
+          if(up->thresholdset) continue;
+          anydouble(value, &p->threshold, name, key, SPACK,
+                   filename, lineno);
+          up->thresholdset=1;
+        }
 
 
       /* Outputs */
@@ -536,6 +543,8 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "zeropoint", p->zeropoint);
   if(up->skysubtractedset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "skysubtracted", p->skysubtracted);
+  if(up->thresholdset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "threshold", p->threshold);
 
   /* Output: */
   fprintf(fp, "\n# Output:\n");
@@ -1177,6 +1186,8 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
   cp->verb          = 1;
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
+
+  p->threshold      = NAN;
 
   /* Read the arguments. */
   errno=0;

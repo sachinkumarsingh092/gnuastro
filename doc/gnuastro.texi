@@ -10115,7 +10115,7 @@ one run (since the @mymath{-\overline{x}^2} term can easily be added
 later). Using the last form creates a major technical issue however:
 due to the floating point accuracy. Suppose the object is located
 between pixels 10000 and 10020. While the object pixels are only
-distributed over 20 pixels (with a standard deviation6 @mymath{<20}),
+distributed over 20 pixels (with a standard deviation @mymath{<20}),
 the mean has a value of @mymath{\sim10000}. The
 @mymath{\sum_iB_i^2x_i^2} will go to very very large values while the
 individual pixel differences will be much smaller, this will lower the
@@ -10316,6 +10316,41 @@ deviation for each pixel.
 If the image has already been sky subtracted by another program, then
 you need to notify MakeCatalog through this option. Note that this is
 only relevant when the Signal to noise ratio is to be calculated.
+
+@item -T
+@itemx --threshold
+(@option{=FLT}) For all the columns, only consider pixels that are
+above a given relative threshold. Symbolizing the value of this option
+as @mymath{T}, the Sky for a pixel at @mymath{(i,j)} with
+@mymath{\mu_{i,j}} and its Standard deviation with
+@mymath{\sigma_{ij}}, that pixel will only be used if its value
+(@mymath{B_{ij}}) satisfies this condition:
+@mymath{B_{ij}>\mu_{ij}+{T}\sigma_{ij}}. The only calculations that
+will not be affected are is the average river values
+(@option{--riverave}), since they are used as a reference. A commented
+row will be added in the header of the output catalog that will print
+the given value, since this is a very important issue, it starts with
+@command{**IMPORTANT**}.
+
+NoiseChisel will detect very diffuse signal which is useful in most
+cases where the aggregate properties of the detections are desired,
+since there is signal there (with the desired certainty). However, in
+some cases, only the properties of the peaks of the objects/clumps are
+desired, for example in attempting to separate stars from galaxies,
+the peaks are the major target and the diffuse regions only act to
+complicate the separation. With this option, MakeCatalog will simply
+ignore any pixel below the relative threshold.
+
+@cindex NaN
+This option is not mandatory, so if it isn't given (after reading the
+command line and all configuration files, see @ref{Configuration
+files}), MakeCatalog will still operate. However, if it has a value in
+any lower-level configuration file and you want to ignore that value
+for this particular run or in a higher-level configuration file, then
+set it to NaN, for example @option{--threshold=nan}. Gnuastro uses the
+C library's @code{strtod} function to read floats, which is not
+case-sensative in reading NaN values. But to be consistent, it is good
+practice to only use @option{nan}.
 
 @end table
 
@@ -12393,8 +12428,8 @@ recieve from the universe, so this is a reasonable assumption for most
 extra-galactic studies. We can thus parametrize the change in distance
 as
 
-@dispmath{ds^2=c^2dt^2+a^2(t)ds_s^2 =
-c^2dt^2+a^2(t)(d\chi^2+r^2d\phi^2).}
+@dispmath{ds^2=c^2dt^2-a^2(t)ds_s^2 =
+c^2dt^2-a^2(t)(d\chi^2+r^2d\phi^2).}
 
 
 @node Extending distance concepts to 3D, Invoking astcosmiccal, Distance on a 2D curved space, CosmicCalculator
@@ -12419,7 +12454,7 @@ steps and convensions as our 2D friend, we arrive at:
 @dispmath{ds_s^2={dr^2\over
 1-Kr^2}+r^2(d\theta^2+sin^2{\theta}d\phi^2).}In a non-static universe
 (with a scale factor a(t), the distance can be written as:
-@dispmath{ds^2=c^2dt^2+a^2(t)[d\chi^2+r^2(d\theta^2+sin^2{\theta}d\phi^2)].}
+@dispmath{ds^2=c^2dt^2-a^2(t)[d\chi^2+r^2(d\theta^2+sin^2{\theta}d\phi^2)].}
 
 
 
