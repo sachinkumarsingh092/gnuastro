@@ -75,6 +75,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum objectcols
   {
     OAREA,               /* Area of this object.                    */
+    OALLAREA,            /* Object area irrespective of threshold.  */
     ONCLUMPS,            /* Total number of clumps in this object.  */
     OBrightness,         /* Sum of (flux-sky) in object.            */
     OFlxWhtX,            /* Sum of (flux-sky)*x of this object.     */
@@ -122,6 +123,7 @@ enum clumpcols
     CHOSTOID,            /* ID of object hosting this clump.        */
     CINHOSTID,           /* ID of clump in host object.             */
     CAREA,               /* Area of this clump.                     */
+    CALLAREA,            /* Area of clump irrespective of threshold.*/
     CFlxWhtX,            /* Sum of flux*x of this clump.            */
     CFlxWhtY,            /* Sum of flux*y of this clump.            */
     CFlxWhtXX,           /* Sum of flux*x*x of this clump.          */

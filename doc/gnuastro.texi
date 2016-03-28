@@ -10576,7 +10576,7 @@ The magnitude of all clumps or objects, see @option{--brightness}.
 @option{--clumpbrightness}.
 
 @item --riverave
-[Clumps] The average Sky subtracted flux of the river pixels of this
+[Clumps] The average brightness of the river pixels around this
 clump. River pixels were defined in Akhlaghi and Ichikawa 2015. In
 short they are the pixels immediately outside of the clumps. This
 value is used internally to find the brightness (or magnitude) and

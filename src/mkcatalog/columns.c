@@ -71,7 +71,7 @@ setskystd(struct mkcatalogparams *p, size_t col)
     {
 
       /* Set the area column: */
-      ac = p->obj0clump1 ? CAREA : OAREA;
+      ac = p->obj0clump1 ? CALLAREA : OALLAREA;
 
       /* Go over every row and do the correction. */
       do
@@ -149,9 +149,9 @@ setclumpbrightness(struct mkcatalogparams *p)
       /* On a clump, we have to subtract the average river flux
          multiplied by the the area of the clump. The value in the
          CBrightness column is simply the sum of pixels. Note that
-         here we are multiplying by the area of the clump (CAREA),
-         while in setaveriver(), we divided by the area of the river
-         (CRivArea). */
+         here we are multiplying by the area of the clump (CALLAREA)
+         irrespective of threshold, while in setaveriver(), we divided
+         by the area of the river (CRivArea). */
       do
         {
           row[CBrightness] -= row[CRivAve]*row[CAREA];
@@ -661,7 +661,9 @@ area(struct mkcatalogparams *p, int cinobj, int isriver)
         }
       else
         {
-          type="Area of this clump";
+          type = isnan(p->threshold)
+            ? "Area of this clump"
+            : "Area of this clump above threshold";
           col = CAREA;
         }
     }

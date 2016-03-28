@@ -116,6 +116,11 @@ firstpass(struct mkcatalogparams *p)
         sx = x - thisobj[ OPOSSHIFTX ];
         sy = y - thisobj[ OPOSSHIFTY ];
 
+        /* Properties that are independent of threshod: */
+        ++thisobj[OALLAREA];
+        thisobj[ OSKY ]        += p->sky[i];
+        thisobj[ OSTD ]        += p->std[i];
+
         /* Only if the pixel is above the desired threshold.
 
            REASON: The reason this condition is given like this that
@@ -137,8 +142,6 @@ firstpass(struct mkcatalogparams *p)
             thisobj[ OGeoYY ]      += sy * sy;
             thisobj[ OGeoXY ]      += sx * sy;
             thisobj[ OBrightness ] += imgss;
-            thisobj[ OSKY ]        += p->sky[i];
-            thisobj[ OSTD ]        += p->std[i];
             if(imgss>0)
               {
                 thisobj[ OPosBright ]  += imgss;
@@ -252,6 +255,14 @@ secondpass(struct mkcatalogparams *p)
           sx = x - thisclump[ CPOSSHIFTX ];
           sy = y - thisclump[ CPOSSHIFTY ];
 
+          /* Calculations that are independent of the threshold. The
+             CALLAREA is the full area of the clump irrespective of
+             the threshold, this is needed to correctly implement the
+             average river flux (which is defined by the. */
+          ++thisclump[ CALLAREA ];
+          thisclump[ CSKY ]  += sky[i];
+          thisclump[ CSTD ]  += std[i];
+
           /* Only if the pixel is above the desired threshold, see
              explanation under similar condition above. */
           if(!(img[i]-sky[i]<p->threshold*p->std[i]))
@@ -268,8 +279,6 @@ secondpass(struct mkcatalogparams *p)
               thisclump[ CGeoYY ]       += sy * sy;
               thisclump[ CGeoXY ]       += sx * sy;
               thisclump[ CBrightness ]  += img[i];
-              thisclump[ CSKY ]         += sky[i];
-              thisclump[ CSTD ]         += std[i];
               thisclump[ CINHOSTID ]     = clumps[i];
               thisclump[ CHOSTOID ]      = objects[i];
               if( (imgss=img[i]-sky[i]) > 0 )
@@ -494,7 +503,7 @@ makeoutput(struct mkcatalogparams *p)
       if(!isnan(p->threshold))
         {
           sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n", "**IMPORTANT** "
-                  "Threshold to use pixels (multiple of local std)",
+                  "Pixel threshold (multiple of local std)",
                   p->threshold);
           strcat(comment, p->line);
         }
