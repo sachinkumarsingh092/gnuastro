@@ -381,6 +381,14 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
           p->up.clumpsbrightnessset=1;
         }
+      else if(strcmp(name, "noriverbrightness")==0)
+        {
+          if(up->noriverbrightnessset) continue;
+          intzeroorone(value, &yes, name, key, SPACK, filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
+          p->up.noriverbrightnessset=1;
+        }
       else if(strcmp(name, "magnitude")==0)
         {
           if(up->magnitudeset) continue;
@@ -641,6 +649,9 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
         break;
       case CATCLUMPSBRIGHTNESS:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsbrightness", 1);
+        break;
+      case CATNORIVERBRIGHTNESS:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "noriverbrightness", 1);
         break;
       case CATMAGNITUDE:
         fprintf(fp, CONF_SHOWFMT"%d\n", "magnitude", 1);
@@ -949,136 +960,139 @@ preparearrays(struct mkcatalogparams *p)
       switch(p->allcols[i])
         {
         case CATID:
-          p->objcols[p->objncols++]=CATID;
-          p->clumpcols[p->clumpncols++]=CATID;
+          p->objcols[p->objncols++]=p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATHOSTOBJID:
-          p->clumpcols[p->clumpncols++]=CATHOSTOBJID;
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATIDINHOSTOBJ:
-          p->clumpcols[p->clumpncols++]=CATIDINHOSTOBJ;
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATNUMCLUMPS:
-          p->objcols[p->objncols++]=CATNUMCLUMPS;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATAREA:
-          p->objcols[p->objncols++]=CATAREA;
-          p->clumpcols[p->clumpncols++]=CATAREA;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATCLUMPSAREA:
-          p->objcols[p->objncols++]=CATCLUMPSAREA;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATX:
-          p->objcols[p->objncols++]=CATX;
-          p->clumpcols[p->clumpncols++]=CATX;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATY:
-          p->objcols[p->objncols++]=CATY;
-          p->clumpcols[p->clumpncols++]=CATY;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATGEOX:
-          p->objcols[p->objncols++]=CATGEOX;
-          p->clumpcols[p->clumpncols++]=CATGEOX;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATGEOY:
-          p->objcols[p->objncols++]=CATGEOY;
-          p->clumpcols[p->clumpncols++]=CATGEOY;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATCLUMPSX:
-          p->objcols[p->objncols++]=CATCLUMPSX;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATCLUMPSY:
-          p->objcols[p->objncols++]=CATCLUMPSY;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATCLUMPSGEOX:
-          p->objcols[p->objncols++]=CATCLUMPSGEOX;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATCLUMPSGEOY:
-          p->objcols[p->objncols++]=CATCLUMPSGEOY;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATRA:
-          p->objcols[p->objncols++]=CATRA;
-          p->clumpcols[p->clumpncols++]=CATRA;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATDEC:
-          p->objcols[p->objncols++]=CATDEC;
-          p->clumpcols[p->clumpncols++]=CATDEC;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATGEORA:
-          p->objcols[p->objncols++]=CATGEORA;
-          p->clumpcols[p->clumpncols++]=CATGEORA;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATGEODEC:
-          p->objcols[p->objncols++]=CATGEODEC;
-          p->clumpcols[p->clumpncols++]=CATGEODEC;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATCLUMPSRA:
-          p->objcols[p->objncols++]=CATCLUMPSRA;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATCLUMPSDEC:
-          p->objcols[p->objncols++]=CATCLUMPSDEC;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATCLUMPSGEORA:
-          p->objcols[p->objncols++]=CATCLUMPSGEORA;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATCLUMPSGEODEC:
-          p->objcols[p->objncols++]=CATCLUMPSGEODEC;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATBRIGHTNESS:
-          p->objcols[p->objncols++]=CATBRIGHTNESS;
-          p->clumpcols[p->clumpncols++]=CATBRIGHTNESS;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATCLUMPSBRIGHTNESS:
-          p->objcols[p->objncols++]=CATCLUMPSBRIGHTNESS;
+          p->objcols[p->objncols++] = p->allcols[i];
+          break;
+        case CATNORIVERBRIGHTNESS:
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATMAGNITUDE:
-          p->objcols[p->objncols++]=CATMAGNITUDE;
-          p->clumpcols[p->clumpncols++]=CATMAGNITUDE;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATCLUMPSMAGNITUDE:
-          p->objcols[p->objncols++]=CATCLUMPSMAGNITUDE;
+          p->objcols[p->objncols++] = p->allcols[i];
           break;
         case CATRIVERAVE:
-          p->clumpcols[p->clumpncols++]=CATRIVERAVE;
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATRIVERNUM:
-          p->clumpcols[p->clumpncols++]=CATRIVERNUM;
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATSN:
-          p->objcols[p->objncols++]=CATSN;
-          p->clumpcols[p->clumpncols++]=CATSN;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATSKY:
-          p->objcols[p->objncols++]=CATSKY;
-          p->clumpcols[p->clumpncols++]=CATSKY;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATSTD:
-          p->objcols[p->objncols++]=CATSTD;
-          p->clumpcols[p->clumpncols++]=CATSTD;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATSEMIMAJOR:
-          p->objcols[p->objncols++]=CATSEMIMAJOR;
-          p->clumpcols[p->clumpncols++]=CATSEMIMAJOR;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATSEMIMINOR:
-          p->objcols[p->objncols++]=CATSEMIMINOR;
-          p->clumpcols[p->clumpncols++]=CATSEMIMINOR;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATPOSITIONANGLE:
-          p->objcols[p->objncols++]=CATPOSITIONANGLE;
-          p->clumpcols[p->clumpncols++]=CATPOSITIONANGLE;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATGEOSEMIMAJOR:
-          p->objcols[p->objncols++]=CATGEOSEMIMAJOR;
-          p->clumpcols[p->clumpncols++]=CATGEOSEMIMAJOR;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATGEOSEMIMINOR:
-          p->objcols[p->objncols++]=CATGEOSEMIMINOR;
-          p->clumpcols[p->clumpncols++]=CATGEOSEMIMINOR;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATGEOPOSITIONANGLE:
-          p->objcols[p->objncols++]=CATGEOPOSITIONANGLE;
-          p->clumpcols[p->clumpncols++]=CATGEOPOSITIONANGLE;
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         default:
           error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "

@@ -837,12 +837,13 @@ brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
               char *scale)
 {
   size_t i;
+  char *add;
   double bright, *value;
 
   /* Prepare other necessary columns */
   if( !strcmp(MKRIVERSSUR, target) )
     setaveriver(p);
-  if( !strcmp(MKCATCLUMP, target) )
+  if( !strcmp(MKCATCLUMP, target) && col!=CNoRiverBrightness )
     setclumpbrightness(p);
 
   /* Fill the output columns: */
@@ -876,7 +877,10 @@ brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
     }
   else
     p->unitp = strcmp(MKCATMAG, scale) ? CATUNITBRIGHTNESS : CATUNITMAG;
-  sprintf(p->description, "%lu: %s %s.", p->curcol, target, scale);
+
+  /* Set the header information: */
+  add = (col==CNoRiverBrightness) ? " sky (not river) subtracted " : " ";
+  sprintf(p->description, "%lu: %s%s%s.", p->curcol, target, add, scale);
 }
 
 

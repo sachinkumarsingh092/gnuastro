@@ -10567,6 +10567,27 @@ objects catalog.
 [Objects] The total brightness of the clumps within an object. This is
 simply the sum of the pixels associated with clumps in the object.
 
+@item --noriverbrightness
+[Clumps] The Sky (not river) subtracted clump brightness. By
+definition, for the clumps, the average brightness of the rivers
+surrounding it are subtracted from it for a first order accounting for
+contamination by neighbors. In cases where you will be calculating the
+flux brightness difference later (one example below) the contamination
+will be (mostly) removed at that stage, which is why this column was
+added.
+
+One example might be this: you want to know the change in the clump
+flux as a function of threshold (see @option{--threshold}). So you
+will make two catalogs (each having this column but with different
+thresholds) and then subtract the lower threshold catalog (higher
+brightness) from the higher threshold catalog (lower brightness). The
+effect is most visile when the rivers have a high average
+signal-to-noise ratio. The removed contribution from the pixels below
+the threshold will be less than the river pixels. Therefore the
+river-subtracted brightness (@option{--brightness}) for the
+thresholded catalog for such clumps will be larger than the brightness
+with no threshold!
+
 @item -m
 @itemx --magnitude
 The magnitude of all clumps or objects, see @option{--brightness}.

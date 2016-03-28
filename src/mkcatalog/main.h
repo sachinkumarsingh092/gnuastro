@@ -133,7 +133,8 @@ enum clumpcols
     CPOSSHIFTY,          /* Shift in Y to avoid rounding errors.    */
     CFlxWhtRA,           /* ra of (CFlxWhtX, CFlxWhtY).             */
     CFlxWhtDec,          /* Dec of (CFlxWhtX, CFlxWhtY).            */
-    CBrightness,         /* Clump brightness, not sky subtracted.   */
+    CBrightness,         /* River subtracted brightness.            */
+    CNoRiverBrightness,  /* Sky (not river) subtracted brightness.  */
     CRivAve,             /* Average value in rivers around clump.   */
     CRivArea,            /* Num river pixels around this clump.     */
     CSKY,                /* Sum of sky value on this object.        */
@@ -188,6 +189,7 @@ enum outcols
     CATCLUMPSGEODEC,
     CATBRIGHTNESS,
     CATCLUMPSBRIGHTNESS,
+    CATNORIVERBRIGHTNESS,
     CATMAGNITUDE,
     CATCLUMPSMAGNITUDE,
     CATRIVERAVE,
@@ -266,6 +268,7 @@ struct uiparams
   int         clumpsgeodecset;
   int           brightnessset;
   int     clumpsbrightnessset;
+  int    noriverbrightnessset;
   int            magnitudeset;
   int      clumpsmagnitudeset;
   int             riveraveset;

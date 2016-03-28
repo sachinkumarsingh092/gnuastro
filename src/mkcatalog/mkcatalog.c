@@ -267,21 +267,25 @@ secondpass(struct mkcatalogparams *p)
              explanation under similar condition above. */
           if(!(img[i]-sky[i]<p->threshold*p->std[i]))
             {
+              /* Sky subtracted brightness */
+              imgss=img[i]-sky[i];
+
               /* Fill in this clump information. IMPORTANT NOTE: The
                  Sky is not subtracted from the clump brightness or
                  river, because later, we will subtract the river flux
                  from the clump brightness and therefore we don't need
                  to know the Sky for the clump brightness. */
               ++thisclump[ CAREA ];
-              thisclump[ CGeoX ]        += x;
-              thisclump[ CGeoY ]        += y;
-              thisclump[ CGeoXX ]       += sx * sx;
-              thisclump[ CGeoYY ]       += sy * sy;
-              thisclump[ CGeoXY ]       += sx * sy;
-              thisclump[ CBrightness ]  += img[i];
-              thisclump[ CINHOSTID ]     = clumps[i];
-              thisclump[ CHOSTOID ]      = objects[i];
-              if( (imgss=img[i]-sky[i]) > 0 )
+              thisclump[ CGeoX ]              += x;
+              thisclump[ CGeoY ]              += y;
+              thisclump[ CGeoXX ]             += sx * sx;
+              thisclump[ CGeoYY ]             += sy * sy;
+              thisclump[ CGeoXY ]             += sx * sy;
+              thisclump[ CINHOSTID ]           = clumps[i];
+              thisclump[ CHOSTOID ]            = objects[i];
+              thisclump[ CBrightness ]        += img[i];
+              thisclump[ CNoRiverBrightness ] += imgss;
+              if( imgss > 0.0f )
                 {
                   thisclump[ CPosBright ]   += imgss;
                   thisclump[ CFlxWhtX ]     += imgss * x;
@@ -626,6 +630,10 @@ makeoutput(struct mkcatalogparams *p)
 
             case CATCLUMPSBRIGHTNESS:
               brightnessmag(p, OBrightnessC, MKCATCINO, MKCATBRIGHT);
+              break;
+
+            case CATNORIVERBRIGHTNESS:
+              brightnessmag(p, CNoRiverBrightness, target, MKCATBRIGHT);
               break;
 
             case CATMAGNITUDE:

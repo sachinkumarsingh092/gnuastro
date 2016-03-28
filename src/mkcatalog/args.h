@@ -74,7 +74,7 @@ const char doc[] =
    e f g k l u v w
    F G J L Q R U W X Y Z
 
-   Number keys used: <=532
+   Number keys used: <=533
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -447,6 +447,14 @@ static struct argp_option options[] =
       3
     },
     {
+      "noriverbrightness",
+      533,
+      0,
+      0,
+      "Sky (not river) subtracted clump brightness.",
+      3
+    },
+    {
       "magnitude",
       'm',
       0,
@@ -766,6 +774,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 511:
       add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
       p->up.clumpsbrightnessset=1;
+      break;
+    case 533:
+      add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
+      p->up.noriverbrightnessset=1;
       break;
     case 'm':
       add_to_sll(&p->allcolsll, CATMAGNITUDE);
