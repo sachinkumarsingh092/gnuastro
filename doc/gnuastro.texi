@@ -5756,6 +5756,8 @@ $ astarithmetic 10.32 3.84 - 2.7 pow            # will print 155.329
 $ astarithmetic 1 image.fits / --out=inverse.fits
 $ astarithmetic image.fits -1 "*" --out=negative.fits
 $ astarithmetic image1.fits image2.fits + 2 / --out=average.fits
+$ astarithmetic image1.fits image2.fits average --out=average.fits
+$ astarithmetic img1.fits img2.fits img2.fits median --out=median.fits
 $ astarithmetic image.fits image.fits - --out=skysub.fits          \
                 --hdu=0 --hdu1=3
 @end example
@@ -5817,6 +5819,10 @@ the multiplication sign (for example @command{"*"}).
 @item /
 Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
 
+@item abs
+Absolute value of first operand, so ``@command{4 abs}'' is
+equivalent to @mymath{|4|}.
+
 @item pow
 First operand to the power of the second, so ``@command{4 5
 pow}'' is equivalent to @mymath{4^5}.
@@ -5833,19 +5839,40 @@ equivalent to @mymath{ln(4)}.
 Base-10 logarithm of first operand, so ``@command{4 log10}'' is
 equivalent to @mymath{log(4)}.
 
-@item abs
-Absolute value of first operand, so ``@command{4 abs}'' is
-equivalent to @mymath{|4|}.
-
-@item min
+@item minvalue
 Minimum value of first operand, so ``@command{a.fits min}'' will push
 the the minimum pixel value in this image onto the stack. On a number,
 this operator just returns the number without any change. So if this
 operator acts on a single image on the command line, the output will
 no longer be an image, but a number.
 
-@item max
+@item maxvalue
 Maximum value of first operand, similar to @command{min}.
+
+@cindex NaN
+@item min
+If there are several operands (images), each pixel of the output of
+this operator will be set to the minimum value of all the operands
+(images) in that pixel. If the operands are all numbers, then their
+minimum value will be reported. All the operands to this operator must
+be either images or numbers, they cannot be mixed.
+
+Note that NaN/blank pixels will be ignored, see @ref{Blank
+pixels}. Also note that this operand will pull all available operands
+on the stack to generate its output.
+
+@item max
+Similar to @command{min}, but the pixels of the output will contain
+the maximum of the respective pixels in all operands in the stack.
+
+@item average
+Similar to @command{min}, but the pixels of the output will contain
+the average of the respective pixels in all operands in the stack
+
+@item median
+Similar to @command{min}, but the pixels of the output will contain
+the median of the respective pixels in all operands in the stack.
+
 @end table
 
 @cartouche

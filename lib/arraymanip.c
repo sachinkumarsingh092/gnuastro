@@ -228,6 +228,25 @@ nonans(float *in, size_t *size)
 
 
 
+void
+nonansdouble(double *in, size_t *size)
+{
+  size_t outsize=0;
+  double *f=in, *fp=in+*size;
+  do
+    if(!isnan(*in))
+      {
+        *f++=*in;
+        ++outsize;
+      }
+  while(++in<fp);
+  *size=outsize;
+}
+
+
+
+
+
 
 
 

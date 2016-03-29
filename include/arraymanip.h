@@ -53,6 +53,9 @@ void
 nonans(float *in, size_t *size);
 
 void
+nonansdouble(double *in, size_t *size);
+
+void
 fmultipconst(float *in, size_t size, float a);
 
 void

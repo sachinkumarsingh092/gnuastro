@@ -43,6 +43,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************************************************************/
 /*************    Operand linked list functions    *************/
 /***************************************************************/
+size_t
+num_operands(struct imgarithparams *p)
+{
+  size_t counter=0;
+  struct operand *tmp=NULL;
+  for(tmp=p->operands;tmp!=NULL;tmp=tmp->next)
+    ++counter;
+  return counter;
+}
+
+
+
+
+
 void
 add_operand(struct imgarithparams *p, char *filename, double number,
             double *array)
@@ -407,6 +421,7 @@ topower(struct imgarithparams *p, char *op)
   /* Do the operation: */
   if(farr && sarr)              /* Both are arrays. */
     {
+
       /* Do the operation, note that the output is stored in the first
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
@@ -415,6 +430,7 @@ topower(struct imgarithparams *p, char *op)
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
+
 
       /* Clean up. */
       free(farr);
@@ -431,6 +447,143 @@ topower(struct imgarithparams *p, char *op)
     }
   else                          /* Both are numbers.           */
     add_operand(p, NOOPTFILENAME, pow(snum, fnum), NOOPTARRAY);
+}
+
+
+
+
+
+void
+alloppixs(struct imgarithparams *p, char *operator)
+{
+  int i, j;                  /* Integer to allow negative checks.     */
+  double num;                /* Temporary number holder.              */
+  double *arr;               /* Temporary array holder.               */
+  int firstisarray=-1;       /* ==-1: unset. ==1: array. ==0: number. */
+  double *allpixels=NULL;    /* Array for all values in one pixel.    */
+  double **allarrays=NULL;   /* Array for pointers to input arrays.   */
+  size_t size, numop=num_operands(p);
+  double (*thisfunction)(double *, size_t);
+
+
+  /* First set the appropriate function to call. */
+  if(!strcmp(operator, "min"))
+    thisfunction = &doublemin_r;
+  else if(!strcmp(operator, "max"))
+    thisfunction = &doublemax_r;
+  else if(!strcmp(operator, "median"))
+    thisfunction = &mediandoubleinplace;
+  else if(!strcmp(operator, "average"))
+    thisfunction = &doubleaverage;
+  else
+    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+          "can address the problem. The value of `operator' in "
+          "alloppixs (%s) is not recognized.",
+          PACKAGE_BUGREPORT, operator);
+
+
+  /* Allocate the array of pointers to all input arrays and also the
+     array to temporarily keep all values for each pixel */
+  errno=0;
+  allarrays=malloc(numop*sizeof *allarrays);
+  if(allarrays==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for allarrays in alloppixs.",
+          numop*sizeof *allarrays);
+  errno=0;
+  allpixels=malloc(numop*sizeof *allpixels);
+  if(allpixels==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for allpixels in alloppixs.",
+          numop*sizeof *allpixels);
+
+
+  /* Prepare all the inputs, note that since it is a linked list, the
+     operands pop from the last to first. Here order is not important,
+     but in other cases that it might be (and also for debugging),
+     here the inputs are put in order so the indexs start from the
+     last to first. */
+  for(i=numop-1;i>=0;--i)
+    {
+      /* Pop out the operand. */
+      pop_operand(p, &num, &arr, operator);
+
+      /* Do the appropriate action if it is an array or a number. */
+      if(arr)
+        switch(firstisarray)
+          {
+          case -1:
+            firstisarray=1;
+            allarrays[i]=arr;
+            break;
+          case 1:
+            allarrays[i]=arr;
+            break;
+          case 0:
+            error(EXIT_FAILURE, 0, "For the %s operator, all operands "
+                  "must be either an array or number.", operator);
+            break;
+          default:
+            error(EXIT_FAILURE, 0, "A Bug! Please contact us at %s so we "
+                  "can address the problem. The value of firstisarray (%d) "
+                  "in the alloppixs function is not recognized.",
+                  PACKAGE_BUGREPORT, firstisarray);
+          }
+      else
+        switch(firstisarray)
+          {
+          case -1:
+            firstisarray=0;
+            allpixels[i]=num;
+            break;
+          case 0:
+            allpixels[i]=num;
+            break;
+          case 1:
+            error(EXIT_FAILURE, 0, "For the %s operator, all operands "
+                  "must be either an array or number.", operator);
+            break;
+          default:
+            error(EXIT_FAILURE, 0, "A Bug! Please contact us at %s so we "
+                  "can address the problem. The value of firstisarray (%d) "
+                  "in the alloppixs function is not recognized.",
+                  PACKAGE_BUGREPORT, firstisarray);
+          }
+    }
+
+
+  /* Set the total number of pixels, note that we can't do this in the
+     definition of the variable because p->s0 and p->s1 will be set in
+     pop_operand for the first image. */
+  size=p->s0*p->s1;
+
+
+  /* Do the operation and report the result: */
+  if(arr)
+    {
+      /* Find the value and replace it with the first operand. */
+      for(i=0;i<size;++i)
+        {
+          /* Go over all the inputs and put the appropriate pixel
+             values in the allpixels array. */
+          for(j=0;j<numop;++j)
+            allpixels[j]=allarrays[j][i];
+
+          /* Do the appropriate action. */
+          allarrays[0][i]=(*thisfunction)(allpixels, numop);
+        }
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, allarrays[0]);
+
+      /* Free all the extra operands */
+      for(i=1;i<numop;++i) free(allarrays[i]);
+    }
+  else
+    add_operand(p, NOOPTFILENAME, (*thisfunction)(allpixels, numop),
+                NOOPTARRAY);
+
+  /* Clean up: */
+  free(allarrays);
+  free(allpixels);
 }
 
 
@@ -650,17 +803,21 @@ reversepolish(struct imgarithparams *p)
         add_operand(p, NOOPTFILENAME, number, NOOPTARRAY);
       else
         {
-          if     (strcmp(token->v, "+")==0)     sum(p);
-          else if(strcmp(token->v, "-")==0)     subtract(p);
-          else if(strcmp(token->v, "*")==0)     multiply(p);
-          else if(strcmp(token->v, "/")==0)     divide(p);
-          else if(strcmp(token->v, "pow")==0)   topower(p, NULL);
-          else if(strcmp(token->v, "log")==0)   takelog(p);
-          else if(strcmp(token->v, "abs")==0)   takeabs(p);
-          else if(strcmp(token->v, "min")==0)   findmin(p);
-          else if(strcmp(token->v, "max")==0)   findmax(p);
-          else if(strcmp(token->v, "sqrt")==0)  takesqrt(p);
-          else if(strcmp(token->v, "log10")==0) takelog10(p);
+          if     (!strcmp(token->v, "+"))       sum(p);
+          else if(!strcmp(token->v, "-"))       subtract(p);
+          else if(!strcmp(token->v, "*"))       multiply(p);
+          else if(!strcmp(token->v, "/"))       divide(p);
+          else if(!strcmp(token->v, "abs"))     takeabs(p);
+          else if(!strcmp(token->v, "pow"))     topower(p, NULL);
+          else if(!strcmp(token->v, "sqrt"))    takesqrt(p);
+          else if(!strcmp(token->v, "log"))     takelog(p);
+          else if(!strcmp(token->v, "log10"))   takelog10(p);
+          else if(!strcmp(token->v, "minvalue"))findmin(p);
+          else if(!strcmp(token->v, "maxvalue"))findmax(p);
+          else if(!strcmp(token->v, "min")
+                  || !strcmp(token->v, "max")
+                  || !strcmp(token->v, "average")
+                  || !strcmp(token->v, "median")) alloppixs(p, token->v);
           else
             error(EXIT_FAILURE, 0, "The argument \"%s\" could not be "
                   "interpretted as an operator.", token->v);

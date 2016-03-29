@@ -39,8 +39,14 @@ floatmax(float *in, size_t size, float *max);
 void
 doublemin(double *in, size_t size, double *min);
 
+double
+doublemin_r(double *in, size_t size);
+
 void
 doublemax(double *in, size_t size, double *max);
+
+double
+doublemax_r(double *in, size_t size);
 
 void
 floatmaxmasked(float *in, unsigned char *mask, size_t size, float *max);
@@ -108,6 +114,9 @@ floatsumsquaredmaskl(float *in, long *mask, size_t size, size_t *nsize);
 float
 floataverage(float *in, size_t size);
 
+double
+doubleaverage(double *in, size_t size);
+
 void
 fave(float *in, size_t size, float *ave, unsigned char *mask);
 
@@ -141,6 +150,9 @@ floatavestdmaskbyt0inregionsclip(float *in, unsigned char *byt,
  ****************************************************************/
 float
 median(float *array, size_t insize);
+
+double
+mediandoubleinplace(double *array, size_t insize);
 
 
 
