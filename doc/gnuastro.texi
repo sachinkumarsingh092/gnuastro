@@ -662,27 +662,53 @@ efficient algorithms. To make things worse, natural scientists have
 generally not been trained in the advanced software techniques,
 paradigms and architecture that is taught in computer science or
 engineering courses and thus used in most software. The GNU Astronomy
-Utilities are an effort to tackle this issue. GNU Astronomy Utilities
-are built on the basis of the GNU general public license (GPL), giving
-the users complete ``freedom'' over them, see @ref{Your rights}. We
-further add the requirement (on the authors of Gnuastro) that an
-astronomer, who is not necessarily trained in computer science or
-engineering, will need minimal requirements and preparations to
-understand and modify any step if they feel the need to do so, see
-@ref{Why C} and @ref{Design philosophy}.
+Utilities are an effort to tackle this issue.
+
+Gnuastro is not just the software, this book is as important to the
+vision behind Gnuastro as the source code (software) is. This book has
+tried to learn from the sucess of the ``Numerical Recipes'' book in
+educating the non-software engineer (but still heavy users of
+computational algorithms, like astronomers) community. There are two
+major differences: the code is moved within the actual Gnuastro
+software source code (which is heavily commented, with all programs
+following a similar internal structure, see @ref{Program source}) and
+this book focuses on thoroughly explaining the concepts (history,
+mathematics, science and applications when necessary) behind those
+codes. The source code and this book are thus intimately linked, and
+when considered as a single entity can be thought of as a real (an
+actual software accompanying the algorithms) ``Numerical Recipes'' for
+astronomy.
+
+The other major difference is that ``Numerical Recipes'' does not
+allow you to distribute any code that you have taken (learnt) from it
+and the book is not freely available. So while it enlightens the
+individual who has access to it, it corroborates social ignorance. For
+example not allowing people who use its codes to release their source
+code with their software, they can only publicly release binaries (a
+black box). Exactly the opposite end of the spectrum, Gnuastro's
+source code is released under the GNU general public license (GPL) and
+this book is released under the GNU free documentation license. You
+are therefore free to distribute any software you create using parts
+of Gnuastro's source code or text from this book, see @ref{Your
+rights}. While developing the source code and this book together, the
+developers of Gnuastro aim to impose the minimum requirements on you
+(in computer science, engineering and even the mathematics behind the
+tools) to understand and modify any step of Gnuastro if you feel the
+need to do so, see @ref{Why C} and @ref{Design philosophy}.
 
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
 telescope. Astronomical objects could not be seen with the Dutch
 military design of the telescope. In the beginning of his ``The
 Sidereal Messenger'' (1610) he cautions the readers on this issue and
-instructs them on how to build a suitable instrument. Before he
-actually saw the moons of Jupiter, the mountains on the Moon or the
-crescent of Venus, he was an anti-Copernican and was “evasive” to
-Kepler@footnote{Galileo G. (Translated by Maurice
-A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing
-company, first edition, 2008.}. Science is not independent of its
-tools.
+instructs them on how to build a suitable instrument: his results were
+not independent of the tool he used (this is as true today as it was
+in the time of Galileo). Before he actually saw the moons of Jupiter,
+the mountains on the Moon or the crescent of Venus, he was an
+anti-Copernican and was “evasive” to Kepler@footnote{Galileo
+G. (Translated by Maurice A. Finocchiaro). @emph{The essential
+Galileo}. Hackett publishing company, first edition, 2008.}. Science
+is not independent of its tools.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
@@ -691,16 +717,22 @@ understanding software, you are reduced to believing in magic''.  Ken
 Thomson (the designer or the Unix operating system) says ``I abhor a
 system designed for the `user' if that word is a coded pejorative
 meaning `stupid and unsophisticated'.'' Certainly no scientist (user
-of a scientific software) would want to be considered as such. Roughly
-5 years before special relativity and about two decades before quantum
-mechanics fundamentally changed Physics, Kelvin is quoted as
-saying@footnote{Another such quote is from Albert. A. Michelson's
-speech at the dedication of Ryerson Physics Lab, U. of Chicago 1894
-saying: ``The more important fundamental laws and facts of physical
-science have all been discovered, and these are now so firmly
-established that the possibility of their ever being supplanted in
-consequence of new discoveries is exceedingly remote.... Our future
-discoveries must be looked for in the sixth place of decimals.''.}:
+of a scientific software) would want to be considered a believer in
+magic, or `stupid and unsophisticated'. This usually happens when
+scientists get too distant from the raw data and are mainly indulging
+themselves in their own high-level (abstract) models (creations). For
+example, roughly 5 years before special relativity and about two
+decades before quantum mechanics fundamentally changed Physics, Kelvin
+is quoted as saying@footnote{Another such quote is from
+Albert. A. Michelson's speech at the dedication of Ryerson Physics
+Lab, U. of Chicago 1894 saying: ``The more important fundamental laws
+and facts of physical science have all been discovered, and these are
+now so firmly established that the possibility of their ever being
+supplanted in consequence of new discoveries is exceedingly
+remote.... Our future discoveries must be looked for in the sixth
+place of decimals.''. Unfortunately this positivist attitude to
+science is still very prevalent with regard to the models and
+knowledge of today.}:
 
 @quotation
 @cindex Lord Kelvin
