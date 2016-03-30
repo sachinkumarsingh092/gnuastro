@@ -5847,15 +5847,15 @@ operator acts on a single image on the command line, the output will
 no longer be an image, but a number.
 
 @item maxvalue
-Maximum value of first operand, similar to @command{min}.
+Maximum value of first operand, similar to @command{minvalue}.
 
 @cindex NaN
 @item min
 If there are several operands (images), each pixel of the output of
 this operator will be set to the minimum value of all the operands
 (images) in that pixel. If the operands are all numbers, then their
-minimum value will be reported. All the operands to this operator must
-be either images or numbers, they cannot be mixed.
+minimum value will be put in the stack. All the operands to this
+operator must be either images or numbers, they cannot be mixed.
 
 Note that NaN/blank pixels will be ignored, see @ref{Blank
 pixels}. Also note that this operand will pull all available operands
@@ -6327,7 +6327,7 @@ involved with the Ptolemic world view had to add a huge number of
 epicycles during the centuries after Ptolemy in order to explain more
 accurate observations. Finally the death knell of this world-view was
 Galileo's observations with his new instrument (the telescope). So the
-main physical insight which is what Astronomers and Physicists are
+physical insight, which is what Astronomers and Physicists are
 interested in (as opposed to Mathematicians and Engineers who just
 like proving and optimizing or calculating!) comes from being creative
 and not limiting our selves to such approximations. Even when they
@@ -13887,6 +13887,11 @@ context, please see the book contents for contextual ordering.
 
 
 @table @asis
+
+@item Arithmetic @value{ARITHMETIC_VERSION}
+(@file{astarithmetic}) For arithmetic operations on data (image) pixels
+(@ref{Arithmetic}).
+
 @item ConvertType @value{CONVERTT_VERSION}
 (@file{astconvertt}) Convert astronomical data files (FITS or IMH) to
 and from several other standard image and data formats, for example
@@ -13903,10 +13908,6 @@ kernel (@ref{Convolve}).
 @item Header @value{HEADER_VERSION}
 (@file{astheader}) Print and manipulate the header data of a FITS file
 (see @ref{Header}).
-
-@item Arithmetic @value{ARITHMETIC_VERSION}
-(@file{astarithmetic}) For arithmetic operations on data (image) pixels
-(@ref{Arithmetic}).
 
 @item ImageCrop @value{IMGCROP_VERSION}
 (@file{astimgcrop}) Crop region(s) from an image and stitch several
