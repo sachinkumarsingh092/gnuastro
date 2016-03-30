@@ -73,7 +73,7 @@ const char doc[] =
 /* Available letters for short options:
 
    f j w x z
-   A J W X Y Z
+   A J K W X Y Z
 
    Used numbers: <=518
 
@@ -580,7 +580,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'H':
       allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
       break;
-    case 'K':
+    case 'k':
       allocatecopyset(arg, &p->up.kernelname, &p->up.kernelnameset);
       break;
     case 'U':
