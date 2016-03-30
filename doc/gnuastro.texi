@@ -666,49 +666,55 @@ Utilities are an effort to tackle this issue.
 
 Gnuastro is not just the software, this book is as important to the
 vision behind Gnuastro as the source code (software) is. This book has
-tried to learn from the sucess of the ``Numerical Recipes'' book in
-educating the non-software engineer (but still heavy users of
-computational algorithms, like astronomers) community. There are two
-major differences: the code is moved within the actual Gnuastro
-software source code (which is heavily commented, with all programs
-following a similar internal structure, see @ref{Program source}) and
-this book focuses on thoroughly explaining the concepts (history,
-mathematics, science and applications when necessary) behind those
-codes. The source code and this book are thus intimately linked, and
-when considered as a single entity can be thought of as a real (an
-actual software accompanying the algorithms) ``Numerical Recipes'' for
-astronomy.
+tried to learn from the success of the ``Numerical Recipes'' book in
+educating those who are not software engineers and computer scientists
+but still heavy users of computational algorithms, like
+astronomers. There are two major differences: the code and the
+explanations are segregated with the code is moved within the actual
+Gnuastro software source code. There every non-trivial step is heavily
+commented, follows the same logic of this book, and all the utilities
+follow a similar internal data, function and file structure, see
+@ref{Program source}. Complementing the code, this book focuses on
+thoroughly explaining the concepts (history, mathematics, science and
+applications when necessary) behind those codes along with detailed
+instructions on how to run the programs. The source code and this book
+are thus intimately linked, and when considered as a single entity can
+be thought of as a real (an actual software accompanying the
+algorithms) ``Numerical Recipes'' for astronomy.
 
-The other major difference is that ``Numerical Recipes'' does not
-allow you to distribute any code that you have taken (learnt) from it
-and the book is not freely available. So while it enlightens the
-individual who has access to it, it corroborates social ignorance. For
-example not allowing people who use its codes to release their source
-code with their software, they can only publicly release binaries (a
-black box). Exactly the opposite end of the spectrum, Gnuastro's
+The other major and more important difference is that ``Numerical
+Recipes'' does not allow you to distribute any code that you have
+learnt from it and the book is not freely available. So while it
+empowers the previlaged individual who has access to it, it
+corroborates social ignorance. For example it does not allow you to
+release your software's source code if you have used their codes, you
+can only publicly release binaries (a black box) to the
+community. Exactly at the opposite end of the spectrum, Gnuastro's
 source code is released under the GNU general public license (GPL) and
 this book is released under the GNU free documentation license. You
 are therefore free to distribute any software you create using parts
-of Gnuastro's source code or text from this book, see @ref{Your
-rights}. While developing the source code and this book together, the
-developers of Gnuastro aim to impose the minimum requirements on you
-(in computer science, engineering and even the mathematics behind the
-tools) to understand and modify any step of Gnuastro if you feel the
-need to do so, see @ref{Why C} and @ref{Design philosophy}.
+of Gnuastro's source code or text, or figures from this book, see
+@ref{Your rights}. While developing the source code and this book
+together, the developers of Gnuastro aim to impose the minimum
+requirements on you (in computer science, engineering and even the
+mathematics behind the tools) to understand and modify any step of
+Gnuastro if you feel the need to do so, see @ref{Why C} and
+@ref{Design philosophy}.
 
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
 telescope. Astronomical objects could not be seen with the Dutch
 military design of the telescope. In the beginning of his ``The
 Sidereal Messenger'' (1610) he cautions the readers on this issue and
-instructs them on how to build a suitable instrument: his results were
-not independent of the tool he used (this is as true today as it was
-in the time of Galileo). Before he actually saw the moons of Jupiter,
-the mountains on the Moon or the crescent of Venus, he was an
-anti-Copernican and was “evasive” to Kepler@footnote{Galileo
-G. (Translated by Maurice A. Finocchiaro). @emph{The essential
-Galileo}. Hackett publishing company, first edition, 2008.}. Science
-is not independent of its tools.
+instructs them on how to build a suitable instrument: without a
+detailed description of ``how'' he made his observations, no one would
+believe him. The same is true today, science cannot progress with a
+black box. Before he actually saw the moons of Jupiter, the mountains
+on the Moon or the crescent of Venus, he was an anti-Copernican and
+was “evasive” to Kepler@footnote{Galileo G. (Translated by Maurice
+A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing
+company, first edition, 2008.}. Science is not independent of its
+tools.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
