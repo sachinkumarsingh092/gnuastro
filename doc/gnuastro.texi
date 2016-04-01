@@ -660,33 +660,34 @@ the other hand, scientific data can be very large and numerous, for
 example images produced by telescopes in astronomy. This requires very
 efficient algorithms. To make things worse, natural scientists have
 generally not been trained in the advanced software techniques,
-paradigms and architecture that is taught in computer science or
+paradigms and architecture that are taught in computer science or
 engineering courses and thus used in most software. The GNU Astronomy
 Utilities are an effort to tackle this issue.
 
-Gnuastro is not just the software, this book is as important to the
-vision behind Gnuastro as the source code (software) is. This book has
-tried to learn from the success of the ``Numerical Recipes'' book in
-educating those who are not software engineers and computer scientists
-but still heavy users of computational algorithms, like
-astronomers. There are two major differences: the code and the
-explanations are segregated with the code is moved within the actual
-Gnuastro software source code. There every non-trivial step is heavily
-commented, follows the same logic of this book, and all the utilities
-follow a similar internal data, function and file structure, see
-@ref{Program source}. Complementing the code, this book focuses on
-thoroughly explaining the concepts (history, mathematics, science and
+Gnuastro is not just a software, this book is as important to the idea
+behind Gnuastro as the source code (software). This book has tried to
+learn from the success of the ``Numerical Recipes'' book in educating
+those who are not software engineers and computer scientists but still
+heavy users of computational algorithms, like astronomers. There are
+two major differences: the code and the explanations are segregated:
+the code is moved within the actual Gnuastro software source code and
+the underlying explanations are given here. In the source code every
+non-trivial step is heavily commented and correlated with this book,
+it follows the same logic of this book, and all the utilities follow a
+similar internal data, function and file structure, see @ref{Program
+source}. Complementing the code, this book focuses on thoroughly
+explaining the concepts (history, mathematics, science and
 applications when necessary) behind those codes along with detailed
 instructions on how to run the programs. The source code and this book
 are thus intimately linked, and when considered as a single entity can
 be thought of as a real (an actual software accompanying the
 algorithms) ``Numerical Recipes'' for astronomy.
 
-The other major and more important difference is that ``Numerical
-Recipes'' does not allow you to distribute any code that you have
-learnt from it and the book is not freely available. So while it
-empowers the previlaged individual who has access to it, it
-corroborates social ignorance. For example it does not allow you to
+The other major and arguably more important difference is that
+``Numerical Recipes'' does not allow you to distribute any code that
+you have learnt from it and the book is not freely available. So while
+it empowers the previlaged individual who has access to it, it
+exacerbates social ignorance. For example it does not allow you to
 release your software's source code if you have used their codes, you
 can only publicly release binaries (a black box) to the
 community. Exactly at the opposite end of the spectrum, Gnuastro's
@@ -12335,8 +12336,8 @@ The observations to date (for example the Plank 2013 results), have
 not measured the presence of a significant curvature in the
 universe. However to be generic (and allow its measurement if it does
 infact exist), it is very important to create a framework that allows
-curvature. As 3D beings, it is impossible for us to create a mental
-picture (visualize) of the curvature of a 3D volume in a 4D
+curvature. As 3D beings, it is impossible for us to mentally create
+(visualize) a picture of the curvature of a 3D volume in a 4D
 space. Hence, here we will assume a 2D surface and discuss distances
 on that 2D surface when it is flat, or when the 2D surface is curved
 (in a 3D space). Once the concepts have been created/visualized here,

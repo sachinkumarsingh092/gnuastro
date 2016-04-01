@@ -463,7 +463,7 @@ alloppixs(struct imgarithparams *p, char *operator)
   double *allpixels=NULL;    /* Array for all values in one pixel.    */
   double **allarrays=NULL;   /* Array for pointers to input arrays.   */
   size_t size, numop=num_operands(p);
-  double (*thisfunction)(double *, size_t);
+  double (*thisfunction)(double *, size_t)=NULL;
 
 
   /* First set the appropriate function to call. */
