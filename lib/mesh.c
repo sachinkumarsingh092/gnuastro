@@ -582,8 +582,10 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
   /* Initialize the maximum number of rows and columns: */
   mp->maxs1=mp->maxs0=0;
 
-  /* Main meshs (type 0) in each channel. */
-  if(gs0>1 && gs1>1)
+  /* Main meshs (type 0) in each channel. If we have more than one row
+     or column of meshes in each channel, then we will have some type1
+     meshes.*/
+  if(gs0>1 || gs1>1)
     {
       typeind=numtypes++;
       ts1[typeind]=ts0[typeind]=meshsize;
@@ -610,7 +612,9 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
           }
     }
 
-  /* Top row of meshes (type 1) in each channel. */
+  /* Top row of meshes (type 1) in each channel. Note that when there
+     is only one column of meshes, then the only one mesh remaining
+     will be type 4, not type 1 (here).*/
   if(gs1>1 && lasts0!=meshsize)
     {
       typeind=numtypes++;
@@ -637,7 +641,9 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
           }
     }
 
-  /* Left column of meshes (type 2) in each channel. */
+  /* Left column of meshes (type 2) in each channel. When there is
+     only one row of meshs, then the last single remaining mesh will
+     be type 3, not type 2 (here).*/
   if(gs0>1 && lasts1!=meshsize)
     {
       typeind=numtypes++;
@@ -692,7 +698,7 @@ fillmeshinfo(struct meshparams *mp, size_t chs0, size_t chs1,
 
   /* Just for a check: */
   if(totalmeshcount!=mp->nmeshi)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it."
+    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it. "
           "The basic information for some meshes has not been found (in "
           "fillmeshinfo of mesh.c).", PACKAGE_BUGREPORT);
 }
@@ -737,9 +743,9 @@ makemesh(struct meshparams *mp)
   /* Incase meshsize is larger than the channel sizes, make it equal
      to the smaller of the channel axis sizes. */
   if(meshsize>chs0 || meshsize>chs1)
-    meshsize = (chs0<chs1
-                ? (chs0%2 ? chs0-1 : chs0)
-                : (chs1%2 ? chs1-1 : chs1));
+    mp->meshsize = meshsize = (chs0<chs1
+                               ? (chs0%2 ? chs0-1 : chs0)
+                               : (chs1%2 ? chs1-1 : chs1));
 
   /* Initialize the necessary arrays: */
   for(i=0;i<4;++i) mp->ts0[i]=mp->ts1[i]=0;
@@ -771,6 +777,7 @@ makemesh(struct meshparams *mp)
       mp->gs1 = chs1/meshsize;
       lasts1 = meshsize+chs1%meshsize;
     }
+
   mp->nmeshc=mp->gs0*mp->gs1;
   mp->nmeshi=mp->nmeshc*mp->nch;
 
