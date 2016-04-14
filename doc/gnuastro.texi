@@ -5680,15 +5680,26 @@ is another keyword named @command{ICFnPIX} which shows the pixel range
 from that input image in the same syntax as @ref{Crop section syntax}.
 
 Once done, a log file will be created in the current directory named
-@file{astimgcrop.log}. This file will keep the names of all the
-outputs along with the number of images that were used in them and
-also whether the central pixels of the cropped image are full. There
-are also comments on the top explaining basic information about the
-run. If the log file cannot be created (for example you don't have
-write permission in the directory you are running ImageCrop in) it
-will not be created (unless @option{--individual} is called). You can
-see the same results in verbose mode on the command line in such
-cases.
+@file{astimgcrop.log}. For each input row, this file will have three
+columns:
+
+@enumerate
+@item
+The cropped image file name for that row.
+@item
+The number of input images that were used to create that image.
+@item
+A @code{0} if the central few pixels (value to the
+@option{--checkcenter} option) are blank and @code{1} otherwise.
+@end enumerate
+
+There are also comments on the top explaining basic information about
+the run. If the log file cannot be created (for example you don't have
+write permission in the directory you are running ImageCrop in) or you
+have specifically asked for no log file (with the @option{--nolog}
+option), then a log file will not be created (unless
+@option{--individual} is called). The same columns will be printed in
+verbose mode on the command line for each row.
 
 
 
