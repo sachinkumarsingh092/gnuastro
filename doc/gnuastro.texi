@@ -725,21 +725,12 @@ Thomson (the designer or the Unix operating system) says ``I abhor a
 system designed for the `user' if that word is a coded pejorative
 meaning `stupid and unsophisticated'.'' Certainly no scientist (user
 of a scientific software) would want to be considered a believer in
-magic, or `stupid and unsophisticated'. This usually happens when
+magic, or `stupid and unsophisticated'. However, this can happen when
 scientists get too distant from the raw data and are mainly indulging
 themselves in their own high-level (abstract) models (creations). For
 example, roughly 5 years before special relativity and about two
 decades before quantum mechanics fundamentally changed Physics, Kelvin
-is quoted as saying@footnote{Another such quote is from
-Albert. A. Michelson's speech at the dedication of Ryerson Physics
-Lab, U. of Chicago 1894 saying: ``The more important fundamental laws
-and facts of physical science have all been discovered, and these are
-now so firmly established that the possibility of their ever being
-supplanted in consequence of new discoveries is exceedingly
-remote.... Our future discoveries must be looked for in the sixth
-place of decimals.''. Unfortunately this positivist attitude to
-science is still very prevalent with regard to the models and
-knowledge of today.}:
+is quoted as saying:
 
 @quotation
 @cindex Lord Kelvin
@@ -749,18 +740,34 @@ is more and more precise measurement.
 @author William Thomson (Lord Kelvin), 1900
 @end quotation
 
+@noindent
+A few years earlier, in speech at the dedication of Ryerson Physics
+Lab, U. of Chicago 1894, Albert. A. Michelson said:
+
+@quotation
+@cindex Albert. A. Michelson
+@cindex Michelson, Albert. A.
+The more important fundamental laws and facts of physical science have
+all been discovered, and these are now so firmly established that the
+possibility of their ever being supplanted in consequence of new
+discoveries is exceedingly remote.... Our future discoveries must be
+looked for in the sixth place of decimals.
+@author Albert. A. Michelson (1894)
+@end quotation
+
 @cindex Puzzle solving scientist
 @cindex Scientist, puzzle solver
 If scientists are considered to be more than mere ``puzzle
 solvers''@footnote{Thomas S. Kuhn. @emph{The Structure of Scientific
-Revolutions}, University of Chicago Press, 1962.}, they cannot just
-passively sit back and wait for others to build the tools that form
-the basis of all their interpretations and working paradigms. Today
-there is a wealth of raw telescope images ready (mostly for free) at
-the finger tips of anyone who is interested with a fast enough
-internet connection to download them.  The only thing lacking is new
-ways to analyze them and dig out the treasure that is lying hidden in
-them to existing methods and techniques.
+Revolutions}, University of Chicago Press, 1962.} (as Kelvin and
+Michelson clearly believed), they cannot just passively sit back and
+uncritically repeat the previous (observational or theoretical)
+methods/tools on new data. Today there is a wealth of raw telescope
+images ready (mostly for free) at the finger tips of anyone who is
+interested with a fast enough internet connection to download
+them. The only thing lacking is new ways to analyze this data and dig
+out the treasure that is lying hidden in them to existing methods and
+techniques.
 
 @quotation
 @cindex Jaynes E. T.
@@ -9675,18 +9682,25 @@ ratio on the psudo-detections of both the initially detected and
 undetected regions. When the area in a psudo-detection is too small,
 the Signal to noise ratio measurements will not be accurate and their
 distribution will be heavily skewed to the postive. So it is best to
-ignore any psudo-detection that is smaller than this area.
+ignore any psudo-detection that is smaller than this area. Use
+@option{--detsnhistnbins} to check if this value is reasonable or not.
 
 @item --detsnhistnbins
 (@option{=INT}) If not equal to zero, a histogram of the Signal to
-noise ratios of the psudo-detections will be stored in a text file for
-every large mesh grid element which is successful in defining a Signal
-to noise ratio in the grid. The number of bins in this histogram is
+noise ratios of the psudo-detections will be stored in a text file
+ending with @file{_detsn.txt}. The number of bins in this histogram is
 specified by the value given to this option. This is good for
-inspecting the best possible value to @option{--detsnminarea}. The
-best values are obtained when the distribution is not skewed
-significantly. Note that when correlated noise is present (processed
-images) a certain level of skewness will be present in any case.
+inspecting the best possible value to @option{--detsnminarea}.
+
+An empirical way to estimate the best @option{--detsnminarea} value
+for your dataset is that the histogram have a sharp drop towards the
+higher S/Ns. In other words, when there is a prominent peak in the
+histogram and the last few bins have less than 10 (an arbitrary
+number, meaning very few!) pseudo-detections. When the minimum area is
+too large or too small, the slope of the histogram in the higher S/N
+bins will not be to sharp with the very high S/N bins having a large
+number of objects and the peak being less significant. A good minimum
+area will result in the last bins having very few pseudo-detections.
 
 @item -c
 @itemx --detquant
@@ -9781,7 +9795,14 @@ Signal to noise ratio of false clumps will not be accurately
 found. Note that this has to be larger than the value to
 @option{--detsnminarea}. Because the clumps are found on the convolved
 (smoothed) image while the psudo-detections are found on the input
-image.
+image. Use @option{--segsnhistnbins} to check if this value is
+reasonable or not.
+
+@item --segsnhistnbins
+(@option{=INT}) Similar to @option{--detsnhistnbins} (see there for
+more explanations), but for the distribution of the S/N of clumps over
+the undetected regions. The relevant parameter to check here is be
+@option{--segsnminarea}.
 
 @item --checkclumpsn
 Check the limiting clump Signal to noise ratio for true detections in
@@ -9793,11 +9814,6 @@ values} for more information on checking values on the mesh grid.
 (@option{=FLT}) The quantile of the noise clump Signal to noise ratio
 distribution. This value is used to identify true clumps over the
 detected regions.
-
-@item --segsnhistnbins
-(@option{=INT}) Similar to @option{--detsnhistnbins}, but for the
-distribution of the Signal to noise ratio of clumps over the
-undetected regions.
 
 @item -v
 @itemx --keepmaxnearriver
