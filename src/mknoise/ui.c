@@ -234,6 +234,10 @@ checkifset(struct mknoiseparams *p)
 void
 sanitycheck(struct mknoiseparams *p)
 {
+
+  /* Make sure the input file exists. */
+  checkfile(p->up.inputname);
+
   /* Set the output name: */
   if(p->cp.output)
     checkremovefile(p->cp.output, p->cp.dontdelete);

@@ -2209,8 +2209,8 @@ In the directory where you have downloaded the compressed file, you
 can take the following steps (the @code{x.xx} represents the version
 number):
 @example
-$ tar -jxvf wcslib.tar.bz2
-$ cd wcslib-x.xx
+$ tar -jxvf wcslib-X.XX.tar.bz2
+$ cd wcslib-X.XX
 $ ./configure --without-pgplot LIBS="-pthread -lm"
 $ make
 $ make check
@@ -9711,11 +9711,6 @@ satisfy the minimum fraction of undetected pixels (value of
 @option{--minbfrac}) and minimum number of psudo-detections (value of
 @option{--minnumfalse}).
 
-@item --checkdetectionsn
-Check the Signal to noise ratio value on each large mesh grid in a
-file ending with @file{_detsn.fits}, see @ref{Checking grid values}
-for more information.
-
 @item -I
 @itemx --dilate
 (@option{=INT}) Number of times to dilate the final true
@@ -9733,7 +9728,25 @@ be a repeat of the explanations above and also of those in Akhlaghi
 and Ichikawa (2015). The extension label should be sufficient to
 recognize which step you are observing. Viewing all the steps can be
 the best guide in choosing the best set of parameters. Note that
-calling this function will significantly slow NoiseChisel.
+calling this function will significantly slow NoiseChisel. Normally
+the detection steps are done in parallel, but to show you each step
+individually, the parallel processing has to be halted and restarted
+multiple times. Below are some notes that might be useful in
+interpretting certain steps, beyond the paper.
+
+@itemize
+@item
+Going from the first ``Labeled'' extension (for the background
+pseudo-detections, which shows the labeled pseudo-detections) to the
+next extension (``For S/N''), with a relatively low @option{--dthresh}
+value, you will notice that a lot of the large area pseudo-detections
+are removed and not used in calcula<ting the S/N threshold. The main
+reason for this is that they overlap with possible detections. You can
+check by going to the next extension and seeing how there are
+detections there. The filled holes have been covering initial
+detections. If you have many such cases, it might be a good sign that
+your @option{--dthresh} value is too low.
+@end itemize
 
 @item --checksky
 Check the final sky and its standard deviation values on the mesh
@@ -9795,19 +9808,14 @@ Signal to noise ratio of false clumps will not be accurately
 found. Note that this has to be larger than the value to
 @option{--detsnminarea}. Because the clumps are found on the convolved
 (smoothed) image while the psudo-detections are found on the input
-image. Use @option{--segsnhistnbins} to check if this value is
+image. Use @option{--clumpsnhistnbins} to check if this value is
 reasonable or not.
 
-@item --segsnhistnbins
+@item --clumpsnhistnbins
 (@option{=INT}) Similar to @option{--detsnhistnbins} (see there for
 more explanations), but for the distribution of the S/N of clumps over
 the undetected regions. The relevant parameter to check here is be
 @option{--segsnminarea}.
-
-@item --checkclumpsn
-Check the limiting clump Signal to noise ratio for true detections in
-a file ending with @file{_clumpsn.fits}, see @ref{Checking grid
-values} for more information on checking values on the mesh grid.
 
 @item -g
 @itemx --segquant

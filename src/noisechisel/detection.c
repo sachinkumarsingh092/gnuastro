@@ -213,7 +213,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
             error(EXIT_FAILURE, 0, "*f was nan!!!");
 
           ++areas[*lab];
-          brightnesses[*lab]   += *f;
+          brightnesses[*lab]     += *f;
           if(f-imgss>0)
             {
               xys[*lab*xyscol+2] += f-imgss;
@@ -227,8 +227,8 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
   while(++f<ff);
 
 
-  /* If the user wants to see the steps, remove all the
-     pseudo-detections that will not be used in the histogram
+  /* If the user wants to see the steps (on the background), remove
+     all the pseudo-detections that will not be used in the histogram
      calcluation. */
   if(p->detectionname && b0f1==0)
     {
@@ -251,33 +251,42 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
 
   /* calculate the signal to noise for successful detections: */
   for(i=1;i<*numlabs;++i)
-    if(areas[i]>detsnminarea &&  xys[i*xyscol+2]>0.0f)
-      {
-        /* Find the flux weighted center of this object in each
-           dimension to find the mesh it belongs to and get the
-           standard deviation at this point. Note that the standard
-           deviation on the grid was stored in smp->garray2. The error
-           should then be taken to the power of two and if the sky is
-           subtracted, a 2 should be multiplied to it.*/
-        err = smp->garray2[imgxytomeshid(smp, xys[i*xyscol]/xys[i*xyscol+2],
-                                         xys[i*xyscol+1]/xys[i*xyscol+2])];
-        err *= p->skysubtracted ? err : 2.0f*err;
+    {
+      ave=brightnesses[i]/areas[i];
+      if(areas[i]>detsnminarea && ave>0.0f && xys[i*xyscol+2]>0.0f)
+        {
+          /* Find the flux weighted center of this object in each
+             dimension to find the mesh it belongs to and get the
+             standard deviation at this point. Note that the standard
+             deviation on the grid was stored in smp->garray2. The error
+             should then be taken to the power of two and if the sky is
+             subtracted, a 2 should be multiplied to it.*/
+          err = smp->garray2[imgxytomeshid(smp, xys[i*xyscol]/xys[i*xyscol+2],
+                                           xys[i*xyscol+1]/xys[i*xyscol+2])];
+          err *= p->skysubtracted ? err : 2.0f*err;
 
-        /* Set the index in the sntable to store the Signal to noise
-           ratio. When we are dealing with the noise, we only want the
-           non-zero signal to noise values, so we will just use a
-           counter. But for initial detections, it is very important
-           that their Signal to noise ratio be placed in the same
-           index as their label. */
-        ave=brightnesses[i]/areas[i];
-        ind = p->b0f1 ? i : counter++;
-        sntable[ind]=sqrt( (float)(areas[i])/cpscorr ) * ave / sqrt(ave+err);
-      }
+          /* Set the index in the sntable to store the Signal to noise
+             ratio. When we are dealing with the noise, we only want the
+             non-zero signal to noise values, so we will just use a
+             counter. But for initial detections, it is very important
+             that their Signal to noise ratio be placed in the same
+             index as their label. */
+          ind = p->b0f1 ? i : counter++;
+          sntable[ind] = ( sqrt( (float)(areas[i])/cpscorr )
+                           * ave / sqrt(ave+err) );
+        }
+    }
+
+
+  /* In background mdoe, set the number of labels to the number of
+     acceptable S/N values measured. */
   if(p->b0f1==0) *numlabs=counter;
 
 
-  /* For a check, note that in the background mode, the sntable is not
-     ordered like the areas, brightnesses and coversdet arrays.
+  /* For a check. IMPORTANT NOTE: in background mode, the sntable is
+     not ordered like the areas, brightnesses and coversdet
+     arrays. Since indexes are irrelevant for this mode, they are just
+     put contigusly in memory for the next step.
   if(b0f1)
     {
       for(i=0;i<*numlabs;++i)
@@ -285,6 +294,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
                i, areas[i], brightnesses[i], sntable[i]);
     }
   */
+
   /* Clean up */
   free(xys);
   free(areas);

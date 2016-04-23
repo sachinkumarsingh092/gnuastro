@@ -779,6 +779,9 @@ sanitycheck(struct mkcatalogparams *p)
 {
   struct readheaderkeys keys[2];
 
+  /* Make sure the input file exists. */
+  checkfile(p->up.inputname);
+
   /* Set the names of the files. */
   fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
                 &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");

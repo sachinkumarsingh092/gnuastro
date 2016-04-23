@@ -715,9 +715,6 @@ automaticoutput(char *inname, char *suffix, int removedirinfo,
   char *out;
   size_t i, l, offset=0;
 
-  /* Check if the input file is actually a readable file or not! */
-  checkfile(inname);
-
   /* Note that we are just using malloccat here to allocate the right
      space! The contents of the allocated space will be changed after
      this.*/

@@ -374,7 +374,6 @@ sanitycheck(struct imgcropparams *p)
 
 
 
-
   /* checkcenter is odd: */
   if(p->checkcenter%2==0)
     p->checkcenter+=1;

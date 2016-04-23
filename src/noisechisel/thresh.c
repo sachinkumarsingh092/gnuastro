@@ -308,18 +308,12 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
          int det0seg1)
 {
   double sn;
-  char cline[1000];
-  char *job, *name, *suffix;
-  char *histname, report[200];
+  char report[200], cline[1000];
+  char *job = det0seg1 ? "Clump" : "Detection";
   float quant = det0seg1 ? p->segquant : p->detquant;
-  size_t snhistnbins= det0seg1 ? p->segsnhistnbins : p->detsnhistnbins;
-
-
-  /* Set the name constants: */
-  if(det0seg1)
-    { job="Clump"; suffix="_segsn.txt"; name="clumps"; }
-  else
-    { job="Detection"; suffix="_detsn.txt"; name="pseudo-detections"; }
+  char *name = det0seg1 ? "clumps" : "pseudo-detections";
+  char *histname= det0seg1 ? p->clumpsnhist : p->detectionsnhist;
+  size_t snhistnbins= det0seg1 ? p->clumpsnhistnbins : p->detsnhistnbins;
 
 
   /* Check if the number is acceptable to the user. */
@@ -336,7 +330,15 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
 
   /* Sort the signal to noise ratios and remove their outliers */
   qsort(sntable, size, sizeof *sntable, floatincreasing);
-  removeoutliers_flatcdf(sntable, &size);
+
+  /* The removal of outliers was useful when the S/N was calculated
+     separately on each mesh (thus there were very few
+     points). However, now that the S/N is calculated over the full
+     image, the number of pseudo-detections and clumps is so high that
+     these outliers will not play a significant role in the S/N
+     threshold (unless you set unreasonably high quantiles!). So This
+     is commented now. */
+  /*removeoutliers_flatcdf(sntable, &size);*/
 
 
   /* Store the SN value. */
@@ -364,15 +366,12 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
 
       /* histname has to be set to NULL so automaticoutput can
          safey free it. */
-      histname=NULL;
       sprintf(cline, "# %s\n# %s started on %s"
               "# Input: %s (hdu: %s)\n"
               "# S/N distribution histogram of %lu sky %s.\n"
               "# The %.3f quantile has an S/N of %.4f.",
               SPACK_STRING, SPACK_NAME, ctime(&p->rawtime),
               p->up.inputname, p->cp.hdu, size, name, quant, sn);
-      automaticoutput(p->up.inputname, suffix, p->cp.removedirinfo,
-                      p->cp.dontdelete, &histname);
       savehist(sntable, size, snhistnbins, histname, cline);
       free(histname);
     }

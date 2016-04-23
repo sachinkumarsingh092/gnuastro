@@ -353,20 +353,15 @@ saveepsorpdf(struct converttparams *p)
 
   /* EPS filename */
   if(p->outputtype==EPSFORMAT)
-    epsfilename=p->cp.output;
+    {
+      epsfilename=p->cp.output;
+      checkremovefile(epsfilename, p->cp.dontdelete);
+    }
   else if (p->outputtype==PDFFORMAT)
     {
-      /* In ui.c we removed the output if it already existed, so it
-         doesn't exist now. But automaticoutput is based on an input
-         (which must exist), so temporarily make the file. */
-      sprintf(command, "touch %s", p->cp.output);
-      if(system(command))
-        error(EXIT_FAILURE, 0, "The command `%s` could not be run!", command);
+      checkremovefile(p->cp.output, p->cp.dontdelete);
       automaticoutput(p->cp.output, ".ps", 0, p->cp.dontdelete,
                       &epsfilename);
-      sprintf(command, "rm %s", p->cp.output);
-      if(system(command))
-        error(EXIT_FAILURE, 0, "The command `%s` could not be run!", command);
     }
   else
     error(EXIT_FAILURE, 0, "A bug! In `saveeps`, for outputtype is "
@@ -439,9 +434,9 @@ saveepsorpdf(struct converttparams *p)
               winpt+2*p->borderwidth, hinpt+2*p->borderwidth, epsfilename);
       if(system(command))
         error(EXIT_FAILURE, 0, "The command to convert a PostScript file to "
-              "PDF (%s) was not successful! The PostScript file (%s) is left "
-              "if you want to convert or use it through any other means.",
-              command, epsfilename);
+              "PDF (`%s') was not successful! The PostScript file (%s) is "
+              "left if you want to convert or use it through any other "
+              "means.", command, epsfilename);
       sprintf(command, "rm %s", epsfilename);
       if(system(command))
         error(EXIT_FAILURE, 0, "The PDF output (%s) was created, but the "
