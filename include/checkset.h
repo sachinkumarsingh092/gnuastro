@@ -170,6 +170,9 @@ char *
 malloccat(char *inname, char *toappend);
 
 void
+allocatecopy(char *arg, char **copy);
+
+void
 allocatecopyset(char *arg, char **copy, int *set);
 
 

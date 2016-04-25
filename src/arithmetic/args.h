@@ -44,7 +44,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
 /* Definition parameters for the argp: */
 const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
@@ -82,10 +81,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   k l m n p r s t u v w x y z
+   a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H I J L O Q R T U W X Y Z
 
-   Number keys used: <=509
+   Number keys used: <=500
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -95,6 +94,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Input:",
+      1
+    },
+    {
+      "hdu",
+      'h',
+      "STR",
+      0,
+      "Nth call of this option, used for Nth input FITS.",
       1
     },
     {
@@ -111,158 +118,6 @@ static struct argp_option options[] =
       "STR",
       0,
       "Mask image header name.",
-      1
-    },
-    {
-      "hdu1",
-      'a',
-      "STR",
-      0,
-      "2nd image extension name.",
-      1
-    },
-    {
-      "hdu2",
-      'b',
-      "STR",
-      0,
-      "3rd image extension name.",
-      1
-    },
-    {
-      "hdu3",
-      'c',
-      "STR",
-      0,
-      "4th image extension name.",
-      1
-    },
-    {
-      "hdu4",
-      'd',
-      "STR",
-      0,
-      "5th image extension name.",
-      1
-    },
-    {
-      "hdu5",
-      'e',
-      "STR",
-      0,
-      "6th image extension name.",
-      1
-    },
-    {
-      "hdu6",
-      'f',
-      "STR",
-      0,
-      "7th image extension name.",
-      1
-    },
-    {
-      "hdu7",
-      'g',
-      "STR",
-      0,
-      "8th image extension name.",
-      1
-    },
-    {
-      "hdu8",
-      'i',
-      "STR",
-      0,
-      "9th image extension name.",
-      1
-    },
-    {
-      "hdu9",
-      'j',
-      "STR",
-      0,
-      "10th image extension name.",
-      1
-    },
-    {
-      "hdu10",
-      500,
-      "STR",
-      0,
-      "11th image extension name.",
-      1
-    },
-    {
-      "hdu11",
-      501,
-      "STR",
-      0,
-      "12th image extension name.",
-      1
-    },
-    {
-      "hdu12",
-      502,
-      "STR",
-      0,
-      "13th image extension name.",
-      1
-    },
-    {
-      "hdu13",
-      503,
-      "STR",
-      0,
-      "14th image extension name.",
-      1
-    },
-    {
-      "hdu14",
-      504,
-      "STR",
-      0,
-      "15th image extension name.",
-      1
-    },
-    {
-      "hdu15",
-      505,
-      "STR",
-      0,
-      "16th image extension name.",
-      1
-    },
-    {
-      "hdu16",
-      506,
-      "STR",
-      0,
-      "17th image extension name.",
-      1
-    },
-    {
-      "hdu17",
-      507,
-      "STR",
-      0,
-      "18th image extension name.",
-      1
-    },
-    {
-      "hdu18",
-      508,
-      "STR",
-      0,
-      "19th image extension name.",
-      1
-    },
-    {
-      "hdu19",
-      509,
-      "STR",
-      0,
-      "20th image extension name.",
       1
     },
 
@@ -295,7 +150,7 @@ static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
-  int junkset=0;
+  char *tokeephdu;
   struct imgarithparams *p = state->input;
 
   /* Set the pointer to the common parameters for all programs
@@ -317,6 +172,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
   switch(key)
     {
 
+    /* Commandline options don't need to be allocated, since they are
+       already in static memory and their pointers will not
+       change. They also don't need to be freed for the same
+       reason. However, later on, we will also be reading from the
+       configuration files and there, we need to allocate space (and
+       free it later). So to consistently free all the poped strings,
+       we are allocating a copy here too. */
+    case 'h':
+      allocatecopy(arg, &tokeephdu);
+      add_to_stll(&p->hdus, tokeephdu);
+      break;
+
     /* Input: */
     case 'M':
       allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
@@ -325,64 +192,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
       allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
       break;
 
-
-    case 'a':
-      allocatecopyset(arg, &p->up.hdus[1], &junkset);
-      break;
-    case 'b':
-      allocatecopyset(arg, &p->up.hdus[2], &junkset);
-      break;
-    case 'c':
-      allocatecopyset(arg, &p->up.hdus[3], &junkset);
-      break;
-    case 'd':
-      allocatecopyset(arg, &p->up.hdus[4], &junkset);
-      break;
-    case 'e':
-      allocatecopyset(arg, &p->up.hdus[5], &junkset);
-      break;
-    case 'f':
-      allocatecopyset(arg, &p->up.hdus[6], &junkset);
-      break;
-    case 'g':
-      allocatecopyset(arg, &p->up.hdus[7], &junkset);
-      break;
-    case 'i':
-      allocatecopyset(arg, &p->up.hdus[8], &junkset);
-      break;
-    case 'j':
-      allocatecopyset(arg, &p->up.hdus[9], &junkset);
-      break;
-    case 500:
-      allocatecopyset(arg, &p->up.hdus[10], &junkset);
-      break;
-    case 501:
-      allocatecopyset(arg, &p->up.hdus[11], &junkset);
-      break;
-    case 502:
-      allocatecopyset(arg, &p->up.hdus[12], &junkset);
-      break;
-    case 503:
-      allocatecopyset(arg, &p->up.hdus[13], &junkset);
-      break;
-    case 504:
-      allocatecopyset(arg, &p->up.hdus[14], &junkset);
-      break;
-    case 505:
-      allocatecopyset(arg, &p->up.hdus[15], &junkset);
-      break;
-    case 506:
-      allocatecopyset(arg, &p->up.hdus[16], &junkset);
-      break;
-    case 507:
-      allocatecopyset(arg, &p->up.hdus[17], &junkset);
-      break;
-    case 508:
-      allocatecopyset(arg, &p->up.hdus[18], &junkset);
-      break;
-    case 509:
-      allocatecopyset(arg, &p->up.hdus[19], &junkset);
-      break;
 
 
     /* Operating modes: */
@@ -417,6 +226,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
     default:
       return ARGP_ERR_UNKNOWN;
     }
+
+
   return 0;
 }
 

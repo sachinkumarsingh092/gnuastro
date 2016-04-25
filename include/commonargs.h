@@ -136,7 +136,10 @@ static struct argp_option coptions[] =
 
 
 
-    /* 1 is the code for input: */
+    /* 1 is the code for inputs. Some utilities might need their own
+       HDU option reader, if that is the case, then the NOTCOMMONHDU
+       is defined in their main.h.*/
+#ifndef NOTCOMMONHDU
     {
       "hdu",
       'h',
@@ -145,6 +148,7 @@ static struct argp_option coptions[] =
       "Extension name or number of input data.",
       1
     },
+#endif
 
 
 

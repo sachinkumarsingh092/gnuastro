@@ -77,7 +77,7 @@ add_operand(struct imgarithparams *p, char *filename, double number,
   if(strlen(filename) && nameisfits(filename))
     {
       /* Set the HDU for this filename. */
-      newnode->hdu=p->up.hdus[p->addcounter];
+      pop_from_stll(&p->hdus, &newnode->hdu);
 
       /* Increment the FITS counter. */
       ++p->addcounter;
@@ -165,6 +165,9 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
                   "ImageArithmetic to work.", filename, hdu, s0, s1,
                   p->s0, p->s1);
         }
+
+      /* Free the HDU string: */
+      free(hdu);
 
       /* Set the bitpix of the output. */
       if(bitpix==DOUBLE_IMG) p->obitpix=DOUBLE_IMG;
@@ -783,6 +786,7 @@ reversepolish(struct imgarithparams *p)
 {
   float *farray;
   double number;
+  char *tokeepvalue;
   struct stll *token;
 
   /* Prepare the processing: */
@@ -853,6 +857,15 @@ reversepolish(struct imgarithparams *p)
     }
   else
     printf("%g\n", p->operands->number);
+
+
+  /* If there are any remaining HDUs in the hdus linked list, then
+     free them. */
+  while(p->hdus!=NULL)
+    {
+      pop_from_stll(&p->hdus, &tokeepvalue);
+      free(tokeepvalue);
+    }
 }
 
 

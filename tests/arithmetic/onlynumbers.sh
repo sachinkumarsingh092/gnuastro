@@ -40,6 +40,4 @@ fi
 
 # Actual test script:
 #####################
-img=convolve_spatial_noised_labeled.fits
-$execname $img $img - $img / --hdu=0 --hdu=3 --hdu=4    \
-          --output=snimage.fits
+$execname -1 3.45 "*"

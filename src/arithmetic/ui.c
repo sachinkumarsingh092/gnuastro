@@ -66,7 +66,7 @@ void
 readconfig(char *filename, struct imgarithparams *p)
 {
   FILE *fp;
-  int junkset;
+  char *tokeephdu;
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
@@ -95,114 +95,23 @@ readconfig(char *filename, struct imgarithparams *p)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
       STARTREADINGLINE;
-      junkset=0;
 
 
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        {
+          allocatecopy(value, &tokeephdu);
+          add_to_stll(&p->hdus, tokeephdu);
+        }
 
       else if (strcmp(name, "mask")==0)
         allocatecopyset(value, &up->maskname, &up->masknameset);
 
       else if (strcmp(name, "mhdu")==0)
         allocatecopyset(value, &up->mhdu, &up->mhduset);
-      else if (strcmp(name, "hdu1")==0)
-        {
-          if(up->hdus[1]) junkset=1;
-          allocatecopyset(value, &up->hdus[1], &junkset);
-        }
-      else if (strcmp(name, "hdu2")==0)
-        {
-          if(up->hdus[2]) junkset=1;
-          allocatecopyset(value, &up->hdus[2], &junkset);
-        }
-      else if (strcmp(name, "hdu3")==0)
-        {
-          if(up->hdus[3]) junkset=1;
-          allocatecopyset(value, &up->hdus[3], &junkset);
-        }
-      else if (strcmp(name, "hdu4")==0)
-        {
-          if(up->hdus[4]) junkset=1;
-          allocatecopyset(value, &up->hdus[4], &junkset);
-        }
-      else if (strcmp(name, "hdu5")==0)
-        {
-          if(up->hdus[5]) junkset=1;
-          allocatecopyset(value, &up->hdus[5], &junkset);
-        }
-      else if (strcmp(name, "hdu6")==0)
-        {
-          if(up->hdus[6]) junkset=1;
-          allocatecopyset(value, &up->hdus[6], &junkset);
-        }
-      else if (strcmp(name, "hdu7")==0)
-        {
-          if(up->hdus[7]) junkset=1;
-          allocatecopyset(value, &up->hdus[7], &junkset);
-        }
-      else if (strcmp(name, "hdu8")==0)
-        {
-          if(up->hdus[8]) junkset=1;
-          allocatecopyset(value, &up->hdus[8], &junkset);
-        }
-      else if (strcmp(name, "hdu9")==0)
-        {
-          if(up->hdus[9]) junkset=1;
-          allocatecopyset(value, &up->hdus[9], &junkset);
-        }
-      else if (strcmp(name, "hdu10")==0)
-        {
-          if(up->hdus[10]) junkset=1;
-          allocatecopyset(value, &up->hdus[10], &junkset);
-        }
-      else if (strcmp(name, "hdu11")==0)
-        {
-          if(up->hdus[11]) junkset=1;
-          allocatecopyset(value, &up->hdus[11], &junkset);
-        }
-      else if (strcmp(name, "hdu12")==0)
-        {
-          if(up->hdus[12]) junkset=1;
-          allocatecopyset(value, &up->hdus[12], &junkset);
-        }
-      else if (strcmp(name, "hdu13")==0)
-        {
-          if(up->hdus[13]) junkset=1;
-          allocatecopyset(value, &up->hdus[13], &junkset);
-        }
-      else if (strcmp(name, "hdu14")==0)
-        {
-          if(up->hdus[14]) junkset=1;
-          allocatecopyset(value, &up->hdus[14], &junkset);
-        }
-      else if (strcmp(name, "hdu15")==0)
-        {
-          if(up->hdus[15]) junkset=1;
-          allocatecopyset(value, &up->hdus[15], &junkset);
-        }
-      else if (strcmp(name, "hdu16")==0)
-        {
-          if(up->hdus[16]) junkset=1;
-          allocatecopyset(value, &up->hdus[16], &junkset);
-        }
-      else if (strcmp(name, "hdu17")==0)
-        {
-          if(up->hdus[17]) junkset=1;
-          allocatecopyset(value, &up->hdus[17], &junkset);
-        }
-      else if (strcmp(name, "hdu18")==0)
-        {
-          if(up->hdus[18]) junkset=1;
-          allocatecopyset(value, &up->hdus[18], &junkset);
-        }
-      else if (strcmp(name, "hdu19")==0)
-        {
-          if(up->hdus[19]) junkset=1;
-          allocatecopyset(value, &up->hdus[19], &junkset);
-        }
+
+
 
 
 
@@ -221,9 +130,6 @@ readconfig(char *filename, struct imgarithparams *p)
 		      "`%s` not recognized.\n", name);
     }
 
-  /* Set the --hdu value in up->hdus[0]  */
-  up->hdus[0]=cp->hdu;
-
   free(line);
   fclose(fp);
 }
@@ -235,57 +141,23 @@ readconfig(char *filename, struct imgarithparams *p)
 void
 printvalues(FILE *fp, struct imgarithparams *p)
 {
+  struct stll *hdu;
   struct uiparams *up=&p->up;
   struct commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input image:\n");
-  if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+  fprintf(fp, "\n# Input image(s):\n");
+
+  /* The order of the HDU linked list has already been corrected, so
+     just print them as they were read in. */
+  for(hdu=p->hdus; hdu!=NULL; hdu=hdu->next)
+    PRINTSTINGMAYBEWITHSPACE("hdu", hdu->v);
+
   if(up->masknameset)
     PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
   if(up->mhdu)
     PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
-
-  if(up->hdus[1])
-    PRINTSTINGMAYBEWITHSPACE("hdu1", up->hdus[1]);
-  if(up->hdus[2])
-    PRINTSTINGMAYBEWITHSPACE("hdu2", up->hdus[2]);
-  if(up->hdus[3])
-    PRINTSTINGMAYBEWITHSPACE("hdu3", up->hdus[3]);
-  if(up->hdus[4])
-    PRINTSTINGMAYBEWITHSPACE("hdu4", up->hdus[4]);
-  if(up->hdus[5])
-    PRINTSTINGMAYBEWITHSPACE("hdu5", up->hdus[5]);
-  if(up->hdus[6])
-    PRINTSTINGMAYBEWITHSPACE("hdu6", up->hdus[6]);
-  if(up->hdus[7])
-    PRINTSTINGMAYBEWITHSPACE("hdu7", up->hdus[7]);
-  if(up->hdus[8])
-    PRINTSTINGMAYBEWITHSPACE("hdu8", up->hdus[8]);
-  if(up->hdus[9])
-    PRINTSTINGMAYBEWITHSPACE("hdu9", up->hdus[9]);
-  if(up->hdus[10])
-    PRINTSTINGMAYBEWITHSPACE("hdu10", up->hdus[10]);
-  if(up->hdus[1])
-    PRINTSTINGMAYBEWITHSPACE("hdu11", up->hdus[11]);
-  if(up->hdus[2])
-    PRINTSTINGMAYBEWITHSPACE("hdu12", up->hdus[12]);
-  if(up->hdus[3])
-    PRINTSTINGMAYBEWITHSPACE("hdu13", up->hdus[13]);
-  if(up->hdus[4])
-    PRINTSTINGMAYBEWITHSPACE("hdu14", up->hdus[14]);
-  if(up->hdus[5])
-    PRINTSTINGMAYBEWITHSPACE("hdu15", up->hdus[15]);
-  if(up->hdus[6])
-    PRINTSTINGMAYBEWITHSPACE("hdu16", up->hdus[16]);
-  if(up->hdus[7])
-    PRINTSTINGMAYBEWITHSPACE("hdu17", up->hdus[17]);
-  if(up->hdus[8])
-    PRINTSTINGMAYBEWITHSPACE("hdu18", up->hdus[18]);
-  if(up->hdus[9])
-    PRINTSTINGMAYBEWITHSPACE("hdu19", up->hdus[19]);
 
   /* Output: */
   fprintf(fp, "\n# Output:\n");
@@ -311,76 +183,26 @@ printvalues(FILE *fp, struct imgarithparams *p)
 void
 checkifset(struct imgarithparams *p)
 {
-  struct stll *t;
-  int intro=0, counter=0;
-  struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  int intro=0;
+  char comment[100];
+  size_t numhdus=numinstll(p->hdus);
 
-  for(t=p->tokens; t!=NULL; t=t->next)
+  /* Make sure the number of HDUs is not less than the total number of
+     FITS images. If there are more HDUs than there are FITS images,
+     there is no problem (since they can come from the configuration
+     files). It is expected that the user can call their own desired
+     number of HDUs, and not rely on the configuration files too much,
+     however, if the configuration file does contain some HDUs, then
+     it will be a real pain to first clean the configuration file and
+     then re-run arithmetic. The best way is to simply ignore them. */
+  if(numhdus<p->numfits)
     {
-      if(nameisfits(t->v))
-        {
-          p->firstname=t->v;
-          switch(counter)
-            {
-            case 0:
-              if(cp->hduset==0) REPORT_NOTSET("hdu"); break;
-            case 1:
-              if(up->hdus[1]==NULL) REPORT_NOTSET("hdu1"); break;
-            case 2:
-              if(up->hdus[2]==NULL) REPORT_NOTSET("hdu2"); break;
-            case 3:
-              if(up->hdus[3]==NULL) REPORT_NOTSET("hdu3"); break;
-            case 4:
-              if(up->hdus[4]==NULL) REPORT_NOTSET("hdu4"); break;
-            case 5:
-              if(up->hdus[5]==NULL) REPORT_NOTSET("hdu5"); break;
-            case 6:
-              if(up->hdus[6]==NULL) REPORT_NOTSET("hdu6"); break;
-            case 7:
-              if(up->hdus[7]==NULL) REPORT_NOTSET("hdu7"); break;
-            case 8:
-              if(up->hdus[8]==NULL) REPORT_NOTSET("hdu8"); break;
-            case 9:
-              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu9"); break;
-            case 10:
-              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu10"); break;
-            case 11:
-              if(up->hdus[1]==NULL) REPORT_NOTSET("hdu11"); break;
-            case 12:
-              if(up->hdus[2]==NULL) REPORT_NOTSET("hdu12"); break;
-            case 13:
-              if(up->hdus[3]==NULL) REPORT_NOTSET("hdu13"); break;
-            case 14:
-              if(up->hdus[4]==NULL) REPORT_NOTSET("hdu14"); break;
-            case 15:
-              if(up->hdus[5]==NULL) REPORT_NOTSET("hdu15"); break;
-            case 16:
-              if(up->hdus[6]==NULL) REPORT_NOTSET("hdu16"); break;
-            case 17:
-              if(up->hdus[7]==NULL) REPORT_NOTSET("hdu17"); break;
-            case 18:
-              if(up->hdus[8]==NULL) REPORT_NOTSET("hdu18"); break;
-            case 19:
-              if(up->hdus[9]==NULL) REPORT_NOTSET("hdu19"); break;
-
-            default:
-              error(EXIT_FAILURE, 0, "Only %d FITS HDUs are given as  "
-                    "options, but there are more input FITS images. Please "
-                    "specify the HDU values for those images with the "
-                    "--hduN options (where N stands for the image number).",
-                    counter);
-            }
-          ++counter;
-        }
-      else
-        /* The token is not a file name, also no operators begin with
-           `n', so if the token starts with `n', it must be a negative
-           number. */
-        if(t->v[0]==NEGDASHREPLACE && isdigit(t->v[1])) t->v[0]='-';
+      sprintf(comment, "hdu (%lu FITS file(s), %lu HDUs)",
+              p->numfits, numhdus);
+      REPORT_NOTSET(comment);
     }
 
-
+  /* Report the (possibly) missing options. */
   END_OF_NOTSET_REPORT;
 }
 
@@ -412,7 +234,7 @@ checkifset(struct imgarithparams *p)
    if any one starts with a dash and is followed by a number, then
    the dash is replaced by NEGDASHREPLACE. */
 void
-correctnegativedash(int argc, char *argv[])
+dashtonegchar(int argc, char *argv[])
 {
   size_t i;
   for(i=0;i<argc;++i)
@@ -424,36 +246,63 @@ correctnegativedash(int argc, char *argv[])
 
 
 
+/* Return the negative character back to the dash (to be read as a
+   number in imgarith.c). When the token is not a FITS file name and
+   since no operators or numbers begin with NEGDASHREPLACE, so if the
+   token starts with NEGDASHREPLACE and its next character is a digit,
+   it must be a negative number. If not, it is either an ordinary
+   number or an operator.*/
+void
+negchartodashcountfits(struct imgarithparams *p)
+{
+  struct stll *token;
+
+  /* Initialize the numfits variable (just incase!) */
+  p->numfits=0;
+
+  /* Go through all the tokens and do the job(s). */
+  for(token=p->tokens; token!=NULL; token=token->next)
+    {
+      if(nameisfits(token->v))
+        ++p->numfits;
+      else if(token->v[0]==NEGDASHREPLACE && isdigit(token->v[1]) )
+        token->v[0]='-';
+    }
+}
+
+
+
+
+
 /* Standard sanity checks. */
 void
 sanitycheck(struct imgarithparams *p)
 {
-  char *token;
-  struct stll *correctorder=NULL;
+  struct stll *token;
 
-  /* An output file name or mask are only necessary when there is a
-     FITS image in the arguments. */
-  if(p->firstname)
+  /* Set the output file name (if any is needed). Note that since the
+     lists are already reversed, the first FITS file encountered, is
+     the first FITS file given by teh user. Also, notet that these
+     file name operations are only necessary for the first FITS file
+     in the token list. */
+  for(token=p->tokens; token!=NULL; token=token->next)
+    if(nameisfits(token->v))
     {
       /* Set the p->up.maskname accordingly: */
-      fileorextname(p->firstname, p->cp.hdu, p->up.masknameset,
+      fileorextname(token->v, p->cp.hdu, p->up.masknameset,
                     &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
 
-      /* Set the names of the output files: */
+      /* Set the name of the output file: */
       if(p->cp.outputset)
         checkremovefile(p->cp.output, p->cp.dontdelete);
       else
-        automaticoutput(p->firstname, "_arith.fits", p->cp.removedirinfo,
+        automaticoutput(token->v, "_arith.fits", p->cp.removedirinfo,
                         p->cp.dontdelete, &p->cp.output);
+
+      /* These were only necessary for the first FITS file in the
+         tokens, so break out of the loop. */
+      break;
     }
-  /* Reorder the tokens so the first one that pops out in imgarith.c
-     is the first one that was written by the user. */
-  while(p->tokens!=NULL)
-    {
-      pop_from_stll(&p->tokens, &token);
-      add_to_stll(&correctorder, token);
-    }
-  p->tokens=correctorder;
 }
 
 
@@ -481,7 +330,6 @@ sanitycheck(struct imgarithparams *p)
 void
 setparams(int argc, char *argv[], struct imgarithparams *p)
 {
-  size_t i;
   struct commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
@@ -491,23 +339,32 @@ setparams(int argc, char *argv[], struct imgarithparams *p)
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
 
+  p->hdus           = NULL;
   p->tokens         = NULL;
-  p->firstname      = NULL;
   p->up.maskname    = NULL;
-  for(i=0;i<MAXNUMIMAGES;++i) p->up.hdus[i]=NULL;
 
   /* The hyphen of a negative number can be confused with a dash, so
      we will temporarily replace such hyphens with other
      characters. */
-  correctnegativedash(argc, argv);
+  dashtonegchar(argc, argv);
 
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
+  /* Revert the conversion of the hyphen above back to the original
+     character. */
+  negchartodashcountfits(p);
+
   /* Add the user default values and save them if asked. */
   CHECKSETCONFIG;
+
+  /* The inputs are put in a lastin-firstout (simple) linked list, so
+     change them to the correct order so the order we pop a node is
+     the same order that the user input a value. */
+  reverse_stll(&p->hdus);
+  reverse_stll(&p->tokens);
 
   /* Check if all the required parameters are set. */
   checkifset(p);

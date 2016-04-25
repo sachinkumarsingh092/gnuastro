@@ -541,6 +541,22 @@ malloccat(char *inname, char *toappend)
 
 
 
+/* Copy the input string to the output (and also allocate the
+   output. */
+void
+allocatecopy(char *arg, char **copy)
+{
+  /* Allocate the necessary space: */
+  errno=0;
+  *copy=malloc(strlen(arg)+1);
+  if(*copy==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes to copy %s",
+          strlen(arg)+1, arg);
+  strcpy(*copy, arg);
+}
+
+
+
 
 /* This function is mainly for reading in the arguments (from the
    command line or configuration files) that need to be copied. The

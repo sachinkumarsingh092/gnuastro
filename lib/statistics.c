@@ -400,6 +400,11 @@ doublesumnum(double *in, size_t *size)
 {
   double *fpt;
   double sum=0;
+
+  /* If size is initially zero, then return 0. */
+  if(*size==0) return 0.0f;
+
+  /* Go through all the array: */
   fpt=in+*size;
   *size=0;
   do
@@ -409,7 +414,11 @@ doublesumnum(double *in, size_t *size)
         ++(*size);
       }
   while(++in<fpt);
-  return sum;
+
+  /* If the size was not initially zero, but after going through the
+     whole array, it is still zero, then the whole array had NaN
+     values. */
+  return *size ? sum : NAN;
 }
 
 
@@ -772,13 +781,21 @@ mediandoubleinplace(double *array, size_t insize)
   /* Shift all its non-NaN elements to the start of the array, then
      sort them and find the median. */
   nonansdouble(array, &size);
-  qsort(array, size, sizeof*array, doubleincreasing);
-  medind=indexfromquantile(size, 0.5);
 
-  if(size%2)
-    return array[medind];
+  /* If all the elements are NaN (size==0), then return NaN,
+     otherwise, find the median. */
+  if(size)
+    {
+      qsort(array, size, sizeof*array, doubleincreasing);
+      medind=indexfromquantile(size, 0.5);
+
+      if(size%2)
+        return array[medind];
+      else
+        return (array[medind]+array[medind-1])/2;
+    }
   else
-    return (array[medind]+array[medind-1])/2;
+    return NAN;
 }
 
 

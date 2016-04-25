@@ -328,6 +328,7 @@ Invoking ImageCrop
 Arithmetic
 
 * Reverse polish notation::     The current notation style for Arithmetic
+* Arithmetic Operators::        List of operators known to Arithmetic
 * Invoking astarithmetic::      How to run Arithmetic
 
 Convolve
@@ -3292,6 +3293,10 @@ help you find the extension you want, far beyond the simple extension
 number and name. See CFITSIO manual's ``HDU Location Specification''
 section for a very complete explanation with several examples.
 
+Note that in some utilities, the behavior of @option{--hdu} might be
+different, for example see @ref{Invoking astarithmetic}, were it can
+be called multiple times and the value of each all will be stored.
+
 @item -o
 @itemx --output
 (@option{=STR}) The name of the output file or directory. With this
@@ -3538,15 +3543,16 @@ several space characters are used. If the value of an option has space
 characters (most commonly for the @option{hdu} option), then double
 quotes can be used to specify the full value.
 
-Any text after the first two words (separated by the above delimiters)
-in a line is ignored. If it is an option without a value in the
-@option{--help} output (on/off option), then the value should be
-@option{1} if it is to be `on' and @option{0} otherwise. If an
-option is not recognized in the configuration file, the name of the
-file and unrecognized option will be reported and the program will
-abort.  If a parameter is repeated more more than once in the
-configuration files and it is not set on the command line, then only
-the first value will be used, the rest will be ignored.
+In each non-commented and non-blank line, any text after the first two
+words (given the conditions above) is ignored. If it is an option
+without a value in the @option{--help} output (on/off option, see
+@ref{Options}), then the value should be @option{1} if it is to be
+`on' and @option{0} otherwise. If an option is not recognized in the
+configuration file, the name of the file and unrecognized option will
+be reported and the program will abort.  If a parameter is repeated
+more more than once in the configuration files and it is not set on
+the command line, then only the first value will be used, the rest
+will be ignored.
 
 @cindex Writing configuration files
 @cindex Automatic configuration file writing
@@ -5745,10 +5751,11 @@ more information on how to run Arithmetic, please see
 
 @menu
 * Reverse polish notation::     The current notation style for Arithmetic
+* Arithmetic Operators::        List of operators known to Arithmetic
 * Invoking astarithmetic::      How to run Arithmetic
 @end menu
 
-@node Reverse polish notation, Invoking astarithmetic, Arithmetic, Arithmetic
+@node Reverse polish notation, Arithmetic Operators, Arithmetic, Arithmetic
 @subsection Reverse polish notation
 
 @cindex Postfix notation
@@ -5806,75 +5813,15 @@ example the Postscript language@footnote{See the EPS and PDF part of
 language.} (the programming language for PDF files) uses this notation
 style
 
-
-@node Invoking astarithmetic,  , Reverse polish notation, Arithmetic
-@subsection Invoking Arithmetic
-
-Arithmetic will do pixel to pixel arithmetic operations on the
-individual pixels of input data and/or numbers. All input data files
-must have the same dimensions. The WCS information will be taken from
-the first input image encountered. If the output is a single number,
-that number will be printed in the standard output. See @ref{Reverse
-polish notation} for the notation. The general template is:
-
-@example
-$ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
-@end example
-
-@noindent
-One line examples:
-
-@example
-$ astarithmetic 10.32 3.84 - 2.7 pow            # will print 155.329
-$ astarithmetic 1 image.fits / --out=inverse.fits
-$ astarithmetic image.fits -1 "*" --out=negative.fits
-$ astarithmetic image1.fits image2.fits + 2 / --out=average.fits
-$ astarithmetic image1.fits image2.fits average --out=average.fits
-$ astarithmetic img1.fits img2.fits img2.fits median --out=median.fits
-$ astarithmetic image.fits image.fits - --out=skysub.fits          \
-                --hdu=0 --hdu1=3
-@end example
-
-@cindex NaN
-@cindex Mask image
-Currently Arithmetic will convert the input image into double
-precision floating point arrays for the operations. But there are
-plans to allow it to also operate on integer (labeled or masked)
-images with bitwise operators so mask layers can also be
-manipulated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Any
-blank pixels in the input image will automatically be set as blank in
-the output. To ignore certain pixels (see @ref{Blank pixels}), you can
-specify a mask image, see @ref{Mask image}. In that case, when reading
-the first FITS image, all the masked pixels will be changed to a NaN
-value. Therefore in any further operations with other images, the
-output for those pixels will always be a NaN (blank pixel value for
-floating point data type). Currently all the operations in Arithmetic
-are done in double precision floating point type. However, if none of
-the input images have this type, the output will be stored as a single
-precision floating point type.
-
-@cindex Options
-The hyphen (@command{-}) can be used both to specify options (see
-@ref{Options}) and also to specify a negative number which might be
-necessary in your arithmetic. In order to enable you to do this,
-Arithmetic will first parse all the input strings and if the first
-character after a hyphen is a digit, then that hyphen is temporarily
-replaced by the vertical tab character which is not commonly used. The
-arguments are then parsed and these strings will not be specified as
-an option. Then the given arguments are parsed and any vertical tabs
-are replaced back with a hyphen so they can be read as negative
-numbers. So as long as the names of the files you want to work on do
-not start with a vertical tab followed by a digit, there is no
-problem. An important consequence of this implementation is that you
-should not write negative fractions like this: @command{-.3}, instead
-write them as @command{-0.3}.
+@node Arithmetic Operators, Invoking astarithmetic, Reverse polish notation, Arithmetic
+@subsection Arithmetic Operators
 
 The recognized operators in Arithmetic are listed below. See
-@ref{Reverse polish notation} for more on the ordering and notation
-used. The operands to all operators can be a data array (for example a
-FITS image) or a number, the output will be an array or number
-according to the inputs. For example a number multiplied by an array
-will produce an array.
+@ref{Reverse polish notation} for more on how the operators and
+operands should be ordered on the commandline. The operands to all
+operators can be a data array (for example a FITS image) or a number,
+the output will be an array or number according to the inputs. For
+example a number multiplied by an array will produce an array.
 
 @table @command
 
@@ -5885,7 +5832,7 @@ Addition, so ``@command{4 5 +}'' is equivalent to @mymath{4+5}.
 Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
 
 @item *
-Multiplication, so ``@command{4 5 *}'' is equivalent to
+Multiplication, so ``@command{4 5 "*"}'' is equivalent to
 @mymath{4\times5}. On the command line or in scripts, be sure to quote
 the multiplication sign (for example @command{"*"}).
 
@@ -5958,6 +5905,77 @@ produce unpredictable outputs. In any case, the input images are not
 affected, they are only read.
 @end cartouche
 
+
+@node Invoking astarithmetic,  , Arithmetic Operators, Arithmetic
+@subsection Invoking Arithmetic
+
+Arithmetic will do pixel to pixel arithmetic operations on the
+individual pixels of input data and/or numbers. All input data files
+must have the same dimensions. The general template is:
+
+@example
+$ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astarithmetic 10.32 3.84 - 2.7 pow            # will print 155.329
+$ astarithmetic 1 image.fits / --out=inverse.fits
+$ astarithmetic image.fits -1 "*" --out=negative.fits
+$ astarithmetic image.fits image.fits - --out=skysub.fits           \
+                --hdu=0 --hdu=3
+$ astarithmetic image1.fits image2.fits + 2 / --out=average.fits
+$ astarithmetic image1.fits image2.fits average --out=average.fits
+$ astarithmetic img1.fits img2.fits img3.fits median                \
+                -h0 -h1 -h2 --out=median.fits
+@end example
+
+If the output is an image, and the @option{--output} option is not
+given, automatic output will use the name of the first FITS image
+encountered to generate an output file name, see @ref{Automatic
+output}. Also, output WCS information will be taken from the first
+input image encountered. If the output is a single number, that number
+will be printed in the standard output. See @ref{Reverse polish
+notation} for the notation used to mix operands and operators on the
+commandline.
+
+@cindex NaN
+@cindex Mask image
+Currently Arithmetic will convert the input image into double
+precision floating point arrays for the operations. But there are
+plans to allow it to also operate on integer (labeled or masked)
+images with bitwise operators so mask layers can also be
+manipulated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Unless
+otherwise stated for each operator, blank pixels in the input image
+will automatically be set as blank in the output. To ignore certain
+pixels (see @ref{Blank pixels}), you can specify a mask image, see
+@ref{Mask image}. In that case, when reading the first FITS image, all
+the masked pixels will be changed to a NaN value. Therefore in any
+further operations with other images, the output for those pixels will
+always be a NaN (blank pixel value for floating point data
+type). Currently all the operations in Arithmetic are done in double
+precision floating point type. However, if none of the input images
+have this type, the output will be stored as a single precision
+floating point type.
+
+@cindex Options
+The hyphen (@command{-}) can be used both to specify options (see
+@ref{Options}) and also to specify a negative number which might be
+necessary in your arithmetic. In order to enable you to do this,
+Arithmetic will first parse all the input strings and if the first
+character after a hyphen is a digit, then that hyphen is temporarily
+replaced by the vertical tab character which is not commonly used. The
+arguments are then parsed and these strings will not be specified as
+an option. Then the given arguments are parsed and any vertical tabs
+are replaced back with a hyphen so they can be read as negative
+numbers. So as long as the names of the files you want to work on do
+not start with a vertical tab followed by a digit, there is no
+problem. An important consequence of this implementation is that you
+should not write negative fractions like this: @command{-.3}, instead
+write them as @command{-0.3}.
+
 @cindex AWK
 @cindex GNU AWK
 Without any images, Arithmetic will act like a simple calculator and
@@ -5979,88 +5997,33 @@ $ echo "" | awk '@{print (10.32-3.84)^2.7@}'
 
 See @ref{Common options} for a review of the options in all Gnuastro
 programs, the two options related to a mask image are also specified
-in @ref{Mask image}. Besides those, the only options particular to
-Arithmetic are several HDU options to specify which HDU to use in each
-image. The common @option{--hdu} option is used for the first image
-encountered in the arguments. @option{--hdu1} is used for the second
-FITS image name encountered in the arguments, @option{--hdu2} for the
-third and so on. Note that since one FITS file may have multiple
-extensions, the same filename may be used multiple times with only the
-HDU option differing. We have tried to keep the short option name as
-alphabetically ordered as possible but in some cases it interfered
-with the common short options, so its best to check the short options
-or use the long options for less ambiguity. Currently 20 input images
-are supported and you must specify each header explicitly@footnote{As
-defined in task #13887, this is slated to change and repeated calls to
-a single header option will allow you to specify the headers of each
-input image for any number of input images.}.
+in @ref{Mask image}. Arithmetic just redefines the @option{--hdu}
+option as explained below:
 
 @table @option
-@item -a
-@itemx --hdu1
-(@option{=STR}) The HDU of second FITS image in list of arguments.
 
-@item -b
-@itemx --hdu2
-(@option{=STR}) The HDU of third FITS image in list of arguments.
+@item -h
+@itemx --hdu
+(@option{=INT}) Unlike most options in Gnuastro (which will ultimately
+only have one value for this option), Arithmetic allows @option{--hdu}
+to be called multiple times and the value of each invocation will be
+stored separately (for the unlimited number of input images you would
+like to use).
 
-@item -c
-@itemx --hdu3
-(@option{=STR}) The HDU of fourth FITS image in list of arguments.
+The order of the values to @option{--hdu} is very important (if they
+don't have the same value!). The order is determined by the order that
+this option is read: first on the command line (from left to right),
+then top-down in each confirguration file, see @ref{Configuration file
+precedence}.
 
-@item -d
-@itemx --hdu4
-(@option{=STR}) The HDU of fifth FITS image in list of arguments.
-
-@item -e
-@itemx --hdu5
-(@option{=STR}) The HDU of sixth FITS image in list of arguments.
-
-@item -f
-@itemx --hdu6
-(@option{=STR}) The HDU of seventh FITS image in list of arguments.
-
-@item -g
-@itemx --hdu7
-(@option{=STR}) The HDU of eighth FITS image in list of arguments.
-
-@item -i
-@itemx --hdu8
-(@option{=STR}) The HDU of ninth FITS image in list of arguments.
-
-@item -j
-@itemx --hdu9
-(@option{=STR}) The HDU of tenth FITS image in list of arguments.
-
-@item --hdu10
-(@option{=STR}) The HDU of 11th FITS image in list of arguments.
-
-@item --hdu11
-(@option{=STR}) The HDU of 12th FITS image in list of arguments.
-
-@item --hdu12
-(@option{=STR}) The HDU of 13th FITS image in list of arguments.
-
-@item --hdu13
-(@option{=STR}) The HDU of 14th FITS image in list of arguments.
-
-@item --hdu14
-(@option{=STR}) The HDU of 15th FITS image in list of arguments.
-
-@item --hdu15
-(@option{=STR}) The HDU of 16th FITS image in list of arguments.
-
-@item --hdu16
-(@option{=STR}) The HDU of 17th FITS image in list of arguments.
-
-@item --hdu17
-(@option{=STR}) The HDU of 18th FITS image in list of arguments.
-
-@item --hdu18
-(@option{=STR}) The HDU of 19th FITS image in list of arguments.
-
-@item --hdu19
-(@option{=STR}) The HDU of 20th FITS image in list of arguments.
+If the number of HDUs is less than the number of input images,
+Arithmetic will abort and notify you. However, if there are more HDUs
+than FITS images, there is no problem: they will be used in the given
+order (everytime a FITS image comes up on the stack) and the extra
+HDUs will be ignored in the end. So there is no problem with having
+extra HDUs in the configuration files and by default several HDUs with
+a value of @option{0} are kept in the system-wide configuration file
+when you install Gnuastro.
 
 @end table
 

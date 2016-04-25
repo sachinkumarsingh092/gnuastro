@@ -34,11 +34,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION
 
 
+/* Do not use the main commonargs.h option reader for the --hdu
+   option. */
+#define NOTCOMMONHDU   1
+
+
 /* Constants: */
 #define NEGDASHREPLACE 11  /* A vertical tab (ASCII=11) for negative dash */
 #define NOOPTARRAY     NULL
 #define NOOPTNUMBER    NAN
-#define MAXNUMIMAGES   20
 #define NOOPTFILENAME  ""
 
 
@@ -65,12 +69,12 @@ struct operand
 
 struct uiparams
 {
-  char        *maskname;    /* Name of mask image.                     */
-  char            *mhdu;    /* Mask image HDU.                         */
+  char        *maskname;  /* Name of mask image.                        */
+  char            *mhdu;  /* Mask image HDU.                            */
+
   int       masknameset;
   int masknameallocated;
   int           mhduset;
-  char *hdus[MAXNUMIMAGES];  /* Array of pointers to HDU strings.      */
 };
 
 
@@ -81,10 +85,11 @@ struct imgarithparams
   struct commonparams   cp;  /* Common parameters.                      */
 
   /* Input: */
+  struct stll        *hdus;  /* String linked list for given HDUs.      */
   struct stll      *tokens;  /* Tokens to do arithmetic.                */
-  char          *firstname;  /* Name of first input for output name.    */
   float             *array;  /* Main array to keep results.             */
   float               *tmp;  /* Secondary array for temporary reading.  */
+  size_t           numfits;  /* Total number of input FITS images.      */
   size_t        addcounter;  /* The number of FITS images added.        */
   size_t        popcounter;  /* The number of FITS images popped.       */
   size_t                s0;  /* Length of image along first C axis.     */
