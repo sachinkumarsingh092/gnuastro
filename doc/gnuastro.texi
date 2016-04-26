@@ -328,8 +328,8 @@ Invoking ImageCrop
 Arithmetic
 
 * Reverse polish notation::     The current notation style for Arithmetic
-* Arithmetic Operators::        List of operators known to Arithmetic
-* Invoking astarithmetic::      How to run Arithmetic
+* Arithmetic operators::        List of operators known to Arithmetic
+* Invoking astarithmetic::      How to run Arithmetic: options and output
 
 Convolve
 
@@ -1090,78 +1090,43 @@ incorrect or unexpected result, or to behave in unintended ways''. So
 when you see that a program is crashing, not reading your input
 correctly, giving the wrong results, or not writing your output
 correctly, you have found a bug. In such cases, it is best if you
-report the bug to the developers. If it is an immediate issue, the
-developers will work hard to correct it as soon as possible.
+report the bug to the developers. The utilities will also report bugs
+in known impossible situations (which are caused by something
+unexpected) and will ask the users to report the bug. Below, first
 
 @cindex Bug reporting
+Prior to actually filing a bug report, it is best to search previous
+reports. The issue might have already been found and even solved. The
+best place to check if your bug has already been discussed is the bugs
+tracker on @ref{Gnuastro project webpage} at
+@url{https://savannah.gnu.org/bugs/?group=gnuastro}. In the top search
+fields (under ``Display Criteria'') set the ``Open/Closed'' dropdown
+menu to ``Any'' and choose the respective utility in ``Category'' and
+click the ``Apply'' button. The results colored green have already
+been solved and the status of those colored in red is shown in the
+table.
+
 @cindex Version control
-Prior to actually filing a bug, it is best to search previous
-reports. The issue might have already been found and even
-solved. Recently corrected bugs are probably not yet publicly released
-because they are scheduled for the next Gnuastro stable release. If
-the bug is solved but not yet released and it is an urgent issue for
-you, you can get the version controlled source and compile that, see
-@ref{Version controlled source}. There are generally two ways to
-inform us of bugs:
+Recently corrected bugs are probably not yet publicly released because
+they are scheduled for the next Gnuastro stable release. If the bug is
+solved but not yet released and it is an urgent issue for you, you can
+get the version controlled source and compile that, see @ref{Version
+controlled source}.
 
-@itemize
-@cindex Mailing list archives
-@cindex Mailing list: bug-gnuastro
-@cindex @code{bug-gnuastro@@gnu.org}
-@item
-Send a mail to @code{bug-gnuastro@@gnu.org}. Any mail you send to this
-address will be distributed through the bug-gnuastro mailing
-list. This is the simplest and preferred way to send bug reports. The
-archives of this mailing list can be found at
-@url{http://lists.gnu.org/archive/html/bug-gnuastro/}.
+To solve the issue as readily as possible, please follow these
+guidelines in your bug report:
 
-@cindex Gnuastro project page
-@cindex Support request manager
-@cindex Submit new tracker item
-@cindex Anonymous bug submission
-@item
-``Submit a new item'' to the ``Communication tools'' section of the
-@url{https://savannah.gnu.org/projects/gnuastro/, Gnuastro project
-webpage}
-@footnote{@url{https://savannah.gnu.org/projects/gnuastro/}}. All the
-bug reports that are sent for Gnuastro (including the mailing list)
-are ultimately stored and managed in the Gnuastro project Bugs tracker
-@footnote{@url{https://savannah.gnu.org/bugs/?group=gnuastro}}. Users
-can also initiate a bug report from the project webpage directly
-through the @clicksequence{``Support''@click{}``Submit new''} links on
-the top of the page or the ``Submit a new item'' link under the ``Tech
-Support Manager'' section (with a red question mark beside it) of the
-main Gnuastro project page. You can browse or submit a new item to
-this list anonymously. See @ref{Gnuastro project webpage} for more
-information about the central management hub of Gnuastro.
-@end itemize
+@table @strong
 
-@cindex Tracker
-@cindex Bug tracker
-@cindex Task tracker
-@cindex Viewing trackers
-Once the items have been gathered from the mailing list or webpage,
-the developers will add it to either the ``Bug Tracker'' or ``Task
-Manager'' trackers of the Gnuastro project webpage. These two trackers
-can only be edited by the Gnuastro project members, but they can be
-browsed by anyone. So prior to filing a bug report please browse and
-search these two trackers to see if the issue has already been solved
-or is being solved.
+@item Individual and independent bug reports
+If you have found multiple bugs, please send them as separate (and
+independent) bugs (as much as possible). This will significantly help
+us in managing and resolving them sooner.
 
-@cartouche
-@noindent
-@strong{Individual and independent bug reports:} If you have found
-multiple bugs, please send them as separate (and independent) mails as
-much as possible. This will significantly help us in managing and
-resolving them sooner.
-@end cartouche
-
-@cartouche
 @cindex Reproducible bug reports
-@noindent
-@strong{Reproducible bug reports:} If we cannot reproduce your bug,
-then it is very hard to resolve it. So please send us a Minimal
-working
+@item Reproducible bug reports
+If we cannot exactly reproduce your bug, then it is very hard to
+resolve it. So please send us a Minimal working
 example@footnote{@url{http://en.wikipedia.org/wiki/Minimal_Working_Example}}
 along with the description. For example in running a program, please
 send us the full command line text and the output with the @option{-P}
@@ -1170,7 +1135,59 @@ certain input, also send us that input file. In case the input FITS is
 large, please use ImageCrop to only crop the problematic section and
 make it as small as possible so it can easily be uploaded and
 downloaded and not waste the archive's storage, see @ref{ImageCrop}.
-@end cartouche
+@end table
+
+There are generally two ways to inform us of bugs:
+
+@itemize
+@cindex Mailing list archives
+@cindex Mailing list: bug-gnuastro
+@cindex @code{bug-gnuastro@@gnu.org}
+@item
+Send a mail to @code{bug-gnuastro@@gnu.org}. Any mail you send to this
+address will be distributed through the bug-gnuastro mailing
+list@footnote{@url{https://lists.gnu.org/mailman/listinfo/bug-gnuastro}}. This
+is the simplest way to send us bug reports. The developers will then
+register the bug into the project webpage (next choice) for you.
+
+@cindex Gnuastro project page
+@cindex Support request manager
+@cindex Submit new tracker item
+@cindex Anonymous bug submission
+@item
+Use the Gnuastro project webpage at
+@url{https://savannah.gnu.org/projects/gnuastro/}: There are two ways
+to get to the submission page as listed below. Fill in the form as
+described below and submit it (see @ref{Gnuastro project webpage} for
+more on the project webpage).
+
+@itemize
+
+@item
+Using the top horizontal menu items, immediately under the top page
+title. Hovering your mouse on ``Support'' will open a dropdown
+list. Select ``Submit new''.
+
+@item
+In the main body of the page, under the ``Communication tools''
+section, click on ``Submit new item''.
+
+@end itemize
+@end itemize
+
+@cindex Tracker
+@cindex Bug tracker
+@cindex Task tracker
+@cindex Viewing trackers
+Once the items have been registered in the mailing list or webpage,
+the developers will add it to either the ``Bug Tracker'' or ``Task
+Manager'' trackers of the Gnuastro project webpage. These two trackers
+can only be edited by the Gnuastro project developers, but they can be
+browsed by anyone, so you can follow the progress on your bug. You are
+most welcome to join us in developing Gnuastro and fixing the bug you
+have found maybe a good starting point. Gnuastro is designed to be
+easy for anyone to develop (see @ref{Science and its tools}) and there
+is a full chapter devoted to developing it: @ref{Developing}.
 
 
 @node Suggest new feature, Announcements, Report a bug, Introduction
@@ -1182,42 +1199,48 @@ We would always be very happy to hear of suggested new features. For
 every program there are already lists of features that we are planning
 to add. You can see the current list of plans from the Gnuastro
 project webpage at @url{https://savannah.gnu.org/projects/gnuastro/}
-and following @clicksequence{``Tasks''@click{}``Browse''} at the top
-of the page. If you want to request a feature to an existing program,
-click on the ``Display Criteria'' above the list and under
-``Category'', choose that particular program. Under ``Category'' you
-can also see the existing suggestions for new utilities or other cases
-like installation.
+and following @clicksequence{``Tasks''@click{}``Browse''} on the
+horizontal menu at the top of the page immediately under the title,
+see @ref{Gnuastro project webpage}. If you want to request a feature
+to an existing utility, click on the ``Display Criteria'' above the
+list and under ``Category'', choose that particular program. Under
+``Category'' you can also see the existing suggestions for new
+utilities or other cases like installation, documentation or
+libraries. Also be sure to set the ``Open/Closed'' value to ``Any''.
 
 If the feature you want to suggest is not already listed in the task
-manager, then inform us through the @code{bug-gnuastro@@gnu.org}
-mailing list or submitting an issue through the Gnuastro project
-webpage, see @ref{Report a bug}. Please have in mind that the
-developers are all very busy with their own astronomical research, and
-implementing existing ``task''s to add or resolving bugs. Gnuastro is
-a volunteer effort and none of the developers are paid for their hard
-work. So, although we will try our best, please don't not expect that
-your suggested feature be immediately included (with the next release
-of Gnuastro).
+manager, then follow the steps that are fully described in @ref{Report
+a bug}. Please have in mind that the developers are all very busy with
+their own astronomical research, and implementing existing ``task''s
+to add or resolving bugs. Gnuastro is a volunteer effort and none of
+the developers are paid for their hard work. So, although we will try
+our best, please don't not expect that your suggested feature be
+immediately included (with the next release of Gnuastro).
 
-The best person to apply the feature is you, since you have the
-motivation and need. So you can read @ref{Developing} and start
-applying your desired feature. Once you have added it, you can use it
-for your own work and if you feel you want others to benefit from your
-labour, you can request for it to become part of Gnuastro. You can
-then join the developers and start maintaining your own part (utility)
-of Gnuastro. If you choose to take this path of action please contact
-us before hand (@ref{Report a bug}) so we can avoid possible duplicate
-activities and get interested people in contact.
+The best person to apply the exciting new feature you have in mind is
+you, since you have the motivation and need. Infact Gnuastro is
+designed for making it as easy as possible for you to hack into it
+(add new feautres, change existing ones and so on), see @ref{Science
+and its tools}. Please have a look at the chapter devoted to
+developing (@ref{Developing}) and start applying your desired
+feature. Once you have added it, you can use it for your own work and
+if you feel you want others to benefit from your work, you can request
+for it to become part of Gnuastro. You can then join the developers
+and start maintaining your own part of Gnuastro. If you choose to take
+this path of action please contact us before hand (@ref{Report a bug})
+so we can avoid possible duplicate activities and get interested
+people in contact.
 
 @cartouche
 @noindent
 @strong{Gnuastro is a collection of low level programs:} As described
 in @ref{Design philosophy}, a founding principle of Gnuastro is that
-each program should be very basic and low-level. High level jobs
-should be done by running the separate programs in succession through
-a shell script, see the examples in @ref{Tutorials}. So please
-consider how your desired job can best be broken into separate steps.
+each library or utility should be very basic and low-level. High level
+jobs should be done by running the separate programs in succession
+through a shell script or calling the libraries by higher level
+functions, see the examples in @ref{Tutorials}. So when making the
+suggestions please consider how your desired job can best be broken
+into separate steps and modularized.
 @end cartouche
 
 
@@ -5751,11 +5774,11 @@ more information on how to run Arithmetic, please see
 
 @menu
 * Reverse polish notation::     The current notation style for Arithmetic
-* Arithmetic Operators::        List of operators known to Arithmetic
-* Invoking astarithmetic::      How to run Arithmetic
+* Arithmetic operators::        List of operators known to Arithmetic
+* Invoking astarithmetic::      How to run Arithmetic: options and output
 @end menu
 
-@node Reverse polish notation, Arithmetic Operators, Arithmetic, Arithmetic
+@node Reverse polish notation, Arithmetic operators, Arithmetic, Arithmetic
 @subsection Reverse polish notation
 
 @cindex Postfix notation
@@ -5813,8 +5836,8 @@ example the Postscript language@footnote{See the EPS and PDF part of
 language.} (the programming language for PDF files) uses this notation
 style
 
-@node Arithmetic Operators, Invoking astarithmetic, Reverse polish notation, Arithmetic
-@subsection Arithmetic Operators
+@node Arithmetic operators, Invoking astarithmetic, Reverse polish notation, Arithmetic
+@subsection Arithmetic operators
 
 The recognized operators in Arithmetic are listed below. See
 @ref{Reverse polish notation} for more on how the operators and
@@ -5860,11 +5883,12 @@ Base-10 logarithm of first operand, so ``@command{4 log10}'' is
 equivalent to @mymath{log(4)}.
 
 @item minvalue
-Minimum value of first operand, so ``@command{a.fits min}'' will push
-the the minimum pixel value in this image onto the stack. On a number,
-this operator just returns the number without any change. So if this
-operator acts on a single image on the command line, the output will
-no longer be an image, but a number.
+Minimum value in the top operand on the stack, so ``@command{a.fits
+min}'' will push the the minimum pixel value in this image onto the
+stack. Therefore this operator is mainly intended for data (for
+example images), if the top operand is a number, this operator just
+returns it without any change. So note that when this operator acts on
+a single image, the output will no longer be an image, but a number.
 
 @item maxvalue
 Maximum value of first operand, similar to @command{minvalue}.
@@ -5874,12 +5898,25 @@ Maximum value of first operand, similar to @command{minvalue}.
 If there are several operands (images), each pixel of the output of
 this operator will be set to the minimum value of all the operands
 (images) in that pixel. If the operands are all numbers, then their
-minimum value will be put in the stack. All the operands to this
-operator must be either images or numbers, they cannot be mixed.
+minimum value will be put in the stack. So ``@command{a.fits b.fits
+c.fits min}'' will produce an image with the same size as the inputs
+but each output pixel is set to the minimum respective pixel value of
+the three input images. Important notes:
+@itemize
 
-Note that NaN/blank pixels will be ignored, see @ref{Blank
-pixels}. Also note that this operand will pull all available operands
-on the stack to generate its output.
+@item
+All the operands must be either images or numbers, they cannot be
+mixed.
+
+@item
+NaN/blank pixels will be ignored, see @ref{Blank
+pixels}.
+
+@item
+All available operands on the stack will be pulled for this operator
+to generate its output. So after calling this operator, there will
+only be one operand on the stack, see @ref{Reverse polish notation}.
+@end itemize
 
 @item max
 Similar to @command{min}, but the pixels of the output will contain
@@ -5906,7 +5943,7 @@ affected, they are only read.
 @end cartouche
 
 
-@node Invoking astarithmetic,  , Arithmetic Operators, Arithmetic
+@node Invoking astarithmetic,  , Arithmetic operators, Arithmetic
 @subsection Invoking Arithmetic
 
 Arithmetic will do pixel to pixel arithmetic operations on the
@@ -12993,6 +13030,18 @@ you browse each tracker, you can use the ``Display Criteria'' link
 above the list to limit the displayed issues to what you are
 interested in. The `Category' and `Group Item' (explained above) are a
 good starting point.
+
+@cindex Mailing list: gnuastro-devel
+Any new issue that is submitted to any of the trackers, or any
+comments that are posted for an issue, is directly forwarded to the
+gnuastro-devel mailing list
+(@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}). This
+will allow anyone interested to be up to date on the over-all
+development activity in Gnuastro and will also provide an alternative
+(to Savannah) archiving for the development discussions. Therefore, it
+is not recommended to directly post an email to this mailing list, but
+do all the activities (for example add new issues, or comment on
+existing ones) on Savannah.
 
 @node Version controlled source, Internal libraries, Gnuastro project webpage, Developing
 @section Version controlled source
