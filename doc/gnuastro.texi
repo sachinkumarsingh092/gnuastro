@@ -490,6 +490,7 @@ Mandatory source code files
 
 Contributing to Gnuastro
 
+* Copyright assignment::
 * Commit guidelines::           Standards for commit messages.
 * Production workflow::         Incorporating changes into Gnuastro.
 
@@ -13863,21 +13864,110 @@ own purposes.
 @node Contributing to Gnuastro,  , After making changes, Developing
 @section Contributing to Gnuastro
 
+@cindex FSF
+@cindex Free Software Foundation
 After you have checked your changes (see @ref{After making changes}),
 you might want to share them with the larger community. In this
-section we describe the Commit guidelines and the general workflow
-that is currently planned for Gnuastro. This workflow is currently
-mostly borrowed from the general recommendations of
-Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
-and GitHub. But since Gnuastro is under heavy development currently,
-these might change and evolve to better suite our needs.
+section we discuss the procedure you have to take: legal and
+technical. From the legal perspective, the copyright of any work you
+do on Gnuastro has to be assigned to the Free Software Foundation
+(FSF) and the GNU operating system. We do this to ensure that Gnuastro
+can remain free in the future and it is one of the foundational
+principles of the FSF and arguably one of the reasons for its success,
+so please read @ref{Copyright assignment} carefully. From the
+technical point of view, here we also discuss commit guidelines
+(@ref{Commit guidelines}) and the general version control workflow of
+Gnuastro in @ref{Production workflow}.
 
 @menu
+* Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Standards for commit messages.
 * Production workflow::         Incorporating changes into Gnuastro.
 @end menu
 
-@node Commit guidelines, Production workflow, Contributing to Gnuastro, Contributing to Gnuastro
+@node Copyright assignment, Commit guidelines, Contributing to Gnuastro, Contributing to Gnuastro
+@subsection Copyright assignment
+
+The copyright of all Gnuastro was assigned to the FSF upon being
+accepted as an official GNU package. Professor Eben Moglen, of the
+Columbia University Law School has given a nice summary of the reasons
+for this at @url{https://www.gnu.org/licenses/why-assign}. Below we
+are copying it verbatim for self consistency (in case you are offline
+or are reading in print).
+
+@quotation
+Under US copyright law, which is the law under which most free
+software programs have historically been first published, there are
+very substantial procedural advantages to registration of
+copyright. And despite the broad right of distribution conveyed by the
+GPL, enforcement of copyright is generally not possible for
+distributors: only the copyright holder or someone having assignment
+of the copyright can enforce the license. If there are multiple
+authors of a copyrighted work, successful enforcement depends on
+having the cooperation of all authors.
+
+In order to make sure that all of our copyrights can meet the
+recordkeeping and other requirements of registration, and in order to
+be able to enforce the GPL most effectively, FSF requires that each
+author of code incorporated in FSF projects provide a copyright
+assignment, and, where appropriate, a disclaimer of any work-for-hire
+ownership claims by the programmer's employer. That way we can be sure
+that all the code in FSF projects is free code, whose freedom we can
+most effectively protect, and therefore on which other developers can
+completely rely.
+@end quotation
+
+@cindex FOSS
+In short, in free and open source software (FOSS) lots of people
+collaborate and their work depends on each other. If they have not
+explicitly given the copyright of their work on a project to a single
+owner, very complicated issues might arise: their employer might claim
+ownership of their work and thus ruine the project for everyone else
+who has depended on it, or under different circumstances in the future
+the person might not want to distribute their work to the FOSS project
+any more.
+
+These situations have been rare in the FOSS community so far. However,
+they can potentially arise, and if they do, they can destroy the whole
+software, project and community that was built around it. In
+programming-speak, this is a bug which most FOSS software authors are
+ignoring right now and somehow hoping that in the future such issues
+don't arise. This is not metaphorical: not having a single copyright
+holder is a real bug for the final software product, just like a
+mistakenly written line of code that doesn't show up on initial
+testing. Therefore, as good scientists/programmers we should not allow
+such bugs to inflitrate our research (software) and create potential
+problems down the line. The copyright of most FSF (or GNU) software is
+held by the FSF precisely for this reason: to guarantee their freedom
+and reliability.
+
+Please get in touch with the Gnuastro maintainer (currently Mohammad
+Akhlaghi, akhlaghi -at- gnu -dot- org) to follow the procedures. It is
+possible to do this for each change (good for for a single
+contribution), and also more generally for all the changes/additions
+you do in the future within Gnuastro. So if you have already assigned
+the copyright of your work on another GNU software to the FSF, it
+should be done again for Gnuastro. The FSF has staff working on these
+legal issues and the maintainer will get you in touch with them to do
+the paperwork. The maintainer will just be informed in the end so your
+contributions can be merged within the Gnuastro source code.
+
+Gnuastro will gratefully acknowledge (see @ref{Acknowledgments}) all
+the people and organizations (employers) who have assigned their
+copyright and disclaimer to the FSF and have thus helped to guarantee
+the freedom and reliability of Gnuastro. The Free Software Foundation
+will also acknowledge your copyright contributions in the Free
+Software Supporter: @url{https://www.fsf.org/free-software-supporter}
+which will circulate to a very large community. See the archives for
+some examples and subscribe to recieve interesting updates. So your
+very valuable contribution and copyright assignment will not be
+forgotten and is highly appreciated by a very large community.
+
+
+
+
+
+@node Commit guidelines, Production workflow, Copyright assignment, Contributing to Gnuastro
 @subsection Commit guidelines
 
 We strive to follow these standards for the commit messages in
@@ -13967,7 +14057,19 @@ history of Gnuastro. Needless to say that in such cases, be sure to
 follow the bug or task trackers and contact us before hand so you
 don't do something that someone else is already working on. In that
 case, you can get in touch with them and help the job go on faster,
-see @ref{Gnuastro project webpage}.
+see @ref{Gnuastro project webpage}. This workflow is currently mostly
+borrowed from the general recommendations of
+Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
+and GitHub. But since Gnuastro is under heavy development currently,
+these might change and evolve to better suite our needs.
+
+
+
+
+
+
+
+
 
 
 
