@@ -1,0 +1,97 @@
+#! /bin/sh
+# This script will generate a list of authors from the git repository,
+# it will only actually do anything if a .git file exists.
+#
+# Note that some authors might have changed their email addresses over
+# the course of their contributions to Gnuastro. Fortunately Git has a
+# great tool for that: the .mailmap file. It has already been included
+# in the source code and if any author changes their email address or
+# would want their name to be printed differently here, please use
+# that file. See the git-shortlog manpage for a complete explanation
+# of all the possible ways to do this.
+#
+# Original author:
+#     Mohammad Akhlaghi <akhlaghi@gnu.org>
+# Contributing author(s):
+# Copyright (C) 2015, Free Software Foundation, Inc.
+#
+# Gnuastro is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# Gnuastro is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
+
+# Only do the job if a .git directory exists
+if [ ! -d ".git" ]; then exit 0; fi
+
+
+# Print the top of the AUTHORS file:
+echo "GNU Astronomy Utilities authors
+===============================
+
+List of authors (based on commits in the version controlled source)
+who have contributed to this distribution of GNU Astronomy Utilities
+(Gnuastro). The format is: [Number of commits] [Name] [email]
+
+
+Aggregate list of all authors
+-----------------------------
+
+List of everyone who has made a commit irrespective of which part of
+Gnuastro they contribted to, the rows are ordered alphabetically." > \
+AUTHORS
+
+
+# Generate the aggregate list
+git shortlog --summary --email >> AUTHORS
+
+
+# For each utility, print the list of authors:
+echo "
+
+Separated by part of Gnuastro
+-----------------------------
+
+Authors listed under the respective part of Gnuastro: utility,
+libraries, or documentation. Note that a single commit might include
+multiple parts of Gnuastro (especially the libraries and
+documentation). The authors in each part are sorted by their number of
+commits.
+" >> AUTHORS
+
+
+# Go over each part of Gnuastro and add the authors:
+for util in src/* "lib/" "doc/"; do
+
+    # Set the name of the utility
+    if   [ $util = src/arithmetic  ]; then name=Arithmetic
+    elif [ $util = src/convertt    ]; then name=ConvertType
+    elif [ $util = src/convolve    ]; then name=Convolve
+    elif [ $util = src/cosmiccal   ]; then name=CosmicCalculator
+    elif [ $util = src/header      ]; then name=Header
+    elif [ $util = src/imgcrop     ]; then name=ImageCrop
+    elif [ $util = src/imgstat     ]; then name=ImageStatistics
+    elif [ $util = src/imgwarp     ]; then name=ImageWarp
+    elif [ $util = src/mkcatalog   ]; then name=MakeCatalog
+    elif [ $util = src/mknoise     ]; then name=MakeNoise
+    elif [ $util = src/mkprof      ]; then name=MakeProfile
+    elif [ $util = src/noisechisel ]; then name=NoiseChisel
+    elif [ $util = src/subtractsky ]; then name=SubtractSky
+    elif [ $util = lib/            ]; then name=Libraries
+    elif [ $util = doc/            ]; then name=Documentation
+    else echo; echo; echo "genauthors.sh: $util not recognized!"; exit 1;
+    fi
+
+    # Fill in the authors of each part:
+    echo $name >> AUTHORS
+    git shortlog --numbered --summary --email -- $util >> AUTHORS
+    echo "" >> AUTHORS
+done
