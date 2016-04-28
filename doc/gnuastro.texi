@@ -13958,10 +13958,14 @@ copyright and disclaimer to the FSF and have thus helped to guarantee
 the freedom and reliability of Gnuastro. The Free Software Foundation
 will also acknowledge your copyright contributions in the Free
 Software Supporter: @url{https://www.fsf.org/free-software-supporter}
-which will circulate to a very large community. See the archives for
-some examples and subscribe to recieve interesting updates. So your
-very valuable contribution and copyright assignment will not be
-forgotten and is highly appreciated by a very large community.
+which will circulate to a very large community (104,444 people in
+April 2016). See the archives for some examples and subscribe to
+recieve interesting updates. The very active code contributors (or
+developers) will also be recognized as project members on the Gnuastro
+project webpage (see @ref{Gnuastro project webpage}) and can be given
+a gnu.org email address. So your very valuable contribution and
+copyright assignment will not be forgotten and is highly appreciated
+by a very large community.
 
 
 
