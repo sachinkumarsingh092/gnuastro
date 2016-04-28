@@ -35,9 +35,9 @@ bin_PROGRAMS = astarithmetic
 astarithmetic_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 arithmetic.c arithmetic.h
 
-astarithmetic_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
--lfitsarrayvv -lcheckset -ltiming -llinkedlist -lmode -lstatistics	\
--larraymanip -lforqsort
+astarithmetic_LDADD = $(top_builddir)/gnulib/lib/libgnu.la		\
+-lconfigfiles -lfitsarrayvv -lcheckset -ltiming -llinkedlist -lmode	\
+-lstatistics -larraymanip -lforqsort
 
 
 

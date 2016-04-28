@@ -54,6 +54,7 @@ missing
 compile
 depcomp
 INSTALL
+AUTHORS
 libtool
 config.h
 stamp-h1
@@ -76,6 +77,7 @@ autom4te.cache
 doc/texinfo.tex
 doc/version.texi
 doc/plotsrc/tikz/
+/gnulib/build-aux
 doc/www/gnuastro/CVS/
 doc/www/gnuastro/manual/
 doc/www/gnuastro/MathJax/

@@ -41,9 +41,9 @@ bin_PROGRAMS = astconvertt
 astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h eps.c	\
 eps.h jpeg.c jpeg.h convertt.c convertt.h
 
-astconvertt_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
--lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -llinkedlist		\
--lstatistics -larraymanip -lforqsort
+astconvertt_LDADD = $(top_builddir)/gnulib/lib/libgnu.la	\
+-lconfigfiles -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming	\
+-llinkedlist -lstatistics -larraymanip -lforqsort
 
 
 

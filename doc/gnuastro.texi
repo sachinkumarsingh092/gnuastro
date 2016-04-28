@@ -2185,21 +2185,21 @@ format''. The instruction below explain how to compile and install
 them on your system along with CFITSIO. Incase you don't want them,
 just ignore the commands that include their names. They are not
 essential for Gnuastro, since they are just wrappers for functions
-within CFITSIO.
+within CFITSIO. The @command{make utils} command is only available for
+versions above 3.39, it will install the utilities (executables, to
+run on the command line) that are also shipped with CFITSIO and can be
+useful.
 
 @example
 $ tar -vxzf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
-$ make fpack
-$ make funpack
-$ make testprog
+$ make utils
 $ ./testprog > testprog.lis
 $ diff testprog.lis testprog.out
 $ cmp testprog.fit testprog.std
 $ sudo make install
-$ sudo cp fpack funpack /usr/local/bin/
 @end example
 
 
@@ -11983,7 +11983,7 @@ as:
 
 @cindex Poisson distribution
 @dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in \{0, 1, 2,
-3, \dots \}}
+3, \dots }}
 
 @cindex Skewed Poisson distribution
 Because the Poisson distribution is only applicable to positive
@@ -13056,13 +13056,19 @@ the revision history of the code can be very useful, also some updates
 that are not yet released might be in it.  We use Git for the version
 control of Gnuastro. For those who are not familiar with it, we
 suggest Pro Git@footnote{@url{https://progit.org/}}. The whole book is
-publicly available for online reading and downloading. The latest
-version of Gnuastro can be cloned by running
+publicly available for online reading and downloading. Lets assume you
+want to keep Gnuastro in the @file{TOPGNUASTRO} directory (can be any
+directory, change the value below). The latest version of Gnuastro can
+be cloned by running the following commands,
+
 
 @example
+$ TOPGNUASTRO=/home/yourname/Research/projects/
+$ cd $TOPGNUASTRO
 $ git clone git://git.sv.gnu.org/gnuastro.git
 @end example
 
+@cindex Bootstrapping
 @cindex GNU C Library
 @cindex GNU Autoconf Archive
 @cindex GNU Portability Library
@@ -13071,7 +13077,12 @@ $ git clone git://git.sv.gnu.org/gnuastro.git
 The version controlled source code lacks the source files that we have
 not written or are automatically built (and included in the
 distributed @file{gnuastro-@value{VERSION}.tar.gz}) for configuration
-and building. There are three types of files that we have not written:
+and building. The process of generating all the automatically built
+files and importing all the files we have not written in Gnuastro into
+the cloned directory is known as @emph{bootstrapping}. All the
+instructions for an automatic bootstrapping are available in the
+@file{bootstrap} file and configured using @file{bootstrap.conf}. In
+general, there are three types of files that we have not written:
 
 @itemize
 @item
@@ -13094,54 +13105,34 @@ converting all the figures into all the formats that are necessary for
 all the various formats of the book.
 @end itemize
 
-To get the Gnulib and the Autoconf archives, just run these commands
-in any directory you want to store them in (let's assume you are in
-@file{~/Development} directory):
+Before starting the bootstrap, you have to clone Gnulib and the
+Autoconf archives into a local directory. Currently in Gnuastro, we
+have assumed that both of these are cloned in the same top directory,
+let's assume that top directory is @command{DEVDIR} (which you can set
+to any directory you like). We have intentionally assumed a separate
+directory for these two packages since they are very useful and you
+will probably need them for your other development projects (not just
+Gnuastro). Then you can run the following commands to go into the
+directory and clone the two packages:
 
 @example
-$ pwd
-/home/yourusername/Development
+$ DEVDIR=/home/yourname/Development
+$ cd $DEVDIR
 $ git clone git://git.sv.gnu.org/gnulib.git
 $ git clone git://git.sv.gnu.org/autoconf-archive.git
 @end example
 
 @noindent
-This will download the full version controlled source of the two in
+You now have the full version controlled source of these two in
 separate directories. Both these packages are regularly updated, so
-every once and a while you can run @command{$ git pull} within them to
-get any possible updates. First, include all the necessary packages
-from Gnulib. To do that, run the following command from within the
-cloned @file{gnuastro} directory@footnote{Note that the
-@file{gnulib-tool} script has to be run from within the cloned Gnulib
-directory, it is not insxtalled.}:
+every once and a while, you can run @command{$ git pull} within them
+to get any possible updates. You are now ready to bootstrap Gnuastro,
+go into the directory you cloned Gnuastro into and run the
+@file{bootstrapscript}, while telling it where to look for Gnulib:
 
 @example
-$ ~/Development/gnulib/gnulib-tool --import --source-base=gnulib/lib \
-  --with-tests --tests-base=gnulib/tests --no-vc-files math argp \
-  error progname
-@end example
-
-@noindent
-One of the directories made after running @file{gnulib-tool} is
-@file{m4/}. We can now add the necessary Autoconf checks from the
-Autoconf archives to this directory:
-
-@example
-$ cp ~/Development/autoconf-archive/m4/ax_pthread.m4 ./m4/
-@end example
-
-@noindent
-The last thing you have to do is to make/convert all the figures in
-all the necessary formats. We use @LaTeX{} (along with TikZ) to create
-some of the figures and ImageMagick's @command{convert} tool for the
-conversion into various types. So make sure you have them
-installed. All the necessary scripts are ready and you just have to
-run a @command{make} command in the appropriate directory.
-
-@example
-$ cd doc/plotsrc
-$ make
-$ cd ../../
+$ cd $TOPGNUASTRO/gnuastro
+$ ./bootstrap --gnulib-srcdir=$DEVDIR/gnulib
 @end example
 
 @cindex GNU Texinfo
@@ -13150,21 +13141,11 @@ $ cd ../../
 @cindex GNU Automake
 @cindex GNU build system
 @noindent
-All the necessary GNU C Library functions, Autoconf macros and book
-figures are now available. The GNU build system will do the rest of
-the job. To generate all the other necessary files you have to run the
-following command in the cloned @file{gnuastro}
-directory@footnote{@command{autoreconf} is part of GNU Autoconf and
-also requires GNU Automake, GNU Libtool and GNU Texinfo to create all
-the necessary files, see @ref{Building}}.
-
-@example
-$ autoreconf --install
-@end example
-
-@noindent
-Now you can easily configure, build and start hacking into the code
-and you have the full revision history under your fingers.
+All the necessary GNU C Library functions, Autoconf macros and
+Automake inputs are now available along with the book figures. The
+standard GNU build system (@ref{Quick start}) will do the rest of the
+building job and you can start hacking into the code with the full
+revision history of Gnuastro under your fingers.
 
 The hand-written (version controlled) code for Gnuastro, this book
 and the tests are divided in the following sub-directories of the top

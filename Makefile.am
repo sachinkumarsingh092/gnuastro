@@ -87,6 +87,6 @@ dist_doc_DATA = README
 
 ## Files that are only distributed:
 ## ================================
-EXTRA_DIST = m4/gnulib-cache.m4 include/commonargs.h	\
- include/commonparams.h include/fixedstringmacros.h	\
- include/neighbors.h
+EXTRA_DIST = bootstrap bootstrap.conf m4/gnulib-cache.m4	\
+ include/commonargs.h include/commonparams.h			\
+ include/fixedstringmacros.h include/neighbors.h

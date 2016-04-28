@@ -37,8 +37,8 @@ bin_PROGRAMS = astcosmiccal
 astcosmiccal_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 cosmiccal.c cosmiccal.h
 
-astcosmiccal_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
--lfitsarrayvv -lcheckset -ltiming -llinkedlist
+astcosmiccal_LDADD = $(top_builddir)/gnulib/lib/libgnu.la	\
+-lconfigfiles -lfitsarrayvv -lcheckset -ltiming -llinkedlist
 
 
 
