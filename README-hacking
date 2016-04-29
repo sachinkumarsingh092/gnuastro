@@ -1,25 +1,28 @@
 Hacking into GNU Astronomy Utilities
 ====================================
 
-This README file is only for the case when you have cloned the version
+This README file is only for those who have cloned the version
 controlled source of GNU Astronomy Utilities (Gnuastro) and want to
 start hacking into it. Gnuastro's version controlled source only
 contains files that were actually written by hand and not
-automatically generated. We have also avoided keeping duplicate files
-when we have taken them from other packages (for example the GNU
-Portability Library, Gnulib). Therefore, immediately after cloning,
-Gnuastro is not ready to configure and run, you have to "bootstrap"
+automatically generated. We have also avoided keeping files that we
+have taken fully from other packages (for example the GNU Portability
+Library, Gnulib). Therefore, immediately after cloning, Gnuastro is
+not ready to configure and run, you have to "bootstrap"
 it. Bootstrapping is the process of doing all the automatic steps on
 the raw source files and make everything ready for you to run
-./configure.
+./configure and compile a program.
 
 All the operations that are necessary to prepare you to run
 ./configure in the version controlled source are managed by the
-./bootstrap file in this directory. ./bootstrap is part of the Gnulib
-and is configured with the ./bootstrap.conf file. Therefore, if you do
-want to customize it, be sure to keep the ./bootstrap file untouched
-and only do your changes in ./bootstrap.conf. ./bootstrap.conf is
-heavily commented so you should be able to easily go through it.
+./bootstrap file in this top directory. ./bootstrap is part of the
+Gnulib and is configured with the ./bootstrap.conf file. Therefore, if
+you want to customize it, be sure to keep the ./bootstrap file
+untouched and only do your changes in
+./bootstrap.conf. ./bootstrap.conf is heavily commented so you should
+be able to easily go through it. It is read at the start of
+./bootstrap's operations and has hooks for you to define any operation
+after Gnulib inclusion, and after all its operations are done.
 
 
 
@@ -51,7 +54,7 @@ To run this script you will need the following programs
       will need the PGFPlots and TiKZ packages to generate some of the
       figures.
 
-  - GNU Autotools: Autoconf, Automake and Libtool, to do all the
+  - GNU Autotools: Autoconf, Automake, Libtool, and M4 to do all the
       preparations.
 
   - help2man to generate man pages from the --help output.

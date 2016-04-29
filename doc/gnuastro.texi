@@ -476,6 +476,10 @@ Developing
 * After making changes::        Checklist to finalize your changes.
 * Contributing to Gnuastro::    Share your changes with all users.
 
+Version controlled source
+
+* Bootstrapping::               Adding all the automaticly generated files
+
 Program source
 
 * Mandatory source code files::  How the source files of each program are managed.
@@ -490,7 +494,7 @@ Mandatory source code files
 
 Contributing to Gnuastro
 
-* Copyright assignment::
+* Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Standards for commit messages.
 * Production workflow::         Incorporating changes into Gnuastro.
 
@@ -607,8 +611,8 @@ used is given.
 
 History of science indicates that there are always inevitably unseen
 faults, hidden assumptions, simplifications and approximations in all
-our theoretical models, data acquisition and analysis techniques. It is
-precisely these that will ultimately allow future generations to
+our theoretical models, data acquisition and analysis techniques. It
+is precisely these that will ultimately allow future generations to
 advance the existing experimental and theoretical knowledge through
 their new solutions and corrections.
 
@@ -656,6 +660,14 @@ personal knowledge and authority''@footnote{Karl Popper. The logic of
 scientific discovery. 1959. Larger quote is given at the start of the
 PDF (for print) version of this book.}.
 
+@quotation
+@cindex Douglas Rushkoff
+Program or be programmed. Choose the former, and you gain access to
+the control panel of civilization. Choose the latter, and it could be
+the last real choice you get to make.
+@author Douglas Rushkoff. Program or be programmed, O/R Books (2010).
+@end quotation
+
 It is obviously impractical for any one human being to gain the
 intricate knowledge explained above for every step of an analysis. On
 the other hand, scientific data can be very large and numerous, for
@@ -678,12 +690,14 @@ non-trivial step is heavily commented and correlated with this book,
 it follows the same logic of this book, and all the utilities follow a
 similar internal data, function and file structure, see @ref{Program
 source}. Complementing the code, this book focuses on thoroughly
-explaining the concepts (history, mathematics, science and
-applications when necessary) behind those codes along with detailed
-instructions on how to run the programs. The source code and this book
-are thus intimately linked, and when considered as a single entity can
-be thought of as a real (an actual software accompanying the
-algorithms) ``Numerical Recipes'' for astronomy.
+explaining the concepts behind those codes (history, mathematics,
+science, software and usage advise when necessary) along with detailed
+instructions on how to run the programs. At the expense of frustrating
+``professionals'' or ``experts'', this book and the comments in the
+code also intentionally avoid jargon and abbreviations. The source
+code and this book are thus intimately linked, and when considered as
+a single entity can be thought of as a real (an actual software
+accompanying the algorithms) ``Numerical Recipes'' for astronomy.
 
 The other major and arguably more important difference is that
 ``Numerical Recipes'' does not allow you to distribute any code that
@@ -743,8 +757,7 @@ is more and more precise measurement.
 @end quotation
 
 @noindent
-A few years earlier, in speech at the dedication of Ryerson Physics
-Lab, U. of Chicago 1894, Albert. A. Michelson said:
+A few years earlier, in a speech Albert. A. Michelson said:
 
 @quotation
 @cindex Albert. A. Michelson
@@ -754,22 +767,23 @@ all been discovered, and these are now so firmly established that the
 possibility of their ever being supplanted in consequence of new
 discoveries is exceedingly remote.... Our future discoveries must be
 looked for in the sixth place of decimals.
-@author Albert. A. Michelson (1894)
+@author Albert. A. Michelson, dedication of Ryerson Physics Lab, U. Chicago 1894
 @end quotation
 
 @cindex Puzzle solving scientist
 @cindex Scientist, puzzle solver
 If scientists are considered to be more than mere ``puzzle
 solvers''@footnote{Thomas S. Kuhn. @emph{The Structure of Scientific
-Revolutions}, University of Chicago Press, 1962.} (as Kelvin and
-Michelson clearly believed), they cannot just passively sit back and
-uncritically repeat the previous (observational or theoretical)
-methods/tools on new data. Today there is a wealth of raw telescope
-images ready (mostly for free) at the finger tips of anyone who is
-interested with a fast enough internet connection to download
-them. The only thing lacking is new ways to analyze this data and dig
-out the treasure that is lying hidden in them to existing methods and
-techniques.
+Revolutions}, University of Chicago Press, 1962.} (simply adding to
+the decimals of known values or observing a feature in 10, 100, or
+100000 more galaxies or stars, as Kelvin and Michelson clearly
+believed), they cannot just passively sit back and uncritically repeat
+the previous (observational or theoretical) methods/tools on new
+data. Today there is a wealth of raw telescope images ready (mostly
+for free) at the finger tips of anyone who is interested with a fast
+enough internet connection to download them. The only thing lacking is
+new ways to analyze this data and dig out the treasure that is lying
+hidden in them to existing methods and techniques.
 
 @quotation
 @cindex Jaynes E. T.
@@ -13044,6 +13058,10 @@ is not recommended to directly post an email to this mailing list, but
 do all the activities (for example add new issues, or comment on
 existing ones) on Savannah.
 
+
+
+
+
 @node Version controlled source, Internal libraries, Gnuastro project webpage, Developing
 @section Version controlled source
 
@@ -13055,12 +13073,15 @@ ready to be configured and built. To be able to develop successfully,
 the revision history of the code can be very useful, also some updates
 that are not yet released might be in it.  We use Git for the version
 control of Gnuastro. For those who are not familiar with it, we
-suggest Pro Git@footnote{@url{https://progit.org/}}. The whole book is
-publicly available for online reading and downloading. Lets assume you
-want to keep Gnuastro in the @file{TOPGNUASTRO} directory (can be any
-directory, change the value below). The latest version of Gnuastro can
-be cloned by running the following commands,
+recommend the Pro Git@footnote{@url{https://progit.org/}} book. The
+whole book is publicly available for online reading and downloading
+and does a wonderful job at explaining the concepts and best
+practices.
 
+Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO}
+directory (can be any directory, change the value below). The full
+version controlled history of Gnuastro can be cloned in
+@file{TOPGNUASTRO/gnuastro} by running the following commands:
 
 @example
 $ TOPGNUASTRO=/home/yourname/Research/projects/
@@ -13068,34 +13089,83 @@ $ cd $TOPGNUASTRO
 $ git clone git://git.sv.gnu.org/gnuastro.git
 @end example
 
+@noindent
+The cloned Gnuastro source cannot immediately be configured, compiled,
+or installed since it only contains hand-written files, not
+automatically generated or imported files which do all the hard work
+of the build process. See @ref{Bootstrapping} for the process of
+generating and importing those files (it is really easy!).
+
+The hand-written (version controlled) source code for Gnuastro's
+utilities, libraries, this book and the tests are divided into
+sub-directories with standard and very descriptive names. The
+@file{src} and @file{lib} directories will be the main destination of
+most scientists, the former contains the utility source codes in
+subdirectories named after them (see @ref{Program source}). The latter
+contains the libraries (see @ref{Internal libraries}). The version
+controlled files in the top cloned directory are either mainly in
+capital letters (for example @file{THANKS} and @file{README}) or
+mainly written in smallcaps (for example @file{configure.ac} and
+@file{Makefile.am}). The former are non-programming, standard writing
+for human readers containing high-level information about the whole
+package. The latter are instructions to customize the GNU build system
+for Gnuastro.
+
+
+@menu
+* Bootstrapping::               Adding all the automaticly generated files
+@end menu
+
+@node Bootstrapping,  , Version controlled source, Version controlled source
+@subsection Bootstrapping
+
 @cindex Bootstrapping
-@cindex GNU C Library
 @cindex GNU Autoconf Archive
 @cindex GNU Portability Library
 @cindex Automatically created build files
 @noindent
 The version controlled source code lacks the source files that we have
-not written or are automatically built (and included in the
-distributed @file{gnuastro-@value{VERSION}.tar.gz}) for configuration
-and building. The process of generating all the automatically built
-files and importing all the files we have not written in Gnuastro into
-the cloned directory is known as @emph{bootstrapping}. All the
-instructions for an automatic bootstrapping are available in the
-@file{bootstrap} file and configured using @file{bootstrap.conf}. In
-general, there are three types of files that we have not written:
+not written or are automatically built. These automatically generated
+files are included in the distributed tar ball for each distribution
+(for example @file{gnuastro-@value{VERSION}.tar.gz}) and make it easy
+to immediately configure, and build and install. However from the
+perspective of version control, they are just bloatware and sources of
+confusion (since they are not changed by Gnuastro developers).
+
+@cindex Gnulib
+@cindex GNU Portability Library (Gnulib)
+The process of automatically building and importing files into the
+cloned directory is known as @emph{bootstrapping}. All the
+instructions for an automatic bootstrapping are available in
+@file{bootstrap} and configured using the
+@file{bootstrap.conf}. @file{bootstrap} is the only file not written
+by Gnuastro developers but is under version control to enable simple
+bootstrapping immediately after cloning. It is maintained by the GNU
+Portability
+Library@footnote{@url{https://www.gnu.org/software/gnulib/}} (Gnulib)
+and this file is an identical copy, so do not make any changes in this
+file since it will be replaced when Gnulib releases an update. Make
+all your changes in @file{bootstrap.conf}. In general, the file we
+have not hand-written can be classified as the following:
 
 @itemize
+
+@cindex GNU C Library
 @item
 To ensure portability for a wider range of operating systems (those
-that don't include GNU C Library, namely glibc), we have used the GNU
-Portability Library (Gnulib). Gnulib keeps a copy of all the functions
-in glibc and you can include them in the source code to replace system
-wide functions on other compilers.
+that don't include GNU C Library, namely glibc), we have used the
+Gnulib. Gnulib keeps a copy of all the functions in glibc and you can
+include them in the source code to replace system wide functions on
+other compilers that lack the extra capabilities of glibc.
 
 @item
 To test for various system architectures and compiler configurations
 we make use of the various GNU Autoconf macros in the GNU Autoconf
 archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
+
+@item
+The necessary GNU Autoconf, Automake, and Libtool files to actually
+configure, build and install Gnuastro.
 
 @item
 Figures in the book. Some of them are built by @LaTeX{} (using
@@ -13106,14 +13176,19 @@ all the various formats of the book.
 @end itemize
 
 Before starting the bootstrap, you have to clone Gnulib and the
-Autoconf archives into a local directory. Currently in Gnuastro, we
-have assumed that both of these are cloned in the same top directory,
-let's assume that top directory is @command{DEVDIR} (which you can set
-to any directory you like). We have intentionally assumed a separate
-directory for these two packages since they are very useful and you
-will probably need them for your other development projects (not just
-Gnuastro). Then you can run the following commands to go into the
-directory and clone the two packages:
+Autoconf archives into a local directory. Currently in Gnuastro, both
+of these have to be cloned in the same top directory, let's assume
+that top directory is @file{DEVDIR} (which you can set to any
+directory other than the cloned Gnuatro directory, change the value
+below). Just note that @file{DEVDIR} should not contain the string
+@file{gnulib}@footnote{All occurances of @file{gnulib} in the value to
+@file{bootstrap}'s @option{--gnulib-srcdir} option will be replaced
+with @file{autoconf-archives} to get to those archives.}. We have
+intentionally assumed a separate (from Gnuastro) top directory for
+these two packages since they are very useful and you will probably
+need them for your other development projects (not just Gnuastro). The
+following commands take you to the top directory for these packages
+and clone them:
 
 @example
 $ DEVDIR=/home/yourname/Development
@@ -13126,59 +13201,41 @@ $ git clone git://git.sv.gnu.org/autoconf-archive.git
 You now have the full version controlled source of these two in
 separate directories. Both these packages are regularly updated, so
 every once and a while, you can run @command{$ git pull} within them
-to get any possible updates. You are now ready to bootstrap Gnuastro,
-go into the directory you cloned Gnuastro into and run the
-@file{bootstrapscript}, while telling it where to look for Gnulib:
+to get any possible updates. You are now ready to bootstrap Gnuastro.
+The following commands will take you into the cloned Gnuastro
+directory and run the @file{bootstrap} script, while telling it where
+to look for Gnulib (see @ref{Version controlled source} for
+@file{TOPGNUASTRO}).
 
 @example
 $ cd $TOPGNUASTRO/gnuastro
 $ ./bootstrap --gnulib-srcdir=$DEVDIR/gnulib
 @end example
 
+You might have noticed the @file{README-hacking} file that is
+available in the cloned Gnuastro directory but is not distributed in
+the tar-ball. It contains a summary of the bootstrapping process
+discussed in this section, it is a necessary reference when you
+haven't built this book yet. @file{bootstrap} uses the existence of
+@file{README-hacking} to check if it is in a directory that was
+checked-out from a version controlled source or if it is a
+distribution tar-ball. If called like the above, @file{bootstrap} will
+complain and abort in the latter case. To run @file{bootstrap} from
+the distribution tar-ball (not recommended!), add the @option{--force}
+option when you are running @file{bootstrap}. With this option,
+@file{bootstrap} will not search for @file{README-hacking}.
+
 @cindex GNU Texinfo
 @cindex GNU Libtool
 @cindex GNU Autoconf
 @cindex GNU Automake
 @cindex GNU build system
-@noindent
 All the necessary GNU C Library functions, Autoconf macros and
 Automake inputs are now available along with the book figures. The
 standard GNU build system (@ref{Quick start}) will do the rest of the
-building job and you can start hacking into the code with the full
-revision history of Gnuastro under your fingers.
-
-The hand-written (version controlled) code for Gnuastro, this book
-and the tests are divided in the following sub-directories of the top
-directory. Their names are standard and descriptive enough, but a
-short summary is given here:
-
-@cindex Top source code directories
-@cindex Directories in Gnuastro source
-@table @file
-
-@item doc
-The Texinfo source files for this book and the Gnuastro webpage
-file(s).
-
-@item include
-The header files of the internal static libraries and also some other
-header files that are used by more than one program.
-
-@item lib
-The internal static libraries (only their @file{.c} files) are stored
-here. These libraries hold functions that are used by more than one
-program, they will not be installed.
-
-@item src
-This directory contains a subdirectory for every program in this
-version of Gnuastro. The source code for each program is placed
-inside each of these sub-directories to be easily separable.
-
-@item tests
-This directory keeps all the tests (checks) which are executed when
-@command{make check} is run.
-
-@end table
+building job and you can start hacking into the code and compiling
+your hacks with the full revision history of Gnuastro under your
+fingers.
 
 
 

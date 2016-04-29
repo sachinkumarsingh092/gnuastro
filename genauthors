@@ -33,13 +33,22 @@
 if [ ! -d ".git" ]; then exit 0; fi
 
 
+# Print a status report, since this will be run along with the large
+# number of bootstrap operations, it is best to tell the users since
+# it might take a few seconds.
+echo "Generating AUTHORS from the version controlled source..."
+
+
 # Print the top of the AUTHORS file:
 echo "GNU Astronomy Utilities authors
 ===============================
 
-List of authors (based on commits in the version controlled source)
-who have contributed to this distribution of GNU Astronomy Utilities
-(Gnuastro). The format is: [Number of commits] [Name] [email]
+List of authors (and their relative contribution) the current release
+of GNU Astronomy Utilities (Gnuastro). The relative contribution is
+measured by the number of commits registered to the author in the
+version control history of Gnuastro.
+
+The format for each author is: [Number of commits] [Name] [email]
 
 
 Aggregate list of all authors
@@ -62,10 +71,12 @@ Separated by part of Gnuastro
 
 Authors listed under the respective part of Gnuastro: utility,
 libraries, or documentation. Note that a single commit might include
-multiple parts of Gnuastro (especially the libraries and
-documentation). The authors in each part are sorted by their number of
-commits.
-" >> AUTHORS
+multiple parts of Gnuastro (especially in the libraries and
+documentation). The authors in each part are sorted by the number of
+commits." >> AUTHORS
+
+# A blank line to separate the list below from the explanations.
+echo "" >> AUTHORS
 
 
 # Go over each part of Gnuastro and add the authors:
