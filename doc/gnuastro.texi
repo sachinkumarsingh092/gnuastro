@@ -13067,13 +13067,16 @@ existing ones) on Savannah.
 
 @cindex Git
 @cindex Version control
-The source code that is publicly distributed does not contain the
-revision history, it is only the final snapshot of a stable release,
-ready to be configured and built. To be able to develop successfully,
-the revision history of the code can be very useful, also some updates
-that are not yet released might be in it.  We use Git for the version
-control of Gnuastro. For those who are not familiar with it, we
-recommend the Pro Git@footnote{@url{https://progit.org/}} book. The
+The publicly distributed Gnuastro tar-ball (for example
+@file{gnuastro-@value{VERSION}.tar.gz}) does not contain the revision
+history, it is only a snapshot of the source code at one significant
+instant of Gnuastro's history (specified by the version number), ready
+to be configured and built. To be able to develop successfully, the
+revision history of the code can be very useful to track when
+something was added or changed, also some updates that are not yet
+released (given a version number) might be in it.  We use Git for the
+version control of Gnuastro. For those who are not familiar with it,
+we recommend the Pro Git@footnote{@url{https://progit.org/}} book. The
 whole book is publicly available for online reading and downloading
 and does a wonderful job at explaining the concepts and best
 practices.
