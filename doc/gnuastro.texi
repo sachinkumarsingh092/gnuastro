@@ -28,7 +28,7 @@ This book documents version @value{VERSION} of the GNU Astronomy
 Utilities, providing various individual tools with similar user
 interface for astronomical data manipulation and analysis.
 
-Copyright @copyright{} 2016 Free Software Foundation, Inc.
+Copyright @copyright{} 2015-2016 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -13131,9 +13131,10 @@ The version controlled source code lacks the source files that we have
 not written or are automatically built. These automatically generated
 files are included in the distributed tar ball for each distribution
 (for example @file{gnuastro-@value{VERSION}.tar.gz}) and make it easy
-to immediately configure, and build and install. However from the
-perspective of version control, they are just bloatware and sources of
-confusion (since they are not changed by Gnuastro developers).
+to immediately configure, build, and install Gnuastro. However from
+the perspective of version control, they are just bloatware and
+sources of confusion (since they are not changed by Gnuastro
+developers).
 
 @cindex Gnulib
 @cindex GNU Portability Library (Gnulib)
@@ -13148,7 +13149,7 @@ Portability
 Library@footnote{@url{https://www.gnu.org/software/gnulib/}} (Gnulib)
 and this file is an identical copy, so do not make any changes in this
 file since it will be replaced when Gnulib releases an update. Make
-all your changes in @file{bootstrap.conf}. In general, the file we
+all your changes in @file{bootstrap.conf}. In general, the files we
 have not hand-written can be classified as the following:
 
 @itemize
@@ -13240,6 +13241,27 @@ building job and you can start hacking into the code and compiling
 your hacks with the full revision history of Gnuastro under your
 fingers.
 
+@cartouche
+@noindent
+@strong{Undoing the bootstrap:} During the development, it might
+happen that you want to remove all the automatically generated and
+imported files. In other words, you might want to reverse the
+bootstrap process. Fortunately Git has a good utility for this job:
+@command{git clean}. Run the following command and everything that is
+not version controlled will be removed.
+
+@example
+git clean -fxd
+@end example
+
+@noindent
+It is best to commit any recent change before running this
+command. You might have created new files since the last commit and if
+they haven't been commited, they will all be gone forever (using
+@command{rm}). To get a list of the non-version controlled files
+before actually deleting them, add the @option{n} option to
+@command{git clean}, so it becomes @option{-fxdn}.
+@end cartouche
 
 
 
@@ -14098,12 +14120,13 @@ before you inform us.
 
 In both cases, your commits (with your name and information) will be
 preserved and your contributions will thus be fully recorded in the
-history of Gnuastro. Needless to say that in such cases, be sure to
-follow the bug or task trackers and contact us before hand so you
-don't do something that someone else is already working on. In that
-case, you can get in touch with them and help the job go on faster,
-see @ref{Gnuastro project webpage}. This workflow is currently mostly
-borrowed from the general recommendations of
+history of Gnuastro and in the @file{AUTHORS} file once they have been
+incorporated into the official repository. Needless to say that in
+such cases, be sure to follow the bug or task trackers and contact us
+before hand so you don't do something that someone else is already
+working on. In that case, you can get in touch with them and help the
+job go on faster, see @ref{Gnuastro project webpage}. This workflow is
+currently mostly borrowed from the general recommendations of
 Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
 and GitHub. But since Gnuastro is under heavy development currently,
 these might change and evolve to better suite our needs.
