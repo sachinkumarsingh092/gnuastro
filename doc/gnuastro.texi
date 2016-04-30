@@ -12286,6 +12286,14 @@ very important for easily understanding the code.
 
 @end itemize
 
+Emacs is an extensible and easily customizable text editor.  Among its countless
+features, it allows specification of certain settings that are applied to a
+single file or to all files in a directory and its subdirectories.  In order to
+harmonize code coming from different contributors, a @file{.dir-locals.el} file
+automatically sets for Emacs some of above coding conventions in all source
+files part of Gnuastro, for more information see that file in Gnuastro top
+directory.  Thus, users of this text editor can readily start hacking Gnuastro
+source code.
 
 @node Multithreaded programming, Documentation, Coding conventions, Program source
 @subsection Multithreaded programming
