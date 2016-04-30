@@ -13138,8 +13138,8 @@ developers).
 
 @cindex Gnulib
 @cindex GNU Portability Library (Gnulib)
-The process of automatically building and importing files into the
-cloned directory is known as @emph{bootstrapping}. All the
+The process of automatically building and importing necessary files
+into the cloned directory is known as @emph{bootstrapping}. All the
 instructions for an automatic bootstrapping are available in
 @file{bootstrap} and configured using the
 @file{bootstrap.conf}. @file{bootstrap} is the only file not written
@@ -13157,7 +13157,7 @@ have not hand-written can be classified as the following:
 @cindex GNU C Library
 @item
 To ensure portability for a wider range of operating systems (those
-that don't include GNU C Library, namely glibc), we have used the
+that don't include GNU C Library, namely glibc), we have used
 Gnulib. Gnulib keeps a copy of all the functions in glibc and you can
 include them in the source code to replace system wide functions on
 other compilers that lack the extra capabilities of glibc.
@@ -13183,7 +13183,7 @@ Before starting the bootstrap, you have to clone Gnulib and the
 Autoconf archives into a local directory. Currently in Gnuastro, both
 of these have to be cloned in the same top directory, let's assume
 that top directory is @file{DEVDIR} (which you can set to any
-directory other than the cloned Gnuatro directory, change the value
+directory other than the cloned Gnuastro directory, change the value
 below). Just note that @file{DEVDIR} should not contain the string
 @file{gnulib}@footnote{All occurances of @file{gnulib} in the value to
 @file{bootstrap}'s @option{--gnulib-srcdir} option will be replaced
@@ -13207,13 +13207,15 @@ separate directories. Both these packages are regularly updated, so
 every once and a while, you can run @command{$ git pull} within them
 to get any possible updates. You are now ready to bootstrap Gnuastro.
 The following commands will take you into the cloned Gnuastro
-directory and run the @file{bootstrap} script, while telling it where
-to look for Gnulib (see @ref{Version controlled source} for
-@file{TOPGNUASTRO}).
+directory and run the @file{bootstrap} script, while telling it to
+copy some files (instead of making symbolic links, with the
+@option{--copy} option) and where to look for Gnulib (with the
+@option{--gnulib-srcdir} option). See @ref{Version controlled source}
+for @file{TOPGNUASTRO}.
 
 @example
 $ cd $TOPGNUASTRO/gnuastro
-$ ./bootstrap --gnulib-srcdir=$DEVDIR/gnulib
+$ ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
 @end example
 
 You might have noticed the @file{README-hacking} file that is
