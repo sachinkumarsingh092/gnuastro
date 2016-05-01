@@ -80,6 +80,6 @@ dist_doc_DATA = README
 
 ## Files that are only distributed:
 ## ================================
-EXTRA_DIST = m4/gnulib-cache.m4 include/commonargs.h	\
- include/commonparams.h include/fixedstringmacros.h	\
+EXTRA_DIST = .dir-locals.el m4/gnulib-cache.m4 include/commonargs.h     \
+ include/commonparams.h include/fixedstringmacros.h                     \
  include/neighbors.h
