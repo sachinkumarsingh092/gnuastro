@@ -25,6 +25,7 @@
 AC_PREREQ([2.69])
 AC_INIT([GNU Astronomy Utilities], [0.1], [bug-gnuastro@gnu.org],
         [gnuastro], [http://www.gnu.org/software/gnuastro/])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
 AC_CONFIG_HEADERS([config.h])

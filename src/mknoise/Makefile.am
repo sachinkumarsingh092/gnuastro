@@ -35,7 +35,7 @@ bin_PROGRAMS = astmknoise
 astmknoise_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 mknoise.c mknoise.h
 
-astmknoise_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
+astmknoise_LDADD = $(top_builddir)/gnulib/lib/libgnu.la -lconfigfiles	\
 -lfitsarrayvv -lcheckset -ltiming -lastrthreads
 
 

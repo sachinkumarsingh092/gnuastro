@@ -38,7 +38,7 @@ bin_PROGRAMS = astheader
 astheader_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 header.c header.h
 
-astheader_LDADD = $(top_builddir)/gnulib/lib/libgnu.a -lconfigfiles	\
+astheader_LDADD = $(top_builddir)/gnulib/lib/libgnu.la -lconfigfiles	\
 -lfitsarrayvv -lcheckset -ltiming -llinkedlist
 
 
