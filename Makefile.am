@@ -115,4 +115,5 @@ EXTRA_DIST = bootstrap bootstrap.conf genauthors m4/gnulib-cache.m4	\
 ##   - The genauthors script will not do anything (make/update the
 ##     AUTHORS file) when there is no git repository.
 .PHONY: AUTHORS
-AUTHORS:; ./genauthors
+AUTHORS:
+	$(top_srcdir)/genauthors
