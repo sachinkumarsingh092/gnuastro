@@ -25,7 +25,7 @@
 AC_PREREQ([2.69])
 AC_INIT([GNU Astronomy Utilities], [0.1], [bug-gnuastro@gnu.org],
         [gnuastro], [http://www.gnu.org/software/gnuastro/])
-AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_AUX_DIR([gnulib/build-aux])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
 AC_CONFIG_HEADERS([config.h])
@@ -191,14 +191,26 @@ AC_ARG_ENABLE([convolve],
               [AS_HELP_STRING([--enable-convolve],
   	            [Install Convolve and other enabled packages only.])],
 	      [AS_IF([test "x$enable_convolve" != xno],
-                     [enable_convolve=yes; ayes=true])],
+                     [enable_cognvolve=yes; ayes=true])],
               [enable_convolve=notset])
+AC_ARG_ENABLE([cosmiccal],
+              [AS_HELP_STRING([--enable-cosmiccal],
+  	            [Install CosmicCalculator and other enabled packages only.])],
+	      [AS_IF([test "x$enable_cosmiccal" != xno],
+                     [enable_cosmiccal=yes; ayes=true])],
+              [enable_cosmiccal=notset])
 AC_ARG_ENABLE([header],
               [AS_HELP_STRING([--enable-header],
   	            [Install Header and other enabled packages only.])],
 	      [AS_IF([test "x$enable_header" != xno],
                      [enable_header=yes; ayes=true])],
               [enable_header=notset])
+AC_ARG_ENABLE([arithmetic],
+              [AS_HELP_STRING([--enable-arithmetic],
+  	            [Install ImageArithmetic and other enabled packages only.])],
+	      [AS_IF([test "x$enable_arithmetic" != xno],
+                     [enable_arithmetic=yes; ayes=true])],
+              [enable_arithmetic=notset])
 AC_ARG_ENABLE([imgcrop],
               [AS_HELP_STRING([--enable-imgcrop],
   	            [Install ImageCrop and other enabled packages only.])],
@@ -264,7 +276,9 @@ AC_ARG_ENABLE([subtractsky],
 AS_IF([test $ayes = true ],
       [AS_IF([test $enable_convertt = notset], [enable_convertt=no])
        AS_IF([test $enable_convolve = notset], [enable_convolve=no])
+       AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=no])
        AS_IF([test $enable_header = notset], [enable_header=no])
+       AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=no])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=no])
        AS_IF([test $enable_imgstat = notset], [enable_imgstat=no])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=no])
@@ -277,7 +291,9 @@ AS_IF([test $ayes = true ],
 
       [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
        AS_IF([test $enable_convolve = notset], [enable_convolve=yes])
+       AS_IF([test $enable_cosmiccal = notset], [enable_cosmiccal=yes])
        AS_IF([test $enable_header = notset], [enable_header=yes])
+       AS_IF([test $enable_arithmetic = notset], [enable_arithmetic=yes])
        AS_IF([test $enable_imgcrop = notset], [enable_imgcrop=yes])
        AS_IF([test $enable_imgstat = notset], [enable_imgstat=yes])
        AS_IF([test $enable_imgwarp = notset], [enable_imgwarp=yes])
@@ -296,8 +312,10 @@ AS_IF([test $ayes = true ],
 # Make the enable_package values available for the Makefile:
 AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
+AM_CONDITIONAL([COND_COSMICCAL], [test $enable_cosmiccal = yes])
 AM_CONDITIONAL([COND_HEADER], [test $enable_header = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
+AM_CONDITIONAL([COND_ARITHMETIC], [test $enable_arithmetic = yes])
 AM_CONDITIONAL([COND_IMGSTAT], [test $enable_imgstat = yes])
 AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKCATALOG], [test $enable_mkcatalog = yes])
@@ -322,7 +340,9 @@ AC_CONFIG_FILES([Makefile
                  gnulib/tests/Makefile
                  src/convertt/Makefile
                  src/convolve/Makefile
+                 src/cosmiccal/Makefile
            	 src/mkcatalog/Makefile
+                 src/arithmetic/Makefile
                  src/noisechisel/Makefile
                  src/subtractsky/Makefile
                  ])

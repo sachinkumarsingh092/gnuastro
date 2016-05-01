@@ -70,6 +70,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/****************************************************************
+ ************      Check and convert strings    *****************
+ ****************************************************************/
+int
+strisdouble(char *string, double *out);
+
+
 
 
 
@@ -161,6 +168,9 @@ stringhasspace(char *in);
 
 char *
 malloccat(char *inname, char *toappend);
+
+void
+allocatecopy(char *arg, char **copy);
 
 void
 allocatecopyset(char *arg, char **copy, int *set);

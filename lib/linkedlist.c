@@ -334,6 +334,23 @@ pop_from_stll(struct stll **list, char **value)
 
 
 void
+reverse_stll(struct stll **list)
+{
+  char *thisstring;
+  struct stll *correctorder=NULL;
+
+  while(*list!=NULL)
+    {
+      pop_from_stll(list, &thisstring);
+      add_to_stll(&correctorder, thisstring);
+    }
+  *list=correctorder;
+}
+
+
+
+
+void
 print_stll(struct stll *list)
 {
   struct stll *tmp;

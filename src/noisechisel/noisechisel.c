@@ -122,11 +122,6 @@ makeoutput(struct noisechiselparams *p)
                  s0, s1, 0, p->wcs, keys, SPACK_STRING);
   keys=NULL;
 
-  /* Save the sky subtracted image if desired: */
-  if(p->skysubedname)
-    arraytofitsimg(p->skysubedname, "Sky subtracted", FLOAT_IMG, p->imgss,
-                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
-
   /* Clean up: */
   free(sky);
   free(std);

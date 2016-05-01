@@ -375,6 +375,9 @@ sanitycheck(struct imgstatparams *p)
 {
   char *basename;
 
+  /* Make sure the input file exists. */
+  checkfile(p->up.inputname);
+
   /* Set the p->up.maskname accordingly: */
   fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
                 &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");

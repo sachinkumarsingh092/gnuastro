@@ -38,8 +38,9 @@ bin_PROGRAMS = astmkcatalog
 astmkcatalog_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 mkcatalog.c mkcatalog.h columns.c columns.h
 
-astmkcatalog_LDADD = $(top_builddir)/gnulib/lib/libgnu.la -lconfigfiles	\
--lfitsarrayvv -lcheckset -ltiming -llinkedlist -ltxtarrayvv
+astmkcatalog_LDADD = $(top_builddir)/gnulib/lib/libgnu.la	\
+-lconfigfiles -lfitsarrayvv -lcheckset -ltiming -llinkedlist	\
+-ltxtarrayvv
 
 
 

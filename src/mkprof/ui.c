@@ -467,6 +467,9 @@ sanitycheck(struct mkprofparams *p)
   size_t i, j, columns[9], cs1=p->cs1;
 
 
+  /* Make sure the input file exists. */
+  checkfile(p->up.catname);
+
 
   /* Check if over-sampling is an odd number, then convert the
      oversampling rate into the double type. */

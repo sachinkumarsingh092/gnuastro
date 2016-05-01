@@ -89,6 +89,21 @@ doublemin(double *in, size_t size, double *min)
 
 
 
+double
+doublemin_r(double *in, size_t size)
+{
+  double tmin=FLT_MAX, *fpt;
+  fpt=in+size;
+  do   /* Works for NAN, since NAN is not smaller than any number. */
+    if(*in<tmin) tmin=*in;
+  while(++in<fpt);
+  return tmin;
+}
+
+
+
+
+
 void
 doublemax(double *in, size_t size, double *max)
 {
@@ -98,6 +113,21 @@ doublemax(double *in, size_t size, double *max)
     if(*in>tmax) tmax=*in;
   while(++in<fpt);
   *max=tmax;
+}
+
+
+
+
+
+double
+doublemax_r(double *in, size_t size)
+{
+  double tmax=-FLT_MAX, *fpt;
+  fpt=in+size;
+  do   /* Works for NAN, since NAN is not larger than any number. */
+    if(*in>tmax) tmax=*in;
+  while(++in<fpt);
+  return tmax;
 }
 
 
@@ -364,6 +394,36 @@ floatsumnum(float *in, size_t *size)
 
 
 
+
+double
+doublesumnum(double *in, size_t *size)
+{
+  double *fpt;
+  double sum=0;
+
+  /* If size is initially zero, then return 0. */
+  if(*size==0) return 0.0f;
+
+  /* Go through all the array: */
+  fpt=in+*size;
+  *size=0;
+  do
+    if(!isnan(*in))
+      {
+        sum+=*in;
+        ++(*size);
+      }
+  while(++in<fpt);
+
+  /* If the size was not initially zero, but after going through the
+     whole array, it is still zero, then the whole array had NaN
+     values. */
+  return *size ? sum : NAN;
+}
+
+
+
+
 float
 floatsumsquared(float *in, size_t size)
 {
@@ -510,6 +570,18 @@ floataverage(float *in, size_t size)
 {
   float sum;
   sum=floatsumnum(in, &size);
+  return sum/size;
+}
+
+
+
+
+
+double
+doubleaverage(double *in, size_t size)
+{
+  double sum;
+  sum=doublesumnum(in, &size);
   return sum/size;
 }
 
@@ -695,6 +767,35 @@ median(float *array, size_t insize)
   /* Clean up */
   free(copy);
   return median;
+}
+
+
+
+
+
+double
+mediandoubleinplace(double *array, size_t insize)
+{
+  size_t size=insize, medind;
+
+  /* Shift all its non-NaN elements to the start of the array, then
+     sort them and find the median. */
+  nonansdouble(array, &size);
+
+  /* If all the elements are NaN (size==0), then return NaN,
+     otherwise, find the median. */
+  if(size)
+    {
+      qsort(array, size, sizeof*array, doubleincreasing);
+      medind=indexfromquantile(size, 0.5);
+
+      if(size%2)
+        return array[medind];
+      else
+        return (array[medind]+array[medind-1])/2;
+    }
+  else
+    return NAN;
 }
 
 

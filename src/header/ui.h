@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef IMCROPUI_H
-#define IMCROPUI_H
+#ifndef UI_H
+#define UI_H
 
 void
 setparams(int argc, char *argv[], struct headerparams *p);

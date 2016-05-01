@@ -450,6 +450,10 @@ checkifset(struct subtractskyparams *p)
 void
 sanitycheck(struct subtractskyparams *p)
 {
+
+  /* Make sure the input file exists. */
+  checkfile(p->up.inputname);
+
   /* Set the maskname and mask hdu accordingly: */
   fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
                 &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");

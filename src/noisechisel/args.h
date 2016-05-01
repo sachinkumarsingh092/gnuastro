@@ -73,9 +73,9 @@ const char doc[] =
 /* Available letters for short options:
 
    f j w x z
-   A J W X Y Z
+   A J K W X Y Z
 
-   Used numbers: <=519
+   Used numbers: <=518 (except 503, and 515)
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -157,14 +157,6 @@ static struct argp_option options[] =
       0,
       0,
       "Do not do any segmentation.",
-      2
-    },
-    {
-      "saveskysubed",
-      518,
-      0,
-      0,
-      "Save the sky subtracted image, `_skysubed.fits'.",
       2
     },
     {
@@ -388,7 +380,7 @@ static struct argp_option options[] =
       510,
       "INT",
       0,
-      "Detection S/N hist. N. bins `_XX_detsn.txt'.",
+      "Det. S/N histogram bins, suffix `_detsn.txt'.",
       4
     },
     {
@@ -433,14 +425,6 @@ static struct argp_option options[] =
       4
     },
     {
-      "checkdetectionsn",
-      503,
-      0,
-      0,
-      "Mesh detection S/N limit `_detsn.fits'.",
-      4
-    },
-    {
       "checksky",
       512,
       0,
@@ -450,7 +434,7 @@ static struct argp_option options[] =
     },
     {
       "checkmaskdet",
-      519,
+      518,
       0,
       0,
       "Mask detections and sky, `_maskdet.fits'.",
@@ -481,11 +465,11 @@ static struct argp_option options[] =
       5
     },
     {
-      "segsnhistnbins",
+      "clumpsnhistnbins",
       514,
       "INT",
       0,
-      "Segmentation S/N hist. N. bins `_XX_segsn.txt'.",
+      "Clump S/N histogram bins, suffix `_clumpsn.txt'.",
       5
     },
     {
@@ -528,14 +512,6 @@ static struct argp_option options[] =
       0,
       "Store segmentation steps in file `_seg.fits'.",
       5
-    },
-    {
-      "checkclumpsn",
-      515,
-      0,
-      0,
-      "Mesh clump S/N limit `_clumpsn.fits'.",
-      4
     },
 
 
@@ -588,7 +564,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'H':
       allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
       break;
-    case 'K':
+    case 'k':
       allocatecopyset(arg, &p->up.kernelname, &p->up.kernelnameset);
       break;
     case 'U':
@@ -610,9 +586,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Output: */
     case 517:
       p->detectonly=1;
-      break;
-    case 518:
-      p->skysubedname="a";
       break;
     case 'C':
       p->grownclumps=1;
@@ -741,13 +714,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 509:
       p->detectionskyname="a";
       break;
-    case 503:
-      p->detectionsnname="a";
-      break;
     case 512:
       p->skyname="a";
       break;
-    case 519:
+    case 518:
       p->maskdetname="a";
       break;
 
@@ -780,15 +750,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
 
     case 514:
-      sizetelzero(arg, &p->segsnhistnbins, "segsnhistnbins", key,
+      sizetelzero(arg, &p->clumpsnhistnbins, "clumpsnhistnbins", key,
                   SPACK, NULL, 0);
-      p->up.segsnhistnbinsset=1;
+      p->up.clumpsnhistnbinsset=1;
       break;
     case 513:
       p->segmentationname="a";
-      break;
-    case 515:
-      p->clumpsnname="a";
       break;
 
 

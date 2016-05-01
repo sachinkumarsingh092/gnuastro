@@ -120,11 +120,15 @@ struct stll
     char *v;
     struct stll *next;
 };
+
 void
 add_to_stll(struct stll **list, char *value);
 
 void
 pop_from_stll(struct stll **list, char **value);
+
+void
+reverse_stll(struct stll **list);
 
 void
 print_stll(struct stll *list);

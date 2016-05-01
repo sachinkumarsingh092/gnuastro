@@ -312,6 +312,8 @@ sanitycheck(struct imgwarpparams *p)
 {
   double *d, *df, *tmp, *m=p->matrix;
 
+  /* Make sure the input file exists. */
+  checkfile(p->up.inputname);
 
   /* Set the output name: */
   if(p->cp.output)

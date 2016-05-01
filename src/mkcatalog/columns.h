@@ -23,6 +23,32 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef COLUMNS_H
 #define COLUMNS_H
 
+/* Units: */
+#define CATDESCRIPTLENGTH         "%-60s"
+#define CATUNITRATIO              "ratio"
+#define CATUNITDEGREE             "degree"
+#define CATUNITCOUNTER            "counter"
+#define CATUNITPIXAREA            "pixel area"
+#define CATUNITMAG                "scale (log)"
+#define CATUNITPIXLENGTH          "pixel length"
+#define CATUNITBRIGHTNESS         "input data unit"
+#define CATUNITAVE                "("CATUNITBRIGHTNESS")/pixel"
+
+
+/* Fixed names */
+#define MKCATX                    "X"
+#define MKCATY                    "Y"
+#define MKCATRA                   "RA"
+#define MKCATDEC                  "Dec"
+#define MKCATCLUMP                "Clump"
+#define MKCATMAG                  "magnitude"
+#define MKCATBRIGHT               "brightness"
+#define MKCATOBJECT               "Full object"
+#define MKCATWHTC                 "weighted center"
+#define MKCATGEOC                 "geometric center"
+#define MKCATCINO                 "Clumps in object"
+#define MKRIVERSSUR               "Rivers surrounding clump, average"
+
 void
 idcol(struct mkcatalogparams *p);
 
@@ -36,14 +62,18 @@ void
 area(struct mkcatalogparams *p, int cinobj, int isriver);
 
 void
-position(struct mkcatalogparams *p, int w1i0, int x1y0, int cinobj);
+position(struct mkcatalogparams *p, size_t col, char *target,
+         char *type, char *axis);
 
 void
-brightnessmag(struct mkcatalogparams *p, int m0b1f2, int cinobj,
-                  int isriver);
+secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target);
 
 void
-skystd(struct mkcatalogparams *p, int issky);
+brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
+              char *scale);
+
+void
+skystd(struct mkcatalogparams *p, size_t col);
 
 void
 sncol(struct mkcatalogparams *p);

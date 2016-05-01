@@ -135,15 +135,19 @@ bibliography.
 The \LaTeX{} code for each plot is in the \texttt{tex/} directory. The
 names of the source code is the same as the base file name of the
 image that is to be used in the manual. However, when TikZ makes the
-EPS (or PDF is you comment the appropriate lines in the preamble)
+EPS (or PDF if you comment the appropriate lines in the preamble)
 files, labels them based on their order. So it is best that you just
 add the next plot to be made after all the current ones. Even if it
 belongs to an earlier part of the manual. The \texttt{Makefile} is in
-charge or renaming the EPS files and putting them into their
+charge or renaming the EPS/PDF files and putting them into their
 appropriate directory.
 
 \input{tex/iandtime.tex}
 
 \input{tex/samplingfreq.tex}
+
+\input{tex/flatplane.tex}
+
+\input{tex/sphericalplane.tex}
 
 \end{document}

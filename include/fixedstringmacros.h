@@ -49,7 +49,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "     info "PACKAGE_TARNAME"\n\n"                                     \
   "If you couldn't find your answer in the manual, you can get "        \
   "direct help from experienced Gnuastro users and developers. "        \
-  "For more information, please run:\n"                                 \
+  "For more information, please run:\n\n"                               \
   "     info help-gnuastro\n\n"                                         \
   SPACK_NAME" options:"                                                 \
 
@@ -59,7 +59,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   "@ARTICLE{noisechisel,\n"                                             \
   "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"                  \
   "    title = \"{Noise-based Detection and Segmentation of Nebulous Objects}\",\n" \
-  "  journal = {\apjs},\n"                                              \
+  "  journal = {\\apjs},\n"                                               \
   "archivePrefix = \"arXiv\",\n"                                        \
   "   eprint = {1505.01664},\n"                                         \
   " primaryClass = \"astro-ph.IM\",\n"                                  \

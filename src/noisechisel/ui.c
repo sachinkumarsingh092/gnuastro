@@ -386,12 +386,12 @@ readconfig(char *filename, struct noisechiselparams *p)
           floatl0s1(value, &p->segquant, name, key, SPACK, filename, lineno);
 	  up->segquantset=1;
 	}
-      else if(strcmp(name, "segsnhistnbins")==0)
+      else if(strcmp(name, "clumpsnhistnbins")==0)
 	{
-	  if(up->segsnhistnbinsset) continue;
-          sizetelzero(value, &p->segsnhistnbins, name, key, SPACK,
+	  if(up->clumpsnhistnbinsset) continue;
+          sizetelzero(value, &p->clumpsnhistnbins, name, key, SPACK,
                       filename, lineno);
-	  up->segsnhistnbinsset=1;
+	  up->clumpsnhistnbinsset=1;
 	}
       else if(strcmp(name, "gthresh")==0)
 	{
@@ -558,8 +558,8 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%d\n", "keepmaxnearriver", p->keepmaxnearriver);
   if(up->segquantset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "segquant", p->segquant);
-  if(up->segsnhistnbinsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnhistnbins", p->segsnhistnbins);
+  if(up->clumpsnhistnbinsset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "clumpsnhistnbins", p->clumpsnhistnbins);
   if(up->gthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "gthresh", p->gthresh);
   if(up->minriverlengthset)
@@ -663,8 +663,8 @@ checkifset(struct noisechiselparams *p)
     REPORT_NOTSET("keepmaxnearriver");
   if(up->segquantset==0)
     REPORT_NOTSET("segquant");
-  if(up->segsnhistnbinsset==0)
-    REPORT_NOTSET("segsnhistnbins");
+  if(up->clumpsnhistnbinsset==0)
+    REPORT_NOTSET("clumpsnhistnbins");
   if(up->gthreshset==0)
     REPORT_NOTSET("gthresh");
   if(up->minriverlengthset==0)
@@ -702,13 +702,24 @@ sanitycheck(struct noisechiselparams *p)
 {
   struct meshparams *smp=&p->smp;
 
+  /* Make sure the input file exists. */
+  checkfile(p->up.inputname);
+
   /* Set the maskname and mask hdu accordingly: */
   fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
                 &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
 
   /* Set the output name: */
   if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
+    {
+      checkremovefile(p->cp.output, p->cp.dontdelete);
+
+      /* When the output name is given (possibly with directory
+         information), the user certainly wants the directory
+         information, if they have bothered to include it. */
+      p->cp.removedirinfo=0;
+
+    }
   else
     automaticoutput(p->up.inputname, "_labeled.fits", p->cp.removedirinfo,
 		p->cp.dontdelete, &p->cp.output);
@@ -717,64 +728,57 @@ sanitycheck(struct noisechiselparams *p)
   if(p->meshname)
     {
       p->meshname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_meshs.fits", p->cp.removedirinfo,
+      automaticoutput(p->cp.output, "_meshs.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->meshname);
     }
   if(p->threshname)
     {
       p->threshname=NULL;
-      automaticoutput(p->up.inputname, "_thresh.fits", p->cp.removedirinfo,
+      automaticoutput(p->cp.output, "_thresh.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->threshname);
     }
   if(p->detectionname)
     {
       p->detectionname=NULL;
-      automaticoutput(p->up.inputname, "_det.fits", p->cp.removedirinfo,
+      automaticoutput(p->cp.output, "_det.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->detectionname);
     }
   if(p->detectionskyname)
     {
       p->detectionskyname=NULL;
-      automaticoutput(p->up.inputname, "_detsky.fits", p->cp.removedirinfo,
+      automaticoutput(p->cp.output, "_detsky.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->detectionskyname);
     }
-  if(p->detectionsnname)
+  if(p->detsnhistnbins)
     {
-      p->detectionsnname=NULL;
-      automaticoutput(p->up.inputname, "_detsn.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->detectionsnname);
+      p->detectionsnhist=NULL;
+      automaticoutput(p->cp.output, "_detsn.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->detectionsnhist);
     }
   if(p->skyname)
     {
       p->skyname=NULL;
-      automaticoutput(p->up.inputname, "_sky.fits", p->cp.removedirinfo,
+      automaticoutput(p->cp.output, "_sky.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->skyname);
     }
   if(p->segmentationname)
     {
       p->segmentationname=NULL;
-      automaticoutput(p->up.inputname, "_seg.fits", p->cp.removedirinfo,
+      automaticoutput(p->cp.output, "_seg.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->segmentationname);
     }
-  if(p->clumpsnname)
+  if(p->clumpsnhistnbins)
     {
-      p->clumpsnname=NULL;
-      automaticoutput(p->up.inputname, "_clumpsn.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->clumpsnname);
-    }
-  if(p->skysubedname)
-    {
-      p->skysubedname=NULL;
-      automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->skysubedname);
+      p->clumpsnhist=NULL;
+      automaticoutput(p->cp.output, "_clumpsn.txt", p->cp.removedirinfo,
+                      p->cp.dontdelete, &p->clumpsnhist);
     }
   if(p->maskdetname)
     {
       p->maskdetname=NULL;
-      automaticoutput(p->up.inputname, "_maskdet.fits", p->cp.removedirinfo,
+      automaticoutput(p->cp.output, "_maskdet.fits", p->cp.removedirinfo,
                       p->cp.dontdelete, &p->maskdetname);
     }
-
 
   /* Other checks: */
   if(smp->numnearest<MINACCEPTABLENEAREST)
@@ -1027,6 +1031,9 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
   cp->numthreads    = DP_NUMTHREADS;
   cp->removedirinfo = 1;
 
+  /* NoiseChisel parameter initializations. */
+  p->detsnhistnbins=p->clumpsnhistnbins=0;
+
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
@@ -1113,7 +1120,6 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
   free(p->meshname);
   free(p->threshname);
   free(p->maskdetname);
-  free(p->skysubedname);
   free(p->detectionname);
   free(p->segmentationname);
   free(p->detectionskyname);

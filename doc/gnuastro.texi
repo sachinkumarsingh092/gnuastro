@@ -9,7 +9,7 @@
 @c %**end of header
 @include version.texi
 @include formath.texi
-@include subpackageversions.texi
+@include utilityversions.texi
 
 @c So dashes and underscores can be used in HTMLs
 @allowcodebreaks true
@@ -24,11 +24,11 @@
 
 @c Copyright information:
 @copying
-This manual documents version @value{VERSION} of the GNU Astronomy
+This book documents version @value{VERSION} of the GNU Astronomy
 Utilities, providing various individual tools with similar user
 interface for astronomical data manipulation and analysis.
 
-Copyright @copyright{} 2015 Free Software Foundation, Inc.
+Copyright @copyright{} 2015-2016 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -53,11 +53,17 @@ Texts.  A copy of the license is included in the section entitled
 * Convolve: (gnuastro)Convolve. Convolve an input file with kernel.
 * astconvolve: (gnuastro)Invoking astconvolve. Options to Convolve.
 
+* CosmicCalculator: (gnuastro)CosmicCalculator. For cosmological params.
+* astcosmiccal: (gnuastro)Invoking astcosmiccal. Options to CosmicCalculator.
+
 * Header: (gnuastro)Header. Print and manipulate data header info.
 * astheader: (gnuastro)Invoking astheader. Options to Header.
 
 * ImageCrop: (gnuastro)ImageCrop. Crop region(s) from image(s).
 * astimgcrop: (gnuastro)Invoking astimgcrop. Options to ImageCrop.
+
+* Arithmetic: (gnuastro)Arithmetic. Arithmetic operations on pixels.
+* astarithmetic: (gnuastro)Invoking astarithmetic. Options to Arithmetic.
 
 * ImageStatistics: (gnuastro)ImageStatistics. Get image Statistics.
 * astimgstat: (gnuastro)Invoking astimgstat. Options to ImageStatistics.
@@ -109,6 +115,11 @@ Texts.  A copy of the license is included in the section entitled
 @author Mohammad Akhlaghi
 
 @page
+Gnuastro (source code and book) authors (sorted by number of commits
+in project history):
+@quotation
+@include authors.texi
+@end quotation
 @vskip 0pt plus 1filll
 @insertcopying
 
@@ -179,6 +190,7 @@ sub-component to a title is present.
 * Image analysis::              Analyze images.
 * Modeling and fittings::       Make and fit models.
 * Table manipulation::          Read/Write tables.
+* High-level calculations::     Physical calculations.
 * Developing::                  The development environment.
 * GNU Astronomy Utilities list::  List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
@@ -199,7 +211,7 @@ Introduction
 * Report a bug::                Search and report the bug you found.
 * Suggest new feature::         How to suggest a new feature.
 * Announcements::               How to stay up to date with Gnuastro.
-* Conventions::                 Conventions used in this manual.
+* Conventions::                 Conventions used in this book.
 * Acknowledgments::             People who helped in the production.
 
 Version numbering
@@ -232,7 +244,7 @@ Installing GNU Astronomy Utilities
 
 * Configuring::                 Configure Gnuastro
 * Tests::                       Run tests to see if it is working.
-* A4 print manual::             Customize the print manual.
+* A4 print book::               Customize the print book.
 * Known issues::                Issues you might encounter.
 
 Configuring
@@ -280,7 +292,7 @@ Getting help
 * --usage::                     View option names and value formats.
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
-* Info::                        View complete manual in terminal.
+* Info::                        View complete book in terminal.
 * help-gnuastro mailing list::  Contacting experienced users.
 
 Files
@@ -301,6 +313,7 @@ ConvertType
 Image manipulation
 
 * ImageCrop::                   Crop region(s) from FITS image(s).
+* Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
 * SubtractSky::                 Find the sky and subtract it from image.
@@ -316,6 +329,12 @@ Invoking ImageCrop
 
 * astimgcrop options::          A list of all the options with explanation.
 * astimgcrop output::           The outputs of ImageCrop.
+
+Arithmetic
+
+* Reverse polish notation::     The current notation style for Arithmetic
+* Arithmetic operators::        List of operators known to Arithmetic
+* Invoking astarithmetic::      How to run Arithmetic: options and output
 
 Convolve
 
@@ -394,7 +413,9 @@ Invoking NoiseChisel
 MakeCatalog
 
 * Depth and limiting magnitude::  For comparing different catalogs.
+* Measuring elliptical parameters::  Estimating elliptical parameters.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
+* Adding new columns to MakeCatalog::  How to add new columns.
 
 Modeling and fitting
 
@@ -436,6 +457,16 @@ Noise basics
 * Final noised pixel value::    How the final noised value is calculated.
 * Generating random numbers::   How random numbers are generated.
 
+High-level calculations
+
+* CosmicCalculator::            Calculate cosmological variables
+
+CosmicCalculator
+
+* Distance on a 2D curved space::  Distances in 2D for simplicity
+* Extending distance concepts to 3D::  Going to 3D (our real universe).
+* Invoking astcosmiccal::       How to run CosmicCalculator
+
 Developing
 
 * Why C::                       Why Gnuastro is designed in C.
@@ -449,6 +480,10 @@ Developing
 * Building::                    Explanations on building.
 * After making changes::        Checklist to finalize your changes.
 * Contributing to Gnuastro::    Share your changes with all users.
+
+Version controlled source
+
+* Bootstrapping::               Adding all the automaticly generated files
 
 Program source
 
@@ -464,6 +499,7 @@ Mandatory source code files
 
 Contributing to Gnuastro
 
+* Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Standards for commit messages.
 * Production workflow::         Incorporating changes into Gnuastro.
 
@@ -494,7 +530,10 @@ standards so it integrates finely with the GNU/Linux operating
 system. This also enables astronomers to expect a fully familiar
 experience in the source code, building, installing and command line
 user interaction that they have seen in all the other GNU software
-that they use.
+that they use. The official and always up to date version of
+book/manual is freely available under @ref{GNU Free Documentation
+License} in various formats (pdf, html, plain text, info, and as its
+Texinfo source) at @url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
 specified most of the topics in chapters 2 and 3 are common to all GNU
@@ -502,14 +541,14 @@ software, for example installation, managing command line options or
 getting help. So if you are new to this environment, we encourage you
 to go through these chapters carefully. They can be a starting point
 from which you can continue to learn more from each program's own
-manual and fully enjoy this wonderful environment. This manual is
+manual and fully enjoy this wonderful environment. This book is
 written so someone who is completely new to GNU/Linux can get going
 very soon, see @ref{New to GNU/Linux?}.
 
 Finally it must be mentioned that in Gnuastro, no change to any
 program will be released before it has been fully documented in this
-manual first. As discussed in @ref{Science and its tools} this is the
-founding basis of the GNU Astronomy Utilities.
+here first. As discussed in @ref{Science and its tools} this is the
+founding basis of the Gnuastro.
 
 @menu
 * Quick start::                 A quick start to installation.
@@ -521,7 +560,7 @@ founding basis of the GNU Astronomy Utilities.
 * Report a bug::                Search and report the bug you found.
 * Suggest new feature::         How to suggest a new feature.
 * Announcements::               How to stay up to date with Gnuastro.
-* Conventions::                 Conventions used in this manual.
+* Conventions::                 Conventions used in this book.
 * Acknowledgments::             People who helped in the production.
 @end menu
 
@@ -534,12 +573,12 @@ founding basis of the GNU Astronomy Utilities.
 @cindex Compile
 @cindex Check
 @cindex Test
-Let's assume you have just downloaded the
-@file{gnuastro-@value{VERSION}.tar.gz} in the @file{DOWLD} directory
-and you already have the requirements (see
+All releases of Gnuastro are available at
+@url{https://www.gnu.org/software/gnuastro/}. Let's assume
+@file{gnuastro-@value{VERSION}.tar.gz} is in the @file{DOWLD}
+directory and you already have the requirements (see
 @ref{Requirements}). Running the following commands will unpack,
-compile, check and install all the GNU Astronomy Utilities so you can
-use them anywhere in your system.
+compile, check and install Gnuastro.
 
 @example
 $ cd DOWLD
@@ -556,7 +595,7 @@ $ rm -rf gnuastro-@value{VERSION} gnuastro-@value{VERSION}.tar.gz
 @noindent
 
 See @ref{Known issues} if you confront any complications.  For each
-program there is an `Invoke ProgramName' sub-section in this manual
+program there is an `Invoke ProgramName' sub-section in this book
 which explains how the programs should be run on the command line. It
 can be read on the command line by running the command @command{$ info
 astprogname}, see @ref{Naming convention} and @ref{Getting help}. The
@@ -577,8 +616,8 @@ used is given.
 
 History of science indicates that there are always inevitably unseen
 faults, hidden assumptions, simplifications and approximations in all
-our theoretical models, data acquisition and analysis techniques. It is
-precisely these that will ultimately allow future generations to
+our theoretical models, data acquisition and analysis techniques. It
+is precisely these that will ultimately allow future generations to
 advance the existing experimental and theoretical knowledge through
 their new solutions and corrections.
 
@@ -624,7 +663,15 @@ This approach to scientific software only helps in producing dogmas
 and an ``obscurantist faith in the expert’s special skill, and in his
 personal knowledge and authority''@footnote{Karl Popper. The logic of
 scientific discovery. 1959. Larger quote is given at the start of the
-PDF manual.}.
+PDF (for print) version of this book.}.
+
+@quotation
+@cindex Douglas Rushkoff
+Program or be programmed. Choose the former, and you gain access to
+the control panel of civilization. Choose the latter, and it could be
+the last real choice you get to make.
+@author Douglas Rushkoff. Program or be programmed, O/R Books (2010).
+@end quotation
 
 It is obviously impractical for any one human being to gain the
 intricate knowledge explained above for every step of an analysis. On
@@ -632,26 +679,61 @@ the other hand, scientific data can be very large and numerous, for
 example images produced by telescopes in astronomy. This requires very
 efficient algorithms. To make things worse, natural scientists have
 generally not been trained in the advanced software techniques,
-paradigms and architecture that is taught in computer science or
+paradigms and architecture that are taught in computer science or
 engineering courses and thus used in most software. The GNU Astronomy
-Utilities are an effort to tackle this issue. GNU Astronomy Utilities
-are built on the basis of the GNU general public license (GPL), giving
-the users complete ``freedom'' over them, see @ref{Your rights}. We
-further add the requirement (on the authors of Gnuastro) that an
-astronomer, who is not necessarily trained in computer science or
-engineering, will need minimal requirements and preparations to
-understand and modify any step if they feel the need to do so, see
-@ref{Why C} and @ref{Design philosophy}.
+Utilities are an effort to tackle this issue.
+
+Gnuastro is not just a software, this book is as important to the idea
+behind Gnuastro as the source code (software). This book has tried to
+learn from the success of the ``Numerical Recipes'' book in educating
+those who are not software engineers and computer scientists but still
+heavy users of computational algorithms, like astronomers. There are
+two major differences: the code and the explanations are segregated:
+the code is moved within the actual Gnuastro software source code and
+the underlying explanations are given here. In the source code every
+non-trivial step is heavily commented and correlated with this book,
+it follows the same logic of this book, and all the utilities follow a
+similar internal data, function and file structure, see @ref{Program
+source}. Complementing the code, this book focuses on thoroughly
+explaining the concepts behind those codes (history, mathematics,
+science, software and usage advise when necessary) along with detailed
+instructions on how to run the programs. At the expense of frustrating
+``professionals'' or ``experts'', this book and the comments in the
+code also intentionally avoid jargon and abbreviations. The source
+code and this book are thus intimately linked, and when considered as
+a single entity can be thought of as a real (an actual software
+accompanying the algorithms) ``Numerical Recipes'' for astronomy.
+
+The other major and arguably more important difference is that
+``Numerical Recipes'' does not allow you to distribute any code that
+you have learnt from it and the book is not freely available. So while
+it empowers the previlaged individual who has access to it, it
+exacerbates social ignorance. For example it does not allow you to
+release your software's source code if you have used their codes, you
+can only publicly release binaries (a black box) to the
+community. Exactly at the opposite end of the spectrum, Gnuastro's
+source code is released under the GNU general public license (GPL) and
+this book is released under the GNU free documentation license. You
+are therefore free to distribute any software you create using parts
+of Gnuastro's source code or text, or figures from this book, see
+@ref{Your rights}. While developing the source code and this book
+together, the developers of Gnuastro aim to impose the minimum
+requirements on you (in computer science, engineering and even the
+mathematics behind the tools) to understand and modify any step of
+Gnuastro if you feel the need to do so, see @ref{Why C} and
+@ref{Design philosophy}.
 
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
 telescope. Astronomical objects could not be seen with the Dutch
 military design of the telescope. In the beginning of his ``The
 Sidereal Messenger'' (1610) he cautions the readers on this issue and
-instructs them on how to build a suitable instrument. Before he
-actually saw the moons of Jupiter, the mountains on the Moon or the
-crescent of Venus, he was an anti-Copernican and was “evasive” to
-Kepler@footnote{Galileo G. (Translated by Maurice
+instructs them on how to build a suitable instrument: without a
+detailed description of ``how'' he made his observations, no one would
+believe him. The same is true today, science cannot progress with a
+black box. Before he actually saw the moons of Jupiter, the mountains
+on the Moon or the crescent of Venus, he was an anti-Copernican and
+was “evasive” to Kepler@footnote{Galileo G. (Translated by Maurice
 A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing
 company, first edition, 2008.}. Science is not independent of its
 tools.
@@ -663,16 +745,13 @@ understanding software, you are reduced to believing in magic''.  Ken
 Thomson (the designer or the Unix operating system) says ``I abhor a
 system designed for the `user' if that word is a coded pejorative
 meaning `stupid and unsophisticated'.'' Certainly no scientist (user
-of a scientific software) would want to be considered as such. Roughly
-5 years before special relativity and about two decades before quantum
-mechanics fundamentally changed Physics, Kelvin is quoted as
-saying@footnote{Another such quote is from Albert. A. Michelson's
-speech at the dedication of Ryerson Physics Lab, U. of Chicago 1894
-saying: ``The more important fundamental laws and facts of physical
-science have all been discovered, and these are now so firmly
-established that the possibility of their ever being supplanted in
-consequence of new discoveries is exceedingly remote.... Our future
-discoveries must be looked for in the sixth place of decimals.''.}:
+of a scientific software) would want to be considered a believer in
+magic, or `stupid and unsophisticated'. However, this can happen when
+scientists get too distant from the raw data and are mainly indulging
+themselves in their own high-level (abstract) models (creations). For
+example, roughly 5 years before special relativity and about two
+decades before quantum mechanics fundamentally changed Physics, Kelvin
+is quoted as saying:
 
 @quotation
 @cindex Lord Kelvin
@@ -682,18 +761,34 @@ is more and more precise measurement.
 @author William Thomson (Lord Kelvin), 1900
 @end quotation
 
+@noindent
+A few years earlier, in a speech Albert. A. Michelson said:
+
+@quotation
+@cindex Albert. A. Michelson
+@cindex Michelson, Albert. A.
+The more important fundamental laws and facts of physical science have
+all been discovered, and these are now so firmly established that the
+possibility of their ever being supplanted in consequence of new
+discoveries is exceedingly remote.... Our future discoveries must be
+looked for in the sixth place of decimals.
+@author Albert. A. Michelson, dedication of Ryerson Physics Lab, U. Chicago 1894
+@end quotation
+
 @cindex Puzzle solving scientist
 @cindex Scientist, puzzle solver
 If scientists are considered to be more than mere ``puzzle
 solvers''@footnote{Thomas S. Kuhn. @emph{The Structure of Scientific
-Revolutions}, University of Chicago Press, 1962.}, they cannot just
-passively sit back and wait for others to build the tools that form
-the basis of all their interpretations and working paradigms. Today
-there is a wealth of raw telescope images ready (mostly for free) at
-the finger tips of anyone who is interested with a fast enough
-internet connection to download them.  The only thing lacking is new
-ways to analyze them and dig out the treasure that is lying hidden in
-them to existing methods and techniques.
+Revolutions}, University of Chicago Press, 1962.} (simply adding to
+the decimals of known values or observing a feature in 10, 100, or
+100000 more galaxies or stars, as Kelvin and Michelson clearly
+believed), they cannot just passively sit back and uncritically repeat
+the previous (observational or theoretical) methods/tools on new
+data. Today there is a wealth of raw telescope images ready (mostly
+for free) at the finger tips of anyone who is interested with a fast
+enough internet connection to download them. The only thing lacking is
+new ways to analyze this data and dig out the treasure that is lying
+hidden in them to existing methods and techniques.
 
 @quotation
 @cindex Jaynes E. T.
@@ -714,7 +809,7 @@ things that the experiment was competent to find.
 @cindex GNU Texinfo
 The paragraphs below, in this section, belong to the GNU
 Texinfo@footnote{Texinfo is the GNU documentation system. It is used
-to create this manual in all the various formats.} manual and are not
+to create this book in all the various formats.} manual and are not
 written by us! The name ``Texinfo'' is just changed to ``GNU Astronomy
 Utilities'' or ``Gnuastro'' because they are released under the same
 licenses and it is beautifully written to inform you of your rights.
@@ -756,7 +851,7 @@ reputation.
 The precise conditions of the licenses for the programs currently
 being distributed that relate to Gnuastro are found in the
 @url{http://www.gnu.org/copyleft/gpl.html, GNU General Public license}
-that accompany them.  This manual is covered by the
+that accompany them.  This book is covered by the
 @url{http://www.gnu.org/copyleft/fdl.html, GNU Free Documentation
 License}.
 
@@ -779,7 +874,7 @@ example @file{astnoisechisel} or @file{astimgcrop}, see
 @pindex ProgramName
 @pindex @file{astprogname}
 We will use ``ProgramName'' for a generic official program name and
-@file{astprogname} for a generic executable name. In this manual, the
+@file{astprogname} for a generic executable name. In this book, the
 programs are classified based on what they do and thoroughly
 explained. An alphabetical list of the utilities that are installed on
 your system with this installation are given in @ref{GNU Astronomy
@@ -1015,78 +1110,43 @@ incorrect or unexpected result, or to behave in unintended ways''. So
 when you see that a program is crashing, not reading your input
 correctly, giving the wrong results, or not writing your output
 correctly, you have found a bug. In such cases, it is best if you
-report the bug to the developers. If it is an immediate issue, the
-developers will work hard to correct it as soon as possible.
+report the bug to the developers. The utilities will also report bugs
+in known impossible situations (which are caused by something
+unexpected) and will ask the users to report the bug. Below, first
 
 @cindex Bug reporting
+Prior to actually filing a bug report, it is best to search previous
+reports. The issue might have already been found and even solved. The
+best place to check if your bug has already been discussed is the bugs
+tracker on @ref{Gnuastro project webpage} at
+@url{https://savannah.gnu.org/bugs/?group=gnuastro}. In the top search
+fields (under ``Display Criteria'') set the ``Open/Closed'' dropdown
+menu to ``Any'' and choose the respective utility in ``Category'' and
+click the ``Apply'' button. The results colored green have already
+been solved and the status of those colored in red is shown in the
+table.
+
 @cindex Version control
-Prior to actually filing a bug, it is best to search previous
-reports. The issue might have already been found and even
-solved. Recently corrected bugs are probably not yet publicly released
-because they are scheduled for the next Gnuastro stable release. If
-the bug is solved but not yet released and it is an urgent issue for
-you, you can get the version controlled source and compile that, see
-@ref{Version controlled source}. There are generally two ways to
-inform us of bugs:
+Recently corrected bugs are probably not yet publicly released because
+they are scheduled for the next Gnuastro stable release. If the bug is
+solved but not yet released and it is an urgent issue for you, you can
+get the version controlled source and compile that, see @ref{Version
+controlled source}.
 
-@itemize
-@cindex Mailing list archives
-@cindex Mailing list: bug-gnuastro
-@cindex @code{bug-gnuastro@@gnu.org}
-@item
-Send a mail to @code{bug-gnuastro@@gnu.org}. Any mail you send to this
-address will be distributed through the bug-gnuastro mailing
-list. This is the simplest and preferred way to send bug reports. The
-archives of this mailing list can be found at
-@url{http://lists.gnu.org/archive/html/bug-gnuastro/}.
+To solve the issue as readily as possible, please follow these
+guidelines in your bug report:
 
-@cindex Gnuastro project page
-@cindex Support request manager
-@cindex Submit new tracker item
-@cindex Anonymous bug submission
-@item
-``Submit a new item'' to the ``Communication tools'' section of the
-@url{https://savannah.gnu.org/projects/gnuastro/, Gnuastro project
-webpage}
-@footnote{@url{https://savannah.gnu.org/projects/gnuastro/}}. All the
-bug reports that are sent for Gnuastro (including the mailing list)
-are ultimately stored and managed in the Gnuastro project Bugs tracker
-@footnote{@url{https://savannah.gnu.org/bugs/?group=gnuastro}}. Users
-can also initiate a bug report from the project webpage directly
-through the @clicksequence{``Support''@click{}``Submit new''} links on
-the top of the page or the ``Submit a new item'' link under the ``Tech
-Support Manager'' section (with a red question mark beside it) of the
-main Gnuastro project page. You can browse or submit a new item to
-this list anonymously. See @ref{Gnuastro project webpage} for more
-information about the central management hub of Gnuastro.
-@end itemize
+@table @strong
 
-@cindex Tracker
-@cindex Bug tracker
-@cindex Task tracker
-@cindex Viewing trackers
-Once the items have been gathered from the mailing list or webpage,
-the developers will add it to either the ``Bug Tracker'' or ``Task
-Manager'' trackers of the Gnuastro project webpage. These two trackers
-can only be edited by the Gnuastro project members, but they can be
-browsed by anyone. So prior to filing a bug report please browse and
-search these two trackers to see if the issue has already been solved
-or is being solved.
+@item Individual and independent bug reports
+If you have found multiple bugs, please send them as separate (and
+independent) bugs (as much as possible). This will significantly help
+us in managing and resolving them sooner.
 
-@cartouche
-@noindent
-@strong{Individual and independent bug reports:} If you have found
-multiple bugs, please send them as separate (and independent) mails as
-much as possible. This will significantly help us in managing and
-resolving them sooner.
-@end cartouche
-
-@cartouche
 @cindex Reproducible bug reports
-@noindent
-@strong{Reproducible bug reports:} If we cannot reproduce your bug,
-then it is very hard to resolve it. So please send us a Minimal
-working
+@item Reproducible bug reports
+If we cannot exactly reproduce your bug, then it is very hard to
+resolve it. So please send us a Minimal working
 example@footnote{@url{http://en.wikipedia.org/wiki/Minimal_Working_Example}}
 along with the description. For example in running a program, please
 send us the full command line text and the output with the @option{-P}
@@ -1095,7 +1155,59 @@ certain input, also send us that input file. In case the input FITS is
 large, please use ImageCrop to only crop the problematic section and
 make it as small as possible so it can easily be uploaded and
 downloaded and not waste the archive's storage, see @ref{ImageCrop}.
-@end cartouche
+@end table
+
+There are generally two ways to inform us of bugs:
+
+@itemize
+@cindex Mailing list archives
+@cindex Mailing list: bug-gnuastro
+@cindex @code{bug-gnuastro@@gnu.org}
+@item
+Send a mail to @code{bug-gnuastro@@gnu.org}. Any mail you send to this
+address will be distributed through the bug-gnuastro mailing
+list@footnote{@url{https://lists.gnu.org/mailman/listinfo/bug-gnuastro}}. This
+is the simplest way to send us bug reports. The developers will then
+register the bug into the project webpage (next choice) for you.
+
+@cindex Gnuastro project page
+@cindex Support request manager
+@cindex Submit new tracker item
+@cindex Anonymous bug submission
+@item
+Use the Gnuastro project webpage at
+@url{https://savannah.gnu.org/projects/gnuastro/}: There are two ways
+to get to the submission page as listed below. Fill in the form as
+described below and submit it (see @ref{Gnuastro project webpage} for
+more on the project webpage).
+
+@itemize
+
+@item
+Using the top horizontal menu items, immediately under the top page
+title. Hovering your mouse on ``Support'' will open a dropdown
+list. Select ``Submit new''.
+
+@item
+In the main body of the page, under the ``Communication tools''
+section, click on ``Submit new item''.
+
+@end itemize
+@end itemize
+
+@cindex Tracker
+@cindex Bug tracker
+@cindex Task tracker
+@cindex Viewing trackers
+Once the items have been registered in the mailing list or webpage,
+the developers will add it to either the ``Bug Tracker'' or ``Task
+Manager'' trackers of the Gnuastro project webpage. These two trackers
+can only be edited by the Gnuastro project developers, but they can be
+browsed by anyone, so you can follow the progress on your bug. You are
+most welcome to join us in developing Gnuastro and fixing the bug you
+have found maybe a good starting point. Gnuastro is designed to be
+easy for anyone to develop (see @ref{Science and its tools}) and there
+is a full chapter devoted to developing it: @ref{Developing}.
 
 
 @node Suggest new feature, Announcements, Report a bug, Introduction
@@ -1107,42 +1219,48 @@ We would always be very happy to hear of suggested new features. For
 every program there are already lists of features that we are planning
 to add. You can see the current list of plans from the Gnuastro
 project webpage at @url{https://savannah.gnu.org/projects/gnuastro/}
-and following @clicksequence{``Tasks''@click{}``Browse''} at the top
-of the page. If you want to request a feature to an existing program,
-click on the ``Display Criteria'' above the list and under
-``Category'', choose that particular program. Under ``Category'' you
-can also see the existing suggestions for new utilities or other cases
-like installation.
+and following @clicksequence{``Tasks''@click{}``Browse''} on the
+horizontal menu at the top of the page immediately under the title,
+see @ref{Gnuastro project webpage}. If you want to request a feature
+to an existing utility, click on the ``Display Criteria'' above the
+list and under ``Category'', choose that particular program. Under
+``Category'' you can also see the existing suggestions for new
+utilities or other cases like installation, documentation or
+libraries. Also be sure to set the ``Open/Closed'' value to ``Any''.
 
 If the feature you want to suggest is not already listed in the task
-manager, then inform us through the @code{bug-gnuastro@@gnu.org}
-mailing list or submitting an issue through the Gnuastro project
-webpage, see @ref{Report a bug}. Please have in mind that the
-developers are all very busy with their own astronomical research, and
-implementing existing ``task''s to add or resolving bugs. Gnuastro is
-a volunteer effort and none of the developers are paid for their hard
-work. So, although we will try our best, please don't not expect that
-your suggested feature be immediately included (with the next release
-of Gnuastro).
+manager, then follow the steps that are fully described in @ref{Report
+a bug}. Please have in mind that the developers are all very busy with
+their own astronomical research, and implementing existing ``task''s
+to add or resolving bugs. Gnuastro is a volunteer effort and none of
+the developers are paid for their hard work. So, although we will try
+our best, please don't not expect that your suggested feature be
+immediately included (with the next release of Gnuastro).
 
-The best person to apply the feature is you, since you have the
-motivation and need. So you can read @ref{Developing} and start
-applying your desired feature. Once you have added it, you can use it
-for your own work and if you feel you want others to benefit from your
-labour, you can request for it to become part of Gnuastro. You can
-then join the developers and start maintaining your own part (utility)
-of Gnuastro. If you choose to take this path of action please contact
-us before hand (@ref{Report a bug}) so we can avoid possible duplicate
-activities and get interested people in contact.
+The best person to apply the exciting new feature you have in mind is
+you, since you have the motivation and need. Infact Gnuastro is
+designed for making it as easy as possible for you to hack into it
+(add new feautres, change existing ones and so on), see @ref{Science
+and its tools}. Please have a look at the chapter devoted to
+developing (@ref{Developing}) and start applying your desired
+feature. Once you have added it, you can use it for your own work and
+if you feel you want others to benefit from your work, you can request
+for it to become part of Gnuastro. You can then join the developers
+and start maintaining your own part of Gnuastro. If you choose to take
+this path of action please contact us before hand (@ref{Report a bug})
+so we can avoid possible duplicate activities and get interested
+people in contact.
 
 @cartouche
 @noindent
 @strong{Gnuastro is a collection of low level programs:} As described
 in @ref{Design philosophy}, a founding principle of Gnuastro is that
-each program should be very basic and low-level. High level jobs
-should be done by running the separate programs in succession through
-a shell script, see the examples in @ref{Tutorials}. So please
-consider how your desired job can best be broken into separate steps.
+each library or utility should be very basic and low-level. High level
+jobs should be done by running the separate programs in succession
+through a shell script or calling the libraries by higher level
+functions, see the examples in @ref{Tutorials}. So when making the
+suggestions please consider how your desired job can best be broken
+into separate steps and modularized.
 @end cartouche
 
 
@@ -1154,7 +1272,9 @@ consider how your desired job can best be broken into separate steps.
 @cindex Mailing list: info-gnuastro
 Gnuastro has a dedicated mailing list for making announcements. Anyone
 that is interested can subscribe to this mailing list to stay upto
-date with new releases. To subscribe to this list, please visit
+date with new releases or when the dependencies (see
+@ref{Requirements}) have been updated. To subscribe to this list,
+please visit
 @url{https://lists.gnu.org/mailman/listinfo/info-gnuastro}.
 
 
@@ -1162,7 +1282,7 @@ date with new releases. To subscribe to this list, please visit
 
 @node Conventions, Acknowledgments, Announcements, Introduction
 @section Conventions
-In this manual we have the following conventions:
+In this book we have the following conventions:
 
 @itemize
 
@@ -1212,7 +1332,7 @@ available for the astronomical community. The very critical view
 points of Professor Takashi Ichikawa (at Tohoku University) were also
 instrumental in the creation of Gnuastro.
 
-Mohammad-reza Khellat and Alan Lefor kindly studied the manual
+Mohammad-reza Khellat and Alan Lefor kindly studied the book
 multiple times and provided very useful suggestions. Alan and
 Mohammad-reza also helped in testing Gnuastro on other operating
 systems. Brandon Invergo, Karl Berry and Richard Stallman also
@@ -1253,12 +1373,12 @@ the various tools in Gnuastro for your scientific purposes. In these
 tutorials, we have intentionally avoided too many cross references to
 make it more easily readable. To get more information about a
 particular program, you can visit the section with the same name as
-the program in this manual. Each program section starts by explaning
+the program in this book. Each program section starts by explaning
 the general concepts behind what it does. If you only want to see an
 explanation of the options and arguments of any program, see the
 subsection titled `Invoking ProgramName'. See @ref{Conventions}, for
 an explanation of the conventions we use in the example codes through
-the manual.
+the book.
 
 The tutorials in this section use a fictional setting of some
 historical figures in the history of astronomy. We have tried to show
@@ -1657,8 +1777,11 @@ as a visual scale.
 Using all the information above, he creates the catalog of mock
 profiles he wants in a file named @file{cat.txt} (short for catalog)
 using his favorite text editor and stores it in a directory named
-@file{simulationtest} in his home directory@footnote{The @command{cat}
-command prints the contents of a file, short for concatenation.}:
+@file{simulationtest} in his home directory. [The @command{cat}
+command prints the contents of a file, short for concatenation. So
+please copy-paste the outputs of the command ``@command{cat cat.txt}''
+into @file{cat.txt} when the editor opens in the steps above it, note
+that there are 6 lines]:
 
 @example
 $ mkdir ~/simulationtest
@@ -1678,8 +1801,7 @@ $ cat cat.txt
 @end example
 
 @noindent
-He looked into his observation logs and found that the night he was
-observing, the zeropoint magnitude was 18. Now he has all the
+The zeropoint magnitude for his observation was 18. Now he has all the
 necessary parameters and runs MakeProfiles with the following command:
 
 @example
@@ -1692,13 +1814,13 @@ MakeProfiles started on Sat Oct  6 16:26:56 953
   ---- Row 3 complete, 4 left to go.
   ---- Row 2 complete, 3 left to go.
   ---- Row 4 complete, 2 left to go.
-  ---- ./0.fits created.
+  ---- ./0_cat.fits created.
   ---- Row 0 complete, 1 left to go.
   ---- Row 1 complete, 0 left to go.
   - cat.fits created.                        in 0.024811 seconds
 MakeProfiles finished in:  0.236629 (seconds)
 $ls
-0.fits  astmkprof.log  cat.fits  cat.txt
+0_cat.fits  astmkprof.log  cat.fits  cat.txt
 @end example
 
 @cindex Oversample
@@ -1721,7 +1843,7 @@ convolving we will resample the image to get our originally desired
 size. To convolve the image, Sufi ran the following command:
 
 @example
-$ astconvolve --kernel=0.fits cat.fits
+$ astconvolve --kernel=0_cat.fits cat.fits
 Convolve started on Mon Apr  6 16:35:32 953
 Convolving cat.fits (hdu: 0)
  with the kernel 0.fits (hdu: 0).
@@ -1733,7 +1855,7 @@ Convolving cat.fits (hdu: 0)
   - Padded parts removed.                    in 0.011880 seconds
 Convolve finished in:  15.972771 (seconds)
 $ls
-0.fits  astmkprof.log  cat_convolved.fits  cat.fits  cat.txt
+0_cat.fits  astmkprof.log  cat_convolved.fits  cat.fits  cat.txt
 @end example
 
 @noindent
@@ -1753,7 +1875,7 @@ $ astimgwarp cat_convolved.fits --matrix="0.2,0,0.4  0,0.2,0.4  0,0,1"
 ImageWarp started on Mon Apr  6 16:51:59 953
 ImageWarp finished in:  0.481421 (seconds)
 $ ls
-0.fits         cat_convolved.fits         cat.fits
+0_cat.fits        cat_convolved.fits         cat.fits
 astmkprof.log  cat_convolved_warped.fits  cat.txt
 @end example
 
@@ -1770,13 +1892,14 @@ convolution is done Sufi can remove those extra pixels using
 ImageCrop:
 
 @example
-$ astimgcrop cat_convolved_warped.fits --section=13:*-13,13:*-13
+$ astimgcrop cat_convolved_warped.fits --section=13:*-13,13:*-13  \
+             --zeroisnotblank
 ImageCrop started on Sat Oct  6 17:03:24 953
   - Read metadata of 1 images.               in 0.000560 seconds
   ---- cat_convolved_warped_crop.fits 1 1
 ImageCrop finished in:  0.018917 (seconds)
 $ls
-0.fits          astmkprof.log           cat_convolved_warped.fits
+0_cat.fits      astmkprof.log           cat_convolved_warped.fits
 0_warped.fits   cat_convolved.fits              cat.fits
 astimgcrop.log  cat_convolved_warped_crop.fits  cat.txt
 @end example
@@ -1801,7 +1924,7 @@ MakeNoise started on Mon Apr  6 17:05:06 953
   - Generator seed: 1428318100
 MakeNoise finished in:  0.033491 (seconds)
 $ls
-0.fits          cat_convolved.fits              cat.txt
+0_cat.fits      cat_convolved.fits              cat.txt
 0_warped.fits   cat_convolved_warped_crop.fits  out.fits
 astimgcrop.log  cat_convolved_warped.fits
 astmkprof.log   cat.fits
@@ -1958,9 +2081,9 @@ conjunction with it is discussed.
 
 @cindex Dependencies, Gnuastro
 @cindex GNU build system
-GNU Astronomy Utilities @value{VERSION} have several dependencies,
-they all follow the same basic GNU based build system (like that shown
-in @ref{Quick start}), so even if you don't have them, installing them
+GNU Astronomy Utilities @value{VERSION} has several dependencies, they
+all follow the same basic GNU based build system (like that shown in
+@ref{Quick start}), so even if you don't have them, installing them
 should be pretty straightforward. In this section we explain each
 program and any specific note that might be necessary in the
 installation.
@@ -1971,23 +2094,38 @@ installation.
 @cindex Source code compilation
 @cindex Package managers
 The most basic choice is to build the packages from source your self
-instead of relying on your distribution's pre-built packages. These
-packages might already be available by your distribution's package
-management system. You can also use those, just note the following two
-issues:
+instead of relying on your distribution's pre-built packages. You can
+use the pre-built packages, however, because of the reasons below, we
+recommend that you build them your self. We will send out
+notifications in the @command{info-gnuastro} mailing list, see
+@ref{Announcements} when these requirements are updated so you can
+update them your self when you need to.
 
 @enumerate
-@item
-They might not be the most recent release.
 
 @item
-For each package, Gnuastro might require certain configuration options
-that the your distribution's package managers didn't add for
-you. Those configuration options are explained below.
+For each package, Gnuastro might preform better (or require) certain
+configuration options that the your distribution's package managers
+didn't add for you. If present, these configuration options are
+explained during the installation of each. When the proper
+configuration has not been set, the programs should complain and
+inform you of it.
+
+@item
+Your distribution's prebuilt package might not be the most recent
+release.
 
 @item
 For the libraries, they might separate the binary file from the header
 files, see @ref{Known issues}.
+
+@item
+Like any other tool, the science you derive from Gnuastro's tools
+highly depend on these lower level dependencies, so generally it is
+much better to have a close connection with them. By reading their
+manuals, installing them and staying up to date with changes/bugs in
+them, your scientific results and understanding will also
+correspondingly improve.
 @end enumerate
 
 
@@ -2002,9 +2140,8 @@ files, see @ref{Known issues}.
 @subsection GNU Scientific library
 
 @cindex GNU Scientific Library
-The GNU Scientific Library is probably already present in your
-distribution's package management system. To install it from source,
-you can run the following commands after you have
+To install the GNU Scientific Library from source, you can run the
+following commands after you have
 downloaded@footnote{@url{http://www.gnu.org/software/gsl/}}
 @file{gsl-X.X.tar.gz}:
 
@@ -2056,11 +2193,31 @@ source and unpack it, the following configure script should be enough
 for most purposes. Don't forget to read chapter two of the manual
 though, for example the second option is only for 64bit systems. The
 manual also explains how to check if it has been installed correctly.
+
+CFITSIO comes with two executables called fpack and funpack. From
+their manual: they ``are standalone programs for compressing and
+uncompressing images and tables that are stored in the FITS (Flexible
+Image Transport System) data format.  They are analogous to the gzip
+and gunzip compression programs except that they are optimized for the
+types of astronomical images that are often stored in FITS
+format''. The instruction below explain how to compile and install
+them on your system along with CFITSIO. Incase you don't want them,
+just ignore the commands that include their names. They are not
+essential for Gnuastro, since they are just wrappers for functions
+within CFITSIO. The @command{make utils} command is only available for
+versions above 3.39, it will install the utilities (executables, to
+run on the command line) that are also shipped with CFITSIO and can be
+useful.
+
 @example
 $ tar -vxzf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
+$ make utils
+$ ./testprog > testprog.lis
+$ diff testprog.lis testprog.out
+$ cmp testprog.fit testprog.std
 $ sudo make install
 @end example
 
@@ -2096,8 +2253,8 @@ In the directory where you have downloaded the compressed file, you
 can take the following steps (the @code{x.xx} represents the version
 number):
 @example
-$ tar -jxvf wcslib.tar.bz2
-$ cd wcslib-x.xx
+$ tar -jxvf wcslib-X.XX.tar.bz2
+$ cd wcslib-X.XX
 $ ./configure --without-pgplot LIBS="-pthread -lm"
 $ make
 $ make check
@@ -2176,7 +2333,7 @@ commands given in @ref{Quick start}. If you want to have all the
 programs of Gnuastro installed in your system, you don't want to
 change the executable names during or after installation, you have
 root access to install the programs in a system wide directory, the
-Letter paper size of the print manual is fine for you or as a summary
+Letter paper size of the print book is fine for you or as a summary
 you don't feel like going into the details when everything is working
 seamlessly, you can safely skip this section. If you have any of the
 above problems or you want to understand the details for a better
@@ -2196,7 +2353,7 @@ explanation. Once you uncompress the source file the directory
 @menu
 * Configuring::                 Configure Gnuastro
 * Tests::                       Run tests to see if it is working.
-* A4 print manual::             Customize the print manual.
+* A4 print book::               Customize the print book.
 * Known issues::                Issues you might encounter.
 @end menu
 
@@ -2593,7 +2750,7 @@ $ ./configure --program-transform-name='s/ast/ /'
 
 
 
-@node Tests, A4 print manual, Configuring, Installing Gnuastro
+@node Tests, A4 print book, Configuring, Installing Gnuastro
 @subsection Tests
 
 @cindex @command{make check}
@@ -2634,28 +2791,29 @@ want to inspect them.
 
 
 
-@node A4 print manual, Known issues, Tests, Installing Gnuastro
-@subsection A4 print manual
+@node A4 print book, Known issues, Tests, Installing Gnuastro
+@subsection A4 print book
 
-@cindex A4 print manual
-@cindex Modifying print manual
+@cindex A4 print book
+@cindex Modifying print book
 @cindex A4 paper size
 @cindex US letter paper size
 @cindex Paper size, A4
 @cindex Paper size, US letter
-The default print manual is provided in the letter paper size. If you
-would like to have the print version of this manual on paper and you
-are living in a country which uses A4, then you can rebuild the
-manual. The great thing about the GNU build system is that the manual
-source code which is in Texinfo is also distributed with the program
-source code, enabling you to do such customizations (hacking).
+The default print version of this book is provided in the letter paper
+size. If you would like to have the print version of this book on
+paper and you are living in a country which uses A4, then you can
+rebuild the book. The great thing about the GNU build system is that
+the book source code which is in Texinfo is also distributed with
+the program source code, enabling you to do such customizations
+(hacking).
 
 @cindex GNU Texinfo
 In order to change the paper size, you will need to have GNU Texinfo
 installed. For simplicity, let's assume @file{SRCdir} is equivalent to
 @file{DOWLD/gnuastro-@value{VERSION}}. Open
 @file{SRCdir/doc/gnuastro.texi} with any text editor. This is the
-source file that created this manual. In the first few lines you will
+source file that created this book. In the first few lines you will
 see this line:
 
 @example
@@ -2679,17 +2837,17 @@ $ make pdf
 @end example
 
 @noindent
-and the new PDF manual will be available in
+and the new PDF book will be available in
 @file{SRCdir/doc/gnuastro.pdf}. By changing the @command{pdf} in
 @command{$ make pdf} to @command{ps} or @command{dvi} you can have the
-manual in those formats. Note that you can do this for any manual that
+book in those formats. Note that you can do this for any book that
 is in Texinfo format, they might not have @code{@@afourpaper} line, so
 you can add it close to the top of the Texinfo source file.
 
 
 
 
-@node Known issues,  , A4 print manual, Installing Gnuastro
+@node Known issues,  , A4 print book, Installing Gnuastro
 @subsection Known issues
 
 Depending on your operating system and the version of the compiler you
@@ -2784,8 +2942,8 @@ test result.
 @item
 @cindex @TeX{}
 @cindex GNU Texinfo
-@command{$ make pdf}: @emph{The PDF manual cannot be made.} To make a
-PDF manual, you need to have the GNU Texinfo program (like any
+@command{$ make pdf}: @emph{The PDF book cannot be made.} To make a
+PDF book, you need to have the GNU Texinfo program (like any
 program, the more recent the better). A working @TeX{} program is also
 necessary, which you can get from Tex
 Live@footnote{@url{https://www.tug.org/texlive/}}.
@@ -2961,7 +3119,7 @@ formats.
 
 @end itemize
 
-Through out this manual and in the command line outputs, whenever we
+Through out this book and in the command line outputs, whenever we
 want to generalize all such astronomical data formats in a text place
 holder, we will use @file{ASTRdata}, we will assume that the extension
 is also part of this name. Any file ending with these names is
@@ -3177,6 +3335,10 @@ for all the programs in Gnuastro. CFITSIO has many capabilities to
 help you find the extension you want, far beyond the simple extension
 number and name. See CFITSIO manual's ``HDU Location Specification''
 section for a very complete explanation with several examples.
+
+Note that in some utilities, the behavior of @option{--hdu} might be
+different, for example see @ref{Invoking astarithmetic}, were it can
+be called multiple times and the value of each all will be stored.
 
 @item -o
 @itemx --output
@@ -3424,15 +3586,16 @@ several space characters are used. If the value of an option has space
 characters (most commonly for the @option{hdu} option), then double
 quotes can be used to specify the full value.
 
-Any text after the first two words (separated by the above delimiters)
-in a line is ignored. If it is an option without a value in the
-@option{--help} output (on/off option), then the value should be
-@option{1} if it is to be `on' and @option{0} otherwise. If an
-option is not recognized in the configuration file, the name of the
-file and unrecognized option will be reported and the program will
-abort.  If a parameter is repeated more more than once in the
-configuration files and it is not set on the command line, then only
-the first value will be used, the rest will be ignored.
+In each non-commented and non-blank line, any text after the first two
+words (given the conditions above) is ignored. If it is an option
+without a value in the @option{--help} output (on/off option, see
+@ref{Options}), then the value should be @option{1} if it is to be
+`on' and @option{0} otherwise. If an option is not recognized in the
+configuration file, the name of the file and unrecognized option will
+be reported and the program will abort.  If a parameter is repeated
+more more than once in the configuration files and it is not set on
+the command line, then only the first value will be used, the rest
+will be ignored.
 
 @cindex Writing configuration files
 @cindex Automatic configuration file writing
@@ -3882,10 +4045,10 @@ ABC01.jpg ABC02.jpg DEF01_labeled.fits
 @section Getting help
 
 @cindex Help
-@cindex Manual formats
+@cindex Book formats
 @cindex Remembering options
-@cindex Convenient manual formats
-Probably the first time you read this manual, it is either in the PDF
+@cindex Convenient book formats
+Probably the first time you read this book, it is either in the PDF
 or HTML formats. These two formats are very convenient for when you
 are not actually working, but when you are only reading. Later on,
 when you start to use the programs and you are deep in the middle of
@@ -3909,7 +4072,7 @@ Another major advantage of such command line based help routines is
 that they are installed with the software in your computer, therefore
 they are always in sync with the executable you are actually
 running. Three of them are actually part of the executable. You don't
-have to worry about the version of the manual or program. If you rely
+have to worry about the version of the book or program. If you rely
 on external help (a PDF in your personal print or digital archive or
 HTML from the official webpage) you have to check to see if their
 versions fit with your installed program.
@@ -3917,7 +4080,7 @@ versions fit with your installed program.
 If you only need to remember the short or long names of the options,
 @option{--usage} is advised. If it is what the options do, then
 @option{--help} is a great tool. Man pages are also provided for those
-who are use to this older system of documentation. This full manual is
+who are use to this older system of documentation. This full book is
 also available to you on the command line in Info format. If none of
 these seems to resolve the problems, there is a mailing list which
 enables you to get in touch with experienced Gnuastro users. In the
@@ -3928,7 +4091,7 @@ subsections below each of these methods are reviewed.
 * --usage::                     View option names and value formats.
 * --help::                      List all options with description.
 * Man pages::                   Man pages generated from --help.
-* Info::                        View complete manual in terminal.
+* Info::                        View complete book in terminal.
 * help-gnuastro mailing list::  Contacting experienced users.
 @end menu
 
@@ -4096,18 +4259,18 @@ standard manner.
 @subsection Info
 
 @cindex GNU Info
-@cindex Command line, viewing full manual
+@cindex Command line, viewing full book
 Info is the standard documentation format for all GNU software. It is
 a very useful command line document viewing format, fully equipped
 with links between the various pages and menus and search
 capabilities. As explained before, the best thing about it is that it
 is available for you the moment you need to refresh your memory on any
 command line tool in the middle of your work without having to take
-your hands off the keyboard. This complete manual is available in Info
+your hands off the keyboard. This complete book is available in Info
 format and can be accessed from anywhere on the command line.
 
 To open the Info format of any installed programs or library on your
-system which has an Info format manual, you can simply run the command
+system which has an Info format book, you can simply run the command
 below (change @command{executablename} to the executable name of the
 program or library):
 
@@ -4128,7 +4291,7 @@ improve.
 @cindex GNU Emacs
 @cindex GNU C Library
 Once you've become an efficient navigator in Info, you can go to any
-part of this manual or any other GNU software or library manual, no
+part of this book or any other GNU software or library manual, no
 matter how long it is, in a matter of seconds. It also blends nicely
 with GNU Emacs (a text editor) and you can search manuals while you
 are writing your document or programs without taking your hands off
@@ -4136,7 +4299,7 @@ the keyboard, this is most useful for libraries like the GNU C
 library. To be able to access all the Info manuals installed in your
 GNU/Linux within Emacs, type @key{Ctrl-H + i}.
 
-To see this whole manual from the beginning in Info, you can run
+To see this whole book from the beginning in Info, you can run
 
 @example
 $ info gnuastro
@@ -5008,12 +5171,13 @@ given kernel or applying a transformation to it.
 
 @menu
 * ImageCrop::                   Crop region(s) from FITS image(s).
+* Arithmetic::                  Arithmetic on input data.
 * Convolve::                    Convolve an image with a kernel.
 * ImageWarp::                   Warp/Transform an image to a different grid.
 * SubtractSky::                 Find the sky and subtract it from image.
 @end menu
 
-@node ImageCrop, Convolve, Image manipulation, Image manipulation
+@node ImageCrop, Arithmetic, Image manipulation, Image manipulation
 @section ImageCrop
 
 @cindex Section of an image
@@ -5572,15 +5736,26 @@ is another keyword named @command{ICFnPIX} which shows the pixel range
 from that input image in the same syntax as @ref{Crop section syntax}.
 
 Once done, a log file will be created in the current directory named
-@file{astimgcrop.log}. This file will keep the names of all the
-outputs along with the number of images that were used in them and
-also whether the central pixels of the cropped image are full. There
-are also comments on the top explaining basic information about the
-run. If the log file cannot be created (for example you don't have
-write permission in the directory you are running ImageCrop in) it
-will not be created (unless @option{--individual} is called). You can
-see the same results in verbose mode on the command line in such
-cases.
+@file{astimgcrop.log}. For each input row, this file will have three
+columns:
+
+@enumerate
+@item
+The cropped image file name for that row.
+@item
+The number of input images that were used to create that image.
+@item
+A @code{0} if the central few pixels (value to the
+@option{--checkcenter} option) are blank and @code{1} otherwise.
+@end enumerate
+
+There are also comments on the top explaining basic information about
+the run. If the log file cannot be created (for example you don't have
+write permission in the directory you are running ImageCrop in) or you
+have specifically asked for no log file (with the @option{--nolog}
+option), then a log file will not be created (unless
+@option{--individual} is called). The same columns will be printed in
+verbose mode on the command line for each row.
 
 
 
@@ -5602,8 +5777,325 @@ cases.
 
 
 
+@node Arithmetic, Convolve, ImageCrop, Image manipulation
+@section Arithmetic
 
-@node Convolve, ImageWarp, ImageCrop, Image manipulation
+It is commonly necessary to do arithmetic operations on the
+astronomical data. For example in the reduction of raw data it is
+necessary to subtract the Sky value (@ref{Sky value}) from each image
+image. Later (once the images as warped into a single grid using
+ImageWarp for example, see @ref{ImageWarp}), the images can be coadded
+or the output pixel grid is the average of the pixels of the
+individual input images. Arithmetic currently uses the reverse
+polish or postfix notation, see @ref{Reverse polish notation}, for
+more information on how to run Arithmetic, please see
+@ref{Invoking astarithmetic}.
+
+
+@menu
+* Reverse polish notation::     The current notation style for Arithmetic
+* Arithmetic operators::        List of operators known to Arithmetic
+* Invoking astarithmetic::      How to run Arithmetic: options and output
+@end menu
+
+@node Reverse polish notation, Arithmetic operators, Arithmetic, Arithmetic
+@subsection Reverse polish notation
+
+@cindex Postfix notation
+@cindex Reverse Polish Notation
+The most common notation for arithmetic operations is the infix
+notation@footnote{@url{https://en.wikipedia.org/wiki/Infix_notation}}
+where the operator goes between the two operands, for example
+@mymath{4+5}. While the infix notation is the perferred way in most
+programming languages, currently Arithmetic does not use it since it
+will require parenthesis which can complicate the implementation of
+the code. In the near future we do plan to adopt this
+notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}},
+but for the time being (due to time constraints on the developers),
+Arithmetic uses the postfix or reverse polish
+notation@footnote{@url{https://en.wikipedia.org/wiki/Reverse_Polish_notation}}. The
+referenced wikipedia article provides some excellent explanation on
+this notation but here we will give a short summary for
+self-sufficiency.
+
+In the postfix notation, the operator is placed after the operands, as
+we will see below this removes the need to define parenthesis for most
+ordinary operators. For example, instead of writing @command{5+6}, we
+write @command{5 6 +}. To easily understand how this notation works,
+you can think of each operand a node in a stack first-in-first-out
+stack. Every time an operator is confronted, it pops the number of
+operands it needs from the top of the stack (so they don't exist in
+the stack any more), does its operation and pushes the result back on
+top of the stack. So if you want the average of 5 and 6, you would
+write: @command{5 6 + 2 /}. The operations that are done are:
+
+@enumerate
+@item
+@command{5} is an operand, so it is pushed to the top of the stack.
+@item
+@command{6} is an operand, so it is pushed to the top of the stack.
+@item
+@command{+} is a binary operator, so pull the top two elements of the
+stack and perform addition on them (the order is @command{5+6} in the
+example above). The result is @command{11}, push it ontop of the
+stack.
+@item
+@command{2} is an operand so push it onto the top of the stack.
+@item
+@command{/} is a binary operator, so pull out the top two elements of
+the stack (top-most is @command{2}, then @command{11}) and divide the
+second one by the first.
+@end enumerate
+
+In Gnuastro's Arithmetic, the operands can be FITS images or
+numbers. As you can see, very complicated procedures can be created
+without the need for parenthesis. Even functions which take an
+arbitrary number of arguments can be defined in this notation. For
+example the Postscript language@footnote{See the EPS and PDF part of
+@ref{Recognized file types} for a little more on the Postscript
+language.} (the programming language for PDF files) uses this notation
+style
+
+@node Arithmetic operators, Invoking astarithmetic, Reverse polish notation, Arithmetic
+@subsection Arithmetic operators
+
+The recognized operators in Arithmetic are listed below. See
+@ref{Reverse polish notation} for more on how the operators and
+operands should be ordered on the commandline. The operands to all
+operators can be a data array (for example a FITS image) or a number,
+the output will be an array or number according to the inputs. For
+example a number multiplied by an array will produce an array.
+
+@table @command
+
+@item +
+Addition, so ``@command{4 5 +}'' is equivalent to @mymath{4+5}.
+
+@item -
+Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
+
+@item *
+Multiplication, so ``@command{4 5 "*"}'' is equivalent to
+@mymath{4\times5}. On the command line or in scripts, be sure to quote
+the multiplication sign (for example @command{"*"}).
+
+@item /
+Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
+
+@item abs
+Absolute value of first operand, so ``@command{4 abs}'' is
+equivalent to @mymath{|4|}.
+
+@item pow
+First operand to the power of the second, so ``@command{4 5
+pow}'' is equivalent to @mymath{4^5}.
+
+@item sqrt
+The square root of the first operand, so ``@command{4 sqrt}'' is
+equivalent to @mymath{\sqrt{4}}.
+
+@item log
+Natural logarithm of first operand, so ``@command{4 log}'' is
+equivalent to @mymath{ln(4)}.
+
+@item log10
+Base-10 logarithm of first operand, so ``@command{4 log10}'' is
+equivalent to @mymath{log(4)}.
+
+@item minvalue
+Minimum value in the top operand on the stack, so ``@command{a.fits
+min}'' will push the the minimum pixel value in this image onto the
+stack. Therefore this operator is mainly intended for data (for
+example images), if the top operand is a number, this operator just
+returns it without any change. So note that when this operator acts on
+a single image, the output will no longer be an image, but a number.
+
+@item maxvalue
+Maximum value of first operand, similar to @command{minvalue}.
+
+@cindex NaN
+@item min
+If there are several operands (images), each pixel of the output of
+this operator will be set to the minimum value of all the operands
+(images) in that pixel. If the operands are all numbers, then their
+minimum value will be put in the stack. So ``@command{a.fits b.fits
+c.fits min}'' will produce an image with the same size as the inputs
+but each output pixel is set to the minimum respective pixel value of
+the three input images. Important notes:
+@itemize
+
+@item
+All the operands must be either images or numbers, they cannot be
+mixed.
+
+@item
+NaN/blank pixels will be ignored, see @ref{Blank
+pixels}.
+
+@item
+All available operands on the stack will be pulled for this operator
+to generate its output. So after calling this operator, there will
+only be one operand on the stack, see @ref{Reverse polish notation}.
+@end itemize
+
+@item max
+Similar to @command{min}, but the pixels of the output will contain
+the maximum of the respective pixels in all operands in the stack.
+
+@item average
+Similar to @command{min}, but the pixels of the output will contain
+the average of the respective pixels in all operands in the stack
+
+@item median
+Similar to @command{min}, but the pixels of the output will contain
+the median of the respective pixels in all operands in the stack.
+
+@end table
+
+@cartouche
+@noindent
+@strong{Important reminder for multiplication:} please quote the
+@command{*} sign (for example, @command{"*"} or
+@command{'*'}). Without quotation, the shell will replace @command{*}
+with a list of all the files in your working directory which can
+produce unpredictable outputs. In any case, the input images are not
+affected, they are only read.
+@end cartouche
+
+
+@node Invoking astarithmetic,  , Arithmetic operators, Arithmetic
+@subsection Invoking Arithmetic
+
+Arithmetic will do pixel to pixel arithmetic operations on the
+individual pixels of input data and/or numbers. All input data files
+must have the same dimensions. The general template is:
+
+@example
+$ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
+@end example
+
+@noindent
+One line examples:
+
+@example
+$ astarithmetic 10.32 3.84 - 2.7 pow            # will print 155.329
+$ astarithmetic 1 image.fits / --out=inverse.fits
+$ astarithmetic image.fits -1 "*" --out=negative.fits
+$ astarithmetic image.fits image.fits - --out=skysub.fits           \
+                --hdu=0 --hdu=3
+$ astarithmetic image1.fits image2.fits + 2 / --out=average.fits
+$ astarithmetic image1.fits image2.fits average --out=average.fits
+$ astarithmetic img1.fits img2.fits img3.fits median                \
+                -h0 -h1 -h2 --out=median.fits
+@end example
+
+If the output is an image, and the @option{--output} option is not
+given, automatic output will use the name of the first FITS image
+encountered to generate an output file name, see @ref{Automatic
+output}. Also, output WCS information will be taken from the first
+input image encountered. If the output is a single number, that number
+will be printed in the standard output. See @ref{Reverse polish
+notation} for the notation used to mix operands and operators on the
+commandline.
+
+@cindex NaN
+@cindex Mask image
+Currently Arithmetic will convert the input image into double
+precision floating point arrays for the operations. But there are
+plans to allow it to also operate on integer (labeled or masked)
+images with bitwise operators so mask layers can also be
+manipulated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Unless
+otherwise stated for each operator, blank pixels in the input image
+will automatically be set as blank in the output. To ignore certain
+pixels (see @ref{Blank pixels}), you can specify a mask image, see
+@ref{Mask image}. In that case, when reading the first FITS image, all
+the masked pixels will be changed to a NaN value. Therefore in any
+further operations with other images, the output for those pixels will
+always be a NaN (blank pixel value for floating point data
+type). Currently all the operations in Arithmetic are done in double
+precision floating point type. However, if none of the input images
+have this type, the output will be stored as a single precision
+floating point type.
+
+@cindex Options
+The hyphen (@command{-}) can be used both to specify options (see
+@ref{Options}) and also to specify a negative number which might be
+necessary in your arithmetic. In order to enable you to do this,
+Arithmetic will first parse all the input strings and if the first
+character after a hyphen is a digit, then that hyphen is temporarily
+replaced by the vertical tab character which is not commonly used. The
+arguments are then parsed and these strings will not be specified as
+an option. Then the given arguments are parsed and any vertical tabs
+are replaced back with a hyphen so they can be read as negative
+numbers. So as long as the names of the files you want to work on do
+not start with a vertical tab followed by a digit, there is no
+problem. An important consequence of this implementation is that you
+should not write negative fractions like this: @command{-.3}, instead
+write them as @command{-0.3}.
+
+@cindex AWK
+@cindex GNU AWK
+Without any images, Arithmetic will act like a simple calculator and
+print the resulting output number on the standard output like the
+first example above. If you really want such calculator operations on
+the command line, AWK (GNU AWK is the most common implementation) is
+much faster, easier and much more powerful. For example, the numerical
+one-line example above can be done with the following command. In
+general AWK is a fantastic tool and GNU AWK has a wonderful manual
+(@url{https://www.gnu.org/software/gawk/manual/}). So if you confront
+situations like this a lot or have to work with large text
+tables/catalogs, be sure to checkout AWK and simplify your life.
+
+@example
+$ echo "" | awk '@{print (10.32-3.84)^2.7@}'
+155.329
+@end example
+
+
+See @ref{Common options} for a review of the options in all Gnuastro
+programs, the two options related to a mask image are also specified
+in @ref{Mask image}. Arithmetic just redefines the @option{--hdu}
+option as explained below:
+
+@table @option
+
+@item -h
+@itemx --hdu
+(@option{=INT}) Unlike most options in Gnuastro (which will ultimately
+only have one value for this option), Arithmetic allows @option{--hdu}
+to be called multiple times and the value of each invocation will be
+stored separately (for the unlimited number of input images you would
+like to use).
+
+The order of the values to @option{--hdu} is very important (if they
+don't have the same value!). The order is determined by the order that
+this option is read: first on the command line (from left to right),
+then top-down in each confirguration file, see @ref{Configuration file
+precedence}.
+
+If the number of HDUs is less than the number of input images,
+Arithmetic will abort and notify you. However, if there are more HDUs
+than FITS images, there is no problem: they will be used in the given
+order (everytime a FITS image comes up on the stack) and the extra
+HDUs will be ignored in the end. So there is no problem with having
+extra HDUs in the configuration files and by default several HDUs with
+a value of @option{0} are kept in the system-wide configuration file
+when you install Gnuastro.
+
+@end table
+
+
+
+
+
+
+
+
+
+
+
+
+@node Convolve, ImageWarp, Arithmetic, Image manipulation
 @section Convolve
 
 @cindex Convolution
@@ -5928,7 +6420,7 @@ involved with the Ptolemic world view had to add a huge number of
 epicycles during the centuries after Ptolemy in order to explain more
 accurate observations. Finally the death knell of this world-view was
 Galileo's observations with his new instrument (the telescope). So the
-main physical insight which is what Astronomers and Physicists are
+physical insight, which is what Astronomers and Physicists are
 interested in (as opposed to Mathematicians and Engineers who just
 like proving and optimizing or calculating!) comes from being creative
 and not limiting our selves to such approximations. Even when they
@@ -6814,7 +7306,7 @@ deployed for the frequency space convolutions.
 @subsection Invoking Convolve
 
 Convolve an input image with a known kernel. The general template for
-convolve is:
+Convolve is:
 
 @example
 $ astconvolve [OPTION...] ASTRdata
@@ -6844,7 +7336,7 @@ It is also possible to specify a mask image for the input. In that
 case, see @ref{Mask image}. Here we will only explain the options
 particular to Convolve. Run Convolve with @option{--help} in order to
 see the full list of options Convolve accepts, irrespective of where
-they are explained in this manual.
+they are explained in this book.
 
 @table @option
 
@@ -8256,7 +8748,7 @@ the kernel related options. The @option{--kernel} option is not
 mandatory and if not specified anywhere prior to running, the original
 image will be used. Please run SubtractSky with the @option{--help}
 option to list all the recognized options, irrespective of which part
-of the manual they are fully explained in.
+of the book they are fully explained in.
 
 @table @option
 
@@ -8985,7 +9477,7 @@ ratio analysis.
 @noindent
 Please run NoiseChisel with the @option{--help} option to list all the
 recognized options with a short explanation, irrespective of which
-part of the Gnuastro manual they are fully explained in, see
+part of the Gnuastro book they are fully explained in, see
 @ref{Getting help}.
 
 
@@ -9210,18 +9702,25 @@ ratio on the psudo-detections of both the initially detected and
 undetected regions. When the area in a psudo-detection is too small,
 the Signal to noise ratio measurements will not be accurate and their
 distribution will be heavily skewed to the postive. So it is best to
-ignore any psudo-detection that is smaller than this area.
+ignore any psudo-detection that is smaller than this area. Use
+@option{--detsnhistnbins} to check if this value is reasonable or not.
 
 @item --detsnhistnbins
 (@option{=INT}) If not equal to zero, a histogram of the Signal to
-noise ratios of the psudo-detections will be stored in a text file for
-every large mesh grid element which is successful in defining a Signal
-to noise ratio in the grid. The number of bins in this histogram is
+noise ratios of the psudo-detections will be stored in a text file
+ending with @file{_detsn.txt}. The number of bins in this histogram is
 specified by the value given to this option. This is good for
-inspecting the best possible value to @option{--detsnminarea}. The
-best values are obtained when the distribution is not skewed
-significantly. Note that when correlated noise is present (processed
-images) a certain level of skewness will be present in any case.
+inspecting the best possible value to @option{--detsnminarea}.
+
+An empirical way to estimate the best @option{--detsnminarea} value
+for your dataset is that the histogram have a sharp drop towards the
+higher S/Ns. In other words, when there is a prominent peak in the
+histogram and the last few bins have less than 10 (an arbitrary
+number, meaning very few!) pseudo-detections. When the minimum area is
+too large or too small, the slope of the histogram in the higher S/N
+bins will not be to sharp with the very high S/N bins having a large
+number of objects and the peak being less significant. A good minimum
+area will result in the last bins having very few pseudo-detections.
 
 @item -c
 @itemx --detquant
@@ -9231,11 +9730,6 @@ grid. Note that this is only calculated for the large mesh grids that
 satisfy the minimum fraction of undetected pixels (value of
 @option{--minbfrac}) and minimum number of psudo-detections (value of
 @option{--minnumfalse}).
-
-@item --checkdetectionsn
-Check the Signal to noise ratio value on each large mesh grid in a
-file ending with @file{_detsn.fits}, see @ref{Checking grid values}
-for more information.
 
 @item -I
 @itemx --dilate
@@ -9254,16 +9748,29 @@ be a repeat of the explanations above and also of those in Akhlaghi
 and Ichikawa (2015). The extension label should be sufficient to
 recognize which step you are observing. Viewing all the steps can be
 the best guide in choosing the best set of parameters. Note that
-calling this function will significantly slow NoiseChisel.
+calling this function will significantly slow NoiseChisel. Normally
+the detection steps are done in parallel, but to show you each step
+individually, the parallel processing has to be halted and restarted
+multiple times. Below are some notes that might be useful in
+interpretting certain steps, beyond the paper.
+
+@itemize
+@item
+Going from the first ``Labeled'' extension (for the background
+pseudo-detections, which shows the labeled pseudo-detections) to the
+next extension (``For S/N''), with a relatively low @option{--dthresh}
+value, you will notice that a lot of the large area pseudo-detections
+are removed and not used in calcula<ting the S/N threshold. The main
+reason for this is that they overlap with possible detections. You can
+check by going to the next extension and seeing how there are
+detections there. The filled holes have been covering initial
+detections. If you have many such cases, it might be a good sign that
+your @option{--dthresh} value is too low.
+@end itemize
 
 @item --checksky
 Check the final sky and its standard deviation values on the mesh
 grid. Similar to @option{--checkdetectionsky}.
-
-@item --saveskysubed
-Save the sky subtracted image (where the sky was calculated from the
-average of undetected pixels, see @ref{Sky value}) into a file ending
-with @file{_skysubed.fits}.
 
 @item --checkmaskdet
 Mask (set to NaN) the undetected pixels in one extension and the
@@ -9321,23 +9828,20 @@ Signal to noise ratio of false clumps will not be accurately
 found. Note that this has to be larger than the value to
 @option{--detsnminarea}. Because the clumps are found on the convolved
 (smoothed) image while the psudo-detections are found on the input
-image.
+image. Use @option{--clumpsnhistnbins} to check if this value is
+reasonable or not.
 
-@item --checkclumpsn
-Check the limiting clump Signal to noise ratio for true detections in
-a file ending with @file{_clumpsn.fits}, see @ref{Checking grid
-values} for more information on checking values on the mesh grid.
+@item --clumpsnhistnbins
+(@option{=INT}) Similar to @option{--detsnhistnbins} (see there for
+more explanations), but for the distribution of the S/N of clumps over
+the undetected regions. The relevant parameter to check here is be
+@option{--segsnminarea}.
 
 @item -g
 @itemx --segquant
 (@option{=FLT}) The quantile of the noise clump Signal to noise ratio
 distribution. This value is used to identify true clumps over the
 detected regions.
-
-@item --segsnhistnbins
-(@option{=INT}) Similar to @option{--detsnhistnbins}, but for the
-distribution of the Signal to noise ratio of clumps over the
-undetected regions.
 
 @item -v
 @itemx --keepmaxnearriver
@@ -9513,7 +10017,9 @@ harder for a curious reader and also potentially adds bugs.
 Another advantage of less complexity is when the parameter you want to
 measure over one profile is not provided by the developers of
 MakeCatalog. You can simply open this tiny little program and add your
-desired calculation easily. However, if making a catalog was part of
+desired calculation easily. In @ref{Adding new columns to
+MakeCatalog}, we have explained all the necessary steps to add a new
+column to MakeCatalog. However, if making a catalog was part of
 NoiseChisel, it would require a lot of energy to understand all the
 steps in order to add desired parameter.
 
@@ -9544,13 +10050,15 @@ transformations on the labeled image.
 
 @menu
 * Depth and limiting magnitude::  For comparing different catalogs.
+* Measuring elliptical parameters::  Estimating elliptical parameters.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
+* Adding new columns to MakeCatalog::  How to add new columns.
 @end menu
 
 
 
 
-@node Depth and limiting magnitude, Invoking astmkcatalog, MakeCatalog, MakeCatalog
+@node Depth and limiting magnitude, Measuring elliptical parameters, MakeCatalog, MakeCatalog
 @subsection Depth and limiting magnitude
 
 @cindex Depth
@@ -9673,7 +10181,179 @@ a very important factor in an accurate comparison between magnitudes
 measured for different images, on possibly different instruments and
 cameras, see @ref{Flux Brightness and magnitude}.
 
-@node Invoking astmkcatalog,  , Depth and limiting magnitude, MakeCatalog
+
+
+@node Measuring elliptical parameters, Invoking astmkcatalog, Depth and limiting magnitude, MakeCatalog
+@subsection Measuring elliptical parameters
+
+One of the most important class of parameters that are important for
+astronomical image analysis is the shape or morphology of the
+objects. In the case of galaxies (with a very rich variety of
+morphologies) studying the morphology of the detected objects is its
+self a is very complicated research subject which is a very active
+field of research now. So in this section, we will just discuss how
+the most basic morphological parameters are estimated: the elliptical
+parameters for a set of labeled pixels (that will be studied together
+and define our object of interest). These are: the major axis, the
+minor axis and the position angle along with the central position of
+the profile. The derivations below follow the SExtractor manual
+derivations but include more explanations.
+
+@cindex Moments
+Let's begin with one dimension for simplicity: Assume we have a set of
+@mymath{N} values (brightness for example) @mymath{B_i}, each at
+position @mymath{x_i}. The simplest parameter we can define is the
+geometric center of the object (@mymath{x_g}) (ignoring the brightness
+values): @mymath{x_g=(\sum_ix_i)/N}. @emph{Moments} are defined to
+incorporate both the value (brightness) and position of the data. The
+first moment can be written as:
+
+@dispmath{\overline{x}={\sum_iB_ix_i \over \sum_iB_i}}
+
+@cindex Variance
+@cindex Second moment
+@noindent
+This is essentially the weighted (by @mymath{B_i}) average
+position. The geometric center (@mymath{x_g}, defined above) is a
+special case of this with all @mymath{B_i=1}. The second moment is
+essentially the variance of the distributions:
+
+@dispmath{\overline{x^2}\equiv{\sum_i(B_ix_i-\overline{x})^2 \over
+        \sum_iB_i} ={\sum_iB_i^2x_i^2 \over \sum_iB_i} -
+        2\overline{x}{\sum_iB_ix_i\over\sum_iB_i} + \overline{x}^2
+        ={\sum_iB_i^2x_i^2 \over \sum_iB_i} - \overline{x}^2}
+
+@cindex Standard deviation
+@noindent
+The last step was done from the definition of
+@mymath{\overline{x}}. So the square root of @mymath{\overline{x^2}}
+is the positional standard deviation (along the one-dimensional) of
+this particular brightness distribution (@mymath{B_i}). Crudely (or
+qualitatively), you can think of its square root as the distance (from
+@mymath{\overline{x}}) which contains a specific amount of the flux
+(depending on the @mymath{B_i} distribution). Similar to the first
+moment, the geometric second moment can be found by setting all
+@mymath{B_i=1}. So while the first moment quantified the position of
+the brightness distribution, the second moment quantifies how that
+brightness is dispersed about the first moment. In other words, it
+quantifies how ``sharp'' the object's image is.
+
+@cindex Floating point error
+Before continuing to two dimensions and the derivation of the
+elliptical parameters we will pause for an implementation
+technicality. You can ignore this paragraph if you don't want to
+implement these concepts. The basic definition (first fraction for
+@mymath{\overline{x^2}}) can be used without any major
+problem. However, using this fraction requires two runs over the data:
+one run to specify @mymath{\overline{x}} and one run for
+@mymath{\overline{x^2}}, this can be slow. However, using the last
+fraction above, we can estimate both the first and second moments in
+one run (since the @mymath{-\overline{x}^2} term can easily be added
+later). Using the last form creates a major technical issue however:
+due to the floating point accuracy. Suppose the object is located
+between pixels 10000 and 10020. While the object pixels are only
+distributed over 20 pixels (with a standard deviation @mymath{<20}),
+the mean has a value of @mymath{\sim10000}. The
+@mymath{\sum_iB_i^2x_i^2} will go to very very large values while the
+individual pixel differences will be much smaller, this will lower the
+accuracy of our calculation due to the limited accuracy of floating
+point operations. Since the variance only depends on the distance of
+each point from the mean, and for a constant/arbitrary @mymath{K},
+@mymath{\overline{x-K}=\overline{x}-K}, we can calculate the second
+order moment using:
+
+@dispmath{\overline{x^2}={\sum_iB_i^2(x_i-K)^2 \over \sum_iB_i} -
+             (\overline{x}-K)^2}
+
+@noindent
+The closer @mymath{K} is to @mymath{\overline{x}}, the better (the
+sums of squares will involve smaller numbers), as long as @mymath{K}
+is within the object limits (in the example above:
+@mymath{10000\leq{K}\leq10020}), the floating point error induced in
+our calculation will be negligible. For the most simplest
+implementation, in order to find the second moments (variance) in each
+dimension, MakeCatalog takes @mymath{K} to be the position of the
+first pixel that is assigned to the object under each dimension. Since
+@mymath{K} is arbitrary and an implementation/technical detail, we
+will ignore it for the remainder of this discussion.
+
+In two dimensions, the mean and variances can be written as:
+
+@dispmath{\overline{x}={\sum_iB_ix_i\over B_i}, \quad
+          \overline{x^2}={\sum_iB_i^2x_i^2 \over \sum_iB_i} -
+          \overline{x}^2}
+@dispmath{\overline{y}={\sum_iB_iy_i\over B_i}, \quad
+          \overline{y^2}={\sum_iB_i^2y_i^2 \over \sum_iB_i} -
+          \overline{y}^2}
+@dispmath{\quad\quad\quad\quad\quad\quad\quad\quad\quad
+          \overline{xy}={\sum_iB_i^2x_iy_i \over \sum_iB_i} -
+          \overline{x}\times\overline{y}}
+
+If an elliptical profile's major axis lies exactly along the
+@mymath{x} axis, then @mymath{\overline{x^2}} will be directly
+proportional with the major axis, @mymath{\overline{y^2}} with its
+minor axis and @mymath{\overline{xy}=0}. However, in reality we are
+not that lucky and (assuming galaxies can be parametrized as an
+ellipse) the major axis of galaxies can be in any direction on the
+image (infact this is one of the core principles behind weak-lensing
+by shear estimation). So the purpose of the remainder of this section
+is to define a strategy to measure the position angle and axis ratio
+of some randomly positioned ellipses in an image, using the raw second
+moments that we have calculated above in our image coordinates.
+
+Let's assume we have rotated the galaxy by @mymath{\theta}, then the
+new second order moments can be written as:
+@dispmath{\overline{x_\theta^2} = \overline{x^2}\cos^2\theta +
+           \overline{y^2}\sin^2\theta -
+           2\overline{xy}\cos\theta\sin\theta }
+@dispmath{\overline{y_\theta^2} = \overline{x^2}\sin^2\theta +
+           \overline{y^2}\cos^2\theta +
+           2\overline{xy}\cos\theta\sin\theta}
+@dispmath{\overline{xy_\theta} = \overline{x^2}\cos\theta\sin\theta -
+           \overline{y^2}\cos\theta\sin\theta +
+           \overline{xy}(\cos^2\theta-\sin^2\theta)}
+We can now find the best @mymath{\theta} (@mymath{\theta_0}) such that
+the major axis lies along the @mymath{x_\theta} axis. This can be
+found by setting:
+@dispmath{\left.{\partial \overline{x_\theta^2} \over \partial \theta}\right|_{\theta_0}=0}
+Taking the derivative, we get:
+@dispmath{2\cos\theta_0\sin\theta_0(\overline{y^2}-\overline{x^2}) +
+2(\cos^2\theta_0-\sin^2\theta_0)\overline{xy}=0} When
+@mymath{\overline{x^2}\neq\overline{y^2}}, we can write:
+@dispmath{\tan2\theta_0 =
+2{\overline{xy} \over \overline{x^2}-\overline{y^2}}.}
+@cindex Position angle
+@noindent
+MakeCatalog uses the standard C math library's @code{atan2} function
+to estimate @mymath{\theta_0}, which we define as the position angle
+of the ellipse. To recall, this is the angle of the major axis of the
+ellipse with the @mymath{x} axis. By definition, when the elliptical
+profile is rotated by @mymath{\theta_0}, then
+@mymath{\overline{xy_{\theta_0}}=0},
+@mymath{\overline{x_{\theta_0}^2}} will be the extent of the maximum
+variance and @mymath{\overline{y_{\theta_0}^2}} the extent of the
+minimum variance (which are perpendicular for an ellipse). Replacing
+@mymath{\theta_0} in the equations above for
+@mymath{\overline{x_\theta}} and @mymath{\overline{y_\theta}}, we can
+get the semi-major (@mymath{A}) and semi-minor (@mymath{B}) lengths:
+
+@dispmath{A^2\equiv\overline{x_{\theta_0}^2}= {\overline{x^2} +
+\overline{y^2} \over 2} + \sqrt{\left({\overline{x^2}-\overline{y^2} \over 2}\right)^2 + \overline{xy}^2}}
+
+@dispmath{B^2\equiv\overline{y_{\theta_0}^2}= {\overline{x^2} +
+\overline{y^2} \over 2} - \sqrt{\left({\overline{x^2}-\overline{y^2} \over 2}\right)^2 + \overline{xy}^2}}
+
+So as a summary, it is important to remember that the units of
+@mymath{A} and @mymath{B} are in pixels (same as the standard
+deviation) and that they represent the spatial light distribution of
+the object in both image dimensions if the object could be
+approximated as an ellipse. When the object cannot be represented as
+an ellipse, this interpretation breaks down:
+@mymath{\overline{xy_{\theta_0}}\neq0} and
+@mymath{\overline{y_{\theta_0}^2}} will not be the direction of
+minimum variance.
+
+@node Invoking astmkcatalog, Adding new columns to MakeCatalog, Measuring elliptical parameters, MakeCatalog
 @subsection Invoking MakeCatalog
 
 MakeCatalog will make a catalog from an input image and a labeled
@@ -9774,10 +10454,45 @@ If the image has already been sky subtracted by another program, then
 you need to notify MakeCatalog through this option. Note that this is
 only relevant when the Signal to noise ratio is to be calculated.
 
+@item -T
+@itemx --threshold
+(@option{=FLT}) For all the columns, only consider pixels that are
+above a given relative threshold. Symbolizing the value of this option
+as @mymath{T}, the Sky for a pixel at @mymath{(i,j)} with
+@mymath{\mu_{i,j}} and its Standard deviation with
+@mymath{\sigma_{ij}}, that pixel will only be used if its value
+(@mymath{B_{ij}}) satisfies this condition:
+@mymath{B_{ij}>\mu_{ij}+{T}\sigma_{ij}}. The only calculations that
+will not be affected are is the average river values
+(@option{--riverave}), since they are used as a reference. A commented
+row will be added in the header of the output catalog that will print
+the given value, since this is a very important issue, it starts with
+@command{**IMPORTANT**}.
+
+NoiseChisel will detect very diffuse signal which is useful in most
+cases where the aggregate properties of the detections are desired,
+since there is signal there (with the desired certainty). However, in
+some cases, only the properties of the peaks of the objects/clumps are
+desired, for example in attempting to separate stars from galaxies,
+the peaks are the major target and the diffuse regions only act to
+complicate the separation. With this option, MakeCatalog will simply
+ignore any pixel below the relative threshold.
+
+@cindex NaN
+This option is not mandatory, so if it isn't given (after reading the
+command line and all configuration files, see @ref{Configuration
+files}), MakeCatalog will still operate. However, if it has a value in
+any lower-level configuration file and you want to ignore that value
+for this particular run or in a higher-level configuration file, then
+set it to NaN, for example @option{--threshold=nan}. Gnuastro uses the
+C library's @code{strtod} function to read floats, which is not
+case-sensative in reading NaN values. But to be consistent, it is good
+practice to only use @option{nan}.
+
 @end table
 
 @noindent
-Through the next group of options, you can customize the general the
+Through the next group of options, you can customize the general
 output plain text catalog. The basic idea behind the options about the
 width and precision of the different types is the fact that some
 columns don't need too much space, while some do. The width is the
@@ -9855,14 +10570,14 @@ $ astmkcatalog --magnitude --dec --ra --id input.fits
 @end example
 
 @noindent
-If no columns are specified in any of the configuration files (see
-@ref{Configuration files}), then the columns in the output catalogs
-will have the following order: ID, RA, Dec and Magnitude. Contrary to
-what it looks like, this is done to make life easier for the
-users. The configuration files can also keep any of the columns (so
-you don't have to specify your desired columns every time). This
-inverse ordering thus comes from their precedence, see
-@ref{Configuration file precedence}.
+In this example, if no columns are specified in any of the
+configuration files (see @ref{Configuration files}), then the columns
+in the catalogs produced by this command will have the following
+order: ID, RA, Dec and Magnitude. Contrary to what it looks like, this
+is done to make life easier for the users. The configuration files can
+also keep any of the columns (so you don't have to specify your
+desired columns every time). This inverse ordering thus comes from
+their precedence, see @ref{Configuration file precedence}.
 
 For example catalogs usually have atleast an ID column and position
 columns (in the image and/or the world coordinate system). By reading
@@ -9872,7 +10587,8 @@ run, if you want some other information about objects or clumps, you
 can add those columns on the command line. Through the user and
 current directory configuration files, you can also have custom
 catalogs in each of your working directories, without bothering to
-specify the columns every time.
+specify the columns every time you run MakeCatalog in those
+directories.
 
 @table @option
 
@@ -9902,34 +10618,77 @@ The area (number of pixels) in any clump or object.
 @item -x
 @itemx --x
 The flux weighted center of all objects and clumps along the first
-FITS axis (horizontal when viewed in SAO ds9).
+FITS axis (horizontal when viewed in SAO ds9). The weight has to have
+a positive value (pixel value larger than the Sky value) to be
+meaningful! Specially when doing matched photometry, this might not
+happen: no pixel value might be above the Sky value. In such cases,
+where there was no pixel with a value larger than the Sky in the
+object or clump, the geometric center (ignoring pixel values, only
+their positions) over the object or clump is used instead of the flux
+weighted center (see @option{--geox}).
 
 @item -y
 @itemx --y
 The flux weighted center of all objects and clumps along the second
-FITS axis (vertical when viewed in SAO ds9).
+FITS axis (vertical when viewed in SAO ds9). See @option{--x}.
+
+@item --geox
+The geometric center of all objects and clumps along the first FITS
+axis axis. The geometric center is the average pixel positions
+irrespective of their pixel values.
+
+@item --geoy
+The geometric center of all objects and clumps along the second FITS
+axis axis, see @option{--geox}.
 
 @item --clumpsx
 [Objects] The flux weighted center of all the clumps in this
-object along the first FITS axis.
+object along the first FITS axis. See @option{--x}.
 
 @item --clumpsy
 [Objects] The flux weighted center of all the clumps in this
-object along the second FITS axis.
+object along the second FITS axis. See @option{--x}.
+
+@item --clumpsgeox
+[Objects] The geometric center of all the clumps in this object along
+the first FITS axis. See @option{--geox}.
+
+@item --clumpsgeoy
+[Objects] The geometric center of all the clumps in this object along
+the second FITS axis. See @option{--geox}.
 
 @item -r
 @itemx --ra
-Right ascension of all objects or clumps.
+Flux weighted right ascension of all objects or clumps, see
+@option{--x}.
 
 @item -d
 @itemx --dec
-Declination of all objects or clumps.
+Flux weighted declination of all objects or clumps, see @option{--x}.
+
+@item --geora
+Geometric center right ascension of all objects or clumps, see
+@option{--geox}.
+
+@item --geodec
+Geometric center declination of all objects or clumps, see
+@option{--geox}.
 
 @item --clumpsra
-[Objects] Right ascension of all clumps in this object.
+[Objects] Flux weighted right ascension of all clumps in this object,
+see @option{--x}.
 
 @item --clumpsdec
-[Objects] Declination of all clumps in this object.
+[Objects] Flux weighted declination of all clumps in this object, see
+@option{--x}.
+
+@item --clumpsgeora
+[Objects] Geometric center right ascension of all clumps in this
+object, see @option{--geox}.
+
+@item --clumpsgeodec
+[Objects] Geometric center declination of all clumps in this object,
+see @option{--geox}.
 
 @item -b
 @itemx --brightness
@@ -9945,6 +10704,27 @@ objects catalog.
 [Objects] The total brightness of the clumps within an object. This is
 simply the sum of the pixels associated with clumps in the object.
 
+@item --noriverbrightness
+[Clumps] The Sky (not river) subtracted clump brightness. By
+definition, for the clumps, the average brightness of the rivers
+surrounding it are subtracted from it for a first order accounting for
+contamination by neighbors. In cases where you will be calculating the
+flux brightness difference later (one example below) the contamination
+will be (mostly) removed at that stage, which is why this column was
+added.
+
+One example might be this: you want to know the change in the clump
+flux as a function of threshold (see @option{--threshold}). So you
+will make two catalogs (each having this column but with different
+thresholds) and then subtract the lower threshold catalog (higher
+brightness) from the higher threshold catalog (lower brightness). The
+effect is most visile when the rivers have a high average
+signal-to-noise ratio. The removed contribution from the pixels below
+the threshold will be less than the river pixels. Therefore the
+river-subtracted brightness (@option{--brightness}) for the
+thresholded catalog for such clumps will be larger than the brightness
+with no threshold!
+
 @item -m
 @itemx --magnitude
 The magnitude of all clumps or objects, see @option{--brightness}.
@@ -9954,11 +10734,15 @@ The magnitude of all clumps or objects, see @option{--brightness}.
 @option{--clumpbrightness}.
 
 @item --riverave
-[Clumps] The average flux of the river pixels of this clump. River
-pixels were defined in Akhlaghi and Ichikawa 2015. In short they are
-right on the boundaries of the clumps. This value is used internally
-to find the signal to noise ratio of the clumps and can also be used
-as a scale to guage the base (ambient) flux of the clump.
+[Clumps] The average brightness of the river pixels around this
+clump. River pixels were defined in Akhlaghi and Ichikawa 2015. In
+short they are the pixels immediately outside of the clumps. This
+value is used internally to find the brightness (or magnitude) and
+signal to noise ratio of the clumps. It can generally also be used as
+a scale to guage the base (ambient) flux surrounding the clump. In
+case there was no river pixels, then this column will have the value
+of the Sky under the clump. So note that this value is @emph{not} sky
+subtracted.
 
 @item --rivernum
 [Clumps] The number of river pixels around this clump, see
@@ -9979,7 +10763,138 @@ The sky value standard deviation (per pixel) for this clump or
 object. Like @option{--sky}, this is the average of the values in the
 input sky standard deviation image pixels that lie over this object.
 
+@item -A
+@itemx --semimajor
+The pixel-value weighted semi-major axis of the profile (assuming it
+is an ellipse) in units of pixels.
+
+@item -B
+@itemx --semiminor
+The pixel-value weighted semi-minor axis of the profile (assuming it
+is an ellipse) in units of pixels.
+
+@item -p
+@itemx --positionangle
+The pixel-value weighted angle of the semi-major axis with the first
+FITS axis in degrees.
+
+@item --geosemimajor
+The geometric (ignoring pixel values) semi-major axis of the profile,
+assuming it is an ellipse.
+
+@item --geosemiminor
+The geometric (ignoring pixel values) semi-mainor axis of the profile,
+assuming it is an ellipse.
+
+@item --geopositionangle
+The geometric (ignoring pixel values) angle of the semi-major axis
+with the first FITS axis in degrees.
+
 @end table
+
+
+
+
+
+@node Adding new columns to MakeCatalog,  , Invoking astmkcatalog, MakeCatalog
+@subsection Adding new columns to MakeCatalog
+
+The common development characteristics of MakeCatalog and other
+Gnuastro utilities is explained in @ref{Developing}. This section
+might be more clearly understood after reading that
+chapter. MakeCatalog has been designed to allow easy addition of new
+columns, here we will give a fast over-view of the steps you need to
+take to define a new output column. After adding and testing your
+column, you are most welcome (and encouraged) to share it with us so
+we can add to the next release of Gnuastro for everyone else to also
+benefit from your efforts.
+
+MakeCatalg will first have two passes over the input pixels: in the
+first pass it will gather mainly object information and in the second
+run, it will mainly focus on the clumps, or any other measurement that
+needs an output from the first pass. These two passes are designed to
+be raw summations: no extra processing. This will allow parallel
+processing and simplicity/clarity. Once the passes are done, depending
+on the order of options that the user has defined the appropriate
+function will be called to add a processed column from the raw
+calculations to the output array (which will be printed). So if your
+new calculation, needs new raw information from the pixels, then you
+will need to also modify the respective @code{firstpass} and
+@code{secondpass} functions and define new information table columns
+in @file{main.h}.
+
+For all the steps below, it is easiest to just copy and paste an
+existing option and change the variables in each step. In all these
+different places, the options are sorted in the same order (same order
+as @ref{Invoking astmkcatalog}). This allows a particular option to be
+easily found in all steps. Therefore in adding your new option, be
+sure to keep it in the same relative place in the list (it doesn't
+necessarily have to be in the end), and near conceptually similar
+options.
+
+@table @file
+
+@item main.h
+The @code{objectcols} and @code{clumpcols} enumerated variables
+(@code{enum}) define the labels for the separate information table
+columns (the raw pixel calculations). If your new calculation requires
+new raw columns, the add them. The @code{outcols} enumerated variables
+define the recognized output columns. You will need to add a new name
+for your desired column here, then add a row for your new parameter in
+the @code{uiparams} structure, the name should be the same as the one
+you used in @code{outcols} (in small caps).
+
+@cindex GNU C library
+@item args.h
+This file specifies all the parameters for the GNU C library, Argp
+structure that is in charge of reading the user's options. It is best
+that the option name be the same as the name you put in @code{outcols}
+(in @file{main.h}), like the other options that are already
+defined.
+
+Define a new option in @code{argp_option} (rows between the @code{@{}
+and @code{@}}). The first is the name of the option, the second is its
+short option name (see @ref{Options}), it is best to use a number (so
+no short option is defined for the user) which in Gnuastro is defined
+to be a number larger than 500. All the used numbers are shown in the
+comment immediately above @code{argp_option} structure, increase that
+number by one and use that number for your new option. The next two
+values should be @code{0} and the last should be a short description
+of your option.
+
+Go down to the @code{parse_opt} function and add a @code{case} for
+your specific option (using the same number you specified above), then
+update the contents.
+
+@item ui.c
+In the @code{readconfig} function, add an @code{else if} for your
+option (easiest to just copy and paste, then update). In the
+@code{printvalues} function's @code{switch} structure, add a
+@code{case} for your option. Finally, in the @code{preparearrays}
+function, add a @code{case} for your new output column.
+
+@item mkcatalog.c
+If your procedure needs new raw calculations, add a new line to
+appropriate parts of the @code{firstpass}, and/or @code{secondpass}
+functions, they should be clear and are fully commented. Then add a
+@code{case} for your column in the @code{makeoutput} function, here
+you will need to call a function (which should be defined in
+@file{columns.c}).
+
+@item columns.c
+Define the function that will write your desired column in the output
+column using the raw input calculations here. There are a lot of
+functions in this file which you can use to model and they are
+commented, in short you have to specify a header (commented column),
+the units of your variable, the possible accuracy to print and finally
+the actual columns.
+
+@end table
+
+
+
+
+
 
 
 
@@ -10109,7 +11024,7 @@ ellipse @mymath{a}, and its minor axis with @mymath{b}, the axis ratio
 is defined as: @mymath{q\equiv b/a}. The major axis of an ellipse can
 be aligned in any direction, therefore define the angle of the major
 axis to the horizontal axis of the image is defined to be the position
-angle of the ellipse and in this manual, we show it with
+angle of the ellipse and in this book, we show it with
 @mymath{\theta}.
 
 @cindex Radial profile on ellipse
@@ -10158,7 +11073,7 @@ dealing with.
 
 
 @node PSF, Stars, Defining an ellipse, Modeling basics
-@subsubsection Point Spread function
+@subsubsection Point Spread Function
 
 @cindex PSF
 @cindex Point source
@@ -10514,7 +11429,7 @@ source or the telescope aperture (for example in
 @mymath{cm^2})@footnote{For a full object that spans over several
 pixels, the telescope area should be used to find the flux. However,
 sometimes, only the brightness per pixel is desired. In such cases
-this manual also @emph{loosely} uses the term flux. This is only
+this book also @emph{loosely} uses the term flux. This is only
 approximately accurate however, since while all the pixels have a
 fixed area, the pixel size can vary with camera on the
 telescope.}. Knowing the flux (@mymath{f}) and distance to the object
@@ -11087,7 +12002,7 @@ as:
 
 @cindex Poisson distribution
 @dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in \{0, 1, 2,
-3, \dots \}}
+3, \dots }}
 
 @cindex Skewed Poisson distribution
 Because the Poisson distribution is only applicable to positive
@@ -11392,7 +12307,7 @@ were of integer types.
 
 
 
-@node Table manipulation, Developing, Modeling and fittings, Top
+@node Table manipulation, High-level calculations, Modeling and fittings, Top
 @chapter Table manipulation
 
 @cindex Table manipulation
@@ -11422,8 +12337,419 @@ The software for this section have to be added ....
 
 
 
+@node High-level calculations, Developing, Table manipulation, Top
+@chapter High-level calculations
 
-@node Developing, GNU Astronomy Utilities list, Table manipulation, Top
+After the reduction of raw data (for example with the utilities in
+@ref{Image manipulation}) you will have reduced images/data ready for
+processing/analysing (for example with the utilities in @ref{Image
+analysis}). But the processed/analysed data (or catalogs) are still
+not enough to derive any scientific result. Even higher-level analysis
+is still needed to convert the observed magnitudes, sizes or volumes
+into physical quantities that we associate with each catalog entry or
+detected object which is the purpose of the tools in this section.
+
+
+
+
+
+@menu
+* CosmicCalculator::            Calculate cosmological variables
+@end menu
+
+@node CosmicCalculator,  , High-level calculations, High-level calculations
+@section CosmicCalculator
+
+To derive higher-level information regarding our sources in
+extra-galactic astronomy, cosmological calculations are necessary. In
+Gnuastro, CosmicCalculator is in charge of such calculations. Before
+discussing how CosmicCalculator is called and operates (in
+@ref{Invoking astcosmiccal}), it is important to provide a rough but
+mostly self sufficient review of the basics and the equations used in
+the analysis. In @ref{Distance on a 2D curved space} the basic idea of
+understanding distances in a curved and expanding 2D universe (which
+we can visualize) are reviewed. Having solidified the concepts there,
+in @ref{Extending distance concepts to 3D}, the formalism is extended
+to the 3D universe we are trying to study in our research.
+
+The focus here is obtaining a physical insight into these equations
+(mainly for the use in real observational studies). There are many
+books thoroughly deriving and proving all the equations with all
+possible initial conditions and assumptions for any abstract universe,
+interested readers can study those books.
+
+@menu
+* Distance on a 2D curved space::  Distances in 2D for simplicity
+* Extending distance concepts to 3D::  Going to 3D (our real universe).
+* Invoking astcosmiccal::       How to run CosmicCalculator
+@end menu
+
+@node Distance on a 2D curved space, Extending distance concepts to 3D, CosmicCalculator, CosmicCalculator
+@subsection Distance on a 2D curved space
+
+The observations to date (for example the Plank 2013 results), have
+not measured the presence of a significant curvature in the
+universe. However to be generic (and allow its measurement if it does
+infact exist), it is very important to create a framework that allows
+curvature. As 3D beings, it is impossible for us to mentally create
+(visualize) a picture of the curvature of a 3D volume in a 4D
+space. Hence, here we will assume a 2D surface and discuss distances
+on that 2D surface when it is flat, or when the 2D surface is curved
+(in a 3D space). Once the concepts have been created/visualized here,
+in @ref{Extending distance concepts to 3D}, we will extend them to the
+real 3D universe we live in and hope to study.
+
+To be more understandable (actively discuss from an observer's point
+of view) let's assume we have an imaginary 2D friend living on the 2D
+space (which @emph{might} be curved in 3D). So here we will be working
+with it in its efforts to analyze distances on its 2D universe. The
+start of the analysis might seem too mundane, but since it is
+impossible to imagine a 3D curved space, it is important to review all
+the very basic concepts thoroughly for an easy transition to a
+universe we cannot visualize any more (a curved 3D space in 4D).
+
+To start, let's assume a static (not expanding or shrinking), flat 2D
+surface similar to @ref{flatplane} and that our 2D friend is observing
+its universe from point @mymath{A}. One of the most basic ways to
+parametrize this space is through the cartesian coordinates
+(@mymath{x}, @mymath{y}). In @ref{flatplane}, the basic axises of
+these two coordinates are plotted. An infinitesmial change in the
+direction of each axis is written as @mymath{dx} and @mymath{dy}. For
+each point, the infinitesimal changes are parallel with the respective
+axises and are not shown for clarity. Another very useful way of
+parametrizing this space is through polar coordinates. For each point,
+we define a radius (@mymath{r}) and angle (@mymath{\phi}) from a fixed
+(but arbitrary) reference axis. In @ref{flatplane} the infinitesimal
+changes for each polar coordinate are plotted for a random point and a
+dashed circle is shown for all points with the same radius.
+
+@float Figure,flatplane
+@center@image{gnuastro-figures/flatplane, 10cm, , }
+
+@caption{Two dimentional cartesian and polar coordinates on a flat
+plane.}
+@end float
+
+Assuming a certain position, which can be parametrized as
+@mymath{(x,y)}, or @mymath{(r,\phi)}, a general infinitesimal change
+change in its position will place it in the coordinates
+@mymath{(x+dx,y+dy)} and @mymath{(r+dr,\phi+d\phi)}. The distance (on
+the flat 2D surface) that is covered by this infinitesimal change in
+the static universe (@mymath{ds_s}, the subscript signifies the static
+nature of this universe) can be written as
+@dispmath{ds_s=dx^2+dy^2=dr^2+r^2d\phi^2}The main question is this:
+how can our 2D friend incorporate the (possible) curvature in its
+universe when it is calculating distances? The universe it lives in
+might equally be a locally flat but globally curved surface like
+@ref{sphericalplane}. The answer to this question but for a 3D being
+(us) is the whole purpose to this discussion. So here we want to give
+our 2D friend (and later, ourselves) the tools to measure distances if
+the space (that hosts the objects) is curved.
+
+@ref{sphericalplane} assumes a spherical shell with radius @mymath{R}
+as the curved 2D plane for simplicity. The spherical shell is tangent
+to the 2D plane and only touches it at @mymath{A}. The result will be
+generalizd afterwards. The first step in measuring the distance in a
+curved space is to imagine a third dimension along the @mymath{z} axis
+as shown in @ref{sphericalplane}. For simplicity, the @mymath{z} axis
+is assumed to pass through the center of the spherical shell. Our
+imaginary 2D friend cannot visualize the third dimension or a curved
+2D surface within it, so the remainder of this discussion is purely
+abstract for it (similar to us being unable to visualize a 3D curved
+space in 4D). But since we are 3D creatures, we have the advantage of
+visualizing the following steps. Fortunately our 2D friend knows our
+mathematics, so it can follow along with us.
+
+With the third axis added, a generic infinitesimal change over
+@emph{the full} 3D space corresponds to the distance:
+@dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2d\phi^2+dz^2.}It is very
+important to recognize that this change of distance is for @emph{any}
+point in the 3D space, not just those changes that occur on the 2D
+spherical shell of @ref{sphericalplane}. Recall that our 2D friend can
+only do measurements in the 2D spherical shell, not the full 3D
+space. So we have to constrain this general change to any change on
+the 2D shperical shell. To do that, let's look at the arbitrary point
+@mymath{P} on the 2D spherical shell. Its image (@mymath{P'}) on the
+flat plain is also displayed. From the dark triangle, we see that
+
+@float Figure,sphericalplane
+@center@image{gnuastro-figures/sphericalplane, 10cm, , }
+
+@caption{2D spherical plane (centered on @mymath{O}) and flat plane
+(gray) tangent to it at point @mymath{A}.}
+@end float
+
+@dispmath{\sin\theta={r\over R},\quad\cos\theta={R-z\over R}.}These
+relations allow our 2D friend to find the value of @mymath{z} (an
+abstract dimension for it) as a function of r (distance on a flat 2D
+plane, which it can visualize) and thus eliminate @mymath{z}. From
+@mymath{\sin^2\theta+\cos^2\theta=1}, we get @mymath{z^2-2Rz+r^2=0}
+and solving for @mymath{z}, we find:
+@dispmath{z=R\left(1\pm\sqrt{1-{r^2\over R^2}}\right).}The
+@mymath{\pm} can be understood from @ref{sphericalplane}: For each
+@mymath{r}, there are two points on the sphere, one in the upper
+hemisphere and one in the lower hemisphere. An infinitesimal change in
+@mymath{r}, will create the following infinitesimal change in
+@mymath{z}:
+
+@dispmath{dz={\mp r\over R}\left(1\over
+\sqrt{1-{r^2/R^2}}\right)dr.}Using the positive signed equation
+instead of @mymath{dz} in the @mymath{ds_s^2} equation above, we get:
+
+@dispmath{ds_s^2={dr^2\over 1-r^2/R^2}+r^2d\phi^2.}
+
+The derivation above was done for a spherical shell of radius
+@mymath{R} as a curved 2D surface. To generalize it to any surface, we
+can define @mymath{K=1/R^2} as the curvature parameter. Then the
+general infinitesimal change in a static universe can be written as:
+@dispmath{ds_s^2={dr^2\over 1-Kr^2}+r^2d\phi^2.}Therefore, we see that
+a positive @mymath{K} represents a real @mymath{R} which signifies a
+closed 2D spherical shell like @ref{sphericalplane}. When
+@mymath{K=0}, we have a flat plane (@ref{flatplane}) and a negative
+@mymath{K} will correspond to an imaginary @mymath{R}. The latter two
+cases are open universes (where @mymath{r} can extend to infinity).
+However, when @mymath{K>0}, we have a closed universe, where
+@mymath{r} cannot become larger than @mymath{R} as in
+@ref{sphericalplane}.
+
+@cindex Proper distance
+A very important issue that can be discussed now (while we are still
+in 2D and can actually visualize things) is that
+@mymath{\overrightarrow{r}} is tangent to the curved space at the
+observer's position. In other words, it is on the gray flat surface of
+@ref{sphericalplane}, even when the universe if curved:
+@mymath{\overrightarrow{r}=P'-A}. Therefore for the point @mymath{P}
+on a curved space, the raw coordinate @mymath{r} is the distance to
+@mymath{P'}, not @mymath{P}. The distance to the point @mymath{P} (at
+a specific coordinate @mymath{r} on the flat plane) on the curved
+surface (thick line in @ref{sphericalplane}) is called the
+@emph{proper distance} and is displayed with @mymath{l}. For the
+specific example of @ref{sphericalplane}, the proper distance can be
+calculated with: @mymath{l=R\theta} (@mymath{\theta} is in
+radians). using the @mymath{\sin\theta} relation found above, we can
+find @mymath{l} as a function of @mymath{r}:
+
+@dispmath{\theta=\sin^{-1}\left({r\over R}\right)\quad\rightarrow\quad
+l(r)=R\sin^{-1}\left({r\over R}\right)}@mymath{R} is just an arbitrary
+constant and can be directly found from @mymath{K}, so for cleaner
+equations, it is common practice to set @mymath{R=1}, which gives:
+@mymath{l(r)=\sin^{-1}r}. Also note that if @mymath{R=1}, then
+@mymath{l=\theta}. Generally, depending on the the curvature, in a
+@emph{static} universe the proper distance can be written as a
+function of the coordinate @mymath{r} as (from now on we are assuming
+@mymath{R=1}):
+
+@dispmath{l(r)=\sin^{-1}(r)\quad(K>0),\quad\quad
+l(r)=r\quad(K=0),\quad\quad l(r)=\sinh^{-1}(r)\quad(K<0).}With
+@mymath{l}, the infinitesimal change of distance can be written in a
+more simpler and abstract form of
+
+@dispmath{ds_s^2=dl^2+r^2d\phi^2.}
+
+@cindex Comoving distance
+Until now, we had assumed a static universe (not changing with
+time). But our observations so far appear to indicate that the
+universe is expanding (isn't static). Since there is no reason to
+expect the observed expansion is unique to our particular position of
+the universe, we expect the universe to be expanding at all points
+with the same rate at the same time. Therefore, to add a time
+dependence to our distance measurements, we can simply add a
+multiplicative scaling factor, which is a function of time:
+@mymath{a(t)}. The functional form of @mymath{a(t)} comes from the
+cosmology and the physics we assume for it: general relativity.
+
+With this scaling factor, the proper distance will also depend on
+time. As the universe expands (moves), the distance will also move to
+larger values. We thus define a distance measure, or coordinate, that
+is independent of time and thus doesn't `move' which we call the
+@emph{comoving distance} and display with @mymath{\chi} such that:
+@mymath{l(r,t)=\chi(r)a(t)}. We thus shift the @mymath{r} dependence
+of the proper distance we derived above for a static universe to the
+comoving distance:
+
+@dispmath{\chi(r)=\sin^{-1}(r)\quad(K>0),\quad\quad
+\chi(r)=r\quad(K=0),\quad\quad \chi(r)=\sinh^{-1}(r)\quad(K<0).}
+
+Therefore @mymath{\chi(r)} is the proper distance of an object at a
+specific reference time: @mymath{t=t_r} (the @mymath{r} subscript
+signifies ``reference'') when @mymath{a(t_r)=1}. At any arbitrary
+moment (@mymath{t\neq{t_r}}) before or after @mymath{t_r}, the proper
+distance to the object can simply be scaled with
+@mymath{a(t)}. Measuring the change of distance in a time-dependent
+(expanding) universe will also involve the speed of the object
+changing positions. Hence, let's assume that we are only thinking
+about the change in distance caused by something (light) moving at the
+speed of light. This speed is postulated as the only constant and
+frame-of-reference-independent speed in the universe, making our
+calculations easier, light is also the major source of information we
+recieve from the universe, so this is a reasonable assumption for most
+extra-galactic studies. We can thus parametrize the change in distance
+as
+
+@dispmath{ds^2=c^2dt^2-a^2(t)ds_s^2 =
+c^2dt^2-a^2(t)(d\chi^2+r^2d\phi^2).}
+
+
+@node Extending distance concepts to 3D, Invoking astcosmiccal, Distance on a 2D curved space, CosmicCalculator
+@subsection Extending distance concepts to 3D
+
+The concepts of @ref{Distance on a 2D curved space} are here extended
+to a 3D space that @emph{might} be curved in a 4D space. We can start
+with the generic infinitesimal distance in a static 3D universe, but
+this time not in spherical coordinates instead of polar coordinates.
+@mymath{\theta} is shown in @ref{sphericalplane}, but here we are 3D
+beings, positioned on @mymath{O} (the center of the sphere) and the
+point @mymath{O} is tangent to a 4D-sphere. In our 3D space, a generic
+infinitesimal displacement will have the distance:
+@dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2(d\theta^2+sin^2{\theta}d\phi^2).}Like
+our 2D friend before, we now have to assume an abstract dimension
+which we cannot visualize. Let's call the fourth dimension @mymath{w},
+then the general change in coordinates in the @emph{full} four
+dimensional space will be:
+@dispmath{ds_s^2=dr^2+r^2(d\theta^2+sin^2{\theta}d\phi^2)+dw^2.}But we
+can only work on a 3D curved space, so following exactly the same
+steps and convensions as our 2D friend, we arrive at:
+@dispmath{ds_s^2={dr^2\over
+1-Kr^2}+r^2(d\theta^2+sin^2{\theta}d\phi^2).}In a non-static universe
+(with a scale factor a(t), the distance can be written as:
+@dispmath{ds^2=c^2dt^2-a^2(t)[d\chi^2+r^2(d\theta^2+sin^2{\theta}d\phi^2)].}
+
+
+
+@c@dispmath{H(z){\equiv}\left(\dot{a}\over a\right)(z)=H_0E(z) }
+
+@c@dispmath{E(z)=[ \Omega_{\Lambda,0} + \Omega_{C,0}(1+z)^2 +
+@c\Omega_{m,0}(1+z)^3 + \Omega_{r,0}(1+z)^4 ]^{1/2}}
+
+@c Lets take @mymath{r} to be the radial coordinate of the emitting
+@c source, which emitted its light at redshift $z$. Then the comoving
+@c distance of this object would be:
+
+@c@dispmath{ \chi(r)={c\over H_0a_0}\int_0^z{dz'\over E(z')} }
+
+@c@noindent
+@c So the proper distance at the current time to that object is:
+@c @mymath{a_0\chi(r)}, therefore the angular diameter distance
+@c (@mymath{d_A}) and luminosity distance (@mymath{d_L}) can be written
+@c as:
+
+@c@dispmath{ d_A={a_0\chi(r)\over 1+z}, \quad d_L=a_0\chi(r)(1+z) }
+
+
+
+
+@node Invoking astcosmiccal,  , Extending distance concepts to 3D, CosmicCalculator
+@subsection Invoking CosmicCalculator
+
+CosmicCalculator will calculate cosmological variables based on the
+input parameters. The executable name is @file{astcosmiccal} with the
+following general template
+
+@example
+$ astcosmiccal [OPTION...] ...
+@end example
+
+
+@noindent
+One line examples:
+
+@example
+$ astcosmiccal --onlyvolume -z=0.8
+$ astcosmiccal -l=0.6964 -m=0.3036 -z=2.1
+$ astcosmiccal --olambda=0.6964 --omatter=0.3036 --redshift=2.1
+@end example
+
+The input parameters can be given as command line options or in the
+configuration files, see @ref{Configuration files}. For a definition
+of the different parameters, please see the sections prior to this. By
+default, all the cosmological calculations will be printed in the
+standard output (the command-line mainly) along with a short
+description and units.
+
+The options starting with @option{--only} will only do that single
+desired calculation and only print the final number (in the same units
+as reported by default). These options are very useful when you want
+to call CosmicCalculator from a script. The resulting number can
+simply be put into a shell variable (for example @code{vol}) with the
+following line, which will allow you to use the value for any other
+subsequent operation.
+
+@example
+z=3.12
+vol=$(astcosmiccal --redshift=$z --onlyvolume)
+@end example
+
+@cindex GNU Grep
+@noindent
+In a script, this operation might be necessary for a very large number
+of objects (thousands of galaxies in a catalog for example). So the
+fact that all the other default calculations are ignored will also
+help you get to your result faster. If you just want to inspect the
+value of a variable, the description (which comes with units) might be
+more useful. In that case, the following command might be better. The
+other parameters will also be calculated, but they are so fast that
+you will not notice on modern computers.
+
+@example
+$ astcosmiccal --redshift=0.832 | grep volume
+@end example
+
+@noindent
+The full list of options is shown and described below:
+@table @option
+
+@item -z
+@itemx --redshift
+(@option{=FLT}) The redshift of interest.
+
+@item -H
+@itemx --H0
+(@option{=FLT}) Current expansion rate (in km sec@mymath{^{-1}}
+Mpc@mymath{^{-1}}).
+
+@item -l
+@itemx --olambda
+(@option{=FLT}) Cosmological constant density divided by the critical
+density in the current Universe (@mymath{\Omega_{\Lambda,0}}).
+
+@item -m
+@itemx --omatter
+(@option{=FLT}) Matter (including massive neutrinos) density divided
+by the critical density in the current Universe
+(@mymath{\Omega_{m,0}}).
+
+@item -r
+@itemx --oradiation
+(@option{=FLT}) Radiation density divided by the critical density in
+the current Universe (@mymath{\Omega_{r,0}}).
+
+@item -v
+@itemx --onlyvolume
+Only print the comoving volume (in units of Mpc@mymath{^3}) until the
+desired redshift based on the input parameters. See explanations above
+for more on these types of options and how to effectively use them.
+
+@item -d
+@itemx --onlyabsmagconv
+Only print the conversion factor for apparent magnitude to absolute
+magnitude. Note that this is practically the distance modulus added
+with @mymath{-2.5\log{(1+z)}} for the the desired redshift based on
+the input parameters. See explanations above for more on these types
+of options and how to effectively use them.
+
+@end table
+
+
+
+
+
+
+
+
+
+
+
+@node Developing, GNU Astronomy Utilities list, High-level calculations, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested
@@ -11725,42 +13051,121 @@ above the list to limit the displayed issues to what you are
 interested in. The `Category' and `Group Item' (explained above) are a
 good starting point.
 
+@cindex Mailing list: gnuastro-devel
+Any new issue that is submitted to any of the trackers, or any
+comments that are posted for an issue, is directly forwarded to the
+gnuastro-devel mailing list
+(@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}). This
+will allow anyone interested to be up to date on the over-all
+development activity in Gnuastro and will also provide an alternative
+(to Savannah) archiving for the development discussions. Therefore, it
+is not recommended to directly post an email to this mailing list, but
+do all the activities (for example add new issues, or comment on
+existing ones) on Savannah.
+
+
+
+
+
 @node Version controlled source, Internal libraries, Gnuastro project webpage, Developing
 @section Version controlled source
 
 @cindex Git
 @cindex Version control
-The source code that is publicly distributed does not contain the
-revision history, it is only the final snapshot of a stable release,
-ready to be configured and built. To be able to develop successfully,
-the revision history of the code can be very useful, also some updates
-that are not yet released might be in it.  We use Git for the version
-control of Gnuastro. For those who are not familiar with it, we
-suggest Pro Git@footnote{@url{https://progit.org/}}. The whole book is
-publicly available for online reading and downloading. The latest
-version of Gnuastro can be cloned by running
+The publicly distributed Gnuastro tar-ball (for example
+@file{gnuastro-@value{VERSION}.tar.gz}) does not contain the revision
+history, it is only a snapshot of the source code at one significant
+instant of Gnuastro's history (specified by the version number), ready
+to be configured and built. To be able to develop successfully, the
+revision history of the code can be very useful to track when
+something was added or changed, also some updates that are not yet
+released (given a version number) might be in it.  We use Git for the
+version control of Gnuastro. For those who are not familiar with it,
+we recommend the Pro Git@footnote{@url{https://progit.org/}} book. The
+whole book is publicly available for online reading and downloading
+and does a wonderful job at explaining the concepts and best
+practices.
+
+Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO}
+directory (can be any directory, change the value below). The full
+version controlled history of Gnuastro can be cloned in
+@file{TOPGNUASTRO/gnuastro} by running the following commands:
 
 @example
+$ TOPGNUASTRO=/home/yourname/Research/projects/
+$ cd $TOPGNUASTRO
 $ git clone git://git.sv.gnu.org/gnuastro.git
 @end example
 
-@cindex GNU C Library
+@noindent
+The cloned Gnuastro source cannot immediately be configured, compiled,
+or installed since it only contains hand-written files, not
+automatically generated or imported files which do all the hard work
+of the build process. See @ref{Bootstrapping} for the process of
+generating and importing those files (it is really easy!).
+
+The hand-written (version controlled) source code for Gnuastro's
+utilities, libraries, this book and the tests are divided into
+sub-directories with standard and very descriptive names. The
+@file{src} and @file{lib} directories will be the main destination of
+most scientists, the former contains the utility source codes in
+subdirectories named after them (see @ref{Program source}). The latter
+contains the libraries (see @ref{Internal libraries}). The version
+controlled files in the top cloned directory are either mainly in
+capital letters (for example @file{THANKS} and @file{README}) or
+mainly written in smallcaps (for example @file{configure.ac} and
+@file{Makefile.am}). The former are non-programming, standard writing
+for human readers containing high-level information about the whole
+package. The latter are instructions to customize the GNU build system
+for Gnuastro.
+
+
+@menu
+* Bootstrapping::               Adding all the automaticly generated files
+@end menu
+
+@node Bootstrapping,  , Version controlled source, Version controlled source
+@subsection Bootstrapping
+
+@cindex Bootstrapping
 @cindex GNU Autoconf Archive
 @cindex GNU Portability Library
 @cindex Automatically created build files
 @noindent
 The version controlled source code lacks the source files that we have
-not written or are automatically built (and included in the
-distributed @file{gnuastro-@value{VERSION}.tar.gz}) for configuration
-and building. There are three types of files that we have not written:
+not written or are automatically built. These automatically generated
+files are included in the distributed tar ball for each distribution
+(for example @file{gnuastro-@value{VERSION}.tar.gz}) and make it easy
+to immediately configure, build, and install Gnuastro. However from
+the perspective of version control, they are just bloatware and
+sources of confusion (since they are not changed by Gnuastro
+developers).
+
+@cindex Gnulib
+@cindex GNU Portability Library (Gnulib)
+The process of automatically building and importing necessary files
+into the cloned directory is known as @emph{bootstrapping}. All the
+instructions for an automatic bootstrapping are available in
+@file{bootstrap} and configured using the
+@file{bootstrap.conf}. @file{bootstrap} is the only file not written
+by Gnuastro developers but is under version control to enable simple
+bootstrapping immediately after cloning. It is maintained by the GNU
+Portability
+Library@footnote{@url{https://www.gnu.org/software/gnulib/}} (Gnulib)
+and this file is an identical copy, so do not make any changes in this
+file since it will be replaced when Gnulib releases an update. Make
+all your changes in @file{bootstrap.conf}. In general, the files we
+have not hand-written can be classified as the following:
 
 @itemize
+
+@cindex GNU C Library
 @item
 To ensure portability for a wider range of operating systems (those
-that don't include GNU C Library, namely glibc), we have used the GNU
-Portability Library (Gnulib). Gnulib keeps a copy of all the functions
-in glibc and you can include them in the source code to replace system
-wide functions on other compilers.
+that don't include GNU C Library, namely glibc), we have used
+Gnulib. Gnulib keeps a copy of all the functions in glibc and you can
+include them in the source code to replace system wide functions on
+other compilers that lack the extra capabilities of glibc.
 
 @item
 To test for various system architectures and compiler configurations
@@ -11768,118 +13173,102 @@ we make use of the various GNU Autoconf macros in the GNU Autoconf
 archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
 
 @item
-Figures in the manual. Some of them are built by @LaTeX{} (using
+The necessary GNU Autoconf, Automake, and Libtool files to actually
+configure, build and install Gnuastro.
+
+@item
+Figures in the book. Some of them are built by @LaTeX{} (using
 the TikZ package) and some are actual rasterized images. An automatic
 script will do the job of drawing the plots with @LaTeX{} and
 converting all the figures into all the formats that are necessary for
-all the various formats of the manual.
+all the various formats of the book.
 @end itemize
 
-To get the Gnulib and the Autoconf archives, just run these commands
-in any directory you want to store them in (let's assume you are in
-@file{~/Development} directory):
+Before starting the bootstrap, you have to clone Gnulib and the
+Autoconf archives into a local directory. Currently in Gnuastro, both
+of these have to be cloned in the same top directory, let's assume
+that top directory is @file{DEVDIR} (which you can set to any
+directory other than the cloned Gnuastro directory, change the value
+below). Just note that @file{DEVDIR} should not contain the string
+@file{gnulib}@footnote{All occurances of @file{gnulib} in the value to
+@file{bootstrap}'s @option{--gnulib-srcdir} option will be replaced
+with @file{autoconf-archives} to get to those archives.}. We have
+intentionally assumed a separate (from Gnuastro) top directory for
+these two packages since they are very useful and you will probably
+need them for your other development projects (not just Gnuastro). The
+following commands take you to the top directory for these packages
+and clone them:
 
 @example
-$ pwd
-/home/yourusername/Development
+$ DEVDIR=/home/yourname/Development
+$ cd $DEVDIR
 $ git clone git://git.sv.gnu.org/gnulib.git
 $ git clone git://git.sv.gnu.org/autoconf-archive.git
 @end example
 
 @noindent
-This will download the full version controlled source of the two in
+You now have the full version controlled source of these two in
 separate directories. Both these packages are regularly updated, so
-every once and a while you can run @command{$ git pull} within them to
-get any possible updates. First, include all the necessary packages
-from Gnulib. To do that, run the following command from within the
-cloned @file{gnuastro} directory@footnote{Note that the
-@file{gnulib-tool} script has to be run from within the cloned Gnulib
-directory, it is not insxtalled.}:
+every once and a while, you can run @command{$ git pull} within them
+to get any possible updates. You are now ready to bootstrap Gnuastro.
+The following commands will take you into the cloned Gnuastro
+directory and run the @file{bootstrap} script, while telling it to
+copy some files (instead of making symbolic links, with the
+@option{--copy} option) and where to look for Gnulib (with the
+@option{--gnulib-srcdir} option). See @ref{Version controlled source}
+for @file{TOPGNUASTRO}.
 
 @example
-$ ~/Development/gnulib/gnulib-tool --import --source-base=gnulib/lib \
-  --with-tests --tests-base=gnulib/tests --no-vc-files math argp \
-  error progname
+$ cd $TOPGNUASTRO/gnuastro
+$ ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
 @end example
 
-@noindent
-One of the directories made after running @file{gnulib-tool} is
-@file{m4/}. We can now add the necessary Autoconf checks from the
-Autoconf archives to this directory:
-
-@example
-$ cp ~/Development/autoconf-archive/m4/ax_pthread.m4 ./m4/
-@end example
-
-@noindent
-The last thing you have to do is to make/convert all the figures in
-all the necessary formats. We use @LaTeX{} (along with TikZ) to create
-some of the figures and ImageMagick's @command{convert} tool for the
-conversion into various types. So make sure you have them
-installed. All the necessary scripts are ready and you just have to
-run a @command{make} command in the appropriate directory.
-
-@example
-$ cd doc/plotsrc
-$ make
-$ cd ../../
-@end example
+You might have noticed the @file{README-hacking} file that is
+available in the cloned Gnuastro directory but is not distributed in
+the tar-ball. It contains a summary of the bootstrapping process
+discussed in this section, it is a necessary reference when you
+haven't built this book yet. @file{bootstrap} uses the existence of
+@file{README-hacking} to check if it is in a directory that was
+checked-out from a version controlled source or if it is a
+distribution tar-ball. If called like the above, @file{bootstrap} will
+complain and abort in the latter case. To run @file{bootstrap} from
+the distribution tar-ball (not recommended!), add the @option{--force}
+option when you are running @file{bootstrap}. With this option,
+@file{bootstrap} will not search for @file{README-hacking}.
 
 @cindex GNU Texinfo
 @cindex GNU Libtool
 @cindex GNU Autoconf
 @cindex GNU Automake
 @cindex GNU build system
+All the necessary GNU C Library functions, Autoconf macros and
+Automake inputs are now available along with the book figures. The
+standard GNU build system (@ref{Quick start}) will do the rest of the
+building job and you can start hacking into the code and compiling
+your hacks with the full revision history of Gnuastro under your
+fingers.
+
+@cartouche
 @noindent
-All the necessary GNU C Library functions, Autoconf macros and manual
-figures are now available. The GNU build system will do the rest of
-the job. To generate all the other necessary files you have to run the
-following command in the cloned @file{gnuastro}
-directory@footnote{@command{autoreconf} is part of GNU Autoconf and
-also requires GNU Automake, GNU Libtool and GNU Texinfo to create all
-the necessary files, see @ref{Building}}.
+@strong{Undoing the bootstrap:} During the development, it might
+happen that you want to remove all the automatically generated and
+imported files. In other words, you might want to reverse the
+bootstrap process. Fortunately Git has a good utility for this job:
+@command{git clean}. Run the following command and everything that is
+not version controlled will be removed.
 
 @example
-$ autoreconf --install
+git clean -fxd
 @end example
 
 @noindent
-Now you can easily configure, build and start hacking into the code
-and you have the full revision history under your fingers.
-
-The hand-written (version controlled) code for Gnuastro, this manual
-and the tests are divided in the following sub-directories of the top
-directory. Their names are standard and descriptive enough, but a
-short summary is given here:
-
-@cindex Top source code directories
-@cindex Directories in Gnuastro source
-@table @file
-
-@item doc
-The Texinfo source files for this manual and the Gnuastro webpage
-file(s).
-
-@item include
-The header files of the internal static libraries and also some other
-header files that are used by more than one program.
-
-@item lib
-The internal static libraries (only their @file{.c} files) are stored
-here. These libraries hold functions that are used by more than one
-program, they will not be installed.
-
-@item src
-This directory contains a subdirectory for every program in this
-version of Gnuastro. The source code for each program is placed
-inside each of these sub-directories to be easily separable.
-
-@item tests
-This directory keeps all the tests (checks) which are executed when
-@command{make check} is run.
-
-@end table
-
+It is best to commit any recent change before running this
+command. You might have created new files since the last commit and if
+they haven't been commited, they will all be gone forever (using
+@command{rm}). To get a list of the non-version controlled files
+before actually deleting them, add the @option{n} option to
+@command{git clean}, so it becomes @option{-fxdn}.
+@end cartouche
 
 
 
@@ -12346,15 +13735,15 @@ introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}
 @node Documentation,  , Multithreaded programming, Program source
 @subsection Documentation
 
-Documentation (this manual) is an integral part of Gnuastro.
+Documentation (this book) is an integral part of Gnuastro.
 Documentation is not considered a separate project. So, no change is
 considered valid for implementation unless the respective parts of the
-manual have also been updated. The following procedure can be a good
+book have also been updated. The following procedure can be a good
 suggestion to take when you have a new idea and are about to start
 implementing it.
 
 The steps below are not a requirement, the important thing is that
-when you send the program to be included in Gnuastro, the manual and
+when you send the program to be included in Gnuastro, the book and
 the code have to both be fully up-to-date and compatible and the
 purpose should be very clearly explained. You can follow any path you
 choose to do this, the following path was what we found to be most
@@ -12363,8 +13752,8 @@ Gnuastro.
 
 @enumerate
 @item
-Edit the manual and fully explain your desired change, such that your
-idea is completely embedded in the general context of the manual with
+Edit the book and fully explain your desired change, such that your
+idea is completely embedded in the general context of the book with
 no sence of discontinuity for a first time reader. This will allow you
 to plan the idea much more accurately and in the general context of
 Gnuastro or a particular program. Later on, when you are coding, this
@@ -12402,16 +13791,16 @@ write it here will really help you later when you are coding.
 
 @item
 After you have finished adding your initial intended plan to the
-manual, then start coding your change or new program within the
+book, then start coding your change or new program within the
 Gnuastro source files. While you are coding, you will notice that
-somethings should be different from what you wrote in the manual (your
+somethings should be different from what you wrote in the book (your
 initial plan). So correct them as you are actually coding.
 
 @item
-In the end, read the section in the manual that you edited completely
+In the end, read the section in the book that you edited completely
 and see if you didn't miss any change in the coding and to see if the
 context is fairly continuous for a first time reader (who hasn't seen
-the manual or had known of Gnuastro before you made your change).
+the book or had known of Gnuastro before you made your change).
 @end enumerate
 
 @node Test scripts, Building, Program source, Developing
@@ -12520,8 +13909,8 @@ change(s)/addition(s) you have made. Then add their file names to
 everything is working correctly.
 
 @item
-Make sure the manual is completely up to date with your changes, see
-@ref{Documentation}.
+Make sure the manual (this book) is completely up to date with your
+changes, see @ref{Documentation}.
 
 @cindex GNU Emacs
 @cindex @file{ChangeLog}
@@ -12563,35 +13952,152 @@ own purposes.
 @node Contributing to Gnuastro,  , After making changes, Developing
 @section Contributing to Gnuastro
 
+@cindex FSF
+@cindex Free Software Foundation
 After you have checked your changes (see @ref{After making changes}),
 you might want to share them with the larger community. In this
-section we describe the Commit guidelines and the general workflow
-that is currently planned for Gnuastro. This workflow is currently
-mostly borrowed from the general recommendations of
-Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
-and GitHub. But since Gnuastro is under heavy development currently,
-these might change and evolve to better suite our needs.
+section we discuss the procedure you have to take: legal and
+technical. From the legal perspective, the copyright of any work you
+do on Gnuastro has to be assigned to the Free Software Foundation
+(FSF) and the GNU operating system. We do this to ensure that Gnuastro
+can remain free in the future and it is one of the foundational
+principles of the FSF and arguably one of the reasons for its success,
+so please read @ref{Copyright assignment} carefully. From the
+technical point of view, here we also discuss commit guidelines
+(@ref{Commit guidelines}) and the general version control workflow of
+Gnuastro in @ref{Production workflow}.
 
 @menu
+* Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Standards for commit messages.
 * Production workflow::         Incorporating changes into Gnuastro.
 @end menu
 
-@node Commit guidelines, Production workflow, Contributing to Gnuastro, Contributing to Gnuastro
+@node Copyright assignment, Commit guidelines, Contributing to Gnuastro, Contributing to Gnuastro
+@subsection Copyright assignment
+
+The copyright of all Gnuastro was assigned to the FSF upon being
+accepted as an official GNU package. Professor Eben Moglen, of the
+Columbia University Law School has given a nice summary of the reasons
+for this at @url{https://www.gnu.org/licenses/why-assign}. Below we
+are copying it verbatim for self consistency (in case you are offline
+or are reading in print).
+
+@quotation
+Under US copyright law, which is the law under which most free
+software programs have historically been first published, there are
+very substantial procedural advantages to registration of
+copyright. And despite the broad right of distribution conveyed by the
+GPL, enforcement of copyright is generally not possible for
+distributors: only the copyright holder or someone having assignment
+of the copyright can enforce the license. If there are multiple
+authors of a copyrighted work, successful enforcement depends on
+having the cooperation of all authors.
+
+In order to make sure that all of our copyrights can meet the
+recordkeeping and other requirements of registration, and in order to
+be able to enforce the GPL most effectively, FSF requires that each
+author of code incorporated in FSF projects provide a copyright
+assignment, and, where appropriate, a disclaimer of any work-for-hire
+ownership claims by the programmer's employer. That way we can be sure
+that all the code in FSF projects is free code, whose freedom we can
+most effectively protect, and therefore on which other developers can
+completely rely.
+@end quotation
+
+@cindex FOSS
+In short, in free and open source software (FOSS) lots of people
+collaborate and their work depends on each other. If they have not
+explicitly given the copyright of their work on a project to a single
+owner, very complicated issues might arise: their employer might claim
+ownership of their work and thus ruine the project for everyone else
+who has depended on it, or under different circumstances in the future
+the person might not want to distribute their work to the FOSS project
+any more.
+
+These situations have been rare in the FOSS community so far. However,
+they can potentially arise, and if they do, they can destroy the whole
+software, project and community that was built around it. In
+programming-speak, this is a bug which most FOSS software authors are
+ignoring right now and somehow hoping that in the future such issues
+don't arise. This is not metaphorical: not having a single copyright
+holder is a real bug for the final software product, just like a
+mistakenly written line of code that doesn't show up on initial
+testing. Therefore, as good scientists/programmers we should not allow
+such bugs to inflitrate our research (software) and create potential
+problems down the line. The copyright of most FSF (or GNU) software is
+held by the FSF precisely for this reason: to guarantee their freedom
+and reliability.
+
+Please get in touch with the Gnuastro maintainer (currently Mohammad
+Akhlaghi, akhlaghi -at- gnu -dot- org) to follow the procedures. It is
+possible to do this for each change (good for for a single
+contribution), and also more generally for all the changes/additions
+you do in the future within Gnuastro. So if you have already assigned
+the copyright of your work on another GNU software to the FSF, it
+should be done again for Gnuastro. The FSF has staff working on these
+legal issues and the maintainer will get you in touch with them to do
+the paperwork. The maintainer will just be informed in the end so your
+contributions can be merged within the Gnuastro source code.
+
+Gnuastro will gratefully acknowledge (see @ref{Acknowledgments}) all
+the people and organizations (employers) who have assigned their
+copyright and disclaimer to the FSF and have thus helped to guarantee
+the freedom and reliability of Gnuastro. The Free Software Foundation
+will also acknowledge your copyright contributions in the Free
+Software Supporter: @url{https://www.fsf.org/free-software-supporter}
+which will circulate to a very large community (104,444 people in
+April 2016). See the archives for some examples and subscribe to
+recieve interesting updates. The very active code contributors (or
+developers) will also be recognized as project members on the Gnuastro
+project webpage (see @ref{Gnuastro project webpage}) and can be given
+a gnu.org email address. So your very valuable contribution and
+copyright assignment will not be forgotten and is highly appreciated
+by a very large community.
+
+
+
+
+
+@node Commit guidelines, Production workflow, Copyright assignment, Contributing to Gnuastro
 @subsection Commit guidelines
 
 We strive to follow these standards for the commit messages in
-Gnuastro.
+Gnuastro. Note that in the early phases of Gnuastro's development, we
+are experimenting and so if you notice earlier commits don't satisfy
+any of the guidelines below, it is because they predate that
+guideline.
 
 @table @asis
 
 @item Commit title
-The commits have to start with one short descriptive title. This will
-help when getting a log output of all the commits, since most emulated
-command line terminals are about 80 characters wide, it is best for
-this title to be less than about 60 (or even 50) characters to also
-allow for the commit labels and branches. The title should also not
-finish with any full-stops or periods.
+The commits have to start with one short descriptive title. The title
+is separated from the body with one blank line. Run @command{git log}
+to see some of the most recent commits as an example. In general, the
+title should satisfy the following conditions:
+
+@itemize
+@item
+It is best for the title to be short, about 70 (or even 60)
+characters. Most emulated command line terminals are about 80
+characters wide. However, we should also allow for the commit hashes
+which are printed in @command{git log --oneline}, and also branch
+names or the graph stucture outputs of @command{git log} which are
+also commonly used.
+
+@item
+The title should start with a category corresponding to the Support,
+Bug or Tasks trackers on Savannah (see @ref{Gnuastro project
+webpage}), followed by a colon (@key{:}). When the change is such that
+any of the other categories overlap with a utility (for example
+something related to a specific utility was changed in the
+documentation, or installation), then the utility category is
+preferred.
+
+@item
+The title should also not finish with any full-stops or periods.
+
+@end itemize
 
 @item Commit body
 The body of the commit message should be separated with the title by
@@ -12663,11 +14169,24 @@ before you inform us.
 
 In both cases, your commits (with your name and information) will be
 preserved and your contributions will thus be fully recorded in the
-history of Gnuastro. Needless to say that in such cases, be sure to
-follow the bug or task trackers and contact us before hand so you
-don't do something that someone else is already working on. In that
-case, you can get in touch with them and help the job go on faster,
-see @ref{Gnuastro project webpage}.
+history of Gnuastro and in the @file{AUTHORS} file once they have been
+incorporated into the official repository. Needless to say that in
+such cases, be sure to follow the bug or task trackers and contact us
+before hand so you don't do something that someone else is already
+working on. In that case, you can get in touch with them and help the
+job go on faster, see @ref{Gnuastro project webpage}. This workflow is
+currently mostly borrowed from the general recommendations of
+Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
+and GitHub. But since Gnuastro is under heavy development currently,
+these might change and evolve to better suite our needs.
+
+
+
+
+
+
+
+
 
 
 
@@ -12684,11 +14203,16 @@ GNU Astronomy Utilities @value{VERSION}, contains the following
 programs. They are sorted in alphabetical order and followed by their
 version number. A short description is provided for each program which
 starts with the executable names in parenthesis, see @ref{Naming
-convention}. Throughout this manual, they are ordered based on their
-context, please see the manual contents for contextual ordering.
+convention}. Throughout this book, they are ordered based on their
+context, please see the book contents for contextual ordering.
 
 
 @table @asis
+
+@item Arithmetic @value{ARITHMETIC_VERSION}
+(@file{astarithmetic}) For arithmetic operations on data (image) pixels
+(@ref{Arithmetic}).
+
 @item ConvertType @value{CONVERTT_VERSION}
 (@file{astconvertt}) Convert astronomical data files (FITS or IMH) to
 and from several other standard image and data formats, for example
@@ -12697,6 +14221,10 @@ JPEG, EPS or PDF (@ref{ConvertType}).
 @item Convolve @value{CONVOLVE_VERSION}
 (@file{astconvolve}) Convolve (blur or smooth) data with a given
 kernel (@ref{Convolve}).
+
+@item CosmicCalculator @value{COSMICCAL_VERSION}
+(@file{astconvolve}) Find cosmological variables from input parameters
+(@ref{CosmicCalculator}).
 
 @item Header @value{HEADER_VERSION}
 (@file{astheader}) Print and manipulate the header data of a FITS file

@@ -1,40 +1,38 @@
-Great thanks to the following institutions and people
-=====================================================
+GNU Astronomy Utilities Acknowledgments
+=======================================
+
+The following people and institutions contributed to Gnuastro
+indirectly (not by actually submitting code) are listed here. For the
+list of Gnuastro code/documentation authors (people who have
+contributed actual code/text as commits in the version controlled
+history of Gnuastro), please see AUTHORS.
+
+
+People
+------
+
+The following people provided valuable feedback (suggestions, ideas)
+to the authors of Gnuastro. We hereby gratefully acknowledge their
+help and support in Gnuatro.
+
+Karl Berry                           karl@gnu.org
+Takashi Ichikawa                     ichikawa@astr.tohoku.ac.jp
+Brandon Invergo                      brandon@gnu.org
+Mohammad-Reza Khellat                moha.khe@gmail.com
+Alan Lefor                           alefor@astr.tohoku.ac.jp
+Richard Stallman                     rms@gnu.org
 
 
 Institutions
 ------------
 
 GNU Astronomy Utilities (Gnuastro) has greatly benefited from the
-following institutions. These institutions funded, supported and most
-importantly provided a productive environment for the developers of
-Gnuastro. They finally disclaimed any copyright ownership of the
-developers' work while in those institutions which allows the world
-wide astronomical community to benefit from their support.
-
-In particular special thanks should be given to the Japanese Ministry
-of science and technology (MEXT) scholarship, which funded Mohammad
-Akhlaghi's five year Masters and PhD program in Tohoku University
-Astronomical Institute. Without this long term scholarship (which
-allowed long term and basic learning and planning), Gnuastro would not
-have been possible.
+following institutions. These institutions have either funded,
+supported and most importantly provided a productive environment for
+the developers of Gnuastro. They finally disclaimed any copyright
+ownership of the developers' work while in those institutions which
+allows the world wide astronomical/scientific community to reliably
+use Gnuastro in the future.
 
 Tohoku University
-
-
-
-
-
-People
-------
-
-These people have contributed to Gnuastro. If your name has been left
-out, if you'd rather not be listed, or if you'd prefer a different
-address be used, please send a note to bug-gnuastro@gnu.org.
-
-Alan Lefor                           alefor@astr.tohoku.ac.jp
-Brandon Invergo                      brandon@gnu.org
-Karl Berry                           karl@gnu.org
-Mohammad-Reza Khellat                moha.khe@gmail.com
-Richard Stallman                     rms@gnu.org
-Takashi Ichikawa                     ichikawa@astr.tohoku.ac.jp
+Università del Salento

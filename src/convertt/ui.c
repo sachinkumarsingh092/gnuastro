@@ -569,6 +569,9 @@ preparearrays(struct converttparams *p)
               "files) has exceeded 4! Note that one file can contain more "
               "than one color channel.");
 
+      /* Make sure this input file exists (if it isn't blank). */
+      if(strcmp(names[i], "blank")) checkfile(names[i]);
+
       /* FITS: */
       if( nameisfits(names[i]) )
         {

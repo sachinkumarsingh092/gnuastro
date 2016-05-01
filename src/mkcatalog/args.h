@@ -71,10 +71,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   e f g k l p u v w
-   A B F G J L Q R T U W X Y Z
+   e f g k l u v w
+   F G J L Q R U W X Y Z
 
-   Number keys used: <=521
+   Number keys used: <=533
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -180,6 +180,14 @@ static struct argp_option options[] =
       0,
       0,
       "Input is already sky subtracted (for S/N).",
+      1
+    },
+    {
+      "threshold",
+      'T',
+      "FLT",
+      0,
+      "Only values larger than this multiple of STD.",
       1
     },
 
@@ -311,6 +319,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "geox",
+      522,
+      0,
+      0,
+      "All obj. geometric center (first FITS axis).",
+      3
+    },
+    {
+      "geoy",
+      523,
+      0,
+      0,
+      "All obj. geometric center (second FITS axis).",
+      3
+    },
+    {
       "clumpsx",
       507,
       0,
@@ -324,6 +348,22 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps flux weighted center (second FITS axis).",
+      3
+    },
+    {
+      "clumpsgeox",
+      524,
+      0,
+      0,
+      "Clumps geometric center (first FITS axis).",
+      3
+    },
+    {
+      "clumpsgeoy",
+      525,
+      0,
+      0,
+      "Clumps geometric center (second FITS axis).",
       3
     },
     {
@@ -343,6 +383,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "geora",
+      526,
+      0,
+      0,
+      "All object geometric center right ascension.",
+      3
+    },
+    {
+      "geodec",
+      527,
+      0,
+      0,
+      "All object geometric center declination.",
+      3
+    },
+    {
       "clumpsra",
       509,
       0,
@@ -359,6 +415,22 @@ static struct argp_option options[] =
       3
     },
     {
+      "clumpsgeora",
+      528,
+      0,
+      0,
+      "Clumps geometric center right ascension.",
+      3
+    },
+    {
+      "clumpsgeodec",
+      529,
+      0,
+      0,
+      "Clumps geometric center declination.",
+      3
+    },
+    {
       "brightness",
       'b',
       0,
@@ -372,6 +444,14 @@ static struct argp_option options[] =
       0,
       0,
       "Brightness in clumps of an object.",
+      3
+    },
+    {
+      "noriverbrightness",
+      533,
+      0,
+      0,
+      "Sky (not river) subtracted clump brightness.",
       3
     },
     {
@@ -428,6 +508,54 @@ static struct argp_option options[] =
       0,
       0,
       "Sky standard deviation.",
+      3
+    },
+    {
+      "semimajor",
+      'A',
+      0,
+      0,
+      "Flux weighted Semi-major axis.",
+      3
+    },
+    {
+      "semiminor",
+      'B',
+      0,
+      0,
+      "Flux weighted Semi-minor axis.",
+      3
+    },
+    {
+      "positionangle",
+      'p',
+      0,
+      0,
+      "Flux weighted Position angle.",
+      3
+    },
+    {
+      "geosemimajor",
+      530,
+      0,
+      0,
+      "Flux weighted Semi-major axis.",
+      3
+    },
+    {
+      "geosemiminor",
+      531,
+      0,
+      0,
+      "Flux weighted Semi-minor axis.",
+      3
+    },
+    {
+      "geopositionangle",
+      532,
+      0,
+      0,
+      "Flux weighted Position angle.",
       3
     },
 
@@ -515,6 +643,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->skysubtracted=1;
       p->up.skysubtractedset=1;
       break;
+    case 'T':
+      anydouble(arg, &p->threshold, "threshold", key, SPACK, NULL, 0);
+      p->up.thresholdset=1;
+      break;
 
 
     /* Output: */
@@ -579,6 +711,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_to_sll(&p->allcolsll, CATY);
       p->up.yset=1;
       break;
+    case 522:
+      add_to_sll(&p->allcolsll, CATGEOX);
+      p->up.geoxset=1;
+      break;
+    case 523:
+      add_to_sll(&p->allcolsll, CATGEOY);
+      p->up.geoyset=1;
+      break;
     case 507:
       add_to_sll(&p->allcolsll, CATCLUMPSX);
       p->up.clumpsxset=1;
@@ -586,6 +726,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 508:
       add_to_sll(&p->allcolsll, CATCLUMPSY);
       p->up.clumpsyset=1;
+      break;
+    case 524:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
+      p->up.clumpsgeoxset=1;
+      break;
+    case 525:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
+      p->up.clumpsgeoyset=1;
       break;
     case 'r':
       add_to_sll(&p->allcolsll, CATRA);
@@ -595,6 +743,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_to_sll(&p->allcolsll, CATDEC);
       p->up.decset=1;
       break;
+    case 526:
+      add_to_sll(&p->allcolsll, CATGEORA);
+      p->up.georaset=1;
+      break;
+    case 527:
+      add_to_sll(&p->allcolsll, CATGEODEC);
+      p->up.geodecset=1;
+      break;
     case 509:
       add_to_sll(&p->allcolsll, CATCLUMPSRA);
       p->up.clumpsraset=1;
@@ -603,6 +759,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_to_sll(&p->allcolsll, CATCLUMPSDEC);
       p->up.clumpsdecset=1;
       break;
+    case 528:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
+      p->up.clumpsgeoraset=1;
+      break;
+    case 529:
+      add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
+      p->up.clumpsgeodecset=1;
+      break;
     case 'b':
       add_to_sll(&p->allcolsll, CATBRIGHTNESS);
       p->up.brightnessset=1;
@@ -610,6 +774,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 511:
       add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
       p->up.clumpsbrightnessset=1;
+      break;
+    case 533:
+      add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
+      p->up.noriverbrightnessset=1;
       break;
     case 'm':
       add_to_sll(&p->allcolsll, CATMAGNITUDE);
@@ -638,6 +806,30 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 506:
       add_to_sll(&p->allcolsll, CATSTD);
       p->up.stdset=1;
+      break;
+    case 'A':
+      add_to_sll(&p->allcolsll, CATSEMIMAJOR);
+      p->up.semimajorset=1;
+      break;
+    case 'B':
+      add_to_sll(&p->allcolsll, CATSEMIMINOR);
+      p->up.semiminorset=1;
+      break;
+    case 'p':
+      add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
+      p->up.positionangleset=1;
+      break;
+    case 530:
+      add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
+      p->up.geosemimajorset=1;
+      break;
+    case 531:
+      add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
+      p->up.geosemiminorset=1;
+      break;
+    case 532:
+      add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
+      p->up.geopositionangleset=1;
       break;
 
 

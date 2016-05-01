@@ -343,6 +343,9 @@ sanitycheck(struct convolveparams *p)
 {
   char *outsuffix = p->makekernel ? "_kernel.fits" : "_convolved.fits";
 
+  /* Make sure the input file exists. */
+  checkfile(p->up.inputname);
+
   /* Set maskname accordingly: */
   fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
                 &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");

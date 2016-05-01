@@ -43,6 +43,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+/*********************************************************************/
+/*****************     Fill information tables     *******************/
+/*********************************************************************/
+
 /* Macro to see if the label is indexable (belongs to an object or
    not). See the explanation in src/noisechisel/label.h. */
 #if FITSLONGBLANK<0
@@ -56,9 +61,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/*********************************************************************/
-/*****************     Fill information tables     *******************/
-/*********************************************************************/
+
 /* In the first pass, the most basic properties (mainly about the
    objects) are found. The primary reason is that we still don't know
    how many objects there are in order to be able to put the clump
@@ -69,8 +72,8 @@ void
 firstpass(struct mkcatalogparams *p)
 {
   float imgss;
-  double *thisobj;
-  size_t i, s1=p->s1;
+  size_t i, is1=p->s1;
+  double x, y, sx, sy, *thisobj;
   long *objects=p->objects, *clumps=p->clumps;
 
   /* Go over the pixels and fill the information array. */
@@ -79,22 +82,75 @@ firstpass(struct mkcatalogparams *p)
       {
         /* thisobj is a pointer to the start of the row in the object
            information array (oinfo). It is mainly used to keep things
-           short, simple, less bugy and most importantly elegant. */
+           short, simple, less bugy and most importantly: elegant. */
         imgss = p->img[i] - p->sky[i];
         thisobj = p->oinfo + objects[i]*OCOLUMNS;
 
-        /* Add to the flux weighted center: */
-        ++thisobj[OAREA];
-        thisobj[ OGeoX ]       += i%s1;
-        thisobj[ OGeoY ]       += i/s1;
-        thisobj[ OBrightness ] += imgss;
+        /* Set the shifts to avoid round-off errors in large numbers
+           for the non-linear calculations. We are using the first
+           pixel of each object as the shift parameter to keep the
+           mean reasonably near to the standard deviation. Otherwise,
+           when the object is far out in the image (large x and y
+           positions), then roundoff errors are going to decrease the
+           accuracy of the second order calculations.
+
+           When the object and clumps columns were allocated, the
+           shift columns were set to NaN so we know when to set them
+           for each object/clump. For later parallelization, a mutex
+           can be set up within the `if' statement below and another
+           check can be done within the mutex, this way, only if
+           separate threads get to the start of an object in their
+           respective mesh, for an object that doesn't have a shift
+           already assigned to it, at the same time (highly unlikely)
+           will the process be slightly slowed down. Otherwise, there
+           will be no speed penalty. */
+        if(isnan(thisobj[ OPOSSHIFTX ]))
+          {
+            thisobj[ OPOSSHIFTX ] = i%is1+1;
+            thisobj[ OPOSSHIFTY ] = i/is1+1;
+          }
+
+        /* Set the positional variables: */
+        x = i%is1+1;
+        y = i/is1+1;
+        sx = x - thisobj[ OPOSSHIFTX ];
+        sy = y - thisobj[ OPOSSHIFTY ];
+
+        /* Properties that are independent of threshod: */
+        ++thisobj[OALLAREA];
         thisobj[ OSKY ]        += p->sky[i];
         thisobj[ OSTD ]        += p->std[i];
-        if(imgss>0)
+
+        /* Only if the pixel is above the desired threshold.
+
+           REASON: The reason this condition is given like this that
+           we don't want to do multiple checks. The basic idea is
+           this: when the user doesn't want any thresholds applied,
+           then p->threshold=NAN and any conditional that involves a
+           NaN will fail, so its logical negation will be positive and
+           the calculations below will be done. However, if the user
+           does specify a threhold and the pixel is above the
+           threshold, then (imgss<p->threshold*p->std[i]) will be
+           false and its logigal negation will be positive, so the
+           pixel will be included.*/
+        if(!(imgss<p->threshold*p->std[i]))
           {
-            thisobj[ OPosBright ]  += imgss;
-            thisobj[ OFlxWhtX ]    += imgss * (i%s1);
-            thisobj[ OFlxWhtY ]    += imgss * (i/s1);
+            ++thisobj[OAREA];
+            thisobj[ OGeoX ]       += x;
+            thisobj[ OGeoY ]       += y;
+            thisobj[ OGeoXX ]      += sx * sx;
+            thisobj[ OGeoYY ]      += sy * sy;
+            thisobj[ OGeoXY ]      += sx * sy;
+            thisobj[ OBrightness ] += imgss;
+            if(imgss>0)
+              {
+                thisobj[ OPosBright ]  += imgss;
+                thisobj[ OFlxWhtX   ]  += imgss * x;
+                thisobj[ OFlxWhtY   ]  += imgss * y;
+                thisobj[ OFlxWhtXX  ]  += imgss * sx * sx;
+                thisobj[ OFlxWhtYY  ]  += imgss * sy * sy;
+                thisobj[ OFlxWhtXY  ]  += imgss * sx * sy;
+              }
           }
 
         if(clumps[i]>0)
@@ -104,54 +160,30 @@ firstpass(struct mkcatalogparams *p)
             thisobj[ ONCLUMPS ] = ( clumps[i] > thisobj[ONCLUMPS]
                                     ? clumps[i] : thisobj[ONCLUMPS] );
 
-            /* Save the information. */
-            ++thisobj [ OAREAC ];
-            thisobj[ OBrightnessC ] += imgss;
-            thisobj[ OGeoCX ]       += i%s1;
-            thisobj[ OGeoCY ]       += i/s1;
-            if(imgss>0)
+            /* Only if the pixel is above the desired threshold, see
+               explanation under similar condition above. */
+            if(!(imgss<p->threshold*p->std[i]))
               {
-                thisobj[ OPosBrightC ]  += imgss;
-                thisobj[ OFlxWhtCX ]    += imgss * (i%s1);
-                thisobj[ OFlxWhtCY ]    += imgss * (i/s1);
+                /* Save the information. */
+                ++thisobj [ OAREAC ];
+                thisobj[ OBrightnessC ]  += imgss;
+                thisobj[ OGeoCX  ]       += x;
+                thisobj[ OGeoCY  ]       += y;
+                thisobj[ OGeoCXX ]       += sx * sx;
+                thisobj[ OGeoCYY ]       += sy * sy;
+                thisobj[ OGeoCXY ]       += sx * sy;
+                if(imgss>0)
+                  {
+                    thisobj[ OPosBrightC ]  += imgss;
+                    thisobj[ OFlxWhtCX   ]  += imgss * x;
+                    thisobj[ OFlxWhtCY   ]  += imgss * y;
+                    thisobj[ OFlxWhtCXX  ]  += imgss * sx * sx;
+                    thisobj[ OFlxWhtCYY  ]  += imgss * sy * sy;
+                    thisobj[ OFlxWhtCXY  ]  += imgss * sx * sy;
+                  }
               }
           }
       }
-
-  /* Make all the correctins (for the averages): */
-  for(i=1;i<=p->numobjects;++i)
-    {
-      /* Set the average sky and its STD: */
-      thisobj = p->oinfo + i*OCOLUMNS;
-      thisobj[ OSKY ] /= thisobj[ OAREA ];
-      thisobj[ OSTD ] /= thisobj[ OAREA ];
-
-      /* Set the flux weighted center of the object. The flux weighted
-         center is only meaningful when there was positive flux inside
-         the detection. */
-      if(OPosBright>0.0f)
-        {
-          thisobj[ OFlxWhtX ] = thisobj[ OFlxWhtX ]/thisobj[ OPosBright ]+1;
-          thisobj[ OFlxWhtY ] = thisobj[ OFlxWhtY ]/thisobj[ OPosBright ]+1;
-        }
-      else
-        {
-          thisobj[ OFlxWhtX ] = thisobj[ OGeoX ] / thisobj[ OAREA ] + 1;
-          thisobj[ OFlxWhtY ] = thisobj[ OGeoY ] / thisobj[ OAREA ] + 1;
-        }
-
-      /* Set the over-all clump information: */
-      if(OPosBrightC>0.0f)
-        {
-          thisobj[ OFlxWhtCX ] = thisobj[ OFlxWhtCX ]/thisobj[OPosBrightC]+1;
-          thisobj[ OFlxWhtCY ] = thisobj[ OFlxWhtCY ]/thisobj[OPosBrightC]+1;
-        }
-      else
-        {
-          thisobj[ OFlxWhtCX ] = thisobj[ OGeoCX ] / thisobj[ OAREAC ] + 1;
-          thisobj[ OFlxWhtCY ] = thisobj[ OGeoCY ] / thisobj[ OAREAC ] + 1;
-        }
-    }
 }
 
 
@@ -165,6 +197,7 @@ void
 secondpass(struct mkcatalogparams *p)
 {
   float imgss;
+  double x, y, sx, sy;
   long wngb[2*WNGBSIZE];
   size_t ii, *n, *nf, numngb, ngb[8];
   double *thisclump, *cinfo=p->cinfo;
@@ -208,21 +241,61 @@ secondpass(struct mkcatalogparams *p)
                         + ( ofcrow[objects[i]] + clumps[i] )
                         * CCOLUMNS );
 
-          /* Fill in this clump information:  */
-          ++thisclump[ CAREA ];
-          thisclump[ CGeoX ]        += i%is1;
-          thisclump[ CGeoY ]        += i/is1;
-          thisclump[ CBrightness ]  += img[i];
-          thisclump[ CSKY ]         += sky[i];
-          thisclump[ CSTD ]         += std[i];
-          thisclump[ CINHOSTID ]     = clumps[i];
-          thisclump[ CHOSTOID ]      = objects[i];
-          if( (imgss=img[i]-sky[i]) > 0 )
+          /* Set the shifts for this object if not already set, see
+             the explanations in the firstpass function. */
+          if(isnan(thisclump[ CPOSSHIFTX ]))
             {
-              thisclump[ CPosBright ]   += imgss;
-              thisclump[ CFlxWhtX ]     += imgss * (i%is1);
-              thisclump[ CFlxWhtY ]     += imgss * (i/is1);
+              thisclump[ CPOSSHIFTX ] = i%is1+1;
+              thisclump[ CPOSSHIFTY ] = i/is1+1;
             }
+
+          /* Set the positional variables: */
+          x = i%is1+1;
+          y = i/is1+1;
+          sx = x - thisclump[ CPOSSHIFTX ];
+          sy = y - thisclump[ CPOSSHIFTY ];
+
+          /* Calculations that are independent of the threshold. The
+             CALLAREA is the full area of the clump irrespective of
+             the threshold, this is needed to correctly implement the
+             average river flux (which is defined by the. */
+          ++thisclump[ CALLAREA ];
+          thisclump[ CSKY ]  += sky[i];
+          thisclump[ CSTD ]  += std[i];
+
+          /* Only if the pixel is above the desired threshold, see
+             explanation under similar condition above. */
+          if(!(img[i]-sky[i]<p->threshold*p->std[i]))
+            {
+              /* Sky subtracted brightness */
+              imgss=img[i]-sky[i];
+
+              /* Fill in this clump information. IMPORTANT NOTE: The
+                 Sky is not subtracted from the clump brightness or
+                 river, because later, we will subtract the river flux
+                 from the clump brightness and therefore we don't need
+                 to know the Sky for the clump brightness. */
+              ++thisclump[ CAREA ];
+              thisclump[ CGeoX ]              += x;
+              thisclump[ CGeoY ]              += y;
+              thisclump[ CGeoXX ]             += sx * sx;
+              thisclump[ CGeoYY ]             += sy * sy;
+              thisclump[ CGeoXY ]             += sx * sy;
+              thisclump[ CINHOSTID ]           = clumps[i];
+              thisclump[ CHOSTOID ]            = objects[i];
+              thisclump[ CBrightness ]        += img[i];
+              thisclump[ CNoRiverBrightness ] += imgss;
+              if( imgss > 0.0f )
+                {
+                  thisclump[ CPosBright ]   += imgss;
+                  thisclump[ CFlxWhtX ]     += imgss * x;
+                  thisclump[ CFlxWhtY ]     += imgss * y;
+                  thisclump[ CFlxWhtXX ]    += imgss * sx * sx;
+                  thisclump[ CFlxWhtYY ]    += imgss * sy * sy;
+                  thisclump[ CFlxWhtXY ]    += imgss * sx * sy;
+                }
+            }
+
         }
 
       /* We are on a detected region but not a clump (with a negative
@@ -295,37 +368,6 @@ secondpass(struct mkcatalogparams *p)
           }
     }
 
-  /* Make the proper corrections:
-
-     1. Divide by total flux to get the flux weighted center.
-     2. Divide the total river flux by the number of river pixels.
-
-     Note that it might happen that there are no river pixels (when
-     grown clumps were used).
-  */
-  for(i=1;i<=p->numclumps;++i)
-    {
-      /* Do the initial corrections: */
-      thisclump = p->cinfo + i*CCOLUMNS;
-      thisclump[ CSKY ] /= thisclump[ CAREA ];
-      thisclump[ CSTD ] /= thisclump[ CAREA ];
-      if(thisclump[ CRivArea ] > 0.0f)
-        thisclump[ CRivAve ] /= thisclump[ CRivArea ];
-      else
-        thisclump[ CRivAve ] = thisclump[ CSKY ];
-
-      if(thisclump [ CPosBright ]>0.0f)
-        {
-          thisclump[ CFlxWhtX ] = thisclump[CFlxWhtX]/thisclump[CPosBright]+1;
-          thisclump[ CFlxWhtY ] = thisclump[CFlxWhtY]/thisclump[CPosBright]+1;
-        }
-      else
-        {
-          thisclump[ CFlxWhtX ] = thisclump[ CGeoX ] / thisclump[ CAREA ] + 1;
-          thisclump[ CFlxWhtY ] = thisclump[ CGeoY ] / thisclump[ CAREA ] + 1;
-        }
-    }
-
   /* Clean up: */
   free(ofcrow);
 }
@@ -354,9 +396,9 @@ secondpass(struct mkcatalogparams *p)
 void
 makeoutput(struct mkcatalogparams *p)
 {
-  size_t *cols;
   double sn, pixarea;
-  char comment[COMMENTSIZE], tline[100];
+  size_t col, *cols, tmpcol;
+  char comment[COMMENTSIZE], tline[100], *target;
   int prec[2]={p->floatprecision, p->accuprecision};
   int space[3]={p->intwidth, p->floatwidth, p->accuwidth};
 
@@ -372,14 +414,15 @@ makeoutput(struct mkcatalogparams *p)
 
       /* Do the preparations for this round: */
       p->intcounter=p->accucounter=p->curcol=0;
-      p->name     = p->obj0clump1 ? "clump" : "object";
-      p->icols    = p->obj0clump1 ? CCOLUMNS : OCOLUMNS;
-      p->info     = p->obj0clump1 ? p->cinfo : p->oinfo;
-      p->cat      = p->obj0clump1 ? p->clumpcat : p->objcat;
-      p->filename = p->obj0clump1 ? p->ccatname : p->ocatname;
-      cols        = p->obj0clump1 ? p->clumpcols : p->objcols;
-      p->numcols  = p->obj0clump1 ? p->clumpncols : p->objncols;
-      p->num      = p->obj0clump1 ? p->numclumps : p->numobjects;
+      p->name      = p->obj0clump1 ? "clump" : "object";
+      p->icols     = p->obj0clump1 ? CCOLUMNS : OCOLUMNS;
+      p->info      = p->obj0clump1 ? p->cinfo : p->oinfo;
+      p->cat       = p->obj0clump1 ? p->clumpcat : p->objcat;
+      target       = p->obj0clump1 ? MKCATCLUMP : MKCATOBJECT;
+      p->filename  = p->obj0clump1 ? p->ccatname : p->ocatname;
+      cols         = p->obj0clump1 ? p->clumpcols : p->objcols;
+      p->numcols   = p->obj0clump1 ? p->clumpncols : p->objncols;
+      p->num       = p->obj0clump1 ? p->numclumps : p->numobjects;
 
 
 
@@ -460,6 +503,15 @@ makeoutput(struct mkcatalogparams *p)
               "Pixel area (arcsec^2)", pixarea);
       strcat(comment, p->line);
 
+      /* if a threshold was used then report it: */
+      if(!isnan(p->threshold))
+        {
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n", "**IMPORTANT** "
+                  "Pixel threshold (multiple of local std)",
+                  p->threshold);
+          strcat(comment, p->line);
+        }
+
 
       /* Prepare for printing the columns: */
       strcat(comment, "#\n# Columns:\n# --------\n");
@@ -470,7 +522,8 @@ makeoutput(struct mkcatalogparams *p)
          stop. */
       for(p->curcol=0;p->curcol<p->numcols;++p->curcol)
         {
-          switch(cols[p->curcol])
+          col=cols[p->curcol];
+          switch(col)
             {
 
             case CATID:
@@ -497,72 +550,125 @@ makeoutput(struct mkcatalogparams *p)
               area(p, 1, 0);
               break;
 
+
             case CATX:
-              position(p, 0, 1, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtX : OFlxWhtX;
+              position(p, tmpcol, target, MKCATWHTC, MKCATX);
               break;
 
             case CATY:
-              position(p, 0, 0, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtY : OFlxWhtY;
+              position(p, tmpcol, target, MKCATWHTC, MKCATY);
+              break;
+
+            case CATGEOX:
+              tmpcol = p->obj0clump1 ? CGeoX : OGeoX;
+              position(p, tmpcol, target, MKCATGEOC, MKCATX);
+              break;
+
+            case CATGEOY:
+              tmpcol = p->obj0clump1 ? CGeoY : OGeoY;
+              position(p, tmpcol, target, MKCATGEOC, MKCATY);
               break;
 
             case CATCLUMPSX:
-              position(p, 0, 1, 1);
+              position(p, OFlxWhtCX, MKCATCINO, MKCATWHTC, MKCATX);
               break;
 
             case CATCLUMPSY:
-              position(p, 0, 0, 1);
+              position(p, OFlxWhtCY, MKCATCINO, MKCATWHTC, MKCATY);
+              break;
+
+            case CATCLUMPSGEOX:
+              position(p, OGeoCX, MKCATCINO, MKCATGEOC, MKCATX);
+              break;
+
+            case CATCLUMPSGEOY:
+              position(p, OGeoCY, MKCATCINO, MKCATGEOC, MKCATY);
               break;
 
             case CATRA:
-              position(p, 1, 1, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtRA : OFlxWhtRA;
+              position(p, tmpcol, target, MKCATWHTC, MKCATRA);
               break;
 
             case CATDEC:
-              position(p, 1, 0, 0);
+              tmpcol = p->obj0clump1 ? CFlxWhtDec : OFlxWhtDec;
+              position(p, tmpcol, target, MKCATWHTC, MKCATDEC);
+              break;
+
+            case CATGEORA:
+              tmpcol = p->obj0clump1 ? CGeoRA : OGeoRA;
+              position(p, tmpcol, target, MKCATGEOC, MKCATRA);
+              break;
+
+            case CATGEODEC:
+              tmpcol = p->obj0clump1 ? CGeoDec : OGeoDec;
+              position(p, tmpcol, target, MKCATGEOC, MKCATDEC);
               break;
 
             case CATCLUMPSRA:
-              position(p, 1, 1, 1);
+              position(p, OFlxWhtCRA, MKCATCINO, MKCATWHTC, MKCATRA);
               break;
 
             case CATCLUMPSDEC:
-              position(p, 1, 0, 1);
+              position(p, OFlxWhtCDec, MKCATCINO, MKCATWHTC, MKCATDEC);
+              break;
+
+            case CATCLUMPSGEORA:
+              position(p, OGeoCRA, MKCATCINO, MKCATGEOC, MKCATRA);
+              break;
+
+            case CATCLUMPSGEODEC:
+              position(p, OGeoCDec, MKCATCINO, MKCATGEOC, MKCATDEC);
               break;
 
             case CATBRIGHTNESS:
-              brightnessmag(p, 1, 0, 0);
+              tmpcol = p->obj0clump1 ? CBrightness : OBrightness;
+              brightnessmag(p, tmpcol, target, MKCATBRIGHT);
               break;
 
             case CATCLUMPSBRIGHTNESS:
-              brightnessmag(p, 1, 1, 0);
+              brightnessmag(p, OBrightnessC, MKCATCINO, MKCATBRIGHT);
+              break;
+
+            case CATNORIVERBRIGHTNESS:
+              brightnessmag(p, CNoRiverBrightness, target, MKCATBRIGHT);
               break;
 
             case CATMAGNITUDE:
-              brightnessmag(p, 0, 0, 0);
+              tmpcol = p->obj0clump1 ? CBrightness : OBrightness;
+              brightnessmag(p, tmpcol, target, MKCATMAG);
               break;
 
             case CATCLUMPSMAGNITUDE:
-              brightnessmag(p, 0, 1, 0);
+              brightnessmag(p, OBrightnessC, MKCATCINO, MKCATMAG);
               break;
 
             case CATRIVERAVE:
-              brightnessmag(p, 1, 0, 1);
+              brightnessmag(p, CRivAve, MKRIVERSSUR, MKCATBRIGHT);
               break;
 
             case CATRIVERNUM:
               area(p, 0, 1);
               break;
 
+            case CATSN:
+              sncol(p);
+              break;
+
             case CATSKY:
-              skystd(p, 1);
+              skystd(p, p->obj0clump1 ? CSKY : OSKY);
               break;
 
             case CATSTD:
-              skystd(p, 0);
+              skystd(p, p->obj0clump1 ? CSTD : OSTD);
               break;
 
-            case CATSN:
-              sncol(p);
+            case CATSEMIMAJOR: case CATSEMIMINOR: case CATPOSITIONANGLE:
+            case CATGEOSEMIMAJOR: case CATGEOSEMIMINOR:
+            case CATGEOPOSITIONANGLE:
+              secondordermoment(p, col, target);
               break;
 
             default:
@@ -615,45 +721,9 @@ makeoutput(struct mkcatalogparams *p)
 void
 mkcatalog(struct mkcatalogparams *p)
 {
-  /* Allocate two arrays to keep all the basic information about each
-     object and clump. Note that there should be one row more than the
-     total number of objects or clumps. This is because we want each
-     label to be its row number and we don't have any object label of
-     zero.*/
-  errno=0; p->oinfo=calloc(OCOLUMNS*(p->numobjects+1), sizeof *p->oinfo);
-  if(p->oinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->oinfo in mkcatalog "
-          "(mkcatalog.c)", OCOLUMNS*(p->numobjects+1)*sizeof *p->oinfo);
-  errno=0; p->cinfo=calloc(CCOLUMNS*(p->numclumps+1), sizeof *p->cinfo);
-  if(p->cinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->cinfo in mkcatalog "
-          "(mkcatalog.c)", CCOLUMNS*(p->numclumps+1)*sizeof *p->cinfo);
-
-
-
   /* Run through the data for the first time: */
   firstpass(p);
   secondpass(p);
-
-
-  /* If world coordinates are needed, then do the
-     transformations. Note that we are passing the pointer to the
-     first X axis value so this function can immediately start calling
-     wcsp2s in wcslib. */
-  if(p->up.raset || p->up.decset)
-    {
-      xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtX,
-                     p->oinfo+OCOLUMNS+OFlxWhtRA, p->numobjects,
-                     OCOLUMNS);
-      xyarraytoradec(p->wcs, p->cinfo+CCOLUMNS+CFlxWhtX,
-                     p->cinfo+CCOLUMNS+CFlxWhtRA, p->numclumps,
-                     CCOLUMNS);
-    }
-  if(p->up.clumpsraset || p->up.clumpsdecset)
-    xyarraytoradec(p->wcs, p->oinfo+OCOLUMNS+OFlxWhtCX,
-                   p->oinfo+OCOLUMNS+OFlxWhtCRA, p->numobjects,
-                   OCOLUMNS);
-
 
   /* Write the output: */
   makeoutput(p);

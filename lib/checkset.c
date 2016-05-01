@@ -56,6 +56,45 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/****************************************************************
+ ************      Check and convert strings    *****************
+ ****************************************************************/
+/* See if a given string is a floating point number, if so, put it in
+   the number.*/
+int
+strisdouble(char *string, double *out)
+{
+  char *tailptr;
+  double tmp=*out;
+  *out=strtod(string, &tailptr);
+
+  /* If the tail pointer (tailptr) is the string NULL character, then
+     the string was a single double precision floating point
+     number. However, if it is any other character, then put the
+     initial value of out back inside of it and return 0. */
+  if(*tailptr=='\0') return 1;
+  *out=tmp;
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /****************************************************************
  *****************      Check the numbers    ********************
@@ -502,6 +541,22 @@ malloccat(char *inname, char *toappend)
 
 
 
+/* Copy the input string to the output (and also allocate the
+   output. */
+void
+allocatecopy(char *arg, char **copy)
+{
+  /* Allocate the necessary space: */
+  errno=0;
+  *copy=malloc(strlen(arg)+1);
+  if(*copy==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes to copy %s",
+          strlen(arg)+1, arg);
+  strcpy(*copy, arg);
+}
+
+
+
 
 /* This function is mainly for reading in the arguments (from the
    command line or configuration files) that need to be copied. The
@@ -675,9 +730,6 @@ automaticoutput(char *inname, char *suffix, int removedirinfo,
 {
   char *out;
   size_t i, l, offset=0;
-
-  /* Check if the input file is actually a readable file or not! */
-  checkfile(inname);
 
   /* Note that we are just using malloccat here to allocate the right
      space! The contents of the allocated space will be changed after

@@ -16,10 +16,53 @@
 # in the folder that will be linked to the GNU servers and it will run
 # CVS to upload them there.
 #
+#
+# NOTE FOR FIRST TIME MAINTAINERS
+# -------------------------------
+#
+# The GNU webpage is version controlled by CVS and operates based on
+# it. CVS is no longer popular anymore, but the commands below should
+# be enough for the initial setup. Afterwards, you can just run this
+# scripot.
+#
+#   1. Choose the top directory to keep your local copy of the webpage
+#      (TOPWEBCHECKOUT). Note that especially because of MathJax,
+#      there are a HUGE number of files and since everything is
+#      generated from the single gnuastro.texi file, there is no need
+#      to take up your backup space. So you can put that directory in
+#      some directory that is not backed up, it can be anywhere.
+#
+#   2. Make a directory to keep the copy of the webpage.
+#         $ mkdir $TOPWEBCHECKOUT
+#
+#   3. Set the CVSROOT environment variable, just replace SAVANNAHID
+#      with your Savannah ID, it will use the key you have registered
+#      on Savannah for authentication.
+#         $ export CVSROOT=:ext:SAVANNAHID@cvs.sv.gnu.org:/web/gnuastro
+#
+#   4. Checkout a copy of the webpage:
+#         $ cvs checkout ./
+#
+#
+# New pages
+# ---------
+#
+# When a new page is added, after all the "cvs commit: Examining ..."
+# reports, you will see a line for each new file starting with a
+# '?'. Assume FILES is a string of all these files (that have a `?' in
+# the CVS commit of this script). Run these commands to go into your
+# local checkout and add those files to the repository.
+#
+#     $ cd $TOPWEBCHECKOUT/gnuastro
+#     $ cvs add FILES
+#     $ cvs commit -m "New file added"
+#
+#"
+#
 # Original author:
 #     Mohammad Akhlaghi <akhlaghi@gnu.org>
 # Contributing author(s):
-# Copyright (C) 2015, Free Software Foundation, Inc.
+# Copyright (C) 2016, Free Software Foundation, Inc.
 #
 # Gnuastro is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -38,6 +81,10 @@
 # Initial settings:
 set -o nounset                  # Stop if a variable is not set.
 set -o errexit                  # Stop if a program returns false.
+
+
+# Top CVS (webpage checkout) copy
+TOPWEBCHECKOUT=~/Development/gnuastro-web
 
 
 
@@ -67,8 +114,11 @@ if [ -d ./manual ]; then rm -rf ./manual; fi
 # Run gendocs.sh to generate all the files:
 ./gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
              "GNU Astronomy Utilities manual" --html " "
-rm gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
-   gnuastro.log gnuastro.pg gnuastro.toc gnuastro.tp gnuastro.vr
+
+# Delete all the temporary files.
+rm -f gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
+   gnuastro.log gnuastro.pg gnuastro.toc gnuastro.tp gnuastro.vr    \
+   gnuastro.vrs
 
 
 
@@ -190,13 +240,15 @@ echo %%%%% DONE %%%%%
 # Copy the generated files to the proper directory. We do not want to
 # copy the full directory there because the CVS information will be
 # removed.
-cp -R manual/* www/gnuastro/manual/
+cp gnuastro-top.html $TOPWEBCHECKOUT/gnuastro/index.html
+cp -R manual/* $TOPWEBCHECKOUT/gnuastro/manual/
 rm -rf ./manual
 
 
 
 
 
-# Run CVS to upload the page to the GNU server
-cd www/gnuastro/
+# Go into the top CVS directory, and commit the new changes to the GNU
+# server.
+cd $TOPWEBCHECKOUT/gnuastro
 cvs commit -m "Update."

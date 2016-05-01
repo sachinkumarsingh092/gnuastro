@@ -82,7 +82,7 @@ struct uiparams
   int      segsnminareaset;
   int  keepmaxnearriverset;
   int          segquantset;
-  int    segsnhistnbinsset;
+  int  clumpsnhistnbinsset;
   int           gthreshset;
   int    minriverlengthset;
   int       objbordersnset;
@@ -112,13 +112,12 @@ struct noisechiselparams
   char         *threshname; /* !=NULL: Name of threshold steps.            */
   char      *detectionname; /* !=NULL: Name of detection steps.            */
   char   *detectionskyname; /* !=NULL: Name of detection sky steps.        */
-  char    *detectionsnname; /* !=NULL: Name of detection S/N on meshs.     */
+  char    *detectionsnhist; /* !=NULL: Name of detection S/N histogram.    */
   char            *skyname; /* !=NULL: Name of image showing sky and STD.  */
   char   *segmentationname; /* !=NULL: Name of segmentation steps.         */
-  char        *clumpsnname; /* !=NULL: Name of clump S/N on grid.          */
+  char        *clumpsnhist; /* !=NULL: Name of clump S/N histogram.        */
   int           detectonly; /* ==1: Only do detection, no segmentation.    */
   char        *maskdetname; /* !=NULL: Save masked detections and sky.     */
-  char       *skysubedname; /* !=NULL: Save the sky subtracted image.      */
   int          grownclumps; /* ==1: Save the grown clumps in output.       */
 
   /* Detection: */
@@ -141,7 +140,7 @@ struct noisechiselparams
   /* Segmentation: */
   size_t      segsnminarea; /* Minimum area to find the S/N of a clump.    */
   float           segquant; /* S/N quantile for true clump.                */
-  size_t    segsnhistnbins; /* ==1: Save false clumps S/Ns histogram.      */
+  size_t  clumpsnhistnbins; /* ==1: Save false clumps S/Ns histogram.      */
   int     keepmaxnearriver; /* ==1: Keep clumps with max touching river.   */
   float            gthresh; /* Threshold to stop growing objects.          */
   size_t    minriverlength; /* Minimum length of river between grown clmps.*/

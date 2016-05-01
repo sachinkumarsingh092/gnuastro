@@ -228,6 +228,25 @@ nonans(float *in, size_t *size)
 
 
 
+void
+nonansdouble(double *in, size_t *size)
+{
+  size_t outsize=0;
+  double *f=in, *fp=in+*size;
+  do
+    if(!isnan(*in))
+      {
+        *f++=*in;
+        ++outsize;
+      }
+  while(++in<fp);
+  *size=outsize;
+}
+
+
+
+
+
 
 
 
@@ -274,7 +293,7 @@ fsumconst(float *in, size_t size, float a)
 
 
 float *
-fsumarrays(float *in1, float *in2, size_t size)
+fsumarrays_return(float *in1, float *in2, size_t size)
 {
   float *out, *o, *op;
 
@@ -288,4 +307,197 @@ fsumarrays(float *in1, float *in2, size_t size)
   do *o = *in1++ + *in2++; while(++o<op);
 
   return out;
+}
+
+
+
+
+
+void
+dmultipconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in *= a; while(++in<dpt);
+}
+
+
+
+
+void
+dmultiparrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 *= *in2++; while(++in1<dpt);
+}
+
+
+
+
+
+void
+ddivideconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in /= a; while(++in<dpt);
+}
+
+
+
+
+
+void
+dconstdivide(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in = a / *in; while(++in<dpt);
+}
+
+
+
+
+void
+ddividearrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 /= *in2++; while(++in1<dpt);
+}
+
+
+
+
+void
+dsumconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in += a; while(++in<dpt);
+}
+
+
+
+
+
+void
+dsumarrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 += *in2++; while(++in1<dpt);
+}
+
+
+
+void
+dsubtractconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in -= a; while(++in<dpt);
+}
+
+
+
+
+
+void
+dconstsubtract(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in = a - *in; while(++in<dpt);
+}
+
+
+
+
+
+void
+dsubtractarrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 -= *in2++; while(++in1<dpt);
+}
+
+
+
+void
+dpowerconst(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+
+  /* Since simply multiplying or taking the square root are more
+     efficient than calling the power function. */
+  if(a==2.0f)      do *in *= *in; while(++in<dpt);
+  else if(a==0.5f) do *in = sqrt(*in); while(++in<dpt);
+  else             do *in = pow(*in, a); while(++in<dpt);
+}
+
+
+
+
+
+void
+dconstpower(double *in, size_t size, double a)
+{
+  double *dpt;
+  dpt=in+size;
+  do *in = pow(a, *in); while(++in<dpt);
+}
+
+
+
+
+
+void
+dpowerarrays(double *in1, double *in2, size_t size)
+{
+  double *dpt;
+  dpt=in1+size;
+  do *in1 = pow(*in1, *in2++); while(++in1<dpt);
+}
+
+
+
+
+
+void
+dlogarray(double *in, size_t size)
+{
+  double *dpt;
+  dpt=in+size;
+
+  do *in = log(*in); while(++in<dpt);
+}
+
+
+
+
+
+void
+dlog10array(double *in, size_t size)
+{
+  double *dpt;
+  dpt=in+size;
+
+  do *in = log10(*in); while(++in<dpt);
+}
+
+
+
+
+
+void
+dabsarray(double *in, size_t size)
+{
+  double *dpt;
+  dpt=in+size;
+
+  do *in = fabs(*in); while(++in<dpt);
 }
