@@ -14045,17 +14045,41 @@ by a very large community.
 @subsection Commit guidelines
 
 We strive to follow these standards for the commit messages in
-Gnuastro.
+Gnuastro. Note that in the early phases of Gnuastro's development, we
+are experimenting and so if you notice earlier commits don't satisfy
+any of the guidelines below, it is because they predate that
+guideline.
 
 @table @asis
 
 @item Commit title
-The commits have to start with one short descriptive title. This will
-help when getting a log output of all the commits, since most emulated
-command line terminals are about 80 characters wide, it is best for
-this title to be less than about 60 (or even 50) characters to also
-allow for the commit labels and branches. The title should also not
-finish with any full-stops or periods.
+The commits have to start with one short descriptive title. The title
+is separated from the body with one blank line. Run @command{git log}
+to see some of the most recent commits as an example. In general, the
+title should satisfy the following conditions:
+
+@itemize
+@item
+It is best for the title to be short, about 70 (or even 60)
+characters. Most emulated command line terminals are about 80
+characters wide. However, we should also allow for the commit hashes
+which are printed in @command{git log --oneline}, and also branch
+names or the graph stucture outputs of @command{git log} which are
+also commonly used.
+
+@item
+The title should start with a category corresponding to the Support,
+Bug or Tasks trackers on Savannah (see @ref{Gnuastro project
+webpage}), followed by a colon (@key{:}). When the change is such that
+any of the other categories overlap with a utility (for example
+something related to a specific utility was changed in the
+documentation, or installation), then the utility category is
+preferred.
+
+@item
+The title should also not finish with any full-stops or periods.
+
+@end itemize
 
 @item Commit body
 The body of the commit message should be separated with the title by
