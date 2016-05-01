@@ -1,6 +1,7 @@
 #! /bin/sh
-# This script will generate a list of authors from the git repository,
-# it will only actually do anything if a .git file exists.
+#
+# Generate a list of authors from the git repository, it will only
+# actually do anything if a .git file exists.
 #
 # Note that some authors might have changed their email addresses over
 # the course of their contributions to Gnuastro. Fortunately Git has a
@@ -29,7 +30,9 @@
 # along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
-# Only do the job if a .git directory exists
+# Only do the job if a .git directory exists (recall that this script
+# is also present in the tar-ball with no .git directory and might be
+# run from there)
 if [ ! -d ".git" ]; then exit 0; fi
 
 
@@ -37,6 +40,7 @@ if [ ! -d ".git" ]; then exit 0; fi
 # number of bootstrap operations, it is best to tell the users since
 # it might take a few seconds.
 echo "Generating AUTHORS from the version controlled source..."
+
 
 
 # Print the top of the AUTHORS file:
