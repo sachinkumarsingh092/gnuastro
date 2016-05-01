@@ -9,7 +9,7 @@
 @c %**end of header
 @include version.texi
 @include formath.texi
-@include subpackageversions.texi
+@include utilityversions.texi
 
 @c So dashes and underscores can be used in HTMLs
 @allowcodebreaks true
@@ -115,6 +115,11 @@ Texts.  A copy of the license is included in the section entitled
 @author Mohammad Akhlaghi
 
 @page
+Gnuastro (source code and book) authors (sorted by number of commits
+in project history):
+@quotation
+@include authors.texi
+@end quotation
 @vskip 0pt plus 1filll
 @insertcopying
 

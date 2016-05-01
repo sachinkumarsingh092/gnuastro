@@ -29,15 +29,35 @@
 ## already there.
 
 SHELL=/bin/bash
-headers=${top_srcdir}/src/*/main.h
+
 
 ## Commands to make the texinfo tools:
 info_TEXINFOS = gnuastro.texi
-gnuastro_TEXINFOS = fdl.texi subpackageversions.texi formath.texi
+gnuastro_TEXINFOS = fdl.texi authors.texi utilityversions.texi formath.texi
 
+
+## Files not predefined by Automake, and not in dependencies that must
+## be included in the final tar-ball distribution.
 EXTRA_DIST = findversions.sh README
 
-subpackageversions.texi: ${headers}
+
+## Generate a list of Gnuastro authors from repo history:
+authors.texi:
+
+        # Only update this file if a .git directory is present in the
+        # parent directory. Otherwise, this is being run from a
+        # tar-ball and asuthors.texi cannot be updated.
+	if [ -d ../.git ]; then                                          \
+	  git shortlog --numbered --summary --email                      \
+	    | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@'e/"     \
+            | awk '{printf "%s %s (%s, %s)@*\n", $$2, $$3, $$4, $$1}'    \
+            > $@;                                                        \
+	fi
+
+
+# Find the version of each utility:
+headers=${top_srcdir}/src/*/main.h
+utilityversions.texi: ${headers}
 	./findversions.sh ${headers}
 
 

@@ -17,7 +17,7 @@
 # create a blank temporary file to save the one-by-one outputs, then
 # in the end (after it has successfully finished), copy that temporary
 # file into the output file.
-output="subpackageversions.texi"
+output="utilityversions.texi"
 tmp="tmp.texi"
 
 
