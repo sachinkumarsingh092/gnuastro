@@ -13651,11 +13651,10 @@ line to your @file{~/.emacs} file.
 
 @item
 @cindex Tabs are evil
-There should be no tabs in the indentation. Add the line below to your
-@file{~/.emacs} file to do this automatically:
-@example
-(setq-default indent-tabs-mode nil)
-@end example
+There should be no tabs in the indentation@footnote{If you use Emacs,
+you can add the following line to your @file{~/.emacs} file to do this
+automatically for any file you edit with Emacs: @command{(setq-default
+indent-tabs-mode nil)}}.
 
 @item
 @cindex GNU Emacs
@@ -13675,17 +13674,36 @@ very important for easily understanding the code.
 
 @end itemize
 
+The last two conventions are not common and might benefit from a short
+discussion here. With a good experience in advanced text editor
+operations, to some extent the last two are redundant for a
+professional developer. However, recall that Gnuastro aspires to be
+friendly to un-familiar, and un-experienced (in programming) eyes. In
+other words, as discussed in @ref{Science and its tools}, we want the
+code to appear welcoming to someone who is completely new to coding
+and only has a scientific curiosity.
+
+Newcomers to coding and development, who are curious enough to venture
+into the code, will not be using (or have any knowledge of) advanced
+text editors. They will see the raw code in the webpage or on a simple
+text editor (like Gedit) as plain text. Trying to learn and understand
+a file with dense functions that are all spaced with one or two blank
+lines can be very taunting for a newcomer. But when they scroll
+throught the file and see clear titles and meaningful spaces for
+similar functions (less density), we are helping them find and focus
+on the part they are most interested in sooner and easier.
+
 @cartouche
 @cindex GNU Emacs
 @noindent
-@strong{Recommended text editor:} GNU Emacs is an extensible and
-easily customizable text editor which many programmers rely on for
-developing due to its countless features. Among them, it allows
-specification of certain settings that are applied to a single file or
-to all files in a directory and its subdirectories. In order to
-harmonize code coming from different contributors, Gnuastro ships with
-a @file{.dir-locals.el} file which automatically configures Emacs to
-satisfy most of the coding conventions above when you are using it
+@strong{GNU Emacs, the recommended text editor:} GNU Emacs is an
+extensible and easily customizable text editor which many programmers
+rely on for developing due to its countless features. Among them, it
+allows specification of certain settings that are applied to a single
+file or to all files in a directory and its subdirectories. In order
+to harmonize code coming from different contributors, Gnuastro comes
+with a @file{.dir-locals.el} file which automatically configures Emacs
+to satisfy most of the coding conventions above when you are using it
 within Gnuastro's directories. Thus, Emacs users can readily start
 hacking into Gnuastro. If you are new to developing, we strongly
 recommend this editor. Emacs also has a great and very complete manual
