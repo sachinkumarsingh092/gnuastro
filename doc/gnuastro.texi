@@ -13677,6 +13677,7 @@ very important for easily understanding the code.
 
 @cartouche
 @cindex GNU Emacs
+@noindent
 @strong{Recommended text editor:} GNU Emacs is an extensible and
 easily customizable text editor which many programmers rely on for
 developing due to its countless features. Among them, it allows
@@ -13684,15 +13685,15 @@ specification of certain settings that are applied to a single file or
 to all files in a directory and its subdirectories. In order to
 harmonize code coming from different contributors, Gnuastro ships with
 a @file{.dir-locals.el} file which automatically configures Emacs to
-satisfy the coding conventions above when you are using it within
-Gnuastro's directories. Thus, Emacs users can readily start hacking
-into Gnuastro. If you are new to developing, we strongly recommend
-it. Emacs also has a great and very complete manual
+satisfy most of the coding conventions above when you are using it
+within Gnuastro's directories. Thus, Emacs users can readily start
+hacking into Gnuastro. If you are new to developing, we strongly
+recommend this editor. Emacs also has a great and very complete manual
 (@url{https://www.gnu.org/software/emacs/manual/emacs.html}) which is
-being continually improved for over 30 years and is the best starting
-point to learn it. Emacs was the first project released by GNU and is
-still one of its flagship projects.
-@end cartouch
+being improved for over 30 years and is the best starting point to
+learn it. Emacs was the first project released by GNU and is still one
+of its flagship projects.
+@end cartouche
 
 @node Multithreaded programming, Documentation, Coding conventions, Program source
 @subsection Multithreaded programming
