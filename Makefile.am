@@ -71,9 +71,9 @@ if COND_SUBTRACTSKY
   MAYBE_SUBTRACTSKY = src/subtractsky
 endif
 if COND_GNULIBCHECK
-  MAYBE_GNULIBCHECK = imported/tests
+  MAYBE_GNULIBCHECK = bootstrapped/tests
 endif
-SUBDIRS = imported/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)       \
+SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)   \
 $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)                    \
 $(MAYBE_ARITHMETIC) $(MAYBE_IMGCROP) $(MAYBE_IMGSTAT)                   \
 $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)    \
@@ -82,7 +82,7 @@ $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY) doc tests
 
 ## Add m4/ to the list of directories to search for m4 files
 ## =========================================================
-ACLOCAL_AMFLAGS = -I imported/m4
+ACLOCAL_AMFLAGS = -I bootstrapped/m4
 
 
 
@@ -95,7 +95,7 @@ dist_doc_DATA = README
 ## Files that are only distributed
 ## ===============================
 EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el \
- imported/m4/gnulib-cache.m4 include/commonargs.h               \
+ bootstrapped/m4/gnulib-cache.m4 include/commonargs.h           \
  include/commonparams.h include/fixedstringmacros.h             \
  include/neighbors.h
 

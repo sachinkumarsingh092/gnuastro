@@ -27,7 +27,7 @@ AM_CFLAGS = -Wall -O3
 AM_LDFLAGS = -lgsl -lgslcblas -lm -L$(top_builddir)/lib
 
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
--I$(top_builddir)/imported/lib -I$(top_srcdir)/imported/lib
+-I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
 
@@ -39,8 +39,8 @@ bin_PROGRAMS = astcosmiccal
 astcosmiccal_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 cosmiccal.c cosmiccal.h
 
-astcosmiccal_LDADD = $(top_builddir)/imported/lib/libgnu.la	\
--lconfigfiles -lfitsarrayvv -lcheckset -ltiming -llinkedlist
+astcosmiccal_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lconfigfiles \
+-lfitsarrayvv -lcheckset -ltiming -llinkedlist
 
 
 

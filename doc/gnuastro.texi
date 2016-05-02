@@ -13268,10 +13268,10 @@ clean}, so it becomes @option{-fxdn}.
 
 Besides the @file{bootstrap} and @file{bootstrap.conf}, another file
 and directory are also related to the bootstrapping process:
-@file{imported/} and @file{README-hacking}. @file{imported/} is for
-all the necessary bootstrapped files. In the version controlled
-source, it only contains a @file{REAME}, but in the distributed
-tar-ball it contains all the necessary imported
+@file{bootstrapped/} and @file{README-hacking}. @file{bootstrapped/}
+is for all the imported (bootstrapped) files. In the version
+controlled source, it only contains a @file{REAME}, but in the
+distributed tar-ball it contains all the necessary imported
 files. @file{README-hacking} contains a summary of the bootstrapping
 process discussed in this section. It is a necessary reference when
 you haven't built this book yet. It is thus not distributed in the

@@ -30,7 +30,7 @@ AM_CFLAGS = -Wall -O3
 AM_LDFLAGS = -lcfitsio -lwcs -lm $(MAYBE_HASLIBJPEG) -L$(top_builddir)/lib
 
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
--I$(top_builddir)/imported/lib -I$(top_srcdir)/imported/lib
+-I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
 
@@ -43,9 +43,9 @@ bin_PROGRAMS = astconvertt
 astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h eps.c	\
 eps.h jpeg.c jpeg.h convertt.c convertt.h
 
-astconvertt_LDADD = $(top_builddir)/imported/lib/libgnu.la      \
--lconfigfiles -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming    \
--llinkedlist -lstatistics -larraymanip -lforqsort
+astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lconfigfiles \
+-lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -llinkedlist -lstatistics     \
+-larraymanip -lforqsort
 
 
 

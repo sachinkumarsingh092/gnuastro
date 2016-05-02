@@ -20,9 +20,11 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
-LDADD = gnulib/lib/libgnu.a
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
--I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
+
+LDADD = bootstrapped/lib/libgnu.a
+
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+-I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
 ## Make libraries of the files that are shared between all the

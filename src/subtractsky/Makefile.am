@@ -24,7 +24,7 @@ AM_CFLAGS = -Wall -O3
 AM_LDFLAGS = -lcfitsio -lwcs -lm -L$(top_builddir)/lib
 
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
--I$(top_builddir)/imported/lib -I$(top_srcdir)/imported/lib
+-I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
 
@@ -36,10 +36,9 @@ bin_PROGRAMS = astsubtractsky
 astsubtractsky_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 subtractsky.c subtractsky.h
 
-astsubtractsky_LDADD = $(top_builddir)/imported/lib/libgnu.la		\
--lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh			\
--lspatialconvolve -lastrthreads -lmode -lstatistics -larraymanip	\
--lforqsort -llinkedlist -lbox
+astsubtractsky_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la            \
+-lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh -lspatialconvolve     \
+-lastrthreads -lmode -lstatistics -larraymanip -lforqsort -llinkedlist -lbox
 
 
 
