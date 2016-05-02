@@ -20,10 +20,11 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
-AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm	\
--L$(top_builddir)/lib
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
--I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
+
+AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm -L$(top_builddir)/lib
+
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+-I$(top_builddir)/imported/lib -I$(top_srcdir)/imported/lib
 
 
 
@@ -35,9 +36,9 @@ bin_PROGRAMS = astarithmetic
 astarithmetic_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 arithmetic.c arithmetic.h
 
-astarithmetic_LDADD = $(top_builddir)/gnulib/lib/libgnu.la		\
--lconfigfiles -lfitsarrayvv -lcheckset -ltiming -llinkedlist -lmode	\
--lstatistics -larraymanip -lforqsort
+astarithmetic_LDADD = $(top_builddir)/imported/lib/libgnu.la -lconfigfiles \
+-lfitsarrayvv -lcheckset -ltiming -llinkedlist -lmode -lstatistics         \
+-larraymanip -lforqsort
 
 
 

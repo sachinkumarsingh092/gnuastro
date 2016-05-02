@@ -25,11 +25,11 @@
 AC_PREREQ([2.69])
 AC_INIT([GNU Astronomy Utilities], [0.1], [bug-gnuastro@gnu.org],
         [gnuastro], [http://www.gnu.org/software/gnuastro/])
-AC_CONFIG_AUX_DIR([gnulib/build-aux])
+AC_CONFIG_AUX_DIR([imported/build-aux])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_MACRO_DIRS([imported/m4])
 
 
 
@@ -42,7 +42,7 @@ AM_PROG_AR
 LT_INIT
 
 
-m4_include([m4/ax_pthread.m4])
+m4_include([imported/m4/ax_pthread.m4])
 AX_PTHREAD([],[AC_MSG_ERROR([AC_PACKAGE_NAME Needs POSIX Threads (pthread)])])
 CLIBS="$PTHREAD_LIBS $LIBS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
@@ -325,19 +325,22 @@ AM_CONDITIONAL([COND_NOISECHISEL], [test $enable_noisechisel = yes])
 AM_CONDITIONAL([COND_SUBTRACTSKY], [test $enable_subtractsky = yes])
 
 
+
+
+
 # Tell autoconf what to work on:
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
 		 tests/Makefile
-                 gnulib/lib/Makefile
+                 imported/lib/Makefile
                  src/mkprof/Makefile
                  src/header/Makefile
                  src/mknoise/Makefile
 		 src/imgcrop/Makefile
            	 src/imgstat/Makefile
        		 src/imgwarp/Makefile
-                 gnulib/tests/Makefile
+                 imported/tests/Makefile
                  src/convertt/Makefile
                  src/convolve/Makefile
                  src/cosmiccal/Makefile

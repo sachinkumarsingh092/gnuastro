@@ -1,0 +1,39 @@
+Imported files to GNU Astronomy Utilities
+=========================================
+
+The contents of this directory (except this README file!) are imported
+to GNU Astronomy Utilities (Gnuastro) from other projects. Therefore
+they are not maintained by Gnuastro developers and separately kept in
+this directory for clarity and easy maintainence.
+
+In the version controlled repository this directory only contains this
+single README file. It is populated during the bootstrapping process
+(see ../README-hacking for more on bootstrapping, or the
+"Bootstrapping" section in the manual). In the distribution tar-ball
+this directory is populated with the relevant necessary files.
+
+The projects that were used are:
+
+ - GNU Portability Library (Gnulib):
+
+       https://www.gnu.org/software/gnulib/
+
+   This is a very useful collection of libraries (from GNU C library)
+   to enable non-complying operating systems to run programs based on
+   it. It also contains various very useful scripts needed for the GNU
+   build process.
+
+
+
+ - GNU Autoconf-archives:
+
+       https://www.gnu.org/software/autoconf-archive/
+
+   These archives contain a large number of M4 scripts that can be
+   used at ./configure time.
+
+
+
+We are most grateful to the maintainers of these projects which allow
+Gnuastro to be easily installed on a very large set of Unix-like
+operating systems.

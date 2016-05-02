@@ -28,6 +28,12 @@
 ## progams. With this configuration, the user can confirm if the
 ## problem is internal to gnulib or still persists after all the
 ## Gnulib tests have been done.
+
+
+# Set the conditional directory compilation
+if COND_ARITHMETIC
+  MAYBE_ARITHMETIC = src/arithmetic
+endif
 if COND_CONVERTT
   MAYBE_CONVERTT = src/convertt
 endif
@@ -39,9 +45,6 @@ if COND_COSMICCAL
 endif
 if COND_HEADER
   MAYBE_HEADER = src/header
-endif
-if COND_ARITHMETIC
-  MAYBE_ARITHMETIC = src/arithmetic
 endif
 if COND_IMGCROP
   MAYBE_IMGCROP = src/imgcrop
@@ -68,18 +71,18 @@ if COND_SUBTRACTSKY
   MAYBE_SUBTRACTSKY = src/subtractsky
 endif
 if COND_GNULIBCHECK
-  MAYBE_GNULIBCHECK = gnulib/tests
+  MAYBE_GNULIBCHECK = imported/tests
 endif
-SUBDIRS = gnulib/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)		\
-$(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)			\
-$(MAYBE_ARITHMETIC) $(MAYBE_IMGCROP) $(MAYBE_IMGSTAT)			\
-$(MAYBE_IMGWARP) $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)	\
+SUBDIRS = imported/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)       \
+$(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)                    \
+$(MAYBE_ARITHMETIC) $(MAYBE_IMGCROP) $(MAYBE_IMGSTAT)                   \
+$(MAYBE_IMGWARP) $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)    \
 $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY) doc tests
 
 
 ## Add m4/ to the list of directories to search for m4 files
 ## =========================================================
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I imported/m4
 
 
 
@@ -92,8 +95,9 @@ dist_doc_DATA = README
 ## Files that are only distributed
 ## ===============================
 EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el \
- m4/gnulib-cache.m4 include/commonargs.h include/commonparams.h \
- include/fixedstringmacros.h include/neighbors.h
+ imported/m4/gnulib-cache.m4 include/commonargs.h               \
+ include/commonparams.h include/fixedstringmacros.h             \
+ include/neighbors.h
 
 
 ## Generate AUTHORS

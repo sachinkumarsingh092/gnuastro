@@ -1,4 +1,3 @@
-/build-aux
 #
 # These are files which git should ignore.
 #
@@ -32,7 +31,6 @@ Makefile
 
 m4
 tars
-gnulib
 snippet
 astmkprof
 astheader
@@ -69,17 +67,21 @@ install-sh
 aclocal.m4
 test-driver
 config.h.in
+imported/m4
+imported/lib
+imported/doc
 doc/mdate-sh
 gnuastro.t2p
 config.guess
 config.status
 doc/stamp-vti
 autom4te.cache
+imported/tests
 doc/texinfo.tex
 doc/version.texi
 doc/authors.texi
 doc/plotsrc/tikz/
-/gnulib/build-aux
+/imported/build-aux
 doc/www/gnuastro/CVS/
 doc/utilityversions.texi
 doc/www/gnuastro/manual/

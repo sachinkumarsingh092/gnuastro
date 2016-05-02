@@ -21,10 +21,11 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
-AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm	\
--L$(top_builddir)/lib
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
--I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
+
+AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm -L$(top_builddir)/lib
+
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+-I$(top_builddir)/imported/lib -I$(top_srcdir)/imported/lib
 
 
 
@@ -34,7 +35,7 @@ bin_PROGRAMS = astmkprof
 astmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h	\
 oneprofile.c oneprofile.h profiles.c profiles.h cite.h
 
-astmkprof_LDADD = $(top_builddir)/gnulib/lib/libgnu.la -lconfigfiles	\
+astmkprof_LDADD = $(top_builddir)/imported/lib/libgnu.la -lconfigfiles	\
 -lfitsarrayvv -ltxtarrayvv -lcheckset -llinkedlist -ltiming		\
 -lastrthreads -lbox -lstatistics -larraymanip -lforqsort
 

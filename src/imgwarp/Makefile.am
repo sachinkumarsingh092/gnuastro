@@ -20,10 +20,11 @@
 
 # Flags:
 AM_CFLAGS = -Wall -O3
-AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm	\
--L$(top_builddir)/lib
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include	\
--I$(top_builddir)/gnulib/lib -I$(top_srcdir)/gnulib/lib
+
+AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm -L$(top_builddir)/lib
+
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+-I$(top_builddir)/imported/lib -I$(top_srcdir)/imported/lib
 
 
 
@@ -35,7 +36,7 @@ bin_PROGRAMS = astimgwarp
 astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 imgwarp.c imgwarp.h
 
-astimgwarp_LDADD = $(top_builddir)/gnulib/lib/libgnu.la -lconfigfiles   \
+astimgwarp_LDADD = $(top_builddir)/imported/lib/libgnu.la -lconfigfiles   \
 -lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -lastrthreads            \
 -lpolygon
 

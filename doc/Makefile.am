@@ -47,11 +47,18 @@ authors.texi:
         # Only update this file if a .git directory is present in the
         # parent directory. Otherwise, this is being run from a
         # tar-ball and asuthors.texi cannot be updated.
+        #
+        # In case there is no git repository, then just touch
+        # authors.texi. If one already exists, only its date will be
+        # unchanged. However, if it doesn't already exist a blank file
+        # will be created (which will allow us to generate the
+        # documentation).
 	if [ -d ../.git ]; then                                          \
 	  git shortlog --numbered --summary --email                      \
 	    | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@'e/"     \
             | awk '{printf "%s %s (%s, %s)@*\n", $$2, $$3, $$4, $$1}'    \
             > $@;                                                        \
+        else touch $@;                                                   \
 	fi
 
 

@@ -76,6 +76,12 @@ command (see above for DEVDIR).
 Run ./bootstrap with the --help option for more information on running
 this script.
 
+You can also run `./bootstrap' without the --gnulib-srcdir option, it
+will clone Gnulib and download the necessary Autoconf archives
+macros. However, you will need an internet connection every time and
+also a full cloned copy of Gnulib will be put in your top Gnuastro
+(this) dictory.
+
 
 
 

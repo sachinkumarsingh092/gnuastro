@@ -13184,20 +13184,41 @@ converting all the figures into all the formats that are necessary for
 all the various formats of the book.
 @end itemize
 
-Before starting the bootstrap, you have to clone Gnulib and the
-Autoconf archives into a local directory. Currently in Gnuastro, both
-of these have to be cloned in the same top directory, let's assume
-that top directory is @file{DEVDIR} (which you can set to any
-directory other than the cloned Gnuastro directory, change the value
-below). Just note that @file{DEVDIR} should not contain the string
+The simplest way to bootstrap Gnuastro is to simply run the bootstrap
+script within your cloned Gnuastro directory as shown below. However,
+please read the next few paragraphs before doing so (see @ref{Version
+controlled source} for @file{TOPGNUASTRO}).
+
+@example
+$ cd TOPGNUASTRO/gnuastro
+$ ./bootstrap                      # Requires internet connection
+@end example
+
+Without any options, bootstrap will clone Gnulib within your cloned
+Gnuastro directory (@file{TOPGNUASTRO/gnuastro/gnulib}) and download
+the necessary Autoconf archives macros. So if you run bootstrap like
+this, you will need an internet connection every time you decide to
+bootstrap. Also, Gnulib is a very large package and cloning it can be
+slow. It will also keep the full Gnulib repository within your
+Gnuastro repository, so if another one of your projects also needs
+Gnulib, and you insist on running bootstrap like this, you will have
+two copies. In case you regularly backup your important files, Gnulib
+will also slow down the backup process. Therefore while the simple
+invocation above can be used with no problem, it is not recommended.
+
+The recommended way to bootstrap is to first clone Gnulib and the
+Autoconf archives into a local directory. Let's call it @file{DEVDIR}
+(which you can set to any directory, change the value
+below)@footnote{If you are not a developer in Gnulib or Autoconf
+archives, you can clone them in a directory that you don't backup. In
+this way the large number of files in these projects won't slow down
+your backup process or take bandwidth (if you backup to a remote
+server).}. Just note that @file{DEVDIR} should not contain the string
 @file{gnulib}@footnote{All occurances of @file{gnulib} in the value to
 @file{bootstrap}'s @option{--gnulib-srcdir} option will be replaced
-with @file{autoconf-archives} to get to those archives.}. We have
-intentionally assumed a separate (from Gnuastro) top directory for
-these two packages since they are very useful and you will probably
-need them for your other development projects (not just Gnuastro). The
-following commands take you to the top directory for these packages
-and clone them:
+with @file{autoconf-archives} to get to those archives.}. Currently in
+Gnuastro, both Gnulib and Autoconf archives have to be cloned in the
+same top directory like the case here.
 
 @example
 $ DEVDIR=/home/yourname/Development
@@ -13210,43 +13231,36 @@ $ git clone git://git.sv.gnu.org/autoconf-archive.git
 You now have the full version controlled source of these two in
 separate directories. Both these packages are regularly updated, so
 every once and a while, you can run @command{$ git pull} within them
-to get any possible updates. You are now ready to bootstrap Gnuastro.
-The following commands will take you into the cloned Gnuastro
-directory and run the @file{bootstrap} script, while telling it to
-copy some files (instead of making symbolic links, with the
-@option{--copy} option) and where to look for Gnulib (with the
-@option{--gnulib-srcdir} option). See @ref{Version controlled source}
-for @file{TOPGNUASTRO}.
+to get any possible updates.
+
+You are now ready to bootstrap Gnuastro. The following commands will
+take you into the cloned Gnuastro directory and run the
+@file{bootstrap} script, while telling it to copy some files (instead
+of making symbolic links, with the @option{--copy} option, this is not
+mandatory@footnote{The @option{--copy} option is recommended because
+some backup systems might do strange things with symbolic links.}) and
+where to look for Gnulib (with the @option{--gnulib-srcdir} option).
 
 @example
 $ cd $TOPGNUASTRO/gnuastro
 $ ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
 @end example
 
-You might have noticed the @file{README-hacking} file that is
-available in the cloned Gnuastro directory but is not distributed in
-the tar-ball. It contains a summary of the bootstrapping process
-discussed in this section, it is a necessary reference when you
-haven't built this book yet. @file{bootstrap} uses the existence of
-@file{README-hacking} to check if it is in a directory that was
-checked-out from a version controlled source or if it is a
-distribution tar-ball. If called like the above, @file{bootstrap} will
-complain and abort in the latter case. To run @file{bootstrap} from
-the distribution tar-ball (not recommended!), add the @option{--force}
-option when you are running @file{bootstrap}. With this option,
-@file{bootstrap} will not search for @file{README-hacking}.
-
 @cindex GNU Texinfo
 @cindex GNU Libtool
 @cindex GNU Autoconf
 @cindex GNU Automake
 @cindex GNU build system
-All the necessary GNU C Library functions, Autoconf macros and
-Automake inputs are now available along with the book figures. The
-standard GNU build system (@ref{Quick start}) will do the rest of the
-building job and you can start hacking into the code and compiling
-your hacks with the full revision history of Gnuastro under your
-fingers.
+Since Gnulib and Autoconf archives are now available in your local
+directories, you don't need an internet connection every time you
+decide to remove all untracked files and redo the bootstrap (see box
+below). You can also use the same command on any other project that
+uses Gnulib. All the necessary GNU C Library functions, Autoconf
+macros and Automake inputs are now available along with the book
+figures. The standard GNU build system (@ref{Quick start}) will do the
+rest of the building job and you can start hacking into the code and
+compiling your hacks with the full revision history of Gnuastro under
+your fingers.
 
 @cartouche
 @noindent
@@ -13266,9 +13280,20 @@ It is best to commit any recent change before running this
 command. You might have created new files since the last commit and if
 they haven't been commited, they will all be gone forever (using
 @command{rm}). To get a list of the non-version controlled files
-before actually deleting them, add the @option{n} option to
-@command{git clean}, so it becomes @option{-fxdn}.
+instead of deleting them, add the @option{n} option to @command{git
+clean}, so it becomes @option{-fxdn}.
 @end cartouche
+
+Besides the @file{bootstrap} and @file{bootstrap.conf}, another file
+and directory are also related to the bootstrapping process:
+@file{imported/} and @file{README-hacking}. @file{imported/} is for
+all the necessary bootstrapped files. In the version controlled
+source, it only contains a @file{REAME}, but in the distributed
+tar-ball it contains all the necessary imported
+files. @file{README-hacking} contains a summary of the bootstrapping
+process discussed in this section. It is a necessary reference when
+you haven't built this book yet. It is thus not distributed in the
+Gnuastro tarball.
 
 
 
