@@ -13706,11 +13706,31 @@ with a @file{.dir-locals.el} file which automatically configures Emacs
 to satisfy most of the coding conventions above when you are using it
 within Gnuastro's directories. Thus, Emacs users can readily start
 hacking into Gnuastro. If you are new to developing, we strongly
-recommend this editor. Emacs also has a great and very complete manual
-(@url{https://www.gnu.org/software/emacs/manual/emacs.html}) which is
-being improved for over 30 years and is the best starting point to
-learn it. Emacs was the first project released by GNU and is still one
-of its flagship projects.
+recommend this editor. Emacs was the first project released by GNU and
+is still one of its flagship projects. Some resources can be found at:
+
+@table @asis
+@item Official manual
+At @url{https://www.gnu.org/software/emacs/manual/emacs.html}. This is
+a great and very complete manual which is being improved for over 30
+years and is the best starting point to learn it. It just requires a
+little patience to practice, you will be rewarded. If you install
+Emacs, you also have access to this manual on the command line with
+the following command (see @ref{Info}).
+
+@example
+$ info emacs
+@end example
+
+@item A guided tour of emacs
+At @url{https://www.gnu.org/software/emacs/tour/}. A short visual tour
+of Emacs, officially maintined by the Emacs developers.
+
+@item Unofficial mini-manual
+At @url{https://tuhdo.github.io/emacs-tutor.html}. A shorter manual
+which contains nice animated images of using Emacs.
+
+@end table
 @end cartouche
 
 @node Multithreaded programming, Documentation, Coding conventions, Program source
