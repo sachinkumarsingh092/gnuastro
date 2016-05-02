@@ -21,6 +21,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
+
+
+
+
 # Definitions:
 AC_PREREQ([2.69])
 AC_INIT([GNU Astronomy Utilities], [0.1], [bug-gnuastro@gnu.org],
@@ -34,6 +38,7 @@ AC_CONFIG_MACRO_DIRS([imported/m4])
 
 
 
+
 # Checks for programs.
 : ${CFLAGS=""}
 AC_PROG_CC
@@ -42,6 +47,10 @@ AM_PROG_AR
 LT_INIT
 
 
+
+
+
+# Include Autoconf archives' ax_pthread.m4 check
 m4_include([imported/m4/ax_pthread.m4])
 AX_PTHREAD([],[AC_MSG_ERROR([AC_PACKAGE_NAME Needs POSIX Threads (pthread)])])
 CLIBS="$PTHREAD_LIBS $LIBS"
@@ -50,10 +59,13 @@ LDFLAGS="$LDFLAGS $PTHREAD_CFLAGS"
 CC="$PTHREAD_CC"
 
 
-# Checks for libraries. The `absolutejunk=1` is put here so it doesn't
-# automatically add the library to the LIBS variable that will be
-# appended to all programs, some libraries will not be needed in some
-# programs.
+
+
+
+# Checks for necessary libraries. The `absolutejunk=1` is put here so
+# it doesn't automatically add the library to the LIBS variable that
+# will be appended to all programs, some libraries will not be needed
+# in some programs.
 AC_CHECK_LIB([cfitsio], [ffopen], [absolutejunk=1],
              [AC_MSG_ERROR([Cannot continue.])], [-lm])
 AC_CHECK_LIB([wcs], [wcspih], [absolutejunk=1],
@@ -96,36 +108,6 @@ AC_DEFINE_UNQUOTED([CONFIGDATE], ["`date +"%d %B %Y"`"],
 AC_DEFINE_UNQUOTED([CONFIGTIME], ["`date +"%H:%M"`"],
                    [Time of compilation])
 AC_MSG_RESULT([done])
-
-
-
-
-
-
-# If the Number of threads to use was specified as a configure command
-# line option, use it. If not, check the number of threads on the
-# system.
-AC_ARG_WITH([numthreads],
-            [AS_HELP_STRING([--with-numthreads=INT],
-	                    [Specify the default number of CPU threads.])],
-	    [], [with_numthreads=no])
-AH_TEMPLATE([DP_NUMTHREADS], [Number of threads to use.])
-AS_IF([test "x$with_numthreads" != xno],
-      [AS_IF([ [[[ $with_numthreads =~ ^[1-9]+$ ]]] ],
-             [AC_DEFINE_UNQUOTED([DP_NUMTHREADS], [$with_numthreads])],
-             [AC_MSG_FAILURE([Value to --with-numthreads ($with_numthreads) is not a valid number])])],
-      [
-       AC_PATH_PROG(has_nproc, nproc, [no])
-       AS_IF([test "x$has_nproc" = xno],
-             [AS_ECHO([])
-              AS_ECHO([])
-              AC_MSG_FAILURE([The executable `nproc' was not found on your system. It is part of GNU Coreutils and specifies the number of CPU threads available for programs on your system. You can either install GNU Coreutils or simply run configure again with the option: `--with-numthreads=NUMBER-OF-THREADS' (replace NUMBER-OF-THREADS with any positive integer you like, ideally, it is double the number of physical CPU cores on your system). All the programs in GNU Astronomy Utilities will then use NUMBER-OF-THREADS if they need to run on multiple threads. Please see the manual for more information.])
-              ])
-       AC_MSG_CHECKING([for number of available threads])
-       AC_DEFINE_UNQUOTED([DP_NUMTHREADS], [`nproc`])
-       AC_MSG_RESULT([$(nproc)])
-      ]
-     )
 
 
 

@@ -30,7 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
-#include "timing.h"	/* Includes time.h and sys/time.h   */
+#include "nproc.h"              /* From Gnulib.                     */
+#include "timing.h"	        /* Includes time.h and sys/time.h   */
 #include "txtarrayvv.h"
 #include "linkedlist.h"
 #include "configfiles.h"
@@ -685,7 +686,7 @@ setparams(int argc, char *argv[], struct converttparams *p)
      have a zero value for all elements. */
   cp->spack         = SPACK;
   cp->verb          = 1;
-  cp->numthreads    = DP_NUMTHREADS;
+  cp->numthreads    = num_processors(NPROC_CURRENT);
   cp->removedirinfo = 1;
   p->invert         = 1;
 

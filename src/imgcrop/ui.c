@@ -29,7 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include "timing.h"	/* Includes time.h and sys/time.h   */
+#include "nproc.h"              /* From Gnulib.                     */
+#include "timing.h"	        /* Includes time.h and sys/time.h   */
 #include "checkset.h"
 #include "txtarrayvv.h"
 #include "commonargs.h"
@@ -709,7 +710,7 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
      have a zero value for all elements. */
   cp->spack         = SPACK;
   cp->verb          = 1;
-  cp->numthreads    = DP_NUMTHREADS;
+  cp->numthreads    = num_processors(NPROC_CURRENT);
   cp->removedirinfo = 1;
 
   /* Read the arguments. */

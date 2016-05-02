@@ -2417,17 +2417,6 @@ program using the GNU build system (through the configure script).
 
 @vtable @option
 
-@cindex CPU threads
-@cindex CPU threads, set number
-@cindex Number of CPU threads to use
-@item --with-numthreads
-(=@code{INT}) If this option is given an integer value, that value
-will be used for the default number of threads to use. If it is not
-given, then the total number of threads will be read from the system,
-see @ref{Threads in GNU Astronomy Utilities}. Specifying
-@option{--with-numthreads=no} or @option{--without-numthreads} is
-equivalent to not calling this option it at all.
-
 @item --enable-progname
 Only build and install @file{progname} along with any other program
 that is enabled in this fashion. @file{progname} is the name of the
@@ -3724,8 +3713,10 @@ self.
 @node Threads in GNU Astronomy Utilities, Final parameter values, Configuration files, Common behavior
 @section Threads in GNU Astronomy Utilities
 
+@pindex nproc
 @cindex pthread
 @cindex CPU threads
+@cindex GNU Coreutils
 @cindex Using CPU threads
 @cindex POSIX threads library
 @cindex CPU, using all threads
@@ -3736,32 +3727,22 @@ threads your computer's CPU has to offer to your operating system.
 GNU Astronomy Utilities uses the POSIX threads library (pthreads) for
 spinning off threads when the user asks for it. The number of threads
 available to your operating system is usually double the number of
-physical (hardware) cores in your CPU.
+physical (hardware) cores in your CPU. On a GNU/Linux system, the
+number of threads available can be found with the command @command{$
+nproc} command (part of GNU Coreutils).
 
-@pindex nproc
 @vindex --numthreads
-@cindex GNU Coreutils
 @cindex Number of threads available
 @cindex Available number of threads
-You can find the number of threads available to your system with the
-command @command{$ nproc}, which is part of GNU Coreutils and is most
-probably already available on your GNU/Linux system. If not specified
-as an option at configure time, Gnuastro finds the number of threads
-available to your system (and reports it along with all those other
-things it checks!). It is saved internally for all the programs to use
-by default. To specify the number of threads at configure time, use
-the @option{--with-numthreads} option, see @ref{GNU Astronomy
-Utilities configure options}. In case your system does not have GNU
-Coreutils, currently the only way to proceed is to manually specify
-the number of threads through this option.
-
 @cindex Internally stored option value
-The number of threads is the only parameter in Gnuastro which is
-stored internally at configure time. The implication is that the only
-option with a value that doesn't have to be in any of the
-configuration files is this, see @ref{Configuration files}. Note that
-if you do specify it, the value you provided in the most immediate
-configuration file will be used, not the internal value.
+Gnuastro can find the number of threads available to your system at
+run-time (when you execute the program). However, if a value is given
+provided for the @option{--numthreads} option, the given value will be
+used, not the value automatically read from your system, see
+@ref{Operating modes} and @ref{Configuration files} for ways to set a
+different value. Thus @option{--numthreads} is the only option with a
+value that doesn't have to be specified anywhere on the command line
+or in the options.
 
 @menu
 * A note on threads::           Caution and suggestion on using threads.
@@ -5458,12 +5439,13 @@ provide the catalog name as an argument. Alternatively, you have to
 provide the crop box parameters with command line options.
 
 @cindex Asynchronous thread allocation
-When in catalog mode, ImageCrop will run using any number of threads
-that you have specified with the @option{--numthreads} option, see
-@ref{Common options}. Note that when multiple threads are being used,
-in verbose mode, the outputs will not be in order. This is because the
-threads are asynchronous and thus not started in order. When the box
-coordinates are given on the command line, no threads will be created.
+When in catalog mode, ImageCrop will run in parallel unless you set
+@option{--numthreads=1}, see @ref{Threads in GNU Astronomy
+Utilities}. Note that when multiple threads are being used, in verbose
+mode, the outputs will not be in order. This is because the threads
+are asynchronous and thus not started in order. This has no effect on
+the output, see @ref{Hubble visually checks and classifies his
+catalog} for a tutorial on effectively using this feature.
 
 @menu
 * astimgcrop options::          A list of all the options with explanation.
