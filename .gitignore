@@ -118,4 +118,13 @@ utilityversions.texi
 /doc/plotsrc/tikz/
 /doc/gnuastro.t2d/
 /doc/gnuastro.html/
-/bootstrapped/build-aux/
+
+
+# NOTE: If ./bootstrap doesn't find the exact string value of its
+# build_aux variable (that we defined in bootstrap.conf) here, it will
+# add it to the top of this file (which we don't want). Unfortunately,
+# the value of build_aux must not end with a slash (otherwise `make
+# distcheck' will not be able to do its final tests). So only for this
+# directory, we have abandoned the convention above.
+
+/bootstrapped/build-aux
