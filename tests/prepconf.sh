@@ -25,8 +25,8 @@
 # Make the .gnuastro directory
 # ----------------------------
 #
-# This directory will keep all the configuration files for this run of
-# `make check'.
+# This directory will keep all the utility configuration files for
+# this run of `make check'.
 if [ ! -d .gnuastro ]; then
     mkdir .gnuastro
 fi
