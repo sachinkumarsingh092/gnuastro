@@ -94,10 +94,10 @@ dist_doc_DATA = README
 
 ## Files that are only distributed
 ## ===============================
-EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el \
- bootstrapped/m4/gnulib-cache.m4 include/commonargs.h           \
- include/commonparams.h include/fixedstringmacros.h             \
- include/neighbors.h
+EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el         \
+ bootstrapped/m4/gnulib-cache.m4 bootstrapped/README .autom4te.cfg      \
+ include/commonargs.h include/commonparams.h                            \
+ include/fixedstringmacros.h include/neighbors.h
 
 
 ## Generate AUTHORS
