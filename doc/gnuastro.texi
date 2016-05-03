@@ -3857,7 +3857,7 @@ should remove it.
 
 @item Make
 Make is a utility built for specifying ``targets'', ``prerequisites''
-and ``receipts''. It allows you to define very complicated dependancy
+and ``recipes''. It allows you to define very complicated dependancy
 structures for complicated processes that commonly start off with a
 large list of inputs and builds them based on the dependancies you
 define. GNU Make@footnote{@url{https://www.gnu.org/software/make/}} is
@@ -11984,7 +11984,7 @@ as:
 
 @cindex Poisson distribution
 @dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in \{0, 1, 2,
-3, \dots }}
+3, \dots \}}
 
 @cindex Skewed Poisson distribution
 Because the Poisson distribution is only applicable to positive

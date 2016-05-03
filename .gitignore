@@ -90,3 +90,5 @@ doc/gnuastro-figures/iandtime.png
 doc/gnuastro-figures/flatplane.png
 doc/gnuastro-figures/samplingfreq.png
 doc/gnuastro-figures/sphericalplane.png
+doc/gnuastro.html/*
+doc/gnuastro.t2d/*
