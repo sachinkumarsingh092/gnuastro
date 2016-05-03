@@ -1,10 +1,22 @@
-#
-# These are files which git should ignore.
-#
+# Files to ignore in version control (Git)
+# ========================================
+
+# The files satisfying the patterns here (one per line) are ignored by
+# the version control using Git, they are all outputs of the various
+# tools used to built Gnuastro, so we don't need to keep their
+# history.
+
+
+
+# Glob patterns
+# -------------
+
+# The `*' can be replaced with any string. Any file that has a name
+# satisfying any of these conditions will be ignored, irrespective of
+# which directory it is in.
 
 *~
 .\#*
-*.aux
 *.cp
 *.fn
 *.ky
@@ -13,38 +25,34 @@
 *.in
 *.pg
 *.gz
-*.toc
 *.tp
 *.vr
-*.log
-*.trs
+*.aux
 *.eps
-*.pdf
 *.jpg
+*.log
+*.pdf
+*.png
+*.toc
+*.trs
 *.txt
-*.info
 *.fits
+*.info
 *-[0-9]
 *.[1ao]
 *.tar.gz
-Makefile
 
-m4
-tars
-snippet
-astmkprof
-astheader
-astmknoise
-astimgcrop
-astimgstat
-astimgwarp
-astconvertt
-astconvolve
-astcosmiccal
-astmkcatalog
-astarithmetic
-astnoisechisel
-astsubtractsky
+
+
+
+
+# Full file names to ignore
+# -------------------------
+
+# These are full file names. Note that the directory containing the
+# file is irrelevant. Note that we cannot use a glob pattern for the
+# utility names (since their configuration files would also be
+# ignored).
 
 .deps
 .sync
@@ -52,43 +60,61 @@ ar-lib
 missing
 compile
 depcomp
+libtool
 INSTALL
 AUTHORS
-libtool
+snippet
 config.h
 stamp-h1
+Makefile
 ltmain.sh
 .dirstamp
 configure
 .gnuastro
-config.sub
+astmkprof
+astheader
 runtest.sh
+astmknoise
+astimgcrop
+astimgstat
+astimgwarp
+config.sub
 install-sh
 aclocal.m4
+astconvertt
+astconvolve
 test-driver
 config.h.in
-doc/mdate-sh
+astcosmiccal
+astmkcatalog
 gnuastro.t2p
 config.guess
+version.texi
+authors.texi
 config.status
 doc/stamp-vti
+astarithmetic
+astnoisechisel
+astsubtractsky
 autom4te.cache
-doc/texinfo.tex
-bootstrapped/m4
-bootstrapped/lib
-bootstrapped/doc
-doc/version.texi
-doc/authors.texi
-doc/plotsrc/tikz/
-bootstrapped/tests
-doc/www/gnuastro/CVS/
-/bootstrapped/build-aux
-doc/utilityversions.texi
-doc/www/gnuastro/manual/
-doc/www/gnuastro/MathJax/
-doc/gnuastro-figures/iandtime.png
-doc/gnuastro-figures/flatplane.png
-doc/gnuastro-figures/samplingfreq.png
-doc/gnuastro-figures/sphericalplane.png
-doc/gnuastro.html/*
-doc/gnuastro.t2d/*
+utilityversions.texi
+
+
+
+
+
+# Directories
+# -----------
+
+# A name finishes with a slash (`/'), is treated as a directory and
+# all files within that directory will be ignored. Therefore there is
+# no need to say `foo/*'. Simply `foo/' is enough.
+
+/bootstrapped/m4/
+/bootstrapped/lib/
+/bootstrapped/doc/
+/doc/plotsrc/tikz/
+/doc/gnuastro.t2d/
+/doc/gnuastro.html/
+/bootstrapped/tests/
+/bootstrapped/build-aux/
