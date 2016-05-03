@@ -11983,8 +11983,8 @@ count. The probability density function of @mymath{k} can be written
 as:
 
 @cindex Poisson distribution
-@dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in \{0, 1, 2,
-3, \dots \}}
+@dispmath{f(k)={\lambda^k \over k!} e^{-\lambda},\quad k\in @{0, 1, 2,
+3, \dots @}}
 
 @cindex Skewed Poisson distribution
 Because the Poisson distribution is only applicable to positive
