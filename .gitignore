@@ -110,11 +110,12 @@ utilityversions.texi
 # all files within that directory will be ignored. Therefore there is
 # no need to say `foo/*'. Simply `foo/' is enough.
 
-/bootstrapped/m4/
-/bootstrapped/lib/
-/bootstrapped/doc/
+# When Git finds a slash in the end of an entry, it will immediately
+# ignore the whole directory (and everything within it). This is more
+# efficient then leaving it to try to fit patterns.
+
+/bootstrapped/
 /doc/plotsrc/tikz/
 /doc/gnuastro.t2d/
 /doc/gnuastro.html/
-/bootstrapped/tests/
 /bootstrapped/build-aux/
