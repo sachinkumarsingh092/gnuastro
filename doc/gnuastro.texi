@@ -14130,9 +14130,9 @@ guideline.
 @table @asis
 
 @item Commit title
-The commits have to start with one short descriptive title. The title
-is separated from the body with one blank line. Run @command{git log}
-to see some of the most recent commits as an example. In general, the
+The commits have to start with one short descriptive title. The title is
+separated from the body with one blank line. Run @command{git log} to see
+some of the most recent commit messages as an example. In general, the
 title should satisfy the following conditions:
 
 @itemize
@@ -14145,13 +14145,21 @@ names or the graph stucture outputs of @command{git log} which are
 also commonly used.
 
 @item
-The title should start with a category corresponding to the Support,
-Bug or Tasks trackers on Savannah (see @ref{Gnuastro project
-webpage}), followed by a colon (@key{:}). When the change is such that
-any of the other categories overlap with a utility (for example
-something related to a specific utility was changed in the
-documentation, or installation), then the utility category is
-preferred.
+The title should start with a category corresponding to the Support, Bug or
+Tasks trackers on Savannah, followed by a colon (@key{:} (see @ref{Gnuastro
+project webpage}). For utilities, use the short name (for example
+@command{imgcrop} for ImageCrop) and for other categories, use the standard
+three letter (all small-caps) summary of the category, see @command{git log
+--oneline} for some examples.
+
+When the change is such that any of the other categories overlap with a
+utility (for example something related to a specific utility was changed in
+the documentation, or installation), then use the utility category. Updates
+in the documentation/book should also be classified by the respective
+utility, or chapter. For example, a change to this section would go under
+the @command{dev} (Development) category. Only issues related to the actual
+book (for example building the documentation, or introduction) should be
+classified as @command{book}.
 
 @item
 The title should also not finish with any full-stops or periods.
@@ -14202,10 +14210,14 @@ the appropriate commit in master marking the release version. So,
 whomever clones Gnuastro will automatically go onto the ready to be
 used master branch that contains bug-fixes or additions that might not
 yet be released. Anything on the master branch should always be tested
-and ready to be used.
+and ready to be built and used.
 
-As fully elaborated in Pro Git, there are two methods for you to
-contribute to Gnuastro in this workflow:
+Recall that to ensure the stability of Gnuastro in the future, you need to
+assign the copyright of your changes in Gnuastro to the FSF before we can
+incorporate them. This can be done once for all your subsequent work in
+Gnuastro, please see @ref{Copyright assignment}. With this legal step out
+of the way, there are two methods for you to contribute to Gnuastro in the
+``Integration-Manager Workflow'':
 
 @enumerate
 
@@ -14223,7 +14235,7 @@ for people who commonly contribute to the code.
 
 Just please follow the feature branch methodology: create a new branch
 for every feature you want to add from the most recent master commit
-in the main repo, when your work is done, inform us of your repository
+in the main repo. When your work is done, inform us of your repository
 and the branch. After testing it and if everything is working fine, we
 will merge it into the main repository. If you have made temporary
 branches within that branch, it is best to rebase them into one branch
@@ -14232,17 +14244,18 @@ before you inform us.
 @end enumerate
 
 In both cases, your commits (with your name and information) will be
-preserved and your contributions will thus be fully recorded in the
-history of Gnuastro and in the @file{AUTHORS} file once they have been
-incorporated into the official repository. Needless to say that in
-such cases, be sure to follow the bug or task trackers and contact us
-before hand so you don't do something that someone else is already
-working on. In that case, you can get in touch with them and help the
-job go on faster, see @ref{Gnuastro project webpage}. This workflow is
-currently mostly borrowed from the general recommendations of
+preserved and your contributions will thus be fully recorded in the history
+of Gnuastro and in the @file{AUTHORS} file once they have been incorporated
+into the official repository. Needless to say that in such cases, be sure
+to follow the bug or task trackers (or subscribe to the
+@command{gnuastro-devel} mailing list) and contact us before hand so you
+don't do something that someone else is already working on. In that case,
+you can get in touch with them and help the job go on faster, see
+@ref{Gnuastro project webpage}. This workflow is currently mostly borrowed
+from the general recommendations of
 Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
-and GitHub. But since Gnuastro is under heavy development currently,
-these might change and evolve to better suite our needs.
+and GitHub. But since Gnuastro is under heavy development currently, these
+might change and evolve to better suite our needs.
 
 
 
