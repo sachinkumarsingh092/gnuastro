@@ -30,7 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
-#include "nproc.h"              /* From Gnulib.                     */
+#include <nproc.h>              /* From Gnulib.                     */
+
 #include "timing.h"	        /* Includes time.h and sys/time.h   */
 #include "txtarrayvv.h"
 #include "linkedlist.h"

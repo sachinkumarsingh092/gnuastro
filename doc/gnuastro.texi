@@ -13585,21 +13585,28 @@ default Gnuastro will compile with the @option{-O3} optmization flag.
 @cindex Buffers (Emacs)
 @cindex Emacs buffers
 @item
-If possible, the text files should always be at most 70 characters
-wide. Monitors today are certainly much wider, but with this limit,
-reading the functions becomes much more easier. Also for the
-developers, it allows multiple files (or multiple views of one file)
-to be displayed beside each other on wide monitors (Emacs's buffers
-are excellent for this capability).
+All Gnuastro hand-written text files (C source code, Texinfo documentation
+source, and version control commit messages) should not exceed @strong{75}
+characters per line. Monitors today are certainly much wider, but with this
+limit, reading the functions becomes much more easier. Also for the
+developers, it allows multiple files (or multiple views of one file) to be
+displayed beside each other on wide monitors.
 
-For long comments you can use press @key{Alt-q} in Emacs to separate
-them into separate lines automatically. For long literal strings, you
-can use the fact that in C, two strings immediately after each other
-are concatenated, for example @code{"The first part, " "and the second
-part."} Note the space character in the end of the first part. Since
-they are now separated, you can easily break a long literal string
-into several lines and adhere to the maximum 70 character line length
-policy.
+Emacs's buffers are excellent for this capability, setting a buffer width
+of 80 with `@key{C-u 80 C-x 3}' will allow you to view and work on several
+files or different parts of one file using the wide monitors common
+today. Emacs buffers can also be used as a shell prompt and compile the
+program (with @key{M-x compile}), and 80 characters is the default width in
+most terminal emulators. If you use Emacs, Gnuastro sets the 75 character
+@command{fill-column} variable automatically for you, see cartouche below.
+
+For long comments you can use press @key{Alt-q} in Emacs to separate them
+into separate lines automatically. For long literal strings, you can use
+the fact that in C, two strings immediately after each other are
+concatenated, for example @code{"The first part, " "and the second part."}
+Note the space character in the end of the first part. Since they are now
+separated, you can easily break a long literal string into several lines
+and adhere to the maximum 75 character line length policy.
 
 @cindex Header file
 @item
@@ -13632,14 +13639,19 @@ additions/modifications to C library headers.
 The C library (or GNU C library) header files, for example
 @file{stdio.h} or @file{errno.h}.
 @item
-Installed library header files, for example @file{cfitsio.h} or
-@file{gsl/gsl_rng.h}.
+Installed library header files (for example @file{cfitsio.h} or
+@file{gsl/gsl_rng.h}), and Gnulib-specific headers (for example
+@file{nproc.h}). Note that the latter are imported with @code{""}, not
+@code{<>}, for example @code{#include <nproc.h>}.
 @item
-Gnuastro common header files, for example @file{fitsarrayvv.h} or
+Gnuastro common headers and libraries, for example @file{fitsarrayvv.h} or
 @file{neighbors.h}, see @ref{Header files}.
 @item
-That particular program's header files, for example @file{main.h} and
-@file{mkprof.h}.
+For utilities, the @file{main.h} file (which is needed by the next group of
+headers).
+@item
+That particular program's header files, for example @file{mkprof.h}, or
+@file{noisechisel.h}.
 @end enumerate
 
 @noindent
@@ -13659,8 +13671,9 @@ line to your @file{~/.emacs} file.
 @item
 @cindex Tabs are evil
 There should be no tabs in the indentation@footnote{If you use Emacs,
-you can add the following line to your @file{~/.emacs} file to do this
-automatically for any file you edit with Emacs: @command{(setq-default
+Gnuastro's @file{.dir-locals.el} file will automatically never use tabs for
+indentation. To make this a default in all your Emacs sessions, you can add
+the following line to your @file{~/.emacs} file: @command{(setq-default
 indent-tabs-mode nil)}}.
 
 @item
@@ -13697,8 +13710,8 @@ text editor (like Gedit) as plain text. Trying to learn and understand
 a file with dense functions that are all spaced with one or two blank
 lines can be very taunting for a newcomer. But when they scroll
 throught the file and see clear titles and meaningful spaces for
-similar functions (less density), we are helping them find and focus
-on the part they are most interested in sooner and easier.
+similar functions (less, meaningful density), we are helping them find and
+focus on the part they are most interested in sooner and easier.
 
 @cartouche
 @cindex GNU Emacs
@@ -13718,11 +13731,11 @@ is still one of its flagship projects. Some resources can be found at:
 
 @table @asis
 @item Official manual
-At @url{https://www.gnu.org/software/emacs/manual/emacs.html}. This is
-a great and very complete manual which is being improved for over 30
-years and is the best starting point to learn it. It just requires a
-little patience to practice, you will be rewarded. If you install
-Emacs, you also have access to this manual on the command line with
+At @url{https://www.gnu.org/software/emacs/manual/emacs.html}. This is a
+great and very complete manual which is being improved for over 30 years
+and is the best starting point to learn it. It just requires a little
+patience and practice, but rest assured that you will be rewarded. If you
+install Emacs, you also have access to this manual on the command line with
 the following command (see @ref{Info}).
 
 @example
@@ -14146,16 +14159,21 @@ The title should also not finish with any full-stops or periods.
 @end itemize
 
 @item Commit body
-The body of the commit message should be separated with the title by
-one empty line. The body should be very descriptive. Try to explain
-the committed contents as best as you can. Try to remember that the
-people (or even your self) who will be reading this later don't have
-the background that you currently have. So be very descriptive and
-explain as much as possible: what the bug/task was, justify the way
-you fixed it and discuss other possible solutions that you might not
-have included. For the last item, it is best to discuss them
-thoroughly as comments in the appropriate section of the code, but
-only give a short summary in the commit message.
+The body of the commit message is separated from the title by one empty
+line. Like all other Gnuastro's text files, the commit body's lines should
+not be longer than 75 characters, see @ref{Coding conventions}. This is to
+ensure that on standard terminal emulators (with 80 character width), the
+@command{git log} output can be cleanly displayed (note that the commit
+message is indented in the output of @command{git log}).
+
+The body should be very descriptive. Try to explain the committed contents
+as best as you can. Try to remember that the people (or even your self) who
+will be reading this later don't have the background that you currently
+have. So be very descriptive and explain as much as possible: what the
+bug/task was, justify the way you fixed it and discuss other possible
+solutions that you might not have included. For the last item, it is best
+to discuss them thoroughly as comments in the appropriate section of the
+code, but only give a short summary in the commit message.
 
 A reference to a bug or task ID on Savannah is necessary when the
 commit has to do with such issues. If the commit is a fix to a bug,

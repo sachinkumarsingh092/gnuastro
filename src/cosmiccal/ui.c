@@ -30,9 +30,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
+#include <nproc.h>              /* From Gnulib.                     */
 #include <gsl/gsl_const_mksa.h>
 
-#include "nproc.h"              /* From Gnulib.                     */
 #include "timing.h"	        /* Includes time.h and sys/time.h   */
 #include "checkset.h"
 #include "txtarrayvv.h"
