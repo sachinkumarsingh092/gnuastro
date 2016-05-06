@@ -1,5 +1,5 @@
-# Files to ignore in version control (Git)
-# ========================================
+# Files to ignore in version control (Git) -*- conf-unix -*-
+# ==========================================================
 
 # The files satisfying the patterns here (one per line) are ignored by
 # the version control using Git, they are all outputs of the various
@@ -98,6 +98,8 @@ astnoisechisel
 astsubtractsky
 autom4te.cache
 utilityversions.texi
+doc/gnuastro.cps
+doc/gnuastro.vrs
 
 
 
