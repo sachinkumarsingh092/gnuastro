@@ -14,4 +14,7 @@
   (fill-column . 75)) ;; 75-character wide lines
  (c-mode
   (c-basic-offset . 2) ;; 2 spaces of indentation
-  (c-file-style . "gnu"))) ;; GNU style for braces
+  (c-file-style . "gnu")) ;; GNU style for braces
+ (makefile-mode
+  (indent-tabs-mode . t)) ;; Real TABs are important in makefiles
+ )
