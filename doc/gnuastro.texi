@@ -218,6 +218,10 @@ Version numbering
 
 * GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
 
+New to GNU/Linux?
+
+* Command-line interface::      Introduction to the command-line
+
 Tutorials
 
 * Hubble visually checks and classifies his catalog::  Check a catalog.
@@ -954,21 +958,32 @@ independent. Something like the GNU Coreutils.
 @node New to GNU/Linux?, Report a bug, Version numbering, Introduction
 @section New to GNU/Linux?
 
-Some astronomers initially install and use the GNU/Linux operating
-systems because their research software can only be run in this
-environment. This is how the founder of Gnuastro started using
-GNU/Linux at least! If this is not the case for you, you can skip this
-section. @ref{Tutorials} is a complete chapter with some real world
-example applications of Gnuastro making good use of GNU/Linux
-capabilities written for newcomers to this environment. It is fully
-explained and is easy and entertaining to read, we hope you enjoy it.
+Some astronomers initially install and use the GNU/Linux operating systems
+because the software that their research community use can only be run in
+this environment, the transition is not necessarily easy. To encourage you
+in investing the patience and time to make this transition, we define the
+GNU/Linux system and argue for the command-line interface of scientific
+software and how it is worth the (apparently steep) learning curve.
+@ref{Command-line interface}, contains a short overview of the very
+powerful command-line user interface. @ref{Tutorials} is a complete chapter
+with some real world example applications of Gnuastro making good use of
+GNU/Linux capabilities written for newcomers to this environment. It is
+fully explained, easy and entertaining.
 
-@cindex GNU/Linux
 @cindex Linux
-You might have already noticed that we are not using the name
-``Linux'', but ``GNU/Linux''. Please take the time to have a look at
-the following essays and FAQs for a complete understanding of this
-very important distinction.
+@cindex GNU/Linux
+@cindex GNU C library
+@cindex GNU compiler collection
+You might have already noticed that we are not using the name ``Linux'',
+but ``GNU/Linux''. Please take the time to have a look at the following
+essays and FAQs for a complete understanding of this very important
+distinction. In short, the Linux kernel is built using the GNU C library
+(glibc) and GNU compiler collection (gcc). The Linux kernel software alone
+is useless, in order have an operating system you need many more packages
+and the majority of such low-level packages in most distributions are
+developed as part of the GNU project: ``the whole system is basically GNU
+with Linux loaded''. In the form of an analogy: to say “running Linux”, is
+like saying “driving your carburettor”.
 
 @itemize
 
@@ -986,36 +1001,49 @@ very important distinction.
 
 @end itemize
 
+
+
+@menu
+* Command-line interface::      Introduction to the command-line
+@end menu
+
+@node Command-line interface,  , New to GNU/Linux?, New to GNU/Linux?
+@subsection Command-line interface
 @cindex Shell
 @cindex Graphic user interface
 @cindex Command line user interface
 @cindex GUI: graphic user interface
 @cindex CLI: command line user interface
-Another thing you will notice is that Gnuastro only has a command line
-user interface (CLI) or the `shell' as it is referred to in
-Unix-like systems. This might be contrary to your mostly graphical
-user interface (GUI) experience with proprietary operating systems. To
-a first time user, the command line does appear much more complicated
-and adapting to it might not be easy.
+One aspect of Gnuastro that might be a little troubling to new GNU/Linux
+users is that (at least for the time being), it only has a command line
+user interface (CLI). This might be contrary to the mostly graphical user
+interface (GUI) experience with proprietary operating systems. To a first
+time user, the command line does appear much more complicated and adapting
+to it might not be easy and a little frustrating at first. This is
+understandable and also experienced by anyone who started using the
+computer (from childhood) in a graphical user interface. Here we hope to
+convince you of the unique benefits of this interface which can greatly
+enhance your productivity while complementing your GUI experience.
 
 @cindex GNOME 3
-Through GNOME 3@footnote{@url{http://www.gnome.org/}}, most GNU/Linux
-based operating systems now have a very advanced and useful GUI. Since
-the GUI was created long after the command line, some wrongly consider
-the command line to be obsolete. Both interfaces are very useful for
-different tasks (for example you can't view an image, video or web
-page on the command line!). Therefore they should not be regarded as
-rivals but as complementary, here we will outline how the CLI can be
+Through GNOME 3@footnote{@url{http://www.gnome.org/}}, most GNU/Linux based
+operating systems now have a very advanced and useful GUI. Since the GUI
+was created long after the command line, some wrongly consider the command
+line to be obsolete. Both interfaces are very useful for different tasks
+(for example you can't view an image, video, pdf document or web page on
+the command line!), on the other hand you can't reproduce your results
+easily in the GUI. Therefore they should not be regarded as rivals but as
+complementary user interfaces, here we will outline how the CLI can be
 useful in scientific programs.
 
 You can think of the GUI as a veneer over the CLI to facilitate a
 small subset of all the possible CLI operations. Each click you do on
-the GUI, can be thought of as internally running a different
+the GUI, can be thought of as internally running a different CLI
 command. So asymptotically (if a good designer can design a GUI which
 is able to show you all the possibilities to click on) the GUI is only
-as powerful as the command line. In practice, such designers are very
-hard to come by for every program, so the GUI operations are always a
-subset of the internal CLI commands. For programs that are only made
+as powerful as the command line. In practice, such graphical designers
+are very hard to find for every program, so the GUI operations are always
+a subset of the internal CLI commands. For programs that are only made
 for the GUI, this results in not including lots of potentially useful
 operations. It also results in `interface design' to be a crucially
 important part of any GUI program. Scientists don't usually have
@@ -1024,31 +1052,33 @@ the GUI code is far more than CLI code, which is harmful for a
 scientific software, see @ref{Science and its tools}.
 
 @cindex GUI: repeating operations
-For those operations with a GUI, one action on the GUI might be more
-efficient. However, if you have to repeat that same action more than
-once, it will soon become very frustrating and prone to errors. Unless
-the designers of a particular program decided to design such a system
-for a particular GUI action, there is no general way to run everything
-automatically on the GUI.
+For programs that have a GUI, one action on the GUI (moving and clicking a
+mouse, or tapping a touchscreen) might be more efficient and easier than
+its CLI counterpart (typing the program name and your desired
+configuration). However, if you have to repeat that same action more than
+once, the GUI will soon become very frustrating and prone to errors. Unless
+the designers of a particular program decided to design such a system for a
+particular GUI action, there is no general way to run any possible series
+of actions automatically on the GUI.
 
 @cindex GNU Bash
 @cindex Reproducible results
 @cindex CLI: repeating operations
-On the command line, with one command you can run numerous actions
-which can come from various CLI capable programs you have decided your
-self in any possible permutation with one command@footnote{By writing
-a shell script and running it, for example see the tutorials in
-@ref{Tutorials}.}. This allows for much more creativity than that
-offered to a GUI user. For technical and scientific operations, where
-the same operation (using various programs) has to be done on a large
-set of data files, this is crucially important. It also allows exact
-reproducability which is a foundation principle for scientific
-results. The most common CLI (which is also known as a shell) in
-GNU/Linux is GNU Bash, we strongly encourage you to put aside several
-hours and go through this beautifully explained web page:
-@url{https://flossmanuals.net/command-line/}. You don't need to read
-or even fully understand the whole thing, only a general knowledge of
-the first few chapters are enough to get you going.
+On the command line, you can run any series of of actions which can come
+from various CLI capable programs you have decided your self in any
+possible permutation with one command@footnote{By writing a shell script
+and running it, for example see the tutorials in @ref{Tutorials}.}. This
+allows for much more creativity and exact reproducibility that is not
+possible to a GUI user. For technical and scientific operations, where the
+same operation (using various programs) has to be done on a large set of
+data files, this is crucially important. It also allows exact
+reproducability which is a foundation principle for scientific results. The
+most common CLI (which is also known as a shell) in GNU/Linux is GNU Bash,
+we strongly encourage you to put aside several hours and go through this
+beautifully explained web page:
+@url{https://flossmanuals.net/command-line/}. You don't need to read or
+even fully understand the whole thing, only a general knowledge of the
+first few chapters are enough to get you going.
 
 Since the operations in the GUI are very limited and they are visible,
 reading a manual is not that important in the GUI (most programs don't
@@ -1059,16 +1089,19 @@ only an understanding of the generalities is needed. Once you start
 working, there are more easier ways to remember a particular option or
 operation detail, see @ref{Getting help}.
 
+@cindex GNU Emacs
 @cindex Virtual console
 To experience the command line in its full glory and not in the GUI
 terminal emulator, press the following keys together:
-@key{CTRL+ALT+F4}@footnote{Instead of @key{F4}, you can use any of the
-keys from @key{F2} to @key{F6} for different virtual consoles. You can
-also run a separate GUI from within this console.} to access the
-virtual console. To return back to your GUI, press the same keys above
-replacing @key{F4} with @key{F1}. In the virtual console, the GUI,
-with all its distracting colors and information, is gone. Enabling you
-to focus more accurately on your actual work.
+@key{CTRL+ALT+F4}@footnote{Instead of @key{F4}, you can use any of the keys
+from @key{F1} to @key{F6} for different virtual consoles depending on your
+GNU/Linux distribution, try them all out. You can also run a separate GUI
+from within this console if you want to.} to access the virtual console. To
+return back to your GUI, press the same keys above replacing @key{F4} with
+@key{F7} (or @key{F1}, or @key{F2}, depending on your GNU/Linux
+distribution). In the virtual console, the GUI, with all its distracting
+colors and information, is gone. Enabling you to focus entirely on your
+actual work.
 
 @cindex Resource heavy operations
 For operations that use a lot of your system's resources (processing a
