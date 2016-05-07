@@ -112,8 +112,8 @@ if [ -d ./manual ]; then rm -rf ./manual; fi
 
 
 # Run gendocs.sh to generate all the files:
-./gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
-             "GNU Astronomy Utilities manual" --html " "
+../bootstrapped/build-aux/gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
+   "GNU Astronomy Utilities manual" --html " "
 
 # Delete all the temporary files.
 rm -f gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
