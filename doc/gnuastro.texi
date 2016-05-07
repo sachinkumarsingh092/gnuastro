@@ -1350,34 +1350,51 @@ character, enabling you to use multiple lines to write your commands.
 @node Acknowledgments,  , Conventions, Introduction
 @section Acknowledgments
 
-GNU Astronomy Utilities has significantly benefited from the help and
-support of various people and institutions. The plain text file
-@file{THANKS} which is distributed along with the source code has a
-full list. In particular the role of the Japanese Ministry of Science
-and Technology (MEXT) scholarship should be acknowledged for the long
-term scholarship of Mohammad Akhlaghi's Masters and PhD period in
-Tohoku University Astronomical Insitute in Sendai city. Gnuastro would
-not have been possible without the long term learning and planning
-that could only be acheived with such a long term scholarship. Tohoku
-University was the first institution to sign a copyright disclaimer to
-the Free Software Foundation for Gnuastro, allowing it to be freely
-available for the astronomical community. The very critical view
-points of Professor Takashi Ichikawa (at Tohoku University) were also
-instrumental in the creation of Gnuastro.
+The list of Gnuastro authors is available at the start of this book, here
+the developers wish to gratefully acknowledge the help and support they
+received from other people and institutions who had an indirect (not
+committed in the version controlled history) role in Gnuastro. The plain
+text file @file{THANKS} which is distributed along with the source code
+also contains this list.
 
-Mohammad-reza Khellat and Alan Lefor kindly studied the book
-multiple times and provided very useful suggestions. Alan and
-Mohammad-reza also helped in testing Gnuastro on other operating
-systems. Brandon Invergo, Karl Berry and Richard Stallman also
-provided very useful suggestions during the GNU evaluation process. At
-first we wanted to submit the programs as independent and individual
-small programs, but thanks to their suggestions and ideas, all the
-separate programs were merged into the complete system that is now
-available for the astronomical community. Finally we should thank all
-the anonymous developers in various online forums which patiently
-answered all our small (but very important) technical questions.
+A major factor in the creation of Gnuastro was the Japanese Ministry of
+Science and Technology (MEXT) scholarship. This 5-year scholarship for
+Mohammad Akhlaghi's Masters and PhD period in Tohoku University
+Astronomical Insitute played an instrumental role in the long term learning
+and planning that made the idea of Gnuastro possible.
 
+The very critical view points of Professor Takashi Ichikawa (from Tohoku
+University) were also instrumental in the initial ideas and creation of
+Gnuastro. Brandon Invergo, Karl Berry and Richard Stallman also provided
+very useful suggestions during the GNU evaluation process. At first we
+wanted to submit the programs as independent and individual small programs,
+but thanks to their suggestions and ideas, all the separate programs were
+merged into this larger infrastructure that is now available for the
+astronomical community. We would also like to gratefully thank
+Mohammad-reza Khellat, Alan Lefor, and Yahya Sefidbakht for their useful
+and constructive comments. Finally we should thank all the anonymous
+developers in various online forums which patiently answered all our small
+(but very important) technical questions.
 
+The following institutions (listed choronologically) have hosted the
+Gnuastro developers and have signed a copyright disclaimer to the Free
+Software Foundation for the developer's contribution to Gnuastro. This
+guarantees the freedom of Gnuastro for the astronomical community in the
+future. See @ref{Copyright assignment} for the imporatance of having a
+single copyright owner in free and open source software. We are thus very
+grateful to them and acknowledge their open-minded role in Gnuastro:
+knowledge should not be locked behind (legally) closed doors, even when the
+source code is free or open.
+
+@itemize
+
+@item
+Tohoku University, Sendai, Japan.
+
+@item
+University of Salento, Lecce, Italy.
+
+@end itemize
 
 
 

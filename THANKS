@@ -15,24 +15,26 @@ The following people provided valuable feedback (suggestions, ideas)
 to the authors of Gnuastro. We hereby gratefully acknowledge their
 help and support in Gnuatro.
 
-Karl Berry                           karl@gnu.org
-Takashi Ichikawa                     ichikawa@astr.tohoku.ac.jp
-Brandon Invergo                      brandon@gnu.org
-Mohammad-Reza Khellat                moha.khe@gmail.com
-Alan Lefor                           alefor@astr.tohoku.ac.jp
-Richard Stallman                     rms@gnu.org
+    Karl Berry                           karl@gnu.org
+    Takashi Ichikawa                     ichikawa@astr.tohoku.ac.jp
+    Brandon Invergo                      brandon@gnu.org
+    Mohammad-Reza Khellat                moha.khe@gmail.com
+    Alan Lefor                           alefor@astr.tohoku.ac.jp
+    Yahya Sefidbakht                     y.sefidbakht@gmail.com
+    Richard Stallman                     rms@gnu.org
 
 
 Institutions
 ------------
 
-GNU Astronomy Utilities (Gnuastro) has greatly benefited from the
-following institutions. These institutions have either funded,
-supported and most importantly provided a productive environment for
-the developers of Gnuastro. They finally disclaimed any copyright
-ownership of the developers' work while in those institutions which
-allows the world wide astronomical/scientific community to reliably
-use Gnuastro in the future.
+GNU Astronomy Utilities (Gnuastro) has greatly benefited from the following
+institutions. These institutions have either funded, supported and most
+importantly provided a productive environment for the developers of
+Gnuastro. They finally disclaimed any copyright ownership of the
+developers' work while in those institutions which allows the world wide
+astronomical/scientific community to reliably use Gnuastro in the
+future. See "Copyright assignment" section of the book for a complete
+explantion on the importance this has for the community.
 
-Tohoku University
-Università del Salento
+    Tohoku University, Sendai, Japan.
+    University of Salento, Lecce, Italy.
