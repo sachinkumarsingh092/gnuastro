@@ -54,7 +54,7 @@ authors.texi:
         # documentation).
 	if [ -d ../.git ]; then                                          \
 	  git shortlog --numbered --summary --email                      \
-	    | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@'e/"     \
+	    | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@\`e/"    \
             | awk '{printf "%s %s (%s, %s)@*\n", $$2, $$3, $$4, $$1}'    \
             > $@;                                                        \
         else touch $@;                                                   \
