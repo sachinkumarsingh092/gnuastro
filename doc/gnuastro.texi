@@ -1015,7 +1015,7 @@ like saying “driving your carburettor”.
 @cindex GUI: graphic user interface
 @cindex CLI: command line user interface
 One aspect of Gnuastro that might be a little troubling to new GNU/Linux
-users is that (at least for the time being), it only has a command line
+users is that (at least for the time being) it only has a command line
 user interface (CLI). This might be contrary to the mostly graphical user
 interface (GUI) experience with proprietary operating systems. To a first
 time user, the command line does appear much more complicated and adapting
@@ -5854,7 +5854,7 @@ In the postfix notation, the operator is placed after the operands, as
 we will see below this removes the need to define parenthesis for most
 ordinary operators. For example, instead of writing @command{5+6}, we
 write @command{5 6 +}. To easily understand how this notation works,
-you can think of each operand a node in a stack first-in-first-out
+you can think of each operand a node in a first-in-first-out
 stack. Every time an operator is confronted, it pops the number of
 operands it needs from the top of the stack (so they don't exist in
 the stack any more), does its operation and pushes the result back on
@@ -5928,11 +5928,11 @@ equivalent to @mymath{\sqrt{4}}.
 
 @item log
 Natural logarithm of first operand, so ``@command{4 log}'' is
-equivalent to @mymath{ln(4)}.
+equivalent to @mymath{\ln(4)}.
 
 @item log10
 Base-10 logarithm of first operand, so ``@command{4 log10}'' is
-equivalent to @mymath{log(4)}.
+equivalent to @mymath{\log(4)}.
 
 @item minvalue
 Minimum value in the top operand on the stack, so ``@command{a.fits
@@ -7425,7 +7425,7 @@ viewable in one image!)  So we either have to show the `Fourier
 spectrum' or the `Phase angle'. For the complex number
 @mymath{a+ib}, the Fourier spectrum is defined as
 @mymath{\sqrt{a^2+b^2}} while the phase angle is defined as
-@mymath{arctan(b/a)}.
+@mymath{\arctan(b/a)}.
 
 @item
 The Fourier spectrum of the forward Fourier transform of the kernel
@@ -11256,7 +11256,7 @@ Today, most practitioners agree that the flux of galaxies can be
 modeled with one or a few generalized de Vaucouleur's (or S@'ersic)
 profiles.
 
-@dispmath{I(r) = I_e exp \left ( -b_n \left[ \left( r \over r_e \right)^{1/n} -1 \right] \right )}
+@dispmath{I(r) = I_e \exp \left ( -b_n \left[ \left( r \over r_e \right)^{1/n} -1 \right] \right )}
 
 @cindex Brightness
 @cindex S@'ersic, J. L.
@@ -12633,18 +12633,18 @@ this time not in spherical coordinates instead of polar coordinates.
 beings, positioned on @mymath{O} (the center of the sphere) and the
 point @mymath{O} is tangent to a 4D-sphere. In our 3D space, a generic
 infinitesimal displacement will have the distance:
-@dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2(d\theta^2+sin^2{\theta}d\phi^2).}Like
+@dispmath{ds_s^2=dx^2+dy^2+dz^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}Like
 our 2D friend before, we now have to assume an abstract dimension
 which we cannot visualize. Let's call the fourth dimension @mymath{w},
 then the general change in coordinates in the @emph{full} four
 dimensional space will be:
-@dispmath{ds_s^2=dr^2+r^2(d\theta^2+sin^2{\theta}d\phi^2)+dw^2.}But we
+@dispmath{ds_s^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)+dw^2.}But we
 can only work on a 3D curved space, so following exactly the same
 steps and convensions as our 2D friend, we arrive at:
 @dispmath{ds_s^2={dr^2\over
-1-Kr^2}+r^2(d\theta^2+sin^2{\theta}d\phi^2).}In a non-static universe
+1-Kr^2}+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}In a non-static universe
 (with a scale factor a(t), the distance can be written as:
-@dispmath{ds^2=c^2dt^2-a^2(t)[d\chi^2+r^2(d\theta^2+sin^2{\theta}d\phi^2)].}
+@dispmath{ds^2=c^2dt^2-a^2(t)[d\chi^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)].}
 
 
 
