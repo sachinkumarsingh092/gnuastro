@@ -13221,19 +13221,21 @@ two copies. In case you regularly backup your important files, Gnulib
 will also slow down the backup process. Therefore while the simple
 invocation above can be used with no problem, it is not recommended.
 
-The recommended way to bootstrap is to first clone Gnulib and the
-Autoconf archives into a local directory. Let's call it @file{DEVDIR}
-(which you can set to any directory, change the value
-below)@footnote{If you are not a developer in Gnulib or Autoconf
-archives, you can clone them in a directory that you don't backup. In
-this way the large number of files in these projects won't slow down
-your backup process or take bandwidth (if you backup to a remote
-server).}. Just note that @file{DEVDIR} should not contain the string
-@file{gnulib}@footnote{All occurances of @file{gnulib} in the value to
-@file{bootstrap}'s @option{--gnulib-srcdir} option will be replaced
-with @file{autoconf-archives} to get to those archives.}. Currently in
-Gnuastro, both Gnulib and Autoconf archives have to be cloned in the
-same top directory like the case here.
+The recommended way to bootstrap is to first clone Gnulib and the Autoconf
+archives into a local directory. Let's call it @file{DEVDIR} (which you can
+set to any directory, change the value below)@footnote{If you are not a
+developer in Gnulib or Autoconf archives, you can clone them in a directory
+that you don't backup. In this way the large number of files in these
+projects won't slow down your backup process or take bandwidth (if you
+backup to a remote server).}. Currently in Gnuastro, both Gnulib and
+Autoconf archives have to be cloned in the same top directory like the case
+here@footnote{If you already have the Autoconf archives in a separate
+directory, or can't clone it in the same directory as Gnulib, or you have
+it with another directory name (not @file{autoconf-archive/}), you can
+follow this short step. Set @file{AUTOCONFARCHIVES} to your desired
+address. Then define a symbolic link in @file{DEVDIR} with the following
+command so Gnuastro's bootstrap script can find it:@*@command{$ ln -s
+$AUTOCONFARCHIVES $DEVDIR/autoconf-archive}.}.
 
 @example
 $ DEVDIR=/home/yourname/Development
@@ -13243,10 +13245,10 @@ $ git clone git://git.sv.gnu.org/autoconf-archive.git
 @end example
 
 @noindent
-You now have the full version controlled source of these two in
-separate directories. Both these packages are regularly updated, so
-every once and a while, you can run @command{$ git pull} within them
-to get any possible updates.
+You now have the full version controlled source of these two repositories
+in separate directories. Both these packages are regularly updated, so
+every once in a while, you can run @command{$ git pull} within them to get
+any possible updates.
 
 You are now ready to bootstrap Gnuastro. The following commands will
 take you into the cloned Gnuastro directory and run the
