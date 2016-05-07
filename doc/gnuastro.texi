@@ -14172,29 +14172,12 @@ title should satisfy the following conditions:
 
 @itemize
 @item
-It is best for the title to be short, about 70 (or even 60)
+It is best for the title to be short, about 60 (or even 50)
 characters. Most emulated command line terminals are about 80
 characters wide. However, we should also allow for the commit hashes
 which are printed in @command{git log --oneline}, and also branch
 names or the graph stucture outputs of @command{git log} which are
 also commonly used.
-
-@item
-The title should start with a category corresponding to the Support, Bug or
-Tasks trackers on Savannah, followed by a colon (@key{:} (see @ref{Gnuastro
-project webpage}). For utilities, use the short name (for example
-@command{imgcrop} for ImageCrop) and for other categories, use the standard
-three letter (all small-caps) summary of the category, see @command{git log
---oneline} for some examples.
-
-When the change is such that any of the other categories overlap with a
-utility (for example something related to a specific utility was changed in
-the documentation, or installation), then use the utility category. Updates
-in the documentation/book should also be classified by the respective
-utility, or chapter. For example, a change to this section would go under
-the @command{dev} (Development) category. Only issues related to the actual
-book (for example building the documentation, or introduction) should be
-classified as @command{book}.
 
 @item
 The title should also not finish with any full-stops or periods.
@@ -14203,30 +14186,38 @@ The title should also not finish with any full-stops or periods.
 
 @item Commit body
 The body of the commit message is separated from the title by one empty
-line. Like all other Gnuastro's text files, the commit body's lines should
+line. The body should be very descriptive. People will look at these commit
+bodies after they pull the recent changes from the main Gnuastro
+repository, so when relevant, start the body by explaining what changes
+your commit makes from a user's perspective (added, changed, or removed
+options, or arguments to utilities or libraries, or modified algorithms, or
+new installation step, or etc). These will later be used to update the
+@file{NEWS} file on each release.
+
+Try to explain the committed contents as best as you can. Try to remember
+that the people (or even your self) who will be reading this later don't
+have the background that you currently have. So be very descriptive and
+explain as much as possible: what the bug/task was, justify the way you
+fixed it and discuss other possible solutions that you might not have
+included. For the last item, it is best to discuss them thoroughly as
+comments in the appropriate section of the code, but only give a short
+summary in the commit message.
+
+Like all other Gnuastro's text files, the lines in the commit body should
 not be longer than 75 characters, see @ref{Coding conventions}. This is to
 ensure that on standard terminal emulators (with 80 character width), the
 @command{git log} output can be cleanly displayed (note that the commit
-message is indented in the output of @command{git log}).
+message is indented in the output of @command{git log}). If you use Emacs,
+Gnuastro's @file{.dir-locals.el} file will ensure that your commits satisfy
+this condition (using @key{M-q}).
 
-The body should be very descriptive. Try to explain the committed contents
-as best as you can. Try to remember that the people (or even your self) who
-will be reading this later don't have the background that you currently
-have. So be very descriptive and explain as much as possible: what the
-bug/task was, justify the way you fixed it and discuss other possible
-solutions that you might not have included. For the last item, it is best
-to discuss them thoroughly as comments in the appropriate section of the
-code, but only give a short summary in the commit message.
-
-A reference to a bug or task ID on Savannah is necessary when the
-commit has to do with such issues. If the commit is a fix to a bug,
-start the commit body with ``@code{Fixed bug #ID:}'' and if it is a
-task, ``@code{Finished task #ID:}'' followed by a description of what
-the bug/task was. Although giving URL references in the description
-can be very good to help others understand the issue, it is best to
-also accompany each such URL with a description of the relevant point
-within it (assume that the reader doesn't have internet access when
-reading the commit message).
+When the commit is to resolve some bug or task defined on @ref{Gnuastro
+project webpage}, also include the relevant ID (in the format of
+@code{bug/task #ID}, note the space). The recommended way is to add a line
+after the body with `@code{This fixes bug #ID.}', or `@code{This finishes
+task #ID.}'. Don't assume that the reader has internet access to check the
+bug's full description when reading the commit message, so be very
+descriptive.
 
 @end table
 
