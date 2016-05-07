@@ -6,6 +6,9 @@
 # tools used to built Gnuastro, so we don't need to keep their
 # history.
 
+# To help readability, please add new files based on the length of the line
+# you wish to add.
+
 
 
 # Glob patterns
@@ -97,9 +100,9 @@ astarithmetic
 astnoisechisel
 astsubtractsky
 autom4te.cache
-utilityversions.texi
 doc/gnuastro.cps
 doc/gnuastro.vrs
+utilityversions.texi
 
 
 
