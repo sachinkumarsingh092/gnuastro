@@ -64,7 +64,7 @@ AUTHORS
 
 
 # Generate the aggregate list
-git shortlog --summary --email >> AUTHORS
+git shortlog --summary --email --no-merges >> AUTHORS
 
 
 # For each utility, print the list of authors:
@@ -107,6 +107,6 @@ for util in src/* "lib/" "doc/"; do
 
     # Fill in the authors of each part:
     echo $name >> AUTHORS
-    git shortlog --numbered --summary --email -- $util >> AUTHORS
+    git shortlog --numbered --summary --email --no-merges -- $util >> AUTHORS
     echo "" >> AUTHORS
 done
