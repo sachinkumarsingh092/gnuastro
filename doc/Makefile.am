@@ -42,7 +42,7 @@ EXTRA_DIST = findversions.sh README
 
 
 ## Generate a list of Gnuastro authors from repo history:
-authors.texi:
+authors.texi::
         # Only update this file if a .git directory is present in the
         # parent directory. Otherwise, this is being run from a
         # tar-ball and asuthors.texi cannot be updated.
@@ -53,7 +53,7 @@ authors.texi:
         # will be created (which will allow us to generate the
         # documentation).
 	if [ -d ../.git ]; then                                          \
-	  git shortlog --numbered --summary --email                      \
+	  git shortlog --numbered --summary --email --no-merges          \
 	    | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@\`e/"    \
             | awk '{printf "%s %s (%s, %s)@*\n", $$2, $$3, $$4, $$1}'    \
             > $@;                                                        \
