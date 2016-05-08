@@ -329,7 +329,7 @@ writeepsimage(struct converttparams *p, FILE *fp)
   fprintf(fp, "  /MultipleDataSources true\n");
   fprintf(fp, "  /BitsPerComponent %d\n", bpc);
   fprintf(fp, "  /Decode[");
-  for(i=0;i<p->numch;++i) fprintf(fp, " 0 1"); fprintf(fp, " ]\n");
+  for(i=0;i<p->numch;++i) {fprintf(fp, " 0 1");} fprintf(fp, " ]\n");
   fprintf(fp, "  /Interpolate false\n");
   fprintf(fp, "  /DataSource [\n");
   if(p->hex) channelsinhex(p, fp, size);

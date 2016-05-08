@@ -163,6 +163,7 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
                       {add_to_sll(&Q, p+s1+1); lab[p+s1+1]=curlab;}
                   }
                 else            /* At least one corner isn't in the image. */
+                  {
                     if(bl==2 && byt[p-s1-1] && !lab[p-s1-1])
                       {add_to_sll(&Q, p-s1-1); lab[p-s1-1]=curlab;}
                     if(br==2 && byt[p-s1+1] && !lab[p-s1+1])
@@ -171,6 +172,7 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
                       {add_to_sll(&Q, p+s1-1); lab[p+s1-1]=curlab;}
                     if(tr==2 && byt[p+s1+1] && !lab[p+s1+1])
                       {add_to_sll(&Q, p+s1+1); lab[p+s1+1]=curlab;}
+                  }
               }
             ++curlab;
           }
