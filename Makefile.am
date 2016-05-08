@@ -80,6 +80,27 @@ $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)    \
 $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY) doc tests
 
 
+
+## Sources to be run before everything else
+## ========================================
+##
+## The .version file is managed by the by the following file to
+## automatically generate the version:
+##
+##    bootstrapped/build-aux/git-version-gen
+##
+## we want it to be created before anything else after running `make',
+## `make check', or `make install', see the "Built sources" section of the
+## AUTOMAKE manual and the git-version-gen script comments for more
+## information.
+##
+##
+BUILT_SOURCES = $(top_srcdir)/.version
+$(top_srcdir)/.version:; echo $(VERSION) > $@-t && mv $@-t $@
+dist-hook:; echo $(VERSION) > $(distdir)/.tarball-version
+
+
+
 ## Add m4/ to the list of directories to search for m4 files
 ## =========================================================
 ACLOCAL_AMFLAGS = -I bootstrapped/m4
@@ -95,9 +116,9 @@ dist_doc_DATA = README
 ## Files that are only distributed
 ## ===============================
 EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el         \
- bootstrapped/m4/gnulib-cache.m4 bootstrapped/README .autom4te.cfg      \
- include/commonargs.h include/commonparams.h                            \
- include/fixedstringmacros.h include/neighbors.h
+ $(top_srcdir)/.version bootstrapped/m4/gnulib-cache.m4                 \
+ bootstrapped/README .autom4te.cfg include/commonargs.h                 \
+ include/commonparams.h include/fixedstringmacros.h include/neighbors.h
 
 
 ## Generate AUTHORS

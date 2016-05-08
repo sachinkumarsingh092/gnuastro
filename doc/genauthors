@@ -1,0 +1,45 @@
+#! /bin/bash
+# Update/create the authors.texi file.
+#
+# Only update authors.texi if a .git directory is present in the parent
+# directory. Otherwise, this is being run from a tar-ball and authors.texi
+# cannot be updated, so just touch it to avoid
+#
+# In case there is no git repository, then just touch authors.texi. If one
+# already exists, only its date will be changed. However, if it doesn't
+# already exist a blank file will be created (which will allow us to
+# generate the documentation).
+#
+#
+#
+# Original author:
+#     Mohammad Akhlaghi <akhlaghi@gnu.org>
+# Contributing author(s):
+# Copyright (C) 2016, Free Software Foundation, Inc.
+#
+# Gnuastro is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Gnuastro is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
+
+# Note that if authors.texi doesn't exist, the -nt (newer than) check will
+# still be successful, so authors.texi will be created from `git shortlog'.
+if [ -d ../.git ] && [ ../.git -nt authors.texi ]; then
+    git shortlog --numbered --summary --email --no-merges          \
+        | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@'e/"   \
+        | awk '{printf "%s %s (%s, %s)@*\n", $2, $3, $4, $1}'      \
+    > authors.texi
+elif [ -f authors.texi ]; then
+    touch authors.texi
+else
+    echo "!Authors list not available!" > authors.texi
+fi

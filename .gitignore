@@ -64,6 +64,7 @@ libtool
 INSTALL
 AUTHORS
 snippet
+.version
 config.h
 stamp-h1
 Makefile

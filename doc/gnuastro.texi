@@ -487,7 +487,8 @@ Developing
 
 Version controlled source
 
-* Bootstrapping::               Adding all the automaticly generated files
+* Bootstrapping::               Adding all the automaticly generated files.
+* Synchronizing::               Keep your local clone up to date.
 
 Program source
 
@@ -504,8 +505,13 @@ Mandatory source code files
 Contributing to Gnuastro
 
 * Copyright assignment::        Copyright has to be assigned to the FSF.
-* Commit guidelines::           Standards for commit messages.
-* Production workflow::         Incorporating changes into Gnuastro.
+* Commit guidelines::           Guidelines for commit messages.
+* Production workflow::         Submitting your commits (work) for inclusionm.
+
+Commit guidelines
+
+* Commit message::              Format of the commit message
+* Generate unique version number::  How to make a version for a commit
 
 Other useful software
 
@@ -894,32 +900,59 @@ version numbers along with a one line description.
 @cindex Number, version
 @cindex Major version number
 @cindex Minor version number
-The general Gnuastro package has a version number. It contains
-various programs and each of those also has its own version
-number. The version numbers for both are two numbers with a point
-(@file{.}) between them. The left number is the major version number
-while the right one is the minor version number. Note that the numbers
-are not decimals, so version 2.34 of a program is much more recent
-than version 2.5, which is not equal to 2.50!
+Gnuastro can have two formats of version numbers, for official and
+unofficial releases. Official Gnuastro releases, are formatted like
+``@file{A.B}''. @file{A} is a major version number, marking a significant
+planned acheivement (for example see @ref{GNU Astronomy Utilities 1.0}),
+while @file{B} is a minor version number, see below for more on the
+distinction. Note that the numbers are not decimals, so version 2.34 is
+much more recent than version 2.5, which is not equal to 2.50.
 
-The current version of Gnuastro is @value{VERSION} and the version
-numbers of its various components are shown in @ref{GNU Astronomy
-Utilities list}. To see the version of a program you are using, you
-can use the @option{--version} option, see @ref{Common options}.
+Gnuastro also allows a unique version number for unofficial releases. This
+is done to allow astronomers to easily use any specific point in Gnuastro's
+history for their data-analysis and research publication. This unofficial
+version number is a meaningful and easy to read string of characters,
+unique to that particular point in Gnuastro's history. With this feature,
+users can easily stay up to date with the cutting edge bug fixes and
+additions that are committed to Gnuastro's history between official
+relases. See @ref{Version controlled source} for a complete introduction,
+this section is not just for developers and is very streightforward, so if
+you are interested, please try it out.
 
-GNU Astronomy Utilities and all programs within it start with version
-number 0.1. For the programs, the minor version number is increased
-with any few bug fixes or small improvements which the developers
-decide is significant for a public release. So minor releases can be
-viewed as ad-hoc improvements. The major version number is set by a
-major goal which is defined by the developers of that particular
-program before hand.
+The unofficial version number is formatted like: @file{A.B.C-D}. @file{A}
+and @file{B} are the same as the official version number. @file{C} is the
+number of commits that have been made after the most recent official
+release. @file{D} is the first 4 characters of the commit hash
+number@footnote{Each point in Gnuastro's history is uniquely identified
+with a 40 character long hash which is created from its contents and
+previous history for example:
+@code{5b17501d8f29ba3cd610673261e6e2229c846d35}. So the string @file{D} in
+the version for this commit would be @file{5b17}}. Therefore, the
+unofficial version number `@code{3.92.8-29c8}', corresponds to the 8th
+commit after of the official version @code{3.92} and its commit hash begins
+with @code{29c8}. This number is sortable (unlike the raw hash) and as
+shown above is very descriptive of the state of the unofficial release
+compared to the most recent official release. Ofcourse an official release
+is preferred for publication, so if an official release is announced prior
+to your publication's final review, please consider using the official
+release.
 
-For Gnuastro, its minor version number increases by 1 on every release
-(which contains an arbitrary number of updated version numbers for the
-programs or the general package). You can see the details from the
-@file{NEWS} file that comes with that distribution and is also
-available online to view before you download.
+All the utilities also have a version number to signify a change in that
+utility. Therefore if no change was made in a utility between two Gnuastro
+official releases, its version number will not change. Gnuastro and all
+programs within it started with a version number @file{0.0}. The minor
+version number is increased by 1 with any few bug fixes or small
+improvements compared to the previous release. The @file{NEWS} file will
+list all the relevant changes.
+
+The major version number is set by a major goal which is defined by the
+developers and user community of Gnuastro and individual utilities before
+hand, see @ref{GNU Astronomy Utilities 1.0} for example. The incremental
+work done in minor releases are commonly small steps in acheiving the major
+goal. Therefore, there is no limit on the number of minor releases and the
+difference between the (assumed) versions 2.927 and 3.0 can be a very
+small (negligible to the user) improvement that finalizes the defined
+goals.
 
 @menu
 * GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
@@ -13088,18 +13121,27 @@ existing ones) on Savannah.
 @cindex Git
 @cindex Version control
 The publicly distributed Gnuastro tar-ball (for example
-@file{gnuastro-@value{VERSION}.tar.gz}) does not contain the revision
-history, it is only a snapshot of the source code at one significant
-instant of Gnuastro's history (specified by the version number), ready
-to be configured and built. To be able to develop successfully, the
-revision history of the code can be very useful to track when
-something was added or changed, also some updates that are not yet
-released (given a version number) might be in it.  We use Git for the
-version control of Gnuastro. For those who are not familiar with it,
-we recommend the Pro Git@footnote{@url{https://progit.org/}} book. The
-whole book is publicly available for online reading and downloading
-and does a wonderful job at explaining the concepts and best
-practices.
+@file{gnuastro-X.X.tar.gz}) does not contain the revision history, it is
+only a snapshot of the source code at one significant instant of Gnuastro's
+history (specified by the version number, see @ref{Version numbering}),
+ready to be configured and built. To be able to develop successfully, the
+revision history of the code can be very useful to track when something was
+added or changed, also some updates that are not yet released (given a
+version number) might be in it.
+
+This section is mainly focused on cloning, building from, and synchronizing
+Gnuastro's version controlled source with the developers. So if you are not
+interested in developing Gnuastro, but would like to remain up to date with
+the cutting-edge bug fixes and new functionalities that have not yet been
+released, this section is all you have to read. If you are interested in
+making changes to Gnuastro, continue the following sections in this chapter
+(culminating in @ref{Contributing to Gnuastro}).
+
+We use Git for the version control of Gnuastro. For those who are not
+familiar with it, we recommend the Pro
+Git@footnote{@url{https://progit.org/}} book. The whole book is publicly
+available for online reading and downloading and does a wonderful job at
+explaining the concepts and best practices.
 
 Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO}
 directory (can be any directory, change the value below). The full
@@ -13113,33 +13155,38 @@ $ git clone git://git.sv.gnu.org/gnuastro.git
 @end example
 
 @noindent
-The cloned Gnuastro source cannot immediately be configured, compiled,
-or installed since it only contains hand-written files, not
-automatically generated or imported files which do all the hard work
-of the build process. See @ref{Bootstrapping} for the process of
-generating and importing those files (it is really easy!).
+The @file{$TOPGNUASTRO/gnuastro} directory will contain hand-written
+(version controlled) source code for Gnuastro's utilities, libraries, this
+book and the tests. All are divided into sub-directories with standard and
+very descriptive names. The version controlled files in the top cloned
+directory are either mainly in capital letters (for example @file{THANKS}
+and @file{README}) or mainly written in smallcaps (for example
+@file{configure.ac} and @file{Makefile.am}). The former are
+non-programming, standard writing for human readers containing high-level
+information about the whole package. The latter are instructions to
+customize the GNU build system for Gnuastro.
 
-The hand-written (version controlled) source code for Gnuastro's
-utilities, libraries, this book and the tests are divided into
-sub-directories with standard and very descriptive names. The
-@file{src} and @file{lib} directories will be the main destination of
-most scientists, the former contains the utility source codes in
-subdirectories named after them (see @ref{Program source}). The latter
-contains the libraries (see @ref{Internal libraries}). The version
-controlled files in the top cloned directory are either mainly in
-capital letters (for example @file{THANKS} and @file{README}) or
-mainly written in smallcaps (for example @file{configure.ac} and
-@file{Makefile.am}). The former are non-programming, standard writing
-for human readers containing high-level information about the whole
-package. The latter are instructions to customize the GNU build system
-for Gnuastro.
+The cloned Gnuastro source cannot immediately be configured, compiled, or
+installed since it only contains hand-written files, not automatically
+generated or imported files which do all the hard work of the build
+process. See @ref{Bootstrapping} for the process of generating and
+importing those files (it is very easy!). Once you have bootstrapped
+Gnuastro, you can run the standard procedures (in @ref{Quick start}). Very
+soon after you have cloned it, Gnuastro's main @file{master} branch will be
+updated on the main repository (since the developers are actively working
+on Gnuastro), for the best practices in keeping your local history in sync
+with the main repository see @ref{Synchronizing}.
+
+
+
 
 
 @menu
-* Bootstrapping::               Adding all the automaticly generated files
+* Bootstrapping::               Adding all the automaticly generated files.
+* Synchronizing::               Keep your local clone up to date.
 @end menu
 
-@node Bootstrapping,  , Version controlled source, Version controlled source
+@node Bootstrapping, Synchronizing, Version controlled source, Version controlled source
 @subsection Bootstrapping
 
 @cindex Bootstrapping
@@ -13147,14 +13194,13 @@ for Gnuastro.
 @cindex GNU Portability Library
 @cindex Automatically created build files
 @noindent
-The version controlled source code lacks the source files that we have
-not written or are automatically built. These automatically generated
-files are included in the distributed tar ball for each distribution
-(for example @file{gnuastro-@value{VERSION}.tar.gz}) and make it easy
-to immediately configure, build, and install Gnuastro. However from
-the perspective of version control, they are just bloatware and
-sources of confusion (since they are not changed by Gnuastro
-developers).
+The version controlled source code lacks the source files that we have not
+written or are automatically built. These automatically generated files are
+included in the distributed tar ball for each distribution (for example
+@file{gnuastro-X.X.tar.gz}, see @ref{Version numbering}) and make it easy
+to immediately configure, build, and install Gnuastro. However from the
+perspective of version control, they are just bloatware and sources of
+confusion (since they are not changed by Gnuastro developers).
 
 @cindex Gnulib
 @cindex GNU Portability Library (Gnulib)
@@ -13221,19 +13267,14 @@ two copies. In case you regularly backup your important files, Gnulib
 will also slow down the backup process. Therefore while the simple
 invocation above can be used with no problem, it is not recommended.
 
-The recommended way to bootstrap is to first clone Gnulib and the
-Autoconf archives into a local directory. Let's call it @file{DEVDIR}
-(which you can set to any directory, change the value
-below)@footnote{If you are not a developer in Gnulib or Autoconf
-archives, you can clone them in a directory that you don't backup. In
-this way the large number of files in these projects won't slow down
-your backup process or take bandwidth (if you backup to a remote
-server).}. Just note that @file{DEVDIR} should not contain the string
-@file{gnulib}@footnote{All occurances of @file{gnulib} in the value to
-@file{bootstrap}'s @option{--gnulib-srcdir} option will be replaced
-with @file{autoconf-archives} to get to those archives.}. Currently in
-Gnuastro, both Gnulib and Autoconf archives have to be cloned in the
-same top directory like the case here.
+The recommended way to bootstrap Gnuastro is to first clone Gnulib and the
+Autoconf archives into a local directory. Let's call it
+@file{DEVDIR}@footnote{If you are not a developer in Gnulib or Autoconf
+archives, @file{DEVDIR} can be a directory that you don't backup. In this
+way the large number of files in these projects won't slow down your backup
+process or take bandwidth (if you backup to a remote server).}  (which you
+can set to any directory). Currently in Gnuastro, both Gnulib and Autoconf
+archives have to be cloned in the same top directory like the case here.
 
 @example
 $ DEVDIR=/home/yourname/Development
@@ -13299,16 +13340,89 @@ instead of deleting them, add the @option{n} option to @command{git
 clean}, so it becomes @option{-fxdn}.
 @end cartouche
 
-Besides the @file{bootstrap} and @file{bootstrap.conf}, another file
-and directory are also related to the bootstrapping process:
-@file{bootstrapped/} and @file{README-hacking}. @file{bootstrapped/}
-is for all the imported (bootstrapped) files. In the version
-controlled source, it only contains a @file{REAME}, but in the
-distributed tar-ball it contains all the necessary imported
+Besides the @file{bootstrap} and @file{bootstrap.conf}, the
+@file{bootstrapped/} directory and @file{README-hacking} file are also
+related to the bootstrapping process. The former hosts all the imported
+(bootstrapped) files. Thus, in the version controlled source, it only
+contains a @file{REAME} file, but in the distributed tar-ball it also
+contains sub-directories filled with all the bootstrapped
 files. @file{README-hacking} contains a summary of the bootstrapping
-process discussed in this section. It is a necessary reference when
-you haven't built this book yet. It is thus not distributed in the
-Gnuastro tarball.
+process discussed in this section. It is a necessary reference when you
+haven't built this book yet. It is thus not distributed in the Gnuastro
+tarball.
+
+
+@node Synchronizing,  , Bootstrapping, Version controlled source
+@subsection Synchronizing
+
+@cindex Mailing list: gnuastro-devel
+@cindex @code{gnuastro-devel@@gnu.org}
+The bootstrapping script (see @ref{Bootstrapping}) is not regularly needed:
+you mainly need it after you have cloned Gnuastro (once) and whenever you
+want to re-import the files from Gnulib, or Autoconf
+archives@footnote{@url{https://savannah.gnu.org/task/index.php?13993} is
+defined for you to check if significant (for Gnuastro) updates are made in
+these repositories, since the last time you pulled from them.} (not too
+common). However, Gnuastro developers are constantly working on Gnuastro
+and are pushing their changes to the official repository. Therefore, your
+local clone will soon be out-dated. All Gnuastro's development discussions
+(including when a change is added which you can pull) are circulated using
+the @command{gnuastro-devel} mailing
+list@footnote{@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}}. Subscribing
+to that mailing list, or regularly checking its
+archives@footnote{@url{http://lists.gnu.org/archive/html/gnuastro-devel/}}
+will help you decide when to synchronize with the official repository.
+
+To pull all the most recent changes in Gnuastro, run the following command.
+
+@example
+$ git pull && autoconf -f
+@end example
+
+@cindex GNU Autoconf
+@cindex Mailing list: info-gnuastro
+@cindex @code{info-gnuastro@@gnu.org}
+GNU Autoconf is part of the GNU build system and will update the
+@file{./configure} script based on the hand-written configurations (in
+@file{configure.ac}, which is version controlled in Gnuastro). The pulled
+changes might contain changes in the build system configurations. However,
+The most important reason for running this command is to generate a version
+number for your Gnuastro snapshot. This generated version number will
+include the commit information if you are building Gnuastro from a
+non-tagged point in Gnuastro's history (see @ref{Version
+numbering}). Tagged points of history will be announced on the
+@code{info-gnuastro} mailing list. Therefore, be sure to run
+`@file{autoconf -f}' after every synchronization. You can also run them
+separately:
+
+@example
+$ git pull
+$ autoconf -f
+@end example
+
+If you would like to see what has changed since you last synchronized your
+local clone without having to dig into all the discussions in the
+@code{gnuastro-devel} mailing list, you can take the following steps
+instead of the simple command above (don't type anything after @code{#}):
+
+@example
+$ git checkout master             # Confirm if you are on master.
+$ git fetch origin                # Fetch all new commits from server.
+$ git log master..origin/master   # See all the new commit messages.
+$ git merge origin/master         # Update your master branch.
+$ autoconf -f                     # Update ./configure.
+@end example
+
+@noindent
+To see exactly what has been changed in the source code along with the
+commit message, add a @option{-p} option to the @command{git log} command
+above.
+
+
+
+
+
+
 
 
 
@@ -14044,36 +14158,59 @@ own purposes.
 @node Contributing to Gnuastro,  , After making changes, Developing
 @section Contributing to Gnuastro
 
+You have this great idea or have found a good fix to a problem which you
+would like to implement it in Gnuastro, and share it with the whole
+community as part of the official release. This is great and your
+contribution is most welcome. Just please make sure that you have had a
+look at the previous sections of this chapter (see the sub-sections under
+@ref{Developing}). In short, that you have done the following steps:
+
+@enumerate
+
+@item
+Register your desired contribution on the project webpage (see
+@ref{Gnuastro project webpage}) to make sure others aren't already working
+on it.
+
+@item
+Clone Gnuastro locally on your system (see @ref{Version controlled source})
+and make sure your @file{master} branch is synchronized with the most
+recent commit on the offcial repository (see @ref{Synchronizing}).
+
+@item
+Implement your idea following Gnuastro's coding conventions, see
+@ref{Coding conventions}).
+
+@item
+Check your changes (see @ref{After making changes}).
+
+@end enumerate
+
 @cindex FSF
 @cindex Free Software Foundation
-After you have checked your changes (see @ref{After making changes}),
-you might want to share them with the larger community. In this
-section we discuss the procedure you have to take: legal and
-technical. From the legal perspective, the copyright of any work you
-do on Gnuastro has to be assigned to the Free Software Foundation
-(FSF) and the GNU operating system. We do this to ensure that Gnuastro
-can remain free in the future and it is one of the foundational
-principles of the FSF and arguably one of the reasons for its success,
-so please read @ref{Copyright assignment} carefully. From the
-technical point of view, here we also discuss commit guidelines
-(@ref{Commit guidelines}) and the general version control workflow of
-Gnuastro in @ref{Production workflow}.
+In this section we discuss the final steps you have to take: legal and
+technical. From the legal perspective, the copyright of any work you do on
+Gnuastro has to be assigned to the Free Software Foundation (FSF) and the
+GNU operating system. We do this to ensure that Gnuastro can remain free in
+the future, see @ref{Copyright assignment}. From the technical point of
+view, in this section we also discuss commit guidelines (@ref{Commit
+guidelines}) and the general version control workflow of Gnuastro in
+@ref{Production workflow}.
 
 @menu
 * Copyright assignment::        Copyright has to be assigned to the FSF.
-* Commit guidelines::           Standards for commit messages.
-* Production workflow::         Incorporating changes into Gnuastro.
+* Commit guidelines::           Guidelines for commit messages.
+* Production workflow::         Submitting your commits (work) for inclusionm.
 @end menu
 
 @node Copyright assignment, Commit guidelines, Contributing to Gnuastro, Contributing to Gnuastro
 @subsection Copyright assignment
 
-The copyright of all Gnuastro was assigned to the FSF upon being
-accepted as an official GNU package. Professor Eben Moglen, of the
-Columbia University Law School has given a nice summary of the reasons
-for this at @url{https://www.gnu.org/licenses/why-assign}. Below we
-are copying it verbatim for self consistency (in case you are offline
-or are reading in print).
+Gnuastro's copyright is owned by the FSF. Professor Eben Moglen, of the
+Columbia University Law School has given a nice summary of the reasons for
+this at @url{https://www.gnu.org/licenses/why-assign}. Below we are copying
+it verbatim for self consistency (in case you are offline or reading in
+print).
 
 @quotation
 Under US copyright law, which is the law under which most free
@@ -14150,15 +14287,44 @@ by a very large community.
 
 
 
-
 @node Commit guidelines, Production workflow, Copyright assignment, Contributing to Gnuastro
 @subsection Commit guidelines
 
-We strive to follow these standards for the commit messages in
-Gnuastro. Note that in the early phases of Gnuastro's development, we
-are experimenting and so if you notice earlier commits don't satisfy
-any of the guidelines below, it is because they predate that
-guideline.
+To be able to cleanly integrate your work with the other developers,
+@strong{never commit on the @file{master} branch} (see @ref{Production
+workflow} for a complete discussion). In short, leave @file{master} only
+for changes you fetch, or pull from the official repository (see
+@ref{Synchronizing}). Before making the first commit for your new issue,
+build and checkout a specific topic-branch from a synchronized
+@file{master} as shown below (replace @file{my-important-fix} with a short
+descriptive name for the issue you want to work on):
+
+@example
+$ git checkout master
+$ git pull
+$ git checkout -b my-important-fix
+@end example
+
+@noindent
+After that, do the first commit of your great new change in Gnuastro and
+continue commiting on this branch for this specific issue.  If you want to
+make another independent change afterwards (or in the meantime), make sure
+all your previous work is commited and repeat the steps above, but with a
+new title for the new issue you are working on. As a summary, always make
+all new branches off of a synchronized @file{master} branch.
+
+
+@menu
+* Commit message::              Format of the commit message
+* Generate unique version number::  How to make a version for a commit
+@end menu
+
+@node Commit message, Generate unique version number, Commit guidelines, Commit guidelines
+@subsubsection Commit message
+In the commit message, we strive to follow these standards in
+Gnuastro. Note that in the early phases of Gnuastro's development, we are
+experimenting and so if you notice earlier commits don't satisfy any of the
+guidelines below, it is because they predate that guideline.
 
 @table @asis
 
@@ -14228,6 +14394,34 @@ reading the commit message).
 
 @end table
 
+
+@node Generate unique version number,  , Commit message, Commit guidelines
+@subsubsection Generate unique version number
+
+@cindex GNU Autoconf
+After making the commit of your great modification to Gnuastro, if you
+intend on using Gnuastro for data-analysis and research, you don't have to
+wait until an official version number (which has incorporated your change)
+is released. Gnuastro can generate a unique version number for your commit
+(see @ref{Version numbering}). To do that, run GNU Autoconf after you have
+commited your change:
+
+@example
+$ autoconf -f
+@end example
+
+The version number is recorded in all outputs (where possible), therefore
+updating it will allow you to reproduce your results later and not worry
+about any future changes. If you send your changes to us to incorporate
+(see @ref{Production workflow}), you can safely cite this version number in
+a research paper or report, since the version number is unique to this
+commit which is recorded in Gnuastro's history. If you don't intend on
+including your work in the official history, please upload your repository
+to a public hosting service (for example GitLab) and link to it in your
+report, so your results are reproducible.
+
+
+
 @node Production workflow,  , Commit guidelines, Contributing to Gnuastro
 @subsection Production workflow
 
@@ -14289,6 +14483,12 @@ from the general recommendations of
 Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
 and GitHub. But since Gnuastro is under heavy development currently, these
 might change and evolve to better suite our needs.
+
+
+
+
+
+
 
 
 
