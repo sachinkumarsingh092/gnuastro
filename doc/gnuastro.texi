@@ -3609,24 +3609,23 @@ standard@footnote{@url{http://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standar
 @cindex CPU threads, number
 @cindex Internal default value
 @cindex Number of CPU threads to use
-The thing to have in mind is that none of the programs in Gnuastro
-keep any internal default value. All the values must either be stored
-in one of the configuration files or explicitly called in the command
-line. In case the necessary parameters are not given through any of
-these methods, the program will list the missing necessary parameters
-and abort. The only exception to this is @option{--numthreads}, whose
-default value is set at @command{$ ./configure} time internally, see
-@ref{Threads in GNU Astronomy Utilities}. Of course, you can still
-provide a default value for the number of threads at any of the levels
-below, but if you don't, the program will not abort. Also note that
-through automatic output name genertion, the value to the
-@option{--output} option is also not mandatory on the command line or
-in the configuration files for all programs which don't rely on that
-value as an input@footnote{One example of a program which uses the
-value given to @option{--output} as an input is ConvertType, this
-value specifies the type of the output through the value to
-@option{--output}, see @ref{Invoking astconvertt}.}, see
-@ref{Automatic output}.
+The thing to have in mind is that none of the programs in Gnuastro keep any
+internal default value. All the values must either be stored in one of the
+configuration files or explicitly called in the command line. In case the
+necessary parameters are not given through any of these methods, the
+program will list the missing necessary parameters and abort. The only
+exception to this is @option{--numthreads}, whose default value is
+determined at run-time using the number of threads available to your
+system, see @ref{Threads in GNU Astronomy Utilities}. Of course, you can
+still provide a default value for the number of threads at any of the
+levels below, but if you don't, the program will not abort. Also note that
+through automatic output name genertion, the value to the @option{--output}
+option is also not mandatory on the command line or in the configuration
+files for all programs which don't rely on that value as an
+input@footnote{One example of a program which uses the value given to
+@option{--output} as an input is ConvertType, this value specifies the type
+of the output through the value to @option{--output}, see @ref{Invoking
+astconvertt}.}, see @ref{Automatic output}.
 
 
 
