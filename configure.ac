@@ -29,7 +29,7 @@
 AC_PREREQ([2.69])
 AC_INIT([GNU Astronomy Utilities],
          m4_esyscmd([bootstrapped/build-aux/git-version-gen    \
-                                  .tarball-version --prefix]),
+                                  .tarball-version --prefix ""]),
         [bug-gnuastro@gnu.org], [gnuastro],
         [http://www.gnu.org/software/gnuastro/])
 AC_CONFIG_AUX_DIR([bootstrapped/build-aux])
