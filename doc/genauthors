@@ -30,12 +30,13 @@
 # You should have received a copy of the GNU General Public License along
 # with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
-
-# Note that if authors.texi doesn't exist, the -nt (newer than) check will
-# still be successful, so authors.texi will be created from `git shortlog'.
-if [ -d ../.git ] && [ ../.git -nt authors.texi ]; then
+# Do NOT test if authors.texi is newer than ../.git.  In some cases the
+# list of authors is created empty when running make in top directory (in
+# particular "make -jN" with N > 1), so authors.texi needs to be recreated
+# anyway.
+if [ -d ../.git ]; then
     git shortlog --numbered --summary --email --no-merges          \
-        | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@'e/"   \
+        | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@\`e/"  \
         | awk '{printf "%s %s (%s, %s)@*\n", $2, $3, $4, $1}'      \
     > authors.texi
 elif [ -f authors.texi ]; then
