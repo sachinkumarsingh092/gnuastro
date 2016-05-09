@@ -128,6 +128,14 @@ AS_IF([test "x$has_libjpeg" = "xyes"],
 AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 
 AC_CHECK_PROG(has_ghostscript, gs, [yes], [no])
+# "-dPDFFitPage" option to ghostscript, used by ConvertType to convert from
+# EPS to PDF, has been introduced in ghostscript 9.10.  Make sure we have
+# at least that version.
+if test "x$has_ghostscript" != "xno"; then
+  case `(gs --version) 2>/dev/null` in
+    [1-8].* | 9.0[0-9]) has_ghostscript=no;;
+  esac
+fi
 AS_IF([test "x$has_ghostscript" = "xno"], anywarnings=yes)
 AM_CONDITIONAL([COND_HASGHOSTSCRIPT], [test "x$has_ghostscript" = "xyes"])
 
@@ -361,10 +369,10 @@ AS_IF([test "x$anywarnings" = xyes],
                AS_ECHO(["      If JPEG outputs are desired from ConvertType, it will warn"])
                AS_ECHO(["      you and abort with an error."])])
         AS_IF([test "x$has_ghostscript" = "xno"],
-              [AS_ECHO(["  - GPL GhostScript, with the executable name \`gs' was not found"])
-               AS_ECHO(["      in your PATH environment variable. If PDF outputs are desired"])
-               AS_ECHO(["      from ConvertType, it will stop at the EPS output and cannot "])
-               AS_ECHO(["      proceed to generate the PDF."])])
+              [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])
+               AS_ECHO(["      name \`gs', was not found in your PATH environment variable."])
+               AS_ECHO(["      If PDF outputs are desired from ConvertType, it will stop"])
+               AS_ECHO(["      at the EPS output and cannot proceed to generate the PDF."])])
         AS_ECHO(["  All checks related to the above warnings will be skipped."])
         AS_ECHO([])
         AS_ECHO([])
