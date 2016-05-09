@@ -41,9 +41,12 @@ gnuastro_TEXINFOS = fdl.texi authors.texi utilityversions.texi formath.texi
 EXTRA_DIST = findversions.sh genauthors README
 
 
-## Generate a list of Gnuastro authors from repo history:
-authors.texi::
-	$(top_srcdir)/doc/genauthors $(top_srcdir)/doc/ $(top_builddir)/doc/
+## We want to build the authors.texi file only when we are building in the
+## version controlled source. For the non version controlled souce,
+## deleting this file is like somehow deleting formath.texi, it will not be
+## rebuilt.
+authors.texi: $(top_srcdir)/configure
+	$(top_srcdir)/doc/genauthors
 
 
 # Find the version of each utility:
