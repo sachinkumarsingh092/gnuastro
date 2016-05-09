@@ -38,18 +38,18 @@ gnuastro_TEXINFOS = fdl.texi authors.texi utilityversions.texi formath.texi
 
 ## Files not predefined by Automake, and not in dependencies that must
 ## be included in the final tar-ball distribution.
-EXTRA_DIST = findversions.sh README
+EXTRA_DIST = findversions.sh genauthors README
 
 
 ## Generate a list of Gnuastro authors from repo history:
 authors.texi::
-	./genauthors
+	$(top_srcdir)/doc/genauthors $(top_srcdir)/doc/ $(top_builddir)/doc/
 
 
 # Find the version of each utility:
 headers=$(top_srcdir)/src/*/main.h
 utilityversions.texi: $(headers)
-	./findversions.sh $(headers)
+	$(top_srcdir)/doc/findversions.sh $(headers)
 
 
 ## Images:
