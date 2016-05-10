@@ -125,20 +125,19 @@ EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el         \
 ## ================
 ##
 ## The AUTHORS file is generated automatically from the version
-## control history. Note the following to cases:
+## control history. Note the following two cases:
 ##
 ##   - The AUTHORS file is a prerequisite for the make dist* commands
 ##     (all make targets including "dist"). So it is not needed when
 ##     we only run "make".
 ##
-##   - AUTHORS is defined as a PHONY target so that it is called every
-##     time any "make dist*" is called, even if AUTHORS already
-##     exists. It is possible to build from the tar-ball (that doesn't
-##     include version control), so we cannot set any dependancies for
-##     it. But generally, "make dist*" is not called to often, so
-##     there is no problem.
+##   - AUTHORS is defined as a double colon rule so that it is called every
+##     time any "make dist*" is called, even if AUTHORS already exists. It
+##     is possible for it to be called in a non version controlled source,
+##     in that case, it will not be updated (or created if it doesn't
+##     already exist, see `genauthors'). But generally, "make dist*" is not
+##     called too often and outside of version control.
 ##
 ##   - The genauthors script will not do anything (make/update the
 ##     AUTHORS file) when there is no git repository.
-.PHONY: AUTHORS
-AUTHORS:; $(top_srcdir)/genauthors
+AUTHORS::; $(top_srcdir)/genauthors
