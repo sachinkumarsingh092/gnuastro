@@ -118,13 +118,13 @@ AC_MSG_RESULT([done])
 
 
 
-#Check necessary program(s):
+# Check libjpeg:
 anywarnings=no
 AC_CHECK_LIB([jpeg], [jpeg_stdio_dest],
              [has_libjpeg=yes], [has_libjpeg=no], [-lm])
-AS_IF([test "x$has_libjpeg" = "xno"], [anywarnings=yes])
 AS_IF([test "x$has_libjpeg" = "xyes"],
-      [AC_DEFINE([HAS_LIBJPEG], [], [Has libjpeg])])
+      [AC_DEFINE([HAS_LIBJPEG], [], [Has libjpeg])],
+      [anywarnings=yes])
 AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 
 AC_CHECK_PROG(has_ghostscript, gs, [yes], [no])
