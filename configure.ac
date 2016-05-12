@@ -127,16 +127,27 @@ AS_IF([test "x$has_libjpeg" = "xyes"],
       [anywarnings=yes])
 AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 
+
+
+
+
+# Check Ghostscript: "-dPDFFitPage" option to Ghostscript, used by
+# ConvertType to convert from EPS to PDF, has been introduced in
+# Ghostscript 9.10.  Make sure we have at least that version.
+#
+# Below, only when Ghostscript exists, we check its version and only if its
+# version is larger than 9.10, does Gnuastro finally assume the existence
+# of Ghostscript.
 AC_CHECK_PROG(has_ghostscript, gs, [yes], [no])
-# "-dPDFFitPage" option to ghostscript, used by ConvertType to convert from
-# EPS to PDF, has been introduced in ghostscript 9.10.  Make sure we have
-# at least that version.
-if test "x$has_ghostscript" != "xno"; then
-  case `(gs --version) 2>/dev/null` in
-    [1-8].* | 9.0[0-9]) has_ghostscript=no;;
-  esac
-fi
-AS_IF([test "x$has_ghostscript" = "xno"], anywarnings=yes)
+AS_IF([test "x$has_ghostscript" = "xyes"],
+      [AC_MSG_CHECKING(Ghostscript version)
+       case `(gs --version) 2>/dev/null` in
+         [1-8].* | 9.0[0-9]) has_ghostscript=no;;
+       esac
+       AC_MSG_RESULT( $(gs --version) )])
+# Note: `has_ghostscript' can be set to `no' within the AS_IF above, so
+# `anywarnings' cannot be an [RUN-IF-FALSE] argument to the AS_IF above.
+AS_IF([test "x$has_ghostscript" = "xno"], [anywarnings=yes])
 AM_CONDITIONAL([COND_HASGHOSTSCRIPT], [test "x$has_ghostscript" = "xyes"])
 
 
