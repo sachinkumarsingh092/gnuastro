@@ -241,7 +241,7 @@ echo %%%%% DONE %%%%%
 # copy the full directory there because the CVS information will be
 # removed.
 cp gnuastro-top.html $TOPWEBCHECKOUT/gnuastro/index.html
-cp -R manual/* $TOPWEBCHECKOUT/gnuastro/manual/
+cp -uR manual/* $TOPWEBCHECKOUT/gnuastro/manual/
 rm -rf ./manual
 
 
