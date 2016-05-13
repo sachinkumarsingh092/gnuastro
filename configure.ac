@@ -3,6 +3,12 @@
 # Hand written file: used as input into GNU Autotools (autoconf).
 # This is part of GNU Astronomy Utilities (gnuastro) package.
 #
+# We use some macros that are distributed as part of the GNU Autoconf
+# Archive here. Those macros are all placed in the bootstrapped/m4/
+# directory along with those that were imported from Gnulib. The
+# ./bootstrap script includes that directory while its running Autoconf so
+# we don't need to explicitly call that directory here.
+#
 # Original author:
 #     Mohammad Akhlaghi <akhlaghi@gnu.org>
 # Contributing author(s):
@@ -53,8 +59,8 @@ LT_INIT
 
 
 
-# Include Autoconf archives' ax_pthread.m4 check
-m4_include([bootstrapped/m4/ax_pthread.m4])
+# Check for pthreads and add the appropriate compilation flags. AX_PTHREAD
+# comes from the GNU Autoconf Archive's ax_pthread.m4.
 AX_PTHREAD([],[AC_MSG_ERROR([AC_PACKAGE_NAME Needs POSIX Threads (pthread)])])
 CLIBS="$PTHREAD_LIBS $LIBS"
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
@@ -137,14 +143,14 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 #
 # Below, only when Ghostscript exists, we check its version and only if its
 # version is larger than 9.10, does Gnuastro finally assume the existence
-# of Ghostscript.
+# of Ghostscript. AX_COMPARE_VERSION comes from the GNU Autoconf Archive's
+# ax_compare_version.m4.
 AC_CHECK_PROG(has_ghostscript, gs, [yes], [no])
 AS_IF([test "x$has_ghostscript" = "xyes"],
       [AC_MSG_CHECKING(Ghostscript version)
-       case `(gs --version) 2>/dev/null` in
-         [1-8].* | 9.0[0-9]) has_ghostscript=no;;
-       esac
-       AC_MSG_RESULT( $(gs --version) )])
+       gsversion=$(gs --version)
+       AX_COMPARE_VERSION([9.10], [gt], [$gsversion], [has_ghostscript=no])
+       AC_MSG_RESULT( $gsversion )])
 # Note: `has_ghostscript' can be set to `no' within the AS_IF above, so
 # `anywarnings' cannot be an [RUN-IF-FALSE] argument to the AS_IF above.
 AS_IF([test "x$has_ghostscript" = "xno"], [anywarnings=yes])
