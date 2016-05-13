@@ -83,6 +83,46 @@ set -o nounset                  # Stop if a variable is not set.
 set -o errexit                  # Stop if a program returns false.
 
 
+
+
+
+# The date that is printed on the manual is generated looking at the
+# modification time of gnuastro.texi, not `../configure' that was used to
+# generate the version number. This can cause confusion, since the version
+# number (coming from the commit) will have a different date in the
+# revision history. To avoid this, here we check if the `../configure'
+# modification date is similar to that on 'gnuastro.texi' or not. If it
+# isn't a warning error is printed to let the user know, so they take the
+# appropriate action.
+cdate=$(../bootstrapped/build-aux/mdate-sh ../configure)
+tdate=$(../bootstrapped/build-aux/mdate-sh ./gnuastro.texi)
+if [ "$cdate" != "$tdate" ]; then
+    cat <<EOF
+
+The modification dates of ../configure and ./gnuastro.texi are not the
+same. The version number printed on the manual was generated with
+../configure, however the date (that is printed beside the version number)
+comes from the last modification date of ./gnuastro.texi. This can cause
+confusion if it is put on the webpage like this!
+
+So please resolve this conflict!
+
+If everything is OK and "autoconf -f" or bootstrapping was done today, you
+can run "touch ./gnuastro.texi" to give it the current modification date. If
+not, please regenerate ./configure (with autoconf -f) and run "make
+distcheck" (to see if everything is working), then "touch
+./gnuastro.texi" to upload the documentation to the webpage.
+
+The webpage is the official place for the manual and it is very important
+that it does not cause confusions for readers who are not too familiar with
+the inner workings of these scripts.
+
+EOF
+fi
+
+
+
+
 # Top CVS (webpage checkout) copy
 TOPWEBCHECKOUT=~/Development/gnuastro-web
 
@@ -254,10 +294,15 @@ fi
 # therefore we only want to copy the files that have actually changed. But
 # first, reset the IFS variable to its default value.
 IFS=$OLDIFS
+echo; echo; echo; echo "diff results:"
 for filename in $(find ./manual/ -type f -print)
 do
-    if ! diff $filename $TOPWEBCHECKOUT/gnuastro/$filename; then
+    echo "$filename:"
+    if diff $filename $TOPWEBCHECKOUT/gnuastro/$filename; then
+        echo " -- Content not changed."
+    else
         cp $filename $TOPWEBCHECKOUT/gnuastro/$filename;
+        echo " -- Copied to $TOPWEBCHECKOUT/gnuastro/"
     fi
 done
 
