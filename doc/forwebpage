@@ -97,13 +97,6 @@ umask 002
 
 
 
-# So Bash's `read' will read white space characters too:
-IFS=''
-
-
-
-
-
 # Remove the manual/ directory if it exists (because gendocs.sh will
 # write everything there).
 if [ -d ./manual ]; then rm -rf ./manual; fi
@@ -122,8 +115,6 @@ rm -f gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
 
 
 
-
-
 # Copy the two necessary files in the manual directory:
 cp javascript.html style.css ./manual/
 
@@ -133,6 +124,18 @@ cp javascript.html style.css ./manual/
 
 # Get the current month to put under all the pages.
 thismonth=$(date +"%B %Y")
+
+
+
+
+# The "Internal Field Separator" (IFS) is used to split words and lines
+# after expansions. In the process of correcting the HTMLs, we need to
+# remove any field separator for the script to work correctly, so we set
+# IFS to nothing (''). However, later on we will be needing the default
+# values in finding the proper files that have been updated, so we keep the
+# old value in a variable to reset it again later.
+OLDIFS=$IFS
+IFS=''
 
 
 
@@ -235,13 +238,34 @@ echo %%%%% DONE %%%%%
 
 
 
+# Copy the gnuastro-top.html page into index.html (by only if it actually
+# differs from it.
+if ! diff gnuastro-top.html $TOPWEBCHECKOUT/gnuastro/index.html; then
+    cp gnuastro-top.html $TOPWEBCHECKOUT/gnuastro/index.html
+fi
 
 
-# Copy the generated files to the proper directory. We do not want to
-# copy the full directory there because the CVS information will be
-# removed.
-cp gnuastro-top.html $TOPWEBCHECKOUT/gnuastro/index.html
-cp -uR manual/* $TOPWEBCHECKOUT/gnuastro/manual/
+
+
+
+# Copy the generated files to the proper directory. Note that the majority
+# of the HTML files in `html_node' have not changed, so CVS doesn't check
+# for the file contents, and so will update everything that is copied,
+# therefore we only want to copy the files that have actually changed. But
+# first, reset the IFS variable to its default value.
+IFS=$OLDIFS
+for filename in $(find ./manual/ -type f -print)
+do
+    if ! diff $filename $TOPWEBCHECKOUT/gnuastro/$filename; then
+        cp $filename $TOPWEBCHECKOUT/gnuastro/$filename;
+    fi
+done
+
+
+
+
+
+# Remove the manual directory from here, since it isn't needed any more.
 rm -rf ./manual
 
 
@@ -251,4 +275,4 @@ rm -rf ./manual
 # Go into the top CVS directory, and commit the new changes to the GNU
 # server.
 cd $TOPWEBCHECKOUT/gnuastro
-cvs commit -m "Update."
+cvs commit -m "Update"
