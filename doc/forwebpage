@@ -183,6 +183,7 @@ IFS=''
 
 # Make the proper corrections to the HTML files:
 echo
+htmldatecomment='<!-- Inserted date. This line will be ignored by diff -->'
 echo %%%%% Correcting the HTMLs %%%%%
 # Correct the address of the `(dir)' links on the top pages of both
 # HTML outputs. In the ./manual/gnuastro.html, it is `dir.html#top'
@@ -250,7 +251,10 @@ do
             if [ $hasjavascript = "yes" ]; then
                 echo "<br><a href=\"http://www.gnu.org/software/gnuastro/manual/javascript.html\" rel=\"jslicense\">JavaScript license information</a>" >> tmp.html
             fi
-            echo "<br><a href=\"http://www.gnu.org/software/gnuastro\">GNU Astronomy Utilities</a> manual, $thismonth.</p>" >> tmp.html
+            # Note that the htmldatecomment put after this line is later
+            # used to ignore this line in the diffs (so the months on the
+            # webpage don't change if this page hasn't changed).
+            echo "<br><a href=\"http://www.gnu.org/software/gnuastro\">GNU Astronomy Utilities</a> manual, $thismonth.</p> $htmldatecomment" >> tmp.html
         fi
 
         #Do any modifications to the line:
@@ -277,7 +281,6 @@ done
 echo %%%%% DONE %%%%%
 
 
-
 # Copy the gnuastro-top.html page into index.html (by only if it actually
 # differs from it.
 if ! diff gnuastro-top.html $TOPWEBCHECKOUT/gnuastro/index.html; then
@@ -293,12 +296,17 @@ fi
 # for the file contents, and so will update everything that is copied,
 # therefore we only want to copy the files that have actually changed. But
 # first, reset the IFS variable to its default value.
+#
+# Note that gendocs automatically puts a version number in the comments of
+# the generated HTML files. This creates a difference even if
 IFS=$OLDIFS
 echo; echo; echo; echo "diff results:"
 for filename in $(find ./manual/ -type f -print)
 do
     echo "$filename:"
-    if diff $filename $TOPWEBCHECKOUT/gnuastro/$filename; then
+    if diff $filename $TOPWEBCHECKOUT/gnuastro/$filename \
+            -I '<!-- This book documents version'        \
+            -I "$htmldatecomment"; then
         echo " -- Content not changed."
     else
         cp $filename $TOPWEBCHECKOUT/gnuastro/$filename;
