@@ -229,22 +229,32 @@ Tutorials
 
 Installation
 
-* Requirements::                Gnuastro requirements.
-* Optional requirements::       Optional Gnuastro requirements.
-* Installing Gnuastro::         Installing Gnuastro.
+* Dependencies::                Necessary packages for Gnuastro.
+* Downloading the source::      Ways to download the source code.
+* Build and install::           Configure, build and install Gnuastro.
 
-Requirements
+Dependencies
+
+* Mandatory dependencies::      Gnuastro will not install without these.
+* Optional dependencies::       Adding more functionality.
+* Bootstrapping dependencies::  If you have the version controlled source.
+
+Mandatory dependencies
 
 * GNU Scientific Library::      Installing GSL.
 * CFITSIO::                     C interface to the FITS standard.
 * WCSLIB::                      C interface to the WCS standard of FITS.
 
-Optional requirements
+Downloading the source
 
-* libjpeg::                     Used for JPEG image input/output.
-* GPL Ghostscript::             Used for compiling PDF images.
+* Version controlled source::   Get and use the version controlled source
 
-Installing GNU Astronomy Utilities
+Version controlled source
+
+* Bootstrapping::               Adding all the automaticly generated files.
+* Synchronizing::               Keep your local clone up to date.
+
+Build and install
 
 * Configuring::                 Configure Gnuastro
 * Tests::                       Run tests to see if it is working.
@@ -253,7 +263,7 @@ Installing GNU Astronomy Utilities
 
 Configuring
 
-* GNU Astronomy Utilities configure options::  Configure options particular to Gnuastro.
+* Gnuastro configure options::  Configure options particular to Gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
 
@@ -476,7 +486,6 @@ Developing
 * Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
-* Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
 * Header files::                Library and common headers.
 * Program source::              Conventions for the code.
@@ -484,11 +493,6 @@ Developing
 * Building::                    Explanations on building.
 * After making changes::        Checklist to finalize your changes.
 * Contributing to Gnuastro::    Share your changes with all users.
-
-Version controlled source
-
-* Bootstrapping::               Adding all the automaticly generated files.
-* Synchronizing::               Keep your local clone up to date.
 
 Program source
 
@@ -529,7 +533,7 @@ SAO ds9
 @chapter Introduction
 
 @cindex GNU coding standards
-@cindex GNU Astronomy Utilities (Gnuastro) @value{VERSION}
+@cindex GNU Astronomy Utilities (Gnuastro)
 The GNU Astronomy Utilities (Gnuastro) is an official GNU package
 consisting of separate programs for the manipulation and analysis of
 astronomical data. See @ref{GNU Astronomy Utilities list} for the full
@@ -583,36 +587,33 @@ founding basis of the Gnuastro.
 @cindex Compile
 @cindex Check
 @cindex Test
-All releases of Gnuastro are available at
-@url{https://www.gnu.org/software/gnuastro/}. Let's assume
-@file{gnuastro-@value{VERSION}.tar.gz} is in the @file{DOWLD}
-directory and you already have the requirements (see
-@ref{Requirements}). Running the following commands will unpack,
-compile, check and install Gnuastro.
+@url{https://www.gnu.org/software/gnuastro/} is the official Gnuastro
+tarball download page (see @ref{Downloading the source}). Let's assume
+@file{gnuastro-X.X.tar.gz} (see @ref{Version numbering}) is in the
+@file{TOPGNUASTRO} directory, which can be any directory, and you already
+have the dependencies installed (see @ref{Dependencies}). Running the
+following commands will unpack, compile, check and install Gnuastro.
 
 @example
-$ cd DOWLD
-$ tar -zxvf gnuastro-@value{VERSION}.tar.gz
-$ cd gnuastro-@value{VERSION}
+$ cd TOPGNUASTRO
+$ tar -zxvf gnuastro-X.X.tar.gz
+$ cd gnuastro-X.X
 $ ./configure
 $ make
 $ make check
 $ sudo make install
-$ cd ../
-$ rm -rf gnuastro-@value{VERSION} gnuastro-@value{VERSION}.tar.gz
 @end example
 
 @noindent
 
-See @ref{Known issues} if you confront any complications.  For each
-program there is an `Invoke ProgramName' sub-section in this book
-which explains how the programs should be run on the command line. It
-can be read on the command line by running the command @command{$ info
-astprogname}, see @ref{Naming convention} and @ref{Getting help}. The
-`Invoke ProgramName' sub-section starts with a few examples of each
-program and goes on to explain the invocation details. In
-@ref{Tutorials} some real life examples of how these programs might be
-used is given.
+See @ref{Known issues} if you confront any complications.  For each program
+there is an `Invoke ProgramName' sub-section in this book which explains
+how the programs should be run on the command-line. It can be read on the
+command line by running the command @command{$ info astprogname}, see
+@ref{Naming convention} and @ref{Getting help}. The `Invoke ProgramName'
+sub-section starts with a few examples of each program and goes on to
+explain the invocation details. In @ref{Tutorials} some real life examples
+of how these programs might be used are given.
 
 
 
@@ -900,24 +901,28 @@ version numbers along with a one line description.
 @cindex Number, version
 @cindex Major version number
 @cindex Minor version number
+@cindex Mailing list: info-gnuastro
 Gnuastro can have two formats of version numbers, for official and
-unofficial releases. Official Gnuastro releases, are formatted like
+unofficial releases. Official Gnuastro releases are announced on the
+@command{info-gnuastro} mailing list, they have a version control tag in
+Gnuastro's development history and their version numbers are formatted like
 ``@file{A.B}''. @file{A} is a major version number, marking a significant
 planned acheivement (for example see @ref{GNU Astronomy Utilities 1.0}),
 while @file{B} is a minor version number, see below for more on the
 distinction. Note that the numbers are not decimals, so version 2.34 is
 much more recent than version 2.5, which is not equal to 2.50.
 
-Gnuastro also allows a unique version number for unofficial releases. This
-is done to allow astronomers to easily use any specific point in Gnuastro's
-history for their data-analysis and research publication. This unofficial
-version number is a meaningful and easy to read string of characters,
-unique to that particular point in Gnuastro's history. With this feature,
-users can easily stay up to date with the cutting edge bug fixes and
-additions that are committed to Gnuastro's history between official
-relases. See @ref{Version controlled source} for a complete introduction,
-this section is not just for developers and is very streightforward, so if
-you are interested, please try it out.
+Gnuastro also allows a unique version number for unofficial
+releases. Unofficial releases can mark any point in Gnuastro's development
+history. This is done to allow astronomers to easily use any point in the
+version controlled source for their data-analysis and research
+publication. See @ref{Version controlled source} for a complete
+introduction. This section is not just for developers and is very
+streightforward, so please have a look if you are interested in the
+cutting-edge. This unofficial version number is a meaningful and easy to
+read string of characters, unique to that particular point of history. With
+this feature, users can easily stay up to date with the cutting edge bug
+fixes and additions that are committed between official relases.
 
 The unofficial version number is formatted like: @file{A.B.C-D}. @file{A}
 and @file{B} are the same as the official version number. @file{C} is the
@@ -929,12 +934,13 @@ previous history for example:
 @code{5b17501d8f29ba3cd610673261e6e2229c846d35}. So the string @file{D} in
 the version for this commit would be @file{5b17}}. Therefore, the
 unofficial version number `@code{3.92.8-29c8}', corresponds to the 8th
-commit after of the official version @code{3.92} and its commit hash begins
+commit after the official version @code{3.92} and its commit hash begins
 with @code{29c8}. This number is sortable (unlike the raw hash) and as
-shown above is very descriptive of the state of the unofficial release
-compared to the most recent official release. Ofcourse an official release
-is preferred for publication, so if an official release is announced prior
-to your publication's final review, please consider using the official
+shown above is very descriptive of the state of the unofficial
+release. Ofcourse an official release is preferred for publication (since
+its tarballs are easily available and it has gone through more tests,
+making it more stable), so if an official release is announced prior to
+your publication's final review, please consider updating to the official
 release.
 
 All the utilities also have a version number to signify a change in that
@@ -1339,7 +1345,7 @@ into separate steps and modularized.
 Gnuastro has a dedicated mailing list for making announcements. Anyone
 that is interested can subscribe to this mailing list to stay upto
 date with new releases or when the dependencies (see
-@ref{Requirements}) have been updated. To subscribe to this list,
+@ref{Dependencies}) have been updated. To subscribe to this list,
 please visit
 @url{https://lists.gnu.org/mailman/listinfo/info-gnuastro}.
 
@@ -2138,61 +2144,90 @@ night's measurements on the ecliptic.
 @chapter Installation
 
 @cindex Installation
-To successfully install Gnuastro you have to have the requirements
-already installed on your system. They are very basic for most
-astronomical programs and you might already have them installed. To
-check, try running the @command{$ ./configure} script. If you get no
-errors, then you already have them and you can skip
-@ref{Requirements}. You can heavily customize your install of
-Gnuastro, to learn more about them, see @ref{Installing Gnuastro}. If
-you encounter any problems in the installation process, it is probably
-already explained in @ref{Known issues}. In @ref{Other useful
-software} the installation and usage of some other free software that
-are not directly required by Gnuastro but might be useful in
-conjunction with it is discussed.
+To successfully install and thus use Gnuastro, first please make sure you
+have the dependencies installed, see @ref{Dependencies} for a complete
+discussion on mandatory, optional and bootstrapping dependencies. Only the
+first group are required, they are very basic for most astronomical
+programs, so you might already have them installed. @ref{Downloading the
+source} discusses the two methods you can obtain the source code: as a
+tarball (a snapshot in Gnuastro's history), or the full history.
+
+The building and installation of Gnuastro is heavily customizable, to learn
+more about them, see @ref{Build and install}. This section is essentially a
+thorough explanation of the steps in @ref{Quick start}. It discusses ways
+you can influence the building and installation. If you encounter any
+problems in the installation process, it is probably already explained in
+@ref{Known issues}. In @ref{Other useful software} the installation and
+usage of some other free software that are not directly required by
+Gnuastro but might be useful in conjunction with it is discussed.
 
 
 
 @menu
-* Requirements::                Gnuastro requirements.
-* Optional requirements::       Optional Gnuastro requirements.
-* Installing Gnuastro::         Installing Gnuastro.
+* Dependencies::                Necessary packages for Gnuastro.
+* Downloading the source::      Ways to download the source code.
+* Build and install::           Configure, build and install Gnuastro.
 @end menu
 
-@node Requirements, Optional requirements, Installation, Installation
-@section Requirements
+
+
+
+@node Dependencies, Downloading the source, Installation, Installation
+@section Dependencies
+
+The dependencies needed to build and install Gnuastro are defined by the
+features you want and how you would like to obtain the source code (see
+@ref{Downloading the source}). A minimal set of dependencies are mandatory,
+if they are not present you cannot get passed the configuration step. Such
+mandatory dependencies are therefore set to a minimum in Gnuastro and are
+very basic (low-level) and easy to install packages, they are thoroughly
+discussed in @ref{Mandatory dependencies}.
+
+If you have the packages of @ref{Optional dependencies}, Gnuastro will have
+additional functionality (for example converting FITS images to JPEG or
+PDF). If you are installing from a tarball, you can stop reading
+here. However, if you decided to use the version controlled source instead
+of the tarball, there is an additional bootstrapping step and its
+dependencies are explained in @ref{Bootstrapping dependencies}.
+
+
+@menu
+* Mandatory dependencies::      Gnuastro will not install without these.
+* Optional dependencies::       Adding more functionality.
+* Bootstrapping dependencies::  If you have the version controlled source.
+@end menu
+
+@node Mandatory dependencies, Optional dependencies, Dependencies, Dependencies
+@subsection Mandatory dependencies
 
 @cindex Dependencies, Gnuastro
 @cindex GNU build system
-GNU Astronomy Utilities @value{VERSION} has several dependencies, they
-all follow the same basic GNU based build system (like that shown in
-@ref{Quick start}), so even if you don't have them, installing them
-should be pretty straightforward. In this section we explain each
-program and any specific note that might be necessary in the
-installation.
+The mandatory Gnuastro dependencies are very basic and low-level
+tools. They all follow the same basic GNU based build system (like that
+shown in @ref{Quick start}), so even if you don't have them, installing
+them should be pretty straightforward. In this section we explain each
+program and any specific note that might be necessary in the installation.
 
 @cindex Building from source
 @cindex Compiling from source
 @cindex Source code building
 @cindex Source code compilation
 @cindex Package managers
-The most basic choice is to build the packages from source your self
-instead of relying on your distribution's pre-built packages. You can
-use the pre-built packages, however, because of the reasons below, we
-recommend that you build them your self. We will send out
-notifications in the @command{info-gnuastro} mailing list, see
-@ref{Announcements} when these requirements are updated so you can
-update them your self when you need to.
+The most basic choice is to build the packages from source yourself instead
+of relying on your distribution's package management system. While the
+latter choice is indeed possible, we recommend that you build these
+dependencies yourself as discussed below. We will send out notifications
+in the @command{info-gnuastro} mailing list, see @ref{Announcements} when
+we find out that these requirements are updated.
 
 @enumerate
 
 @item
 For each package, Gnuastro might preform better (or require) certain
-configuration options that the your distribution's package managers
-didn't add for you. If present, these configuration options are
-explained during the installation of each. When the proper
-configuration has not been set, the programs should complain and
-inform you of it.
+configuration options that your distribution's package managers didn't add
+for you. If present, these configuration options are explained during the
+installation of each. When the proper configuration has not been set, the
+programs should complain and inform you.
 
 @item
 Your distribution's prebuilt package might not be the most recent
@@ -2219,14 +2254,16 @@ correspondingly improve.
 * WCSLIB::                      C interface to the WCS standard of FITS.
 @end menu
 
-@node GNU Scientific Library, CFITSIO, Requirements, Requirements
-@subsection GNU Scientific library
+@node GNU Scientific Library, CFITSIO, Mandatory dependencies, Mandatory dependencies
+@subsubsection GNU Scientific library
 
 @cindex GNU Scientific Library
-To install the GNU Scientific Library from source, you can run the
-following commands after you have
-downloaded@footnote{@url{http://www.gnu.org/software/gsl/}}
-@file{gsl-X.X.tar.gz}:
+The GNU Scientific Library (GSL) is a very large collection of functions
+that are very useful in scientific applications, for example integration,
+random number generation, and Fast Fourier Transform among many others. To
+install GSL from source, you can run the following commands after you have
+downloaded @file{gsl-X.X.tar.gz} from its official webpage
+(@url{http://www.gnu.org/software/gsl/}):
 
 @example
 $ tar -zxvf gsl-X.X.tar.gz
@@ -2237,8 +2274,8 @@ $ make check
 $ sudo make install
 @end example
 
-@node CFITSIO, WCSLIB, GNU Scientific Library, Requirements
-@subsection CFITSIO
+@node CFITSIO, WCSLIB, GNU Scientific Library, Mandatory dependencies
+@subsubsection CFITSIO
 
 @cindex CFITSIO
 @cindex FITS standard
@@ -2277,20 +2314,18 @@ for most purposes. Don't forget to read chapter two of the manual
 though, for example the second option is only for 64bit systems. The
 manual also explains how to check if it has been installed correctly.
 
-CFITSIO comes with two executables called fpack and funpack. From
-their manual: they ``are standalone programs for compressing and
-uncompressing images and tables that are stored in the FITS (Flexible
-Image Transport System) data format.  They are analogous to the gzip
-and gunzip compression programs except that they are optimized for the
-types of astronomical images that are often stored in FITS
-format''. The instruction below explain how to compile and install
-them on your system along with CFITSIO. Incase you don't want them,
-just ignore the commands that include their names. They are not
-essential for Gnuastro, since they are just wrappers for functions
-within CFITSIO. The @command{make utils} command is only available for
-versions above 3.39, it will install the utilities (executables, to
-run on the command line) that are also shipped with CFITSIO and can be
-useful.
+CFITSIO comes with two executables called fpack and funpack. From their
+manual: they ``are standalone programs for compressing and uncompressing
+images and tables that are stored in the FITS (Flexible Image Transport
+System) data format.  They are analogous to the gzip and gunzip compression
+programs except that they are optimized for the types of astronomical
+images that are often stored in FITS format''. The instruction below
+explain how to compile and install them on your system along with
+CFITSIO. They are not essential for Gnuastro, since they are just wrappers
+for functions within CFITSIO, but they can come in handy. The @command{make
+utils} command is only available for versions above 3.39, it will build
+these executables along with several other test executables which are
+deleted before the installation (otherwise they will also be installed).
 
 @example
 $ tar -vxzf cfitsio_latest.tar.gz
@@ -2299,8 +2334,9 @@ $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
 $ make utils
 $ ./testprog > testprog.lis
-$ diff testprog.lis testprog.out
-$ cmp testprog.fit testprog.std
+$ diff testprog.lis testprog.out    # Should have no output
+$ cmp testprog.fit testprog.std     # Should have no output
+$ rm cookbook fitscopy imcopy smem speed testprog
 $ sudo make install
 @end example
 
@@ -2308,8 +2344,8 @@ $ sudo make install
 
 
 
-@node WCSLIB,  , CFITSIO, Requirements
-@subsection WCSLIB
+@node WCSLIB,  , CFITSIO, Mandatory dependencies
+@subsubsection WCSLIB
 
 @cindex WCS
 @cindex WCSLIB
@@ -2347,37 +2383,29 @@ $ sudo make install
 
 
 
-@node Optional requirements, Installing Gnuastro, Requirements, Installation
-@section Optional requirements
+@node Optional dependencies, Bootstrapping dependencies, Mandatory dependencies, Dependencies
+@subsection Optional dependencies
 
-Most of the programs in Gnuastro make use of the libraries in
-@ref{Requirements}, therefore if they are not available, the configure
-script will complain and compiling the Gnuastro is not possible. The
-libraries listed in this section are only used for very specific
-applications, therefore if you don't want these operations, they do
-not need to be present.
+The libraries listed here are only used for very specific applications,
+therefore if you don't want these operations, Gnuastro will be built and
+installed without them and you don't have to have the dependencies.
 
 @cindex GPL Ghostscript
-If the @command{./configure} script can't find these requirements, it
-will warn you that they are not present and notify you of the
-operation(s) you can't do due to not having them. If the output you
-request from a program requires a missing library, that program is
-going to warn you and abort. In the case of executables like GPL
-GhostScript, if you install them at a later time, the program will
-run. This is because if required libraries are not present at build
-time, the executables cannot be built, but an executable is called by
-the built program at run time so if it becomes available, it will be
-used. If you do install an optional library later, you will have to
-rebuild Gnuastro and reinstall it for it to take effect.
+If the @command{./configure} script can't find these requirements, it will
+warn you in the end that they are not present and notify you of the
+operation(s) you can't do due to not having them. If the output you request
+from a program requires a missing library, that program is going to warn
+you and abort. In the case of executables like GPL GhostScript, if you
+install them at a later time, the program will run. This is because if
+required libraries are not present at build time, the executables cannot be
+built, but an executable is called by the built program at run time so if
+it becomes available, it will be used. If you do install an optional
+library later, you will have to rebuild Gnuastro and reinstall it for it to
+take effect.
 
-@menu
-* libjpeg::                     Used for JPEG image input/output.
-* GPL Ghostscript::             Used for compiling PDF images.
-@end menu
+@table @asis
 
-@node libjpeg, GPL Ghostscript, Optional requirements, Optional requirements
-@subsection libjpeg
-
+@item libjpeg
 @pindex libjpeg
 @cindex JPEG format
 libjpeg is only used by ConvertType to read from and write to JPEG
@@ -2390,9 +2418,7 @@ alternative to libjpeg. It uses SIMD instructions for ARM based
 systems that significantly decreases the processing time of JPEG
 compression and decompression algorithms.
 
-@node GPL Ghostscript,  , libjpeg, Optional requirements
-@subsection GPL Ghostscript
-
+@item GPL Ghostscript
 @cindex GPL Ghostscript
 GPL Ghostscript's executable (@command{gs}) is called used by
 ConvertType to compile a PDF file from a source PostScript file, see
@@ -2402,14 +2428,426 @@ GNU/Linux distribution. Unfortunately it does not follow the standard
 GNU build style so installing it is very hard. It is best to rely on
 your distribution's package managers for this.
 
+@end table
+
+
+
+
+@node Bootstrapping dependencies,  , Optional dependencies, Dependencies
+@subsection Bootstrapping dependencies
+
+Bootstrapping is only necessary if you have decided to obtain the full
+version controlled history of Gnuastro, see @ref{Version controlled source}
+and @ref{Bootstrapping}. Using the version controlled source enables you to
+always be up to date with the most recent development work of Gnuastro (bug
+fixes, new functionalities, improved algorithms and etc). If you have
+downloaded a tarball (see @ref{Downloading the source}), then you can
+ignore this subsection.
+
+To sucessfully run the bootstrapping process, there are some additional
+dependencies to those discussed in the previous subsections. These are low
+level tools that are used by a large collection of Unix-like operating
+systems programs, therefore they are most probably already available in
+your system. If they are not already installed, you should be able to
+easily find them in any GNU/Linux distribution package management system
+(@command{apt-get}, @command{yum}, @command{pacman} and etc). The short
+names in parenthesis in @command{typewriter} font after the package name
+can be used to search for them in your package manager. For the GNU
+Portability Library, GNU Autoconf Archive and @TeX{} Live, it is
+recommended to use the instructions here, not your operating system's
+package manager.
+
+@table @asis
+
+@item GNU Portability Library (Gnulib)
+@cindex Gnulib
+@cindex GNU C library
+@cindex GNU Portability Library
+To ensure portability for a wider range of operating systems (those that
+don't include GNU C Library, namely glibc), Gnuastro depends on the GNU
+portability library, or Gnulib. Gnulib keeps a copy of all the functions in
+glibc, implemented (as much as possible) to be portable to other operating
+systems. The @file{bootstrap} script can automatically clone Gnulib (as a
+@file{gnulib/} directory inside Gnuastro), however, as described in
+@ref{Bootstrapping} this is not recommended.
+
+The recommended way to bootstrap Gnuastro is to first clone Gnulib and the
+Autoconf archives (see below) into a local directory outside of
+Gnuastro. Let's call it @file{DEVDIR}@footnote{If you are not a developer
+in Gnulib or Autoconf archives, @file{DEVDIR} can be a directory that you
+don't backup. In this way the large number of files in these projects won't
+slow down your backup process or take bandwidth (if you backup to a remote
+server).}  (which you can set to any directory). Currently in Gnuastro,
+both Gnulib and Autoconf archives have to be cloned in the same top
+directory like the case here@footnote{If you already have the Autoconf
+archives in a separate directory, or can't clone it in the same directory
+as Gnulib, or you have it with another directory name (not
+@file{autoconf-archive/}), you can follow this short step. Set
+@file{AUTOCONFARCHIVES} to your desired address. Then define a symbolic
+link in @file{DEVDIR} with the following command so Gnuastro's bootstrap
+script can find it:@*@command{$ ln -s $AUTOCONFARCHIVES
+$DEVDIR/autoconf-archive}.}.
+
+@example
+$ DEVDIR=/home/yourname/Development
+$ cd $DEVDIR
+$ git clone git://git.sv.gnu.org/gnulib.git
+$ git clone git://git.sv.gnu.org/autoconf-archive.git
+@end example
+
+@noindent
+You now have the full version controlled source of these two repositories
+in separate directories. Both these packages are regularly updated, so
+every once in a while, you can run @command{$ git pull} within them to get
+any possible updates.
+
+@item GNU Automake (@command{automake})
+@cindex GNU Automake
+GNU Automake will build the @file{Makefile.in} files in each subdirectory
+using the (hand-written) @file{Makefile.am} files. The @file{Makefile.in}s
+are subsequently used to generate the @file{Makefile}s when the user runs
+@command{./configure} before building.
+
+@item GNU Autoconf (@command{autoconf})
+@cindex GNU Autoconf
+GNU Autoconf will build the @file{configure} script using the
+configurations we have defined (hand-written) in @file{configure.ac}.
+
+@item GNU Autoconf Archive
+@cindex GNU Autoconf Archive
+These are a large collection of tests that can be called to run at
+@command{./configure} time. See the explanation under GNU Portability
+Library above for instructions on obtaining it and keeping it up to date.
+
+@item GNU Libtool (@command{libtool})
+@cindex GNU Libtool
+GNU Libtool is in charge of building all the libraries in Gnuastro. The
+libraries contain functions that are used by more than one utility and are
+thus put in a separate directory (@file{lib/}).
+
+@item GNU help2man (@command{help2man})
+@cindex GNU help2man
+GNU help2man is used to convert the output of the @option{--help} option
+(@ref{--help}) to the traditional Man page (@ref{Man pages}).
+
+@item @TeX{} Live
+@cindex @TeX{} Live
+@cindex @LaTeX{}
+Some of the figures in this book are built by @LaTeX{} (using the TikZ
+package). The @LaTeX{} source for those figures is version controlled for
+easy maintenance not the actual figures. So the @file{./boostrap} script
+will run @LaTeX{} on the sources.
+
+Installing @TeX{} Live is very easy, simply go to its official webpage
+(@url{https://www.tug.org/texlive/}) and download the appropriate installer
+by following the ``download'' link. Just note that if you do intend to
+download the full package, it needs around 4 Giga-bytes of space, so its
+initial installation can be a little slow. After the installation be sure
+to follow the instructions in setting the environment variables.
+
+@item ImageMagick (@command{imagemagick})
+@cindex ImageMagick
+ImageMagick is a wonderful and robust program for image manipulation on the
+command-line. @file{bootsrap} uses it to convert the book images into the
+formats necessary for the various book formats.
+
+@end table
 
 
 
 
 
 
-@node Installing Gnuastro,  , Optional requirements, Installation
-@section Installing GNU Astronomy Utilities
+
+
+
+
+@node Downloading the source, Build and install, Dependencies, Installation
+@section Downloading the source
+
+Gnuastro's source code can either be downloaded as a tarball, ready to be
+configured and installed on your system (as described in @ref{Quick
+start}). Alternatively, you can clone the version controlled history, run
+one extra bootstrapping step and then follow the same steps as the
+tarball.
+
+The first method is very straightforward and has less dependencies, but you
+will have to manually go to the downloading webpage at
+@url{http://ftp.gnu.org/gnu/gnuastro/} to get a recent version of Gnuastro
+and you can only use official releases, so if you want to benefit from a
+bug fix or an improvement, you have to wait until an official release. The
+second method gives you access to the most cutting-edge work done on
+Gnuastro, as soon as a bug is fixed, a new feature is added or an improved
+algorithm is used, you can start using it, see @ref{Version controlled
+source} for a complete discussion on the second method.
+
+
+
+@menu
+* Version controlled source::   Get and use the version controlled source
+@end menu
+
+@node Version controlled source,  , Downloading the source, Downloading the source
+@subsection Version controlled source
+
+@cindex Git
+@cindex Version control
+The publicly distributed Gnuastro tar-ball (for example
+@file{gnuastro-X.X.tar.gz}) does not contain the revision history, it is
+only a snapshot of the source code at one significant instant of Gnuastro's
+history (specified by the version number, see @ref{Version numbering}),
+ready to be configured and built. To be able to develop successfully, the
+revision history of the code can be very useful to track when something was
+added or changed, also some updates that are not yet officially released
+might be in it.
+
+We use Git for the version control of Gnuastro. For those who are not
+familiar with it, we recommend the Pro
+Git@footnote{@url{https://progit.org/}} book. The whole book is publicly
+available for online reading and downloading and does a wonderful job at
+explaining the concepts and best practices.
+
+Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO}
+directory (can be any directory, change the value below). The full
+version controlled history of Gnuastro can be cloned in
+@file{TOPGNUASTRO/gnuastro} by running the following commands:
+
+@example
+$ TOPGNUASTRO=/home/yourname/Research/projects/
+$ cd $TOPGNUASTRO
+$ git clone git://git.sv.gnu.org/gnuastro.git
+@end example
+
+@noindent
+The @file{$TOPGNUASTRO/gnuastro} directory will contain hand-written
+(version controlled) source code for Gnuastro's utilities, libraries, this
+book and the tests. All are divided into sub-directories with standard and
+very descriptive names. The version controlled files in the top cloned
+directory are either mainly in capital letters (for example @file{THANKS}
+and @file{README}) or mainly written in smallcaps (for example
+@file{configure.ac} and @file{Makefile.am}). The former are
+non-programming, standard writing for human readers containing high-level
+information about the whole package. The latter are instructions to
+customize the GNU build system for Gnuastro.
+
+The cloned Gnuastro source cannot immediately be configured, compiled, or
+installed since it only contains hand-written files, not automatically
+generated or imported files which do all the hard work of the build
+process. See @ref{Bootstrapping} for the process of generating and
+importing those files (it is very easy!). Once you have bootstrapped
+Gnuastro, you can run the standard procedures (in @ref{Quick start}). Very
+soon after you have cloned it, Gnuastro's main @file{master} branch will be
+updated on the main repository (since the developers are actively working
+on Gnuastro), for the best practices in keeping your local history in sync
+with the main repository see @ref{Synchronizing}.
+
+
+
+
+
+@menu
+* Bootstrapping::               Adding all the automaticly generated files.
+* Synchronizing::               Keep your local clone up to date.
+@end menu
+
+@node Bootstrapping, Synchronizing, Version controlled source, Version controlled source
+@subsubsection Bootstrapping
+
+@cindex Bootstrapping
+@cindex GNU Autoconf Archive
+@cindex GNU Portability Library
+@cindex Automatically created build files
+@noindent
+The version controlled source code lacks the source files that we have not
+written or are automatically built. These automatically generated files are
+included in the distributed tar ball for each distribution (for example
+@file{gnuastro-X.X.tar.gz}, see @ref{Version numbering}) and make it easy
+to immediately configure, build, and install Gnuastro. However from the
+perspective of version control, they are just bloatware and sources of
+confusion (since they are not changed by Gnuastro developers).
+
+@cindex Gnulib
+@cindex GNU Portability Library (Gnulib)
+The process of automatically building and importing necessary files into
+the cloned directory is known as @emph{bootstrapping}. All the instructions
+for an automatic bootstrapping are available in @file{bootstrap} and
+configured using @file{bootstrap.conf}. @file{bootstrap} is the only file
+not written by Gnuastro developers but is under version control to enable
+simple bootstrapping immediately after cloning. It is maintained by the GNU
+Portability Library (Gnulib) and this file is an identical copy, so do not
+make any changes in this file since it will be replaced when Gnulib
+releases an update. Make all your changes in @file{bootstrap.conf}.
+
+The bootstrapping process has its own separate set of dependencies, the
+full list is given in @ref{Bootstrapping dependencies}. They are generally
+very low-level and used by a very large set of commonly used programs, so
+they are probably already installed on your system. The simplest way to
+bootstrap Gnuastro is to simply run the bootstrap script within your cloned
+Gnuastro directory as shown below. However, please read the next paragraph
+before doing so (see @ref{Version controlled source} for
+@file{TOPGNUASTRO}).
+
+@example
+$ cd TOPGNUASTRO/gnuastro
+$ ./bootstrap                      # Requires internet connection
+@end example
+
+Without any options, @file{bootstrap} will clone Gnulib within your cloned
+Gnuastro directory (@file{TOPGNUASTRO/gnuastro/gnulib}) and download the
+necessary Autoconf archives macros. So if you run bootstrap like this, you
+will need an internet connection every time you decide to bootstrap. Also,
+Gnulib is a large package and cloning it can be slow. It will also keep the
+full Gnulib repository within your Gnuastro repository, so if another one
+of your projects also needs Gnulib, and you insist on running bootstrap
+like this, you will have two copies. In case you regularly backup your
+important files, Gnulib will also slow down the backup process. Therefore
+while the simple invocation above can be used with no problem, it is not
+recommended, see the next paragraph.
+
+The recommended way to get these two packages is thoroughly discussed in
+@ref{Bootstrapping dependencies}. Once you have cloned them in the separate
+@file{DEVDIR/} as discussed there. The following commands will take you
+into the cloned Gnuastro directory and run the @file{bootstrap} script,
+while telling it to copy some files (instead of making symbolic links, with
+the @option{--copy} option, this is not mandatory@footnote{The
+@option{--copy} option is recommended because some backup systems might do
+strange things with symbolic links.}) and where to look for Gnulib (with
+the @option{--gnulib-srcdir} option).
+
+@example
+$ cd $TOPGNUASTRO/gnuastro
+$ ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
+@end example
+
+@cindex GNU Texinfo
+@cindex GNU Libtool
+@cindex GNU Autoconf
+@cindex GNU Automake
+@cindex GNU build system
+Since Gnulib and Autoconf archives are now available in your local
+directories, you don't need an internet connection every time you decide to
+remove all untracked files and redo the bootstrap (see box below). You can
+also use the same command on any other project that uses Gnulib. All the
+necessary GNU C Library functions, Autoconf macros and Automake inputs are
+now available along with the book figures. The standard GNU build system
+(@ref{Quick start}) will do the rest of the job.
+
+@cartouche
+@noindent
+@strong{Undoing the bootstrap:} During the development, it might happen
+that you want to remove all the automatically generated and imported
+files. In other words, you might want to reverse the bootstrap
+process. Fortunately Git has a good utility for this job: @command{git
+clean}. Run the following command and every file that is not version
+controlled will be removed.
+
+@example
+git clean -fxd
+@end example
+
+@noindent
+It is best to commit any recent change before running this
+command. You might have created new files since the last commit and if
+they haven't been commited, they will all be gone forever (using
+@command{rm}). To get a list of the non-version controlled files
+instead of deleting them, add the @option{n} option to @command{git
+clean}, so it becomes @option{-fxdn}.
+@end cartouche
+
+Besides the @file{bootstrap} and @file{bootstrap.conf}, the
+@file{bootstrapped/} directory and @file{README-hacking} file are also
+related to the bootstrapping process. The former hosts all the imported
+(bootstrapped) directories. Thus, in the version controlled source, it only
+contains a @file{REAME} file, but in the distributed tar-ball it also
+contains sub-directories filled with all bootstrapped
+files. @file{README-hacking} contains a summary of the bootstrapping
+process discussed in this section. It is a necessary reference when you
+haven't built this book yet. It is thus not distributed in the Gnuastro
+tarball.
+
+
+@node Synchronizing,  , Bootstrapping, Version controlled source
+@subsubsection Synchronizing
+
+@cindex Mailing list: gnuastro-devel
+@cindex @code{gnuastro-devel@@gnu.org}
+The bootstrapping script (see @ref{Bootstrapping}) is not regularly needed:
+you mainly need it after you have cloned Gnuastro (once) and whenever you
+want to re-import the files from Gnulib, or Autoconf
+archives@footnote{@url{https://savannah.gnu.org/task/index.php?13993} is
+defined for you to check if significant (for Gnuastro) updates are made in
+these repositories, since the last time you pulled from them.} (not too
+common). However, Gnuastro developers are constantly working on Gnuastro
+and are pushing their changes to the official repository. Therefore, your
+local clone will soon be out-dated. All Gnuastro's development discussions
+(including when a change is added which you can pull) are circulated using
+the @command{gnuastro-devel} mailing
+list@footnote{@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}}. Subscribing
+to that mailing list, or regularly checking its
+archives@footnote{@url{http://lists.gnu.org/archive/html/gnuastro-devel/}}
+will help you decide when to synchronize with the official repository.
+
+To pull all the most recent changes in Gnuastro, run the following command.
+
+@example
+$ git pull && autoconf -f
+@end example
+
+@cindex GNU Autoconf
+@cindex Mailing list: info-gnuastro
+@cindex @code{info-gnuastro@@gnu.org}
+GNU Autoconf is part of the GNU build system and will update the
+@file{./configure} script based on the hand-written configurations (in
+@file{configure.ac}, which is version controlled in Gnuastro). The pulled
+changes might contain changes in the build system configurations. However,
+The most important reason for running this command is to generate a version
+number for your Gnuastro snapshot. This generated version number will
+include the commit information if you are building Gnuastro from any point
+in Gnuastro's history (see @ref{Version numbering}). Since the version
+number is included in nearly all outputs of the utilities, this can help
+you later exactly reproduce an old result by checking out the exact point
+in Gnuastro's history. Therefore, be sure to run `@file{autoconf -f}' after
+every synchronization. You can also run them separately:
+
+@example
+$ git pull
+$ autoconf -f
+@end example
+
+If you would like to see what has changed since you last synchronized your
+local clone without having to dig into all the discussions in the
+@code{gnuastro-devel} mailing list, you can take the following steps
+instead of the simple command above (don't type anything after @code{#}):
+
+@example
+$ git checkout master             # Confirm if you are on master.
+$ git fetch origin                # Fetch all new commits from server.
+$ git log master..origin/master   # See all the new commit messages.
+$ git merge origin/master         # Update your master branch.
+$ autoconf -f                     # Update ./configure.
+@end example
+
+@noindent
+To see exactly what has been changed in the source code along with the
+commit message, add a @option{-p} option to the @command{git log} command
+above.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Build and install,  , Downloading the source, Installation
+@section Build and install
 
 This section is basically a longer explanation to the sequence of
 commands given in @ref{Quick start}. If you want to have all the
@@ -2418,19 +2856,14 @@ change the executable names during or after installation, you have
 root access to install the programs in a system wide directory, the
 Letter paper size of the print book is fine for you or as a summary
 you don't feel like going into the details when everything is working
-seamlessly, you can safely skip this section. If you have any of the
-above problems or you want to understand the details for a better
-control over your build and install, read along.
+seamlessly, you can safely skip this section.
 
-In the following it is assumed that you have downloaded the compressed
-source file, @file{gnuastro-@value{VERSION}.tar.gz}, to the
-@file{DOWLD} (short for download) directory, replace this name with
-the directory that you want to run the installation in. Note that
-after installation, if you don't plan to re-install you no longer need
-this file or the uncompressed directory, so you can safely delete
-both. The first three steps in @ref{Quick start} need no extra
-explanation. Once you uncompress the source file the directory
-@file{DOWLD/gnuastro-@value{VERSION}} will be created.
+If you have any of the above problems or you want to understand the details
+for a better control over your build and install, read along. In the
+following it is assumed that you have prepared the source files in the
+@file{TOPGNUASTRO} directory (see @ref{Downloading the source}). The first
+three steps in @ref{Quick start} need no extra explanation, so we will skip
+them.
 
 
 @menu
@@ -2444,7 +2877,7 @@ explanation. Once you uncompress the source file the directory
 
 
 
-@node Configuring, Tests, Installing Gnuastro, Installing Gnuastro
+@node Configuring, Tests, Build and install, Build and install
 @subsection Configuring
 
 @pindex ./configure
@@ -2470,25 +2903,24 @@ $ ./configure --help
 @end example
 
 @noindent
-A complete explanation is also included in the
-@file{gnuastro-@value{VERSION}/INSTALL} file in plain text that comes
-with the Gnuastro source. Note that this file was written by the
-authors of GNU Autoconf and is common for all programs which use the
-@command{$ ./configure} script for building and installing (there is a
-lot of such programs). Here the most common general usages (not only
-Gnuastro) are explained: when you don't have super-user access to the
-system and changing the executable names. But before that a review of
-the options to configure that are particular to Gnuastro are
-discussed.
+@cindex GNU Autoconf
+A complete explanation is also included in the @file{INSTALL} file. Note
+that this file was written by the authors of GNU Autoconf (which builds the
+@file{configure} script), therefore it is common for all programs which use
+the @command{$ ./configure} script for building and installing, not just
+Gnuastro. Here we only discuss cases where you don't have super-user access
+to the system and if you want to change the executable names. But before
+that, a review of the options to configure that are particular to Gnuastro
+are discussed.
 
 @menu
-* GNU Astronomy Utilities configure options::  Configure options particular to Gnuastro.
+* Gnuastro configure options::  Configure options particular to Gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
 @end menu
 
-@node GNU Astronomy Utilities configure options, Installation directory, Configuring, Configuring
-@subsubsection GNU Astronomy Utilities configure options
+@node Gnuastro configure options, Installation directory, Configuring, Configuring
+@subsubsection Gnuastro configure options
 
 @cindex @command{./configure} options
 @cindex Configure options particular to Gnuastro
@@ -2551,7 +2983,7 @@ but not run the tests and directly install after building.
 
 
 
-@node Installation directory, Executable names, GNU Astronomy Utilities configure options, Configuring
+@node Installation directory, Executable names, Gnuastro configure options, Configuring
 @subsubsection Installation directory
 
 @vindex --prefix
@@ -2573,7 +3005,7 @@ can't take the installation steps of the command sequence in
 from anywhere, you have to specify a special directory in the
 directories you have write access in, through the shell's environment
 variables. Note that this explanation can apply to all the
-requirements in @ref{Requirements} in case the system lacks them or
+requirements in @ref{Dependencies} in case the system lacks them or
 the system wide install was not built with the proper configuration
 options. We will start with a short introduction to the shell
 variables.
@@ -2606,23 +3038,22 @@ $ printenv
 @cindex Setting @code{PATH}
 @cindex Default executable search directory
 @cindex Search directory for executables
-One of the most commonly used environment variables is @file{PATH}, it
-is a list of directories to search for executable names.  The most
-basic way to run an executable is to explicitly type the full file
-name (including all the directory information) and run it. This is
-useful for simple shell scripts or programs that you don't use too
-often. However, when the program (an executable) is to be used a lot,
-specifying all those directories will become a significant burden. The
-@file{PATH} environment variable keeps the address of all the
-directories to be searched if directory information is not explicitly
-given@footnote{This is why in the sequence of commands in @ref{Quick
-start} only @command{$ ./configure} has directory information. By
-giving a specific directory (the current directory or @file{./}), we
-are explicitly telling the shell to look in the current directory for
-an executable named @file{configure} not in the directories listed in
-@file{PATH}.}. When you don't have root access, you need to specify a
-directory for your self and add that to the @file{PATH} environment
-variable.
+One of the most commonly used environment variables is @file{PATH}, it is a
+list of directories to search for executable names.  The most basic way to
+run an executable is to explicitly type the full file name (including all
+the directory information) and run it. This is useful for simple shell
+scripts or programs that you don't use too often. However, when the program
+(an executable) is to be used a lot, specifying all those directories will
+become a significant burden. The @file{PATH} environment variable keeps the
+address of all the directories to be searched if directory information is
+not explicitly given@footnote{This is why in the sequence of commands in
+@ref{Quick start} only @command{$ ./configure} has directory
+information. By giving a specific directory (the current directory or
+@file{./}), we are explicitly telling the shell to look in the current
+directory for an executable named @file{configure} not in the directories
+listed in @file{PATH}.}. When you don't have root access, you need to
+specify a directory for yourself and add that to the @file{PATH}
+environment variable.
 
 @cindex GNU Bash
 @cindex Startup scripts
@@ -2822,7 +3253,7 @@ $ ./configure --program-transform-name='s/ast/ /'
 
 
 
-@node Tests, A4 print book, Configuring, Installing Gnuastro
+@node Tests, A4 print book, Configuring, Build and install
 @subsection Tests
 
 @cindex @command{make check}
@@ -2852,18 +3283,17 @@ all these tests are checked. If you have a reasonably modern terminal,
 the outputs of the successful tests will be colored green and the
 failed ones will be colored red.
 
-These scripts can also act as a good set of examples for you to see
-how the programs are run. All the tests are in the
-@file{gnuastro-@value{VERSION}/tests} directory. The tests for each
-program are shell scripts (ending with @file{.sh}) in a subdirectory
-of this directory with the same name as the program. See @ref{Test
-scripts} for more detailed information about these scripts incase you
-want to inspect them.
+These scripts can also act as a good set of examples for you to see how the
+programs are run. All the tests are in the @file{tests/} directory. The
+tests for each program are shell scripts (ending with @file{.sh}) in a
+subdirectory of this directory with the same name as the program. See
+@ref{Test scripts} for more detailed information about these scripts incase
+you want to inspect them.
 
 
 
 
-@node A4 print book, Known issues, Tests, Installing Gnuastro
+@node A4 print book, Known issues, Tests, Build and install
 @subsection A4 print book
 
 @cindex A4 print book
@@ -2882,11 +3312,9 @@ the program source code, enabling you to do such customizations
 
 @cindex GNU Texinfo
 In order to change the paper size, you will need to have GNU Texinfo
-installed. For simplicity, let's assume @file{SRCdir} is equivalent to
-@file{DOWLD/gnuastro-@value{VERSION}}. Open
-@file{SRCdir/doc/gnuastro.texi} with any text editor. This is the
-source file that created this book. In the first few lines you will
-see this line:
+installed. Open @file{doc/gnuastro.texi} with any text editor. This is the
+source file that created this book. In the first few lines you will see
+this line:
 
 @example
 @@c@@afourpaper
@@ -2919,7 +3347,7 @@ you can add it close to the top of the Texinfo source file.
 
 
 
-@node Known issues,  , A4 print book, Installing Gnuastro
+@node Known issues,  , A4 print book, Build and install
 @subsection Known issues
 
 Depending on your operating system and the version of the compiler you
@@ -2967,7 +3395,7 @@ non-GNU based operating system.} In this case, please run @command{$
 ./configure} with the @option{--enable-gnulibcheck} option to see if
 the problem is from the GNU Portability Library (Gnulib) not
 supporting your system or if there is a problem in Gnuastro, see
-@ref{GNU Astronomy Utilities configure options}. If the problem is not
+@ref{Gnuastro configure options}. If the problem is not
 in Gnulib
 and after all its tests you get the same complaint from
 @command{make}, then please contact us at
@@ -3081,14 +3509,12 @@ options that are common to all the programs in Gnuastro are listed.
 @cindex Command line token separation
 @cindex Separating tokens on the command line
 Your full command line text is passed onto the shell as a string of
-characters. That string is then broken up into separate `words' by
-any `metacharacters' (like space, tab, @command{|}, @command{>} or
-@command{;}) that might exist in the text. @xref{Definitions,
-`metacharacters' and `words', Definitions, bash.info, the Bash
-manual}, for the complete list of meta-characters and other Bash
-definitions. @xref{Shell Operation, ,Shell Operation, bash.info, the
-Bash manual}, for a short summary of the steps the shell takes before
-passing the commands to the program you called.
+characters. That string is then broken up into separate `words' by any
+`metacharacters' (like space, tab, @command{|}, @command{>} or @command{;})
+that might exist in the text. See the GNU Bash manual, for the complete
+list of meta-characters and other Bash definitions. Its ``Shell Operation''
+section has a short summary of the steps the shell takes before passing the
+commands to the program you called.
 
 @menu
 * Arguments and options::       Basics of options and arguments.
@@ -3672,7 +4098,7 @@ will be ignored.
 @cindex Automatic configuration file writing
 @cindex Configuration files, writing
 You can build or edit any of the directories and the configuration
-files your self using any text editor.  However, it is recommended to
+files yourself using any text editor.  However, it is recommended to
 use the @option{--setdirconf} and @option{--setusrconf} options to set
 default values for the current directory or this user, see
 @ref{Operating modes}. With these options, the values you give will be
@@ -7278,7 +7704,7 @@ profiles use the frequency domain and when working on an image of real
 edges). The reason is that if you apply a frequency domain convolution
 to a real image, you are going to loose information on the edges and
 generally you don't want large kernels. But when you have made the
-profiles in the image your self, you can just make a larger input
+profiles in the image yourself, you can just make a larger input
 image and crop the central parts to completely remove the edge effect,
 see @ref{If convolving afterwards}. Also due to oversampling, both the
 kernels and the images can become very large and the speed boost of
@@ -12840,7 +13266,6 @@ discussed. Finally some notes on the building process are given.
 * Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
-* Version controlled source::   How to get and prepare the VCSed code.
 * Internal libraries::          Internal static (not installed) libraries.
 * Header files::                Library and common headers.
 * Program source::              Conventions for the code.
@@ -13043,7 +13468,7 @@ join that work.
 
 
 
-@node Gnuastro project webpage, Version controlled source, Design philosophy, Developing
+@node Gnuastro project webpage, Internal libraries, Design philosophy, Developing
 @section Gnuastro project webpage
 
 @cindex Bug
@@ -13131,325 +13556,13 @@ existing ones) on Savannah.
 
 
 
-@node Version controlled source, Internal libraries, Gnuastro project webpage, Developing
-@section Version controlled source
-
-@cindex Git
-@cindex Version control
-The publicly distributed Gnuastro tar-ball (for example
-@file{gnuastro-X.X.tar.gz}) does not contain the revision history, it is
-only a snapshot of the source code at one significant instant of Gnuastro's
-history (specified by the version number, see @ref{Version numbering}),
-ready to be configured and built. To be able to develop successfully, the
-revision history of the code can be very useful to track when something was
-added or changed, also some updates that are not yet released (given a
-version number) might be in it.
-
-This section is mainly focused on cloning, building from, and synchronizing
-Gnuastro's version controlled source with the developers. So if you are not
-interested in developing Gnuastro, but would like to remain up to date with
-the cutting-edge bug fixes and new functionalities that have not yet been
-released, this section is all you have to read. If you are interested in
-making changes to Gnuastro, continue the following sections in this chapter
-(culminating in @ref{Contributing to Gnuastro}).
-
-We use Git for the version control of Gnuastro. For those who are not
-familiar with it, we recommend the Pro
-Git@footnote{@url{https://progit.org/}} book. The whole book is publicly
-available for online reading and downloading and does a wonderful job at
-explaining the concepts and best practices.
-
-Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO}
-directory (can be any directory, change the value below). The full
-version controlled history of Gnuastro can be cloned in
-@file{TOPGNUASTRO/gnuastro} by running the following commands:
-
-@example
-$ TOPGNUASTRO=/home/yourname/Research/projects/
-$ cd $TOPGNUASTRO
-$ git clone git://git.sv.gnu.org/gnuastro.git
-@end example
-
-@noindent
-The @file{$TOPGNUASTRO/gnuastro} directory will contain hand-written
-(version controlled) source code for Gnuastro's utilities, libraries, this
-book and the tests. All are divided into sub-directories with standard and
-very descriptive names. The version controlled files in the top cloned
-directory are either mainly in capital letters (for example @file{THANKS}
-and @file{README}) or mainly written in smallcaps (for example
-@file{configure.ac} and @file{Makefile.am}). The former are
-non-programming, standard writing for human readers containing high-level
-information about the whole package. The latter are instructions to
-customize the GNU build system for Gnuastro.
-
-The cloned Gnuastro source cannot immediately be configured, compiled, or
-installed since it only contains hand-written files, not automatically
-generated or imported files which do all the hard work of the build
-process. See @ref{Bootstrapping} for the process of generating and
-importing those files (it is very easy!). Once you have bootstrapped
-Gnuastro, you can run the standard procedures (in @ref{Quick start}). Very
-soon after you have cloned it, Gnuastro's main @file{master} branch will be
-updated on the main repository (since the developers are actively working
-on Gnuastro), for the best practices in keeping your local history in sync
-with the main repository see @ref{Synchronizing}.
-
-
-
-
-
-@menu
-* Bootstrapping::               Adding all the automaticly generated files.
-* Synchronizing::               Keep your local clone up to date.
-@end menu
-
-@node Bootstrapping, Synchronizing, Version controlled source, Version controlled source
-@subsection Bootstrapping
-
-@cindex Bootstrapping
-@cindex GNU Autoconf Archive
-@cindex GNU Portability Library
-@cindex Automatically created build files
-@noindent
-The version controlled source code lacks the source files that we have not
-written or are automatically built. These automatically generated files are
-included in the distributed tar ball for each distribution (for example
-@file{gnuastro-X.X.tar.gz}, see @ref{Version numbering}) and make it easy
-to immediately configure, build, and install Gnuastro. However from the
-perspective of version control, they are just bloatware and sources of
-confusion (since they are not changed by Gnuastro developers).
-
-@cindex Gnulib
-@cindex GNU Portability Library (Gnulib)
-The process of automatically building and importing necessary files
-into the cloned directory is known as @emph{bootstrapping}. All the
-instructions for an automatic bootstrapping are available in
-@file{bootstrap} and configured using the
-@file{bootstrap.conf}. @file{bootstrap} is the only file not written
-by Gnuastro developers but is under version control to enable simple
-bootstrapping immediately after cloning. It is maintained by the GNU
-Portability
-Library@footnote{@url{https://www.gnu.org/software/gnulib/}} (Gnulib)
-and this file is an identical copy, so do not make any changes in this
-file since it will be replaced when Gnulib releases an update. Make
-all your changes in @file{bootstrap.conf}. In general, the files we
-have not hand-written can be classified as the following:
-
-@itemize
-
-@cindex GNU C Library
-@item
-To ensure portability for a wider range of operating systems (those
-that don't include GNU C Library, namely glibc), we have used
-Gnulib. Gnulib keeps a copy of all the functions in glibc and you can
-include them in the source code to replace system wide functions on
-other compilers that lack the extra capabilities of glibc.
-
-@item
-To test for various system architectures and compiler configurations
-we make use of the various GNU Autoconf macros in the GNU Autoconf
-archives@footnote{@url{http://www.gnu.org/software/autoconf-archive/}}.
-
-@item
-The necessary GNU Autoconf, Automake, and Libtool files to actually
-configure, build and install Gnuastro.
-
-@item
-Figures in the book. Some of them are built by @LaTeX{} (using
-the TikZ package) and some are actual rasterized images. An automatic
-script will do the job of drawing the plots with @LaTeX{} and
-converting all the figures into all the formats that are necessary for
-all the various formats of the book.
-@end itemize
-
-The simplest way to bootstrap Gnuastro is to simply run the bootstrap
-script within your cloned Gnuastro directory as shown below. However,
-please read the next few paragraphs before doing so (see @ref{Version
-controlled source} for @file{TOPGNUASTRO}).
-
-@example
-$ cd TOPGNUASTRO/gnuastro
-$ ./bootstrap                      # Requires internet connection
-@end example
-
-Without any options, bootstrap will clone Gnulib within your cloned
-Gnuastro directory (@file{TOPGNUASTRO/gnuastro/gnulib}) and download
-the necessary Autoconf archives macros. So if you run bootstrap like
-this, you will need an internet connection every time you decide to
-bootstrap. Also, Gnulib is a very large package and cloning it can be
-slow. It will also keep the full Gnulib repository within your
-Gnuastro repository, so if another one of your projects also needs
-Gnulib, and you insist on running bootstrap like this, you will have
-two copies. In case you regularly backup your important files, Gnulib
-will also slow down the backup process. Therefore while the simple
-invocation above can be used with no problem, it is not recommended.
-
-The recommended way to bootstrap Gnuastro is to first clone Gnulib and the
-Autoconf archives into a local directory. Let's call it
-@file{DEVDIR}@footnote{If you are not a developer in Gnulib or Autoconf
-archives, @file{DEVDIR} can be a directory that you don't backup. In this
-way the large number of files in these projects won't slow down your backup
-process or take bandwidth (if you backup to a remote server).}  (which you
-can set to any directory). Currently in Gnuastro, both Gnulib and Autoconf
-archives have to be cloned in the same top directory like the case
-here@footnote{If you already have the Autoconf archives in a separate
-directory, or can't clone it in the same directory as Gnulib, or you have
-it with another directory name (not @file{autoconf-archive/}), you can
-follow this short step. Set @file{AUTOCONFARCHIVES} to your desired
-address. Then define a symbolic link in @file{DEVDIR} with the following
-command so Gnuastro's bootstrap script can find it:@*@command{$ ln -s
-$AUTOCONFARCHIVES $DEVDIR/autoconf-archive}.}.
-
-@example
-$ DEVDIR=/home/yourname/Development
-$ cd $DEVDIR
-$ git clone git://git.sv.gnu.org/gnulib.git
-$ git clone git://git.sv.gnu.org/autoconf-archive.git
-@end example
-
-@noindent
-You now have the full version controlled source of these two repositories
-in separate directories. Both these packages are regularly updated, so
-every once in a while, you can run @command{$ git pull} within them to get
-any possible updates.
-
-You are now ready to bootstrap Gnuastro. The following commands will
-take you into the cloned Gnuastro directory and run the
-@file{bootstrap} script, while telling it to copy some files (instead
-of making symbolic links, with the @option{--copy} option, this is not
-mandatory@footnote{The @option{--copy} option is recommended because
-some backup systems might do strange things with symbolic links.}) and
-where to look for Gnulib (with the @option{--gnulib-srcdir} option).
-
-@example
-$ cd $TOPGNUASTRO/gnuastro
-$ ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
-@end example
-
-@cindex GNU Texinfo
-@cindex GNU Libtool
-@cindex GNU Autoconf
-@cindex GNU Automake
-@cindex GNU build system
-Since Gnulib and Autoconf archives are now available in your local
-directories, you don't need an internet connection every time you
-decide to remove all untracked files and redo the bootstrap (see box
-below). You can also use the same command on any other project that
-uses Gnulib. All the necessary GNU C Library functions, Autoconf
-macros and Automake inputs are now available along with the book
-figures. The standard GNU build system (@ref{Quick start}) will do the
-rest of the building job and you can start hacking into the code and
-compiling your hacks with the full revision history of Gnuastro under
-your fingers.
-
-@cartouche
-@noindent
-@strong{Undoing the bootstrap:} During the development, it might
-happen that you want to remove all the automatically generated and
-imported files. In other words, you might want to reverse the
-bootstrap process. Fortunately Git has a good utility for this job:
-@command{git clean}. Run the following command and everything that is
-not version controlled will be removed.
-
-@example
-git clean -fxd
-@end example
-
-@noindent
-It is best to commit any recent change before running this
-command. You might have created new files since the last commit and if
-they haven't been commited, they will all be gone forever (using
-@command{rm}). To get a list of the non-version controlled files
-instead of deleting them, add the @option{n} option to @command{git
-clean}, so it becomes @option{-fxdn}.
-@end cartouche
-
-Besides the @file{bootstrap} and @file{bootstrap.conf}, the
-@file{bootstrapped/} directory and @file{README-hacking} file are also
-related to the bootstrapping process. The former hosts all the imported
-(bootstrapped) files. Thus, in the version controlled source, it only
-contains a @file{REAME} file, but in the distributed tar-ball it also
-contains sub-directories filled with all the bootstrapped
-files. @file{README-hacking} contains a summary of the bootstrapping
-process discussed in this section. It is a necessary reference when you
-haven't built this book yet. It is thus not distributed in the Gnuastro
-tarball.
-
-
-@node Synchronizing,  , Bootstrapping, Version controlled source
-@subsection Synchronizing
-
-@cindex Mailing list: gnuastro-devel
-@cindex @code{gnuastro-devel@@gnu.org}
-The bootstrapping script (see @ref{Bootstrapping}) is not regularly needed:
-you mainly need it after you have cloned Gnuastro (once) and whenever you
-want to re-import the files from Gnulib, or Autoconf
-archives@footnote{@url{https://savannah.gnu.org/task/index.php?13993} is
-defined for you to check if significant (for Gnuastro) updates are made in
-these repositories, since the last time you pulled from them.} (not too
-common). However, Gnuastro developers are constantly working on Gnuastro
-and are pushing their changes to the official repository. Therefore, your
-local clone will soon be out-dated. All Gnuastro's development discussions
-(including when a change is added which you can pull) are circulated using
-the @command{gnuastro-devel} mailing
-list@footnote{@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}}. Subscribing
-to that mailing list, or regularly checking its
-archives@footnote{@url{http://lists.gnu.org/archive/html/gnuastro-devel/}}
-will help you decide when to synchronize with the official repository.
-
-To pull all the most recent changes in Gnuastro, run the following command.
-
-@example
-$ git pull && autoconf -f
-@end example
-
-@cindex GNU Autoconf
-@cindex Mailing list: info-gnuastro
-@cindex @code{info-gnuastro@@gnu.org}
-GNU Autoconf is part of the GNU build system and will update the
-@file{./configure} script based on the hand-written configurations (in
-@file{configure.ac}, which is version controlled in Gnuastro). The pulled
-changes might contain changes in the build system configurations. However,
-The most important reason for running this command is to generate a version
-number for your Gnuastro snapshot. This generated version number will
-include the commit information if you are building Gnuastro from a
-non-tagged point in Gnuastro's history (see @ref{Version
-numbering}). Tagged points of history will be announced on the
-@code{info-gnuastro} mailing list. Therefore, be sure to run
-`@file{autoconf -f}' after every synchronization. You can also run them
-separately:
-
-@example
-$ git pull
-$ autoconf -f
-@end example
-
-If you would like to see what has changed since you last synchronized your
-local clone without having to dig into all the discussions in the
-@code{gnuastro-devel} mailing list, you can take the following steps
-instead of the simple command above (don't type anything after @code{#}):
-
-@example
-$ git checkout master             # Confirm if you are on master.
-$ git fetch origin                # Fetch all new commits from server.
-$ git log master..origin/master   # See all the new commit messages.
-$ git merge origin/master         # Update your master branch.
-$ autoconf -f                     # Update ./configure.
-@end example
-
-@noindent
-To see exactly what has been changed in the source code along with the
-commit message, add a @option{-p} option to the @command{git log} command
-above.
 
 
 
 
 
 
-
-
-
-@node Internal libraries, Header files, Version controlled source, Developing
+@node Internal libraries, Header files, Gnuastro project webpage, Developing
 @section Internal libraries
 
 @cindex Static libraries
@@ -14009,7 +14122,7 @@ completely unfamiliar with the concepts can get a general initial
 understanding. You don't have to go deep into the details, just enough
 to get an interested person (with absolutely no background)
 started. If you feel you can't do that, then you have probably not
-understood the concept your self! Have in mind that your only
+understood the concept yourself! Have in mind that your only
 limitation in length is the fatigue of the reader after reading a long
 text, nothing else.
 
@@ -14038,9 +14151,8 @@ the book or had known of Gnuastro before you made your change).
 @cindex Test scripts
 @cindex Gnuastro test scripts
 As explained in @ref{Tests}, for every program some simple tests are
-written to check the various independent features of the program. All
-the tests are placed in the @file{gnuastro-@value{VERSION}/tests}
-directory, let's call it @file{TESTdir}. There is one script
+written to check the various independent features of the program. All the
+tests are placed in the @file{tests/} directory. There is one script
 (@file{prepconf.sh}) in this folder and several @file{Makefile}s. The
 script is the first `test' that will be run. It will copy all the
 configuration files from the various directories to a @file{.gnuastro}
@@ -14060,7 +14172,7 @@ executable.
 @cindex Build tree
 @cindex Source tree
 The most important thing to have in mind about all the test scripts is
-that they are run from inside the @file{TESTdir} directory in the
+that they are run from inside the @file{tests/} directory in the
 ``build tree''. Which can be different from the directory they are
 stored in (known as the ``source tree''). This distinction is made by
 GNU Autoconf and Automake (which configure, build and install
@@ -14074,7 +14186,7 @@ tests (and is thus in the build tree), for example the catalogs in
 ImageCrop tests, has a @command{$topsrc} prefix instead of
 @command{../} for the build three. This @command{$topsrc} variable
 points to the source tree where the script can find the source data
-(it is defined in @file{TESTdir/Makefile.am}). The executables and
+(it is defined in @file{tests/Makefile.am}). The executables and
 other test products were built in the build tree (where they are being
 run), so they don't need to be prefixed with that variable. This is
 also true for images or files that were produced by other tests.
@@ -14091,14 +14203,13 @@ also true for images or files that were produced by other tests.
 @cindex GNU Automake
 @cindex GNU build system
 To build the various programs and libraries in Gnuastro, the GNU build
-system is used which defines the steps in @ref{Quick start}. It
-consists of GNU Autoconf and GNU Automake and GNU Libtool which are
-collectively known as GNU Autotools. They provide a very portable
-system to check the environment a program is to be installed on prior
-to compiling and set the compilation conditions based on the
-particular user. They also make installing everything in their
-standard places very easy for the programmer. Most of the small caps
-files that you see in the top @file{gnuastro-@value{VERSION}/}
+system is used which defines the steps in @ref{Quick start}. It consists of
+GNU Autoconf and GNU Automake and GNU Libtool which are collectively known
+as GNU Autotools. They provide a very portable system to check the
+environment a program is to be installed on prior to compiling and set the
+compilation conditions based on the particular user. They also make
+installing everything in their standard places very easy for the
+programmer. Most of the small caps files that you see in the top source
 directory are created by these three tools.
 
 By default all the programs are compiled with optimization flags for
@@ -14382,7 +14493,7 @@ new installation step, or etc). These will later be used to update the
 @file{NEWS} file on each release.
 
 Try to explain the committed contents as best as you can. Try to remember
-that the people (or even your self) who will be reading this later don't
+that the people (or even yourself) who will be reading this later don't
 have the background that you currently have. So be very descriptive and
 explain as much as possible: what the bug/task was, justify the way you
 fixed it and discuss other possible solutions that you might not have
@@ -14523,12 +14634,12 @@ might change and evolve to better suite our needs.
 @node GNU Astronomy Utilities list, Other useful software, Developing, Top
 @appendix GNU Astronomy Utilities list
 
-GNU Astronomy Utilities @value{VERSION}, contains the following
-programs. They are sorted in alphabetical order and followed by their
-version number. A short description is provided for each program which
-starts with the executable names in parenthesis, see @ref{Naming
-convention}. Throughout this book, they are ordered based on their
-context, please see the book contents for contextual ordering.
+GNU Astronomy Utilities, contains the following programs. They are sorted
+in alphabetical order and followed by their version number. A short
+description is provided for each program which starts with the executable
+names in parenthesis, see @ref{Naming convention}. Throughout this book,
+they are ordered based on their context, please see the book contents for
+contextual ordering.
 
 
 @table @asis
@@ -14703,7 +14814,7 @@ Copy this file into your local (user) applications directory:
 @example
 $ cp saods9.desktop ~/.local/share/applications/
 @end example
-In case you don't have the directory, you can make it your self:
+In case you don't have the directory, you can make it yourself:
 
 @example
 $ mkdir -p ~/.local/share/applications/
