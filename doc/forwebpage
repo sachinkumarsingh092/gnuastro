@@ -99,11 +99,13 @@ tdate=$(../bootstrapped/build-aux/mdate-sh ./gnuastro.texi)
 if [ "$cdate" != "$tdate" ]; then
     cat <<EOF
 
-The modification dates of ../configure and ./gnuastro.texi are not the
-same. The version number printed on the manual was generated with
-../configure, however the date (that is printed beside the version number)
-comes from the last modification date of ./gnuastro.texi. This can cause
-confusion if it is put on the webpage like this!
+Different ../configure and ./gnuastro.texi modification dates
+=============================================================
+
+The version number printed on the manual was generated with ../configure,
+however the date (that is printed beside the version number) comes from the
+last modification date of ./gnuastro.texi. This can cause confusion if it
+is put on the webpage like this!
 
 So please resolve this conflict!
 
@@ -118,6 +120,7 @@ that it does not cause confusions for readers who are not too familiar with
 the inner workings of these scripts.
 
 EOF
+    exit 1
 fi
 
 
