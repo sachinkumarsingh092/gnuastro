@@ -2479,14 +2479,18 @@ don't backup. In this way the large number of files in these projects won't
 slow down your backup process or take bandwidth (if you backup to a remote
 server).}  (which you can set to any directory). Currently in Gnuastro,
 both Gnulib and Autoconf archives have to be cloned in the same top
-directory like the case here@footnote{If you already have the Autoconf
-archives in a separate directory, or can't clone it in the same directory
-as Gnulib, or you have it with another directory name (not
-@file{autoconf-archive/}), you can follow this short step. Set
-@file{AUTOCONFARCHIVES} to your desired address. Then define a symbolic
-link in @file{DEVDIR} with the following command so Gnuastro's bootstrap
-script can find it:@*@command{$ ln -s $AUTOCONFARCHIVES
-$DEVDIR/autoconf-archive}.}.
+directory@footnote{If you already have the Autoconf archives in a separate
+directory, or can't clone it in the same directory as Gnulib, or you have
+it with another directory name (not @file{autoconf-archive/}), you can
+follow this short step. Set @file{AUTOCONFARCHIVES} to your desired
+address. Then define a symbolic link in @file{DEVDIR} with the following
+command so Gnuastro's bootstrap script can find it:@*@command{$ ln -s
+$AUTOCONFARCHIVES $DEVDIR/autoconf-archive}.} like the case
+here@footnote{If your internet connection is active, but Git complains
+about the network, it might be due to your network setup not recognizing
+the git protocol. In that case use the following URL for the HTTP protocol
+instead (for Autoconf archives, replace the name):
+@command{http://git.sv.gnu.org/r/gnulib.git}}:
 
 @example
 $ DEVDIR=/home/yourname/Development
@@ -2607,10 +2611,13 @@ Git@footnote{@url{https://progit.org/}} book. The whole book is publicly
 available for online reading and downloading and does a wonderful job at
 explaining the concepts and best practices.
 
-Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO}
-directory (can be any directory, change the value below). The full
-version controlled history of Gnuastro can be cloned in
-@file{TOPGNUASTRO/gnuastro} by running the following commands:
+Let's assume you want to keep Gnuastro in the @file{TOPGNUASTRO} directory
+(can be any directory, change the value below). The full version controlled
+history of Gnuastro can be cloned in @file{TOPGNUASTRO/gnuastro} by running
+the following commands@footnote{If your internet connection is active, but
+Git complains about the network, it might be due to your network setup not
+recognizing the Git protocol. In that case use the following URL which uses
+the HTTP protocol instead: @command{http://git.sv.gnu.org/r/gnuastro.git}}:
 
 @example
 $ TOPGNUASTRO=/home/yourname/Research/projects/
