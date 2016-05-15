@@ -376,8 +376,10 @@ PACKAGE_FULL_NAME="AC_PACKAGE_NAME (AC_PACKAGE_TARNAME) AC_PACKAGE_VERSION"
 AS_ECHO([])
 AS_ECHO([===================================================================])
 AS_ECHO([===================================================================])
-AS_ECHO(["$PACKAGE_NAME (Gnuastro) $PACKAGE_VERSION"])
-AS_ECHO(["is successfully configured for this machine."])
+AS_ECHO(["$PACKAGE_NAME (Gnuastro) $PACKAGE_VERSION is successfully"])
+AS_ECHO(["configured for this machine. To build it please run:"])
+AS_ECHO([])
+AS_ECHO(["    make"])
 AS_ECHO([])
 AS_IF([test "x$anywarnings" = xyes],
       [
@@ -396,10 +398,6 @@ AS_IF([test "x$anywarnings" = xyes],
         AS_ECHO([])
       ]
      )
-AS_ECHO(["To build Gnuastro, please run:"])
-AS_ECHO([])
-AS_ECHO(["    make"])
-AS_ECHO([])
 AS_ECHO([===================================================================])
 AS_ECHO([===================================================================])
 AS_ECHO([])

@@ -176,13 +176,26 @@ install-exec-local:
 	@echo
 	@echo "                  !!!! Congratulations !!! "
 	@echo
-	@echo "The utilities and book are now accessible anywhere on this system."
-	@echo "While using any of the utilities, if you find any bugs, or have "
-	@echo "suggestions, please don't hesitate to let us know at: "
+	@echo "The complete official Gnuastro book is available by running:"
+	@echo "    info gnuastro"
 	@echo
-	@echo "                    $(PACKAGE_BUGREPORT)"
+	@echo "We have prepared some entertaining tutorials, please run:"
+	@echo "    info gnuastro Tutorials"
 	@echo
-	@echo "(The following \"Leaving directory\" notices can be ignored.)"
+	@echo "There is a dedicated mailing list for helping you use Gnuastro:"
+	@echo "    help-gnuastro@gnu.org"
+	@echo
+	@echo "If you have found a bug, please run the following command. It "
+	@echo "contains instructions for the best ways of sharing them so we"
+	@echo "can fix it as soon as possible."
+	@echo "    info bug-gnuastro"
+	@echo
+	@echo "To stay up to date with future releases, please subscribe to "
+	@echo "the Gnuastro announcement mailing list at:"
+	@echo "    https://lists.gnu.org/mailman/listinfo/info-gnuastro"
+	@echo
+	@echo
+	@echo "(The following lines can be ignored.)"
 	@echo "==================================================================="
 	@echo "==================================================================="
 	@echo

@@ -45,7 +45,9 @@ Texts.  A copy of the license is included in the section entitled
 @direntry
 * Gnuastro: (gnuastro).       GNU Astronomy Utilities.
 
-* help-gnuastro: (gnuastro)help-gnuastro mailing list. Instructions.
+* help-gnuastro: (gnuastro)help-gnuastro mailing list. Getting help.
+
+* bug-gnuastro: (gnuastro)Report a bug. How to report bugs
 
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
