@@ -3,23 +3,43 @@
 ## Hand written file: used as input into Autotools.
 ## This is part of GNU Astronomy Utilities (gnuastro).
 ##
-# Original author:
-#     Mohammad Akhlaghi <akhlaghi@gnu.org>
-# Contributing author(s):
-# Copyright (C) 2015, Free Software Foundation, Inc.
-#
-# Gnuastro is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Gnuastro is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
+## Original author:
+##     Mohammad Akhlaghi <akhlaghi@gnu.org>
+## Contributing author(s):
+## Copyright (C) 2015, Free Software Foundation, Inc.
+##
+## Gnuastro is free software: you can redistribute it and/or modify it
+## under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## Gnuastro is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+## Sources to be run before everything else
+## ========================================
+##
+## The .version file is managed by the by the following file to
+## automatically generate the version:
+##
+##    bootstrapped/build-aux/git-version-gen
+##
+## we want it to be created before anything else after running `make',
+## `make check', or `make install', see the "Built sources" section of the
+## AUTOMAKE manual and the git-version-gen script comments for more
+## information.
+BUILT_SOURCES = $(top_srcdir)/.version
+$(top_srcdir)/.version:; echo $(VERSION) > $@-t && mv $@-t $@
+dist-hook:; echo $(VERSION) > $(distdir)/.tarball-version
+
+
 
 ## Directories to check:
 ## =====================
@@ -28,9 +48,6 @@
 ## progams. With this configuration, the user can confirm if the
 ## problem is internal to gnulib or still persists after all the
 ## Gnulib tests have been done.
-
-
-# Set the conditional directory compilation
 if COND_ARITHMETIC
   MAYBE_ARITHMETIC = src/arithmetic
 endif
@@ -81,26 +98,6 @@ $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY) doc tests
 
 
 
-## Sources to be run before everything else
-## ========================================
-##
-## The .version file is managed by the by the following file to
-## automatically generate the version:
-##
-##    bootstrapped/build-aux/git-version-gen
-##
-## we want it to be created before anything else after running `make',
-## `make check', or `make install', see the "Built sources" section of the
-## AUTOMAKE manual and the git-version-gen script comments for more
-## information.
-##
-##
-BUILT_SOURCES = $(top_srcdir)/.version
-$(top_srcdir)/.version:; echo $(VERSION) > $@-t && mv $@-t $@
-dist-hook:; echo $(VERSION) > $(distdir)/.tarball-version
-
-
-
 ## Add m4/ to the list of directories to search for m4 files
 ## =========================================================
 ACLOCAL_AMFLAGS = -I bootstrapped/m4
@@ -121,15 +118,86 @@ EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el         \
  include/commonparams.h include/fixedstringmacros.h include/neighbors.h
 
 
-## Generate AUTHORS
-## ================
+
+## Print the completion messages
+## =============================
+##
+## After the jobs in all the subdirectories are done, print the following
+## messages to confirm that everything is complete and guide the users on
+## what they should do next.
+##
+## Note that all-local is a prerequisite of `make check' too, so we will
+## only print its message when `make' was called with no options. Make will
+## set MAKECMDGOALS to blank if there are no arguments, however, the way
+## Automake works, its value is set to "all-am".
+all-local:
+	@if [ x$(MAKECMDGOALS) = x"all-am" ]; then                                   \
+	 echo;                                                                       \
+	 echo "==================================================================="; \
+	 echo "==================================================================="; \
+	 echo "Gnuastro $(VERSION), was successfully built.";                        \
+	 echo "Please check the build on your system by running:";                   \
+	 echo;                                                                       \
+	 echo "    make check";                                                      \
+	 echo;                                                                       \
+	 echo "(The following \"Leaving directory\" notices can be ignored.)";       \
+	 echo "==================================================================="; \
+	 echo "==================================================================="; \
+	 echo;                                                                       \
+	fi
+
+check-local:
+	@echo
+	@echo "==================================================================="
+	@echo "==================================================================="
+	@echo "All checks succeeded for the built Gnuastro $(VERSION)."
+	@echo "To install Gnuastro, please run:"
+	@echo
+	@if [ ! -w $(prefix) ] ; then                                                \
+	  echo "(NOTE: As the user $$USER, you don't have writing permissions";      \
+	  echo "in \"$(prefix)\", therefore the \"su\" command below should be run"; \
+	  echo "first. Configure Gnuastro again if you can't run \"su\". This";      \
+	  echo "is an example that will work: \"./configure --prefix ~/.local\".)";  \
+	  echo;                                                                      \
+	  echo "    su";                                                             \
+	fi
+	@echo "    make install"
+	@echo
+	@echo "(The following \"Leaving directory\" notices can be ignored.)"
+	@echo "==================================================================="
+	@echo "==================================================================="
+	@echo
+
+install-exec-local:
+	@echo
+	@echo "==================================================================="
+	@echo "==================================================================="
+	@echo "Gnuastro $(VERSION) is now successfully installed."
+	@echo
+	@echo "                  !!!! Congratulations !!! "
+	@echo
+	@echo "The utilities and book are now accessible anywhere on this system."
+	@echo "While using any of the utilities, if you find any bugs, or have "
+	@echo "suggestions, please don't hesitate to let us know at: "
+	@echo
+	@echo "                    $(PACKAGE_BUGREPORT)"
+	@echo
+	@echo "(The following \"Leaving directory\" notices can be ignored.)"
+	@echo "==================================================================="
+	@echo "==================================================================="
+	@echo
+
+
+
+## Generate AUTHORS for distributions
+## ==================================
 ##
 ## The AUTHORS file is generated automatically from the version
 ## control history. Note the following two cases:
 ##
-##   - The AUTHORS file is a prerequisite for the make dist* commands
-##     (all make targets including "dist"). So it is not needed when
-##     we only run "make".
+##   - The AUTHORS file is a prerequisite for the make dist* commands (all
+##     make targets including "dist") in the Makefile.in that Automake
+##     builds from this file. So it is not needed when we only run "make".
 ##
 ##   - AUTHORS is defined as a double colon rule so that it is called every
 ##     time any "make dist*" is called, even if AUTHORS already exists. It
