@@ -23,24 +23,26 @@
 # The GNU webpage is version controlled by CVS and operates based on
 # it. CVS is no longer popular anymore, but the commands below should
 # be enough for the initial setup. Afterwards, you can just run this
-# scripot.
+# script.
 #
-#   1. Choose the top directory to keep your local copy of the webpage
+#   1. Add `export CVS_RSH=ssh' to your ~/.bashrc
+#
+#   2. Choose the top directory to keep your local copy of the webpage
 #      (TOPWEBCHECKOUT). Note that especially because of MathJax,
 #      there are a HUGE number of files and since everything is
 #      generated from the single gnuastro.texi file, there is no need
 #      to take up your backup space. So you can put that directory in
 #      some directory that is not backed up, it can be anywhere.
 #
-#   2. Make a directory to keep the copy of the webpage.
+#   3. Make a directory to keep the copy of the webpage.
 #         $ mkdir $TOPWEBCHECKOUT
 #
-#   3. Set the CVSROOT environment variable, just replace SAVANNAHID
+#   4. Set the CVSROOT environment variable, just replace SAVANNAHID
 #      with your Savannah ID, it will use the key you have registered
 #      on Savannah for authentication.
 #         $ export CVSROOT=:ext:SAVANNAHID@cvs.sv.gnu.org:/web/gnuastro
 #
-#   4. Checkout a copy of the webpage:
+#   5. Checkout a copy of the webpage:
 #         $ cvs checkout ./
 #
 #
