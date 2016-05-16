@@ -166,18 +166,23 @@ check-local:
 	 echo;                                                                       \
 	 echo "==================================================================="; \
 	 echo "==================================================================="; \
-	 echo "All checks succeeded for the built Gnuastro $(VERSION).";             \
+	 echo "Your build of Gnuastro $(VERSION) didn't fail on any tests.";         \
 	 echo "To install Gnuastro, please run the commands below:";                 \
 	 echo;                                                                       \
 	 if [ ! -w $(prefix) ] ; then                                                \
 	  echo "(NOTE: As the user $$USER, you don't have writing permissions";      \
-	  echo "in \"$(prefix)\". To install Gnuastro there, the \"su\" command ";   \
-	  echo "should be run first. If you can't run \"su\", configure Gnuastro ";  \
-	  echo "again. A working example is: \"./configure --prefix ~/.local\".)";   \
+	  echo "in \"$(prefix)\". To install Gnuastro there, you must get ";         \
+	  echo "privileges first, as described below. If you can't, configure ";     \
+	  echo "Gnuastro again, for example: \"./configure --prefix ~/.local\".)";   \
 	  echo;                                                                      \
+	  echo "    sudo make install";                                              \
+	  echo "or";                                                                 \
 	  echo "    su";                                                             \
 	 fi;                                                                         \
 	 echo "    make install";                                                    \
+	 if [ ! -w $(prefix) ] ; then                                                \
+	  echo "    exit";                                                           \
+	 fi;                                                                         \
 	 echo;                                                                       \
 	 echo "(The following \"Leaving directory\" notices can be ignored.)";       \
 	 echo "==================================================================="; \
@@ -186,7 +191,8 @@ check-local:
 	fi
 
 # Note that the `\' characters in the GNU head here are not printed on the
-# command line. So we have to consider them.
+# command line. So we have to consider them. The ASCII GNU head is taken
+# from: https://www.gnu.org/graphics/gnu-ascii.html
 install-exec-local:
 	@if [ x$(GUIDEMESSAGE) = xyes ]; then                                        \
 	 echo;                                                                       \
@@ -204,11 +210,17 @@ install-exec-local:
 	 echo;                                                                       \
 	 echo "More information                     Command to run ";                \
 	 echo "----------------                     -------------- ";                \
-	 echo "Complete official Gnuastro book:    \" info gnuastro           \"";   \
-	 echo "Entertaining tutorials:             \" info gnuastro Tutorials \"";   \
-	 echo "Dedicated help mailing list:        \" info help-gnuastro      \"";   \
-	 echo "Instructions for reporting bugs:    \" info bug-gnuastro       \"";   \
-	 echo "Effectively use Info:               \" info info               \"";   \
+	 echo "Complete official Gnuastro book:    ' info gnuastro           '";     \
+	 echo "Entertaining tutorials:             ' info gnuastro Tutorials '";     \
+	 echo "Dedicated help mailing list:        ' info help-gnuastro      '";     \
+	 echo "Instructions for reporting bugs:    ' info bug-gnuastro       '";     \
+	 echo "Effectively use Info:               ' info info               '";     \
+	 echo;                                                                       \
+	 echo;                                                                       \
+	 echo "Environment variables to check: ";                                    \
+	 echo "  - '$(prefix)/bin' in PATH.";                                      \
+	 echo "(for an intro, run 'info gnuastro \"Installation directory\"')";      \
+	 echo;                                                                       \
 	 echo;                                                                       \
 	 echo "To stay up to date with future releases, please subscribe to: ";      \
 	 echo "    https://lists.gnu.org/mailman/listinfo/info-gnuastro";            \
