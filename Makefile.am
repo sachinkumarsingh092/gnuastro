@@ -126,12 +126,16 @@ EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el         \
 ## messages to confirm that everything is complete and guide the users on
 ## what they should do next.
 ##
+## When running ./configure, the user can opt-out of these messages using
+## the GUIDEMESSAGE variable that is set when they run ./configure with the
+## `--distable-guide-message' option.
+##
 ## Note that all-local is a prerequisite of `make check' too, so we will
 ## only print its message when `make' was called with no options. Make will
 ## set MAKECMDGOALS to blank if there are no arguments, however, the way
 ## Automake works, its value is set to "all-am".
 all-local:
-	@if [ x$(MAKECMDGOALS) = x"all-am" ]; then                                   \
+	@if [ x$(MAKECMDGOALS) = x"all-am" ] && [ x$(GUIDEMESSAGE) = xyes ]; then    \
 	 echo;                                                                       \
 	 echo "==================================================================="; \
 	 echo "==================================================================="; \
@@ -146,59 +150,75 @@ all-local:
 	 echo;                                                                       \
 	fi
 
+# We cannot do the writing persmission test at configure time. Here is a
+# quote from the generated ./configure script: The prefix variables...
+#
+#   "... are left unexpanded so users can "make install exec_prefix=/foo"
+#   and all the variables that are supposed to be based on exec_prefix by
+#   default will actually change."
+#
+# So actually, they can also do that after `make check'. Usually
+# professional users would want to do such a thing, so they can ignore the
+# NOTE. This note is mostly for beginners and it is not written to convey
+# that this is the ONLY solution.
 check-local:
-	@echo
-	@echo "==================================================================="
-	@echo "==================================================================="
-	@echo "All checks succeeded for the built Gnuastro $(VERSION)."
-	@echo "To install Gnuastro, please run:"
-	@echo
-	@if [ ! -w $(prefix) ] ; then                                                \
+	@if [ x$(GUIDEMESSAGE) = xyes ]; then                                        \
+	 echo;                                                                       \
+	 echo "==================================================================="; \
+	 echo "==================================================================="; \
+	 echo "All checks succeeded for the built Gnuastro $(VERSION).";             \
+	 echo "To install Gnuastro, please run the commands below:";                 \
+	 echo;                                                                       \
+	 if [ ! -w $(prefix) ] ; then                                                \
 	  echo "(NOTE: As the user $$USER, you don't have writing permissions";      \
-	  echo "in \"$(prefix)\", therefore the \"su\" command below should be run"; \
-	  echo "first. Configure Gnuastro again if you can't run \"su\". This";      \
-	  echo "is an example that will work: \"./configure --prefix ~/.local\".)";  \
+	  echo "in \"$(prefix)\". To install Gnuastro there, the \"su\" command ";   \
+	  echo "should be run first. If you can't run \"su\", configure Gnuastro ";  \
+	  echo "again. A working example is: \"./configure --prefix ~/.local\".)";   \
 	  echo;                                                                      \
 	  echo "    su";                                                             \
+	 fi;                                                                         \
+	 echo "    make install";                                                    \
+	 echo;                                                                       \
+	 echo "(The following \"Leaving directory\" notices can be ignored.)";       \
+	 echo "==================================================================="; \
+	 echo "==================================================================="; \
+	 echo;                                                                       \
 	fi
-	@echo "    make install"
-	@echo
-	@echo "(The following \"Leaving directory\" notices can be ignored.)"
-	@echo "==================================================================="
-	@echo "==================================================================="
-	@echo
 
+# Note that the `\' characters in the GNU head here are not printed on the
+# command line. So we have to consider them.
 install-exec-local:
-	@echo
-	@echo "==================================================================="
-	@echo "==================================================================="
-	@echo "Gnuastro $(VERSION) is now successfully installed."
-	@echo
-	@echo "                  !!!! Congratulations !!! "
-	@echo
-	@echo "The complete official Gnuastro book is available by running:"
-	@echo "    info gnuastro"
-	@echo
-	@echo "We have prepared some entertaining tutorials, please run:"
-	@echo "    info gnuastro Tutorials"
-	@echo
-	@echo "There is a dedicated mailing list for helping you use Gnuastro:"
-	@echo "    help-gnuastro@gnu.org"
-	@echo
-	@echo "If you have found a bug, please run the following command. It "
-	@echo "contains instructions for the best ways of sharing them so we"
-	@echo "can fix it as soon as possible."
-	@echo "    info bug-gnuastro"
-	@echo
-	@echo "To stay up to date with future releases, please subscribe to "
-	@echo "the Gnuastro announcement mailing list at:"
-	@echo "    https://lists.gnu.org/mailman/listinfo/info-gnuastro"
-	@echo
-	@echo
-	@echo "(The following lines can be ignored.)"
-	@echo "==================================================================="
-	@echo "==================================================================="
-	@echo
+	@if [ x$(GUIDEMESSAGE) = xyes ]; then                                        \
+	 echo;                                                                       \
+	 echo "==================================================================="; \
+	 echo "==================================================================="; \
+	 echo "      ,           , ";                                                \
+	 echo "     /             \ ";                                               \
+	 echo "    ((__-^^-,-^^-__))        Congratulations!";                       \
+	 echo "     \`-_---' \`---_-'         GNU Astronomy Utilities (Gnuastro),";  \
+	 echo "      \`--|o\` 'o|--'          Version $(VERSION)";                   \
+	 echo "         \  \`  / ";                                                  \
+	 echo "          ): :(              Successfully installed on this sytem.";  \
+	 echo "          :o_o: ";                                                    \
+	 echo "           \"-\" ";                                                   \
+	 echo;                                                                       \
+	 echo "More information                     Command to run ";                \
+	 echo "----------------                     -------------- ";                \
+	 echo "Complete official Gnuastro book:    \" info gnuastro           \"";   \
+	 echo "Entertaining tutorials:             \" info gnuastro Tutorials \"";   \
+	 echo "Dedicated help mailing list:        \" info help-gnuastro      \"";   \
+	 echo "Instructions for reporting bugs:    \" info bug-gnuastro       \"";   \
+	 echo "Effectively use Info:               \" info info               \"";   \
+	 echo;                                                                       \
+	 echo "To stay up to date with future releases, please subscribe to: ";      \
+	 echo "    https://lists.gnu.org/mailman/listinfo/info-gnuastro";            \
+	 echo;                                                                       \
+	 echo;                                                                       \
+	 echo "(The following lines can be ignored.)";                               \
+	 echo "==================================================================="; \
+	 echo "==================================================================="; \
+	 echo;                                                                       \
+	fi
 
 
 

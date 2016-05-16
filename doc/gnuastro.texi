@@ -2970,6 +2970,22 @@ in the build process (@command{$ make}), you can give this flag to
 configure to see if the problem is caused by Gnulib not supporting
 your operating system or Gnuastro, see @ref{Known issues}.
 
+@item --disable-guide-message
+@itemx --enable-guide-message=no
+Do not print a guiding message during the GNU Build process of @ref{Quick
+start}. By default, after each step, a message is printed guiding the user
+what the next command should be. Therefore, after @command{./configure}, it
+will suggest running @command{make}. After @command{make}, it will suggest
+running @command{make check} and so on. If Gnuastro is configured with this
+option, for example
+@example
+$ ./configure --disable-guide-message
+@end example
+Then these messages will not be printed after any step (like most
+programs). For people who are not yet fully accustomed to this build
+system, these guidelines can be very useful and encouraging. However, if
+you find those messages annoying, use this option.
+
 
 @end vtable
 

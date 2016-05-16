@@ -1,4 +1,4 @@
-# Process this file with autoconf to produce a configure script.
+i# Process this file with autoconf to produce a configure script.
 #
 # Hand written file: used as input into GNU Autotools (autoconf).
 # This is part of GNU Astronomy Utilities (gnuastro) package.
@@ -43,6 +43,13 @@ AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([bootstrapped/m4])
+
+
+
+
+
+# By default we assume no warnings
+anywarnings=no
 
 
 
@@ -125,7 +132,6 @@ AC_MSG_RESULT([done])
 
 
 # Check libjpeg:
-anywarnings=no
 AC_CHECK_LIB([jpeg], [jpeg_stdio_dest],
              [has_libjpeg=yes], [has_libjpeg=no], [-lm])
 AS_IF([test "x$has_libjpeg" = "xyes"],
@@ -320,12 +326,12 @@ AS_IF([test $ayes = true ],
 
 
 # Make the enable_package values available for the Makefile:
+AM_CONDITIONAL([COND_ARITHMETIC], [test $enable_arithmetic = yes])
 AM_CONDITIONAL([COND_CONVERTT], [test $enable_convertt = yes])
 AM_CONDITIONAL([COND_CONVOLVE], [test $enable_convolve = yes])
 AM_CONDITIONAL([COND_COSMICCAL], [test $enable_cosmiccal = yes])
 AM_CONDITIONAL([COND_HEADER], [test $enable_header = yes])
 AM_CONDITIONAL([COND_IMGCROP], [test $enable_imgcrop = yes])
-AM_CONDITIONAL([COND_ARITHMETIC], [test $enable_arithmetic = yes])
 AM_CONDITIONAL([COND_IMGSTAT], [test $enable_imgstat = yes])
 AM_CONDITIONAL([COND_IMGWARP], [test $enable_imgwarp = yes])
 AM_CONDITIONAL([COND_MKCATALOG], [test $enable_mkcatalog = yes])
@@ -364,24 +370,40 @@ AC_CONFIG_FILES([Makefile
 
 
 
-#Make the outputs:
+# Printing guiding messages. Autoconf will make the variable
+# enable_guide_message from the first argument to AC_ARG_ENABLE. It will
+# also give it a value. From the Autoconf manual, we see that
+# `--disable-guide-message' is equivalent to a value of `no', while with no
+# argument, the value will default to `yes'. In the last argument to
+# AC_ARG_ENABLE, we also specify the default behavior (when it isn't given
+# at all), here we want the default to be `yes'.
+AC_ARG_ENABLE([guide-message],
+              [AS_HELP_STRING([--disable-guide-message],
+                   [No messages after each build step.])],
+	      [], [enable_guide_message=yes])
+AC_SUBST(GUIDEMESSAGE, [$enable_guide_message])
+
+
+
+
+# Make the Makefiles:
 AC_OUTPUT
 
 
 
 
-
-# Print a bye-bye message.
-PACKAGE_FULL_NAME="AC_PACKAGE_NAME (AC_PACKAGE_TARNAME) AC_PACKAGE_VERSION"
-AS_ECHO([])
-AS_ECHO([===================================================================])
-AS_ECHO([===================================================================])
-AS_ECHO(["$PACKAGE_NAME (Gnuastro) $PACKAGE_VERSION is successfully"])
-AS_ECHO(["configured for this machine. To build it please run:"])
-AS_ECHO([])
-AS_ECHO(["    make"])
-AS_ECHO([])
-AS_IF([test "x$anywarnings" = xyes],
+# Print a message if necessary
+AS_IF([test x$enable_guide_message = xyes],
+[
+  AS_ECHO([])
+  AS_ECHO([===================================================================])
+  AS_ECHO([===================================================================])
+  AS_ECHO(["$PACKAGE_NAME (Gnuastro) $PACKAGE_VERSION is successfully"])
+  AS_ECHO(["configured for this machine. To build it please run:"])
+  AS_ECHO([])
+  AS_ECHO(["    make"])
+  AS_ECHO([])
+  AS_IF([test "x$anywarnings" = xyes],
       [
         AS_ECHO([Configuration warnings:])
         AS_IF([test "x$has_libjpeg" = "xno"],
@@ -398,6 +420,7 @@ AS_IF([test "x$anywarnings" = xyes],
         AS_ECHO([])
       ]
      )
-AS_ECHO([===================================================================])
-AS_ECHO([===================================================================])
-AS_ECHO([])
+  AS_ECHO([===================================================================])
+  AS_ECHO([===================================================================])
+  AS_ECHO([])
+])
