@@ -3138,9 +3138,9 @@ $ /usr/bin/ls
 @end example
 
 To address this problem, we have the @file{PATH} environment variable. Its
-value is a list of directories (separated by @key{:}). When the address of
-the executable is not explicitly given (like @file{./configure} above), the
-system will look for the executable in the directories specified by
+value is a list of directories (separated by `@key{:}'). When the address
+of the executable is not explicitly given (like @file{./configure} above),
+the system will look for the executable in the directories specified by
 @file{PATH}. If you have a computer nearby, try running the following
 command to see which directories your system will look into, one example is
 printed here:
@@ -3164,11 +3164,11 @@ The top installation directory will be used to keep all the package's
 components: programs (executables), libraries, manuals, shared data, or
 configuration files. So it commonly has the following subdirectories for
 each class of components respectively: @file{bin/}, @file{lib/},
-@file{man/}, @file{share/}, @file{etc/}. Since the @file{PATH} variable is
-only used for executables, you can add the @file{~/.local/bin} directory to
-@file{PATH} with the following command. Note that first the existing value
-of @file{PATH} is used, then your given value is added to it and put back
-in @file{PATH}.
+@file{include/} @file{man/}, @file{share/}, @file{etc/}. Since the
+@file{PATH} variable is only used for executables, you can add the
+@file{~/.local/bin} directory to @file{PATH} with the following
+command. Note that first the existing value of @file{PATH} is used, then
+your given value is added to it and put back in @file{PATH}.
 
 @example
 $ PATH=$PATH:~/.local/bin
@@ -3179,7 +3179,7 @@ $ PATH=$PATH:~/.local/bin
 @cindex Scripts, startup
 Try @command{$ echo $PATH} to check if it was added. Any exectuable that
 you installed in this directory will now be usable without having to
-know/write its full address. However, as soon as you leave your current
+remember/type its full address. However, as soon as you leave your current
 terminal session, this modification will be lost. Adding your specified
 directory to the @file{PATH} environment variable each time you start a
 terminal is also very inconvenient and prone to errors. So there are
@@ -3215,7 +3215,7 @@ as the last line of the file. Let's assume you want to add it to
 @file{~/.bashrc}, then you should run:
 
 @example
-$ echo 'export PATH=$PATH:/home/yourname/bin' >> ~/.bashrc
+$ echo 'export PATH=$PATH:/home/yourname/.local/bin' >> ~/.bashrc
 @end example
 
 @cindex GNU build system
@@ -3226,9 +3226,9 @@ executables, you can tell Gnuastro's configure script to install everything
 in the top @file{~/.local} directory using the @option{--prefix}
 option. When you subsequently run @command{$ make install} all the
 installable files will be put in their respective directory under this top
-directory. Tilde (@key{~}) expansion will not happen if you use `@key{=}'
-between @option{--prefix} and @file{~/.local}@footnote{If you insist on
-using `@key{=}', you can use @option{--prefix=$HOME/.local}.}.
+directory. Note that tilde (`@key{~}') expansion will not happen if you use
+`@key{=}' between @option{--prefix} and @file{~/.local}@footnote{If you
+insist on using `@key{=}', you can use @option{--prefix=$HOME/.local}.}.
 
 @example
 $ ./configure --prefix ~/.local
@@ -3259,7 +3259,7 @@ put the new directory before the already existing list like the
 example below.
 
 @example
-export LD_LIBRARY_PATH=/home/yourname/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/yourname/.local/lib:$LD_LIBRARY_PATH
 @end example
 
 @noindent
