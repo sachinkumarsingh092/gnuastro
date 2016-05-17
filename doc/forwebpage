@@ -7,7 +7,7 @@
 # 1. Add a CSS sytlesheet.
 # 2. Add MathJax.
 # 3. Add a "GNU Astronomy Utilities manual" title on the top.
-# 4. Add a link to read in different formats.
+# 4. Add a link to read in different formats in the bottom.
 # 5. If MathJax was used in a page, add a link to Javascript.html
 # 6. Add a link to the main Gnuastro webpage on the bottom.
 # 7. Remove the border from cartouche in the HTML.
@@ -86,6 +86,24 @@ set -o errexit                  # Stop if a program returns false.
 
 
 
+# For the permissions of the output:
+umask 002
+
+# Top CVS (webpage checkout) copy
+TOPWEBCHECKOUT=~/Development/gnuastro-web
+
+# Set the temporary output name:
+outdir=~/Development/gnuastro-manual-tmp
+
+# Set the title value
+booktitle="GNU Astronomy Utilities"
+
+# Remove the output directory if it exists (because gendocs.sh will write
+# everything there).
+if [ -d $outdir ]; then rm -rf $outdir; fi
+
+
+
 
 
 # The date that is printed on the manual is generated looking at the
@@ -128,40 +146,24 @@ fi
 
 
 
-# Top CVS (webpage checkout) copy
-TOPWEBCHECKOUT=~/Development/gnuastro-web
-
-
-
-
-
-# For the permissions of the output:
-umask 002
-
-
-
-
-
-# Remove the manual/ directory if it exists (because gendocs.sh will
-# write everything there).
-if [ -d ./manual ]; then rm -rf ./manual; fi
-
-
-
-
 # Run gendocs.sh to generate all the files:
 ../bootstrapped/build-aux/gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
-   "GNU Astronomy Utilities manual" --html " "
+   "$booktitle" --html " " -o $outdir
 
-# Delete all the temporary files.
+
+
+
+
+# Delete all the temporary files that gendocs.sh left behind
 rm -f gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
    gnuastro.log gnuastro.pg gnuastro.toc gnuastro.tp gnuastro.vr    \
    gnuastro.vrs
 
 
 
+
 # Copy the two necessary files in the manual directory:
-cp javascript.html style.css ./manual/
+cp javascript.html style.css $outdir/
 
 
 
@@ -191,25 +193,25 @@ echo
 htmldatecomment='<!-- Inserted date. This line will be ignored by diff -->'
 echo %%%%% Correcting the HTMLs %%%%%
 # Correct the address of the `(dir)' links on the top pages of both
-# HTML outputs. In the ./manual/gnuastro.html, it is `dir.html#top'
+# HTML outputs. In the $outdir/gnuastro.html, it is `dir.html#top'
 # which should be change to index.html. In
-# ./manual/html_node/index.html, it is `../dir/index.html' which
+# $outdir/html_node/index.html, it is `../dir/index.html' which
 # should become ../index.html
-cat ./manual/gnuastro.html | sed s/dir\.html\#Top/index.html/g > tmp.txt
-mv tmp.txt ./manual/gnuastro.html
-cat ./manual/html_node/index.html | sed -e 's/\/dir\//\//g' > tmp.txt
-mv tmp.txt ./manual/html_node/index.html
+cat $outdir/gnuastro.html | sed s/dir\.html\#Top/index.html/g > tmp.txt
+mv tmp.txt $outdir/gnuastro.html
+cat $outdir/html_node/index.html | sed -e 's/\/dir\//\//g' > tmp.txt
+mv tmp.txt $outdir/html_node/index.html
 
 if [ -f tmp.html ]; then rm tmp.html; fi
 
-for file in manual/gnuastro.html manual/html_node/*.html
+for file in $outdir/gnuastro.html $outdir/html_node/*.html
 do
     if grep -q '\\(\|$$' "$file";
     then hasjavascript="yes"
     else hasjavascript="no"
     fi
 
-    if [ "$file" != manual/gnuastro.html ] && [ "$file" != manual/html_node/index.html ];
+    if [ "$file" != $outdir/gnuastro.html ] && [ "$file" != $outdir/html_node/index.html ];
     then addtitle="yes"
     else addtitle="no"
     fi
@@ -218,7 +220,7 @@ do
 
         # Actions that must be done before a given line:
         if [ "$line" = "</head>" ]; then
-            if [ "$file" = manual/gnuastro.html ]; then
+            if [ "$file" = $outdir/gnuastro.html ]; then
                 cssbase="./"
                 jsbase="../"
             else
@@ -277,13 +279,15 @@ do
 
             # Add a title.
             if [ $addtitle = "yes" ]; then
-            echo "<h2>GNU Astronomy Utilities manual</h2>" >> tmp.html
+            echo "<h2>$booktitle</h2>" >> tmp.html
             fi
         fi
     done < "$file"
     mv tmp.html "$file"
 done
 echo %%%%% DONE %%%%%
+
+
 
 
 # Copy the gnuastro-top.html page into index.html (by only if it actually
@@ -306,31 +310,29 @@ fi
 # the generated HTML files. This creates a difference even if
 IFS=$OLDIFS
 echo; echo; echo; echo "diff results:"
-for filename in $(find ./manual/ -type f -print)
+for filename in $(find $outdir/ -type f -print)
 do
-    echo "$filename:"
-    if diff $filename $TOPWEBCHECKOUT/gnuastro/$filename \
-            -I '<!-- This book documents version'        \
+    # realpath is part of GNU Coreutils.
+    relname=$(realpath $filename --relative-to=$outdir)
+    if ! diff $filename $TOPWEBCHECKOUT/gnuastro/manual/$relname \
+            -I '<!-- This book documents version'                \
             -I "$htmldatecomment"; then
-        echo " -- Content not changed."
-    else
-        cp $filename $TOPWEBCHECKOUT/gnuastro/$filename;
-        echo " -- Copied to $TOPWEBCHECKOUT/gnuastro/"
+        cp $filename $TOPWEBCHECKOUT/gnuastro/manual/$relname;
+        echo "$relname:"
+        echo " -- Copied to for upload"
     fi
 done
 
 
 
 
-
-# Remove the manual directory from here, since it isn't needed any more.
-rm -rf ./manual
-
+# Remove the temporary manual directory, since it isn't needed any more.
+rm -rf $outdir
 
 
 
 
 # Go into the top CVS directory, and commit the new changes to the GNU
 # server.
-cd $TOPWEBCHECKOUT/gnuastro
+cd $TOPWEBCHECKOUT/gnuastro/
 cvs commit -m "Update"
