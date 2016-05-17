@@ -405,7 +405,7 @@ AS_IF([test x$enable_guide_message = xyes],
   AS_ECHO([])
   AS_IF([test "x$anywarnings" = xyes],
       [
-        AS_ECHO([Configuration warnings:])
+        AS_ECHO(["Configuration warning(s):"])
         AS_IF([test "x$has_libjpeg" = "xno"],
               [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])
                AS_ECHO(["    If JPEG outputs are desired from ConvertType, it will warn"])
@@ -415,11 +415,11 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
                AS_ECHO(["    If PDF outputs are desired from ConvertType, it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])])
-        AS_ECHO(["  All checks related to the above warnings will be skipped."])
-        AS_ECHO([])
+        AS_ECHO(["  All checks related to warning(s) will be skipped."])
         AS_ECHO([])
       ]
      )
+  AS_ECHO(["(Build faster on N threads with 'make -jN'.)"])
   AS_ECHO(["(Configure with '--disable-guide-message' for no messages)"])
   AS_ECHO([===================================================================])
   AS_ECHO([===================================================================])
