@@ -249,7 +249,8 @@ Mandatory dependencies
 
 Downloading the source
 
-* Version controlled source::   Get and use the version controlled source
+* Release tarball::             Download a stable official release.
+* Version controlled source::   Get and use the version controlled source.
 
 Version controlled source
 
@@ -2147,12 +2148,14 @@ night's measurements on the ecliptic.
 
 @cindex Installation
 To successfully install and thus use Gnuastro, first please make sure you
-have the dependencies installed, see @ref{Dependencies} for a complete
-discussion on mandatory, optional and bootstrapping dependencies. Only the
-first group are required, they are very basic for most astronomical
-programs, so you might already have them installed. @ref{Downloading the
-source} discusses the two methods you can obtain the source code: as a
-tarball (a snapshot in Gnuastro's history), or the full history.
+have the dependencies installed (see @ref{Dependencies}). Only the first
+group are required when you are building Gnuastro using a tarball (see
+@ref{Release tarball}), they are very basic and low-level tools used in
+most astronomical software, so you might already have them installed, if
+not they are very easy to install as described for each. @ref{Downloading
+the source} discusses the two methods you can obtain the source code: as a
+tarball (a significant snapshot in Gnuastro's history), or the full
+history.
 
 The building and installation of Gnuastro is heavily customizable, to learn
 more about them, see @ref{Build and install}. This section is essentially a
@@ -2571,29 +2574,66 @@ formats necessary for the various book formats.
 @node Downloading the source, Build and install, Dependencies, Installation
 @section Downloading the source
 
-Gnuastro's source code can either be downloaded as a tarball, ready to be
-configured and installed on your system (as described in @ref{Quick
-start}). Alternatively, you can clone the version controlled history, run
-one extra bootstrapping step and then follow the same steps as the
-tarball.
-
-The first method is very straightforward and has less dependencies, but you
-will have to manually go to the downloading webpage at
-@url{http://ftp.gnu.org/gnu/gnuastro/} to get a recent version of Gnuastro
-and you can only use official releases, so if you want to benefit from a
-bug fix or an improvement, you have to wait until an official release. The
-second method gives you access to the most cutting-edge work done on
-Gnuastro, as soon as a bug is fixed, a new feature is added or an improved
-algorithm is used, you can start using it, see @ref{Version controlled
-source} for a complete discussion on the second method.
+Gnuastro's source code can be downloaded in two ways. As a tarball, ready
+to be configured and installed on your system (as described in @ref{Quick
+start}), see @ref{Release tarball}. If you want official releases of stable
+versions this is the best, easiest and most common option. Alternatively,
+you can clone the version controlled history of Gnuastro, run one extra
+bootstrapping step and then follow the same steps as the tarball. This will
+give you access to all the most recent work that will be included in the
+next release along with the full project history. The process is thoroughly
+introduced in @ref{Version controlled source}.
 
 
 
 @menu
-* Version controlled source::   Get and use the version controlled source
+* Release tarball::             Download a stable official release.
+* Version controlled source::   Get and use the version controlled source.
 @end menu
 
-@node Version controlled source,  , Downloading the source, Downloading the source
+@node Release tarball, Version controlled source, Downloading the source, Downloading the source
+@subsection Release tarball
+
+A released compressed tarball is the most common way of obtaining Free and
+Open Source software. A tarball is a snapshot of one particular moment in
+the Gnuastro development history along with all the necessary files to
+configure, build, and install Gnuastro easily. It is very straightforward
+and needs the least set of dependencies (see @ref{Dependencies}). Gnuastro
+has tarballs for official and some unofficial releases, see @ref{Version
+numbering} for more on the two types of releases and the formats of the
+version numbers. The URLs for each type of release are given below.
+
+@table @asis
+
+@item Official stable releases (@url{http://ftp.gnu.org/gnu/gnuastro}):
+This URL hosts the official stable releases of Gnuastro. Always use the
+most recent version (see @ref{Version numbering}). By clicking on the
+``Last modifed'' title of the second column, the files will be sorted by
+their date which you can also use to find the latest version.
+
+@item Pre-release tar-balls (@url{http://alpha.gnu.org/gnu/gnuastro}):
+This URL contains unofficial prerelease versions of Gnuastro. These are
+pre-release versions of Gnuastro that are put here for enthusiasts to try
+out before an official release. If there are problems, or bugs then the
+testers will inform the developers to fix before the next official
+release. See @ref{Version numbering} to understand how the version numbers
+here are formatted. If you want to remain even more up-to-date with the
+developing activities that are not yet in this directory, please clone the
+Version controlled source, fully explained in @ref{Version controlled
+source}.
+
+@end table
+
+The GNU FTP server is mirrored (has backups) in various locations on the
+globe, you can use the closest mirror to your location for a more faster
+download, for the list of mirrors, please visit:
+@url{http://www.gnu.org/order/ftp.html}. Note that not all mirrors keep
+track of the pre-release (alpha) tarballs. Also note that if you want to
+download immediately after and announcement (see @ref{Announcements}), the
+mirrors might need some time to synchronize with the main GNU FTP server.
+
+
+@node Version controlled source,  , Release tarball, Downloading the source
 @subsection Version controlled source
 
 @cindex Git
@@ -2714,14 +2754,14 @@ while the simple invocation above can be used with no problem, it is not
 recommended, see the next paragraph.
 
 The recommended way to get these two packages is thoroughly discussed in
-@ref{Bootstrapping dependencies}. Once you have cloned them in the separate
-@file{DEVDIR/} as discussed there. The following commands will take you
-into the cloned Gnuastro directory and run the @file{bootstrap} script,
-while telling it to copy some files (instead of making symbolic links, with
-the @option{--copy} option, this is not mandatory@footnote{The
-@option{--copy} option is recommended because some backup systems might do
-strange things with symbolic links.}) and where to look for Gnulib (with
-the @option{--gnulib-srcdir} option).
+@ref{Bootstrapping dependencies} (in short: clone them in the separate
+@file{DEVDIR/} directory). The following commands will take you into the
+cloned Gnuastro directory and run the @file{bootstrap} script, while
+telling it to copy some files (instead of making symbolic links, with the
+@option{--copy} option, this is not mandatory@footnote{The @option{--copy}
+option is recommended because some backup systems might do strange things
+with symbolic links.}) and where to look for Gnulib (with the
+@option{--gnulib-srcdir} option).
 
 @example
 $ cd $TOPGNUASTRO/gnuastro
@@ -2788,15 +2828,16 @@ defined for you to check if significant (for Gnuastro) updates are made in
 these repositories, since the last time you pulled from them.} (not too
 common). However, Gnuastro developers are constantly working on Gnuastro
 and are pushing their changes to the official repository. Therefore, your
-local clone will soon be out-dated. All Gnuastro's development discussions
-(including when a change is added which you can pull) are circulated using
-the @command{gnuastro-devel} mailing
+local Gnuastro clone will soon be out-dated. All Gnuastro's development
+discussions (including when a change is added which you can pull) are
+circulated using the @command{gnuastro-devel} mailing
 list@footnote{@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}}. Subscribing
 to that mailing list, or regularly checking its
 archives@footnote{@url{http://lists.gnu.org/archive/html/gnuastro-devel/}}
 will help you decide when to synchronize with the official repository.
 
-To pull all the most recent changes in Gnuastro, run the following command.
+To pull all the most recent work in Gnuastro, run the following command
+from the top Gnuastro directory:
 
 @example
 $ git pull && autoconf -f
@@ -2815,8 +2856,9 @@ include the commit information if you are building Gnuastro from any point
 in Gnuastro's history (see @ref{Version numbering}). Since the version
 number is included in nearly all outputs of the utilities, this can help
 you later exactly reproduce an old result by checking out the exact point
-in Gnuastro's history. Therefore, be sure to run `@file{autoconf -f}' after
-every synchronization. You can also run them separately:
+in Gnuastro's history that produced those results. Therefore, be sure to
+run `@file{autoconf -f}' after every synchronization. You can also run them
+separately:
 
 @example
 $ git pull
@@ -2837,9 +2879,10 @@ $ autoconf -f                     # Update ./configure.
 @end example
 
 @noindent
-To see exactly what has been changed in the source code along with the
-commit message, add a @option{-p} option to the @command{git log} command
-above.
+By default @command{git log} prints the most recent commit first, add the
+@option{--reverse} option to see the changes chronologically. To see
+exactly what has been changed in the source code along with the commit
+message, add a @option{-p} option to the @command{git log}.
 
 
 
