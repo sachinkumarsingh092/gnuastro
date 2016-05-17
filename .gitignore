@@ -31,6 +31,7 @@
 *.tp
 *.vr
 *.aux
+*.dvi
 *.eps
 *.jpg
 *.log
@@ -120,6 +121,7 @@ utilityversions.texi
 # ignore the whole directory (and everything within it). This is more
 # efficient then leaving it to try to fit patterns.
 
+/gnulib/
 /bootstrapped/
 /doc/plotsrc/tikz/
 /doc/gnuastro.t2d/
