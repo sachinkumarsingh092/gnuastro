@@ -489,6 +489,7 @@ Developing
 * Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
+* Developing mailing lists::    Stay up to date with Gnuastro's development.
 * Internal libraries::          Internal static (not installed) libraries.
 * Header files::                Library and common headers.
 * Program source::              Conventions for the code.
@@ -2594,14 +2595,15 @@ introduced in @ref{Version controlled source}.
 @node Release tarball, Version controlled source, Downloading the source, Downloading the source
 @subsection Release tarball
 
-A released compressed tarball is the most common way of obtaining Free and
-Open Source software. A tarball is a snapshot of one particular moment in
-the Gnuastro development history along with all the necessary files to
-configure, build, and install Gnuastro easily. It is very straightforward
-and needs the least set of dependencies (see @ref{Dependencies}). Gnuastro
-has tarballs for official and some unofficial releases, see @ref{Version
-numbering} for more on the two types of releases and the formats of the
-version numbers. The URLs for each type of release are given below.
+A release tarball (commonly compressed) is the most common way of obtaining
+Free and Open Source software. A tarball is a snapshot of one particular
+moment in the Gnuastro development history along with all the necessary
+files to configure, build, and install Gnuastro easily. It is very
+straightforward and needs the least set of dependencies (see
+@ref{Dependencies}). Gnuastro has tarballs for official and some unofficial
+releases. See @ref{Version numbering} for more on the two types of releases
+and the formats of the version numbers. The URLs for each type of release
+are given below.
 
 @table @asis
 
@@ -2609,10 +2611,12 @@ version numbers. The URLs for each type of release are given below.
 This URL hosts the official stable releases of Gnuastro. Always use the
 most recent version (see @ref{Version numbering}). By clicking on the
 ``Last modifed'' title of the second column, the files will be sorted by
-their date which you can also use to find the latest version.
+their date which you can also use to find the latest version. It is
+recommended to use a mirror to download these tarballs, please visit
+@url{http://ftpmirror.gnu.org/gnuastro/} and see below.
 
 @item Pre-release tar-balls (@url{http://alpha.gnu.org/gnu/gnuastro}):
-This URL contains unofficial prerelease versions of Gnuastro. These are
+This URL contains unofficial pre-release versions of Gnuastro. These are
 pre-release versions of Gnuastro that are put here for enthusiasts to try
 out before an official release. If there are problems, or bugs then the
 testers will inform the developers to fix before the next official
@@ -2625,12 +2629,12 @@ source}.
 @end table
 
 The GNU FTP server is mirrored (has backups) in various locations on the
-globe, you can use the closest mirror to your location for a more faster
-download, for the list of mirrors, please visit:
-@url{http://www.gnu.org/order/ftp.html}. Note that not all mirrors keep
-track of the pre-release (alpha) tarballs. Also note that if you want to
-download immediately after and announcement (see @ref{Announcements}), the
-mirrors might need some time to synchronize with the main GNU FTP server.
+globe (@url{http://www.gnu.org/order/ftp.html}). You can use the closest
+mirror to your location for a more faster download, for the list of
+mirrors. Note that not all mirrors keep track of the pre-release (alpha)
+tarballs. Also note that if you want to download immediately after and
+announcement (see @ref{Announcements}), the mirrors might need some time to
+synchronize with the main GNU FTP server.
 
 
 @node Version controlled source,  , Release tarball, Downloading the source
@@ -2818,8 +2822,6 @@ tarball.
 @node Synchronizing,  , Bootstrapping, Version controlled source
 @subsubsection Synchronizing
 
-@cindex Mailing list: gnuastro-devel
-@cindex @code{gnuastro-devel@@gnu.org}
 The bootstrapping script (see @ref{Bootstrapping}) is not regularly needed:
 you mainly need it after you have cloned Gnuastro (once) and whenever you
 want to re-import the files from Gnulib, or Autoconf
@@ -2828,13 +2830,10 @@ defined for you to check if significant (for Gnuastro) updates are made in
 these repositories, since the last time you pulled from them.} (not too
 common). However, Gnuastro developers are constantly working on Gnuastro
 and are pushing their changes to the official repository. Therefore, your
-local Gnuastro clone will soon be out-dated. All Gnuastro's development
-discussions (including when a change is added which you can pull) are
-circulated using the @command{gnuastro-devel} mailing
-list@footnote{@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}}. Subscribing
-to that mailing list, or regularly checking its
-archives@footnote{@url{http://lists.gnu.org/archive/html/gnuastro-devel/}}
-will help you decide when to synchronize with the official repository.
+local Gnuastro clone will soon be out-dated. Gnuastro has two mailing lists
+dedicated to its developing activities (see @ref{Developing mailing
+lists}).  Subscribing to them can help you decide when to synchronize with
+the official repository.
 
 To pull all the most recent work in Gnuastro, run the following command
 from the top Gnuastro directory:
@@ -2866,9 +2865,9 @@ $ autoconf -f
 @end example
 
 If you would like to see what has changed since you last synchronized your
-local clone without having to dig into all the discussions in the
-@code{gnuastro-devel} mailing list, you can take the following steps
-instead of the simple command above (don't type anything after @code{#}):
+local clone without having to dig into all the discussions @ref{Developing
+mailing lists}, you can take the following steps instead of the simple
+command above (don't type anything after @code{#}):
 
 @example
 $ git checkout master             # Confirm if you are on master.
@@ -13389,6 +13388,7 @@ discussed. Finally some notes on the building process are given.
 * Why C::                       Why Gnuastro is designed in C.
 * Design philosophy::           General ideas behind the package structure.
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
+* Developing mailing lists::    Stay up to date with Gnuastro's development.
 * Internal libraries::          Internal static (not installed) libraries.
 * Header files::                Library and common headers.
 * Program source::              Conventions for the code.
@@ -13591,7 +13591,7 @@ join that work.
 
 
 
-@node Gnuastro project webpage, Internal libraries, Design philosophy, Developing
+@node Gnuastro project webpage, Developing mailing lists, Design philosophy, Developing
 @section Gnuastro project webpage
 
 @cindex Bug
@@ -13664,16 +13664,59 @@ interested in. The `Category' and `Group Item' (explained above) are a
 good starting point.
 
 @cindex Mailing list: gnuastro-devel
-Any new issue that is submitted to any of the trackers, or any
-comments that are posted for an issue, is directly forwarded to the
-gnuastro-devel mailing list
-(@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel}). This
-will allow anyone interested to be up to date on the over-all
-development activity in Gnuastro and will also provide an alternative
-(to Savannah) archiving for the development discussions. Therefore, it
-is not recommended to directly post an email to this mailing list, but
-do all the activities (for example add new issues, or comment on
-existing ones) on Savannah.
+Any new issue that is submitted to any of the trackers, or any comments
+that are posted for an issue, is directly forwarded to the gnuastro-devel
+mailing list (@url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel},
+see @ref{Developing mailing lists} for more). This will allow anyone
+interested to be up to date on the over-all development activity in
+Gnuastro and will also provide an alternative (to Savannah) archiving for
+the development discussions. Therefore, it is not recommended to directly
+post an email to this mailing list, but do all the activities (for example
+add new issues, or comment on existing ones) on Savannah.
+
+@node Developing mailing lists, Internal libraries, Gnuastro project webpage, Developing
+@section Developing mailing lists
+
+To keep the developers and interested users up to date with the activity
+and discussions within Gnuastro, there are two mailing lists which you can
+subscribe to:
+
+@table @asis
+
+@item @command{gnuastro-devel@@gnu.org}
+@itemx (at @url{https://lists.gnu.org/mailman/listinfo/gnuastro-devel})
+
+@cindex Mailing list: gnuastro-devel
+All the posts made in the support, bugs and tasks discussions of
+@ref{Gnuastro project webpage} are also sent to this mailing address and
+archived. By subscribing to this list you can stay up to date with the
+discussions that are going on between the developers before, during and
+(possibly) after working on an issue. All discussions are either in the
+context of bugs or tasks which are done on Savannah and circulated to all
+interested people through this mailing list. Therefore it is not
+recommended to post anything directly to this mailing list. Any mail that
+is sent to it from Savannah to this list has a link under the title ``Reply
+to this item at:''. That link will take you directly to the issue
+discussion page, where you can read the discussion history or join it.
+
+While you are posting comments on the Savannah issues, be sure to update
+the meta-data. For example if the task/bug is not assigned to anyone and
+you would like to take it, change the ``Assigned to'' box, or if you want
+to report that it has been applied, change the status and so on. All these
+changes will also be circulated with the email very clearly.
+
+@item @command{gnuastro-commits@@gnu.org}
+@itemx (at @url{https://lists.gnu.org/mailman/listinfo/gnuastro-commits})
+
+@cindex Mailing list: gnuastro-commits
+This mailing list is defined to circulate all commits that are done in
+Gnuastro's version controlled source, see @ref{Version controlled
+source}. If you have any ideas, or suggestions on the commits, please use
+the bug and task trackers on Savannah to followup the discussion, do not
+post to this list. All the commits that are made for an already defined
+issue or task will state the respective ID so you can find it easily.
+
+@end table
 
 
 
@@ -13683,9 +13726,7 @@ existing ones) on Savannah.
 
 
 
-
-
-@node Internal libraries, Header files, Gnuastro project webpage, Developing
+@node Internal libraries, Header files, Developing mailing lists, Developing
 @section Internal libraries
 
 @cindex Static libraries
@@ -14607,7 +14648,12 @@ The title should also not finish with any full-stops or periods.
 
 @item Commit body
 The body of the commit message is separated from the title by one empty
-line. The body should be very descriptive. People will look at these commit
+line.
+
+@itemize
+
+@item
+The body should be very descriptive. People will look at these commit
 bodies after they pull the recent changes from the main Gnuastro
 repository, so when relevant, start the body by explaining what changes
 your commit makes from a user's perspective (added, changed, or removed
@@ -14615,15 +14661,19 @@ options, or arguments to utilities or libraries, or modified algorithms, or
 new installation step, or etc). These will later be used to update the
 @file{NEWS} file on each release.
 
-Try to explain the committed contents as best as you can. Try to remember
-that the people (or even yourself) who will be reading this later don't
-have the background that you currently have. So be very descriptive and
-explain as much as possible: what the bug/task was, justify the way you
-fixed it and discuss other possible solutions that you might not have
-included. For the last item, it is best to discuss them thoroughly as
-comments in the appropriate section of the code, but only give a short
-summary in the commit message.
+@item
+Try to explain the committed contents as best as you can. Recall that all
+commits are circulated in the @command{gnuastro-commits} mailing list and
+that the subscribers do not necessarily have your current background. After
+some time you will also forget the context, so this request is not just for
+others@footnote{@url{http://catb.org/esr/writings/unix-koans/prodigy.html}}. So
+be very descriptive and explain as much as possible: what the bug/task was,
+justify the way you fixed it and discuss other possible solutions that you
+might not have included. For the last item, it is best to discuss them
+thoroughly as comments in the appropriate section of the code, but only
+give a short summary in the commit message.
 
+@item
 Like all other Gnuastro's text files, the lines in the commit body should
 not be longer than 75 characters, see @ref{Coding conventions}. This is to
 ensure that on standard terminal emulators (with 80 character width), the
@@ -14632,13 +14682,18 @@ message is indented in the output of @command{git log}). If you use Emacs,
 Gnuastro's @file{.dir-locals.el} file will ensure that your commits satisfy
 this condition (using @key{M-q}).
 
-When the commit is to resolve some bug or task defined on @ref{Gnuastro
-project webpage}, also include the relevant ID (in the format of
-@code{bug/task #ID}, note the space). The recommended way is to add a line
-after the body with `@code{This fixes bug #ID.}', or `@code{This finishes
-task #ID.}'. Don't assume that the reader has internet access to check the
-bug's full description when reading the commit message, so be very
-descriptive.
+@item
+@cindex Mailing list: gnuastro-commits
+When the commit is related to a task or a bug, please include the
+respective ID (in the format of @code{bug/task #ID}, note the space) in the
+commit message (from @ref{Gnuastro project webpage}) for interested people
+to be able to followup the discussion. Recall that all commits are
+forwarded to the @command{gnuastro-commits} mailing list. The recommended
+way is to add a line after the body with `@code{This fixes bug #ID.}', or
+`@code{This finishes task #ID.}'. Don't assume that the reader has internet
+access to check the bug's full description when reading the commit message,
+so be very descriptive.
+@end itemize
 
 @end table
 
