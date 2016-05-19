@@ -15,32 +15,46 @@
 
 
 
-
-# Preliminaries:
-################
+# Preliminaries
+# =============
+#
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
+#
+# We will be adding noise to two images: the warped (smaller) and unwarped
+# (larger) mock images. The warped one will be used by programs that don't
+# care about the size of the image, but the larger one will be used by
+# those that do: for example SubtractSky and NoiseChisel will be better
+# tested on a larger image.
 prog=mknoise
+img1=convolve_spatial.fits
 execname=../src/$prog/ast$prog
+img2=convolve_spatial_warped.fits
 
 
 
 
 
-# If the executable was not made (the user chose to not install this
-# package), skip this test:
-if [ ! -f $execname ]; then
-    exit 77
-fi
+# Skip?
+# =====
+#
+# If the dependencies of the test don't exist, then skip it. There are two
+# types of dependencies:
+#
+#   - The executable was not made (for example due to a configure option),
+#
+#   - The input data was not made (for example the test that created the
+#     data file failed).
+if [ ! -f $execname ] || [ ! -f $img1 ] || [ ! -f $img2 ]; then exit 77; fi
 
 
 
 
 
-# Actual test script:
-#####################
+# Actual test script
+# ==================
 export GSL_RNG_SEED=1
 export GSL_RNG_TYPE=ranlxs2
-img=convolve_spatial_warped.fits
-$execname --envseed $img
+$execname --envseed $img1
+$execname --envseed $img2

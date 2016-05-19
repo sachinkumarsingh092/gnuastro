@@ -18,30 +18,35 @@
 # without any warranty.
 
 
-# Preliminaries:
-################
+# Preliminaries
+# =============
+#
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
 prog=mkprof
 execname=../src/$prog/ast$prog
-
-
-
-
-
-# If the executable was not made (the user chose to not install this
-# package), skip this test:
-if [ ! -f $execname ]; then
-    exit 77
-fi
-
-
-
-
-
-# Actual test script:
-#####################
 cat=$topsrc/tests/$prog/mkprofcat1.txt
+
+
+
+
+
+# Skip?
+# =====
+#
+# If the dependencies of the test don't exist, then skip it. There are two
+# types of dependencies:
+#
+#   - The executable was not made (for example due to a configure option),
+#
+if [ ! -f $execname ]; then exit 77; fi
+
+
+
+
+
+# Actual test script
+# ==================
 $execname $cat --naxis1=100 --naxis2=100
 mv 0_mkprofcat1.fits psf.fits

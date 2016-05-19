@@ -16,11 +16,13 @@
 
 
 
-# Preliminaries:
-################
+# Preliminaries
+# =============
+#
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
+img=psf.fits
 prog=convertt
 execname=../src/$prog/ast$prog
 
@@ -28,17 +30,22 @@ execname=../src/$prog/ast$prog
 
 
 
-# If the executable was not made (the user chose to not install this
-# package), skip this test:
-if [ ! -f $execname ]; then
-    exit 77
-fi
+# Skip?
+# =====
+#
+# If the dependencies of the test don't exist, then skip it. There are two
+# types of dependencies:
+#
+#   - The executable was not made (for example due to a configure option),
+#
+#   - The input data was not made (for example the test that created the
+#     data file failed).
+if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 
 
 
 
-# Actual test script:
-#####################
-img=psf.fits
+# Actual test script
+# ==================
 $execname $img --output=psf.txt

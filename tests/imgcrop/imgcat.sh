@@ -16,35 +16,42 @@
 
 
 
-# Preliminaries:
-################
+# Preliminaries
+# =============
+#
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
 prog=imgcrop
+img=mkprofcat1.fits
 execname=../src/$prog/ast$prog
 
 
 
 
 
-# If the executable was not made (the user chose to not install this
-# package), skip this test:
-if [ ! -f $execname ]; then
-    exit 77
-fi
+# Skip?
+# =====
+#
+# If the dependencies of the test don't exist, then skip it. There are two
+# types of dependencies:
+#
+#   - The executable was not made (for example due to a configure option),
+#
+#   - The input data was not made (for example the test that created the
+#     data file failed).
+if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 
 
 
 
-# Actual test script:
-#####################
-
+# Actual test script
+# ==================
+#
 # The number of threads is one so if CFITSIO does is not configured to
 # enable multithreaded access to files, the tests pass. It is the
 # users choice to enable this feature.
-
-img=mkprofcat1.fits
 cat=$topsrc/tests/$prog/cat.txt
-$execname $img $cat --imgmode --suffix=_imgcat.fits --zeroisnotblank --numthreads=1
+$execname $img $cat --imgmode --suffix=_imgcat.fits --zeroisnotblank \
+          --numthreads=1
