@@ -72,40 +72,39 @@ mkprof/mosaic1.sh: prepconf.sh.log
 mkprof/mosaic2.sh: prepconf.sh.log
 mkprof/mosaic3.sh: prepconf.sh.log
 mkprof/mosaic4.sh: prepconf.sh.log
-imgcrop/imgcat.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-imgcrop/wcscat.sh: prepconf.sh.log mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
-                                   mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-imgcrop/xcyc.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-imgcrop/xcycnoblank.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-imgcrop/section.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-imgcrop/radec.sh: prepconf.sh.log mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
-                                  mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
-imgcrop/imgpolygon.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-imgcrop/imgoutpolygon.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-imgcrop/wcspolygon.sh: prepconf.sh.log mkprof/mosaic1.sh.log                  \
-                       mkprof/mosaic2.sh.log mkprof/mosaic3.sh.log            \
-                       mkprof/mosaic4.sh.log
-convertt/fitstotxt.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-convertt/fitstojpeg.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-convertt/blankch.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-convertt/jpegtotxt.sh: prepconf.sh.log convertt/fitstojpeg.sh.log
-convertt/fitstojpegcmyk.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-convertt/jpegtofits.sh: prepconf.sh.log convertt/blankch.sh.log
-convertt/fitstopdf.sh: prepconf.sh.log imgcrop/section.sh.log
-convolve/spatial.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-convolve/frequency.sh: prepconf.sh.log mkprof/mosaic1.sh.log
-imgwarp/imgwarp_scale.sh: prepconf.sh.log convolve/spatial.sh.log
-imgwarp/homographic.sh: prepconf.sh.log convolve/spatial.sh.log
-mknoise/addnoise.sh: prepconf.sh.log imgwarp/imgwarp_scale.sh.log
-mkprof/ellipticalmasks.sh: prepconf.sh.log mknoise/addnoise.sh.log
-header/write.sh: prepconf.sh.log convolve/spatial.sh.log
-header/print.sh: prepconf.sh.log header/write.sh.log
-header/update.sh: prepconf.sh.log header/write.sh.log
-header/delete.sh: prepconf.sh.log header/write.sh.log
-imgstat/basicstats.sh: prepconf.sh.log mknoise/addnoise.sh.log
-subtractsky/subtractsky.sh: prepconf.sh.log mknoise/addnoise.sh.log
-noisechisel/noisechisel.sh: prepconf.sh.log mknoise/addnoise.sh.log
-mkcatalog/simple.sh: prepconf.sh.log noisechisel/noisechisel.sh.log
-arithmetic/snimage.sh: prepconf.sh.log noisechisel/noisechisel.sh.log
+imgcrop/imgcat.sh: mkprof/mosaic1.sh.log
+imgcrop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
+                   mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
+imgcrop/xcyc.sh: mkprof/mosaic1.sh.log
+imgcrop/xcycnoblank.sh: mkprof/mosaic1.sh.log
+imgcrop/section.sh: mkprof/mosaic1.sh.log
+imgcrop/radec.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log      \
+                  mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
+imgcrop/imgpolygon.sh: mkprof/mosaic1.sh.log
+imgcrop/imgoutpolygon.sh: mkprof/mosaic1.sh.log
+imgcrop/wcspolygon.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log \
+                       mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log
+convertt/fitstotxt.sh: mkprof/mosaic1.sh.log
+convertt/fitstojpeg.sh: mkprof/mosaic1.sh.log
+convertt/blankch.sh: mkprof/mosaic1.sh.log
+convertt/jpegtotxt.sh: convertt/fitstojpeg.sh.log
+convertt/fitstojpegcmyk.sh: mkprof/mosaic1.sh.log
+convertt/jpegtofits.sh: convertt/blankch.sh.log
+convertt/fitstopdf.sh: imgcrop/section.sh.log
+convolve/spatial.sh: mkprof/mosaic1.sh.log
+convolve/frequency.sh: mkprof/mosaic1.sh.log
+imgwarp/imgwarp_scale.sh: convolve/spatial.sh.log
+imgwarp/homographic.sh: convolve/spatial.sh.log
+mknoise/addnoise.sh: imgwarp/imgwarp_scale.sh.log
+mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
+header/write.sh: convolve/spatial.sh.log
+header/print.sh: header/write.sh.log
+header/update.sh: header/write.sh.log
+header/delete.sh: header/write.sh.log
+imgstat/basicstats.sh: mknoise/addnoise.sh.log
+subtractsky/subtractsky.sh: mknoise/addnoise.sh.log
+noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
+mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
+arithmetic/snimage.sh: noisechisel/noisechisel.sh.log
 arithmetic/onlynumbers.sh: prepconf.sh.log
 cosmiccal/simpletest.sh: prepconf.sh.log
