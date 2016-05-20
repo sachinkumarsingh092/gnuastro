@@ -1,18 +1,151 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 * Noteworthy changes in release 0.1 (YYYY-MM-DD) [stable]
+* << Until commit 12ed388 Corrected imgcrop/imgpolygon.sh test script >>
+* <<          REMOVE THESE TWO LINES BEFORE THE 0.1 RELEASE           >>
 
 ** Bug fixes
 
+  MakeCatalog's problem in checking the sizes of all input images is now
+  fixed.
+
+  NoiseChisel's problem with reading the `--kernel' option is now
+  corrected (bug #46750).
+
+  lib/mesh.c's problem in correctly calculating the mesh sizes was
+  corrected (bug #47611).
+
+  `make check' will not look into system utility configuration files. In
+  the previous release, if Gnuastro was already installed, the
+  configuration files already present on the system would also be read. Now
+  only configuration files in the tested package are used (bug #47833).
+
+  Ghostscript's version is now checked at configure time after its
+  existence. ConvertType uses the `-dPDFFitPage' option to Ghostscript
+  which was introduced in version 9.10, so older versions would pass
+  configure but at `make check' time, the PDF test would fail. Now this
+  test is skipped (bug #47868).
+
+  Most tests would fail when `make check -jN' was run (to do the checks on
+  N threads). A dependency structure has now been defined to fix this
+  problem and greatly speed up the testing process (bug #47957).
+
 ** New utilities
 
+  Arithmetic: For arithmetic operations on the pixels of input images. With
+  this utility, it is now possible to add multiple images with each other,
+  or easily calculate a median image. It as a large set of other arithmetic
+  operations and some functions which can be done on the input image(s). An
+  unlimited number of input images can be given, the images will only be
+  loaded when necessary and will be freed as soon as they are no longer
+  necessary.
+
+  CosmicCalculator: For doing cosmological calculations at a given
+  redshift.
+
 ** New features
+
+  All the utilities that would produce a log file now have a `--nolog'
+  option to avoid printing a log file.
+
+  The tiled image compression convention (.fits.fz, created with `fpack')
+  files can now be used as input in the utilities.
 
   ImageCrop can now also crop a polygon from the input image. The polygon
   vertices can be given in the world or image coordinates. The simple
   `--polygon' option will keep the insides of the polygon while the
   `--outpolygon' will keep the outside of the polygon.
 
+  ImageCrop and ImageWarp can now read the WCS information of a FITS header
+  from a specific region with the `--hstartwcs' and `--hendwcs'. In some
+  older FITS images, when the WCS distortions were not as standardized as
+  now, there were cases which would confuse WCSLIB.
+
+  NoiseChisel can now save the grown clumps image instead of the original
+  clumps image in the output with the `--grownclumps' option.
+
+  Convolve can now do deconvolution with the `--makekernel' option.
+
+  MakeProfiles now has a `--setconsttonan' option which will fill the
+  contant profiles with a NaN (blank) value, not a number, allowing the
+  creations of elliptical masked regions for example.
+
+  Header can now import a keyword directly from a string with the `--asis'
+  option.
+
+  MakeCatalog can now output the geometric (average position independent of
+  pixel flux value) positions of the objects too.
+
+  MakeCatalog can now produce the object's elliptical parameters (for
+  example semi-major axis, semi-minor axis, and position angle). This can
+  also be done both in standard flux weighted and geometric methods too.
+
+  MakeCatalog now has a `--threshold' function to only use pixels above a
+  given threshold in each object or clump. This is useful to avoid diffuse
+  regions in calculations.
+
+  MakeCatalog now has a `--noriverbrightness' option. With this option it
+  is possible to calculate the clump flux without subtracting the river
+  pixels on its circumference.
+
+  The number of CPU threads is no longer a configuration option, it is now
+  determined at runtime for each program. Therefore it is now easily
+  possible to built Gnuastro on one system to use on another (commonly done
+  in the GNU/Linux package managers). Therefore ./configure no longer has a
+  `--with-numthreads' option.
+
+  Every commit in Gnuastro's history (after implementing this feature) can
+  now be given a unique version number. Since the version number is printed
+  in possible outputs, this feature can help reproducibility, even when the
+  an official/stable release isn't used.
+
+  The AUTHORS file is now automatically generated from the version
+  controlled history. Also all the authors that have contributed to
+  Gnuastro are included in the second (copyright) page of the PDF book.
+
+  All the bootstrapped directories are now moved with a new `bootstrapped'
+  directory in the top source directory. This significantly cleans up this
+  directory, allowing users to more easily find the hand-written Gnuastro
+  source files they like.
+
+  A `bug-gnuastro' Info page was created so users can easily go to that
+  page for information on how to submit bug reports. It is accessible on
+  the command line with the command `info bug-gnuastro'.
+
 ** Changes in behavior
 
+  MakeProfiles will now add a suffix to the individual images and put them
+  in the output directory if specified.
+
+  NoiseChisel and MakeCatalog now use the median mesh standard deviation to
+  define the over-all depth of the image. Previously they used the maximum
+  value (or the least depth).
+
+  NoiseChisel no longer outputs a sky subtracted image. This job can now be
+  done with the new Arithmetic utility.
+
+  NoiseChisel's `--segsnhistnbins' option was renamed to
+  `--clumpsnhistnbins'.
+
 ** Improvements
+
+  NoiseChisel's default quantiles were changed to 0.95 from 0.99. Since the
+  old value was too severe.
+
+  NoiseChisel's S/N thresholds are now found from the distribution of
+  pseudo-detections and clumps from the full image, not within each large
+  mesh. This was done to increase the accuracy of the S/N threshold. There
+  were commonly not enough points in large mesh sizes and this would add
+  scatter. With ImageCrop's polygon capabilities, it is now easily possible
+  to cut out the region that has uniform noise properties (depth and
+  correlated noise). Therefore the old `--checkdetectionsn' and
+  `checkclumpsn' options are no longer present.
+
+  When building from the version controlled source, the whole bootstrapping
+  process is done with one script. In the previous version, all the
+  separate operations should have been done by hand (as instructed in the
+  old manual).
+
+  All the build steps now report what was done and suggest the next
+  step. This feature can be disabled with the `--disable-guide-message' at
+  configure time.
