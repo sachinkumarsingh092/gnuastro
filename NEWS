@@ -1,61 +1,18 @@
-User-visible changes in GNU Astronomy Utilities (Gnuastro)
-==========================================================
+GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-Introduction
-------------
+* Noteworthy changes in release 0.1 (YYYY-MM-DD) [stable]
 
-The user-visible and significant changes in each official release of
-Gnuastro are written here in reverse chronological order, even within each
-category. So the recommended way to read the changes is from bottom to
-top. All the changes have been blended in the text of the official Gnuastro
-book. The most recent version of the book can be found in the link below:
+** Bug fixes
 
-    https://www.gnu.org/software/gnuastro/manual/
+** New utilities
 
-Therefore this file should be the main reference for experienced users who
-are upgrading and want to learn what has changed since their last
-version. The most recent changes have not yet been given a version
-number. Further explanation on the changes can be seen in the version
-controlled history of Gnuastro (see "Version controlled source" section of
-the book). The parenthesis after each line contain the commit hash which
-contains more information. The commit message can be seen with the
-following command in the version controlled source.
+** New features
 
-    git log HASH
+  ImageCrop can now also crop a polygon from the input image. The polygon
+  vertices can be given in the world or image coordinates. The simple
+  `--polygon' option will keep the insides of the polygon while the
+  `--outpolygon' will keep the outside of the polygon.
 
-In the version controlled source, this file is not updated on every
-commit. It is updated after an arbitrarily long period to incorporate
-serveral recent changes. Please see "Synchronizing" section of the manual
-on how to stay informed of the changes before each official release.
+** Changes in behavior
 
-
-
-
-
-List of changes
----------------
-
-YYYY-MM-DD (Until commit a55076a, on 2016-05-15)
-
-  ImageCrop
-
-    - Crop/keep regions outside of a given polygon with `--outpolygon'
-      (9566549).
-
-    - Crop/keep image regions within a polygon using the `--polygon'
-      option. The polygon vertices can be specified in image or WCS
-      coordinates (4e746a2).
-
-  NoiseChisel
-
-    - The limiting detection and clump S/N value is found over the whole
-      image, not within meshes (b48ce16).
-
-
-
-
-
-2015-09-13 (0.0)
-
- - First official version of Gnuastro. Due to heavy development, this
-   version was not publicly released.
+** Improvements
