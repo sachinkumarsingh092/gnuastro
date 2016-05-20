@@ -35,7 +35,7 @@ i# Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.69])
 AC_INIT([GNU Astronomy Utilities],
          m4_esyscmd([bootstrapped/build-aux/git-version-gen    \
-                                  .tarball-version]),
+                        .tarball-version --prefix "gnuastro_v"]),
         [bug-gnuastro@gnu.org], [gnuastro],
         [http://www.gnu.org/software/gnuastro/])
 AC_CONFIG_AUX_DIR([bootstrapped/build-aux])
