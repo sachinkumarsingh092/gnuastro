@@ -1,4 +1,4 @@
-i# Process this file with autoconf to produce a configure script.
+# Process this file with autoconf to produce a configure script.
 #
 # Hand written file: used as input into GNU Autotools (autoconf).
 # This is part of GNU Astronomy Utilities (gnuastro) package.

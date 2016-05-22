@@ -28,10 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "commonparams.h"
 
 /* Progarm name macros: */
-#define SPACK_VERSION   "0.1"
 #define SPACK           "astnoisechisel" /* Subpackage executable name. */
 #define SPACK_NAME      "NoiseChisel"    /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION
+#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
 
 
 

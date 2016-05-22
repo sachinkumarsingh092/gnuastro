@@ -33,12 +33,12 @@ SHELL=/bin/bash
 
 ## Commands to make the texinfo tools:
 info_TEXINFOS = gnuastro.texi
-gnuastro_TEXINFOS = fdl.texi authors.texi utilityversions.texi formath.texi
+gnuastro_TEXINFOS = fdl.texi authors.texi formath.texi
 
 
 ## Files not predefined by Automake, and not in dependencies that must
 ## be included in the final tar-ball distribution.
-EXTRA_DIST = findversions.sh genauthors README
+EXTRA_DIST = genauthors README
 
 
 ## We want to build the authors.texi file only when we are building in the
@@ -47,12 +47,6 @@ EXTRA_DIST = findversions.sh genauthors README
 ## rebuilt.
 authors.texi: $(top_srcdir)/configure
 	$(top_srcdir)/doc/genauthors
-
-
-# Find the version of each utility:
-headers=$(top_srcdir)/src/*/main.h
-utilityversions.texi: $(headers)
-	$(top_srcdir)/doc/findversions.sh $(headers)
 
 
 ## Images:

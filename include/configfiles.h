@@ -74,21 +74,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
     readconfig(CURDIRCONFIG_FILE, p);                                   \
     if(cp->setdirconf)                                                  \
       SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);                              \
-    if(cp->onlyversionset && strcmp(cp->onlyversion, SPACK_VERSION))    \
-      error(EXIT_FAILURE, 0, "The running version of %s is `%s'. "      \
-            "However, you have asked for this %s run to be with "       \
-            "version `%s'. Either on the command line or in a "         \
-            "configuration file with the `--onlyversion' option. "      \
-            "Please either remove it, or set it to `%s' with a command " \
-            "like:\n\n"                                                 \
-            "    %s --onlyversion=%s --setdirconf\n\n"                  \
-            "Alternatively, you can install %s %s.\n"                   \
-            "NOTE: If this option was a configuration file, probably "  \
-            "it is intended for reproducability. If so, to be exactly " \
-            "reproducible, it is advised to install the requested "     \
-            "version.", SPACK_NAME, SPACK_VERSION, SPACK_NAME,          \
-            cp->onlyversion, SPACK_VERSION, SPACK, SPACK_VERSION,       \
-            SPACK_NAME, SPACK_VERSION);                                 \
+    if(cp->onlyversionset && strcmp(cp->onlyversion, PACKAGE_VERSION))  \
+      error(EXIT_FAILURE, 0, "You are currently running Gnuastro %s. "  \
+            "However, this run should be with version `%s'.\n\n"        \
+            "To resolve the situation, use the the '--onlyversion' "    \
+            "option, either on the command-line or in a configuration " \
+            "file. For example, set it to `%s' by repeating the "       \
+            "previous command with:\n\n"                                \
+            "    --onlyversion=%s\n\n"                                  \
+            "Alternatively, you can install Gnuastro %s.\n\n"           \
+            "NOTE: If you didn't set this option on the command-line, " \
+            "it was probably intended for reproducability. If so, it "  \
+            "is advised to install Gnuastro %s.",                       \
+            PACKAGE_VERSION, cp->onlyversion, PACKAGE_VERSION,          \
+            PACKAGE_VERSION, cp->onlyversion, cp->onlyversion);         \
                                                                         \
     if(cp->onlydirconf==0)                                              \
       {                                                                 \

@@ -9,7 +9,6 @@
 @c %**end of header
 @include version.texi
 @include formath.texi
-@include utilityversions.texi
 
 @c So dashes and underscores can be used in HTMLs
 @allowcodebreaks true
@@ -920,16 +919,15 @@ introduction. This section is not just for developers and is very
 streightforward, so please have a look if you are interested in the
 cutting-edge. This unofficial version number is a meaningful and easy to
 read string of characters, unique to that particular point of history. With
-this feature, users can easily stay up to date with the cutting edge bug
+this feature, users can easily stay up to date with the most recent bug
 fixes and additions that are committed between official relases.
 
 The unofficial version number is formatted like: @file{A.B.C-D}. @file{A}
-and @file{B} are the same as the official version number. @file{C} is the
-number of commits that have been made after the most recent official
-release. @file{D} is the first 4 characters of the commit hash
-number@footnote{Each point in Gnuastro's history is uniquely identified
-with a 40 character long hash which is created from its contents and
-previous history for example:
+and @file{B} are the most recent official version number. @file{C} is the
+number of commits that have been made after version @file{A.B}. @file{D} is
+the first 4 or 5 characters of the commit hash number@footnote{Each point
+in Gnuastro's history is uniquely identified with a 40 character long hash
+which is created from its contents and previous history for example:
 @code{5b17501d8f29ba3cd610673261e6e2229c846d35}. So the string @file{D} in
 the version for this commit would be @file{5b17}}. Therefore, the
 unofficial version number `@code{3.92.8-29c8}', corresponds to the 8th
@@ -941,14 +939,6 @@ its tarballs are easily available and it has gone through more tests,
 making it more stable), so if an official release is announced prior to
 your publication's final review, please consider updating to the official
 release.
-
-All the utilities also have a version number to signify a change in that
-utility. Therefore if no change was made in a utility between two Gnuastro
-official releases, its version number will not change. Gnuastro and all
-programs within it started with a version number @file{0.0}. The minor
-version number is increased by 1 with any few bug fixes or small
-improvements compared to the previous release. The @file{NEWS} file will
-list all the relevant changes.
 
 The major version number is set by a major goal which is defined by the
 developers and user community of Gnuastro and individual utilities before
@@ -5252,7 +5242,7 @@ continue with the rest of actions.
 @cindex Converting data formats
 @cindex Image format conversion
 @cindex Converting image formats
-@pindex @r{ConvertType @value{CONVERTT_VERSION} (}astconvertt@r{)}
+@pindex @r{ConvertType (}astconvertt@r{)}
 The formats of astronomical data were defined mainly for archiving and
 processing. In other situations, the data might be useful in other
 formats. For example, when you are writing a paper or report or if you
@@ -5779,7 +5769,7 @@ given kernel or applying a transformation to it.
 @cindex Crop part of image
 @cindex Postage stamp images
 @cindex Large astronomical images
-@pindex @r{ImageCrop @value{IMGCROP_VERSION} (}astimgcrop@r{)}
+@pindex @r{ImageCrop (}astimgcrop@r{)}
 Astronomical images are often very large, filled with thousands of
 galaxies. It often happens that you only want a section of the image,
 or you have a catalog of sources and you want to visually analyze them
@@ -11527,7 +11517,7 @@ data. The tools in this chapter create model galaxies and will provide
 @section MakeProfiles
 
 @cindex Checking detection algorithms
-@pindex @r{MakeProfiles @value{MKPROF_VERSION} (}astmkprof@r{)}
+@pindex @r{MakeProfiles (}astmkprof@r{)}
 MakeProfiles will create mock astronomical profiles from a catalog,
 either individually or together in one output image. In data analysis,
 making a mock image can act like a calibration tool, through which you
@@ -14781,54 +14771,54 @@ contextual ordering.
 
 @table @asis
 
-@item Arithmetic @value{ARITHMETIC_VERSION}
+@item Arithmetic
 (@file{astarithmetic}) For arithmetic operations on data (image) pixels
 (@ref{Arithmetic}).
 
-@item ConvertType @value{CONVERTT_VERSION}
+@item ConvertType
 (@file{astconvertt}) Convert astronomical data files (FITS or IMH) to
 and from several other standard image and data formats, for example
 JPEG, EPS or PDF (@ref{ConvertType}).
 
-@item Convolve @value{CONVOLVE_VERSION}
+@item Convolve
 (@file{astconvolve}) Convolve (blur or smooth) data with a given
 kernel (@ref{Convolve}).
 
-@item CosmicCalculator @value{COSMICCAL_VERSION}
+@item CosmicCalculator
 (@file{astconvolve}) Find cosmological variables from input parameters
 (@ref{CosmicCalculator}).
 
-@item Header @value{HEADER_VERSION}
+@item Header
 (@file{astheader}) Print and manipulate the header data of a FITS file
 (see @ref{Header}).
 
-@item ImageCrop @value{IMGCROP_VERSION}
+@item ImageCrop
 (@file{astimgcrop}) Crop region(s) from an image and stitch several
 images if necessary. Inputs can be in pixel coordinates or world
 coordinates (@ref{ImageCrop}).
 
-@item ImageStatistics @value{IMGSTAT_VERSION}
+@item ImageStatistics
 (@file{astimgstat}) Get pixel statistics and save histogram and
 cumulative frequency plots (@ref{ImageStatistics}).
 
-@item ImageWarp @value{IMGWARP_VERSION}
+@item ImageWarp
 (@file{astimgwarp}) Warp image to new pixel grid (@ref{ImageWarp}).
 
-@item MakeCatalog @value{MKCATALOG_VERSION}
+@item MakeCatalog
 (@file{astmkcatalog}) Make catalog of labeled image
 (@ref{MakeCatalog}).
 
-@item MakeNoise @value{MKNOISE_VERSION}
+@item MakeNoise
 (@file{astmknoise}) Make (add) noise to an image (@ref{MakeNoise}).
 
-@item MakeProfiles @value{MKPROF_VERSION}
+@item MakeProfiles
 (@file{astmkprof}) Make mock profiles in image (@ref{MakeProfiles}).
 
-@item NoiseChisel @value{NOISECHISEL_VERSION}
+@item NoiseChisel
 (@file{astnoisechisel}) Detect and segment signal in noise
 (@ref{NoiseChisel}).
 
-@item SubtractSky @value{SUBTRACTSKY_VERSION}
+@item SubtractSky
 (@file{astsubtractsky}) Find and subtract sky value by comparing the
 mode and median on a mesh grid (@ref{SubtractSky}).
 

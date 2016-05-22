@@ -31,10 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Progarm name macros: */
-#define SPACK_VERSION   "0.1"
 #define SPACK           "astmkprof" /* Subpackage executable name. */
 #define SPACK_NAME      "MakeProfiles"     /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_STRING") "SPACK_VERSION
+#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
 #define LOGFILENAME     SPACK".log"
 #define LOGNUMCOLS      5
 
