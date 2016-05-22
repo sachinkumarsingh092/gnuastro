@@ -420,7 +420,7 @@ AS_IF([test x$enable_guide_message = xyes],
       ]
      )
   AS_ECHO(["(Build faster on N threads with 'make -jN'.)"])
-  AS_ECHO(["(Configure with '--disable-guide-message' for no messages)"])
+  AS_ECHO(["(Configure with '--disable-guide-message' for no messages.)"])
   AS_ECHO([===================================================================])
   AS_ECHO([===================================================================])
   AS_ECHO([])
