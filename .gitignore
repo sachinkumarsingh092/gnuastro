@@ -96,6 +96,7 @@ gnuastro.t2p
 config.guess
 version.texi
 authors.texi
+doc/fdl.texi
 config.status
 doc/stamp-vti
 astarithmetic
