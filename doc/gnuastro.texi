@@ -516,11 +516,6 @@ Contributing to Gnuastro
 * Commit guidelines::           Guidelines for commit messages.
 * Production workflow::         Submitting your commits (work) for inclusionm.
 
-Commit guidelines
-
-* Commit message::              Format of the commit message
-* Generate unique version number::  How to make a version for a commit
-
 Other useful software
 
 * SAO ds9::                     Viewing FITS images.
@@ -2862,7 +2857,17 @@ By default @command{git log} prints the most recent commit first, add the
 exactly what has been changed in the source code along with the commit
 message, add a @option{-p} option to the @command{git log}.
 
-
+If you intend make changes in the code, have a look at @ref{Developing} to
+get started easily. Be sure to commit your changes in a separate branch
+(keep your @code{master} branch to follow the official repository) and
+re-run @command{autoconf -f} after the commit. If you intend to send your
+changes to us (see @ref{Contributing to Gnuastro}) for the benefit of the
+whole community, you can safely use your commit since you work will be
+ultimately recorded in Gnuastro's official history. If not, please upload
+your separate branch to a public hosting service (for example GitLab) and
+link to it in your report, or run @command{make distcheck} and upload the
+output @file{gnuastro-X.X.X.XXXX.tar.gz} to a publicly accessible webpage
+so your results can be scientific and reproducible.
 
 
 
@@ -14599,14 +14604,6 @@ all your previous work is commited and repeat the steps above, but with a
 new title for the new issue you are working on. As a summary, always make
 all new branches off of a synchronized @file{master} branch.
 
-
-@menu
-* Commit message::              Format of the commit message
-* Generate unique version number::  How to make a version for a commit
-@end menu
-
-@node Commit message, Generate unique version number, Commit guidelines, Commit guidelines
-@subsubsection Commit message
 In the commit message, we strive to follow these standards in
 Gnuastro. Note that in the early phases of Gnuastro's development, we are
 experimenting and so if you notice earlier commits don't satisfy any of the
@@ -14684,32 +14681,6 @@ so be very descriptive.
 @end itemize
 
 @end table
-
-
-@node Generate unique version number,  , Commit message, Commit guidelines
-@subsubsection Generate unique version number
-
-@cindex GNU Autoconf
-After making the commit of your great modification to Gnuastro, if you
-intend on using Gnuastro for data-analysis and research, you don't have to
-wait until an official version number (which has incorporated your change)
-is released. Gnuastro can generate a unique version number for your commit
-(see @ref{Version numbering}). To do that, run GNU Autoconf after you have
-commited your change:
-
-@example
-$ autoconf -f
-@end example
-
-The version number is recorded in all outputs (where possible), therefore
-updating it will allow you to reproduce your results later and not worry
-about any future changes. If you send your changes to us to incorporate
-(see @ref{Production workflow}), you can safely cite this version number in
-a research paper or report, since the version number is unique to this
-commit which is recorded in Gnuastro's history. If you don't intend on
-including your work in the official history, please upload your repository
-to a public hosting service (for example GitLab) and link to it in your
-report, so your results are reproducible.
 
 
 
