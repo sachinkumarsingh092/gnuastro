@@ -1393,51 +1393,30 @@ character, enabling you to use multiple lines to write your commands.
 @node Acknowledgments,  , Conventions, Introduction
 @section Acknowledgments
 
-The list of Gnuastro authors is available at the start of this book, here
-the developers wish to gratefully acknowledge the help and support they
-received from other people and institutions who had an indirect (not
-committed in the version controlled history) role in Gnuastro. The plain
-text file @file{THANKS} which is distributed along with the source code
-also contains this list.
+The list of Gnuastro authors is available at the start of this book and the
+@file{AUTHORS} file in the source code. Here the authors wish to gratefully
+acknowledge the help and support they received from other people and
+institutions who had an indirect (not committed in the version controlled
+history) role in Gnuastro. The plain text file @file{THANKS} which is
+distributed along with the source code also contains this list.
 
-A major factor in the creation of Gnuastro was the Japanese Ministry of
-Science and Technology (MEXT) scholarship. This 5-year scholarship for
+The Japanese Ministry of Science and Technology (MEXT) scholarship for
 Mohammad Akhlaghi's Masters and PhD period in Tohoku University
-Astronomical Insitute played an instrumental role in the long term learning
-and planning that made the idea of Gnuastro possible.
+Astronomical Insitute had an instrumental role in the long term learning
+and planning that made the idea of Gnuastro possible. The very critical
+view points of Professor Takashi Ichikawa (from Tohoku University) were
+also instrumental in the initial ideas and creation of Gnuastro. Brandon
+Invergo, Karl Berry and Richard Stallman also provided very useful
+suggestions during the GNU evaluation process.
 
-The very critical view points of Professor Takashi Ichikawa (from Tohoku
-University) were also instrumental in the initial ideas and creation of
-Gnuastro. Brandon Invergo, Karl Berry and Richard Stallman also provided
-very useful suggestions during the GNU evaluation process. At first we
-wanted to submit the programs as independent and individual small programs,
-but thanks to their suggestions and ideas, all the separate programs were
-merged into this larger infrastructure that is now available for the
-astronomical community. We would also like to gratefully thank
-Mohammad-reza Khellat, Alan Lefor, and Yahya Sefidbakht for their useful
-and constructive comments. Finally we should thank all the anonymous
+@c To the developers: if you would like to thank someone, please change the
+@c `and' before the last name to a comma (','), then add " and Firstname
+@c Familyname'' after the last name.
+We would also like to gratefully thank Mohammad-reza Khellat, Alan Lefor,
+and Yahya Sefidbakht for their useful and constructive comments and
+suggestions. Finally we should thank all the (sometimes anonymous)
 developers in various online forums which patiently answered all our small
-(but very important) technical questions.
-
-The following institutions (listed choronologically) have hosted the
-Gnuastro developers and have signed a copyright disclaimer to the Free
-Software Foundation for the developer's contribution to Gnuastro. This
-guarantees the freedom of Gnuastro for the astronomical community in the
-future. See @ref{Copyright assignment} for the imporatance of having a
-single copyright owner in free and open source software. We are thus very
-grateful to them and acknowledge their open-minded role in Gnuastro:
-knowledge should not be locked behind (legally) closed doors, even when the
-source code is free or open.
-
-@itemize
-
-@item
-Tohoku University, Sendai, Japan.
-
-@item
-University of Salento, Lecce, Italy.
-
-@end itemize
+(but important) technical questions.
 
 
 
@@ -14558,31 +14537,40 @@ and reliability.
 
 Please get in touch with the Gnuastro maintainer (currently Mohammad
 Akhlaghi, akhlaghi -at- gnu -dot- org) to follow the procedures. It is
-possible to do this for each change (good for for a single
-contribution), and also more generally for all the changes/additions
-you do in the future within Gnuastro. So if you have already assigned
-the copyright of your work on another GNU software to the FSF, it
-should be done again for Gnuastro. The FSF has staff working on these
-legal issues and the maintainer will get you in touch with them to do
-the paperwork. The maintainer will just be informed in the end so your
-contributions can be merged within the Gnuastro source code.
+possible to do this for each change (good for for a single contribution),
+and also more generally for all the changes/additions you do in the future
+within Gnuastro. So if you have already assigned the copyright of your work
+on another GNU software to the FSF, it should be done again for
+Gnuastro. The FSF has staff working on these legal issues and the
+maintainer will get you in touch with them to do the paperwork. The
+maintainer will just be informed in the end so your contributions can be
+merged within the Gnuastro source code.
 
-Gnuastro will gratefully acknowledge (see @ref{Acknowledgments}) all
-the people and organizations (employers) who have assigned their
-copyright and disclaimer to the FSF and have thus helped to guarantee
-the freedom and reliability of Gnuastro. The Free Software Foundation
-will also acknowledge your copyright contributions in the Free
-Software Supporter: @url{https://www.fsf.org/free-software-supporter}
-which will circulate to a very large community (104,444 people in
-April 2016). See the archives for some examples and subscribe to
-recieve interesting updates. The very active code contributors (or
-developers) will also be recognized as project members on the Gnuastro
-project webpage (see @ref{Gnuastro project webpage}) and can be given
-a gnu.org email address. So your very valuable contribution and
-copyright assignment will not be forgotten and is highly appreciated
-by a very large community.
+Gnuastro will gratefully acknowledge (see @ref{Acknowledgments}) all the
+people who have assigned their copyright to the FSF and have thus helped to
+guarantee the freedom and reliability of Gnuastro. The Free Software
+Foundation will also acknowledge your copyright contributions in the Free
+Software Supporter: @url{https://www.fsf.org/free-software-supporter} which
+will circulate to a very large community (104,444 people in April
+2016). See the archives for some examples and subscribe to recieve
+interesting updates. The very active code contributors (or developers) will
+also be recognized as project members on the Gnuastro project webpage (see
+@ref{Gnuastro project webpage}) and can be given a @code{gnu.org} email
+address. So your very valuable contribution and copyright assignment will
+not be forgotten and is highly appreciated by a very large community. If
+you are reluctant to sign an assignment, a disclaimer is also acceptable.
 
-
+@cartouche
+@noindent
+@strong{Do I need a disclaimer from my university or employer?} It depends
+on the contract with your university or employer. From the FSF's
+@file{/gd/gnuorg/conditions.text}: ``If you are employed to do programming,
+or have made an agreement with your employer that says it owns programs you
+write, we need a signed piece of paper from your employer disclaiming
+rights to'' Gnuastro. The FSF's copyright clerk will kindly help you
+decide, please consult the following email address: ``assign -at- gnu -dot-
+org''.
+@end cartouche
 
 
 @node Commit guidelines, Production workflow, Copyright assignment, Contributing to Gnuastro
