@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef COPYRIGHT_H
 #define COPYRIGHT_H
 
-#define SHORTCOPYRIGHT "Copyright (C) 2015, Free Software Foundation, Inc."
+#define SHORTCOPYRIGHT "Copyright (C) 2016, Free Software Foundation, Inc."
 
 
 #define SHORTLICENSE   "License GPLv3+: GNU General public license version 3 or later."
