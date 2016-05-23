@@ -39,7 +39,7 @@ AC_INIT([GNU Astronomy Utilities],
         [bug-gnuastro@gnu.org], [gnuastro],
         [http://www.gnu.org/software/gnuastro/])
 AC_CONFIG_AUX_DIR([bootstrapped/build-aux])
-AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects gnu])
+AM_INIT_AUTOMAKE([-Wall subdir-objects gnu])
 AC_CONFIG_SRCDIR([lib/fitsarrayvv.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([bootstrapped/m4])

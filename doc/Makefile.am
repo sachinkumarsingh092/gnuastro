@@ -38,16 +38,8 @@ AM_MAKEINFOFLAGS = -I $(bootstrpdoc)
 
 # This is just a temporary work-around since Automake does not pass the
 # AM_MAKEINFOFLAGS to texi2dvi (which builds DVI and PDF outputs). This was
-# reported in Automake's bug 23599. A better way than the solution below
-# would have been to add the flags to the TEXI2DVI variable like this:
-#
-#    TEXI2DVI = texi2dvi -I $(bootstrpdoc)
-#
-# However, strangely, Automake doesn't allow us to override the value of
-# TEXI2DVI! So the only remaining tool that can be used to pass this
-# include directive to texi2dvi is the AM_V_texinfo. It appears it was
-# there to limit verbosity, but for the time being we are using it here.
-AM_V_texinfo = -I $(bootstrpdoc)
+# reported in Automake's bug 23599.
+TEXI2DVI = texi2dvi -I $(bootstrpdoc)
 
 
 ## Commands to make the texinfo tools.
