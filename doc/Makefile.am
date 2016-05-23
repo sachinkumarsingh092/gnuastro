@@ -22,18 +22,24 @@
 ## along with GNU Astronomy Utilities. If not, see
 ## <http://www.gnu.org/licenses/>.
 
-## Add the version numbers of the separate programs:
-## ================================================= List the header
-## files in this string with a space character between them, don't
-## forget to add `$(top_srcdir}/src/` before them like the ones
-## already there.
 
+## Set the shell
 SHELL=/bin/bash
 
 
-## Commands to make the texinfo tools:
+## fdl.texi (The GNU Free documentation license in Texinfo format) is
+## bootstrapped from Gnulib. Therefore it is not in this
+## directory. However, it is needed by gnuastro.texi to build the
+## documentation. It is the job of AM_MAKEINFOFLAGS, to pass options to the
+## documentation build programs. BOOTSTRPDOC is defined in `configure.ac'.
+AM_MAKEINFOFLAGS = -I $(BOOTSTRPDOC)
+#TEXI2DVI = texi2dvi -I $(BOOTSTRPDOC)
+
+
+## Commands to make the texinfo tools. BOOTSTRPDOC is defined in
+## `configure.ac'.
 info_TEXINFOS = gnuastro.texi
-gnuastro_TEXINFOS = fdl.texi authors.texi formath.texi
+gnuastro_TEXINFOS = $(BOOTSTRPDOC)/fdl.texi formath.texi authors.texi
 
 
 ## Files not predefined by Automake, and not in dependencies that must
