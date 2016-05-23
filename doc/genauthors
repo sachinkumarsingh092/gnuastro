@@ -29,6 +29,10 @@
 # with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
+# Status report
+echo "Generating authors list for documentation."
+
+
 # Only do the job if a .git directory exists in the top source directory
 # (recall that this script is also present in the tar-ball with no .git
 # directory and might be run from there)
@@ -36,10 +40,10 @@ if [ -d $1/.git ]; then
 
     # We will need to import the `.mailmap' file from the source directory
     # temporarily to correct the changing emails (see the comments in
-    # `.mailmap'). Note that this script is run from within the
-    # `TOP_SRCDIR/doc/' directory. The original `.mailmap' is in the
-    # `TOP_SRCDIR', so even when the source and build directories are the
-    # same, there is no problem.
+    # `.mailmap'). Note that this script is run from within the `doc/'
+    # directory. The original `.mailmap' is in the `TOP_SRCDIR', so even
+    # when the source and build directories are the same, there is no
+    # problem.
     ln -s $1/.mailmap .mailmap
 
     # Do NOT test if authors.texi is newer than ../.git.  In some cases the
@@ -52,6 +56,12 @@ if [ -d $1/.git ]; then
 
     # Clean up:
     rm .mailmap
+
+    # Check if the authors.texi file was actually written:
+    if [ ! -s authors.texi ]; then
+        echo "authors.texi is empty!"
+        exit 1
+    fi
 else
     echo "No Git repository detected, leaving authors.texi unchanged."
 fi
