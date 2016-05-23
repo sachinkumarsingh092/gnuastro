@@ -1,10 +1,13 @@
 #! /bin/sh
 #
 # Update/create authors for the documentation. But only when there is a Git
-# repository. When there is no ../.git directory, rely on the existing
-# authors list. If the authors.texi file has for some reason been deleted
-# from the non version controlled source, then the book will not be made
-# (Texinfo will complain about a missing authors.texi).
+# repository. When there is no $(top_srcdir)/.git directory, rely on the
+# existing authors list. If the authors.texi file has for some reason been
+# deleted from the non version controlled source, then the book will not be
+# made (Texinfo will complain about a missing authors.texi).
+#
+# Call like this:
+#     genauthors TOP_SRCDIR
 #
 # Original author:
 #     Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -26,16 +29,29 @@
 # with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
-# Only do the job if a .git directory exists (recall that this script
-# is also present in the tar-ball with no .git directory and might be
-# run from there)
-if [ ! -d "../.git" ]; then exit 0; fi
+# Only do the job if a .git directory exists in the top source directory
+# (recall that this script is also present in the tar-ball with no .git
+# directory and might be run from there)
+if [ -d $1/.git ]; then
 
+    # We will need to import the `.mailmap' file from the source directory
+    # temporarily to correct the changing emails (see the comments in
+    # `.mailmap'). Note that this script is run from within the
+    # `TOP_SRCDIR/doc/' directory. The original `.mailmap' is in the
+    # `TOP_SRCDIR', so even when the source and build directories are the
+    # same, there is no problem.
+    ln -s $1/.mailmap .mailmap
 
-# Do NOT test if authors.texi is newer than ../.git.  In some cases the
-# list of authors is created empty when running make in top directory
-# (in particular "make -jN" with N > 1), so authors.texi needs to be
-# recreated anyway.
-git shortlog --numbered --summary --email --no-merges          \
-    | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@\`e/"  \
-    | awk '{printf "%s %s (%s, %s)@*\n", $2, $3, $4, $1}' > authors.texi
+    # Do NOT test if authors.texi is newer than ../.git.  In some cases the
+    # list of authors is created empty when running make in top directory
+    # (in particular "make -jN" with N > 1), so authors.texi needs to be
+    # recreated anyway.
+    git --git-dir=$1/.git shortlog --numbered --summary --email --no-merges \
+        | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@\`e/"           \
+        | awk '{printf "%s %s (%s, %s)@*\n", $2, $3, $4, $1}' > authors.texi
+
+    # Clean up:
+    rm .mailmap
+else
+    echo "No Git repository detected, leaving authors.texi unchanged."
+fi
