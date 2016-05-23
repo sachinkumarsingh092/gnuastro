@@ -117,16 +117,6 @@ AC_PATH_PROG(HELP2MAN, help2man)
 
 
 
-# Path of the bootstrapped/doc dir to use for finding fdl.texi (which comes
-# from Gnulib). IMPORTANT NOTE: the `'' signs are needed on either side of
-# the value, otherwise the `$(top_srcdir)' will be executed at configure
-# time and be blank by the time it reaches Make.
-AC_SUBST(BOOTSTRPDOC, ['$(top_srcdir)/bootstrapped/doc'])
-
-
-
-
-
 # Read the configuration date.
 AC_MSG_CHECKING([for date of compilation])
 AC_DEFINE_UNQUOTED([CONFIGDATE], ["`date +"%d %B %Y"`"],

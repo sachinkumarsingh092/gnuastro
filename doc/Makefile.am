@@ -32,14 +32,27 @@ SHELL=/bin/bash
 ## directory. However, it is needed by gnuastro.texi to build the
 ## documentation. It is the job of AM_MAKEINFOFLAGS, to pass options to the
 ## documentation build programs. BOOTSTRPDOC is defined in `configure.ac'.
-AM_MAKEINFOFLAGS = -I $(BOOTSTRPDOC)
-#TEXI2DVI = texi2dvi -I $(BOOTSTRPDOC)
+bootstrpdoc = $(top_srcdir)/bootstrapped/doc
+AM_MAKEINFOFLAGS = -I $(bootstrpdoc)
 
 
-## Commands to make the texinfo tools. BOOTSTRPDOC is defined in
-## `configure.ac'.
+# This is just a temporary work-around since Automake does not pass the
+# AM_MAKEINFOFLAGS to texi2dvi (which builds DVI and PDF outputs). This was
+# reported in Automake's bug 23599. A better way than the solution below
+# would have been to add the flags to the TEXI2DVI variable like this:
+#
+#    TEXI2DVI = texi2dvi -I $(bootstrpdoc)
+#
+# However, strangely, Automake doesn't allow us to override the value of
+# TEXI2DVI! So the only remaining tool that can be used to pass this
+# include directive to texi2dvi is the AM_V_texinfo. It appears it was
+# there to limit verbosity, but for the time being we are using it here.
+AM_V_texinfo = -I $(bootstrpdoc)
+
+
+## Commands to make the texinfo tools.
 info_TEXINFOS = gnuastro.texi
-gnuastro_TEXINFOS = $(BOOTSTRPDOC)/fdl.texi formath.texi authors.texi
+gnuastro_TEXINFOS = $(bootstrpdoc)/fdl.texi formath.texi authors.texi
 
 
 ## Files not predefined by Automake, and not in dependencies that must
