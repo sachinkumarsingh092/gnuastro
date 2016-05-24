@@ -146,9 +146,15 @@ fi
 
 
 
+# Generate authors.texi
+make authors.texi
+
+
+
+
 # Run gendocs.sh to generate all the files:
 ../bootstrapped/build-aux/gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
-   "$booktitle" --html " " -o $outdir
+   "$booktitle" --html " " -o $outdir -I ../bootstrapped/doc
 
 
 
