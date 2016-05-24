@@ -494,8 +494,8 @@ Developing
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
-* After making changes::        Checklist to finalize your changes.
 * Contributing to Gnuastro::    Share your changes with all users.
+* After making changes::        Checklist to finalize your changes.
 
 Program source
 
@@ -513,7 +513,8 @@ Contributing to Gnuastro
 
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
-* Production workflow::         Submitting your commits (work) for inclusionm.
+* Production workflow::         Submitting your commits (work) for inclusion.
+* Branching workflow tutorial::       Tutorial on wokflow steps with Git.
 
 Other useful software
 
@@ -13368,8 +13369,8 @@ discussed. Finally some notes on the building process are given.
 * Program source::              Conventions for the code.
 * Test scripts::                Understanding the test scripts.
 * Building::                    Explanations on building.
-* After making changes::        Checklist to finalize your changes.
 * Contributing to Gnuastro::    Share your changes with all users.
+* After making changes::        Checklist to finalize your changes.
 @end menu
 
 
@@ -14333,7 +14334,7 @@ also true for images or files that were produced by other tests.
 
 
 
-@node Building, After making changes, Test scripts, Developing
+@node Building, Contributing to Gnuastro, Test scripts, Developing
 @section Building
 
 @cindex GNU Libtool
@@ -14373,106 +14374,44 @@ can get you started off.
 
 
 
-@node After making changes, Contributing to Gnuastro, Building, Developing
-@section After making changes
-After you have made your your changes/additions, please take the
-following steps:
-
-@enumerate
-
-@item
-Write test(s) in the @file{tests/progname/} directory to test the
-change(s)/addition(s) you have made. Then add their file names to
-@file{tests/Makefile.am}. And run @command{$ make check} to make sure
-everything is working correctly.
-
-@item
-Make sure the manual (this book) is completely up to date with your
-changes, see @ref{Documentation}.
-
-@cindex GNU Emacs
-@cindex @file{ChangeLog}
-@cindex GNU coding standards
-@item
-If you have @emph{changed} anything in the program, add it to the
-@file{ChangeLog} (a file in the top source code
-directory). @file{ChangeLog} has a specific format defined by the GNU
-coding standards. The easiest way to add an entry to it is through
-Emacs: by pressing @key{CTRL-x 4 a} within the places that you have
-changed. Note that if you have only added something, there is no need
-to include it in @file{ChangeLog}.
-
-@cindex Making a distribution package
-@item
-Finally, to make sure everything will run and is checked correctly,
-run
-
-@example
-$ make distcheck
-@end example
-
-@noindent
-This command will create a distribution file (ending with
-@file{.tar.gz}) and try to compile it in the most general cases, then
-it will run the tests on what it has built in its own
-mini-environment. If @command{$ make distcheck} finishes successfully,
-then you are safe to send your changes to us to implement or for your
-own purposes.
-
-@end enumerate
 
 
-
-
-
-
-
-@node Contributing to Gnuastro,  , After making changes, Developing
+@node Contributing to Gnuastro, After making changes, Building, Developing
 @section Contributing to Gnuastro
 
 You have this great idea or have found a good fix to a problem which you
-would like to implement it in Gnuastro, and share it with the whole
-community as part of the official release. This is great and your
-contribution is most welcome. Just please make sure that you have had a
-look at the previous sections of this chapter (see the sub-sections under
-@ref{Developing}). In short, that you have done the following steps:
-
-@enumerate
-
-@item
-Register your desired contribution on the project webpage (see
-@ref{Gnuastro project webpage}) to make sure others aren't already working
-on it.
-
-@item
-Clone Gnuastro locally on your system (see @ref{Version controlled source})
-and make sure your @file{master} branch is synchronized with the most
-recent commit on the offcial repository (see @ref{Synchronizing}).
-
-@item
-Implement your idea following Gnuastro's coding conventions, see
-@ref{Coding conventions}).
-
-@item
-Check your changes (see @ref{After making changes}).
-
-@end enumerate
+would like to implement in Gnuastro. You have also become familiar with the
+general design of Gnuastro in the previous sections of this chapter (see
+@ref{Developing}) and want to start working on and sharing your new
+addition/change with the whole community as part of the official
+release. This is great and your contribution is most welcome. This section
+and the next (see @ref{After making changes}) are written in the hope of
+making it as easy as possible for you to share your great idea with the
+Gnuastro community.
 
 @cindex FSF
 @cindex Free Software Foundation
 In this section we discuss the final steps you have to take: legal and
 technical. From the legal perspective, the copyright of any work you do on
 Gnuastro has to be assigned to the Free Software Foundation (FSF) and the
-GNU operating system. We do this to ensure that Gnuastro can remain free in
-the future, see @ref{Copyright assignment}. From the technical point of
-view, in this section we also discuss commit guidelines (@ref{Commit
-guidelines}) and the general version control workflow of Gnuastro in
-@ref{Production workflow}.
+GNU operating system, or you have to sign a disclaimer. We do this to
+ensure that Gnuastro can remain free in the future, see @ref{Copyright
+assignment}. From the technical point of view, in this section we also
+discuss commit guidelines (@ref{Commit guidelines}) and the general version
+control workflow of Gnuastro in @ref{Production workflow}, along with a
+tutorial in @ref{Branching workflow tutorial}.
+
+Recall that before starting the work on your idea, be sure to checkout the
+bugs and tasks trackers in @ref{Gnuastro project webpage} and announce your
+work there so you don't end up spending time on something others have
+already worked on, and also to attract similarly interested developers to
+help you.
 
 @menu
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
-* Production workflow::         Submitting your commits (work) for inclusionm.
+* Production workflow::         Submitting your commits (work) for inclusion.
+* Branching workflow tutorial::       Tutorial on wokflow steps with Git.
 @end menu
 
 @node Copyright assignment, Commit guidelines, Contributing to Gnuastro, Contributing to Gnuastro
@@ -14573,31 +14512,15 @@ org''.
 
 To be able to cleanly integrate your work with the other developers,
 @strong{never commit on the @file{master} branch} (see @ref{Production
-workflow} for a complete discussion). In short, leave @file{master} only
-for changes you fetch, or pull from the official repository (see
-@ref{Synchronizing}). Before making the first commit for your new issue,
-build and checkout a specific topic-branch from a synchronized
-@file{master} as shown below (replace @file{my-important-fix} with a short
-descriptive name for the issue you want to work on):
+workflow} for a complete discussion and @ref{Branching workflow tutorial} for a
+cookbook example). In short, leave @file{master} only for changes you
+fetch, or pull from the official repository (see
+@ref{Synchronizing}).
 
-@example
-$ git checkout master
-$ git pull
-$ git checkout -b my-important-fix
-@end example
-
-@noindent
-After that, do the first commit of your great new change in Gnuastro and
-continue commiting on this branch for this specific issue.  If you want to
-make another independent change afterwards (or in the meantime), make sure
-all your previous work is commited and repeat the steps above, but with a
-new title for the new issue you are working on. As a summary, always make
-all new branches off of a synchronized @file{master} branch.
-
-In the commit message, we strive to follow these standards in
-Gnuastro. Note that in the early phases of Gnuastro's development, we are
-experimenting and so if you notice earlier commits don't satisfy any of the
-guidelines below, it is because they predate that guideline.
+In the Gnuastro commit messages, we strive to follow these standards. Note
+that in the early phases of Gnuastro's development, we are experimenting
+and so if you notice earlier commits don't satisfy some of the guidelines
+below, it is because they predate that guideline.
 
 @table @asis
 
@@ -14617,36 +14540,44 @@ names or the graph stucture outputs of @command{git log} which are
 also commonly used.
 
 @item
-The title should also not finish with any full-stops or periods.
+The title should not finish with any full-stops or periods (`@key{.}').
 
 @end itemize
 
 @item Commit body
+@cindex Mailing list: gnuastro-commits
 The body of the commit message is separated from the title by one empty
-line.
+line. Recall that anyone who has subscribed to @command{gnuastro-commits}
+mailing list will get the commit in their email after it has been pushed to
+@file{master}. People will also read them when they synchronize with the
+main Gnuastro repository (see @ref{Synchronizing}). Finally, the commit
+messages will later be used to update the @file{NEWS} file on each
+release. Therefore the commit message body plays a very important role in
+the development of Gnuastro, so please adhere to the following guidelines.
 
 @itemize
 
-@item
-The body should be very descriptive. People will look at these commit
-bodies after they pull the recent changes from the main Gnuastro
-repository, so when relevant, start the body by explaining what changes
-your commit makes from a user's perspective (added, changed, or removed
-options, or arguments to utilities or libraries, or modified algorithms, or
-new installation step, or etc). These will later be used to update the
-@file{NEWS} file on each release.
 
 @item
-Try to explain the committed contents as best as you can. Recall that all
-commits are circulated in the @command{gnuastro-commits} mailing list and
-that the subscribers do not necessarily have your current background. After
-some time you will also forget the context, so this request is not just for
-others@footnote{@url{http://catb.org/esr/writings/unix-koans/prodigy.html}}. So
+The body should be very descriptive. Start the commit message body by
+explaining what changes your commit makes from a user's perspective (added,
+changed, or removed options, or arguments to utilities or libraries, or
+modified algorithms, or new installation step, or etc).
+
+@item
+@cindex Mailing list: gnuastro-commits
+Try to explain the committed contents as best as you can. Recall that the
+readers of your commit message do not necessarily have your current
+background. After some time you will also forget the context, so this
+request is not just for
+others@footnote{@url{http://catb.org/esr/writings/unix-koans/prodigy.html}}. Therefore
 be very descriptive and explain as much as possible: what the bug/task was,
 justify the way you fixed it and discuss other possible solutions that you
 might not have included. For the last item, it is best to discuss them
 thoroughly as comments in the appropriate section of the code, but only
-give a short summary in the commit message.
+give a short summary in the commit message. Note that all added and removed
+source code lines will also be circulated in the @command{gnuastro-commits}
+mailing list.
 
 @item
 Like all other Gnuastro's text files, the lines in the commit body should
@@ -14662,82 +14593,198 @@ this condition (using @key{M-q}).
 When the commit is related to a task or a bug, please include the
 respective ID (in the format of @code{bug/task #ID}, note the space) in the
 commit message (from @ref{Gnuastro project webpage}) for interested people
-to be able to followup the discussion. Recall that all commits are
-forwarded to the @command{gnuastro-commits} mailing list. The recommended
-way is to add a line after the body with `@code{This fixes bug #ID.}', or
-`@code{This finishes task #ID.}'. Don't assume that the reader has internet
-access to check the bug's full description when reading the commit message,
-so be very descriptive.
+to be able to followup the discussion that took place there. If the commit
+fixes a bug or finishes a task, the recommended way is to add a line after
+the body with `@code{This fixes bug #ID.}', or `@code{This finishes task
+#ID.}'. Don't assume that the reader has internet access to check the bug's
+full description when reading the commit message, so give a short
+introduction too.
 @end itemize
 
 @end table
 
 
 
-@node Production workflow,  , Commit guidelines, Contributing to Gnuastro
+@node Production workflow, Branching workflow tutorial, Commit guidelines, Contributing to Gnuastro
 @subsection Production workflow
 
-Fortunately Pro Git has done a wonderful job in explaining the
-different workflows in Chapter
+Fortunately `Pro Git' has done a wonderful job in explaining the different
+workflows in Chapter
 5@footnote{@url{http://git-scm.com/book/en/v2/Distributed-Git-Distributed-Workflows}}
-and in particular the ``Integration-Manager Workflow'' explained
-there. The implementation of this workflow is nicely explained in
-Section
+and in particular the ``Integration-Manager Workflow'' explained there. The
+implementation of this workflow is nicely explained in Section
 5.2@footnote{@url{http://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project}}
-under ``Forked-Public-Project''. Upon a release, a tag will be put on
-the appropriate commit in master marking the release version. So,
-whomever clones Gnuastro will automatically go onto the ready to be
-used master branch that contains bug-fixes or additions that might not
-yet be released. Anything on the master branch should always be tested
-and ready to be built and used.
-
-Recall that to ensure the stability of Gnuastro in the future, you need to
-assign the copyright of your changes in Gnuastro to the FSF before we can
-incorporate them. This can be done once for all your subsequent work in
-Gnuastro, please see @ref{Copyright assignment}. With this legal step out
-of the way, there are two methods for you to contribute to Gnuastro in the
-``Integration-Manager Workflow'':
+under ``Forked-Public-Project''. We have also prepared a short tutorial in
+@ref{Branching workflow tutorial}. Anything on the master branch should always be
+tested and ready to be built and used. As described in `Pro Git', there are
+two methods for you to contribute to Gnuastro in the Integration-Manager
+Workflow:
 
 @enumerate
 
 @item
-You can send commit patches by email as fully explained in Pro
-Git. This is good for your first few contributions, if you would like
-to get more heavily involved in Gnuastro's development, then you can
-try the next solution.
+You can send commit patches by email as fully explained in `Pro Git'. This
+is good for your first few contributions, if you would like to get more
+heavily involved in Gnuastro's development, then you can try the next
+solution.
 
 @item
-You can have your own forked copy of Gnuastro on any hosting site you
-like (GitHub, GitLab, BitBucket, or etc) and inform us when your
-changes are ready so we merge them in Gnuastro. This is more suited
-for people who commonly contribute to the code.
-
-Just please follow the feature branch methodology: create a new branch
-for every feature you want to add from the most recent master commit
-in the main repo. When your work is done, inform us of your repository
-and the branch. After testing it and if everything is working fine, we
-will merge it into the main repository. If you have made temporary
-branches within that branch, it is best to rebase them into one branch
-before you inform us.
+You can have your own forked copy of Gnuastro on any hosting site you like
+(GitHub, GitLab, BitBucket, or etc) and inform us when your changes are
+ready so we merge them in Gnuastro. This is more suited for people who
+commonly contribute to the code (see @ref{Branching workflow tutorial}).
 
 @end enumerate
 
 In both cases, your commits (with your name and information) will be
 preserved and your contributions will thus be fully recorded in the history
-of Gnuastro and in the @file{AUTHORS} file once they have been incorporated
-into the official repository. Needless to say that in such cases, be sure
-to follow the bug or task trackers (or subscribe to the
-@command{gnuastro-devel} mailing list) and contact us before hand so you
-don't do something that someone else is already working on. In that case,
-you can get in touch with them and help the job go on faster, see
-@ref{Gnuastro project webpage}. This workflow is currently mostly borrowed
-from the general recommendations of
+of Gnuastro and in the @file{AUTHORS} file and this book (second page in
+the PDF format) once they have been incorporated into the official
+repository. Needless to say that in such cases, be sure to follow the bug
+or task trackers (or subscribe to the @command{gnuastro-devel} mailing
+list) and contact us before hand so you don't do something that someone
+else is already working on. In that case, you can get in touch with them
+and help the job go on faster, see @ref{Gnuastro project webpage}. This
+workflow is currently mostly borrowed from the general recommendations of
 Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
 and GitHub. But since Gnuastro is under heavy development currently, these
 might change and evolve to better suite our needs.
 
 
 
+
+
+@node Branching workflow tutorial,  , Production workflow, Contributing to Gnuastro
+@subsection Branching workflow tutorial
+
+This is a tutorial on the second suggested method that you can submit your
+modifications in Gnuastro (see @ref{Production workflow}). Let's assume you
+want to start contributing to Gnuastro and you would like to use
+GitLab@footnote{See
+@url{https://www.gnu.org/software/repo-criteria-evaluation.html} for an
+evaluation of the major existing repositories.} to keep your work remotely
+and share it with other Gnuastro developers once you are ready. You can
+create an empty repository on the GitLab webpage (this applies to any
+service, not just Gitlab!). Here we'll assume you use the name
+@file{janedoe} to refer to yourself everywhere and that you choose
+@file{gnuastro-janedoe} as the name of your Gnuastro fork. Any online
+hosting service will give you an address (similar to
+`@file{git@@gitlab.com:}' below) of the empty repository you have created
+using their webpage, use that address in the third line below.
+
+@example
+$ git clone git://git.sv.gnu.org/gnuastro.git
+$ cd gnuastro
+$ git remote add janedoe git@@gitlab.com:janedoe/gnuastro-janedoe.git
+$ git push janedoe master
+@end example
+
+The full Gnuastro history is now pushed onto your GitLab account and the
+@file{janedoe} remote is now also following your @file{master} branch. If
+you run @command{git remote show REMOTENAME} for the @file{origin} and
+@file{janedoe} remotes, you will see their difference: the first has pull
+access and the second doesn't. This nicely summarizes the main idea behind
+this workflow: you push to your remote repository, we pull from it and
+merge it into @file{master}, then you finalize it by pulling from the main
+repository. The process above is only necessary for your first time setup,
+you don't need to repeat it. However, please repeat the process below for
+each independent issue you intend to work on.
+
+Let's assume you have found a bug in one of the functions of
+@file{lib/statistics.c} and after announcing it (see @ref{Report a bug}),
+you are in charge of fixing it. You make a branch, checkout to it, correct
+the bug, check if it is indeed fixed, add it to the staging area, commit it
+to the new branch and push it to your GitLab account. But before all of
+them, make sure that your @file{master} branche is up to date with the main
+Gnuastro @file{master} branch.
+
+@example
+$ git checkout master
+$ git pull
+$ git checkout -b bug-123456-stats
+$ emacs lib/statistics.c
+$ git add lib/statistics.c
+$ git commit
+$ git push janedoe bug-123456-stats
+@end example
+
+Your new branch is now on your GitLab repository. You can then let the
+other developers know that your @file{bug-123456-stats} branch is ready,
+and they will pull your change, test it themselves and if it is ready to be
+merged into the main Gnuastro history, they will merge it into the
+@file{master} branch. After that is done, you can simply checkout your
+local @file{master} branch and pull all the changes from the main
+repo. After the pull you run `@command{git log}' as shown below, to see
+that your separate @file{bug-123456-stats} is merged with master. So you
+can push all the changes to your GitLab account and delete the branches
+
+@example
+$ git checkout master
+$ git pull
+$ git log --oneline --graph --decorate --all
+$ git push janedoe master
+$ git branch -d bug-123456-stats                # delete local branch
+$ git push janedoe --delete bug-123456-stats    # delete remote branch
+@end example
+
+Just as a reminder, always keep your work on each issue in a separte local
+and remote branch so work can progress on them independently. After you
+make your announcement, other people might contribute to the branch before
+merging it in to @file{master}, so this is very important. Also before
+starting each issue branch from @file{master}, be sure to run @command{git
+pull} in @file{master} as shown above, to simplify the merging process
+later.
+
+
+
+
+
+@node After making changes,  , Contributing to Gnuastro, Developing
+@section After making changes
+This is a checklist of things to do after applying your changes/additions
+in Gnuastro:
+
+@enumerate
+
+@item
+If the change is non-trivial, write test(s) in the @file{tests/progname/}
+directory to test the change(s)/addition(s) you have made. Then add their
+file names to @file{tests/Makefile.am}.
+
+@item
+Run @command{$ make check} to make sure everything is working correctly.
+
+@item
+Make sure the documentation (this book) is completely up to date with your
+changes, see @ref{Documentation}.
+
+@item
+Commit your change to your issue branch (see @ref{Production workflow} and
+@ref{Branching workflow tutorial}) Afterwards, run Autoreconf to generate the
+appropriate version number:
+
+@example
+$ autoreconf -f
+@end example
+
+@cindex Making a distribution package
+@item
+Finally, to make sure everything will be built, installed and checked
+correctly run
+
+@example
+$ make distcheck
+@end example
+
+@noindent
+This command will create a distribution file (ending with @file{.tar.gz})
+and try to compile it in the most general cases, then it will run the tests
+on what it has built in its own mini-environment. If @command{$ make
+distcheck} finishes successfully, then you are safe to send your changes to
+us to implement or for your own purposes. See @ref{Production workflow} and
+@ref{Branching workflow tutorial}.
+
+@end enumerate
 
 
 
