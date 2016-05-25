@@ -585,12 +585,12 @@ founding basis of the Gnuastro.
 @cindex Compile
 @cindex Check
 @cindex Test
-@url{https://www.gnu.org/software/gnuastro/} is the official Gnuastro
-tarball download page (see @ref{Downloading the source}). Let's assume
-@file{gnuastro-X.X.tar.gz} (see @ref{Version numbering}) is in the
-@file{TOPGNUASTRO} directory, which can be any directory, and you already
-have the dependencies installed (see @ref{Dependencies}). Running the
-following commands will unpack, compile, check and install Gnuastro.
+Let's assume @file{gnuastro-X.X.tar.gz} (see @ref{Version numbering}) is in
+the @file{TOPGNUASTRO} directory, which can be any directory. See
+@ref{Release tarball} for downloading a release tarball and
+@ref{Dependencies} for the list of dependencies. By running the following
+commands you will unpack, compile, check and install Gnuastro (replace
+@file{X.X} with the version number you downloaded).
 
 @example
 $ cd TOPGNUASTRO
@@ -2147,16 +2147,18 @@ The dependencies needed to build and install Gnuastro are defined by the
 features you want and how you would like to obtain the source code (see
 @ref{Downloading the source}). A minimal set of dependencies are mandatory,
 if they are not present you cannot get passed the configuration step. Such
-mandatory dependencies are therefore set to a minimum in Gnuastro and are
-very basic (low-level) and easy to install packages, they are thoroughly
-discussed in @ref{Mandatory dependencies}.
+mandatory dependencies are therefore very basic (low-level) tools which are
+easy to obtain, build and install, see @ref{Mandatory dependencies} for a
+full discussion.
 
 If you have the packages of @ref{Optional dependencies}, Gnuastro will have
 additional functionality (for example converting FITS images to JPEG or
-PDF). If you are installing from a tarball, you can stop reading
-here. However, if you decided to use the version controlled source instead
-of the tarball, there is an additional bootstrapping step and its
-dependencies are explained in @ref{Bootstrapping dependencies}.
+PDF). If you are installing from a tarball as explained in @ref{Quick
+start}, you can stop reading after this section. However, if you decided to
+use the version controlled source instead of the tarball (see @ref{Version
+controlled source}), an additional bootstrapping step is required before
+configuration and its dependencies are explained in @ref{Bootstrapping
+dependencies}.
 
 
 @menu
@@ -2558,14 +2560,14 @@ introduced in @ref{Version controlled source}.
 @subsection Release tarball
 
 A release tarball (commonly compressed) is the most common way of obtaining
-Free and Open Source software. A tarball is a snapshot of one particular
+free and open source software. A tarball is a snapshot of one particular
 moment in the Gnuastro development history along with all the necessary
-files to configure, build, and install Gnuastro easily. It is very
-straightforward and needs the least set of dependencies (see
-@ref{Dependencies}). Gnuastro has tarballs for official and some unofficial
-releases. See @ref{Version numbering} for more on the two types of releases
-and the formats of the version numbers. The URLs for each type of release
-are given below.
+files to configure, build, and install Gnuastro easily (see @ref{Quick
+start}). It is very straightforward and needs the least set of dependencies
+(see @ref{Mandatory dependencies}). Gnuastro has tarballs for official
+stable releases and pre-releases for testing. See @ref{Version numbering}
+for more on the two types of releases and the formats of the version
+numbers. The URLs for each type of release are given below.
 
 @table @asis
 
@@ -2578,25 +2580,24 @@ recommended to use a mirror to download these tarballs, please visit
 @url{http://ftpmirror.gnu.org/gnuastro/} and see below.
 
 @item Pre-release tar-balls (@url{http://alpha.gnu.org/gnu/gnuastro}):
-This URL contains unofficial pre-release versions of Gnuastro. These are
-pre-release versions of Gnuastro that are put here for enthusiasts to try
-out before an official release. If there are problems, or bugs then the
-testers will inform the developers to fix before the next official
-release. See @ref{Version numbering} to understand how the version numbers
-here are formatted. If you want to remain even more up-to-date with the
-developing activities that are not yet in this directory, please clone the
-Version controlled source, fully explained in @ref{Version controlled
-source}.
+This URL contains unofficial pre-release versions of Gnuastro. The
+pre-release versions of Gnuastro here are for enthusiasts to try out before
+an official release. If there are problems, or bugs then the testers will
+inform the developers to fix before the next official release. See
+@ref{Version numbering} to understand how the version numbers here are
+formatted. If you want to remain even more up-to-date with the developing
+activities, please clone the version controlled source as described in
+@ref{Version controlled source}.
 
 @end table
 
 The GNU FTP server is mirrored (has backups) in various locations on the
 globe (@url{http://www.gnu.org/order/ftp.html}). You can use the closest
-mirror to your location for a more faster download, for the list of
-mirrors. Note that not all mirrors keep track of the pre-release (alpha)
-tarballs. Also note that if you want to download immediately after and
-announcement (see @ref{Announcements}), the mirrors might need some time to
-synchronize with the main GNU FTP server.
+mirror to your location for a more faster download. Note that only some
+mirrors keep track of the pre-release (alpha) tarballs. Also note that if
+you want to download immediately after and announcement (see
+@ref{Announcements}), the mirrors might need some time to synchronize with
+the main GNU FTP server.
 
 
 @node Version controlled source,  , Release tarball, Downloading the source
@@ -2872,21 +2873,25 @@ so your results can be scientific and reproducible.
 @node Build and install,  , Downloading the source, Installation
 @section Build and install
 
-This section is basically a longer explanation to the sequence of
-commands given in @ref{Quick start}. If you want to have all the
-programs of Gnuastro installed in your system, you don't want to
-change the executable names during or after installation, you have
-root access to install the programs in a system wide directory, the
-Letter paper size of the print book is fine for you or as a summary
-you don't feel like going into the details when everything is working
-seamlessly, you can safely skip this section.
+This section is basically a longer explanation to the sequence of commands
+given in @ref{Quick start}. If you didn't have any problems during the
+@ref{Quick start} steps, you want to have all the programs of Gnuastro
+installed in your system, you don't want to change the executable names
+during or after installation, you have root access to install the programs
+in the default system wide directory, the Letter paper size of the print
+book is fine for you or as a summary you don't feel like going into the
+details when everything is working, you can safely skip this section.
 
 If you have any of the above problems or you want to understand the details
-for a better control over your build and install, read along. In the
-following it is assumed that you have prepared the source files in the
-@file{TOPGNUASTRO} directory (see @ref{Downloading the source}). The first
-three steps in @ref{Quick start} need no extra explanation, so we will skip
-them.
+for a better control over your build and install, read along. The
+dependencies which you will need prior to configuring, building and
+installing Gnuastro are explained in @ref{Dependencies}. The first three
+steps in @ref{Quick start} need no extra explanation, so we will skip them
+and start with an explanation of Gnuastro specific configuration options
+and a discussion on the installation directory in @ref{Configuring},
+followed by some smaller subsections: @ref{Tests}, @ref{A4 print book}, and
+@ref{Known issues} which explains the solutions to known problems you might
+encounter in the installation steps and ways you can solve them.
 
 
 @menu
