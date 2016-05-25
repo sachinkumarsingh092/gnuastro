@@ -412,7 +412,7 @@ Image analysis
 
 ImageStatistics
 
-* Histogram and Cumulative Freqency Plot::  Basic definitions.
+* Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
 * Mirror distribution::         Used for finding the mode.
 * Invoking astimgstat::         Arguments and options to ImageStatistics.
@@ -514,7 +514,7 @@ Contributing to Gnuastro
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
 * Production workflow::         Submitting your commits (work) for inclusion.
-* Branching workflow tutorial::       Tutorial on wokflow steps with Git.
+* Branching workflow tutorial::       Tutorial on workflow steps with Git.
 
 Other useful software
 
@@ -716,8 +716,8 @@ accompanying the algorithms) ``Numerical Recipes'' for astronomy.
 
 The other major and arguably more important difference is that
 ``Numerical Recipes'' does not allow you to distribute any code that
-you have learnt from it and the book is not freely available. So while
-it empowers the previlaged individual who has access to it, it
+you have learned from it and the book is not freely available. So while
+it empowers the privileged individual who has access to it, it
 exacerbates social ignorance. For example it does not allow you to
 release your software's source code if you have used their codes, you
 can only publicly release binaries (a black box) to the
@@ -906,7 +906,7 @@ unofficial releases. Official Gnuastro releases are announced on the
 @command{info-gnuastro} mailing list, they have a version control tag in
 Gnuastro's development history and their version numbers are formatted like
 ``@file{A.B}''. @file{A} is a major version number, marking a significant
-planned acheivement (for example see @ref{GNU Astronomy Utilities 1.0}),
+planned achievement (for example see @ref{GNU Astronomy Utilities 1.0}),
 while @file{B} is a minor version number, see below for more on the
 distinction. Note that the numbers are not decimals, so version 2.34 is
 much more recent than version 2.5, which is not equal to 2.50.
@@ -917,11 +917,11 @@ history. This is done to allow astronomers to easily use any point in the
 version controlled source for their data-analysis and research
 publication. See @ref{Version controlled source} for a complete
 introduction. This section is not just for developers and is very
-streightforward, so please have a look if you are interested in the
+straightforward, so please have a look if you are interested in the
 cutting-edge. This unofficial version number is a meaningful and easy to
 read string of characters, unique to that particular point of history. With
 this feature, users can easily stay up to date with the most recent bug
-fixes and additions that are committed between official relases.
+fixes and additions that are committed between official releases.
 
 The unofficial version number is formatted like: @file{A.B.C-D}. @file{A}
 and @file{B} are the most recent official version number. @file{C} is the
@@ -933,9 +933,9 @@ which is created from its contents and previous history for example:
 the version for this commit would be @file{5b17}}. Therefore, the
 unofficial version number `@code{3.92.8-29c8}', corresponds to the 8th
 commit after the official version @code{3.92} and its commit hash begins
-with @code{29c8}. This number is sortable (unlike the raw hash) and as
+with @code{29c8}. This number is sort-able (unlike the raw hash) and as
 shown above is very descriptive of the state of the unofficial
-release. Ofcourse an official release is preferred for publication (since
+release. Of course an official release is preferred for publication (since
 its tarballs are easily available and it has gone through more tests,
 making it more stable), so if an official release is announced prior to
 your publication's final review, please consider updating to the official
@@ -944,7 +944,7 @@ release.
 The major version number is set by a major goal which is defined by the
 developers and user community of Gnuastro and individual utilities before
 hand, see @ref{GNU Astronomy Utilities 1.0} for example. The incremental
-work done in minor releases are commonly small steps in acheiving the major
+work done in minor releases are commonly small steps in achieving the major
 goal. Therefore, there is no limit on the number of minor releases and the
 difference between the (assumed) versions 2.927 and 3.0 can be a very
 small (negligible to the user) improvement that finalizes the defined
@@ -1012,7 +1012,7 @@ is useless, in order have an operating system you need many more packages
 and the majority of such low-level packages in most distributions are
 developed as part of the GNU project: ``the whole system is basically GNU
 with Linux loaded''. In the form of an analogy: to say “running Linux”, is
-like saying “driving your carburettor”.
+like saying “driving your carburetor”.
 
 @itemize
 
@@ -1097,7 +1097,7 @@ On the command line, you can run any series of of actions which can come
 from various CLI capable programs you have decided your self in any
 possible permutation with one command@footnote{By writing a shell script
 and running it, for example see the tutorials in @ref{Tutorials}.}. This
-allows for much more creativity and exact reproducibility that is not
+allows for much more creativity and exact reproducability that is not
 possible to a GUI user. For technical and scientific operations, where the
 same operation (using various programs) has to be done on a large set of
 data files, this is crucially important. It also allows exact
@@ -1182,7 +1182,7 @@ reports. The issue might have already been found and even solved. The
 best place to check if your bug has already been discussed is the bugs
 tracker on @ref{Gnuastro project webpage} at
 @url{https://savannah.gnu.org/bugs/?group=gnuastro}. In the top search
-fields (under ``Display Criteria'') set the ``Open/Closed'' dropdown
+fields (under ``Display Criteria'') set the ``Open/Closed'' drop-down
 menu to ``Any'' and choose the respective utility in ``Category'' and
 click the ``Apply'' button. The results colored green have already
 been solved and the status of those colored in red is shown in the
@@ -1247,7 +1247,7 @@ more on the project webpage).
 
 @item
 Using the top horizontal menu items, immediately under the top page
-title. Hovering your mouse on ``Support'' will open a dropdown
+title. Hovering your mouse on ``Support'' will open a drop-down
 list. Select ``Submit new''.
 
 @item
@@ -1302,7 +1302,7 @@ immediately included (with the next release of Gnuastro).
 The best person to apply the exciting new feature you have in mind is
 you, since you have the motivation and need. Infact Gnuastro is
 designed for making it as easy as possible for you to hack into it
-(add new feautres, change existing ones and so on), see @ref{Science
+(add new features, change existing ones and so on), see @ref{Science
 and its tools}. Please have a look at the chapter devoted to
 developing (@ref{Developing}) and start applying your desired
 feature. Once you have added it, you can use it for your own work and
@@ -1333,7 +1333,7 @@ into separate steps and modularized.
 @cindex Announcements
 @cindex Mailing list: info-gnuastro
 Gnuastro has a dedicated mailing list for making announcements. Anyone
-that is interested can subscribe to this mailing list to stay upto
+that is interested can subscribe to this mailing list to stay up to
 date with new releases or when the dependencies (see
 @ref{Dependencies}) have been updated. To subscribe to this list,
 please visit
@@ -1368,7 +1368,7 @@ The @key{\} character is a shell escape character which is used
 commonly to make characters which have special meaning for the shell
 loose that special place (the shell will not treat them specially if
 there is a @key{\} behind them). When it is a last character in a line
-(the next character is a new-line charactor) the new-line character
+(the next character is a new-line character) the new-line character
 looses its meaning an the shell sees it as a simple white-space
 character, enabling you to use multiple lines to write your commands.
 
@@ -1388,7 +1388,7 @@ distributed along with the source code also contains this list.
 
 The Japanese Ministry of Science and Technology (MEXT) scholarship for
 Mohammad Akhlaghi's Masters and PhD period in Tohoku University
-Astronomical Insitute had an instrumental role in the long term learning
+Astronomical Institute had an instrumental role in the long term learning
 and planning that made the idea of Gnuastro possible. The very critical
 view points of Professor Takashi Ichikawa (from Tohoku University) were
 also instrumental in the initial ideas and creation of Gnuastro. Brandon
@@ -1431,7 +1431,7 @@ the various tools in Gnuastro for your scientific purposes. In these
 tutorials, we have intentionally avoided too many cross references to
 make it more easily readable. To get more information about a
 particular program, you can visit the section with the same name as
-the program in this book. Each program section starts by explaning
+the program in this book. Each program section starts by explaining
 the general concepts behind what it does. If you only want to see an
 explanation of the options and arguments of any program, see the
 subsection titled `Invoking ProgramName'. See @ref{Conventions}, for
@@ -1444,7 +1444,7 @@ how Gnuastro would have been helpful for them in making their
 discoveries if there were GNU/Linux computers in their times! Please
 excuse us for any historical inaccuracy, this is not intended to be a
 historical reference. This form of presentation can make the tutorials
-more pleasent and entertaining to read while also being more practical
+more pleasant and entertaining to read while also being more practical
 (explaining from a user's point of view)@footnote{This form of
 presenting a tutorial was influenced by the PGF/TikZ and Beamer
 manuals. The first provides graphic capabilities, while with the
@@ -1470,7 +1470,7 @@ Wikipedia.
 @cindex Edwin Hubble
 In 1924 Hubble@footnote{Edwin Powell Hubble (1889 -- 1953 A.D.) was an
 American astronomer who can be considered as the father of
-extragalactic astronomy, by proving that some nebulae are too distant
+extra-galactic astronomy, by proving that some nebulae are too distant
 to be within the Galaxy. He then went on to show that the universe
 appears to expand and also done a visual classification of the
 galaxies that is known as the Hubble fork.} announced his discovery
@@ -1537,7 +1537,7 @@ targets belong to various pointings in the sky, so they are not in one
 large image. Gnuastro's ImageCrop is just the utility he wants. The
 catalog in @file{extragalactic.txt} is a plain text file which stores
 the basic information of all his known 200 extra Galactic nebulae. In
-its second column it has each object's Right Ascention (the first
+its second column it has each object's Right Ascension (the first
 column is a label he has given to each object) and in the third the
 object's declination.  Having read the Gnuastro manual, he knows that
 all counting is done starting from zero, so the RA and Dec columns
@@ -1584,12 +1584,12 @@ accurate storing of the data. So he chooses to convert the cropped
 images to a more common image format to view them more quickly and
 easily through standard image viewers (which load much faster than
 FITS image viewer). JPEG is one of the most recognized image formats
-that is supported by most image viewers. Fortuantely Gnuastro has just
+that is supported by most image viewers. Fortunately Gnuastro has just
 such a tool to convert various types of file types to and from each
 other: ConvertType. Hubble has already heard of GNU Parallel from one
 of his colleagues at Mount Wilson Observatory. It allows multiple
 instances of a command to be run simultaneously on the system, so he
-uses it in conjuction with ConvertType to convert all the images to
+uses it in conjunction with ConvertType to convert all the images to
 JPEG.
 @example
 $ parallel astconvertt -ojpg ::: *_crop.fits
@@ -1713,12 +1713,12 @@ something was bothering him for a long time. While mapping the
 constellations, there were several non-stellar objects that he had
 detected in the sky, one of them was in the Andromeda
 constellation. During a trip he had to Yemen, Sufi had seen another
-such object in the southern skies looking over the indian ocean. He
+such object in the southern skies looking over the Indian ocean. He
 wasn't sure if such cloud-like non-stellar objects (which he was the
 first to call `Sah@={a}bi' in Arabic or `nebulous') were real
 astronomical objects or if they were only the result of some bias in
 his observations. Could such diffuse objects actually be detected at
-all with his detection technqiue?
+all with his detection technique?
 
 He still had a few hours left until nightfall (when he would continue
 his studies on the ecliptic) so he decided to find an answer to this
@@ -1859,7 +1859,7 @@ $ cat cat.txt
 @end example
 
 @noindent
-The zeropoint magnitude for his observation was 18. Now he has all the
+The zero-point magnitude for his observation was 18. Now he has all the
 necessary parameters and runs MakeProfiles with the following command:
 
 @example
@@ -1921,7 +1921,7 @@ When convolution finished, Sufi opened the @file{cat_convolved.fits}
 file and showed the effect of convolution to his student and explained
 to him how a PSF with a larger FWHM would make the points even
 wider. With the convolved image ready, they were ready to re-sample it
-to the orignal pixel scale Sufi had planned. Sufi explained the basic
+to the original pixel scale Sufi had planned. Sufi explained the basic
 concepts of warping the image to his student and also the fact that
 since the center of a pixel is assumed to take integer values in the
 FITS standard, the transformation matrix would not be a simple scaling
@@ -1963,16 +1963,15 @@ astimgcrop.log  cat_convolved_warped_crop.fits  cat.txt
 @end example
 
 @noindent
-Finally, the @file{cat_convolved_warped.fits} has the same
-dimensionality as Sufi had asked for in the beginning. All this
-trouble was certainly worth it because now there is no dimming on the
-edges of the image and the profile centers are more accurately
-sampled. The final step to simulate a real observation would be to add
-noise to the image. Sufi set the zeropoint magnitude to the same value
-that he set when making the mock profiles and looking again at his
-observation log, he found that at that night the background flux near
-the nebula had a magnitude of 7. So using these values he ran
-MakeNoise:
+Finally, the @file{cat_convolved_warped.fits} has the same dimensions as
+Sufi had asked for in the beginning. All this trouble was certainly worth
+it because now there is no dimming on the edges of the image and the
+profile centers are more accurately sampled. The final step to simulate a
+real observation would be to add noise to the image. Sufi set the zeropoint
+magnitude to the same value that he set when making the mock profiles and
+looking again at his observation log, he found that at that night the
+background flux near the nebula had a magnitude of 7. So using these values
+he ran MakeNoise:
 
 @example
 $ astmknoise --zeropoint=18 --background=7 --output=out.fits    \
@@ -2201,7 +2200,7 @@ installation of each. When the proper configuration has not been set, the
 programs should complain and inform you.
 
 @item
-Your distribution's prebuilt package might not be the most recent
+Your distribution's pre-built package might not be the most recent
 release.
 
 @item
@@ -2415,7 +2414,7 @@ fixes, new functionalities, improved algorithms and etc). If you have
 downloaded a tarball (see @ref{Downloading the source}), then you can
 ignore this subsection.
 
-To sucessfully run the bootstrapping process, there are some additional
+To successfully run the bootstrapping process, there are some additional
 dependencies to those discussed in the previous subsections. These are low
 level tools that are used by a large collection of Unix-like operating
 systems programs, therefore they are most probably already available in
@@ -2478,7 +2477,7 @@ any possible updates.
 
 @item GNU Automake (@command{automake})
 @cindex GNU Automake
-GNU Automake will build the @file{Makefile.in} files in each subdirectory
+GNU Automake will build the @file{Makefile.in} files in each sub-directory
 using the (hand-written) @file{Makefile.am} files. The @file{Makefile.in}s
 are subsequently used to generate the @file{Makefile}s when the user runs
 @command{./configure} before building.
@@ -2575,7 +2574,7 @@ are given below.
 @item Official stable releases (@url{http://ftp.gnu.org/gnu/gnuastro}):
 This URL hosts the official stable releases of Gnuastro. Always use the
 most recent version (see @ref{Version numbering}). By clicking on the
-``Last modifed'' title of the second column, the files will be sorted by
+``Last modified'' title of the second column, the files will be sorted by
 their date which you can also use to find the latest version. It is
 recommended to use a mirror to download these tarballs, please visit
 @url{http://ftpmirror.gnu.org/gnuastro/} and see below.
@@ -2642,7 +2641,7 @@ The @file{$TOPGNUASTRO/gnuastro} directory will contain hand-written
 book and the tests. All are divided into sub-directories with standard and
 very descriptive names. The version controlled files in the top cloned
 directory are either mainly in capital letters (for example @file{THANKS}
-and @file{README}) or mainly written in smallcaps (for example
+and @file{README}) or mainly written in small-caps (for example
 @file{configure.ac} and @file{Makefile.am}). The former are
 non-programming, standard writing for human readers containing high-level
 information about the whole package. The latter are instructions to
@@ -2766,7 +2765,7 @@ git clean -fxd
 @noindent
 It is best to commit any recent change before running this
 command. You might have created new files since the last commit and if
-they haven't been commited, they will all be gone forever (using
+they haven't been committed, they will all be gone forever (using
 @command{rm}). To get a list of the non-version controlled files
 instead of deleting them, add the @option{n} option to @command{git
 clean}, so it becomes @option{-fxdn}.
@@ -3136,7 +3135,7 @@ recognized.
 
 The top installation directory will be used to keep all the package's
 components: programs (executables), libraries, manuals, shared data, or
-configuration files. So it commonly has the following subdirectories for
+configuration files. So it commonly has the following sub-directories for
 each class of components respectively: @file{bin/}, @file{lib/},
 @file{include/} @file{man/}, @file{share/}, @file{etc/}. Since the
 @file{PATH} variable is only used for executables, you can add the
@@ -3151,7 +3150,7 @@ $ PATH=$PATH:~/.local/bin
 @cindex GNU Bash
 @cindex Startup scripts
 @cindex Scripts, startup
-Try @command{$ echo $PATH} to check if it was added. Any exectuable that
+Try @command{$ echo $PATH} to check if it was added. Any executable that
 you installed in this directory will now be usable without having to
 remember/type its full address. However, as soon as you leave your current
 terminal session, this modification will be lost. Adding your specified
@@ -3181,7 +3180,7 @@ graphic user interface).
 For security reasons, in these files it is highly recommended to directly
 type in your @file{HOME} directory by hand instead of using variables. So
 in the following let's assume your user name is @file{yourname}. To add
-this directory to your @file{PATH} permanentaly you have to add this line
+this directory to your @file{PATH} permanently you have to add this line
 to the startup file that is most relevant to you: `@command{export
 PATH=$PATH:/home/yourname/.local/bin}'. You can either do it manually using
 a text editor, or by running the following command which will add this line
@@ -3199,7 +3198,7 @@ Now that you know your system will look into @file{~/.local/bin} for
 executables, you can tell Gnuastro's configure script to install everything
 in the top @file{~/.local} directory using the @option{--prefix}
 option. When you subsequently run @command{$ make install} all the
-installable files will be put in their respective directory under this top
+install-able files will be put in their respective directory under this top
 directory. Note that tilde (`@key{~}') expansion will not happen if you use
 `@key{=}' between @option{--prefix} and @file{~/.local}@footnote{If you
 insist on using `@key{=}', you can use @option{--prefix=$HOME/.local}.}.
@@ -3383,8 +3382,8 @@ failed ones will be colored red.
 These scripts can also act as a good set of examples for you to see how the
 programs are run. All the tests are in the @file{tests/} directory. The
 tests for each program are shell scripts (ending with @file{.sh}) in a
-subdirectory of this directory with the same name as the program. See
-@ref{Test scripts} for more detailed information about these scripts incase
+sub-directory of this directory with the same name as the program. See
+@ref{Test scripts} for more detailed information about these scripts in case
 you want to inspect them.
 
 
@@ -3689,7 +3688,7 @@ format, that filename extension is used to separate the kinds of
 arguments. The list below shows what astronomical data formats are
 recognized based on their file name endings. If the program doesn't
 accept any other data format, any other argument that doesn't end with
-the specified extentions below is considered to be a text file
+the specified extensions below is considered to be a text file
 (usually catalogs). For example @ref{ConvertType} accepts other data
 formats.
 
@@ -3735,7 +3734,7 @@ final error by Gnuastro.
 @cindex GNU style options
 @cindex Options, GNU style
 @cindex Options, short (@option{-}) and long (@option{--})
-Command line options allow configuring the behaviour of a program in
+Command line options allow configuring the behavior of a program in
 all GNU/Linux applications for each particular execution. Most options
 can be called in two ways: @emph{short} or @emph{long} a small number
 of options in some programs only have the latter type. In the list of
@@ -3825,11 +3824,11 @@ these two dashes will be parsed.
 @cindex Options, repeated
 If an option with a value is repeated or called more than once, the
 value of the last time it was called will be assigned to it. This very
-useful in complicated sitations, for example in scripts. Let's say you
+useful in complicated situations, for example in scripts. Let's say you
 want to make a small modification to one option value. You can simply
 type the option with a new value in the end of the command and see how
 the script works. If you are satisfied with the change, you can remove
-the original option. If the change wasn't satsifactory, you can remove
+the original option. If the change wasn't satisfactory, you can remove
 the one you just added and not worry about saving the original
 value. Without this capability, you would have to memorize or save the
 original value somewhere else, run the command and then change the
@@ -3863,10 +3862,9 @@ example use @command{-o ~/test}, @command{--output ~/test} or
 @cartouche
 @noindent
 @strong{CAUTION:} If you forget to specify a value for an option which
-requires one, and that option is the last one, Gnuastro will warn
-you. But if it is in the middle of the command, it will take the text
-of the next option or argument as the value which can cause undefined
-behaviour.
+requires one, and that option is the last one, Gnuastro will warn you. But
+if it is in the middle of the command, it will take the text of the next
+option or argument as the value which can cause undefined behavior.
 @end cartouche
 @cartouche
 @noindent
@@ -4074,7 +4072,7 @@ files. Then with this option you can ensure that no other
 configuration file is read. So if your local configuration file lacks
 some parameters, which ever Gnuastro utility you are using will will
 warn you and abort, enabling you to exactly set all the necessary
-parameters without unknowningly relying on some user or system wide
+parameters without unknowingly relying on some user or system wide
 option values.
 
 @option{onlydirconf} can also be used in the configuration files (with
@@ -4142,7 +4140,7 @@ determined at run-time using the number of threads available to your
 system, see @ref{Threads in GNU Astronomy Utilities}. Of course, you can
 still provide a default value for the number of threads at any of the
 levels below, but if you don't, the program will not abort. Also note that
-through automatic output name genertion, the value to the @option{--output}
+through automatic output name generation, the value to the @option{--output}
 option is also not mandatory on the command line or in the configuration
 files for all programs which don't rely on that value as an
 input@footnote{One example of a program which uses the value given to
@@ -4388,7 +4386,7 @@ number of available threads will be more efficient.
 @cindex System Cache
 @cindex Cache, system
 Note that the operating system keeps a cache of recently processed
-data, so usually, the second time you process an identical dataset
+data, so usually, the second time you process an identical data set
 (independent of the number of threads used), you will get faster
 results. In order to make an unbiased comparison, you have to first
 clean the system's cache with the following command between the two
@@ -4426,7 +4424,7 @@ GNU Parallel or Make (GNU Make is the most common implementation). The
 first is very useful when you only want to do one job multiple times
 and want to get back to your work without actually keeping the command
 you ran. The second is usually for (very) complicated processes, with
-lots of dependancies between the different products (for example a
+lots of dependencies between the different products (for example a
 data-production pipeline).
 
 @table @asis
@@ -4462,9 +4460,9 @@ should remove it.
 
 @item Make
 Make is a utility built for specifying ``targets'', ``prerequisites''
-and ``recipes''. It allows you to define very complicated dependancy
+and ``recipes''. It allows you to define very complicated dependency
 structures for complicated processes that commonly start off with a
-large list of inputs and builds them based on the dependancies you
+large list of inputs and builds them based on the dependencies you
 define. GNU Make@footnote{@url{https://www.gnu.org/software/make/}} is
 the most common implementation which (like nearly all GNU programs
 comes with a wonderful
@@ -4480,7 +4478,7 @@ threads. So you can run:
 $ make -j8
 @end example
 
-Once the dependancy tree for your processes is built, Make will run
+Once the dependency tree for your processes is built, Make will run
 the independent targets simultaneously.
 
 @end table
@@ -5173,7 +5171,7 @@ multiple @option{--update} options).
 
 @noindent
 The format of the values to this option can best be specified with an
-exmaple:
+example:
 
 @example
 --update=KEYWORD,value,"comments for this keyword",unit
@@ -5193,9 +5191,9 @@ behavior.
 
 @item -w
 @itemx --write
-(@option{=STR}) Write a keyword to the header. For the format of
-inputing the possible values, comments and units for the keyword, see
-the @option{--update} option above.
+(@option{=STR}) Write a keyword to the header. For the possible value input
+formats, comments and units for the keyword, see the @option{--update}
+option above.
 
 @item -H
 @itemx --history
@@ -5430,7 +5428,7 @@ image can be interpreted as shades of any color, it is customary to
 use shades of black or grayscale. However, to produce the color
 spectrum in the digital world, several primary colors must be
 mixed. Therefore in a color image, each pixel has several values
-depending on how many primary colors were choosen. For example on the
+depending on how many primary colors were chosen. For example on the
 digital monitor or color digital cameras, all colors are built by
 mixing the three colors of Red-Green-Blue (RGB) with various
 proportions. However, for printing on paper, standard printers use the
@@ -5751,7 +5749,7 @@ is best to call this option so the image is not inverted.
 
 Images are one of the major formats of data that is used in
 astronomy. The functions in this chapter explain the GNU Astronomy
-Utilities which are provided for their manipulaton. For example
+Utilities which are provided for their manipulation. For example
 cropping out a part of a larger image or convolving the image with a
 given kernel or applying a transformation to it.
 
@@ -5940,7 +5938,7 @@ that are @math{\geq}@command{X1} and <@command{X2} will be included in
 the cropped image. The same goes for the second axis. Note that each
 different term will be read as an integer, not a float (there are no
 sub-pixels in ImageCrop, you can use ImageWarp to shift the matrix
-with any subpixel distance, then crop the warped image, see
+with any sub-pixel distance, then crop the warped image, see
 @ref{ImageWarp}). Also, following the FITS standard, pixel indexes
 along each axis start from unity(1) not zero(0).
 
@@ -6137,11 +6135,11 @@ completely encompasses the polygon will be kept and all the pixels
 that are outside of it will be removed.
 
 The syntax for the polygon vertices is similar to and simpler than
-that for @option{--section}. In short, the dimentions of each
+that for @option{--section}. In short, the dimensions of each
 coordinate are separated by a comma (@key{,}) and each vertice is
 separated by a colon (@key{:}). You can define as many vertices as you
-like. If you would like to use space characters between the dimentions
-and vertices to make them more human-readible, then you have to put
+like. If you would like to use space characters between the dimensions
+and vertices to make them more human-readable, then you have to put
 the value to this option in double quotation marks.
 
 For example let's assume you want to work on the deepest part of the
@@ -6210,8 +6208,8 @@ the vertical axis.
 pixels. In order for the chosen central pixel to be in the center of
 the cropped image, the final width has to be an odd number, therefore
 if the value to this option is an even number, the final crop width
-will be one pixel larger in each dimention. If you want an even sided
-crop box, use the @option{--section} option to specify the boudaries
+will be one pixel larger in each dimension. If you want an even sided
+crop box, use the @option{--section} option to specify the boundaries
 of the box, see @ref{Crop section syntax}.
 
 @item -f
@@ -6371,7 +6369,7 @@ It is commonly necessary to do arithmetic operations on the
 astronomical data. For example in the reduction of raw data it is
 necessary to subtract the Sky value (@ref{Sky value}) from each image
 image. Later (once the images as warped into a single grid using
-ImageWarp for example, see @ref{ImageWarp}), the images can be coadded
+ImageWarp for example, see @ref{ImageWarp}), the images can be co-added
 or the output pixel grid is the average of the pixels of the
 individual input images. Arithmetic currently uses the reverse
 polish or postfix notation, see @ref{Reverse polish notation}, for
@@ -6393,7 +6391,7 @@ more information on how to run Arithmetic, please see
 The most common notation for arithmetic operations is the infix
 notation@footnote{@url{https://en.wikipedia.org/wiki/Infix_notation}}
 where the operator goes between the two operands, for example
-@mymath{4+5}. While the infix notation is the perferred way in most
+@mymath{4+5}. While the infix notation is the preferred way in most
 programming languages, currently Arithmetic does not use it since it
 will require parenthesis which can complicate the implementation of
 the code. In the near future we do plan to adopt this
@@ -6401,7 +6399,7 @@ notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}},
 but for the time being (due to time constraints on the developers),
 Arithmetic uses the postfix or reverse polish
 notation@footnote{@url{https://en.wikipedia.org/wiki/Reverse_Polish_notation}}. The
-referenced wikipedia article provides some excellent explanation on
+referenced Wikipedia article provides some excellent explanation on
 this notation but here we will give a short summary for
 self-sufficiency.
 
@@ -6424,7 +6422,7 @@ write: @command{5 6 + 2 /}. The operations that are done are:
 @item
 @command{+} is a binary operator, so pull the top two elements of the
 stack and perform addition on them (the order is @command{5+6} in the
-example above). The result is @command{11}, push it ontop of the
+example above). The result is @command{11}, push it on top of the
 stack.
 @item
 @command{2} is an operand so push it onto the top of the stack.
@@ -6448,7 +6446,7 @@ style
 
 The recognized operators in Arithmetic are listed below. See
 @ref{Reverse polish notation} for more on how the operators and
-operands should be ordered on the commandline. The operands to all
+operands should be ordered on the command-line. The operands to all
 operators can be a data array (for example a FITS image) or a number,
 the output will be an array or number according to the inputs. For
 example a number multiplied by an array will produce an array.
@@ -6583,14 +6581,14 @@ output}. Also, output WCS information will be taken from the first
 input image encountered. If the output is a single number, that number
 will be printed in the standard output. See @ref{Reverse polish
 notation} for the notation used to mix operands and operators on the
-commandline.
+command-line.
 
 @cindex NaN
 @cindex Mask image
 Currently Arithmetic will convert the input image into double
 precision floating point arrays for the operations. But there are
 plans to allow it to also operate on integer (labeled or masked)
-images with bitwise operators so mask layers can also be
+images with bit-wise operators so mask layers can also be
 manipulated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Unless
 otherwise stated for each operator, blank pixels in the input image
 will automatically be set as blank in the output. To ignore certain
@@ -6657,13 +6655,13 @@ like to use).
 The order of the values to @option{--hdu} is very important (if they
 don't have the same value!). The order is determined by the order that
 this option is read: first on the command line (from left to right),
-then top-down in each confirguration file, see @ref{Configuration file
+then top-down in each configuration file, see @ref{Configuration file
 precedence}.
 
 If the number of HDUs is less than the number of input images,
 Arithmetic will abort and notify you. However, if there are more HDUs
 than FITS images, there is no problem: they will be used in the given
-order (everytime a FITS image comes up on the stack) and the extra
+order (every time a FITS image comes up on the stack) and the extra
 HDUs will be ignored in the end. So there is no problem with having
 extra HDUs in the configuration files and by default several HDUs with
 a value of @option{0} are kept in the system-wide configuration file
@@ -6729,12 +6727,12 @@ the variation in neighboring pixel values due to noise can be very
 high. But after convolution, those variations will decrease and we
 have a better hope in detecting the possible underlying
 signal. Another case where convolution is extensively used is in mock
-images and modelling in general, convolution can be used to simulate
+images and modeling in general, convolution can be used to simulate
 the effect of the atmosphere or the optical system on the mock
 profiles that we create, see @ref{PSF}. Convolution is a very
 interesting and important topic in any form of signal analysis
 (including astronomical observations). So we have
-thoroughly@footnote{A mathematicial will certainly consider this
+thoroughly@footnote{A mathematical will certainly consider this
 explanation is incomplete and inaccurate. However this text is written
 for an understanding on the operations that are done on a real (not
 complex, discrete and noisy) astronomical image, not any general form
@@ -6806,7 +6804,7 @@ original image. However, if the kernel is not symmetric, the image
 will be affected in the opposite manner, this is a natural consequence
 of the definition of spatial filtering. In order to avoid this we can
 rotate the kernel about its center by 180 degrees so the convolved
-output can have the same original orentation. Technically speaking,
+output can have the same original orientation. Technically speaking,
 only if the kernel is flipped the process is known
 @emph{Convolution}. If it isn't it is known as @emph{Correlation}.
 
@@ -6897,7 +6895,7 @@ Before jumping head-first into the equations and proofs we will begin
 with a historical background to see how the importance of frequencies
 actually roots in our ancient desire to see everything in terms of
 circles. A short review of how the complex plane should be
-interpretted is then given. Having paved the way with these two
+interpreted is then given. Having paved the way with these two
 basics, we define the Fourier series and subsequently the Fourier
 transform.  Our final aim is to explain discrete Fourier transform,
 however some very important concepts need to be solidified first: The
@@ -6928,7 +6926,7 @@ concepts.
 @node Fourier series historical background, Circles and the complex plane, Frequency domain and Fourier operations, Frequency domain and Fourier operations
 @subsubsection Fourier series historical background
 Ever since the ancient times, the circle has been (and still is) the
-simplest shape for abstract comprehention. All you need is a center
+simplest shape for abstract comprehension. All you need is a center
 point and a radius and you are done. All the points on a circle are at
 a fixed distance from the center. However, the moment you try to
 connect this elegantly simple and beautiful abstract construct (the
@@ -6938,7 +6936,7 @@ because the irrational number @mymath{\pi} gets involved.
 
 The key to understanding the Fourier series (thus the Fourier
 transform and finally the Discrete Fourier Transform) is our ancient
-desire to express everthing in terms of circles or the most
+desire to express everything in terms of circles or the most
 exceptionally simple and elegant abstract human construct. Most people
 prefer to say the same thing in a more ahistorical manner: to break a
 function into sines and cosines. As the term ``ancient'' in the
@@ -6958,14 +6956,14 @@ world'' by Qutb al-Din al-Shirazi (1236 -- 1311 A.D.)  retrieved from
 Wikipedia
 (@url{https://commons.wikimedia.org/wiki/File:Ghotb2.jpg}). Middle and
 Right: A snapshot from an animation Showing how adding more epicycles
-(or terms in the fourier series) will be able to approximate any
+(or terms in the Fourier series) will be able to approximate any
 function. Animations can be found at:
 (@url{https://commons.wikimedia.org/wiki/File:Fourier_series_square_wave_circles_animation.gif})
 and
 (@url{https://commons.wikimedia.org/wiki/File:Fourier_series_sawtooth_wave_circles_animation.gif}).}
 @end float
 
-Like most aspects of mathematics, this process of interpretting
+Like most aspects of mathematics, this process of interpreting
 everything in terms of circles, began for astronomical purposes. When
 astronomers noticed that the orbit of Mars and other outer planets,
 did not appear to be a simple circle (as everything should have been
@@ -6984,15 +6982,15 @@ for a more complete historical review.}. @ref{epicycle}(Left) shows an
 example depiction of the epicycles of Mercury in the late 13th
 century.
 
-Ofcourse we now know that if they had abdicated the Earth from its
+Of course we now know that if they had abdicated the Earth from its
 throne in the center of the heavens and allowed the Sun to take its
 place, everything would become much simpler and true. But there wasn't
 enough observational evidence for changing the ``professional
 consensus'' of the time to this radical view suggested by a small
 minority@footnote{Aristarchus of Samos (310 -- 230 B.C.) appears to be
-one of the first peole to suggest the Sun being in the center of the
+one of the first people to suggest the Sun being in the center of the
 universe. This approach to science (that the standard model is defined
-by concensus) and the fact that this consensus might be completely
+by consensus) and the fact that this consensus might be completely
 wrong still applies equally well to our models of particle physics and
 cosmology today.}. So the pre-Galilean astronomers chose to keep Earth
 in the center and find a correction to the models (while keeping the
@@ -7003,7 +7001,7 @@ appear off topic is to give historical evidence that while such
 ``approximations'' do work and are very useful for pragmatic reasons
 (like measuring the calendar from the movement of astronomical
 bodies). They offer no physical insight. The astronomers who were
-involved with the Ptolemic world view had to add a huge number of
+involved with the Ptolemaic world view had to add a huge number of
 epicycles during the centuries after Ptolemy in order to explain more
 accurate observations. Finally the death knell of this world-view was
 Galileo's observations with his new instrument (the telescope). So the
@@ -7044,7 +7042,7 @@ defined through the integer @mymath{n}. In this notation, @mymath{t}
 is in units of ``cycles''. Later, Caspar Wessel (mathematician and
 cartographer 1745 -- 1818 A.D.)  showed how complex numbers can be
 displayed as vectors on a plane and therefore how @mymath{e^{it}} can
-be interpretted as an angle on a circle.
+be interpreted as an angle on a circle.
 
 As we see from the examples in @ref{epicycle} and @ref{iandtime}, for
 each constituting frequency, we need a respective `magnitude' or the
@@ -7176,7 +7174,7 @@ resolution that we discussed in @ref{Fourier series} will tend to
 zero: @mymath{\omega_0\rightarrow0}. In the equation to find
 @mymath{c_m}, every @mymath{m} represented a frequency (multiple of
 @mymath{\omega_0}) and the integration on @mymath{l} removes the
-dependance of the right side of the equation on @mymath{l}, making it
+dependence of the right side of the equation on @mymath{l}, making it
 only a function of @mymath{m} or frequency. Let's define the following
 two variables:
 
@@ -7268,7 +7266,7 @@ function is:
 @noindent
 From the definition of the Dirac @mymath{\delta} we can also define a
 Dirac comb (@mymath{{\rm III}_P}) or an impulse train with infinite
-impules separated by @mymath{P}:
+impulses separated by @mymath{P}:
 
 @dispmath{
 {\rm III}_P(l)\equiv\displaystyle\sum_{k=-\infty}^{\infty}\delta(l-kP) }
@@ -7316,8 +7314,8 @@ defined in @ref{Fourier transform}, @mymath{\omega{\equiv}m\omega_0},
 where @mymath{m} was an integer. The integral will be zero for any
 @mymath{\omega} that is not equal to @mymath{2{\pi}n/P}, a more
 complete explanation can be seen in @ref{Fourier series}. Therefore,
-while in the spatial domain the impulses had spacings of @mymath{P}
-(meters for example), in the frequency space, the spacings between the
+while in the spatial domain the impulses had spacing of @mymath{P}
+(meters for example), in the frequency space, the spacing between the
 different impulses are @mymath{2\pi/P} cycles per meters.
 
 
@@ -7333,7 +7331,7 @@ c(l)\equiv[f{\ast}h](l)=\int_{-\infty}^{\infty}f(\tau)h(l-\tau)d\tau
 
 @noindent
 See @ref{Convolution process} for a more detailed physical (pixel
-based) interpretation of this definition. The fourier transform of
+based) interpretation of this definition. The Fourier transform of
 convolution (@mymath{C(\omega)}) can be written as:
 
 @dispmath{
@@ -7403,7 +7401,7 @@ three images through the convolution theorem. But there, we assumed
 that @mymath{f(l)} and @mymath{h(l)} are known (given) and the
 convolved image is desired.
 
-In deconvolution, we have @mymath{f(l)} --the sharper image-- and
+In de-convolution, we have @mymath{f(l)} --the sharper image-- and
 @mymath{f*h(l)} --the more blurry image-- and we want to find the kernel
 @mymath{h(l)}. The solution is a direct result of the convolution
 theorem:
@@ -7426,13 +7424,12 @@ transform will not be a number!
 
 @item
 If there is significant noise in the image, then the high frequencies
-of the noise are going to significantly reduce the quanlity of the
+of the noise are going to significantly reduce the quality of the
 final result.
 
 @end itemize
 
-A standard solution to both these problems is the Weiner
-deconovolution
+A standard solution to both these problems is the Weiner de-convolution
 algorithm@footnote{@url{https://en.wikipedia.org/wiki/Wiener_deconvolution}}.
 
 @node Sampling theorem, Discrete Fourier transform, Convolution theorem, Frequency domain and Fourier operations
@@ -7463,8 +7460,8 @@ averages the signal it receives over that area, not a mathematical
 point as the Dirac @mymath{\delta} function defines. However, as long
 as the variation in the signal over one detector pixel is not
 significant, this can be a good approximation. Having put this issue
-to the side, we can now try to find the relation between the fourier
-transforms of the unsampled @mymath{f(l)} and the sampled
+to the side, we can now try to find the relation between the Fourier
+transforms of the un-sampled @mymath{f(l)} and the sampled
 @mymath{f_s(l)}. For a more clear notation, let's define:
 
 @dispmath{F_s(\omega)\equiv{\cal F}[f_s]}
@@ -7498,7 +7495,7 @@ shift in each copy is @mymath{2\pi/P}.
 
 @float Figure,samplingfreq
 @image{gnuastro-figures/samplingfreq, 15.2cm, , } @caption{Sampling
-    causes infinite repetation in the frequency domain. FT is an
+    causes infinite repetition in the frequency domain. FT is an
     abbreviation for `Fourier transform'. @mymath{\omega_m} represents
     the maximum frequency present in the input. @mymath{F(\omega)} is
     only symmetric on both sides of 0 when the input is real (not
@@ -7515,13 +7512,13 @@ a range of frequencies equal to
 we used to sample this hypothetical function was such that
 @mymath{2\pi/P>\Delta\omega}. The consequence is that each copy of
 @mymath{F(\omega)} has become completely separate from the surrounding
-copies. Such a digitized (sampled) dataset is thus called
+copies. Such a digitized (sampled) data set is thus called
 @emph{over-sampled}. When @mymath{2\pi/P=\Delta\omega}, @mymath{P} is
-just small enough to finely separte even the largest frequencies in
+just small enough to finely separate even the largest frequencies in
 the input signal and thus it is known as
 @emph{critically-sampled}. Finally if @mymath{2\pi/P<\Delta\omega} we
-are dealing with an @emph{under-sampled} dataset. In an under-sampled
-dataset, the separate copies of @mymath{F(\omega)} are going to
+are dealing with an @emph{under-sampled} data set. In an under-sampled
+data set, the separate copies of @mymath{F(\omega)} are going to
 overlap and this will deprive us of recovering high constituent
 frequencies of @mymath{f(l)}. The effects of under-sampling in an
 image with high rates of change (for example a brick wall imaged from
@@ -7543,7 +7540,7 @@ Fourier transform.
 This ability to exactly reproduce the continuous input from the
 sampled or digitized data leads us to the @emph{sampling theorem}
 which connects the inherent property of the continuous signal (its
-maximum frequency) to that of the detector (the spacings between its
+maximum frequency) to that of the detector (the spacing between its
 pixels). The sampling theorem states that the full (continuous) signal
 can be recovered when the pixel size (@mymath{P}) and the maximum
 constituent frequency in the signal (@mymath{\omega_m}) have the
@@ -7571,7 +7568,7 @@ function or PSF. This spread does blur the image which is undesirable;
 however, for this analysis it produces the positive outcome that there
 will be a finite @mymath{\omega_m}. Though we should caution that any
 detector will have noise which will add lots of very high frequency
-(ideally inifinite) changes between the pixels. However, the
+(ideally infinite) changes between the pixels. However, the
 coefficients of those noise frequencies are usually exceedingly small.
 
 @node Discrete Fourier transform, Fourier operations in two dimensions, Sampling theorem, Frequency domain and Fourier operations
@@ -7596,7 +7593,7 @@ transform (see @ref{Fourier transform}):
 @dispmath{F_s(\omega)=\int_{-\infty}^{\infty}f_s(l)e^{-i{\omega}l}dl }
 
 @noindent
-From the defintion of @mymath{f_s(\omega)} (using @mymath{x} instead
+From the definition of @mymath{f_s(\omega)} (using @mymath{x} instead
 of @mymath{n}) we get:
 
 @dispmath{
@@ -7645,7 +7642,7 @@ the input was defined in @ref{Dirac delta and comb}. As we saw in
 specifies the range of frequencies that can be studied and in
 @ref{Fourier series} we saw that the length of the (spatial) input,
 (@mymath{L}) determines the resolution (or size of the freq-pixels) in
-our discrete fourier transformed image. Both result from the fact that
+our discrete Fourier transformed image. Both result from the fact that
 the frequency domain is the inverse of the spatial domain.
 
 @node Fourier operations in two dimensions, Edges in the frequency domain, Discrete Fourier transform, Frequency domain and Fourier operations
@@ -7673,7 +7670,7 @@ delta and comb}) can be written in units of the 2D Dirac
 @mymath{\delta}. For most image detectors, the sides of a pixel are
 equal in both dimentions. So @mymath{P} remains unchanged, if a
 specific device is used which has non-square pixels, then for each
-dimention a different value should be used.
+dimension a different value should be used.
 
 @dispmath{{\rm III}_P(l, m)\equiv\displaystyle\sum_{j=-\infty}^{\infty}
 \displaystyle\sum_{k=-\infty}^{\infty}
@@ -7681,11 +7678,11 @@ dimention a different value should be used.
 
 The Two dimensional Sampling theorem (see @ref{Sampling theorem}) is
 thus very easily derived as before since the frequencies in each
-dimention are independent. Let's take @mymath{\nu_m} as the maximum
-frequency along the second dimention. Therefore the two dimensional
+dimension are independent. Let's take @mymath{\nu_m} as the maximum
+frequency along the second dimension. Therefore the two dimensional
 sampling theorem says that a 2D band-limited function can be recovered
 when the following conditions hold@footnote{If the pixels are not a
-square, then each dimention has to use the respective pixel size, but
+square, then each dimension has to use the respective pixel size, but
 since most imagers have square pixels, we assume so here too}:
 
 @dispmath{ {2\pi\over P} > 2\omega_m \quad\quad\quad {\rm and}
@@ -7708,13 +7705,13 @@ F_{u,v}e^{i({ux\over X}+{vy\over Y})} }
 @node Edges in the frequency domain,  , Fourier operations in two dimensions, Frequency domain and Fourier operations
 @subsubsection Edges in the frequency domain
 
-With a good grasp of the frequency domain, we can revist the problem
+With a good grasp of the frequency domain, we can revisit the problem
 of convolution on the image edges, see @ref{Edges in the spatial
 domain}.  When we apply the convolution theorem (see @ref{Convolution
 theorem}) to convolve an image, we first take the discrete Fourier
 transforms (DFT, @ref{Discrete Fourier transform}) of both the input
 image and the kernel, then we multiply them with each other and then
-take the inverse DFT to construct the convolved image. Ofcourse, in
+take the inverse DFT to construct the convolved image. Of course, in
 order to multiply them with each other in the frequency domain, the
 two images have to be the same size, so let's assume that we pad the
 kernel (it is usually smaller than the input image) with zero valued
@@ -7734,7 +7731,7 @@ the input image's DFT, the coefficients or magnitudes (see
 sum of the input image pixels) remains unchanged, while the magnitudes
 of the higher frequencies are significantly reduced.
 
-As we saw in @ref{Sampling theorem}, the Fourier tranform of a
+As we saw in @ref{Sampling theorem}, the Fourier transform of a
 discrete input will be infinitely repeated. In the final inverse DFT
 step, the input is in the frequency domain (the multiplied DFT of the
 input image and the kernel DFT). So the result (our output convolved
@@ -7755,8 +7752,8 @@ So as long as we are dealing with convolution in the frequency domain,
 there is nothing we can do about the image edges. The least we can do
 is to eliminate the ghosts of the other side of the image. So, we add
 zero valued pixels to both the input image and the kernel in both
-dimentions so the image that will be covolved has the a size equal to
-the sum of both images in each dimention. Ofcourse, the effect of this
+dimentions so the image that will be convolved has the a size equal to
+the sum of both images in each dimension. Of course, the effect of this
 zero-padding is that the sides of the output convolved image will
 become dark. To put it another way, the edges are going to drain the
 flux from nearby objects. But at least it is consistent across all the
@@ -7795,7 +7792,7 @@ Will be much faster when the image and kernel are both large.
 @end itemize
 
 @noindent
-As a general rule of thumb, when working on an image of modelled
+As a general rule of thumb, when working on an image of modeled
 profiles use the frequency domain and when working on an image of real
 (observed) objects use the spatial domain (corrected for the
 edges). The reason is that if you apply a frequency domain convolution
@@ -7822,7 +7819,7 @@ to create a kernel image:
 @itemize
 
 @item
-MakeProfiles: You can use MakeProfiles to create a parameteric (based
+MakeProfiles: You can use MakeProfiles to create a parametric (based
 on a radial function) kernel, see @ref{MakeProfiles}. By default
 MakeProfiles will make the Gaussian and Moffat profiles in a separate
 file so you can feed it into any of the programs.
@@ -7913,7 +7910,7 @@ the options are the same between Convolve and some other Gnuastro
 programs. Therefore, to avoid repetition, they will not be repeated
 here. For the full list of options shared by all Gnuastro programs,
 please see @ref{Common options}. @ref{Mesh grid options} lists all the
-options related to spefiying a mesh grid which is currently only used
+options related to specifying a mesh grid which is currently only used
 in spatial convolution. Note that here, no interpolation or smoothing
 is defined, only channels and the mesh size are
 important. @ref{Convolution kernel} lists the the convolution kernel
@@ -7938,10 +7935,10 @@ pixels is unity.
 
 @item -f
 @itemx --frequency
-@cindex Discrete fourier transform
-Convolve using discrete fourier transform in the frequency domain: The
-fourier transform of both arrays is first calculated and
-multiplied. Then the inverse fourier transform is applied to the
+@cindex Discrete Fourier transform
+Convolve using discrete Fourier transform in the frequency domain: The
+Fourier transform of both arrays is first calculated and
+multiplied. Then the inverse Fourier transform is applied to the
 product to give the final convolved image.
 
 For large images, this process will be more efficient than convolving
@@ -7975,8 +7972,8 @@ The padded kernel, similar to the above.
 @cindex Fourier spectrum
 @cindex Spectrum, Fourier
 The Fourier spectrum of the forward Fourier transform of the input
-image. Note that the fourier transform is a complex operation (and not
-viewable in one image!)  So we either have to show the `Fourier
+image. Note that the Fourier transform is a complex operation (and not
+view able in one image!)  So we either have to show the `Fourier
 spectrum' or the `Phase angle'. For the complex number
 @mymath{a+ib}, the Fourier spectrum is defined as
 @mymath{\sqrt{a^2+b^2}} while the phase angle is defined as
@@ -7999,7 +7996,7 @@ you will see that the convolved image is now in the center, not on one
 side of the image as it started with (in the padded image of the first
 extension). If you are working on a mock image which originally had
 pixels of precisely 0.0, you will notice that in those parts that your
-convolved profile(s) did not conver, the values are now
+convolved profile(s) did not convert, the values are now
 @mymath{\sim10^{-18}}, this is due to floating-point round off
 errors. Therefore in the final step (when cropping the central parts
 of the image), we also remove any pixel with a value less than
@@ -8010,7 +8007,7 @@ of the image), we also remove any pixel with a value less than
 @item -m
 @itemx --makekernel
 (@option{INT}) If this option is called, Convolve will do
-deconvolution (see @ref{Convolution theorem}). The image specified by
+de-convolution (see @ref{Convolution theorem}). The image specified by
 the @option{--kernel} option is assumed to be the sharper (less
 blurry) image and the input image is assumed to be the more blurry
 image. The two images have to be the same size. Some notes to take
@@ -8042,7 +8039,7 @@ pixels is one) and then take their average to decrease this effect.
 @item
 The shifting might move the center of the star by one pixel in any
 direction, so crop the central pixel of the warped image to have a
-clean image for the deconvolution.
+clean image for the de-convolution.
 
 @end itemize
 @end table
@@ -8059,7 +8056,7 @@ clean image for the deconvolution.
 
 @node ImageWarp, SubtractSky, Convolve, Image manipulation
 @section ImageWarp
-Image warpring is the process of mapping the pixels of one image onto
+Image warping is the process of mapping the pixels of one image onto
 a new pixel grid. This process is sometimes known as transformation,
 however following the discussion of Heckbert 1989@footnote{Paul
 S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
@@ -8071,7 +8068,7 @@ grid transformation which is better conveyed with `warp'.
 @cindex Gravitational lensing
 Image wrapping is a very important step in astronomy, both in
 observational data analysis and in simulating modeled images. In
-modelling, warping an image is necessary when we want to apply grid
+modeling, warping an image is necessary when we want to apply grid
 transformations to the initial models, for example in simulating
 gravitational lensing (Radial warpings are not yet included in
 ImageWarp). Observational reasons for warping an image are listed
@@ -8104,7 +8101,7 @@ multiple observations is known as Mosaicing.
 @item
 @strong{Cosmic rays:} Cosmic rays can randomly fall on any part of an
 image. If they collide vertically with the camera, they are going to
-create a very sharp and bright spot that in most cases can be separted
+create a very sharp and bright spot that in most cases can be separated
 easily@footnote{All astronomical targets are blurred with the PSF, see
 @ref{PSF}, however a cosmic ray is not and so it is very sharp (it
 suddenly stops at one pixel).}. However, depending on the depth of the
@@ -8216,7 +8213,7 @@ coordinate transformations. However they are limited to mapping the
 point @mymath{[\matrix{0&0}]} to @mymath{[\matrix{0&0}]}. Therefore
 they are useless if you want one coordinate to be shifted compared to
 the other one. They are also space invariant, meaning that all the
-coordinates in the image will recieve the same transformation. In
+coordinates in the image will receive the same transformation. In
 other words, all the pixels in the output image will have the same
 area if placed over the input image. So transformations which require
 varying output pixel sizes like projections cannot be applied through
@@ -8238,7 +8235,7 @@ and the references therein.
 By adding an extra coordinate to a point we can add the flexibility we
 need. The point @mymath{[\matrix{x&y}]} can be represented as
 @mymath{[\matrix{xZ&yZ&Z}]} in homogeneous coordinates. Therefore
-multiplying all the coordinates of a point in the homogenous
+multiplying all the coordinates of a point in the homogeneous
 coordinates with a constant will give the same point. Put another way,
 the point @mymath{[\matrix{x&y&Z}]} corresponds to the point
 @mymath{[\matrix{x/Z&y/Z}]} on the constant @mymath{Z} plane. Setting
@@ -8292,7 +8289,7 @@ lines at all orientations. A very useful fact about homography is that
 its inverse is also a homography. These two properties play a very
 important role in the implementation of this transformation. A short
 but instructive and illustrated review of affine, projective and also
-bilinear mappings is provided in Heckbert 1989@footnote{Paul
+bi-linear mappings is provided in Heckbert 1989@footnote{Paul
 S. Heckbert. 1989. @emph{Fundamentals of Texture mapping and Image
 Warping}, Master's thesis at University of California, Berkely. Note
 that since points are defined as row vectors there, the matrix is the
@@ -8365,9 +8362,9 @@ image.
 @cindex Interpolation
 @cindex Bicubic interpolation
 @cindex Signal to noise ratio
-@cindex Bilinear interpolation
+@cindex Bi-linear interpolation
 @cindex Interpolation, bicubic
-@cindex Interpolation, bilinear
+@cindex Interpolation, bi-linear
 In most applications of image processing, it is sufficient to consider
 each pixel to be a point and not an area. This assumption can
 significantly speed up the processing of an image and also the
@@ -8384,7 +8381,7 @@ more accurate interpolation in the output grid.
 However, interpolation has several problems. The first one is that it
 will depend on the type of function you want to assume for the
 interpolation. For example you can choose a bi-linear or bi-cubic (the
-`bi's are for the 2 dimentional nature of the data) interpolation
+`bi's are for the 2 dimensional nature of the data) interpolation
 method. For the latter there are various ways to set the
 constants@footnote{see
 @url{http://entropymine.com/imageworsener/bicubic/} for a nice
@@ -8393,7 +8390,7 @@ seriously on the edges of an image. They will also need normalization
 so that the flux of the objects before and after the warpings are
 comparable. The most basic problem with such techniques is that they
 are based on a point while a detector pixel is an area. They add a
-level of subjectivitiy to the data (make more assumptions through the
+level of subjectivity to the data (make more assumptions through the
 functions than the data can handle). For most applications this is
 fine, but in scientific applications where detection of the faintest
 possible galaxies or fainter parts of bright galaxies is our aim, we
@@ -8407,7 +8404,7 @@ ImageWarp will do interpolation based on ``pixel mixing''@footnote{For
 a graphic demonstration see
 @url{http://entropymine.com/imageworsener/pixelmixing/}.}  or ``area
 resampling''. This is also what the Hubble Space Telescope pipeline
-calles
+calls
 ``Drizzling''@footnote{@url{http://en.wikipedia.org/wiki/Drizzle_(image_processing)}}. This
 technique requires no functions, it is thus non-parametric. It is also
 the closest we can get (make least assumptions) to what actually
@@ -8428,7 +8425,7 @@ ailiasing@footnote{@url{http://en.wikipedia.org/wiki/Aliasing}}. So if
 the input image has fringes, they have to be calculated and removed
 separately (which would naturally be done in any astronomical
 application). Because of the PSF no astronomical target has a sharp
-change in the signal so this issue is less important for astronoimcal
+change in the signal so this issue is less important for astronomical
 applications, see @ref{PSF}.
 
 
@@ -8522,12 +8519,12 @@ with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
 @item --hstartwcs
 (@option{=INT}) Specify the first header keyword number (line) that
-should be used to read the WCS information, see the full explantion in
+should be used to read the WCS information, see the full explanation in
 @ref{Invoking astimgcrop}.
 
 @item --hendwcs
 (@option{=INT}) Specify the last header keyword number (line) that
-should be used to read the WCS information, see the full explantion in
+should be used to read the WCS information, see the full explanation in
 @ref{Invoking astimgcrop}.
 
 @item -n
@@ -8551,7 +8548,7 @@ option, the output pixel will be set to a blank pixel its self.
 
 When the fraction is lower, the sum of non-blank pixel values over
 that pixel will be multiplied by the inverse of this fraction to
-correct for its flux and not cause discontinuties on the edges of
+correct for its flux and not cause discontinuities on the edges of
 blank regions. Note that even with this correction, discontinuities
 (very low non-blank values touching blank regions in the output image)
 might arise depending on the transformation and the blank pixels. So
@@ -8619,7 +8616,7 @@ Ichikawa. T. (2015). Astrophysical Journal Supplement Series.}. Let's
 assume that all instrument defects -- bias, dark and flat -- have been
 corrected and the brightness (see @ref{Flux Brightness and magnitude})
 of a detected object, @mymath{O}, is desired. The sources of flux on
-pixel @mymath{i}@footnote{For this analysis the dimentionality of the
+pixel @mymath{i}@footnote{For this analysis the dimension of the
 data (image) is irrelevant. So if the data is an image (2D) with width
 of @mymath{w} pixels, then a pixel located on column @mymath{x} and
 row @mymath{y} (where all counting starts from zero and (0, 0) is
@@ -8733,7 +8730,7 @@ the data. For example see Figure 15 in Akhlaghi and Ichikawa
 remove the effect of such objects in the average and standard
 deviation. See @ref{Sigma clipping} for a complete explanation. So
 after asserting that the mode and median are approximately equal in a
-mesh (see @ref{Tiling an image}), convergance-based
+mesh (see @ref{Tiling an image}), convergence-based
 @mymath{\sigma}-clipping is also applied before getting the final sky
 value and its standard deviation for a mesh.
 
@@ -8746,7 +8743,7 @@ defined when the detection algorithm is not significantly reliant on
 the sky value. In particular its detection threshold. However, most
 signal-based detection tools @footnote{According to Akhlaghi and
 Ichikawa (2015), signal-based detection is a detection process that
-realies heavily on assumptions about the to-be-detected objects. This
+relies heavily on assumptions about the to-be-detected objects. This
 method was the most heavily used technique prior to the introduction
 of NoiseChisel in that paper.} used the sky value as a reference to
 define the detection threshold. So these old techniques had to rely on
@@ -8768,7 +8765,7 @@ an approximation of the mode of the image pixel distribution and
 @cindex Probability density function
 @item
 To find the mode of a distribution those methods would either have to
-assume (or find) a certain probablity density function (PDF) or use
+assume (or find) a certain probability density function (PDF) or use
 the histogram. But the image pixels can have any distribution, and the
 histogram results are very inaccurate (there is a large dispersion)
 and depend on bin-widths.
@@ -8777,7 +8774,7 @@ and depend on bin-widths.
 @item
 Another approach was to iteratively clip the brightest pixels in the
 image (which is known as @mymath{\sigma}-clipping, since the reference
-was found from the image mean and its stadard deviation or
+was found from the image mean and its standard deviation or
 @mymath{\sigma}). See @ref{Sigma clipping} for a complete
 explanation. The problem with @mymath{\sigma}-clipping was that real
 astronomical objects have diffuse and faint wings that penetrate
@@ -8831,7 +8828,7 @@ scatter in the results will be less.
 For raw image processing, a simple mesh grid is not sufficient. Raw
 images are the unprocessed outputs of the camera detectors. Large
 detectors usually have multiple readout channels each with its own
-amplifier. For example the Hubble Space Telecope Advanced Camera for
+amplifier. For example the Hubble Space Telescope Advanced Camera for
 Surveys (ACS) has four amplifiers over its full detector area dividing
 the square field of view to four smaller squares. Ground based image
 detectors are not exempt, for example each CCD of Subaru Telescope's
@@ -8840,7 +8837,7 @@ they have the same height of the CCD and divide the width by four
 parts.
 
 @cindex Channel
-The bias current on each amplifier is different, and normaly bias
+The bias current on each amplifier is different, and normally bias
 subtraction is not accurately done. So even after subtracting the
 measured bias current, you can usually still identify identify the
 boundaries of different amplifiers by eye. See Figure 11(a) in
@@ -8872,7 +8869,7 @@ channels in both axises to 1.
 
 Unlike the channel size, that has to be an exact multiple of the image
 size, the mesh size can be any number. If it is not an exact multiple
-of the image side, the last (rightest, for the first FITS dimention,
+of the image side, the last (rightest, for the first FITS dimension,
 and highest for the second when viewed in SAO ds9) mesh will have a
 different size than the rest. If the remainder of the image size
 divided by mesh size is larger than a certain fraction (value to
@@ -8890,7 +8887,7 @@ called, a multi-extension FITS file with a @file{_mesh.fits} suffix
 will be created along with the outputs, see @ref{Automatic
 output}. The first extension will be the input image. For each mesh
 grid the image produces, there will be a subsequent extension. Each
-pixel in the grid extensions is labled to the mesh that it is part
+pixel in the grid extensions is labeled to the mesh that it is part
 of. You can flip through the extensions to check the mesh sizes and
 locations compared to the input image.
 
@@ -8910,7 +8907,7 @@ locations compared to the input image.
 Noise is characterized with a fixed background value and a certain
 distribution. For example, for the Gaussian distribution these two are
 the mean and standard deviation. When we have absolutely no signal and
-only noise in a dataset, the mean, median and mode of the distribution
+only noise in a data set, the mean, median and mode of the distribution
 are equal within statistical errors and approximately equal to the
 background value. For the next paragraph, let's assume that the
 background is subtracted and is zero.
@@ -8923,7 +8920,7 @@ defined based on an ordered distribution and so is not affected by a
 small (less than half) number of outliers. Finally, the mode is the
 slowest to shift to the positive.
 
-Inversing the argument above provides us with the basis of Gnuastro's
+Inverting the argument above provides us with the basis of Gnuastro's
 algorithm to quantify the presence of signal in a mesh. Namely, when
 the mode and median of a distribution are approximately equal, we can
 argue that there is no significant signal in that mesh. So we can
@@ -8942,12 +8939,12 @@ checked, we can interpolate over all the empty elements and smooth the
 final result to find the sky value over the full image. See @ref{Grid
 interpolation and smoothing}.
 
-Convolving a dataset (that contains signal and noise), creates a
+Convolving a data set (that contains signal and noise), creates a
 positive skewness in it depending on the fraction of data present in
 the distribution and also the convolution kernel. See Section 3.1.1 in
 Akhlaghi and Ichikawa (2015) and @ref{Convolution process}. This
 skewness can be interpreted as an increase in the Signal to noise
-ratio of the objects burried in the noise. Therefore, to obtain an
+ratio of the objects buried in the noise. Therefore, to obtain an
 even better measure of the presence of signal in a mesh, the image can
 be convolved with a given PSF first. This positive skew will result in
 more distance between the mode an median thereby enabling a more
@@ -8974,7 +8971,7 @@ we use interpolation.
 @cindex Bicubic interpolation
 @cindex Interpolation, spline
 @cindex Interpolation, bicubic
-@cindex Interpolation, bilinear
+@cindex Interpolation, bi-linear
 Parametric interpolations like bi-linear, bicubic or spline
 interpolations are not used because they fail terribly on the edges of
 the image. For example see Figure 16 in Akhlaghi and Ichikawa
@@ -9100,7 +9097,7 @@ image. In such cases, you can call the @option{--meshbasedcheck}
 option so the check image only has one pixel for each mesh. This image
 will only be as big as the full mesh grid and there will be no world
 coordinate system. When the input images are really large, this can
-make a differnence in both the processing of the programs and in
+make a difference in both the processing of the programs and in
 viewing the images.
 
 Another case when only one pixel for each mesh will be useful is when
@@ -9264,7 +9261,7 @@ The programs that accept a mask image, all share the options
 below. Any masked pixels will receive a NaN value (or a blank pixel,
 see @ref{Blank pixels}) in the final output of those programs.
 Infact, another way to notify any of the Gnuastro programs to not use
-a certain set of pixels in a dataset is to set those pixels equal to
+a certain set of pixels in a data set is to set those pixels equal to
 appropriate blank pixel value for the type of the image, @ref{Blank
 pixels}.
 
@@ -9341,7 +9338,7 @@ of the book they are fully explained in.
 
 @item -u
 @itemx --sigclipmultip
-(@option{=FLT}) The multiple of the standard devation to clip from the
+(@option{=FLT}) The multiple of the standard deviation to clip from the
 distribution in @mymath{\sigma}-clipping. This is necessary to remove
 the effect of cosmic rays, see @ref{Sky value} and @ref{Sigma
 clipping}.
@@ -9359,7 +9356,7 @@ created showing how the interpolated sky value is smoothed.
 
 @item --checkskystd
 In the interpolation and sky checks above, include the sky standard
-devation too. By default, only the sky value is shown in all the
+deviation too. By default, only the sky value is shown in all the
 checks. However with this option, an extension will be added showing
 how the standard deviation on each mesh is finally found too.
 
@@ -9403,18 +9400,18 @@ and we want to see how accurate it was, one method is to calculate the
 average of the undetected pixels and see how reasonable it is (if
 detection is done correctly, the average of undetected pixels should
 be approximately equal to the background value, see @ref{Sky
-value}). ImageStatistics is built for precisely such situatons.
+value}). ImageStatistics is built for precisely such situations.
 
 @menu
-* Histogram and Cumulative Freqency Plot::  Basic definitions.
+* Histogram and Cumulative Frequency Plot::  Basic definitions.
 * Sigma clipping::              Definition of @mymath{\sigma}-clipping
 * Mirror distribution::         Used for finding the mode.
 * Invoking astimgstat::         Arguments and options to ImageStatistics.
 @end menu
 
 
-@node Histogram and Cumulative Freqency Plot, Sigma clipping, ImageStatistics, ImageStatistics
-@subsection Histogram and Cumulative Freqency Plot
+@node Histogram and Cumulative Frequency Plot, Sigma clipping, ImageStatistics, ImageStatistics
+@subsection Histogram and Cumulative Frequency Plot
 
 Histograms and the cumulative frequency plots are both used to study
 the distribution of data. The histogram is mainly easier to understand
@@ -9444,8 +9441,8 @@ sort of bias or error that a given bin-width would have on the
 analysis. When a larger number of the data points have roughly the
 same value, then the cumulative frequency plot will become steep in
 that vicinity. This occurs because on the x axis (data values), there
-is little change while on the y axis the indexs constantly
-increase. Normalizing a cumultaive frequency plot means to divide each
+is little change while on the y axis the indexes constantly
+increase. Normalizing a cumulative frequency plot means to divide each
 index (y axis) by the total number of data points.
 
 Unlike the histogram which has a limited number of bins, ideally the
@@ -9464,7 +9461,7 @@ and b is represented by [a, b). This is true for all the intervals
 except the last one. The last interval is closed or [a, b].
 
 
-@node  Sigma clipping, Mirror distribution, Histogram and Cumulative Freqency Plot, ImageStatistics
+@node  Sigma clipping, Mirror distribution, Histogram and Cumulative Frequency Plot, ImageStatistics
 @subsection Sigma clipping
 
 Let's assume that you have pure noise (centered on zero) with a clear
@@ -9474,8 +9471,8 @@ very sharp boundary. By a sharp boundary, we mean that there is a
 clear cutoff at the place the objects finish. In other words, at their
 boundaries, the objects do not fade away into the noise. In such a
 case, when you plot the histogram (see @ref{Histogram and Cumulative
-Freqency Plot}) of the distribution, the pixels relating to those
-objects will be clearly separte from pixels that belong to parts of
+Frequency Plot}) of the distribution, the pixels relating to those
+objects will be clearly separate from pixels that belong to parts of
 the image that did not have data. In the cumulative frequency plot,
 you would observe a long flat region were for a certain range of data
 (x axis), there is no increase in the index (y axis).
@@ -9502,7 +9499,7 @@ criteria to stop the iteration will be discussed below.
 
 @enumerate
 @item
-Calcuate the mean, standard deviation (@mymath{\sigma}) and median
+Calculate the mean, standard deviation (@mymath{\sigma}) and median
 (@mymath{m}) of a distribution.
 @item
 Remove all points that are smaller or larger than
@@ -9554,7 +9551,7 @@ removing the effect of Cosmic rays.
 
 @cindex Mirror distribution
 The mirror distribution of a data set was defined in Appendix C of
-Akhlaghi and Ichikawa (2015). It is best visiualized by mentally
+Akhlaghi and Ichikawa (2015). It is best visualized by mentally
 placing a mirror on the histogram of a distribution at any point
 within the distribution (which we call the mirror point).
 
@@ -9562,7 +9559,7 @@ Through the @option{--mirrorquant} in ImageStatistics, you can check
 the mirror of a distribution when the mirror is placed on any given
 quantile. The mirror distribution is plotted along with the input
 distribution both as histograms and cumulative frequency plots, see
-@ref{Histogram and Cumulative Freqency Plot}. Unlike the rest of the
+@ref{Histogram and Cumulative Frequency Plot}. Unlike the rest of the
 histograms and cumulative frequency plots in ImageStatistics, the text
 files created with the @option{--mirrorquant} and @option{--checkmode}
 will contain 3 columns. The first is the horizontal axis similar to
@@ -9575,7 +9572,7 @@ The value for each bin of both histogram is divided by the maximum of
 both. For the cumulative frequency plot, the value in each bin is
 divided by the maximum number of elements. So one of the cumulative
 frequency plots reaches the maximum vertical axis of 1. The outputs
-will have the @file{_mirrorhist.txt} and @file{_mirrorcfp.txt} suffixs
+will have the @file{_mirrorhist.txt} and @file{_mirrorcfp.txt} suffixes
 respectively. You can use a simple Python script like the one below to
 display the histograms and cumulative frequency plots in one plot:
 
@@ -9967,7 +9964,7 @@ techniques. Following the explanations for the options in
 of the steps. Currently the paper does a very thorough job at
 explaining the concepts and methods of NoiseChisel with abundant
 demonstrations for each step. However, the paper cannot undergo any
-futher updates, so as the development of NoiseChisel evolves, this
+further updates, so as the development of NoiseChisel evolves, this
 section will grow.
 
 @cindex Detection
@@ -10080,7 +10077,7 @@ classified by context and also sorted in the same order that the
 operations are done on the image. See Akhlaghi and Ichikawa (2015) for
 a very complete, detailed and illustrated explanation of each
 step. Reading through the option explanations should be enough to
-optain a general idea of how NoiseChisel works. Before the procedures
+obtain a general idea of how NoiseChisel works. Before the procedures
 explained by these options begin, the image is convolved with a
 kernel. The first group of options listed below are those that apply
 to both the detection and the segmentation processes.
@@ -10159,7 +10156,7 @@ can customize the detection process in NoiseChisel.
 (@option{=FLT}) The quantile threshold to apply to the convolved
 image. The detection process begins with applying a quantile threshold
 to each of the small mesh grid elements, see @ref{Tiling an
-image}. The quantile is only calcuated for those meshs that don't have
+image}. The quantile is only calculated for those meshs that don't have
 any significant signal within them, see @ref{Quantifying signal in a
 mesh}.
 
@@ -10197,7 +10194,7 @@ below.
 Erosion has the effect of shrinking the foreground pixels. To put it
 another way, it expands the holes. This is a founding principle in
 NoiseChisel: it exploits the fact that with very low thresholds, the
-holes in the very low surface brightnesss regions of an image will be
+holes in the very low surface brightness regions of an image will be
 smaller than regions that have no signal. Therefore by expanding those
 holes, we are able to separate the regions harboring signal.
 
@@ -10244,7 +10241,7 @@ Since cosmic rays have sharp boundaries and are usually small, the
 erosion and opening might put them within the undetected
 pixels. Although they might cover a very small number of pixels, they
 usually have very large flux values which can easily bias the average
-and standard devation measured on a mesh. Their effect can easily be
+and standard deviation measured on a mesh. Their effect can easily be
 removed by @mymath{\sigma}-clipping, see @ref{Sigma
 clipping}. NoiseChisel uses the convergence of the value of the
 standard deviation as the criteria to stop the
@@ -10288,7 +10285,7 @@ Ichikawa (2015) for a very complete explanation.
 ratio on the psudo-detections of both the initially detected and
 undetected regions. When the area in a psudo-detection is too small,
 the Signal to noise ratio measurements will not be accurate and their
-distribution will be heavily skewed to the postive. So it is best to
+distribution will be heavily skewed to the positive. So it is best to
 ignore any psudo-detection that is smaller than this area. Use
 @option{--detsnhistnbins} to check if this value is reasonable or not.
 
@@ -10300,7 +10297,7 @@ specified by the value given to this option. This is good for
 inspecting the best possible value to @option{--detsnminarea}.
 
 An empirical way to estimate the best @option{--detsnminarea} value
-for your dataset is that the histogram have a sharp drop towards the
+for your data set is that the histogram have a sharp drop towards the
 higher S/Ns. In other words, when there is a prominent peak in the
 histogram and the last few bins have less than 10 (an arbitrary
 number, meaning very few!) pseudo-detections. When the minimum area is
@@ -10339,7 +10336,7 @@ calling this function will significantly slow NoiseChisel. Normally
 the detection steps are done in parallel, but to show you each step
 individually, the parallel processing has to be halted and restarted
 multiple times. Below are some notes that might be useful in
-interpretting certain steps, beyond the paper.
+interpreting certain steps, beyond the paper.
 
 @itemize
 @item
@@ -10347,7 +10344,7 @@ Going from the first ``Labeled'' extension (for the background
 pseudo-detections, which shows the labeled pseudo-detections) to the
 next extension (``For S/N''), with a relatively low @option{--dthresh}
 value, you will notice that a lot of the large area pseudo-detections
-are removed and not used in calcula<ting the S/N threshold. The main
+are removed and not used in calculating the S/N threshold. The main
 reason for this is that they overlap with possible detections. You can
 check by going to the next extension and seeing how there are
 detections there. The filled holes have been covering initial
@@ -10462,7 +10459,7 @@ for it to be considered in Signal to noise ratio estimations. Similar
 to @option{--segsnminarea} and @option{--detsnminarea}, if the length
 of the river is too short, the Signal to noise ratio can be noisy and
 unreliable. Any existing rivers shorter than this length will be
-considered as non-existant, independent of their Signal to noise
+considered as non-existent, independent of their Signal to noise
 ratio. Since the clumps are grown on the input image, this value
 should best be similar to the value of @option{--detsnminarea}. Recall
 that the clumps were defined on the convolved image so
@@ -10495,7 +10492,7 @@ A file with the suffix @file{_seg.fits} will be created. This file
 keeps all the relevant steps in finding true clumps and segmenting the
 detections in various extensions. Having read the paper or the steps
 above, the extension name should be enough to understand which step
-each extension is showing. Examing this file can be an excellent guide
+each extension is showing. Examining this file can be an excellent guide
 in choosing the best set of parameters. Note that calling this
 function will significantly slow NoiseChisel.
 
@@ -10597,7 +10594,7 @@ output a catalog, so this is not a common practice.} are listed below:
 
 @item
 Complexity: Adding in a catalog functionality to the detector program
-will add several more steps (and options) to its processings that can
+will add several more steps (and options) to its processing that can
 equally well be done outside of it. This makes following the code
 harder for a curious reader and also potentially adds bugs.
 
@@ -10613,7 +10610,7 @@ steps in order to add desired parameter.
 @item
 Low level nature of Gnuastro: Making catalogs is a separate process
 from labeling (detecting and segmenting) the pixels. A user might want
-to do certain operations on the labed regions before creating a
+to do certain operations on the labeled regions before creating a
 catalog for them. Another user might want the properties of the same
 pixels in another image (possibly from another broadband filter) for
 measuring the colors or SEDs for example.
@@ -10697,7 +10694,7 @@ just been stirred and you can't see anything through it. As you wait
 and make more observations, the mud settles down and the @emph{depth}
 of the transparent water increases as you wait. The summits of hills
 begin to appear. As the depth of clear water increases, the parts of
-the hills with lower hights can be seen more clearly.
+the hills with lower heights can be seen more clearly.
 
 @cindex Depth
 The outputs of NoiseChisel include the Sky standard deviation
@@ -10710,7 +10707,7 @@ smoothing}). Note that even though on different instruments, pixels
 have different physical sizes (for example in @mymath{\mu}m),
 nevertheless, a pixel is the unit of data collection. Therefore, as
 far as noise is considered, the physical or projected size of the
-pixels is irrelevant. We thus define the @emph{depth} of each dataset
+pixels is irrelevant. We thus define the @emph{depth} of each data set
 as the magnitude of @mymath{\sigma_m}.
 
 As an example, the XDF survey covers part of the sky that the Hubble
@@ -10740,7 +10737,7 @@ detections (pseudo-detections or clumps in NoiseChisel, see
 While adding more data sets does have the advantage of decreasing the
 standard deviation of the noise, it also produces correlated
 noise. Correlated noise is produced because the raw data sets are
-warped (rotated, shifted or resamapled in general, see
+warped (rotated, shifted or resampled in general, see
 @ref{ImageWarp}) before they are added with each other. This
 correlated noise manifests as a `smoothing' or `blurring' over the
 image. Therefore pixels in added images are no longer separate or
@@ -10750,7 +10747,7 @@ produces a hurdle in our ability to detect objects in them.
 @cindex Number count
 To find the limiting magnitude, you have to use the output of
 MakeCatalog and plot the number of objects as a function of magnitude
-with your favoriate plotting tool, this is called a ``number count''
+with your favorite plotting tool, this is called a ``number count''
 plot. It is simply a histogram of the catalog in each magnitude
 bin. This histogram can be used in many ways to specify a magnitude
 limit, for example see Akhlaghi et al. (2015, in preparation) for one
@@ -10882,7 +10879,7 @@ proportional with the major axis, @mymath{\overline{y^2}} with its
 minor axis and @mymath{\overline{xy}=0}. However, in reality we are
 not that lucky and (assuming galaxies can be parametrized as an
 ellipse) the major axis of galaxies can be in any direction on the
-image (infact this is one of the core principles behind weak-lensing
+image (in fact this is one of the core principles behind weak-lensing
 by shear estimation). So the purpose of the remainder of this section
 is to define a strategy to measure the position angle and axis ratio
 of some randomly positioned ellipses in an image, using the raw second
@@ -11122,7 +11119,7 @@ point.
 @item --accuwidth
 (@option{=INT}) The width columns to be printed with extra
 accuracy. In MakeCatalog the following columns are printed with extra
-accuracy: right ascensions, declinations, brightnesses, river pixel
+accuracy: right ascension, declination, brightness, river pixel
 averages (see Akhlaghi and Ichikawa 2015 for the definition of river
 pixels), the sky and the sky standard deviation.
 
@@ -11138,7 +11135,7 @@ in more accurate floating point display.
 
 @noindent
 The final group of options particular to MakeCatalog are those that
-specfy which columns should be displayed in the output catalogs. For
+specify which columns should be displayed in the output catalogs. For
 each column there is an option, if it has been called on the command
 line or in any of the configuration files, it will included as a
 column in the output catalog. Some of the options apply to both
@@ -11166,7 +11163,7 @@ also keep any of the columns (so you don't have to specify your
 desired columns every time). This inverse ordering thus comes from
 their precedence, see @ref{Configuration file precedence}.
 
-For example catalogs usually have atleast an ID column and position
+For example catalogs usually have at least an ID column and position
 columns (in the image and/or the world coordinate system). By reading
 the order of the columns in reverse you can have your fixed set of
 columns in your system wide configuration file and in any particular
@@ -11305,7 +11302,7 @@ flux as a function of threshold (see @option{--threshold}). So you
 will make two catalogs (each having this column but with different
 thresholds) and then subtract the lower threshold catalog (higher
 brightness) from the higher threshold catalog (lower brightness). The
-effect is most visile when the rivers have a high average
+effect is most visible when the rivers have a high average
 signal-to-noise ratio. The removed contribution from the pixels below
 the threshold will be less than the river pixels. Therefore the
 river-subtracted brightness (@option{--brightness}) for the
@@ -11326,7 +11323,7 @@ clump. River pixels were defined in Akhlaghi and Ichikawa 2015. In
 short they are the pixels immediately outside of the clumps. This
 value is used internally to find the brightness (or magnitude) and
 signal to noise ratio of the clumps. It can generally also be used as
-a scale to guage the base (ambient) flux surrounding the clump. In
+a scale to gauge the base (ambient) flux surrounding the clump. In
 case there was no river pixels, then this column will have the value
 of the Sky under the clump. So note that this value is @emph{not} sky
 subtracted.
@@ -11370,7 +11367,7 @@ The geometric (ignoring pixel values) semi-major axis of the profile,
 assuming it is an ellipse.
 
 @item --geosemiminor
-The geometric (ignoring pixel values) semi-mainor axis of the profile,
+The geometric (ignoring pixel values) semi-minor axis of the profile,
 assuming it is an ellipse.
 
 @item --geopositionangle
@@ -11396,7 +11393,7 @@ column, you are most welcome (and encouraged) to share it with us so
 we can add to the next release of Gnuastro for everyone else to also
 benefit from your efforts.
 
-MakeCatalg will first have two passes over the input pixels: in the
+MakeCatalog will first have two passes over the input pixels: in the
 first pass it will gather mainly object information and in the second
 run, it will mainly focus on the clumps, or any other measurement that
 needs an output from the first pass. These two passes are designed to
@@ -11668,7 +11665,7 @@ dealing with.
 @cindex Point Spread Function
 @cindex Spread of a point source
 Assume we have a `point' source, or a source that is far smaller
-than the maxium resolution (a pixel). When we take an image of it, it
+than the maximum resolution (a pixel). When we take an image of it, it
 will `spread' over an area. To quantify that spread, we can define a
 `function'. This is how the point spread function or the PSF of an
 image is defined. This `spread' can have various causes, for example
@@ -11903,7 +11900,7 @@ along the minor axis. So if the next pixel is chosen based on
 of pixels with large fractional differences will be missed.
 
 Monte Carlo integration uses a random number of points. Thus,
-everytime you run it, by default, you will get a different
+every time you run it, by default, you will get a different
 distribution of points to sample within the pixel. In the case of
 large profiles, this will result in a slight difference of the pixels
 which use Monte Carlo integration each time MakeProfiles is run. To
@@ -11919,9 +11916,9 @@ all the profiles have the same seed and without it, each will get a
 different seed using the system clock (which is accurate to within one
 microsecond). The same seed will be used to generate a random number
 for all the sub-pixel positions of all the profiles. So in the former,
-the subpixel points checked for all the pixels undergoing Monte carlo
+the sub-pixel points checked for all the pixels undergoing Monte carlo
 integration in all profiles will be identical. In other words, the
-subpixel points in the first (closest to the center) pixel of all the
+sub-pixel points in the first (closest to the center) pixel of all the
 profiles will be identical with each other. All the second pixels
 studied for all the profiles will also receive an identical (different
 from the first pixel) set of sub-pixel points and so on. As long as
@@ -11992,7 +11989,7 @@ astmkprof}.
 @cindex Gain
 @cindex Counts
 Astronomical data pixels are usually in units of
-counts@footnote{Counts are also known as analog to ditigal units
+counts@footnote{Counts are also known as analog to digital units
 (ADU).} or electrons or either one divided by seconds. To convert from
 the counts to electrons, you will need to know the instrument gain. In
 any case, they can be directly converted to energy or energy/time
@@ -12341,11 +12338,11 @@ peak has the given magnitude, not the total profile.
 @cartouche
 @strong{CAUTION:} If you want to use this option for comparing with
 observations, please note that MakeProfiles does not do
-convolution. Unless you have deconvolved your data, your images are
+convolution. Unless you have de-convolved your data, your images are
 convolved with the instrument and atmospheric PSF, see
 @ref{PSF}. Particularly in sharper profiles, the flux in the peak
 pixel is strongly decreased after convolution. Also note that in such
-cases, besides deconvolution, you will have to set
+cases, besides de-convolution, you will have to set
 @option{--oversample=1} otherwise after resampling your profile with
 ImageWarp (see @ref{ImageWarp}), the peak flux will be different.
 @end cartouche
@@ -12530,7 +12527,7 @@ If an individual image was created or not.
 @section MakeNoise
 
 @cindex Noise
-Real data are always burried in noise, therefore to finalize a
+Real data are always buried in noise, therefore to finalize a
 simulation of real data (for example to test our observational
 algorithms) it is essential to add noise to the mock profiles created
 with MakeProfiles, see @ref{MakeProfiles}. Below, the general
@@ -12671,7 +12668,7 @@ While taking images with a camera, a dark current is fed to the
 pixels, the variation of the value of this dark current over the
 pixels, also adds to the final image noise. Another source of noise is
 the readout noise that is produced by the electronics in the CCD that
-attempt to digitize the voltage produced by teh photo-electrons in the
+attempt to digitize the voltage produced by the photo-electrons in the
 analog to digital converter. In deep extra-galactic studies these
 sources of noise are not as significant as the noise of the background
 sky. Let @mymath{C} represent the combined standard deviation of all
@@ -12684,7 +12681,7 @@ distribution with
 @cindex ADU
 @cindex Gain
 @cindex Counts
-This type of noise is completley independent of the type of objects
+This type of noise is completely independent of the type of objects
 being studied, it is completely determined by the instrument. So the
 flux scale (and not magnitude scale) is most commonly used for this
 type of noise. In practice, this value is usually reported in ADUs not
@@ -12723,7 +12720,7 @@ affordable!}!
 @cindex Seed, psudo-random numbers
 Using only software, we can only produce what is called a psudo-random
 sequence of numbers. A true random number generator a hardware (let's
-assume we have made sure it has no systematic biases), for examle
+assume we have made sure it has no systematic biases), for example
 throwing dice or flipping coins (which have remained from the ancient
 times). More modern hardware methods use atmospheric noise, thermal
 noise or other types of external electromagnetic or quantum
@@ -12743,7 +12740,7 @@ introduction to environment variables. In the chapter titled ``Random
 Number Generation'' they have fully explained the various random
 number generators that are available (there are a lot of
 them!). Through the two environment variables @code{GSL_RNG_TYPE} and
-@code{GSL_RNG_SEED} you can sepecify the generator and its seed
+@code{GSL_RNG_SEED} you can specify the generator and its seed
 respectively.
 
 If you don't specify a value for @code{GSL_RNG_TYPE}, GSL will use its
@@ -12877,7 +12874,7 @@ and magnitude}.
 Use the @code{GSL_RNG_SEED} environment variable for the seed used in
 the random number generator, see @ref{Generating random numbers}. With
 this option, the output image noise is always going to be identical
-(or reproducable).
+(or reproducible).
 
 @item -d
 @itemx --doubletype
@@ -12929,8 +12926,8 @@ The software for this section have to be added ....
 
 After the reduction of raw data (for example with the utilities in
 @ref{Image manipulation}) you will have reduced images/data ready for
-processing/analysing (for example with the utilities in @ref{Image
-analysis}). But the processed/analysed data (or catalogs) are still
+processing/analyzing (for example with the utilities in @ref{Image
+analysis}). But the processed/analyzed data (or catalogs) are still
 not enough to derive any scientific result. Even higher-level analysis
 is still needed to convert the observed magnitudes, sizes or volumes
 into physical quantities that we associate with each catalog entry or
@@ -12977,7 +12974,7 @@ interested readers can study those books.
 The observations to date (for example the Plank 2013 results), have
 not measured the presence of a significant curvature in the
 universe. However to be generic (and allow its measurement if it does
-infact exist), it is very important to create a framework that allows
+in fact exist), it is very important to create a framework that allows
 curvature. As 3D beings, it is impossible for us to mentally create
 (visualize) a picture of the curvature of a 3D volume in a 4D
 space. Hence, here we will assume a 2D surface and discuss distances
@@ -12998,9 +12995,9 @@ universe we cannot visualize any more (a curved 3D space in 4D).
 To start, let's assume a static (not expanding or shrinking), flat 2D
 surface similar to @ref{flatplane} and that our 2D friend is observing
 its universe from point @mymath{A}. One of the most basic ways to
-parametrize this space is through the cartesian coordinates
+parametrize this space is through the Cartesian coordinates
 (@mymath{x}, @mymath{y}). In @ref{flatplane}, the basic axises of
-these two coordinates are plotted. An infinitesmial change in the
+these two coordinates are plotted. An infinitesimal change in the
 direction of each axis is written as @mymath{dx} and @mymath{dy}. For
 each point, the infinitesimal changes are parallel with the respective
 axises and are not shown for clarity. Another very useful way of
@@ -13013,7 +13010,7 @@ dashed circle is shown for all points with the same radius.
 @float Figure,flatplane
 @center@image{gnuastro-figures/flatplane, 10cm, , }
 
-@caption{Two dimentional cartesian and polar coordinates on a flat
+@caption{Two dimensional Cartesian and polar coordinates on a flat
 plane.}
 @end float
 
@@ -13036,7 +13033,7 @@ the space (that hosts the objects) is curved.
 @ref{sphericalplane} assumes a spherical shell with radius @mymath{R}
 as the curved 2D plane for simplicity. The spherical shell is tangent
 to the 2D plane and only touches it at @mymath{A}. The result will be
-generalizd afterwards. The first step in measuring the distance in a
+generalized afterwards. The first step in measuring the distance in a
 curved space is to imagine a third dimension along the @mymath{z} axis
 as shown in @ref{sphericalplane}. For simplicity, the @mymath{z} axis
 is assumed to pass through the center of the spherical shell. Our
@@ -13055,7 +13052,7 @@ point in the 3D space, not just those changes that occur on the 2D
 spherical shell of @ref{sphericalplane}. Recall that our 2D friend can
 only do measurements in the 2D spherical shell, not the full 3D
 space. So we have to constrain this general change to any change on
-the 2D shperical shell. To do that, let's look at the arbitrary point
+the 2D spherical shell. To do that, let's look at the arbitrary point
 @mymath{P} on the 2D spherical shell. Its image (@mymath{P'}) on the
 flat plain is also displayed. From the dark triangle, we see that
 
@@ -13169,7 +13166,7 @@ about the change in distance caused by something (light) moving at the
 speed of light. This speed is postulated as the only constant and
 frame-of-reference-independent speed in the universe, making our
 calculations easier, light is also the major source of information we
-recieve from the universe, so this is a reasonable assumption for most
+receive from the universe, so this is a reasonable assumption for most
 extra-galactic studies. We can thus parametrize the change in distance
 as
 
@@ -13195,7 +13192,7 @@ then the general change in coordinates in the @emph{full} four
 dimensional space will be:
 @dispmath{ds_s^2=dr^2+r^2(d\theta^2+\sin^2{\theta}d\phi^2)+dw^2.}But we
 can only work on a 3D curved space, so following exactly the same
-steps and convensions as our 2D friend, we arrive at:
+steps and conventions as our 2D friend, we arrive at:
 @dispmath{ds_s^2={dr^2\over
 1-Kr^2}+r^2(d\theta^2+\sin^2{\theta}d\phi^2).}In a non-static universe
 (with a scale factor a(t), the distance can be written as:
@@ -13479,7 +13476,7 @@ different languages at configure time
 @cindex Low level programming
 @cindex Programming, low level
 The final reason was speed. This is another very important aspect of C
-which is not independant of simplicity (first reason discussed
+which is not independent of simplicity (first reason discussed
 above). The abstractions provided by the higher-level languages (which
 also makes learning them harder for a newcomer) comes at the cost of
 speed. Since C is a low-level language@footnote{Low-level languages
@@ -13487,7 +13484,7 @@ are those that directly operate the hardware like assembly
 languages. So C is actually a high-level language, but it can be
 considered the lowest-level high-level language.}(closer to the
 hardware), it is much less complex for both the human reader and the
-computer. The former was dicussed above in simplicity and the latter
+computer. The former was discussed above in simplicity and the latter
 helps in making the program run more efficiently (faster). This thus
 allows for a closer relation between the scientist/programmer
 (program) and the actual data/processing. The GNU coding
@@ -13980,7 +13977,7 @@ most visible. If the reader is interested, a simple search will show
 them the variable they are interested in. However, when looking
 through the functions or reading the separate steps of the functions,
 this `order' in the declarations will make reading the rest of the
-function steps much more easier and pleasent to the eye.
+function steps much more easier and pleasant to the eye.
 
 @item
 When ever you see that the function cannot be fully displayed
@@ -14002,7 +13999,7 @@ In general you can be very liberal in breaking up the functions into
 smaller parts, the GNU Compiler Collection (GCC) will automatically
 compile the functions as inline functions when the optimizations are
 turned on. So you don't have to worry about decreasing the speed. By
-default Gnuastro will compile with the @option{-O3} optmization flag.
+default Gnuastro will compile with the @option{-O3} optimization flag.
 
 @cindex Buffers (Emacs)
 @cindex Emacs buffers
@@ -14042,7 +14039,7 @@ useful for readability by a first time reader. @file{main.h} may only
 include the header file(s) that define types that the main program
 structure needs, see @file{main.h} in @ref{Program source}. Those
 particular header files that are included in @file{main.h} can
-ofcourse be ignored (not included) in separate source files.
+of course be ignored (not included) in separate source files.
 
 @item
 The headers should be classified (by an empty line) into separate
@@ -14131,7 +14128,7 @@ text editors. They will see the raw code in the webpage or on a simple
 text editor (like Gedit) as plain text. Trying to learn and understand
 a file with dense functions that are all spaced with one or two blank
 lines can be very taunting for a newcomer. But when they scroll
-throught the file and see clear titles and meaningful spaces for
+through the file and see clear titles and meaningful spaces for
 similar functions (less, meaningful density), we are helping them find and
 focus on the part they are most interested in sooner and easier.
 
@@ -14142,7 +14139,7 @@ focus on the part they are most interested in sooner and easier.
 extensible and easily customizable text editor which many programmers
 rely on for developing due to its countless features. Among them, it
 allows specification of certain settings that are applied to a single
-file or to all files in a directory and its subdirectories. In order
+file or to all files in a directory and its sub-directories. In order
 to harmonize code coming from different contributors, Gnuastro comes
 with a @file{.dir-locals.el} file which automatically configures Emacs
 to satisfy most of the coding conventions above when you are using it
@@ -14166,7 +14163,7 @@ $ info emacs
 
 @item A guided tour of emacs
 At @url{https://www.gnu.org/software/emacs/tour/}. A short visual tour
-of Emacs, officially maintined by the Emacs developers.
+of Emacs, officially maintained by the Emacs developers.
 
 @item Unofficial mini-manual
 At @url{https://tuhdo.github.io/emacs-tutor.html}. A shorter manual
@@ -14235,7 +14232,7 @@ Gnuastro.
 @item
 Edit the book and fully explain your desired change, such that your
 idea is completely embedded in the general context of the book with
-no sence of discontinuity for a first time reader. This will allow you
+no sense of discontinuity for a first time reader. This will allow you
 to plan the idea much more accurately and in the general context of
 Gnuastro or a particular program. Later on, when you are coding, this
 general context will significantly help you as a road-map.
@@ -14245,7 +14242,7 @@ which explains the purposes of the program. Before actually starting
 to code, explain your idea's purpose thoroughly in the start of the
 program section you wish to add or edit. While actually writing its
 purpose for a new reader, you will probably get some very valuable
-ideas that you hadn't thought of before, this has occured several
+ideas that you hadn't thought of before, this has occurred several
 times during the creation of Gnuastro. If an introduction already
 exists, embed or blend your idea's purpose with the existing
 purposes. We emphasize that doing this is equally useful for you (as
@@ -14411,7 +14408,7 @@ help you.
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
 * Production workflow::         Submitting your commits (work) for inclusion.
-* Branching workflow tutorial::       Tutorial on wokflow steps with Git.
+* Branching workflow tutorial::       Tutorial on workflow steps with Git.
 @end menu
 
 @node Copyright assignment, Commit guidelines, Contributing to Gnuastro, Contributing to Gnuastro
@@ -14450,7 +14447,7 @@ In short, in free and open source software (FOSS) lots of people
 collaborate and their work depends on each other. If they have not
 explicitly given the copyright of their work on a project to a single
 owner, very complicated issues might arise: their employer might claim
-ownership of their work and thus ruine the project for everyone else
+ownership of their work and thus ruin the project for everyone else
 who has depended on it, or under different circumstances in the future
 the person might not want to distribute their work to the FOSS project
 any more.
@@ -14464,7 +14461,7 @@ don't arise. This is not metaphorical: not having a single copyright
 holder is a real bug for the final software product, just like a
 mistakenly written line of code that doesn't show up on initial
 testing. Therefore, as good scientists/programmers we should not allow
-such bugs to inflitrate our research (software) and create potential
+such bugs to infiltrate our research (software) and create potential
 problems down the line. The copyright of most FSF (or GNU) software is
 held by the FSF precisely for this reason: to guarantee their freedom
 and reliability.
@@ -14486,7 +14483,7 @@ guarantee the freedom and reliability of Gnuastro. The Free Software
 Foundation will also acknowledge your copyright contributions in the Free
 Software Supporter: @url{https://www.fsf.org/free-software-supporter} which
 will circulate to a very large community (104,444 people in April
-2016). See the archives for some examples and subscribe to recieve
+2016). See the archives for some examples and subscribe to receive
 interesting updates. The very active code contributors (or developers) will
 also be recognized as project members on the Gnuastro project webpage (see
 @ref{Gnuastro project webpage}) and can be given a @code{gnu.org} email
@@ -14536,7 +14533,7 @@ It is best for the title to be short, about 60 (or even 50)
 characters. Most emulated command line terminals are about 80
 characters wide. However, we should also allow for the commit hashes
 which are printed in @command{git log --oneline}, and also branch
-names or the graph stucture outputs of @command{git log} which are
+names or the graph structure outputs of @command{git log} which are
 also commonly used.
 
 @item
@@ -14695,7 +14692,7 @@ Let's assume you have found a bug in one of the functions of
 you are in charge of fixing it. You make a branch, checkout to it, correct
 the bug, check if it is indeed fixed, add it to the staging area, commit it
 to the new branch and push it to your GitLab account. But before all of
-them, make sure that your @file{master} branche is up to date with the main
+them, make sure that your @file{master} branch is up to date with the main
 Gnuastro @file{master} branch.
 
 @example
@@ -14703,6 +14700,7 @@ $ git checkout master
 $ git pull
 $ git checkout -b bug-123456-stats
 $ emacs lib/statistics.c
+$                                       # do your checks here
 $ git add lib/statistics.c
 $ git commit
 $ git push janedoe bug-123456-stats
@@ -14727,7 +14725,7 @@ $ git branch -d bug-123456-stats                # delete local branch
 $ git push janedoe --delete bug-123456-stats    # delete remote branch
 @end example
 
-Just as a reminder, always keep your work on each issue in a separte local
+Just as a reminder, always keep your work on each issue in a separate local
 and remote branch so work can progress on them independently. After you
 make your announcement, other people might contribute to the branch before
 merging it in to @file{master}, so this is very important. Also before
