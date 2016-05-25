@@ -1391,7 +1391,9 @@ and planning that made the idea of Gnuastro possible. The very critical
 view points of Professor Takashi Ichikawa (from Tohoku University) were
 also instrumental in the initial ideas and creation of Gnuastro. Brandon
 Invergo, Karl Berry and Richard Stallman also provided very useful
-suggestions during the GNU evaluation process.
+suggestions during the GNU evaluation process. Bob Proulx from Savannah,
+has kindly supported Gnuastro's project webpage on Savannah and the
+management of its version controlled source server there.
 
 @c To the developers: if you would like to thank someone, please change the
 @c `and' before the last name to a comma (','), then add " and Firstname
