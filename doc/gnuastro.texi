@@ -190,7 +190,6 @@ sub-component to a title is present.
 * Image manipulation::          Tools for basic image manipulation.
 * Image analysis::              Analyze images.
 * Modeling and fittings::       Make and fit models.
-* Table manipulation::          Read/Write tables.
 * High-level calculations::     Physical calculations.
 * Developing::                  The development environment.
 * GNU Astronomy Utilities list::  List and short summary of Gnuastro.
@@ -514,7 +513,7 @@ Contributing to Gnuastro
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
 * Production workflow::         Submitting your commits (work) for inclusion.
-* Branching workflow tutorial::       Tutorial on workflow steps with Git.
+* Branching workflow tutorial::  Tutorial on workflow steps with Git.
 
 Other useful software
 
@@ -930,16 +929,15 @@ the first 4 or 5 characters of the commit hash number@footnote{Each point
 in Gnuastro's history is uniquely identified with a 40 character long hash
 which is created from its contents and previous history for example:
 @code{5b17501d8f29ba3cd610673261e6e2229c846d35}. So the string @file{D} in
-the version for this commit would be @file{5b17}}. Therefore, the
+the version for this commit could be @file{5b17}.}. Therefore, the
 unofficial version number `@code{3.92.8-29c8}', corresponds to the 8th
 commit after the official version @code{3.92} and its commit hash begins
 with @code{29c8}. This number is sort-able (unlike the raw hash) and as
-shown above is very descriptive of the state of the unofficial
-release. Of course an official release is preferred for publication (since
-its tarballs are easily available and it has gone through more tests,
-making it more stable), so if an official release is announced prior to
-your publication's final review, please consider updating to the official
-release.
+shown above is very descriptive of the state of the unofficial release. Of
+course an official release is preferred for publication (since its tarballs
+are easily available and it has gone through more tests, making it more
+stable), so if an official release is announced prior to your publication's
+final review, please consider updating to the official release.
 
 The major version number is set by a major goal which is defined by the
 developers and user community of Gnuastro and individual utilities before
@@ -1174,7 +1172,7 @@ correctly, giving the wrong results, or not writing your output
 correctly, you have found a bug. In such cases, it is best if you
 report the bug to the developers. The utilities will also report bugs
 in known impossible situations (which are caused by something
-unexpected) and will ask the users to report the bug. Below, first
+unexpected) and will ask the users to report the bug.
 
 @cindex Bug reporting
 Prior to actually filing a bug report, it is best to search previous
@@ -9823,8 +9821,8 @@ ending with @file{_hist.txt}.
 Do not calculate or save the histogram.
 
 @item --normhist
-Make a normalized histogram, see @ref{Histogram and Cumulative
-Freqency Plot}.
+Make a normalized histogram, see @ref{Histogram and Cumulative Frequency
+Plot}.
 
 @item --maxhistone
 Divide all histogram bins by the number in the bin with the most data
@@ -9866,7 +9864,7 @@ that if this option is given, any (possible) value given to
 @strong{Cumulative Frequency Plot:} The cumulative frequency plot will
 be stored in a text file ending with @file{_cfp.txt}. To be more
 realistic, the average of the indexs in each interval is used as the
-second column, see @ref{Histogram and Cumulative Freqency Plot}.
+second column, see @ref{Histogram and Cumulative Frequency Plot}.
 
 @table @option
 
@@ -9874,8 +9872,8 @@ second column, see @ref{Histogram and Cumulative Freqency Plot}.
 Do not calculate or store the cumulative frequency plot.
 
 @item --normcfp
-Normalize the cumulative frequency plot, see @ref{Histogram and
-Cumulative Freqency Plot}.
+Normalize the cumulative frequency plot, see @ref{Histogram and Cumulative
+Frequency Plot}.
 
 @item --maxcfpeqmaxhist
 Set the maximum cumulative frequency plot value to the maximum value
@@ -11492,7 +11490,7 @@ the actual columns.
 
 
 
-@node Modeling and fittings, Table manipulation, Image analysis, Top
+@node Modeling and fittings, High-level calculations, Image analysis, Top
 @chapter Modeling and fitting
 
 @cindex Fitting
@@ -12891,19 +12889,17 @@ were of integer types.
 
 
 
-@node Table manipulation, High-level calculations, Modeling and fittings, Top
-@chapter Table manipulation
-
-@cindex Table manipulation
-@cindex Manipulating tables
-The FITS standard also specifies tables as a form of data that can be
-stored in the extensions of a FITS file. These tables can be ASCII
-tables or binary tables. The utilities in this section provide the
-tools to directly read and write to FITS tables.
-
-The software for this section have to be added ....
-
-
+@c @node Table manipulation, High-level calculations, Modeling and fittings, Top
+@c @chapter Table manipulation
+@c
+@c @cindex Table manipulation
+@c @cindex Manipulating tables
+@c The FITS standard also specifies tables as a form of data that can be
+@c stored in the extensions of a FITS file. These tables can be ASCII
+@c tables or binary tables. The utilities in this section provide the
+@c tools to directly read and write to FITS tables.
+@c
+@c The software for this section have to be added ....
 
 
 
@@ -12921,7 +12917,9 @@ The software for this section have to be added ....
 
 
 
-@node High-level calculations, Developing, Table manipulation, Top
+
+
+@node High-level calculations, Developing, Modeling and fittings, Top
 @chapter High-level calculations
 
 After the reduction of raw data (for example with the utilities in
@@ -14408,7 +14406,7 @@ help you.
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
 * Production workflow::         Submitting your commits (work) for inclusion.
-* Branching workflow tutorial::       Tutorial on workflow steps with Git.
+* Branching workflow tutorial::  Tutorial on workflow steps with Git.
 @end menu
 
 @node Copyright assignment, Commit guidelines, Contributing to Gnuastro, Contributing to Gnuastro
