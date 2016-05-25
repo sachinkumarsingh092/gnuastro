@@ -270,7 +270,7 @@ Configuring
 
 Common behavior
 
-* Command line::                How to use the command line.
+* Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
 * Threads in GNU Astronomy Utilities::  How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
@@ -278,7 +278,7 @@ Common behavior
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
 
-Command line
+Command-line
 
 * Arguments and options::       Basics of options and arguments.
 * Arguments::                   Treatment of arguments.
@@ -338,7 +338,7 @@ ImageCrop
 * ImageCrop modes::             Basic ImageCrop modes.
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
-* Invoking astimgcrop::         Calling ImageCrop on the command line
+* Invoking astimgcrop::         Calling ImageCrop on the command-line
 
 Invoking ImageCrop
 
@@ -535,12 +535,12 @@ SAO ds9
 The GNU Astronomy Utilities (Gnuastro) is an official GNU package
 consisting of separate programs for the manipulation and analysis of
 astronomical data. See @ref{GNU Astronomy Utilities list} for the full
-list. All the various utilities share the same basic command line user
+list. All the various utilities share the same basic command-line user
 interface for the comfort of both the users and developers. GNU
 Astronomy Utilities is written to comply fully with the GNU coding
 standards so it integrates finely with the GNU/Linux operating
 system. This also enables astronomers to expect a fully familiar
-experience in the source code, building, installing and command line
+experience in the source code, building, installing and command-line
 user interaction that they have seen in all the other GNU software
 that they use. The official and always up to date version of
 book/manual is freely available under @ref{GNU Free Documentation
@@ -549,7 +549,7 @@ Texinfo source) at @url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
 specified most of the topics in chapters 2 and 3 are common to all GNU
-software, for example installation, managing command line options or
+software, for example installation, managing command-line options or
 getting help. So if you are new to this environment, we encourage you
 to go through these chapters carefully. They can be a starting point
 from which you can continue to learn more from each program's own
@@ -607,7 +607,7 @@ $ sudo make install
 See @ref{Known issues} if you confront any complications.  For each program
 there is an `Invoke ProgramName' sub-section in this book which explains
 how the programs should be run on the command-line. It can be read on the
-command line by running the command @command{$ info astprogname}, see
+command-line by running the command @command{$ info astprogname}, see
 @ref{Naming convention} and @ref{Getting help}. The `Invoke ProgramName'
 sub-section starts with a few examples of each program and goes on to
 explain the invocation details. In @ref{Tutorials} some real life examples
@@ -874,7 +874,7 @@ License}.
 GNU Astronomy Utilities is a package of independent utilities or
 programs. Each utility has an official name which consists of one or
 two words, describing what they do. The latter are printed with no
-space, for example NoiseChisel or ImageCrop. On the command line, you
+space, for example NoiseChisel or ImageCrop. On the command-line, you
 can run them with their executable names which start with an
 @file{ast} and might be an abbreviation of the official name, for
 example @file{astnoisechisel} or @file{astimgcrop}, see
@@ -1038,14 +1038,14 @@ like saying “driving your carburetor”.
 @subsection Command-line interface
 @cindex Shell
 @cindex Graphic user interface
-@cindex Command line user interface
+@cindex Command-line user interface
 @cindex GUI: graphic user interface
-@cindex CLI: command line user interface
+@cindex CLI: command-line user interface
 One aspect of Gnuastro that might be a little troubling to new GNU/Linux
-users is that (at least for the time being) it only has a command line
+users is that (at least for the time being) it only has a command-line
 user interface (CLI). This might be contrary to the mostly graphical user
 interface (GUI) experience with proprietary operating systems. To a first
-time user, the command line does appear much more complicated and adapting
+time user, the command-line does appear much more complicated and adapting
 to it might not be easy and a little frustrating at first. This is
 understandable and also experienced by anyone who started using the
 computer (from childhood) in a graphical user interface. Here we hope to
@@ -1055,10 +1055,10 @@ enhance your productivity while complementing your GUI experience.
 @cindex GNOME 3
 Through GNOME 3@footnote{@url{http://www.gnome.org/}}, most GNU/Linux based
 operating systems now have a very advanced and useful GUI. Since the GUI
-was created long after the command line, some wrongly consider the command
+was created long after the command-line, some wrongly consider the command
 line to be obsolete. Both interfaces are very useful for different tasks
 (for example you can't view an image, video, pdf document or web page on
-the command line!), on the other hand you can't reproduce your results
+the command-line!), on the other hand you can't reproduce your results
 easily in the GUI. Therefore they should not be regarded as rivals but as
 complementary user interfaces, here we will outline how the CLI can be
 useful in scientific programs.
@@ -1068,7 +1068,7 @@ small subset of all the possible CLI operations. Each click you do on
 the GUI, can be thought of as internally running a different CLI
 command. So asymptotically (if a good designer can design a GUI which
 is able to show you all the possibilities to click on) the GUI is only
-as powerful as the command line. In practice, such graphical designers
+as powerful as the command-line. In practice, such graphical designers
 are very hard to find for every program, so the GUI operations are always
 a subset of the internal CLI commands. For programs that are only made
 for the GUI, this results in not including lots of potentially useful
@@ -1091,7 +1091,7 @@ of actions automatically on the GUI.
 @cindex GNU Bash
 @cindex Reproducible results
 @cindex CLI: repeating operations
-On the command line, you can run any series of of actions which can come
+On the command-line, you can run any series of of actions which can come
 from various CLI capable programs you have decided your self in any
 possible permutation with one command@footnote{By writing a shell script
 and running it, for example see the tutorials in @ref{Tutorials}.}. This
@@ -1118,7 +1118,7 @@ operation detail, see @ref{Getting help}.
 
 @cindex GNU Emacs
 @cindex Virtual console
-To experience the command line in its full glory and not in the GUI
+To experience the command-line in its full glory and not in the GUI
 terminal emulator, press the following keys together:
 @key{CTRL+ALT+F4}@footnote{Instead of @key{F4}, you can use any of the keys
 from @key{F1} to @key{F6} for different virtual consoles depending on your
@@ -1209,7 +1209,7 @@ If we cannot exactly reproduce your bug, then it is very hard to
 resolve it. So please send us a Minimal working
 example@footnote{@url{http://en.wikipedia.org/wiki/Minimal_Working_Example}}
 along with the description. For example in running a program, please
-send us the full command line text and the output with the @option{-P}
+send us the full command-line text and the output with the @option{-P}
 option, see @ref{Final parameter values}. If it is caused only for a
 certain input, also send us that input file. In case the input FITS is
 large, please use ImageCrop to only crop the problematic section and
@@ -1347,7 +1347,7 @@ In this book we have the following conventions:
 @itemize
 
 @item
-All commands that are to be run on the shell (command line) prompt as
+All commands that are to be run on the shell (command-line) prompt as
 the user start with a @command{$}. In case they must be run as a
 super-user or system administrator, they will start with a
 @command{#}. If the command is in a separate line and next line
@@ -1358,7 +1358,7 @@ after it is run. As a user, you don't need to type those lines.
 @item
 If the command becomes larger than the page width a @key{\} is
 inserted in the code. If you are typing the code by hand on the
-command line, you don't need to use multiple lines or add the extra
+command-line, you don't need to use multiple lines or add the extra
 space characters, so you can omit them. If you want to copy and paste
 these examples (highly discouraged!) then the @key{\} should stay.
 
@@ -1997,7 +1997,7 @@ can simply remove them all with the Shell's capabilities. So Sufi
 decided to show this to the student by making a shell script from the
 commands he had used before.
 
-The command line shell has the capability to read all the separate
+The command-line shell has the capability to read all the separate
 input commands from a file. This is very useful when you want to do
 the same thing multiple times, with only the names of the files or
 minor parameters changing between the different instances. Using the
@@ -3058,7 +3058,7 @@ variables.
 @cindex Environment variables
 Shell variable values are basically treated as strings of
 characters. You can define a variable and a value for it by running
-@command{$ myvariable=a test value} on the command line. Then you can
+@command{$ myvariable=a test value} on the command-line. Then you can
 see the value in the with the command @command{$ echo $myvariable}. If
 a variable has no value, this command will only print an empty
 line. This variable will be known as long as this shell or terminal is
@@ -3576,17 +3576,17 @@ If your problem was not listed above, please file a bug report
 
 There are some facts that are common to all the programs in Gnuastro
 which are mainly to do with user interaction. In this chapter these
-aspects are discussed. The most basic are the command line options
+aspects are discussed. The most basic are the command-line options
 which are common in all the programs for a unified user
 experience. All Gnuastro programs can use configuration files so you
-don't have to specify all the parameters on the command line each time
+don't have to specify all the parameters on the command-line each time
 you run a program. The manner of setting, checking and using the these
 files at various levels are also explained. Finally we discuss how you
 can get immediate and distraction-free (without taking your hands off
-the keyboard!) help on the command line.
+the keyboard!) help on the command-line.
 
 @menu
-* Command line::                How to use the command line.
+* Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
 * Threads in GNU Astronomy Utilities::  How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
@@ -3595,19 +3595,19 @@ the keyboard!) help on the command line.
 * Output headers::              Common headers to all FITS outputs.
 @end menu
 
-@node Command line, Configuration files, Common behavior, Common behavior
-@section Command line
+@node Command-line, Configuration files, Common behavior, Common behavior
+@section Command-line
 
 All the programs in GNU Astronomy Utilities are customized through the
-standard GNU style command line options. First a general outline of
+standard GNU style command-line options. First a general outline of
 how to make best use of these options is discussed and finally the
 options that are common to all the programs in Gnuastro are listed.
 
 @cindex Metacharacters
 @cindex Token separation
-@cindex Command line token separation
-@cindex Separating tokens on the command line
-Your full command line text is passed onto the shell as a string of
+@cindex Command-line token separation
+@cindex Separating tokens on the command-line
+Your full command-line text is passed onto the shell as a string of
 characters. That string is then broken up into separate `words' by any
 `metacharacters' (like space, tab, @command{|}, @command{>} or @command{;})
 that might exist in the text. See the GNU Bash manual, for the complete
@@ -3622,14 +3622,14 @@ commands to the program you called.
 * Common options::              Common options to all Gnuastro programs.
 @end menu
 
-@node Arguments and options, Arguments, Command line, Command line
+@node Arguments and options, Arguments, Command-line, Command-line
 @subsection Arguments and options
 
 @cindex Options to programs
-@cindex Command line options
+@cindex Command-line options
 @cindex Arguments to programs
-@cindex Command line arguments
-On the command line, the first thing you enter is the name of the
+@cindex Command-line arguments
+On the command-line, the first thing you enter is the name of the
 program you want to run. After that you can specify two types of
 input: @emph{arguments} and @emph{options}.  Arguments are those
 tokens that are not preceded by any hyphens (@command{-}), the program
@@ -3647,7 +3647,7 @@ optional and which are mandatory, see @ref{--usage}. As their name
 suggests, @emph{options} are only optional and most of the time you
 don't have to worry about what order you specify them in.
 
-@cindex Metacharacters on the command line
+@cindex Metacharacters on the command-line
 In case your arguments or option values contain any of the shell's
 meta-characters, you have to quote them. If there is only one such
 character, you can use a backslash (@command{\}) before it. If there
@@ -3677,7 +3677,7 @@ quotes are much more easier, elegant and readable.
 
 
 
-@node Arguments, Options, Arguments and options, Command line
+@node Arguments, Options, Arguments and options, Command-line
 @subsection Arguments
 In GNU Astronomy Utilities, the names of the input data files and
 ASCII tables are mostly specified as arguments, you can generally
@@ -3716,7 +3716,7 @@ formats.
 
 @end itemize
 
-Through out this book and in the command line outputs, whenever we
+Through out this book and in the command-line outputs, whenever we
 want to generalize all such astronomical data formats in a text place
 holder, we will use @file{ASTRdata}, we will assume that the extension
 is also part of this name. Any file ending with these names is
@@ -3731,13 +3731,13 @@ final error by Gnuastro.
 
 
 
-@node Options, Common options, Arguments, Command line
+@node Options, Common options, Arguments, Command-line
 @subsection Options
 
 @cindex GNU style options
 @cindex Options, GNU style
 @cindex Options, short (@option{-}) and long (@option{--})
-Command line options allow configuring the behavior of a program in
+Command-line options allow configuring the behavior of a program in
 all GNU/Linux applications for each particular execution. Most options
 can be called in two ways: @emph{short} or @emph{long} a small number
 of options in some programs only have the latter type. In the list of
@@ -3820,7 +3820,7 @@ long option names can be abbreviated. For example, instead of typing
 @option{--pri} will be enough, if there are conflicts, the program
 will warn you and show you the alternatives. Finally, if you want the
 argument parser to stop parsing arguments beyond a certain point, you
-can use two dashes: @option{--}. No text on the command line beyond
+can use two dashes: @option{--}. No text on the command-line beyond
 these two dashes will be parsed.
 
 @cindex Repeated options
@@ -3878,13 +3878,13 @@ by 0, not 1. This is the standard in C and all languages that are
 based on it (for example C++, Java and Python).
 @end cartouche
 
-@node Common options,  , Options, Command line
+@node Common options,  , Options, Command-line
 @subsection Common options
 
 @cindex Options common to all utilities
 @cindex Gnuastro common options
 To facilitate the job of the users and developers, all the programs in
-Gnuastro share some basic command line options for the same
+Gnuastro share some basic command-line options for the same
 operations where they are relevant. The list of options is provided
 below. It is noteworthy that these similar options are hard-wired into
 the programming of all of Gnuastro programs using GNU C Library's
@@ -3973,11 +3973,11 @@ option).
 @vtable @option
 
 @item --
-(GNU option) Stop parsing the command line. This option can be useful
+(GNU option) Stop parsing the command-line. This option can be useful
 in scripts or when using the shell history. Suppose you have a long
 list of options, and want to see if removing some of them (and using
 the default values) can give a better result. If the ones you want to
-remove are the last ones on the command line, you don't have to delete
+remove are the last ones on the command-line, you don't have to delete
 them, you can just add @option{--} before them and if you don't get
 what you want, you can remove the @option{--} and get the same initial
 result.
@@ -4060,7 +4060,7 @@ the program will not run).
 
 @item -U
 @itemx --setusrconf
-Update the user configuration file from the command line options and
+Update the user configuration file from the command-line options and
 quit. See explanation under @option{--setdirconf} for more details.
 
 @item --onlydirconf
@@ -4110,7 +4110,7 @@ in GNU Astronomy Utilities}.
 
 
 
-@node Configuration files, Threads in GNU Astronomy Utilities, Command line, Common behavior
+@node Configuration files, Threads in GNU Astronomy Utilities, Command-line, Common behavior
 @section Configuration files
 
 @cindex @file{etc}
@@ -4135,7 +4135,7 @@ standard@footnote{@url{http://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standar
 @cindex Number of CPU threads to use
 The thing to have in mind is that none of the programs in Gnuastro keep any
 internal default value. All the values must either be stored in one of the
-configuration files or explicitly called in the command line. In case the
+configuration files or explicitly called in the command-line. In case the
 necessary parameters are not given through any of these methods, the
 program will list the missing necessary parameters and abort. The only
 exception to this is @option{--numthreads}, whose default value is
@@ -4144,7 +4144,7 @@ system, see @ref{Threads in GNU Astronomy Utilities}. Of course, you can
 still provide a default value for the number of threads at any of the
 levels below, but if you don't, the program will not abort. Also note that
 through automatic output name generation, the value to the @option{--output}
-option is also not mandatory on the command line or in the configuration
+option is also not mandatory on the command-line or in the configuration
 files for all programs which don't rely on that value as an
 input@footnote{One example of a program which uses the value given to
 @option{--output} as an input is ConvertType, this value specifies the type
@@ -4174,7 +4174,7 @@ code of each program, see @ref{Program source}.
 Any line in the configuration file whose first non-white character is
 a @key{#} is considered to be a comment and is ignored. The same goes
 for an empty line. The name of the parameter is the same as the long
-format of the command line option for that parameter. The parameter
+format of the command-line option for that parameter. The parameter
 name and parameter value have to be separated by any number of
 `white-space' characters: space, tab or vertical tab. By default
 several space characters are used. If the value of an option has space
@@ -4189,7 +4189,7 @@ without a value in the @option{--help} output (on/off option, see
 configuration file, the name of the file and unrecognized option will
 be reported and the program will abort.  If a parameter is repeated
 more more than once in the configuration files and it is not set on
-the command line, then only the first value will be used, the rest
+the command-line, then only the first value will be used, the rest
 will be ignored.
 
 @cindex Writing configuration files
@@ -4220,7 +4220,7 @@ be ignored.
 
 @enumerate
 @item
-Command line options, for this particular execution.
+Command-line options, for this particular execution.
 
 @item
 Current directory, for all executions in the directory from which any
@@ -4277,7 +4277,7 @@ Although it might cause confusions like above, this dependence on the
 @file{HOME} environment variable enables you to temporarily use a
 different directory as your home directory. This can come in handy in
 complicated situations. To set the user or current directory
-configuration files based on your command line input, you can use the
+configuration files based on your command-line input, you can use the
 @option{--setdirconf} or @option{--setusrconf}, see @ref{Operating
 modes}
 
@@ -4298,7 +4298,7 @@ Gnuastro will check to retrieve parameter values.
 
 If you remove a parameter and its value from the files in this system
 wide directory, you either have to specify it in more immediate
-configuration files or set it each time in the command line. Recall
+configuration files or set it each time in the command-line. Recall
 that none of the programs in Gnuastro keep any internal default
 values and will abort if they don't find a value for the necessary
 parameters (except the number of threads). So even though you might
@@ -4347,7 +4347,7 @@ provided for the @option{--numthreads} option, the given value will be
 used, not the value automatically read from your system, see
 @ref{Operating modes} and @ref{Configuration files} for ways to set a
 different value. Thus @option{--numthreads} is the only option with a
-value that doesn't have to be specified anywhere on the command line
+value that doesn't have to be specified anywhere on the command-line
 or in the options.
 
 @menu
@@ -4498,17 +4498,17 @@ the independent targets simultaneously.
 @cindex Final parameter value checking
 @cindex Checking final parameter values
 The input parameters can be specified in many places, either on the
-command line or in at least one of several configuration files, see
+command-line or in at least one of several configuration files, see
 @ref{Configuration files}. Therefore, it often happens that before
 running a program on a certain data set, you want to see the values
 for the parameters that the program will use after it has read your
-command line options and all the configuration files in their correct
+command-line options and all the configuration files in their correct
 order. You might also want to save the list with the output so you can
 reproduce the same results at a later time, this is very important
 when you want to use your results in a report or paper.
 
 If you call the @option{--printparams} option, all Gnuastro programs
-will read your command line parameters and all the configuration
+will read your command-line parameters and all the configuration
 files. If there is no problem (like a missing parameter or a value in
 the wrong format) and immediately before actually running, the
 programs will print the full list of parameter names and values sorted
@@ -4516,7 +4516,7 @@ and grouped by context and quit. They will also report their version
 number, the date they were configured on your system and the time they
 were reported.
 
-As an example, you can give your full command line options and even
+As an example, you can give your full command-line options and even
 the input and output file names and finally just add @option{-P} to
 check if all the parameters are finely set. If everything is ok, you
 can just run the same command (easily retrieved from the bash history,
@@ -4644,10 +4644,10 @@ find the PDF file (printed or digital) or the HTML webpage is a major
 distraction.
 
 @cindex Online help
-@cindex Command line help
+@cindex Command-line help
 GNU software have a very unique set of tools for aiding your memory on
-the command line, where you are working, depending how much of it you
-need to remember. In the past, such command line help was known as
+the command-line, where you are working, depending how much of it you
+need to remember. In the past, such command-line help was known as
 ``online'' help, because they were literally provided to you `on'
 the command `line'. However, nowadays the word ``online'' refers to
 something on the internet, so that term will not be used. With this
@@ -4655,7 +4655,7 @@ type of help, you can resume your exciting research without taking
 your hands off the keyboard.
 
 @cindex Installed help methods
-Another major advantage of such command line based help routines is
+Another major advantage of such command-line based help routines is
 that they are installed with the software in your computer, therefore
 they are always in sync with the executable you are actually
 running. Three of them are actually part of the executable. You don't
@@ -4668,7 +4668,7 @@ If you only need to remember the short or long names of the options,
 @option{--usage} is advised. If it is what the options do, then
 @option{--help} is a great tool. Man pages are also provided for those
 who are use to this older system of documentation. This full book is
-also available to you on the command line in Info format. If none of
+also available to you on the command-line in Info format. If none of
 these seems to resolve the problems, there is a mailing list which
 enables you to get in touch with experienced Gnuastro users. In the
 subsections below each of these methods are reviewed.
@@ -4717,7 +4717,7 @@ all GNU software.
 @subsection @option{--help}
 
 @vindex --help
-If the command line includes this option, the program will not be
+If the command-line includes this option, the program will not be
 run. It will print a complete list of all available options along with
 a short explanation. The options are also grouped by their
 context. Within each context, the options are sorted
@@ -4735,7 +4735,7 @@ options are already explained in @ref{Operating modes}.
 
 @cindex Long outputs
 @cindex Redirection of output
-@cindex Command line, long outputs
+@cindex Command-line, long outputs
 The help message will sometimes be longer than the vertical size of
 your terminal. If you are using a graphical user interface terminal
 emulator, you can scroll the terminal with your mouse, but we promised
@@ -4743,8 +4743,8 @@ no mice distractions! So here are some suggestions:
 
 @itemize
 @item
-@cindex Scroll command line
-@cindex Command line scroll
+@cindex Scroll command-line
+@cindex Command-line scroll
 @cindex @key{Shift + PageUP} and @key{Shift + PageDown}
 @key{Shift + PageUP} to scroll up and @key{Shift + PageDown} to scroll
 down. For most help output this should be enough. The problem is that
@@ -4780,7 +4780,7 @@ $ astnoisechisel --help > filename.txt
 
 @cindex GNU Grep
 @cindex Searching text
-@cindex Command line searching text
+@cindex Command-line searching text
 In case you have a special keyword you are looking for in the help,
 you don't have to go through the full list. GNU Grep is made for this
 job. For example if you only want the list of options whose
@@ -4821,7 +4821,7 @@ file. This is a standard option for all GNU software.
 @node Man pages, Info, --help, Getting help
 @subsection Man pages
 @cindex Man pages
-Man pages were the Unix method of providing command line documentation
+Man pages were the Unix method of providing command-line documentation
 to a program. With GNU Info, see @ref{Info} the usage of this method
 of documentation is highly discouraged. This is because Info provides
 a much more easier to navigate and read environment.
@@ -4846,15 +4846,15 @@ standard manner.
 @subsection Info
 
 @cindex GNU Info
-@cindex Command line, viewing full book
+@cindex Command-line, viewing full book
 Info is the standard documentation format for all GNU software. It is
-a very useful command line document viewing format, fully equipped
+a very useful command-line document viewing format, fully equipped
 with links between the various pages and menus and search
 capabilities. As explained before, the best thing about it is that it
 is available for you the moment you need to refresh your memory on any
-command line tool in the middle of your work without having to take
+command-line tool in the middle of your work without having to take
 your hands off the keyboard. This complete book is available in Info
-format and can be accessed from anywhere on the command line.
+format and can be accessed from anywhere on the command-line.
 
 To open the Info format of any installed programs or library on your
 system which has an Info format book, you can simply run the command
@@ -4902,7 +4902,7 @@ $ info astprogramname
 
 @noindent
 you will be taken to the section titled ``Invoking ProgramName'' which
-explains the inputs and outputs along with the command line options
+explains the inputs and outputs along with the command-line options
 for that program. Finally, if you run Info with the official program
 name, for example ImageCrop or NoiseChisel:
 
@@ -5043,7 +5043,7 @@ $ astheader --add=MYKEY1,20.00,"An example keyword" --add=MYKEY2,fd
 
 @cindex HDU
 If no keyword modification options are given, the full header of the
-given HDU will be printed on the command line. If any of the keywords
+given HDU will be printed on the command-line. If any of the keywords
 are to be modified, the headers of the input file will be changed. If
 you want to keep the original FITS file, it is easiest to create a
 copy first and then run Header on that. In the FITS standard, keywords
@@ -5393,7 +5393,7 @@ channel, that channel will not be used in the output.
 @cindex Plain text
 @cindex Suffixes, plain text
 Plain text files have the advantage that they can be viewed with any
-text editor or on the command line. Most programs also support input
+text editor or on the command-line. Most programs also support input
 as plain text files. In ConvertType, if the input arguments do not
 have any of the extensions listed above for other formats, the input
 is assumed to be a text file. Each plain text file is considered to
@@ -5510,7 +5510,7 @@ $ astconvertt M31_r.fits M31_g.fits blank -oeps
 @noindent
 The file type of the output will be specified with the (possibly
 complete) file name given to the @option{--output} option, which can
-either be given on the command line or in any of the configuration
+either be given on the command-line or in any of the configuration
 files (see @ref{Configuration files}). Note that if the output suffix
 is not recognized, it will default to plain text format, see
 @ref{Recognized file types}.
@@ -5814,7 +5814,7 @@ image processing, see @ref{Crop section syntax}.
 * ImageCrop modes::             Basic ImageCrop modes.
 * Crop section syntax::         How to define a section to crop.
 * Blank pixels::                Pixels with no value.
-* Invoking astimgcrop::         Calling ImageCrop on the command line
+* Invoking astimgcrop::         Calling ImageCrop on the command-line
 @end menu
 
 @node ImageCrop modes, Crop section syntax, ImageCrop, ImageCrop
@@ -5840,7 +5840,7 @@ a catalog file name is provided (with @option{--imagemode} activated
 of course) this mode will be used.
 
 @item
-Center (one crop). The box center is given on the command line with
+Center (one crop). The box center is given on the command-line with
 the @option{--xc} and @option{--yc} parameters. The image width is
 similar to above.
 
@@ -5911,7 +5911,7 @@ tools to transform the image to the correct directions.
 @end table
 
 In short, if you don't specify a catalog, you have to specify box
-coordinates manually on the command line. When you do specify a
+coordinates manually on the command-line. When you do specify a
 catalog, ImageCrop has to be in one of the two major modes
 (@option{--imgmode} or @option{--wcsmode}). Note that the single crop
 box parameters specified in the sub-modes will not be written to or
@@ -5973,7 +5973,7 @@ put your value in double quotes, for example
 @command{--section="5:200, 123:854"}. If you forget, anything after
 the first space will not be seen by @option{--section}, because the
 unquoted space character is one of the characters that separates
-options on the command line.
+options on the command-line.
 
 
 @node Blank pixels, Invoking astimgcrop, Crop section syntax, ImageCrop
@@ -6042,7 +6042,7 @@ shown above with @file{ASTRdata ...}. You can use shell expansions,
 for example @command{*} for this if you have lots of images in WCS
 mode. If the crop box centers are in a catalog, you also have to
 provide the catalog name as an argument. Alternatively, you have to
-provide the crop box parameters with command line options.
+provide the crop box parameters with command-line options.
 
 @cindex Asynchronous thread allocation
 When in catalog mode, ImageCrop will run in parallel unless you set
@@ -6286,7 +6286,7 @@ Operating mode options:
 @itemx --imgmode
 Operate in Image mode as described above. This option is only useful
 when catalog is being provided. If coordinates are given on the
-command line, the mode is automatically set based on them.
+command-line, the mode is automatically set based on them.
 
 @item -W
 @itemx --wcsmode
@@ -6307,7 +6307,7 @@ parts: a variable part (the row number of each target starting from 1)
 along with a fixed string which you can set with the @option{--suffix}
 option. Note that in catalog mode, only one image can be input.
 
-When the crop box is specified on the command line, the value to
+When the crop box is specified on the command-line, the value to
 @option{--output} will be used as a file name. If no output is
 specified or if it is a directory, the output file name will follow
 the automatic output names of Gnuastro, see @ref{Automatic output}
@@ -6343,7 +6343,7 @@ write permission in the directory you are running ImageCrop in) or you
 have specifically asked for no log file (with the @option{--nolog}
 option), then a log file will not be created (unless
 @option{--individual} is called). The same columns will be printed in
-verbose mode on the command line for each row.
+verbose mode on the command-line for each row.
 
 
 
@@ -6464,7 +6464,7 @@ Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
 
 @item *
 Multiplication, so ``@command{4 5 "*"}'' is equivalent to
-@mymath{4\times5}. On the command line or in scripts, be sure to quote
+@mymath{4\times5}. On the command-line or in scripts, be sure to quote
 the multiplication sign (for example @command{"*"}).
 
 @item /
@@ -6626,7 +6626,7 @@ write them as @command{-0.3}.
 Without any images, Arithmetic will act like a simple calculator and
 print the resulting output number on the standard output like the
 first example above. If you really want such calculator operations on
-the command line, AWK (GNU AWK is the most common implementation) is
+the command-line, AWK (GNU AWK is the most common implementation) is
 much faster, easier and much more powerful. For example, the numerical
 one-line example above can be done with the following command. In
 general AWK is a fantastic tool and GNU AWK has a wonderful manual
@@ -6657,7 +6657,7 @@ like to use).
 
 The order of the values to @option{--hdu} is very important (if they
 don't have the same value!). The order is determined by the order that
-this option is read: first on the command line (from left to right),
+this option is read: first on the command-line (from left to right),
 then top-down in each configuration file, see @ref{Configuration file
 precedence}.
 
@@ -7815,7 +7815,7 @@ All the programs that need convolution will need to be given a
 convolution kernel file and extension. In most cases (other than
 Convolve, see @ref{Convolve}) the kernel file name is
 optional. However, the extension is necessary and must be specified
-either on the command line or at least one of the configuration files
+either on the command-line or at least one of the configuration files
 (see @ref{Configuration files}). Within Gnuastro, there are two ways
 to create a kernel image:
 
@@ -8454,7 +8454,7 @@ ImageWarp can accept two arguments, one (the input image) is mandatory
 if any processing is to be done. An optional argument is a plain text
 file that will keep the warp/transform matrix, see @ref{Warping
 basics}. There is also the @option{--matrix} option from which the
-matrix can be literally specified on the command line. If both are
+matrix can be literally specified on the command-line. If both are
 present when calling ImageWarp, the contents of the plain text file
 have higher precedence. The general options to all Gnuastro programs
 can be seen in @ref{Common options}.
@@ -8508,7 +8508,7 @@ scaled.}.
 this matrix must be separated by any number of space, tab or comma
 (@key{,}) characters. If you want to use the first two, then be sure
 to wrap the matrix within double quotation marks (@key{"}) so they are
-not confused with other arguments on the command line, see
+not confused with other arguments on the command-line, see
 @ref{Options}. This also applies to values in the configuration files,
 see @ref{Configuration file format}.  The transformation matrix can be
 either 2 by 2 or 3 by 3 array, see @ref{Warping basics}.
@@ -8863,7 +8863,7 @@ boundary. They can also be used in subsequent steps as the area used
 to identify nearby neighbors to interpolate and smooth the final grid,
 see @ref{Grid interpolation and smoothing}. The number of channels
 along each axis can be specified by the user at run time through the
-command line @option{--nch1} and @option{--nch2} options or in the
+command-line @option{--nch1} and @option{--nch2} options or in the
 configuration files, see @ref{Configuration files}. The area of each
 channel will then be tiled by meshes of the given size and subsequent
 processing will be done on those meshes. If the image is processed or
@@ -9275,7 +9275,7 @@ pixels}.
 (@option{=STR}) Mask image file name. If this option is not given and
 the @option{--mhdu} option has a different value from @option{--hdu},
 then the input image name will be used. If a name is specified on the
-command line or in any of the configuration files, it will be used. If
+command-line or in any of the configuration files, it will be used. If
 the program doesn't get any mask file name, it will use all the
 non-blank (see @ref{Blank pixels}) pixels in the image. Therefore,
 specifying a mask file name in any of the configuration files is not
@@ -9604,7 +9604,7 @@ plt.plot(b[:,0], b[:,2], linewidth=2, color="green")
 plt.ylim([0,np.amax(a[:,1])])
 plt.xlim([np.amin(a[:,0]),np.amax(a[:,0])])
 
-# Save the output to any name from the command line:
+# Save the output to any name from the command-line:
 plt.savefig(sys.argv[1]+"_plot.pdf")
 @end example
 
@@ -9745,7 +9745,7 @@ ImageStatistics finished in:  0.006964 (seconds)
 @item -M
 @itemx --mask
 (@option{=STR}) The file name of a mask image. If this option is not
-given on the command line or in the configuration files and
+given on the command-line or in the configuration files and
 @option{--mhdu} is not given or is identical to @option{--hdu}, then
 no mask image will be used.
 
@@ -9782,12 +9782,12 @@ above you will not see the 0.000. To see it, add the
 @option{--lowerbin} option to show the lower value of each bin. If you
 don't care about the bin positions within the specified range you can
 set the value to this option to a Not-a-Number (NaN) value on the
-command line (@option{--onebinvalue=nan}) or in the configuration
+command-line (@option{--onebinvalue=nan}) or in the configuration
 files with a @code{nan} following the option name. If the value is not
 within the specified bin range, it will be ignored.
 
 @item --noasciihist
-Do not show an ASCII plot on the command line.
+Do not show an ASCII plot on the command-line.
 
 @item --mirrorquant
 (@option{=FLT}) quantile to put the mirror. A value between 0 and
@@ -10026,7 +10026,7 @@ explanation and the relevant options. A masked pixel is completely
 ignored.
 
 A convolution kernel can also be optionally given. If a value (file
-name) is given to @option{--kernel} on the command line or in a
+name) is given to @option{--kernel} on the command-line or in a
 configuration file (see @ref{Configuration files}), then that file
 will be used to convolve the image prior to thresholding. Otherwise a
 default kernel will be used. The default kernel is a 2D Gaussian with
@@ -11067,7 +11067,7 @@ ignore any pixel below the relative threshold.
 
 @cindex NaN
 This option is not mandatory, so if it isn't given (after reading the
-command line and all configuration files, see @ref{Configuration
+command-line and all configuration files, see @ref{Configuration
 files}), MakeCatalog will still operate. However, if it has a value in
 any lower-level configuration file and you want to ignore that value
 for this particular run or in a higher-level configuration file, then
@@ -11171,7 +11171,7 @@ columns (in the image and/or the world coordinate system). By reading
 the order of the columns in reverse you can have your fixed set of
 columns in your system wide configuration file and in any particular
 run, if you want some other information about objects or clumps, you
-can add those columns on the command line. Through the user and
+can add those columns on the command-line. Through the user and
 current directory configuration files, you can also have custom
 catalogs in each of your working directories, without bothering to
 specify the columns every time you run MakeCatalog in those
@@ -11944,7 +11944,7 @@ In order to more accurately simulate this process, the unconvolved
 image and the PSF are created on a finer pixel grid. In other words,
 the output image is a certain odd-integer multiple of the desired
 size, we can call this `oversampling'. The user can specify this
-multiple as a command line option. The reason this has to be an odd
+multiple as a command-line option. The reason this has to be an odd
 number is that the PSF has to be centered on the center of its
 image. An image with an even number of pixels on each side does not
 have a central pixel.
@@ -12137,7 +12137,7 @@ value of each profile pixel will be added to the pixel in that
 background value. In this case the values to all options relating to
 the output size and WCS will be ignored if specified (for example
 @option{--naxis1}, @option{--naxis2} and @option{--prepforconv}) on
-the command line or in the configuration files. Note that
+the command-line or in the configuration files. Note that
 @option{--oversample} will remain active even if a background image is
 specified.
 
@@ -12316,7 +12316,7 @@ of the first Moffat or Gaussian profile in the catalog, considering
 any possible oversampling see @ref{If convolving
 afterwards}. @option{--prepforconv} is only checked and possibly
 activated if @option{--xshift} and @option{--yshift} are both zero
-(after reading the command line and configuration files). If a
+(after reading the command-line and configuration files). If a
 background image is specified, any possible value to this option is
 ignored.
 
@@ -12759,7 +12759,7 @@ the system time (accurate to within a microsecond) to generate
 program, you will get a different random number distribution.
 
 There are two ways you can specify values for these environment
-variables. You can call them on the same command line for example:
+variables. You can call them on the same command-line for example:
 
 @example
 $ GSL_RNG_TYPE="taus" GSL_RNG_SEED=345 astmknoise input.fits
@@ -13246,7 +13246,7 @@ $ astcosmiccal -l=0.6964 -m=0.3036 -z=2.1
 $ astcosmiccal --olambda=0.6964 --omatter=0.3036 --redshift=2.1
 @end example
 
-The input parameters can be given as command line options or in the
+The input parameters can be given as command-line options or in the
 configuration files, see @ref{Configuration files}. For a definition
 of the different parameters, please see the sections prior to this. By
 default, all the cosmological calculations will be printed in the
@@ -14157,7 +14157,7 @@ At @url{https://www.gnu.org/software/emacs/manual/emacs.html}. This is a
 great and very complete manual which is being improved for over 30 years
 and is the best starting point to learn it. It just requires a little
 patience and practice, but rest assured that you will be rewarded. If you
-install Emacs, you also have access to this manual on the command line with
+install Emacs, you also have access to this manual on the command-line with
 the following command (see @ref{Info}).
 
 @example
@@ -14533,7 +14533,7 @@ title should satisfy the following conditions:
 @itemize
 @item
 It is best for the title to be short, about 60 (or even 50)
-characters. Most emulated command line terminals are about 80
+characters. Most emulated command-line terminals are about 80
 characters wide. However, we should also allow for the commit hashes
 which are printed in @command{git log --oneline}, and also branch
 names or the graph structure outputs of @command{git log} which are
@@ -14948,7 +14948,7 @@ The method above is a little tedious to do every time you want view a
 multi-extension FITS file. Fortunately SAO ds9 also provides options
 that you can use to specify a particular behavior. One of those
 options is @option{-mecube} which opens a FITS image as a
-multi-extension data cube. So on the command line, if you run
+multi-extension data cube. So on the command-line, if you run
 @command{$ds9 -mecube foo.fits} a small window will also be opened,
 which allows you to switch between the image extensions that
 @file{foo.fits} might have. If @file{foo.fits} only consists of one
