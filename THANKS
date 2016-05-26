@@ -1,19 +1,19 @@
 GNU Astronomy Utilities Acknowledgments
 =======================================
 
-The following people and institutions contributed to Gnuastro
-indirectly (not by actually submitting code) are listed here. For the
-list of Gnuastro code/documentation authors (people who have
-contributed actual code/text as commits in the version controlled
-history of Gnuastro), please see AUTHORS.
+The following people and institutions who contributed to Gnuastro
+indirectly (not by actually submitting code) are listed here. For the list
+of Gnuastro code/documentation authors (people who have contributed actual
+code/text as commits in the version controlled history of Gnuastro), please
+see the `AUTHORS' file in the same directory.
 
 
 People
 ------
 
-The following people provided valuable feedback (suggestions, ideas)
-to the authors of Gnuastro. We hereby gratefully acknowledge their
-help and support in Gnuatro.
+The following people provided valuable feedback (suggestions, ideas) to the
+authors of Gnuastro. We hereby gratefully acknowledge their help and
+support in Gnuastro. The list is ordered alphabetically.
 
     Karl Berry                           karl@gnu.org
     Takashi Ichikawa                     ichikawa@astr.tohoku.ac.jp
@@ -30,11 +30,7 @@ Institutions
 GNU Astronomy Utilities (Gnuastro) has greatly benefited from the following
 institutions. These institutions have either funded, supported and most
 importantly provided a productive environment for the developers of
-Gnuastro. They finally disclaimed any copyright ownership of the
-developers' work while in those institutions which allows the world wide
-astronomical/scientific community to reliably use Gnuastro in the
-future. See "Copyright assignment" section of the book for a complete
-explantion on the importance this has for the community.
+Gnuastro. The list is in chronological order.
 
     Tohoku University, Sendai, Japan.
     University of Salento, Lecce, Italy.
