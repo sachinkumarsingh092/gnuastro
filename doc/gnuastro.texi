@@ -6896,13 +6896,13 @@ simple sine waves'' (from Wikipedia). However, sines themselves are
 abstract functions, so this statement really adds no extra layer of
 physical insight.
 
-Before jumping head-first into the equations and proofs we will begin
+Before jumping head-first into the equations and proofs, we will begin
 with a historical background to see how the importance of frequencies
 actually roots in our ancient desire to see everything in terms of
 circles. A short review of how the complex plane should be
 interpreted is then given. Having paved the way with these two
 basics, we define the Fourier series and subsequently the Fourier
-transform.  Our final aim is to explain discrete Fourier transform,
+transform. The final aim is to explain discrete Fourier transform,
 however some very important concepts need to be solidified first: The
 Dirac comb, convolution theorem and sampling theorem. So each of these
 topics are explained in their own separate sub-sub-section before
@@ -6910,7 +6910,7 @@ going on to the discrete Fourier transform. Finally we revisit (after
 @ref{Edges in the spatial domain}) the problem of convolution on the
 edges, but this time in the frequency domain. Understanding the
 sampling theorem and the discrete Fourier transform is very important
-in order to be able to pull out valuable science from the ``discrete''
+in order to be able to pull out valuable science from the discrete
 image pixels. Therefore we have included the mathematical proofs and
 figures so you can have a clear understanding of these very important
 concepts.
@@ -12624,7 +12624,7 @@ instrument, lie above a certain background flux. This background flux
 is defined to be the average flux of a region in the image that has
 absolutely no objects. The physical origin of this background value is
 the brightness of the atmosphere or possible stray light within the
-imagining instrument. It is thus an ideal definition, because in
+imaging instrument. It is thus an ideal definition, because in
 practice, what lies deep in the noise far lower than the detection
 limit is never known@footnote{See the section on sky in Akhlaghi M.,
 Ichikawa. T. 2015. Astrophysical Journal Supplement Series.}. However,
