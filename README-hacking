@@ -1,95 +1,107 @@
 Hacking into GNU Astronomy Utilities
 ====================================
 
-This README file is only for those who have cloned the version
-controlled source of GNU Astronomy Utilities (Gnuastro) and want to
-start hacking into it. Gnuastro's version controlled source only
-contains files that were actually written by hand and not
-automatically generated. We have also avoided keeping files that we
-have taken fully from other packages (for example the GNU Portability
-Library, Gnulib). Therefore, immediately after cloning, Gnuastro is
-not ready to configure and run, you have to "bootstrap"
-it. Bootstrapping is the process of doing all the automatic steps on
-the raw source files and make everything ready for you to run
-./configure and compile a program.
+This file is intended for those who are building and installing the version
+controlled source of GNU Astronomy Utilities (Gnuastro) and not the tarball
+release (see the 'README' file for the easier tarball installation and
+general guide). This file is thus not distributed with the
+tarball. Gnuastro's version controlled source can be cloned by running the
+following command:
 
-All the operations that are necessary to prepare you to run
-./configure in the version controlled source are managed by the
-./bootstrap file in this top directory. ./bootstrap is part of the
-Gnulib and is configured with the ./bootstrap.conf file. Therefore, if
-you want to customize it, be sure to keep the ./bootstrap file
-untouched and only do your changes in
-./bootstrap.conf. ./bootstrap.conf is heavily commented so you should
-be able to easily go through it. It is read at the start of
-./bootstrap's operations and has hooks for you to define any operation
-after Gnulib inclusion, and after all its operations are done.
+    git clone git://git.sv.gnu.org/gnuastro.git
+
+The cloned 'gnuastro' directory only contains files that were actually
+written by hand as part of Gnuastro and not automatically generated files,
+or files that we have taken fully from other packages (for example the GNU
+Portability Library, Gnulib). Therefore, immediately after cloning,
+Gnuastro is not ready to be configured, built, checked, or installed. You
+have to "bootstrap" it first. Bootstrapping is the process of doing all the
+automatic steps on the version controlled files and make everything ready
+for you to run './configure' and compile a program. All these extra files
+are automatically included in the release tarball for easy installation,
+hence bootstrapping is not necessary when configuring from the tarball.
+
+All the operations that are necessary to prepare you to run './configure'
+in the version controlled source are managed by the 'bootstrap' file in
+this top directory. 'bootstrap' is part of the Gnulib and is the only
+outsider file that is version controlled in Gnuastro. It is configured with
+the 'bootstrap.conf' file. Therefore, if you want to customize it, be sure
+to keep the 'bootstrap' file untouched and only do your changes in
+'bootstrap.conf' (any change in 'bootstrap' will be overridden when Gnulib
+releases an update). 'bootstrap.conf' is heavily commented so you should be
+able to easily go through it. It is read at the start of 'bootstrap'
+operations and has hooks for you to define any operation after Gnulib
+inclusion, and after all its operations are done.
 
 
 
+Dependencies
+------------
 
-Prerequisites
--------------
+To bootstrap Gnuastro, you will need to have the following
+dependencies. These are more fully discussed in the "Bootstrapping
+dependencies" section of the Gnuastro book. The last three are probably
+already present in your operating system's package management system.
 
-To run this script you will need the following programs
+  - Gnulib and GNU Autoconf-archive. These two packages can be cloned by
+    the bootstrap script automatically. However, if you don't already have
+    them, we recommed to clone them separately as discussed below. They
+    should be in the same directory (let's call it 'DEVDIR', can be any
+    directory). These packages are regularly updated, so run `git pull'
+    within the cloned directories to keep them up to date before
+    bootstrapping. See the "Bootstrapping dependencies" and "Bootstrapping"
+    sections of the book for more information.
 
-  - Gnulib and GNU Autoconf-archive. These two packages should be in
-     the same directory (DEVDIR below). If you don't already have
-     them, please run the following commands to clone them. Set the
-     value of DEVDIR to any desired directory. These packages are
-     regularly updated, so run `git pull' within the cloned
-     directories to keep them up to date. Note that DEVDIR is very
-     important for the final bootstrapping step below.
+        DEVDIR=/home/yourusername/Development
+        cd $DEVDIR
+        git clone git://git.sv.gnu.org/gnulib.git
+        git clone git://git.sv.gnu.org/autoconf-archive.git
 
-         $ DEVDIR=/home/yourusername/Development
-         $ cd $DEVDIR
-         $ git clone git://git.sv.gnu.org/gnulib.git
-         $ git clone git://git.sv.gnu.org/autoconf-archive.git
-
-     IMPORTANT NOTE: Be sure that DEVDIR doesn't contain the string
-                     `gnulib'. Any occurance of `gnulib' will be
-                     replaced with `autoconf-archive' to get to the
-                     Autoconf-archives directory.
-
-  - TeX Live installation to generate the pdf and dvi manuals. You
-      will need the PGFPlots and TiKZ packages to generate some of the
-      figures.
+  - TeX Live. It is used to generate the pdf and dvi figures and
+    manuals. You will need the PGFPlots and TiKZ packages to generate some
+    of the figures. You can download and install it from its official
+    webpage at: https://www.tug.org/texlive/
 
   - GNU Autotools: Autoconf, Automake, Libtool, and M4 to do all the
-      preparations.
+    preparations for an easy and portable configuration and build
+    system.
 
   - help2man to generate man pages from the --help output.
 
-  - ImageMagick to convert some of the graphic formats to other
-      formats to use in different manual outputs.
-
+  - ImageMagick to convert some of the graphic formats to other formats to
+    use in different manual outputs.
 
 
 
 Bootstrapping
 -------------
 
-The bootstrapping process is very simple, just run the following
-command (see above for DEVDIR).
+The bootstrapping process is very simple. The simplest (and not
+recommended) way is to just run the following command which will clone
+Gnulib and download the appropriate GNU Autoconf archives directly under
+you cloned 'gnuastro' directory.
 
-   ./bootstrap --gnulib-srcdir=$DEVDIR/gnulib
+    ./bootstrap             # Needs internet connection every time.
+
+The recommended way is to clone Gnulib and the Autoconf archives separately
+(see above), then tell the script where to look for them. You will not need
+an internet connection every time you decide to bootstrap, your 'gnuastro'
+directory will be much more cleaner, and if your other packages or projects
+need these tools, you won't need to have multiple copies. Note that during
+development, sometimes it can be convenient to remove all non-version
+controlled files.
+
+   ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
 
 Run ./bootstrap with the --help option for more information on running
 this script.
-
-You can also run `./bootstrap' without the --gnulib-srcdir option, it
-will clone Gnulib and download the necessary Autoconf archives
-macros. However, you will need an internet connection every time and
-also a full cloned copy of Gnulib will be put in your top Gnuastro
-(this) dictory.
-
 
 
 
 CAUTION
 -------
 
-This file (README-hacking) is only distributed with the version
-controlled source and not the tar.gz source. Without this file, the
-./bootstrap script will complain about not being checked-out and
-abort. So be sure to keep this file where ever you want to run
-./bootstrap.
+This file ('README-hacking') is only distributed with the version
+controlled source and not the Gnuastro tarball. Without this file, the
+'bootstrap' script will complain about not being checked-out and abort. So
+be sure to keep this file where ever you want to run 'bootstrap'.
