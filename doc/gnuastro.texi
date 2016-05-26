@@ -6953,19 +6953,20 @@ method to find the necessary coefficients (radius of) and frequencies
 function.
 
 @float Figure,epicycle
-@image{gnuastro-figures/epicycles, 15.2cm, , Middle ages epicycles
-along with two demonstrations of breaking a generic function using
-epicycles.} @caption{Epicycles and the Fourier series. Left: A
-demonstration of Mercury's epicycles relative to the ``center of the
-world'' by Qutb al-Din al-Shirazi (1236 -- 1311 A.D.)  retrieved from
-Wikipedia
-(@url{https://commons.wikimedia.org/wiki/File:Ghotb2.jpg}). Middle and
-Right: A snapshot from an animation Showing how adding more epicycles
-(or terms in the Fourier series) will be able to approximate any
-function. Animations can be found at:
-(@url{https://commons.wikimedia.org/wiki/File:Fourier_series_square_wave_circles_animation.gif})
-and
-(@url{https://commons.wikimedia.org/wiki/File:Fourier_series_sawtooth_wave_circles_animation.gif}).}
+
+@c Since these links are long, we had to write them like this so they don't
+@c jump out of the text width.
+@image{gnuastro-figures/epicycles, 15.2cm, , Middle ages epicycles along
+with two demonstrations of breaking a generic function using epicycles.}
+@caption{Epicycles and the Fourier series. Left: A demonstration of
+Mercury's epicycles relative to the ``center of the world'' by Qutb al-Din
+al-Shirazi (1236 -- 1311 A.D.) retrieved
+@url{https://commons.wikimedia.org/wiki/File:Ghotb2.jpg, from
+Wikipedia}. @url{https://commons.wikimedia.org/wiki/File:Fourier_series_square_wave_circles_animation.gif,
+Middle} and Right: How adding more epicycles (or terms in the Fourier
+series) will approximate functions. The
+@url{https://commons.wikimedia.org/wiki/File:Fourier_series_sawtooth_wave_circles_animation.gif,
+right} animation is also available.}
 @end float
 
 Like most aspects of mathematics, this process of interpreting
@@ -7031,45 +7032,73 @@ relation with the axises marked.
 Leonhard Euler@footnote{Other forms of this equation were known before
 Euler. For example in 1707 A.D. (the year of Euler's birth) Abraham de
 Moivre (1667 -- 1754 A.D.)  showed that
-@mymath{(\cos{t}+i\sin{t})^n=\cos(nt)+i\sin(nt)}. In 1714 A.D., Roger
-Cotes (1682 -- 1716 A.D. a colleague of Newton who proofread the
-second edition of Principia) showed that:
-@mymath{it=\ln(\cos{t}+i\sin{t})}.}  (1707 -- 1783 A.D.)  showed that
-the complex exponential (@mymath{e^{it}} where @mymath{t} is real) is
-periodic and can be written as: @mymath{e^{it}=\cos{t}+isin{t}}.
-Therefore, @mymath{e^{it+2\pi}=e^{it}}. Since it is periodic (lets
-assume with a period of @mymath{T}), it is customary to write a
-complex exponential in the form of @mymath{e^{i{2{\pi}n\over T}t}}
-where @mymath{n} is an integer) instead of simply @mymath{e^{it}}. The
-advantage is of this notation is that the period (@mymath{T}) is
-clearly visible and the frequency (@mymath{2{\pi}n \over T}) is
-defined through the integer @mymath{n}. In this notation, @mymath{t}
-is in units of ``cycles''. Later, Caspar Wessel (mathematician and
+@mymath{(\cos{x}+i\sin{x})^n=\cos(nx)+i\sin(nx)}. In 1714 A.D., Roger Cotes
+(1682 -- 1716 A.D. a colleague of Newton who proofread the second edition
+of Principia) showed that: @mymath{ix=\ln(\cos{x}+i\sin{x})}.}  (1707 --
+1783 A.D.)  showed that the complex exponential (@mymath{e^{iv}} where
+@mymath{v} is real) is periodic and can be written as:
+@mymath{e^{iv}=\cos{v}+isin{v}}. Therefore
+@mymath{e^{iv+2\pi}=e^{iv}}. Later, Caspar Wessel (mathematician and
 cartographer 1745 -- 1818 A.D.)  showed how complex numbers can be
-displayed as vectors on a plane and therefore how @mymath{e^{it}} can
-be interpreted as an angle on a circle.
+displayed as vectors on a plane. Euler's identity might seem counter
+intuitive at first, so we will try to explain it geometrically (for a more
+physical insight). On the real-imaginary 2D plane (like the left hand plot
+in each box of @ref{iandtime}), multiplying a number by @mymath{i} can be
+interpretted as rotating the point by @mymath{90} degrees (for example the
+value @mymath{3} on the real axis becomes @mymath{3i} on the imaginary
+axis). On the other hand,
+@mymath{e\equiv\lim_{n\rightarrow\infty}(1+{1\over n})^n}, therefore,
+defining @mymath{m\equiv nu}, we get:
 
-As we see from the examples in @ref{epicycle} and @ref{iandtime}, for
-each constituting frequency, we need a respective `magnitude' or the
-radius of the circle in order to accurately approximate the desired 1D
-function. The concepts of ``period'' and ``frequency'' are relatively
-easy to grasp when using temporal units like time because this is how
-we define them in every-day life. However, in an image (astronomical
-data), we are dealing with spatial units like distance. Therefore, by
-one ``period'' we mean the @emph{distance} at which the signal is
-identical and frequency is defined as the inverse of that spatial
-``period''.  The complex circle of @ref{iandtime} resembles the Moon
-rotating about Earth which is rotating around the Sun; so the ``Real
-(signal)'' axis shows the Moon's position as seen by a distant
-observer positioned on @mymath{-\infty} on the Imaginary (@mymath{i})
-axis as time goes by.  Therefore, because of the scalar (not having
-any direction or vector) nature of time, @ref{iandtime} is easier to
-understand in units of time. When thinking about spatial units,
-mentally replace the ``Time (sec)'' axis with ``Distance
-(meters)''. Because length has direction and is a vector, making a
-connection between the rotation of the imaginary circle and the
-advance along the ``Distance (meters)'' axis is not as simple as
-temporal units like time.
+@dispmath{e^{u}=\lim_{n\rightarrow\infty}\left(1+{1\over n}\right)^{nu}
+               =\lim_{n\rightarrow\infty}\left(1+{u\over nu}\right)^{nu}
+               =\lim_{m\rightarrow\infty}\left(1+{u\over m}\right)^{m}}
+
+@noindent
+Taking @mymath{u\equiv iv} the result can be written as a generic complex
+number (a function of @mymath{v}):
+
+@dispmath{e^{iv}=\lim_{m\rightarrow\infty}\left(1+i{v\over
+                m}\right)^{m}=a(v)+ib(v)}
+
+@noindent
+For @mymath{v=\pi}, a nice geometric animation of going to the limit can be
+seen @url{https://commons.wikimedia.org/wiki/File:ExpIPi.gif, on
+Wikipedia}. We see that @mymath{\lim_{m\rightarrow\infty}a(\pi)=-1}, while
+@mymath{\lim_{m\rightarrow\infty}b(\pi)=0}, which gives the famus
+@mymath{e^{i\pi}=-1} equation. The final value is the real number
+@mymath{-1}, however the distance of the polygon points traversed as
+@mymath{m\rightarrow\infty} is half the circumference of a circle or
+@mymath{\pi}, showing how @mymath{v} in the equation above can be
+interpretted as an angle in units of radians and therefore how
+@mymath{a(v)=cos(v)} and @mymath{b(v)=sin(v)}.
+
+Since @mymath{e^{iv}} is periodic (lets assume with a period of
+@mymath{T}), it is more clear to write it as @mymath{v\equiv{2{\pi}n\over
+T}t} (where @mymath{n} is an integer), so @mymath{e^{iv}=e^{i{2{\pi}n\over
+T}t}}. The advantage is of this notation is that the period (@mymath{T}) is
+clearly visible and the frequency (@mymath{2{\pi}n \over T}, in units of
+1/cycle) is defined through the integer @mymath{n}. In this notation,
+@mymath{t} is in units of ``cycle''s.
+
+As we see from the examples in @ref{epicycle} and @ref{iandtime}, for each
+constituting frequency, we need a respective `magnitude' or the radius of
+the circle in order to accurately approximate the desired 1D function. The
+concepts of ``period'' and ``frequency'' are relatively easy to grasp when
+using temporal units like time because this is how we define them in
+every-day life. However, in an image (astronomical data), we are dealing
+with spatial units like distance. Therefore, by one ``period'' we mean the
+@emph{distance} at which the signal is identical and frequency is defined
+as the inverse of that spatial ``period''.  The complex circle of
+@ref{iandtime} can be thought of the Moon rotating about Earth which is
+rotating around the Sun; so the ``Real (signal)'' axis shows the Moon's
+position as seen by a distant observer on the Sun as time goes by.  Because
+of the scalar (not having any direction or vector) nature of time,
+@ref{iandtime} is easier to understand in units of time. When thinking
+about spatial units, mentally replace the ``Time (sec)'' axis with
+``Distance (meters)''. Because length has direction and is a vector,
+visualizing the rotation of the imaginary circle and the advance along the
+``Distance (meters)'' axis is not as simple as temporal units like time.
 
 @float Figure,iandtime
 @image{gnuastro-figures/iandtime, 15.2cm, , } @caption{Relation
