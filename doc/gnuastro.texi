@@ -14811,66 +14811,84 @@ us to implement or for your own purposes. See @ref{Production workflow} and
 @node GNU Astronomy Utilities list, Other useful software, Developing, Top
 @appendix GNU Astronomy Utilities list
 
-GNU Astronomy Utilities, contains the following programs. They are sorted
-in alphabetical order and followed by their version number. A short
-description is provided for each program which starts with the executable
-names in parenthesis, see @ref{Naming convention}. Throughout this book,
-they are ordered based on their context, please see the book contents for
-contextual ordering.
+GNU Astronomy Utilities @value{VERSION}, contains the following
+programs. They are sorted in alphabetical order and followed by their
+version number. A short description is provided for each program which
+starts with the executable names in @file{thisfont} followed by a link to
+the respective section in parenthesis, see @ref{Naming
+convention}. Throughout this book, they are ordered based on their context,
+please see the book contents for contextual ordering.
 
 
 @table @asis
 
 @item Arithmetic
-(@file{astarithmetic}) For arithmetic operations on data (image) pixels
-(@ref{Arithmetic}).
+(@file{astarithmetic}, see @ref{Arithmetic}) For arithmetic operations on
+multiple (theoretically unlimited) number of datasets (images). It has a
+large and growing set of arithmetic, mathematical, and even statistical
+operators (for example @command{+}, @command{-}, @command{*}, @command{/},
+@command{sqrt}, @command{log}, @command{min}, @command{average},
+@command{median}).
 
 @item ConvertType
-(@file{astconvertt}) Convert astronomical data files (FITS or IMH) to
-and from several other standard image and data formats, for example
-JPEG, EPS or PDF (@ref{ConvertType}).
+(@file{astconvertt}, see @ref{ConvertType}) Convert astronomical data files
+(FITS or IMH) to and from several other standard image and data formats,
+for example TXT, JPEG, EPS or PDF.
 
 @item Convolve
-(@file{astconvolve}) Convolve (blur or smooth) data with a given
-kernel (@ref{Convolve}).
+(@file{astconvolve}, see @ref{Convolve}) Convolve (blur or smooth) data
+with a given kernel in spatial and frequency domain on multiple
+threads. Convolve can also do de-convolution to find the appropriate kernel
+to PSF-match two images. Convolve (blur or smooth) data with a given
+kernel.
 
 @item CosmicCalculator
-(@file{astconvolve}) Find cosmological variables from input parameters
-(@ref{CosmicCalculator}).
+(@file{astconvolve}, see @ref{CosmicCalculator}) Do cosmological
+calculations, for example the luminosity distance, distance modulus,
+comoving volume and many more.
 
 @item Header
-(@file{astheader}) Print and manipulate the header data of a FITS file
-(see @ref{Header}).
+(@file{astheader}, see @ref{Header}) Print and manipulate the header data
+of a FITS file.
 
 @item ImageCrop
-(@file{astimgcrop}) Crop region(s) from an image and stitch several
-images if necessary. Inputs can be in pixel coordinates or world
-coordinates (@ref{ImageCrop}).
+(@file{astimgcrop}, see @ref{ImageCrop}) Crop region(s) from an image and
+stitch several images if necessary. Inputs can be in pixel coordinates or
+world coordinates.
 
 @item ImageStatistics
-(@file{astimgstat}) Get pixel statistics and save histogram and
-cumulative frequency plots (@ref{ImageStatistics}).
+(@file{astimgstat}, see @ref{ImageStatistics}) Get pixel statistics and
+save histogram and cumulative frequency plots.
 
 @item ImageWarp
-(@file{astimgwarp}) Warp image to new pixel grid (@ref{ImageWarp}).
+(@file{astimgwarp}, see @ref{ImageWarp}) Warp image to new pixel grid. Any
+projective transformation or Homography can be applied to the input images.
 
 @item MakeCatalog
-(@file{astmkcatalog}) Make catalog of labeled image
-(@ref{MakeCatalog}).
+(@file{astmkcatalog}, see @ref{MakeCatalog}) Make catalog of labeled image
+(output of NoiseChisel). The catalogs are highly customizable and adding
+new calculations/columns is very streightforward.
 
 @item MakeNoise
-(@file{astmknoise}) Make (add) noise to an image (@ref{MakeNoise}).
+(@file{astmknoise}, see @ref{MakeNoise}) Make (add) noise to an image, with
+a large set of random number generators and any seed.
 
 @item MakeProfiles
-(@file{astmkprof}) Make mock profiles in image (@ref{MakeProfiles}).
+(@file{astmkprof}, see @ref{MakeProfiles}) Make mock 2D profiles in an
+image. The central regions of radial profiles are made with a configurable
+2D Monte Carlo integration. It can also build the profiles on an
+over-sampled image.
 
 @item NoiseChisel
-(@file{astnoisechisel}) Detect and segment signal in noise
-(@ref{NoiseChisel}).
+(@file{astnoisechisel}, see @ref{NoiseChisel}) Detect and segment signal in
+noise. It uses a technique to detect very faint and diffuse, irregularly
+shaped signal in noise (galaxies in the sky), using thresholds that are
+below the Sky value, see @url{http://arxiv.org/abs/1505.01664,
+arXiv:1505.01664}.
 
 @item SubtractSky
-(@file{astsubtractsky}) Find and subtract sky value by comparing the
-mode and median on a mesh grid (@ref{SubtractSky}).
+(@file{astsubtractsky}, @ref{SubtractSky}) Find and subtract sky value by
+comparing the mode and median on a mesh grid.
 
 @end table
 

@@ -57,8 +57,8 @@ context under categories/chapters.
   - ImageStatistics (astimgstat): Get pixel statistics and save histogram
     and cumulative frequency plots.
 
-  - ImageWarp (astimgwarp): Warp image to new pixel grid, any form or
-    homographic transformation can be applied to the input images.
+  - ImageWarp (astimgwarp): Warp image to new pixel grid. Any projective
+    transformation or Homography can be applied to the input images.
 
   - MakeCatalog (astmkcatalog): Make catalog of labeled image (output of
     NoiseChisel). The catalogs are highly customizable and adding new
