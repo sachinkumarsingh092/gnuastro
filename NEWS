@@ -1,8 +1,8 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
 * Noteworthy changes in release 0.1 (YYYY-MM-DD) [stable]
-* << Until commit 12ed388 Corrected imgcrop/imgpolygon.sh test script >>
-* <<          REMOVE THESE TWO LINES BEFORE THE 0.1 RELEASE           >>
+* <<    Until commit b6a3953 Updated list of utilities in the book    >>
+* <<           REMOVE THESE TWO LINES For THE 0.1 RELEASE             >>
 
 ** Bug fixes
 
@@ -113,6 +113,10 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   the command line with the command `info bug-gnuastro'.
 
 ** Changes in behavior
+
+  The separate utilities no longer have a separate version number. With the
+  introduction of unofficial version numbers generated from each commit in
+  Gnuastro's history, the utility version numbers would cause confusion.
 
   MakeProfiles will now add a suffix to the individual images and put them
   in the output directory if specified.
