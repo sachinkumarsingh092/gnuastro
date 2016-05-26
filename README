@@ -1,48 +1,200 @@
-GNU Astronomy Utilities (gnuastro)
-===================================
+GNU Astronomy Utilities 0.1
+===========================
 
-GNU Astronomy Utilities is an official GNU program. It consists of a
-set of utilities for astronomical data analysis directly from the
-command line in a system that integrates fully with the GNU operating
-system.
+GNU Astronomy Utilities (Gnuastro) 0.1 is an official GNU package
+consisting of a set of utilities, or executable programs for astronomical
+data manipulation and analysis directly from the command-line and no
+mini-environment. It also contains a large collection of useful libraries
+which will be installable in near future (next releases). The full package
+comes with a comprehensive book or documentation in various formats (plain
+text, info, PDF and HTML):
 
-All the various utilities share the same basic command line user
-interface for the comfort of both the users and developers. GNU
-Astronomy Utilities is written to comply fully with the GNU coding
-standards so it integrates finely with the GNU/Linux operating
-system. This also enables astronomers to expect a fully familiar
-experience in the source code, building, installing and command line
-user interaction that they have seen in all the other GNU software
-that they use.
+    http://www.gnu.org/software/gnuastro/manual/
 
-GNU Astronomy Utilities comes with a complete and detailed
-tutorial/manual in various formats (plain text, info, docbook, PDF and
-HTML). You can get any of the formats from the GNU Astronomical
-Utilities webpage. If you have already installed gnuastro, you can see
-the manual by running:
+The Gnuastro book explains all the mathematical, physical and where
+necessary even historical concepts for effective usage of all the utilities
+along with short examples for each utility and full descriptions of all
+their options (in the "Invoking ProgramName' sections). There is also a
+separate chapter devoted to tutorials for effectively use the utilities
+together and along with other system software (see Chapter 2).
 
-    $ info gnuastro
+If you have already installed gnuastro, you can read the full manual by
+running the following command. You can go through the whole book by
+pressing the 'SPACE' key, and leave the Info environment at any time by
+pressing 'q' key, see "Getting help" below for more.
+
+    info gnuastro
+
+The utilities released in version 0.1 are listed below followed by their
+executable name in parenthesis and a short description. This list is
+ordered alphabetically. In the book, they are grouped and ordered by
+context under categories/chapters.
+
+  - Arithmetic (astarithmetic): For arithmetic operations on multiple
+    (theoretically unlimited) number of datasets (images). It has a large
+    and growing set of arithmetic, mathematical, and even statistical
+    operators (for example +, -, *, /, sqrt, log, min, average, median).
+
+  - ConvertType (astconvertt): Convert astronomical data files (FITS or
+    IMH) to and from several other standard image and data formats, for
+    example TXT, JPEG, EPS or PDF.
+
+  - Convolve (astconvolve): Convolve (blur or smooth) data with a given
+    kernel in spatial and frequency domain on multiple threads. Convolve
+    can also do de-convolution to find the appropriate kernel to PSF-match
+    two images.
+
+  - CosmicCalculator (astconvolve): Do cosmological calculations, for
+    example the luminosity distance, distance modulus, comoving volume and
+    many more.
+
+  - Header (astheader): Print and manipulate the header data of a FITS file.
+
+  - ImageCrop (astimgcrop): Crop region(s) from an image and stitch several
+    images if necessary.  Inputs can be in pixel coordinates or world
+    coordinates.
+
+  - ImageStatistics (astimgstat): Get pixel statistics and save histogram
+    and cumulative frequency plots.
+
+  - ImageWarp (astimgwarp): Warp image to new pixel grid, any form or
+    homographic transformation can be applied to the input images.
+
+  - MakeCatalog (astmkcatalog): Make catalog of labeled image (output of
+    NoiseChisel). The catalogs are highly customizable and adding new
+    calculations/columns is very streightforward.
+
+  - MakeNoise (astmknoise): Make (add) noise to an image, with a large set
+    of random number generators and any seed.
+
+  - MakeProfiles (astmkprof): Make mock 2D profiles in an image. The
+    central regions of radial profiles are made with a configurable 2D
+    Monte Carlo integration. It can also build the profiles on an
+    over-sampled image.
+
+  - NoiseChisel (astnoisechisel): Detect and segment signal in noise. It
+    uses a technique to detect very faint and diffuse, irregularly shaped
+    signal in noise (galaxies in the sky), using thresholds that are below
+    the Sky value (see arXiv:1505.01664).
+
+  - SubtractSky (astsubtractsky): Find and subtract sky value by comparing
+    the mode and median on a mesh grid.
+
+All the various utilities share the same basic command line user interface
+and a set of common options for the comfort of both the users and
+developers. Gnuastro is written to comply fully with the GNU coding
+standards so it integrates finely with the GNU/Linux operating system and
+Unix-like operating systems in general. This also enables astronomers to
+expect a fully familiar experience in the source code, building, installing
+and command line user interaction that they have seen in all the other GNU
+software that they use.
+
+Behind the scenes, Gnuastro comes with a very robust infra-structure
+enabling easy addition of new utilities and new features to existing
+utilities and a full chapter devoted to explaining how to develop most
+effectively (see the "Developing" chapter). Please join us in developing
+this comprehensive and low level set of tools for astronomical data
+manipulation and analysis. The copyright owner of Gnuastro is the Free
+Software Foundation to guarantee its freedom in the future, and not any
+particular astronomer or astronomical project, or astronomical institution,
+so please join us.
 
 
 
-Installing and running:
+Installing Gnuastro
+-------------------
+
+The mandatory dependencies which are required to install Gnuastro from the
+tarball are listed below. See the "Dependencies" section of the book for
+their detailed installation guides and optional dependencies to enable
+extra features. If you have just cloned Gnuastro and want to install from
+the version controlled source, please read the 'README-hacking' file (not
+available in the tarball) or the "Bootstrapping dependencies" subsection of
+the manual before continuing.
+
+  - GNU Scientific Library (GSL): https://www.gnu.org/software/gsl/
+  - CFITSIO: http://heasarc.gsfc.nasa.gov/fitsio/
+  - WCSLIB: http://www.atnf.csiro.au/people/mcalabre/WCS/
+
+The most recent stable Gnuastro release can be downloaded from the
+following link. Please see the "Downloading the source" section of the
+Gnuastro book for a more complete discussion of your download options.
+
+    http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz
+
+Unpacking, configuring, building, checking and installing Gnuastro follows
+the standard GNU Build system as shown below. After the './configure'
+command, Gnuastro will print messages upon the successful completion of
+each step, giving further information and suggestions for the next steps.
+
+    tar -zxvf gnuastro-latest.tar.gz
+    cd gnuastro-0.1
+    ./configure
+    make
+    make check
+    sudo make install
+
+See the "Build and install" section of the book for more information. Also,
+see the 'INSTALL' file which is distributed with this file for a standard
+(very comprehensive and general) review of the GNU build and install
+methods. The 'INSTALL' file is shared in many software packages, so reading
+it once in any package is enough to help you greatly customize your build
+of a very large collection of Free and Open Source (FOSS) software.
+
+
+
+Getting help
 ------------
 
-The list of gnuastro requirements are fully explained in the
-manual. To install gnuastro, after downloading or cloning it, all you
-have to do is to run the standard configuring, compiling and
-installing commands that are common to all GNU applications. In the
-downloaded directory (`$` as user and `#` as root):
+To access the appropriate section of the Gnuastro book/documentation from
+your command-line (in the middle of your work, without distracting your
+self by having to move your hand off the keyboard), please run any of the
+following two commands. Note that you can leave the Info environment by
+pressing the key `q'.
 
-    $ ./configure
-    $ make
-    $ make check
-    # make install
+    info ProgramName               # For example 'info NoiseChisel'
+    info astprogname               # For example 'info astnoisechisel'
 
-See `./INSTALL` for a standard review of the GNU build and install
-methods.
+The Info environment is great for easily reading of the complete
+documentation of many software packages, not just Gnuastro. It can greatly
+enhance your life/work in the Unix-like operating systems. If you are not
+familiar with it, please run the following command and read through it (it
+is short and only takes about an hour, so we strongly recommend it):
 
-All the programs in GNU Astronomy Utilities use the standard GNU/Linux
-commandline options for configuration. Running any of the executables
-with the `--help` option for a complete list of options and a short
-explanation of each.
+    info info
+
+To immediately get a short list of each utility's options and a short
+explanation of each, please run:
+
+    astprogname --help             # For example 'astnoisechisel --help'
+
+Ultimately you can send a mail to 'help-gnuastro@gnu.org' to get help in
+installing or using Gnuastro. Some Gnuastro developers and active users are
+subscribed to this list and are ready to help you in using these utilities.
+
+
+
+Reporting bugs
+--------------
+
+The most effective way to report bugs is explained in the "Report a bug"
+section of the documentation, after installation, you can read it by
+running (leave the Info environment by pressing the `q' key afterwards):
+
+    info bug-gnuastro
+
+In short, you can send a mail to 'bug-gnuastro@gnu.org', or submit a report
+in the link below (the latter is recommended):
+
+    https://savannah.gnu.org/support/?func=additem&group=gnuastro
+
+In any case, please be very descriptive and give the exact command that
+produced the bug, we will be able to solve it faster and more effectively
+if we can reproduce it after your first report. The list of previous bugs
+along with their status can be seen here
+
+    https://savannah.gnu.org/bugs/?group=gnuastro
+
+Have a look in the link above to see if your problem has already been
+addressed. Click on "Display Criteria" and choose the "Category" of your
+bug for a shorter and more relevant list to look into.
