@@ -991,11 +991,11 @@ this environment, the transition is not necessarily easy. To encourage you
 in investing the patience and time to make this transition, we define the
 GNU/Linux system and argue for the command-line interface of scientific
 software and how it is worth the (apparently steep) learning curve.
-@ref{Command-line interface}, contains a short overview of the very
+@ref{Command-line interface} contains a short overview of the very
 powerful command-line user interface. @ref{Tutorials} is a complete chapter
 with some real world example applications of Gnuastro making good use of
 GNU/Linux capabilities written for newcomers to this environment. It is
-fully explained, easy and entertaining.
+fully explained, easy and (hopefully) entertaining.
 
 @cindex Linux
 @cindex GNU/Linux
@@ -1193,10 +1193,32 @@ solved but not yet released and it is an urgent issue for you, you can
 get the version controlled source and compile that, see @ref{Version
 controlled source}.
 
-To solve the issue as readily as possible, please follow these
-guidelines in your bug report:
+To solve the issue as readily as possible, please follow the following to
+guidelines in your bug report. The
+@url{http://www.chiark.greenend.org.uk/~sgtatham/bugs.html, How to Report
+Bugs Effectively} and @url{http://catb.org/~esr/faqs/smart-questions.html,
+How To Ask Questions The Smart Way} essays also provide some very good
+generic advice for all software (don't contact their authors for Gnuastro's
+problems). Mastering the art of giving good bug reports (like asking good
+questions) can greatly enhance your experience with any free and open
+source software. So investing the time to read through these essays will
+greatly reduce your frustration after you see something doesn't work the
+way you feel it is supposed to for a large range of software, not just
+Gnuastro.
 
 @table @strong
+
+@item Be descriptive
+Please provide as many details as possible and be very descriptive. Explain
+what you expected and what the output was: it might be that your
+expectation was wrong. Also please clearly state which sections of the
+Gnuastro book (this book), or other references you have studied to
+understand the problem. This can be useful in correcting the book (adding
+links to likely places where users will check). But more importantly, it
+will be very encouraging for the developers, since you are showing how
+serious you are about the problem and that you have actually put some
+thought into it. ``To be able to ask a question clearly is two-thirds of
+the way to getting it answered.'' -- John Ruskin (1819-1900).
 
 @item Individual and independent bug reports
 If you have found multiple bugs, please send them as separate (and
@@ -1217,6 +1239,7 @@ make it as small as possible so it can easily be uploaded and
 downloaded and not waste the archive's storage, see @ref{ImageCrop}.
 @end table
 
+@noindent
 There are generally two ways to inform us of bugs:
 
 @itemize
@@ -14765,7 +14788,7 @@ make your announcement, other people might contribute to the branch before
 merging it in to @file{master}, so this is very important. Also before
 starting each issue branch from @file{master}, be sure to run @command{git
 pull} in @file{master} as shown above, to start your branch (work) from the
-most recent history point and thus simply the final merging of your work.
+most recent history point and thus simplify the final merging of your work.
 
 
 
