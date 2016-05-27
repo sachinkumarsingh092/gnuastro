@@ -2830,9 +2830,8 @@ $ autoconf -f
 @end example
 
 If you would like to see what has changed since you last synchronized your
-local clone without having to dig into all the discussions @ref{Developing
-mailing lists}, you can take the following steps instead of the simple
-command above (don't type anything after @code{#}):
+local clone, you can take the following steps instead of the simple command
+above (don't type anything after @code{#}):
 
 @example
 $ git checkout master             # Confirm if you are on master.
@@ -2853,12 +2852,13 @@ get started easily. Be sure to commit your changes in a separate branch
 (keep your @code{master} branch to follow the official repository) and
 re-run @command{autoconf -f} after the commit. If you intend to send your
 changes to us (see @ref{Contributing to Gnuastro}) for the benefit of the
-whole community, you can safely use your commit since you work will be
-ultimately recorded in Gnuastro's official history. If not, please upload
-your separate branch to a public hosting service (for example GitLab) and
-link to it in your report, or run @command{make distcheck} and upload the
-output @file{gnuastro-X.X.X.XXXX.tar.gz} to a publicly accessible webpage
-so your results can be scientific and reproducible.
+whole community. If you send your work to us, you can safely use your
+commit since it will be ultimately recorded in Gnuastro's official
+history. If not, please upload your separate branch to a public hosting
+service (for example GitLab, see @ref{Forking tutorial}) and link to it in
+your report, or run @command{make distcheck} and upload the output
+@file{gnuastro-X.X.X.XXXX.tar.gz} to a publicly accessible webpage so your
+results can be considered scientific (reproducible).
 
 
 
