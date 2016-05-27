@@ -14492,30 +14492,6 @@ most effectively protect, and therefore on which other developers can
 completely rely.
 @end quotation
 
-@cindex FOSS
-In short, in free and open source software (FOSS) lots of people
-collaborate and their work depends on each other. If they have not
-explicitly given the copyright of their work on a project to a single
-owner, very complicated issues might arise: their employer might claim
-ownership of their work and thus ruin the project for everyone else
-who has depended on it, or under different circumstances in the future
-the person might not want to distribute their work to the FOSS project
-any more.
-
-These situations have been rare in the FOSS community so far. However,
-they can potentially arise, and if they do, they can destroy the whole
-software, project and community that was built around it. In
-programming-speak, this is a bug which most FOSS software authors are
-ignoring right now and somehow hoping that in the future such issues
-don't arise. This is not metaphorical: not having a single copyright
-holder is a real bug for the final software product, just like a
-mistakenly written line of code that doesn't show up on initial
-testing. Therefore, as good scientists/programmers we should not allow
-such bugs to infiltrate our research (software) and create potential
-problems down the line. The copyright of most FSF (or GNU) software is
-held by the FSF precisely for this reason: to guarantee their freedom
-and reliability.
-
 Please get in touch with the Gnuastro maintainer (currently Mohammad
 Akhlaghi, akhlaghi -at- gnu -dot- org) to follow the procedures. It is
 possible to do this for each change (good for for a single contribution),
