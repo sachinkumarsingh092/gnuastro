@@ -1,3 +1,20 @@
+2016-05-27  Mohammad Akhlaghi  <akhlaghi@gnu.org>
+
+        Following the discussions in task #13779, the ChangeLog has not
+        been updated since 2015-11-05 (previous log). Instead, the commit
+        messages are very descriptive. Git's blame tool can be used to
+        check the history of any part of the code very effectively.
+
+        Gnulib has scripts to generate a ChangeLog from the commit history
+        so building this file automatically is possible and will be
+        implemented (task #14007). Once this ChangeLog is automatically
+        generated, it will be removed from the version controlled
+        source. Until then this file will remain unchanged. There is also a
+        discussion for adopting the ChangeLog format in the commit messages
+        in task #14008.
+
+	* ChangeLog: no longer updated.
+
 2015-11-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
 	* doc/gnuastro.texi (Why C): Clarified explanations.
