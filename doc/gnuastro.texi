@@ -513,7 +513,7 @@ Contributing to Gnuastro
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
 * Production workflow::         Submitting your commits (work) for inclusion.
-* Branching workflow tutorial::  Tutorial on workflow steps with Git.
+* Forking tutorial::            Tutorial on workflow steps with Git.
 
 Other useful software
 
@@ -7073,7 +7073,7 @@ Wikipedia}. We see that @mymath{\lim_{m\rightarrow\infty}a(\pi)=-1}, while
 interpretted as an angle in units of radians and therefore how
 @mymath{a(v)=cos(v)} and @mymath{b(v)=sin(v)}.
 
-Since @mymath{e^{iv}} is periodic (lets assume with a period of
+Since @mymath{e^{iv}} is periodic (let's assume with a period of
 @mymath{T}), it is more clear to write it as @mymath{v\equiv{2{\pi}n\over
 T}t} (where @mymath{n} is an integer), so @mymath{e^{iv}=e^{i{2{\pi}n\over
 T}t}}. The advantage is of this notation is that the period (@mymath{T}) is
@@ -7374,7 +7374,7 @@ convolution (@mymath{C(\omega)}) can be written as:
 }
 
 @noindent
-To solve the inner integral, lets define @mymath{s{\equiv}l-\tau}, so
+To solve the inner integral, let's define @mymath{s{\equiv}l-\tau}, so
 that @mymath{ds=dl} and @mymath{l=s+\tau} then the inner integral
 becomes:
 
@@ -7687,7 +7687,7 @@ understood in one dimension, it is very easy to generalize them to two
 or even more dimentions since each dimension is by definition
 independent. Previously we defined @mymath{l} as the continuous
 variable in 1D and the inverse of the period in its direction to be
-@mymath{\omega}. Lets show the second spatial direction with
+@mymath{\omega}. Let's show the second spatial direction with
 @mymath{m} the the inverse of the period in the second dimension with
 @mymath{\nu}. The Fourier transform in 2D (see @ref{Fourier
 transform}) can be written as:
@@ -7724,7 +7724,7 @@ since most imagers have square pixels, we assume so here too}:
 
 Finally, let's represent the pixel counter on the second dimension in
 the spatial and frequency domains with @mymath{y} and @mymath{v}
-respectively. Also lets assume that the input image has @mymath{Y}
+respectively. Also let's assume that the input image has @mymath{Y}
 pixels on the second dimension. Then the two dimensional discrete
 Fourier transform and its inverse (see @ref{Discrete Fourier
 transform}) can be written as:
@@ -13239,7 +13239,7 @@ steps and conventions as our 2D friend, we arrive at:
 @c@dispmath{E(z)=[ \Omega_{\Lambda,0} + \Omega_{C,0}(1+z)^2 +
 @c\Omega_{m,0}(1+z)^3 + \Omega_{r,0}(1+z)^4 ]^{1/2}}
 
-@c Lets take @mymath{r} to be the radial coordinate of the emitting
+@c Let's take @mymath{r} to be the radial coordinate of the emitting
 @c source, which emitted its light at redshift $z$. Then the comoving
 @c distance of this object would be:
 
@@ -13679,6 +13679,22 @@ Gnuastro and will also provide an alternative (to Savannah) archiving for
 the development discussions. Therefore, it is not recommended to directly
 post an email to this mailing list, but do all the activities (for example
 add new issues, or comment on existing ones) on Savannah.
+
+
+@cartouche
+@noindent
+@strong{Do I need to be a member in Savannah to contribute to Gnuastro?}
+No.
+
+The full version controlled history of Gnuastro is available for anonymous
+download or cloning. See @ref{Production workflow} for a description of
+Gnuastro's Integration-Manager Workflow. In short, you can either send in
+patches, or make your own fork. If you choose the latter, you can push your
+changes to your own fork and inform us. We will then pull your changes and
+merge them into the main project. Please see @ref{Forking tutorial} for a
+tutorial.
+@end cartouche
+
 
 @node Developing mailing lists, Internal libraries, Gnuastro project webpage, Developing
 @section Developing mailing lists
@@ -14430,7 +14446,7 @@ ensure that Gnuastro can remain free in the future, see @ref{Copyright
 assignment}. From the technical point of view, in this section we also
 discuss commit guidelines (@ref{Commit guidelines}) and the general version
 control workflow of Gnuastro in @ref{Production workflow}, along with a
-tutorial in @ref{Branching workflow tutorial}.
+tutorial in @ref{Forking tutorial}.
 
 Recall that before starting the work on your idea, be sure to checkout the
 bugs and tasks trackers in @ref{Gnuastro project webpage} and announce your
@@ -14442,7 +14458,7 @@ help you.
 * Copyright assignment::        Copyright has to be assigned to the FSF.
 * Commit guidelines::           Guidelines for commit messages.
 * Production workflow::         Submitting your commits (work) for inclusion.
-* Branching workflow tutorial::  Tutorial on workflow steps with Git.
+* Forking tutorial::            Tutorial on workflow steps with Git.
 @end menu
 
 @node Copyright assignment, Commit guidelines, Contributing to Gnuastro, Contributing to Gnuastro
@@ -14543,7 +14559,7 @@ org''.
 
 To be able to cleanly integrate your work with the other developers,
 @strong{never commit on the @file{master} branch} (see @ref{Production
-workflow} for a complete discussion and @ref{Branching workflow tutorial} for a
+workflow} for a complete discussion and @ref{Forking tutorial} for a
 cookbook example). In short, leave @file{master} only for changes you
 fetch, or pull from the official repository (see
 @ref{Synchronizing}).
@@ -14636,7 +14652,7 @@ introduction too.
 
 
 
-@node Production workflow, Branching workflow tutorial, Commit guidelines, Contributing to Gnuastro
+@node Production workflow, Forking tutorial, Commit guidelines, Contributing to Gnuastro
 @subsection Production workflow
 
 Fortunately `Pro Git' has done a wonderful job in explaining the different
@@ -14646,7 +14662,7 @@ and in particular the ``Integration-Manager Workflow'' explained there. The
 implementation of this workflow is nicely explained in Section
 5.2@footnote{@url{http://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project}}
 under ``Forked-Public-Project''. We have also prepared a short tutorial in
-@ref{Branching workflow tutorial}. Anything on the master branch should always be
+@ref{Forking tutorial}. Anything on the master branch should always be
 tested and ready to be built and used. As described in `Pro Git', there are
 two methods for you to contribute to Gnuastro in the Integration-Manager
 Workflow:
@@ -14663,7 +14679,7 @@ solution.
 You can have your own forked copy of Gnuastro on any hosting site you like
 (GitHub, GitLab, BitBucket, or etc) and inform us when your changes are
 ready so we merge them in Gnuastro. This is more suited for people who
-commonly contribute to the code (see @ref{Branching workflow tutorial}).
+commonly contribute to the code (see @ref{Forking tutorial}).
 
 @end enumerate
 
@@ -14685,18 +14701,21 @@ might change and evolve to better suite our needs.
 
 
 
-@node Branching workflow tutorial,  , Production workflow, Contributing to Gnuastro
-@subsection Branching workflow tutorial
+@node Forking tutorial,  , Production workflow, Contributing to Gnuastro
+@subsection Forking tutorial
 
 This is a tutorial on the second suggested method that you can submit your
-modifications in Gnuastro (see @ref{Production workflow}). Let's assume you
-want to start contributing to Gnuastro and you would like to use
-GitLab@footnote{See
+modifications in Gnuastro (see @ref{Production workflow}), which is
+commonly known as forking. Let's assume you want to start contributing to
+Gnuastro and you would like to use GitLab@footnote{See
 @url{https://www.gnu.org/software/repo-criteria-evaluation.html} for an
-evaluation of the major existing repositories.} to keep your work remotely
+evaluation of the major existing repositories.} to host your work remotely
 and share it with other Gnuastro developers once you are ready. You can
-create an empty repository on the GitLab webpage (this applies to any
-service, not just Gitlab!). Here we'll assume you use the name
+create an empty repository on your hosting service webpage. If this is your
+first hosted repository on the webpage, you also have to upload your public
+SSH key@footnote{For example see this explanation provided by GitLab:
+@url{http://docs.gitlab.com/ce/ssh/README.html}.} for the @command{git
+push} command below to work. Here we'll assume you use the name
 @file{janedoe} to refer to yourself everywhere and that you choose
 @file{gnuastro-janedoe} as the name of your Gnuastro fork. Any online
 hosting service will give you an address (similar to
@@ -14710,22 +14729,26 @@ $ git remote add janedoe git@@gitlab.com:janedoe/gnuastro-janedoe.git
 $ git push janedoe master
 @end example
 
-The full Gnuastro history is now pushed onto your GitLab account and the
+The full Gnuastro history is now pushed onto your hosting service and the
 @file{janedoe} remote is now also following your @file{master} branch. If
 you run @command{git remote show REMOTENAME} for the @file{origin} and
 @file{janedoe} remotes, you will see their difference: the first has pull
 access and the second doesn't. This nicely summarizes the main idea behind
 this workflow: you push to your remote repository, we pull from it and
 merge it into @file{master}, then you finalize it by pulling from the main
-repository. The process above is only necessary for your first time setup,
-you don't need to repeat it. However, please repeat the process below for
+repository.
+
+To test (compile) your changes during your work, you will need to bootstrap
+the version controlled source, see @ref{Bootstrapping} for a full
+description. The process above is only necessary for your first time setup,
+you don't need to repeat it. However, please repeat the steps below for
 each independent issue you intend to work on.
 
 Let's assume you have found a bug in one of the functions of
 @file{lib/statistics.c} and after announcing it (see @ref{Report a bug}),
 you are in charge of fixing it. You make a branch, checkout to it, correct
 the bug, check if it is indeed fixed, add it to the staging area, commit it
-to the new branch and push it to your GitLab account. But before all of
+to the new branch and push it to your hosting service. But before all of
 them, make sure that your @file{master} branch is up to date with the main
 Gnuastro @file{master} branch.
 
@@ -14740,15 +14763,16 @@ $ git commit
 $ git push janedoe bug-123456-stats
 @end example
 
-Your new branch is now on your GitLab repository. You can then let the
-other developers know that your @file{bug-123456-stats} branch is ready,
-and they will pull your change, test it themselves and if it is ready to be
-merged into the main Gnuastro history, they will merge it into the
+Your new branch is now on your hosted repository. Through the respective
+tacker on Savannah (see @ref{Gnuastro project webpage}) you can then let
+the other developers know that your @file{bug-123456-stats} branch is
+ready. They will pull your work, test it themselves and if it is ready to
+be merged into the main Gnuastro history, they will merge it into the
 @file{master} branch. After that is done, you can simply checkout your
 local @file{master} branch and pull all the changes from the main
-repo. After the pull you run `@command{git log}' as shown below, to see
-that your separate @file{bug-123456-stats} is merged with master. So you
-can push all the changes to your GitLab account and delete the branches
+repo. After the pull you can run `@command{git log}' as shown below, to see
+how @file{bug-123456-stats} is merged with master. So you can push all the
+changes to your hosted repository and delete the branches:
 
 @example
 $ git checkout master
@@ -14764,8 +14788,8 @@ and remote branch so work can progress on them independently. After you
 make your announcement, other people might contribute to the branch before
 merging it in to @file{master}, so this is very important. Also before
 starting each issue branch from @file{master}, be sure to run @command{git
-pull} in @file{master} as shown above, to simplify the merging process
-later.
+pull} in @file{master} as shown above, to start your branch (work) from the
+most recent history point and thus simply the final merging of your work.
 
 
 
@@ -14792,7 +14816,7 @@ changes, see @ref{Documentation}.
 
 @item
 Commit your change to your issue branch (see @ref{Production workflow} and
-@ref{Branching workflow tutorial}) Afterwards, run Autoreconf to generate the
+@ref{Forking tutorial}) Afterwards, run Autoreconf to generate the
 appropriate version number:
 
 @example
@@ -14814,7 +14838,7 @@ and try to compile it in the most general cases, then it will run the tests
 on what it has built in its own mini-environment. If @command{$ make
 distcheck} finishes successfully, then you are safe to send your changes to
 us to implement or for your own purposes. See @ref{Production workflow} and
-@ref{Branching workflow tutorial}.
+@ref{Forking tutorial}.
 
 @end enumerate
 
