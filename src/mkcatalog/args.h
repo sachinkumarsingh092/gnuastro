@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata";
@@ -57,10 +57,10 @@ static char args_doc[] = "ASTRdata";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" will create a catalog from an input, labeled, and noise "
   "identification images.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -605,38 +605,40 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'M':
-      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname, &p->up.masknameset);
       break;
     case 'H':
-      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
       break;
     case 'O':
-      allocatecopyset(arg, &p->up.objlabsname, &p->up.objlabsnameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.objlabsname,
+                                     &p->up.objlabsnameset);
       break;
     case 501:
-      allocatecopyset(arg, &p->up.objhdu, &p->up.objhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.objhdu, &p->up.objhduset);
       break;
     case 'c':
-      allocatecopyset(arg, &p->up.clumplabsname,
-                      &p->up.clumplabsnameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.clumplabsname,
+                                     &p->up.clumplabsnameset);
       break;
     case 502:
-      allocatecopyset(arg, &p->up.clumphdu, &p->up.clumphduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.clumphdu, &p->up.clumphduset);
       break;
     case 's':
-      allocatecopyset(arg, &p->up.skyname, &p->up.skynameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.skyname, &p->up.skynameset);
       break;
     case 503:
-      allocatecopyset(arg, &p->up.skyhdu, &p->up.skyhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.skyhdu, &p->up.skyhduset);
       break;
     case 't':
-      allocatecopyset(arg, &p->up.stdname, &p->up.stdnameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.stdname, &p->up.stdnameset);
       break;
     case 504:
-      allocatecopyset(arg, &p->up.stdhdu, &p->up.stdhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.stdhdu, &p->up.stdhduset);
       break;
     case 'z':
-      anyfloat(arg, &p->zeropoint, "zeropoint", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->zeropoint, "zeropoint", key, SPACK,
+                             NULL, 0);
       p->up.zeropointset=1;
       break;
     case 'E':
@@ -644,36 +646,41 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.skysubtractedset=1;
       break;
     case 'T':
-      anydouble(arg, &p->threshold, "threshold", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->threshold, "threshold", key, SPACK,
+                              NULL, 0);
       p->up.thresholdset=1;
       break;
 
 
     /* Output: */
     case 521:
-      anydouble(arg, &p->nsigmag, "nsigmag", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->nsigmag, "nsigmag", key, SPACK,
+                              NULL, 0);
       p->up.nsigmagset=1;
       break;
     case 516:
-      intlzero(arg, &p->intwidth, "intwidth", key, SPACK, NULL, 0);
+      gal_checkset_int_l_zero(arg, &p->intwidth, "intwidth", key, SPACK,
+                              NULL, 0);
       p->up.intwidthset=1;
       break;
     case 517:
-      intlzero(arg, &p->floatwidth, "floatwidth", key, SPACK, NULL, 0);
+      gal_checkset_int_l_zero(arg, &p->floatwidth, "floatwidth", key, SPACK,
+                              NULL, 0);
       p->up.floatwidthset=1;
       break;
     case 518:
-      intlzero(arg, &p->accuwidth, "accuwidth", key, SPACK, NULL, 0);
+      gal_checkset_int_l_zero(arg, &p->accuwidth, "accuwidth", key, SPACK,
+                              NULL, 0);
       p->up.floatwidthset=1;
       break;
     case 519:
-      intlzero(arg, &p->floatprecision, "flatprecision",
-               key, SPACK, NULL, 0);
+      gal_checkset_int_l_zero(arg, &p->floatprecision, "flatprecision",
+                              key, SPACK, NULL, 0);
       p->up.floatprecisionset=1;
       break;
     case 520:
-      intlzero(arg, &p->accuprecision, "accuprecision",
-               key, SPACK, NULL, 0);
+      gal_checkset_int_l_zero(arg, &p->accuprecision, "accuprecision",
+                              key, SPACK, NULL, 0);
       p->up.accuprecisionset=1;
       break;
 
@@ -842,7 +849,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
         {
           if(p->up.inputname)
             argp_error(state, "Only one input image should be given.");

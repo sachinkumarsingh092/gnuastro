@@ -66,7 +66,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    nearestint_halfhigher(0.5f) --> 1.0f
 */
 #define nearestint_halfhigher(D)                                        \
-  ( ceil((D)) - (D) > 0.5f + ROUNDERR ? ceil((D))-1.0f : ceil((D)) )
+  (ceil((D)) - (D) > 0.5f + GAL_POLYGON_ROUND_ERR ? ceil((D))-1.0f : ceil((D)))
 
 
 
@@ -77,14 +77,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    nearestint_halflower(0.5f) --> 0.0f;
  */
 #define nearestint_halflower(D)                                        \
-  ( ceil((D)) - (D) > 0.5f - ROUNDERR ? ceil((D))-1.0f : ceil((D)) )
+  (ceil((D)) - (D) > 0.5f - GAL_POLYGON_ROUND_ERR ? ceil((D))-1.0f : ceil((D)))
 
 
 
 
 
-#define ceilwitherr(D)                          \
-  ( fabs( nearbyint((D)) - (D) ) < ROUNDERR     \
+#define ceilwitherr(D)                                       \
+  ( fabs( nearbyint((D)) - (D) ) < GAL_POLYGON_ROUND_ERR     \
     ? nearbyint((D)) : nearbyint((D))+1  )
 
 
@@ -121,9 +121,9 @@ imgwarponthread(void *inparam)
   size_t i, j, ind, os1=p->onaxes[0], numcrn, numinput;
   double ocrn[8], icrn_base[8], icrn[8], *output=p->output;
   long x, y, xstart, xend, ystart, yend; /* Might be negative */
-  double pcrn[8], *outfpixval=p->outfpixval, ccrn[MAXPOLYGONCORNERS];
+  double pcrn[8], *outfpixval=p->outfpixval, ccrn[GAL_POLYGON_MAX_CORNERS];
 
-  for(i=0;(ind=iwp->indexs[i])!=NONTHRDINDEX;++i)
+  for(i=0;(ind=iwp->indexs[i])!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Initialize the output pixel value: */
       numinput=0;
@@ -194,8 +194,8 @@ imgwarponthread(void *inparam)
               pcrn[4]=x+0.5f;          pcrn[6]=x-0.5f;
 
               /* Find the overlapping (clipped) polygon: */
-              polygonclip(icrn, 4, pcrn, 4, ccrn, &numcrn);
-              area=polygonarea(ccrn, numcrn);
+              gal_polygon_clip(icrn, 4, pcrn, 4, ccrn, &numcrn);
+              area=gal_polygon_area(ccrn, numcrn);
 
               /* Add the fractional value of this pixel. If this
                  output pixel covers a NaN pixel in the input grid,
@@ -223,14 +223,14 @@ imgwarponthread(void *inparam)
                   for(j=0;j<numcrn;++j)
                     printf("\t%.3f, %.3f\n", ccrn[j*2], ccrn[j*2+1]);
                   printf("[%lu]: %.3f of [%ld, %ld]: %f\n", ind,
-                         polygonarea(ccrn, numcrn), x, y,
+                         gal_polygon_area(ccrn, numcrn), x, y,
                          input[(y-1)*is1+x-1]);
                 }
               */
 
               /* For a simple pixel value check:
               if(ind==97387)
-                printf("%f --> (%lu) %f\n", v*polygonarea(ccrn, numcrn),
+                printf("%f --> (%lu) %f\n", v*gal_polygon_area(ccrn, numcrn),
                        numinput, output[ind]);
               */
             }
@@ -374,7 +374,7 @@ imgwarppreparations(struct imgwarpparams *p)
 
 
   /* Order the transformed output pixel. */
-  orderedpolygoncorners(icrn, 4, p->ordinds);
+  gal_polygon_ordered_corners(icrn, 4, p->ordinds);
 
 
   /* Find the area of the output pixel in units of the input pixel,
@@ -385,7 +385,7 @@ imgwarppreparations(struct imgwarpparams *p)
       forarea[2*i]=icrn[2*p->ordinds[i]];
       forarea[2*i+1]=icrn[2*p->ordinds[i]+1];
     }
-  p->opixarea=polygonarea(forarea, 4);
+  p->opixarea=gal_polygon_area(forarea, 4);
 
 
 
@@ -427,7 +427,7 @@ correctwcssaveoutput(struct imgwarpparams *p)
   void *array;
   double *m=p->matrix;
   char keyword[9*FLEN_KEYWORD];
-  struct fitsheaderll *headers=NULL;
+  struct gal_fitsarray_header_ll *headers=NULL;
   double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
@@ -458,23 +458,25 @@ correctwcssaveoutput(struct imgwarpparams *p)
       p->inputbitpix=DOUBLE_IMG; /* In case it wasn't and p->doubletype==1 */
     }
   else
-    changetype((void **)p->output, DOUBLE_IMG, p->onaxes[1]*p->onaxes[0],
-               p->numnul, &array, p->inputbitpix);
+    gal_fitsarray_change_type((void **)p->output, DOUBLE_IMG,
+                              p->onaxes[1]*p->onaxes[0],
+                              p->numnul, &array, p->inputbitpix);
 
   /* Add the appropriate headers: */
-  filenameinkeywords("INF", p->up.inputname, &headers);
+  gal_fitsarray_file_name_in_keywords("INF", p->up.inputname, &headers);
   for(i=0;i<9;++i)
     {
       sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%lu_%lu", i/3+1, i%3+1);
-      add_to_fitsheaderllend(&headers, TDOUBLE, &keyword[i*FLEN_KEYWORD],
-                             0, &p->matrix[i], 0, "Warp matrix element "
-                             "value.", 0, NULL);
+      gal_fitsarray_add_to_fits_header_ll_end(&headers, TDOUBLE,
+                                              &keyword[i*FLEN_KEYWORD], 0,
+                                              &p->matrix[i], 0, "Warp matrix "
+                                              "element value.", 0, NULL);
     }
 
   /* Save the output: */
-  arraytofitsimg(p->cp.output, "Warped", p->inputbitpix, array,
-                 p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
-                 headers, SPACK_STRING);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "Warped", p->inputbitpix, array,
+                                  p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
+                                  headers, SPACK_STRING);
 
   if(array!=p->output)
     free(array);
@@ -530,7 +532,7 @@ imgwarp(struct imgwarpparams *p)
 
   /* Distribute the output pixels into the threads: */
   size=p->onaxes[0]*p->onaxes[1];
-  distinthreads(size, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(size, nt, &indexs, &thrdcols);
 
 
   /* Start the convolution. */
@@ -548,11 +550,11 @@ imgwarp(struct imgwarpparams *p)
 	 threads spinned off. */
       if(size<nt) nb=size+1;
       else nb=nt+1;
-      attrbarrierinit(&attr, &b, nb);
+      gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-        if(indexs[i*thrdcols]!=NONTHRDINDEX)
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
           {
             iwp[i].p=p;
             iwp[i].b=&b;

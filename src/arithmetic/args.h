@@ -45,7 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata or number [ASTRdata] OPERATOR ...";
@@ -56,7 +56,7 @@ static char args_doc[] = "ASTRdata or number [ASTRdata] OPERATOR ...";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" will do arithmetic operations on one or multiple images and "
   "numbers. Simply put, the name of the image along with the arithmetic "
   "operators and possible numbers are given as arguments. The extensions of "
@@ -70,7 +70,7 @@ const char doc[] =
   "abs, pow, sqrt, log, log10, minvalue, maxvalue, min, max, average and "
   "median. Note that multiplication should be quoted like \"*\" to avoid "
   "shell expansion.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -180,16 +180,17 @@ parse_opt(int key, char *arg, struct argp_state *state)
        free it later). So to consistently free all the poped strings,
        we are allocating a copy here too. */
     case 'h':
-      allocatecopy(arg, &tokeephdu);
-      add_to_stll(&p->hdus, tokeephdu);
+      gal_checkset_allocate_copy(arg, &tokeephdu);
+      gal_linkedlist_add_to_stll(&p->hdus, tokeephdu);
       break;
 
     /* Input: */
     case 'M':
-      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname,
+                                     &p->up.masknameset);
       break;
     case 'H':
-      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
       break;
 
 
@@ -202,7 +203,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* Add the argument to the list of tokens: */
-      add_to_stll(&p->tokens, arg);
+      gal_linkedlist_add_to_stll(&p->tokens, arg);
       break;
 
 

@@ -92,11 +92,11 @@ struct uiparams
 struct converttparams
 {
   /* Before actual program: */
-  struct   commonparams  cp;  /* Common parameters.                    */
-  struct       uiparams  up;  /* User interface parameters.            */
+  struct uiparams         up;  /* User interface parameters.           */
+  struct gal_commonparams cp; /* Common parameters.                    */
 
   /* Input: */
-  struct stll   *inputnames;  /* The names of input files.             */
+  struct gal_linkedlist_stll *inputnames; /* The names of input files. */
   size_t          numinputs;  /* Number of input files.                */
   int             inputtype;  /* The type of the input file.           */
 

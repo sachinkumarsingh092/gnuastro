@@ -72,7 +72,7 @@ readconfig(char *filename, struct imgarithparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -96,22 +96,23 @@ readconfig(char *filename, struct imgarithparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
         {
-          allocatecopy(value, &tokeephdu);
-          add_to_stll(&p->hdus, tokeephdu);
+          gal_checkset_allocate_copy(value, &tokeephdu);
+          gal_linkedlist_add_to_stll(&p->hdus, tokeephdu);
         }
 
       else if (strcmp(name, "mask")==0)
-        allocatecopyset(value, &up->maskname, &up->masknameset);
+        gal_checkset_allocate_copy_set(value, &up->maskname,
+                                       &up->masknameset);
 
       else if (strcmp(name, "mhdu")==0)
-        allocatecopyset(value, &up->mhdu, &up->mhduset);
+        gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
 
 
 
@@ -119,12 +120,12 @@ readconfig(char *filename, struct imgarithparams *p)
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -143,9 +144,9 @@ readconfig(char *filename, struct imgarithparams *p)
 void
 printvalues(FILE *fp, struct imgarithparams *p)
 {
-  struct stll *hdu;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_linkedlist_stll *hdu;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
@@ -154,12 +155,12 @@ printvalues(FILE *fp, struct imgarithparams *p)
   /* The order of the HDU linked list has already been corrected, so
      just print them as they were read in. */
   for(hdu=p->hdus; hdu!=NULL; hdu=hdu->next)
-    PRINTSTINGMAYBEWITHSPACE("hdu", hdu->v);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", hdu->v);
 
   if(up->masknameset)
-    PRINTSTINGMAYBEWITHSPACE("mask", up->maskname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mask", up->maskname);
   if(up->mhdu)
-    PRINTSTINGMAYBEWITHSPACE("mhdu", up->mhdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
 
   /* Output: */
   fprintf(fp, "\n# Output:\n");
@@ -171,7 +172,7 @@ printvalues(FILE *fp, struct imgarithparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -187,7 +188,7 @@ checkifset(struct imgarithparams *p)
 {
   int intro=0;
   char comment[100];
-  size_t numhdus=numinstll(p->hdus);
+  size_t numhdus=gal_linkedlist_num_in_stll(p->hdus);
 
   /* Make sure the number of HDUs is not less than the total number of
      FITS images. If there are more HDUs than there are FITS images,
@@ -201,11 +202,11 @@ checkifset(struct imgarithparams *p)
     {
       sprintf(comment, "hdu (%lu FITS file(s), %lu HDUs)",
               p->numfits, numhdus);
-      REPORT_NOTSET(comment);
+      GAL_CONFIGFILES_REPORT_NOTSET(comment);
     }
 
   /* Report the (possibly) missing options. */
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -257,7 +258,7 @@ dashtonegchar(int argc, char *argv[])
 void
 negchartodashcountfits(struct imgarithparams *p)
 {
-  struct stll *token;
+  struct gal_linkedlist_stll *token;
 
   /* Initialize the numfits variable (just incase!) */
   p->numfits=0;
@@ -265,7 +266,7 @@ negchartodashcountfits(struct imgarithparams *p)
   /* Go through all the tokens and do the job(s). */
   for(token=p->tokens; token!=NULL; token=token->next)
     {
-      if(nameisfits(token->v))
+      if(gal_fitsarray_name_is_fits(token->v))
         ++p->numfits;
       else if(token->v[0]==NEGDASHREPLACE && isdigit(token->v[1]) )
         token->v[0]='-';
@@ -280,7 +281,7 @@ negchartodashcountfits(struct imgarithparams *p)
 void
 sanitycheck(struct imgarithparams *p)
 {
-  struct stll *token;
+  struct gal_linkedlist_stll *token;
 
   /* Set the output file name (if any is needed). Note that since the
      lists are already reversed, the first FITS file encountered, is
@@ -288,18 +289,20 @@ sanitycheck(struct imgarithparams *p)
      file name operations are only necessary for the first FITS file
      in the token list. */
   for(token=p->tokens; token!=NULL; token=token->next)
-    if(nameisfits(token->v))
+    if(gal_fitsarray_name_is_fits(token->v))
     {
       /* Set the p->up.maskname accordingly: */
-      fileorextname(token->v, p->cp.hdu, p->up.masknameset,
-                    &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
+      gal_fitsarray_file_or_ext_name(token->v, p->cp.hdu,
+                                     p->up.masknameset, &p->up.maskname,
+                                     p->up.mhdu, p->up.mhduset, "mask");
 
       /* Set the name of the output file: */
       if(p->cp.outputset)
-        checkremovefile(p->cp.output, p->cp.dontdelete);
+        gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
       else
-        automaticoutput(token->v, "_arith.fits", p->cp.removedirinfo,
-                        p->cp.dontdelete, &p->cp.output);
+        gal_checkset_automatic_output(token->v, "_arith.fits",
+                                      p->cp.removedirinfo,
+                                      p->cp.dontdelete, &p->cp.output);
 
       /* These were only necessary for the first FITS file in the
          tokens, so break out of the loop. */
@@ -332,7 +335,7 @@ sanitycheck(struct imgarithparams *p)
 void
 setparams(int argc, char *argv[], struct imgarithparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -360,20 +363,20 @@ setparams(int argc, char *argv[], struct imgarithparams *p)
   negchartodashcountfits(p);
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* The inputs are put in a lastin-firstout (simple) linked list, so
      change them to the correct order so the order we pop a node is
      the same order that the user input a value. */
-  reverse_stll(&p->hdus);
-  reverse_stll(&p->tokens);
+  gal_linkedlist_reverse_stll(&p->hdus);
+  gal_linkedlist_reverse_stll(&p->tokens);
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+      GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check. */
   sanitycheck(p);

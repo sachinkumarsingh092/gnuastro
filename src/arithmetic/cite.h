@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageArithmetic - Do arithmetic operations on images.
-ImageArithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
+Arithmetic - Do arithmetic operations on images.
+Arithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -23,15 +23,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef CITE_H
 #define CITE_H
 
-#define HEADERBIBTEX ""
+#define ARITHMETICBIBTEX ""
 
 #define PRINTCITEABORT {						\
     printf("\nWe hope %s has been useful for your research.\n"		\
 	   "Citations are vital for the continued work on %s.\n"	\
 	   "Thank you for citing it in your research paper.\n"		\
 	   "\nPlease cite as \"%s\":\n\n%s\n\n%s",			\
-	   SPACK_NAME, SPACK_NAME, SPACK_STRING, GNUASTROBIBTEX,	\
-	   HEADERBIBTEX);						\
+	   SPACK_NAME, SPACK_NAME, SPACK_STRING,                        \
+           GAL_STRINGS_MAIN_BIBTEX, ARITHMETICBIBTEX);		        \
     exit(EXIT_SUCCESS);							\
 }
 

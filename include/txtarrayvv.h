@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef TXTARRAYVV_H
-#define TXTARRAYVV_H
+#ifndef __GAL_TXTARRAY_H__
+#define __GAL_TXTARRAY_H__
 
 #include <float.h>
 
@@ -31,9 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Simple macros: */
-#define FMTLENGTH     50
-#define DELIMITERS    " ,\t\n"
-#define TXTARRAYVVLOG "txtarrayvv.log"
+#define GAL_TXTARRAY_FMT_LENGTH     50
+#define GAL_TXTARRAY_DELIMITERS    " ,\t\n"
+#define GAL_TXTARRAY_LOG "txtarray.log"
 
 
 
@@ -46,11 +46,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    this function you have to give its pointer, hence three
    dereferences. */
 void
-txttoarray(char *filename, double **array, size_t *s0, size_t *s1);
+gal_txtarray_txt_to_array(char *filename, double **array,
+                          size_t *s0, size_t *s1);
 
 void
-arraytotxt(double *array, size_t s0, size_t s1, char *comments,
-	   int *int_cols, int *accu_cols, int *space, int *prec,
-	   char forg, const char *filename);
+gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
+                          int *int_cols, int *accu_cols, int *space, int *prec,
+                          char forg, const char *filename);
 
 #endif

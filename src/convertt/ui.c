@@ -68,7 +68,7 @@ readconfig(char *filename, struct converttparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -92,28 +92,28 @@ readconfig(char *filename, struct converttparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if(strcmp(name, "hdu2")==0)
-        allocatecopyset(value, &up->hdu2, &up->hdu2set);
+        gal_checkset_allocate_copy_set(value, &up->hdu2, &up->hdu2set);
       else if(strcmp(name, "hdu3")==0)
-        allocatecopyset(value, &up->hdu3, &up->hdu3set);
+        gal_checkset_allocate_copy_set(value, &up->hdu3, &up->hdu3set);
       else if(strcmp(name, "hdu4")==0)
-        allocatecopyset(value, &up->hdu4, &up->hdu4set);
+        gal_checkset_allocate_copy_set(value, &up->hdu4, &up->hdu4set);
 
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "quality")==0)
 	{
 	  if(up->qualityset) continue;
-          intsmallerequalto(value, &p->quality, name, key,
-                            p->cp.spack, filename, lineno, 100);
+          gal_checkset_int_smaller_equal_to(value, &p->quality, name, key,
+                                            p->cp.spack, filename, lineno, 100);
           if(p->quality<0)
             error(EXIT_FAILURE, 0, "The quality option should be positive.");
 	  up->qualityset=1;
@@ -121,14 +121,15 @@ readconfig(char *filename, struct converttparams *p)
       else if(strcmp(name, "widthincm")==0)
 	{
 	  if(up->widthincmset) continue;
-          floatl0(value, &p->widthincm, name, key, SPACK, filename, lineno);
+          gal_checkset_float_l_0(value, &p->widthincm, name, key, SPACK,
+                                 filename, lineno);
 	  up->widthincmset=1;
 	}
       else if(strcmp(name, "borderwidth")==0)
 	{
 	  if(up->borderwidthset) continue;
-          intelzero(value, &p->borderwidth, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_int_el_zero(value, &p->borderwidth, name, key, SPACK,
+                                   filename, lineno);
 	  up->borderwidthset=1;
 	}
 
@@ -140,22 +141,22 @@ readconfig(char *filename, struct converttparams *p)
       else if(strcmp(name, "fluxlow")==0)
 	{
 	  if(up->fluxlowset) continue;
-          anydouble(value, &p->fluxlow, name, key, p->cp.spack,
-                   filename, lineno);
+          gal_checkset_any_double(value, &p->fluxlow, name, key, p->cp.spack,
+                                  filename, lineno);
           up->fluxlowset=1;
 	}
       else if(strcmp(name, "fluxhigh")==0)
 	{
 	  if(up->fluxhighset) continue;
-          anydouble(value, &p->fluxhigh, name, key, p->cp.spack,
-                   filename, lineno);
+          gal_checkset_any_double(value, &p->fluxhigh, name, key, p->cp.spack,
+                                  filename, lineno);
           up->fluxhighset=1;
 	}
       else if(strcmp(name, "maxbyte")==0)
 	{
 	  if(up->maxbyteset) continue;
-          intsmallerequalto(value, &tmp, "maxbyte", key,
-                            p->cp.spack, NULL, 0, UINT8_MAX);
+          gal_checkset_int_smaller_equal_to(value, &tmp, "maxbyte", key,
+                                            p->cp.spack, NULL, 0, UINT8_MAX);
           if(tmp<0)
             error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive.");
           p->maxbyte=tmp;
@@ -166,7 +167,7 @@ readconfig(char *filename, struct converttparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -186,19 +187,19 @@ void
 printvalues(FILE *fp, struct converttparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->hdu2set)
-    PRINTSTINGMAYBEWITHSPACE("hdu2", up->hdu2);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu2", up->hdu2);
   if(up->hdu3set)
-    PRINTSTINGMAYBEWITHSPACE("hdu3", up->hdu3);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu3", up->hdu3);
   if(up->hdu4set)
-    PRINTSTINGMAYBEWITHSPACE("hdu4", up->hdu4);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu4", up->hdu4);
 
 
   fprintf(fp, "\n# Output parameters:\n");
@@ -224,7 +225,7 @@ printvalues(FILE *fp, struct converttparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating modes:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -237,31 +238,31 @@ void
 checkifset(struct converttparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->hdu2set==0)
-    REPORT_NOTSET("hdu2");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu2");
   if(up->hdu3set==0)
-    REPORT_NOTSET("hdu3");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu3");
   if(up->hdu4set==0)
-    REPORT_NOTSET("hdu4");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu4");
   if(up->qualityset==0)
-    REPORT_NOTSET("quality");
+    GAL_CONFIGFILES_REPORT_NOTSET("quality");
   if(up->widthincmset==0)
-    REPORT_NOTSET("widthincm");
+    GAL_CONFIGFILES_REPORT_NOTSET("widthincm");
   if(up->borderwidthset==0)
-    REPORT_NOTSET("borderwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("borderwidth");
   if(up->fluxlowset==0)
-    REPORT_NOTSET("fluxlow");
+    GAL_CONFIGFILES_REPORT_NOTSET("fluxlow");
   if(up->fluxhighset==0)
-    REPORT_NOTSET("fluxhigh");
+    GAL_CONFIGFILES_REPORT_NOTSET("fluxhigh");
   if(up->maxbyteset==0)
-    REPORT_NOTSET("maxbyte");
+    GAL_CONFIGFILES_REPORT_NOTSET("maxbyte");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -360,7 +361,7 @@ void
 adddotautomaticoutput(struct converttparams *p)
 {
   size_t i;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char *tmp, *basename="output.txt";
 
   /* Find the first file name in the input(s). */
@@ -385,9 +386,9 @@ adddotautomaticoutput(struct converttparams *p)
     }
 
   /* Set the automatic output and make sure we have write access. */
-  automaticoutput(basename, cp->output, cp->removedirinfo,
+  gal_checkset_automatic_output(basename, cp->output, cp->removedirinfo,
                   cp->dontdelete, &cp->output);
-  if( dir0file1(cp->output, cp->dontdelete)==0 )
+  if( gal_checkset_dir_0_file_1(cp->output, cp->dontdelete)==0 )
     error(EXIT_FAILURE, 0, "%s is a directory.", cp->output);
 }
 
@@ -399,7 +400,7 @@ void
 sanitycheck(struct converttparams *p)
 {
   size_t i, j;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* The flux range: */
   if(p->fluxlow>p->fluxhigh)
@@ -459,10 +460,10 @@ sanitycheck(struct converttparams *p)
   /* The output file name. First find the first non-blank file name: */
   if(cp->outputset)
     {
-      if(nameisfits(cp->output))
+      if(gal_fitsarray_name_is_fits(cp->output))
         {
           p->outputtype=FITSFORMAT;
-          if( nameisfitssuffix(cp->output) )
+          if( gal_fitsarray_name_is_fits_suffix(cp->output) )
             adddotautomaticoutput(p);
         }
       else if(nameisjpeg(cp->output))
@@ -554,7 +555,7 @@ preparearrays(struct converttparams *p)
   size_t i;
   void *array;
   double *d, *df;
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
   char *hdu=NULL, **names=p->names;
 
   /* Put the names in the correct order. */
@@ -572,10 +573,10 @@ preparearrays(struct converttparams *p)
               "than one color channel.");
 
       /* Make sure this input file exists (if it isn't blank). */
-      if(strcmp(names[i], "blank")) checkfile(names[i]);
+      if(strcmp(names[i], "blank")) gal_checkset_check_file(names[i]);
 
       /* FITS: */
-      if( nameisfits(names[i]) )
+      if( gal_fitsarray_name_is_fits(names[i]) )
         {
           switch(p->numch) /* Get the HDU value for this channel. */
             {
@@ -586,13 +587,15 @@ preparearrays(struct converttparams *p)
                            "contact us so we can see what caused this "
                            "problem and fix it.");
             }
-          p->numnul[p->numch]=fitsimgtoarray(names[i], hdu,
-                                             &p->bitpixs[p->numch], &array,
-                                             &p->s0[p->numch],
-                                             &p->s1[p->numch]);
-          changetype(array, p->bitpixs[p->numch],
-                     p->s0[p->numch]*p->s1[p->numch], p->numnul[p->numch],
-                     (void **)(&p->ch[p->numch]), DOUBLE_IMG);
+          p->numnul[p->numch]=
+            gal_fitsarray_fits_img_to_array(names[i], hdu,
+                                            &p->bitpixs[p->numch], &array,
+                                            &p->s0[p->numch],
+                                            &p->s1[p->numch]);
+          gal_fitsarray_change_type(array, p->bitpixs[p->numch],
+                                    p->s0[p->numch]*p->s1[p->numch],
+                                    p->numnul[p->numch],
+                                    (void **)(&p->ch[p->numch]), DOUBLE_IMG);
           free(array);
           ++p->numch;
         }
@@ -643,15 +646,15 @@ preparearrays(struct converttparams *p)
       /* Text: */
       else
         {
-          txttoarray(names[i], &p->ch[p->numch],
-                     &p->s0[p->numch], &p->s1[p->numch]);
+          gal_txtarray_txt_to_array(names[i], &p->ch[p->numch],
+                                    &p->s0[p->numch], &p->s1[p->numch]);
           df = (d=p->ch[p->numch]) + p->s0[p->numch]*p->s1[p->numch];
           do if(isnan(*d++)) break; while(d<df);
           if(d==df)
-            checkremovefile(TXTARRAYVVLOG, 0);
+            gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
           else
             error(EXIT_FAILURE, 0, "%s contains non-numeric data, see %s.",
-                  names[i], TXTARRAYVVLOG);
+                  names[i], GAL_TXTARRAY_LOG);
           p->bitpixs[p->numch]=DOUBLE_IMG;
           ++p->numch;
         }
@@ -681,7 +684,7 @@ preparearrays(struct converttparams *p)
 void
 setparams(int argc, char *argv[], struct converttparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -697,14 +700,14 @@ setparams(int argc, char *argv[], struct converttparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Prepare the arrays: */
   preparearrays(p);
@@ -739,7 +742,7 @@ void
 freeandreport(struct converttparams *p)
 {
   size_t i;
-  struct stll *tmp, *ttmp;
+  struct gal_linkedlist_stll *tmp, *ttmp;
 
   free(p->cp.hdu);
   free(p->up.hdu2);

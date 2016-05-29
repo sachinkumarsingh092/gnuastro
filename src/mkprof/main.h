@@ -135,7 +135,7 @@ struct mkprofparams
 {
   /* Other structures */
   struct uiparams     up;  /* User interface parameters.               */
-  struct commonparams cp;  /* Common parameters.                       */
+  struct gal_commonparams cp; /* Common parameters.                    */
 
   /* Operating modes */
   int           psfinimg;  /* ==1: Build PSF profiles in image.        */

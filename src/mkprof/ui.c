@@ -71,7 +71,7 @@ readconfig(char *filename, struct mkprofparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   size_t lineno=0, len=200, tmp;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -95,35 +95,37 @@ readconfig(char *filename, struct mkprofparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "naxis1")==0)
 	{
 	  if(up->naxis1set) continue;
-	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
+                                    filename, lineno);
 	  p->naxes[0]=tmp;
 	  up->naxis1set=1;
 	}
       else if(strcmp(name, "naxis2")==0)
 	{
 	  if(up->naxis2set) continue;
-	  sizetlzero(value, &tmp, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
+                                    filename, lineno);
 	  p->naxes[1]=tmp;
 	  up->naxis2set=1;
 	}
       else if(strcmp(name, "oversample")==0)
 	{
 	  if(up->oversampleset) continue;
-	  sizetlzero(value, &p->oversample, name, key, SPACK,
-		     filename, lineno);
+	  gal_checkset_sizet_l_zero(value, &p->oversample, name, key, SPACK,
+                                    filename, lineno);
 	  up->oversampleset=1;
 	}
 
@@ -134,57 +136,59 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "tunitinp")==0)
 	{
 	  if(up->tunitinpset) continue;
-	  intzeroorone(value, &p->tunitinp, name, key, SPACK,
-		       filename, lineno);
+	  gal_checkset_int_zero_or_one(value, &p->tunitinp, name, key, SPACK,
+                                       filename, lineno);
 	  up->tunitinpset=1;
 	}
       else if(strcmp(name, "numrandom")==0)
 	{
 	  if(up->numrandomset) continue;
-	  sizetlzero(value, &p->numrandom, name, key, SPACK,
-		     filename, lineno);
+	  gal_checkset_sizet_l_zero(value, &p->numrandom, name, key, SPACK,
+                                    filename, lineno);
 	  up->numrandomset=1;
 	}
       else if(strcmp(name, "tolerance")==0)
 	{
 	  if(up->toleranceset) continue;
-	  floatl0(value, &p->tolerance, name, key, SPACK, filename, lineno);
+	  gal_checkset_float_l_0(value, &p->tolerance, name, key, SPACK,
+                                 filename, lineno);
 	  up->toleranceset=1;
 	}
       else if(strcmp(name, "zeropoint")==0)
 	{
 	  if(up->zeropointset) continue;
-	  anyfloat(value, &p->zeropoint, name, key, SPACK, filename, lineno);
+	  gal_checkset_any_float(value, &p->zeropoint, name, key, SPACK,
+                                 filename, lineno);
 	  up->zeropointset=1;
 	}
       else if(strcmp(name, "prepforconv")==0)
 	{
 	  if(up->prepforconvset) continue;
-	  intzeroorone(value, &p->up.prepforconv, name, key, SPACK,
-		       filename, lineno);
+	  gal_checkset_int_zero_or_one(value, &p->up.prepforconv, name, key,
+                                       SPACK, filename, lineno);
 	  up->prepforconvset=1;
 	}
       else if(strcmp(name, "xshift")==0)
 	{
 	  if(up->xshiftset) continue;
-	  sizetelzero(value, &tmp, name, key, SPACK,
-		      filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &tmp, name, key, SPACK,
+                                     filename, lineno);
 	  p->shift[0]=tmp;
 	  up->xshiftset=1;
 	}
       else if(strcmp(name, "yshift")==0)
 	{
 	  if(up->yshiftset) continue;
-	  sizetelzero(value, &tmp, name, key, SPACK,
-		      filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &tmp, name, key, SPACK,
+                                     filename, lineno);
 	  p->shift[1]=tmp;
 	  up->yshiftset=1;
 	}
       else if(strcmp(name, "circumwidth")==0)
 	{
 	  if(up->circumwidthset) continue;
-          doublelvalue(value, &p->circumwidth, name, key, SPACK,
-                       MINCIRCUMWIDTH, filename, lineno);
+          gal_checkset_double_l_value(value, &p->circumwidth, name, key, SPACK,
+                                      MINCIRCUMWIDTH, filename, lineno);
 	  up->circumwidthset=1;
 	}
 
@@ -195,55 +199,64 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "xcol")==0)
 	{
 	  if(up->xcolset) continue;
-	  sizetelzero(value, &p->xcol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->xcol, name, key, SPACK,
+                                     filename, lineno);
 	  up->xcolset=1;
 	}
       else if(strcmp(name, "ycol")==0)
 	{
 	  if(up->ycolset) continue;
-	  sizetelzero(value, &p->ycol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->ycol, name, key, SPACK,
+                                     filename, lineno);
 	  up->ycolset=1;
 	}
       else if(strcmp(name, "fcol")==0)
 	{
 	  if(up->fcolset) continue;
-	  sizetelzero(value, &p->fcol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->fcol, name, key, SPACK,
+                                     filename, lineno);
 	  up->fcolset=1;
 	}
       else if(strcmp(name, "rcol")==0)
 	{
 	  if(up->rcolset) continue;
-	  sizetelzero(value, &p->rcol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->rcol, name, key, SPACK,
+                                     filename, lineno);
 	  up->rcolset=1;
 	}
       else if(strcmp(name, "ncol")==0)
 	{
 	  if(up->ncolset) continue;
-	  sizetelzero(value, &p->ncol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->ncol, name, key, SPACK,
+                                     filename, lineno);
 	  up->ncolset=1;
 	}
       else if(strcmp(name, "pcol")==0)
 	{
 	  if(up->pcolset) continue;
-	  sizetelzero(value, &p->pcol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->pcol, name, key, SPACK,
+                                     filename, lineno);
 	  up->pcolset=1;
 	}
       else if(strcmp(name, "qcol")==0)
 	{
 	  if(up->qcolset) continue;
-	  sizetelzero(value, &p->qcol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->qcol, name, key, SPACK,
+                                     filename, lineno);
 	  up->qcolset=1;
 	}
       else if(strcmp(name, "mcol")==0)
 	{
 	  if(up->mcolset) continue;
-	  sizetelzero(value, &p->mcol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->mcol, name, key, SPACK,
+                                     filename, lineno);
 	  up->mcolset=1;
 	}
       else if(strcmp(name, "tcol")==0)
 	{
 	  if(up->tcolset) continue;
-	  sizetelzero(value, &p->tcol, name, key, SPACK, filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->tcol, name, key, SPACK,
+                                     filename, lineno);
 	  up->tcolset=1;
 	}
 
@@ -255,36 +268,36 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "crpix1")==0)
 	{
 	  if(up->crpix1set) continue;
-	  anydouble(value, &p->crpix[0], name, key, SPACK,
-		   filename, lineno);
+	  gal_checkset_any_double(value, &p->crpix[0], name, key, SPACK,
+                                  filename, lineno);
 	  up->crpix1set=1;
 	}
       else if(strcmp(name, "crpix2")==0)
 	{
 	  if(up->crpix2set) continue;
-	  anydouble(value, &p->crpix[1], name, key, SPACK,
-		   filename, lineno);
+	  gal_checkset_any_double(value, &p->crpix[1], name, key, SPACK,
+                                  filename, lineno);
 	  up->crpix2set=1;
 	}
       else if(strcmp(name, "crval1")==0)
 	{
 	  if(up->crval1set) continue;
-	  anydouble(value, &p->crval[0], name, key, SPACK,
-		   filename, lineno);
+	  gal_checkset_any_double(value, &p->crval[0], name, key, SPACK,
+                                  filename, lineno);
 	  up->crval1set=1;
 	}
       else if(strcmp(name, "crval2")==0)
 	{
 	  if(up->crval2set) continue;
-	  anydouble(value, &p->crval[1], name, key, SPACK,
-		   filename, lineno);
+	  gal_checkset_any_double(value, &p->crval[1], name, key, SPACK,
+                                  filename, lineno);
 	  up->crval2set=1;
 	}
       else if(strcmp(name, "resolution")==0)
 	{
 	  if(up->resolutionset) continue;
-	  anyfloat(value, &p->resolution, name, key, SPACK,
-		   filename, lineno);
+	  gal_checkset_any_float(value, &p->resolution, name, key, SPACK,
+                                 filename, lineno);
 	  up->resolutionset=1;
 	}
 
@@ -292,7 +305,7 @@ readconfig(char *filename, struct mkprofparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -313,11 +326,11 @@ void
 printvalues(FILE *fp, struct mkprofparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
 
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
@@ -377,7 +390,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating modes:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -391,50 +404,50 @@ checkifset(struct mkprofparams *p)
 
   int intro=0;
   if(p->cp.hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->tunitinpset==0)
-    REPORT_NOTSET("tunitinp");
+    GAL_CONFIGFILES_REPORT_NOTSET("tunitinp");
   if(up->numrandomset==0)
-    REPORT_NOTSET("numrandom");
+    GAL_CONFIGFILES_REPORT_NOTSET("numrandom");
   if(up->toleranceset==0)
-    REPORT_NOTSET("tolerance");
+    GAL_CONFIGFILES_REPORT_NOTSET("tolerance");
   if(up->zeropointset==0)
-    REPORT_NOTSET("zeropoint");
+    GAL_CONFIGFILES_REPORT_NOTSET("zeropoint");
   if(up->xcolset==0)
-    REPORT_NOTSET("xcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("xcol");
   if(up->ycolset==0)
-    REPORT_NOTSET("ycol");
+    GAL_CONFIGFILES_REPORT_NOTSET("ycol");
   if(up->fcolset==0)
-    REPORT_NOTSET("fcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("fcol");
   if(up->rcolset==0)
-    REPORT_NOTSET("rcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("rcol");
   if(up->ncolset==0)
-    REPORT_NOTSET("ncol");
+    GAL_CONFIGFILES_REPORT_NOTSET("ncol");
   if(up->pcolset==0)
-    REPORT_NOTSET("pcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("pcol");
   if(up->qcolset==0)
-    REPORT_NOTSET("qcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("qcol");
   if(up->mcolset==0)
-    REPORT_NOTSET("mcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("mcol");
   if(up->naxis1set==0)
-    REPORT_NOTSET("naxis1");
+    GAL_CONFIGFILES_REPORT_NOTSET("naxis1");
   if(up->naxis2set==0)
-    REPORT_NOTSET("naxis2");
+    GAL_CONFIGFILES_REPORT_NOTSET("naxis2");
   if(up->oversampleset==0)
-    REPORT_NOTSET("oversample");
+    GAL_CONFIGFILES_REPORT_NOTSET("oversample");
   if(up->circumwidthset==0)
-    REPORT_NOTSET("circumwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("circumwidth");
   if(up->crpix1set==0)
-    REPORT_NOTSET("crpix1");
+    GAL_CONFIGFILES_REPORT_NOTSET("crpix1");
   if(up->crpix2set==0)
-    REPORT_NOTSET("crpix2");
+    GAL_CONFIGFILES_REPORT_NOTSET("crpix2");
   if(up->crval1set==0)
-    REPORT_NOTSET("crval1");
+    GAL_CONFIGFILES_REPORT_NOTSET("crval1");
   if(up->crval2set==0)
-    REPORT_NOTSET("crval2");
+    GAL_CONFIGFILES_REPORT_NOTSET("crval2");
   if(up->resolutionset==0)
-    REPORT_NOTSET("resolution");
-  END_OF_NOTSET_REPORT;
+    GAL_CONFIGFILES_REPORT_NOTSET("resolution");
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -470,7 +483,7 @@ sanitycheck(struct mkprofparams *p)
 
 
   /* Make sure the input file exists. */
-  checkfile(p->up.catname);
+  gal_checkset_check_file(p->up.catname);
 
 
   /* Check if over-sampling is an odd number, then convert the
@@ -503,15 +516,15 @@ sanitycheck(struct mkprofparams *p)
 
 
   /* If all the columns are within the catalog: */
-  CHECKCOLINCAT(p->xcol, "xcol");
-  CHECKCOLINCAT(p->ycol, "ycol");
-  CHECKCOLINCAT(p->fcol, "fcol");
-  CHECKCOLINCAT(p->rcol, "rcol");
-  CHECKCOLINCAT(p->ncol, "ncol");
-  CHECKCOLINCAT(p->pcol, "pcol");
-  CHECKCOLINCAT(p->qcol, "qcol");
-  CHECKCOLINCAT(p->mcol, "mcol");
-  CHECKCOLINCAT(p->tcol, "tcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, "xcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, "ycol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->fcol, "fcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->rcol, "rcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ncol, "ncol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->pcol, "pcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->qcol, "qcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->mcol, "mcol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->tcol, "tcol");
 
 
   /* Check if all the profile codes are within the desired range: */
@@ -555,8 +568,8 @@ sanitycheck(struct mkprofparams *p)
 		 of it for the shift.*/
 	      truncr = ( p->tunitinp ? row[p->tcol] :
 			 row[p->tcol] * row[p->rcol]/2);
-	      ellipseinbox(truncr, row[p->qcol]*truncr,
-			   row[p->pcol]*DEGREESTORADIANS, width);
+              gal_box_ellipse_in_box(truncr, row[p->qcol]*truncr,
+                                     row[p->pcol]*DEGREESTORADIANS, width);
 	      p->shift[0]  = (width[0]/2)*p->oversample;
 	      p->shift[1]  = (width[1]/2)*p->oversample;
 	    }
@@ -582,11 +595,11 @@ sanitycheck(struct mkprofparams *p)
 
 
   /* Check the output name: */
-  d0f1=dir0file1(p->cp.output, p->cp.dontdelete);
+  d0f1=gal_checkset_dir_0_file_1(p->cp.output, p->cp.dontdelete);
   if(d0f1)		        /* --output is a file name. */
     {
       p->mergedimgname=p->cp.output;
-      p->outdir=dirpart(p->mergedimgname);
+      p->outdir=gal_checkset_dir_part(p->mergedimgname);
     }
   else				/* --output is a directory name. */
     {
@@ -596,13 +609,13 @@ sanitycheck(struct mkprofparams *p)
         error(EXIT_FAILURE, errno, "%lu bytes for p->outdir in ui.c",
               (strlen(p->cp.output)+1)*sizeof *p->outdir);
       strcpy(p->outdir, p->cp.output);
-      checkdirwriteaddslash(&p->outdir);
-      automaticoutput(p->up.catname, ".fits", p->cp.removedirinfo,
-		      p->cp.dontdelete, &tmpname);
-      p->mergedimgname=malloccat(p->outdir, tmpname);
+      gal_checkset_check_dir_write_add_slash(&p->outdir);
+      gal_checkset_automatic_output(p->up.catname, ".fits", p->cp.removedirinfo,
+                                    p->cp.dontdelete, &tmpname);
+      p->mergedimgname=gal_checkset_malloc_cat(p->outdir, tmpname);
       free(tmpname);
     }
-  p->basename=notdirpart(p->mergedimgname);
+  p->basename=gal_checkset_not_dir_part(p->mergedimgname);
 }
 
 
@@ -645,9 +658,11 @@ preparearrays(struct mkprofparams *p)
   if(p->up.backname)
     {
       /* Read in the background image and its coordinates: */
-      p->anyblank=fitsimgtoarray(p->up.backname, p->cp.hdu, &p->bitpix,
-                                 &array, &naxes[1], &naxes[0]);
-      readfitswcs(p->up.backname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+      p->anyblank=gal_fitsarray_fits_img_to_array(p->up.backname, p->cp.hdu,
+                                                  &p->bitpix, &array,
+                                                  &naxes[1], &naxes[0]);
+      gal_fitsarray_read_fits_wcs(p->up.backname, p->cp.hdu, 0, 0,
+                                  &p->nwcs, &p->wcs);
       p->naxes[1]=naxes[1];
       p->naxes[0]=naxes[0];
 
@@ -657,14 +672,14 @@ preparearrays(struct mkprofparams *p)
         p->out=array;
       else
         {
-          changetype(array, p->bitpix, p->naxes[1]*p->naxes[0], p->anyblank,
-                     (void **)(&p->out), FLOAT_IMG);
+          gal_fitsarray_change_type(array, p->bitpix, p->naxes[1]*p->naxes[0],
+                                    p->anyblank, (void **)(&p->out), FLOAT_IMG);
           free(array);
         }
 
       /* If setconsttomin is called, then there should be an input image: */
       if(p->setconsttomin)
-        floatmin(p->out, p->naxes[1]*p->naxes[0], &p->constant);
+        gal_statistics_float_min(p->out, p->naxes[1]*p->naxes[0], &p->constant);
     }
   else
     {
@@ -709,8 +724,8 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 {
   char *jobname;
   struct timeval t1;
-  char message[VERBMSGLENGTH_V];
-  struct commonparams *cp=&p->cp;
+  char message[GAL_TIMING_VERB_MSG_LENGTH_V];
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -727,17 +742,17 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
-  txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
+  gal_txtarray_txt_to_array(p->up.catname, &p->cat, &p->cs0, &p->cs1);
 
   /* If cp->output was not specified on the command line or in any of
      the configuration files, then automatic output should be used, in
@@ -752,10 +767,10 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
     }
 
   /* Do a sanity check, then remove the possibly existing log file
-     created by txttoarray. */
+     created by gal_txtarray_txt_to_array. */
   gettimeofday(&t1, NULL);
   sanitycheck(p);
-  checkremovefile(TXTARRAYVVLOG, 0);
+  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
   /* Prepare the necessary arrays: */
   preparearrays(p);
@@ -769,17 +784,17 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
       if(jobname==NULL)	error(EXIT_FAILURE, errno, "jobname in ui.c");
       sprintf(jobname, "%lu profile%sread from %s", p->cs0,
 	      p->cs0>1?"s ":" ", p->up.catname);
-      reporttiming(&t1, jobname, 1);
+      gal_timing_report(&t1, jobname, 1);
       free(jobname);
 
       sprintf(message, "Random number generator (RNG) type: %s",
               gsl_rng_name(p->rng));
-      reporttiming(NULL, message, 1);
+      gal_timing_report(NULL, message, 1);
       if(p->envseed)
         {
           sprintf(message, "RNG seed for all profiles: %lu",
                   gsl_rng_default_seed);
-          reporttiming(NULL, message, 1);
+          gal_timing_report(NULL, message, 1);
         }
     }
 }
@@ -835,5 +850,5 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

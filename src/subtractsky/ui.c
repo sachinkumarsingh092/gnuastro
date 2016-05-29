@@ -73,7 +73,7 @@ readconfig(char *filename, struct subtractskyparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -97,7 +97,7 @@ readconfig(char *filename, struct subtractskyparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
       /* Inputs: */
@@ -171,78 +171,78 @@ readconfig(char *filename, struct subtractskyparams *p)
       else if(strcmp(name, "meshsize")==0)
 	{
 	  if(up->meshsizeset) continue;
-          sizetlzero(value, &p->mp.meshsize, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name, key, SPACK,
+                                    filename, lineno);
 	  up->meshsizeset=1;
 	}
       else if(strcmp(name, "nch1")==0)
 	{
 	  if(up->nch1set) continue;
-          sizetlzero(value, &p->mp.nch1, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.nch1, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch1set=1;
 	}
       else if(strcmp(name, "nch2")==0)
 	{
 	  if(up->nch2set) continue;
-          sizetlzero(value, &p->mp.nch2, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.nch2, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch2set=1;
 	}
       else if(strcmp(name, "lastmeshfrac")==0)
 	{
 	  if(up->lastmeshfracset) continue;
-          floatl0s1(value, &p->mp.lastmeshfrac, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name, key, SPACK,
+                                     filename, lineno);
 	  up->lastmeshfracset=1;
 	}
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->mp.mirrordist, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0(value, &p->mp.mirrordist, name, key, SPACK,
+                                 filename, lineno);
 	  up->mirrordistset=1;
 	}
       else if(strcmp(name, "minmodeq")==0)
 	{
 	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->mp.minmodeq, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->mp.minmodeq, name, key, SPACK,
+                                     filename, lineno);
 	  up->minmodeqset=1;
 	}
       else if(strcmp(name, "numnearest")==0)
 	{
 	  if(up->numnearestset) continue;
-          sizetlzero(value, &p->mp.numnearest, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->mp.numnearest, name, key, SPACK,
+                                    filename, lineno);
 	  up->numnearestset=1;
 	}
       else if(strcmp(name, "smoothwidth")==0)
 	{
 	  if(up->smoothwidthset) continue;
-          sizetpodd(value, &p->mp.smoothwidth, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_sizet_p_odd(value, &p->mp.smoothwidth, name, key, SPACK,
+                                   filename, lineno);
 	  up->smoothwidthset=1;
 	}
       else if(strcmp(name, "fullconvolution")==0)
 	{
 	  if(up->fullconvolutionset) continue;
-          intzeroorone(value, &p->mp.fullconvolution, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->mp.fullconvolution, name, key,
+                                       SPACK, filename, lineno);
 	  up->fullconvolutionset=1;
 	}
       else if(strcmp(name, "fullinterpolation")==0)
 	{
 	  if(up->fullinterpolationset) continue;
-          intzeroorone(value, &p->mp.fullinterpolation, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->mp.fullinterpolation, name,
+                                       key, SPACK, filename, lineno);
 	  up->fullinterpolationset=1;
 	}
       else if(strcmp(name, "fullsmooth")==0)
 	{
 	  if(up->fullsmoothset) continue;
-          intzeroorone(value, &p->mp.fullsmooth, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->mp.fullsmooth, name, key,
+                                       SPACK, filename, lineno);
 	  up->fullsmoothset=1;
 	}
 
@@ -251,22 +251,22 @@ readconfig(char *filename, struct subtractskyparams *p)
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->sigclipmultip, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0(value, &p->sigclipmultip, name, key, SPACK,
+                                 filename, lineno);
 	  up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0s1(value, &p->sigcliptolerance, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->sigcliptolerance, name, key,
+                                     SPACK, filename, lineno);
 	  up->sigcliptoleranceset=1;
 	}
 
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -286,43 +286,43 @@ void
 printvalues(FILE *fp, struct subtractskyparams *p)
 {
   struct uiparams *up=&p->up;
-  struct meshparams *mp=&p->mp;
-  struct commonparams *cp=&p->cp;
+  struct gal_mesh_params *mp=&p->mp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
     {
-      if(stringhasspace(cp->hdu))
+      if(gal_checkset_string_has_space(cp->hdu))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
     }
   if(up->masknameset)
     {
-      if(stringhasspace(up->maskname))
+      if(gal_checkset_string_has_space(up->maskname))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
     }
   if(up->mhdu)
     {
-      if(stringhasspace(up->mhdu))
+      if(gal_checkset_string_has_space(up->mhdu))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
   if(up->kernelnameset)
     {
-      if(stringhasspace(up->kernelname))
+      if(gal_checkset_string_has_space(up->kernelname))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
     }
   if(up->khdu)
     {
-      if(stringhasspace(up->khdu))
+      if(gal_checkset_string_has_space(up->khdu))
 	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
       else
 	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
@@ -372,7 +372,7 @@ printvalues(FILE *fp, struct subtractskyparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -386,45 +386,45 @@ void
 checkifset(struct subtractskyparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->khduset==0)
-    REPORT_NOTSET("khdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("khdu");
 
   /* Mesh grid: */
   if(up->meshsizeset==0)
-    REPORT_NOTSET("meshsize");
+    GAL_CONFIGFILES_REPORT_NOTSET("meshsize");
   if(up->nch1set==0)
-    REPORT_NOTSET("nch1");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch1");
   if(up->nch2set==0)
-    REPORT_NOTSET("nch2");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
-    REPORT_NOTSET("lastmeshfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("lastmeshfrac");
   if(up->mirrordistset==0)
-    REPORT_NOTSET("mirrordist");
+    GAL_CONFIGFILES_REPORT_NOTSET("mirrordist");
   if(up->minmodeqset==0)
-    REPORT_NOTSET("minmodeq");
+    GAL_CONFIGFILES_REPORT_NOTSET("minmodeq");
   if(up->numnearestset==0)
-    REPORT_NOTSET("numnearest");
+    GAL_CONFIGFILES_REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
-    REPORT_NOTSET("smoothwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("smoothwidth");
   if(up->fullconvolutionset==0)
-    REPORT_NOTSET("fullconvolution");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullconvolution");
   if(up->fullinterpolationset==0)
-    REPORT_NOTSET("fullinterpolation");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullinterpolation");
   if(up->fullsmoothset==0)
-    REPORT_NOTSET("fullsmooth");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullsmooth");
 
   /* Statistics: */
   if(up->sigclipmultipset==0)
-    REPORT_NOTSET("sigclipmultip");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
-    REPORT_NOTSET("sigcliptolerance");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigcliptolerance");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -454,18 +454,20 @@ sanitycheck(struct subtractskyparams *p)
 {
 
   /* Make sure the input file exists. */
-  checkfile(p->up.inputname);
+  gal_checkset_check_file(p->up.inputname);
 
   /* Set the maskname and mask hdu accordingly: */
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                                 &p->up.maskname, p->up.mhdu, p->up.mhduset,
+                                 "mask");
 
   /* Set the output name: */
   if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_skysubed.fits", p->cp.removedirinfo,
-		p->cp.dontdelete, &p->cp.output);
+    gal_checkset_automatic_output(p->up.inputname, "_skysubed.fits",
+                                  p->cp.removedirinfo, p->cp.dontdelete,
+                                  &p->cp.output);
 
   /* Set the sky image name: */
 
@@ -473,30 +475,33 @@ sanitycheck(struct subtractskyparams *p)
   if(p->meshname)
     {
       p->meshname=NULL;           /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_mesh.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->meshname);
+      gal_checkset_automatic_output(p->up.inputname, "_mesh.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->meshname);
     }
   if(p->convname)
     {
       p->convname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_conv.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->convname);
+      gal_checkset_automatic_output(p->up.inputname, "_conv.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->convname);
     }
   if(p->skyname)
     {
       p->skyname=NULL;            /* Was not allocated before!  */
-      automaticoutput(p->up.inputname, "_sky.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->skyname);
+      gal_checkset_automatic_output(p->up.inputname, "_sky.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->skyname);
     }
 
 
   /* Other checks: */
-  if(p->mp.numnearest<MINACCEPTABLENEAREST)
+  if(p->mp.numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
     error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
-          p->mp.numnearest);
+          "(`-n') is %d. You have asked for: %lu.",
+          GAL_MESH_MIN_ACCEPTABLE_NEAREST, p->mp.numnearest);
 
-  /* Set the constants in the meshparams structure. */
+  /* Set the constants in the gal_mesh_params structure. */
   p->mp.params=p;
   p->mp.numthreads=p->cp.numthreads;
 }
@@ -525,18 +530,19 @@ sanitycheck(struct subtractskyparams *p)
 void
 preparearrays(struct subtractskyparams *p)
 {
-  struct meshparams *mp=&p->mp;
+  struct gal_mesh_params *mp=&p->mp;
 
   /* Read the input image. */
-  filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              (float **)&p->mp.img, &p->bitpix, &p->anyblank, &mp->s0,
-              &mp->s1);
-  readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+  gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
+                              p->up.mhdu, (float **)&p->mp.img, &p->bitpix,
+                              &p->anyblank, &mp->s0, &mp->s1);
+  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
+                              &p->nwcs, &p->wcs);
 
   /* Read the kernel: */
   if(p->up.kernelnameset)
-    prepfloatkernel(p->up.kernelname, p->up.khdu, &mp->kernel,
-                    &mp->ks0, &mp->ks1);
+    gal_fitsarray_prep_float_kernel(p->up.kernelname, p->up.khdu, &mp->kernel,
+                                    &mp->ks0, &mp->ks1);
 
   /* Check if the input sizes and channel sizes are exact
      multiples. */
@@ -570,7 +576,7 @@ preparearrays(struct subtractskyparams *p)
 void
 setparams(int argc, char *argv[], struct subtractskyparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -585,14 +591,14 @@ setparams(int argc, char *argv[], struct subtractskyparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check. */
   sanitycheck(p);
@@ -660,5 +666,5 @@ freeandreport(struct subtractskyparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

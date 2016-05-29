@@ -355,13 +355,13 @@ saveepsorpdf(struct converttparams *p)
   if(p->outputtype==EPSFORMAT)
     {
       epsfilename=p->cp.output;
-      checkremovefile(epsfilename, p->cp.dontdelete);
+      gal_checkset_check_remove_file(epsfilename, p->cp.dontdelete);
     }
   else if (p->outputtype==PDFFORMAT)
     {
-      checkremovefile(p->cp.output, p->cp.dontdelete);
-      automaticoutput(p->cp.output, ".ps", 0, p->cp.dontdelete,
-                      &epsfilename);
+      gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
+      gal_checkset_automatic_output(p->cp.output, ".ps", 0, p->cp.dontdelete,
+                                    &epsfilename);
     }
   else
     error(EXIT_FAILURE, 0, "A bug! In `saveeps`, for outputtype is "

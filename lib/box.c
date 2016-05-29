@@ -63,7 +63,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    that encloses the whole ellipse.
 */
 void
-ellipseinbox(double a, double b, double theta_rad, long *width)
+gal_box_ellipse_in_box(double a, double b, double theta_rad, long *width)
 {
   double t_x, t_y, max_x, max_y;
   t_x=atan(b/a*tan(theta_rad));
@@ -88,8 +88,8 @@ ellipseinbox(double a, double b, double theta_rad, long *width)
 /* We have the central pixel and box size of the crop box, find the
    starting and ending pixels: */
 void
-borderfromcenter(double xc, double yc, long *width,
-		 long *fpixel, long *lpixel)
+gal_box_border_from_center(double xc, double yc, long *width,
+                           long *fpixel, long *lpixel)
 {
   long lxc, lyc;
   double intpart;
@@ -187,8 +187,8 @@ borderfromcenter(double xc, double yc, long *width,
    0: There is no overlap
 */
 int
-overlap(long *naxes, long *fpixel_i, long *lpixel_i,
-	long *fpixel_o, long *lpixel_o)
+gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
+                long *fpixel_o, long *lpixel_o)
 {
   long width[2];
 

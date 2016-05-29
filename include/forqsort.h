@@ -20,32 +20,32 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef FORQSORT_H
-#define FORQSORT_H
+#ifndef __GAL_QSORT_H__
+#define __GAL_QSORT_H__
 
 /* Pointer used to sort the indexs of an array based on their flux
    (value in this array). */
-extern float *forqsortindexarr;
+extern float *gal_qsort_index_arr;
 
 int
-indexfloatdecreasing(const void * a, const void * b);
+gal_qsort_index_float_decreasing(const void * a, const void * b);
 
 int
-intdecreasing(const void * a, const void * b);
+gal_qsort_int_decreasing(const void * a, const void * b);
 
 int
-intincreasing(const void * a, const void * b);
+gal_qsort_int_increasing(const void * a, const void * b);
 
 int
-floatdecreasing(const void * a, const void * b);
+gal_qsort_float_decreasing(const void * a, const void * b);
 
 int
-floatincreasing(const void * a, const void * b);
+gal_qsort_float_increasing(const void * a, const void * b);
 
 int
-doubledecreasing(const void * a, const void * b);
+gal_qsort_double_decreasing(const void * a, const void * b);
 
 int
-doubleincreasing(const void * a, const void * b);
+gal_qsort_double_increasing(const void * a, const void * b);
 
 #endif

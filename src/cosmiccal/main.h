@@ -56,7 +56,7 @@ struct cosmiccalparams
 {
   /* Other structures: */
   struct uiparams          up;  /* User interface parameters.           */
-  struct commonparams      cp;  /* Common parameters.                   */
+  struct gal_commonparams  cp;  /* Common parameters.                   */
 
   /* Input: */
   double             redshift;  /* Redshift of interest.                */

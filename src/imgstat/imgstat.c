@@ -49,9 +49,9 @@ reportsimplestats(struct imgstatparams *p)
   float modequant, symvalue;
   float ave, std, med, modesym;
 
-  sum=floatsum(p->img, p->size);
-  favestd(p->img, p->size, &ave, &std, NULL);
-  med=p->sorted[indexfromquantile(p->size, 0.5f)];
+  sum=gal_statistics_float_sum(p->img, p->size);
+  gal_statistics_f_ave_std(p->img, p->size, &ave, &std, NULL);
+  med=p->sorted[gal_statistics_index_from_quantile(p->size, 0.5f)];
 
   /* Very simple and basic: */
   printf(SNAMEVAL FNAMEVAL FNAMEVAL, "Number of points", p->size,
@@ -60,25 +60,27 @@ reportsimplestats(struct imgstatparams *p)
 	 "Standard deviation", std, "Median", med);
 
   /* The mode: */
-  modeindexinsorted(p->sorted, p->size, p->mirrordist, &modeindex, &modesym);
+  gal_mode_index_in_sorted(p->sorted, p->size, p->mirrordist, &modeindex,
+                           &modesym);
   modequant=(float)(modeindex)/(float)(p->size);
 
   /* Report the values: */
   printf("   -- %-45s%.4f   %g\n", "Mode (quantile, value)",
          modequant, p->sorted[modeindex]);
-  symvalue=valuefromsym(p->sorted, p->size, modeindex, modesym);
+  symvalue=gal_mode_value_from_sym(p->sorted, p->size, modeindex, modesym);
   printf("   -- %-45s%.4f   %g\n", "Mode symmetricity and its cutoff"
          " value", modesym, symvalue);
-  if(modesym<MODESYMGOOD)
+  if(modesym<GAL_MODE_SYM_GOOD)
     printf("      ## MODE SYMMETRICITY IS TOO LOW ##\n");
 
   /* Save the mode histogram and cumulative frequency plot. Note
      that if the histograms are to be built, then
      mhistname!=NULL. */
   if(p->mhistname)
-    makemirrorplots(p->sorted, p->size, modeindex, p->histmin, p->histmax,
-                    p->histnumbins, p->mhistname, p->mcfpname,
-                    p->histrangeformirror ? 0.0f : p->mirrorplotdist);
+    gal_mode_make_mirror_plots(p->sorted, p->size, modeindex, p->histmin,
+                               p->histmax, p->histnumbins, p->mhistname,
+                               p->mcfpname, p->histrangeformirror ? 0.0f
+                               : p->mirrorplotdist);
 }
 
 
@@ -94,10 +96,10 @@ printasciihist(struct imgstatparams *p)
   int i, binonzero=0, normhist=0, maxhistone=1;
 
   /* Find the histogram for the ASCII plot: */
-  setbins(p->sorted, p->size, ASCIIHISTNUMBINS, p->histmin,
-          p->histmax, binonzero, quant, &bins);
-  histogram(p->sorted, p->size, bins, ASCIIHISTNUMBINS,
-            normhist, maxhistone);
+  gal_statistics_set_bins(p->sorted, p->size, ASCIIHISTNUMBINS, p->histmin,
+                          p->histmax, binonzero, quant, &bins);
+  gal_statistics_histogram(p->sorted, p->size, bins, ASCIIHISTNUMBINS,
+                           normhist, maxhistone);
 
   /* It's maximum value is set to one. Multiply that by the desired
      height in pixels. */
@@ -223,10 +225,10 @@ imgstat(struct imgstatparams *p)
   if(p->histname)
     {
       /* Make the actual data histogram and save it. */
-      setbins(p->sorted, p->size, p->histnumbins, p->histmin,
-              p->histmax, p->onebinvalue, quant, &bins);
-      histogram(p->sorted, p->size, bins, p->histnumbins,
-                p->normhist, p->maxhistone);
+      gal_statistics_set_bins(p->sorted, p->size, p->histnumbins, p->histmin,
+                              p->histmax, p->onebinvalue, quant, &bins);
+      gal_statistics_histogram(p->sorted, p->size, bins, p->histnumbins,
+                               p->normhist, p->maxhistone);
       printhistcfp(p, bins, p->histnumbins, p->histname, HISTSTRING);
 
       /* Get the hisogram maximum value if it is needed for the
@@ -249,10 +251,11 @@ imgstat(struct imgstatparams *p)
       else
 	{
 	  if(p->histname) free(bins);
-          setbins(p->sorted, p->size, p->cfpnum, p->cfpmin,
-                  p->cfpmax, p->onebinvalue, quant, &bins);
+          gal_statistics_set_bins(p->sorted, p->size, p->cfpnum, p->cfpmin,
+                                  p->cfpmax, p->onebinvalue, quant, &bins);
 	}
-      cumulativefp(p->sorted, p->size, bins, p->cfpnum, p->normcfp);
+      gal_statistics_cumulative_fp(p->sorted, p->size, bins,
+                                   p->cfpnum, p->normcfp);
 
       if(p->maxcfpeqmaxhist)
 	for(i=0;i<p->cfpnum;++i)
@@ -263,10 +266,13 @@ imgstat(struct imgstatparams *p)
 
   /* Make the mirror distribution if asked for: */
   if(isnan(p->mirror)==0)
-    makemirrorplots(p->sorted, p->size, indexfromquantile(p->size, p->mirror),
-                    p->histmin, p->histmax, p->histnumbins, p->mirrorhist,
-                    p->mirrorcfp,
-                    p->histrangeformirror ? 0.0f : p->mirrorplotdist);
+    gal_mode_make_mirror_plots(p->sorted, p->size,
+                               gal_statistics_index_from_quantile(p->size,
+                                                                  p->mirror),
+                               p->histmin, p->histmax, p->histnumbins,
+                               p->mirrorhist, p->mirrorcfp,
+                               p->histrangeformirror ? 0.0f
+                               : p->mirrorplotdist);
 
   /* Print out the Sigma clippings: */
   if(p->sigclip && p->cp.verb)
@@ -274,14 +280,17 @@ imgstat(struct imgstatparams *p)
       printf(" - Sigma clipping results (Median, Mean, STD, Number):\n");
       printf("   - %.2f times sigma by convergence (tolerance: %.4f):\n",
              p->sigclipmultip, p->sigcliptolerance);
-      r=sigmaclip_converge(p->sorted, 1, p->size, p->sigclipmultip,
-                           p->sigcliptolerance, &ave, &med, &std, 1);
+      r=gal_statistics_sigma_clip_converge(p->sorted, 1, p->size,
+                                           p->sigclipmultip,
+                                           p->sigcliptolerance, &ave,
+                                           &med, &std, 1);
       if(r==0)
         printf("   #### Could not converge\n");
       printf("   - %.2f sigma-clipping %lu times:\n",
 	     p->sigclipmultip, p->sigclipnum);
-      sigmaclip_certainnum(p->sorted, 1, p->size, p->sigclipmultip,
-                           p->sigclipnum, &ave, &med, &std, 1);
+      gal_statistics_sigma_clip_certain_num(p->sorted, 1, p->size,
+                                            p->sigclipmultip, p->sigclipnum,
+                                            &ave, &med, &std, 1);
     }
 
   /* Free the allocated arrays: */

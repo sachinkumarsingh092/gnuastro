@@ -175,7 +175,7 @@ polygonparser(struct imgcropparams *p)
   size_t dim=0;
   char *tailptr;
   double read[2], *array;
-  struct tdll *tdll=NULL;
+  struct gal_linkedlist_tdll *gal_linkedlist_tdll=NULL;
   char *pt=p->up.polygon;
 
   /* Parse the string. */
@@ -224,7 +224,7 @@ polygonparser(struct imgcropparams *p)
           /* If this was the second dimension, then put the values
              into the linked list: */
           if(dim==1)
-            add_to_tdll(&tdll, read[0], read[1]);
+            gal_linkedlist_add_to_tdll(&gal_linkedlist_tdll, read[0], read[1]);
 
           /* The job here is done, start from tailptr */
           pt=tailptr;
@@ -232,7 +232,7 @@ polygonparser(struct imgcropparams *p)
     }
 
   /* Convert the linked list to an array: */
-  tdlltoarrayinv(tdll, &array, &p->nvertices);
+  gal_linkedlist_tdll_to_array_inv(gal_linkedlist_tdll, &array, &p->nvertices);
   if(p->imgmode) { p->ipolygon=array; p->wpolygon=NULL;  }
   else           { p->ipolygon=NULL;  p->wpolygon=array; }
 
@@ -248,7 +248,7 @@ polygonparser(struct imgcropparams *p)
   */
 
   /* Clean up: */
-  freetdll(tdll);
+  gal_linkedlist_free_tdll(gal_linkedlist_tdll);
 }
 
 
@@ -313,7 +313,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
   /* Find the order of the polygons and put the elements in the proper
      order. Also subtract the fpixel_i coordinates from all the
      vertices to bring them into the crop image coordinates.*/
-  orderedpolygoncorners(crp->ipolygon, crp->p->nvertices, ordinds);
+  gal_polygon_ordered_corners(crp->ipolygon, crp->p->nvertices, ordinds);
   for(i=0;i<crp->p->nvertices;++i)
     {
       ipolygon[i*2  ] = crp->ipolygon[ordinds[i]*2]   - fpixel_i[0];
@@ -326,56 +326,56 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
   switch(bitpix)
     {
     case BYTE_IMG:
-      bb=bitpixblank(bitpix);
+      bb=gal_fitsarray_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) ba[i]=*bb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) ba[i]=*bb;
         }
       free(bb);
       break;
     case SHORT_IMG:
-      sb=bitpixblank(bitpix);
+      sb=gal_fitsarray_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) sa[i]=*sb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) sa[i]=*sb;
         }
       free(sb);
       break;
     case LONG_IMG:
-      lb=bitpixblank(bitpix);
+      lb=gal_fitsarray_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) la[i]=*lb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) la[i]=*lb;
         }
       free(lb);
       break;
     case LONGLONG_IMG:
-      Lb=bitpixblank(bitpix);
+      Lb=gal_fitsarray_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) La[i]=*Lb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) La[i]=*Lb;
         }
       free(Lb);
       break;
     case FLOAT_IMG:
-      fb=bitpixblank(bitpix);
+      fb=gal_fitsarray_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) fa[i]=*fb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) fa[i]=*fb;
         }
       free(fb);
       break;
     case DOUBLE_IMG:
-      db=bitpixblank(bitpix);
+      db=gal_fitsarray_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(pinpolygon(ipolygon, point, nvertices)==outpolygon) da[i]=*db;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) da[i]=*db;
         }
       free(db);
       break;
@@ -451,7 +451,7 @@ void
 cropname(struct cropparams *crp)
 {
   struct imgcropparams *p=crp->p;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   struct imgcroplog *log=&crp->p->log[crp->outindex];
 
   /* Set the output name and crop sides: */
@@ -464,7 +464,7 @@ cropname(struct cropparams *crp)
 	      "imgcroponthreads", crp->outlen);
       sprintf(log->name, "%s%lu%s", cp->output, crp->outindex+1,
 	      p->suffix);
-      checkremovefile(log->name, cp->dontdelete);
+      gal_checkset_check_remove_file(log->name, cp->dontdelete);
     }
   else
     {
@@ -472,10 +472,10 @@ cropname(struct cropparams *crp)
       if(p->outnameisfile)            /* An output file was specified. */
 	{
 	  log->name=cp->output;
-	  checkremovefile(log->name, cp->dontdelete);
+	  gal_checkset_check_remove_file(log->name, cp->dontdelete);
 	}
       else	  /* The output was a directory, use automatic output. */
-	automaticoutput(p->imgs[crp->imgindex].name, p->suffix,
+	gal_checkset_automatic_output(p->imgs[crp->imgindex].name, p->suffix,
 			cp->removedirinfo, cp->dontdelete,
 			&log->name);
     }
@@ -499,11 +499,11 @@ cropflpixel(struct cropparams *crp)
   if(p->imgmode)
     {
       if(p->up.catset)
-	borderfromcenter(p->cat[crp->outindex*p->cs1+p->xcol],
-			 p->cat[crp->outindex*p->cs1+p->ycol],
-			 p->iwidth, fpixel, lpixel);
+        gal_box_border_from_center(p->cat[crp->outindex*p->cs1+p->xcol],
+                                   p->cat[crp->outindex*p->cs1+p->ycol],
+                                   p->iwidth, fpixel, lpixel);
       else if(p->up.xcset)
-	borderfromcenter(p->xc, p->yc, p->iwidth, fpixel, lpixel);
+        gal_box_border_from_center(p->xc, p->yc, p->iwidth, fpixel, lpixel);
       else if(p->up.sectionset)
 	sectionparser(p->section, naxes, fpixel, lpixel);
       else if(p->up.polygonset)
@@ -534,7 +534,8 @@ cropflpixel(struct cropparams *crp)
                     phi, theta, imgcrd, pixcrd, &status) )
             error(EXIT_FAILURE, 0, "wcss2p error %d: %s", status,
                   wcs_errmsg[status]);
-          borderfromcenter(pixcrd[0], pixcrd[1], p->iwidth, fpixel, lpixel);
+          gal_box_border_from_center(pixcrd[0], pixcrd[1], p->iwidth, fpixel,
+                                     lpixel);
           /*
             printf("\n(%f, %f): (%ld, %ld) -- (%ld, %ld)\n\n", pixcrd[0],
                    pixcrd[1], fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
@@ -610,17 +611,17 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
   /* Create the FITS image extension and array and fill it with null
      values. */
   if(fits_create_file(&crp->outfits, outname, &status))
-    fitsioerror(status, "Creating file.");
+    gal_fitsarray_io_error(status, "Creating file.");
   ofp=crp->outfits;
   if(fits_create_img(ofp, bitpix, naxis, naxes, &status))
-    fitsioerror(status, "Creating image.");
+    gal_fitsarray_io_error(status, "Creating image.");
   if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
      || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
     if(fits_write_key(ofp, crp->p->datatype, "BLANK",
 		      crp->p->bitnul, "Pixels with no data.", &status) )
-      fitsioerror(status, "Adding Blank.");
+      gal_fitsarray_io_error(status, "Adding Blank.");
   if(fits_write_null_img(ofp, 1, naxes[0]*naxes[1], &status))
-    fitsioerror(status, "Writing null array.");
+    gal_fitsarray_io_error(status, "Writing null array.");
 
 
   /* Write the WCS header keywords in the output FITS image, then
@@ -630,7 +631,7 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
       crpix0 = img->wcs->crpix[0] - (fpixel_i[0]-1) + (fpixel_c[0]-1);
       crpix1 = img->wcs->crpix[1] - (fpixel_i[1]-1) + (fpixel_c[1]-1);
       if(fits_write_record(ofp, blankrec, &status))
-        fitsioerror(status, NULL);
+        gal_fitsarray_io_error(status, NULL);
       sprintf(titlerec, "%sWCS information", startblank);
       for(i=strlen(titlerec);i<79;++i)
         titlerec[i]=' ';
@@ -639,18 +640,18 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
         fits_write_record(ofp, &img->wcstxt[i*80], &status);
       fits_update_key(ofp, TDOUBLE, "CRPIX1", &crpix0, NULL, &status);
       fits_update_key(ofp, TDOUBLE, "CRPIX2", &crpix1, NULL, &status);
-      fitsioerror(status, NULL);
+      gal_fitsarray_io_error(status, NULL);
     }
 
 
   /* Add the Crop information. */
   if(fits_write_record(ofp, blankrec, &status))
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
   sprintf(titlerec, "%sCrop information", startblank);
   for(i=strlen(titlerec);i<79;++i)
     titlerec[i]=' ';
   if(fits_write_record(ofp, titlerec, &status))
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 }
 
 
@@ -675,7 +676,7 @@ onecrop(struct cropparams *crp)
   char basename[FLEN_KEYWORD];
   long fpixel_i[2] , lpixel_i[2];
   fitsfile *ifp=crp->infits, *ofp;
-  struct fitsheaderll *headers=NULL;
+  struct gal_fitsarray_header_ll *headers=NULL;
   int status=0, anynul=0, bitpix=p->bitpix;
   long fpixel_o[2], lpixel_o[2], inc[2]={1,1};
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
@@ -690,7 +691,7 @@ onecrop(struct cropparams *crp)
 
 
   /* Find the overlap and apply it if there is any overlap. */
-  if( overlap(img->naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o) )
+  if( gal_box_overlap(img->naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o) )
     {
       /* Make the output FITS image and initialize it with an array of
 	 NaN or BLANK values. Note that for FLOAT_IMG and DOUBLE_IMG,
@@ -703,11 +704,11 @@ onecrop(struct cropparams *crp)
       /* Read the desired part of the image, then write it into this
 	 array. */
       cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
-      array=bitpixalloc(cropsize, bitpix);
+      array=gal_fitsarray_bitpix_alloc(cropsize, bitpix);
       status=0;
       if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
 			  p->bitnul, array, &anynul, &status))
-	fitsioerror(status, NULL);
+	gal_fitsarray_io_error(status, NULL);
 
 
       /* If we have a floating point or double image, pixels with zero
@@ -735,21 +736,21 @@ onecrop(struct cropparams *crp)
       status=0;
       if( fits_write_subset(ofp, p->datatype, fpixel_o, lpixel_o,
 			    array, &status) )
-	fitsioerror(status, NULL);
+	gal_fitsarray_io_error(status, NULL);
 
 
       /* A section has been added to the cropped image from this input
 	 image, so increment crp->imgcount and save the information of
 	 this image. */
       sprintf(basename, "ICF%lu", ++p->log[crp->outindex].numimg);
-      filenameinkeywords(basename, img->name, &headers);
+      gal_fitsarray_file_name_in_keywords(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
 	      fpixel_i[1], lpixel_i[1]+1);
-      add_to_fitsheaderllend(&headers, TSTRING, regionkey, 0, region, 0,
-			     "Range of pixels used for this output.",
-			     0, NULL);
-      updatekeys(ofp, &headers);
+      gal_fitsarray_add_to_fits_header_ll_end(&headers, TSTRING, regionkey, 0,
+                                              region, 0, "Range of pixels "
+                                              "used for this output.", 0, NULL);
+      gal_fitsarray_update_keys(ofp, &headers);
 
 
       /* Free the allocated array. */
@@ -807,7 +808,7 @@ iscenterfilled(struct cropparams *crp)
 
   /* Get the final size of the output image. */
   if( fits_get_img_size(ofp, maxdim, naxes, &status) )
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   /* Get the size and range of the central region to check. The +1 is
      because in FITS, counting begins from 1, not zero. */
@@ -818,10 +819,10 @@ iscenterfilled(struct cropparams *crp)
 
   /* Allocate the array and read in the pixels. */
   size=checkcenter*checkcenter;
-  array=bitpixalloc(size, bitpix);
+  array=gal_fitsarray_bitpix_alloc(size, bitpix);
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
 		       p->bitnul, array, &anynul, &status) )
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   /* Depending on bitpix, check the central pixels of the image. */
   nulcount=0;
@@ -900,7 +901,7 @@ printlog(struct imgcropparams *p)
 {
   size_t i;
   FILE *logfile;
-  char msg[VERBMSGLENGTH_V];
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
   struct imgcroplog *log=p->log;
   size_t numfiles=0, numcentfilled=0, numstitched=0;
 
@@ -920,7 +921,7 @@ printlog(struct imgcropparams *p)
 	}
 
   /* Check to see if the file exists and remove if if it is ok. */
-  checkremovefile(LOGFILENAME, p->cp.dontdelete);
+  gal_checkset_check_remove_file(LOGFILENAME, p->cp.dontdelete);
 
   /* Make the file and print the top comments. If the file can't be
      opened for write mode, there is no problem, this is a log file,
@@ -955,15 +956,15 @@ printlog(struct imgcropparams *p)
       if(p->cp.verb && p->up.catset)
 	{
 	  sprintf(msg, "%lu images created.", numfiles);
-	  reporttiming(NULL, msg, 1);
+	  gal_timing_report(NULL, msg, 1);
 	  sprintf(msg, "%lu filled in the center.",
 		  numcentfilled);
-	  reporttiming(NULL, msg, 1);
+	  gal_timing_report(NULL, msg, 1);
 	  if(numstitched)
 	    {
 	      sprintf(msg, "%lu used more than one input.",
 		      numstitched);
-	      reporttiming(NULL, msg, 1);
+	      gal_timing_report(NULL, msg, 1);
 	    }
 	}
 

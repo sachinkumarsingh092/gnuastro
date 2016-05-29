@@ -20,15 +20,15 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef POLYGON_H
-#define POLYGON_H
+#ifndef __GAL_POLYGON_H__
+#define __GAL_POLYGON_H__
 
 
 
 
 
-#define MAXPOLYGONCORNERS 50
-#define ROUNDERR          1e-5
+#define GAL_POLYGON_MAX_CORNERS  50
+#define GAL_POLYGON_ROUND_ERR    1e-5
 
 
 
@@ -38,20 +38,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************     Function declarations     ******************/
 /***************************************************************/
 void
-orderedpolygoncorners(double *in, size_t n, size_t *ordinds);
+gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds);
 
 double
-polygonarea(double *v, size_t n);
+gal_polygon_area(double *v, size_t n);
 
 int
-pinpolygon(double *v, double *p, size_t n);
+gal_polygon_pin(double *v, double *p, size_t n);
 
 int
-ppropinpolygon(double *v, double *p, size_t n);
+gal_polygon_ppropin(double *v, double *p, size_t n);
 
 void
-polygonclip(double *s, size_t n, double *c, size_t m,
-            double *o, size_t *numcrn);
+gal_polygon_clip(double *s, size_t n, double *c, size_t m,
+                 double *o, size_t *numcrn);
 
 
 
@@ -74,14 +74,14 @@ polygonclip(double *s, size_t n, double *c, size_t m,
 /**************            MACROS             ******************/
 /***************************************************************/
 /* The cross product of two points from the center. */
-#define crossproduct(A, B) ( (A)[0]*(B)[1] - (B)[0]*(A)[1] )
+#define GAL_POLYGON_CROSS_PRODUCT(A, B) ( (A)[0]*(B)[1] - (B)[0]*(A)[1] )
 
 
 
 
 /* Find the cross product (2*area) between three points. Each point is
    assumed to be a pointer that has atleast two values within it. */
-#define tricrossproduct(A, B, C)                  \
+#define GAL_POLYGON_TRI_CROSS_PRODUCT(A, B, C)    \
   ( ( (B)[0]-(A)[0] ) * ( (C)[1]-(A)[1] ) -       \
     ( (C)[0]-(A)[0] ) * ( (B)[1]-(A)[1] ) )       \
 
@@ -102,28 +102,28 @@ polygonclip(double *s, size_t n, double *c, size_t m,
    zero for the area. Zero would indicate that they are on the same
    line in this case this should give a true result.
 */
-#define pleftofline(A, B, C)                            \
-  ( tricrossproduct((A), (B), (C)) > -ROUNDERR ) /* >= 0 */
+#define GAL_POLYGON_LEFT_OF_LINE(A, B, C)                               \
+  ( GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) > -GAL_POLYGON_ROUND_ERR ) /* >= 0 */
 
 
 
 
-/* See if the three points are collinear, similar to pleftofline
+/* See if the three points are collinear, similar to GAL_POLYGON_LEFT_OF_LINE
    except that the result has to be exactly zero. */
-#define pcollinearwithline(A, B, C)                            \
-  ( tricrossproduct((A), (B), (C)) > -ROUNDERR                 \
-    && tricrossproduct((A), (B), (C)) < ROUNDERR) /* == 0 */
+#define GAL_POLYGON_COLLINEAR_WITH_LINE(A, B, C)                        \
+  (GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) > -GAL_POLYGON_ROUND_ERR \
+   && GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) < GAL_POLYGON_ROUND_ERR) /* == 0 */
 
 
 
 
-/* Similar to pleftofline except that if they are on the same line,
+/* Similar to GAL_POLYGON_LEFT_OF_LINE except that if they are on the same line,
    this will return 0 (so that it is not on the left). Therefore the
    name is "proper left". */
-#define ppropleftofline(A, B, C)                            \
-  ( tricrossproduct((A), (B), (C)) > ROUNDERR ) /* > 0   */
+#define GAL_POLYGON_PROP_LEFT_OF_LINE(A, B, C)                          \
+  ( GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) > GAL_POLYGON_ROUND_ERR ) /* > 0   */
 
 
-#define minoftwo(A, B) ( (A)<(B)+ROUNDERR ? (A) : (B) )
-#define maxoftwo(A, B) ( (A)>(B)-ROUNDERR ? (A) : (B) )
+#define GAL_POLYGON_MIN_OF_TWO(A, B) ((A)<(B)+GAL_POLYGON_ROUND_ERR ? (A) : (B))
+#define GAL_POLYGON_MAX_OF_TWO(A, B) ((A)>(B)-GAL_POLYGON_ROUND_ERR ? (A) : (B))
 #endif

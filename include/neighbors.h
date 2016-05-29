@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef NEIGHBORS_H
-#define NEIGHBORS_H
+#ifndef __GAL_NEIGHBORS_H__
+#define __GAL_NEIGHBORS_H__
 
 
 /* These macros can be put any where you want to know the neighbors of
@@ -39,7 +39,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    *ngb       : Array keeping the neighbours indexs (allocated outside).
 */
 
-#define FILL_NGB_4_REGION {			                   \
+#define GAL_NEIGHBORS_FILL_4_REGION {                              \
     numngb=0;							   \
     if (*ind/is1!=x0  ) ngb[numngb++]=*ind-is1;			   \
     if (*ind/is1!=x1-1) ngb[numngb++]=*ind+is1;			   \
@@ -48,7 +48,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   }
 
 
-#define FILL_NGB_4_ALLIMG {					   \
+#define GAL_NEIGHBORS_FILL_4_ALLIMG {                              \
     numngb=0;							   \
     if (*ind/is1!=0    ) ngb[numngb++]=*ind-is1;		   \
     if (*ind/is1!=is0-1) ngb[numngb++]=*ind+is1;		   \
@@ -57,7 +57,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   }
 
 
-#define FILL_NGB_8_REGION {					   \
+#define GAL_NEIGHBORS_FILL_8_REGION {                              \
     unsigned char bl=0, br=0, tl=0, tr=0;			   \
     numngb=0;						           \
     if (*ind/is1!=x0  ) {ngb[numngb++]=*ind-is1; ++bl; ++br;}	   \
@@ -80,7 +80,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   }
 
 
-#define FILL_NGB_8_ALLIMG {					   \
+#define GAL_NEIGHBORS_FILL_8_ALLIMG {                              \
     unsigned char bl=0, br=0, tl=0, tr=0;			   \
     numngb=0;						           \
     if (*ind/is1!=0     ) {ngb[numngb++]=*ind-is1; ++bl; ++br;}	   \
@@ -103,7 +103,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   }
 
 
-#define FILL_NGB_8_ALLIMG_IJ {					   \
+#define GAL_NEIGHBORS_FILL_8_ALLIMG_IJ {                           \
     unsigned char bl=0, br=0, tl=0, tr=0;			   \
     numngb=0;						           \
     if (i!=0     ) {ngb[numngb++]=(i-1)*is1+j; ++bl; ++br;}	   \

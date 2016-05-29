@@ -205,29 +205,33 @@ saveindividual(struct mkonthread *mkp)
 
   /* Write the name and save the FITS image: */
   sprintf(outname, "%s%lu_%s", outdir, ibq->id, p->basename);
-  checkremovefile(outname, p->cp.dontdelete);
+  gal_checkset_check_remove_file(outname, p->cp.dontdelete);
 
   /* Change NaN values to 0.0f: */
-  freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], NAN, 0.0f);
+  gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
+                                NAN, 0.0f);
   if(p->setconsttonan)
-    freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], CONSTFORNAN, NAN);
+    gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
+                                  CONSTFORNAN, NAN);
 
   /* Write the array to file (A separately built PSF doesn't need WCS
      coordinates): */
   if(ibq->ispsf && p->psfinimg==0)
-    arraytofitsimg(outname, "MockImg", FLOAT_IMG, ibq->img,
-		   mkp->width[1], mkp->width[0], 0, NULL, NULL,
-                   SPACK_STRING);
+    gal_fitsarray_array_to_fits_img(outname, "MockImg", FLOAT_IMG, ibq->img,
+                                    mkp->width[1], mkp->width[0], 0, NULL, NULL,
+                                    SPACK_STRING);
   else
-    atofcorrectwcs(outname, "MockImg", FLOAT_IMG, ibq->img,
-		   mkp->width[1], mkp->width[0], p->wcsheader,
-		   p->wcsnkeyrec, crpix, SPACK_STRING);
+    gal_fitsarray_atof_correct_wcs(outname, "MockImg", FLOAT_IMG, ibq->img,
+                                   mkp->width[1], mkp->width[0], p->wcsheader,
+                                   p->wcsnkeyrec, crpix, SPACK_STRING);
   ibq->indivcreated=1;
 
   /* Change 0.0f values to NAN: */
   if(p->setconsttonan)
-    freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], NAN, CONSTFORNAN);
-  freplacevalue(ibq->img, mkp->width[1]*mkp->width[0], 0.0f, NAN);
+    gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
+                                  NAN, CONSTFORNAN);
+  gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
+                                0.0f, NAN);
 
   /* Report if in verbose mode. */
   if(p->cp.verb)
@@ -236,7 +240,7 @@ saveindividual(struct mkonthread *mkp)
       jobname=malloc((len+100)*sizeof *jobname);
       if(jobname==NULL)	error(EXIT_FAILURE, errno, "jobname in mkprof.c");
       sprintf(jobname, "%s created.", outname);
-      reporttiming(NULL, jobname, 2);
+      gal_timing_report(NULL, jobname, 2);
       free(jobname);
     }
   free(outname);
@@ -306,7 +310,7 @@ build(void *inparam)
   pthread_cond_t *qready=&p->qready;
 
   /* Make each profile that was specified for this thread. */
-  for(i=0;mkp->indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;mkp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Create a new builtqueue element with all the information. fbq
 	 will be used when we want to add ibq to p->bq. It is defined
@@ -329,18 +333,18 @@ build(void *inparam)
       if((int)cat[p->fcol]==POINTCODE)
 	mkp->width[0]=mkp->width[1]=1;
       else
-	ellipseinbox(mkp->truncr, mkp->q*mkp->truncr,
-		     cat[p->pcol]*DEGREESTORADIANS, mkp->width);
+        gal_box_ellipse_in_box(mkp->truncr, mkp->q*mkp->truncr,
+                               cat[p->pcol]*DEGREESTORADIANS, mkp->width);
 
 
       /* Get the overlapping pixels using the starting points (NOT
 	 oversampled). */
-      borderfromcenter(cat[p->xcol], cat[p->ycol], mkp->width,
-		       ibq->fpixel_i, ibq->lpixel_i);
+      gal_box_border_from_center(cat[p->xcol], cat[p->ycol], mkp->width,
+                                 ibq->fpixel_i, ibq->lpixel_i);
       mkp->fpixel_i[0]=ibq->fpixel_i[0];
       mkp->fpixel_i[1]=ibq->fpixel_i[1];
-      ibq->overlaps = overlap(mkp->onaxes, ibq->fpixel_i, ibq->lpixel_i,
-			      ibq->fpixel_o, lpixel_o);
+      ibq->overlaps = gal_box_overlap(mkp->onaxes, ibq->fpixel_i, ibq->lpixel_i,
+                                      ibq->fpixel_o, lpixel_o);
 
 
       /* Build the profile if necessary, After this, the width is
@@ -354,7 +358,7 @@ build(void *inparam)
           /* Set the seed of the random number generator if the
              environment is not to be used. */
           if(mkp->p->envseed==0)
-            gsl_rng_set(mkp->rng, timebasedrngseed());
+            gsl_rng_set(mkp->rng, gal_timing_time_based_rng_seed());
 
           /* Make the profile */
 	  makeoneprofile(mkp);
@@ -404,7 +408,7 @@ build(void *inparam)
              this thread to add up its built profiles). So we have to
              lock the mutex to pass on this built structure to the
              builtqueue. */
-          else if (mkp->indexs[i+1]==NONTHRDINDEX)
+          else if (mkp->indexs[i+1]==GAL_THREADS_NON_THRD_INDEX)
             {
 	      pthread_mutex_lock(qlock);
 	      fbq->next=p->bq;
@@ -467,8 +471,8 @@ writelog(struct mkprofparams *p)
 	  ctime(&p->rawtime), p->zeropoint);
 
 
-  arraytotxt(p->log, p->cs0, LOGNUMCOLS, comments, int_cols,
-	     accu_cols, space, prec, 'f', LOGFILENAME);
+  gal_txtarray_array_to_txt(p->log, p->cs0, LOGNUMCOLS, comments, int_cols,
+                            accu_cols, space, prec, 'f', LOGFILENAME);
 }
 
 
@@ -594,7 +598,7 @@ write(struct mkprofparams *p)
 	    error(EXIT_FAILURE, errno, "jobname in mkprof.c");
 	  sprintf(jobname, "Row %lu complete, %lu left to go.",
 		  ibq->id, cs0-complete);
-	  reporttiming(NULL, jobname, 2);
+	  gal_timing_report(NULL, jobname, 2);
 	  free(jobname);
 	}
 
@@ -615,17 +619,20 @@ write(struct mkprofparams *p)
       if(p->up.backname)
         {
           if(bitpix==FLOAT_IMG) array=out;
-          else changetype(p->out, FLOAT_IMG, p->naxes[1]*p->naxes[0],
-                          p->anyblank, &array, bitpix);
-          arraytofitsimg(p->mergedimgname, "MockImg on back", bitpix,
-                         array, p->naxes[1], p->naxes[0], p->anyblank,
-                         p->wcs, NULL, SPACK_STRING);
+          else gal_fitsarray_change_type(p->out, FLOAT_IMG,
+                                         p->naxes[1]*p->naxes[0],
+                                         p->anyblank, &array, bitpix);
+          gal_fitsarray_array_to_fits_img(p->mergedimgname, "MockImg on back",
+                                          bitpix, array, p->naxes[1],
+                                          p->naxes[0], p->anyblank, p->wcs,
+                                          NULL, SPACK_STRING);
           if(bitpix!=FLOAT_IMG) free(array);
         }
       else
-        atofcorrectwcs(p->mergedimgname, "MockImg", FLOAT_IMG, out,
-                       p->naxes[1], p->naxes[0], p->wcsheader,
-                       p->wcsnkeyrec, NULL, SPACK_STRING);
+        gal_fitsarray_atof_correct_wcs(p->mergedimgname, "MockImg", FLOAT_IMG,
+                                       out, p->naxes[1], p->naxes[0],
+                                       p->wcsheader, p->wcsnkeyrec,
+                                       NULL, SPACK_STRING);
       if(verb)
 	{
 	  errno=0;
@@ -633,7 +640,7 @@ write(struct mkprofparams *p)
 	  if(jobname==NULL)
 	    error(EXIT_FAILURE, errno, "final report in mkprof.c");
 	  sprintf(jobname, "%s created.", p->mergedimgname);
-	  reporttiming(&t1, jobname, 1);
+	  gal_timing_report(&t1, jobname, 1);
 	  free(jobname);
 	}
     }
@@ -692,7 +699,7 @@ mkprof(struct mkprofparams *p)
   /* Distribute the different profiles for different threads. Note
      that one thread is left out for writing, while nt-1 are left
      for building. */
-  distinthreads(p->cs0, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(p->cs0, nt, &indexs, &thrdcols);
 
   /* onaxes are sides of the image without over-sampling. */
   onaxes[0] = (p->naxes[0]-2*p->shift[0])/os + 2*p->shift[0]/os;
@@ -714,7 +721,7 @@ mkprof(struct mkprofparams *p)
 	 barrier stops. */
       if(p->cs0<nt) nb=p->cs0+1;
       else nb=nt+1;
-      attrbarrierinit(&attr, &b, nb);
+      gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Initialize the condition variable and mutex. */
       err=pthread_mutex_init(&p->qlock, NULL);
@@ -724,7 +731,7 @@ mkprof(struct mkprofparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-	if(indexs[i*thrdcols]!=NONTHRDINDEX)
+	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
 	    mkp[i].p=p;
 	    mkp[i].b=&b;

@@ -71,7 +71,7 @@ readconfig(char *filename, struct headerparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   /*struct uiparams *up=&p->up;*/
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -95,7 +95,7 @@ readconfig(char *filename, struct headerparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
@@ -121,7 +121,7 @@ readconfig(char *filename, struct headerparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -141,21 +141,21 @@ void
 printvalues(FILE *fp, struct headerparams *p)
 {
   /*struct uiparams *up=&p->up;*/
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
 
 
   /* For the operating mode, first put the macro to print the common
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -169,14 +169,14 @@ void
 checkifset(struct headerparams *p)
 {
   /*struct uiparams *up=&p->up;*/
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
 
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -236,7 +236,7 @@ void
 setuprename(struct headerparams *p)
 {
   char *c;
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
 
   for(tmp=p->up.rename; tmp!=NULL; tmp=tmp->next)
     {
@@ -248,8 +248,8 @@ setuprename(struct headerparams *p)
       strcpy(c, tmp->v);
 
       /* Tokenize the input. */
-      add_to_stll(&p->renamefrom, strtok(tmp->v, ", "));
-      add_to_stll(&p->renameto, strtok(NULL, ", "));
+      gal_linkedlist_add_to_stll(&p->renamefrom, strtok(tmp->v, ", "));
+      gal_linkedlist_add_to_stll(&p->renameto, strtok(NULL, ", "));
       if(p->renamefrom->v==NULL || p->renameto->v==NULL)
         error(EXIT_FAILURE, 0, "`%s' could not be tokenized in order to "
               "complete rename. There should be a space character "
@@ -260,7 +260,7 @@ setuprename(struct headerparams *p)
     }
   /*
   {
-    struct stll *tmp2=p->renameto;
+    struct gal_linkedlist_stll *tmp2=p->renameto;
     for(tmp=p->renamefrom; tmp!=NULL; tmp=tmp->next)
       {
         printf("%s to %s\n", tmp->v, tmp2->v);
@@ -275,12 +275,13 @@ setuprename(struct headerparams *p)
 
 
 void
-fillfitsheaderll(struct stll *input, struct fitsheaderll **output)
+fillfitsheaderll(struct gal_linkedlist_stll *input,
+                 struct gal_fitsarray_header_ll **output)
 {
   long l, *lp;
   void *fvalue;
   double d, *dp;
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
   int i=0, datatype, vfree;
   char *c, *cf, *start, *tailptr;
   char *original, *keyname, *value, *comment, *unit;
@@ -383,8 +384,8 @@ fillfitsheaderll(struct stll *input, struct fitsheaderll **output)
         }
 
 
-      add_to_fitsheaderll(output, datatype, keyname, 0, fvalue, vfree,
-                          comment, 0, unit);
+      gal_fitsarray_add_to_fits_header_ll(output, datatype, keyname, 0,
+                                          fvalue, vfree, comment, 0, unit);
       free(original);
     }
 }
@@ -414,7 +415,7 @@ preparearrays(struct headerparams *p)
   else
     iomode=READWRITE;
   if( fits_open_file(&p->fptr, ffname, iomode, &status) )
-    fitsioerror(status, "Reading file.");
+    gal_fitsarray_io_error(status, "Reading file.");
   free(ffname);
 
   /* Separate the comma-separated values:  */
@@ -451,7 +452,7 @@ preparearrays(struct headerparams *p)
 void
 setparams(int argc, char *argv[], struct headerparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -466,14 +467,14 @@ setparams(int argc, char *argv[], struct headerparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check. */
   sanitycheck(p);
@@ -515,7 +516,7 @@ freeandreport(struct headerparams *p)
 
   /* Close the FITS file: */
   if(fits_close_file(p->fptr, &status))
-    fitsioerror(status, NULL);
+    gal_fitsarray_io_error(status, NULL);
 
   if(p->wcs)
     wcsvfree(&p->nwcs, &p->wcs);

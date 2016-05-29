@@ -539,8 +539,9 @@ preparewcs(struct mkcatalogparams *p, size_t col)
       /* Do the conversion. Note that the p->icols is added because
          the first row is not used by any object or colump (since
          their indexes begin from 1).*/
-      xyarraytoradec(p->wcs, p->info+p->icols+xc, p->info+p->icols+rc,
-                     p->num, p->icols);
+      gal_fitsarray_xy_array_to_radec(p->wcs, p->info+p->icols+xc,
+                                      p->info+p->icols+rc,
+                                      p->num, p->icols);
 
 
       /* Set the flag of the converted columns to 1.0f, so the

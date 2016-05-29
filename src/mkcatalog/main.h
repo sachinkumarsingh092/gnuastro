@@ -291,7 +291,7 @@ struct mkcatalogparams
 {
   /* Other structures: */
   struct uiparams          up;  /* User interface parameters.         */
-  struct commonparams      cp;  /* Common parameters.                 */
+  struct gal_commonparams  cp;  /* Common parameters.                 */
 
   /* Input: */
   float                  *img;  /* Input image.                       */
@@ -325,7 +325,7 @@ struct mkcatalogparams
   double               *cinfo;  /* Information for all the clumps.    */
   size_t           numobjects;  /* Total number of objects.           */
   size_t            numclumps;  /* Total number of clumps.            */
-  struct sll       *allcolsll;  /* All the input columns.             */
+  struct gal_linkedlist_sll *allcolsll; /* All the input columns.     */
   size_t             *allcols;  /* Array keeping all the input cols.  */
   size_t             allncols;  /* Total number of input columns.     */
   size_t             *objcols;  /* Array of objcolsll.                */

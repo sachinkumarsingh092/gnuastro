@@ -29,7 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "InputFile1 [InputFile2] ... [InputFile4]";
@@ -40,11 +40,11 @@ static char args_doc[] = "InputFile1 [InputFile2] ... [InputFile4]";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" will convert any of the known input formats to any other "
   "of the known formats. The output file will have the same number of "
   "pixels.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -277,29 +277,30 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input:  */
     case 500:
-      allocatecopyset(arg, &p->up.hdu2, &p->up.hdu2set);
+      gal_checkset_allocate_copy_set(arg, &p->up.hdu2, &p->up.hdu2set);
       break;
     case 501:
-      allocatecopyset(arg, &p->up.hdu3, &p->up.hdu3set);
+      gal_checkset_allocate_copy_set(arg, &p->up.hdu3, &p->up.hdu3set);
       break;
     case 502:
-      allocatecopyset(arg, &p->up.hdu4, &p->up.hdu4set);
+      gal_checkset_allocate_copy_set(arg, &p->up.hdu4, &p->up.hdu4set);
       break;
 
 
     /* Output: */
     case 'w':
-      floatl0(arg, &p->widthincm, "widthincm", key, p->cp.spack, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->widthincm, "widthincm", key, p->cp.spack,
+                             NULL, 0);
       p->up.widthincmset=1;
       break;
     case 'b':
-      intelzero(arg, &p->borderwidth, "borderwidth", key,
-                p->cp.spack, NULL, 0);
+      gal_checkset_int_el_zero(arg, &p->borderwidth, "borderwidth", key,
+                               p->cp.spack, NULL, 0);
       p->up.borderwidthset=1;
       break;
     case 'u':
-      intsmallerequalto(arg, &p->quality, "quality", key,
-                        p->cp.spack, NULL, 0, 100);
+      gal_checkset_int_smaller_equal_to(arg, &p->quality, "quality", key,
+                                        p->cp.spack, NULL, 0, 100);
       if(p->quality<0)
         error(EXIT_FAILURE, 0, "The quality option should be positive.");
       p->up.qualityset=1;
@@ -312,16 +313,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Flux: */
     case 'L':
-      anydouble(arg, &p->fluxlow, "fluxlow", key, p->cp.spack, NULL, 0);
+      gal_checkset_any_double(arg, &p->fluxlow, "fluxlow", key, p->cp.spack, NULL, 0);
       p->up.fluxlowset=1;
       break;
     case 'H':
-      anydouble(arg, &p->fluxhigh, "fluxhigh", key, p->cp.spack, NULL, 0);
+      gal_checkset_any_double(arg, &p->fluxhigh, "fluxhigh", key, p->cp.spack, NULL, 0);
       p->up.fluxhighset=1;
       break;
     case 'm':
-      intsmallerequalto(arg, &tmp, "maxbyte", key,
-                        p->cp.spack, NULL, 0, UINT8_MAX);
+      gal_checkset_int_smaller_equal_to(arg, &tmp, "maxbyte", key,
+                                        p->cp.spack, NULL, 0, UINT8_MAX);
       if(tmp<0) error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive.");
       p->maxbyte=tmp;
       p->up.maxbyteset=1;
@@ -348,7 +349,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Read the non-option arguments: */
     case ARGP_KEY_ARG:
-      add_to_stll(&p->inputnames, arg);
+      gal_linkedlist_add_to_stll(&p->inputnames, arg);
       ++p->numinputs;
       break;
 

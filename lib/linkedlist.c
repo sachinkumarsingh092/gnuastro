@@ -43,14 +43,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  *****************        Two doubles        ********************
  ****************************************************************/
 void
-add_to_tdll(struct tdll **list, double a, double b)
+gal_linkedlist_add_to_tdll(struct gal_linkedlist_tdll **list,
+                           double a, double b)
 {
-  struct tdll *newnode;
+  struct gal_linkedlist_tdll *newnode;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in tdll");
+    error(EXIT_FAILURE, errno, "linkedlist: New element in "
+          "gal_linkedlist_tdll");
 
   newnode->a=a;
   newnode->b=b;
@@ -63,9 +65,10 @@ add_to_tdll(struct tdll **list, double a, double b)
 
 
 void
-pop_from_tdll(struct tdll **list, double *a, double *b)
+gal_linkedlist_pop_from_tdll(struct gal_linkedlist_tdll **list,
+                             double *a, double *b)
 {
-  struct tdll *tmp=*list;
+  struct gal_linkedlist_tdll *tmp=*list;
 
   *a=tmp->a;
   *b=tmp->b;
@@ -78,10 +81,10 @@ pop_from_tdll(struct tdll **list, double *a, double *b)
 
 
 size_t
-numintdll(struct tdll *list)
+gal_linkedlist_num_int_dll(struct gal_linkedlist_tdll *list)
 {
   size_t num=0;
-  struct tdll *tmp;
+  struct gal_linkedlist_tdll *tmp;
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     ++num;
   return num;
@@ -92,23 +95,24 @@ numintdll(struct tdll *list)
 
 
 void
-tdlltoarrayinv(struct tdll *list, double **d, size_t *num)
+gal_linkedlist_tdll_to_array_inv(struct gal_linkedlist_tdll *list,
+                                 double **d, size_t *num)
 {
   size_t i;
   double *td;
-  struct tdll *tmp;
+  struct gal_linkedlist_tdll *tmp;
 
   /* Find the number of elements: */
   if(*num==0)
-    *num=numintdll(list);
+    *num=gal_linkedlist_num_int_dll(list);
 
   /* Allocate the space (every element of the list has two
      elements.) */
   errno=0;
   td=*d=malloc(2 * *num * sizeof(double));
   if(*d==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: array of tdll with %lu "
-	  "elements", *num);
+    error(EXIT_FAILURE, errno, "linkedlist: array of gal_linkedlist_tdll "
+          "with %lu elements", *num);
 
   /* Fill in the array in reverse order */
   i = 2 * *num - 2;
@@ -125,9 +129,9 @@ tdlltoarrayinv(struct tdll *list, double **d, size_t *num)
 
 
 void
-freetdll(struct tdll *list)
+gal_linkedlist_free_tdll(struct gal_linkedlist_tdll *list)
 {
-  struct tdll *tmp, *ttmp;
+  struct gal_linkedlist_tdll *tmp, *ttmp;
   tmp=list;
   while(tmp!=NULL)
     {
@@ -160,10 +164,10 @@ freetdll(struct tdll *list)
  *****************            Float          ********************
  ****************************************************************/
 void
-printarrayoffll(struct fll **afll, size_t num)
+gal_linkedlist_print_fll_array(struct gal_linkedlist_fll **afll, size_t num)
 {
   size_t i;
-  struct fll *tmp;
+  struct gal_linkedlist_fll *tmp;
   for(i=0;i<num;++i)
     {
       printf(" %lu:\n", i);
@@ -178,14 +182,14 @@ printarrayoffll(struct fll **afll, size_t num)
 
 
 void
-add_to_fll(struct fll **list, float value)
+gal_linkedlist_add_to_fll(struct gal_linkedlist_fll **list, float value)
 {
-  struct fll *newnode;
+  struct gal_linkedlist_fll *newnode;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in fll");
+    error(EXIT_FAILURE, errno, "linkedlist: New element in gal_linkedlist_fll");
 
   newnode->v=value;
   newnode->next=*list;
@@ -197,9 +201,9 @@ add_to_fll(struct fll **list, float value)
 
 
 void
-pop_from_fll(struct fll **list, float *value)
+gal_linkedlist_pop_from_fll(struct gal_linkedlist_fll **list, float *value)
 {
-  struct fll *tmp;
+  struct gal_linkedlist_fll *tmp;
   tmp=*list;
   *value=tmp->v;
   *list=tmp->next;
@@ -211,10 +215,10 @@ pop_from_fll(struct fll **list, float *value)
 
 
 size_t
-numinfll(struct fll *list)
+gal_linkedlist_num_in_fll(struct gal_linkedlist_fll *list)
 {
   size_t num=0;
-  struct fll *tmp;
+  struct gal_linkedlist_fll *tmp;
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     ++num;
   return num;
@@ -225,22 +229,23 @@ numinfll(struct fll *list)
 
 
 void
-flltoarray(struct fll *list, float **f, size_t *num)
+gal_linkedlist_fll_to_array(struct gal_linkedlist_fll *list,
+                            float **f, size_t *num)
 {
   float *tf;
   size_t i=0;
-  struct fll *tmp;
+  struct gal_linkedlist_fll *tmp;
 
   /* Find the number of elements: */
   if(*num==0)
-    *num=numinfll(list);
+    *num=gal_linkedlist_num_in_fll(list);
 
   /* Allocate the space: */
   errno=0;
   *f=malloc(*num*sizeof(float));
   if(*f==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: array of fll with %lu "
-	  "elements", *num);
+    error(EXIT_FAILURE, errno, "linkedlist: array of gal_linkedlist_fll "
+          "with %lu elements", *num);
   tf=*f;
 
   /* Fill in the array: */
@@ -253,9 +258,9 @@ flltoarray(struct fll *list, float **f, size_t *num)
 
 
 void
-freefll(struct fll *list)
+gal_linkedlist_free_fll(struct gal_linkedlist_fll *list)
 {
-  struct fll *tmp, *ttmp;
+  struct gal_linkedlist_fll *tmp, *ttmp;
   tmp=list;
   while(tmp!=NULL)
     {
@@ -270,11 +275,11 @@ freefll(struct fll *list)
 
 
 void
-freearrayoffll(struct fll **afll, size_t num)
+gal_linkedlist_free_fll_array(struct gal_linkedlist_fll **afll, size_t num)
 {
   size_t i;
   for(i=0;i<num;++i)
-    freefll(afll[i]);
+    gal_linkedlist_free_fll(afll[i]);
   free(afll);
 }
 
@@ -301,14 +306,15 @@ freearrayoffll(struct fll **afll, size_t num)
  *****************           string          ********************
  ****************************************************************/
 void
-add_to_stll(struct stll **list, char *value)
+gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value)
 {
-  struct stll *newnode;
+  struct gal_linkedlist_stll *newnode;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in stll");
+    error(EXIT_FAILURE, errno,
+          "linkedlist: New element in gal_linkedlist_stll");
 
   newnode->v=value;
   newnode->next=*list;
@@ -320,9 +326,9 @@ add_to_stll(struct stll **list, char *value)
 
 
 void
-pop_from_stll(struct stll **list, char **value)
+gal_linkedlist_pop_from_stll(struct gal_linkedlist_stll **list, char **value)
 {
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
   tmp=*list;
   *value=tmp->v;
   *list=tmp->next;
@@ -334,15 +340,15 @@ pop_from_stll(struct stll **list, char **value)
 
 
 void
-reverse_stll(struct stll **list)
+gal_linkedlist_reverse_stll(struct gal_linkedlist_stll **list)
 {
   char *thisstring;
-  struct stll *correctorder=NULL;
+  struct gal_linkedlist_stll *correctorder=NULL;
 
   while(*list!=NULL)
     {
-      pop_from_stll(list, &thisstring);
-      add_to_stll(&correctorder, thisstring);
+      gal_linkedlist_pop_from_stll(list, &thisstring);
+      gal_linkedlist_add_to_stll(&correctorder, thisstring);
     }
   *list=correctorder;
 }
@@ -351,9 +357,9 @@ reverse_stll(struct stll **list)
 
 
 void
-print_stll(struct stll *list)
+gal_linkedlist_print_stll(struct gal_linkedlist_stll *list)
 {
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
   for(tmp=list; tmp!=NULL; tmp=tmp->next)
     printf("%s\n", tmp->v);
 }
@@ -363,10 +369,10 @@ print_stll(struct stll *list)
 
 
 size_t
-numinstll(struct stll *list)
+gal_linkedlist_num_in_stll(struct gal_linkedlist_stll *list)
 {
   size_t num=0;
-  struct stll *tmp;
+  struct gal_linkedlist_stll *tmp;
   for(tmp=list;tmp!=NULL;tmp=tmp->next) ++num;
   return num;
 }
@@ -391,14 +397,14 @@ numinstll(struct stll *list)
  *****************           size_t          ********************
  ****************************************************************/
 void
-add_to_sll(struct sll **list, size_t value)
+add_to_sll(struct gal_linkedlist_sll **list, size_t value)
 {
-  struct sll *newnode;
+  struct gal_linkedlist_sll *newnode;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in sll");
+    error(EXIT_FAILURE, errno, "linkedlist: New element in gal_linkedlist_sll");
 
   newnode->v=value;
   newnode->next=*list;
@@ -410,9 +416,9 @@ add_to_sll(struct sll **list, size_t value)
 
 
 void
-pop_from_sll(struct sll **list, size_t *value)
+pop_from_sll(struct gal_linkedlist_sll **list, size_t *value)
 {
-  struct sll *tmp;
+  struct gal_linkedlist_sll *tmp;
   tmp=*list;
   *value=tmp->v;
   *list=tmp->next;
@@ -424,10 +430,10 @@ pop_from_sll(struct sll **list, size_t *value)
 
 
 size_t
-numinsll(struct sll *list)
+numinsll(struct gal_linkedlist_sll *list)
 {
   size_t num=0;
-  struct sll *tmp;
+  struct gal_linkedlist_sll *tmp;
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     ++num;
   return num;
@@ -438,18 +444,19 @@ numinsll(struct sll *list)
 
 
 void
-slltoarray(struct sll *list, size_t **f, size_t *num)
+gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
+                            size_t **f, size_t *num)
 {
   size_t i=0, *tf;
-  struct sll *tmp;
+  struct gal_linkedlist_sll *tmp;
 
   *num=numinsll(list);
 
   errno=0;
   *f=malloc(*num*sizeof(size_t));
   if(*f==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: array of sll with %lu "
-	  "elements", *num);
+    error(EXIT_FAILURE, errno, "linkedlist: array of gal_linkedlist_sll "
+          "with %lu elements", *num);
   tf=*f;
 
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
@@ -461,9 +468,9 @@ slltoarray(struct sll *list, size_t **f, size_t *num)
 
 
 void
-printsll(struct sll *list)
+gal_linkedlist_print_sll(struct gal_linkedlist_sll *list)
 {
-  struct sll *tmp;
+  struct gal_linkedlist_sll *tmp;
   printf("\n\n");
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
     printf("%lu, ", tmp->v);
@@ -476,9 +483,9 @@ printsll(struct sll *list)
 
 
 void
-freesll(struct sll *list)
+gal_linkedlist_free_sll(struct gal_linkedlist_sll *list)
 {
-  struct sll *tmp, *ttmp;
+  struct gal_linkedlist_sll *tmp, *ttmp;
   tmp=list;
   while(tmp!=NULL)
     {
@@ -513,14 +520,15 @@ freesll(struct sll *list)
  ****************************************************************/
 
 void
-add_to_tsll_end(struct tsll **last, size_t value)
+gal_linkedlist_add_to_tsll_end(struct gal_linkedlist_tsll **last, size_t value)
 {
-  struct tsll *newnode;
+  struct gal_linkedlist_tsll *newnode;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in tsll");
+    error(EXIT_FAILURE, errno, "linkedlist: New element in "
+          "gal_linkedlist_tsll");
 
   newnode->v=value;
   newnode->next=*last;
@@ -536,9 +544,10 @@ add_to_tsll_end(struct tsll **last, size_t value)
 
 /* Note that start has to be initialized. */
 void
-pop_from_tsll_start(struct tsll **first,  size_t *value)
+gal_linkedlist_pop_from_tsll_start(struct gal_linkedlist_tsll **first,
+                                   size_t *value)
 {
-  struct tsll *tmp;
+  struct gal_linkedlist_tsll *tmp;
   tmp=*first;
   *value=tmp->v;
   *first=tmp->prev;
@@ -573,14 +582,16 @@ pop_from_tsll_start(struct tsll **first,  size_t *value)
 /* We want to put the nodes in order based on the 'tosort' value of
 each node. The top element should always have the smallest radius. */
 void
-add_to_osll(struct osll **list, size_t value, float tosort)
+gal_linkedlist_add_to_osll(struct gal_linkedlist_osll **list,
+                           size_t value, float tosort)
 {
-  struct osll *newnode, *tmp=*list, *prev=NULL;
+  struct gal_linkedlist_osll *newnode, *tmp=*list, *prev=NULL;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in osll");
+    error(EXIT_FAILURE, errno, "linkedlist: New element "
+          "in gal_linkedlist_osll");
 
   newnode->v=value;
   newnode->s=tosort;
@@ -615,9 +626,10 @@ add_to_osll(struct osll **list, size_t value, float tosort)
 
 /* Note that the popped element is the smallest! */
 void
-pop_from_osll(struct osll **list,  size_t *value, float *sortvalue)
+gal_linkedlist_pop_from_osll(struct gal_linkedlist_osll **list,
+                             size_t *value, float *sortvalue)
 {
-  struct osll *tmp;
+  struct gal_linkedlist_osll *tmp;
   tmp=*list;
   *value=tmp->v;
   *sortvalue=tmp->s;
@@ -629,11 +641,12 @@ pop_from_osll(struct osll **list,  size_t *value, float *sortvalue)
 
 
 
-/* Add the elements of an osll to a sll. */
+/* Add the elements of an gal_linkedlist_osll to a gal_linkedlist_sll. */
 void
-osll_into_sll(struct osll *in, struct sll **out)
+gal_linkedlist_osll_into_sll(struct gal_linkedlist_osll *in,
+                             struct gal_linkedlist_sll **out)
 {
-  struct osll *tmp;
+  struct gal_linkedlist_osll *tmp;
   while(in!=NULL)
     {
       tmp=in->next;
@@ -679,7 +692,8 @@ osll_into_sll(struct osll *in, struct sll **out)
 */
 
 void
-print_tosll(struct tosll *l, struct tosll *s)
+gal_linkedlist_print_tosll(struct gal_linkedlist_tosll *l,
+                           struct gal_linkedlist_tosll *s)
 {
   size_t counter=1;   /* We are not counting array elements :-D ! */
   while(l!=NULL)
@@ -699,15 +713,17 @@ print_tosll(struct tosll *l, struct tosll *s)
 
 /* Very similar to Ordered SLL, but now it is two way. */
 void
-add_to_tosll_end(struct tosll **largest, struct tosll **smallest,
-		  size_t value, float tosort)
+gal_linkedlist_add_to_tosll_end(struct gal_linkedlist_tosll **largest,
+                                struct gal_linkedlist_tosll **smallest,
+                                size_t value, float tosort)
 {
-  struct tosll *newnode, *tmp=*largest;
+  struct gal_linkedlist_tosll *newnode, *tmp=*largest;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in tosll");
+    error(EXIT_FAILURE, errno, "linkedlist: New element "
+          "in gal_linkedlist_tosll");
 
   newnode->v=value;
   newnode->s=tosort;
@@ -753,10 +769,11 @@ add_to_tosll_end(struct tosll **largest, struct tosll **smallest,
 
 /* Note that start has to be initialized. */
 void
-pop_from_tosll_start(struct tosll **largest, struct tosll **smallest,
-		      size_t *value, float *tosort)
+gal_linkedlist_pop_from_tosll_start(struct gal_linkedlist_tosll **largest,
+                                    struct gal_linkedlist_tosll **smallest,
+                                    size_t *value, float *tosort)
 {
-  struct tosll *tmp=*smallest;
+  struct gal_linkedlist_tosll *tmp=*smallest;
 
   *value=tmp->v;
   *tosort=tmp->s;
@@ -776,9 +793,10 @@ pop_from_tosll_start(struct tosll **largest, struct tosll **smallest,
 
 
 void
-smallest_tosll(struct tosll *largest, struct tosll **smallest)
+gal_linkedlist_smallest_tosll(struct gal_linkedlist_tosll *largest,
+                              struct gal_linkedlist_tosll **smallest)
 {
-  struct tosll *tmp=largest;
+  struct gal_linkedlist_tosll *tmp=largest;
 
   while(tmp!=NULL)
     {
@@ -801,9 +819,10 @@ smallest_tosll(struct tosll *largest, struct tosll **smallest)
 
 
 void
-tosll_into_sll(struct tosll *in, struct sll **out)
+gal_linkedlist_tosll_into_sll(struct gal_linkedlist_tosll *in,
+                              struct gal_linkedlist_sll **out)
 {
-  struct tosll *tmp;
+  struct gal_linkedlist_tosll *tmp;
   while(in!=NULL)
     {
       tmp=in->next;
@@ -818,9 +837,9 @@ tosll_into_sll(struct tosll *in, struct sll **out)
 
 
 void
-tosll_free(struct tosll *largest)
+gal_linkedlist_tosll_free(struct gal_linkedlist_tosll *largest)
 {
-  struct tosll *tmp;
+  struct gal_linkedlist_tosll *tmp;
   while(largest!=NULL)
     {
       tmp=largest->next;

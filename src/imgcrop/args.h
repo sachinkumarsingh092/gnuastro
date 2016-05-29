@@ -45,7 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "[ASCIIcatalog] ASTRdata ...";
@@ -56,13 +56,13 @@ static char args_doc[] = "[ASCIIcatalog] ASTRdata ...";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" will create cutouts, thumbnails, postage stamps or crops of "
   "region(s) from input image(s) using image or celestial coordinates. "
   "If muliple crops are desired, a catalog must be provided. When in WCS "
   "mode, if the cut out covers more than one input image, all overlapping "
   "input images will be stitched in the output.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -356,11 +356,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input */
     case 501:
-      sizetelzero(arg, &p->hstartwcs, "hstartwcs", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->hstartwcs, "hstartwcs", key, SPACK,
+                                 NULL, 0);
       p->up.hstartwcsset=1;
       break;
     case 502:
-      sizetelzero(arg, &p->hendwcs, "hendwcs", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->hendwcs, "hendwcs", key, SPACK,
+                                 NULL, 0);
       p->up.hendwcsset=1;
       break;
 
@@ -376,11 +378,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->keepblankcenter=1;
       break;
     case 'c':
-      sizetlzero(arg, &p->checkcenter, "checkcenter", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->checkcenter, "checkcenter", key, SPACK,
+                                NULL, 0);
       p->up.checkcenterset=1;
       break;
     case 'p':
-      allocatecopyset(arg, &p->suffix, &p->up.suffixset);
+      gal_checkset_allocate_copy_set(arg, &p->suffix, &p->up.suffixset);
       break;
 
 
@@ -389,44 +392,46 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Crop: */
     case 'f':
-      sizetelzero(arg, &p->racol, "racol", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->racol, "racol", key, SPACK,
+                                 NULL, 0);
       p->up.racolset=1;
       break;
     case 'g':
-      sizetelzero(arg, &p->deccol, "deccol", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->deccol, "deccol", key, SPACK,
+                                 NULL, 0);
       p->up.deccolset=1;
       break;
     case 'r':
-      anydouble(arg, &p->ra, "ra", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->ra, "ra", key, SPACK, NULL, 0);
       p->up.raset=1;
       break;
     case 'd':
-      anydouble(arg, &p->dec, "dec", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->dec, "dec", key, SPACK, NULL, 0);
       p->up.decset=1;
       break;
     case 'i':
-      sizetelzero(arg, &p->xcol, "xcol", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->xcol, "xcol", key, SPACK, NULL, 0);
       p->up.xcolset=1;
       break;
     case 'j':
-      sizetelzero(arg, &p->ycol, "ycol", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->ycol, "ycol", key, SPACK, NULL, 0);
       p->up.ycolset=1;
       break;
     case 'x':
-      anydouble(arg, &p->xc, "xc", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->xc, "xc", key, SPACK, NULL, 0);
       p->up.xcset=1;		/* Using FITS standard, not C. */
       break;
     case 'y':
-      anydouble(arg, &p->yc, "yc", key, SPACK, NULL, 0);
+      gal_checkset_any_double(arg, &p->yc, "yc", key, SPACK, NULL, 0);
       p->up.ycset=1;		/* Using FITS standard, not C. */
       break;
     case 'a':
-      sizetlzero(arg, &tmp, "iwidth", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &tmp, "iwidth", key, SPACK, NULL, 0);
       p->iwidth[0]=p->iwidth[1]=tmp;
       p->up.iwidthset=1;
       break;
     case 'w':
-      doublel0(arg, &p->wwidth, "wwidth", key, SPACK, NULL, 0);
+      gal_checkset_double_l_0(arg, &p->wwidth, "wwidth", key, SPACK, NULL, 0);
       p->up.wwidthset=1;
       break;
     case 's':
@@ -453,9 +458,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
 	{
-	  add_to_stll(&p->up.stll, arg);
+	  gal_linkedlist_add_to_stll(&p->up.gal_linkedlist_stll, arg);
 	  ++p->numimg;
 	}
       else
@@ -486,7 +491,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 				      || p->up.sectionset
                                       || p->up.polygonset))
 	    argp_error(state, "No catalog provided!");
-	  if(p->up.stll==NULL)
+	  if(p->up.gal_linkedlist_stll==NULL)
 	    argp_error(state, "No FITS image(s) provided!");
 	}
       break;

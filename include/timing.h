@@ -20,21 +20,21 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef TIMING_H
-#define TIMING_H
+#ifndef __GAL_TIMING_H__
+#define __GAL_TIMING_H__
 
 #include <time.h>
 #include <sys/time.h>
 
-#define VERBMSGLENGTH_V 45
-#define VERBMSGLENGTH_T "45"
-#define VERBMSGLENGTHS2_V 65
-#define VERBMSGLENGTHS2_T "65"
+#define GAL_TIMING_VERB_MSG_LENGTH_V     45
+#define GAL_TIMING_VERB_MSG_LENGTH_T    "45"
+#define GAL_TIMING_VERB_MSG_LENGTHS_2_V  65
+#define GAL_TIMING_VERB_MSG_LENGTHS_2_T "65"
 
 unsigned long int
-timebasedrngseed();
+gal_timing_time_based_rng_seed();
 
 void
-reporttiming(struct timeval *t1, char *jobname, size_t level);
+gal_timing_report(struct timeval *t1, char *jobname, size_t level);
 
 #endif

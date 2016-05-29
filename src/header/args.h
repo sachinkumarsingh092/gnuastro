@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata";
@@ -57,11 +57,11 @@ static char args_doc[] = "ASTRdata";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" print the header information in any astronomical data file"
   "header. It can also manipulate (add, remove or modify) any of the "
   "existing keywords in a data header. \n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -218,19 +218,19 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output: */
     case 'a':
-      add_to_stll(&p->asis, arg);
+      gal_linkedlist_add_to_stll(&p->asis, arg);
       break;
     case 'd':
-      add_to_stll(&p->delete, arg);
+      gal_linkedlist_add_to_stll(&p->delete, arg);
       break;
     case 'r':
-      add_to_stll(&p->up.rename, arg);
+      gal_linkedlist_add_to_stll(&p->up.rename, arg);
       break;
     case 'u':
-      add_to_stll(&p->up.update, arg);
+      gal_linkedlist_add_to_stll(&p->up.update, arg);
       break;
     case 'w':
-      add_to_stll(&p->up.write, arg);
+      gal_linkedlist_add_to_stll(&p->up.write, arg);
       break;
     case 'c':
       p->comment=arg;
@@ -251,7 +251,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
         {
           if(p->up.inputname)
             argp_error(state, "Only one input image should be given.");

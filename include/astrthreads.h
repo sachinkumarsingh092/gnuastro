@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef ASTRTHREADS_H
-#define ASTRTHREADS_H
+#ifndef __GAL_THREADS_H__
+#define __GAL_THREADS_H__
 
 
 
@@ -33,7 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define NONTHRDINDEX (size_t)(-1)
+#define GAL_THREADS_NON_THRD_INDEX (size_t)(-1)
 
 
 
@@ -94,11 +94,11 @@ pthread_barrier_wait(pthread_barrier_t *b);
 /****************      gnuastro functions       ******************/
 /*****************************************************************/
 void
-distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
-	      size_t *outthrdcols);
+gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
+                            size_t *outthrdcols);
 
 void
-attrbarrierinit(pthread_attr_t *attr, pthread_barrier_t *b,
-		size_t numthreads);
+gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
+                              size_t numthreads);
 
 #endif

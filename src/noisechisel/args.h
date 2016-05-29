@@ -45,7 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata";
@@ -56,12 +56,12 @@ static char args_doc[] = "ASTRdata";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" Detects and segments signal that is deeply burried in noise. "
   "It employs a noise-based detection and segmentation method enabling it "
   "to be very resilient to the rich diversity of shapes in astronomical "
   "targets.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -559,27 +559,31 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'M':
-      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname,
+                                     &p->up.masknameset);
       break;
     case 'H':
-      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
       break;
     case 'k':
-      allocatecopyset(arg, &p->up.kernelname, &p->up.kernelnameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.kernelname,
+                                     &p->up.kernelnameset);
       break;
     case 'U':
-      allocatecopyset(arg, &p->up.khdu, &p->up.khduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.khdu, &p->up.khduset);
       break;
     case 'E':
       p->skysubtracted=1;
       p->up.skysubtractedset=1;
       break;
     case 'B':
-      floatl0s1(arg, &p->minbfrac, "minbfrac", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->minbfrac, "minbfrac", key,
+                                 SPACK, NULL, 0);
       p->up.minbfracset=1;
       break;
     case 'F':
-      sizetlzero(arg, &p->minnumfalse, "minnumfalse", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->minnumfalse, "minnumfalse", key,
+                                SPACK, NULL, 0);
       p->up.minnumfalseset=1;
       break;
 
@@ -594,43 +598,51 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Mesh grid: */
     case 's':
-      sizetlzero(arg, &p->smp.meshsize, "smeshsize", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->smp.meshsize, "smeshsize", key,
+                                SPACK, NULL, 0);
       p->up.smeshsizeset=1;
       break;
     case 'l':
-      sizetlzero(arg, &p->lmp.meshsize, "lmeshsize", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->lmp.meshsize, "lmeshsize", key,
+                                SPACK, NULL, 0);
       p->up.lmeshsizeset=1;
       break;
     case 'a':
-      sizetlzero(arg, &p->smp.nch1, "nch1", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->smp.nch1, "nch1", key, SPACK,
+                                NULL, 0);
       p->up.nch1set=1;
       break;
     case 'b':
-      sizetlzero(arg, &p->smp.nch2, "nch2", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->smp.nch2, "nch2", key, SPACK,
+                                NULL, 0);
       p->up.nch2set=1;
       break;
     case 'L':
-      floatl0s1(arg, &p->smp.lastmeshfrac, "lastmeshfrac", key, SPACK,
-                NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->smp.lastmeshfrac, "lastmeshfrac",
+                                 key, SPACK, NULL, 0);
       p->up.lastmeshfracset=1;
       break;
     case 'd':
-      floatl0(arg, &p->smp.mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->smp.mirrordist, "mirrordist", key,
+                             SPACK, NULL, 0);
       p->up.mirrordistset=1;
       break;
     case 'Q':
-      floatl0s1(arg, &p->smp.minmodeq, "minmodeq", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->smp.minmodeq, "minmodeq", key,
+                                 SPACK, NULL, 0);
       p->up.minmodeqset=1;
       break;
     case 511:
       p->smp.interponlyblank=1;
       break;
     case 'n':
-      sizetlzero(arg, &p->smp.numnearest, "numnearest", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->smp.numnearest, "numnearest", key,
+                                SPACK, NULL, 0);
       p->up.numnearestset=1;
       break;
     case 'T':
-      sizetpodd(arg, &p->smp.smoothwidth, "smoothwidth", key, SPACK, NULL, 0);
+      gal_checkset_sizet_p_odd(arg, &p->smp.smoothwidth, "smoothwidth", key,
+                               SPACK, NULL, 0);
       p->up.smoothwidthset=1;
       break;
     case 500:
@@ -655,54 +667,63 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Detection */
     case 't':
-      floatl0s1(arg, &p->qthresh, "qthresh", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->qthresh, "qthresh", key, SPACK,
+                                 NULL, 0);
       p->up.qthreshset=1;
       break;
     case 'e':
-      sizetelzero(arg, &p->erode, "erode", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->erode, "erode", key, SPACK,
+                                 NULL, 0);
       p->up.erodeset=1;
       break;
     case 506:
-      int4or8(arg, &p->erodengb, "erodengb", key, SPACK, NULL, 0);
+      gal_checkset_int_4_or_8(arg, &p->erodengb, "erodengb", key, SPACK,
+                              NULL, 0);
       p->up.erodengbset=1;
       break;
     case 'p':
-      sizetelzero(arg, &p->opening, "opening", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->opening, "opening", key, SPACK,
+                                 NULL, 0);
       p->up.openingset=1;
       break;
     case 507:
-      int4or8(arg, &p->openingngb, "openingngb", key, SPACK, NULL, 0);
+      gal_checkset_int_4_or_8(arg, &p->openingngb, "openingngb", key, SPACK,
+                              NULL, 0);
       p->up.openingngbset=1;
       break;
     case 'u':
-      floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK,
-              NULL, 0);
+      gal_checkset_float_l_0(arg, &p->sigclipmultip, "sigclipmultip", key,
+                             SPACK, NULL, 0);
       p->up.sigclipmultipset=1;
       break;
     case 'r':
-      floatl0s1(arg, &p->sigcliptolerance, "sigcliptolerance", key, SPACK,
-              NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->sigcliptolerance,
+                                 "sigcliptolerance", key, SPACK, NULL, 0);
       p->up.sigcliptoleranceset=1;
       break;
     case 'R':
-      anyfloat(arg, &p->dthresh, "dthresh", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->dthresh, "dthresh", key, SPACK,
+                             NULL, 0);
       p->up.dthreshset=1;
       break;
     case 'i':
-      sizetlzero(arg, &p->detsnminarea, "detsnminarea", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->detsnminarea, "detsnminarea", key,
+                                SPACK, NULL, 0);
       p->up.detsnminareaset=1;
       break;
     case 510:
-      sizetelzero(arg, &p->detsnhistnbins, "detsnhistnbins", key,
-                  SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->detsnhistnbins, "detsnhistnbins",
+                                 key, SPACK, NULL, 0);
       p->up.detsnhistnbinsset=1;
       break;
     case 'c':
-      floatl0s1(arg, &p->detquant, "detquant", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->detquant, "detquant", key, SPACK,
+                                 NULL, 0);
       p->up.detquantset=1;
       break;
     case 'I':
-      sizetelzero(arg, &p->dilate, "dilate", key, SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->dilate, "dilate", key, SPACK,
+                                 NULL, 0);
       p->up.dilateset=1;
       break;
     case 505:
@@ -724,34 +745,36 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Segmentation: */
     case 'm':
-      sizetlzero(arg, &p->segsnminarea, "segsnminarea", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->segsnminarea, "segsnminarea", key,
+                                SPACK, NULL, 0);
       p->up.segsnminareaset=1;
       break;
     case 'g':
-      floatl0s1(arg, &p->segquant, "segquant", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->segquant, "segquant", key, SPACK,
+                                 NULL, 0);
       p->up.segquantset=1;
       break;
     case 'v':
       p->keepmaxnearriver=1;
       break;
     case 'G':
-      anyfloat(arg, &p->gthresh, "gthresh", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->gthresh, "gthresh", key, SPACK, NULL, 0);
       p->up.gthreshset=1;
       break;
     case 'y':
-      sizetlzero(arg, &p->minriverlength, "minriverlength",
-                 key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->minriverlength, "minriverlength",
+                                key, SPACK, NULL, 0);
       p->up.minriverlengthset=1;
       break;
     case 'O':
-      floatl0(arg, &p->objbordersn, "objbordersn", key, SPACK,
-              NULL, 0);
+      gal_checkset_float_l_0(arg, &p->objbordersn, "objbordersn", key, SPACK,
+                             NULL, 0);
       p->up.objbordersnset=1;
       break;
 
     case 514:
-      sizetelzero(arg, &p->clumpsnhistnbins, "clumpsnhistnbins", key,
-                  SPACK, NULL, 0);
+      gal_checkset_sizet_el_zero(arg, &p->clumpsnhistnbins,
+                                 "clumpsnhistnbins", key, SPACK, NULL, 0);
       p->up.clumpsnhistnbinsset=1;
       break;
     case 513:
@@ -766,7 +789,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
         {
           if(p->up.inputname)
             argp_error(state, "Only one input image should be given.");

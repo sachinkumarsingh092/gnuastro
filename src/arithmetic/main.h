@@ -80,12 +80,12 @@ struct uiparams
 struct imgarithparams
 {
   /* Other structures: */
-  struct uiparams       up;  /* User interface parameters.              */
-  struct commonparams   cp;  /* Common parameters.                      */
+  struct uiparams         up;  /* User interface parameters.            */
+  struct gal_commonparams cp;  /* Common parameters.                    */
 
   /* Input: */
-  struct stll        *hdus;  /* String linked list for given HDUs.      */
-  struct stll      *tokens;  /* Tokens to do arithmetic.                */
+  struct gal_linkedlist_stll *hdus; /* List of all given HDU strings.   */
+  struct gal_linkedlist_stll *tokens; /* List of all arithmetic tokens. */
   float             *array;  /* Main array to keep results.             */
   float               *tmp;  /* Secondary array for temporary reading.  */
   size_t           numfits;  /* Total number of input FITS images.      */

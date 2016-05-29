@@ -291,8 +291,8 @@ fillcrpipolygon(struct cropparams *crp)
 
   /* Fill in the crp->ipolygon array by converting the WCS polygon
      vertices to this image's coordinates. */
-  radecarraytoxy(p->imgs[crp->imgindex].wcs, p->wpolygon,
-                 crp->ipolygon, p->nvertices, 2);
+  gal_fitsarray_radec_array_to_xy(p->imgs[crp->imgindex].wcs, p->wpolygon,
+                                  crp->ipolygon, p->nvertices, 2);
 }
 
 

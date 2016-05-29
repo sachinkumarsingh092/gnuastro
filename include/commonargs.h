@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef COMMONARGS_H
-#define COMMONARGS_H
+#ifndef __GAL_COMMONARGS_H__
+#define __GAL_COMMONARGS_H__
 
 #include <argp.h>
 #include <string.h>
@@ -57,7 +57,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    You can use this above list to set short options for the different
    utilities.
  */
-static struct argp_option coptions[] =
+static struct argp_option gal_commonargs_options[] =
   {
     /* -1 is the code for operating modes: */
     {
@@ -195,10 +195,10 @@ static struct argp_option coptions[] =
 
 
 static error_t
-cparse_opt(int key, char *arg, struct argp_state *state)
+gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
-  struct commonparams *cp=state->input;
+  struct gal_commonparams *cp=state->input;
 
   /* In case the user incorrectly uses the equal sign (for example
      with a short format or with space in the long format, then `arg`
@@ -228,7 +228,8 @@ cparse_opt(int key, char *arg, struct argp_state *state)
       cp->setusrconf=1;
       break;
     case 'N':
-      sizetlzero(arg, &cp->numthreads, "numthreads", key, cp->spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &cp->numthreads, "numthreads", key,
+                                cp->spack, NULL, 0);
       cp->numthreadsset=1;
       break;
     case 1000:
@@ -294,7 +295,8 @@ cparse_opt(int key, char *arg, struct argp_state *state)
 
 
 
-static struct argp commonargp = {coptions, cparse_opt, NULL,
-				 NULL, NULL, NULL, NULL};
+static struct argp commonargp = {gal_commonargs_options,
+                                 gal_checkset_commonargs_cparse_opt,
+                                 NULL, NULL, NULL, NULL, NULL};
 
 #endif

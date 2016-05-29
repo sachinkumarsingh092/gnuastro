@@ -14151,6 +14151,39 @@ As much as order does not matter when you include the header of each
 group, sort them by length, see above.
 
 @item
+Regarding naming of exported header files, functions, variables, macros,
+and library functions, we adopted similar conventions to those used by the
+GNU Scientific
+Library@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
+In particular, in order to avoid clashes with the names of functions and
+variables coming from other libraries we decided to use the namespace
+@code{gal}, which stands for @emph{G}NU @emph{A}stronomy @emph{L}ibrary.
+
+@itemize
+@item
+All exported header files should have a filename with the prefix @code{gal_}.
+
+@item
+All function names, variables, etc should be in lower case.  Macros and
+preprocessor variables should be in upper case.
+
+@item
+@cindex GNU coding standards
+For all exported functions and variables use the base name of the file in
+which they are defined as prefix, followed by the rest of the name, using
+underscores to separate words@footnote{The convention to use underscores to
+separate words, called ``snake case'' (or ``snake_case''). This is also
+recommended by the GNU coding standards.}.  The same applies to exported
+macros, but in upper case.  For example, the prototype of function
+@code{gal_box_border_from_center} is in @code{gal_box.h}, and the macro
+@code{GAL_POLYGON_MAX_CORNERS} is defined in @code{gal_polygon.h}. This
+facilitates looking up their definitions.
+
+@item
+All installed libraries should have a name like @code{libgalbox.a}.
+@end itemize
+
+@item
 @cindex GNU Emacs
 @cindex Trailing space
 There should be no trailing white space in a line. To do this
@@ -14185,6 +14218,7 @@ clearly distinguishable. Such contextual grouping and clear title are
 very important for easily understanding the code.
 
 @end itemize
+
 
 The last two conventions are not common and might benefit from a short
 discussion here. With a good experience in advanced text editor
@@ -14244,6 +14278,7 @@ which contains nice animated images of using Emacs.
 
 @end table
 @end cartouche
+
 
 @node Multithreaded programming, Documentation, Coding conventions, Program source
 @subsection Multithreaded programming

@@ -142,7 +142,7 @@ pthread_barrier_wait(pthread_barrier_t *b)
    array of `outthrdcols` columns and each row will finish with a
    (size_t) -1, which is larger than any possible index!. */
 void
-distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
+gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
 	      size_t *outthrdcols)
 {
   size_t *sp, *fp;
@@ -156,7 +156,7 @@ distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
 
   /* Initialize all the elements to NONINDEX. */
   fp=(sp=thrds)+nthrds*thrdcols;
-  do *sp=NONTHRDINDEX; while(++sp<fp);
+  do *sp=GAL_THREADS_NON_THRD_INDEX; while(++sp<fp);
 
   /* Distribute the labels in the threads.  */
   for(i=0;i<nindexs;++i)
@@ -168,7 +168,7 @@ distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
       size_t j;
       printf("\n\n############################\n");
       printf("THREAD %lu: \n", i);
-      for(j=0;thrds[i*thrdcols+j]!=NONTHRDINDEX;j++)
+      for(j=0;thrds[i*thrdcols+j]!=GAL_THREADS_NON_THRD_INDEX;j++)
 	printf("%lu, ", thrds[i*thrdcols+j]);
       printf("\b\b.\n");
     }
@@ -181,7 +181,7 @@ distinthreads(size_t nindexs, size_t nthrds, size_t **outthrds,
 
 
 void
-attrbarrierinit(pthread_attr_t *attr, pthread_barrier_t *b,
+gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
 		size_t numthreads)
 {
   int err;

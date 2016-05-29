@@ -59,7 +59,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 prepfirstgrowth(struct clumpsthreadparams *ctp)
 {
-  struct meshparams *smp=&ctp->p->smp;
+  struct gal_mesh_params *smp=&ctp->p->smp;
 
   size_t *ind, *indf, is1=smp->s1;
   float growlimit, *imgss=ctp->p->imgss;
@@ -95,7 +95,7 @@ prepfirstgrowth(struct clumpsthreadparams *ctp)
 
   /* First find the standard deviation on this detection, then use
      it to calculate the growth threshold. */
-  ctp->std=smp->garray2[imgxytomeshid(smp, x, y)];
+  ctp->std=smp->garray2[gal_mesh_img_xy_to_mesh_id(smp, x, y)];
   growlimit=ctp->p->gthresh * ctp->std;
 
   /* Allocate and fill the array for the blank pixels and reset the
@@ -190,7 +190,7 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
 	memset(wngb, 0, sizeof(wngb));
 
 	/* Find which grown clumps this river pixel touches.      */
-	FILL_NGB_8_ALLIMG;
+	GAL_NEIGHBORS_FILL_8_ALLIMG;
 	nf=(n=ngb)+numngb;
 	do
 	  if( olab[*n]>0 )
@@ -481,7 +481,7 @@ segmentonthread(void *inparam)
 
   /* Go over all the initial detections that were assigned to this
      thread. */
-  for(i=0;ctp->indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;ctp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     if(ctp->indexs[i])   /* sp->indexs[i]==0 for the background. */
       {
         /* Keep the initial label of this detection. The initial label
@@ -646,7 +646,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
 
 
   /* Distribute the initial labels between all the threads.  */
-  distinthreads(numobjsinit, numthreads, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(numobjsinit, numthreads, &indexs, &thrdcols);
 
   /* Spin off the threads to work on each object if more than one
      thread will be used. If not, simply start working on all the
@@ -668,14 +668,14 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
 	 threads spinned off. */
       if(numobjsinit<numthreads) nb=numobjsinit+1;
       else                       nb=numthreads+1;
-      attrbarrierinit(&attr, &b, nb);
+      gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Initialize the mutex for the number of objects. */
       pthread_mutex_init(&totalnummtx, NULL);
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(indexs[i*thrdcols]!=NONTHRDINDEX)
+	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
 	  {
             ctp[i].p=p;
             ctp[i].id=i;
@@ -734,7 +734,7 @@ clabwithnoseg(long *olab, long *clab, size_t size, int anyblank)
 
   if(anyblank)
     do
-      *clab++ = ( *olab==FITSLONGBLANK ? FITSLONGBLANK
+      *clab++ = ( *olab==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
                   : ( *olab>0 ? SEGMENTINIT : 0 ) );
     while(++olab<end);
   else
@@ -770,14 +770,16 @@ segmentation(struct noisechiselparams *p)
   /* Start the steps image: */
   if(segmentationname)
     {
-      arraytofitsimg(segmentationname, "Input", FLOAT_IMG, p->img,
-                     s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(segmentationname, "Convolved-SkySubtracted",
-                     FLOAT_IMG, p->conv, s0, s1, p->anyblank,
-                     p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(segmentationname, "InitialLabels",
-                     LONG_IMG, p->olab, s0, s1, p->anyblank, p->wcs,
-                     NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(segmentationname, "Input", FLOAT_IMG,
+                                      p->img, s0, s1, p->anyblank, p->wcs,
+                                      NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(segmentationname,
+                                      "Convolved-SkySubtracted", FLOAT_IMG,
+                                      p->conv, s0, s1, p->anyblank, p->wcs,
+                                      NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(segmentationname, "InitialLabels",
+                                      LONG_IMG, p->olab, s0, s1, p->anyblank,
+                                      p->wcs, NULL, SPACK_STRING);
     }
 
 
@@ -790,7 +792,8 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       b=p->byt;lf=(l=p->clab)+s0*s1;
-      do *l = *b++==FITSBYTEBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+      do *l = *b++==GAL_FITSARRAY_BYTE_BLANK ? GAL_FITSARRAY_LONG_BLANK
+           : 0; while(++l<lf);
     }
   else
     memset(p->clab, 0, s0*s1*sizeof *p->clab);
@@ -802,9 +805,10 @@ segmentation(struct noisechiselparams *p)
   findclumpsn(p);
   if(p->segmentationname)
     {
-      arraytofitsimg(p->segmentationname, "Noise Oversegmentaion",
-                     LONG_IMG, p->clab, p->smp.s0, p->smp.s1,
-                     p->anyblank, p->wcs, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->segmentationname,
+                                      "Noise Oversegmentaion", LONG_IMG,
+                                      p->clab, p->smp.s0, p->smp.s1,
+                                      p->anyblank, p->wcs, NULL, SPACK_STRING);
     }
 
 
@@ -813,7 +817,8 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       lf=(l=p->clab)+s0*s1;
-      do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+      do *l = *l==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
+           : 0; while(++l<lf);
     }
   else memset(p->clab, 0, s0*s1*sizeof *p->clab);
 
@@ -838,7 +843,8 @@ segmentation(struct noisechiselparams *p)
           if(p->anyblank)
             {
               lf=(l=p->clab)+s0*s1;
-              do *l = *l==FITSLONGBLANK ? FITSLONGBLANK : 0; while(++l<lf);
+              do *l = *l==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
+                   : 0; while(++l<lf);
             }
           else memset(p->clab, 0, s0*s1*sizeof *p->clab);
 
@@ -867,8 +873,10 @@ segmentation(struct noisechiselparams *p)
                     "unrecognized value of %d.", PACKAGE_BUGREPORT,
                     p->stepnum);
             }
-          arraytofitsimg(p->segmentationname, extname, LONG_IMG, forfits,
-                         s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
+          gal_fitsarray_array_to_fits_img(p->segmentationname, extname,
+                                          LONG_IMG, forfits, s0, s1,
+                                          p->anyblank, p->wcs, NULL,
+                                          SPACK_STRING);
           ++p->stepnum;
         }
     }

@@ -79,10 +79,11 @@ haserror(struct headerparams *p, int actionid, char *string, int status)
 
 
 void
-writeupdatekeys(fitsfile *fptr, struct fitsheaderll **keylist, int u1w2)
+writeupdatekeys(fitsfile *fptr, struct gal_fitsarray_header_ll **keylist,
+                int u1w2)
 {
   int status=0;
-  struct fitsheaderll *tmp, *ttmp;
+  struct gal_fitsarray_header_ll *tmp, *ttmp;
 
   tmp=*keylist;
   while(tmp!=NULL)
@@ -95,13 +96,13 @@ writeupdatekeys(fitsfile *fptr, struct fitsheaderll **keylist, int u1w2)
             {
               if( fits_update_key(fptr, tmp->datatype, tmp->keyname,
                                   tmp->value, tmp->comment, &status) )
-                fitsioerror(status, NULL);
+                gal_fitsarray_io_error(status, NULL);
             }
           else
             {
               if(fits_write_key_null(fptr, tmp->keyname, tmp->comment,
                                      &status))
-                fitsioerror(status, NULL);
+                gal_fitsarray_io_error(status, NULL);
             }
         }
       else if (u1w2==2)
@@ -110,17 +111,17 @@ writeupdatekeys(fitsfile *fptr, struct fitsheaderll **keylist, int u1w2)
             {
               if( fits_write_key(fptr, tmp->datatype, tmp->keyname,
                                  tmp->value, tmp->comment, &status) )
-                fitsioerror(status, NULL);
+                gal_fitsarray_io_error(status, NULL);
             }
           else
             {
               if(fits_write_key_null(fptr, tmp->keyname, tmp->comment,
                                      &status))
-                fitsioerror(status, NULL);
+                gal_fitsarray_io_error(status, NULL);
             }
           if(tmp->unit
              && fits_write_key_unit(fptr, tmp->keyname, tmp->unit, &status) )
-            fitsioerror(status, NULL);
+            gal_fitsarray_io_error(status, NULL);
         }
       else
         error(EXIT_FAILURE, 0, "A bug! Please contact us at `%s' so we can "
@@ -130,7 +131,7 @@ writeupdatekeys(fitsfile *fptr, struct fitsheaderll **keylist, int u1w2)
       /* Add the unit: */
       if(tmp->unit
          && fits_write_key_unit(fptr, tmp->keyname, tmp->unit, &status) )
-        fitsioerror(status, NULL);
+        gal_fitsarray_io_error(status, NULL);
 
       /* Free the value pointer if desired: */
       if(tmp->kfree) free(tmp->keyname);
@@ -157,12 +158,12 @@ header(struct headerparams *p)
   int r=EXIT_SUCCESS;
   int nkeys, status=0;
   char *fullheader, *c, *cf;
-  struct stll *tstll, *ttstll;
+  struct gal_linkedlist_stll *tstll, *ttstll;
 
   if(p->onlyview)
     {
       if( fits_hdr2str(p->fptr, 0, NULL, 0, &fullheader, &nkeys, &status) )
-        fitsioerror(status, NULL);
+        gal_fitsarray_io_error(status, NULL);
 
       /* FLEN_CARD supposes that the NULL string character is in the
          end of each keyword header card. In fits_hdr2str, the NULL
@@ -180,8 +181,8 @@ header(struct headerparams *p)
       printf("\n");
 
       if (fits_free_memory(fullheader, &status) )
-        fitsioerror(status, "Problem in header.c for freeing the memory "
-                    "used to keep all the headers.");
+        gal_fitsarray_io_error(status, "Problem in header.c for freeing "
+                               "the memory used to keep all the headers.");
     }
   else
     {

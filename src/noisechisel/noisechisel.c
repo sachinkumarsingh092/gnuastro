@@ -62,25 +62,28 @@ makeoutput(struct noisechiselparams *p)
   double *dpt;
   long num[0];
   float *sky=NULL, *std=NULL;
-  struct fitsheaderll *keys=NULL;
+  struct gal_fitsarray_header_ll *keys=NULL;
   size_t s0=p->smp.s0, s1=p->smp.s1;
 
 
   /* First put a copy of the input image. */
-  arraytofitsimg(p->cp.output, "Input", FLOAT_IMG, p->img,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "Input", FLOAT_IMG, p->img,
+                                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
 
   /* The object labels image with a keyword mentioning the number of
      objects. */
   num[0]=p->numobjects-1;
-  add_to_fitsheaderll(&keys, TLONG, "NOBJS", 0, num, 0,
-                      "Number of objects in the image.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll(&keys, TLONG, "NOBJS", 0, num, 0,
+                                      "Number of objects in the image.", 0,
+                                      NULL);
   dpt=&p->detsn;
-  add_to_fitsheaderll(&keys, TDOUBLE, "DETSN", 0, dpt, 0,
-                      "Signal to noise of true pseudo-detections.", 0, NULL);
-  arraytofitsimg(p->cp.output, "Objects", LONG_IMG, p->olab,
-                 s0, s1, p->anyblank, p->wcs, keys, SPACK_STRING);
+  gal_fitsarray_add_to_fits_header_ll(&keys, TDOUBLE, "DETSN", 0, dpt, 0,
+                                      "Signal to noise of true "
+                                      "pseudo-detections.", 0, NULL);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "Objects", LONG_IMG, p->olab,
+                                  s0, s1, p->anyblank, p->wcs, keys,
+                                  SPACK_STRING);
   keys=NULL;     /* keys was freed after writing. */
 
 
@@ -89,19 +92,21 @@ makeoutput(struct noisechiselparams *p)
      extension filled so the sky and its standard deviation can remain
      on the 3rd and 4th extensions. */
   num[0] = p->detectonly ? 0 : p->numclumps-1;
-  add_to_fitsheaderll(&keys, TLONG, "NCLUMPS", 0, num, 0,
-                      "Number of clumps in the image.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll(&keys, TLONG, "NCLUMPS", 0, num, 0,
+                                      "Number of clumps in the image.", 0,
+                                      NULL);
   dpt=&p->clumpsn;
-  add_to_fitsheaderll(&keys, TDOUBLE, "CLUMPSN", 0, dpt, 0,
-                      "Signal to noise of true clumps.", 0, NULL);
-  arraytofitsimg(p->cp.output, "Clumps", LONG_IMG, p->clab,
-                 s0, s1, p->anyblank, p->wcs, keys, SPACK_STRING);
+  gal_fitsarray_add_to_fits_header_ll(&keys, TDOUBLE, "CLUMPSN", 0, dpt, 0,
+                                      "Signal to noise of true clumps.", 0,
+                                      NULL);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "Clumps", LONG_IMG, p->clab, s0,
+                                  s1, p->anyblank, p->wcs, keys, SPACK_STRING);
   keys=NULL;
 
   /* The sky image: */
-  checkgarray(&p->smp, &sky, &std);
-  arraytofitsimg(p->cp.output, "Sky", FLOAT_IMG, sky,
-                 s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  gal_mesh_check_garray(&p->smp, &sky, &std);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "Sky", FLOAT_IMG, sky,
+                                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
 
   /* The sky standard deviation image. Note that since this is a
@@ -110,17 +115,22 @@ makeoutput(struct noisechiselparams *p)
      interpolating or smoothing the image, so we have put a "raw" in
      the comments of each variable.*/
   fpt=&p->maxstd;
-  add_to_fitsheaderll(&keys, TFLOAT, "MAXSTD", 0, fpt, 0,
-                      "Maximum raw mesh sky standard deviation.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll(&keys, TFLOAT, "MAXSTD", 0, fpt, 0,
+                                      "Maximum raw mesh sky standard "
+                                      "deviation.", 0, NULL);
   fpt=&p->minstd;
-  add_to_fitsheaderll(&keys, TFLOAT, "MINSTD", 0, fpt, 0,
-                      "Minimum raw mesh sky standard deviation.", 0, NULL);
+  gal_fitsarray_add_to_fits_header_ll(&keys, TFLOAT, "MINSTD", 0, fpt, 0,
+                                      "Minimum raw mesh sky standard "
+                                      "deviation.", 0, NULL);
   fpt=&p->medstd;
-  add_to_fitsheaderll(&keys, TFLOAT, "MEDSTD", 0, fpt, 0,
-                      "Median raw mesh standard deviation.", 0, NULL);
-  arraytofitsimg(p->cp.output, "Standard deviation", FLOAT_IMG, std,
-                 s0, s1, 0, p->wcs, keys, SPACK_STRING);
+  gal_fitsarray_add_to_fits_header_ll(&keys, TFLOAT, "MEDSTD", 0, fpt, 0,
+                                      "Median raw mesh standard "
+                                      "deviation.", 0, NULL);
+  gal_fitsarray_array_to_fits_img(p->cp.output, "Standard deviation",
+                                  FLOAT_IMG, std, s0, s1, 0, p->wcs,
+                                  keys, SPACK_STRING);
   keys=NULL;
+
 
   /* Clean up: */
   free(sky);
@@ -134,40 +144,42 @@ makeoutput(struct noisechiselparams *p)
 void
 noisechisel(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
+  struct gal_mesh_params *smp=&p->smp, *lmp=&p->lmp;
 
   float *imgcopy;
   struct timeval t1;
   int verb=p->cp.verb;
   size_t i, s0=smp->s0, s1=smp->s1;
-  char report[VERBMSGLENGTH_V], *oreport;
+  char report[GAL_TIMING_VERB_MSG_LENGTH_V], *oreport;
 
 
   /* Convolve the image: */
   if(verb) gettimeofday(&t1, NULL);
-  spatialconvolveonmesh(smp, &p->conv);
+  gal_mesh_spatial_convolve_on_mesh(smp, &p->conv);
   if(p->detectionname)
     {
-      arraytofitsimg(p->detectionname, "Input", FLOAT_IMG, smp->img,
-                     s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(p->detectionname, "Convolved", FLOAT_IMG, p->conv,
-                     s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->detectionname, "Input", FLOAT_IMG,
+                                      smp->img, s0, s1, p->anyblank, p->wcs,
+                                      NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->detectionname, "Convolved", FLOAT_IMG,
+                                      p->conv, s0, s1, p->anyblank, p->wcs,
+                                      NULL, SPACK_STRING);
     }
-  if(verb) reporttiming(&t1, "Convolved with kernel.", 1);
+  if(verb) gal_timing_report(&t1, "Convolved with kernel.", 1);
 
 
 
   /* Do the initial detection: */
   if(verb)
     {
-      reporttiming(NULL, "Starting to find initial detections.", 1);
+      gal_timing_report(NULL, "Starting to find initial detections.", 1);
       gettimeofday(&t1, NULL);
     }
   initialdetection(p);
   if(verb)
     {
       sprintf(report, "%lu initial detections found.", p->numobjects-1);
-      reporttiming(&t1, report, 1);
+      gal_timing_report(&t1, report, 1);
     }
 
 
@@ -175,14 +187,15 @@ noisechisel(struct noisechiselparams *p)
   /* Remove the false detections */
   if(verb)
     {
-      reporttiming(NULL, "Starting to find and remove false detections.", 1);
+      gal_timing_report(NULL, "Starting to find and remove false detections.",
+                        1);
       gettimeofday(&t1, NULL);
     }
   onlytruedetections(p);
   if(verb)
     {
       sprintf(report, "%lu true detections identified.", p->numobjects-1);
-      reporttiming(&t1, report, 1);
+      gal_timing_report(&t1, report, 1);
     }
 
 
@@ -204,27 +217,29 @@ noisechisel(struct noisechiselparams *p)
         {
           sprintf(report, "%lu detections after %lu dilation%s",
                   p->numobjects-1, p->dilate, p->dilate>1 ? "s." : ".");
-          reporttiming(&t1, report, 1);
+          gal_timing_report(&t1, report, 1);
         }
     }
   if(p->detectionname)
-    arraytofitsimg(p->detectionname, "Dilated", LONG_IMG, p->olab,
-                   s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
+    gal_fitsarray_array_to_fits_img(p->detectionname, "Dilated", LONG_IMG,
+                                    p->olab, s0, s1, p->anyblank, p->wcs,
+                                    NULL, SPACK_STRING);
   if(p->maskdetname)
     {
-      arraytofitsimg(p->maskdetname, "Input", FLOAT_IMG, p->img, s0, s1,
-                     p->anyblank, p->wcs, NULL, SPACK_STRING);
-      floatcopy(p->img, s0*s1, &imgcopy);
+      gal_fitsarray_array_to_fits_img(p->maskdetname, "Input", FLOAT_IMG,
+                                      p->img, s0, s1, p->anyblank, p->wcs,
+                                      NULL, SPACK_STRING);
+      gal_arraymanip_float_copy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 0);
-      arraytofitsimg(p->maskdetname, "Undetected masked", FLOAT_IMG,
-                     imgcopy, s0, s1, p->anyblank, p->wcs, NULL,
-                     SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->maskdetname, "Undetected masked",
+                                      FLOAT_IMG, imgcopy, s0, s1, p->anyblank,
+                                      p->wcs, NULL, SPACK_STRING);
       free(imgcopy);
-      floatcopy(p->img, s0*s1, &imgcopy);
+      gal_arraymanip_float_copy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 1);
-      arraytofitsimg(p->maskdetname, "Detected masked", FLOAT_IMG,
-                     imgcopy, s0, s1, p->anyblank, p->wcs, NULL,
-                     SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->maskdetname, "Detected masked",
+                                      FLOAT_IMG, imgcopy, s0, s1, p->anyblank,
+                                      p->wcs, NULL, SPACK_STRING);
       free(imgcopy);
     }
 
@@ -232,9 +247,9 @@ noisechisel(struct noisechiselparams *p)
   if(smp->nch>1 && smp->fullconvolution==0 && p->detectonly==0)
     {
       if(verb) gettimeofday(&t1, NULL);
-      changetofullconvolution(smp, p->conv);
+      gal_mesh_change_to_full_convolution(smp, p->conv);
       if(verb)
-        reporttiming(&t1, "Convolved image internals corrected.", 1);
+        gal_timing_report(&t1, "Convolved image internals corrected.", 1);
     }
 
   /* Find and subtract the final sky value for the input and convolved
@@ -252,7 +267,7 @@ noisechisel(struct noisechiselparams *p)
   findavestdongrid(p, p->skyname);
   if(p->detectonly==0) subtractskyimg(p);
   if(verb)
-    reporttiming(&t1, "Final sky and its STD found and subtracted.", 1);
+    gal_timing_report(&t1, "Final sky and its STD found and subtracted.", 1);
 
 
 
@@ -264,7 +279,7 @@ noisechisel(struct noisechiselparams *p)
     {
       if(verb)
         {
-          reporttiming(NULL, "Starting to find clumps and objects.", 1);
+          gal_timing_report(NULL, "Starting to find clumps and objects.", 1);
           gettimeofday(&t1, NULL);
         }
       segmentation(p);
@@ -273,7 +288,7 @@ noisechisel(struct noisechiselparams *p)
           sprintf(report, "%lu object%s""containing %lu clump%sfound.",
                   p->numobjects-1, p->numobjects==2 ? " " : "s ",
                   p->numclumps-1,  p->numclumps ==2 ? " " : "s ");
-          reporttiming(&t1, report, 1);
+          gal_timing_report(&t1, report, 1);
         }
     }
 
@@ -289,12 +304,12 @@ noisechisel(struct noisechiselparams *p)
         error(EXIT_FAILURE, errno, "%lu bytes for oreport in noisechisel "
               "(noisechisel.c)", strlen(p->cp.output)+100*sizeof *oreport);
       sprintf(oreport, "Output written to %s.", p->cp.output);
-      reporttiming(&t1, oreport, 1);
+      gal_timing_report(&t1, oreport, 1);
       free(oreport);
     }
 
   /* Clean up: */
-  free(p->conv);                /* Allocated in spatialconvolveonmesh. */
-  freemesh(smp);                /* Allocated here.                     */
-  freemesh(lmp);                /* Allocated here.                     */
+  free(p->conv);           /* Allocated in gal_mesh_spatial_convolve_on_mesh. */
+  gal_mesh_free_mesh(smp); /* Allocated here.                                 */
+  gal_mesh_free_mesh(lmp); /* Allocated here.                                 */
 }

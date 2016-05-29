@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata";
@@ -57,11 +57,11 @@ static char args_doc[] = "ASTRdata";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" will print the basic statistics of the input image pixel "
   "flux distribution. All blank pixels or pixels specified by a mask "
   "image will be ignored.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -406,16 +406,17 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'M':
-      allocatecopyset(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname, &p->up.masknameset);
       break;
     case 'H':
-      allocatecopyset(arg, &p->up.mhdu, &p->up.mhduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
       break;
     case 'r':
       p->ignoremin=1;
       break;
     case 'd':
-      floatl0(arg, &p->mirrordist, "mirrordist", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->mirrordist, "mirrordist", key, SPACK,
+                             NULL, 0);
       p->up.mirrordistset=1;
       break;
 
@@ -424,7 +425,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->lowerbin=1;
       break;
     case 'B':
-      anyfloat(arg, &p->onebinvalue, "onebinvalue", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->onebinvalue, "onebinvalue", key, SPACK,
+                             NULL, 0);
       p->up.onebinvalueset=1;
       break;
     case 'A':
@@ -434,13 +436,15 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->mhistname="a";
       break;
     case 510:
-      floatl0s1(arg, &p->mirror, "mirrorquant", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->mirror, "mirrorquant", key, SPACK,
+                                 NULL, 0);
       break;
     case 511:
       p->histrangeformirror=1;
       break;
     case 503:
-      floatl0(arg, &p->mirrorplotdist, "mirrorplotdist", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->mirrorplotdist, "mirrorplotdist", key,
+                             SPACK, NULL, 0);
       p->up.mirrorplotdistset=1;
       break;
 
@@ -455,19 +459,21 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->maxhistone=1;
       break;
     case 'n':
-      sizetlzero(arg, &p->histnumbins, "histnumbins", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->histnumbins, "histnumbins", key, SPACK,
+                                NULL, 0);
       p->up.histnumbinsset=1;
       break;
     case 'i':
-      anyfloat(arg, &p->histmin, "histmin", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->histmin, "histmin", key, SPACK, NULL, 0);
       p->up.histminset=1;
       break;
     case 'x':
-      anyfloat(arg, &p->histmax, "histmax", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->histmax, "histmax", key, SPACK, NULL, 0);
       p->up.histmaxset=1;
       break;
     case 'Q':
-      floatl0s1(arg, &p->histquant, "histquant", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->histquant, "histquant", key, SPACK,
+                                 NULL, 0);
       p->up.histquantset=1;
       break;
 
@@ -485,19 +491,20 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->cfpsimhist=1;
       break;
     case 'p':
-      sizetlzero(arg, &p->cfpnum, "cfpnum", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->cfpnum, "cfpnum", key, SPACK, NULL, 0);
       p->up.cfpnumset=1;
       break;
     case 'a':
-      anyfloat(arg, &p->cfpmin, "cfpmin", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->cfpmin, "cfpmin", key, SPACK, NULL, 0);
       p->up.cfpminset=1;
       break;
     case 'b':
-      anyfloat(arg, &p->cfpmax, "cfpmax", key, SPACK, NULL, 0);
+      gal_checkset_any_float(arg, &p->cfpmax, "cfpmax", key, SPACK, NULL, 0);
       p->up.cfpmaxset=1;
       break;
     case 'U':
-      floatl0s1(arg, &p->cfpquant, "cfpquant", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->cfpquant, "cfpquant", key, SPACK,
+                                 NULL, 0);
       p->up.cfpquantset=1;
       break;
 
@@ -507,16 +514,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->sigclip=0;
       break;
     case 'u':
-      floatl0(arg, &p->sigclipmultip, "sigclipmultip", key, SPACK, NULL, 0);
+      gal_checkset_float_l_0(arg, &p->sigclipmultip, "sigclipmultip", key,
+                             SPACK, NULL, 0);
       p->up.sigclipmultipset=1;
       break;
     case 't':
-      floatl0(arg, &p->sigcliptolerance, "sigcliptolerance", key, SPACK,
-              NULL, 0);
+      gal_checkset_float_l_0(arg, &p->sigcliptolerance, "sigcliptolerance", key,
+                             SPACK, NULL, 0);
       p->up.sigcliptoleranceset=1;
       break;
     case 'g':
-      sizetlzero(arg, &p->sigclipnum, "sigclipnum", key, SPACK, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->sigclipnum, "sigclipnum", key, SPACK,
+                                NULL, 0);
       p->up.sigclipnumset=1;
       break;
 
@@ -528,7 +537,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( nameisfits(arg) )
+      if( gal_fitsarray_name_is_fits(arg) )
         {
           if(p->up.inputname)
             argp_error(state, "Only one input image should be given.");

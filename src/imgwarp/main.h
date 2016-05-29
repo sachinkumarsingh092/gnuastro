@@ -63,7 +63,7 @@ struct imgwarpparams
 {
   /* Other structures: */
   struct uiparams     up;  /* User interface parameters.                 */
-  struct commonparams cp;  /* Common parameters.                         */
+  struct gal_commonparams cp; /* Common parameters.                      */
 
   /* Input: */
   double           *input;  /* Name of input FITS file.                  */

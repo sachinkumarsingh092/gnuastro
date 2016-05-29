@@ -77,21 +77,21 @@ oversegment(struct clumpsthreadparams *ctp)
   struct noisechiselparams *p=ctp->p;
 
   /* pix is not actually used its self, however, the pointer to it
-     will be extensively used (ind) for the macro FILL_NGB_8_REGION.
+     will be extensively used (ind) for the macro GAL_NEIGHBORS_FILL_8_REGION.
      This macro works on the pointer to the index, not the index its
      self. `pix` is filled with different index values, so the pointer
      to it doesn't change. */
   size_t pix;
 
   float *arr=p->conv;
-  struct sll *Q=NULL, *cleanup=NULL;
+  struct gal_linkedlist_sll *Q=NULL, *cleanup=NULL;
   long n1, rlab, nlab, curlab=1, *clab=p->clab;
   size_t x0=ctp->x0, y0=ctp->y0, x1=ctp->x1, y1=ctp->y1;
   size_t *n, *nf, *indf, *pind, *ind=&pix, is1=p->lmp.s1;
   size_t ng, *rn, *rnf, numngb, ngb[8], *relngb=p->relngb;
 
   /* Sort the indexs based on the flux within them. */
-  qsort(ctp->inds, ctp->area, sizeof(size_t), indexfloatdecreasing);
+  qsort(ctp->inds, ctp->area, sizeof(size_t), gal_qsort_index_float_decreasing);
 
   /* Initialize the region you want to over-segment. */
   indf=(pind=ctp->inds)+ctp->area;
@@ -182,7 +182,7 @@ oversegment(struct clumpsthreadparams *ctp)
                 /* Check the vicinity of this pixel that was just
                    popped to see if it can find any already labeled
                    neighbour or not. */
-                FILL_NGB_8_REGION;
+                GAL_NEIGHBORS_FILL_8_REGION;
 
                 /* If the pixel is on the side of the region, set it
                    as a river, no more need to look around it. */
@@ -413,7 +413,7 @@ growclumps(struct clumpsthreadparams *ctp, int withrivers)
 	  n1=0;
 
 	  /* Check the 4 connected neighbors of the pixel: */
-          FILL_NGB_4_ALLIMG;
+          GAL_NEIGHBORS_FILL_4_ALLIMG;
 	  nf=(n=ngb)+numngb;
 	  do
             if( olab[*n]>0 )	             /* This neighbor is labeled. */
@@ -488,7 +488,7 @@ void
 getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
 {
   struct noisechiselparams *p=ctp->p;
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
 
   double *xys, *clumpinfo;
   float *img=p->img, *smpstd=smp->garray2;
@@ -545,8 +545,8 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
                the neighbors within a region. Otherwise (when working
                on the detections) we want the neighbors on the full
                image.*/
-            if(p->b0f1) {FILL_NGB_8_ALLIMG}
-            else        {FILL_NGB_8_REGION}
+            if(p->b0f1) {GAL_NEIGHBORS_FILL_8_ALLIMG}
+            else        {GAL_NEIGHBORS_FILL_8_REGION}
 
 
             /* We are on a river pixel. So its value has to be added
@@ -628,7 +628,8 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
                   xys[3*lab+2] /= xys[3*lab];
                   if(p->skysubtracted)
                       clumpinfo[row+4]=
-                        smpstd[imgxytomeshid(smp,xys[3*lab+1],xys[3*lab+2])];
+                        smpstd[gal_mesh_img_xy_to_mesh_id(smp,xys[3*lab+1],
+                                                          xys[3*lab+2])];
 
                   /* For a check:
                   printf("%lu: (%lu, %lu) --> %f\n", lab,
@@ -771,8 +772,8 @@ void *
 clumpsntableonmesh(void *inparams)
 {
   struct clumpsthreadparams ctp;
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparams;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparams;
+  struct gal_mesh_params *mp=mtp->mp;
   struct noisechiselparams *p=(struct noisechiselparams *)mp->params;
 
   size_t *mponeforall=mp->oneforall;
@@ -789,7 +790,7 @@ clumpsntableonmesh(void *inparams)
   ctp.inds=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
   /* Go over all the meshs that are assigned to this thread. */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Set index of this mesh: */
       ind=ctp.thislabel=indexs[i];
@@ -867,13 +868,13 @@ void
 findclumpsn(struct noisechiselparams *p)
 {
   float *sntable;
-  struct meshparams *lmp=&p->lmp;
+  struct gal_mesh_params *lmp=&p->lmp;
   size_t i, j, numclumps=0, nmeshi=lmp->nmeshi;
 
 
   /* Set the convolved image as the basis for sorting the indexs and
      finding clumps. */
-  forqsortindexarr=p->conv;
+  gal_qsort_index_arr=p->conv;
 
 
   /* Allocate the two arrays to keep the number and values of the S/Ns
@@ -890,7 +891,7 @@ findclumpsn(struct noisechiselparams *p)
 
   /* Find the clump Signal to noise ratio on successful meshs then on
      all the meshs. findsnthreshongrid is in detection.c. */
-  operateonmesh(lmp, clumpsntableonmesh, sizeof(size_t), 0, 0);
+  gal_mesh_operate_on_mesh(lmp, clumpsntableonmesh, sizeof(size_t), 0, 0);
 
 
   /* Find the total number of useful clumps and allocate sntable.  */
@@ -949,7 +950,7 @@ findclumpsn(struct noisechiselparams *p)
 void
 removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
 {
-  struct meshparams *lmp=&ctp->p->lmp;
+  struct gal_mesh_params *lmp=&ctp->p->lmp;
 
   long *newlabs, *clab=ctp->p->clab;
   size_t *n, *nf, is0=lmp->s0, is1=lmp->s1;
@@ -962,7 +963,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
           "removefalsedetections (clumps.c)", ctp->numclumps*sizeof *newlabs);
 
   /* We want the removed regions to become SEGMENTINIT. */
-  longinit(newlabs, ctp->numclumps, SEGMENTINIT);
+  gal_arraymanip_long_init(newlabs, ctp->numclumps, SEGMENTINIT);
 
   /* Set the new labels: */
   if(ctp->p->keepmaxnearriver)
@@ -978,7 +979,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
           /* Check to see if the brightest pixel in this clump is
              touching a river or not. */
           ind=&ctp->topinds[i];
-          FILL_NGB_8_ALLIMG;
+          GAL_NEIGHBORS_FILL_8_ALLIMG;
           nf=(n=ngb)+numngb;
           do if(clab[*n++]==SEGMENTRIVER) break; while(n<nf);
 

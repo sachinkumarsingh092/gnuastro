@@ -46,7 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"COPYRIGHT
+const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "";
@@ -57,9 +57,9 @@ static char args_doc[] = "";
 
 const char doc[] =
   /* Before the list of options: */
-  TOPHELPINFO
+  GAL_STRINGS_TOP_HELP_INFO
   SPACK_NAME" will produce cosmological calculations.\n"
-  MOREHELPINFO
+  GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
   PACKAGE_NAME" home page: "PACKAGE_URL;
@@ -194,23 +194,27 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'z':
-      doublele0(arg, &p->redshift, "redshift", key, SPACK, NULL, 0);
+      gal_checkset_double_el_0(arg, &p->redshift, "redshift", key,
+                               SPACK, NULL, 0);
       p->up.redshiftset=1;
       break;
     case 'H':
-      doublele0(arg, &p->H0, "H0", key, SPACK, NULL, 0);
+      gal_checkset_double_el_0(arg, &p->H0, "H0", key, SPACK, NULL, 0);
       p->up.H0set=1;
       break;
     case 'l':
-      doublele0(arg, &p->olambda, "olambda", key, SPACK, NULL, 0);
+      gal_checkset_double_el_0(arg, &p->olambda, "olambda", key,
+                               SPACK, NULL, 0);
       p->up.olambdaset=1;
       break;
     case 'm':
-      doublele0(arg, &p->omatter, "omatter", key, SPACK, NULL, 0);
+      gal_checkset_double_el_0(arg, &p->omatter, "omatter", key,
+                               SPACK, NULL, 0);
       p->up.omatterset=1;
       break;
     case 'r':
-      doublele0(arg, &p->oradiation, "oradiation", key, SPACK, NULL, 0);
+      gal_checkset_double_el_0(arg, &p->oradiation, "oradiation",
+                               key, SPACK, NULL, 0);
       p->up.oradiationset=1;
       break;
 

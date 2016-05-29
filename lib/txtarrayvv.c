@@ -74,7 +74,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
   while( getline(&line, &len, fp) != -1 )
     {
       /* Read the first token: */
-      firsttoken=strtok(line, DELIMITERS);
+      firsttoken=strtok(line, GAL_TXTARRAY_DELIMITERS);
 
       /* If there are no non-delimters in the line (can happen if the
 	 line is a blank line in the end of the file). */
@@ -89,7 +89,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
       if(s0==0)  /* We are on the first row of data, find s1. */
 	{
 	  s1=1;
-	  while( strtok(NULL, DELIMITERS) != NULL )
+	  while( strtok(NULL, GAL_TXTARRAY_DELIMITERS) != NULL )
 	    ++s1;
 	}
       ++s0;
@@ -120,7 +120,7 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
   else				/* Not yet created.          */
     {
       errno=0;
-      *log=fopen(TXTARRAYVVLOG, "w");
+      *log=fopen(GAL_TXTARRAY_LOG, "w");
       if(*log==NULL)
 	error(EXIT_FAILURE, errno, "%s", filename);
       fprintf(*log, "# Elements in %s which could not be read as a \n"
@@ -189,7 +189,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
       ++lineno;
 
       /* Read the first token: */
-      token=strtok(line, DELIMITERS);
+      token=strtok(line, GAL_TXTARRAY_DELIMITERS);
 
       /* If there are no non-delimters in the line (can happen if the
 	 line is a blank line in the end of the file). */
@@ -204,7 +204,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
       CONVERTANDSAVE;
 
       /* Read the rest of the tokens: */
-      while( (token=strtok(NULL, DELIMITERS))!=NULL )
+      while( (token=strtok(NULL, GAL_TXTARRAY_DELIMITERS))!=NULL )
 	{
 	  if(ts1>=s1)
 	    error_at_line(EXIT_FAILURE, 0, filename, lineno,
@@ -229,7 +229,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
     {
       errno=0;
       if(fclose(log)==EOF)
-	error(EXIT_FAILURE, errno, "%s", TXTARRAYVVLOG);
+	error(EXIT_FAILURE, errno, "%s", GAL_TXTARRAY_LOG);
     }
 }
 
@@ -238,14 +238,15 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
 
 
 void
-txttoarray(char *filename, double **array, size_t *s0, size_t *s1)
+gal_txtarray_txt_to_array(char *filename, double **array,
+                          size_t *s0, size_t *s1)
 {
   /* Find the size of the table and allocate space for it: */
   errno=0;
   txttablesize(filename, s0, s1);
   if( (*array=malloc(*s0 * *s1 * sizeof **array)) == NULL)
-    error(EXIT_FAILURE, errno, "txttoarray: space for array with %lu "
-	  "elements", *s0 * *s1);
+    error(EXIT_FAILURE, errno, "gal_txtarray_txt_to_array: space for array "
+          "with %lu elements", *s0 * *s1);
 
   /* Fill in the table with the contents of the text file: */
   filltable(filename, *array, *s0, *s1);
@@ -287,10 +288,10 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
     {
       /* Allocate space for the format string of each column: */
       errno=0;
-      fmt[i]=malloc(FMTLENGTH * sizeof(char));
+      fmt[i]=malloc(GAL_TXTARRAY_FMT_LENGTH * sizeof(char));
       if(fmt[i]==NULL)
 	error(EXIT_FAILURE, errno, "txtarrayvv, space for format "
-	      "string %d, with %d elements", i, FMTLENGTH);
+	      "string %d, with %d elements", i, GAL_TXTARRAY_FMT_LENGTH);
 
       /* See if this is an int column. */
       found=0;
@@ -351,9 +352,9 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
 
  */
 void
-arraytotxt(double *array, size_t s0, size_t s1, char *comments,
-	   int *int_cols, int *accu_cols, int *space, int *prec,
-	   char forg, const char *filename)
+gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
+                          int *int_cols, int *accu_cols, int *space, int *prec,
+                          char forg, const char *filename)
 {
   int i,j;
   FILE *fp;
@@ -362,19 +363,19 @@ arraytotxt(double *array, size_t s0, size_t s1, char *comments,
   /* Do a small sanity check: */
   for(i=0;int_cols[i]>0;++i)
     if(int_cols[i]>=s1)
-      error(EXIT_FAILURE, 0, "arraytotxt: In int_cols[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In int_cols[], %d is "
 	    "larger than the number of columns: %lu.", int_cols[i], s1);
   for(i=0;accu_cols[i]>0;++i)
     if(accu_cols[i]>=s1)
-      error(EXIT_FAILURE, 0, "arraytotxt: In accu_cols[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In accu_cols[], %d is "
 	    "larger than the number of columns: %lu.", accu_cols[i], s1);
   for(i=0;i<3;++i)
     if(space[i]<=0)
-      error(EXIT_FAILURE, 0, "arraytotxt: In space[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In space[], %d is "
 	    "smaller or equal to zero.", space[i]);
   for(i=0;i<2;++i)
     if(prec[i]<0)
-      error(EXIT_FAILURE, 0, "arraytotxt: In prec[], %d is "
+      error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In prec[], %d is "
 	    "smaller than zero.", space[i]);
 
   /* Allocate the spaces: */

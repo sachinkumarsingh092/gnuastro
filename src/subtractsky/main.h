@@ -69,9 +69,9 @@ struct uiparams
 struct subtractskyparams
 {
   /* Other structures: */
-  struct uiparams     up;  /* User interface parameters.                 */
-  struct commonparams cp;  /* Common parameters.                         */
-  struct meshparams   mp;  /* Mesh grid of input image.                  */
+  struct uiparams         up;  /* User interface parameters.             */
+  struct gal_commonparams cp; /* Common parameters.                      */
+  struct gal_mesh_params  mp; /* Mesh grid of input image.               */
 
   /* Input: */
   int               nwcs;  /* Number of WCS structures.                  */

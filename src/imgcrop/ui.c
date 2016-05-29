@@ -73,7 +73,7 @@ readconfig(char *filename, struct imgcropparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   size_t lineno=0, len=200, tmp;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
   int imgmodeset=0, wcsmodeset=0; /* For unambiguous default file checking. */
 
@@ -98,12 +98,12 @@ readconfig(char *filename, struct imgcropparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
       /* Operating modes: */
       if(strcmp(name, "imgmode")==0)
 	{
-	  intzeroorone(value, &zeroorone, name, key, SPACK,
+	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
 		       filename, lineno);
 	  if(zeroorone)
 	    {
@@ -122,7 +122,7 @@ readconfig(char *filename, struct imgcropparams *p)
 	}
       else if(strcmp(name, "wcsmode")==0)
 	{
-	  intzeroorone(value, &zeroorone, name, key, SPACK,
+	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
 		       filename, lineno);
 	  if(zeroorone)
 	    {
@@ -146,40 +146,40 @@ readconfig(char *filename, struct imgcropparams *p)
 
       /* Inputs: */
       else if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
       else if(strcmp(name, "racol")==0)
 	{
 	  if(up->racolset) continue;
-	  sizetelzero(value, &p->racol, name, key, SPACK,
+	  gal_checkset_sizet_el_zero(value, &p->racol, name, key, SPACK,
 		      filename, lineno);
 	  up->racolset=1;
 	}
       else if(strcmp(name, "deccol")==0)
 	{
 	  if(up->deccolset) continue;
-	  sizetelzero(value, &p->deccol, name, key, SPACK,
+	  gal_checkset_sizet_el_zero(value, &p->deccol, name, key, SPACK,
 		      filename, lineno);
 	  up->deccolset=1;
 	}
       else if(strcmp(name, "xcol")==0)
 	{
 	  if(up->xcolset) continue;
-	  sizetelzero(value, &p->xcol, name, key, SPACK,
+	  gal_checkset_sizet_el_zero(value, &p->xcol, name, key, SPACK,
 		      filename, lineno);
 	  up->xcolset=1;
 	}
       else if(strcmp(name, "ycol")==0)
 	{
 	  if(up->ycolset) continue;
-	  sizetelzero(value, &p->ycol, name, key, SPACK,
+	  gal_checkset_sizet_el_zero(value, &p->ycol, name, key, SPACK,
 		      filename, lineno);
 	  up->ycolset=1;
 	}
       else if(strcmp(name, "iwidth")==0)
 	{
 	  if(up->iwidthset) continue;
-	  sizetlzero(value, &tmp, name, key, SPACK,
+	  gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
 		     filename, lineno);
 	  p->iwidth[0]=p->iwidth[1]=tmp;
 	  up->iwidthset=1;
@@ -187,21 +187,21 @@ readconfig(char *filename, struct imgcropparams *p)
       else if(strcmp(name, "wwidth")==0)
 	{
 	  if(up->wwidthset) continue;
-	  doublel0(value, &p->wwidth, name, key, SPACK,
+	  gal_checkset_double_l_0(value, &p->wwidth, name, key, SPACK,
 		   filename, lineno);
 	  up->wwidthset=1;
 	}
       else if(strcmp(name, "hstartwcs")==0)
 	{
 	  if(up->hstartwcsset) continue;
-	  sizetelzero(value, &p->hstartwcs, name, key, SPACK,
+	  gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key, SPACK,
                       filename, lineno);
 	  up->hstartwcsset=1;
 	}
       else if(strcmp(name, "hendwcs")==0)
 	{
 	  if(up->hendwcsset) continue;
-	  sizetelzero(value, &p->hendwcs, name, key, SPACK,
+	  gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
                       filename, lineno);
 	  up->hendwcsset=1;
 	}
@@ -212,7 +212,7 @@ readconfig(char *filename, struct imgcropparams *p)
       else if(strcmp(name, "checkcenter")==0)
 	{
 	  if(up->checkcenterset) continue;
-	  sizetelzero(value, &p->checkcenter, name, key, SPACK,
+	  gal_checkset_sizet_el_zero(value, &p->checkcenter, name, key, SPACK,
 		      filename, lineno);
 	  up->checkcenterset=1;
 	}
@@ -238,7 +238,7 @@ readconfig(char *filename, struct imgcropparams *p)
 	}
 
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
       else
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,
@@ -257,13 +257,13 @@ void
 printvalues(FILE *fp, struct imgcropparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
 
 
   fprintf(fp, "\n# Output parameters:\n");
@@ -298,7 +298,7 @@ printvalues(FILE *fp, struct imgcropparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
   if(up->imgmodeset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "imgmode", p->imgmode);
   if(up->wcsmodeset)
@@ -316,31 +316,31 @@ void
 checkifset(struct imgcropparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(up->imgmodeset==0 && up->wcsmodeset==0)
-    REPORT_NOTSET("imgmode or wcsmode");
+    GAL_CONFIGFILES_REPORT_NOTSET("imgmode or wcsmode");
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->xcolset==0)
-    REPORT_NOTSET("xcol");
+    GAL_CONFIGFILES_REPORT_NOTSET("xcol");
   if(up->ycolset==0)
-    REPORT_NOTSET("ycol");
+    GAL_CONFIGFILES_REPORT_NOTSET("ycol");
   if(up->iwidthset==0)
-    REPORT_NOTSET("iwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("iwidth");
   if(up->racolset==0)
-    REPORT_NOTSET("racol");
+    GAL_CONFIGFILES_REPORT_NOTSET("racol");
   if(up->deccolset==0)
-    REPORT_NOTSET("deccol");
+    GAL_CONFIGFILES_REPORT_NOTSET("deccol");
   if(up->wwidthset==0)
-    REPORT_NOTSET("wwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("wwidth");
   if(up->suffixset==0)
-    REPORT_NOTSET("suffix");
+    GAL_CONFIGFILES_REPORT_NOTSET("suffix");
   if(up->checkcenterset==0)
-    REPORT_NOTSET("checkcenter");
+    GAL_CONFIGFILES_REPORT_NOTSET("checkcenter");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -372,7 +372,7 @@ sanitycheck(struct imgcropparams *p)
   int checksum;
   char forerr[100];
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
 
 
@@ -454,7 +454,7 @@ sanitycheck(struct imgcropparams *p)
         }
 
       /* Check if the value for --output is a file or a directory? */
-      p->outnameisfile=dir0file1(cp->output, cp->dontdelete);
+      p->outnameisfile=gal_checkset_dir_0_file_1(cp->output, cp->dontdelete);
 
       /* When there is only one output, only one thread is needed. */
       cp->numthreads=1;
@@ -496,19 +496,19 @@ sanitycheck(struct imgcropparams *p)
 	      "provided.");
 
       /* Make sure the given output is a directory. */
-      checkdirwriteaddslash(&cp->output);
+      gal_checkset_check_dir_write_add_slash(&cp->output);
 
       /* Make sure the columns of data are within the catalog range of
 	 columns: */
       if(p->imgmode)
 	{
-	  CHECKCOLINCAT(p->xcol, "xcol");
-	  CHECKCOLINCAT(p->ycol, "ycol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, "xcol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, "ycol");
 	}
       else
 	{
-	  CHECKCOLINCAT(p->racol, "racol");
-	  CHECKCOLINCAT(p->deccol, "deccol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->racol, "racol");
+	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->deccol, "deccol");
 	}
     }
 
@@ -594,7 +594,7 @@ preparearrays(struct imgcropparams *p)
   fitsfile *tmpfits;
   struct timeval t1;
   struct inputimgs *img;
-  char msg[VERBMSGLENGTH_V];
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
   int i, status, firstbitpix=0;
 
   if(p->cp.verb) gettimeofday(&t1, NULL);
@@ -619,10 +619,11 @@ preparearrays(struct imgcropparams *p)
       /* Get the image properties. */
       status=0;
       img=&p->imgs[i];
-      pop_from_stll(&p->up.stll, &img->name);
-      readfitshdu(img->name, p->cp.hdu, IMAGE_HDU, &tmpfits);
-      imgbitpixsize(tmpfits, &p->bitpix, img->naxes);
-      readwcs(tmpfits, &img->nwcs, &img->wcs, p->hstartwcs, p->hendwcs);
+      gal_linkedlist_pop_from_stll(&p->up.gal_linkedlist_stll, &img->name);
+      gal_fitsarray_read_fits_hdu(img->name, p->cp.hdu, IMAGE_HDU, &tmpfits);
+      gal_fitsarray_img_bitpix_size(tmpfits, &p->bitpix, img->naxes);
+      gal_fitsarray_read_wcs(tmpfits, &img->nwcs, &img->wcs, p->hstartwcs,
+                             p->hendwcs);
       if(img->wcs)
         {
           status=wcshdo(0, img->wcs, &img->nwcskeys, &img->wcstxt);
@@ -638,15 +639,15 @@ preparearrays(struct imgcropparams *p)
                 "Image Mode (note that the crops will lack WCS "
                 "header information).", img->name, p->cp.hdu);
       fits_close_file(tmpfits, &status);
-      fitsioerror(status, NULL);
+      gal_fitsarray_io_error(status, NULL);
 
       /* Make sure all the images have the same BITPIX and set the
 	 basic BITPIX related parameters. */
       if(firstbitpix==0)
 	{
 	  firstbitpix=p->bitpix;
-	  p->datatype=bitpixtodtype(p->bitpix);
-	  p->bitnul=bitpixblank(p->bitpix);
+	  p->datatype=gal_fitsarray_bitpix_to_dtype(p->bitpix);
+	  p->bitnul=gal_fitsarray_bitpix_blank(p->bitpix);
 	}
       else if(firstbitpix!=p->bitpix)
 	error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "
@@ -677,7 +678,7 @@ preparearrays(struct imgcropparams *p)
   if(p->cp.verb)
     {
       sprintf(msg, "Read metadata of %lu images.", p->numimg);
-      reporttiming(&t1, msg, 1);
+      gal_timing_report(&t1, msg, 1);
     }
 }
 
@@ -705,7 +706,7 @@ preparearrays(struct imgcropparams *p)
 void
 setparams(int argc, char *argv[], struct imgcropparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -720,18 +721,18 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
   if(p->up.catname)
-    txttoarray(p->up.catname, &p->cat, &p->cs0, &p->cs1);
+    gal_txtarray_txt_to_array(p->up.catname, &p->cat, &p->cs0, &p->cs1);
 
   /* If cp->output was not specified on the command line or in any of
      the configuration files, then automatic output should be used, in
@@ -747,7 +748,7 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
 
   /* Do a sanity check. */
   sanitycheck(p);
-  checkremovefile(TXTARRAYVVLOG, 0);
+  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
@@ -817,5 +818,5 @@ freeandreport(struct imgcropparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

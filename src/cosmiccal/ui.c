@@ -72,7 +72,7 @@ readconfig(char *filename, struct cosmiccalparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -96,7 +96,7 @@ readconfig(char *filename, struct cosmiccalparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
@@ -105,36 +105,36 @@ readconfig(char *filename, struct cosmiccalparams *p)
       if(strcmp(name, "redshift")==0)
 	{
 	  if(up->redshiftset) continue;
-          doublele0(value, &p->redshift, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_double_el_0(value, &p->redshift, name, key,
+                                      SPACK, filename, lineno);
 	  up->redshiftset=1;
 	}
       else if(strcmp(name, "H0")==0)
 	{
 	  if(up->H0set) continue;
-          doublele0(value, &p->H0, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_double_el_0(value, &p->H0, name, key, SPACK,
+                                      filename, lineno);
 	  up->H0set=1;
 	}
       else if(strcmp(name, "olambda")==0)
 	{
 	  if(up->olambdaset) continue;
-          doublele0(value, &p->olambda, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_double_el_0(value, &p->olambda, name, key,
+                                      SPACK, filename, lineno);
 	  up->olambdaset=1;
 	}
       else if(strcmp(name, "omatter")==0)
 	{
 	  if(up->omatterset) continue;
-          doublele0(value, &p->omatter, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_double_el_0(value, &p->omatter, name, key,
+                                      SPACK, filename, lineno);
 	  up->omatterset=1;
 	}
       else if(strcmp(name, "oradiation")==0)
 	{
 	  if(up->oradiationset) continue;
-          doublele0(value, &p->oradiation, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_double_el_0(value, &p->oradiation, name, key,
+                                   SPACK, filename, lineno);
 	  up->oradiationset=1;
 	}
 
@@ -144,15 +144,15 @@ readconfig(char *filename, struct cosmiccalparams *p)
       else if(strcmp(name, "onlyvolume")==0)
 	{
 	  if(up->onlyvolumeset) continue;
-          intzeroorone(value, &p->onlyvolume, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->onlyvolume, name, key,
+                                       SPACK, filename, lineno);
 	  up->onlyvolumeset=1;
 	}
       else if(strcmp(name, "onlyabsmagconv")==0)
 	{
 	  if(up->onlyabsmagconvset) continue;
-          intzeroorone(value, &p->onlyabsmagconv, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->onlyabsmagconv, name,
+                                       key, SPACK, filename, lineno);
 	  up->onlyabsmagconvset=1;
 	}
 
@@ -160,7 +160,7 @@ readconfig(char *filename, struct cosmiccalparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -180,7 +180,7 @@ void
 printvalues(FILE *fp, struct cosmiccalparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
 
   /* Print all the options that are set. Separate each group with a
@@ -205,7 +205,7 @@ printvalues(FILE *fp, struct cosmiccalparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -219,22 +219,22 @@ void
 checkifset(struct cosmiccalparams *p)
 {
   struct uiparams *up=&p->up;
-  /*struct commonparams *cp=&p->cp;*/
+  /*struct gal_commonparams *cp=&p->cp;*/
 
   int intro=0;
   if(up->redshiftset==0)
-    REPORT_NOTSET("redshift");
+    GAL_CONFIGFILES_REPORT_NOTSET("redshift");
   if(up->H0set==0)
-    REPORT_NOTSET("H0");
+    GAL_CONFIGFILES_REPORT_NOTSET("H0");
   if(up->olambdaset==0)
-    REPORT_NOTSET("olambda");
+    GAL_CONFIGFILES_REPORT_NOTSET("olambda");
   if(up->omatterset==0)
-    REPORT_NOTSET("omatter");
+    GAL_CONFIGFILES_REPORT_NOTSET("omatter");
   if(up->oradiationset==0)
-    REPORT_NOTSET("oradiation");
+    GAL_CONFIGFILES_REPORT_NOTSET("oradiation");
 
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -333,7 +333,7 @@ preparations(struct cosmiccalparams *p)
 void
 setparams(int argc, char *argv[], struct cosmiccalparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -348,7 +348,7 @@ setparams(int argc, char *argv[], struct cosmiccalparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
@@ -361,5 +361,5 @@ setparams(int argc, char *argv[], struct cosmiccalparams *p)
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 }

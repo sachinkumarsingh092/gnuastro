@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef CONFIGFILES_H
-#define CONFIGFILES_H
+#ifndef __GAL_CONFIGFILES_H__
+#define __GAL_CONFIGFILES_H__
 
 
 
@@ -29,14 +29,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************               Macros                *************/
 /**************************************************************/
 /* Simple macros: */
-#define CONFIG_DELIMITERS " ,=:\t\n"
+#define GAL_CONFIGFILES_DELIMITERS " ,=:\t\n"
 
 
 
-#define STARTREADINGLINE {						\
+#define GAL_CONFIGFILES_START_READING_LINE {                            \
   ++lineno;								\
   if(*line=='#') continue;						\
-  else readnamevalue(line, filename, lineno, &name, &value);		\
+  else gal_configfiles_read_name_value(line, filename, lineno,          \
+                                       &name, &value);                  \
   if(name==NULL && value==NULL) continue;				\
 }
 
@@ -45,16 +46,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Functional macros: These are not actual functions, because they
    depend on functions that are different for different programs. So
    they have to be written into the functions with a macro. */
-#define SAVE_LOCAL_CONFIG(INDIR) {					\
+#define GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(INDIR) {                      \
     FILE *fp;								\
     char *outfilename, *command;		 			\
-    fp=writelocalconfigstop(INDIR, CONFIG_FILE, SPACK,			\
-			     SPACK_NAME, &outfilename);			\
+    fp=gal_configfiles_write_local_config_stop(INDIR, CONFIG_FILE,      \
+                                               SPACK, SPACK_NAME,       \
+                                               &outfilename);           \
     printvalues(fp, p);							\
     errno=0;								\
     if(fclose(fp)==-1)							\
       error(EXIT_FAILURE, errno, "%s", outfilename);                    \
-    command=malloccat("cat ", outfilename);				\
+    command=gal_checkset_malloc_cat("cat ", outfilename);               \
     printf("Values saved in %s:\n\n", outfilename);			\
     if(system(command))                                                 \
       error(EXIT_FAILURE, 0, "The `%s` command could not be run or "    \
@@ -68,12 +70,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define CHECKSETCONFIG {                                                \
+#define GAL_CONFIGFILES_CHECK_SET_CONFIG {                              \
     char *userconfig_dir, *userconfig_file;				\
                                                                         \
     readconfig(CURDIRCONFIG_FILE, p);                                   \
     if(cp->setdirconf)                                                  \
-      SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);                              \
+      GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);              \
     if(cp->onlyversionset && strcmp(cp->onlyversion, PACKAGE_VERSION))  \
       error(EXIT_FAILURE, 0, "You are currently running Gnuastro %s. "  \
             "However, this run should be with version `%s'.\n\n"        \
@@ -91,10 +93,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                                                                         \
     if(cp->onlydirconf==0)                                              \
       {                                                                 \
-        userconfig_dir=addhomedir(USERCONFIG_DIR);                      \
-        userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
+        userconfig_dir=gal_configfiles_add_home_dir(USERCONFIG_DIR);    \
+        userconfig_file=                                                \
+          gal_configfiles_add_home_dir(USERCONFIG_FILEEND);             \
         readconfig(userconfig_file, p);                                 \
-        if(cp->setusrconf) SAVE_LOCAL_CONFIG(userconfig_dir);           \
+        if(cp->setusrconf)                                              \
+          GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(userconfig_dir);            \
         readconfig(SYSCONFIG_FILE, p);                                  \
         free(userconfig_file);						\
         free(userconfig_dir);						\
@@ -107,7 +111,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define REPORT_NOTSET(var_name) {					\
+#define GAL_CONFIGFILES_REPORT_NOTSET(var_name) {                       \
     if(intro==0)							\
       {									\
 	fprintf(stderr, SPACK": Parameter(s) not set: %s", (var_name));	\
@@ -121,7 +125,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define END_OF_NOTSET_REPORT {			                        \
+#define GAL_CONFIGFILES_END_OF_NOTSET_REPORT {                          \
     if(intro)								\
       {									\
 	char *userconfig_file;						\
@@ -130,7 +134,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 		"system wide default files. Otherwise you have to "	\
 		"explicitly call them each time. See `"SPACK" --help` "	\
 		"or `info "SPACK"` for more information.\n\n");		\
-	userconfig_file=addhomedir(USERCONFIG_FILEEND);			\
+	userconfig_file=                                                \
+        gal_configfiles_add_home_dir(USERCONFIG_FILEEND);               \
 	fprintf(stderr, "Default files checked (existing or not):\n"	\
 		"   %s\n   %s\n   %s\n", CURDIRCONFIG_FILE,		\
 		userconfig_file, SYSCONFIG_FILE);			\
@@ -143,7 +148,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#define REPORT_PARAMETERS_SET {			                        \
+#define GAL_CONFIGFILES_REPORT_PARAMETERS_SET {                         \
     fprintf(stdout, "# "SPACK_STRING"\n");				\
     fprintf(stdout, "# Configured on "CONFIGDATE" at "CONFIGTIME"\n");	\
     fprintf(stdout, "# Written on %s", ctime(&p->rawtime));	        \
@@ -158,29 +163,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Read the options that are common to all programs from the
    configuration file. Since these two checks are within an if-else
    structure, they should not be placed within an `{' and `}'. */
-#define READ_COMMONOPTIONS_FROM_CONF                                    \
+#define GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF                    \
     else if(strcmp(name, "numthreads")==0)                              \
       {                                                                 \
         if(cp->numthreadsset) continue;                                 \
-        sizetlzero(value, &cp->numthreads, name, key, SPACK,            \
-                   filename, lineno);                                   \
+        gal_checkset_sizet_l_zero(value, &cp->numthreads, name, key,    \
+                                  SPACK, filename, lineno);             \
         cp->numthreadsset=1;                                            \
       }                                                                 \
     else if(strcmp(name, "nolog")==0)                                   \
       {                                                                 \
         if(cp->nologset) continue;                                      \
-        intzeroorone(value, &cp->nolog, name, key, SPACK,               \
-                     filename, lineno);                                 \
+        gal_checkset_int_zero_or_one(value, &cp->nolog, name, key,      \
+                                     SPACK, filename, lineno);          \
         cp->nologset=1;                                                 \
       }                                                                 \
     else if(strcmp(name, "onlydirconf")==0)                             \
       {                                                                 \
         if(cp->onlydirconf==0)                                          \
-          intzeroorone(value, &cp->onlydirconf, name, key, SPACK,       \
-                       filename, lineno);                               \
+          gal_checkset_int_zero_or_one(value, &cp->onlydirconf, name,   \
+                                       key, SPACK, filename, lineno);   \
       }                                                                 \
     else if(strcmp(name, "onlyversion")==0)                             \
-        allocatecopyset(value, &cp->onlyversion, &cp->onlyversionset);  \
+      gal_checkset_allocate_copy_set(value, &cp->onlyversion,           \
+                                     &cp->onlyversionset);              \
 
 
 
@@ -188,13 +194,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Write common options: */
-#define PRINT_COMMONOPTIONS {                                           \
+#define GAL_CONFIGFILES_PRINT_COMMONOPTIONS {                           \
     if(cp->numthreadsset)                                               \
       fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads); \
     if(cp->nologset)                                                    \
       fprintf(fp, CONF_SHOWFMT"%d\n", "nolog", p->cp.nolog);            \
     if(cp->onlyversionset)                                              \
-      PRINTSTINGMAYBEWITHSPACE("onlyversion", cp->onlyversion);         \
+      GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("onlyversion",         \
+                                                 cp->onlyversion);      \
   }
 
 
@@ -208,14 +215,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************       Function declarations         *************/
 /**************************************************************/
 char *
-addhomedir(char *dir);
+gal_configfiles_add_home_dir(char *dir);
 
 void
-readnamevalue(char *line, char *filename, size_t lineno,
-	      char **name, char **value);
+gal_configfiles_read_name_value(char *line, char *filename, size_t lineno,
+                                char **name, char **value);
 
 FILE *
-writelocalconfigstop(char *indir, char *filename, char *spack,
-		     char *spack_name, char **outfilename);
+gal_configfiles_write_local_config_stop(char *indir, char *filename,
+                                        char *spack, char *spack_name,
+                                        char **outfilename);
 
 #endif

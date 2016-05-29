@@ -41,8 +41,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void *
 avestdonthread(void *inparam)
 {
-  struct meshthreadparams *mtp=(struct meshthreadparams *)inparam;
-  struct meshparams *mp=mtp->mp;
+  struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparam;
+  struct gal_mesh_params *mp=mtp->mp;
   struct subtractskyparams *p=(struct subtractskyparams *)mp->params;
 
   float *mponeforall=mp->oneforall;
@@ -71,7 +71,7 @@ avestdonthread(void *inparam)
   else cofa=NULL;
 
   /* Start this thread's work: */
-  for(i=0;indexs[i]!=NONTHRDINDEX;++i)
+  for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Prepare the values: */
       num=row=0;
@@ -106,20 +106,22 @@ avestdonthread(void *inparam)
       while(row<s0);
 
       /* Do the desired operation on the mesh: */
-      qsort(sorted, num, sizeof *oneforall, floatincreasing);
-      modeindexinsorted(sorted, num, mirrordist, &modeindex, &modesym);
-      if( modesym>MODESYMGOOD && (float)modeindex/(float)num>minmodeq )
+      qsort(sorted, num, sizeof *oneforall, gal_qsort_float_increasing);
+      gal_mode_index_in_sorted(sorted, num, mirrordist, &modeindex, &modesym);
+      if( modesym>GAL_MODE_SYM_GOOD && (float)modeindex/(float)num>minmodeq )
         {
           /* If cofa was defined, then oneforall was not sorted. */
           if(cofa)
-            qsort(oneforall, num, sizeof *oneforall, floatincreasing);
+            qsort(oneforall, num, sizeof *oneforall,
+                  gal_qsort_float_increasing);
 
           /* Do sigma-clipping and save the result if it is
              accurate. Note that all meshs were initialized to NaN, so
              if they don't fit the criteria, they can simply be
              ignored. */
-          if(sigmaclip_converge(oneforall, 1, num, sigclipmultip,
-                                sigcliptolerance, &ave, &med, &std, 0))
+          if(gal_statistics_sigma_clip_converge(oneforall, 1, num,
+                                                sigclipmultip, sigcliptolerance,
+                                                &ave, &med, &std, 0))
             {
               mp->cgarray1[ind]=ave;
               if(mp->ngarrays==2) mp->cgarray2[ind]=std;
@@ -142,7 +144,7 @@ avestdonthread(void *inparam)
 void
 subtractsky(struct subtractskyparams *p)
 {
-  struct meshparams *mp=&p->mp;
+  struct gal_mesh_params *mp=&p->mp;
 
   long *meshindexs;
   struct timeval t1;
@@ -153,85 +155,90 @@ subtractsky(struct subtractskyparams *p)
 
   /* Prepare the mesh array. */
   gettimeofday(&t1, NULL);
-  makemesh(mp);
+  gal_mesh_make_mesh(mp);
   if(p->meshname)
     {
-      checkmeshid(mp, &meshindexs);
-      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, p->mp.img, s0, s1,
-                     p->anyblank, p->wcs, NULL, SPACK_STRING);
-      arraytofitsimg(p->meshname, "MeshIndexs", LONG_IMG, meshindexs,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      gal_check_mesh_id(mp, &meshindexs);
+      gal_fitsarray_array_to_fits_img(p->meshname, "Input", FLOAT_IMG,
+                                      p->mp.img, s0, s1, p->anyblank, p->wcs,
+                                      NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->meshname, "MeshIndexs", LONG_IMG,
+                                      meshindexs, s0, s1, 0, p->wcs,
+                                      NULL, SPACK_STRING);
       free(meshindexs);
     }
-  if(p->cp.verb) reporttiming(&t1, "Mesh grid ready.", 1);
+  if(p->cp.verb) gal_timing_report(&t1, "Mesh grid ready.", 1);
 
 
 
   /* Convolve the image if the user has asked for it: */
   if(p->up.kernelnameset)
     {
-      spatialconvolveonmesh(mp, &p->conv);
+      gal_mesh_spatial_convolve_on_mesh(mp, &p->conv);
       if(p->convname)
         {
-          arraytofitsimg(p->convname, "Input", FLOAT_IMG, p->mp.img, s0, s1,
-                         p->anyblank, p->wcs, NULL, SPACK_STRING);
-          arraytofitsimg(p->convname, "Input", FLOAT_IMG, p->conv, s0, s1,
-                         p->anyblank, p->wcs, NULL, SPACK_STRING);
+          gal_fitsarray_array_to_fits_img(p->convname, "Input", FLOAT_IMG,
+                                          p->mp.img, s0, s1, p->anyblank,
+                                          p->wcs, NULL, SPACK_STRING);
+          gal_fitsarray_array_to_fits_img(p->convname, "Input", FLOAT_IMG,
+                                          p->conv, s0, s1, p->anyblank, p->wcs,
+                                          NULL, SPACK_STRING);
         }
     }
   else p->conv=p->mp.img;
   if(p->cp.verb)
-    reporttiming(&t1, "Input image convolved with kernel.", 1);
+    gal_timing_report(&t1, "Input image convolved with kernel.", 1);
 
 
 
   /* Find the sky value and its standard deviation on each mesh. */
-  operateonmesh(mp, avestdonthread, sizeof(float), checkstd, 1);
+  gal_mesh_operate_on_mesh(mp, avestdonthread, sizeof(float), checkstd, 1);
   if(p->skyname)
-    meshvaluefile(mp, p->skyname, "Sky value", "Sky STD", p->wcs,
-                  SPACK_STRING);
+    gal_mesh_value_file(mp, p->skyname, "Sky value", "Sky STD", p->wcs,
+                        SPACK_STRING);
   if(p->cp.verb)
-    reporttiming(&t1, "Sky and its STD found on some meshes.", 1);
+    gal_timing_report(&t1, "Sky and its STD found on some meshes.", 1);
 
 
 
   /* Interpolate over the meshs to fill all the blank ones in both the
      sky and the standard deviation arrays: */
-  meshinterpolate(mp, "Interpolating the sky and its standard deviation");
+  gal_mesh_interpolate(mp, "Interpolating the sky and its standard deviation");
   if(p->skyname)
-    meshvaluefile(mp, p->skyname, "Sky Interpolated",
+    gal_mesh_value_file(mp, p->skyname, "Sky Interpolated",
                   "Sky STD interpolated", p->wcs, SPACK_STRING);
   if(p->cp.verb)
-    reporttiming(&t1, "All blank meshs filled (interplated).", 1);
+    gal_timing_report(&t1, "All blank meshs filled (interplated).", 1);
 
 
 
   /* Smooth the interpolated array:  */
   if(mp->smoothwidth>1)
     {
-      meshsmooth(mp);
+      gal_mesh_smooth(mp);
       if(p->cp.verb)
-        reporttiming(&t1, "Mesh grid smoothed.", 1);
+        gal_timing_report(&t1, "Mesh grid smoothed.", 1);
     }
 
 
   /* Make the sky array and save it if the user has asked for it: */
-  checkgarray(mp, &sky, &std);
+  gal_mesh_check_garray(mp, &sky, &std);
   if(p->skyname)
-    meshvaluefile(mp, p->skyname, "Sky Smoothed", "Sky STD smoothed",
-                  p->wcs, SPACK_STRING);
+    gal_mesh_value_file(mp, p->skyname, "Sky Smoothed", "Sky STD smoothed",
+                        p->wcs, SPACK_STRING);
 
 
   /* Subtract the sky value */
-  fmultipconst(sky, s0*s1, -1.0f);
-  skysubtracted=fsumarrays_return(mp->img, sky, s0*s1);
-  arraytofitsimg(p->cp.output ,"SkySubtracted", FLOAT_IMG, skysubtracted,
-                 s0, s1, p->anyblank, p->wcs, NULL, SPACK_STRING);
+  gal_arraymanip_fmultip_const(sky, s0*s1, -1.0f);
+  skysubtracted=gal_arraymanip_fsum_arrays(mp->img, sky, s0*s1);
+  gal_fitsarray_array_to_fits_img(p->cp.output ,"SkySubtracted", FLOAT_IMG,
+                                  skysubtracted, s0, s1, p->anyblank, p->wcs,
+                                  NULL, SPACK_STRING);
 
 
   /* Clean up: */
   free(sky);
-  freemesh(mp);
+  gal_mesh_free_mesh(mp);
   free(skysubtracted);
   if(checkstd) free(std);
   if(p->up.kernelnameset) free(p->conv);

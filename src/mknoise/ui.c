@@ -71,7 +71,7 @@ readconfig(char *filename, struct mknoiseparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -95,33 +95,34 @@ readconfig(char *filename, struct mknoiseparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
       else if(strcmp(name, "background")==0)
 	{
 	  if(up->backgroundset) continue;
-          anydouble(value, &p->mbackground, value, key, SPACK, filename,
-                    lineno);
+          gal_checkset_any_double(value, &p->mbackground, value, key, SPACK,
+                                  filename, lineno);
 	  up->backgroundset=1;
 	}
       else if(strcmp(name, "zeropoint")==0)
 	{
 	  if(up->zeropointset) continue;
-          anydouble(value, &p->zeropoint, value, key, SPACK, filename,
-                    lineno);
+          gal_checkset_any_double(value, &p->zeropoint, value, key, SPACK,
+                                  filename, lineno);
 	  up->zeropointset=1;
 	}
       else if(strcmp(name, "stdadd")==0)
 	{
 	  if(up->stdaddset) continue;
-          doublele0(value, &p->stdadd, value, key, SPACK, filename, lineno);
+          gal_checkset_double_el_0(value, &p->stdadd, value, key, SPACK,
+                                   filename, lineno);
 	  up->stdaddset=1;
 	}
 
@@ -129,14 +130,14 @@ readconfig(char *filename, struct mknoiseparams *p)
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
 
 
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -156,13 +157,13 @@ void
 printvalues(FILE *fp, struct mknoiseparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->backgroundset)
     fprintf(fp, CONF_SHOWFMT"%f\n", "background", p->mbackground);
   if(up->zeropointset)
@@ -180,7 +181,7 @@ printvalues(FILE *fp, struct mknoiseparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -194,21 +195,21 @@ void
 checkifset(struct mknoiseparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
 
   if(up->backgroundset==0)
-    REPORT_NOTSET("background");
+    GAL_CONFIGFILES_REPORT_NOTSET("background");
   if(up->zeropointset==0)
-    REPORT_NOTSET("zeropoint");
+    GAL_CONFIGFILES_REPORT_NOTSET("zeropoint");
   if(up->stdaddset==0)
-    REPORT_NOTSET("stdadd");
+    GAL_CONFIGFILES_REPORT_NOTSET("stdadd");
 
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -238,14 +239,15 @@ sanitycheck(struct mknoiseparams *p)
 {
 
   /* Make sure the input file exists. */
-  checkfile(p->up.inputname);
+  gal_checkset_check_file(p->up.inputname);
 
   /* Set the output name: */
   if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_noised.fits", p->cp.removedirinfo,
-                    p->cp.dontdelete, &p->cp.output);
+    gal_checkset_automatic_output(p->up.inputname, "_noised.fits",
+                                  p->cp.removedirinfo, p->cp.dontdelete,
+                                  &p->cp.output);
 
   /* Convert the background value from magnitudes to flux. Note that
      magnitudes are actually calculated from the ratio of brightness,
@@ -284,23 +286,26 @@ preparearrays(struct mknoiseparams *p)
   void *array;
 
   /* Read in the input image: */
-  p->anyblank=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
-                        &array, &p->is0, &p->is1);
+  p->anyblank=gal_fitsarray_fits_img_to_array(p->up.inputname, p->cp.hdu,
+                                              &p->inputbitpix, &array,
+                                              &p->is0, &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else
     {
-      changetype(array, p->inputbitpix, p->is0*p->is1, p->anyblank,
-                 (void **)&p->input, DOUBLE_IMG);
+      gal_fitsarray_change_type(array, p->inputbitpix, p->is0*p->is1,
+                                p->anyblank, (void **)&p->input,
+                                DOUBLE_IMG);
       free(array);
     }
-  readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
+                              &p->nwcs, &p->wcs);
 
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
   p->rng=gsl_rng_alloc(gsl_rng_default);
   if(p->envseed==0)
-    gsl_rng_set(p->rng, timebasedrngseed());
+    gsl_rng_set(p->rng, gal_timing_time_based_rng_seed());
   p->rng_seed=gsl_rng_default_seed;
   strcpy(p->rng_type, gsl_rng_name(p->rng));
 }
@@ -329,8 +334,8 @@ preparearrays(struct mknoiseparams *p)
 void
 setparams(int argc, char *argv[], struct mknoiseparams *p)
 {
-  char message[VERBMSGLENGTH_V];
-  struct commonparams *cp=&p->cp;
+  char message[GAL_TIMING_VERB_MSG_LENGTH_V];
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -345,14 +350,14 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Make the array of input images. */
   preparearrays(p);
@@ -366,12 +371,12 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
       sprintf(message, "Random number generator type: %s",
               gsl_rng_name(p->rng));
-      reporttiming(NULL, message, 1);
+      gal_timing_report(NULL, message, 1);
       if(p->envseed)
         {
           sprintf(message, "Random number generator seed: %lu",
                   gsl_rng_default_seed);
-          reporttiming(NULL, message, 1);
+          gal_timing_report(NULL, message, 1);
         }
     }
 }
@@ -415,5 +420,5 @@ freeandreport(struct mknoiseparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

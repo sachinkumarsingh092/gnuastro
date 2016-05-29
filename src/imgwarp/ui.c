@@ -70,7 +70,7 @@ readconfig(char *filename, struct imgwarpparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -94,26 +94,26 @@ readconfig(char *filename, struct imgwarpparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
 
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        allocatecopyset(value, &cp->hdu, &cp->hduset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if(strcmp(name, "hstartwcs")==0)
 	{
 	  if(up->hstartwcsset) continue;
-	  sizetelzero(value, &p->hstartwcs, name, key, SPACK,
-                      filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key, SPACK,
+                                     filename, lineno);
 	  up->hstartwcsset=1;
 	}
       else if(strcmp(name, "hendwcs")==0)
 	{
 	  if(up->hendwcsset) continue;
-	  sizetelzero(value, &p->hendwcs, name, key, SPACK,
-                      filename, lineno);
+	  gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
+                                     filename, lineno);
 	  up->hendwcsset=1;
 	}
 
@@ -123,16 +123,17 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       /* Outputs */
       else if(strcmp(name, "matrix")==0)
-        allocatecopyset(value, &up->matrixstring, &up->matrixstringset);
+        gal_checkset_allocate_copy_set(value, &up->matrixstring,
+                                       &up->matrixstringset);
 
       else if(strcmp(name, "output")==0)
-        allocatecopyset(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "maxblankfrac")==0)
         {
 	  if(up->maxblankfracset) continue;
-	  floatl0s1(value, &p->maxblankfrac, name, key, SPACK,
-		       filename, lineno);
+	  gal_checkset_float_l_0_s_1(value, &p->maxblankfrac, name, key, SPACK,
+                                     filename, lineno);
 	  up->maxblankfracset=1;
         }
 
@@ -141,7 +142,7 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -161,13 +162,13 @@ void
 printvalues(FILE *fp, struct imgwarpparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
-    PRINTSTINGMAYBEWITHSPACE("hdu", cp->hdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->hstartwcsset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "hstartwcs", p->hstartwcs);
   if(up->hendwcsset)
@@ -175,10 +176,10 @@ printvalues(FILE *fp, struct imgwarpparams *p)
 
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
-    PRINTSTINGMAYBEWITHSPACE("matrix", up->matrixstring);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("matrix", up->matrixstring);
 
   if(cp->outputset)
-    PRINTSTINGMAYBEWITHSPACE("output", cp->output);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("output", cp->output);
 
   if(up->maxblankfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "maxblankfrac", p->maxblankfrac);
@@ -188,7 +189,7 @@ printvalues(FILE *fp, struct imgwarpparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -202,17 +203,17 @@ void
 checkifset(struct imgwarpparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->matrixstringset==0)
-    REPORT_NOTSET("matrix");
+    GAL_CONFIGFILES_REPORT_NOTSET("matrix");
   if(up->maxblankfracset==0)
-    REPORT_NOTSET("maxblankfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("maxblankfrac");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -315,14 +316,15 @@ sanitycheck(struct imgwarpparams *p)
   double *d, *df, *tmp, *m=p->matrix;
 
   /* Make sure the input file exists. */
-  checkfile(p->up.inputname);
+  gal_checkset_check_file(p->up.inputname);
 
   /* Set the output name: */
   if(p->cp.output)
-    checkremovefile(p->cp.output, p->cp.dontdelete);
+    gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    automaticoutput(p->up.inputname, "_warped.fits", p->cp.removedirinfo,
-                    p->cp.dontdelete, &p->cp.output);
+    gal_checkset_automatic_output(p->up.inputname, "_warped.fits",
+                                  p->cp.removedirinfo, p->cp.dontdelete,
+                                  &p->cp.output);
 
 
   /* Check the size of the input matrix, note that it might only have
@@ -403,18 +405,19 @@ preparearrays(struct imgwarpparams *p)
   double *inv, *m=p->matrix;
 
   /* Read in the input image: */
-  numnul=fitsimgtoarray(p->up.inputname, p->cp.hdu, &p->inputbitpix,
-                        &array, &p->is0, &p->is1);
+  numnul=gal_fitsarray_fits_img_to_array(p->up.inputname, p->cp.hdu,
+                                         &p->inputbitpix, &array, &p->is0,
+                                         &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else
     {
-      changetype(array, p->inputbitpix, p->is0*p->is1, numnul,
-                 (void **)&p->input, DOUBLE_IMG);
+      gal_fitsarray_change_type(array, p->inputbitpix, p->is0*p->is1, numnul,
+                                (void **)&p->input, DOUBLE_IMG);
       free(array);
     }
-  readfitswcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
-              p->hendwcs, &p->nwcs, &p->wcs);
+  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
+                              p->hendwcs, &p->nwcs, &p->wcs);
 
   /* Make the inverse matrix: */
   errno=0;
@@ -468,7 +471,7 @@ preparearrays(struct imgwarpparams *p)
 void
 setparams(int argc, char *argv[], struct imgwarpparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -484,24 +487,24 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Read catalog if given. */
   if(p->up.matrixname)
-    txttoarray(p->up.matrixname, &p->matrix, &p->ms0, &p->ms1);
+    gal_txtarray_txt_to_array(p->up.matrixname, &p->matrix, &p->ms0, &p->ms1);
   else
     readmatrixoption(p);
 
   /* Do a sanity check. */
   sanitycheck(p);
-  checkremovefile(TXTARRAYVVLOG, 0);
+  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
   /* Everything is ready, notify the user of the program starting. */
   if(cp->verb)
@@ -560,5 +563,5 @@ freeandreport(struct imgwarpparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in: ", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in: ", 0);
 }

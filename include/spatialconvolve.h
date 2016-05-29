@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef SPATIALCONVOLVE_H
-#define SPATIALCONVOLVE_H
+#ifndef __GAL_SPATIALCONVOLVE_H__
+#define __GAL_SPATIALCONVOLVE_H__
 
 
 
@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Main structure: */
-struct sconvparams
+struct gal_spatialconvolve_params
 {
   /* General input parameters: */
   float           *input;     /* Input image array.                    */
@@ -63,16 +63,17 @@ struct sconvparams
 
 /* Functions: */
 void
-scpparams(float *input, size_t is0, size_t is1, float *kernel, size_t ks0,
-          size_t ks1, size_t nt, int edgecorrection, float *out,
-          size_t *indexs, struct sconvparams *scp);
+gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
+                            size_t ks0, size_t ks1, size_t nt,
+                            int edgecorrection, float *out, size_t *indexs,
+                            struct gal_spatialconvolve_params *scp);
 
 void *
-sconvonthread(void *inparam);
+gal_spatialconvolve_thread(void *inparam);
 
 void
-spatialconvolve(float *input, size_t is0, size_t is1,
-                float *kernel, size_t ks0, size_t ks1,
-                size_t nt, int edgecorrection, float **out);
+gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
+                             float *kernel, size_t ks0, size_t ks1,
+                             size_t nt, int edgecorrection, float **out);
 
 #endif

@@ -94,10 +94,10 @@ struct uiparams
 struct noisechiselparams
 {
   /* Other structures: */
-  struct uiparams       up; /* User interface parameters.                  */
-  struct commonparams   cp; /* Common parameters.                          */
-  struct meshparams    smp; /* Smaller mesh grid of input image.           */
-  struct meshparams    lmp; /* Larger mesh grid of input image.            */
+  struct uiparams         up; /* User interface parameters.                */
+  struct gal_commonparams cp; /* Common parameters.                        */
+  struct gal_mesh_params smp; /* Smaller mesh grid of input image.         */
+  struct gal_mesh_params lmp; /* Larger mesh grid of input image.          */
 
   /* Input: */
   int                 nwcs; /* Number of WCS structures.                   */

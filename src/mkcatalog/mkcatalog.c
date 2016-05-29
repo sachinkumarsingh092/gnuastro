@@ -50,12 +50,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Macro to see if the label is indexable (belongs to an object or
    not). See the explanation in src/noisechisel/label.h. */
-#if FITSLONGBLANK<0
+#if GAL_FITSARRAY_LONG_BLANK<0
 #define ISINDEXABLEOBJLABEL (objects[i]>0)
 #define ISINDEXABLECLPLABEL (clumps[i]>0)
 #else
-#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=FITSLONGBLANK)
-#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=FITSLONGBLANK)
+#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=GAL_FITSARRAY_LONG_BLANK)
+#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=GAL_FITSARRAY_LONG_BLANK)
 #endif
 
 
@@ -301,7 +301,7 @@ secondpass(struct mkcatalogparams *p)
       /* We are on a detected region but not a clump (with a negative
          label). This region can be used to find properties like the
          river fluxs in the vicinity of clumps. */
-      else if (clumps[i]!=FITSLONGBLANK)
+      else if (clumps[i]!=GAL_FITSARRAY_LONG_BLANK)
 
         /* We want to check the river pixels in each detection that
            has a clump. Recall that each detection can host more than
@@ -327,7 +327,7 @@ secondpass(struct mkcatalogparams *p)
             /* Make the preparations: */
             ii=0;
             ind=&i;
-            FILL_NGB_8_ALLIMG;
+            GAL_NEIGHBORS_FILL_8_ALLIMG;
             nf=(n=ngb)+numngb;
             memset(wngb, 0, sizeof(wngb));
 
@@ -404,7 +404,7 @@ makeoutput(struct mkcatalogparams *p)
 
 
   /* Calculate the pixel area in arcseconds^2: */
-  pixarea=pixelareaarcsec2(p->wcs);
+  pixarea=gal_fitsarray_pixel_area_arcsec2(p->wcs);
 
 
   /* First make the objects catalog, then the clumps catalog. */
@@ -517,9 +517,8 @@ makeoutput(struct mkcatalogparams *p)
       strcat(comment, "#\n# Columns:\n# --------\n");
 
 
-      /* Fill the catalog array, in the end set the last elements in
-         intcols and accucols to -1, so arraytotxt knows when to
-         stop. */
+      /* Fill the catalog array, in the end set the last elements in intcols and
+         accucols to -1, so gal_txtarray_array_to_txt knows when to stop. */
       for(p->curcol=0;p->curcol<p->numcols;++p->curcol)
         {
           col=cols[p->curcol];
@@ -687,8 +686,8 @@ makeoutput(struct mkcatalogparams *p)
 
 
       /* Write the catalog to file: */
-      arraytotxt(p->cat, p->num, p->numcols, comment, p->intcols,
-                 p->accucols, space, prec, 'f', p->filename);
+      gal_txtarray_array_to_txt(p->cat, p->num, p->numcols, comment, p->intcols,
+                                p->accucols, space, prec, 'f', p->filename);
 
       /* Clean up: */
       free(p->intcols);

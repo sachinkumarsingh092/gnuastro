@@ -77,7 +77,7 @@ struct inputimgs
 struct uiparams
 {
   char      *catname;  /* Catalog file name.                            */
-  struct stll  *stll;  /* Linked list keeping input file names.         */
+  struct gal_linkedlist_stll *gal_linkedlist_stll; /* Input file names. */
   char      *polygon;  /* String of input polygon vertices.             */
 
   /* Check if all parameters are read (use .def file for
@@ -114,8 +114,8 @@ struct uiparams
 struct imgcropparams
 {
   /* Before actual program: */
-  struct commonparams cp;  /* Common parameters.                       */
-  struct uiparams     up;  /* User interface parameters.               */
+  struct uiparams         up; /* User interface parameters.            */
+  struct gal_commonparams cp; /* Common parameters.                    */
 
   /* Operating modes: */
   int            imgmode;  /* ==1: will use X and Y coordiates.        */

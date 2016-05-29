@@ -20,60 +20,65 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef STATISTICS_H
-#define STATISTICS_H
+#ifndef __GAL_STATISTICS_H__
+#define __GAL_STATISTICS_H__
 
 
-#define MAXSIGCLIPCONVERGE 50
+#define GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE 50
 
 
 /****************************************************************
  *****************    Mininum and Maximum    ********************
  ****************************************************************/
 void
-floatmin(float *in, size_t size, float *min);
+gal_statistics_float_min(float *in, size_t size, float *min);
 
 void
-floatmax(float *in, size_t size, float *max);
+gal_statistics_float_max(float *in, size_t size, float *max);
 
 void
-doublemin(double *in, size_t size, double *min);
+gal_statistics_double_min(double *in, size_t size, double *min);
 
 double
-doublemin_r(double *in, size_t size);
+gal_statistics_double_min_return(double *in, size_t size);
 
 void
-doublemax(double *in, size_t size, double *max);
+gal_statistics_double_max(double *in, size_t size, double *max);
 
 double
-doublemax_r(double *in, size_t size);
+gal_statistics_double_max_return(double *in, size_t size);
 
 void
-floatmaxmasked(float *in, unsigned char *mask, size_t size, float *max);
+gal_statistics_float_max_masked(float *in, unsigned char *mask, size_t size,
+                                float *max);
 
 void
-floatsecondmax(float *in, size_t size, float *secondmax);
+gal_statistics_float_second_max(float *in, size_t size, float *secondmax);
 
 void
-floatsecondmin(float *in, size_t size, float *secondmin);
+gal_statistics_float_second_min(float *in, size_t size, float *secondmin);
 
 void
-fminmax(float *in, size_t size, float *min, float *max);
+gal_statistics_f_min_max(float *in, size_t size, float *min, float *max);
 
 void
-dminmax(double *in, size_t size, double *min, double *max);
+gal_statistics_d_min_max(double *in, size_t size, double *min, double *max);
 
 void
-dmax_withindex(double *in, size_t size, double *max, size_t *index);
+gal_statistics_d_max_with_index(double *in, size_t size, double *max,
+                                size_t *index);
 
 void
-fmax_withindex(float *in, size_t size, float *max, size_t *index);
+gal_statistics_f_max_with_index(float *in, size_t size, float *max,
+                                size_t *index);
 
 void
-dmin_withindex(double *in, size_t size, double *min, size_t *index);
+gal_statistics_d_min_with_index(double *in, size_t size, double *min,
+                                size_t *index);
 
 void
-fmin_withindex(float *in, size_t size, float *min, size_t *index);
+gal_statistics_f_min_with_index(float *in, size_t size, float *min,
+                                size_t *index);
 
 
 
@@ -83,25 +88,29 @@ fmin_withindex(float *in, size_t size, float *min, size_t *index);
  *****************            Sum            ********************
  ****************************************************************/
 float
-floatsum(float *in, size_t size);
+gal_statistics_float_sum(float *in, size_t size);
 
 float
-floatsumnum(float *in, size_t *size);
+gal_statistics_float_sum_num(float *in, size_t *size);
 
 float
-floatsumsquared(float *in, size_t size);
+gal_statistics_float_sum_squared(float *in, size_t size);
 
 float
-floatsummask(float *in, unsigned char *mask, size_t size, size_t *nsize);
+gal_statistics_float_sum_mask(float *in, unsigned char *mask, size_t size,
+                              size_t *nsize);
 
 float
-floatsummaskl(float *in, long *mask, size_t size, size_t *nsize);
+gal_statistics_float_sum_mask_l(float *in, long *mask, size_t size,
+                                size_t *nsize);
 
 float
-floatsumsquaredmask(float *in, unsigned char *mask, size_t size, size_t *nsize);
+gal_statistics_float_sum_squared_mask(float *in, unsigned char *mask,
+                                      size_t size, size_t *nsize);
 
 float
-floatsumsquaredmaskl(float *in, long *mask, size_t size, size_t *nsize);
+gal_statistics_float_sum_squared_mask_l(float *in, long *mask,
+                                        size_t size, size_t *nsize);
 
 
 
@@ -112,34 +121,41 @@ floatsumsquaredmaskl(float *in, long *mask, size_t size, size_t *nsize);
  ****************    Standard deviation      ********************
  ****************************************************************/
 float
-floataverage(float *in, size_t size);
+gal_statistics_float_average(float *in, size_t size);
 
 double
-doubleaverage(double *in, size_t size);
+gal_statistics_double_average(double *in, size_t size);
 
 void
-fave(float *in, size_t size, float *ave, unsigned char *mask);
+gal_statistics_f_ave(float *in, size_t size, float *ave, unsigned char *mask);
 
 void
-favel(float *in, size_t size, float *ave, long *mask);
+gal_statistics_f_ave_l(float *in, size_t size, float *ave, long *mask);
 
 void
-favestd(float *in, size_t size, float *ave, float *std, unsigned char *mask);
+gal_statistics_f_ave_std(float *in, size_t size, float *ave,
+                         float *std, unsigned char *mask);
 
 void
-favestdl(float *in, size_t size, float *ave, float *std, long *mask);
+gal_statistics_f_ave_std_l(float *in, size_t size, float *ave,
+                           float *std, long *mask);
 
 void
-floatavestdmaskbyt0inregion(float *in, unsigned char *byt,
-			    unsigned char *mask, size_t startind,
-			    size_t s0, size_t s1, size_t is1,
-			    float *ave, float *std);
+gal_statistics_f_ave_std_mask_byt_0_in_region(float *in, unsigned char *byt,
+                                              unsigned char *mask,
+                                              size_t startind, size_t s0,
+                                              size_t s1, size_t is1,
+                                              float *ave, float *std);
 
 void
-floatavestdmaskbyt0inregionsclip(float *in, unsigned char *byt,
-				 unsigned char *mask, size_t startind,
-				 size_t s0, size_t s1, size_t is1,
-				 size_t numback, float *ave, float *std);
+gal_statistics_f_ave_std_mask_byt_0_in_regions_clip(float *in,
+                                                    unsigned char *byt,
+                                                    unsigned char *mask,
+                                                    size_t startind,
+                                                    size_t s0, size_t s1,
+                                                    size_t is1,
+                                                    size_t numback, float *ave,
+                                                    float *std);
 
 
 
@@ -149,10 +165,10 @@ floatavestdmaskbyt0inregionsclip(float *in, unsigned char *byt,
  *****************           Median            ******************
  ****************************************************************/
 float
-median(float *array, size_t insize);
+gal_statistics_median(float *array, size_t insize);
 
 double
-mediandoubleinplace(double *array, size_t insize);
+gal_statistics_median_double_in_place(double *array, size_t insize);
 
 
 
@@ -162,20 +178,21 @@ mediandoubleinplace(double *array, size_t insize);
  ********     Histogram and Cumulative Frequency Plot     *******
  ****************************************************************/
 void
-setbins(float *sorted, size_t size, size_t numbins, float min,
-	float max, float onebinvalue, float quant, float **obins);
+gal_statistics_set_bins(float *sorted, size_t size, size_t numbins,
+                        float min, float max, float onebinvalue,
+                        float quant, float **obins);
 
 void
-histogram(float *sorted, size_t size, float *bins, size_t numbins,
-	  int normhist, int maxhistone);
+gal_statistics_histogram(float *sorted, size_t size, float *bins,
+                         size_t numbins, int normhist, int maxhistone);
 
 void
-cumulativefp(float *sorted, size_t size, float *bins, size_t numbins,
-	     int normcfp);
+gal_statistics_cumulative_fp(float *sorted, size_t size, float *bins,
+                             size_t numbins, int normcfp);
 
 void
-savehist(float *sorted, size_t size, size_t numbins,
-	 char *filename, char *comment);
+gal_statistics_save_hist(float *sorted, size_t size, size_t numbins,
+                         char *filename, char *comment);
 
 
 
@@ -185,7 +202,7 @@ savehist(float *sorted, size_t size, size_t numbins,
  *****************         Quantiles         ********************
  ****************************************************************/
 size_t
-indexfromquantile(size_t size, float quant);
+gal_statistics_index_from_quantile(size_t size, float quant);
 
 
 
@@ -195,16 +212,16 @@ indexfromquantile(size_t size, float quant);
  *****************        Sigma clip         ********************
  ****************************************************************/
 int
-sigmaclip_converge(float *array, int o1_n0, size_t num_elem,
-		   float sigma_multiple, float accuracy,
-		   float *outave, float *outmed, float *outstd,
-                   int print);
+gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
+                                   float sigma_multiple, float accuracy,
+                                   float *outave, float *outmed, float *outstd,
+                                   int print);
 
 int
-sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
-		     float sigma_multiple, size_t numtimes,
-		     float *outave, float *outmed, float *outstd,
-                     int print);
+gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
+                                      float sigma_multiple, size_t numtimes,
+                                      float *outave, float *outmed,
+                                      float *outstd, int print);
 
 
 
@@ -214,5 +231,5 @@ sigmaclip_certainnum(float *array, int o1_n0, size_t num_elem,
 /*************         Identify outliers         ****************/
 /****************************************************************/
 void
-removeoutliers_flatcdf(float *sorted, size_t *outsize);
+gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize);
 #endif

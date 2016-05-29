@@ -73,7 +73,7 @@ readconfig(char *filename, struct noisechiselparams *p)
   size_t lineno=0, len=200;
   char *line, *name, *value;
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
   char key='a';	/* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -97,7 +97,7 @@ readconfig(char *filename, struct noisechiselparams *p)
   while(getline(&line, &len, fp) != -1)
     {
       /* Prepare the "name" and "value" strings, also set lineno. */
-      STARTREADINGLINE;
+      GAL_CONFIGFILES_START_READING_LINE;
 
 
       /* Inputs: */
@@ -154,22 +154,22 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "skysubtracted")==0)
 	{
 	  if(up->skysubtractedset) continue;
-          intzeroorone(value, &p->skysubtracted, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->skysubtracted, name, key,
+                                       SPACK, filename, lineno);
 	  up->skysubtractedset=1;
 	}
       else if(strcmp(name, "minbfrac")==0)
 	{
 	  if(up->minbfracset) continue;
-          floatl0s1(value, &p->minbfrac, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->minbfrac, name, key, SPACK,
+                                     filename, lineno);
 	  up->minbfracset=1;
 	}
       else if(strcmp(name, "minnumfalse")==0)
 	{
 	  if(up->minnumfalseset) continue;
-          sizetlzero(value, &p->minnumfalse, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->minnumfalse, name, key, SPACK,
+                                    filename, lineno);
 	  up->minnumfalseset=1;
 	}
 
@@ -189,8 +189,8 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "grownclumps")==0)
 	{
 	  if(up->grownclumpsset) continue;
-          intzeroorone(value, &p->grownclumps, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->grownclumps, name, key, SPACK,
+                                       filename, lineno);
 	  up->grownclumpsset=1;
 	}
 
@@ -199,85 +199,85 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "smeshsize")==0)
 	{
 	  if(up->smeshsizeset) continue;
-          sizetlzero(value, &p->smp.meshsize, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->smp.meshsize, name, key, SPACK,
+                                    filename, lineno);
 	  up->smeshsizeset=1;
 	}
       else if(strcmp(name, "lmeshsize")==0)
 	{
 	  if(up->lmeshsizeset) continue;
-          sizetlzero(value, &p->lmp.meshsize, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->lmp.meshsize, name, key, SPACK,
+                                    filename, lineno);
 	  up->lmeshsizeset=1;
 	}
       else if(strcmp(name, "nch1")==0)
 	{
 	  if(up->nch1set) continue;
-          sizetlzero(value, &p->smp.nch1, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->smp.nch1, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch1set=1;
 	}
       else if(strcmp(name, "nch2")==0)
 	{
 	  if(up->nch2set) continue;
-          sizetlzero(value, &p->smp.nch2, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->smp.nch2, name, key, SPACK,
+                                    filename, lineno);
 	  up->nch2set=1;
 	}
       else if(strcmp(name, "lastmeshfrac")==0)
 	{
 	  if(up->lastmeshfracset) continue;
-          floatl0s1(value, &p->smp.lastmeshfrac, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->smp.lastmeshfrac, name, key,
+                                     SPACK, filename, lineno);
 	  up->lastmeshfracset=1;
 	}
       else if(strcmp(name, "mirrordist")==0)
 	{
 	  if(up->mirrordistset) continue;
-          floatl0(value, &p->smp.mirrordist, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0(value, &p->smp.mirrordist, name, key, SPACK,
+                                 filename, lineno);
 	  up->mirrordistset=1;
 	}
       else if(strcmp(name, "minmodeq")==0)
 	{
 	  if(up->minmodeqset) continue;
-          floatl0s1(value, &p->smp.minmodeq, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->smp.minmodeq, name, key, SPACK,
+                                     filename, lineno);
 	  up->minmodeqset=1;
 	}
       else if(strcmp(name, "numnearest")==0)
 	{
 	  if(up->numnearestset) continue;
-          sizetlzero(value, &p->smp.numnearest, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->smp.numnearest, name, key, SPACK,
+                                    filename, lineno);
 	  up->numnearestset=1;
 	}
       else if(strcmp(name, "smoothwidth")==0)
 	{
 	  if(up->smoothwidthset) continue;
-          sizetpodd(value, &p->smp.smoothwidth, name, key, SPACK,
-                    filename, lineno);
+          gal_checkset_sizet_p_odd(value, &p->smp.smoothwidth, name, key, SPACK,
+                                   filename, lineno);
 	  up->smoothwidthset=1;
 	}
       else if(strcmp(name, "fullconvolution")==0)
 	{
 	  if(up->fullconvolutionset) continue;
-          intzeroorone(value, &p->smp.fullconvolution, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->smp.fullconvolution, name,
+                                       key, SPACK, filename, lineno);
 	  up->fullconvolutionset=1;
 	}
       else if(strcmp(name, "fullinterpolation")==0)
 	{
 	  if(up->fullinterpolationset) continue;
-          intzeroorone(value, &p->smp.fullinterpolation, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->smp.fullinterpolation, name,
+                                       key, SPACK, filename, lineno);
 	  up->fullinterpolationset=1;
 	}
       else if(strcmp(name, "fullsmooth")==0)
 	{
 	  if(up->fullsmoothset) continue;
-          intzeroorone(value, &p->smp.fullsmooth, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->smp.fullsmooth, name, key,
+                                       SPACK, filename, lineno);
 	  up->fullsmoothset=1;
 	}
 
@@ -286,83 +286,85 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "qthresh")==0)
 	{
 	  if(up->qthreshset) continue;
-          floatl0s1(value, &p->qthresh, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->qthresh, name, key, SPACK,
+                                     filename, lineno);
 	  up->qthreshset=1;
 	}
       else if(strcmp(name, "erode")==0)
 	{
 	  if(up->erodeset) continue;
-          sizetelzero(value, &p->erode, name, key, SPACK,
-                      filename, lineno);
+          gal_checkset_sizet_el_zero(value, &p->erode, name, key, SPACK,
+                                     filename, lineno);
 	  up->erodeset=1;
 	}
       else if(strcmp(name, "erodengb")==0)
 	{
 	  if(up->erodengbset) continue;
-          int4or8(value, &p->erodengb, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_int_4_or_8(value, &p->erodengb, name, key, SPACK,
+                                  filename, lineno);
 	  up->erodengbset=1;
 	}
       else if(strcmp(name, "opening")==0)
 	{
 	  if(up->openingset) continue;
-          sizetelzero(value, &p->opening, name, key, SPACK,
-                      filename, lineno);
+          gal_checkset_sizet_el_zero(value, &p->opening, name, key, SPACK,
+                                     filename, lineno);
 	  up->openingset=1;
 	}
       else if(strcmp(name, "openingngb")==0)
 	{
 	  if(up->openingngbset) continue;
-          int4or8(value, &p->openingngb, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_int_4_or_8(value, &p->openingngb, name, key, SPACK,
+                                  filename, lineno);
 	  up->openingngbset=1;
 	}
       else if(strcmp(name, "sigclipmultip")==0)
 	{
 	  if(up->sigclipmultipset) continue;
-          floatl0(value, &p->sigclipmultip, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0(value, &p->sigclipmultip, name, key, SPACK,
+                                 filename, lineno);
 	  up->sigclipmultipset=1;
 	}
       else if(strcmp(name, "sigcliptolerance")==0)
 	{
 	  if(up->sigcliptoleranceset) continue;
-          floatl0s1(value, &p->sigcliptolerance, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->sigcliptolerance, name, key,
+                                     SPACK, filename, lineno);
 	  up->sigcliptoleranceset=1;
 	}
       else if(strcmp(name, "dthresh")==0)
 	{
 	  if(up->dthreshset) continue;
-          anyfloat(value, &p->dthresh, name, key, SPACK,
-                   filename, lineno);
+          gal_checkset_any_float(value, &p->dthresh, name, key, SPACK,
+                                 filename, lineno);
 	  up->dthreshset=1;
 	}
       else if(strcmp(name, "detsnminarea")==0)
 	{
 	  if(up->detsnminareaset) continue;
-          sizetlzero(value, &p->detsnminarea, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->detsnminarea, name, key, SPACK,
+                                    filename, lineno);
 	  up->detsnminareaset=1;
 	}
       else if(strcmp(name, "detsnhistnbins")==0)
 	{
 	  if(up->detsnhistnbinsset) continue;
-          sizetelzero(value, &p->detsnhistnbins, name, key, SPACK,
-                      filename, lineno);
+          gal_checkset_sizet_el_zero(value, &p->detsnhistnbins, name, key,
+                                     SPACK, filename, lineno);
 	  up->detsnhistnbinsset=1;
 	}
       else if(strcmp(name, "detquant")==0)
 	{
 	  if(up->detquantset) continue;
-          floatl0s1(value, &p->detquant, name, key, SPACK, filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->detquant, name, key, SPACK,
+                                     filename, lineno);
 	  up->detquantset=1;
 	}
       else if(strcmp(name, "dilate")==0)
 	{
 	  if(up->dilateset) continue;
-          sizetelzero(value, &p->dilate, name, key, SPACK, filename, lineno);
+          gal_checkset_sizet_el_zero(value, &p->dilate, name, key, SPACK,
+                                     filename, lineno);
 	  up->dilateset=1;
 	}
 
@@ -371,56 +373,57 @@ readconfig(char *filename, struct noisechiselparams *p)
       else if(strcmp(name, "segsnminarea")==0)
 	{
 	  if(up->segsnminareaset) continue;
-          sizetlzero(value, &p->segsnminarea, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->segsnminarea, name, key, SPACK,
+                                    filename, lineno);
 	  up->segsnminareaset=1;
 	}
       else if(strcmp(name, "keepmaxnearriver")==0)
 	{
 	  if(up->keepmaxnearriverset) continue;
-          intzeroorone(value, &p->keepmaxnearriver, name, key, SPACK,
-                       filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->keepmaxnearriver, name, key,
+                                       SPACK, filename, lineno);
 	  up->keepmaxnearriverset=1;
 	}
       else if(strcmp(name, "segquant")==0)
 	{
 	  if(up->segquantset) continue;
-          floatl0s1(value, &p->segquant, name, key, SPACK, filename, lineno);
+          gal_checkset_float_l_0_s_1(value, &p->segquant, name, key, SPACK,
+                                     filename, lineno);
 	  up->segquantset=1;
 	}
       else if(strcmp(name, "clumpsnhistnbins")==0)
 	{
 	  if(up->clumpsnhistnbinsset) continue;
-          sizetelzero(value, &p->clumpsnhistnbins, name, key, SPACK,
-                      filename, lineno);
+          gal_checkset_sizet_el_zero(value, &p->clumpsnhistnbins, name, key,
+                                     SPACK,filename, lineno);
 	  up->clumpsnhistnbinsset=1;
 	}
       else if(strcmp(name, "gthresh")==0)
 	{
 	  if(up->gthreshset) continue;
-          anyfloat(value, &p->gthresh, name, key, SPACK,
-                   filename, lineno);
+          gal_checkset_any_float(value, &p->gthresh, name, key, SPACK,
+                                 filename, lineno);
 	  up->gthreshset=1;
 	}
       else if(strcmp(name, "minriverlength")==0)
 	{
 	  if(up->minriverlengthset) continue;
-          sizetlzero(value, &p->minriverlength, name, key, SPACK,
-                     filename, lineno);
+          gal_checkset_sizet_l_zero(value, &p->minriverlength, name, key, SPACK,
+                                    filename, lineno);
 	  up->minriverlengthset=1;
 	}
       else if(strcmp(name, "objbordersn")==0)
 	{
 	  if(up->objbordersnset) continue;
-          floatl0(value, &p->objbordersn, name, key, SPACK,
-                  filename, lineno);
+          gal_checkset_float_l_0(value, &p->objbordersn, name, key, SPACK,
+                                 filename, lineno);
 	  up->objbordersnset=1;
 	}
 
 
       /* Operating modes: */
       /* Read options common to all programs */
-      READ_COMMONOPTIONS_FROM_CONF
+      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
@@ -440,47 +443,22 @@ void
 printvalues(FILE *fp, struct noisechiselparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
-  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
+  struct gal_commonparams *cp=&p->cp;
+  struct gal_mesh_params *smp=&p->smp, *lmp=&p->lmp;
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
   fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
-    {
-      if(stringhasspace(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
-    }
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->masknameset)
-    {
-      if(stringhasspace(up->maskname))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
-    }
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mask", up->maskname);
   if(up->mhdu)
-    {
-      if(stringhasspace(up->mhdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
-    }
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
   if(up->kernelnameset)
-    {
-      if(stringhasspace(up->kernelname))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
-    }
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("kernel", up->kernelname);
   if(up->khdu)
-    {
-      if(stringhasspace(up->khdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
-      else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
-    }
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("khdu", up->khdu);
   if(up->skysubtractedset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "skysubtracted", p->skysubtracted);
   if(up->minbfracset)
@@ -574,7 +552,7 @@ printvalues(FILE *fp, struct noisechiselparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
-  PRINT_COMMONOPTIONS;
+  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
 
@@ -588,93 +566,93 @@ void
 checkifset(struct noisechiselparams *p)
 {
   struct uiparams *up=&p->up;
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
-    REPORT_NOTSET("hdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("hdu");
   if(up->khduset==0)
-    REPORT_NOTSET("khdu");
+    GAL_CONFIGFILES_REPORT_NOTSET("khdu");
   if(up->skysubtractedset==0)
-    REPORT_NOTSET("skysubtracted");
+    GAL_CONFIGFILES_REPORT_NOTSET("skysubtracted");
   if(up->minbfracset==0)
-    REPORT_NOTSET("minbfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("minbfrac");
   if(up->minnumfalseset==0)
-    REPORT_NOTSET("minnumfalse");
+    GAL_CONFIGFILES_REPORT_NOTSET("minnumfalse");
 
   /* Output */
   if(up->grownclumpsset==0)
-    REPORT_NOTSET("grownclumps");
+    GAL_CONFIGFILES_REPORT_NOTSET("grownclumps");
 
   /* Mesh grid: */
   if(up->smeshsizeset==0)
-    REPORT_NOTSET("smeshsize");
+    GAL_CONFIGFILES_REPORT_NOTSET("smeshsize");
   if(up->lmeshsizeset==0)
-    REPORT_NOTSET("lmeshsize");
+    GAL_CONFIGFILES_REPORT_NOTSET("lmeshsize");
   if(up->nch1set==0)
-    REPORT_NOTSET("nch1");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch1");
   if(up->nch2set==0)
-    REPORT_NOTSET("nch2");
+    GAL_CONFIGFILES_REPORT_NOTSET("nch2");
   if(up->lastmeshfracset==0)
-    REPORT_NOTSET("lastmeshfrac");
+    GAL_CONFIGFILES_REPORT_NOTSET("lastmeshfrac");
   if(up->mirrordistset==0)
-    REPORT_NOTSET("mirrordist");
+    GAL_CONFIGFILES_REPORT_NOTSET("mirrordist");
   if(up->minmodeqset==0)
-    REPORT_NOTSET("minmodeq");
+    GAL_CONFIGFILES_REPORT_NOTSET("minmodeq");
   if(up->numnearestset==0)
-    REPORT_NOTSET("numnearest");
+    GAL_CONFIGFILES_REPORT_NOTSET("numnearest");
   if(up->smoothwidthset==0)
-    REPORT_NOTSET("smoothwidth");
+    GAL_CONFIGFILES_REPORT_NOTSET("smoothwidth");
   if(up->fullconvolutionset==0)
-    REPORT_NOTSET("fullconvolution");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullconvolution");
   if(up->fullinterpolationset==0)
-    REPORT_NOTSET("fullinterpolation");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullinterpolation");
   if(up->fullsmoothset==0)
-    REPORT_NOTSET("fullsmooth");
+    GAL_CONFIGFILES_REPORT_NOTSET("fullsmooth");
 
   /* Detection: */
   if(up->qthreshset==0)
-    REPORT_NOTSET("qthresh");
+    GAL_CONFIGFILES_REPORT_NOTSET("qthresh");
   if(up->erodeset==0)
-    REPORT_NOTSET("erode");
+    GAL_CONFIGFILES_REPORT_NOTSET("erode");
   if(up->erodengbset==0)
-    REPORT_NOTSET("erodengb");
+    GAL_CONFIGFILES_REPORT_NOTSET("erodengb");
   if(up->openingset==0)
-    REPORT_NOTSET("opening");
+    GAL_CONFIGFILES_REPORT_NOTSET("opening");
   if(up->openingngbset==0)
-    REPORT_NOTSET("openingngb");
+    GAL_CONFIGFILES_REPORT_NOTSET("openingngb");
   if(up->sigclipmultipset==0)
-    REPORT_NOTSET("sigclipmultip");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigclipmultip");
   if(up->sigcliptoleranceset==0)
-    REPORT_NOTSET("sigcliptolerance");
+    GAL_CONFIGFILES_REPORT_NOTSET("sigcliptolerance");
   if(up->dthreshset==0)
-    REPORT_NOTSET("dthresh");
+    GAL_CONFIGFILES_REPORT_NOTSET("dthresh");
   if(up->detsnminareaset==0)
-    REPORT_NOTSET("detsnminarea");
+    GAL_CONFIGFILES_REPORT_NOTSET("detsnminarea");
   if(up->detsnhistnbinsset==0)
-    REPORT_NOTSET("detsnhistnbins");
+    GAL_CONFIGFILES_REPORT_NOTSET("detsnhistnbins");
   if(up->detquantset==0)
-    REPORT_NOTSET("detquant");
+    GAL_CONFIGFILES_REPORT_NOTSET("detquant");
   if(up->dilateset==0)
-    REPORT_NOTSET("dilate");
+    GAL_CONFIGFILES_REPORT_NOTSET("dilate");
 
   /* Segmentation: */
   if(up->segsnminareaset==0)
-    REPORT_NOTSET("segsnminarea");
+    GAL_CONFIGFILES_REPORT_NOTSET("segsnminarea");
   if(up->keepmaxnearriverset==0)
-    REPORT_NOTSET("keepmaxnearriver");
+    GAL_CONFIGFILES_REPORT_NOTSET("keepmaxnearriver");
   if(up->segquantset==0)
-    REPORT_NOTSET("segquant");
+    GAL_CONFIGFILES_REPORT_NOTSET("segquant");
   if(up->clumpsnhistnbinsset==0)
-    REPORT_NOTSET("clumpsnhistnbins");
+    GAL_CONFIGFILES_REPORT_NOTSET("clumpsnhistnbins");
   if(up->gthreshset==0)
-    REPORT_NOTSET("gthresh");
+    GAL_CONFIGFILES_REPORT_NOTSET("gthresh");
   if(up->minriverlengthset==0)
-    REPORT_NOTSET("minriverlength");
+    GAL_CONFIGFILES_REPORT_NOTSET("minriverlength");
   if(up->objbordersnset==0)
-    REPORT_NOTSET("objbordersn");
+    GAL_CONFIGFILES_REPORT_NOTSET("objbordersn");
 
-  END_OF_NOTSET_REPORT;
+  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
 
@@ -702,19 +680,20 @@ checkifset(struct noisechiselparams *p)
 void
 sanitycheck(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp;
+  struct gal_mesh_params *smp=&p->smp;
 
   /* Make sure the input file exists. */
-  checkfile(p->up.inputname);
+  gal_checkset_check_file(p->up.inputname);
 
   /* Set the maskname and mask hdu accordingly: */
-  fileorextname(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                &p->up.maskname, p->up.mhdu, p->up.mhduset, "mask");
+  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+                                 &p->up.maskname, p->up.mhdu, p->up.mhduset,
+                                 "mask");
 
   /* Set the output name: */
   if(p->cp.output)
     {
-      checkremovefile(p->cp.output, p->cp.dontdelete);
+      gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
 
       /* When the output name is given (possibly with directory
          information), the user certainly wants the directory
@@ -723,70 +702,80 @@ sanitycheck(struct noisechiselparams *p)
 
     }
   else
-    automaticoutput(p->up.inputname, "_labeled.fits", p->cp.removedirinfo,
-		p->cp.dontdelete, &p->cp.output);
+    gal_checkset_automatic_output(p->up.inputname, "_labeled.fits",
+                                  p->cp.removedirinfo, p->cp.dontdelete,
+                                  &p->cp.output);
 
   /* Set the check image names: */
   if(p->meshname)
     {
       p->meshname=NULL;         /* Was not allocated before!  */
-      automaticoutput(p->cp.output, "_meshs.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->meshname);
+      gal_checkset_automatic_output(p->cp.output, "_meshs.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->meshname);
     }
   if(p->threshname)
     {
       p->threshname=NULL;
-      automaticoutput(p->cp.output, "_thresh.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->threshname);
+      gal_checkset_automatic_output(p->cp.output, "_thresh.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->threshname);
     }
   if(p->detectionname)
     {
       p->detectionname=NULL;
-      automaticoutput(p->cp.output, "_det.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->detectionname);
+      gal_checkset_automatic_output(p->cp.output, "_det.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->detectionname);
     }
   if(p->detectionskyname)
     {
       p->detectionskyname=NULL;
-      automaticoutput(p->cp.output, "_detsky.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->detectionskyname);
+      gal_checkset_automatic_output(p->cp.output, "_detsky.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->detectionskyname);
     }
   if(p->detsnhistnbins)
     {
       p->detectionsnhist=NULL;
-      automaticoutput(p->cp.output, "_detsn.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->detectionsnhist);
+      gal_checkset_automatic_output(p->cp.output, "_detsn.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->detectionsnhist);
     }
   if(p->skyname)
     {
       p->skyname=NULL;
-      automaticoutput(p->cp.output, "_sky.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->skyname);
+      gal_checkset_automatic_output(p->cp.output, "_sky.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->skyname);
     }
   if(p->segmentationname)
     {
       p->segmentationname=NULL;
-      automaticoutput(p->cp.output, "_seg.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->segmentationname);
+      gal_checkset_automatic_output(p->cp.output, "_seg.fits",
+                                    p->cp.removedirinfo,
+                                    p->cp.dontdelete, &p->segmentationname);
     }
   if(p->clumpsnhistnbins)
     {
       p->clumpsnhist=NULL;
-      automaticoutput(p->cp.output, "_clumpsn.txt", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->clumpsnhist);
+      gal_checkset_automatic_output(p->cp.output, "_clumpsn.txt",
+                                    p->cp.removedirinfo,
+                                    p->cp.dontdelete, &p->clumpsnhist);
     }
   if(p->maskdetname)
     {
       p->maskdetname=NULL;
-      automaticoutput(p->cp.output, "_maskdet.fits", p->cp.removedirinfo,
-                      p->cp.dontdelete, &p->maskdetname);
+      gal_checkset_automatic_output(p->cp.output, "_maskdet.fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->maskdetname);
     }
 
   /* Other checks: */
-  if(smp->numnearest<MINACCEPTABLENEAREST)
+  if(smp->numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
     error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %lu.", MINACCEPTABLENEAREST,
-          smp->numnearest);
+          "(`-n') is %d. You have asked for: %lu.",
+          GAL_MESH_MIN_ACCEPTABLE_NEAREST, smp->numnearest);
 }
 
 
@@ -869,7 +858,7 @@ float defaultkernel[121]=
 void
 preparearrays(struct noisechiselparams *p)
 {
-  struct meshparams *smp=&p->smp, *lmp=&p->lmp;
+  struct gal_mesh_params *smp=&p->smp, *lmp=&p->lmp;
 
   long *meshindexs;
   float *f, *ff, *fp;
@@ -880,10 +869,11 @@ preparearrays(struct noisechiselparams *p)
      done on the convolved image and some on the actual image, we will
      need to change the mesh's img value some times and the p->img
      will be used to keep its actual value. */
-  filetofloat(p->up.inputname, p->up.maskname, p->cp.hdu, p->up.mhdu,
-              (float **)&smp->img, &p->bitpix, &p->anyblank, &smp->s0,
-              &smp->s1);
-  readfitswcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+  gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
+                              p->up.mhdu, (float **)&smp->img, &p->bitpix,
+                              &p->anyblank, &smp->s0, &smp->s1);
+  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
+                              &p->nwcs, &p->wcs);
   s0=smp->s0; s1=smp->s1;
 
   /* make sure the channel sizes fit the channel sizes. */
@@ -918,8 +908,8 @@ preparearrays(struct noisechiselparams *p)
 
   /* Read the kernel: */
   if(p->up.kernelnameset)
-    prepfloatkernel(p->up.kernelname, p->up.khdu, &smp->kernel,
-                    &smp->ks0, &smp->ks1);
+    gal_fitsarray_prep_float_kernel(p->up.kernelname, p->up.khdu, &smp->kernel,
+                                    &smp->ks0, &smp->ks1);
   else
     {
       errno=0;
@@ -983,19 +973,22 @@ preparearrays(struct noisechiselparams *p)
 
 
   /* Prepare the mesh structures. */
-  makemesh(smp);
-  makemesh(lmp);
+  gal_mesh_make_mesh(smp);
+  gal_mesh_make_mesh(lmp);
   if(p->meshname)
     {
-      arraytofitsimg(p->meshname, "Input", FLOAT_IMG, smp->img, s0, s1,
-                     p->anyblank, p->wcs, NULL, SPACK_STRING);
-      checkmeshid(smp, &meshindexs);
-      arraytofitsimg(p->meshname, "SmallMeshIndexs", LONG_IMG, meshindexs,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      gal_fitsarray_array_to_fits_img(p->meshname, "Input", FLOAT_IMG,
+                                      smp->img, s0, s1, p->anyblank, p->wcs,
+                                      NULL, SPACK_STRING);
+      gal_check_mesh_id(smp, &meshindexs);
+      gal_fitsarray_array_to_fits_img(p->meshname, "SmallMeshIndexs",
+                                      LONG_IMG, meshindexs, s0, s1, 0, p->wcs,
+                                      NULL, SPACK_STRING);
       free(meshindexs);
-      checkmeshid(lmp, &meshindexs);
-      arraytofitsimg(p->meshname, "LargeMeshIndexs", LONG_IMG, meshindexs,
-                     s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+      gal_check_mesh_id(lmp, &meshindexs);
+      gal_fitsarray_array_to_fits_img(p->meshname, "LargeMeshIndexs", LONG_IMG,
+                                      meshindexs, s0, s1, 0, p->wcs,
+                                      NULL, SPACK_STRING);
       free(meshindexs);
     }
 }
@@ -1024,7 +1017,7 @@ preparearrays(struct noisechiselparams *p)
 void
 setparams(int argc, char *argv[], struct noisechiselparams *p)
 {
-  struct commonparams *cp=&p->cp;
+  struct gal_commonparams *cp=&p->cp;
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -1042,14 +1035,14 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
     error(EXIT_FAILURE, errno, "Parsing arguments");
 
   /* Add the user default values and save them if asked. */
-  CHECKSETCONFIG;
+  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
   /* Check if all the required parameters are set. */
   checkifset(p);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
-    REPORT_PARAMETERS_SET;
+    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
   /* Do a sanity check. */
   sanitycheck(p);
@@ -1132,5 +1125,5 @@ freeandreport(struct noisechiselparams *p, struct timeval *t1)
 
   /* Print the final message. */
   if(p->cp.verb)
-    reporttiming(t1, SPACK_NAME" finished in", 0);
+    gal_timing_report(t1, SPACK_NAME" finished in", 0);
 }
