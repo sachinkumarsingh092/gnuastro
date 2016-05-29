@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <wcslib/wcs.h>
 
-#include "astrthreads.h"
+#include <gnuastro/threads.h>
 
 
 

@@ -25,14 +25,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <argp.h>
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
 
 #include <fitsio.h>
 
-#include "checkset.h"
-#include "commonparams.h"
-#include "fixedstringmacros.h"
+#include <gnuastro/checkset.h>
+#include <gnuastro/commonparams.h>
+#include <gnuastro/fixedstringmacros.h>
 
 /* These are separate in each package. */
 #include "main.h"

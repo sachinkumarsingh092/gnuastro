@@ -29,9 +29,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
-#include "forqsort.h"
-#include "statistics.h"
-#include "arraymanip.h"
+#include <gnuastro/qsort.h>
+#include <gnuastro/statistics.h>
+#include <gnuastro/arraymanip.h>
 
 
 

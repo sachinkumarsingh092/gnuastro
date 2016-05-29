@@ -112,10 +112,11 @@ dist_doc_DATA = README
 
 ## Files that are only distributed
 ## ===============================
-EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el         \
- $(top_srcdir)/.version bootstrapped/m4/gnulib-cache.m4                 \
- bootstrapped/README .autom4te.cfg include/commonargs.h                 \
- include/commonparams.h include/fixedstringmacros.h include/neighbors.h
+EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el	\
+ $(top_srcdir)/.version bootstrapped/m4/gnulib-cache.m4		\
+ bootstrapped/README .autom4te.cfg lib/gnuastro/commonargs.h	\
+ lib/gnuastro/commonparams.h lib/gnuastro/fixedstringmacros.h	\
+ lib/gnuastro/neighbors.h lib/gnuastro/README
 
 
 

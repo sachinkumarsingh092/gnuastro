@@ -28,12 +28,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include <gnuastro/fitsarrayvv.h>
+
 #include "main.h"
 
 #include "label.h"
 #include "binary.h"
-#include "fitsarrayvv.h"
-
 
 
 

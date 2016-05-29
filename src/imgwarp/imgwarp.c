@@ -28,10 +28,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
-#include "fitsarrayvv.h"
+#include <gnuastro/polygon.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
-#include "polygon.h"
 #include "imgwarp.h"
 
 

@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MOCKGALS_H
 #define MOCKGALS_H
 
-#include "astrthreads.h"
+#include <gnuastro/threads.h>
 
 #include "main.h"
 

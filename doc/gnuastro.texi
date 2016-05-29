@@ -14151,37 +14151,69 @@ As much as order does not matter when you include the header of each
 group, sort them by length, see above.
 
 @item
-Regarding naming of exported header files, functions, variables, macros,
-and library functions, we adopted similar conventions to those used by the
-GNU Scientific
-Library@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
-In particular, in order to avoid clashes with the names of functions and
-variables coming from other libraries we decided to use the namespace
-@code{gal}, which stands for @emph{G}NU @emph{A}stronomy @emph{L}ibrary.
-
-@itemize
-@item
-All exported header files should have a filename with the prefix @code{gal_}.
-
-@item
 All function names, variables, etc should be in lower case.  Macros and
 preprocessor variables should be in upper case.
 
 @item
-@cindex GNU coding standards
-For all exported functions and variables use the base name of the file in
-which they are defined as prefix, followed by the rest of the name, using
-underscores to separate words@footnote{The convention to use underscores to
-separate words, called ``snake case'' (or ``snake_case''). This is also
-recommended by the GNU coding standards.}.  The same applies to exported
-macros, but in upper case.  For example, the prototype of function
-@code{gal_box_border_from_center} is in @code{gal_box.h}, and the macro
-@code{GAL_POLYGON_MAX_CORNERS} is defined in @code{gal_polygon.h}. This
-facilitates looking up their definitions.
+Regarding naming of exported header files, functions, variables, macros,
+and library functions, we adopted similar conventions to those used by the
+GNU Scientific Library
+(GSL)@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
+In particular, in order to avoid clashes with the names of functions and
+variables coming from other libraries the namespace `@code{gal_}' is
+prefixed to them. GAL stands for @emph{G}NU @emph{A}stronomy
+@emph{L}ibrary. Ideally `@code{gnuastro_}' should have been used, but that
+is very long.
 
 @item
-All installed libraries should have a name like @code{libgalbox.a}.
-@end itemize
+All installed header files should be in the @file{lib/gnuastro} directory
+(under the top Gnuastro source directory). After installation, they will be
+put in the @file{$prefix/include/gnuastro} directory (see @ref{Installation
+directory} for @file{$prefix}). Therefore Gnuastro's headers can be
+included in source files with the following line.
+@example
+# include <gnuastro/headername.h>
+@end example
+Note that unlike the GSL convention, the header file names are not prefixed
+with a `@file{gnuastro_}'. The reason is that the headers depend on each
+other (the include line above is present in the headers too). So if the
+user chooses to avoid the @file{gnuastro/} directory when installing
+Gnuastro the dependencies of the headers will break and Gnuastro cannot be
+compiled. Therefore the `@file{gnuastro_}' prefix to the file names is
+redundant@footnote{Note that this applies to GSL's header files too, for
+example see @file{eigen/gsl_eigen.h} in GSL's source files. However, GSL
+uses this prefix to find the headers that will be installed, therefore it
+is necessary there. With this convention, Gnuastro already has all its
+installed headers in the @file{lib/gnuastro/} directory so it doesn't have
+any operational necessity.}. With this convention, the coding of Gnuastro's
+utilities will be the same as a user's code working on their own separate
+project.
+
+@item
+@cindex GNU coding standards
+All installed functions and variables should also include the base name of
+the file in which they are defined as prefix, using underscores to separate
+words@footnote{The convention to use underscores to separate words, called
+``snake case'' (or ``snake_case''). This is also recommended by the GNU
+coding standards.}. The same applies to exported macros, but in upper case.
+For example in Gnuastro's top source directory, the prototype of function
+@code{gal_box_border_from_center} is in @file{lib/gnuastro/box.h}, and the
+macro @code{GAL_POLYGON_MAX_CORNERS} is defined in
+@code{lib/gnuastro/polygon.h}. To find the header file in the installed
+directories, replace @file{lib/} with @file{$prefix/include/} (see
+@ref{Installation directory} for @file{$prefix}).
+
+This is necessary to give any user (who is not familiar with the library
+structure) the ability to follow the code of a function that is not in the
+utility or library they are reading. This convention does make the function
+names longer (a little harder to write), but the extra documentation it
+provides convention plays an important role in Gnuastro and is worth the
+cost.
+
+@item
+All installed libraries should have a name like @code{libgalbox.a} (this is
+specified in the @file{Makefile.am} files in each directory, not in the
+actual C source code).
 
 @item
 @cindex GNU Emacs

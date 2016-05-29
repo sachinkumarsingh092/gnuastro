@@ -23,7 +23,7 @@ AM_CFLAGS = -Wall -O3
 
 AM_LDFLAGS = -lcfitsio -lwcs -lm -L$(top_builddir)/lib
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
@@ -36,9 +36,10 @@ bin_PROGRAMS = astsubtractsky
 astsubtractsky_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 subtractsky.c subtractsky.h
 
-astsubtractsky_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la            \
--lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh -lspatialconvolve     \
--lastrthreads -lmode -lstatistics -larraymanip -lforqsort -llinkedlist -lbox
+astsubtractsky_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
+-lgalconfigfiles -lgalfitsarrayvv -lgalcheckset -lgaltiming -lgalmesh	\
+-lgalspatialconvolve -lgalthreads -lgalmode -lgalstatistics		\
+-lgalarraymanip -lgalqsort -lgallinkedlist -lgalbox
 
 
 
@@ -54,5 +55,5 @@ dist_sysconf_DATA = astsubtractsky.conf
 ## Generally for the man pages:
 dist_man_MANS = astsubtractsky.1
 
-astsubtractsky.1: args.h $(top_srcdir)/include/commonargs.h
+astsubtractsky.1: args.h $(top_srcdir)/lib/gnuastro/commonargs.h
 	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astsubtractsky

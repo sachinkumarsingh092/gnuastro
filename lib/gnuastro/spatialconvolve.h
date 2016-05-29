@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* For pthread_barrier_t: */
-#include "astrthreads.h"
+#include <gnuastro/threads.h>
 
 
 

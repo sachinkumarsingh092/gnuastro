@@ -31,7 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include "checkset.h"
+#include <gnuastro/checkset.h>
 
 
 #define FIXEDFORFILE        "The value of `%s` (given as %s)"

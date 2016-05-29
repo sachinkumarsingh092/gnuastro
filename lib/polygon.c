@@ -27,9 +27,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <gsl/gsl_sort.h>
 
-#include "polygon.h"
+#include <gnuastro/polygon.h>
 
 
 /***************************************************************/

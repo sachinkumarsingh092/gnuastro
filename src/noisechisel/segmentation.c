@@ -28,9 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include "forqsort.h"
-#include "neighbors.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/qsort.h>
+#include <gnuastro/neighbors.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

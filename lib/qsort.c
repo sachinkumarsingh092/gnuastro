@@ -24,7 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 
-#include "forqsort.h"
+#include <gnuastro/qsort.h>
 
 /* Initialize the array for sorting indexs to NULL. */
 float *gal_qsort_index_arr;

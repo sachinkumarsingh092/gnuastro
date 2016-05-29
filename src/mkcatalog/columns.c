@@ -37,7 +37,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-
 #include "main.h"
 
 #include "columns.h"

@@ -28,10 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include "timing.h"
-#include "binary.h"
-#include "arraymanip.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/timing.h>
+#include <gnuastro/arraymanip.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

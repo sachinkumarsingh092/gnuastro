@@ -32,8 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_rng.h>	 /* Used in setrandoms.   */
 #include <gsl/gsl_randist.h>	 /* To make noise.        */
 
-#include "timing.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/timing.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

@@ -32,16 +32,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
-#include "timing.h"	        /* Includes time.h and sys/time.h   */
-#include "checkset.h"
-#include "forqsort.h"
-#include "arraymanip.h"
-#include "statistics.h"
-#include "txtarrayvv.h"
-#include "commonargs.h"
-#include "configfiles.h"
-#include "fitsarrayvv.h"
-#include "fixedstringmacros.h"
+#include <gnuastro/qsort.h>
+#include <gnuastro/timing.h>	/* Includes time.h and sys/time.h   */
+#include <gnuastro/checkset.h>
+#include <gnuastro/arraymanip.h>
+#include <gnuastro/statistics.h>
+#include <gnuastro/txtarrayvv.h>
+#include <gnuastro/commonargs.h>
+#include <gnuastro/configfiles.h>
+#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/fixedstringmacros.h>
 
 #include "main.h"
 

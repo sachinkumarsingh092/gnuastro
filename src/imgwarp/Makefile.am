@@ -23,7 +23,7 @@ AM_CFLAGS = -Wall -O3
 
 AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm -L$(top_builddir)/lib
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
@@ -36,8 +36,9 @@ bin_PROGRAMS = astimgwarp
 astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 imgwarp.c imgwarp.h
 
-astimgwarp_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lconfigfiles \
--lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -lastrthreads -lpolygon
+astimgwarp_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
+-lgalconfigfiles -lgalfitsarrayvv -lgaltxtarrayvv -lgalcheckset	\
+-lgaltiming -lgalthreads -lgalpolygon
 
 
 
@@ -53,5 +54,5 @@ dist_sysconf_DATA = astimgwarp.conf
 ## Generally for the man pages:
 dist_man_MANS = astimgwarp.1
 
-astimgwarp.1: args.h $(top_srcdir)/include/commonargs.h
+astimgwarp.1: args.h $(top_srcdir)/lib/gnuastro/commonargs.h
 	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astimgwarp

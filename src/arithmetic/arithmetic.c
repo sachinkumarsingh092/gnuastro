@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include "checkset.h"
-#include "arraymanip.h"
-#include "statistics.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/checkset.h>
+#include <gnuastro/arraymanip.h>
+#include <gnuastro/statistics.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 #include "arithmetic.h"            /* needs main.h.                  */

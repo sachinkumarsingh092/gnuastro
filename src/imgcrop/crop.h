@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef CROP_H
 #define CROP_H
 
-#include "astrthreads.h"
+#include <gnuastro/threads.h>
 
 #include "main.h"
 

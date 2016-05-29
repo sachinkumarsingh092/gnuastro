@@ -1,0 +1,12 @@
+GNU Astronomy Utilities library header files
+============================================
+
+This directory contins Gnuastro's library header files. Once installed, all
+these directories will be installed in the specified
+'$(prefix)/include/gnuastro' directory (the value of '$(prefix)' can be set
+at configure time, see the "Installation directory" of the Gnuastro book
+for more).
+
+Inside of Gnuastro, the directory is given the same name to make Gnuastro's
+internal code similar to what a user would use in their own programs once
+the header files are installed.

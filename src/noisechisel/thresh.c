@@ -27,12 +27,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
-#include "mode.h"
-#include "timing.h"
-#include "forqsort.h"
-#include "checkset.h"
-#include "statistics.h"
-#include "spatialconvolve.h"
+#include <gnuastro/mode.h>
+#include <gnuastro/qsort.h>
+#include <gnuastro/timing.h>
+#include <gnuastro/checkset.h>
+#include <gnuastro/statistics.h>
+#include <gnuastro/spatialconvolve.h>
 
 #include "main.h"
 #include "noisechisel.h"

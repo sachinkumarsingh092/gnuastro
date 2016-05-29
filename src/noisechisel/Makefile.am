@@ -23,7 +23,7 @@ AM_CFLAGS = -Wall -O3
 
 AM_LDFLAGS = -lcfitsio -lwcs -lm -L$(top_builddir)/lib
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
@@ -38,9 +38,10 @@ noisechisel.c noisechisel.h thresh.c thresh.h binary.c binary.h		\
 label.c label.h detection.c detection.h sky.c sky.h segmentation.c	\
 segmentation.h clumps.c clumps.h
 
-astnoisechisel_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la            \
--lconfigfiles -lfitsarrayvv -lcheckset -ltiming -lmesh -lspatialconvolve     \
--lastrthreads -lmode -lstatistics -larraymanip -lforqsort -llinkedlist -lbox
+astnoisechisel_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
+-lgalconfigfiles -lgalfitsarrayvv -lgalcheckset -lgaltiming -lgalmesh	\
+-lgalspatialconvolve -lgalthreads -lgalmode -lgalstatistics		\
+-lgalarraymanip -lgalqsort -lgallinkedlist -lgalbox
 
 
 
@@ -56,5 +57,5 @@ dist_sysconf_DATA = astnoisechisel.conf
 ## Generally for the man pages:
 dist_man_MANS = astnoisechisel.1
 
-astnoisechisel.1: args.h $(top_srcdir)/include/commonargs.h
+astnoisechisel.1: args.h $(top_srcdir)/lib/gnuastro/commonargs.h
 	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astnoisechisel

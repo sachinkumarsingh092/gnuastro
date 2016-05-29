@@ -29,9 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include "box.h"
-#include "astrthreads.h"
-#include "spatialconvolve.h"
+#include <gnuastro/box.h>
+#include <gnuastro/spatialconvolve.h>
 
 
 

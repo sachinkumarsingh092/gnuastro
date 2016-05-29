@@ -24,7 +24,7 @@ AM_CFLAGS = -Wall -O3
 
 AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm -L$(top_builddir)/lib
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
@@ -37,9 +37,9 @@ bin_PROGRAMS = astimgcrop
 astimgcrop_SOURCES = main.c main.h cite.h ui.c ui.h args.h imgcrop.c	\
 imgcrop.h wcsmode.c wcsmode.h crop.c crop.h
 
-astimgcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lconfigfiles \
--lfitsarrayvv -ltxtarrayvv -lcheckset -llinkedlist -ltiming -lastrthreads   \
--lbox -lpolygon
+astimgcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
+-lgalconfigfiles -lgalfitsarrayvv -lgaltxtarrayvv -lgalcheckset		\
+-lgallinkedlist -lgaltiming -lgalthreads -lgalbox -lgalpolygon
 
 
 
@@ -53,5 +53,5 @@ dist_sysconf_DATA = astimgcrop.conf
 ## Generally for the man pages:
 dist_man_MANS = astimgcrop.1
 
-astimgcrop.1: args.h $(top_srcdir)/include/commonargs.h
+astimgcrop.1: args.h $(top_srcdir)/lib/gnuastro/commonargs.h
 	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astimgcrop

@@ -28,8 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
-#include <timing.h>
-#include <checkset.h>
+#include <gnuastro/timing.h>
+#include <gnuastro/checkset.h>
 
 #include "main.h"
 

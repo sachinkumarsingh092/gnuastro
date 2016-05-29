@@ -32,9 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <dirent.h>
 #include <sys/stat.h>		/* For mkdir permission flags. */
 
-#include "config.h"
-#include "checkset.h"
-#include "configfiles.h"
+#include <gnuastro/checkset.h>
+#include <gnuastro/configfiles.h>
 
 
 

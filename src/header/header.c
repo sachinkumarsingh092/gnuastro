@@ -28,8 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include "linkedlist.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/linkedlist.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

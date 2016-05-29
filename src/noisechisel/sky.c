@@ -27,9 +27,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
-#include "mesh.h"
-#include "forqsort.h"
-#include "statistics.h"
+#include <gnuastro/mesh.h>
+#include <gnuastro/qsort.h>
+#include <gnuastro/statistics.h>
 
 #include "main.h"
 

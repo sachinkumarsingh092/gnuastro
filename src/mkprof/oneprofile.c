@@ -33,12 +33,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_randist.h>	 /* To make noise.       */
 #include <gsl/gsl_integration.h> /* gsl_integration_qng  */
 
-#include "timing.h"
-#include "neighbors.h"
-#include "arraymanip.h"
-#include "statistics.h"
-#include "linkedlist.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/timing.h>
+#include <gnuastro/neighbors.h>
+#include <gnuastro/arraymanip.h>
+#include <gnuastro/statistics.h>
+#include <gnuastro/linkedlist.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

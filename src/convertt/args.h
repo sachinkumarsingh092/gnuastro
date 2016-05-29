@@ -23,9 +23,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
+#include <gnuastro/commonargs.h>
+#include <gnuastro/fixedstringmacros.h>
+
 #include "ui.h"
-#include "commonargs.h"
-#include "fixedstringmacros.h"
 
 
 /* Definition parameters for the argp: */

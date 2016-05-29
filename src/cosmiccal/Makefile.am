@@ -26,7 +26,7 @@ AM_CFLAGS = -Wall -O3
 
 AM_LDFLAGS = -lgsl -lgslcblas -lm -L$(top_builddir)/lib
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
@@ -39,8 +39,9 @@ bin_PROGRAMS = astcosmiccal
 astcosmiccal_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 cosmiccal.c cosmiccal.h
 
-astcosmiccal_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lconfigfiles \
--lfitsarrayvv -lcheckset -ltiming -llinkedlist
+astcosmiccal_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
+-lgalconfigfiles -lgalfitsarrayvv -lgalcheckset -lgaltiming	\
+-lgallinkedlist
 
 
 
@@ -56,5 +57,5 @@ dist_sysconf_DATA = astcosmiccal.conf
 ## Generally for the man pages:
 dist_man_MANS = astcosmiccal.1
 
-astcosmiccal.1: args.h $(top_srcdir)/include/commonargs.h
+astcosmiccal.1: args.h $(top_srcdir)/lib/gnuastro/commonargs.h
 	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astcosmiccal

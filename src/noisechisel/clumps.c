@@ -29,14 +29,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include "timing.h"
-#include "checkset.h"
-#include "forqsort.h"
-#include "neighbors.h"
-#include "arraymanip.h"
-#include "linkedlist.h"
-#include "statistics.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/qsort.h>
+#include <gnuastro/timing.h>
+#include <gnuastro/checkset.h>
+#include <gnuastro/neighbors.h>
+#include <gnuastro/arraymanip.h>
+#include <gnuastro/linkedlist.h>
+#include <gnuastro/statistics.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

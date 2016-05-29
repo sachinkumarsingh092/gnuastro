@@ -30,15 +30,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
-#include "mesh.h"
-#include "mode.h"
-#include "forqsort.h"
-#include "neighbors.h"
-#include "linkedlist.h"
-#include "statistics.h"
-#include "fitsarrayvv.h"
-#include "astrthreads.h"
-#include "spatialconvolve.h"
+#include <gnuastro/mesh.h>
+#include <gnuastro/mode.h>
+#include <gnuastro/qsort.h>
+#include <gnuastro/neighbors.h>
+#include <gnuastro/linkedlist.h>
+#include <gnuastro/statistics.h>
+#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/spatialconvolve.h>
 
 
 

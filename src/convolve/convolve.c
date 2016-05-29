@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <gsl/gsl_errno.h>
 
-#include "timing.h"
-#include "astrthreads.h"
-#include "fitsarrayvv.h"
-#include "spatialconvolve.h"
+#include <gnuastro/timing.h>
+#include <gnuastro/threads.h>
+#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/spatialconvolve.h>
 
 #include "main.h"
 #include "convolve.h"

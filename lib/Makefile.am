@@ -23,52 +23,52 @@ AM_CFLAGS = -Wall -O3
 
 LDADD = bootstrapped/lib/libgnu.a
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib \
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
 ## Make libraries of the files that are shared between all the
 ## programs:
-noinst_LTLIBRARIES = libconfigfiles.la libfitsarrayvv.la	\
-libtxtarrayvv.la libcheckset.la liblinkedlist.la libtiming.la	\
-libastrthreads.la libbox.la libarraymanip.la libstatistics.la	\
-libspatialconvolve.la libmesh.la libmode.la libforqsort.la	\
-libpolygon.la
+headersdir=$(top_srcdir)/lib/gnuastro
+noinst_LTLIBRARIES = libgalconfigfiles.la libgalfitsarrayvv.la		  \
+libgaltxtarrayvv.la libgalcheckset.la libgallinkedlist.la libgaltiming.la \
+libgalthreads.la libgalbox.la libgalarraymanip.la libgalstatistics.la \
+libgalspatialconvolve.la libgalmesh.la libgalmode.la libgalqsort.la	  \
+libgalpolygon.la
 
-libbox_la_SOURCES = box.c $(top_srcdir)/include/box.h
-libbox_la_LIBADD = -lm
+libgalbox_la_SOURCES = box.c $(headersdir)/box.h
+libgalbox_la_LIBADD = -lm
 
-libmesh_la_SOURCES = mesh.c $(top_srcdir)/include/mesh.h
+libgalmesh_la_SOURCES = mesh.c $(headersdir)/mesh.h
 
+libgalmode_la_SOURCES = mode.c $(headersdir)/mode.h
 
-libmode_la_SOURCES = mode.c $(top_srcdir)/include/mode.h
+libgalqsort_la_SOURCES = qsort.c $(headersdir)/qsort.h
 
-libtiming_la_SOURCES = timing.c $(top_srcdir)/include/timing.h
+libgaltiming_la_SOURCES = timing.c $(headersdir)/timing.h
 
-libpolygon_la_SOURCES = polygon.c $(top_srcdir)/include/polygon.h
+libgalpolygon_la_SOURCES = polygon.c $(headersdir)/polygon.h
 
-libforqsort_la_SOURCES = forqsort.c $(top_srcdir)/include/forqsort.h
+libgalthreads_la_SOURCES = threads.c $(headersdir)/threads.h
 
-libcheckset_la_SOURCES = checkset.c $(top_srcdir)/include/checkset.h
+libgalcheckset_la_SOURCES = checkset.c $(headersdir)/checkset.h
 
-liblinkedlist_la_SOURCES = linkedlist.c $(top_srcdir)/include/linkedlist.h
+libgallinkedlist_la_SOURCES = linkedlist.c $(headersdir)/linkedlist.h
 
-libstatistics_la_SOURCES = statistics.c $(top_srcdir)/include/statistics.h
+libgalstatistics_la_SOURCES = statistics.c $(headersdir)/statistics.h
 
-libarraymanip_la_SOURCES = arraymanip.c $(top_srcdir)/include/arraymanip.h
+libgalarraymanip_la_SOURCES = arraymanip.c $(headersdir)/arraymanip.h
 
-libtxtarrayvv_la_SOURCES = txtarrayvv.c $(top_srcdir)/include/txtarrayvv.h
+libgaltxtarrayvv_la_SOURCES = txtarrayvv.c $(headersdir)/txtarrayvv.h
 
-libastrthreads_la_SOURCES = astrthreads.c $(top_srcdir)/include/astrthreads.h
+libgalconfigfiles_la_SOURCES = configfiles.c $(headersdir)/configfiles.h
 
-libconfigfiles_la_SOURCES = configfiles.c $(top_srcdir)/include/configfiles.h
-
-libfitsarrayvv_la_SOURCES = fitsarrayvv.c $(top_srcdir)/include/fitsarrayvv.h
-libfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lm
+libgalfitsarrayvv_la_SOURCES = fitsarrayvv.c $(headersdir)/fitsarrayvv.h
+libgalfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lm
 
 
 
 # Dependent libraries:
-libspatialconvolve_la_SOURCES = spatialconvolve.c	\
-$(top_srcdir)/include/spatialconvolve.h
-libspatialconvolve_la_LDFLAGS = -lastrthreads -lbox
+libgalspatialconvolve_la_SOURCES = spatialconvolve.c	\
+	$(headersdir)/spatialconvolve.h
+libgalspatialconvolve_la_LDFLAGS = -lgalthreads -lgalbox

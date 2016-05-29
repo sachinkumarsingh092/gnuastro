@@ -32,7 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 #define GAL_CHECKSET_CHECK_COL_IN_CAT(INCOL,NAME) {                     \
     size_t i;								\
-    									\
+                                                                        \
     if( (INCOL) >= p->cs1 )						\
       error(EXIT_FAILURE, 0, "%s only has %lu columns while you "	\
 	    "have requested column %lu (counting from zero) for "	\

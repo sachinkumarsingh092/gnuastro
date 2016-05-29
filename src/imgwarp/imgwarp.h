@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef IMGTRANSFORM_H
 #define IMGTRANSFORM_H
 
-#include "astrthreads.h"
+#include <gnuastro/threads.h>
 
 struct iwpparams
 {

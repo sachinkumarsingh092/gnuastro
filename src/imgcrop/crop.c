@@ -31,11 +31,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include "box.h"
-#include "timing.h"
-#include "polygon.h"
-#include "checkset.h"
-#include "fitsarrayvv.h"
+#include <gnuastro/box.h>
+#include <gnuastro/timing.h>
+#include <gnuastro/polygon.h>
+#include <gnuastro/checkset.h>
+#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

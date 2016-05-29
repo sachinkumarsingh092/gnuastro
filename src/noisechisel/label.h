@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* For the GAL_FITSARRAY_LONG_BLANK and GAL_FITSARRAY_BYTE_BLANK macros: */
-#include "fitsarrayvv.h"
+#include <gnuastro/fitsarrayvv.h>
 
 
 /* In case the blank value for the long type is negative, the only

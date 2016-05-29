@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <string.h>
 
-#include "txtarrayvv.h"
+#include <gnuastro/txtarrayvv.h>
 
 
 

@@ -29,7 +29,7 @@ AM_CFLAGS = -Wall -O3
 
 AM_LDFLAGS = -lcfitsio -lwcs -lm $(MAYBE_HASLIBJPEG) -L$(top_builddir)/lib
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
@@ -43,9 +43,9 @@ bin_PROGRAMS = astconvertt
 astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h eps.c	\
 eps.h jpeg.c jpeg.h convertt.c convertt.h
 
-astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lconfigfiles \
--lfitsarrayvv -ltxtarrayvv -lcheckset -ltiming -llinkedlist -lstatistics     \
--larraymanip -lforqsort
+astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
+-lgalconfigfiles -lgalfitsarrayvv -lgaltxtarrayvv -lgalcheckset		\
+-lgaltiming -lgallinkedlist -lgalstatistics -lgalarraymanip -lgalqsort
 
 
 
@@ -61,5 +61,5 @@ dist_sysconf_DATA = astconvertt.conf
 ## Generally for the man pages:
 dist_man_MANS = astconvertt.1
 
-astconvertt.1: args.h $(top_srcdir)/include/commonargs.h
+astconvertt.1: args.h $(top_srcdir)/lib/gnuastro/commonargs.h
 	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astconvertt

@@ -24,7 +24,7 @@ AM_CFLAGS = -Wall -O3
 
 AM_LDFLAGS = -lcfitsio -lwcs  -lgsl -lgslcblas -lm -L$(top_builddir)/lib
 
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/include \
+AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
 -I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
 
 
@@ -37,9 +37,10 @@ bin_PROGRAMS = astconvolve
 astconvolve_SOURCES = main.c main.h args.h ui.c ui.h convolve.c	\
 convolve.h cite.h
 
-astconvolve_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la -lcheckset   \
--lfitsarrayvv -ltiming -lconfigfiles -lmesh -lastrthreads -lspatialconvolve \
--lbox -larraymanip -lstatistics -lforqsort -llinkedlist
+astconvolve_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		   \
+-lgalcheckset -lgalfitsarrayvv -lgaltiming -lgalconfigfiles -lgalmesh	   \
+-lgalthreads -lgalspatialconvolve -lgalbox -lgalarraymanip -lgalstatistics \
+-lgalqsort -lgallinkedlist
 
 
 
@@ -53,5 +54,5 @@ dist_sysconf_DATA = astconvolve.conf
 ## Generally for the man pages:
 dist_man_MANS = astconvolve.1
 
-astconvolve.1: args.h $(top_srcdir)/include/commonargs.h
+astconvolve.1: args.h $(top_srcdir)/lib/gnuastro/commonargs.h
 	-$(HELP2MAN) --output=$@ --source="$(PACKAGE_STRING)" ./astconvolve
