@@ -26,6 +26,8 @@
 ## Set the shell
 SHELL=/bin/bash
 
+BUILT_SOURCES = authors.texi
+
 
 ## fdl.texi (The GNU Free documentation license in Texinfo format) is
 ## bootstrapped from Gnulib. Therefore it is not in this
