@@ -49,8 +49,13 @@ EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt			\
 mkprof/mkprofcat1_mask.txt mkprof/mkprofcat2.txt		\
 mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt imgcrop/cat.txt
 
-CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps .gnuastro/*.conf	\
-.gnuastro
+CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps
+
+# CLEANFILES is only for files, not directories. Therefore we are using
+# Automake's extending rules to clean the temporary `.gnuastro' directory
+# that was built by the `prepconf.sh' scripot. See "Extending Automake
+# rules", and the "What Gets Cleaned" sections of the Automake manual.
+clean-local:; rm -rf .gnuastro
 
 
 
