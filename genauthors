@@ -83,12 +83,11 @@ gnuastroversion=$(cat "$1/.version")
 echo "GNU Astronomy Utilities authors
 ===============================
 
-Version $gnuastroversion
+List of authors (and their relative contribution) for this version of GNU
+Astronomy Utilities (Gnuastro). The relative contribution is measured by
+the number of commits made by each author in the version control history.
 
-List of authors (and their relative contribution) the current release of
-GNU Astronomy Utilities (Gnuastro). The relative contribution is measured
-by the number of commits registered to the author in the version control
-history of Gnuastro.
+Generated for Gnuastro $gnuastroversion.
 
 The format for each author is: [Number of commits] [Name] [email]
 
