@@ -52,16 +52,17 @@ if [ -d $1/.git ]; then
     # recreated anyway.
     git --git-dir=$1/.git shortlog --numbered --summary --email --no-merges \
         | sed -e 's/</ /' -e 's/>/ /' -e 's/@/@@/' -e "s/è/@\`e/"           \
-        | awk '{printf "%s %s (%s, %s)@*\n", $2, $3, $4, $1}' > authors.texi
+        | awk '{printf "%s %s (%s, %s)@*\n", $2, $3, $4, $1}'               \
+        > $1/doc/authors.texi
 
     # Clean up:
     rm .mailmap
 
     # Check if the authors.texi file was actually written:
-    if [ ! -s authors.texi ]; then
+    if [ ! -s $1/doc/authors.texi ]; then
         echo "authors.texi is empty!"
         exit 1
     fi
 else
-    echo "No Git repository detected, leaving authors.texi unchanged."
+    echo "No Git repository detected, leaving $1/doc/authors.texi unchanged."
 fi

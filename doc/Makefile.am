@@ -26,7 +26,7 @@
 ## Set the shell
 SHELL=/bin/bash
 
-BUILT_SOURCES = authors.texi
+BUILT_SOURCES = $(srcdir)/authors.texi
 
 
 ## fdl.texi (The GNU Free documentation license in Texinfo format) is
@@ -35,18 +35,20 @@ BUILT_SOURCES = authors.texi
 ## documentation. It is the job of AM_MAKEINFOFLAGS, to pass options to the
 ## documentation build programs. BOOTSTRPDOC is defined in `configure.ac'.
 bootstrpdoc = $(top_srcdir)/bootstrapped/doc
-AM_MAKEINFOFLAGS = -I $(bootstrpdoc)
+AM_MAKEINFOFLAGS = -I $(bootstrpdoc) -I $(srcdir)
 
 
 # This is just a temporary work-around since Automake does not pass the
 # AM_MAKEINFOFLAGS to texi2dvi (which builds DVI and PDF outputs). This was
-# reported in Automake's bug 23599.
-TEXI2DVI = texi2dvi -I $(bootstrpdoc)
+# reported in Automake's bug 23599. Note that a space is necessary between
+# the `-I' and directory for texi2dvi.
+TEXI2DVI = texi2dvi -I $(bootstrpdoc) -I $(srcdir)
 
 
 ## Commands to make the texinfo tools.
 info_TEXINFOS = gnuastro.texi
-gnuastro_TEXINFOS = $(bootstrpdoc)/fdl.texi formath.texi authors.texi
+gnuastro_TEXINFOS = $(bootstrpdoc)/fdl.texi formath.texi	\
+                    $(srcdir)/authors.texi
 
 
 ## Files not predefined by Automake, and not in dependencies that must
@@ -58,7 +60,7 @@ EXTRA_DIST = genauthors README
 ## version controlled source. For the non version controlled souce,
 ## deleting this file is like somehow deleting formath.texi, it will not be
 ## rebuilt and result in an error.
-authors.texi: $(top_srcdir)/configure
+$(srcdir)/authors.texi: $(top_srcdir)/configure
 	$(top_srcdir)/doc/genauthors $(top_srcdir)
 
 
