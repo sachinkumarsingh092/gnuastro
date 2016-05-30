@@ -26,17 +26,25 @@
 ## Sources to be run before everything else
 ## ========================================
 ##
-## The .version file is managed by the by the following file to
-## automatically generate the version:
+## The .version file is created from the $(VERSION) variable which was
+## defined by the git-version-gen script at:
 ##
 ##    bootstrapped/build-aux/git-version-gen
 ##
-## we want it to be created before anything else after running `make',
-## `make check', or `make install', see the "Built sources" section of the
+## we want it to be created before anything else when running `make', `make
+## check', or `make install', see the "Built sources" section of the
 ## AUTOMAKE manual and the git-version-gen script comments for more
 ## information.
+##
+## Note that contrary to what is proposed by git-version-gen, here the
+## `.version' file's creation depends on the `configure' script, so anytime
+## a the VERSION variable is updated, `.version' is also updated. During
+## development of the main functionality of Gnuastro (utilities and
+## libraries), the `configure' script is rarely updated, so `.version' will
+## not be rebuilt and thus it won't harm the speed of testing.
 BUILT_SOURCES = $(top_srcdir)/.version
-$(top_srcdir)/.version:; echo $(VERSION) > $@-t && mv $@-t $@
+$(top_srcdir)/.version: $(top_srcdir)/configure
+	echo $(VERSION) > $@-t && mv $@-t $@
 dist-hook:; echo $(VERSION) > $(distdir)/.tarball-version
 
 
