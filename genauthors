@@ -3,7 +3,7 @@
 # Generate a list of authors from the git repository, it will only
 # actually do anything if a .git file exists. Run like this:
 #
-#    ./genauthors path/to/.version
+#    ./genauthors top/src/dir
 #
 # Note that some authors might have changed their email addresses over
 # the course of their contributions to Gnuastro. Fortunately Git has a
@@ -46,7 +46,11 @@ set -o errexit                  # Stop if a program returns false.
 # Only do the job if a .git directory exists (recall that this script
 # is also present in the tar-ball with no .git directory and might be
 # run from there)
-if [ ! -d ".git" ]; then exit 0; fi
+if [ ! -d "$1/.git" ]; then
+    echo "There is no Git repository in the source directory."
+    echo "AUTHORS cannot be generated."
+    exit 0
+fi
 
 
 
@@ -61,9 +65,21 @@ echo "Generating AUTHORS from the version controlled source..."
 
 
 
+# Make sure the .mailmap file is present in this directory, so Git can fix
+# the different email addresses and names of one person. Note that while
+# this is in the top source directory, it is possible for the source and
+# build directories to be different, and we have to be prepared for that.
+if [ ! -f .mailmap ]; then
+    ln -s $1/.mailmap .mailmap
+fi
+
+
+
+
 
 # Print the top of the AUTHORS file:
-gnuastroversion=$(cat $1)
+outauthors="$1/AUTHORS"
+gnuastroversion=$(cat "$1/.version")
 echo "GNU Astronomy Utilities authors
 ===============================
 
@@ -82,11 +98,11 @@ Aggregate list of all authors
 
 List of everyone who has made a commit irrespective of which part of
 Gnuastro they contributed to, the rows are ordered alphabetically." > \
-AUTHORS
+"$outauthors"
 
 
 # Generate the aggregate list
-git shortlog --summary --email --no-merges >> AUTHORS
+git --git-dir=$1/.git shortlog --summary --email --no-merges >> "$outauthors"
 
 
 # For each utility, print the list of authors:
@@ -99,10 +115,10 @@ Authors listed under the respective part of Gnuastro: utility,
 libraries, or documentation. Note that a single commit might include
 multiple parts of Gnuastro (especially in the libraries and
 documentation). The authors in each part are sorted by the number of
-commits." >> AUTHORS
+commits." >> "$outauthors"
 
 # A blank line to separate the list below from the explanations.
-echo "" >> AUTHORS
+echo "" >> "$outauthors"
 
 
 # Go over each part of Gnuastro and add the authors:
@@ -128,7 +144,8 @@ for util in src/* "lib/" "doc/"; do
     fi
 
     # Fill in the authors of each part:
-    echo $name >> AUTHORS
-    git shortlog --numbered --summary --email --no-merges -- $util >> AUTHORS
-    echo "" >> AUTHORS
+    echo $name >> "$outauthors"
+    git --git-dir=$1/.git shortlog --numbered --summary --email    \
+        --no-merges -- $util >> "$outauthors"
+    echo "" >> "$outauthors"
 done
