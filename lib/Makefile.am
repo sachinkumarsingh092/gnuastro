@@ -18,13 +18,20 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
+
+
+
+
 # Flags:
 AM_CFLAGS = -Wall -O3
 
 LDADD = bootstrapped/lib/libgnu.a
 
 AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib \
--I$(top_builddir)/bootstrapped/lib -I$(top_srcdir)/bootstrapped/lib
+              -I$(top_srcdir)/bootstrapped/lib
+
+
+
 
 
 ## Make libraries of the files that are shared between all the
