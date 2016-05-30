@@ -6,7 +6,7 @@
 <address>Last updated %%DATE%%</address>
 
 <p><a href="http://www.gnu.org/software/gnuastro">GNU Astronomy
-Utilities</a> manual (documentation) is available in the following
+Utilities</a> book (manual, documentation) is available in the following
 formats:</p>
 <ul>
 <li><a href="%%PACKAGE%%.html">HTML
