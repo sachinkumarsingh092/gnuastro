@@ -1,7 +1,9 @@
 #! /bin/sh
 #
 # Generate a list of authors from the git repository, it will only
-# actually do anything if a .git file exists.
+# actually do anything if a .git file exists. Run like this:
+#
+#    ./genauthors path/to/.version
 #
 # Note that some authors might have changed their email addresses over
 # the course of their contributions to Gnuastro. Fortunately Git has a
@@ -30,10 +32,24 @@
 # along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
+
+
+
+# Initial settings:
+set -o nounset                  # Stop if a variable is not set.
+set -o errexit                  # Stop if a program returns false.
+
+
+
+
+
 # Only do the job if a .git directory exists (recall that this script
 # is also present in the tar-ball with no .git directory and might be
 # run from there)
 if [ ! -d ".git" ]; then exit 0; fi
+
+
+
 
 
 # Print a status report, since this will be run along with the large
@@ -43,14 +59,20 @@ echo "Generating AUTHORS from the version controlled source..."
 
 
 
+
+
+
 # Print the top of the AUTHORS file:
+gnuastroversion=$(cat $1)
 echo "GNU Astronomy Utilities authors
 ===============================
 
-List of authors (and their relative contribution) the current release
-of GNU Astronomy Utilities (Gnuastro). The relative contribution is
-measured by the number of commits registered to the author in the
-version control history of Gnuastro.
+Version $gnuastroversion
+
+List of authors (and their relative contribution) the current release of
+GNU Astronomy Utilities (Gnuastro). The relative contribution is measured
+by the number of commits registered to the author in the version control
+history of Gnuastro.
 
 The format for each author is: [Number of commits] [Name] [email]
 
@@ -59,7 +81,7 @@ Aggregate list of all authors
 -----------------------------
 
 List of everyone who has made a commit irrespective of which part of
-Gnuastro they contribted to, the rows are ordered alphabetically." > \
+Gnuastro they contributed to, the rows are ordered alphabetically." > \
 AUTHORS
 
 

@@ -120,11 +120,11 @@ dist_doc_DATA = README
 
 ## Files that are only distributed
 ## ===============================
-EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el	\
- $(top_srcdir)/.version bootstrapped/m4/gnulib-cache.m4		\
- bootstrapped/README .autom4te.cfg lib/gnuastro/commonargs.h	\
- lib/gnuastro/commonparams.h lib/gnuastro/fixedstringmacros.h	\
- lib/gnuastro/neighbors.h lib/gnuastro/README
+EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el .version  \
+             bootstrapped/m4/gnulib-cache.m4 bootstrapped/README	  \
+             .autom4te.cfg lib/gnuastro/commonargs.h			  \
+             lib/gnuastro/commonparams.h lib/gnuastro/fixedstringmacros.h \
+             lib/gnuastro/neighbors.h lib/gnuastro/README
 
 
 
@@ -262,4 +262,5 @@ install-exec-local:
 ##
 ##   - The genauthors script will not do anything (make/update the
 ##     AUTHORS file) when there is no git repository.
-AUTHORS::; $(top_srcdir)/genauthors
+AUTHORS:: $(top_srcdir)/.version $(top_srcdir)/genauthors
+	$(top_srcdir)/genauthors $(top_srcdir)/.version
