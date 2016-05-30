@@ -64,8 +64,8 @@ avestdonthread(void *inparam)
     {
       errno=0; cofa=malloc(mp->maxs0*mp->maxs1*sizeof *oneforall);
       if(cofa==NULL)
-        error(EXIT_FAILURE, errno, "Unable to allocate %lu bytes for"
-              "cofa in avestdonthread of subtractsky.c.",
+        error(EXIT_FAILURE, errno, "unable to allocate %lu bytes for"
+              "cofa in avestdonthread of subtractsky.c",
               mp->maxs0*mp->maxs1*sizeof *mp->img);
     }
   else cofa=NULL;

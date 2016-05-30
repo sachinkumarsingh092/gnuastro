@@ -248,7 +248,7 @@ readmatrixoption(struct imgwarpparams *p)
   p->matrix=malloc(9*sizeof *p->matrix);
   if(p->matrix==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for temporary array to keep "
-          "the matrix option.", 9*sizeof *p->matrix);
+          "the matrix option", 9*sizeof *p->matrix);
 
   t=p->up.matrixstring;
   while(*t!='\0')
@@ -263,12 +263,12 @@ readmatrixoption(struct imgwarpparams *p)
           p->matrix[counter++]=strtod(t, &tailptr);
           if(errno) error(EXIT_FAILURE, errno, "In reading `%s`", t);
           if(tailptr==t)
-            error(EXIT_FAILURE, 0, "The provided string `%s' for matrix "
-                  "could not be read as a number.", t);
+            error(EXIT_FAILURE, 0, "the provided string `%s' for matrix "
+                  "could not be read as a number", t);
           t=tailptr;
           if(counter>9)       /* Note that it was ++'d! */
-            error(EXIT_FAILURE, 0, "There are %lu elements in `%s', there "
-                  "should be 4 or 9.", counter, p->up.matrixstring);
+            error(EXIT_FAILURE, 0, "there are %lu elements in `%s', there "
+                  "should be 4 or 9", counter, p->up.matrixstring);
           /*printf("%f, %s\n", p->matrix[counter-1], t);*/
         }
     }
@@ -282,9 +282,9 @@ readmatrixoption(struct imgwarpparams *p)
       p->ms1=p->ms0=3;
       break;
     default:
-      error(EXIT_FAILURE, 0, "There are %lu numbers in the string `%s'! "
+      error(EXIT_FAILURE, 0, "there are %lu numbers in the string `%s'! "
             "It should contain 4 or 9 numbers (for a 2 by 2 or 3 by 3 "
-            "matrix).", counter, p->up.matrixstring);
+            "matrix)", counter, p->up.matrixstring);
     }
 }
 
@@ -331,15 +331,15 @@ sanitycheck(struct imgwarpparams *p)
      the wrong numbers when it is read from a file. */
   if(p->up.matrixname
      && (p->ms0!=2 || p->ms0!=3 || p->ms1!=2 || p->ms1!=3))
-    error(EXIT_FAILURE, 0, "The given matrix in %s has %lu rows and %lu "
-          "columns. Its size must be either 2x2 or 3x3.", p->up.matrixname,
+    error(EXIT_FAILURE, 0, "the given matrix in %s has %lu rows and %lu "
+          "columns. Its size must be either 2x2 or 3x3", p->up.matrixname,
           p->ms0, p->ms1);
 
   /* Check if there are any non-normal numbers in the matrix: */
   df=(d=m)+p->ms0*p->ms1;
   do
     if(!isfinite(*d++))
-      error(EXIT_FAILURE, 0, "%f is not a `normal' number!", *(d-1));
+      error(EXIT_FAILURE, 0, "%f is not a `normal' number", *(d-1));
   while(d<df);
 
   /* Check if the determinant is not zero: */
@@ -348,8 +348,8 @@ sanitycheck(struct imgwarpparams *p)
       ( p->ms0==3 &&
         (m[0]*m[4]*m[8] + m[1]*m[5]*m[6] + m[2]*m[3]*m[7]
          - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7] == 0) ) )
-      error(EXIT_FAILURE, 0, "The determinant of the given matrix "
-            "is zero!");
+      error(EXIT_FAILURE, 0, "the determinant of the given matrix "
+            "is zero");
 
   /* If the matrix only has two components, then convert it to
      three. */
@@ -423,7 +423,7 @@ preparearrays(struct imgwarpparams *p)
   errno=0;
   p->inverse=inv=malloc(9*sizeof *inv);
   if(inv==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for the inverse array.",
+    error(EXIT_FAILURE, errno, "%lu bytes for the inverse array",
           9*sizeof *inv);
   inv[0]=m[4]*m[8]-m[5]*m[7];
   inv[1]=m[2]*m[7]-m[1]*m[8];
@@ -484,7 +484,7 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

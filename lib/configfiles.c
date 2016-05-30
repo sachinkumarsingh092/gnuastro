@@ -47,8 +47,8 @@ gal_configfiles_add_home_dir(char *dir)
   /* Get the home environment variable. */
   home=getenv("HOME");
   if(home==NULL)
-    error(EXIT_FAILURE, 0, "The HOME environment variable "
-	  "is not defined.");
+    error(EXIT_FAILURE, 0, "the HOME environment variable "
+	  "is not defined");
 
   /* Concatenate the two strings together: */
   return gal_checkset_malloc_cat(home, dir);
@@ -160,9 +160,9 @@ gal_configfiles_write_local_config_stop(char *indir, char *filename,
 	{
 	  errno=0;
 	  if(mkdir(indir, S_IRWXU)==-1)
-	    error(EXIT_FAILURE, errno, "%s: Could not be created. Try "
+	    error(EXIT_FAILURE, errno, "%s: could not be created. Try "
 		  "running:\n\n    mkdir -p %s\n\nto built it and run "
-                  "your previous command again.", indir, indir);
+                  "your previous command again", indir, indir);
 	}
       else
 	error(EXIT_FAILURE, errno, "%s", indir);

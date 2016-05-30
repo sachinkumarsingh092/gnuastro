@@ -107,7 +107,7 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  errno=0;
 	  cp->hdu=malloc(strlen(value)+1);
 	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
+	    error(EXIT_FAILURE, errno, "space for HDU");
 	  strcpy(cp->hdu, value);
 	  cp->hduset=1;
 	}
@@ -117,7 +117,7 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  errno=0;
 	  up->maskname=malloc(strlen(value)+1);
 	  if(up->maskname==NULL)
-	    error(EXIT_FAILURE, errno, "Space for mask name.");
+	    error(EXIT_FAILURE, errno, "space for mask name");
 	  strcpy(up->maskname, value);
 	  up->masknameset=1;
 	}
@@ -127,7 +127,7 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  errno=0;
 	  up->mhdu=malloc(strlen(value)+1);
 	  if(up->mhdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for mask HDU.");
+	    error(EXIT_FAILURE, errno, "space for mask HDU");
 	  strcpy(up->mhdu, value);
 	  up->mhduset=1;
 	}
@@ -137,7 +137,7 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  errno=0;
 	  up->kernelname=malloc(strlen(value)+1);
 	  if(up->kernelname==NULL)
-	    error(EXIT_FAILURE, errno, "Space for kernel name.");
+	    error(EXIT_FAILURE, errno, "space for kernel name");
 	  strcpy(up->kernelname, value);
 	  up->kernelnameset=1;
 	}
@@ -147,7 +147,7 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  errno=0;
 	  up->khdu=malloc(strlen(value)+1);
 	  if(up->khdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for kernel HDU.");
+	    error(EXIT_FAILURE, errno, "space for kernel HDU");
 	  strcpy(up->khdu, value);
 	  up->khduset=1;
 	}
@@ -182,7 +182,7 @@ readconfig(char *filename, struct noisechiselparams *p)
 	  errno=0;
 	  cp->output=malloc(strlen(value)+1);
 	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
+	    error(EXIT_FAILURE, errno, "space for output");
 	  strcpy(cp->output, value);
 	  cp->outputset=1;
 	}
@@ -773,8 +773,8 @@ sanitycheck(struct noisechiselparams *p)
 
   /* Other checks: */
   if(smp->numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
-    error(EXIT_FAILURE, 0, "The smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %lu.",
+    error(EXIT_FAILURE, 0, "the smallest possible number for `--numnearest' "
+          "(`-n') is %d. You have asked for: %lu",
           GAL_MESH_MIN_ACCEPTABLE_NEAREST, smp->numnearest);
 }
 
@@ -878,9 +878,9 @@ preparearrays(struct noisechiselparams *p)
 
   /* make sure the channel sizes fit the channel sizes. */
   if( s0%smp->nch2 || s1%smp->nch1 )
-    error(EXIT_FAILURE, 0, "The input image size (%lu x %lu) is not an "
+    error(EXIT_FAILURE, 0, "the input image size (%lu x %lu) is not an "
           "exact multiple of the number of the given channels (%lu, %lu) "
-          "in the respective axis.", s1, s0, smp->nch1, smp->nch2);
+          "in the respective axis", s1, s0, smp->nch1, smp->nch2);
 
   /* p->imgss (image-sky-subtracted) is the sky subtracted input
      image. For both the removal of false detections and also the
@@ -1032,7 +1032,7 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

@@ -137,12 +137,12 @@ gal_fitsarray_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxes)
     gal_fitsarray_io_error(status, NULL);
 
   if(naxis!=2)
-    error(EXIT_FAILURE, 0, "Currently only a 2 dimensional image array "
+    error(EXIT_FAILURE, 0, "currently only a 2 dimensional image array "
 	  "is supported. Your array is %d dimension(s). %s", naxis,
 	  naxis ? "Please contact us to add this feature." : "This might "
           "Be due to the fact that the data in images with multiple "
           "extensions are sometimes put on the second extension. If this is "
-          "the case, try changing the hdu (maybe to --hdu=1).");
+          "the case, try changing the hdu (maybe to --hdu=1)");
 }
 
 
@@ -168,7 +168,7 @@ gal_fitsarray_bitpix_to_dtype(int bitpix)
     case DOUBLE_IMG:
       return TDOUBLE;
     default:
-      error(EXIT_FAILURE, 0, "Bitpix value of %d not recognized.",
+      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized",
 	    bitpix);
     }
   return 0;
@@ -234,7 +234,7 @@ gal_fitsarray_bitpix_blank(int bitpix)
       return d;
 
     default:
-      error(EXIT_FAILURE, 0, "Bitpix value of %d not recognized.",
+      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized",
 	    bitpix);
     }
 
@@ -274,7 +274,7 @@ gal_fitsarray_bitpix_alloc(size_t size, int bitpix)
       if(sizeof(float)!=4)
 	error(EXIT_FAILURE, 0,
               "`float` is not 32bits on this machine. The FITS standard "
-              "Requires this size.");
+              "Requires this size");
       size*=sizeof(float);
       break;
 
@@ -282,18 +282,18 @@ gal_fitsarray_bitpix_alloc(size_t size, int bitpix)
       if(sizeof(double)!=8)
 	error(EXIT_FAILURE, 0,
               "`double` is not 64bits on this machine. The FITS standard "
-              "requires this size.");
+              "requires this size");
       size*=sizeof(double);
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "Bitpix value of %d not recognized.", bitpix);
+      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized", bitpix);
     }
 
   errno=0;
   array=malloc(size);
   if(array==NULL)
-    error(EXIT_FAILURE, errno, "Array of %lu bytes", size);
+    error(EXIT_FAILURE, errno, "array of %lu bytes", size);
 
   return array;
 }
@@ -345,9 +345,9 @@ blanktovalue(void *array, int bitpix, size_t size, void *value)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "A bug! Bitpix value of %d not recognized. "
+      error(EXIT_FAILURE, 0, "a bug! Bitpix value of %d not recognized. "
 	    "This should not happen here (blanktovalue in fitsarrayvv.c). "
-	    "Please contact us at %s to see how this happened.", bitpix,
+	    "Please contact us at %s to see how this happened", bitpix,
             PACKAGE_BUGREPORT);
     }
 }
@@ -411,9 +411,9 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+	  error(EXIT_FAILURE, 0, "a bug!  In gal_fitsarray_change_type "
                 "(fitsarrayvv.c). BITPIX=%d of input not recognized.  Please "
-                "contact us so we can fix it.", inbitpix);
+                "contact us so we can fix it", inbitpix);
 	}
       break;
 
@@ -456,7 +456,7 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+	  error(EXIT_FAILURE, 0, "a bug!  In gal_fitsarray_change_type "
                 "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
                 "contact us so we can fix it", inbitpix);
 	}
@@ -501,9 +501,9 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+	  error(EXIT_FAILURE, 0, "a bug!  In gal_fitsarray_change_type "
                 "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
-                "contact us so we can fix it.", inbitpix);
+                "contact us so we can fix it", inbitpix);
 	}
       break;
 
@@ -546,9 +546,9 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
               while(++i!=size);}
           return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+	  error(EXIT_FAILURE, 0, "a bug!  In gal_fitsarray_change_type "
                 "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
-                "contact us so we can fix it.", inbitpix);
+                "contact us so we can fix it", inbitpix);
 	}
       break;
 
@@ -588,9 +588,9 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case DOUBLE_IMG:
 	  ff=(f=*out)+size; do *f=*id++; while(++f<ff); return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+	  error(EXIT_FAILURE, 0, "a bug!  In gal_fitsarray_change_type "
                 "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
-                "contact us so we can fix it.", inbitpix);
+                "contact us so we can fix it", inbitpix);
 	}
       break;
 
@@ -630,18 +630,18 @@ gal_fitsarray_change_type(void *in, int inbitpix, size_t size, int anyblank,
 	case DOUBLE_IMG:
 	  df=(d=*out)+size; do *d=*id++; while(++d<df); return;
 	default:
-	  error(EXIT_FAILURE, 0, "A bug!  In gal_fitsarray_change_type "
+	  error(EXIT_FAILURE, 0, "a bug!  In gal_fitsarray_change_type "
                 "(fitsarrayvv.c).  BITPIX=%d of input not recognized.  Please "
-                "contact us so we can fix it.", inbitpix);
+                "contact us so we can fix it", inbitpix);
 	}
       break;
 
 
     default:
-      error(EXIT_FAILURE, 0, "A bug! Output Bitpix value of %d is not "
-	    "recognized. This should not happen here (gal_fitsarray_change_type in "
-	    "fitsarrayvv.c). Please contact us to see how this happened.",
-	    outbitpix);
+      error(EXIT_FAILURE, 0, "a bug! Output Bitpix value of %d is not "
+	    "recognized. This should not happen here "
+            "(gal_fitsarray_change_type in fitsarrayvv.c). Please "
+            "contact us to see how this happened", outbitpix);
     }
 }
 
@@ -717,7 +717,7 @@ hdutypestring(int hdutype)
       return "a binary table";
       break;
     default:
-      error(EXIT_FAILURE, 0, "HDU code %d in CFITSIO not recognized.",
+      error(EXIT_FAILURE, 0, "HDU code %d in CFITSIO not recognized",
 	    hdutype);
     }
   return NULL;
@@ -748,7 +748,7 @@ gal_fitsarray_read_fits_hdu(char *filename, char *hdu, int desiredtype,
 
   /* Open the FITS file: */
   if( fits_open_file(outfptr, ffname, READONLY, &status) )
-    gal_fitsarray_io_error(status, "Reading this FITS file.");
+    gal_fitsarray_io_error(status, "reading this FITS file");
   fptr=*outfptr;
 
   /* Check the Type of the given HDU: */
@@ -756,7 +756,7 @@ gal_fitsarray_read_fits_hdu(char *filename, char *hdu, int desiredtype,
     gal_fitsarray_io_error(status, NULL);
 
   if(hdutype!=desiredtype)
-    error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not %s.",
+    error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not %s",
 	  filename, hdu, hdutypestring(hdutype),
 	  hdutypestring(desiredtype));
 
@@ -792,7 +792,7 @@ gal_fitsarray_read_keywords(char *filename, char *hdu,
 
   /* Open the FITS file: */
   if( fits_open_file(&fptr, ffname, READONLY, &status) )
-    gal_fitsarray_io_error(status, "Reading this FITS file.");
+    gal_fitsarray_io_error(status, "reading this FITS file");
 
   /* Get the desired keywords. */
   for(i=0;i<num;++i)
@@ -821,12 +821,12 @@ gal_fitsarray_read_keywords(char *filename, char *hdu,
           valueptr=&keys[i].d;
           break;
         default:
-          error(EXIT_FAILURE, 0, "The value of keys[%lu].datatype (=%d) "
-                "is not recognized.", i, keys[i].datatype);
+          error(EXIT_FAILURE, 0, "the value of keys[%lu].datatype (=%d) "
+                "is not recognized", i, keys[i].datatype);
         }
       if( fits_read_key(fptr, keys[i].datatype, keys[i].keyname,
                         valueptr, NULL, &status) )
-        gal_fitsarray_io_error(status, "Reading the keyword.");
+        gal_fitsarray_io_error(status, "reading the keyword");
     }
 
   /* Close the FITS file. */
@@ -876,7 +876,7 @@ gal_fitsarray_add_to_fits_header_ll(struct gal_fitsarray_header_ll **list,
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
-	  "linkedlist: New element in gal_fitsarray_header_ll");
+	  "linkedlist: new element in gal_fitsarray_header_ll");
   newnode->datatype=datatype;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -907,7 +907,7 @@ gal_fitsarray_add_to_fits_header_ll_end(struct gal_fitsarray_header_ll **list,
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
-	  "linkedlist: New element in gal_fitsarray_header_ll");
+	  "linkedlist: new element in gal_fitsarray_header_ll");
   newnode->datatype=datatype;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -989,9 +989,9 @@ gal_fitsarray_file_name_in_keywords(char *keynamebase, char *filename,
 		break;
 	      }
 	  if(j==0)
-	    error(EXIT_FAILURE, 0, "The filename `%sP has at least one span "
+	    error(EXIT_FAILURE, 0, "the filename `%sP has at least one span "
 		  "of %lu characters without a `/`. It cannot be written "
-		  "to the header of the output fits file.", filename,
+		  "to the header of the output fits file", filename,
 		  maxlength);
 
 	  /* Convert the last useful character and save the file name.*/
@@ -1242,8 +1242,8 @@ gal_fitsarray_read_wcs(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
       *wcs=NULL; *nwcs=0;
     }
   if (fits_free_memory(fullheader, &status) )
-    gal_fitsarray_io_error(status, "Problem in fitsarrayvv.c for freeing "
-                           "the memory used to keep all the headers.");
+    gal_fitsarray_io_error(status, "problem in fitsarrayvv.c for freeing "
+                           "the memory used to keep all the headers");
 
   /* Set the internal structure: */
   status=wcsset(*wcs);
@@ -1385,7 +1385,7 @@ gal_fitsarray_array_to_fits_img(char *filename, char *hdu, int bitpix,
         blank=gal_fitsarray_bitpix_blank(bitpix);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
-          gal_fitsarray_io_error(status, "Adding the BLANK keyword.");
+          gal_fitsarray_io_error(status, "adding the BLANK keyword");
         free(blank);
       }
 
@@ -1397,7 +1397,7 @@ gal_fitsarray_array_to_fits_img(char *filename, char *hdu, int bitpix,
       /* Convert the WCS information to text. */
       status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsheader);
       if(status)
-	error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
+	error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s", status,
 	      wcs_errmsg[status]);
       gal_fitsarray_add_wcs_to_header(fptr, wcsheader, nkeyrec);
     }
@@ -1495,19 +1495,19 @@ gal_fitsarray_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
          HDU are optional. So just to be safe, we will check this all
          the time. */
       if(ohduset==0)
-        error(EXIT_FAILURE, 0, "A %s image was specified (%s). However, "
+        error(EXIT_FAILURE, 0, "a %s image was specified (%s). However, "
               "no HDU is given for it. Please add a HDU. If you regularly "
               "use the same HDU as %s, you may consider adding it to "
               "the configuration file. For more information, please see the "
               "`Configuration files' section of the %s manual by running "
-              "` info gnuastro ' on the command-line.", type, *othername,
+              "` info gnuastro ' on the command-line", type, *othername,
               type, PACKAGE_NAME);
       if(strcmp(inputname, *othername)==0)
         {
           if(strcmp(ohdu, inhdu)==0)
-            error(EXIT_FAILURE, 0, "The specified %s name and "
+            error(EXIT_FAILURE, 0, "the specified %s name and "
                   "input image name (%s) are the same while the input "
-                  "image hdu name and mask hdu are also identical (%s)!",
+                  "image hdu name and mask hdu are also identical (%s)",
                   type, inputname, inhdu);
         }
     }
@@ -1568,9 +1568,9 @@ gal_fitsarray_file_to_float(char *inputname, char *maskname, char *inhdu,
                 maskbitpix==FLOAT_IMG ? "single" : "double", maskbitpix);
 
       if(s0!=*ins0 || s1!=*ins1)
-        error(EXIT_FAILURE, 0, "The input image %s (hdu: %s) has size: "
+        error(EXIT_FAILURE, 0, "the input image %s (hdu: %s) has size: "
               "%lu x %lu. The mask image %s (hdu: %s) has size %lu x %lu. "
-              "The two images have to have the same size.", inputname,
+              "The two images have to have the same size", inputname,
               inhdu, *ins1, *ins0, maskname, mhdu, s1, s0);
 
       if(maskbitpix==FLOAT_IMG)
@@ -1634,9 +1634,9 @@ gal_fitsarray_file_to_double(char *inputname, char *maskname, char *inhdu,
                 maskbitpix==FLOAT_IMG ? "single" : "double", maskbitpix);
 
       if(s0!=*ins0 || s1!=*ins1)
-        error(EXIT_FAILURE, 0, "The input image %s (hdu: %s) has size: "
+        error(EXIT_FAILURE, 0, "the input image %s (hdu: %s) has size: "
               "%lu x %lu. The mask image %s (hdu: %s) has size %lu x %lu. "
-              "The two images have to have the same size.", inputname,
+              "The two images have to have the same size", inputname,
               inhdu, *ins1, *ins0, maskname, mhdu, s1, s0);
 
       if(maskbitpix==DOUBLE_IMG)
@@ -1701,9 +1701,9 @@ gal_fitsarray_prep_float_kernel(char *inputname, char *inhdu, float **outkernel,
 
   /* Simple sanity check: */
   if(*ins0%2==0 || *ins1%2==0)
-    error(EXIT_FAILURE, 0, "The kernel image has to have an odd number "
+    error(EXIT_FAILURE, 0, "the kernel image has to have an odd number "
           "of pixels on both sides (there has to be on pixel in the "
-          "center). %s (hdu: %s) is %lu by %lu.", inputname, inhdu,
+          "center). %s (hdu: %s) is %lu by %lu", inputname, inhdu,
           *ins1, *ins0);
 
   /* If there are any NaN pixels, set them to zero and normalize it.*/
@@ -1776,7 +1776,7 @@ gal_fitsarray_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
           status=wcsp2s(wcs, ncoord, nelem, xy+i*width, imgcrd, &phi,
                         &theta, radec+i*width, &stat);
           if(status)
-            error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s.", status,
+            error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
                   wcs_errmsg[status]);
 
           /* For a check:
@@ -1808,7 +1808,7 @@ gal_fitsarray_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
           status=wcss2p(wcs, ncoord, nelem, radec+i*width, &phi, &theta,
                         imgcrd, xy+i*width, &stat);
           if(status)
-            error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s.", status,
+            error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
                   wcs_errmsg[status]);
           /* For a check:
              printf("(%f, %f) --> (%f, %f)\n", xy[i*width], xy[i*width+1],

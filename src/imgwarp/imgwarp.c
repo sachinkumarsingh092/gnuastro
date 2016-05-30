@@ -561,7 +561,7 @@ imgwarp(struct imgwarpparams *p)
             iwp[i].indexs=&indexs[i*thrdcols];
 	    err=pthread_create(&t, &attr, imgwarponthread, &iwp[i]);
 	    if(err)
-	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

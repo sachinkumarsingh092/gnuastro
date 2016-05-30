@@ -189,7 +189,8 @@ gal_linkedlist_add_to_fll(struct gal_linkedlist_fll **list, float value)
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in gal_linkedlist_fll");
+    error(EXIT_FAILURE, errno, "linkedlist: New element in "
+          "gal_linkedlist_fll");
 
   newnode->v=value;
   newnode->next=*list;

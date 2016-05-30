@@ -347,7 +347,7 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

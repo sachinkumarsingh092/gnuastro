@@ -56,15 +56,15 @@ haserror(struct headerparams *p, int actionid, char *string, int status)
       strcpy(action, "written");
       break;
     default:
-      error(EXIT_FAILURE, 0, "A bug! Please contact us at `%s' so we can fix "
+      error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' so we can fix "
             "this problem. In `header.c'. The value of actionid in "
-            "`haserror' must not be %d.", PACKAGE_BUGREPORT, actionid);
+            "`haserror' must not be %d", PACKAGE_BUGREPORT, actionid);
     }
 
   if(p->quitonerror)
     {
       fits_report_error(stderr, status);
-      error(EXIT_FAILURE, 0, "Not deleted: %s\n", string);
+      error(EXIT_FAILURE, 0, "not deleted: %s\n", string);
     }
   else
     {
@@ -124,9 +124,9 @@ writeupdatekeys(fitsfile *fptr, struct gal_fitsarray_header_ll **keylist,
             gal_fitsarray_io_error(status, NULL);
         }
       else
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at `%s' so we can "
+        error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' so we can "
               "fix this problem. In `header.c'. The value of u1w2 in "
-              "writeupdatekeys must not be %d.\n", PACKAGE_BUGREPORT, u1w2);
+              "writeupdatekeys must not be %d\n", PACKAGE_BUGREPORT, u1w2);
 
       /* Add the unit: */
       if(tmp->unit
@@ -181,8 +181,8 @@ header(struct headerparams *p)
       printf("\n");
 
       if (fits_free_memory(fullheader, &status) )
-        gal_fitsarray_io_error(status, "Problem in header.c for freeing "
-                               "the memory used to keep all the headers.");
+        gal_fitsarray_io_error(status, "problem in header.c for freeing "
+                               "the memory used to keep all the headers");
     }
   else
     {

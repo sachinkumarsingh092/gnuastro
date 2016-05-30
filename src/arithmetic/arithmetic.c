@@ -105,7 +105,7 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
   /* If the operand linked list has finished, then give an error and
      exit. */
   if(operands==NULL)
-    error(EXIT_FAILURE, 0, "Not enough operands for the \"%s\" operator.",
+    error(EXIT_FAILURE, 0, "not enough operands for the \"%s\" operator",
           operator);
 
 
@@ -118,9 +118,9 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
      warnings.*/
   if( (strlen(operands->filename)>0) + !(isnan(operands->number))
       + (operands->array!=NOOPTARRAY) != 1)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix the "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix the "
           "problem. For some reason, one node in the operands linked list "
-          "has more than one value.", PACKAGE_BUGREPORT);
+          "has more than one value", PACKAGE_BUGREPORT);
 
 
   /* Set the array output. If filename is present then read the file
@@ -163,7 +163,7 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
             error(EXIT_FAILURE, 0, "%s (hdu=%s): has size of %lu x %lu. "
                   "However, previous images had a size of %lu x %lu. All "
                   "the images must be the same size in order for "
-                  "ImageArithmetic to work.", filename, hdu, s0, s1,
+                  "ImageArithmetic to work", filename, hdu, s0, s1,
                   p->s0, p->s1);
         }
 
@@ -480,9 +480,9 @@ alloppixs(struct imgarithparams *p, char *operator)
   else if(!strcmp(operator, "average"))
     thisfunction = &gal_statistics_double_average;
   else
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
           "can address the problem. The value of `operator' in "
-          "alloppixs (%s) is not recognized.",
+          "alloppixs (%s) is not recognized",
           PACKAGE_BUGREPORT, operator);
 
 
@@ -491,12 +491,12 @@ alloppixs(struct imgarithparams *p, char *operator)
   errno=0;
   allarrays=malloc(numop*sizeof *allarrays);
   if(allarrays==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for allarrays in alloppixs.",
+    error(EXIT_FAILURE, errno, "%lu bytes for allarrays in alloppixs",
           numop*sizeof *allarrays);
   errno=0;
   allpixels=malloc(numop*sizeof *allpixels);
   if(allpixels==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for allpixels in alloppixs.",
+    error(EXIT_FAILURE, errno, "%lu bytes for allpixels in alloppixs",
           numop*sizeof *allpixels);
 
 
@@ -522,13 +522,13 @@ alloppixs(struct imgarithparams *p, char *operator)
             allarrays[i]=arr;
             break;
           case 0:
-            error(EXIT_FAILURE, 0, "For the %s operator, all operands "
-                  "must be either an array or number.", operator);
+            error(EXIT_FAILURE, 0, "for the %s operator, all operands "
+                  "must be either an array or number", operator);
             break;
           default:
-            error(EXIT_FAILURE, 0, "A Bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a Bug! Please contact us at %s so we "
                   "can address the problem. The value of firstisarray (%d) "
-                  "in the alloppixs function is not recognized.",
+                  "in the alloppixs function is not recognized",
                   PACKAGE_BUGREPORT, firstisarray);
           }
       else
@@ -542,13 +542,13 @@ alloppixs(struct imgarithparams *p, char *operator)
             allpixels[i]=num;
             break;
           case 1:
-            error(EXIT_FAILURE, 0, "For the %s operator, all operands "
-                  "must be either an array or number.", operator);
+            error(EXIT_FAILURE, 0, "for the %s operator, all operands "
+                  "must be either an array or number", operator);
             break;
           default:
-            error(EXIT_FAILURE, 0, "A Bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can address the problem. The value of firstisarray (%d) "
-                  "in the alloppixs function is not recognized.",
+                  "in the alloppixs function is not recognized",
                   PACKAGE_BUGREPORT, firstisarray);
           }
     }
@@ -824,16 +824,16 @@ reversepolish(struct imgarithparams *p)
                   || !strcmp(token->v, "average")
                   || !strcmp(token->v, "median")) alloppixs(p, token->v);
           else
-            error(EXIT_FAILURE, 0, "The argument \"%s\" could not be "
-                  "interpretted as an operator.", token->v);
+            error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
+                  "interpretted as an operator", token->v);
         }
     }
 
   /* If there is more than one node in the operands stack, then the
      user has given too many operands and there is an error. */
   if(p->operands->next!=NULL)
-    error(EXIT_FAILURE, 0, "There are too many operands for the operators "
-          "in the given expression.");
+    error(EXIT_FAILURE, 0, "there are too many operands for the operators "
+          "in the given expression");
 
 
   /* If the remaining operand is an array then save the array as a

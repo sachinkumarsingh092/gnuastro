@@ -115,7 +115,7 @@ readconfig(char *filename, struct converttparams *p)
           gal_checkset_int_smaller_equal_to(value, &p->quality, name, key,
                                             p->cp.spack, filename, lineno, 100);
           if(p->quality<0)
-            error(EXIT_FAILURE, 0, "The quality option should be positive.");
+            error(EXIT_FAILURE, 0, "the quality option should be positive");
 	  up->qualityset=1;
 	}
       else if(strcmp(name, "widthincm")==0)
@@ -158,7 +158,7 @@ readconfig(char *filename, struct converttparams *p)
           gal_checkset_int_smaller_equal_to(value, &tmp, "maxbyte", key,
                                             p->cp.spack, NULL, 0, UINT8_MAX);
           if(tmp<0)
-            error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive.");
+            error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive");
           p->maxbyte=tmp;
           p->up.maxbyteset=1;
 	}
@@ -378,7 +378,7 @@ adddotautomaticoutput(struct converttparams *p)
       errno=0;
       tmp=malloc(strlen(cp->output)+10*sizeof *tmp);
       if(tmp==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for suffix name.",
+        error(EXIT_FAILURE, errno, "%lu bytes for suffix name",
               strlen(cp->output)+10*sizeof *tmp);
       sprintf(tmp, ".%s", cp->output);
       free(cp->output);
@@ -389,7 +389,7 @@ adddotautomaticoutput(struct converttparams *p)
   gal_checkset_automatic_output(basename, cp->output, cp->removedirinfo,
                   cp->dontdelete, &cp->output);
   if( gal_checkset_dir_0_file_1(cp->output, cp->dontdelete)==0 )
-    error(EXIT_FAILURE, 0, "%s is a directory.", cp->output);
+    error(EXIT_FAILURE, 0, "%s is a directory", cp->output);
 }
 
 
@@ -404,17 +404,17 @@ sanitycheck(struct converttparams *p)
 
   /* The flux range: */
   if(p->fluxlow>p->fluxhigh)
-    error(EXIT_FAILURE, 0, "The value of `--fluxlow` (`-L`, %.3f) is "
-          "larger than `--fluxhigh` (`-H`, %.3f).", p->fluxlow, p->fluxhigh);
+    error(EXIT_FAILURE, 0, "the value of `--fluxlow` (`-L`, %.3f) is "
+          "larger than `--fluxhigh` (`-H`, %.3f)", p->fluxlow, p->fluxhigh);
 
   /* Make sure there are 1 (for grayscale), 3 (for RGB) or 4 (for
      CMYK) color channels. */
   if(p->numch!=1 && p->numch!=3 && p->numch!=4)
-    error(EXIT_FAILURE, 0, "The number of input color channels has to be "
+    error(EXIT_FAILURE, 0, "the number of input color channels has to be "
           "1 (for non image data, grayscale or only K channel in CMYK), "
           "3 (for RGB) and 4 (for CMYK). You have given %lu color channels. "
           "Note that some file formats (for example JPEG) can contain more "
-          "than one color channel.", p->numch);
+          "than one color channel", p->numch);
 
   /* Make sure that there is atleast one input file (not only blank)
      and set the sizes of the blank channels to the first non-blank
@@ -422,7 +422,7 @@ sanitycheck(struct converttparams *p)
   for(i=0;i<p->numch;++i)
     if(p->isblank[i]==0) break;
   if(i==p->numch)
-    error(EXIT_FAILURE, 0, "All the input(s) are of type blank!");
+    error(EXIT_FAILURE, 0, "all the input(s) are of type blank");
   for(j=0;j<p->numch;++j)
     if(p->isblank[j])
       {
@@ -441,8 +441,8 @@ sanitycheck(struct converttparams *p)
           for(i=0;i<p->numch;++i)
             fprintf(stderr, "Channel %lu is %lu x %lu pixels.\n", i,
                     p->s1[i], p->s0[i]);
-          error(EXIT_FAILURE, 0, "The input color channels have different "
-                "sizes.");
+          error(EXIT_FAILURE, 0, "the input color channels have different "
+                "sizes");
         }
     }
 
@@ -453,7 +453,7 @@ sanitycheck(struct converttparams *p)
         errno=0;
         p->ch[i]=calloc(p->s0[0]*p->s1[0], sizeof *p->ch[i]);
         if(p->ch[i]==NULL)
-          error(EXIT_FAILURE, errno, "Allocating %lu bytes for the blank "
+          error(EXIT_FAILURE, errno, "allocating %lu bytes for the blank "
                 "channel %lu", p->s0[0]*p->s1[0]*sizeof *p->ch[i], i);
       }
 
@@ -469,10 +469,10 @@ sanitycheck(struct converttparams *p)
       else if(nameisjpeg(cp->output))
         {
 #ifndef HAS_LIBJPEG
-          error(EXIT_FAILURE, 0, "You have asked for a JPEG output, however, "
+          error(EXIT_FAILURE, 0, "you have asked for a JPEG output, however, "
                 "when %s was configured libjpeg was not available. To write "
                 "to JPEG files, libjpeg is required. Please install it and "
-                "configure, make and install %s again.", PACKAGE_STRING,
+                "configure, make and install %s again", PACKAGE_STRING,
                 PACKAGE_STRING);
 #else
           p->outputtype=JPEGFORMAT;
@@ -497,10 +497,10 @@ sanitycheck(struct converttparams *p)
           /* If the length of the name is shorter than 4 characters, it is
              most probably a mis-spelled extension, warn the user. */
           if(strlen(cp->output)<=5)
-            error(EXIT_FAILURE, 0, ": (Warning) Your output file name is "
+            error(EXIT_FAILURE, 0, "your output file name is "
                     "`%s`, based on its length, it might be a mis-spelled "
                     "extension. Your input is converted to a plain text "
-                    "format file with That name.",
+                    "format file with That name",
                     cp->output);
 
           p->outputtype=TXTFORMAT;
@@ -508,23 +508,23 @@ sanitycheck(struct converttparams *p)
           /* If output type is not an image, there should only be one color
              channel: */
           if(p->numch>1)
-            error(EXIT_FAILURE, 0, "Text output (`--output=%s`) can only be "
+            error(EXIT_FAILURE, 0, "text output (`--output=%s`) can only be "
                   "completed with one input color channel. You have given "
                   "%lu. Note that some formats (for example JPEG) can have "
                   "more than one color channel in each file. You can first "
                   "convert the file to FITS, then convert the desired "
-                  "channel to text by specifying the HDU.",
+                  "channel to text by specifying the HDU",
                   cp->output, p->numch);
         }
     }
   else
-    error(EXIT_FAILURE, 0, "No ouput file name or extension is specified, "
+    error(EXIT_FAILURE, 0, "no ouput file name or extension is specified, "
           "Please run "SPACK" again with the `--output' or `-o' option.\n\n"
           "The value to this option doesn't have to be a file name, you "
           "can also only give an extension (in which case your input file"
           "name will be used for the base name of the output. For example "
           "running `"SPACK" filename.fits -ojpg') will produce the output "
-          "file `filename.jpg').");
+          "file `filename.jpg')");
 }
 
 
@@ -568,9 +568,9 @@ preparearrays(struct converttparams *p)
     {
       /* Check if p->numch has not exceeded 4. */
       if(p->numch>=4)
-        error(EXIT_FAILURE, 0, "The number of input color channels (not "
+        error(EXIT_FAILURE, 0, "the number of input color channels (not "
               "files) has exceeded 4! Note that one file can contain more "
-              "than one color channel.");
+              "than one color channel");
 
       /* Make sure this input file exists (if it isn't blank). */
       if(strcmp(names[i], "blank")) gal_checkset_check_file(names[i]);
@@ -582,10 +582,10 @@ preparearrays(struct converttparams *p)
             {
             case 0: hdu=p->cp.hdu; break;   case 1: hdu=p->up.hdu2; break;
             case 2: hdu=p->up.hdu3; break;  case 3: hdu=p->up.hdu4; break;
-            default: error(EXIT_FAILURE, 0, "A bug! In parsing the input "
+            default: error(EXIT_FAILURE, 0, "a bug! In parsing the input "
                            "FITS files, it has gone beyond four! Please "
                            "contact us so we can see what caused this "
-                           "problem and fix it.");
+                           "problem and fix it");
             }
           p->numnul[p->numch]=
             gal_fitsarray_fits_img_to_array(names[i], hdu,
@@ -606,10 +606,10 @@ preparearrays(struct converttparams *p)
       else if ( nameisjpeg(names[i]) )
         {
 #ifndef HAS_LIBJPEG
-          error(EXIT_FAILURE, 0, "You are giving a JPEG input, however, "
+          error(EXIT_FAILURE, 0, "you are giving a JPEG input, however, "
                 "when %s was configured libjpeg was not available. To read "
                 "from JPEG files, libjpeg is required. Please install it and "
-                "configure, make and install %s again.", PACKAGE_STRING,
+                "configure, make and install %s again", PACKAGE_STRING,
                 PACKAGE_STRING);
 #else
           preparejpeg(p, names[i]);
@@ -632,7 +632,7 @@ preparearrays(struct converttparams *p)
       else if ( nameiseps(names[i]) )
         error(EXIT_FAILURE, 0, "EPS files cannot be used as input. Since "
               "EPS files are not raster graphics, they are only used as "
-              "output.");
+              "output");
 
 
 
@@ -640,7 +640,7 @@ preparearrays(struct converttparams *p)
       else if ( nameispdf(names[i]) )
         error(EXIT_FAILURE, 0, "PDF files cannot be used as input. Since "
               "PDF files are not raster graphics, they are only used as "
-              "output.");
+              "output");
 
 
       /* Text: */
@@ -653,7 +653,7 @@ preparearrays(struct converttparams *p)
           if(d==df)
             gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
           else
-            error(EXIT_FAILURE, 0, "%s contains non-numeric data, see %s.",
+            error(EXIT_FAILURE, 0, "%s contains non-numeric data, see %s",
                   names[i], GAL_TXTARRAY_LOG);
           p->bitpixs[p->numch]=DOUBLE_IMG;
           ++p->numch;
@@ -697,7 +697,7 @@ setparams(int argc, char *argv[], struct converttparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

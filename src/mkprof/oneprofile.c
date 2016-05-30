@@ -254,7 +254,7 @@ makepixbypix(struct mkonthread *mkp)
   byt=calloc(is0*is1, sizeof *byt);
   if(byt==NULL)
     error(EXIT_FAILURE, 0, "%lu bytes for map of object in row %lu of "
-	  "data in %s.", is0*is1*sizeof *byt, ibq->id,
+	  "data in %s", is0*is1*sizeof *byt, ibq->id,
 	  mkp->p->up.catname);
 
   /* Start the queue: */
@@ -484,10 +484,10 @@ setprofparams(struct mkonthread *mkp)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "A bug in setprofparams (oneprofile.c)! "
+      error(EXIT_FAILURE, 0, "a bug in setprofparams (oneprofile.c)! "
 	    "The profile code is not recognized. This should have been "
 	    "seen and reported prior to this step. Please contact us so "
-	    "we can correct this.");
+	    "we can correct this");
     }
 
 }
@@ -551,7 +551,7 @@ makeoneprofile(struct mkonthread *mkp)
   size=mkp->width[0]*mkp->width[1];
   mkp->ibq->img=malloc(size*sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
-    error(EXIT_FAILURE, 0, "%lu bytes for object in row %lu of data in %s.",
+    error(EXIT_FAILURE, 0, "%lu bytes for object in row %lu of data in %s",
 	  size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
   gal_arraymanip_fset_const(mkp->ibq->img, size, NAN);
 

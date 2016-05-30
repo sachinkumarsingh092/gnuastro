@@ -320,13 +320,13 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
 
   /* Check if the number is acceptable to the user. */
   if(size<p->minnumfalse)
-    error(EXIT_FAILURE, 0, "There are only %lu %s in the sky region of "
+    error(EXIT_FAILURE, 0, "there are only %lu %s in the sky region of "
           "the image. This is smaller than the minimum number you "
           "specified: %lu. You can decrease this minimum with the "
           "`--minnumfalse' (`-F') option or you can decrease the other "
           "parameters that determine the %s. See the GNU Astronomy "
           "Utilities manual (section on NoiseChisel) or Akhlaghi and "
-          "Ichikawa (2015) for more information.", size, name,
+          "Ichikawa (2015) for more information", size, name,
           p->minnumfalse, name);
 
 

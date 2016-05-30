@@ -117,8 +117,8 @@ double
 sersic_b(double n)
 {
   if(n<=0.35f)
-    error(EXIT_FAILURE, 0, "The Sersic index cannot be smaller "
-	  "than 0.35. It is %.3f.", n);
+    error(EXIT_FAILURE, 0, "the Sersic index cannot be smaller "
+	  "than 0.35. It is %.3f", n);
   return 2*n-(1/3)+(4/(405*n))+(46/(25515*n*n))+
     (131/(1148175*n*n*n)-(2194697/(30690717750*n*n*n*n)));
 }

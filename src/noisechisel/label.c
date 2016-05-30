@@ -67,9 +67,9 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
 
   /* A simple sanity check. */
   if(connectivity!=4 && connectivity!=8)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "the problem. For some reason, the value to connectivity in "
-          "BF_concmp (label.c) is %lu which is not recognized.",
+          "BF_concmp (label.c) is %lu which is not recognized",
           PACKAGE_BUGREPORT, connectivity);
 
 

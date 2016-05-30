@@ -145,7 +145,7 @@ printhistcfp(struct imgstatparams *p, float *bins, size_t numbins,
   errno=0;
   out=fopen(filename, "w");
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "Couldn't open file %s", filename);
+    error(EXIT_FAILURE, errno, "couldn't open file %s", filename);
 
   /* Get the time to print on the report. */
   time(&rawtime);

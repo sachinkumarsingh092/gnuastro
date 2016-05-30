@@ -59,8 +59,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
     command=gal_checkset_malloc_cat("cat ", outfilename);               \
     printf("Values saved in %s:\n\n", outfilename);			\
     if(system(command))                                                 \
-      error(EXIT_FAILURE, 0, "The `%s` command could not be run or "    \
-            "failed.", command);                                        \
+      error(EXIT_FAILURE, 0, "the `%s` command could not be run or "    \
+            "failed", command);                                         \
     free(outfilename);							\
     free(command);							\
     exit(EXIT_SUCCESS);							\
@@ -77,7 +77,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
     if(cp->setdirconf)                                                  \
       GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(CURDIRCONFIG_DIR);              \
     if(cp->onlyversionset && strcmp(cp->onlyversion, PACKAGE_VERSION))  \
-      error(EXIT_FAILURE, 0, "You are currently running Gnuastro %s. "  \
+      error(EXIT_FAILURE, 0, "you are currently running Gnuastro %s. "  \
             "However, this run should be with version `%s'.\n\n"        \
             "To resolve the situation, use the the '--onlyversion' "    \
             "option, either on the command-line or in a configuration " \
@@ -87,7 +87,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
             "Alternatively, you can install Gnuastro %s.\n\n"           \
             "NOTE: If you didn't set this option on the command-line, " \
             "it was probably intended for reproducability. If so, it "  \
-            "is advised to install Gnuastro %s.",                       \
+            "is advised to install Gnuastro %s",                        \
             PACKAGE_VERSION, cp->onlyversion, PACKAGE_VERSION,          \
             PACKAGE_VERSION, cp->onlyversion, cp->onlyversion);         \
                                                                         \

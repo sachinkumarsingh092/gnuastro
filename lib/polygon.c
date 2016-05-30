@@ -89,11 +89,11 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
     tindexs[GAL_POLYGON_MAX_CORNERS];
 
   if(n>GAL_POLYGON_MAX_CORNERS)
-    error(EXIT_FAILURE, 0, "Most probably a bug! The number of corners "
+    error(EXIT_FAILURE, 0, "most probably a bug! The number of corners "
           "given to `gal_polygon_ordered_corners' is more than %d. This is an "
           "internal value and cannot be set from the outside. Most probably "
           "Some bug has caused this un-normal value. Please contact us at "
-          PACKAGE_BUGREPORT" so we can solve this problem.",
+          PACKAGE_BUGREPORT" so we can solve this problem",
           GAL_POLYGON_MAX_CORNERS);
 
   /* For a check:
@@ -348,9 +348,9 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
 
   /*
   if(n>GAL_POLYGON_MAX_CORNERS || m>GAL_POLYGON_MAX_CORNERS)
-    error(EXIT_FAILURE, 0, "The two polygons given to the function "
+    error(EXIT_FAILURE, 0, "the two polygons given to the function "
           "gal_polygon_clip in polygon.c have %lu and %lu vertices. They cannot"
-          " have any values larger than %lu.", n, m, GAL_POLYGON_MAX_CORNERS);
+          " have any values larger than %lu", n, m, GAL_POLYGON_MAX_CORNERS);
   */
 
   /* 2*outnum because for each vertice, there are two elements. */

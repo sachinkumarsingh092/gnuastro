@@ -60,7 +60,7 @@ changevalue(struct converttparams *p)
   to=malloc(numchange*sizeof *to);
   from=malloc(numchange*sizeof *from);
   if(to==NULL || from==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for `to` or `from` in convert.",
+    error(EXIT_FAILURE, errno, "%lu bytes for `to` or `from` in convert",
           numchange*sizeof *from);
   i=1;
   tmp=p->change;
@@ -308,10 +308,10 @@ doubleto8bit(struct converttparams *p)
             {fu=(u=ech[i])+size; do *u=0; while(++u<fu);}
           else if(numch==4)     /* CMYK */
             {fu=(u=ech[i])+size; do *u=UINT8_MAX; while(++u<fu);}
-          else error(EXIT_FAILURE, 0, "A bug! The number of channels in "
+          else error(EXIT_FAILURE, 0, "a bug! The number of channels in "
                      "doubleto8bit is not 3 or 4 when there is a blank "
                      "channel, this should not happen. Please contact us "
-                     "So we can fix it.");
+                     "So we can fix it");
         }
       else
         {
@@ -405,10 +405,10 @@ convertt(struct converttparams *p)
 #ifdef HAS_LIBJPEG
       savejpeg(p);
 #else
-      error(EXIT_FAILURE, 0, "You have asked for a JPEG output, however, "
+      error(EXIT_FAILURE, 0, "you have asked for a JPEG output, however, "
             "when %s was configured libjpeg was not available. To write "
             "to JPEG files, libjpeg is required. Please install it and "
-            "configure, make and install %s again.", PACKAGE_STRING,
+            "configure, make and install %s again", PACKAGE_STRING,
             PACKAGE_STRING);
 #endif
       break;
@@ -417,9 +417,9 @@ convertt(struct converttparams *p)
       saveepsorpdf(p);
       break;
     default:
-      error(EXIT_FAILURE, 0, "A bug! The internal type of the output is "
+      error(EXIT_FAILURE, 0, "a bug! The internal type of the output is "
             "not recognized. Please contact us so we can find the problem "
-            "and fix it.");
+            "and fix it");
     }
 
   /* Free the ech arrays. Note that if they have not been

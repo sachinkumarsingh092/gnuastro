@@ -269,8 +269,8 @@ sanitycheck(struct cosmiccalparams *p)
      if more than one is called, check will be larger than one. So in
      this case, report an error. */
   if(check>1)
-    error(EXIT_FAILURE, 0, "Only a single option starting with `--only' "
-          "can be called.");
+    error(EXIT_FAILURE, 0, "only a single option starting with `--only' "
+          "can be called");
 }
 
 
@@ -345,7 +345,7 @@ setparams(int argc, char *argv[], struct cosmiccalparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

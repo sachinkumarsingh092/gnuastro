@@ -101,7 +101,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
     error(EXIT_FAILURE, errno, "%s", filename);
 
   if(s0==0 && s1==0)
-    error(EXIT_FAILURE, 0, "No table could be read in %s.", filename);
+    error(EXIT_FAILURE, 0, "no table could be read in %s", filename);
 
   *outs0=s0;
   *outs1=s1;
@@ -364,19 +364,19 @@ gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
   for(i=0;int_cols[i]>0;++i)
     if(int_cols[i]>=s1)
       error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In int_cols[], %d is "
-	    "larger than the number of columns: %lu.", int_cols[i], s1);
+	    "larger than the number of columns: %lu", int_cols[i], s1);
   for(i=0;accu_cols[i]>0;++i)
     if(accu_cols[i]>=s1)
       error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In accu_cols[], %d is "
-	    "larger than the number of columns: %lu.", accu_cols[i], s1);
+	    "larger than the number of columns: %lu", accu_cols[i], s1);
   for(i=0;i<3;++i)
     if(space[i]<=0)
       error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In space[], %d is "
-	    "smaller or equal to zero.", space[i]);
+	    "smaller or equal to zero", space[i]);
   for(i=0;i<2;++i)
     if(prec[i]<0)
       error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In prec[], %d is "
-	    "smaller than zero.", space[i]);
+	    "smaller than zero", space[i]);
 
   /* Allocate the spaces: */
   errno=0;

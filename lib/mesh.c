@@ -295,10 +295,10 @@ gal_mesh_full_garray(struct gal_mesh_params *mp, int reverse)
     {
       /* A simple sanity check */
       if(reverse)
-        error(EXIT_FAILURE, 0, "A bug!  Please contact us at %s so we can "
+        error(EXIT_FAILURE, 0, "a bug!  Please contact us at %s so we can "
               "fix this problem.  For some reason, gal_mesh_full_garray "
               "has been called with the `reverse' flag set to true while "
-              "fgarray is not allocated!  This should not happen.",
+              "fgarray is not allocated! This should not happen",
               PACKAGE_BUGREPORT);
 
       /* Allocate the fgarrays */
@@ -392,7 +392,7 @@ gal_check_mesh_id(struct gal_mesh_params *mp, long **out)
   errno=0;
   *out=calloc(mp->s0*mp->s1, sizeof **out);
   if(*out==NULL)
-    error(EXIT_FAILURE, errno, "The array to show mesh labels in checkmesh.");
+    error(EXIT_FAILURE, errno, "the array to show mesh labels in checkmesh");
 
   /* Fill the indexs: */
   for(i=0;i<mp->nmeshi;++i)
@@ -703,9 +703,9 @@ fillmeshinfo(struct gal_mesh_params *mp, size_t chs0, size_t chs1,
 
   /* Just for a check: */
   if(totalmeshcount!=mp->nmeshi)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it. "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix it. "
           "The basic information for some meshes has not been found (in "
-          "fillmeshinfo of mesh.c).", PACKAGE_BUGREPORT);
+          "fillmeshinfo of mesh.c)", PACKAGE_BUGREPORT);
 }
 
 
@@ -790,13 +790,13 @@ gal_mesh_make_mesh(struct gal_mesh_params *mp)
      types. Irrespective of which channel they lie in. */
   mp->cgarray1=mp->cgarray2=mp->fgarray1=mp->fgarray2=NULL;
   errno=0; mp->start=malloc(mp->nmeshi*sizeof *mp->start);
-  if(mp->start==NULL) error(EXIT_FAILURE, errno, "Mesh starting points");
+  if(mp->start==NULL) error(EXIT_FAILURE, errno, "mesh starting points");
   errno=0; mp->types=malloc(mp->nmeshi*sizeof *mp->types);
-  if(mp->types==NULL) error(EXIT_FAILURE, errno, "Mesh types");
+  if(mp->types==NULL) error(EXIT_FAILURE, errno, "mesh types");
   errno=0; mp->chindex=malloc(mp->nmeshi*sizeof *mp->chindex);
-  if(mp->chindex==NULL) error(EXIT_FAILURE, errno, "Mesh in channel index");
+  if(mp->chindex==NULL) error(EXIT_FAILURE, errno, "mesh in channel index");
   errno=0; mp->imgindex=malloc(mp->nmeshi*sizeof *mp->imgindex);
-  if(mp->imgindex==NULL) error(EXIT_FAILURE, errno, "Mesh in image index");
+  if(mp->imgindex==NULL) error(EXIT_FAILURE, errno, "mesh in image index");
 
   /* Distribute the meshes in all the threads. */
   gal_threads_dist_in_threads(mp->nmeshi, mp->numthreads, &mp->indexs,
@@ -934,8 +934,8 @@ gal_mesh_operate_on_mesh(struct gal_mesh_params *mp, void *(*meshfunc)(void *),
       errno=0;
       mp->oneforall=malloc(numthreads*mp->maxs0*mp->maxs1*oneforallsize);
       if(mp->oneforall==NULL)
-        error(EXIT_FAILURE, errno, "Unable to allocate %lu bytes for"
-              "mtp->oneforall in fillmesh of mesh.c.",
+        error(EXIT_FAILURE, errno, "unable to allocate %lu bytes for"
+              "mtp->oneforall in fillmesh of mesh.c",
               numthreads*mp->maxs0*mp->maxs1*oneforallsize);
     }
 
@@ -963,7 +963,7 @@ gal_mesh_operate_on_mesh(struct gal_mesh_params *mp, void *(*meshfunc)(void *),
             mtp[i].id=i;
 	    mtp[i].mp=mp;
 	    err=pthread_create(&t, &attr, meshfunc, &mtp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
 	  }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -1055,7 +1055,7 @@ preparemeshinterparrays(struct gal_mesh_params *mp)
   mp->nearest1=malloc(numthreads*mp->numnearest*sizeof *mp->nearest1);
   if(mp->nearest1==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
-          "nearest1 values for interpolation (mesh.c).",
+          "nearest1 values for interpolation (mesh.c)",
           numthreads*mp->numnearest*sizeof *mp->nearest1);
   if(mp->ngarrays==2)
     {
@@ -1063,7 +1063,7 @@ preparemeshinterparrays(struct gal_mesh_params *mp)
       mp->nearest2=malloc(numthreads*mp->numnearest*sizeof *mp->nearest2);
       if(mp->nearest2==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
-              "nearest2 values for interpolation (mesh.c).",
+              "nearest2 values for interpolation (mesh.c)",
               numthreads*mp->numnearest*sizeof *mp->nearest2);
     }
 
@@ -1206,7 +1206,7 @@ meshinterponthread(void *inparams)
                   "points or decrease the number of nearest points to "
                   "use for interpolation. Problem encountered on thread "
                   "%lu, for pixel %lu. When running on multiple threads, "
-                  "This message might be repeated for different threads.\n",
+                  "This message might be repeated for different threads",
                   mp->errstart, currentnum, thisind/mp->nmeshc, mtp->id,
                   thisind);
         }
@@ -1286,7 +1286,7 @@ gal_mesh_interpolate(struct gal_mesh_params *mp, char *errstart)
             mtp[i].id=i;
 	    mtp[i].mp=mp;
 	    err=pthread_create(&t, &attr, meshinterponthread, &mtp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
 	  }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -1578,7 +1578,7 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
   /* Allocate space for the convolved array. */
   errno=0; *conv=malloc(mp->s0*mp->s1* sizeof **conv);
   if(*conv==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for convolution on mesh output.",
+    error(EXIT_FAILURE, errno, "%lu bytes for convolution on mesh output",
           mp->s0*mp->s1* sizeof **conv);
 
 
@@ -1641,7 +1641,7 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
             mtp[i].conv=*conv;
             mtp[i].chbrd=chbrd;
 	    err=pthread_create(&t, &attr, meshspatialconvonthreads, &mtp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
 	  }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -1855,7 +1855,7 @@ gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
                                         conv, &indexs[i*thrdcols], &scp[i]);
 	    err=pthread_create(&t, &attr, gal_spatialconvolve_thread, &scp[i]);
 	    if(err)
-	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

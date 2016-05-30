@@ -222,7 +222,7 @@ readconfig(char *filename, struct imgcropparams *p)
 	  errno=0;
 	  cp->output=malloc(strlen(value)+1);
 	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "Space for output");
+	    error(EXIT_FAILURE, errno, "space for output");
 	  strcpy(cp->output, value);
 	  cp->outputset=1;
 	}
@@ -232,7 +232,7 @@ readconfig(char *filename, struct imgcropparams *p)
 	  errno=0;
 	  p->suffix=malloc(strlen(value)+1);
 	  if(p->suffix==NULL)
-	    error(EXIT_FAILURE, errno, "Space for prefix.");
+	    error(EXIT_FAILURE, errno, "space for prefix");
 	  strcpy(p->suffix, value);
 	  up->suffixset=1;
 	}
@@ -384,12 +384,12 @@ sanitycheck(struct imgcropparams *p)
 
   /* Width and checkcenter are odd */
   if(p->iwidth[0]<3)
-    error(EXIT_FAILURE, 0, "--iwidth has to be >3 pixels.");
+    error(EXIT_FAILURE, 0, "--iwidth has to be >3 pixels");
   else if(p->iwidth[0]%2==0)
       p->iwidth[0]+=1;
   p->iwidth[1]=p->iwidth[0];
   if(p->checkcenter<3)
-    error(EXIT_FAILURE, 0, "--checkcenter has to be >3 pixels.");
+    error(EXIT_FAILURE, 0, "--checkcenter has to be >3 pixels");
   else if(p->checkcenter%2==0)
     p->checkcenter+=1;
 
@@ -397,11 +397,11 @@ sanitycheck(struct imgcropparams *p)
 
   /* deccol!=racol and xcol!=ycol */
   if(p->racol==p->deccol)
-    error(EXIT_FAILURE, 0, "The columns for RA and Dec must be "
-	  "different.");
+    error(EXIT_FAILURE, 0, "the columns for RA and Dec must be "
+	  "different");
   if(p->xcol==p->ycol)
-    error(EXIT_FAILURE, 0, "The columns for x and y must be "
-	  "different.");
+    error(EXIT_FAILURE, 0, "the columns for x and y must be "
+	  "different");
 
 
 
@@ -410,8 +410,8 @@ sanitycheck(struct imgcropparams *p)
   checksum=up->raset+up->decset;
   if(checksum==2) {p->imgmode=0; p->wcsmode=1;}
   else if(checksum)/* is not zero */
-    error(EXIT_FAILURE, 0, "The options `--ra` and `--dec` should be "
-	  "called together.");
+    error(EXIT_FAILURE, 0, "the options `--ra` and `--dec` should be "
+	  "called together");
 
 
 
@@ -420,8 +420,8 @@ sanitycheck(struct imgcropparams *p)
   checksum=up->xcset+up->ycset;
   if(checksum==2) {p->imgmode=1; p->wcsmode=0;}
   else if(checksum)/* is not zero */
-    error(EXIT_FAILURE, 0, "The options `--xc` and `--yc` should be "
-	  "called together.");
+    error(EXIT_FAILURE, 0, "the options `--xc` and `--yc` should be "
+	  "called together");
 
 
 
@@ -447,9 +447,9 @@ sanitycheck(struct imgcropparams *p)
             strcat(forerr, "(`--section'), ");
           if(up->polygonset)
             strcat(forerr, "(`--polygon'), ");
-          error(EXIT_FAILURE, 0, "There are several ways to specify a crop "
+          error(EXIT_FAILURE, 0, "there are several ways to specify a crop "
                 "box on the command line, see `--help`. But they should not "
-                "be called together. You have asked for %s simultaneously!",
+                "be called together. You have asked for %s simultaneously",
                 forerr);
         }
 
@@ -466,8 +466,8 @@ sanitycheck(struct imgcropparams *p)
           if(up->polygonset) strcpy(forerr, "`--polygon'");
           if(up->xcset) strcpy(forerr, "`--xc' and `--yc'");
 	  if(up->raset) strcpy(forerr, "`--ra' and `--dec'");
-	  error(EXIT_FAILURE, 0, "A catalog name (%s) and command line crop "
-		"parameters (%s) cannot be given together.", up->catname,
+	  error(EXIT_FAILURE, 0, "a catalog name (%s) and command line crop "
+		"parameters (%s) cannot be given together", up->catname,
                 forerr);
 	}
     }
@@ -477,23 +477,23 @@ sanitycheck(struct imgcropparams *p)
 	 command line, in the steps above, we set the image mode or
 	 wcs mode.*/
       if(p->imgmode && p->wcsmode)
-	error(EXIT_FAILURE, 0, "Only one of imgmode or wcsmode "
-	      "must be called. They cannot operate together.");
+	error(EXIT_FAILURE, 0, "only one of imgmode or wcsmode "
+	      "must be called. They cannot operate together");
       else if(p->imgmode==0 && p->wcsmode==0)
-	error(EXIT_FAILURE, 0, "At least one of imgmode or "
-	      "wcsmode must be called.");
+	error(EXIT_FAILURE, 0, "at least one of imgmode or "
+	      "wcsmode must be called");
 
       /* Make sure a catalog is set. */
       if(up->catset)
 	{
 	  if(p->numimg>1 && p->imgmode)
-	    error(EXIT_FAILURE, 0, "In image mode, when a catalog is "
-		  "specified, only one image may be provided.");
+	    error(EXIT_FAILURE, 0, "in image mode, when a catalog is "
+		  "specified, only one image may be provided");
 	}
       else
-	error(EXIT_FAILURE, 0, "No catalog. When no crop coordinates "
+	error(EXIT_FAILURE, 0, "no catalog. When no crop coordinates "
 	      "are specified on the command line, a catalog must be "
-	      "provided.");
+	      "provided");
 
       /* Make sure the given output is a directory. */
       gal_checkset_check_dir_write_add_slash(&cp->output);
@@ -516,8 +516,8 @@ sanitycheck(struct imgcropparams *p)
 
   /* If in image mode, there should only be one input image. */
   if(p->imgmode && p->numimg>1)
-    error(EXIT_FAILURE, 0, "In image mode, only one input image may be "
-	  "specified.");
+    error(EXIT_FAILURE, 0, "in image mode, only one input image may be "
+	  "specified");
 
 
 
@@ -525,7 +525,7 @@ sanitycheck(struct imgcropparams *p)
   /* If we are in WCS mode, noblanks must be off */
   if(p->wcsmode && p->noblank)
     error(EXIT_FAILURE, 0, "`--noblanks` (`-b`) is only for image mode. "
-	  "You have called it with WCS mode.");
+	  "You have called it with WCS mode");
 
 
 
@@ -535,14 +535,14 @@ sanitycheck(struct imgcropparams *p)
     {
       polygonparser(p);
       if(p->nvertices<3)
-        error(EXIT_FAILURE, 0, "A polygon has to have 3 or more vertices, "
-              "you have only given %lu (%s).\n", p->nvertices, p->up.polygon);
+        error(EXIT_FAILURE, 0, "a polygon has to have 3 or more vertices, "
+              "you have only given %lu (%s)", p->nvertices, p->up.polygon);
       if(p->outpolygon && p->numimg>1)
-        error(EXIT_FAILURE, 0, "Currently in WCS mode, outpolygon can only "
+        error(EXIT_FAILURE, 0, "currently in WCS mode, outpolygon can only "
               "be set to zero when there is one image, you have given %lu "
               "images. For multiple images the region will be very large. "
               "It is best if you first crop out the larger region you want "
-              "into one image, then mask the polygon.", p->numimg);
+              "into one image, then mask the polygon", p->numimg);
     }
   else
     p->wpolygon=p->ipolygon=NULL;
@@ -560,7 +560,7 @@ sanitycheck(struct imgcropparams *p)
 	  "again with this flag to use multiple threads, run `info %s "
 	  "CFITSIO` for more information. Alternatively you can set "
 	  "the number of threads to 1 by adding the `--numthreads=1` "
-	  "or `-N1` options.", cp->numthreads, PACKAGE);
+	  "or `-N1` options", cp->numthreads, PACKAGE);
 }
 
 
@@ -628,16 +628,16 @@ preparearrays(struct imgcropparams *p)
         {
           status=wcshdo(0, img->wcs, &img->nwcskeys, &img->wcstxt);
           if(status)
-            error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s.", status,
+            error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s", status,
                   wcs_errmsg[status]);
         }
       else
         if(p->wcsmode)
-          error(EXIT_FAILURE, 0, "The WCS structure of %s (hdu: %s) "
+          error(EXIT_FAILURE, 0, "the WCS structure of %s (hdu: %s) "
                 "image is not recognized. So RA and Dec cannot be used "
                 "as input. You can try with pixel coordinates in the "
                 "Image Mode (note that the crops will lack WCS "
-                "header information).", img->name, p->cp.hdu);
+                "header information)", img->name, p->cp.hdu);
       fits_close_file(tmpfits, &status);
       gal_fitsarray_io_error(status, NULL);
 
@@ -652,7 +652,7 @@ preparearrays(struct imgcropparams *p)
       else if(firstbitpix!=p->bitpix)
 	error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "
 	      "BITPIX value of %d, For "SPACK_NAME" to work, all images "
-	      "must have the same pixel data type.",
+	      "must have the same pixel data type",
 	      img->name, p->bitpix, firstbitpix);
 
       /* In WCS mode, Check resolution and get the first pixel
@@ -718,7 +718,7 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;
@@ -741,7 +741,7 @@ setparams(int argc, char *argv[], struct imgcropparams *p)
     {
       p->cp.output=malloc(2+1); /* 2 is length of "./" */
       if(p->cp.output==NULL)
-        error(EXIT_FAILURE, errno, "Space for output");
+        error(EXIT_FAILURE, errno, "space for output");
       strcpy(p->cp.output, "./");
       p->cp.outputset=1;
     }
@@ -806,7 +806,7 @@ freeandreport(struct imgcropparams *p, struct timeval *t1)
         free(p->imgs[i].wcstxt);
         status=wcsvfree(&p->imgs[i].nwcs, &p->imgs[i].wcs);
         if(status)
-          error(EXIT_FAILURE, 0, "wcsvfree ERROR %d: %s.", status,
+          error(EXIT_FAILURE, 0, "wcsvfree ERROR %d: %s", status,
                 wcs_errmsg[status]);
       }
   free(p->imgs);

@@ -499,7 +499,7 @@ sanitycheck(struct mkprofparams *p)
   if(p->setconsttomin && p->setconsttonan)
     error(EXIT_FAILURE, 0, "`--setconsttomin' and `--setconsttonan' have "
           "been called together! The constant profile values can only have "
-          "one value. So these two options cannot be called together.");
+          "one value. So these two options cannot be called together");
 
 
   /* If the column numbers are not equal. */
@@ -509,10 +509,10 @@ sanitycheck(struct mkprofparams *p)
   for(i=0;i<9;++i)
     for(j=0;j<9;++j)
       if(i!=j && columns[i]==columns[j])
-	error(EXIT_FAILURE, 0, "At least two of the specified columns "
+	error(EXIT_FAILURE, 0, "at least two of the specified columns "
 	      "are set to %lu! By adding the `-P` or `--printparams` "
 	      "option you can check the final column numbers. They "
-	      "all have to be different.", columns[i]);
+	      "all have to be different", columns[i]);
 
 
   /* If all the columns are within the catalog: */
@@ -531,7 +531,7 @@ sanitycheck(struct mkprofparams *p)
   for(i=0;i<p->cs0;++i)
     if(cat[i*cs1+p->fcol]<0 || cat[i*cs1+p->fcol]>MAXIMUMCODE)
       error(EXIT_FAILURE, 0, "%s: In row %lu, the function code should"
-	    "be positive and smaller or equal to %d.",
+	    "be positive and smaller or equal to %d",
 	    p->up.catname, i+1, MAXIMUMCODE);
 
 
@@ -577,8 +577,8 @@ sanitycheck(struct mkprofparams *p)
       break;
 
     case 1:
-      error(EXIT_FAILURE, 0, "At least one of `--xshift` (`-X`) or "
-	    "`--yshift` (`-Y`) are zero! ");
+      error(EXIT_FAILURE, 0, "at least one of `--xshift` (`-X`) or "
+	    "`--yshift` (`-Y`) are zero");
       break;
 
     case 2:
@@ -587,8 +587,8 @@ sanitycheck(struct mkprofparams *p)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "A bug in sanitycheck (ui.c)! In checks "
-	    "for shifts. Please contact us so we can fix it.");
+      error(EXIT_FAILURE, 0, "a bug in sanitycheck (ui.c)! In checks "
+	    "for shifts. Please contact us so we can fix it");
     }
   p->naxes[0] += 2*p->shift[0];
   p->naxes[1] += 2*p->shift[1];
@@ -649,7 +649,7 @@ preparearrays(struct mkprofparams *p)
   /* Allocate space for the log file: */
   p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
   if(p->log==NULL)
-    error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file.",
+    error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file",
 	  p->cs0*LOGNUMCOLS*sizeof *p->log);
 
 
@@ -685,8 +685,8 @@ preparearrays(struct mkprofparams *p)
     {
       p->bitpix=FLOAT_IMG;
       if(p->setconsttomin)
-        error(EXIT_FAILURE, 0, "The `--setconsttomin' option can only be "
-              "called when an input background image is also provided.");
+        error(EXIT_FAILURE, 0, "the `--setconsttomin' option can only be "
+              "called when an input background image is also provided");
     }
 
 
@@ -739,7 +739,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;
@@ -761,7 +761,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
     {
       p->cp.output=malloc(2+1); /* 2 is length of "./" */
       if(p->cp.output==NULL)
-        error(EXIT_FAILURE, errno, "Space for output");
+        error(EXIT_FAILURE, errno, "space for output");
       strcpy(p->cp.output, "./");
       p->cp.outputset=1;
     }

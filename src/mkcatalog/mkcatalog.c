@@ -671,9 +671,9 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             default:
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+              error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                     "can fix the problem. The value to cols[%lu] (%lu), is "
-                    "not recognized in makeoutput (mkcatalog.c).",
+                    "not recognized in makeoutput (mkcatalog.c)",
                     PACKAGE_BUGREPORT, p->curcol, cols[p->curcol]);
             }
 

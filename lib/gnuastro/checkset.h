@@ -36,13 +36,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
     if( (INCOL) >= p->cs1 )						\
       error(EXIT_FAILURE, 0, "%s only has %lu columns while you "	\
 	    "have requested column %lu (counting from zero) for "	\
-	    "`--%s`.", p->up.catname, p->cs1, (INCOL), (NAME));		\
+	    "`--%s`", p->up.catname, p->cs1, (INCOL), (NAME));		\
 									\
     for(i=0;i<p->cs0;++i)						\
       if( isnan(p->cat[i*p->cs1+(INCOL)]) )				\
-	error(EXIT_FAILURE, 0, "%s: Column %lu (--%s) in row %lu "	\
+	error(EXIT_FAILURE, 0, "%s: column %lu (--%s) in row %lu "	\
 	      "could not be read as a number. See %s. Note that "	\
-	      "counting starts from zero.",				\
+	      "counting starts from zero",				\
 	      p->up.catname, (INCOL), (NAME), i, GAL_TXTARRAY_LOG);	\
   }
 

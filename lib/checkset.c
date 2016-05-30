@@ -36,12 +36,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #define FIXEDFORFILE        "The value of `%s` (given as %s)"
 #define FIXEDFOROPTION      "The value of `--%s (-%c)` (given as %s)"
-#define NOTEMSG_NOTNUMBER   "not readable as number."
-#define NOTEMSG_EQZEROORONE "should be ==0 or ==1."
-#define NOTEMSG_LEQZERO     "should be >=0."
-#define NOTEMSG_LARGERZERO  "should be >0."
-#define NOTEMSG_4OR8        "should be either 4 or 8."
-#define NOTEMSG_SMALLERONE  "should be >=0 and <=1."
+#define NOTEMSG_NOTNUMBER   "not readable as number"
+#define NOTEMSG_EQZEROORONE "should be ==0 or ==1"
+#define NOTEMSG_LEQZERO     "should be >=0"
+#define NOTEMSG_LARGERZERO  "should be >0"
+#define NOTEMSG_4OR8        "should be either 4 or 8"
+#define NOTEMSG_SMALLERONE  "should be >=0 and <=1"
 
 
 #define CHECKFULLNUMBER   if(*tailptr!='\0'){				\
@@ -329,7 +329,7 @@ gal_checkset_sizet_p_odd(char *optarg, size_t *var, char *lo, char so,
 	error_at_line(EXIT_FAILURE, 0, filename, lineno,
 		      FIXEDFORFILE" should be >0 and odd.", lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be >0 and odd.",
+	error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be >0 and odd",
 	      lo, so, optarg);
     }
 }
@@ -533,7 +533,7 @@ gal_checkset_malloc_cat(char *inname, char *toappend)
   out=malloc(inl+apl+1);
   if(out==NULL)
     error(EXIT_FAILURE, errno,
-          "Allocating %lu bytes in gal_checkset_malloc_cat", inl+apl+1);
+          "allocating %lu bytes in gal_checkset_malloc_cat", inl+apl+1);
 
   strcpy(out, inname);
   strcat(out, toappend);
@@ -643,7 +643,7 @@ gal_checkset_check_remove_file(char *filename, int dontdelete)
       if(dontdelete)
 	error(EXIT_FAILURE, 0, "%s already exists and you have "
 	      "asked to not remove it with the `--dontdelete` "
-	      "(`-D`) option.", filename);
+	      "(`-D`) option", filename);
 
       /* Delete the file: */
       errno=0;
@@ -672,10 +672,10 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
   struct stat nameinfo;
 
   if(name==NULL)
-    error(EXIT_FAILURE, 0, "A bug! The input to the gal_checkset_dir_0_file_1 "
+    error(EXIT_FAILURE, 0, "a bug! The input to the gal_checkset_dir_0_file_1 "
           "function in checkset.c should not be NULL. Please contact us at "
           PACKAGE_BUGREPORT" so we can see what went wrong and fix it in "
-          "future updates.");
+          "future updates");
 
   errno=0;
   if(stat(name, &nameinfo)!=0)
@@ -710,12 +710,12 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
       return 1;
     }
   else 				/* Not a file or a dir, ABORT */
-    error(EXIT_FAILURE, 0, "%s not a file or a directory.", name);
+    error(EXIT_FAILURE, 0, "%s not a file or a directory", name);
 
-  error(EXIT_FAILURE, 0, "A bug! In gal_checkset_dir_0_file_1, (in checkset.c) "
+  error(EXIT_FAILURE, 0, "a bug! In gal_checkset_dir_0_file_1, (in checkset.c) "
 	"The process should not reach the end of the function! Please "
         "contact us at "PACKAGE_BUGREPORT" so we can see what went wrong "
-        "and fix it in future updates.");
+        "and fix it in future updates");
   return 0;
 }
 
@@ -876,13 +876,13 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
   errno=0;
   file_d=mkstemp(tmpname);
   if(file_d==-1)
-    error(EXIT_FAILURE, errno, "Cannot write output in the directory %s",
+    error(EXIT_FAILURE, errno, "cannot write output in the directory %s",
 	  indir);
   /*
   errno=0;
   printf("\n\n%s\n\n", tmpname);
   if( write(file_d, buf, strlen(buf)) == -1 )
-    error(EXIT_FAILURE, errno, "%s: Writing to this temporary file to "
+    error(EXIT_FAILURE, errno, "%s: writing to this temporary file to "
 	  "check the given `%s` directory", tmpname, indir);
   */
   errno=0;
@@ -893,7 +893,7 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
   /* Delete the temporary file: */
   errno=0;
   if(unlink(tmpname)==-1)
-    error(EXIT_FAILURE, errno, "%s: Removing this temporary file made "
+    error(EXIT_FAILURE, errno, "%s: removing this temporary file made "
 	  "to check the given `%s directory`", tmpname, indir);
 
   /* Remove the extra characters that were added for the random name. */

@@ -73,9 +73,9 @@ complextoreal(double *c, size_t size, int action, double **output)
       do { *o++ = *c;                            c+=2; } while(o<of);
       break;
     default:
-      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
             "correct it. For some reason, the action code for complextoreal "
-            "in convolve.c (%d) is not recognized.", PACKAGE_BUGREPORT,
+            "in convolve.c (%d) is not recognized", PACKAGE_BUGREPORT,
             action);
     }
 }
@@ -204,7 +204,7 @@ makepaddedcomplex(struct convolveparams *p)
   errno=0;
   pimg=p->pimg=malloc(2*ps0*ps1*sizeof *pimg);
   if(pimg==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for pimg.", ps0*ps1*sizeof *pimg);
+    error(EXIT_FAILURE, errno, "%lu bytes for pimg", ps0*ps1*sizeof *pimg);
   for(i=0;i<ps0;++i)
     {
       op=(o=pimg+i*2*ps1)+2*ps1; /* pimg is complex.            */
@@ -221,7 +221,7 @@ makepaddedcomplex(struct convolveparams *p)
   errno=0;
   pker=p->pker=malloc(2*ps0*ps1*sizeof *pker);
   if(pker==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for pker.", ps0*ps1*sizeof *pker);
+    error(EXIT_FAILURE, errno, "%lu bytes for pker", ps0*ps1*sizeof *pker);
   for(i=0;i<ps0;++i)
     {
       op=(o=pker+i*2*ps1)+2*ps1; /* pker is complex.            */
@@ -361,9 +361,9 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
 
   /* Check if the image has even sides. */
   if(ps0%2 || ps1%2)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s. In "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s. In "
           "correctdeconvolve, the padded image sides are not an "
-          "even number!", PACKAGE_BUGREPORT);
+          "even number", PACKAGE_BUGREPORT);
 
   /* First convert the complex image to a real image: */
   complextoreal(p->pimg, ps0*ps1, COMPLEXTOREALSPEC, &s);
@@ -529,10 +529,10 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
   if(forward1backwardn1==1)       multiple=2;
   else if(forward1backwardn1==-1) multiple=1;
   else
-    error(EXIT_FAILURE, 0, "A bug! In forward2dfft, the value of the "
+    error(EXIT_FAILURE, 0, "a bug! In forward2dfft, the value of the "
           "variable forward1backwardn1 is somehow not 1 or 2, but %d. "
           "Please contact us at "PACKAGE_BUGREPORT" so we can find the "
-          "cause of the problem and fix it.", forward1backwardn1);
+          "cause of the problem and fix it", forward1backwardn1);
 
 
   /* ==================== */
@@ -567,7 +567,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             fp[i].forward1backwardn1=forward1backwardn1;
 	    err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
 	    if(err)
-	      error(EXIT_FAILURE, 0, "Can't create thread %lu for rows.",
+	      error(EXIT_FAILURE, 0, "can't create thread %lu for rows",
                     i);
           }
 
@@ -606,7 +606,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             fp[i].forward1backwardn1=forward1backwardn1;
 	    err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
 	    if(err)
-	      error(EXIT_FAILURE, 0, "Can't create thread %lu for columns.",
+	      error(EXIT_FAILURE, 0, "can't create thread %lu for columns",
                     i);
           }
       pthread_barrier_wait(&b);

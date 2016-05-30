@@ -358,7 +358,7 @@ sanitycheck(struct convolveparams *p)
   if(p->cp.outputset)
     {
       if( gal_checkset_dir_0_file_1(p->cp.output, p->cp.dontdelete) == 0 )
-        error(EXIT_FAILURE, 0, "Your output name (%s) is a directory.",
+        error(EXIT_FAILURE, 0, "your output name (%s) is a directory",
               p->cp.output);
     }
   else
@@ -390,7 +390,7 @@ sanitycheck(struct convolveparams *p)
           "or change your nearest configuration file so Convolve defaults "
           "to the frequency domain. Please see the Gnuastro for more "
           "information. On the command line, the manual can be seen with "
-          "the `info gnuastro' command.");
+          "the `info gnuastro' command");
 }
 
 
@@ -453,12 +453,12 @@ preparearrays(struct convolveparams *p)
                                   &p->kernel, &bitpix, &anyblank,
                                   &p->ks0, &p->ks1);
       if(p->ks0!=p->is0 || p->ks1!=p->is1)
-        error(EXIT_FAILURE, 0, "With the `--makekernel' (`-m') option, "
+        error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
               "the input image and the image specified with the kernel "
               "option should have the same size. The lower resolution "
               "input image (%s) has %lux%lu pixels while the higher "
               "resolution image (%s) specified with the kernel option has "
-              "%lux%lu pixels.", up->inputname, p->is1, p->is0,
+              "%lux%lu pixels", up->inputname, p->is1, p->is0,
               up->kernelname, p->ks1, p->ks0);
 
       /* Divide both images by their sum so their lowest frequency
@@ -487,9 +487,9 @@ preparearrays(struct convolveparams *p)
           kernel=p->kernel;
 
           if(p->ks0%2==0 || p->ks1%2==0)
-            error(EXIT_FAILURE, 0, "The kernel image has to have an odd "
+            error(EXIT_FAILURE, 0, "the kernel image has to have an odd "
                   "number of pixels on both sides (there has to be on pixel "
-                  "in the center). %s (hdu: %s) is %lu by %lu.",
+                  "in the center). %s (hdu: %s) is %lu by %lu",
                   p->up.kernelname, p->up.khdu, p->ks1, p->ks0);
 
           /* Convert all the NaN pixels to zero if the kernel contains
@@ -560,7 +560,7 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

@@ -59,14 +59,14 @@ pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
   /* Initialize the mutex: */
   err=pthread_mutex_init(&b->mutex, 0);
   if(err)
-    error(EXIT_FAILURE, err, "Inializing mutex in pthread_barrier_init");
+    error(EXIT_FAILURE, err, "inializing mutex in pthread_barrier_init");
 
   /* Initialize the condition variable: */
   err=pthread_cond_init(&b->cond, 0);
   if(err)
     {
       pthread_mutex_destroy(&b->mutex);
-      error(EXIT_FAILURE, err, "Inializing cond in pthread_barrier_init");
+      error(EXIT_FAILURE, err, "inializing cond in pthread_barrier_init");
     }
 
   /* set the values: */
@@ -152,7 +152,7 @@ gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
   errno=0;
   thrds=*outthrds=malloc(nthrds*thrdcols*sizeof *thrds);
   if(thrds==NULL)
-    error(EXIT_FAILURE, errno, "Allocating thrds in prepindexsinthreads");
+    error(EXIT_FAILURE, errno, "allocating thrds in prepindexsinthreads");
 
   /* Initialize all the elements to NONINDEX. */
   fp=(sp=thrds)+nthrds*thrdcols;
@@ -187,9 +187,9 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
   int err;
 
   err=pthread_attr_init(attr);
-  if(err) error(EXIT_FAILURE, 0, "Thread attr not initialized.");
+  if(err) error(EXIT_FAILURE, 0, "thread attr not initialized");
   err=pthread_attr_setdetachstate(attr, PTHREAD_CREATE_DETACHED);
-  if(err) error(EXIT_FAILURE, 0, "Thread attr not detached.");
+  if(err) error(EXIT_FAILURE, 0, "thread attr not detached");
   err=pthread_barrier_init(b, NULL, numthreads);
-  if(err) error(EXIT_FAILURE, 0, "Thread barrier not initialized.");
+  if(err) error(EXIT_FAILURE, 0, "thread barrier not initialized");
 }

@@ -87,7 +87,7 @@ imgmodecrop(void *inparam)
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
 	    gal_fitsarray_io_error(status, "CFITSIO could not close "
-                                   "the opened file.");
+                                   "the opened file");
 
 	  /* Remove the output image if its center was not filled. */
 	  if(log->centerfilled==0 && p->keepblankcenter==0)
@@ -114,7 +114,7 @@ imgmodecrop(void *inparam)
   status=0;
   if( fits_close_file(crp->infits, &status) )
     gal_fitsarray_io_error(status, "imgmode.c: imgcroponthreads could "
-                           "not close FITS file.");
+                           "not close FITS file");
 
   /* Wait until all other threads finish. */
   if(cp->numthreads>1)
@@ -169,7 +169,7 @@ wcsmodecrop(void *inparam)
 	    status=0;
 	    if( fits_close_file(crp->infits, &status) )
 	      gal_fitsarray_io_error(status, "imgmode.c: imgcroponthreads "
-                                     "could not close FITS file.");
+                                     "could not close FITS file");
 	  }
       while ( ++(crp->imgindex) < p->numimg );
 
@@ -183,7 +183,7 @@ wcsmodecrop(void *inparam)
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
 	    gal_fitsarray_io_error(status, "CFITSIO could not close the "
-                                     "opened file.");
+                                     "opened file");
 
 	  if(log->centerfilled==0 && p->keepblankcenter==0)
 	    {
@@ -261,9 +261,9 @@ imgcrop(struct imgcropparams *p)
   size_t nt=p->cp.numthreads, nb;
 
   if(!p->imgmode && !p->wcsmode)
-    error(EXIT_FAILURE, 0, "A bug! Somehow in imgcrop (imgcrop.c), "
+    error(EXIT_FAILURE, 0, "a bug! Somehow in imgcrop (imgcrop.c), "
 	  "neither the imgmode is on or the wcsmode! Please contact us "
-	  "so we can fix it, thanks.");
+	  "so we can fix it, thanks");
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. */
@@ -321,7 +321,7 @@ imgcrop(struct imgcropparams *p)
 	    else if(p->wcsmode)
 	      err=pthread_create(&t, &attr, wcsmodecrop, &crp[i]);
 	    if(err)
-	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
 	  }
 
       /* Wait for all threads to finish and free the spaces. */

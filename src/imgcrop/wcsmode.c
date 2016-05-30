@@ -62,18 +62,18 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 	  "celestial coordinates. The first FITS axis should be "
 	  "along the Right Ascension and the second FITS axis "
 	  "should be along the declination. You should rotate "
-	  "(interpolate) the images with other software.",
+	  "(interpolate) the images with other software",
 	  img->name, p->cp.hdu);
   if(wcs->pc[0]>0)
     error(EXIT_FAILURE, 0, "%s: HDU %s: An increase in the first "
 	  "FITS axis pixel coordinates should be a decrese in the "
 	  "RA. You have to flip the image along the second axis "
-	  "before running ImageCrop.", img->name, p->cp.hdu);
+	  "before running ImageCrop", img->name, p->cp.hdu);
   if(wcs->pc[3]<0)
     error(EXIT_FAILURE, 0, "%s: HDU %s: An increase in the second "
 	  "FITS axis pixel coordinates should translate to an "
 	  "increase in the declination. You have to flip the "
-	  "image along the first axis before running ImageCrop.",
+	  "image along the first axis before running ImageCrop",
 	  img->name, p->cp.hdu);
   /* Since we are dealing with very accurate values, a multiplication
      by -1 might cause a floating point error. So we have to account
@@ -81,7 +81,7 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
   if(-1.0f*wcs->pc[0]<wcs->pc[3]-1e-15 || -1.0f*wcs->pc[0]>wcs->pc[3]+1e-15)
     error(EXIT_FAILURE, 0, "%s: HDU %s: The pixel scale along "
 	  "the two image axises is not the same. The first axis "
-	  "is %f arcseconds/pixel, while the second is %f.",
+	  "is %f arcseconds/pixel, while the second is %f",
 	  img->name, p->cp.hdu, 3600*-1.0f*wcs->pc[0],
 	  3600*wcs->pc[3]);
   if(p->res==0.0f)
@@ -98,7 +98,7 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
       if(twidth<3)
 	error(EXIT_FAILURE, 0, "--wwidth = %f (arcseconds) translates "
 	      "to %.0f pixels in scale of input image(s). This is probably "
-	      "not what you want!", p->wwidth*3600, twidth);
+	      "not what you want", p->wwidth*3600, twidth);
       p->iwidth[0] = (twidth-(long)twidth)>0.5 ? twidth+1 : twidth;
       if(p->iwidth[0]%2==0)
 	{
@@ -112,7 +112,7 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
       error(EXIT_FAILURE, 0, "%s: HDU %s: The resolution of "
 	    "this image is %f arcseconds/pixel while the "
 	    "previously checked input image(s) had a resolution "
-	    "of %f.", img->name, p->cp.hdu, 3600*wcs->pc[3],
+	    "of %f", img->name, p->cp.hdu, 3600*wcs->pc[3],
 	    3600*p->res);
 
 
@@ -124,7 +124,7 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
   wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta,
 	 img->corners, &status);
   if(status)
-    error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s.", status,
+    error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
 	  wcs_errmsg[status]);
 
 

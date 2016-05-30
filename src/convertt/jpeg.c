@@ -182,7 +182,7 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
     {
       jpeg_destroy_decompress(&cinfo);
       fclose(infile);
-      error(EXIT_FAILURE, 0, "Problem in reading %s", inname);
+      error(EXIT_FAILURE, 0, "problem in reading %s", inname);
     }
   jpeg_create_decompress(&cinfo);
   jpeg_stdio_src(&cinfo, infile);
@@ -252,9 +252,9 @@ preparejpeg(struct converttparams *p, char *filename)
   /* Check if the number of colors that will be added with this JPEG
      image does not exceed 4. */
   if(p->numch+numcolors>4)
-    error(EXIT_FAILURE, 0, "The number of channels in %s added with the "
+    error(EXIT_FAILURE, 0, "the number of channels in %s added with the "
           "previous inputs will exceed 4 (the maximum number of color "
-          "channels). Can't continue.", filename);
+          "channels). Can't continue", filename);
 
   /* Add each channel to the final set of channels. */
   for(i=0;i<numcolors;++i)
@@ -332,9 +332,9 @@ writejpeg(JSAMPLE *jsr, struct converttparams *p)
       cinfo.in_color_space = JCS_CMYK;
       break;
     default:
-      error(EXIT_FAILURE, 0, "A bug! The number of channels in writejpeg "
+      error(EXIT_FAILURE, 0, "a bug! The number of channels in writejpeg "
             "is not 1, 3 or 4, but %lu. This should not happen. Please "
-            "contact us so we can fix the problem.", p->numch);
+            "contact us so we can fix the problem", p->numch);
     }
 
   jpeg_set_defaults(&cinfo);
@@ -370,7 +370,7 @@ savejpeg(struct converttparams *p)
   /* Make sure the JSAMPLE is 8bits, then allocate the necessary space
      based on the number of channels. */
   if(sizeof *jsr!=1)
-    error(EXIT_FAILURE, 0, "JSAMPLE has to be 8bit!");
+    error(EXIT_FAILURE, 0, "JSAMPLE has to be 8bit");
   size=p->numch*p->s0[0]*p->s1[0];
   errno=0;
   jsr=malloc(size*sizeof *jsr);

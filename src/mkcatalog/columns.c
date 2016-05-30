@@ -187,10 +187,10 @@ geoxy(struct mkcatalogparams *p, size_t col)
           if      (col==OGeoX || col==OGeoY)    ac=OAREA;
           else if (col==OGeoCX || col==OGeoCY)  ac=OAREAC;
           else
-            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in the --OBJECTS-- "
                   "information table was not recognized for calculating the "
-                  "geometric X and/or Y.", PACKAGE_BUGREPORT);
+                  "geometric X and/or Y", PACKAGE_BUGREPORT);
         }
 
       /* Go over all the rows and correct this column. */
@@ -241,10 +241,10 @@ flxwhtimg(struct mkcatalogparams *p, size_t col)
           if     (col==CFlxWhtX) gc=CGeoX;
           else if(col==CFlxWhtY) gc=CGeoY;
           else
-            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in the --CLUMPS-- "
                   "information table was not recognized for calculating the "
-                  "final flux weighted X and/or Y.", PACKAGE_BUGREPORT);
+                  "final flux weighted X and/or Y", PACKAGE_BUGREPORT);
         }
       else
         {
@@ -259,10 +259,10 @@ flxwhtimg(struct mkcatalogparams *p, size_t col)
               gc = col==OFlxWhtCX ? OGeoCX : OGeoCY;
             }
           else
-            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in the --OBJECTS-- "
                   "information table was not recognized for calculating the "
-                  "final flux weighted X and/or Y.", PACKAGE_BUGREPORT);
+                  "final flux weighted X and/or Y", PACKAGE_BUGREPORT);
         }
 
 
@@ -349,10 +349,10 @@ setsecondmoment(struct mkcatalogparams *p, size_t col)
             sfc=CPOSSHIFTX;  ssc=CPOSSHIFTY;      break;
 
           default:
-            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in setsecondmoment's "
                   "--CLUMP-- information table (%lu) was not recognized for "
-                  "correcting the second moment.", PACKAGE_BUGREPORT, col);
+                  "correcting the second moment", PACKAGE_BUGREPORT, col);
           }
       else
         switch(col)
@@ -403,10 +403,10 @@ setsecondmoment(struct mkcatalogparams *p, size_t col)
             wc=OAREAC; geoxy(p, fc=OGeoCX); geoxy(p, sc=OGeoCY);
             sfc=OPOSSHIFTX;  ssc=OPOSSHIFTY;      break;
           default:
-            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in setsecondmoment's "
                   "--OBJECT-- information table (%lu) was not recognized for "
-                  "correcting the second moment.", PACKAGE_BUGREPORT, col);
+                  "correcting the second moment", PACKAGE_BUGREPORT, col);
           }
 
       /* Go over all the rows and correct this column. */
@@ -470,10 +470,10 @@ preparewcs(struct mkcatalogparams *p, size_t col)
               wht0geo1=1;
             }
           else
-            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in the --CLUMPS-- "
                   "information table was not recognized for calculating the "
-                  "RA and Dec.", PACKAGE_BUGREPORT);
+                  "RA and Dec", PACKAGE_BUGREPORT);
         }
       else
         {
@@ -506,10 +506,10 @@ preparewcs(struct mkcatalogparams *p, size_t col)
               wht0geo1=1;
             }
           else
-            error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+            error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in the --OBJECT-- "
                   "information table was not recognized for calculating the "
-                  "RA and Dec.", PACKAGE_BUGREPORT);
+                  "RA and Dec", PACKAGE_BUGREPORT);
         }
 
 
@@ -529,9 +529,9 @@ preparewcs(struct mkcatalogparams *p, size_t col)
           geoxy(p, yc);
           break;
         default:
-          error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                 "can fix this. The value of the wht0geo1 variable (%d) is "
-                "not recognized.", PACKAGE_BUGREPORT, wht0geo1);
+                "not recognized", PACKAGE_BUGREPORT, wht0geo1);
         }
 
 
@@ -725,9 +725,9 @@ position(struct mkcatalogparams *p, size_t col, char *target,
       else if(!strcmp(type, MKCATWHTC))
         flxwhtimg(p, col);
       else
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+        error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
               "solve this problem. The value to `type' (%s) is not "
-              "recognized in position (image mode).", PACKAGE_BUGREPORT,
+              "recognized in position (image mode)", PACKAGE_BUGREPORT,
               type);
 
       /* Set the units. */
@@ -770,9 +770,9 @@ secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target)
 
     /* Output column not recognized */
     default:
-      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
             "solve this problem. The value to `ocol' (%lu) is not "
-            "recognized in secondordermoment (first).", PACKAGE_BUGREPORT,
+            "recognized in secondordermoment (first)", PACKAGE_BUGREPORT,
             ocol);
     }
 
@@ -818,9 +818,9 @@ secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target)
         }
       break;
     default:
-      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
             "solve this problem. The value to `ocol' (%lu) is not "
-            "recognized in secondordermoment (second).", PACKAGE_BUGREPORT,
+            "recognized in secondordermoment (second)", PACKAGE_BUGREPORT,
             ocol);
     }
 
@@ -861,10 +861,10 @@ brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
       else if(!strcmp(MKCATBRIGHT, scale))
         *value = bright;
       else
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+        error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
               "fix this issue. For some reason, the value to `scale' in"
               "brightnessfluxmag (columns.c) is `%s', which is not "
-              "recognized.", PACKAGE_BUGREPORT, scale);
+              "recognized", PACKAGE_BUGREPORT, scale);
     }
 
   /* Make final preparations for output. When dealing with the average

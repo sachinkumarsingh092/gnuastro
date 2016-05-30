@@ -107,7 +107,7 @@ readconfig(char *filename, struct headerparams *p)
 	  errno=0;
 	  cp->hdu=malloc(strlen(value)+1);
 	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "Space for HDU.");
+	    error(EXIT_FAILURE, errno, "space for HDU");
 	  strcpy(cp->hdu, value);
 	  cp->hduset=1;
 	}
@@ -244,7 +244,7 @@ setuprename(struct headerparams *p)
          reported. */
       errno=0;
       c=malloc(strlen(tmp->v));
-      if(c==NULL) error(EXIT_FAILURE, errno, "space for c in setuprename.");
+      if(c==NULL) error(EXIT_FAILURE, errno, "space for c in setuprename");
       strcpy(c, tmp->v);
 
       /* Tokenize the input. */
@@ -255,7 +255,7 @@ setuprename(struct headerparams *p)
               "complete rename. There should be a space character "
               "or a comma (,) between the two keyword names. If you have "
               "used the space character, be sure to enclose the value to "
-              "the `--rename' option in double quotation marks.", c);
+              "the `--rename' option in double quotation marks", c);
       free(c);
     }
   /*
@@ -296,7 +296,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
       errno=0;
       original=malloc(strlen(tmp->v)+1);
       if(original==NULL)
-        error(EXIT_FAILURE, errno, "space for c in setuprename.");
+        error(EXIT_FAILURE, errno, "space for c in setuprename");
       strcpy(original, tmp->v);
 
       /* Tokenize the input. Note that strlen does not include the \0
@@ -325,7 +325,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
                     unit=start;
                     break;
                   default:
-                    error(EXIT_FAILURE, 0, "%s: Only three commas should be "
+                    error(EXIT_FAILURE, 0, "%s: only three commas should be "
                           "given in the write or update keyword options. "
                           "The general expected format is:\n"
                           "    KEYWORD,value,\"a comment string\",unit\n",
@@ -341,11 +341,11 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
         }
       while(++c<cf);
       if(keyname==NULL)
-        error(EXIT_FAILURE, 0, "The keyword in %s was not readable. "
+        error(EXIT_FAILURE, 0, "the keyword in %s was not readable. "
               "The general expected format is:\n"
               "    KEYWORD,value,\"a comment string\",unit\n"
               "Any space characters around the the comma (,) characters "
-              "will be seen as part of the respective token.", original);
+              "will be seen as part of the respective token", original);
       /*
       printf("\n\n-%s-\n-%s-\n-%s-\n-%s-\n", keyname, value, comment, unit);
       */
@@ -360,7 +360,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
           errno=0;
           fvalue=lp=malloc(sizeof *lp);
           if(lp==NULL)
-            error(EXIT_FAILURE, errno, "%lu bytes for long integer.",
+            error(EXIT_FAILURE, errno, "%lu bytes for long integer",
                   sizeof *lp);
           *lp=l;
         }
@@ -375,7 +375,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
               errno=0;
               fvalue=dp=malloc(sizeof *dp);
               if(dp==NULL)
-                error(EXIT_FAILURE, errno, "%lu bytes for double.",
+                error(EXIT_FAILURE, errno, "%lu bytes for double",
                       sizeof *dp);
               *dp=d;
             }
@@ -415,7 +415,7 @@ preparearrays(struct headerparams *p)
   else
     iomode=READWRITE;
   if( fits_open_file(&p->fptr, ffname, iomode, &status) )
-    gal_fitsarray_io_error(status, "Reading file.");
+    gal_fitsarray_io_error(status, "reading file");
   free(ffname);
 
   /* Separate the comma-separated values:  */
@@ -464,7 +464,7 @@ setparams(int argc, char *argv[], struct headerparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

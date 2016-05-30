@@ -427,23 +427,23 @@ sanitycheck(struct imgstatparams *p)
   if(p->cfpname && p->histname==NULL)
     {
       if(p->cfpsimhist)
-	error(EXIT_FAILURE, 0, "Without a histogram, `--cfpsimhist` is "
-              "meaningless.");
+	error(EXIT_FAILURE, 0, "without a histogram, `--cfpsimhist` is "
+              "meaningless");
       if (p->maxcfpeqmaxhist)
-	error(EXIT_FAILURE, 0, "Without a histogram, `--maxcfpeqmaxhist` "
-		"is meaningless.\n");
+	error(EXIT_FAILURE, 0, "without a histogram, `--maxcfpeqmaxhist` "
+		"is meaningless");
     }
 
   /* Check if `--maxcfpeqmaxhist` and `--normcfp` are not called
      together: */
   if(p->normcfp && p->maxcfpeqmaxhist)
     error(EXIT_FAILURE, 0, "`--normcfp` and `--maxcfpeqmaxhist` "
-          "cannot be called together.\n");
+          "cannot be called together\n");
 
   /* Check if `normhist` and `maxhistone` are not called together: */
   if(p->normhist && p->maxhistone)
     error(EXIT_FAILURE, 0, "`--normhist` and `--histnumbins` cannot be "
-	      "called together.\n");
+	      "called together\n");
 }
 
 
@@ -500,9 +500,9 @@ preparearrays(struct imgstatparams *p)
       if(up->histquantset)
         {
           if(p->histquant>=0.5)
-            error(EXIT_FAILURE, 0, "The value to `--histquant' (-Q) must "
+            error(EXIT_FAILURE, 0, "the value to `--histquant' (-Q) must "
                   "Be smaller than 0.5, because it sets the lower limit of "
-                  "the value range. The higher limit will be 1-Q.");
+                  "the value range. The higher limit will be 1-Q");
           p->histmin=
             p->sorted[gal_statistics_index_from_quantile(p->size,
                                                          p->histquant)];
@@ -519,29 +519,29 @@ preparearrays(struct imgstatparams *p)
               p->histmax=p->sorted[p->size-1];
               break;
             case 1:
-              error(EXIT_FAILURE, 0, "The options `--histmin' (-i) and "
+              error(EXIT_FAILURE, 0, "the options `--histmin' (-i) and "
                     "`--histmax' (-x) should both be specified. You have "
-                    "only given the %s."GAL_STRINGS_HOW_TO_CHECK_VALUES,
+                    "only given the %s"GAL_STRINGS_HOW_TO_CHECK_VALUES,
                     up->histminset==1 ? "former" : "latter");
               break;
             case 2:
               if(p->histmin>=p->histmax)
-                error(EXIT_FAILURE, 0, "The value to `--histmin' (-i) (%f) "
-                      "is larger or equal to that of `--histmax' (-x) (%f)."
+                error(EXIT_FAILURE, 0, "the value to `--histmin' (-i) (%f) "
+                      "is larger or equal to that of `--histmax' (-x) (%f)"
                       GAL_STRINGS_HOW_TO_CHECK_VALUES, p->histmin, p->histmax);
               if(p->histmin>p->sorted[p->size-1] || p->histmax<p->sorted[0])
-                error(EXIT_FAILURE, 0, "The range of data is %.5f to %.5f. "
+                error(EXIT_FAILURE, 0, "the range of data is %.5f to %.5f. "
                       "However, you have set `--histmin' (-i) and "
                       "`--histmax' (-x) to %.5f and %.5f respectively. "
-                      "They do not overlap!"GAL_STRINGS_HOW_TO_CHECK_VALUES,
+                      "They do not overlap"GAL_STRINGS_HOW_TO_CHECK_VALUES,
                       p->sorted[0], p->sorted[p->size-1], p->histmin,
                       p->histmax);
               break;
             default:
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at "
+              error(EXIT_FAILURE, 0, "a bug! Please contact us at "
                     PACKAGE_BUGREPORT" So we can solve the problem. the "
                     "value of up->histminset+up->histmaxset is not 0, 1 or "
-                    "2.");
+                    "2");
             }
         }
     }
@@ -556,9 +556,9 @@ preparearrays(struct imgstatparams *p)
       if(up->cfpquantset)
         {
           if(p->cfpquant>=0.5)
-            error(EXIT_FAILURE, 0, "The value to `--cfpquant' (-U) must "
+            error(EXIT_FAILURE, 0, "the value to `--cfpquant' (-U) must "
                   "Be smaller than 0.5, because it sets the lower limit of "
-                  "the value range. The higher limit will be 1-U.");
+                  "the value range. The higher limit will be 1-U");
           p->cfpmin=p->sorted[gal_statistics_index_from_quantile(p->size,
                                                                  p->cfpquant)];
           p->cfpmax=
@@ -574,29 +574,29 @@ preparearrays(struct imgstatparams *p)
               p->cfpmax=p->sorted[p->size-1];
               break;
             case 1:
-              error(EXIT_FAILURE, 0, "The options `--cfpmin' (-a) and "
+              error(EXIT_FAILURE, 0, "the options `--cfpmin' (-a) and "
                     "`--cfpmax' (-b) should both be specified. You have "
-                    "only given the %s."GAL_STRINGS_HOW_TO_CHECK_VALUES,
+                    "only given the %s"GAL_STRINGS_HOW_TO_CHECK_VALUES,
                     up->cfpminset==1 ? "former" : "latter");
               break;
             case 2:
               if(p->cfpmin>p->cfpmax)
-                error(EXIT_FAILURE, 0, "The value to `--cfpmin' (-a) (%.f) "
-                      "is larger than that of `--cfpmax' (-b) (%f)."
+                error(EXIT_FAILURE, 0, "the value to `--cfpmin' (-a) (%.f) "
+                      "is larger than that of `--cfpmax' (-b) (%f)"
                       GAL_STRINGS_HOW_TO_CHECK_VALUES, p->cfpmin, p->cfpmax);
               if(p->cfpmin>p->sorted[p->size-1] || p->cfpmax<p->sorted[0])
-                error(EXIT_FAILURE, 0, "The range of data is %.5f to %.5f. "
+                error(EXIT_FAILURE, 0, "the range of data is %.5f to %.5f. "
                       "However, you have set `--cfpmin' (-a) and "
                       "`--cfpmax' (-b) to %.5f and %.5f respectively. "
-                      "They do not overlap!"GAL_STRINGS_HOW_TO_CHECK_VALUES,
+                      "They do not overlap"GAL_STRINGS_HOW_TO_CHECK_VALUES,
                       p->sorted[0], p->sorted[p->size-1], p->cfpmin,
                       p->cfpmax);
               break;
             default:
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at "
+              error(EXIT_FAILURE, 0, "a bug! Please contact us at "
                     PACKAGE_BUGREPORT" So we can solve the problem. the "
                     "value of up->cfpminset+up->cfpmaxset is not 0, 1 or "
-                    "2.");
+                    "2");
             }
         }
     }
@@ -644,7 +644,7 @@ setparams(int argc, char *argv[], struct imgstatparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;

@@ -183,10 +183,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "Incorrect use of the equal sign (`=`). For short "
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
 	       "options, `=` should not be used and for long options, "
 	       "there should be no space between the option, equal sign "
-	       "and value.");
+	       "and value");
 
   switch(key)
     {
@@ -252,9 +252,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
 	 && p->cp.printparams==0)
 	{
 	  if(state->arg_num==0)
-	    argp_error(state, "No argument given!");
+	    argp_error(state, "no argument given");
 	  if(p->up.inputname==NULL)
-	    argp_error(state, "No input FITS image(s) provided!");
+	    argp_error(state, "no input FITS image(s) provided");
 	}
       */
         break;

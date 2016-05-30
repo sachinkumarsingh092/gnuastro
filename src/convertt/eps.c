@@ -182,7 +182,7 @@ blackandwhite(struct converttparams *p)
   errno=0;
   bits=calloc(bytesinimg, sizeof *bits);
   if(bits==NULL)
-    error(EXIT_FAILURE, errno, "Allocating %lu bytes in blackandwhite",
+    error(EXIT_FAILURE, errno, "allocating %lu bytes in blackandwhite",
           bytesinimg);
 
   for(i=0;i<s0;++i)
@@ -318,9 +318,9 @@ writeepsimage(struct converttparams *p, FILE *fp)
   else if(p->numch==3) fprintf(fp, "/DeviceRGB setcolorspace\n");
   else if(p->numch==4) fprintf(fp, "/DeviceCMYK setcolorspace\n");
   else
-    error(EXIT_FAILURE, 0, "A bug! In saveepsorpdf the number of channels "
+    error(EXIT_FAILURE, 0, "a bug! In saveepsorpdf the number of channels "
           "is not 1, 3 or 4. Please contact us so we can find the issue "
-          "and fix it.");
+          "and fix it");
   fprintf(fp, "<<\n");
   fprintf(fp, "  /ImageType 1\n");
   fprintf(fp, "  /Width %lu\n", p->s1[0]);
@@ -364,8 +364,8 @@ saveepsorpdf(struct converttparams *p)
                                     &epsfilename);
     }
   else
-    error(EXIT_FAILURE, 0, "A bug! In `saveeps`, for outputtype is "
-          "neither eps or pdf! Please contact us so we fix it.");
+    error(EXIT_FAILURE, 0, "a bug! In `saveeps`, for outputtype is "
+          "neither eps or pdf! Please contact us so we fix it");
 
 
 
@@ -433,15 +433,15 @@ saveepsorpdf(struct converttparams *p)
               " -dDEVICEHEIGHTPOINTS=%lu -dPDFFitPage %s", p->cp.output,
               winpt+2*p->borderwidth, hinpt+2*p->borderwidth, epsfilename);
       if(system(command))
-        error(EXIT_FAILURE, 0, "The command to convert a PostScript file to "
+        error(EXIT_FAILURE, 0, "the command to convert a PostScript file to "
               "PDF (`%s') was not successful! The PostScript file (%s) is "
               "left if you want to convert or use it through any other "
-              "means.", command, epsfilename);
+              "means", command, epsfilename);
       sprintf(command, "rm %s", epsfilename);
       if(system(command))
         error(EXIT_FAILURE, 0, "The PDF output (%s) was created, but the "
               "PostScript file which was used to make it (%s) could not be"
-              "removed.", p->cp.output, epsfilename);
+              "removed", p->cp.output, epsfilename);
       free(epsfilename);
     }
 }

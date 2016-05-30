@@ -214,7 +214,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
             }
 
           if(isnan(*f))
-            error(EXIT_FAILURE, 0, "*f was nan!!!");
+            error(EXIT_FAILURE, 0, "*f was nan");
 
           ++areas[*lab];
           brightnesses[*lab]     += *f;
@@ -552,10 +552,10 @@ detsnthresh(struct noisechiselparams *p)
             case 3:
               extname="Opened"; break;
             default:
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+              error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                     "can find the solution. For some reason, the value to "
                     "p->stepnum (%d) is not recognized in detsnthresh "
-                    "(detection.c).", PACKAGE_BUGREPORT, p->stepnum);
+                    "(detection.c)", PACKAGE_BUGREPORT, p->stepnum);
             }
           gal_fitsarray_array_to_fits_img(p->detectionname, extname, BYTE_IMG,
                                           p->dbyt, s0, s1, p->anyblank, p->wcs,

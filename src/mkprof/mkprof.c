@@ -72,7 +72,7 @@ preparewcs(struct mkprofparams *p)
   /* Initialize the structure (allocate all the arrays). */
   wcs.flag=-1;
   if( (status=wcsini(1, 2, &wcs)) )
-    error(EXIT_FAILURE, 0, "wcsinit error %d: %s.",
+    error(EXIT_FAILURE, 0, "wcsinit error %d: %s",
 	  status, wcs_errmsg[status]);
 
   /* Correct the CRPIX values. */
@@ -96,17 +96,17 @@ preparewcs(struct mkprofparams *p)
 
   /* Set up the wcs structure: */
   if( (status=wcsset(&wcs)) )
-    error(EXIT_FAILURE, 0, "wcsset error %d: %s.", status,
+    error(EXIT_FAILURE, 0, "wcsset error %d: %s", status,
 	  wcs_errmsg[status]);
 
   /* Write the WCS structure to a header string. */
   if( (status=wcshdo(WCSHDO_safe, &wcs, &p->wcsnkeyrec, &p->wcsheader)) )
-    error(EXIT_FAILURE, 0, "wcshdo error %d: %s.", status,
+    error(EXIT_FAILURE, 0, "wcshdo error %d: %s", status,
 	  wcs_errmsg[status]);
 
   /* Free the allocated spaces by wcsini/wcsset: */
   if( (status=wcsfree(&wcs)) )
-    error(EXIT_FAILURE, 0, "wcsfree error %d: %s.", status,
+    error(EXIT_FAILURE, 0, "wcsfree error %d: %s", status,
 	  wcs_errmsg[status]);
 }
 
@@ -142,7 +142,7 @@ builtqueue_addempty(struct builtqueue **bq)
   errno=0;
   tbq=malloc(sizeof *tbq);
   if(tbq==NULL)
-    error(EXIT_FAILURE, 0, "%lu byte element in builtqueue_addempty.",
+    error(EXIT_FAILURE, 0, "%lu byte element in builtqueue_addempty",
 	  sizeof *tbq);
 
   /* Initialize some of the values. */
@@ -596,7 +596,7 @@ write(struct mkprofparams *p)
 	  jobname=malloc(100*sizeof *jobname);
 	  if(jobname==NULL)
 	    error(EXIT_FAILURE, errno, "jobname in mkprof.c");
-	  sprintf(jobname, "Row %lu complete, %lu left to go.",
+	  sprintf(jobname, "row %lu complete, %lu left to go",
 		  ibq->id, cs0-complete);
 	  gal_timing_report(NULL, jobname, 2);
 	  free(jobname);
@@ -725,9 +725,9 @@ mkprof(struct mkprofparams *p)
 
       /* Initialize the condition variable and mutex. */
       err=pthread_mutex_init(&p->qlock, NULL);
-      if(err) error(EXIT_FAILURE, 0, "Mutex not initialized.");
+      if(err) error(EXIT_FAILURE, 0, "mutex not initialized");
       err=pthread_cond_init(&p->qready, NULL);
-      if(err) error(EXIT_FAILURE, 0, "Condition variable not initialized.");
+      if(err) error(EXIT_FAILURE, 0, "condition variable not initialized");
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
@@ -741,7 +741,7 @@ mkprof(struct mkprofparams *p)
 	    mkp[i].indexs=&indexs[i*thrdcols];
 	    err=pthread_create(&t, &attr, build, &mkp[i]);
 	    if(err)
-	      error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
 	  }
     }
 

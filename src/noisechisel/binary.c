@@ -163,9 +163,9 @@ dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
 
   /* Do a sanity check: */
   if(b0_f1!=1 && b0_f1!=0)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "this problem. In dilate0_erode1_4con (binary.c), the value to "
-          "b0_f1 is %u while it should be 0 or 1.", PACKAGE_BUGREPORT, b0_f1);
+          "b0_f1 is %u while it should be 0 or 1", PACKAGE_BUGREPORT, b0_f1);
 
   /* Set the foreground and background values. */
   if(b0_f1==0) {f=1; b=0;}
@@ -247,9 +247,9 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
 
   /* Do a sanity check: */
   if(b0_f1!=1 && b0_f1!=0)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "this problem. In dilate0_erode1_4con (binary.c), the value to "
-          "b0_f1 is %u while it should be 0 or 1.", PACKAGE_BUGREPORT, b0_f1);
+          "b0_f1 is %u while it should be 0 or 1", PACKAGE_BUGREPORT, b0_f1);
 
   /* Set the foreground and background values: */
   if(b0_f1==0) {f=1; b=0;}
@@ -342,9 +342,9 @@ opening(unsigned char *byt, size_t s0, size_t s1,
 
   /* Sanity check: */
   if(con_type!=4 && con_type!=8)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "this problem. For some reason, the value to con_type in opening "
-          "(binary.c) is %d while it should be 4 or 8.", PACKAGE_BUGREPORT,
+          "(binary.c) is %d while it should be 4 or 8", PACKAGE_BUGREPORT,
           con_type);
 
   /* Do the opening: */

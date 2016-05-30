@@ -366,12 +366,12 @@ newclumplabels(struct clumpsthreadparams *ctp)
 
   /* A simple sanity check. */
   if(ctp->numclumps<=2 || ctp->numobjects<=2)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it. "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix it. "
           "For some reason, the newclumplabels function (in segmentation.c) "
           "was called for the %lu detected region, even though this region "
           "has ctp->numclumps=%lu and ctp->numobjects=%lu! This function "
           "should only be used when there is more than one object and "
-          "clump over a detected region.", PACKAGE_BUGREPORT,
+          "clump over a detected region", PACKAGE_BUGREPORT,
           ctp->thislabel, ctp->numclumps, ctp->numobjects);
 
   /* 'numclumpsinobj' will keep the number of clumps in each object.
@@ -685,7 +685,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
             ctp[i].totalnummtx=&totalnummtx;
             ctp[i].indexs=&indexs[i*thrdcols];
 	    err=pthread_create(&t, &attr, segmentonthread, &ctp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "Can't create thread %lu.", i);
+	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
 	  }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -867,10 +867,10 @@ segmentation(struct noisechiselparams *p)
             case 7:
               extname="Final object labels"; forfits=p->olab; break;
             default:
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at %s to "
+              error(EXIT_FAILURE, 0, "a bug! Please contact us at %s to "
                     "fix the problem. For some reason, the variable "
                     "p->stepnum in segmenation (segmentation.c) has the "
-                    "unrecognized value of %d.", PACKAGE_BUGREPORT,
+                    "unrecognized value of %d", PACKAGE_BUGREPORT,
                     p->stepnum);
             }
           gal_fitsarray_array_to_fits_img(p->segmentationname, extname,

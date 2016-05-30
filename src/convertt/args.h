@@ -268,10 +268,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "Incorrect use of the equal sign (`=`). For short "
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
 	       "options, `=` should not be used and for long options, "
 	       "there should be no space between the option, equal sign "
-	       "and value.");
+	       "and value");
 
   switch(key)
     {
@@ -303,7 +303,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       gal_checkset_int_smaller_equal_to(arg, &p->quality, "quality", key,
                                         p->cp.spack, NULL, 0, 100);
       if(p->quality<0)
-        error(EXIT_FAILURE, 0, "The quality option should be positive.");
+        error(EXIT_FAILURE, 0, "the quality option should be positive");
       p->up.qualityset=1;
       break;
     case 'x':
@@ -324,7 +324,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'm':
       gal_checkset_int_smaller_equal_to(arg, &tmp, "maxbyte", key,
                                         p->cp.spack, NULL, 0, UINT8_MAX);
-      if(tmp<0) error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive.");
+      if(tmp<0) error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive");
       p->maxbyte=tmp;
       p->up.maxbyteset=1;
       break;
@@ -365,9 +365,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
 	 && p->cp.printparams==0)
 	{
 	  if(state->arg_num==0)
-	    argp_error(state, "No argument given!");
+	    argp_error(state, "no argument given");
 	  if(p->inputnames==NULL)
-	    argp_error(state, "No input files provided!");
+	    argp_error(state, "no input files provided");
 	}
       break;
 

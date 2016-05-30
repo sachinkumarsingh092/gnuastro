@@ -625,10 +625,10 @@ gal_statistics_f_ave_std(float *in, size_t size, float *ave,
       sum=gal_statistics_float_sum_mask(in, mask, size, &nsize1);
       sum2=gal_statistics_float_sum_squared_mask(in, mask, size, &nsize2);
       if(nsize1!=nsize2)
-	error(EXIT_FAILURE, 0, "A bug in gal_statistics_f_ave_std "
+	error(EXIT_FAILURE, 0, "a bug in gal_statistics_f_ave_std "
               "(lib/statistics.h).  Somehow the number of masked pixels is "
               "measured differently.  Please contact us so we can find the "
-              "cause.");
+              "cause");
       size=nsize1;
     }
   else
@@ -662,9 +662,9 @@ gal_statistics_f_ave_std_l(float *in, size_t size, float *ave,
       sum=gal_statistics_float_sum_mask_l(in, mask, size, &nsize1);
       sum2=gal_statistics_float_sum_squared_mask_l(in, mask, size, &nsize2);
       if(nsize1!=nsize2)
-	error(EXIT_FAILURE, 0, "A bug in favestl (lib/statistics.h). "
+	error(EXIT_FAILURE, 0, "a bug in favestl (lib/statistics.h). "
 	      "Somehow the number of masked pixels is measured "
-	      "differently. Please contact us so we can find the cause.");
+	      "differently. Please contact us so we can find the cause");
       size=nsize1;
     }
   *ave=sum/size;
@@ -882,8 +882,8 @@ gal_statistics_histogram(float *sorted, size_t size, float *bins,
   size_t histrow=0, i;
 
   if((long)numbins<=0)
-    error(EXIT_FAILURE, 0, "The number of bins in gal_statistics_histogram "
-          "(statistics.h) must be >0.  You have given asked for %ld.",
+    error(EXIT_FAILURE, 0, "the number of bins in gal_statistics_histogram "
+          "(statistics.h) must be >0.  You have given asked for %ld",
           (long)numbins);
 
   /* Fill the histogram. */
@@ -1042,7 +1042,7 @@ gal_statistics_save_hist(float *sorted, size_t size, size_t numbins,
   errno=0;
   fp=fopen(filename, "w");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "Couldn't open file %s", filename);
+    error(EXIT_FAILURE, errno, "couldn't open file %s", filename);
   fprintf(fp, "%s\n", comment);
   fprintf(fp, "# The input %lu points binned in %lu bins\n#\n",
           size, numbins);
@@ -1084,8 +1084,8 @@ gal_statistics_index_from_quantile(size_t size, float quant)
   float floatindex;
 
   if(quant>1.0f)
-    error(EXIT_FAILURE, 0, "The quantile in gal_statistics_index_from_quantile "
-          "(statistics.c) Should be smaller.");
+    error(EXIT_FAILURE, 0, "the quantile in gal_statistics_index_from_quantile "
+          "(statistics.c) Should be smaller");
 
   /* Find the index of the quantile. */
   floatindex=(float)size*quant;

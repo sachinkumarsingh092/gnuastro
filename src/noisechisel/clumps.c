@@ -164,10 +164,10 @@ oversegment(struct clumpsthreadparams *ctp)
           {
             n1=0;
             if(Q!=NULL || cleanup!=NULL)
-              error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we "
+              error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                     "can fix this problem. In oversegment (clumps.c) Q and "
                     "cleanup should be NULL but while checking the equal "
-                    "flux regions they aren't.", PACKAGE_BUGREPORT);
+                    "flux regions they aren't", PACKAGE_BUGREPORT);
             add_to_sll(&Q, *pind);
             add_to_sll(&cleanup, *pind);
             clab[*pind]=SEGMENTTMPCHECK;
@@ -271,10 +271,10 @@ oversegment(struct clumpsthreadparams *ctp)
                 /* Set the first neighbour's label to zero. */
                 n1=0;
                 if(Q!=NULL || cleanup!=NULL)
-                  error(EXIT_FAILURE, 0, "A bug! Please contact us at %s "
+                  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s "
                         "so we can fix this problem. In oversegment "
                         "(clumps.c) Q and cleanup should be NULL but while "
-                        "checking the equal flux regions they aren't.",
+                        "checking the equal flux regions they aren't",
                         PACKAGE_BUGREPORT);
 
                 /* Go over all the 8 neighbors of this pixel and see
@@ -499,9 +499,9 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
 
   /* Just make sure that the box size is not only around one pixel! */
   if(x1-x0<=1 || y1-y0<=1)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can find "
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can find "
           "and fix the problem in clumpinfo (clumps.c). For some reason, "
-          "the specified input region is %lu by %lu wide.",
+          "the specified input region is %lu by %lu wide",
           PACKAGE_BUGREPORT, y1-y0, x1-x0);
 
   /* Allocate the clump information array. */

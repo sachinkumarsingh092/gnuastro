@@ -93,7 +93,7 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
 	case ',':
 	  ++dim;
 	  if(dim==2)
-	    error(EXIT_FAILURE, 0, "Extra `,` in `%s`.", section);
+	    error(EXIT_FAILURE, 0, "Extra `,` in `%s`", section);
 	  forl='f';
 	  ++pt;
 	  break;
@@ -102,9 +102,9 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
 	  ++pt;
 	  break;
 	case '.':
-	  error(EXIT_FAILURE, 0, "The numbers in the argument to "
+	  error(EXIT_FAILURE, 0, "the numbers in the argument to "
 		"`--section` (`-s') have to be integers. You input "
-		"includes a float number: %s.",
+		"includes a float number: %s",
 		section);
 	  break;
 	case ' ': case '\t':
@@ -151,10 +151,10 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
     }
 
   if(fpixel[0]>=lpixel[0] || fpixel[1]>=lpixel[1])
-    error(EXIT_FAILURE, 0, "The bottom left corner coordinates "
+    error(EXIT_FAILURE, 0, "the bottom left corner coordinates "
 	  "cannot be larger or equal to the top right's! Your section "
 	  "string (%s) has been read as: bottom left coordinate "
-	  "(%ld, %ld) to top right coordinate (%ld, %ld).",
+	  "(%ld, %ld) to top right coordinate (%ld, %ld)",
 	  section, fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
 
   /*
@@ -186,13 +186,13 @@ polygonparser(struct imgcropparams *p)
 	case ',':
 	  ++dim;
 	  if(dim==2)
-	    error(EXIT_FAILURE, 0, "Extra `,` in `%s`.", p->up.polygon);
+	    error(EXIT_FAILURE, 0, "Extra `,` in `%s`", p->up.polygon);
 	  ++pt;
 	  break;
 	case ':':
           if(dim==0)
-            error(EXIT_FAILURE, 0, "Not enough coordinates for at least "
-                  "one polygon vertex (in %s).", p->up.polygon);
+            error(EXIT_FAILURE, 0, "not enough coordinates for at least "
+                  "one polygon vertex (in %s)", p->up.polygon);
           dim=0;
 	  ++pt;
 	  break;
@@ -219,7 +219,7 @@ polygonparser(struct imgcropparams *p)
           /* Make sure if a number was read at all? */
           if(tailptr==pt)	        /* No number was read!             */
             error(EXIT_FAILURE, 0, "%s could not be parsed as a floating "
-                  "point number.", tailptr);
+                  "point number", tailptr);
 
           /* If this was the second dimension, then put the values
              into the linked list: */
@@ -380,9 +380,9 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       free(db);
       break;
     default:
-      error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, so we "
+      error(EXIT_FAILURE, 0, "a bug! Please contact us at %s, so we "
             "can fix the problem. For some reason, an unrecognized "
-            "bitpix value (%d) has been seen in polygonmask (crop.c).",
+            "bitpix value (%d) has been seen in polygonmask (crop.c)",
             PACKAGE_BUGREPORT, bitpix);
     }
 
@@ -435,9 +435,9 @@ changezerotonan(void *array, size_t size, int bitpix)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "In changezerotonan, bitpix is not "
+      error(EXIT_FAILURE, 0, "in changezerotonan, bitpix is not "
 	    "recognized! This is out of the users control and is a bug, "
-	    "please report it to us so we see how it was caused and fix it.");
+	    "please report it to us so we see how it was caused and fix it");
     }
 }
 
@@ -512,12 +512,12 @@ cropflpixel(struct cropparams *crp)
             imgpolygonflpixel(p->ipolygon, p->nvertices, fpixel, lpixel);
         }
       else
-	error(EXIT_FAILURE, 0, "A bug! In image mode, neither of the "
+	error(EXIT_FAILURE, 0, "a bug! In image mode, neither of the "
 	      "following has been set: a catalog, a central pixel, "
 	      "a section or a polygon in the image. Please contact us "
               "to see how it got to this impossible place! You should "
               "have been warned of this condition long before ImageCrop "
-              "reaches this point.");
+              "reaches this point");
     }
   else if(p->wcsmode) /* In wcsmode, crp->world is already filled.       */
     {		      /* Note that p->iwidth was set based on p->wwidth. */
@@ -543,9 +543,9 @@ cropflpixel(struct cropparams *crp)
         }
     }
   else
-    error(EXIT_FAILURE, 0, "A bug! in cropflpixel (crop.c), "
+    error(EXIT_FAILURE, 0, "a bug! in cropflpixel (crop.c), "
 	  "neither imgmode or wcsmode are set. Please contact us so "
-	  "we can see how it got to this impossible place.");
+	  "we can see how it got to this impossible place");
 
   /* If the user only wants regions outside to the polygon, then set
      the fpixel and lpixel to cover the full input image. */
@@ -611,17 +611,17 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
   /* Create the FITS image extension and array and fill it with null
      values. */
   if(fits_create_file(&crp->outfits, outname, &status))
-    gal_fitsarray_io_error(status, "Creating file.");
+    gal_fitsarray_io_error(status, "creating file");
   ofp=crp->outfits;
   if(fits_create_img(ofp, bitpix, naxis, naxes, &status))
-    gal_fitsarray_io_error(status, "Creating image.");
+    gal_fitsarray_io_error(status, "creating image");
   if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
      || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
     if(fits_write_key(ofp, crp->p->datatype, "BLANK",
-		      crp->p->bitnul, "Pixels with no data.", &status) )
-      gal_fitsarray_io_error(status, "Adding Blank.");
+		      crp->p->bitnul, "pixels with no data", &status) )
+      gal_fitsarray_io_error(status, "adding Blank");
   if(fits_write_null_img(ofp, 1, naxes[0]*naxes[1], &status))
-    gal_fitsarray_io_error(status, "Writing null array.");
+    gal_fitsarray_io_error(status, "writing null array");
 
 
   /* Write the WCS header keywords in the output FITS image, then
@@ -863,9 +863,9 @@ iscenterfilled(struct cropparams *crp)
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "In iscenterfilled, the bitbix is not "
+      error(EXIT_FAILURE, 0, "in iscenterfilled, the bitbix is not "
 	    "recognized! This is not possible by the user, so it is a "
-	    "a bug. Please contact us so we can correct it.");
+	    "a bug. Please contact us so we can correct it");
     }
   free(array);
 

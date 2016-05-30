@@ -172,7 +172,7 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   errno=0;
   fp=fopen(histsname, "w");
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "Could not open file %s", histsname);
+    error(EXIT_FAILURE, errno, "could not open file %s", histsname);
   fprintf(fp, "# Histogram of actual and mirrored distributions.\n");
   fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
   fprintf(fp, "# Column 1: Input data.\n");
@@ -203,7 +203,7 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   else maxcfp=msize;
   errno=0;
   fp=fopen(cfpsname, "w");
-  if(fp==NULL) error(EXIT_FAILURE, errno, "Could not open file %s", cfpsname);
+  if(fp==NULL) error(EXIT_FAILURE, errno, "could not open file %s", cfpsname);
   fprintf(fp, "# Cumulative frequency plot (average index in bin) of\n"
 	  "# Actual and mirrored distributions.\n");
   fprintf(fp, "# Column 0: Value in the middle of this bin.\n");

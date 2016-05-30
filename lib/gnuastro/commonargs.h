@@ -206,10 +206,10 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "Incorrect use of the equal sign (`=`). For short "
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
 	       "options, `=` should not be used and for long options, "
 	       "there should be no space between the option, equal sign "
-	       "and value.");
+	       "and value");
 
   switch(key)
     {
@@ -250,14 +250,14 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
     case 'h':
       errno=0;
       cp->hdu=malloc(strlen(arg)+1);
-      if(cp->hdu==NULL) error(EXIT_FAILURE, 0, "Space for hdu");
+      if(cp->hdu==NULL) error(EXIT_FAILURE, 0, "space for hdu");
       strcpy(cp->hdu, arg);
       cp->hduset=1;
       break;
     case 'o':
       errno=0;
       cp->output=malloc(strlen(arg)+1);
-      if(cp->output==NULL) error(EXIT_FAILURE, 0, "Space for output");
+      if(cp->output==NULL) error(EXIT_FAILURE, 0, "space for output");
       strcpy(cp->output, arg); /* This allocation is done so cp->output */
       cp->outputset=1;	       /* Can always be freed when set, because */
       break;		       /* It usually needs modifications.       */
@@ -272,9 +272,9 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
     /* Once finished: */
     case ARGP_KEY_END:
       if(cp->setdirconf && cp->setusrconf)
-	error(EXIT_FAILURE, 0, "Only one of `--setusrconf` or "
+	error(EXIT_FAILURE, 0, "only one of `--setusrconf` or "
 	      "`--setdirconf` may be set in each run. You have asked "
-	      "for both.");
+	      "for both");
       break;
 
     /* If the argument is not known. */

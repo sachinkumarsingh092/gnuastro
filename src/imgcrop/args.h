@@ -326,10 +326,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
      check if the first character of arg is the equal sign, then the
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
-    argp_error(state, "Incorrect use of the equal sign (`=`). For short "
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
 	       "options, `=` should not be used and for long options, "
 	       "there should be no space between the option, equal sign "
-	       "and value.");
+	       "and value");
 
   switch(key)
     {
@@ -337,14 +337,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Operating modes: */
     case 'I':
       if(p->up.imgmodeset)
-	argp_error(state, "Only one of Image or WCS modes can be chosen.");
+	argp_error(state, "only one of Image or WCS modes can be chosen");
       p->imgmode=1;
       p->wcsmode=0;
       p->up.imgmodeset=p->up.wcsmodeset=1;
       break;
     case 'W':
       if(p->up.wcsmodeset)
-	argp_error(state, "Only one of Image or WCS modes can be chosen.");
+	argp_error(state, "only one of Image or WCS modes can be chosen");
       p->imgmode=0;
       p->wcsmode=1;
       p->up.imgmodeset=p->up.wcsmodeset=1;
@@ -466,7 +466,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       else
 	{
 	  if(p->up.catname)
-	    argp_error(state, "Only one catalog file can be given.");
+	    argp_error(state, "only one catalog file can be given");
 	  else
 	    {
 	      p->up.catname=arg;
@@ -485,14 +485,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
 	 && p->cp.printparams==0)
 	{
 	  if(state->arg_num==0)
-	    argp_error(state, "No argument given!");
+	    argp_error(state, "no argument given");
 	  if(p->up.catname==NULL && !(p->up.xcset    || p->up.ycset
 				      || p->up.raset || p->up.decset
 				      || p->up.sectionset
                                       || p->up.polygonset))
-	    argp_error(state, "No catalog provided!");
+	    argp_error(state, "no catalog provided");
 	  if(p->up.gal_linkedlist_stll==NULL)
-	    argp_error(state, "No FITS image(s) provided!");
+	    argp_error(state, "no FITS image(s) provided");
 	}
       break;
 

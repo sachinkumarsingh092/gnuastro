@@ -356,7 +356,7 @@ setparams(int argc, char *argv[], struct imgarithparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Revert the conversion of the hyphen above back to the original
      character. */

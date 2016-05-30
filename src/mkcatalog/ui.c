@@ -739,10 +739,10 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
         fprintf(fp, CONF_SHOWFMT"%d\n", "geopositionangle", 1);
         break;
       default:
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+        error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
               "fix the problem. For some reason p->allcols[%d] is given "
               "the value %lu which is not recognized in preparearrays "
-              "(ui.c).", PACKAGE_BUGREPORT, i, p->allcols[i]);
+              "(ui.c)", PACKAGE_BUGREPORT, i, p->allcols[i]);
       }
 
   /* For the operating mode, first put the macro to print the common
@@ -881,10 +881,10 @@ sanitycheck(struct mkcatalogparams *p)
   if(p->up.raset || p->up.decset)
     {
       if( OFlxWhtX!=OFlxWhtY-1 || OFlxWhtRA!=OFlxWhtDec-1 )
-        error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+        error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
               "fix the problem. X(%d) and Y(%d), or Ra(%d) and Dec(%d) "
               "columns in the information array are not immediately after "
-              "each other.", PACKAGE_BUGREPORT, OFlxWhtX, OFlxWhtY,
+              "each other", PACKAGE_BUGREPORT, OFlxWhtX, OFlxWhtY,
               OFlxWhtRA, OFlxWhtDec);
     }
 
@@ -939,16 +939,16 @@ checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
 
   /* Make sure it has an integer type. */
   if(bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG)
-    error(EXIT_FAILURE, 0, "The labels image can be any integer type "
+    error(EXIT_FAILURE, 0, "the labels image can be any integer type "
           "(BITPIX). However, %s (hdu: %s) is a %s precision floating "
-          "point image.", filename, hdu,
+          "point image", filename, hdu,
           bitpix==FLOAT_IMG ? "single" : "double");
 
   /* Make sure it is the same size as the input image. */
   if(s0!=p->s0 || s1!=p->s1)
     error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
           "%s (hdu: %s) is %lu x %lu. The images should have the same "
-          "size.", filename, hdu, s1, s0, p->up.inputname,
+          "size", filename, hdu, s1, s0, p->up.inputname,
           p->cp.hdu, p->s1, p->s0);
 }
 
@@ -969,15 +969,15 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
 
   /* Make sure it has no blank pixels. */
   if(anyblank)
-    error(EXIT_FAILURE, 0, "The Sky and Sky standard deviation images "
-          "should not have any blank values. %s (hdu: %s) has blank pixels.",
+    error(EXIT_FAILURE, 0, "the Sky and Sky standard deviation images "
+          "should not have any blank values. %s (hdu: %s) has blank pixels",
           filename, hdu);
 
   /* Make sure it has the same size as the image. */
   if(s0!=p->s0 || s1!=p->s1)
     error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
           "%s (hdu: %s) is %lu x %lu. The images should have the same "
-          "size.", filename, hdu, s1, s0, p->up.inputname,
+          "size", filename, hdu, s1, s0, p->up.inputname,
           p->cp.hdu, p->s1, p->s0);
 }
 
@@ -997,7 +997,7 @@ preparearrays(struct mkcatalogparams *p)
      arrays to keep the macros of what output they should keep. */
   gal_linkedlist_sll_to_array(p->allcolsll, &p->allcols, &p->allncols);
   if(p->allncols==0)
-    error(EXIT_FAILURE, 0, "No columns specified for output.");
+    error(EXIT_FAILURE, 0, "no columns specified for output");
   errno=0; p->objcols=malloc(p->allncols*sizeof *p->objcols);
   if(p->objcols==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for p->objcols in "
@@ -1151,10 +1151,10 @@ preparearrays(struct mkcatalogparams *p)
           p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         default:
-          error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can "
+          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
                 "fix the problem. For some reason p->allcols[%lu] is given "
                 "the value %lu which is not recognized in preparearrays "
-                "(ui.c).", PACKAGE_BUGREPORT, i, p->allcols[i]);
+                "(ui.c)", PACKAGE_BUGREPORT, i, p->allcols[i]);
         }
     }
 
@@ -1264,7 +1264,7 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "Parsing arguments");
+    error(EXIT_FAILURE, errno, "aarsing arguments");
 
 
   /* Add the user default values and save them if asked. */
