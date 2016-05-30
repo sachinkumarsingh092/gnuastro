@@ -77,27 +77,43 @@ fi
 
 
 
-# Print the top of the AUTHORS file:
+# Set the version number. Note that this script is also run at the start of
+# the bootstrapping process. At that point we don't have the `.version'
+# file, so we will just rely on `.git describe'. Later during `make', this
+# scripot will be run again to set it using `git-version-gen'.
+if [ -f "$1/.version" ]; then
+    gnuastroversion="Gnuastro "$(cat "$1/.version")
+else
+    gnuastroversion=$(git --git-dir=$1/.git describe)
+fi
+
+
+
+
+
+# Print the top of the AUTHORS file.
 outauthors="$1/AUTHORS"
-gnuastroversion=$(cat "$1/.version")
 echo "GNU Astronomy Utilities authors
 ===============================
 
 List of authors (and their relative contribution) for this version of GNU
 Astronomy Utilities (Gnuastro). The relative contribution is measured by
-the number of commits made by each author in the version control history.
+the number of commits made in the version controlled history.
 
-Generated for Gnuastro $gnuastroversion.
+Generated for $gnuastroversion.
 
-The format for each author is: [Number of commits] [Name] [email]
+The format for each author is: [Number of commits] [Name] (email)
 
 
 Aggregate list of all authors
 -----------------------------
 
-List of everyone who has made a commit irrespective of which part of
-Gnuastro they contributed to, the rows are ordered alphabetically." > \
+List of all authors irrespective of which part of Gnuastro they contributed
+to with their email address, the rows are ordered alphabetically." > \
 "$outauthors"
+# This extra line is to have a blank line between the explanations and the
+# list.
+echo "" >> "$outauthors"
 
 
 # Generate the aggregate list
@@ -110,11 +126,11 @@ echo "
 Separated by part of Gnuastro
 -----------------------------
 
-Authors listed under the respective part of Gnuastro: utility,
-libraries, or documentation. Note that a single commit might include
-multiple parts of Gnuastro (especially in the libraries and
-documentation). The authors in each part are sorted by the number of
-commits." >> "$outauthors"
+Authors listed under the respective part of Gnuastro: utility, libraries,
+or documentation. Note that a single commit might include multiple parts of
+Gnuastro (especially in the libraries and documentation). The authors in
+each part are sorted by the number of commits, see the aggregate list for
+emails." >> "$outauthors"
 
 # A blank line to separate the list below from the explanations.
 echo "" >> "$outauthors"
@@ -144,7 +160,7 @@ for util in src/* "lib/" "doc/"; do
 
     # Fill in the authors of each part:
     echo $name >> "$outauthors"
-    git --git-dir=$1/.git shortlog --numbered --summary --email    \
+    git --git-dir=$1/.git shortlog --numbered --summary     \
         --no-merges -- $util >> "$outauthors"
     echo "" >> "$outauthors"
 done
