@@ -25,8 +25,8 @@
 
 
 
-## Sources to be run before everything else
-## ========================================
+## Sources to be created before everything else
+## ============================================
 ##
 ## These target(s) will be created before anything else when running
 ## `make', `make check', or `make install', see the "Built sources" section
@@ -91,11 +91,11 @@ endif
 if COND_GNULIBCHECK
   MAYBE_GNULIBCHECK = bootstrapped/tests
 endif
-SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_CONVERTT)   \
-$(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)                    \
-$(MAYBE_ARITHMETIC) $(MAYBE_IMGCROP) $(MAYBE_IMGSTAT)                   \
-$(MAYBE_IMGWARP) $(MAYBE_MKCATALOG) $(MAYBE_MKNOISE) $(MAYBE_MKPROF)    \
-$(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY) doc tests
+SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)    \
+$(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)	   \
+$(MAYBE_IMGCROP) $(MAYBE_IMGSTAT) $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG)	   \
+$(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY) \
+doc tests
 
 
 

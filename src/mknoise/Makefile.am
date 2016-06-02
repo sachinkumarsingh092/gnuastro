@@ -22,18 +22,6 @@
 
 
 
-# Flags:
-AM_CFLAGS = -Wall -O3
-
-AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm -L$(top_builddir)/lib
-
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
-              -I$(top_srcdir)/bootstrapped/lib
-
-
-
-
-
 ## Utility and its sources
 bin_PROGRAMS = astmknoise
 

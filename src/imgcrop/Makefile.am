@@ -22,26 +22,14 @@
 
 
 
-# Flags:
-AM_CFLAGS = -Wall -O3
-
-AM_LDFLAGS = -lcfitsio -lwcs -lgsl -lgslcblas -lm -L$(top_builddir)/lib
-
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
-              -I$(top_srcdir)/bootstrapped/lib
-
-
-
-
-
 ## Utility and its sources
 bin_PROGRAMS = astimgcrop
 
 astimgcrop_SOURCES = main.c main.h cite.h ui.c ui.h args.h imgcrop.c	\
 imgcrop.h wcsmode.c wcsmode.h crop.c crop.h
 
-astimgcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgalconfigfiles -lgalfitsarrayvv -lgaltxtarrayvv -lgalcheckset		\
+astimgcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	        \
+-lgalconfigfiles -lgalfitsarrayvv -lgaltxtarrayvv -lgalcheckset         \
 -lgallinkedlist -lgaltiming -lgalthreads -lgalbox -lgalpolygon
 
 

@@ -66,6 +66,26 @@ LT_INIT
 
 
 
+# Generic flags for all subdirectories. Note that when order matters, we
+# want the user values to be set (and thus used) after the default
+# values. The "AM_" versions of these variables will be confined to the
+# particular Makefile, so we can't define them in the top Makefile.am.
+#
+# About the quotations: the commands here first go through Autoconf which
+# removes one later of quotations. So if `$' is not quoted, it will try to
+# evaluate it. We can't just quote the full right side, because we wand the
+# (possibly) user defined original values that are passed to configure. For
+# the -D value in CPPFLAGS, we want the quotation marks until gcc, which is
+# two layers away from this text: first Autoconf, then Make. So we need two
+# layers of quotations there.
+CFLAGS="-Wall -O3 $CFLAGS"
+LDFLAGS="-L\$(top_builddir)/lib $LDFLAGS"
+CPPFLAGS="-DSYSCONFIG_DIR=\\\"$sysconfdir\\\" -I\$(top_srcdir)/lib -I\$(top_srcdir)/bootstrapped/lib $CPPFLAGS"
+
+
+
+
+
 # Check for pthreads and add the appropriate compilation flags. AX_PTHREAD
 # comes from the GNU Autoconf Archive's ax_pthread.m4.
 AX_PTHREAD([],[AC_MSG_ERROR([AC_PACKAGE_NAME Needs POSIX Threads (pthread)])])
@@ -77,20 +97,27 @@ CC="$PTHREAD_CC"
 
 
 
+# Search for necessary libraries. After each library is found,
+# AC_SEARCH_LIBS adds the -lLIBRARY flag to the LIBS variable which is then
+# given to all the Makefiles. Each new flag is added to the left of the old
+# one so order matters here. Note that the LIBS variable is also used in
+# checking the next libraries, so the linking with their dependent
+# libraries is done automatically with this order, and we don't have to
+# explicitly set the dependency flags.
+AC_SEARCH_LIBS(sqrt, m, [],
+    [AC_MSG_ERROR([C math library not present, cannot continue.])])
+AC_SEARCH_LIBS([cblas_sdsdot], [gslcblas], [],
+    [AC_MSG_ERROR([GSL CBLAS not present, cannot continue.])])
+AC_SEARCH_LIBS([gsl_integration_qng], [gsl], [],
+    [AC_MSG_ERROR([GSL not found, cannot continue.])])
+AC_SEARCH_LIBS([ffopen], [cfitsio], [],
+    [AC_MSG_ERROR([CFITSIO not found, cannot continue.])])
+AC_SEARCH_LIBS([wcspih], [wcs], [],
+    [AC_MSG_ERROR([WCSLIB not found, cannot continue.])])
 
-# Checks for necessary libraries. The `absolutejunk=1` is put here so
-# it doesn't automatically add the library to the LIBS variable that
-# will be appended to all programs, some libraries will not be needed
-# in some programs.
-AC_CHECK_LIB([cfitsio], [ffopen], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])], [-lm])
-AC_CHECK_LIB([wcs], [wcspih], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])], [-lcfitsio -lm])
-AC_CHECK_LIB([gslcblas], [cblas_sdsdot], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])], [-lm])
-AC_CHECK_LIB([gsl], [gsl_integration_qng], [absolutejunk=1],
-             [AC_MSG_ERROR([Cannot continue.])], [-lgslcblas -lm])
-
+# These are secondary tests for more fine-grained control in libraries that
+# have already been checked. We don't need to add them to the LIBS
+# variable, so we are using AC_CHECK_LIB for these tests.
 AC_CHECK_LIB([wcs], [wcslib_version],
              [AC_DEFINE([HAVE_WCSLIBVERSION], [1], [Has wcslib_version])],
              [], [-lcfitsio -lm])
@@ -132,8 +159,8 @@ AC_MSG_RESULT([done])
 
 
 # Check libjpeg:
-AC_CHECK_LIB([jpeg], [jpeg_stdio_dest],
-             [has_libjpeg=yes], [has_libjpeg=no], [-lm])
+AC_SEARCH_LIBS([jpeg_stdio_dest], [jpeg],
+               [has_libjpeg=yes], [has_libjpeg=no])
 AS_IF([test "x$has_libjpeg" = "xyes"],
       [AC_DEFINE([HAS_LIBJPEG], [], [Has libjpeg])],
       [anywarnings=yes])

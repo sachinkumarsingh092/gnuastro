@@ -22,18 +22,6 @@
 
 
 
-# Flags:
-AM_CFLAGS = -Wall -O3
-
-LDADD = bootstrapped/lib/libgnu.a
-
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib \
-              -I$(top_srcdir)/bootstrapped/lib
-
-
-
-
-
 ## Make libraries of the files that are shared between all the
 ## programs:
 headersdir=$(top_srcdir)/lib/gnuastro

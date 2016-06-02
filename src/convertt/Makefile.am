@@ -22,27 +22,6 @@
 
 
 
-# Check if the system has libjpeg installed.
-if COND_HASLIBJPEG
-   MAYBE_HASLIBJPEG = -ljpeg
-endif
-
-
-
-
-
-# Flags:
-AM_CFLAGS = -Wall -O3
-
-AM_LDFLAGS = -lcfitsio -lwcs -lm $(MAYBE_HASLIBJPEG) -L$(top_builddir)/lib
-
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
-              -I$(top_srcdir)/bootstrapped/lib
-
-
-
-
-
 ## Utility and its sources
 bin_PROGRAMS = astconvertt
 

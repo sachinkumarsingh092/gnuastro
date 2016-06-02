@@ -22,19 +22,7 @@
 
 
 
-# Flags:
-AM_CFLAGS = -Wall -O3
-
-AM_LDFLAGS = -lcfitsio -lwcs -lm -L$(top_builddir)/lib
-
-AM_CPPFLAGS = -DSYSCONFIG_DIR=\"$(sysconfdir)\" -I$(top_srcdir)/lib	\
-              -I$(top_srcdir)/bootstrapped/lib
-
-
-
-
-
-## ImageCrop:
+## Utility and its sources
 bin_PROGRAMS = astsubtractsky
 
 astsubtractsky_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
