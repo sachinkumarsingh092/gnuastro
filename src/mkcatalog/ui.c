@@ -32,12 +32,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -823,48 +823,48 @@ checkifset(struct mkcatalogparams *p)
 void
 sanitycheck(struct mkcatalogparams *p)
 {
-  struct gal_fitsarray_read_header_keys keys[2];
+  struct gal_fits_read_header_keys keys[2];
 
   /* Make sure the input file exists. */
   gal_checkset_check_file(p->up.inputname);
 
   /* Set the names of the files. */
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
                                  &p->up.maskname, p->up.mhdu, p->up.mhduset,
                                  "mask");
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu,
                                  p->up.objlabsnameset, &p->up.objlabsname,
                                  p->up.objhdu, p->up.objhduset,
                                  "object labels");
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu,
                                  p->up.clumplabsnameset, &p->up.clumplabsname,
                                  p->up.clumphdu, p->up.clumphduset,
                                  "clump labels");
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.skynameset,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.skynameset,
                                  &p->up.skyname, p->up.skyhdu, p->up.skyhduset,
                                  "sky value image");
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.stdnameset,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.stdnameset,
                                  &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
                                  "sky standard deviation");
 
   /* Read the number of labels for the objects:  */
   keys[0].keyname="DETSN";        keys[0].datatype=TDOUBLE;
   keys[1].keyname="NOBJS";        keys[1].datatype=TLONG;
-  gal_fitsarray_read_keywords(p->up.objlabsname, p->up.objhdu, keys, 2);
+  gal_fits_read_keywords(p->up.objlabsname, p->up.objhdu, keys, 2);
   p->detsn=keys[0].d;
   p->numobjects=keys[1].l;
 
   /* Read the clumps information. Note that the datatypes don't change. */
   keys[0].keyname="CLUMPSN";
   keys[1].keyname="NCLUMPS";
-  gal_fitsarray_read_keywords(p->up.clumplabsname, p->up.clumphdu, keys, 2);
+  gal_fits_read_keywords(p->up.clumplabsname, p->up.clumphdu, keys, 2);
   p->clumpsn=keys[0].d;
   p->numclumps=keys[1].l;
 
   /* Read the minimum and maximum standard deviation values. */
   keys[0].keyname="MINSTD";       keys[0].datatype=TFLOAT;
   keys[1].keyname="MEDSTD";       keys[1].datatype=TFLOAT;
-  gal_fitsarray_read_keywords(p->up.stdname, p->up.stdhdu, keys, 2);
+  gal_fits_read_keywords(p->up.stdname, p->up.stdhdu, keys, 2);
   p->minstd=keys[0].f;
   p->medstd=keys[1].f;
   p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
@@ -934,7 +934,7 @@ checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
   int bitpix, anyblank;
 
   /* Read the file: */
-  gal_fitsarray_file_to_long(filename, hdu, array, &bitpix,
+  gal_fits_file_to_long(filename, hdu, array, &bitpix,
                              &anyblank, &s0, &s1);
 
   /* Make sure it has an integer type. */
@@ -964,7 +964,7 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
   int bitpix, anyblank;
 
   /* Read the array: */
-  gal_fitsarray_file_to_float(filename, NULL, hdu, NULL, array, &bitpix,
+  gal_fits_file_to_float(filename, NULL, hdu, NULL, array, &bitpix,
                               &anyblank, &s0, &s1);
 
   /* Make sure it has no blank pixels. */
@@ -1164,11 +1164,10 @@ preparearrays(struct mkcatalogparams *p)
      check the parameters, there is no input file name. */
   if(p->up.inputname)
     {
-      gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
+      gal_fits_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
                                   p->up.mhdu, &p->img, &bitpix, &anyblank,
                                   &p->s0, &p->s1);
-      gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
-                                  &p->nwcs, &p->wcs);
+      gal_fits_read_wcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
 
 
       /* Read and check the other arrays: */

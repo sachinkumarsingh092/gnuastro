@@ -29,7 +29,7 @@ astsubtractsky_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 subtractsky.c subtractsky.h
 
 astsubtractsky_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
--lgalconfigfiles -lgalfitsarrayvv -lgalcheckset -lgaltiming -lgalmesh	\
+-lgalconfigfiles -lgalfits -lgalcheckset -lgaltiming -lgalmesh		\
 -lgalspatialconvolve -lgalthreads -lgalmode -lgalstatistics		\
 -lgalarraymanip -lgalqsort -lgallinkedlist -lgalbox
 

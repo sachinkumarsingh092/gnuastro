@@ -31,12 +31,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 #include "crop.h"
@@ -594,8 +594,8 @@ preparearrays(struct imgcropparams *p)
   fitsfile *tmpfits;
   struct timeval t1;
   struct inputimgs *img;
-  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
   int i, status, firstbitpix=0;
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
 
   if(p->cp.verb) gettimeofday(&t1, NULL);
 
@@ -620,10 +620,10 @@ preparearrays(struct imgcropparams *p)
       status=0;
       img=&p->imgs[i];
       gal_linkedlist_pop_from_stll(&p->up.gal_linkedlist_stll, &img->name);
-      gal_fitsarray_read_fits_hdu(img->name, p->cp.hdu, IMAGE_HDU, &tmpfits);
-      gal_fitsarray_img_bitpix_size(tmpfits, &p->bitpix, img->naxes);
-      gal_fitsarray_read_wcs(tmpfits, &img->nwcs, &img->wcs, p->hstartwcs,
-                             p->hendwcs);
+      gal_fits_read_hdu(img->name, p->cp.hdu, IMAGE_HDU, &tmpfits);
+      gal_fits_img_bitpix_size(tmpfits, &p->bitpix, img->naxes);
+      gal_fits_read_wcs_from_pointer(tmpfits, &img->nwcs, &img->wcs,
+                                     p->hstartwcs, p->hendwcs);
       if(img->wcs)
         {
           status=wcshdo(0, img->wcs, &img->nwcskeys, &img->wcstxt);
@@ -639,15 +639,15 @@ preparearrays(struct imgcropparams *p)
                 "Image Mode (note that the crops will lack WCS "
                 "header information)", img->name, p->cp.hdu);
       fits_close_file(tmpfits, &status);
-      gal_fitsarray_io_error(status, NULL);
+      gal_fits_io_error(status, NULL);
 
       /* Make sure all the images have the same BITPIX and set the
 	 basic BITPIX related parameters. */
       if(firstbitpix==0)
 	{
 	  firstbitpix=p->bitpix;
-	  p->datatype=gal_fitsarray_bitpix_to_dtype(p->bitpix);
-	  p->bitnul=gal_fitsarray_bitpix_blank(p->bitpix);
+	  p->datatype=gal_fits_bitpix_to_dtype(p->bitpix);
+	  p->bitnul=gal_fits_bitpix_blank(p->bitpix);
 	}
       else if(firstbitpix!=p->bitpix)
 	error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "

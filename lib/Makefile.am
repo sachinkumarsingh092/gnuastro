@@ -25,14 +25,17 @@
 ## Make libraries of the files that are shared between all the
 ## programs:
 headersdir=$(top_srcdir)/lib/gnuastro
-noinst_LTLIBRARIES = libgalconfigfiles.la libgalfitsarrayvv.la		  \
+noinst_LTLIBRARIES = libgalconfigfiles.la libgalfits.la			  \
 libgaltxtarrayvv.la libgalcheckset.la libgallinkedlist.la libgaltiming.la \
-libgalthreads.la libgalbox.la libgalarraymanip.la libgalstatistics.la \
+libgalthreads.la libgalbox.la libgalarraymanip.la libgalstatistics.la	  \
 libgalspatialconvolve.la libgalmesh.la libgalmode.la libgalqsort.la	  \
-libgalpolygon.la
+libgalpolygon.la libgalwcs.la
 
 libgalbox_la_SOURCES = box.c $(headersdir)/box.h
-libgalbox_la_LIBADD = -lm
+
+libgalwcs_la_SOURCES = wcs.c $(headersdir)/wcs.h
+
+libgalfits_la_SOURCES = fits.c $(headersdir)/fits.h
 
 libgalmesh_la_SOURCES = mesh.c $(headersdir)/mesh.h
 
@@ -57,9 +60,6 @@ libgalarraymanip_la_SOURCES = arraymanip.c $(headersdir)/arraymanip.h
 libgaltxtarrayvv_la_SOURCES = txtarrayvv.c $(headersdir)/txtarrayvv.h
 
 libgalconfigfiles_la_SOURCES = configfiles.c $(headersdir)/configfiles.h
-
-libgalfitsarrayvv_la_SOURCES = fitsarrayvv.c $(headersdir)/fitsarrayvv.h
-libgalfitsarrayvv_la_LIBADD = -lwcs -lcfitsio -lm
 
 
 

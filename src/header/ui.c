@@ -32,12 +32,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -276,7 +276,7 @@ setuprename(struct headerparams *p)
 
 void
 fillfitsheaderll(struct gal_linkedlist_stll *input,
-                 struct gal_fitsarray_header_ll **output)
+                 struct gal_fits_header_ll **output)
 {
   long l, *lp;
   void *fvalue;
@@ -384,7 +384,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
         }
 
 
-      gal_fitsarray_add_to_fits_header_ll(output, datatype, keyname, 0,
+      gal_fits_add_to_fits_header_ll(output, datatype, keyname, 0,
                                           fvalue, vfree, comment, 0, unit);
       free(original);
     }
@@ -415,7 +415,7 @@ preparearrays(struct headerparams *p)
   else
     iomode=READWRITE;
   if( fits_open_file(&p->fptr, ffname, iomode, &status) )
-    gal_fitsarray_io_error(status, "reading file");
+    gal_fits_io_error(status, "reading file");
   free(ffname);
 
   /* Separate the comma-separated values:  */
@@ -516,7 +516,7 @@ freeandreport(struct headerparams *p)
 
   /* Close the FITS file: */
   if(fits_close_file(p->fptr, &status))
-    gal_fitsarray_io_error(status, NULL);
+    gal_fits_io_error(status, NULL);
 
   if(p->wcs)
     wcsvfree(&p->nwcs, &p->wcs);

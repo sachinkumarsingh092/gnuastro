@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/fits.h>
 #include <gnuastro/commonparams.h>
 
 /* Progarm name macros: */

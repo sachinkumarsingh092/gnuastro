@@ -32,10 +32,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/box.h>
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/polygon.h>
 #include <gnuastro/checkset.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -326,7 +326,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
   switch(bitpix)
     {
     case BYTE_IMG:
-      bb=gal_fitsarray_bitpix_blank(bitpix);
+      bb=gal_fits_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -335,7 +335,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       free(bb);
       break;
     case SHORT_IMG:
-      sb=gal_fitsarray_bitpix_blank(bitpix);
+      sb=gal_fits_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -344,7 +344,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       free(sb);
       break;
     case LONG_IMG:
-      lb=gal_fitsarray_bitpix_blank(bitpix);
+      lb=gal_fits_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -353,7 +353,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       free(lb);
       break;
     case LONGLONG_IMG:
-      Lb=gal_fitsarray_bitpix_blank(bitpix);
+      Lb=gal_fits_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -362,7 +362,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       free(Lb);
       break;
     case FLOAT_IMG:
-      fb=gal_fitsarray_bitpix_blank(bitpix);
+      fb=gal_fits_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -371,7 +371,7 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       free(fb);
       break;
     case DOUBLE_IMG:
-      db=gal_fitsarray_bitpix_blank(bitpix);
+      db=gal_fits_bitpix_blank(bitpix);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -611,17 +611,17 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
   /* Create the FITS image extension and array and fill it with null
      values. */
   if(fits_create_file(&crp->outfits, outname, &status))
-    gal_fitsarray_io_error(status, "creating file");
+    gal_fits_io_error(status, "creating file");
   ofp=crp->outfits;
   if(fits_create_img(ofp, bitpix, naxis, naxes, &status))
-    gal_fitsarray_io_error(status, "creating image");
+    gal_fits_io_error(status, "creating image");
   if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
      || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
     if(fits_write_key(ofp, crp->p->datatype, "BLANK",
 		      crp->p->bitnul, "pixels with no data", &status) )
-      gal_fitsarray_io_error(status, "adding Blank");
+      gal_fits_io_error(status, "adding Blank");
   if(fits_write_null_img(ofp, 1, naxes[0]*naxes[1], &status))
-    gal_fitsarray_io_error(status, "writing null array");
+    gal_fits_io_error(status, "writing null array");
 
 
   /* Write the WCS header keywords in the output FITS image, then
@@ -631,7 +631,7 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
       crpix0 = img->wcs->crpix[0] - (fpixel_i[0]-1) + (fpixel_c[0]-1);
       crpix1 = img->wcs->crpix[1] - (fpixel_i[1]-1) + (fpixel_c[1]-1);
       if(fits_write_record(ofp, blankrec, &status))
-        gal_fitsarray_io_error(status, NULL);
+        gal_fits_io_error(status, NULL);
       sprintf(titlerec, "%sWCS information", startblank);
       for(i=strlen(titlerec);i<79;++i)
         titlerec[i]=' ';
@@ -640,18 +640,18 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
         fits_write_record(ofp, &img->wcstxt[i*80], &status);
       fits_update_key(ofp, TDOUBLE, "CRPIX1", &crpix0, NULL, &status);
       fits_update_key(ofp, TDOUBLE, "CRPIX2", &crpix1, NULL, &status);
-      gal_fitsarray_io_error(status, NULL);
+      gal_fits_io_error(status, NULL);
     }
 
 
   /* Add the Crop information. */
   if(fits_write_record(ofp, blankrec, &status))
-    gal_fitsarray_io_error(status, NULL);
+    gal_fits_io_error(status, NULL);
   sprintf(titlerec, "%sCrop information", startblank);
   for(i=strlen(titlerec);i<79;++i)
     titlerec[i]=' ';
   if(fits_write_record(ofp, titlerec, &status))
-    gal_fitsarray_io_error(status, NULL);
+    gal_fits_io_error(status, NULL);
 }
 
 
@@ -676,7 +676,7 @@ onecrop(struct cropparams *crp)
   char basename[FLEN_KEYWORD];
   long fpixel_i[2] , lpixel_i[2];
   fitsfile *ifp=crp->infits, *ofp;
-  struct gal_fitsarray_header_ll *headers=NULL;
+  struct gal_fits_header_ll *headers=NULL;
   int status=0, anynul=0, bitpix=p->bitpix;
   long fpixel_o[2], lpixel_o[2], inc[2]={1,1};
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
@@ -704,11 +704,11 @@ onecrop(struct cropparams *crp)
       /* Read the desired part of the image, then write it into this
 	 array. */
       cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
-      array=gal_fitsarray_bitpix_alloc(cropsize, bitpix);
+      array=gal_fits_bitpix_alloc(cropsize, bitpix);
       status=0;
       if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
 			  p->bitnul, array, &anynul, &status))
-	gal_fitsarray_io_error(status, NULL);
+	gal_fits_io_error(status, NULL);
 
 
       /* If we have a floating point or double image, pixels with zero
@@ -736,21 +736,21 @@ onecrop(struct cropparams *crp)
       status=0;
       if( fits_write_subset(ofp, p->datatype, fpixel_o, lpixel_o,
 			    array, &status) )
-	gal_fitsarray_io_error(status, NULL);
+	gal_fits_io_error(status, NULL);
 
 
       /* A section has been added to the cropped image from this input
 	 image, so increment crp->imgcount and save the information of
 	 this image. */
       sprintf(basename, "ICF%lu", ++p->log[crp->outindex].numimg);
-      gal_fitsarray_file_name_in_keywords(basename, img->name, &headers);
+      gal_fits_file_name_in_keywords(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
 	      fpixel_i[1], lpixel_i[1]+1);
-      gal_fitsarray_add_to_fits_header_ll_end(&headers, TSTRING, regionkey, 0,
+      gal_fits_add_to_fits_header_ll_end(&headers, TSTRING, regionkey, 0,
                                               region, 0, "Range of pixels "
                                               "used for this output.", 0, NULL);
-      gal_fitsarray_update_keys(ofp, &headers);
+      gal_fits_update_keys(ofp, &headers);
 
 
       /* Free the allocated array. */
@@ -808,7 +808,7 @@ iscenterfilled(struct cropparams *crp)
 
   /* Get the final size of the output image. */
   if( fits_get_img_size(ofp, maxdim, naxes, &status) )
-    gal_fitsarray_io_error(status, NULL);
+    gal_fits_io_error(status, NULL);
 
   /* Get the size and range of the central region to check. The +1 is
      because in FITS, counting begins from 1, not zero. */
@@ -819,10 +819,10 @@ iscenterfilled(struct cropparams *crp)
 
   /* Allocate the array and read in the pixels. */
   size=checkcenter*checkcenter;
-  array=gal_fitsarray_bitpix_alloc(size, bitpix);
+  array=gal_fits_bitpix_alloc(size, bitpix);
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
 		       p->bitnul, array, &anynul, &status) )
-    gal_fitsarray_io_error(status, NULL);
+    gal_fits_io_error(status, NULL);
 
   /* Depending on bitpix, check the central pixels of the image. */
   nulcount=0;

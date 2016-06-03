@@ -28,8 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/linkedlist.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -79,11 +79,11 @@ haserror(struct headerparams *p, int actionid, char *string, int status)
 
 
 void
-writeupdatekeys(fitsfile *fptr, struct gal_fitsarray_header_ll **keylist,
+writeupdatekeys(fitsfile *fptr, struct gal_fits_header_ll **keylist,
                 int u1w2)
 {
   int status=0;
-  struct gal_fitsarray_header_ll *tmp, *ttmp;
+  struct gal_fits_header_ll *tmp, *ttmp;
 
   tmp=*keylist;
   while(tmp!=NULL)
@@ -96,13 +96,13 @@ writeupdatekeys(fitsfile *fptr, struct gal_fitsarray_header_ll **keylist,
             {
               if( fits_update_key(fptr, tmp->datatype, tmp->keyname,
                                   tmp->value, tmp->comment, &status) )
-                gal_fitsarray_io_error(status, NULL);
+                gal_fits_io_error(status, NULL);
             }
           else
             {
               if(fits_write_key_null(fptr, tmp->keyname, tmp->comment,
                                      &status))
-                gal_fitsarray_io_error(status, NULL);
+                gal_fits_io_error(status, NULL);
             }
         }
       else if (u1w2==2)
@@ -111,17 +111,17 @@ writeupdatekeys(fitsfile *fptr, struct gal_fitsarray_header_ll **keylist,
             {
               if( fits_write_key(fptr, tmp->datatype, tmp->keyname,
                                  tmp->value, tmp->comment, &status) )
-                gal_fitsarray_io_error(status, NULL);
+                gal_fits_io_error(status, NULL);
             }
           else
             {
               if(fits_write_key_null(fptr, tmp->keyname, tmp->comment,
                                      &status))
-                gal_fitsarray_io_error(status, NULL);
+                gal_fits_io_error(status, NULL);
             }
           if(tmp->unit
              && fits_write_key_unit(fptr, tmp->keyname, tmp->unit, &status) )
-            gal_fitsarray_io_error(status, NULL);
+            gal_fits_io_error(status, NULL);
         }
       else
         error(EXIT_FAILURE, 0, "a bug! Please contact us at `%s' so we can "
@@ -131,7 +131,7 @@ writeupdatekeys(fitsfile *fptr, struct gal_fitsarray_header_ll **keylist,
       /* Add the unit: */
       if(tmp->unit
          && fits_write_key_unit(fptr, tmp->keyname, tmp->unit, &status) )
-        gal_fitsarray_io_error(status, NULL);
+        gal_fits_io_error(status, NULL);
 
       /* Free the value pointer if desired: */
       if(tmp->kfree) free(tmp->keyname);
@@ -163,7 +163,7 @@ header(struct headerparams *p)
   if(p->onlyview)
     {
       if( fits_hdr2str(p->fptr, 0, NULL, 0, &fullheader, &nkeys, &status) )
-        gal_fitsarray_io_error(status, NULL);
+        gal_fits_io_error(status, NULL);
 
       /* FLEN_CARD supposes that the NULL string character is in the
          end of each keyword header card. In fits_hdr2str, the NULL
@@ -181,7 +181,7 @@ header(struct headerparams *p)
       printf("\n");
 
       if (fits_free_memory(fullheader, &status) )
-        gal_fitsarray_io_error(status, "problem in header.c for freeing "
+        gal_fits_io_error(status, "problem in header.c for freeing "
                                "the memory used to keep all the headers");
     }
   else

@@ -458,7 +458,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( gal_fitsarray_name_is_fits(arg) )
+      if( gal_fits_name_is_fits(arg) )
 	{
 	  gal_linkedlist_add_to_stll(&p->up.gal_linkedlist_stll, arg);
 	  ++p->numimg;

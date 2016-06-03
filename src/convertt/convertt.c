@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/txtarrayvv.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -217,16 +217,16 @@ savefits(struct converttparams *p)
     {
       /* Make sure array is in the correct format. */
       if(p->bitpixs[i]!=DOUBLE_IMG)
-        gal_fitsarray_change_type(p->ch[i], DOUBLE_IMG, size, p->numnul[i],
+        gal_fits_change_type(p->ch[i], DOUBLE_IMG, size, p->numnul[i],
                                   &array, p->bitpixs[i]);
       else
         array=p->ch[i];
 
       /* Write array to a FITS file.*/
       sprintf(hdu, "Channel%lu", i+1);
-      gal_fitsarray_array_to_fits_img(p->cp.output, hdu, p->bitpixs[i], array,
-                                      p->s0[i], p->s1[i], 0, NULL, NULL,
-                                      SPACK_STRING);
+      gal_fits_array_to_file(p->cp.output, hdu, p->bitpixs[i], array,
+                             p->s0[i], p->s1[i], 0, NULL, NULL,
+                             SPACK_STRING);
 
       /* If array was allocated separately, free it. */
       if(p->bitpixs[i]!=DOUBLE_IMG)

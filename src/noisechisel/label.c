@@ -28,9 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/neighbors.h>
 #include <gnuastro/linkedlist.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -77,7 +77,7 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
      array, then give them the blank labeled array. Note that since
      their value will not be 0, they will also not be labeled. */
   if(anyblank)
-    do *l++ = *b==GAL_FITSARRAY_BYTE_BLANK ? GAL_FITSARRAY_LONG_BLANK
+    do *l++ = *b==GAL_FITS_BYTE_BLANK ? GAL_FITS_LONG_BLANK
          : 0; while(++b<bf);
   else
     memset(lab, 0, size*sizeof *lab);
@@ -311,13 +311,13 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
   if(byt)
     {
       for(i=0;i<size;++i)
-        if(in[i]!=GAL_FITSARRAY_LONG_BLANK)
+        if(in[i]!=GAL_FITS_LONG_BLANK)
           byt[i] = (in[i]=newlabs[in[i]]) > 0;
     }
   else
     {
       for(i=0;i<size;++i)
-        if(in[i]!=GAL_FITSARRAY_LONG_BLANK)
+        if(in[i]!=GAL_FITS_LONG_BLANK)
           in[i]=newlabs[in[i]];
     }
 

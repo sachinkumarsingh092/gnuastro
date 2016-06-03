@@ -14136,7 +14136,7 @@ Installed library header files (for example @file{cfitsio.h} or
 @file{nproc.h}). Note that the latter are imported with @code{""}, not
 @code{<>}, for example @code{#include <nproc.h>}.
 @item
-Gnuastro common headers and libraries, for example @file{fitsarrayvv.h} or
+Gnuastro common headers and libraries, for example @file{fits.h} or
 @file{neighbors.h}, see @ref{Header files}.
 @item
 For utilities, the @file{main.h} file (which is needed by the next group of

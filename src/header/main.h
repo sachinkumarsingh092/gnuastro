@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/fits.h>
 #include <gnuastro/commonparams.h>
 
 /* Progarm name macros: */
@@ -67,8 +67,8 @@ struct headerparams
   struct gal_linkedlist_stll *delete; /* Keywords to remove.          */
   struct gal_linkedlist_stll *renamefrom; /* The initial value of the keyword. */
   struct gal_linkedlist_stll *renameto; /* The final value of the keyword. */
-  struct gal_fitsarray_header_ll *update; /* Linked list of keywords to update. */
-  struct gal_fitsarray_header_ll *write; /* Linked list of keywords to add. */
+  struct gal_fits_header_ll  *update; /* Linked list of keywords to update. */
+  struct gal_fits_header_ll  *write; /* Linked list of keywords to add. */
 
   /* Operating mode: */
   int             quitonerror;  /* Quit if an error occurs.           */

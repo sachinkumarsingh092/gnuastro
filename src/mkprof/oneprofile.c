@@ -33,12 +33,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_randist.h>	 /* To make noise.       */
 #include <gsl/gsl_integration.h> /* gsl_integration_qng  */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/neighbors.h>
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -310,7 +310,7 @@ makepixbypix(struct mkonthread *mkp)
           /*
             printf("\tac: %f, ap: %f, frac: %f\n", img[p], approx,
             fabs(img[p]-approx)/img[p]);
-            gal_fitsarray_array_to_fits_img("tmp.fits", "", FLOAT_IMG, img, is0, is1,
+            gal_fits_array_to_file("tmp.fits", "", FLOAT_IMG, img, is0, is1,
             NULL, SPACK_STRING);
           */
 
@@ -360,8 +360,8 @@ makepixbypix(struct mkonthread *mkp)
       if(ispeak) { mkp->peakflux=img[p]; ispeak=0; }
 
       /*
-      gal_fitsarray_array_to_fits_img("tmp.fits", "", FLOAT_IMG, img, is0, is1,
-		     NULL, SPACK_STRING);
+      gal_fits_array_to_file("tmp.fits", "", FLOAT_IMG, img, is0, is1,
+ 		             NULL, SPACK_STRING);
       */
       /* Go over the neighbours and add them to queue of elements
 	 to check. */

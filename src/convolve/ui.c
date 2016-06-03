@@ -31,12 +31,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                   */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h> 	/* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -350,7 +350,7 @@ sanitycheck(struct convolveparams *p)
   gal_checkset_check_file(p->up.inputname);
 
   /* Set maskname accordingly: */
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
                                  &p->up.maskname, p->up.mhdu,
                                  p->up.mhduset, "mask");
 
@@ -425,10 +425,10 @@ preparearrays(struct convolveparams *p)
   float *f, *fp, tmp, *kernel, sum;
 
   /* First read the input image: */
-  gal_fitsarray_file_to_float(up->inputname, up->maskname, cp->hdu, up->mhdu,
+  gal_fits_file_to_float(up->inputname, up->maskname, cp->hdu, up->mhdu,
                               &p->input, &bitpix, &p->anyblank,
                               &p->is0, &p->is1);
-  gal_fitsarray_read_fits_wcs(up->inputname, cp->hdu, 0, 0, &p->nwcs, &p->wcs);
+  gal_fits_read_wcs(up->inputname, cp->hdu, 0, 0, &p->nwcs, &p->wcs);
   if(p->frequency && p->anyblank)
     fprintf(stderr, "\n----------------------------------------\n"
             "######## %s WARNING ########\n"
@@ -449,7 +449,7 @@ preparearrays(struct convolveparams *p)
   if(p->makekernel)
     {
       /* Read in the kernel array: */
-      gal_fitsarray_file_to_float(up->kernelname, NULL, up->khdu, NULL,
+      gal_fits_file_to_float(up->kernelname, NULL, up->khdu, NULL,
                                   &p->kernel, &bitpix, &anyblank,
                                   &p->ks0, &p->ks1);
       if(p->ks0!=p->is0 || p->ks1!=p->is1)
@@ -470,17 +470,17 @@ preparearrays(struct convolveparams *p)
       gal_arraymanip_fmultip_const(p->kernel, size, 1/sum);
     }
 
-  /* Read the kernel. If there is anything particular to Convolve,
-     then don't use the standard kernel reading function in
-     fitsarrayvv.c. Otherwise just use the same one that all programs
-     use. The standard one is faster because it mixes the NaN
-     conversion and also the normalization into one loop.*/
+  /* Read the kernel. If there is anything particular to Convolve, then
+     don't use the standard kernel reading function in fits.c. Otherwise
+     just use the same one that all programs use. The standard one is
+     faster because it mixes the NaN conversion and also the normalization
+     into one loop.*/
   else
     {
       if(p->kernelnorm==0 || p->kernelflip==0)
         {
           /* Read in the kernel array: */
-          gal_fitsarray_file_to_float(up->kernelname, NULL, up->khdu, NULL,
+          gal_fits_file_to_float(up->kernelname, NULL, up->khdu, NULL,
                                       &p->kernel, &bitpix, &anyblank,
                                       &p->ks0, &p->ks1);
           size=p->ks0*p->ks1;
@@ -514,7 +514,7 @@ preparearrays(struct convolveparams *p)
               }
         }
       else
-        gal_fitsarray_prep_float_kernel(up->kernelname, up->khdu, &p->kernel,
+        gal_fits_prep_float_kernel(up->kernelname, up->khdu, &p->kernel,
                                         &p->ks0, &p->ks1);
     }
 }

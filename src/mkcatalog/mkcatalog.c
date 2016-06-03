@@ -30,10 +30,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/wcs.h>
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/neighbors.h>
 #include <gnuastro/txtarrayvv.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -50,12 +51,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Macro to see if the label is indexable (belongs to an object or
    not). See the explanation in src/noisechisel/label.h. */
-#if GAL_FITSARRAY_LONG_BLANK<0
+#if GAL_FITS_LONG_BLANK<0
 #define ISINDEXABLEOBJLABEL (objects[i]>0)
 #define ISINDEXABLECLPLABEL (clumps[i]>0)
 #else
-#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=GAL_FITSARRAY_LONG_BLANK)
-#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=GAL_FITSARRAY_LONG_BLANK)
+#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=GAL_FITS_LONG_BLANK)
+#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=GAL_FITS_LONG_BLANK)
 #endif
 
 
@@ -301,7 +302,7 @@ secondpass(struct mkcatalogparams *p)
       /* We are on a detected region but not a clump (with a negative
          label). This region can be used to find properties like the
          river fluxs in the vicinity of clumps. */
-      else if (clumps[i]!=GAL_FITSARRAY_LONG_BLANK)
+      else if (clumps[i]!=GAL_FITS_LONG_BLANK)
 
         /* We want to check the river pixels in each detection that
            has a clump. Recall that each detection can host more than
@@ -404,7 +405,7 @@ makeoutput(struct mkcatalogparams *p)
 
 
   /* Calculate the pixel area in arcseconds^2: */
-  pixarea=gal_fitsarray_pixel_area_arcsec2(p->wcs);
+  pixarea=gal_wcs_pixel_area_arcsec2(p->wcs);
 
 
   /* First make the objects catalog, then the clumps catalog. */

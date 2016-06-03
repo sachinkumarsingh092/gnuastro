@@ -30,13 +30,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/box.h>
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/txtarrayvv.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -217,11 +217,11 @@ saveindividual(struct mkonthread *mkp)
   /* Write the array to file (A separately built PSF doesn't need WCS
      coordinates): */
   if(ibq->ispsf && p->psfinimg==0)
-    gal_fitsarray_array_to_fits_img(outname, "MockImg", FLOAT_IMG, ibq->img,
-                                    mkp->width[1], mkp->width[0], 0, NULL, NULL,
-                                    SPACK_STRING);
+    gal_fits_array_to_file(outname, "MockImg", FLOAT_IMG, ibq->img,
+                           mkp->width[1], mkp->width[0], 0, NULL, NULL,
+                           SPACK_STRING);
   else
-    gal_fitsarray_atof_correct_wcs(outname, "MockImg", FLOAT_IMG, ibq->img,
+    gal_fits_atof_correct_wcs(outname, "MockImg", FLOAT_IMG, ibq->img,
                                    mkp->width[1], mkp->width[0], p->wcsheader,
                                    p->wcsnkeyrec, crpix, SPACK_STRING);
   ibq->indivcreated=1;
@@ -619,17 +619,17 @@ write(struct mkprofparams *p)
       if(p->up.backname)
         {
           if(bitpix==FLOAT_IMG) array=out;
-          else gal_fitsarray_change_type(p->out, FLOAT_IMG,
+          else gal_fits_change_type(p->out, FLOAT_IMG,
                                          p->naxes[1]*p->naxes[0],
                                          p->anyblank, &array, bitpix);
-          gal_fitsarray_array_to_fits_img(p->mergedimgname, "MockImg on back",
-                                          bitpix, array, p->naxes[1],
-                                          p->naxes[0], p->anyblank, p->wcs,
-                                          NULL, SPACK_STRING);
+          gal_fits_array_to_file(p->mergedimgname, "MockImg on back",
+                                 bitpix, array, p->naxes[1],
+                                 p->naxes[0], p->anyblank, p->wcs,
+                                 NULL, SPACK_STRING);
           if(bitpix!=FLOAT_IMG) free(array);
         }
       else
-        gal_fitsarray_atof_correct_wcs(p->mergedimgname, "MockImg", FLOAT_IMG,
+        gal_fits_atof_correct_wcs(p->mergedimgname, "MockImg", FLOAT_IMG,
                                        out, p->naxes[1], p->naxes[0],
                                        p->wcsheader, p->wcsnkeyrec,
                                        NULL, SPACK_STRING);

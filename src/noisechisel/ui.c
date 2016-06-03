@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarrayvv.h>
@@ -39,7 +40,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -686,7 +686,7 @@ sanitycheck(struct noisechiselparams *p)
   gal_checkset_check_file(p->up.inputname);
 
   /* Set the maskname and mask hdu accordingly: */
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
                                  &p->up.maskname, p->up.mhdu, p->up.mhduset,
                                  "mask");
 
@@ -869,11 +869,10 @@ preparearrays(struct noisechiselparams *p)
      done on the convolved image and some on the actual image, we will
      need to change the mesh's img value some times and the p->img
      will be used to keep its actual value. */
-  gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
+  gal_fits_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
                               p->up.mhdu, (float **)&smp->img, &p->bitpix,
                               &p->anyblank, &smp->s0, &smp->s1);
-  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
-                              &p->nwcs, &p->wcs);
+  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
   s0=smp->s0; s1=smp->s1;
 
   /* make sure the channel sizes fit the channel sizes. */
@@ -908,7 +907,7 @@ preparearrays(struct noisechiselparams *p)
 
   /* Read the kernel: */
   if(p->up.kernelnameset)
-    gal_fitsarray_prep_float_kernel(p->up.kernelname, p->up.khdu, &smp->kernel,
+    gal_fits_prep_float_kernel(p->up.kernelname, p->up.khdu, &smp->kernel,
                                     &smp->ks0, &smp->ks1);
   else
     {
@@ -977,18 +976,18 @@ preparearrays(struct noisechiselparams *p)
   gal_mesh_make_mesh(lmp);
   if(p->meshname)
     {
-      gal_fitsarray_array_to_fits_img(p->meshname, "Input", FLOAT_IMG,
-                                      smp->img, s0, s1, p->anyblank, p->wcs,
-                                      NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->meshname, "Input", FLOAT_IMG,
+                             smp->img, s0, s1, p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
       gal_check_mesh_id(smp, &meshindexs);
-      gal_fitsarray_array_to_fits_img(p->meshname, "SmallMeshIndexs",
-                                      LONG_IMG, meshindexs, s0, s1, 0, p->wcs,
-                                      NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->meshname, "SmallMeshIndexs",
+                             LONG_IMG, meshindexs, s0, s1, 0, p->wcs,
+                             NULL, SPACK_STRING);
       free(meshindexs);
       gal_check_mesh_id(lmp, &meshindexs);
-      gal_fitsarray_array_to_fits_img(p->meshname, "LargeMeshIndexs", LONG_IMG,
-                                      meshindexs, s0, s1, 0, p->wcs,
-                                      NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->meshname, "LargeMeshIndexs", LONG_IMG,
+                             meshindexs, s0, s1, 0, p->wcs,
+                             NULL, SPACK_STRING);
       free(meshindexs);
     }
 }

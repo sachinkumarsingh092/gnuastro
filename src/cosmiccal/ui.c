@@ -33,12 +33,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <nproc.h>              /* From Gnulib.                     */
 #include <gsl/gsl_const_mksa.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

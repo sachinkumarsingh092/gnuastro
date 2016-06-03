@@ -28,9 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/neighbors.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -734,7 +734,7 @@ clabwithnoseg(long *olab, long *clab, size_t size, int anyblank)
 
   if(anyblank)
     do
-      *clab++ = ( *olab==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
+      *clab++ = ( *olab==GAL_FITS_LONG_BLANK ? GAL_FITS_LONG_BLANK
                   : ( *olab>0 ? SEGMENTINIT : 0 ) );
     while(++olab<end);
   else
@@ -770,16 +770,16 @@ segmentation(struct noisechiselparams *p)
   /* Start the steps image: */
   if(segmentationname)
     {
-      gal_fitsarray_array_to_fits_img(segmentationname, "Input", FLOAT_IMG,
-                                      p->img, s0, s1, p->anyblank, p->wcs,
-                                      NULL, SPACK_STRING);
-      gal_fitsarray_array_to_fits_img(segmentationname,
-                                      "Convolved-SkySubtracted", FLOAT_IMG,
-                                      p->conv, s0, s1, p->anyblank, p->wcs,
-                                      NULL, SPACK_STRING);
-      gal_fitsarray_array_to_fits_img(segmentationname, "InitialLabels",
-                                      LONG_IMG, p->olab, s0, s1, p->anyblank,
-                                      p->wcs, NULL, SPACK_STRING);
+      gal_fits_array_to_file(segmentationname, "Input", FLOAT_IMG,
+                             p->img, s0, s1, p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
+      gal_fits_array_to_file(segmentationname,
+                             "Convolved-SkySubtracted", FLOAT_IMG,
+                             p->conv, s0, s1, p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
+      gal_fits_array_to_file(segmentationname, "InitialLabels",
+                             LONG_IMG, p->olab, s0, s1, p->anyblank,
+                             p->wcs, NULL, SPACK_STRING);
     }
 
 
@@ -792,7 +792,7 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       b=p->byt;lf=(l=p->clab)+s0*s1;
-      do *l = *b++==GAL_FITSARRAY_BYTE_BLANK ? GAL_FITSARRAY_LONG_BLANK
+      do *l = *b++==GAL_FITS_BYTE_BLANK ? GAL_FITS_LONG_BLANK
            : 0; while(++l<lf);
     }
   else
@@ -805,10 +805,10 @@ segmentation(struct noisechiselparams *p)
   findclumpsn(p);
   if(p->segmentationname)
     {
-      gal_fitsarray_array_to_fits_img(p->segmentationname,
-                                      "Noise Oversegmentaion", LONG_IMG,
-                                      p->clab, p->smp.s0, p->smp.s1,
-                                      p->anyblank, p->wcs, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->segmentationname,
+                             "Noise Oversegmentaion", LONG_IMG,
+                             p->clab, p->smp.s0, p->smp.s1,
+                             p->anyblank, p->wcs, NULL, SPACK_STRING);
     }
 
 
@@ -817,7 +817,7 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       lf=(l=p->clab)+s0*s1;
-      do *l = *l==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
+      do *l = *l==GAL_FITS_LONG_BLANK ? GAL_FITS_LONG_BLANK
            : 0; while(++l<lf);
     }
   else memset(p->clab, 0, s0*s1*sizeof *p->clab);
@@ -843,7 +843,7 @@ segmentation(struct noisechiselparams *p)
           if(p->anyblank)
             {
               lf=(l=p->clab)+s0*s1;
-              do *l = *l==GAL_FITSARRAY_LONG_BLANK ? GAL_FITSARRAY_LONG_BLANK
+              do *l = *l==GAL_FITS_LONG_BLANK ? GAL_FITS_LONG_BLANK
                    : 0; while(++l<lf);
             }
           else memset(p->clab, 0, s0*s1*sizeof *p->clab);
@@ -873,10 +873,10 @@ segmentation(struct noisechiselparams *p)
                     "unrecognized value of %d", PACKAGE_BUGREPORT,
                     p->stepnum);
             }
-          gal_fitsarray_array_to_fits_img(p->segmentationname, extname,
-                                          LONG_IMG, forfits, s0, s1,
-                                          p->anyblank, p->wcs, NULL,
-                                          SPACK_STRING);
+          gal_fits_array_to_file(p->segmentationname, extname,
+                                 LONG_IMG, forfits, s0, s1,
+                                 p->anyblank, p->wcs, NULL,
+                                 SPACK_STRING);
           ++p->stepnum;
         }
     }

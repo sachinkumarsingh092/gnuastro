@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/mesh.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/timing.h>
@@ -34,7 +35,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/checkset.h>
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -75,9 +75,9 @@ initialdetection(struct noisechiselparams *p)
   findapplyqthreshold(p);
   if(p->anyblank)  setbytblank(p->img, p->byt, s0*s1);
   if(detectionname)
-    gal_fitsarray_array_to_fits_img(detectionname, "Thresholded", BYTE_IMG,
-                                    p->byt, s0, s1, p->anyblank, p->wcs, NULL,
-                                    SPACK_STRING);
+    gal_fits_array_to_file(detectionname, "Thresholded", BYTE_IMG,
+                           p->byt, s0, s1, p->anyblank, p->wcs, NULL,
+                           SPACK_STRING);
   if(verb)
     {
       sprintf(report, "%.2f quantile threshold found and applied.",
@@ -95,9 +95,9 @@ initialdetection(struct noisechiselparams *p)
     for(i=0;i<p->erode;++i)
       dilate0_erode1_8con(p->byt, s0, s1, 1);
   if(detectionname)
-    gal_fitsarray_array_to_fits_img(detectionname, "Eroded", BYTE_IMG, p->byt,
-                                    s0, s1, p->anyblank, p->wcs, NULL,
-                                    SPACK_STRING);
+    gal_fits_array_to_file(detectionname, "Eroded", BYTE_IMG, p->byt,
+                           s0, s1, p->anyblank, p->wcs, NULL,
+                           SPACK_STRING);
   if(verb)
     {
       sprintf(report, "Eroded %lu times (%s connectivity).",
@@ -110,9 +110,9 @@ initialdetection(struct noisechiselparams *p)
   /* Do the opening: */
   opening(p->byt, s0, s1, p->opening, p->openingngb);
   if(detectionname)
-    gal_fitsarray_array_to_fits_img(detectionname, "Opened", BYTE_IMG, p->byt,
-                                    s0, s1, p->anyblank, p->wcs, NULL,
-                                    SPACK_STRING);
+    gal_fits_array_to_file(detectionname, "Opened", BYTE_IMG, p->byt,
+                           s0, s1, p->anyblank, p->wcs, NULL,
+                           SPACK_STRING);
   if(verb)
     {
       sprintf(report, "Opened (depth: %lu, %s connectivity).",
@@ -126,9 +126,9 @@ initialdetection(struct noisechiselparams *p)
      ui.c and will be freed there. */
   p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->anyblank, 4);
   if(detectionname)
-    gal_fitsarray_array_to_fits_img(detectionname, "Labeled", LONG_IMG, p->olab,
-                                    s0, s1, p->anyblank, p->wcs, NULL,
-                                    SPACK_STRING);
+    gal_fits_array_to_file(detectionname, "Labeled", LONG_IMG, p->olab,
+                           s0, s1, p->anyblank, p->wcs, NULL,
+                           SPACK_STRING);
 }
 
 
@@ -246,9 +246,9 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
           ++b;
         }
       while(++lab<lf);
-      gal_fitsarray_array_to_fits_img(p->detectionname, "For S/N", BYTE_IMG,
-                                      p->dbyt, p->smp.s0, p->smp.s1,
-                                      p->anyblank, p->wcs, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->detectionname, "For S/N", BYTE_IMG,
+                             p->dbyt, p->smp.s0, p->smp.s1,
+                             p->anyblank, p->wcs, NULL, SPACK_STRING);
     }
 
 
@@ -335,7 +335,7 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
   lf= (lab=clab) + p->smp.s0*p->smp.s1;
   do
     {
-      if(*lab!=GAL_FITSARRAY_LONG_BLANK)
+      if(*lab!=GAL_FITS_LONG_BLANK)
         *b = newlabs[*lab] > 0;
       ++b;
     }
@@ -343,9 +343,9 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
 
 
   if(p->detectionname)
-    gal_fitsarray_array_to_fits_img(p->detectionname, "True pseudo-detections",
-                                    BYTE_IMG, p->dbyt, p->smp.s0, p->smp.s1,
-                                    p->anyblank, p->wcs, NULL, SPACK_STRING);
+    gal_fits_array_to_file(p->detectionname, "True pseudo-detections",
+                           BYTE_IMG, p->dbyt, p->smp.s0, p->smp.s1,
+                           p->anyblank, p->wcs, NULL, SPACK_STRING);
 
   free(newlabs);
 }
@@ -390,8 +390,8 @@ bytpartfromlarge(struct noisechiselparams *p, unsigned char *out,
       bf = ( b = p->byt + start + r++ * is1 ) + s1;
       do
         {
-          *out++ = *b==b0f1 ? *d : (*b==GAL_FITSARRAY_BYTE_BLANK
-                                    ? GAL_FITSARRAY_BYTE_BLANK : 0);
+          *out++ = *b==b0f1 ? *d : (*b==GAL_FITS_BYTE_BLANK
+                                    ? GAL_FITS_BYTE_BLANK : 0);
           ++d;
         }
       while(++b<bf);
@@ -467,7 +467,7 @@ detectpseudos(void *inparams)
       if(p->anyblank)
         {
           bf=(b=thisbyt)+s0*s1;
-          do if(*b++==GAL_FITSARRAY_BYTE_BLANK) { anyblank=1; break; }
+          do if(*b++==GAL_FITS_BYTE_BLANK) { anyblank=1; break; }
           while(b<bf);
         }
 
@@ -557,9 +557,9 @@ detsnthresh(struct noisechiselparams *p)
                     "p->stepnum (%d) is not recognized in detsnthresh "
                     "(detection.c)", PACKAGE_BUGREPORT, p->stepnum);
             }
-          gal_fitsarray_array_to_fits_img(p->detectionname, extname, BYTE_IMG,
-                                          p->dbyt, s0, s1, p->anyblank, p->wcs,
-                                          NULL, SPACK_STRING);
+          gal_fits_array_to_file(p->detectionname, extname, BYTE_IMG,
+                                 p->dbyt, s0, s1, p->anyblank, p->wcs,
+                                 NULL, SPACK_STRING);
           ++p->stepnum;
         }
       free(tmp);
@@ -575,9 +575,9 @@ detsnthresh(struct noisechiselparams *p)
      quantile. */
   numpseudo=BF_concmp(p->dbyt, p->clab, s0, s1, p->anyblank, 4);
   if(p->detectionname)
-    gal_fitsarray_array_to_fits_img(p->detectionname, "Labeled", LONG_IMG,
-                                    p->clab, s0, s1, p->anyblank, p->wcs,
-                                    NULL, SPACK_STRING);
+    gal_fits_array_to_file(p->detectionname, "Labeled", LONG_IMG,
+                           p->clab, s0, s1, p->anyblank, p->wcs,
+                           NULL, SPACK_STRING);
   detlabelsn(p, &numpseudo, &sntable);
 
 
@@ -658,7 +658,7 @@ dbytolaboverlap(struct noisechiselparams *p)
   if(p->dilate)
     do
       {
-        if(*lab!=GAL_FITSARRAY_LONG_BLANK)
+        if(*lab!=GAL_FITS_LONG_BLANK)
           *byt=tokeep[*lab]>0;
         ++byt;
       }
@@ -666,7 +666,7 @@ dbytolaboverlap(struct noisechiselparams *p)
   else
     do
       {
-        if(*lab!=GAL_FITSARRAY_LONG_BLANK)
+        if(*lab!=GAL_FITS_LONG_BLANK)
           *byt = ( *lab = tokeep[*lab] ) > 0;
         ++byt;
       }
@@ -721,9 +721,9 @@ onlytruedetections(struct noisechiselparams *p)
   /* Apply the false detection removal threshold to the image. */
   applydetectionthresholdskysub(p);
   if(detectionname)
-    gal_fitsarray_array_to_fits_img(detectionname, "InitalSkySubtracted",
-                                    FLOAT_IMG, p->imgss, s0, s1, p->anyblank,
-                                    p->wcs, NULL, SPACK_STRING);
+    gal_fits_array_to_file(detectionname, "InitalSkySubtracted",
+                           FLOAT_IMG, p->imgss, s0, s1, p->anyblank,
+                           p->wcs, NULL, SPACK_STRING);
   if(verb)
     {
       sprintf(report, "Initial sky threshold (%.3f sigma) applied.",
@@ -742,9 +742,9 @@ onlytruedetections(struct noisechiselparams *p)
   /* Select the true detections: */
   dbytolaboverlap(p);
   if(detectionname)
-    gal_fitsarray_array_to_fits_img(detectionname, "TrueDetections",
-                                    BYTE_IMG, p->byt, s0, s1, p->anyblank,
-                                    p->wcs, NULL, SPACK_STRING);
+    gal_fits_array_to_file(detectionname, "TrueDetections",
+                           BYTE_IMG, p->byt, s0, s1, p->anyblank,
+                           p->wcs, NULL, SPACK_STRING);
   if(verb)
     {            /* p->numobjects changed in dbytlaboverlap. */
       sprintf(report, "%lu false detections removed.",

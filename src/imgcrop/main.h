@@ -24,8 +24,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 
+#include <gnuastro/fits.h>
 #include <gnuastro/linkedlist.h>
-#include <gnuastro/fitsarrayvv.h>
 #include <gnuastro/commonparams.h>
 
 

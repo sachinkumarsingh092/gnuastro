@@ -27,22 +27,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* For the GAL_FITSARRAY_LONG_BLANK and GAL_FITSARRAY_BYTE_BLANK macros: */
-#include <gnuastro/fitsarrayvv.h>
+/* For the GAL_FITS_LONG_BLANK and GAL_FITS_BYTE_BLANK macros: */
+#include <gnuastro/fits.h>
 
 
 /* In case the blank value for the long type is negative, the only
    necessary check to see if we are on a label or not is to see if its
-   value is positive. But since we don't want to impose this condition
-   on the fitsarrayvv.h macro (which is used by all Gnuastro programs)
-   we allow for it to be positive through this C preprocessor
-   check. The compiler has no idea of our convention to label things
-   with positive indices, so we can't rely on the compiler to optimize
-   this. */
-#if GAL_FITSARRAY_LONG_BLANK<0
+   value is positive. But since we don't want to impose this condition on
+   the fits.h macro (which is used by all Gnuastro programs) we allow for
+   it to be positive through this C preprocessor check. The compiler has no
+   idea of our convention to label things with positive indices, so we
+   can't rely on the compiler to optimize this. */
+#if GAL_FITS_LONG_BLANK<0
 #define ISINDEXABLELABEL (*lab>0)
 #else
-#define ISINDEXABLELABEL (*lab && *lab!=GAL_FITSARRAY_LONG_BLANK)
+#define ISINDEXABLELABEL (*lab && *lab!=GAL_FITS_LONG_BLANK)
 #endif
 
 

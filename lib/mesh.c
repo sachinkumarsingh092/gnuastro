@@ -30,13 +30,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/mesh.h>
 #include <gnuastro/mode.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/neighbors.h>
 #include <gnuastro/linkedlist.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/fitsarrayvv.h>
 #include <gnuastro/spatialconvolve.h>
 
 
@@ -347,13 +347,13 @@ gal_mesh_full_garray(struct gal_mesh_params *mp, int reverse)
     }
 
   /* Just for a check:
-  gal_fitsarray_array_to_fits_img("nochannels.fits", "fgarray1", FLOAT_IMG, fgarray1,
-                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
-                 "mesh");
+  gal_fits_array_to_file("nochannels.fits", "fgarray1", FLOAT_IMG,
+                         fgarray1, mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1,
+                         NULL, NULL, "mesh");
   if(mp->ngarrays==2)
-    gal_fitsarray_array_to_fits_img("nochannels.fits", "fgarray2", FLOAT_IMG, fgarray2,
-                   mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
-                   "mesh");
+    gal_fits_array_to_file("nochannels.fits", "fgarray2", FLOAT_IMG,
+                           fgarray2, mp->nch2*mp->gs0, mp->nch1*mp->gs1,
+                           1, NULL, NULL, "mesh");
   */
 }
 
@@ -494,29 +494,29 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename, char *extname1,
          used for this job. In cgarray the meshs are ordered
          differently. */
       if(mp->garray1==mp->cgarray1) gal_mesh_full_garray(mp, 0);
-      gal_fitsarray_array_to_fits_img(filename, extname1, FLOAT_IMG,
-                                      mp->fgarray1, mp->gs0*mp->nch2,
-                                      mp->gs1*mp->nch1, 0, wcs, NULL,
-                                      spack_string);
+      gal_fits_array_to_file(filename, extname1, FLOAT_IMG,
+                             mp->fgarray1, mp->gs0*mp->nch2,
+                             mp->gs1*mp->nch1, 0, wcs, NULL,
+                             spack_string);
       if(mp->ngarrays==2)
         /* Note that gal_mesh_full_garray will correct both the meshs if there
            are two.*/
-        gal_fitsarray_array_to_fits_img(filename, extname2, FLOAT_IMG,
-                                        mp->fgarray2, mp->gs0*mp->nch2,
-                                        mp->gs1*mp->nch1, 0, wcs, NULL,
-                                        spack_string);
+        gal_fits_array_to_file(filename, extname2, FLOAT_IMG,
+                               mp->fgarray2, mp->gs0*mp->nch2,
+                               mp->gs1*mp->nch1, 0, wcs, NULL,
+                               spack_string);
 
     }
   else
     {
       gal_mesh_check_garray(mp, &tmp1, &tmp2);
-      gal_fitsarray_array_to_fits_img(filename, extname1, FLOAT_IMG, tmp1,
-                                      mp->s0, mp->s1, 0, wcs, NULL,
-                                      spack_string);
+      gal_fits_array_to_file(filename, extname1, FLOAT_IMG, tmp1,
+                             mp->s0, mp->s1, 0, wcs, NULL,
+                             spack_string);
       if(mp->ngarrays==2)
-        gal_fitsarray_array_to_fits_img(filename, extname2, FLOAT_IMG, tmp2,
-                                        mp->s0, mp->s1, 0, wcs, NULL,
-                                        spack_string);
+        gal_fits_array_to_file(filename, extname2, FLOAT_IMG, tmp2,
+                               mp->s0, mp->s1, 0, wcs, NULL,
+                               spack_string);
       free(tmp1);
       free(tmp2);
     }
@@ -1311,12 +1311,12 @@ gal_mesh_interpolate(struct gal_mesh_params *mp, char *errstart)
 
   /* For a check
   system("rm test.fits");
-  gal_fitsarray_array_to_fits_img("test.fits", "garray1", FLOAT_IMG, mp->garray1,
-                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
-                 "mesh");
-  gal_fitsarray_array_to_fits_img("test.fits", "garray2", FLOAT_IMG, mp->garray2,
-                 mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
-                 "mesh");
+  gal_fits_array_to_file("test.fits", "garray1", FLOAT_IMG, mp->garray1,
+                          mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                          "mesh");
+  gal_fits_array_to_file("test.fits", "garray2", FLOAT_IMG, mp->garray2,
+                         mp->nch2*mp->gs0, mp->nch1*mp->gs1, 1, NULL, NULL,
+                         "mesh");
   */
 
   /* Clean up. */

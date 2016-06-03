@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/checkset.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -61,7 +61,7 @@ imgmodecrop(void *inparam)
   /* The whole catalog is from one image, so you can get the
      information here:*/
   img=&p->imgs[crp->imgindex];
-  gal_fitsarray_read_fits_hdu(img->name, cp->hdu, IMAGE_HDU, &crp->infits);
+  gal_fits_read_hdu(img->name, cp->hdu, IMAGE_HDU, &crp->infits);
 
   /* Go over all the outputs that are assigned to this thread: */
   for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
@@ -83,10 +83,10 @@ imgmodecrop(void *inparam)
 	  log->centerfilled=iscenterfilled(crp);
 
 	  /* Add the final headers and close output FITS image: */
-	  gal_fitsarray_copyright_end(crp->outfits, NULL, SPACK_STRING);
+	  gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
-	    gal_fitsarray_io_error(status, "CFITSIO could not close "
+	    gal_fits_io_error(status, "CFITSIO could not close "
                                    "the opened file");
 
 	  /* Remove the output image if its center was not filled. */
@@ -113,7 +113,7 @@ imgmodecrop(void *inparam)
   /* Close the input image. */
   status=0;
   if( fits_close_file(crp->infits, &status) )
-    gal_fitsarray_io_error(status, "imgmode.c: imgcroponthreads could "
+    gal_fits_io_error(status, "imgmode.c: imgcroponthreads could "
                            "not close FITS file");
 
   /* Wait until all other threads finish. */
@@ -159,7 +159,7 @@ wcsmodecrop(void *inparam)
       do
 	if(radecoverlap(crp))
 	  {
-	    gal_fitsarray_read_fits_hdu(p->imgs[crp->imgindex].name, p->cp.hdu,
+	    gal_fits_read_hdu(p->imgs[crp->imgindex].name, p->cp.hdu,
                                         IMAGE_HDU, &crp->infits);
 
 	    if(log->name==NULL) cropname(crp);
@@ -168,7 +168,7 @@ wcsmodecrop(void *inparam)
 
 	    status=0;
 	    if( fits_close_file(crp->infits, &status) )
-	      gal_fitsarray_io_error(status, "imgmode.c: imgcroponthreads "
+	      gal_fits_io_error(status, "imgmode.c: imgcroponthreads "
                                      "could not close FITS file");
 	  }
       while ( ++(crp->imgindex) < p->numimg );
@@ -179,10 +179,10 @@ wcsmodecrop(void *inparam)
 	{
 	  log->centerfilled=iscenterfilled(crp);
 
-	  gal_fitsarray_copyright_end(crp->outfits, NULL, SPACK_STRING);
+	  gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
 	  status=0;
 	  if( fits_close_file(crp->outfits, &status) )
-	    gal_fitsarray_io_error(status, "CFITSIO could not close the "
+	    gal_fits_io_error(status, "CFITSIO could not close the "
                                      "opened file");
 
 	  if(log->centerfilled==0 && p->keepblankcenter==0)

@@ -133,8 +133,8 @@ findavestdongrid(struct noisechiselparams *p, char *outname)
   if(outname)
     {
       if(smp->meshbasedcheck==0)
-        gal_fitsarray_array_to_fits_img(outname, "Detected", BYTE_IMG, p->byt,
-                                        s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+        gal_fits_array_to_file(outname, "Detected", BYTE_IMG, p->byt,
+                               s0, s1, 0, p->wcs, NULL, SPACK_STRING);
       gal_mesh_value_file(smp, outname, "Calculated Sky", "Calculated Sky STD",
                           p->wcs, SPACK_STRING);
     }

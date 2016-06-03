@@ -32,13 +32,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <nproc.h>              /* From Gnulib.                   */
 
 #include <gnuastro/box.h>
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 #include "mkprof.h"
@@ -658,11 +658,10 @@ preparearrays(struct mkprofparams *p)
   if(p->up.backname)
     {
       /* Read in the background image and its coordinates: */
-      p->anyblank=gal_fitsarray_fits_img_to_array(p->up.backname, p->cp.hdu,
-                                                  &p->bitpix, &array,
-                                                  &naxes[1], &naxes[0]);
-      gal_fitsarray_read_fits_wcs(p->up.backname, p->cp.hdu, 0, 0,
-                                  &p->nwcs, &p->wcs);
+      p->anyblank=gal_fits_hdu_to_array(p->up.backname, p->cp.hdu,
+                                        &p->bitpix, &array,
+                                        &naxes[1], &naxes[0]);
+      gal_fits_read_wcs(p->up.backname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
       p->naxes[1]=naxes[1];
       p->naxes[0]=naxes[0];
 
@@ -672,7 +671,7 @@ preparearrays(struct mkprofparams *p)
         p->out=array;
       else
         {
-          gal_fitsarray_change_type(array, p->bitpix, p->naxes[1]*p->naxes[0],
+          gal_fits_change_type(array, p->bitpix, p->naxes[1]*p->naxes[0],
                                     p->anyblank, (void **)(&p->out), FLOAT_IMG);
           free(array);
         }

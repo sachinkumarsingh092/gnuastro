@@ -28,8 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/polygon.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 #include "imgwarp.h"
@@ -427,7 +427,7 @@ correctwcssaveoutput(struct imgwarpparams *p)
   void *array;
   double *m=p->matrix;
   char keyword[9*FLEN_KEYWORD];
-  struct gal_fitsarray_header_ll *headers=NULL;
+  struct gal_fits_header_ll *headers=NULL;
   double tpc[4], tcrpix[3], *crpix=p->wcs->crpix, *pc=p->wcs->pc;
   double tinv[4]={p->inverse[0]/p->inverse[8], p->inverse[1]/p->inverse[8],
                   p->inverse[3]/p->inverse[8], p->inverse[4]/p->inverse[8]};
@@ -458,25 +458,25 @@ correctwcssaveoutput(struct imgwarpparams *p)
       p->inputbitpix=DOUBLE_IMG; /* In case it wasn't and p->doubletype==1 */
     }
   else
-    gal_fitsarray_change_type((void **)p->output, DOUBLE_IMG,
+    gal_fits_change_type((void **)p->output, DOUBLE_IMG,
                               p->onaxes[1]*p->onaxes[0],
                               p->numnul, &array, p->inputbitpix);
 
   /* Add the appropriate headers: */
-  gal_fitsarray_file_name_in_keywords("INF", p->up.inputname, &headers);
+  gal_fits_file_name_in_keywords("INF", p->up.inputname, &headers);
   for(i=0;i<9;++i)
     {
       sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%lu_%lu", i/3+1, i%3+1);
-      gal_fitsarray_add_to_fits_header_ll_end(&headers, TDOUBLE,
+      gal_fits_add_to_fits_header_ll_end(&headers, TDOUBLE,
                                               &keyword[i*FLEN_KEYWORD], 0,
                                               &p->matrix[i], 0, "Warp matrix "
                                               "element value.", 0, NULL);
     }
 
   /* Save the output: */
-  gal_fitsarray_array_to_fits_img(p->cp.output, "Warped", p->inputbitpix, array,
-                                  p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
-                                  headers, SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output, "Warped", p->inputbitpix, array,
+                         p->onaxes[1], p->onaxes[0], p->numnul, p->wcs,
+                         headers, SPACK_STRING);
 
   if(array!=p->output)
     free(array);

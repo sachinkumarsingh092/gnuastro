@@ -606,7 +606,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case ARGP_KEY_ARG:
 
       /* See what type of input value it is and put it in. */
-      if( gal_fitsarray_name_is_fits(arg) )
+      if( gal_fits_name_is_fits(arg) )
 	{
 	  if(p->up.backname)
 	    argp_error(state, "only one input FITS image (the background) "

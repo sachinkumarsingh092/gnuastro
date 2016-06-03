@@ -28,8 +28,8 @@ bin_PROGRAMS = astmknoise
 astmknoise_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 mknoise.c mknoise.h
 
-astmknoise_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		 \
--lgalconfigfiles -lgalfitsarrayvv -lgalcheckset -lgaltiming -lgalthreads
+astmknoise_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
+-lgalconfigfiles -lgalfits -lgalcheckset -lgaltiming -lgalthreads
 
 
 

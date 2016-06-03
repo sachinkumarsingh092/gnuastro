@@ -32,7 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   #include <jpeglib.h>
 #endif
 
-#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/fits.h>
 
 #include "main.h"
 #include "jpeg.h"

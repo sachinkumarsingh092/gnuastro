@@ -29,9 +29,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <gsl/gsl_errno.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
-#include <gnuastro/fitsarrayvv.h>
 #include <gnuastro/spatialconvolve.h>
 
 #include "main.h"
@@ -637,14 +637,14 @@ frequencyconvolve(struct convolveparams *p)
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Input padded",
-                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                                      NULL, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->up.freqstepsname, "Input padded",
+                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                             NULL, NULL, SPACK_STRING);
       free(tmp);
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Kernel padded",
-                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                                      NULL, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->up.freqstepsname, "Kernel padded",
+                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                             NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -660,14 +660,14 @@ frequencyconvolve(struct convolveparams *p)
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Input transform",
-                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                                      NULL, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->up.freqstepsname, "Input transform",
+                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                             NULL, NULL, SPACK_STRING);
       free(tmp);
       complextoreal(p->pker, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Kernel transform",
-                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                                      NULL, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->up.freqstepsname, "Kernel transform",
+                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                             NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -686,9 +686,9 @@ frequencyconvolve(struct convolveparams *p)
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
-      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, operation,
-                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                                      NULL, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->up.freqstepsname, operation,
+                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                             NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -700,9 +700,9 @@ frequencyconvolve(struct convolveparams *p)
   if(verb) gal_timing_report(&t1, "Converted back to the spatial domain.", 1);
   if(p->viewfreqsteps)
     {
-      gal_fitsarray_array_to_fits_img(p->up.freqstepsname, "Spatial",
-                                      DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
-                                      NULL, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->up.freqstepsname, "Spatial",
+                             DOUBLE_IMG, tmp, p->ps0, p->ps1, 0,
+                             NULL, NULL, SPACK_STRING);
       free(tmp);
     }
 
@@ -762,13 +762,13 @@ convolve(struct convolveparams *p)
       if(p->meshname)
         {
           gal_check_mesh_id(mp, &meshindexs);
-          gal_fitsarray_array_to_fits_img(p->meshname, "Input", FLOAT_IMG,
-                                          p->mp.img, mp->s0, mp->s1,
-                                          p->anyblank, p->wcs, NULL,
+          gal_fits_array_to_file(p->meshname, "Input", FLOAT_IMG,
+                                 p->mp.img, mp->s0, mp->s1,
+                                 p->anyblank, p->wcs, NULL,
                                           SPACK_STRING);
-          gal_fitsarray_array_to_fits_img(p->meshname, "MeshIndexs", LONG_IMG,
-                                          meshindexs, mp->s0, mp->s1, 0, p->wcs,
-                                          NULL, SPACK_STRING);
+          gal_fits_array_to_file(p->meshname, "MeshIndexs", LONG_IMG,
+                                 meshindexs, mp->s0, mp->s1, 0, p->wcs,
+                                 NULL, SPACK_STRING);
           free(meshindexs);
         }
 
@@ -784,7 +784,7 @@ convolve(struct convolveparams *p)
 
   /* Save the output (which is in p->input) array. Note that p->input
      will be freed in ui.c. */
-  gal_fitsarray_array_to_fits_img(p->cp.output, "Convolved", FLOAT_IMG,
-                                  p->input, p->is0, p->is1, p->anyblank, p->wcs,
-                                  NULL, SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output, "Convolved", FLOAT_IMG,
+                         p->input, p->is0, p->is1, p->anyblank, p->wcs,
+                         NULL, SPACK_STRING);
 }

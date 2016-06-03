@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>   	/* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarrayvv.h>
@@ -39,7 +40,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -457,7 +457,7 @@ sanitycheck(struct subtractskyparams *p)
   gal_checkset_check_file(p->up.inputname);
 
   /* Set the maskname and mask hdu accordingly: */
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
                                  &p->up.maskname, p->up.mhdu, p->up.mhduset,
                                  "mask");
 
@@ -533,15 +533,14 @@ preparearrays(struct subtractskyparams *p)
   struct gal_mesh_params *mp=&p->mp;
 
   /* Read the input image. */
-  gal_fitsarray_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
+  gal_fits_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
                               p->up.mhdu, (float **)&p->mp.img, &p->bitpix,
                               &p->anyblank, &mp->s0, &mp->s1);
-  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, 0, 0,
-                              &p->nwcs, &p->wcs);
+  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
 
   /* Read the kernel: */
   if(p->up.kernelnameset)
-    gal_fitsarray_prep_float_kernel(p->up.kernelname, p->up.khdu, &mp->kernel,
+    gal_fits_prep_float_kernel(p->up.kernelname, p->up.khdu, &mp->kernel,
                                     &mp->ks0, &mp->ks1);
 
   /* Check if the input sizes and channel sizes are exact

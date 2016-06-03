@@ -32,11 +32,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/linkedlist.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -460,10 +460,10 @@ sanitycheck(struct converttparams *p)
   /* The output file name. First find the first non-blank file name: */
   if(cp->outputset)
     {
-      if(gal_fitsarray_name_is_fits(cp->output))
+      if(gal_fits_name_is_fits(cp->output))
         {
           p->outputtype=FITSFORMAT;
-          if( gal_fitsarray_name_is_fits_suffix(cp->output) )
+          if( gal_fits_name_is_fits_suffix(cp->output) )
             adddotautomaticoutput(p);
         }
       else if(nameisjpeg(cp->output))
@@ -576,7 +576,7 @@ preparearrays(struct converttparams *p)
       if(strcmp(names[i], "blank")) gal_checkset_check_file(names[i]);
 
       /* FITS: */
-      if( gal_fitsarray_name_is_fits(names[i]) )
+      if( gal_fits_name_is_fits(names[i]) )
         {
           switch(p->numch) /* Get the HDU value for this channel. */
             {
@@ -588,11 +588,9 @@ preparearrays(struct converttparams *p)
                            "problem and fix it");
             }
           p->numnul[p->numch]=
-            gal_fitsarray_fits_img_to_array(names[i], hdu,
-                                            &p->bitpixs[p->numch], &array,
-                                            &p->s0[p->numch],
-                                            &p->s1[p->numch]);
-          gal_fitsarray_change_type(array, p->bitpixs[p->numch],
+            gal_fits_hdu_to_array(names[i], hdu, &p->bitpixs[p->numch],
+                                  &array, &p->s0[p->numch], &p->s1[p->numch]);
+          gal_fits_change_type(array, p->bitpixs[p->numch],
                                     p->s0[p->numch]*p->s1[p->numch],
                                     p->numnul[p->numch],
                                     (void **)(&p->ch[p->numch]), DOUBLE_IMG);

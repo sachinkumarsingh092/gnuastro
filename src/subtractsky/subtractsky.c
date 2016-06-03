@@ -27,13 +27,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/mesh.h>
 #include <gnuastro/mode.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arraymanip.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -159,12 +159,12 @@ subtractsky(struct subtractskyparams *p)
   if(p->meshname)
     {
       gal_check_mesh_id(mp, &meshindexs);
-      gal_fitsarray_array_to_fits_img(p->meshname, "Input", FLOAT_IMG,
-                                      p->mp.img, s0, s1, p->anyblank, p->wcs,
-                                      NULL, SPACK_STRING);
-      gal_fitsarray_array_to_fits_img(p->meshname, "MeshIndexs", LONG_IMG,
-                                      meshindexs, s0, s1, 0, p->wcs,
-                                      NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->meshname, "Input", FLOAT_IMG,
+                             p->mp.img, s0, s1, p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->meshname, "MeshIndexs", LONG_IMG,
+                             meshindexs, s0, s1, 0, p->wcs,
+                             NULL, SPACK_STRING);
       free(meshindexs);
     }
   if(p->cp.verb) gal_timing_report(&t1, "Mesh grid ready.", 1);
@@ -177,12 +177,12 @@ subtractsky(struct subtractskyparams *p)
       gal_mesh_spatial_convolve_on_mesh(mp, &p->conv);
       if(p->convname)
         {
-          gal_fitsarray_array_to_fits_img(p->convname, "Input", FLOAT_IMG,
-                                          p->mp.img, s0, s1, p->anyblank,
-                                          p->wcs, NULL, SPACK_STRING);
-          gal_fitsarray_array_to_fits_img(p->convname, "Input", FLOAT_IMG,
-                                          p->conv, s0, s1, p->anyblank, p->wcs,
-                                          NULL, SPACK_STRING);
+          gal_fits_array_to_file(p->convname, "Input", FLOAT_IMG,
+                                 p->mp.img, s0, s1, p->anyblank,
+                                 p->wcs, NULL, SPACK_STRING);
+          gal_fits_array_to_file(p->convname, "Input", FLOAT_IMG,
+                                 p->conv, s0, s1, p->anyblank, p->wcs,
+                                 NULL, SPACK_STRING);
         }
     }
   else p->conv=p->mp.img;
@@ -231,9 +231,9 @@ subtractsky(struct subtractskyparams *p)
   /* Subtract the sky value */
   gal_arraymanip_fmultip_const(sky, s0*s1, -1.0f);
   skysubtracted=gal_arraymanip_fsum_arrays(mp->img, sky, s0*s1);
-  gal_fitsarray_array_to_fits_img(p->cp.output ,"SkySubtracted", FLOAT_IMG,
-                                  skysubtracted, s0, s1, p->anyblank, p->wcs,
-                                  NULL, SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output ,"SkySubtracted", FLOAT_IMG,
+                         skysubtracted, s0, s1, p->anyblank, p->wcs,
+                         NULL, SPACK_STRING);
 
 
   /* Clean up: */

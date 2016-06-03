@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/timing.h>	/* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
@@ -40,7 +41,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 #include <gnuastro/fixedstringmacros.h>
 
 #include "main.h"
@@ -381,7 +381,7 @@ sanitycheck(struct imgstatparams *p)
   gal_checkset_check_file(p->up.inputname);
 
   /* Set the p->up.maskname accordingly: */
-  gal_fitsarray_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
+  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
                                  &p->up.maskname, p->up.mhdu,
                                  p->up.mhduset, "mask");
 
@@ -476,7 +476,7 @@ preparearrays(struct imgstatparams *p)
   struct uiparams *up=&p->up;
 
   /* Read the input and mask arrays: */
-  gal_fitsarray_file_to_float(up->inputname, up->maskname, p->cp.hdu, up->mhdu,
+  gal_fits_file_to_float(up->inputname, up->maskname, p->cp.hdu, up->mhdu,
                               &p->img, &bitpix, &anyblank, &s0, &s1);
   p->size=s0*s1;
 

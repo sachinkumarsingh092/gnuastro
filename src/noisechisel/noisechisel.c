@@ -28,9 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/arraymanip.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -61,28 +61,28 @@ makeoutput(struct noisechiselparams *p)
   double *dpt;
   long num[0];
   float *sky=NULL, *std=NULL;
-  struct gal_fitsarray_header_ll *keys=NULL;
+  struct gal_fits_header_ll *keys=NULL;
   size_t s0=p->smp.s0, s1=p->smp.s1;
 
 
   /* First put a copy of the input image. */
-  gal_fitsarray_array_to_fits_img(p->cp.output, "Input", FLOAT_IMG, p->img,
-                                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output, "Input", FLOAT_IMG, p->img,
+                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
 
   /* The object labels image with a keyword mentioning the number of
      objects. */
   num[0]=p->numobjects-1;
-  gal_fitsarray_add_to_fits_header_ll(&keys, TLONG, "NOBJS", 0, num, 0,
+  gal_fits_add_to_fits_header_ll(&keys, TLONG, "NOBJS", 0, num, 0,
                                       "Number of objects in the image.", 0,
                                       NULL);
   dpt=&p->detsn;
-  gal_fitsarray_add_to_fits_header_ll(&keys, TDOUBLE, "DETSN", 0, dpt, 0,
+  gal_fits_add_to_fits_header_ll(&keys, TDOUBLE, "DETSN", 0, dpt, 0,
                                       "Signal to noise of true "
                                       "pseudo-detections.", 0, NULL);
-  gal_fitsarray_array_to_fits_img(p->cp.output, "Objects", LONG_IMG, p->olab,
-                                  s0, s1, p->anyblank, p->wcs, keys,
-                                  SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output, "Objects", LONG_IMG, p->olab,
+                         s0, s1, p->anyblank, p->wcs, keys,
+                         SPACK_STRING);
   keys=NULL;     /* keys was freed after writing. */
 
 
@@ -91,21 +91,21 @@ makeoutput(struct noisechiselparams *p)
      extension filled so the sky and its standard deviation can remain
      on the 3rd and 4th extensions. */
   num[0] = p->detectonly ? 0 : p->numclumps-1;
-  gal_fitsarray_add_to_fits_header_ll(&keys, TLONG, "NCLUMPS", 0, num, 0,
+  gal_fits_add_to_fits_header_ll(&keys, TLONG, "NCLUMPS", 0, num, 0,
                                       "Number of clumps in the image.", 0,
                                       NULL);
   dpt=&p->clumpsn;
-  gal_fitsarray_add_to_fits_header_ll(&keys, TDOUBLE, "CLUMPSN", 0, dpt, 0,
+  gal_fits_add_to_fits_header_ll(&keys, TDOUBLE, "CLUMPSN", 0, dpt, 0,
                                       "Signal to noise of true clumps.", 0,
                                       NULL);
-  gal_fitsarray_array_to_fits_img(p->cp.output, "Clumps", LONG_IMG, p->clab, s0,
-                                  s1, p->anyblank, p->wcs, keys, SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output, "Clumps", LONG_IMG, p->clab, s0,
+                         s1, p->anyblank, p->wcs, keys, SPACK_STRING);
   keys=NULL;
 
   /* The sky image: */
   gal_mesh_check_garray(&p->smp, &sky, &std);
-  gal_fitsarray_array_to_fits_img(p->cp.output, "Sky", FLOAT_IMG, sky,
-                                  s0, s1, 0, p->wcs, NULL, SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output, "Sky", FLOAT_IMG, sky,
+                         s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
 
   /* The sky standard deviation image. Note that since this is a
@@ -114,20 +114,20 @@ makeoutput(struct noisechiselparams *p)
      interpolating or smoothing the image, so we have put a "raw" in
      the comments of each variable.*/
   fpt=&p->maxstd;
-  gal_fitsarray_add_to_fits_header_ll(&keys, TFLOAT, "MAXSTD", 0, fpt, 0,
+  gal_fits_add_to_fits_header_ll(&keys, TFLOAT, "MAXSTD", 0, fpt, 0,
                                       "Maximum raw mesh sky standard "
                                       "deviation.", 0, NULL);
   fpt=&p->minstd;
-  gal_fitsarray_add_to_fits_header_ll(&keys, TFLOAT, "MINSTD", 0, fpt, 0,
+  gal_fits_add_to_fits_header_ll(&keys, TFLOAT, "MINSTD", 0, fpt, 0,
                                       "Minimum raw mesh sky standard "
                                       "deviation.", 0, NULL);
   fpt=&p->medstd;
-  gal_fitsarray_add_to_fits_header_ll(&keys, TFLOAT, "MEDSTD", 0, fpt, 0,
+  gal_fits_add_to_fits_header_ll(&keys, TFLOAT, "MEDSTD", 0, fpt, 0,
                                       "Median raw mesh standard "
                                       "deviation.", 0, NULL);
-  gal_fitsarray_array_to_fits_img(p->cp.output, "Standard deviation",
-                                  FLOAT_IMG, std, s0, s1, 0, p->wcs,
-                                  keys, SPACK_STRING);
+  gal_fits_array_to_file(p->cp.output, "Standard deviation",
+                         FLOAT_IMG, std, s0, s1, 0, p->wcs,
+                         keys, SPACK_STRING);
   keys=NULL;
 
 
@@ -157,12 +157,12 @@ noisechisel(struct noisechiselparams *p)
   gal_mesh_spatial_convolve_on_mesh(smp, &p->conv);
   if(p->detectionname)
     {
-      gal_fitsarray_array_to_fits_img(p->detectionname, "Input", FLOAT_IMG,
-                                      smp->img, s0, s1, p->anyblank, p->wcs,
-                                      NULL, SPACK_STRING);
-      gal_fitsarray_array_to_fits_img(p->detectionname, "Convolved", FLOAT_IMG,
-                                      p->conv, s0, s1, p->anyblank, p->wcs,
-                                      NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->detectionname, "Input", FLOAT_IMG,
+                             smp->img, s0, s1, p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->detectionname, "Convolved", FLOAT_IMG,
+                             p->conv, s0, s1, p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
     }
   if(verb) gal_timing_report(&t1, "Convolved with kernel.", 1);
 
@@ -220,25 +220,25 @@ noisechisel(struct noisechiselparams *p)
         }
     }
   if(p->detectionname)
-    gal_fitsarray_array_to_fits_img(p->detectionname, "Dilated", LONG_IMG,
-                                    p->olab, s0, s1, p->anyblank, p->wcs,
-                                    NULL, SPACK_STRING);
+    gal_fits_array_to_file(p->detectionname, "Dilated", LONG_IMG,
+                           p->olab, s0, s1, p->anyblank, p->wcs,
+                           NULL, SPACK_STRING);
   if(p->maskdetname)
     {
-      gal_fitsarray_array_to_fits_img(p->maskdetname, "Input", FLOAT_IMG,
-                                      p->img, s0, s1, p->anyblank, p->wcs,
-                                      NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->maskdetname, "Input", FLOAT_IMG,
+                             p->img, s0, s1, p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
       gal_arraymanip_float_copy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 0);
-      gal_fitsarray_array_to_fits_img(p->maskdetname, "Undetected masked",
-                                      FLOAT_IMG, imgcopy, s0, s1, p->anyblank,
-                                      p->wcs, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->maskdetname, "Undetected masked",
+                             FLOAT_IMG, imgcopy, s0, s1, p->anyblank,
+                             p->wcs, NULL, SPACK_STRING);
       free(imgcopy);
       gal_arraymanip_float_copy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 1);
-      gal_fitsarray_array_to_fits_img(p->maskdetname, "Detected masked",
-                                      FLOAT_IMG, imgcopy, s0, s1, p->anyblank,
-                                      p->wcs, NULL, SPACK_STRING);
+      gal_fits_array_to_file(p->maskdetname, "Detected masked",
+                             FLOAT_IMG, imgcopy, s0, s1, p->anyblank,
+                             p->wcs, NULL, SPACK_STRING);
       free(imgcopy);
     }
 

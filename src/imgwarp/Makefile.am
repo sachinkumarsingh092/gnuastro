@@ -28,9 +28,9 @@ bin_PROGRAMS = astimgwarp
 astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 imgwarp.c imgwarp.h
 
-astimgwarp_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
--lgalconfigfiles -lgalfitsarrayvv -lgaltxtarrayvv -lgalcheckset	\
--lgaltiming -lgalthreads -lgalpolygon
+astimgwarp_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
+-lgalconfigfiles -lgalfits -lgaltxtarrayvv -lgalcheckset -lgaltiming	\
+-lgalthreads -lgalpolygon
 
 
 

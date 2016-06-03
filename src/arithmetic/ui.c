@@ -32,11 +32,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 #include <gnuastro/fixedstringmacros.h>
 
 #include "main.h"
@@ -266,7 +266,7 @@ negchartodashcountfits(struct imgarithparams *p)
   /* Go through all the tokens and do the job(s). */
   for(token=p->tokens; token!=NULL; token=token->next)
     {
-      if(gal_fitsarray_name_is_fits(token->v))
+      if(gal_fits_name_is_fits(token->v))
         ++p->numfits;
       else if(token->v[0]==NEGDASHREPLACE && isdigit(token->v[1]) )
         token->v[0]='-';
@@ -289,10 +289,10 @@ sanitycheck(struct imgarithparams *p)
      file name operations are only necessary for the first FITS file
      in the token list. */
   for(token=p->tokens; token!=NULL; token=token->next)
-    if(gal_fitsarray_name_is_fits(token->v))
+    if(gal_fits_name_is_fits(token->v))
     {
       /* Set the p->up.maskname accordingly: */
-      gal_fitsarray_file_or_ext_name(token->v, p->cp.hdu,
+      gal_fits_file_or_ext_name(token->v, p->cp.hdu,
                                      p->up.masknameset, &p->up.maskname,
                                      p->up.mhdu, p->up.mhduset, "mask");
 

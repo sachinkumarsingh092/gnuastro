@@ -31,12 +31,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>              /* From Gnulib.                     */
 
+#include <gnuastro/fits.h>
 #include <gnuastro/timing.h>   	/* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarrayvv.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 
@@ -405,18 +405,18 @@ preparearrays(struct imgwarpparams *p)
   double *inv, *m=p->matrix;
 
   /* Read in the input image: */
-  numnul=gal_fitsarray_fits_img_to_array(p->up.inputname, p->cp.hdu,
-                                         &p->inputbitpix, &array, &p->is0,
-                                         &p->is1);
+  numnul=gal_fits_hdu_to_array(p->up.inputname, p->cp.hdu,
+                                     &p->inputbitpix, &array, &p->is0,
+                                     &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else
     {
-      gal_fitsarray_change_type(array, p->inputbitpix, p->is0*p->is1, numnul,
+      gal_fits_change_type(array, p->inputbitpix, p->is0*p->is1, numnul,
                                 (void **)&p->input, DOUBLE_IMG);
       free(array);
     }
-  gal_fitsarray_read_fits_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
+  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
                               p->hendwcs, &p->nwcs, &p->wcs);
 
   /* Make the inverse matrix: */

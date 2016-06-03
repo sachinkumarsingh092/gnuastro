@@ -37,6 +37,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/wcs.h>
+
 #include "main.h"
 
 #include "columns.h"
@@ -538,7 +540,7 @@ preparewcs(struct mkcatalogparams *p, size_t col)
       /* Do the conversion. Note that the p->icols is added because
          the first row is not used by any object or colump (since
          their indexes begin from 1).*/
-      gal_fitsarray_xy_array_to_radec(p->wcs, p->info+p->icols+xc,
+      gal_wcs_xy_array_to_radec(p->wcs, p->info+p->icols+xc,
                                       p->info+p->icols+rc,
                                       p->num, p->icols);
 

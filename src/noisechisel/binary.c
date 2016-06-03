@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
-#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/fits.h>
 
 #include "main.h"
 
@@ -43,7 +43,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  **************            Binary NAN           *****************
  ****************************************************************/
 /* When the float image has NaN pixels, set the respective byt value
-   to GAL_FITSARRAY_BYTE_BLANK. */
+   to GAL_FITS_BYTE_BLANK. */
 void
 setbytblank(float *img, unsigned char *byt, size_t size)
 {
@@ -51,7 +51,7 @@ setbytblank(float *img, unsigned char *byt, size_t size)
   do
     {
       if(isnan(*img++))
-        *byt=GAL_FITSARRAY_BYTE_BLANK;
+        *byt=GAL_FITS_BYTE_BLANK;
       ++byt;
     }
   while(img<end);
@@ -98,7 +98,7 @@ count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
     {
       fb = ( b = byt + startind + is1*row++ ) + s1;
       do
-        *b ? (*b==GAL_FITSARRAY_BYTE_BLANK ? *anyblank=1: ++nf) : ++nb;
+        *b ? (*b==GAL_FITS_BYTE_BLANK ? *anyblank=1: ++nf) : ++nb;
       while(++b<fb);
     }
   while(row<s0);
@@ -533,8 +533,8 @@ fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
       tp=tinv+start+row*idy;
       bf = ( bp = byt + row++ * s1 ) + s1;
       if(anyblank)
-        do *tp++ = *bp==GAL_FITSARRAY_BYTE_BLANK
-             ? GAL_FITSARRAY_BYTE_BLANK : !*bp; while(++bp<bf);
+        do *tp++ = *bp==GAL_FITS_BYTE_BLANK
+             ? GAL_FITS_BYTE_BLANK : !*bp; while(++bp<bf);
       else
         do *tp++ = !*bp; while(++bp<bf);
     }
@@ -624,12 +624,12 @@ fillboundedholes(unsigned char *in, size_t s0, size_t s1, int anyblank)
 
 
   /* For a check
-  gal_fitsarray_array_to_fits_img("fbh.fits", "INPUT", BYTE_IMG, in,
-                 s0, s1, anyblank, NULL, NULL, "tmp");
-  gal_fitsarray_array_to_fits_img("fbh.fits", "INV", BYTE_IMG, inv,
-                 idx, idy, anyblank, NULL, NULL, "tmp");
-  gal_fitsarray_array_to_fits_img("fbh.fits", "HLAB", LONG_IMG, hlab,
-                 idx, idy, anyblank, NULL, NULL, "tmp");
+  gal_fits_array_to_file("fbh.fits", "INPUT", BYTE_IMG, in,
+                         s0, s1, anyblank, NULL, NULL, "tmp");
+  gal_fits_array_to_file("fbh.fits", "INV", BYTE_IMG, inv,
+                         idx, idy, anyblank, NULL, NULL, "tmp");
+  gal_fits_array_to_file("fbh.fits", "HLAB", LONG_IMG, hlab,
+                         idx, idy, anyblank, NULL, NULL, "tmp");
   */
 
   /* Correct the labels: */
@@ -645,8 +645,8 @@ fillboundedholes(unsigned char *in, size_t s0, size_t s1, int anyblank)
 
 
   /* For a check:
-  gal_fitsarray_array_to_fits_img("fbh.fits", "INPUT", BYTE_IMG, in,
-                 s0, s1, anyblank, NULL, NULL, "tmp");
+  gal_fits_array_to_file("fbh.fits", "INPUT", BYTE_IMG, in,
+                         s0, s1, anyblank, NULL, NULL, "tmp");
   exit(0);
   */
 

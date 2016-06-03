@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/checkset.h>
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 #include "arithmetic.h"            /* needs main.h.                  */
@@ -74,7 +74,7 @@ add_operand(struct imgarithparams *p, char *filename, double number,
   newnode->number=number;
   newnode->filename=filename;
 
-  if(strlen(filename) && gal_fitsarray_name_is_fits(filename))
+  if(strlen(filename) && gal_fits_name_is_fits(filename))
     {
       /* Set the HDU for this filename. */
       gal_linkedlist_pop_from_stll(&p->hdus, &newnode->hdu);
@@ -143,10 +143,9 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
         {
           mhdu=up->mhdu;
           maskname=up->maskname;
-          gal_fitsarray_read_fits_wcs(filename, hdu, 0, 0, &p->nwcs,
-                                      &p->wcs);
+          gal_fits_read_wcs(filename, hdu, 0, 0, &p->nwcs, &p->wcs);
         }
-      gal_fitsarray_file_to_double(filename, maskname, hdu, mhdu,
+      gal_fits_file_to_double(filename, maskname, hdu, mhdu,
                                    array, &bitpix, &p->anyblank, &s0, &s1);
 
       /* If the output size was not set yet, then set it. Otherwise,
@@ -802,7 +801,7 @@ reversepolish(struct imgarithparams *p)
       /* If we have a name or number, then add it to the operands
          linked list. Otherwise, pull out two members and do the
          specified operation on them. */
-      if(gal_fitsarray_name_is_fits(token->v))
+      if(gal_fits_name_is_fits(token->v))
         add_operand(p, token->v, NOOPTNUMBER, NOOPTARRAY);
       else if(strisdouble(token->v, &number))
         add_operand(p, NOOPTFILENAME, number, NOOPTARRAY);
@@ -845,19 +844,19 @@ reversepolish(struct imgarithparams *p)
          last operand must be an array. */
       if(p->obitpix==FLOAT_IMG)
         {
-          gal_fitsarray_change_type(p->operands->array, DOUBLE_IMG,
+          gal_fits_change_type(p->operands->array, DOUBLE_IMG,
                                     p->s0*p->s1, p->anyblank,
                                     (void **)(&farray), FLOAT_IMG);
-          gal_fitsarray_array_to_fits_img(p->cp.output, "astimgarith",
-                                          FLOAT_IMG, farray, p->s0, p->s1,
-                                          p->anyblank, p->wcs, NULL,
-                                          SPACK_STRING);
+          gal_fits_array_to_file(p->cp.output, "astimgarith",
+                                 FLOAT_IMG, farray, p->s0, p->s1,
+                                 p->anyblank, p->wcs, NULL,
+                                 SPACK_STRING);
         }
       else
-        gal_fitsarray_array_to_fits_img(p->cp.output, "astimgarith",
-                                        DOUBLE_IMG, p->operands->array,
-                                        p->s0, p->s1, p->anyblank,
-                                        p->wcs, NULL, SPACK_STRING);
+        gal_fits_array_to_file(p->cp.output, "astimgarith",
+                               DOUBLE_IMG, p->operands->array,
+                               p->s0, p->s1, p->anyblank,
+                               p->wcs, NULL, SPACK_STRING);
     }
   else
     printf("%g\n", p->operands->number);

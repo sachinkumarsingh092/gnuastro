@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/checkset.h>
@@ -36,7 +37,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arraymanip.h>
 #include <gnuastro/linkedlist.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/fitsarrayvv.h>
 
 #include "main.h"
 

@@ -29,9 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
-#include <gnuastro/fitsarrayvv.h>
+#include <gnuastro/wcs.h>
 
 #include "main.h"
+
 #include "crop.h"
 
 
@@ -291,8 +292,8 @@ fillcrpipolygon(struct cropparams *crp)
 
   /* Fill in the crp->ipolygon array by converting the WCS polygon
      vertices to this image's coordinates. */
-  gal_fitsarray_radec_array_to_xy(p->imgs[crp->imgindex].wcs, p->wpolygon,
-                                  crp->ipolygon, p->nvertices, 2);
+  gal_wcs_radec_array_to_xy(p->imgs[crp->imgindex].wcs, p->wpolygon,
+                            crp->ipolygon, p->nvertices, 2);
 }
 
 
