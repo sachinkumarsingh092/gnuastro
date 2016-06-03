@@ -779,8 +779,8 @@ gal_fitsarray_read_keywords(char *filename, char *hdu,
   int status=0;
   char *ffname;
   size_t i, len;
-  void *valueptr;
   fitsfile *fptr;
+  void *valueptr=NULL;
 
   /* Add hdu to filename: */
   errno=0;
