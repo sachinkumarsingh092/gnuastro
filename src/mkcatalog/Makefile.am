@@ -30,7 +30,7 @@ mkcatalog.c mkcatalog.h columns.c columns.h
 
 astmkcatalog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
 -lgalconfigfiles -lgalfits -lgalwcs -lgalcheckset -lgaltiming	\
--lgallinkedlist -lgaltxtarrayvv
+-lgallinkedlist -lgaltxtarray
 
 
 

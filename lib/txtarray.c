@@ -1,5 +1,5 @@
 /*********************************************************************
-txtarrayvv -- Convert a text file table to a C array.
+txtarray -- Convert a text file table to a C array.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <string.h>
 
-#include <gnuastro/txtarrayvv.h>
+#include <gnuastro/txtarray.h>
 
 
 
@@ -290,7 +290,7 @@ doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
       errno=0;
       fmt[i]=malloc(GAL_TXTARRAY_FMT_LENGTH * sizeof(char));
       if(fmt[i]==NULL)
-	error(EXIT_FAILURE, errno, "txtarrayvv, space for format "
+	error(EXIT_FAILURE, errno, "txtarray, space for format "
 	      "string %d, with %d elements", i, GAL_TXTARRAY_FMT_LENGTH);
 
       /* See if this is an int column. */
@@ -382,7 +382,7 @@ gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
   errno=0;
   fmt=malloc(s1 * sizeof(char *));
   if(fmt==NULL)
-    error(EXIT_FAILURE, errno, "txtarrayvv, formatting of each "
+    error(EXIT_FAILURE, errno, "txtarray, formatting of each "
 	  "column with %lu elements", s1);
 
   /* Prepare the formatting for each column */

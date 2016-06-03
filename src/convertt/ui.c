@@ -34,7 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
-#include <gnuastro/txtarrayvv.h>
+#include <gnuastro/txtarray.h>
 #include <gnuastro/linkedlist.h>
 #include <gnuastro/configfiles.h>
 

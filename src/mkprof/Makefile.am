@@ -28,9 +28,9 @@ bin_PROGRAMS = astmkprof
 astmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h	\
 oneprofile.c oneprofile.h profiles.c profiles.h cite.h
 
-astmkprof_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		 \
--lgalconfigfiles -lgalfits -lgaltxtarrayvv -lgalcheckset -lgallinkedlist \
--lgaltiming -lgalthreads -lgalbox -lgalstatistics -lgalarraymanip	 \
+astmkprof_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
+-lgalconfigfiles -lgalfits -lgaltxtarray -lgalcheckset -lgallinkedlist	\
+-lgaltiming -lgalthreads -lgalbox -lgalstatistics -lgalarraymanip	\
 -lgalqsort
 
 

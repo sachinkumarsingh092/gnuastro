@@ -29,7 +29,7 @@ astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 imgwarp.c imgwarp.h
 
 astimgwarp_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgalconfigfiles -lgalfits -lgaltxtarrayvv -lgalcheckset -lgaltiming	\
+-lgalconfigfiles -lgalfits -lgaltxtarray -lgalcheckset -lgaltiming	\
 -lgalthreads -lgalpolygon
 
 

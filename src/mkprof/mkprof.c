@@ -34,9 +34,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/checkset.h>
+#include <gnuastro/txtarray.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arraymanip.h>
-#include <gnuastro/txtarrayvv.h>
 
 #include "main.h"
 

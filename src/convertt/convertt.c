@@ -31,8 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/timing.h>
+#include <gnuastro/txtarray.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/txtarrayvv.h>
 
 #include "main.h"
 

@@ -28,8 +28,8 @@ bin_PROGRAMS = astimgcrop
 astimgcrop_SOURCES = main.c main.h cite.h ui.c ui.h args.h imgcrop.c	\
 imgcrop.h wcsmode.c wcsmode.h crop.c crop.h
 
-astimgcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgalconfigfiles -lgalwcs -lgalfits -lgaltxtarrayvv -lgalcheckset	\
+astimgcrop_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
+-lgalconfigfiles -lgalwcs -lgalfits -lgaltxtarray -lgalcheckset	\
 -lgallinkedlist -lgaltiming -lgalthreads -lgalbox -lgalpolygon
 
 
