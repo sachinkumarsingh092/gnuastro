@@ -138,7 +138,8 @@ gl_INIT
 
 
 # To add the help2man:
-AC_PATH_PROG(HELP2MAN, help2man)
+AC_CHECK_PROG(has_help2man, help2man, [yes], [no])
+AM_CONDITIONAL([COND_HASHELP2MAN], [test "x$has_help2man" = "xyes"])
 
 
 
@@ -409,6 +410,15 @@ AC_ARG_ENABLE([guide-message],
                    [No messages after each build step.])],
 	      [], [enable_guide_message=yes])
 AC_SUBST(GUIDEMESSAGE, [$enable_guide_message])
+
+
+
+
+# Build the man page directory. Note that this is the cleanest and most
+# portable way of building this directory. We don't want to do it in any of
+# the Makefiles.
+AC_CONFIG_COMMANDS([man page directory], [$MKDIR_P doc/man])
+
 
 
 

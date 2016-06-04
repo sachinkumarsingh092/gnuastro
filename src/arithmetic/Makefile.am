@@ -37,25 +37,5 @@ astarithmetic_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
 
 
 # To destribute the defaults file.
+# NOTE: the man page is created in doc/Makefile.am
 dist_sysconf_DATA = astarithmetic.conf
-
-
-
-
-
-## Generally for the man pages:
-dist_man_MANS = astarithmetic.1
-
-## Note that in parallel builds, we want to make sure that the man page is
-## only created once the executable is built, so the argument to
-## bin_PROGRAMS is a prerequisite here, the $(EXEEXT) is used in
-## Makefile.in.
-astarithmetic.1: astarithmetic$(EXEEXT) args.h                        \
-                 $(top_srcdir)/lib/gnuastro/commonargs.h
-	-$(HELP2MAN) --output=$@ ./astarithmetic$(EXEEXT)             \
-                     --source="$(PACKAGE_STRING)"
-
-# With the addition of the executable as a dependency for the man page, the
-# (possibly) produced man page will not be cleaned. So we have to ask for
-# its cleaning manually here.
-CLEANFILES = $(builddir)/astarithmetic.1

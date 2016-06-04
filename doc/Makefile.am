@@ -63,7 +63,64 @@ EXTRA_DIST = genauthors README
 $(srcdir)/authors.texi: $(top_srcdir)/configure
 	$(top_srcdir)/doc/genauthors $(top_srcdir)
 
-
 ## Images:
 infognuastrodir=$(infodir)/gnuastro-figures/
 dist_infognuastro_DATA = $(top_srcdir)/doc/gnuastro-figures/*
+
+
+
+
+
+
+
+
+
+
+## Man pages: to keep things managable, sort the utilities alphabetically.
+dist_man_MANS = man/astarithmetic.1 man/astconvertt.1 man/astconvolve.1	\
+man/astcosmiccal.1 man/astheader.1 man/astimgcrop.1 man/astimgstat.1	\
+man/astimgwarp.1 man/astmkcatalog.1 man/astmknoise.1 man/astmkprof.1	\
+man/astnoisechisel.1 man/astsubtractsky.1
+
+
+## See if help2man is present or not. When help2man doesn't exist, we don't
+## want to overwhelm the user with any commands, so we just let them know
+## that the distributed man pages will be used.
+if COND_HASHELP2MAN
+  MAYBE_HELP2MAN = help2man --output=$@ --source="$(PACKAGE_STRING)"
+else
+  MAYBE_HELP2MAN = @echo "Using distributed man page for"
+endif
+
+
+# Build the `man' directory and then put all the man pages in
+# it. Unfortunately as far as I know, pattern rules are not portable in all
+# implementations of Make, so we have to list all the utilities manually.
+toputildir=$(top_builddir)/src
+ALLMANSDEP = $(top_srcdir)/lib/gnuastro/commonargs.h
+man/astarithmetic.1: $(top_srcdir)/src/arithmetic/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/arithmetic/astarithmetic
+man/astconvertt.1: $(top_srcdir)/src/convertt/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/convertt/astconvertt
+man/astconvolve.1: $(top_srcdir)/src/convolve/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/convolve/astconvolve
+man/astcosmiccal.1: $(top_srcdir)/src/cosmiccal/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/cosmiccal/astcosmiccal
+man/astheader.1: $(top_srcdir)/src/header/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/header/astheader
+man/astimgcrop.1: $(top_srcdir)/src/imgcrop/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/imgcrop/astimgcrop
+man/astimgstat.1: $(top_srcdir)/src/imgstat/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/imgstat/astimgstat
+man/astimgwarp.1: $(top_srcdir)/src/imgwarp/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/imgwarp/astimgwarp
+man/astmkcatalog.1: $(top_srcdir)/src/mkcatalog/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/mkcatalog/astmkcatalog
+man/astmknoise.1: $(top_srcdir)/src/mknoise/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/mknoise/astmknoise
+man/astmkprof.1: $(top_srcdir)/src/mkprof/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/mkprof/astmkprof
+man/astnoisechisel.1: $(top_srcdir)/src/noisechisel/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/noisechisel/astnoisechisel
+man/astsubtractsky.1: $(top_srcdir)/src/subtractsky/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/subtractsky/astsubtractsky
