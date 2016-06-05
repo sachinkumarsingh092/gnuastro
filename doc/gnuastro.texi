@@ -2208,12 +2208,12 @@ program and any specific note that might be necessary in the installation.
 @cindex Source code building
 @cindex Source code compilation
 @cindex Package managers
-The most basic choice is to build the packages from source yourself instead
-of relying on your distribution's package management system. While the
-latter choice is indeed possible, we recommend that you build these
-dependencies yourself as discussed below. We will send out notifications
-in the @command{info-gnuastro} mailing list, see @ref{Announcements} when
-we find out that these requirements are updated.
+The most basic choice is to build the packages from source yourself,
+instead of relying on your distribution's package management system. While
+the latter choice is indeed possible, we recommend that you build these
+dependencies yourself as discussed below. We will send out notifications in
+the @command{info-gnuastro} mailing list, see @ref{Announcements} when we
+find out that these requirements are updated.
 
 @enumerate
 
@@ -2221,8 +2221,8 @@ we find out that these requirements are updated.
 For each package, Gnuastro might preform better (or require) certain
 configuration options that your distribution's package managers didn't add
 for you. If present, these configuration options are explained during the
-installation of each. When the proper configuration has not been set, the
-programs should complain and inform you.
+installation of each in the sections below. When the proper configuration
+has not been set, the programs should complain and inform you.
 
 @item
 Your distribution's pre-built package might not be the most recent
@@ -2253,16 +2253,17 @@ correspondingly improve.
 @subsubsection GNU Scientific library
 
 @cindex GNU Scientific Library
-The GNU Scientific Library (GSL) is a very large collection of functions
-that are very useful in scientific applications, for example integration,
-random number generation, and Fast Fourier Transform among many others. To
-install GSL from source, you can run the following commands after you have
-downloaded @file{gsl-X.X.tar.gz} from its official webpage
-(@url{http://www.gnu.org/software/gsl/}):
+The @url{http://www.gnu.org/software/gsl/, GNU Scientific Library}, or GSL,
+is a large collection of functions that are very useful in scientific
+applications, for example integration, random number generation, and Fast
+Fourier Transform among many others. To install GSL from source, you can
+run the following commands after you have downloaded
+@url{ftp://ftp.gnu.org/gnu/gsl/gsl-latest.tar.gz,
+@file{gsl-latest.tar.gz}}:
 
 @example
-$ tar -zxvf gsl-X.X.tar.gz
-$ cd gsl-X.X
+$ tar -zxvf gsl-latest.tar.gz
+$ cd gsl-X.X                     # Replace X.X with version number
 $ ./configure
 $ make
 $ make check
@@ -2274,40 +2275,36 @@ $ sudo make install
 
 @cindex CFITSIO
 @cindex FITS standard
-CFITSIO is the closest you can get to the pixels in a FITS image while
-remaining faithful to the FITS standard
-@footnote{@url{http://fits.gsfc.nasa.gov/fits_standard.html}}. It is
-written by William Pence, the author of the FITS
+@url{http://heasarc.gsfc.nasa.gov/fitsio/, CFITSIO} is the closest you can
+get to the pixels in a FITS image while remaining faithful to the
+@url{http://fits.gsfc.nasa.gov/fits_standard.html, FITS standard}. It is
+written by William Pence, the principal author of the FITS
 standard@footnote{Pence, W.D. et al. Definition of the Flexible Image
-Transport System (FITS), version 3.0. (2010) Astronomy and
-Astrophysics, Volume 524, id.A42, 40 pp.}, and is regularly
-updated. Setting the definitions for all other software packages using
-FITS images.
+Transport System (FITS), version 3.0. (2010) Astronomy and Astrophysics,
+Volume 524, id.A42, 40 pp.}, and is regularly updated. Setting the
+definitions for all other software packages using FITS images.
 
 @vindex --enable-reentrant
 @cindex Reentrancy, multiple file opening
 @cindex Multiple file opening, reentrancy
-Some GNU/Linux distributions have CFITSIO in their package managers,
-if it is available and updated, you can use it. One problem that might
-occur is that CFITSIO might not be configured with the
-@option{--enable-reentrant} option by the distribution. This option
-allows CFITSIO to open a file in multiple threads. If so, upon
-running, any program which needs this capability will warn you and
-abort if you ask for multiple threads. In such cases you can take the
-following step.
+Some GNU/Linux distributions have CFITSIO in their package managers, if it
+is available and updated, you can use it. One problem that might occur is
+that CFITSIO might not be configured with the @option{--enable-reentrant}
+option by the distribution. This option allows CFITSIO to open a file in
+multiple threads, it can thus provide great speed improvements. If CFITSIO
+was not configured with this option, any program which needs this
+capability will warn you and abort when you ask for multiple threads (see
+@ref{Threads in GNU Astronomy Utilities}).
 
-The best way is that you can install CFITSIO from source. You can
-download the latest version of the source code and manual from its
-webpage@footnote{@url{http://heasarc.gsfc.nasa.gov/fitsio/fitsio.html}}.
-We strongly recommend that you have a look through Chapter 2 (Creating
-the CFITSIO library) of the CFITSIO manual and understand the options
-you can pass to @command{$ ./configure} (they aren't too much). This
-is a very basic package for most astronomical software and it is best
-that you configure it nicely with your system. Once you download the
-source and unpack it, the following configure script should be enough
-for most purposes. Don't forget to read chapter two of the manual
-though, for example the second option is only for 64bit systems. The
-manual also explains how to check if it has been installed correctly.
+To install CFITSIO from source, we strongly recommend that you have a look
+through Chapter 2 (Creating the CFITSIO library) of the CFITSIO manual and
+understand the options you can pass to @command{$ ./configure} (they aren't
+too much). This is a very basic package for most astronomical software and
+it is best that you configure it nicely with your system. Once you download
+the source and unpack it, the following configure script should be enough
+for most purposes. Don't forget to read chapter two of the manual though,
+for example the second option is only for 64bit systems. The manual also
+explains how to check if it has been installed correctly.
 
 CFITSIO comes with two executables called fpack and funpack. From their
 manual: they ``are standalone programs for compressing and uncompressing
@@ -2321,6 +2318,11 @@ for functions within CFITSIO, but they can come in handy. The @command{make
 utils} command is only available for versions above 3.39, it will build
 these executables along with several other test executables which are
 deleted before the installation (otherwise they will also be installed).
+
+The CFITSIO installation from source process is given below. Let's assume
+you have downloaded
+@url{http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio_latest.tar.gz,
+@file{cfitsio_latest.tar.gz}} and are in the same directory:
 
 @example
 $ tar -vxzf cfitsio_latest.tar.gz
@@ -2345,30 +2347,31 @@ $ sudo make install
 @cindex WCS
 @cindex WCSLIB
 @cindex World Coordinate System
-WCSLIB is also written and maintained by one of the authors of the
-World Coordinate System (WCS) definition in the FITS
-standard@footnote{Greisen E.W., Calabretta M.R. (2002) Representation
-of world coordinates in FITS. Astronomy and Astrophysics, 395,
-1061-1075.}, Mark Calabretta. It might be already built and ready in
-your distribution's package management system. Here installation from
-source is explained. To install WCSLIB you will need to have CFITSIO
-already installed, see @ref{CFITSIO}. WCSLIB also has plotting
-capabilities which use PGPLOT (a plotting library for C). However, if
-you will not be using its plotting functions, you can configure it
-such that pgplot is not required.
+@url{http://www.atnf.csiro.au/people/mcalabre/WCS/, WCSLIB} is written and
+maintained by one of the authors of the World Coordinate System (WCS)
+definition in the @url{http://fits.gsfc.nasa.gov/fits_standard.html, FITS
+standard}@footnote{Greisen E.W., Calabretta M.R. (2002) Representation of
+world coordinates in FITS. Astronomy and Astrophysics, 395, 1061-1075.},
+Mark Calabretta. It might be already built and ready in your distribution's
+package management system. However, here the installation from source is
+explained, for the advantages please see @ref{Mandatory dependencies}. To
+install WCSLIB you will need to have CFITSIO already installed, see
+@ref{CFITSIO}.
 
 @vindex --without-pgplot
-If you do want to make plots with WCSLIB, there is an explanation in
-@ref{PGPLOT}. To disable the dependency on PGPLOT, you have to add the
-@option{--without-pgplot} option to the configure script as you can
-see below. You can get the most recent source code from the WCSLIB
-webpage@footnote{@url{http://www.atnf.csiro.au/people/mcalabre/WCS/}}.
-In the directory where you have downloaded the compressed file, you
-can take the following steps (the @code{x.xx} represents the version
-number):
+WCSLIB also has plotting capabilities which use PGPLOT (a plotting library
+for C). If you wan to use those capabilities in WCSLIB, @ref{PGPLOT}
+provides the PGPLOT installation instructions. However PGPLOT is
+old@footnote{As of early June 2016, its most recent version was uploaded in
+February 2001.}, so its installation is not easy, there are also many great
+modern WCS plotting tools (mostly in written in Python). Hence, if you will
+not be using those plotting functions in WCSLIB, you can configure it with
+the @option{--without-pgplot} option as shown below. Let's assume you have
+downloaded @url{ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib.tar.bz2,
+@file{wcslib.tar.bz2}} and are in the same directory:
 @example
-$ tar -jxvf wcslib-X.XX.tar.bz2
-$ cd wcslib-X.XX
+$ tar -jxvf wcslib.tar.bz2
+$ cd wcslib-X.X                    # Replace X.X with version number
 $ ./configure --without-pgplot LIBS="-pthread -lm"
 $ make
 $ make check
