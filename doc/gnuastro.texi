@@ -585,17 +585,19 @@ founding basis of the Gnuastro.
 @cindex Compile
 @cindex Check
 @cindex Test
-Let's assume @file{gnuastro-X.X.tar.gz} (see @ref{Version numbering}) is in
-the @file{TOPGNUASTRO} directory, which can be any directory. See
-@ref{Release tarball} for downloading a release tarball and
-@ref{Dependencies} for the list of dependencies. By running the following
-commands you will unpack, compile, check and install Gnuastro (replace
-@file{X.X} with the version number you downloaded).
+Gnuastro has a small set of mandatory dependencies and some optional ones
+for added functionality, see @ref{Dependencies}. The latest official
+release tarball is always available at
+@url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz,
+@file{gnuastro-latest.tar.gz}}, see @ref{Release tarball}. If you have
+downloaded the tarball in the @file{TOPGNUASTRO} directory and the
+dependencies are installed, you can unpack, compile, check and install
+Gnuastro with the following commands:
 
 @example
 $ cd TOPGNUASTRO
-$ tar -zxvf gnuastro-X.X.tar.gz
-$ cd gnuastro-X.X
+$ tar -zxvf gnuastro-latest.tar.gz
+$ cd gnuastro-X.X                  # Replace X.X with version number
 $ ./configure
 $ make
 $ make check
