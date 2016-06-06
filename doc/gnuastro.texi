@@ -7104,7 +7104,7 @@ interpretted as an angle in units of radians and therefore how
 Since @mymath{e^{iv}} is periodic (let's assume with a period of
 @mymath{T}), it is more clear to write it as @mymath{v\equiv{2{\pi}n\over
 T}t} (where @mymath{n} is an integer), so @mymath{e^{iv}=e^{i{2{\pi}n\over
-T}t}}. The advantage is of this notation is that the period (@mymath{T}) is
+T}t}}. The advantage of this notation is that the period (@mymath{T}) is
 clearly visible and the frequency (@mymath{2{\pi}n \over T}, in units of
 1/cycle) is defined through the integer @mymath{n}. In this notation,
 @mymath{t} is in units of ``cycle''s.
@@ -8068,7 +8068,7 @@ of the image), we also remove any pixel with a value less than
 
 @item -m
 @itemx --makekernel
-(@option{INT}) If this option is called, Convolve will do
+(@option{=INT}) If this option is called, Convolve will do
 de-convolution (see @ref{Convolution theorem}). The image specified by
 the @option{--kernel} option is assumed to be the sharper (less
 blurry) image and the input image is assumed to be the more blurry
@@ -12781,7 +12781,7 @@ affordable!}!
 @cindex Numbers, psudo-random
 @cindex Seed, psudo-random numbers
 Using only software, we can only produce what is called a psudo-random
-sequence of numbers. A true random number generator a hardware (let's
+sequence of numbers. A true random number generator is a hardware (let's
 assume we have made sure it has no systematic biases), for example
 throwing dice or flipping coins (which have remained from the ancient
 times). More modern hardware methods use atmospheric noise, thermal
@@ -12838,17 +12838,16 @@ $ export GSL_RNG_SEED=345
 @cindex Startup scripts
 @cindex @file{.bashrc}
 @noindent
-The subsequent programs in the particular terminal (or script) that
-you ran these commands on which use of GSL's random number generators
-(including the Gnuastro programs) will hence forth use these values.
-Finally, in case you want set fixed values for these variables every
-time you use the GSL random number generator, you can add these two
-lines to your @file{.bashrc} startup script@footnote{Don't forget that
-if you are going to give your scripts (that use the GSL random number
-generator) to others you have to make sure you also tell them to set
-these environment variable separately. So for scripts, it is best to
-keep all such variable definitions within the script, even if they are
-within your @file{.bashrc}.}.
+The subsequent programs which use GSL's random number generators will hence
+forth use these values in this session of the terminal you are running or
+while executing this script. In case you want set fixed values for these
+variables every time you use the GSL random number generator, you can add
+these two lines to your @file{.bashrc} startup script@footnote{Don't forget
+that if you are going to give your scripts (that use the GSL random number
+generator) to others you have to make sure you also tell them to set these
+environment variable separately. So for scripts, it is best to keep all
+such variable definitions within the script, even if they are within your
+@file{.bashrc}.}, see @ref{Installation directory}.
 
 @cartouche
 @noindent
