@@ -2534,20 +2534,46 @@ thus put in a separate directory (@file{lib/}).
 GNU help2man is used to convert the output of the @option{--help} option
 (@ref{--help}) to the traditional Man page (@ref{Man pages}).
 
-@item @TeX{} Live
-@cindex @TeX{} Live
+@item @LaTeX{} and some @TeX{} packages
 @cindex @LaTeX{}
-Some of the figures in this book are built by @LaTeX{} (using the TikZ
+@cindex @TeX{} Live
+Some of the figures in this book are built by @LaTeX{} (using the PGF/TikZ
 package). The @LaTeX{} source for those figures is version controlled for
 easy maintenance not the actual figures. So the @file{./boostrap} script
-will run @LaTeX{} on the sources.
+will run @LaTeX{} to build the figtures. The best way to install @LaTeX{}
+and all the necessary packages is through
+@url{https://www.tug.org/texlive/, @TeX{} live} which is a package manager
+for @TeX{} related tools that is independent of any operating system. It is
+thus preferred to the @TeX{} Live versions distributed by your operating
+system.
 
-Installing @TeX{} Live is very easy, simply go to its official webpage
-(@url{https://www.tug.org/texlive/}) and download the appropriate installer
-by following the ``download'' link. Just note that if you do intend to
-download the full package, it needs around 4 Giga-bytes of space, so its
-initial installation can be a little slow. After the installation be sure
-to follow the instructions in setting the environment variables.
+To install @TeX{} Live, go to the webpage and download the appropriate
+installer by following the ``download'' link. Note that by default the full
+package repository will be downloaded and installed (around 4 Giga Bytes)
+which can take @emph{very} long to download and to update later. However,
+most packages are not needed by everyone, it is easier, faster and better
+to install only the ``Basic scheme'' (consisting of only the most basic
+@TeX{} and @LaTeX{} packages, which is less than 200 Mega
+bytes)@footnote{You can also download the DVD iso file at a later time to
+keep as a backup for when you don't have internet connection if you need a
+package.}.
+
+After the installation be sure to set the environment variables as
+suggested in the end of the outputs. Any time you confront (need) a package
+you don't have, simply install it with a command like below (similar to how
+you install software from your operating system's package
+manager)@footnote{After running @TeX{}, or @LaTeX{}, you might get a
+warning complaining about a @file{missingfile}. Run `@command{tlmgr info
+missingfile}' to see the package(s) containing that file which you can
+install.}. To install all the necessary @TeX{} packages for a successful
+Gnuastro bootstrap, run this command:
+
+@example
+$ su
+# tlmgr install epsf jknapltx caption biblatex biber iftex \
+                etoolbox logreq xstring xkeyval pgf ms     \
+                xcolor pgfplots times rsfs pstools epspdf
+@end example
 
 @item ImageMagick (@command{imagemagick})
 @cindex ImageMagick
