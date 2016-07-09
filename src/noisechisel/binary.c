@@ -318,7 +318,7 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
 	   && (byt[ind-1]==f        || byt[ind+1]==f
 	       || byt[ind+nc]==f    || byt[ind-nc]==f
 	       || byt[ind-1-nc]==f  || byt[ind+1+nc]==f
-	       || byt[ind-1+nc]==f  || byt[ind+1+nc]==f) )
+	       || byt[ind-1+nc]==f  || byt[ind+1-nc]==f) )
 	  byt[ind]=BINARYTMP;
       }
 
