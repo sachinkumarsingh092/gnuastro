@@ -14822,9 +14822,19 @@ Workflow:
 
 @item
 You can send commit patches by email as fully explained in `Pro Git'. This
-is good for your first few contributions, if you would like to get more
-heavily involved in Gnuastro's development, then you can try the next
-solution.
+is good for your first few contributions. Just note that raw patches
+(containing only the diff) do not have any meta-data (author name, date and
+etc). Therefore will not allow us to fully acknowledge your contributions
+as an author in Gnuastro: in the @file{AUTHORS} file and at the start of
+the PDF book. These author lists are created automatically from the version
+controlled source.
+
+To receive full acknowledgement when submitting a patch, is thus advised to
+use Git's @code{format-patch} tool. See Pro Git's
+@url{https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#Public-Project-over-Email,
+Public project over email} section for a nice explanation. If you would
+like to get more heavily involved in Gnuastro's development, then you can
+try the next solution.
 
 @item
 You can have your own forked copy of Gnuastro on any hosting site you like
