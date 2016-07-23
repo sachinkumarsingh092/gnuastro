@@ -384,12 +384,12 @@ sanitycheck(struct imgcropparams *p)
 
   /* Width and checkcenter are odd */
   if(p->iwidth[0]<3)
-    error(EXIT_FAILURE, 0, "--iwidth has to be >3 pixels");
+    error(EXIT_FAILURE, 0, "--iwidth has to be 3 or more pixels");
   else if(p->iwidth[0]%2==0)
       p->iwidth[0]+=1;
   p->iwidth[1]=p->iwidth[0];
   if(p->checkcenter<3)
-    error(EXIT_FAILURE, 0, "--checkcenter has to be >3 pixels");
+    error(EXIT_FAILURE, 0, "--checkcenter has to be 3 or more pixels");
   else if(p->checkcenter%2==0)
     p->checkcenter+=1;
 
