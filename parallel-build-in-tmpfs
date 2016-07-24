@@ -16,22 +16,25 @@
 #
 #   - Having the built files mixed with the source files can greatly affect
 #     backing up (synchronization) of source files (since it involves the
-#     management of a large number of small files that are changed a lot.
+#     management of a large number of small files that are changed a
+#     lot. Such systems can ofcourse be configured to ignore some files and
+#     directories but that will require a high level of customization.
 #
 # One solution to these problems is the tmpfs file system (see
 # https://en.wikipedia.org/wiki/Tmpfs). Any file in tmpfs is actually
-# stored in the RAM, not on HDDs or SSDs. Therefore I/O can be much faster
-# and will also not harm the non-volatile memory devices. However, due to
-# the volatile nature of RAM, files in the tmpfs filesystem will be
-# permanently lost after a power-off.
+# stored in the RAM (and possibly SAWP), not on HDDs or SSDs. Therefore I/O
+# can be much faster and will also not harm the non-volatile memory
+# hardware. However, due to the volatile nature of RAM, files in the tmpfs
+# filesystem will be permanently lost after a power-off, since they are all
+# derivative files (not files that have been directly manipulated) there is
+# no problem in this.
 #
 # The modern GNU C library (and thus the Linux kernel) define the
 # '/dev/shm' directory for this purpose (POSIX shared memory). Therefore
-# this script takes '/dev/shm' as the default here (the value to TMPDIR)
-# this should be fine for all modern Linux based OSs. This script will make
-# a 'gnuastro' directory in TMPDIR, change to that directory and configure
-# and build gnuastro in there to have fast and non-wear configures and
-# builds.
+# this script takes '/dev/shm' as the default temporary directory (the
+# value to TMPDIR). This script will make a 'gnuastro' directory in TMPDIR,
+# change to that directory and configure and build gnuastro in there to
+# have fast and non-wear configures and builds.
 #
 # After this script is run, change directory to $TMPDIR/gnuastro and run
 # other 'make' commands (for example 'make pdf', 'make check', or 'make
@@ -49,7 +52,9 @@
 #
 #
 # Original author: Mohammad Akhlaghi <akhlaghi@gnu.org>
-# Contributing author(s): Copyright (C) 2016, Free Software Foundation,
+# Contributing author(s):
+#
+# Copyright (C) 2016, Free Software Foundation,
 # Inc.
 #
 # Gnuastro is free software: you can redistribute it and/or modify it under
@@ -68,7 +73,7 @@
 
 # Set the variables:
 NUM_THREADS=8
-TMPDIR=/dev/shdm
+TMPDIR=/dev/shm
 
 
 # Check if TMPDIR exists
