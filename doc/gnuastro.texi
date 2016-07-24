@@ -14905,34 +14905,37 @@ description. The process above is only necessary for your first time setup,
 you don't need to repeat it. However, please repeat the steps below for
 each independent issue you intend to work on.
 
-Let's assume you have found a bug in one of the functions of
-@file{lib/statistics.c} and after announcing it (see @ref{Report a bug}),
-you are in charge of fixing it. You make a branch, checkout to it, correct
-the bug, check if it is indeed fixed, add it to the staging area, commit it
-to the new branch and push it to your hosting service. But before all of
-them, make sure that your @file{master} branch is up to date with the main
-Gnuastro @file{master} branch.
+Let's assume you have found a bug in @file{lib/statistics.c}'s median
+calculating function. You announce it (see @ref{Report a bug}) so everyone
+knows you are working on it. However, if it is a very simple, clear/obvious
+and straightforward bug to fix you can skip this initial announcement. With
+the commands below, you make a branch, checkout to it, correct the bug,
+check if it is indeed fixed, add it to the staging area, commit it to the
+new branch and push it to your hosting service. But before all of them,
+make sure that you are on the @file{master} branch and that your
+@file{master} branch is up to date with the main Gnuastro repo with the
+first two commands.
 
 @example
 $ git checkout master
 $ git pull
-$ git checkout -b bug-123456-stats
+$ git checkout -b bug-median-stats      # Choose a descriptive name
 $ emacs lib/statistics.c
 $                                       # do your checks here
 $ git add lib/statistics.c
 $ git commit
-$ git push janedoe bug-123456-stats
+$ git push janedoe bug-median-stats
 @end example
 
 Your new branch is now on your hosted repository. Through the respective
 tacker on Savannah (see @ref{Gnuastro project webpage}) you can then let
-the other developers know that your @file{bug-123456-stats} branch is
+the other developers know that your @file{bug-median-stats} branch is
 ready. They will pull your work, test it themselves and if it is ready to
 be merged into the main Gnuastro history, they will merge it into the
 @file{master} branch. After that is done, you can simply checkout your
 local @file{master} branch and pull all the changes from the main
 repo. After the pull you can run `@command{git log}' as shown below, to see
-how @file{bug-123456-stats} is merged with master. So you can push all the
+how @file{bug-median-stats} is merged with master. So you can push all the
 changes to your hosted repository and delete the branches:
 
 @example
@@ -14940,8 +14943,8 @@ $ git checkout master
 $ git pull
 $ git log --oneline --graph --decorate --all
 $ git push janedoe master
-$ git branch -d bug-123456-stats                # delete local branch
-$ git push janedoe --delete bug-123456-stats    # delete remote branch
+$ git branch -d bug-median-stats                # delete local branch
+$ git push janedoe --delete bug-median-stats    # delete remote branch
 @end example
 
 Just as a reminder, always keep your work on each issue in a separate local
