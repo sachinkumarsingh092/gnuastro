@@ -845,9 +845,9 @@ gal_checkset_not_dir_part(char *input)
   /* Get the length of the notdir name: */
   l=strlen(tmp);
   errno=0;
-  out=malloc(l*sizeof *out);
+  out=malloc((l+1)*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for notdir", l*sizeof *out);
+    error(EXIT_FAILURE, errno, "%lu bytes for notdir", (l+1)*sizeof *out);
 
   strcpy(out, tmp);
   return out;
