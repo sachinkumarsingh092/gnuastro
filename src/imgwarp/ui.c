@@ -329,11 +329,11 @@ sanitycheck(struct imgwarpparams *p)
 
   /* Check the size of the input matrix, note that it might only have
      the wrong numbers when it is read from a file. */
-  if(p->up.matrixname
-     && (p->ms0!=2 && p->ms0!=3 || p->ms0!=p->ms1))
-    error(EXIT_FAILURE, 0, "the given matrix in %s has %lu rows and %lu "
-          "columns. Its size must be either 2x2 or 3x3", p->up.matrixname,
-          p->ms0, p->ms1);
+  if(p->up.matrixname)
+     if( (p->ms0 != 2 && p->ms0 != 3) || p->ms0 != p->ms1 )
+       error(EXIT_FAILURE, 0, "the given matrix in %s has %lu rows and "
+             "%lu columns. Its size must be either 2x2 or 3x3",
+             p->up.matrixname, p->ms0, p->ms1);
 
   /* Check if there are any non-normal numbers in the matrix: */
   df=(d=m)+p->ms0*p->ms1;
