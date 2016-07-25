@@ -60,6 +60,7 @@
 
 .deps
 .sync
+build
 ar-lib
 missing
 compile
