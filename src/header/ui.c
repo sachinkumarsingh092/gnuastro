@@ -243,7 +243,7 @@ setuprename(struct headerparams *p)
       /* `c' is created in case of an error, so the input value can be
          reported. */
       errno=0;
-      c=malloc(strlen(tmp->v));
+      c=malloc(strlen(tmp->v) + 1);
       if(c==NULL) error(EXIT_FAILURE, errno, "space for c in setuprename");
       strcpy(c, tmp->v);
 
