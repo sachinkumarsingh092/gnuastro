@@ -191,7 +191,7 @@ gal_configfiles_write_local_config_stop(char *indir, char *filename,
 	  "# This file was created on %s#\n"
 	  "# Use the long option name of each paramter followed by\n"
 	  "# a value. The name and value should be separated by\n"
-	  "# atleast one of the following charaacters:\n"
+	  "# at least one of the following characters:\n"
 	  "# space, `,`, `=` or `:`.\n#\n"
 	  "# Run `%s --help` or `info %s`\n"
 	  "# for more information.\n#\n"
