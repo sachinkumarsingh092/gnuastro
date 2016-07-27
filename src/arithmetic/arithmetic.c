@@ -74,7 +74,7 @@ add_operand(struct imgarithparams *p, char *filename, double number,
   newnode->number=number;
   newnode->filename=filename;
 
-  if(strlen(filename) && gal_fits_name_is_fits(filename))
+  if(filename != NULL && gal_fits_name_is_fits(filename))
     {
       /* Set the HDU for this filename. */
       gal_linkedlist_pop_from_stll(&p->hdus, &newnode->hdu);
