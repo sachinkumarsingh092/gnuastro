@@ -294,7 +294,7 @@ doubleto8bit(struct converttparams *p)
      image.*/
   if(p->fluxlow!=p->fluxhigh)
     {
-      if(p->flminbyte) max=p->fluxlow;
+      if(p->flminbyte) min=p->fluxlow;
       if(p->fhmaxbyte) max=p->fluxhigh;
     }
   m=(double)maxbyte/(max-min);
