@@ -101,7 +101,12 @@ fi
 # pre-existing symbolic link.
 build_sym=build
 if [ -h $build_sym ]; then
+    # Delete a harmless symbolic link, if present.
     rm $build_sym
+fi
+
+if [ ! -e $build_sym ]; then
+    # Create the link only if the target doesn't exist.
     ln -s $build_dir $build_sym
 else
     echo "$build_sym already exists here and is not a symbolic link."
