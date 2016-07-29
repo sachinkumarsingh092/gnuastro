@@ -4,14 +4,13 @@
 # temporary tmpfs directory in the RAM. Then it will create a symbolic link
 # to access that temporary directory called 'build'.
 #
+# MOTIVATION:
+#
 # The configure and build process involves the creation, reading, and
 # modification of a large number of files (input/output, or I/O). Therefore
 # I/O issues can directly affect the work of developers who need to
 # configure and build Gnuastro numerous times. Some such issues are listed
 # below:
-#
-#   - I/O can be slow in non-volatile (non-RAM) memory like traditional
-#     hard disks (HDDs) and even SSDs.
 #
 #   - I/O will cause wear and tear on both the HDDs (mechanical failures)
 #     and SSDs (decreasing the lifetime).
@@ -24,13 +23,12 @@
 #
 # One solution to these problems is the tmpfs file system (see
 # https://en.wikipedia.org/wiki/Tmpfs). Any file in tmpfs is actually
-# stored in the RAM (and possibly SAWP), not on HDDs or SSDs. Therefore I/O
-# can be much faster and will also not harm the non-volatile memory
-# hardware. However, due to the volatile nature of RAM, files in the tmpfs
-# filesystem will be permanently lost after a power-off, since they are all
-# derivative files (not files that have been directly manipulated) there is
-# no problem in this and this feature can be considered and automatic
-# cleanup.
+# stored in the RAM (and possibly SAWP), not on HDDs or SSDs. Therefore the
+# large number of small file I/O will not harm the HDDs or SSDs. However,
+# due to the volatile nature of RAM, files in the tmpfs filesystem will be
+# permanently lost after a power-off, since they are all derivative files
+# (not files that have been directly manipulated) there is no problem in
+# this and this feature can be considered and automatic cleanup.
 #
 # The modern GNU C library (and thus the Linux kernel) define the
 # '/dev/shm' directory for this purpose (POSIX shared memory). Therefore
@@ -57,7 +55,7 @@
 #
 # Original author: Mohammad Akhlaghi <akhlaghi@gnu.org>
 # Contributing author(s):
-#
+#   Mosè Giordano <mose@gnu.org>
 # Copyright (C) 2016, Free Software Foundation, Inc.
 #
 # Gnuastro is free software: you can redistribute it and/or modify it under
