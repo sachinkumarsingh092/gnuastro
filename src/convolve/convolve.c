@@ -74,9 +74,9 @@ complextoreal(double *c, size_t size, int action, double **output)
       break;
     default:
       error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-            "correct it. For some reason, the action code for complextoreal "
-            "in convolve.c (%d) is not recognized", PACKAGE_BUGREPORT,
-            action);
+            "correct it. For some reason, the action code for "
+            "complextoreal in convolve.c (%d) is not recognized",
+            PACKAGE_BUGREPORT, action);
     }
 }
 
@@ -205,7 +205,7 @@ makepaddedcomplex(struct convolveparams *p)
   pimg=p->pimg=malloc(2*ps0*ps1*sizeof *pimg);
   if(pimg==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for pimg",
-		   2*ps0*ps1*sizeof *pimg);
+          2*ps0*ps1*sizeof *pimg);
   for(i=0;i<ps0;++i)
     {
       op=(o=pimg+i*2*ps1)+2*ps1; /* pimg is complex.            */
@@ -223,7 +223,7 @@ makepaddedcomplex(struct convolveparams *p)
   pker=p->pker=malloc(2*ps0*ps1*sizeof *pker);
   if(pker==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for pker",
-		    2*ps0*ps1*sizeof *pker);
+          2*ps0*ps1*sizeof *pker);
   for(i=0;i<ps0;++i)
     {
       op=(o=pker+i*2*ps1)+2*ps1; /* pker is complex.            */
@@ -658,7 +658,8 @@ frequencyconvolve(struct convolveparams *p)
   /* Forward 2D FFT on each image. */
   if(verb) gettimeofday(&t1, NULL);
   twodimensionfft(p, fp, 1);
-  if(verb) gal_timing_report(&t1, "Images converted to frequency domain.", 1);
+  if(verb)
+    gal_timing_report(&t1, "Images converted to frequency domain.", 1);
   if(p->viewfreqsteps)
     {
       complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALSPEC, &tmp);
@@ -678,12 +679,14 @@ frequencyconvolve(struct convolveparams *p)
   if(p->makekernel)
     {
       complexarraydivide(p->pimg, p->pker, p->ps0*p->ps1);
-      if(verb) gal_timing_report(&t1, "Divided in the frequency domain.", 1);
+      if(verb)
+        gal_timing_report(&t1, "Divided in the frequency domain.", 1);
     }
   else
     {
       complexarraymultiply(p->pimg, p->pker, p->ps0*p->ps1);
-      if(verb) gal_timing_report(&t1, "Multiplied in the frequency domain.", 1);
+      if(verb)
+        gal_timing_report(&t1, "Multiplied in the frequency domain.", 1);
     }
   if(p->viewfreqsteps)
     {
@@ -699,7 +702,8 @@ frequencyconvolve(struct convolveparams *p)
   twodimensionfft(p, fp, -1);
   if(p->makekernel) correctdeconvolve(p, &tmp);
   else complextoreal(p->pimg, p->ps0*p->ps1, COMPLEXTOREALREAL, &tmp);
-  if(verb) gal_timing_report(&t1, "Converted back to the spatial domain.", 1);
+  if(verb)
+    gal_timing_report(&t1, "Converted back to the spatial domain.", 1);
   if(p->viewfreqsteps)
     {
       gal_fits_array_to_file(p->up.freqstepsname, "Spatial",
