@@ -204,7 +204,8 @@ makepaddedcomplex(struct convolveparams *p)
   errno=0;
   pimg=p->pimg=malloc(2*ps0*ps1*sizeof *pimg);
   if(pimg==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for pimg", ps0*ps1*sizeof *pimg);
+    error(EXIT_FAILURE, errno, "%lu bytes for pimg",
+		   2*ps0*ps1*sizeof *pimg);
   for(i=0;i<ps0;++i)
     {
       op=(o=pimg+i*2*ps1)+2*ps1; /* pimg is complex.            */
@@ -221,7 +222,8 @@ makepaddedcomplex(struct convolveparams *p)
   errno=0;
   pker=p->pker=malloc(2*ps0*ps1*sizeof *pker);
   if(pker==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for pker", ps0*ps1*sizeof *pker);
+    error(EXIT_FAILURE, errno, "%lu bytes for pker",
+		    2*ps0*ps1*sizeof *pker);
   for(i=0;i<ps0;++i)
     {
       op=(o=pker+i*2*ps1)+2*ps1; /* pker is complex.            */
