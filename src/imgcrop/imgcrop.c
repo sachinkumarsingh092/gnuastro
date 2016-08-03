@@ -49,7 +49,7 @@ imgmodecrop(void *inparam)
   struct imgcropparams *p=crp->p;
   struct gal_commonparams *cp=&p->cp;
 
-  size_t i;
+  size_t i, job_len;
   int status;
   struct inputimgs *img;
   struct imgcroplog *log;
@@ -104,8 +104,13 @@ imgmodecrop(void *inparam)
 	 on the terminal, if the user askd for it. */
       if(cp->verb)
 	{
-	  sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
-		  log->centerfilled);
+        job_len = strlen(log->name);
+        if (job_len > 30)
+            sprintf(msg, "...%s %lu %d", &log->name[job_len-27], log->numimg,
+                    log->centerfilled);
+        else
+            sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
+                    log->centerfilled);
 	  gal_timing_report(NULL, msg, 2);
 	}
     }
