@@ -39,6 +39,22 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+/* Set the maximum length given to a file name when run in verbose
+   mode. The STR macro function is used to convert the numerical macro
+   value into a string (which is necessary). STR_HELPER(x) uses the C
+   pre-processor's "stringification" functionality. See the
+   "Stringification" section of the GNU C Pre-Processor manual for a
+   thorough explanation. Note that this is part of the C standard, not just
+   GNU C. */
+#define STRINGIFY(x) #x
+#define MACROSTR(x) STRINGIFY(x)
+#define FILENAME_BUFFER_IN_VERB 30
+
+
+
+
+
 /* Structure for the log file. Since we are operating in parallel
    mode, writing to a file will significantly decrease the speed. So
    we will make an array to keep the status of each output.*/

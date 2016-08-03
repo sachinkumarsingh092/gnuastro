@@ -49,8 +49,8 @@ imgmodecrop(void *inparam)
   struct imgcropparams *p=crp->p;
   struct gal_commonparams *cp=&p->cp;
 
-  size_t i, job_len;
   int status;
+  size_t i, outnamelen;
   struct inputimgs *img;
   struct imgcroplog *log;
   char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
@@ -99,27 +99,36 @@ imgmodecrop(void *inparam)
 	}
       else log->centerfilled=0;
 
-      /* Write the log entry for this crop, in this mode, each output
-	 image was only cropped from one image. Then print the result
-	 on the terminal, if the user askd for it. */
+      /* Write the log entry for this crop, in this mode, each output image
+         was only cropped from one image. Then print the result on the
+         terminal, if the user asked for it.
+
+         A maximum length of FILENAME_BUFFER_IN_VERB characters is set for
+         the filename. This length is set to make the output on the user's
+         terminal reasonable (in one line). So when the filename is longer
+         than this, its first set of characters are truncated. In the
+         log-file there is no truncation, therefore the log file should be
+         used for checking the outputs, not the outputs printed on the
+         screen. */
       if(cp->verb)
-	{
-        job_len = strlen(log->name);
-        if (job_len > 30)
-            sprintf(msg, "...%s %lu %d", &log->name[job_len-27], log->numimg,
-                    log->centerfilled);
-        else
-            sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
-                    log->centerfilled);
-	  gal_timing_report(NULL, msg, 2);
-	}
+        {
+          outnamelen = strlen(log->name);
+          if ( outnamelen > FILENAME_BUFFER_IN_VERB )
+            sprintf(msg, "...%s %lu %d",
+                    &log->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
+                    log->numimg, log->centerfilled);
+          else
+            sprintf(msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %lu %d",
+                    log->name, log->numimg, log->centerfilled);
+          gal_timing_report(NULL, msg, 2);
+        }
     }
 
   /* Close the input image. */
   status=0;
   if( fits_close_file(crp->infits, &status) )
     gal_fits_io_error(status, "imgmode.c: imgcroponthreads could "
-                           "not close FITS file");
+                      "not close FITS file");
 
   /* Wait until all other threads finish. */
   if(cp->numthreads>1)
