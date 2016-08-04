@@ -143,7 +143,7 @@ pthread_barrier_wait(pthread_barrier_t *b)
    (size_t) -1, which is larger than any possible index!. */
 void
 gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
-	      size_t *outthrdcols)
+              size_t *outthrdcols)
 {
   size_t *sp, *fp;
   size_t i, *thrds, thrdcols;
@@ -169,7 +169,7 @@ gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
       printf("\n\n############################\n");
       printf("THREAD %lu: \n", i);
       for(j=0;thrds[i*thrdcols+j]!=GAL_THREADS_NON_THRD_INDEX;j++)
-	printf("%lu, ", thrds[i*thrdcols+j]);
+        printf("%lu, ", thrds[i*thrdcols+j]);
       printf("\b\b.\n");
     }
   exit(0);
@@ -182,7 +182,7 @@ gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
 
 void
 gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
-		size_t numthreads)
+                              size_t numthreads)
 {
   int err;
 

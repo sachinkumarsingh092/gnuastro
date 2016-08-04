@@ -84,8 +84,8 @@ makemirrored(float *in, size_t mi, float **outmirror, size_t *outsize)
   errno=0;
   mirror=malloc(size*sizeof *mirror);
   if(mirror==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for mirror array in makemirrored "
-          "(mode.c)", size*sizeof *mirror);
+    error(EXIT_FAILURE, errno, "%lu bytes for mirror array in "
+          "makemirrored (mode.c)", size*sizeof *mirror);
 
   for(i=0;i<=mi;++i)
     mirror[i]    = in[i];
@@ -139,8 +139,8 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   errno=0;
   out=malloc(numbins*3*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out in gal_mode_make_mirror_plots"
-          " (mode.c)", numbins*3*sizeof *out);
+    error(EXIT_FAILURE, errno, "%lu bytes for out in "
+          "gal_mode_make_mirror_plots (mode.c)", numbins*3*sizeof *out);
 
 
   /* Define the bin sides: */
@@ -151,7 +151,8 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   /* Find the histogram of the actual data and put it in out. Note
      that maxhistone=0, because here we want to use one value for both
      histograms so they are comparable. */
-  gal_statistics_histogram(actual, size, bins, numbins, normhist, maxhistone);
+  gal_statistics_histogram(actual, size, bins, numbins,
+                           normhist, maxhistone);
   for(i=0;i<numbins;++i)
     if(bins[i*2+1]>maxhist) maxhist=bins[i*2+1];
   for(i=0;i<numbins;++i)
@@ -162,7 +163,8 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
 
   /* Find the histogram of the mirrired distribution and put it in
      out: */
-  gal_statistics_histogram(mirror, msize, bins, numbins, normhist, maxhistone);
+  gal_statistics_histogram(mirror, msize, bins, numbins, normhist,
+                           maxhistone);
   for(i=0;i<numbins;++i)
     { out[i*3+2]=bins[i*2+1]/maxhist; bins[i*2+1]=0.0f;}
   bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
@@ -179,7 +181,7 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   fprintf(fp, "# Column 2: Mirror distribution.\n");
   for(i=0;i<numbins;++i)
     fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3]+d,
-	    out[i*3+1], out[i*3+2]);
+            out[i*3+1], out[i*3+2]);
   fclose(fp);
 
 
@@ -203,15 +205,16 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   else maxcfp=msize;
   errno=0;
   fp=fopen(cfpsname, "w");
-  if(fp==NULL) error(EXIT_FAILURE, errno, "could not open file %s", cfpsname);
+  if(fp==NULL)
+    error(EXIT_FAILURE, errno, "could not open file %s", cfpsname);
   fprintf(fp, "# Cumulative frequency plot (average index in bin) of\n"
-	  "# Actual and mirrored distributions.\n");
+          "# Actual and mirrored distributions.\n");
   fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
   fprintf(fp, "# Column 1: Actual data.\n");
   fprintf(fp, "# Column 2: Mirror distribution.\n");
   for(i=0;i<numbins;++i)
     fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3],
-	    out[i*3+1]/maxcfp, out[i*3+2]/maxcfp);
+            out[i*3+1]/maxcfp, out[i*3+2]/maxcfp);
   fclose(fp);
 
 
@@ -274,7 +277,7 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   in speeding up the job :-D. Only for the first element, `prevj=0`.*/
 size_t
 mirrormaxdiff(float *a, size_t size, size_t m,
-	      size_t numcheck, size_t interval, size_t stdm)
+              size_t numcheck, size_t interval, size_t stdm)
 {
   /* The variables:
    i:        Index on mirror distribution.
@@ -304,33 +307,33 @@ mirrormaxdiff(float *a, size_t size, size_t m,
          if a[m+j]. We change `j` accordingly and break out of the `j`
          loop. */
       for(j=prevj;j<size-m;++j)
-	if(a[m+j]>mf)
-	  {
-	    if( a[m+j]-mf < mf-a[m+j-1] )
-	      break;
-	    else
-	      {
-		j--;
-		break;
-	      }
-	  }
+        if(a[m+j]>mf)
+          {
+            if( a[m+j]-mf < mf-a[m+j-1] )
+              break;
+            else
+              {
+                j--;
+                break;
+              }
+          }
       /*
       printf("i:%-5lu j:%-5lu diff:%-5d maxdiff: %lu\n",
-	     i, j, (int)j-(int)i, maxdiff);
+             i, j, (int)j-(int)i, maxdiff);
       */
       /* The index of the actual CDF corresponding the the mirrored
-	 flux has been found. We want the mirrored distribution to be
-	 within the actual distribution, not beyond it, so the only
-	 acceptable results are when i<j. If i>j+errordiff then the
-	 result is not acceptable! */
+         flux has been found. We want the mirrored distribution to be
+         within the actual distribution, not beyond it, so the only
+         acceptable results are when i<j. If i>j+errordiff then the
+         result is not acceptable! */
       if(i>j+errordiff)
-	{
-	  maxdiff=GAL_MODE_MIRROR_IS_ABOVE_RESULT;
-	  break;
-	}
+        {
+          maxdiff=GAL_MODE_MIRROR_IS_ABOVE_RESULT;
+          break;
+        }
       absdiff  = i>j ? i-j : j-i;
       if(absdiff>maxdiff)
-	maxdiff=absdiff;
+        maxdiff=absdiff;
 
       prevj=j;
     }
@@ -342,19 +345,22 @@ mirrormaxdiff(float *a, size_t size, size_t m,
 
 
 /* Find the mode of a float array of size `size`. I assume that
-   mirrormaxdiff() has one minimum (within the statistical
-   errors) in the function. To find that minimum, the golden section
-   search algorithm is going to used. Read the Wikipedia article for a
-   very nice introduction. In summary we will constantly be finding
-   middle points in the given interval and thus decreasing the
-   interval until a certain tolerance is reached.
+   mirrormaxdiff() has one minimum (within the statistical errors) in the
+   function. To find that minimum, the golden section search algorithm is
+   going to used. Read the Wikipedia article for a very nice
+   introduction. In summary we will constantly be finding middle points in
+   the given interval and thus decreasing the interval until a certain
+   tolerance is reached.
 
-   If the input interval is on points `a` and `b`, then the middle point (lets
-   call it `c`, where c>a and c<b) to test should be positioned such that
-   (b-c)/(c-a)=GAL_MODE_GOLDEN_RATIO. Once we open up this relation, we can find
-   c using: c=(b+GAL_MODE_GOLDEN_RATIO*a)/(1+GAL_MODE_GOLDEN_RATIO). We need a
-   fourth point to be placed between. With this configuration, the probing point
-   is located at: */
+   If the input interval is on points `a` and `b`, then the middle point
+   (lets call it `c`, where c>a and c<b) to test should be positioned such
+   that (b-c)/(c-a)=GAL_MODE_GOLDEN_RATIO. Once we open up this relation,
+   we can find c using:
+
+      c=(b+GAL_MODE_GOLDEN_RATIO*a)/(1+GAL_MODE_GOLDEN_RATIO).
+
+   We need a fourth point to be placed between. With this configuration,
+   the probing point is located at: */
 size_t
 modegoldenselection(struct gal_mode_params *mp)
 {
@@ -381,7 +387,7 @@ modegoldenselection(struct gal_mode_params *mp)
 
   /* Find the maximum difference for this quantile. */
   dd = mirrormaxdiff(mp->sorted, mp->size, di, mp->numcheck,
-		     mp->interval, mp->errorstdm);
+                     mp->interval, mp->errorstdm);
 
   /*------------------------------------------------------------------
   sprintf(outname, "%dcmp.pdf", counter);
@@ -394,28 +400,28 @@ modegoldenselection(struct gal_mode_params *mp)
   /*
   printf("%-5lu\t%-5lu(%d)\t%-5lu ----> dq: %-5lu di: %d\n",
          mp->lowi, mp->midi, (int)mp->midd, mp->highi,
-	 di, (int)dd);
+         di, (int)dd);
   */
-  /* +++++++++++++ The mirrored distribution's cumulative frequency
-     plot has be lower than the actual's cfp. If it isn't, `di` will
-     be GAL_MODE_MIRROR_IS_ABOVE_RESULT. In this case, the normal golden section
-     minimization is not going to give us what we want. So I have added this
-     modification to it. In such cases, we want the search to go to the lower
-     intervals.*/
+  /* +++++++++++++ The mirrored distribution's cumulative frequency plot
+     has be lower than the actual's cfp. If it isn't, `di` will be
+     GAL_MODE_MIRROR_IS_ABOVE_RESULT. In this case, the normal golden
+     section minimization is not going to give us what we want. So I have
+     added this modification to it. In such cases, we want the search to go
+     to the lower intervals.*/
   if(dd==GAL_MODE_MIRROR_IS_ABOVE_RESULT)
     {
       if(mp->midi < di)
-	{
-	  mp->highi=di;
-	  return modegoldenselection(mp);
-	}
+        {
+          mp->highi=di;
+          return modegoldenselection(mp);
+        }
       else
-	{
-	  mp->highi=mp->midi;
-	  mp->midi=di;
-	  mp->midd=dd;
-	  return modegoldenselection(mp);
-	}
+        {
+          mp->highi=mp->midi;
+          mp->midi=di;
+          mp->midd=dd;
+          return modegoldenselection(mp);
+        }
     }
   /* +++++++++++++ End of my addition to the golden section search. */
 
@@ -423,32 +429,32 @@ modegoldenselection(struct gal_mode_params *mp)
   if(dd<mp->midd)
     {
       if(mp->highi-mp->midi > mp->midi-mp->lowi)
-	{
-	  mp->lowi  = mp->midi;
-	  mp->midi  = di;
-	  mp->midd  = dd;
-	  return modegoldenselection(mp);
-	}
+        {
+          mp->lowi  = mp->midi;
+          mp->midi  = di;
+          mp->midd  = dd;
+          return modegoldenselection(mp);
+        }
       else
-	{
-	  mp->highi = mp->midi;
-	  mp->midi  = di;
-	  mp->midd  = dd;
-	  return modegoldenselection(mp);
-	}
+        {
+          mp->highi = mp->midi;
+          mp->midi  = di;
+          mp->midd  = dd;
+          return modegoldenselection(mp);
+        }
     }
   else
     {
       if(mp->highi-mp->midi > mp->midi-mp->lowi)
-	{
-	  mp->highi = di;
-	  return modegoldenselection(mp);
-	}
+        {
+          mp->highi = di;
+          return modegoldenselection(mp);
+        }
       else
-	{
-	  mp->lowi  = di;
-	  return modegoldenselection(mp);
-	}
+        {
+          mp->lowi  = di;
+          return modegoldenselection(mp);
+        }
     }
 }
 
@@ -469,7 +475,7 @@ modegoldenselection(struct gal_mode_params *mp)
    for `b` only goes to the 95% of the distribution.  */
 void
 modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
-		 float *sym)
+                 float *sym)
 {
   float af, bf, mf, fi;
   size_t i, j, bi=0, topi, errdiff, prevj=0;
@@ -488,22 +494,22 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
       fi=2*mf-a[mi-i];
 
       for(j=prevj;j<size-mi;++j)
-	if(a[mi+j]>fi)
-	  {
-	    if( a[mi+j]-fi < fi-a[mi+j-1] )
-	      break;
-	    else
-	      {
-		j--;
-		break;
-	      }
-	  }
+        if(a[mi+j]>fi)
+          {
+            if( a[mi+j]-fi < fi-a[mi+j-1] )
+              break;
+            else
+              {
+                j--;
+                break;
+              }
+          }
 
       if(i>j+errdiff || j>i+errdiff)
-	{
-	  bi=mi+i;
-	  break;
-	}
+        {
+          bi=mi+i;
+          break;
+        }
       prevj=j;
     }
 
@@ -533,7 +539,8 @@ modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
    it just finds bf from the equation to calculate symmetricity in
    modesymmetricity. */
 float
-gal_mode_value_from_sym(float *sorted, size_t size, size_t modeindex, float sym)
+gal_mode_value_from_sym(float *sorted, size_t size, size_t modeindex,
+                        float sym)
 {
   float mf=sorted[modeindex];
   float af=
@@ -571,12 +578,14 @@ gal_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
   if(mp.numcheck>1000)
     mp.interval=mp.numcheck/1000;
   else mp.interval=1;
-  mp.lowi  = gal_statistics_index_from_quantile(size, GAL_MODE_LOW_QUANTILE);
-  mp.highi = gal_statistics_index_from_quantile(size, GAL_MODE_HIGH_QUANTILE);
+  mp.lowi  = gal_statistics_index_from_quantile(size,
+                                                GAL_MODE_LOW_QUANTILE);
+  mp.highi = gal_statistics_index_from_quantile(size,
+                                                GAL_MODE_HIGH_QUANTILE);
   mp.midi  = ((float)mp.highi
-              +GAL_MODE_GOLDEN_RATIO*(float)mp.lowi)/(1+GAL_MODE_GOLDEN_RATIO);
+              + GAL_MODE_GOLDEN_RATIO*(float)mp.lowi)/(1+GAL_MODE_GOLDEN_RATIO);
   mp.midd  = mirrormaxdiff(mp.sorted, mp.size, mp.midi, mp.numcheck,
-			   mp.interval, mp.errorstdm);
+                           mp.interval, mp.errorstdm);
 
   /* Do the golden section search and find the resulting
      symmetricity. */

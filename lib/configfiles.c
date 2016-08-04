@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <string.h>
 #include <dirent.h>
-#include <sys/stat.h>		/* For mkdir permission flags. */
+#include <sys/stat.h>                /* For mkdir permission flags. */
 
 #include <gnuastro/checkset.h>
 #include <gnuastro/configfiles.h>
@@ -48,7 +48,7 @@ gal_configfiles_add_home_dir(char *dir)
   home=getenv("HOME");
   if(home==NULL)
     error(EXIT_FAILURE, 0, "the HOME environment variable "
-	  "is not defined");
+          "is not defined");
 
   /* Concatenate the two strings together: */
   return gal_checkset_malloc_cat(home, dir);
@@ -73,48 +73,48 @@ gal_configfiles_read_name_value(char *line, char *filename, size_t lineno,
     switch(*line)
       {
       case ' ': case '\t': case '\v': case '\n': case '\r':
-	if(inword) /* Only considered in a word, not in a quote*/
-	  {
-	    inword=0;
-	    *line='\0';
-	    if(*value && inquote==0)
-	      notyetfinished=0;
-	  }
-	break;
+        if(inword) /* Only considered in a word, not in a quote*/
+          {
+            inword=0;
+            *line='\0';
+            if(*value && inquote==0)
+              notyetfinished=0;
+          }
+        break;
       case '#':
-	notyetfinished=0;
-	break;
+        notyetfinished=0;
+        break;
       case '"':
-	if(inword)
-	  error_at_line(EXIT_FAILURE, 0, filename, lineno,
-			"Quotes have to be surrounded by whitespace "
-			"characters (space, tab, new line, etc).");
-	if(inquote)
-	  {
-	    *line='\0';
-	    inquote=0;
-	    notyetfinished=0;
-	  }
-	else
-	  {
-	    if(*name==NULL)
-	      error_at_line(EXIT_FAILURE, 0, filename, lineno,
-			    "Parameter name should not start with "
-			    "double quotes (\").");
-	    inquote=1;
-	    *value=line+1;
-	  }
-	break;
+        if(inword)
+          error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                        "Quotes have to be surrounded by whitespace "
+                        "characters (space, tab, new line, etc).");
+        if(inquote)
+          {
+            *line='\0';
+            inquote=0;
+            notyetfinished=0;
+          }
+        else
+          {
+            if(*name==NULL)
+              error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                            "Parameter name should not start with "
+                            "double quotes (\").");
+            inquote=1;
+            *value=line+1;
+          }
+        break;
       default:
-	if(inword==0 && inquote==0)
-	  {
-	    if(*name==NULL)
-	      *name=line;
-	    else  /* name is set, now assign *value. */
-	      *value=line;
-	    inword=1;
-	  }
-	break;
+        if(inword==0 && inquote==0)
+          {
+            if(*name==NULL)
+              *name=line;
+            else  /* name is set, now assign *value. */
+              *value=line;
+            inword=1;
+          }
+        break;
       }
   while(*(++line)!='\0' && notyetfinished);
 
@@ -132,8 +132,8 @@ gal_configfiles_read_name_value(char *line, char *filename, size_t lineno,
   /* Name or value were set but not yet finished. */
   if(notyetfinished)
     error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		  "line finished before parameter name and "
-		  "value could be read.");
+                  "line finished before parameter name and "
+                  "value could be read.");
 }
 
 
@@ -154,24 +154,24 @@ gal_configfiles_write_local_config_stop(char *indir, char *filename,
 
   /* Make sure the directory exists, if it doesn't, try to make it.*/
   dp=opendir(indir);
-  if(dp==NULL)			/* The directory could not be opened. */
+  if(dp==NULL)               /* The directory could not be opened. */
     {
       if(errno==ENOENT)
-	{
-	  errno=0;
-	  if(mkdir(indir, S_IRWXU)==-1)
-	    error(EXIT_FAILURE, errno, "%s: could not be created. Try "
-		  "running:\n\n    mkdir -p %s\n\nto built it and run "
+        {
+          errno=0;
+          if(mkdir(indir, S_IRWXU)==-1)
+            error(EXIT_FAILURE, errno, "%s: could not be created. Try "
+                  "running:\n\n    mkdir -p %s\n\nto built it and run "
                   "your previous command again", indir, indir);
-	}
+        }
       else
-	error(EXIT_FAILURE, errno, "%s", indir);
+        error(EXIT_FAILURE, errno, "%s", indir);
     }
   else
     {
       errno=0;
       if (closedir(dp)==-1)
-	error(EXIT_FAILURE, errno, "%s", indir);
+        error(EXIT_FAILURE, errno, "%s", indir);
     }
 
 
@@ -187,17 +187,17 @@ gal_configfiles_write_local_config_stop(char *indir, char *filename,
 
   /* write the comments: */
   fprintf(fp, "# Default parameters for %s (%s).\n"
-	  "# %s is part of GNU Astronomy Utitlies.\n"
-	  "# This file was created on %s#\n"
-	  "# Use the long option name of each paramter followed by\n"
-	  "# a value. The name and value should be separated by\n"
-	  "# at least one of the following characters:\n"
-	  "# space, `,`, `=` or `:`.\n#\n"
-	  "# Run `%s --help` or `info %s`\n"
-	  "# for more information.\n#\n"
-	  "# NOTE I:  All counting is from zero, not one.\n"
-	  "# NOTE II: Lines starting with `#` are ignored.\n",
-	  spack_name, spack, spack_name, ctime(&rawtime), spack, spack);
+          "# %s is part of GNU Astronomy Utitlies.\n"
+          "# This file was created on %s#\n"
+          "# Use the long option name of each paramter followed by\n"
+          "# a value. The name and value should be separated by\n"
+          "# at least one of the following characters:\n"
+          "# space, `,`, `=` or `:`.\n#\n"
+          "# Run `%s --help` or `info %s`\n"
+          "# for more information.\n#\n"
+          "# NOTE I:  All counting is from zero, not one.\n"
+          "# NOTE II: Lines starting with `#` are ignored.\n",
+          spack_name, spack, spack_name, ctime(&rawtime), spack, spack);
 
   return fp;
 }

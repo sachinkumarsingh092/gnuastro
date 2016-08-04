@@ -66,7 +66,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    nearestint_halfhigher(0.5f) --> 1.0f
 */
 #define nearestint_halfhigher(D)                                        \
-  (ceil((D)) - (D) > 0.5f + GAL_POLYGON_ROUND_ERR ? ceil((D))-1.0f : ceil((D)))
+  (ceil((D)) - (D) > 0.5f                                               \
+   + GAL_POLYGON_ROUND_ERR ? ceil((D))-1.0f : ceil((D)))
 
 
 
@@ -161,10 +162,12 @@ imgwarponthread(void *inparam)
       /* For a check:
       if(ind==9999)
         {
-          printf("\n\n\nind: %lu: (%lu, %lu):\n", ind, ind%os1+1, ind/os1+1);
+          printf("\n\n\nind: %lu: (%lu, %lu):\n",
+                 ind, ind%os1+1, ind/os1+1);
           for(j=0;j<4;++j)
             printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
-                   ocrn[j*2], ocrn[j*2+1], icrn_base[j*2], icrn_base[j*2+1]);
+                   ocrn[j*2], ocrn[j*2+1], icrn_base[j*2],
+                   icrn_base[j*2+1]);
           printf("------- Ordered -------\n");
           for(j=0;j<4;++j) printf("(%.3f, %.3f)\n", icrn[j*2], icrn[j*2+1]);
           printf("------- Start and ending pixels -------\n");
@@ -230,7 +233,8 @@ imgwarponthread(void *inparam)
 
               /* For a simple pixel value check:
               if(ind==97387)
-                printf("%f --> (%lu) %f\n", v*gal_polygon_area(ccrn, numcrn),
+                printf("%f --> (%lu) %f\n",
+                       v*gal_polygon_area(ccrn, numcrn),
                        numinput, output[ind]);
               */
             }
@@ -455,7 +459,7 @@ correctwcssaveoutput(struct imgwarpparams *p)
   if(p->inputbitpix==DOUBLE_IMG || p->doubletype)
     {
       array=p->output;
-      p->inputbitpix=DOUBLE_IMG; /* In case it wasn't and p->doubletype==1 */
+      p->inputbitpix=DOUBLE_IMG; /* Not converted and p->doubletype==1 */
     }
   else
     gal_fits_change_type((void **)p->output, DOUBLE_IMG,
@@ -468,9 +472,9 @@ correctwcssaveoutput(struct imgwarpparams *p)
     {
       sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%lu_%lu", i/3+1, i%3+1);
       gal_fits_add_to_fits_header_ll_end(&headers, TDOUBLE,
-                                              &keyword[i*FLEN_KEYWORD], 0,
-                                              &p->matrix[i], 0, "Warp matrix "
-                                              "element value.", 0, NULL);
+                                         &keyword[i*FLEN_KEYWORD], 0,
+                                         &p->matrix[i], 0, "Warp matrix "
+                                         "element value.", 0, NULL);
     }
 
   /* Save the output: */
@@ -545,9 +549,9 @@ imgwarp(struct imgwarpparams *p)
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(size<nt) nb=size+1;
       else nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
@@ -559,9 +563,9 @@ imgwarp(struct imgwarpparams *p)
             iwp[i].p=p;
             iwp[i].b=&b;
             iwp[i].indexs=&indexs[i*thrdcols];
-	    err=pthread_create(&t, &attr, imgwarponthread, &iwp[i]);
-	    if(err)
-	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+            err=pthread_create(&t, &attr, imgwarponthread, &iwp[i]);
+            if(err)
+              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

@@ -31,7 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /*                        IMPORTANT NOTE:
-	 All the axises are based on the FITS standard, not C.
+         All the axises are based on the FITS standard, not C.
 */
 
 
@@ -108,7 +108,7 @@ gal_box_border_from_center(double xc, double yc, long *width,
   /*
   printf("\n\nCenter is on: %ld, %ld\n", lxc, lyc);
   printf("Starting and ending pixels: (%ld, %ld) -- (%ld, %ld)\n\n\n",
-	 fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
+         fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
   */
 }
 
@@ -254,9 +254,9 @@ gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
   /* In case you wish to see the results.
   printf("\nAfter correction:\n");
   printf("Input image: (%ld, %ld) -- (%ld, %ld)\n", fpixel_i[0],
-	 fpixel_i[1], lpixel_i[0], lpixel_i[1]);
+         fpixel_i[1], lpixel_i[0], lpixel_i[1]);
   printf("output image:(%ld, %ld) -- (%ld, %ld)\n\n\n", fpixel_o[0],
-	 fpixel_o[1], lpixel_o[0], lpixel_o[1]);
+         fpixel_o[1], lpixel_o[0], lpixel_o[1]);
   */
 
   if(fpixel_i[0]>naxes[0] || fpixel_i[1]>naxes[1]

@@ -43,9 +43,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 #include "mkprof.h"
 
-#include "ui.h"			/* Needs main.h.                  */
-#include "args.h"		/* Needs main.h, includes argp.h. */
-#include "oneprofile.h"		/* Needs main.h and mkprof.h.     */
+#include "ui.h"                  /* Needs main.h.                  */
+#include "args.h"                /* Needs main.h, includes argp.h. */
+#include "oneprofile.h"          /* Needs main.h and mkprof.h.     */
 
 
 /* Set the file names of the places where the default parameters are
@@ -72,7 +72,7 @@ readconfig(char *filename, struct mkprofparams *p)
   struct uiparams *up=&p->up;
   size_t lineno=0, len=200, tmp;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -89,7 +89,7 @@ readconfig(char *filename, struct mkprofparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -106,159 +106,160 @@ readconfig(char *filename, struct mkprofparams *p)
         gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "naxis1")==0)
-	{
-	  if(up->naxis1set) continue;
-	  gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
+        {
+          if(up->naxis1set) continue;
+          gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
                                     filename, lineno);
-	  p->naxes[0]=tmp;
-	  up->naxis1set=1;
-	}
+          p->naxes[0]=tmp;
+          up->naxis1set=1;
+        }
       else if(strcmp(name, "naxis2")==0)
-	{
-	  if(up->naxis2set) continue;
-	  gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
+        {
+          if(up->naxis2set) continue;
+          gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
                                     filename, lineno);
-	  p->naxes[1]=tmp;
-	  up->naxis2set=1;
-	}
+          p->naxes[1]=tmp;
+          up->naxis2set=1;
+        }
       else if(strcmp(name, "oversample")==0)
-	{
-	  if(up->oversampleset) continue;
-	  gal_checkset_sizet_l_zero(value, &p->oversample, name, key, SPACK,
-                                    filename, lineno);
-	  up->oversampleset=1;
-	}
+        {
+          if(up->oversampleset) continue;
+          gal_checkset_sizet_l_zero(value, &p->oversample, name, key,
+                                    SPACK, filename, lineno);
+          up->oversampleset=1;
+        }
 
 
 
 
       /* Profiles: */
       else if(strcmp(name, "tunitinp")==0)
-	{
-	  if(up->tunitinpset) continue;
-	  gal_checkset_int_zero_or_one(value, &p->tunitinp, name, key, SPACK,
-                                       filename, lineno);
-	  up->tunitinpset=1;
-	}
-      else if(strcmp(name, "numrandom")==0)
-	{
-	  if(up->numrandomset) continue;
-	  gal_checkset_sizet_l_zero(value, &p->numrandom, name, key, SPACK,
-                                    filename, lineno);
-	  up->numrandomset=1;
-	}
-      else if(strcmp(name, "tolerance")==0)
-	{
-	  if(up->toleranceset) continue;
-	  gal_checkset_float_l_0(value, &p->tolerance, name, key, SPACK,
-                                 filename, lineno);
-	  up->toleranceset=1;
-	}
-      else if(strcmp(name, "zeropoint")==0)
-	{
-	  if(up->zeropointset) continue;
-	  gal_checkset_any_float(value, &p->zeropoint, name, key, SPACK,
-                                 filename, lineno);
-	  up->zeropointset=1;
-	}
-      else if(strcmp(name, "prepforconv")==0)
-	{
-	  if(up->prepforconvset) continue;
-	  gal_checkset_int_zero_or_one(value, &p->up.prepforconv, name, key,
+        {
+          if(up->tunitinpset) continue;
+          gal_checkset_int_zero_or_one(value, &p->tunitinp, name, key,
                                        SPACK, filename, lineno);
-	  up->prepforconvset=1;
-	}
+          up->tunitinpset=1;
+        }
+      else if(strcmp(name, "numrandom")==0)
+        {
+          if(up->numrandomset) continue;
+          gal_checkset_sizet_l_zero(value, &p->numrandom, name, key, SPACK,
+                                    filename, lineno);
+          up->numrandomset=1;
+        }
+      else if(strcmp(name, "tolerance")==0)
+        {
+          if(up->toleranceset) continue;
+          gal_checkset_float_l_0(value, &p->tolerance, name, key, SPACK,
+                                 filename, lineno);
+          up->toleranceset=1;
+        }
+      else if(strcmp(name, "zeropoint")==0)
+        {
+          if(up->zeropointset) continue;
+          gal_checkset_any_float(value, &p->zeropoint, name, key, SPACK,
+                                 filename, lineno);
+          up->zeropointset=1;
+        }
+      else if(strcmp(name, "prepforconv")==0)
+        {
+          if(up->prepforconvset) continue;
+          gal_checkset_int_zero_or_one(value, &p->up.prepforconv, name, key,
+                                       SPACK, filename, lineno);
+          up->prepforconvset=1;
+        }
       else if(strcmp(name, "xshift")==0)
-	{
-	  if(up->xshiftset) continue;
-	  gal_checkset_sizet_el_zero(value, &tmp, name, key, SPACK,
+        {
+          if(up->xshiftset) continue;
+          gal_checkset_sizet_el_zero(value, &tmp, name, key, SPACK,
                                      filename, lineno);
-	  p->shift[0]=tmp;
-	  up->xshiftset=1;
-	}
+          p->shift[0]=tmp;
+          up->xshiftset=1;
+        }
       else if(strcmp(name, "yshift")==0)
-	{
-	  if(up->yshiftset) continue;
-	  gal_checkset_sizet_el_zero(value, &tmp, name, key, SPACK,
+        {
+          if(up->yshiftset) continue;
+          gal_checkset_sizet_el_zero(value, &tmp, name, key, SPACK,
                                      filename, lineno);
-	  p->shift[1]=tmp;
-	  up->yshiftset=1;
-	}
+          p->shift[1]=tmp;
+          up->yshiftset=1;
+        }
       else if(strcmp(name, "circumwidth")==0)
-	{
-	  if(up->circumwidthset) continue;
-          gal_checkset_double_l_value(value, &p->circumwidth, name, key, SPACK,
-                                      MINCIRCUMWIDTH, filename, lineno);
-	  up->circumwidthset=1;
-	}
+        {
+          if(up->circumwidthset) continue;
+          gal_checkset_double_l_value(value, &p->circumwidth, name, key,
+                                      SPACK, MINCIRCUMWIDTH, filename,
+                                      lineno);
+          up->circumwidthset=1;
+        }
 
 
 
 
       /* Catalog: */
       else if(strcmp(name, "xcol")==0)
-	{
-	  if(up->xcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->xcol, name, key, SPACK,
+        {
+          if(up->xcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->xcol, name, key, SPACK,
                                      filename, lineno);
-	  up->xcolset=1;
-	}
+          up->xcolset=1;
+        }
       else if(strcmp(name, "ycol")==0)
-	{
-	  if(up->ycolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->ycol, name, key, SPACK,
+        {
+          if(up->ycolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->ycol, name, key, SPACK,
                                      filename, lineno);
-	  up->ycolset=1;
-	}
+          up->ycolset=1;
+        }
       else if(strcmp(name, "fcol")==0)
-	{
-	  if(up->fcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->fcol, name, key, SPACK,
+        {
+          if(up->fcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->fcol, name, key, SPACK,
                                      filename, lineno);
-	  up->fcolset=1;
-	}
+          up->fcolset=1;
+        }
       else if(strcmp(name, "rcol")==0)
-	{
-	  if(up->rcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->rcol, name, key, SPACK,
+        {
+          if(up->rcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->rcol, name, key, SPACK,
                                      filename, lineno);
-	  up->rcolset=1;
-	}
+          up->rcolset=1;
+        }
       else if(strcmp(name, "ncol")==0)
-	{
-	  if(up->ncolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->ncol, name, key, SPACK,
+        {
+          if(up->ncolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->ncol, name, key, SPACK,
                                      filename, lineno);
-	  up->ncolset=1;
-	}
+          up->ncolset=1;
+        }
       else if(strcmp(name, "pcol")==0)
-	{
-	  if(up->pcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->pcol, name, key, SPACK,
+        {
+          if(up->pcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->pcol, name, key, SPACK,
                                      filename, lineno);
-	  up->pcolset=1;
-	}
+          up->pcolset=1;
+        }
       else if(strcmp(name, "qcol")==0)
-	{
-	  if(up->qcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->qcol, name, key, SPACK,
+        {
+          if(up->qcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->qcol, name, key, SPACK,
                                      filename, lineno);
-	  up->qcolset=1;
-	}
+          up->qcolset=1;
+        }
       else if(strcmp(name, "mcol")==0)
-	{
-	  if(up->mcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->mcol, name, key, SPACK,
+        {
+          if(up->mcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->mcol, name, key, SPACK,
                                      filename, lineno);
-	  up->mcolset=1;
-	}
+          up->mcolset=1;
+        }
       else if(strcmp(name, "tcol")==0)
-	{
-	  if(up->tcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->tcol, name, key, SPACK,
+        {
+          if(up->tcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->tcol, name, key, SPACK,
                                      filename, lineno);
-	  up->tcolset=1;
-	}
+          up->tcolset=1;
+        }
 
 
 
@@ -266,40 +267,40 @@ readconfig(char *filename, struct mkprofparams *p)
 
       /* WCS: */
       else if(strcmp(name, "crpix1")==0)
-	{
-	  if(up->crpix1set) continue;
-	  gal_checkset_any_double(value, &p->crpix[0], name, key, SPACK,
+        {
+          if(up->crpix1set) continue;
+          gal_checkset_any_double(value, &p->crpix[0], name, key, SPACK,
                                   filename, lineno);
-	  up->crpix1set=1;
-	}
+          up->crpix1set=1;
+        }
       else if(strcmp(name, "crpix2")==0)
-	{
-	  if(up->crpix2set) continue;
-	  gal_checkset_any_double(value, &p->crpix[1], name, key, SPACK,
+        {
+          if(up->crpix2set) continue;
+          gal_checkset_any_double(value, &p->crpix[1], name, key, SPACK,
                                   filename, lineno);
-	  up->crpix2set=1;
-	}
+          up->crpix2set=1;
+        }
       else if(strcmp(name, "crval1")==0)
-	{
-	  if(up->crval1set) continue;
-	  gal_checkset_any_double(value, &p->crval[0], name, key, SPACK,
+        {
+          if(up->crval1set) continue;
+          gal_checkset_any_double(value, &p->crval[0], name, key, SPACK,
                                   filename, lineno);
-	  up->crval1set=1;
-	}
+          up->crval1set=1;
+        }
       else if(strcmp(name, "crval2")==0)
-	{
-	  if(up->crval2set) continue;
-	  gal_checkset_any_double(value, &p->crval[1], name, key, SPACK,
+        {
+          if(up->crval2set) continue;
+          gal_checkset_any_double(value, &p->crval[1], name, key, SPACK,
                                   filename, lineno);
-	  up->crval2set=1;
-	}
+          up->crval2set=1;
+        }
       else if(strcmp(name, "resolution")==0)
-	{
-	  if(up->resolutionset) continue;
-	  gal_checkset_any_float(value, &p->resolution, name, key, SPACK,
+        {
+          if(up->resolutionset) continue;
+          gal_checkset_any_float(value, &p->resolution, name, key, SPACK,
                                  filename, lineno);
-	  up->resolutionset=1;
-	}
+          up->resolutionset=1;
+        }
 
 
 
@@ -309,8 +310,8 @@ readconfig(char *filename, struct mkprofparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);
@@ -509,10 +510,10 @@ sanitycheck(struct mkprofparams *p)
   for(i=0;i<9;++i)
     for(j=0;j<9;++j)
       if(i!=j && columns[i]==columns[j])
-	error(EXIT_FAILURE, 0, "at least two of the specified columns "
-	      "are set to %lu! By adding the `-P` or `--printparams` "
-	      "option you can check the final column numbers. They "
-	      "all have to be different", columns[i]);
+        error(EXIT_FAILURE, 0, "at least two of the specified columns "
+              "are set to %lu! By adding the `-P` or `--printparams` "
+              "option you can check the final column numbers. They "
+              "all have to be different", columns[i]);
 
 
   /* If all the columns are within the catalog: */
@@ -531,8 +532,8 @@ sanitycheck(struct mkprofparams *p)
   for(i=0;i<p->cs0;++i)
     if(cat[i*cs1+p->fcol]<0 || cat[i*cs1+p->fcol]>MAXIMUMCODE)
       error(EXIT_FAILURE, 0, "%s: In row %lu, the function code should"
-	    "be positive and smaller or equal to %d",
-	    p->up.catname, i+1, MAXIMUMCODE);
+            "be positive and smaller or equal to %d",
+            p->up.catname, i+1, MAXIMUMCODE);
 
 
   /* If any of xshift or yshift is non-zero, the other should be too!
@@ -541,44 +542,45 @@ sanitycheck(struct mkprofparams *p)
      1. Otherwise the sum will either be 0 or 2.*/
   switch ( (p->shift[0]!=0) + (p->shift[1]!=0) )
     {
-      /* If prepforconv is called, then xshift and yshift should be zero. Also
-	 a Moffat or Gaussian profile should exist in the image. */
+      /* If prepforconv is called, then xshift and yshift should be
+         zero. Also a Moffat or Gaussian profile should exist in the
+         image. */
     case 0:
       if(p->up.prepforconv)
-	{
-	  /* Check if there is at least one Moffat or Gaussian profile. */
-	  j=0;
-	  for(i=0;i<p->cs0;++i)
-	    if(ispsf(cat[i*cs1+p->fcol]))
-	      {
-		j=i;
-		break;
-	      }
+        {
+          /* Check if there is at least one Moffat or Gaussian profile. */
+          j=0;
+          for(i=0;i<p->cs0;++i)
+            if(ispsf(cat[i*cs1+p->fcol]))
+              {
+                j=i;
+                break;
+              }
 
-	  /* If there is no PSF in the catalog, then you can ignore
-	     prepforconv. */
-	  if(i<p->cs0)
-	    {
-	      /* Set the row, to simplify: */
-	      row=&cat[j*cs1];
+          /* If there is no PSF in the catalog, then you can ignore
+             prepforconv. */
+          if(i<p->cs0)
+            {
+              /* Set the row, to simplify: */
+              row=&cat[j*cs1];
 
-	      /* Find the correct xshift and yshift using the first Moffat
-		 or Gaussian profile (in row 'j'). Note that the output of
-		 encloseellipse will be the total width, we only want half
-		 of it for the shift.*/
-	      truncr = ( p->tunitinp ? row[p->tcol] :
-			 row[p->tcol] * row[p->rcol]/2);
+              /* Find the correct xshift and yshift using the first Moffat
+                 or Gaussian profile (in row 'j'). Note that the output of
+                 encloseellipse will be the total width, we only want half
+                 of it for the shift.*/
+              truncr = ( p->tunitinp ? row[p->tcol] :
+                         row[p->tcol] * row[p->rcol]/2);
               gal_box_ellipse_in_box(truncr, row[p->qcol]*truncr,
                                      row[p->pcol]*DEGREESTORADIANS, width);
-	      p->shift[0]  = (width[0]/2)*p->oversample;
-	      p->shift[1]  = (width[1]/2)*p->oversample;
-	    }
-	}
+              p->shift[0]  = (width[0]/2)*p->oversample;
+              p->shift[1]  = (width[1]/2)*p->oversample;
+            }
+        }
       break;
 
     case 1:
       error(EXIT_FAILURE, 0, "at least one of `--xshift` (`-X`) or "
-	    "`--yshift` (`-Y`) are zero");
+            "`--yshift` (`-Y`) are zero");
       break;
 
     case 2:
@@ -588,7 +590,7 @@ sanitycheck(struct mkprofparams *p)
 
     default:
       error(EXIT_FAILURE, 0, "a bug in sanitycheck (ui.c)! In checks "
-	    "for shifts. Please contact us so we can fix it");
+            "for shifts. Please contact us so we can fix it");
     }
   p->naxes[0] += 2*p->shift[0];
   p->naxes[1] += 2*p->shift[1];
@@ -596,12 +598,12 @@ sanitycheck(struct mkprofparams *p)
 
   /* Check the output name: */
   d0f1=gal_checkset_dir_0_file_1(p->cp.output, p->cp.dontdelete);
-  if(d0f1)		        /* --output is a file name. */
+  if(d0f1)                        /* --output is a file name. */
     {
       p->mergedimgname=p->cp.output;
       p->outdir=gal_checkset_dir_part(p->mergedimgname);
     }
-  else				/* --output is a directory name. */
+  else                                /* --output is a directory name. */
     {
       errno=0;
       p->outdir=malloc((strlen(p->cp.output)+1)*sizeof *p->outdir);
@@ -610,8 +612,9 @@ sanitycheck(struct mkprofparams *p)
               (strlen(p->cp.output)+1)*sizeof *p->outdir);
       strcpy(p->outdir, p->cp.output);
       gal_checkset_check_dir_write_add_slash(&p->outdir);
-      gal_checkset_automatic_output(p->up.catname, ".fits", p->cp.removedirinfo,
-                                    p->cp.dontdelete, &tmpname);
+      gal_checkset_automatic_output(p->up.catname, ".fits",
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &tmpname);
       p->mergedimgname=gal_checkset_malloc_cat(p->outdir, tmpname);
       free(tmpname);
     }
@@ -650,7 +653,7 @@ preparearrays(struct mkprofparams *p)
   p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
   if(p->log==NULL)
     error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file",
-	  p->cs0*LOGNUMCOLS*sizeof *p->log);
+          p->cs0*LOGNUMCOLS*sizeof *p->log);
 
 
   /* If a background image is specified, then use that as the output
@@ -672,13 +675,14 @@ preparearrays(struct mkprofparams *p)
       else
         {
           gal_fits_change_type(array, p->bitpix, p->naxes[1]*p->naxes[0],
-                                    p->anyblank, (void **)(&p->out), FLOAT_IMG);
+                               p->anyblank, (void **)(&p->out), FLOAT_IMG);
           free(array);
         }
 
       /* If setconsttomin is called, then there should be an input image: */
       if(p->setconsttomin)
-        gal_statistics_float_min(p->out, p->naxes[1]*p->naxes[0], &p->constant);
+        gal_statistics_float_min(p->out, p->naxes[1]*p->naxes[0],
+                                 &p->constant);
     }
   else
     {
@@ -780,9 +784,10 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
       errno=0;
       jobname=malloc(strlen(p->up.catname)+100*sizeof *jobname);
-      if(jobname==NULL)	error(EXIT_FAILURE, errno, "jobname in ui.c");
+      if(jobname==NULL)
+        error(EXIT_FAILURE, errno, "jobname in ui.c");
       sprintf(jobname, "%lu profile%sread from %s", p->cs0,
-	      p->cs0>1?"s ":" ", p->up.catname);
+              p->cs0>1?"s ":" ", p->up.catname);
       gal_timing_report(&t1, jobname, 1);
       free(jobname);
 

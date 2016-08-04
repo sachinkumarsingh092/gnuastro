@@ -324,7 +324,8 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
   errno=0; newlabs=calloc(numpseudo, sizeof *newlabs);
   if(newlabs==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for numlabs in "
-          "removefalsedetections (detections.c)", numpseudo*sizeof *newlabs);
+          "removefalsedetections (detections.c)",
+          numpseudo*sizeof *newlabs);
 
 
   for(i=1;i<numpseudo;++i)
@@ -459,7 +460,7 @@ detectpseudos(void *inparams)
          work for this mesh if this is the first step. */
       bytpartfromlarge(p, thisbyt, startind, s0, s1);
       if(detectionname && p->stepnum==1)
-	{ bytparttolarge(p, thisbyt, startind, s0, s1); continue; }
+        { bytparttolarge(p, thisbyt, startind, s0, s1); continue; }
 
 
       /* If there were NaN pixels in the image, make sure if this
@@ -475,7 +476,7 @@ detectpseudos(void *inparams)
       /* Fill the bounded holes. */
       fillboundedholes(thisbyt, s0, s1, anyblank);
       if(detectionname && p->stepnum==2)
-	{ bytparttolarge(p, thisbyt, startind, s0, s1); continue; }
+        { bytparttolarge(p, thisbyt, startind, s0, s1); continue; }
 
       /* Open the image once: */
       opening(thisbyt, s0, s1, 1, 4);
@@ -540,8 +541,8 @@ detsnthresh(struct noisechiselparams *p)
         {
           free(p->dbyt);    /* Free the old, p->dbyt, put the original */
           gal_arraymanip_uchar_copy(tmp, s0*s1, &p->dbyt);
-          gal_mesh_operate_on_mesh(lmp, detectpseudos, sizeof(unsigned char),
-                                   0, 0);
+          gal_mesh_operate_on_mesh(lmp, detectpseudos,
+                                   sizeof(unsigned char), 0, 0);
           switch(p->stepnum)
             {
             case 1:
@@ -565,7 +566,8 @@ detsnthresh(struct noisechiselparams *p)
       free(tmp);
     }
   else
-    gal_mesh_operate_on_mesh(lmp, detectpseudos, sizeof(unsigned char), 0, 0);
+    gal_mesh_operate_on_mesh(lmp, detectpseudos,
+                             sizeof(unsigned char), 0, 0);
 
 
   /* Find the connected components and the signal to noise ratio of
@@ -633,9 +635,9 @@ dbytolaboverlap(struct noisechiselparams *p)
       if(ISINDEXABLELABEL)
         {
           tokeep[ *lab ] =
-            tokeep[ *lab ]	/* Check if this label is to be kept.    */
-            ? 1			/* It has, its all we need!              */
-            : *byt; 		/* It hasn't, check if it should be kept.*/
+            tokeep[ *lab ]    /* Check if this label is to be kept.    */
+            ? 1               /* It has, its all we need!              */
+            : *byt;           /* It hasn't, check if it should be kept.*/
         }
       ++byt;
     }

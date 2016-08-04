@@ -28,9 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
-#include <sys/time.h>		 /* generate random seed */
-#include <gsl/gsl_rng.h>	 /* used in setrandoms   */
-#include <gsl/gsl_randist.h>	 /* To make noise.       */
+#include <sys/time.h>            /* generate random seed */
+#include <gsl/gsl_rng.h>         /* used in setrandoms   */
+#include <gsl/gsl_randist.h>     /* To make noise.       */
 #include <gsl/gsl_integration.h> /* gsl_integration_qng  */
 
 #include <gnuastro/fits.h>
@@ -71,8 +71,8 @@ r_circle(size_t p, struct mkonthread *mkp)
 {
   double x, y;
 
-  x = p/mkp->width[0];		/* Note that width[0] is the First FITS */
-  y = p%mkp->width[0];		/* axis, not first C axis.              */
+  x = p/mkp->width[0];   /* Note that width[0] is the First FITS */
+  y = p%mkp->width[0];   /* axis, not first C axis.              */
 
   return sqrt( (x-mkp->xc)*(x-mkp->xc) + (y-mkp->yc)*(y-mkp->yc) );
 }
@@ -174,7 +174,7 @@ twod_over_xy(double y, void *params)
 
   mkp->y=y;
   gsl_integration_qng(&F, mkp->xl, mkp->xh, epsabs, epsrel,
-		      &result, &abserr, &neval);
+                      &result, &abserr, &neval);
   return result;
 }
 
@@ -193,7 +193,7 @@ integ2d(struct mkonthread *mkp)
   F.function = &twod_over_xy;
   F.params = mkp;
   gsl_integration_qng(&F, mkp->yl, mkp->yh, epsabs,
-		      epsrel, &result, &abserr, &neval);
+                      epsrel, &result, &abserr, &neval);
   return result;
 }
 
@@ -235,7 +235,9 @@ makepixbypix(struct mkonthread *mkp)
   double (*profile)(struct mkonthread *)=mkp->profile;
   double xc=mkp->xc, yc=mkp->yc, os=mkp->p->oversample;
   double truncr=mkp->truncr, approx, hp=mkp->p->halfpixel;
-  struct gal_linkedlist_tosll *lQ=NULL, *sQ; /* lQ: Largest. sQ: Smallest in queue */
+
+  /* lQ: Largest. sQ: Smallest in queue */
+  struct gal_linkedlist_tosll *lQ=NULL, *sQ;
 
   /* Find the nearest pixel to the profile center and add it to the
      queue. */
@@ -254,8 +256,8 @@ makepixbypix(struct mkonthread *mkp)
   byt=calloc(is0*is1, sizeof *byt);
   if(byt==NULL)
     error(EXIT_FAILURE, 0, "%lu bytes for map of object in row %lu of "
-	  "data in %s", is0*is1*sizeof *byt, ibq->id,
-	  mkp->p->up.catname);
+          "data in %s", is0*is1*sizeof *byt, ibq->id,
+          mkp->p->up.catname);
 
   /* Start the queue: */
   byt[p]=1;
@@ -310,8 +312,8 @@ makepixbypix(struct mkonthread *mkp)
           /*
             printf("\tac: %f, ap: %f, frac: %f\n", img[p], approx,
             fabs(img[p]-approx)/img[p]);
-            gal_fits_array_to_file("tmp.fits", "", FLOAT_IMG, img, is0, is1,
-            NULL, SPACK_STRING);
+            gal_fits_array_to_file("tmp.fits", "", FLOAT_IMG, img, is0,
+                                   is1, NULL, SPACK_STRING);
           */
 
           /* Go over the neighbours and add them to queue of elements
@@ -340,7 +342,7 @@ makepixbypix(struct mkonthread *mkp)
   /* Order doesn't matter any more, add all the pixels you find. */
   while(Q)
     {
-      pop_from_sll(&Q, ind);	/* ind=&p */
+      pop_from_sll(&Q, ind);        /* ind=&p */
       mkp->x=(p/is1-xc)/os;
       mkp->y=(p%is1-yc)/os;
       r_el(mkp);
@@ -361,18 +363,18 @@ makepixbypix(struct mkonthread *mkp)
 
       /*
       gal_fits_array_to_file("tmp.fits", "", FLOAT_IMG, img, is0, is1,
- 		             NULL, SPACK_STRING);
+                              NULL, SPACK_STRING);
       */
       /* Go over the neighbours and add them to queue of elements
-	 to check. */
+         to check. */
       GAL_NEIGHBORS_FILL_4_ALLIMG;
       nf=(n=ngb)+numngb;
       do
-	if(byt[*n]==0)
-	  {
-	    byt[*n]=1;
-	    add_to_sll(&Q, *n);
-	  }
+        if(byt[*n]==0)
+          {
+            byt[*n]=1;
+            add_to_sll(&Q, *n);
+          }
       while(++n<nf);
     }
   free(byt);
@@ -452,7 +454,7 @@ setprofparams(struct mkonthread *mkp)
       mkp->moffat_alphasq  *= mkp->moffat_alphasq;
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
       if(p->psfinimg==0 && p->individual==0)
-	{ mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
+        { mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
       break;
 
     case GAUSSIANCODE:
@@ -461,7 +463,7 @@ setprofparams(struct mkonthread *mkp)
       mkp->gaussian_c       = -1.0f/(2.0f*sigma*sigma);
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
       if(p->psfinimg==0 && p->individual==0)
-	{ mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
+        { mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
       break;
 
     case POINTCODE:
@@ -485,9 +487,9 @@ setprofparams(struct mkonthread *mkp)
 
     default:
       error(EXIT_FAILURE, 0, "a bug in setprofparams (oneprofile.c)! "
-	    "The profile code is not recognized. This should have been "
-	    "seen and reported prior to this step. Please contact us so "
-	    "we can correct this");
+            "The profile code is not recognized. This should have been "
+            "seen and reported prior to this step. Please contact us so "
+            "we can correct this");
     }
 
 }
@@ -530,12 +532,12 @@ makeoneprofile(struct mkonthread *mkp)
      is in the non-oversampled scale.*/
   pixfrac = modf(fabs(cat[p->xcol]), &intpart);
   mkp->yc = ( os * (mkp->width[0]/2 + pixfrac)
-	      + (pixfrac<0.50f ? os/2 : -1*os/2-1) );
+              + (pixfrac<0.50f ? os/2 : -1*os/2-1) );
   mkp->yc = round(mkp->yc*100)/100;
 
   pixfrac = modf(fabs(cat[p->ycol]), &intpart);
   mkp->xc = ( os*(mkp->width[1]/2 + pixfrac)
-	      + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
+              + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
   mkp->xc = round(mkp->xc*100)/100;
 
 
@@ -552,7 +554,7 @@ makeoneprofile(struct mkonthread *mkp)
   mkp->ibq->img=malloc(size*sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
     error(EXIT_FAILURE, 0, "%lu bytes for object in row %lu of data in %s",
-	  size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
+          size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
   gal_arraymanip_fset_const(mkp->ibq->img, size, NAN);
 
 

@@ -78,25 +78,25 @@ imgmodecrop(void *inparam)
 
       /* Check the final output: */
       if(log->numimg)
-	{
+        {
           /* Check if the center of the crop is filled or not. */
-	  log->centerfilled=iscenterfilled(crp);
+          log->centerfilled=iscenterfilled(crp);
 
-	  /* Add the final headers and close output FITS image: */
-	  gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
-	  status=0;
-	  if( fits_close_file(crp->outfits, &status) )
-	    gal_fits_io_error(status, "CFITSIO could not close "
+          /* Add the final headers and close output FITS image: */
+          gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
+          status=0;
+          if( fits_close_file(crp->outfits, &status) )
+            gal_fits_io_error(status, "CFITSIO could not close "
                                    "the opened file");
 
-	  /* Remove the output image if its center was not filled. */
-	  if(log->centerfilled==0 && p->keepblankcenter==0)
-	    {
-	      errno=0;
-	      if(unlink(log->name))
-		error(EXIT_FAILURE, errno, "%s", log->name);
-	    }
-	}
+          /* Remove the output image if its center was not filled. */
+          if(log->centerfilled==0 && p->keepblankcenter==0)
+            {
+              errno=0;
+              if(unlink(log->name))
+                error(EXIT_FAILURE, errno, "%s", log->name);
+            }
+        }
       else log->centerfilled=0;
 
       /* Write the log entry for this crop, in this mode, each output image
@@ -168,65 +168,65 @@ wcsmodecrop(void *inparam)
 
 
       /* Go over all the images to see if this target is within their
-	 range or not. */
+         range or not. */
       crp->imgindex=0;
       do
-	if(radecoverlap(crp))
-	  {
-	    gal_fits_read_hdu(p->imgs[crp->imgindex].name, p->cp.hdu,
+        if(radecoverlap(crp))
+          {
+            gal_fits_read_hdu(p->imgs[crp->imgindex].name, p->cp.hdu,
                                         IMAGE_HDU, &crp->infits);
 
-	    if(log->name==NULL) cropname(crp);
+            if(log->name==NULL) cropname(crp);
 
-	    onecrop(crp);
+            onecrop(crp);
 
-	    status=0;
-	    if( fits_close_file(crp->infits, &status) )
-	      gal_fits_io_error(status, "imgmode.c: imgcroponthreads "
+            status=0;
+            if( fits_close_file(crp->infits, &status) )
+              gal_fits_io_error(status, "imgmode.c: imgcroponthreads "
                                      "could not close FITS file");
-	  }
+          }
       while ( ++(crp->imgindex) < p->numimg );
 
 
       /* Check the final output: */
       if(log->numimg)
-	{
-	  log->centerfilled=iscenterfilled(crp);
+        {
+          log->centerfilled=iscenterfilled(crp);
 
-	  gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
-	  status=0;
-	  if( fits_close_file(crp->outfits, &status) )
-	    gal_fits_io_error(status, "CFITSIO could not close the "
+          gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
+          status=0;
+          if( fits_close_file(crp->outfits, &status) )
+            gal_fits_io_error(status, "CFITSIO could not close the "
                                      "opened file");
 
-	  if(log->centerfilled==0 && p->keepblankcenter==0)
-	    {
-	      errno=0;
-	      if(unlink(log->name))
-		error(EXIT_FAILURE, errno, "%s", log->name);
-	    }
-	}
+          if(log->centerfilled==0 && p->keepblankcenter==0)
+            {
+              errno=0;
+              if(unlink(log->name))
+                error(EXIT_FAILURE, errno, "%s", log->name);
+            }
+        }
       else
-	{
-	  if(p->up.catset==0)	/* Trick cropname into making a catalog */
-	    {			/* So we have a name for log report. */
-	      tcatset=1;
-	      p->up.catset=1;
-	    }
-	  cropname(crp);
-	  if(tcatset) p->up.catset=0;
-	  log->centerfilled=0;
-	}
+        {
+          if(p->up.catset==0)    /* Trick cropname into making a catalog */
+            {                    /* So we have a name for log report.    */
+              tcatset=1;
+              p->up.catset=1;
+            }
+          cropname(crp);
+          if(tcatset) p->up.catset=0;
+          log->centerfilled=0;
+        }
 
       /* Write the log entry for this crop, in this mode, each output
-	 image was only cropped from one image. Then print the result
-	 on the terminal, if the user askd for it. */
+         image was only cropped from one image. Then print the result
+         on the terminal, if the user askd for it. */
       if(p->cp.verb)
-	{
-	  sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
-		  log->centerfilled);
-	  gal_timing_report(NULL, msg, 2);
-	}
+        {
+          sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
+                  log->centerfilled);
+          gal_timing_report(NULL, msg, 2);
+        }
     }
 
   /* Wait until all other threads finish. */
@@ -276,8 +276,8 @@ imgcrop(struct imgcropparams *p)
 
   if(!p->imgmode && !p->wcsmode)
     error(EXIT_FAILURE, 0, "a bug! Somehow in imgcrop (imgcrop.c), "
-	  "neither the imgmode is on or the wcsmode! Please contact us "
-	  "so we can fix it, thanks");
+          "neither the imgmode is on or the wcsmode! Please contact us "
+          "so we can fix it, thanks");
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. */
@@ -285,7 +285,7 @@ imgcrop(struct imgcropparams *p)
   crp=malloc(nt*sizeof *crp);
   if(crp==NULL)
     error(EXIT_FAILURE, errno,
-	  "%lu bytes in imgcrop (imgcrop.c) for crp", nt*sizeof *crp);
+          "%lu bytes in imgcrop (imgcrop.c) for crp", nt*sizeof *crp);
 
 
   /* Get the length of the output, no reasonable integer can have more
@@ -308,35 +308,35 @@ imgcrop(struct imgcropparams *p)
       crp[0].p=p;
       crp[0].indexs=indexs;
       if(p->imgmode)
-	imgmodecrop(&crp[0]);
+        imgmodecrop(&crp[0]);
       else if(p->wcsmode)
-	wcsmodecrop(&crp[0]);
+        wcsmodecrop(&crp[0]);
     }
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(p->cs0<nt) nb=p->cs0+1;
       else          nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
-	  {
-	    crp[i].p=p;
-	    crp[i].b=&b;
-	    crp[i].outlen=crp[0].outlen;
-	    crp[i].indexs=&indexs[i*thrdcols];
-	    if(p->imgmode)
-	      err=pthread_create(&t, &attr, imgmodecrop, &crp[i]);
-	    else if(p->wcsmode)
-	      err=pthread_create(&t, &attr, wcsmodecrop, &crp[i]);
-	    if(err)
-	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
-	  }
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+          {
+            crp[i].p=p;
+            crp[i].b=&b;
+            crp[i].outlen=crp[0].outlen;
+            crp[i].indexs=&indexs[i*thrdcols];
+            if(p->imgmode)
+              err=pthread_create(&t, &attr, imgmodecrop, &crp[i]);
+            else if(p->wcsmode)
+              err=pthread_create(&t, &attr, wcsmodecrop, &crp[i]);
+            if(err)
+              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+          }
 
       /* Wait for all threads to finish and free the spaces. */
       pthread_barrier_wait(&b);

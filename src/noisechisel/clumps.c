@@ -76,11 +76,11 @@ oversegment(struct clumpsthreadparams *ctp)
 {
   struct noisechiselparams *p=ctp->p;
 
-  /* pix is not actually used its self, however, the pointer to it
-     will be extensively used (ind) for the macro GAL_NEIGHBORS_FILL_8_REGION.
+  /* pix is not actually used its self, however, the pointer to it will be
+     extensively used (ind) for the macro GAL_NEIGHBORS_FILL_8_REGION.
      This macro works on the pointer to the index, not the index its
-     self. `pix` is filled with different index values, so the pointer
-     to it doesn't change. */
+     self. `pix` is filled with different index values, so the pointer to
+     it doesn't change. */
   size_t pix;
 
   float *arr=p->conv;
@@ -91,7 +91,8 @@ oversegment(struct clumpsthreadparams *ctp)
   size_t ng, *rn, *rnf, numngb, ngb[8], *relngb=p->relngb;
 
   /* Sort the indexs based on the flux within them. */
-  qsort(ctp->inds, ctp->area, sizeof(size_t), gal_qsort_index_float_decreasing);
+  qsort(ctp->inds, ctp->area, sizeof(size_t),
+        gal_qsort_index_float_decreasing);
 
   /* Initialize the region you want to over-segment. */
   indf=(pind=ctp->inds)+ctp->area;
@@ -396,28 +397,28 @@ growclumps(struct clumpsthreadparams *ctp, int withrivers)
   while(thisround>numblanks)
     {
       /* "thisround" will keep the number of pixels to be inspected in
-	 this round. "numblanks" will count the number of pixels left
-	 without an index by the end of this round. Since numblack
-	 comes from the previous loop (or outside for the first loop)
-	 it has to be saved in "thisround" to begin counting a
-	 fresh. */
+         this round. "numblanks" will count the number of pixels left
+         without an index by the end of this round. Since numblack
+         comes from the previous loop (or outside for the first loop)
+         it has to be saved in "thisround" to begin counting a
+         fresh. */
       thisround=numblanks;
       numblanks=0;
 
       /* Go over all the available indexs to fill: */
       indf = ( ind=ctp->blankinds ) + thisround;
       do
-	{
-	  /* We begin by assuming the neighbor label is zero (meaning
-	     that no neighbor actually exists!) */
-	  n1=0;
+        {
+          /* We begin by assuming the neighbor label is zero (meaning
+             that no neighbor actually exists!) */
+          n1=0;
 
-	  /* Check the 4 connected neighbors of the pixel: */
+          /* Check the 4 connected neighbors of the pixel: */
           GAL_NEIGHBORS_FILL_4_ALLIMG;
-	  nf=(n=ngb)+numngb;
-	  do
-            if( olab[*n]>0 )	             /* This neighbor is labeled. */
-	    {
+          nf=(n=ngb)+numngb;
+          do
+            if( olab[*n]>0 )                 /* This neighbor is labeled. */
+            {
               if(n1)           /* A previous neighboring label was found. */
                 {
                   if(n1!=olab[*n])      /* This neighbor has a new label. */
@@ -431,18 +432,18 @@ growclumps(struct clumpsthreadparams *ctp, int withrivers)
                   n1=olab[*n];
                   if(!withrivers) break;
                 }
-	    }
-	  while(++n<nf);
+            }
+          while(++n<nf);
 
-	  /* The loop above finishes with three possibilities:
-  	       n1==0            --> No labeled neighbor was found.
-	       n1==SEGMENTINIT  --> It is connecting two labeled regions.
-	       n1>0             --> It only has one neighbouring label.*/
-	  if(n1==0)		/* First condition above. */
-	    ctp->blankinds[numblanks++]=*ind;
-	  else			/* Last two conditions above. */
+          /* The loop above finishes with three possibilities:
+               n1==0            --> No labeled neighbor was found.
+               n1==SEGMENTINIT  --> It is connecting two labeled regions.
+               n1>0             --> It only has one neighbouring label.*/
+          if(n1==0)                   /* First condition above. */
+            ctp->blankinds[numblanks++]=*ind;
+          else                        /* Last two conditions above. */
             olab[*ind]=n1;
-	}
+        }
       while(++ind<indf);
     }
 
@@ -701,11 +702,11 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
       O  = clumpinfo[ row + 2 ];
 
       /* If the inner flux is smaller than the outer flux (happens
-	 only in noise cases) or the area is smaller than the minimum
-	 area to calculate signal-to-noise, then set the S/N of this
-	 segment to zero. */
+         only in noise cases) or the area is smaller than the minimum
+         area to calculate signal-to-noise, then set the S/N of this
+         segment to zero. */
       if( Ni>p->segsnminarea && I>O )   /* This is O, not 0 (zero). */
-	{
+        {
           /* If the sky was subtracted then put in the second power of
              the standard deviation multiplied by two (because we are
              measuring two fluxs). */
@@ -719,11 +720,11 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
              (for easy sorting and etc). Note that counter will always
              be smaller and equal to i. */
           ind = p->b0f1 ? i : counter++;
-	  sntab[ind]=( sqrt((float)(Ni)/cpscorr)*(I-O)
-		       / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + err ) );
-	}
+          sntab[ind]=( sqrt((float)(Ni)/cpscorr)*(I-O)
+                       / sqrt( (I>0?I:-1*I) + (O>0?O:-1*O) + err ) );
+        }
       else
-	sntab[i]=0;
+        sntab[i]=0;
     }
 
 
@@ -804,7 +805,7 @@ clumpsntableonmesh(void *inparams)
 
 
       /* Check to see if we have enough blank area for getting the
-	 background noise statistics. */
+         background noise statistics. */
       count_f_b_onregion(p->byt, startind, s0, s1, is1, &nf, &ctp.area,
                          &anyblank);
       if( (float)ctp.area < (float)(s0*s1)*p->minbfrac )
@@ -960,7 +961,8 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
   errno=0; newlabs=malloc(ctp->numclumps*sizeof *newlabs);
   if(newlabs==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for newlabs in "
-          "removefalsedetections (clumps.c)", ctp->numclumps*sizeof *newlabs);
+          "removefalsedetections (clumps.c)",
+          ctp->numclumps*sizeof *newlabs);
 
   /* We want the removed regions to become SEGMENTINIT. */
   gal_arraymanip_long_init(newlabs, ctp->numclumps, SEGMENTINIT);
@@ -997,9 +999,9 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
   do
     {
       if(clab[*ind]>0)
-	clab[*ind] = newlabs[ clab[*ind] ];
+        clab[*ind] = newlabs[ clab[*ind] ];
       else
-	clab[*ind] = SEGMENTINIT;
+        clab[*ind] = SEGMENTINIT;
     }
   while(++ind<indf);
 

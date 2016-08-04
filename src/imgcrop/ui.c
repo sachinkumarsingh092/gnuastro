@@ -42,8 +42,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "crop.h"
 #include "wcsmode.h"
 
-#include "ui.h"		        /* Needs main.h                   */
-#include "args.h"	        /* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h                   */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -74,8 +74,8 @@ readconfig(char *filename, struct imgcropparams *p)
   struct uiparams *up=&p->up;
   size_t lineno=0, len=200, tmp;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
-  int imgmodeset=0, wcsmodeset=0; /* For unambiguous default file checking. */
+  char key='a';                   /* Not used, just a place holder.     */
+  int imgmodeset=0, wcsmodeset=0; /* Unambiguous default file checking. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -92,7 +92,7 @@ readconfig(char *filename, struct imgcropparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -102,43 +102,43 @@ readconfig(char *filename, struct imgcropparams *p)
 
       /* Operating modes: */
       if(strcmp(name, "imgmode")==0)
-	{
-	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
-		       filename, lineno);
-	  if(zeroorone)
-	    {
-	      imgmodeset=1;
-	      if(wcsmodeset)
-		error_at_line(EXIT_FAILURE, 0, filename, lineno,
-			      "Image and WCS modes cannot be called "
-			      "together. It is ambiguous.");
-	      if(up->imgmodeset==0)
-		{
-		  p->imgmode=1;
-		  p->wcsmode=0;
-		  up->imgmodeset=up->wcsmodeset=1;
-		}
-	    }
-	}
+        {
+          gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
+                       filename, lineno);
+          if(zeroorone)
+            {
+              imgmodeset=1;
+              if(wcsmodeset)
+                error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                              "Image and WCS modes cannot be called "
+                              "together. It is ambiguous.");
+              if(up->imgmodeset==0)
+                {
+                  p->imgmode=1;
+                  p->wcsmode=0;
+                  up->imgmodeset=up->wcsmodeset=1;
+                }
+            }
+        }
       else if(strcmp(name, "wcsmode")==0)
-	{
-	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
-		       filename, lineno);
-	  if(zeroorone)
-	    {
-	      wcsmodeset=1;
-	      if(imgmodeset)
-		error_at_line(EXIT_FAILURE, 0, filename, lineno,
-			      "Image and WCS modes cannot be called "
-			      "together. It is ambiguous.");
-	      if(up->wcsmodeset==0)
-		{
-		  p->imgmode=0;
-		  p->wcsmode=1;
-		  up->imgmodeset=up->wcsmodeset=1;
-		}
-	    }
-	}
+        {
+          gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
+                       filename, lineno);
+          if(zeroorone)
+            {
+              wcsmodeset=1;
+              if(imgmodeset)
+                error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                              "Image and WCS modes cannot be called "
+                              "together. It is ambiguous.");
+              if(up->wcsmodeset==0)
+                {
+                  p->imgmode=0;
+                  p->wcsmode=1;
+                  up->imgmodeset=up->wcsmodeset=1;
+                }
+            }
+        }
 
 
 
@@ -149,100 +149,100 @@ readconfig(char *filename, struct imgcropparams *p)
         gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
       else if(strcmp(name, "racol")==0)
-	{
-	  if(up->racolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->racol, name, key, SPACK,
-		      filename, lineno);
-	  up->racolset=1;
-	}
+        {
+          if(up->racolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->racol, name, key, SPACK,
+                      filename, lineno);
+          up->racolset=1;
+        }
       else if(strcmp(name, "deccol")==0)
-	{
-	  if(up->deccolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->deccol, name, key, SPACK,
-		      filename, lineno);
-	  up->deccolset=1;
-	}
+        {
+          if(up->deccolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->deccol, name, key, SPACK,
+                      filename, lineno);
+          up->deccolset=1;
+        }
       else if(strcmp(name, "xcol")==0)
-	{
-	  if(up->xcolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->xcol, name, key, SPACK,
-		      filename, lineno);
-	  up->xcolset=1;
-	}
+        {
+          if(up->xcolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->xcol, name, key, SPACK,
+                      filename, lineno);
+          up->xcolset=1;
+        }
       else if(strcmp(name, "ycol")==0)
-	{
-	  if(up->ycolset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->ycol, name, key, SPACK,
-		      filename, lineno);
-	  up->ycolset=1;
-	}
+        {
+          if(up->ycolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->ycol, name, key, SPACK,
+                      filename, lineno);
+          up->ycolset=1;
+        }
       else if(strcmp(name, "iwidth")==0)
-	{
-	  if(up->iwidthset) continue;
-	  gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
-		     filename, lineno);
-	  p->iwidth[0]=p->iwidth[1]=tmp;
-	  up->iwidthset=1;
-	}
+        {
+          if(up->iwidthset) continue;
+          gal_checkset_sizet_l_zero(value, &tmp, name, key, SPACK,
+                     filename, lineno);
+          p->iwidth[0]=p->iwidth[1]=tmp;
+          up->iwidthset=1;
+        }
       else if(strcmp(name, "wwidth")==0)
-	{
-	  if(up->wwidthset) continue;
-	  gal_checkset_double_l_0(value, &p->wwidth, name, key, SPACK,
-		   filename, lineno);
-	  up->wwidthset=1;
-	}
+        {
+          if(up->wwidthset) continue;
+          gal_checkset_double_l_0(value, &p->wwidth, name, key, SPACK,
+                   filename, lineno);
+          up->wwidthset=1;
+        }
       else if(strcmp(name, "hstartwcs")==0)
-	{
-	  if(up->hstartwcsset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key, SPACK,
+        {
+          if(up->hstartwcsset) continue;
+          gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key, SPACK,
                       filename, lineno);
-	  up->hstartwcsset=1;
-	}
+          up->hstartwcsset=1;
+        }
       else if(strcmp(name, "hendwcs")==0)
-	{
-	  if(up->hendwcsset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
+        {
+          if(up->hendwcsset) continue;
+          gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
                       filename, lineno);
-	  up->hendwcsset=1;
-	}
+          up->hendwcsset=1;
+        }
 
 
 
       /* Outputs */
       else if(strcmp(name, "checkcenter")==0)
-	{
-	  if(up->checkcenterset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->checkcenter, name, key, SPACK,
-		      filename, lineno);
-	  up->checkcenterset=1;
-	}
+        {
+          if(up->checkcenterset) continue;
+          gal_checkset_sizet_el_zero(value, &p->checkcenter, name, key,
+                                     SPACK, filename, lineno);
+          up->checkcenterset=1;
+        }
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        {
+          if(cp->outputset) continue;
+          errno=0;
+          cp->output=malloc(strlen(value)+1);
+          if(cp->output==NULL)
+            error(EXIT_FAILURE, errno, "space for output");
+          strcpy(cp->output, value);
+          cp->outputset=1;
+        }
       else if(strcmp(name, "suffix")==0)
-	{
-	  if(up->suffixset) continue;
-	  errno=0;
-	  p->suffix=malloc(strlen(value)+1);
-	  if(p->suffix==NULL)
-	    error(EXIT_FAILURE, errno, "space for prefix");
-	  strcpy(p->suffix, value);
-	  up->suffixset=1;
-	}
+        {
+          if(up->suffixset) continue;
+          errno=0;
+          p->suffix=malloc(strlen(value)+1);
+          if(p->suffix==NULL)
+            error(EXIT_FAILURE, errno, "space for prefix");
+          strcpy(p->suffix, value);
+          up->suffixset=1;
+        }
 
       /* Read options common to all programs */
       GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);
@@ -398,10 +398,10 @@ sanitycheck(struct imgcropparams *p)
   /* deccol!=racol and xcol!=ycol */
   if(p->racol==p->deccol)
     error(EXIT_FAILURE, 0, "the columns for RA and Dec must be "
-	  "different");
+          "different");
   if(p->xcol==p->ycol)
     error(EXIT_FAILURE, 0, "the columns for x and y must be "
-	  "different");
+          "different");
 
 
 
@@ -411,7 +411,7 @@ sanitycheck(struct imgcropparams *p)
   if(checksum==2) {p->imgmode=0; p->wcsmode=1;}
   else if(checksum)/* is not zero */
     error(EXIT_FAILURE, 0, "the options `--ra` and `--dec` should be "
-	  "called together");
+          "called together");
 
 
 
@@ -421,7 +421,7 @@ sanitycheck(struct imgcropparams *p)
   if(checksum==2) {p->imgmode=1; p->wcsmode=0;}
   else if(checksum)/* is not zero */
     error(EXIT_FAILURE, 0, "the options `--xc` and `--yc` should be "
-	  "called together");
+          "called together");
 
 
 
@@ -448,68 +448,69 @@ sanitycheck(struct imgcropparams *p)
           if(up->polygonset)
             strcat(forerr, "(`--polygon'), ");
           error(EXIT_FAILURE, 0, "there are several ways to specify a crop "
-                "box on the command line, see `--help`. But they should not "
-                "be called together. You have asked for %s simultaneously",
-                forerr);
+                "box on the command line, see `--help`. But they should "
+                "not be called together. You have asked for %s "
+                "simultaneously", forerr);
         }
 
       /* Check if the value for --output is a file or a directory? */
-      p->outnameisfile=gal_checkset_dir_0_file_1(cp->output, cp->dontdelete);
+      p->outnameisfile=gal_checkset_dir_0_file_1(cp->output,
+                                                 cp->dontdelete);
 
       /* When there is only one output, only one thread is needed. */
       cp->numthreads=1;
 
       /* Not with a catalog. */
       if(up->catname)
-	{
+        {
           if(up->sectionset) strcpy(forerr, "`--section'");
           if(up->polygonset) strcpy(forerr, "`--polygon'");
           if(up->xcset) strcpy(forerr, "`--xc' and `--yc'");
-	  if(up->raset) strcpy(forerr, "`--ra' and `--dec'");
-	  error(EXIT_FAILURE, 0, "a catalog name (%s) and command line crop "
-		"parameters (%s) cannot be given together", up->catname,
-                forerr);
-	}
+          if(up->raset) strcpy(forerr, "`--ra' and `--dec'");
+          error(EXIT_FAILURE, 0, "a catalog name (%s) and command line "
+                "crop parameters (%s) cannot be given together",
+                up->catname, forerr);
+        }
     }
   else
     {
       /* Only one mode. Note that when the box is specified on the
-	 command line, in the steps above, we set the image mode or
-	 wcs mode.*/
+         command line, in the steps above, we set the image mode or
+         wcs mode.*/
       if(p->imgmode && p->wcsmode)
-	error(EXIT_FAILURE, 0, "only one of imgmode or wcsmode "
-	      "must be called. They cannot operate together");
+        error(EXIT_FAILURE, 0, "only one of imgmode or wcsmode "
+              "must be called. They cannot operate together");
       else if(p->imgmode==0 && p->wcsmode==0)
-	error(EXIT_FAILURE, 0, "at least one of imgmode or "
-	      "wcsmode must be called");
+        error(EXIT_FAILURE, 0, "at least one of imgmode or "
+              "wcsmode must be called");
 
       /* Make sure a catalog is set. */
       if(up->catset)
-	{
-	  if(p->numimg>1 && p->imgmode)
-	    error(EXIT_FAILURE, 0, "in image mode, when a catalog is "
-		  "specified, only one image may be provided");
-	}
+        {
+          if(p->numimg>1 && p->imgmode)
+            error(EXIT_FAILURE, 0, "in image mode, when a catalog is "
+                  "specified, only one image may be provided");
+        }
       else
-	error(EXIT_FAILURE, 0, "no catalog. When no crop coordinates "
-	      "are specified on the command line, a catalog must be "
-	      "provided");
+        error(EXIT_FAILURE, 0, "no catalog. When no crop coordinates "
+              "are specified on the command line, a catalog must be "
+              "provided");
 
       /* Make sure the given output is a directory. */
       gal_checkset_check_dir_write_add_slash(&cp->output);
 
       /* Make sure the columns of data are within the catalog range of
-	 columns: */
+         columns: */
       if(p->imgmode)
-	{
-	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, "xcol");
-	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, "ycol");
-	}
+        {
+          GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, "xcol");
+          GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, "ycol");
+        }
       else
-	{
-	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->racol, "racol");
-	  GAL_CHECKSET_CHECK_COL_IN_CAT(p->deccol, "deccol");
-	}
+        {
+          GAL_CHECKSET_CHECK_COL_IN_CAT(p->racol, "racol");
+          GAL_CHECKSET_CHECK_COL_IN_CAT(p->deccol, "deccol");
+        }
     }
 
 
@@ -517,7 +518,7 @@ sanitycheck(struct imgcropparams *p)
   /* If in image mode, there should only be one input image. */
   if(p->imgmode && p->numimg>1)
     error(EXIT_FAILURE, 0, "in image mode, only one input image may be "
-	  "specified");
+          "specified");
 
 
 
@@ -525,7 +526,7 @@ sanitycheck(struct imgcropparams *p)
   /* If we are in WCS mode, noblanks must be off */
   if(p->wcsmode && p->noblank)
     error(EXIT_FAILURE, 0, "`--noblanks` (`-b`) is only for image mode. "
-	  "You have called it with WCS mode");
+          "You have called it with WCS mode");
 
 
 
@@ -555,12 +556,12 @@ sanitycheck(struct imgcropparams *p)
      because the number of threads may change above. */
   if(cp->numthreads>1 && fits_is_reentrant()==0)
     error(EXIT_FAILURE, 0, "CFITSIO was not configured with the "
-	  "`--enable-reentrant` option but you have asked to operate "
-	  "on %lu threads. Please configure, make and install CFITSIO "
-	  "again with this flag to use multiple threads, run `info %s "
-	  "CFITSIO` for more information. Alternatively you can set "
-	  "the number of threads to 1 by adding the `--numthreads=1` "
-	  "or `-N1` options", cp->numthreads, PACKAGE);
+          "`--enable-reentrant` option but you have asked to operate "
+          "on %lu threads. Please configure, make and install CFITSIO "
+          "again with this flag to use multiple threads, run `info %s "
+          "CFITSIO` for more information. Alternatively you can set "
+          "the number of threads to 1 by adding the `--numthreads=1` "
+          "or `-N1` options", cp->numthreads, PACKAGE);
 }
 
 
@@ -642,21 +643,21 @@ preparearrays(struct imgcropparams *p)
       gal_fits_io_error(status, NULL);
 
       /* Make sure all the images have the same BITPIX and set the
-	 basic BITPIX related parameters. */
+         basic BITPIX related parameters. */
       if(firstbitpix==0)
-	{
-	  firstbitpix=p->bitpix;
-	  p->datatype=gal_fits_bitpix_to_dtype(p->bitpix);
-	  p->bitnul=gal_fits_bitpix_blank(p->bitpix);
-	}
+        {
+          firstbitpix=p->bitpix;
+          p->datatype=gal_fits_bitpix_to_dtype(p->bitpix);
+          p->bitnul=gal_fits_bitpix_blank(p->bitpix);
+        }
       else if(firstbitpix!=p->bitpix)
-	error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "
-	      "BITPIX value of %d, For "SPACK_NAME" to work, all images "
-	      "must have the same pixel data type",
-	      img->name, p->bitpix, firstbitpix);
+        error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "
+              "BITPIX value of %d, For "SPACK_NAME" to work, all images "
+              "must have the same pixel data type",
+              img->name, p->bitpix, firstbitpix);
 
       /* In WCS mode, Check resolution and get the first pixel
-	 positions. */
+         positions. */
       if(p->wcsmode) wcscheckprepare(p, img);
     }
 
@@ -672,7 +673,7 @@ preparearrays(struct imgcropparams *p)
   p->log=calloc(num+1, sizeof *p->log);
   if(p->log==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes for p->log",
-	  num+1 * sizeof *p->log);
+          num+1 * sizeof *p->log);
 
   /* Report timing: */
   if(p->cp.verb)

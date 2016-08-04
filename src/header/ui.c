@@ -30,10 +30,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include <nproc.h>              /* From Gnulib.                     */
+#include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
+#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/commonargs.h>
@@ -41,8 +41,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"		        /* Needs main.h                   */
-#include "args.h"	        /* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h                   */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -72,7 +72,7 @@ readconfig(char *filename, struct headerparams *p)
   char *line, *name, *value;
   /*struct uiparams *up=&p->up;*/
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -89,7 +89,7 @@ readconfig(char *filename, struct headerparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -102,15 +102,15 @@ readconfig(char *filename, struct headerparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "space for HDU");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        {
+          if(cp->hduset) continue;
+          errno=0;
+          cp->hdu=malloc(strlen(value)+1);
+          if(cp->hdu==NULL)
+            error(EXIT_FAILURE, errno, "space for HDU");
+          strcpy(cp->hdu, value);
+          cp->hduset=1;
+        }
 
 
 
@@ -125,8 +125,8 @@ readconfig(char *filename, struct headerparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);
@@ -325,9 +325,9 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
                     unit=start;
                     break;
                   default:
-                    error(EXIT_FAILURE, 0, "%s: only three commas should be "
-                          "given in the write or update keyword options. "
-                          "The general expected format is:\n"
+                    error(EXIT_FAILURE, 0, "%s: only three commas should "
+                          "be given in the write or update keyword "
+                          "options. The general expected format is:\n"
                           "    KEYWORD,value,\"a comment string\",unit\n",
                           original);
                   }
@@ -385,7 +385,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
 
 
       gal_fits_add_to_fits_header_ll(output, datatype, keyname, 0,
-                                          fvalue, vfree, comment, 0, unit);
+                                     fvalue, vfree, comment, 0, unit);
       free(original);
     }
 }

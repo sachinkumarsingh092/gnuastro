@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <nproc.h>              /* From Gnulib.                   */
+#include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h> 	/* Includes time.h and sys/time.h */
+#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/arraymanip.h>
@@ -40,8 +40,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"			/* Needs main.h.                  */
-#include "args.h"		/* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h.                  */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -69,7 +69,7 @@ readconfig(char *filename, struct convolveparams *p)
   struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
   int zeroorone, spatialset=0, frequencyset=0;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -86,7 +86,7 @@ readconfig(char *filename, struct convolveparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -100,7 +100,8 @@ readconfig(char *filename, struct convolveparams *p)
       if(strcmp(name, "hdu")==0)
         gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if (strcmp(name, "mask")==0)
-        gal_checkset_allocate_copy_set(value, &up->maskname, &up->masknameset);
+        gal_checkset_allocate_copy_set(value, &up->maskname,
+                                       &up->masknameset);
       else if (strcmp(name, "mhdu")==0)
         gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
       else if (strcmp(name, "kernel")==0)
@@ -113,104 +114,105 @@ readconfig(char *filename, struct convolveparams *p)
 
       /* Outputs: */
       else if(strcmp(name, "output")==0)
-        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output,
+                                       &cp->outputset);
 
 
 
 
       /* Mesh grid: */
       else if(strcmp(name, "meshsize")==0)
-	{
-	  if(up->meshsizeset) continue;
-          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name, key, SPACK,
-                                    filename, lineno);
-	  up->meshsizeset=1;
-	}
+        {
+          if(up->meshsizeset) continue;
+          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name, key,
+                                    SPACK, filename, lineno);
+          up->meshsizeset=1;
+        }
       else if(strcmp(name, "nch1")==0)
-	{
-	  if(up->nch1set) continue;
+        {
+          if(up->nch1set) continue;
           gal_checkset_sizet_l_zero(value, &p->mp.nch1, name, key, SPACK,
                                     filename, lineno);
-	  up->nch1set=1;
-	}
+          up->nch1set=1;
+        }
       else if(strcmp(name, "nch2")==0)
-	{
-	  if(up->nch2set) continue;
+        {
+          if(up->nch2set) continue;
           gal_checkset_sizet_l_zero(value, &p->mp.nch2, name, key, SPACK,
                                     filename, lineno);
-	  up->nch2set=1;
-	}
+          up->nch2set=1;
+        }
       else if(strcmp(name, "lastmeshfrac")==0)
-	{
-	  if(up->lastmeshfracset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name, key, SPACK,
-                                     filename, lineno);
-	  up->lastmeshfracset=1;
-	}
+        {
+          if(up->lastmeshfracset) continue;
+          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name,
+                                     key, SPACK, filename, lineno);
+          up->lastmeshfracset=1;
+        }
       else if(strcmp(name, "fullconvolution")==0)
-	{
-	  if(up->fullconvolutionset) continue;
+        {
+          if(up->fullconvolutionset) continue;
           gal_checkset_int_zero_or_one(value, &p->mp.fullconvolution, name,
                                        key, SPACK, filename, lineno);
-	  up->fullconvolutionset=1;
-	}
+          up->fullconvolutionset=1;
+        }
 
 
 
       /* Operating modes: */
       else if(strcmp(name, "spatial")==0)
-	{
-	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
-                                       filename, lineno);
-	  if(zeroorone)
-	    {
-	      spatialset=1;
-	      if(frequencyset)
-		error_at_line(EXIT_FAILURE, 0, filename, lineno,
-			      "Spatial and frequency modes cannot be called "
-			      "together. It is ambiguous.");
-	      if(up->spatialset==0)
-		{
-		  p->spatial=1;
-		  p->frequency=0;
-		  up->spatialset=up->frequencyset=1;
-		}
-	    }
-	}
+        {
+          gal_checkset_int_zero_or_one(value, &zeroorone, name, key,
+                                       SPACK, filename, lineno);
+          if(zeroorone)
+            {
+              spatialset=1;
+              if(frequencyset)
+                error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                              "Spatial and frequency modes cannot be called "
+                              "together. It is ambiguous.");
+              if(up->spatialset==0)
+                {
+                  p->spatial=1;
+                  p->frequency=0;
+                  up->spatialset=up->frequencyset=1;
+                }
+            }
+        }
       else if(strcmp(name, "frequency")==0)
-	{
-	  gal_checkset_int_zero_or_one(value, &zeroorone, name, key, SPACK,
-                                       filename, lineno);
-	  if(zeroorone)
-	    {
-	      frequencyset=1;
-	      if(spatialset)
-		error_at_line(EXIT_FAILURE, 0, filename, lineno,
-			      "Spatial and frequency modes cannot be called "
-			      "together. It is ambiguous.");
-	      if(up->frequencyset==0)
-		{
-		  p->spatial=0;
-		  p->frequency=1;
-		  up->spatialset=up->frequencyset=1;
-		}
-	    }
-	}
+        {
+          gal_checkset_int_zero_or_one(value, &zeroorone, name, key,
+                                       SPACK, filename, lineno);
+          if(zeroorone)
+            {
+              frequencyset=1;
+              if(spatialset)
+                error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                              "Spatial and frequency modes cannot be "
+                              "called together. It is ambiguous.");
+              if(up->frequencyset==0)
+                {
+                  p->spatial=0;
+                  p->frequency=1;
+                  up->spatialset=up->frequencyset=1;
+                }
+            }
+        }
       else if(strcmp(name, "makekernel")==0)
-	{
-	  if(up->makekernelset) continue;
-          gal_checkset_int_el_zero(value, &p->makekernel, name, key, SPACK,
-                                   filename, lineno);
-	  up->makekernelset=1;
-	}
+        {
+          if(up->makekernelset) continue;
+          gal_checkset_int_el_zero(value, &p->makekernel, name, key,
+                                   SPACK, filename, lineno);
+          up->makekernelset=1;
+        }
 
       /* Read options common to all programs */
       GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);

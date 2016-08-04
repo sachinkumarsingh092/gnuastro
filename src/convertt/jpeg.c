@@ -109,8 +109,8 @@ nameisjpegsuffix(char *name)
    details of what is going on here.  */
 struct my_error_mgr
 {
-  struct jpeg_error_mgr pub;	/* "public" fields */
-  jmp_buf setjmp_buffer;	/* for return to caller */
+  struct jpeg_error_mgr pub;        /* "public" fields */
+  jmp_buf setjmp_buffer;            /* for return to caller */
 };
 
 typedef struct my_error_mgr *my_error_ptr;

@@ -73,7 +73,7 @@ preparewcs(struct mkprofparams *p)
   wcs.flag=-1;
   if( (status=wcsini(1, 2, &wcs)) )
     error(EXIT_FAILURE, 0, "wcsinit error %d: %s",
-	  status, wcs_errmsg[status]);
+          status, wcs_errmsg[status]);
 
   /* Correct the CRPIX values. */
   p->crpix[0]=p->crpix[0]*os+p->shift[0]-os/2;
@@ -97,17 +97,17 @@ preparewcs(struct mkprofparams *p)
   /* Set up the wcs structure: */
   if( (status=wcsset(&wcs)) )
     error(EXIT_FAILURE, 0, "wcsset error %d: %s", status,
-	  wcs_errmsg[status]);
+          wcs_errmsg[status]);
 
   /* Write the WCS structure to a header string. */
   if( (status=wcshdo(WCSHDO_safe, &wcs, &p->wcsnkeyrec, &p->wcsheader)) )
     error(EXIT_FAILURE, 0, "wcshdo error %d: %s", status,
-	  wcs_errmsg[status]);
+          wcs_errmsg[status]);
 
   /* Free the allocated spaces by wcsini/wcsset: */
   if( (status=wcsfree(&wcs)) )
     error(EXIT_FAILURE, 0, "wcsfree error %d: %s", status,
-	  wcs_errmsg[status]);
+          wcs_errmsg[status]);
 }
 
 
@@ -143,7 +143,7 @@ builtqueue_addempty(struct builtqueue **bq)
   tbq=malloc(sizeof *tbq);
   if(tbq==NULL)
     error(EXIT_FAILURE, 0, "%lu byte element in builtqueue_addempty",
-	  sizeof *tbq);
+          sizeof *tbq);
 
   /* Initialize some of the values. */
   tbq->img=NULL;
@@ -196,8 +196,8 @@ saveindividual(struct mkonthread *mkp)
   outname=malloc(len*sizeof *outname);
   if(outname==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for name of object in "
-	  "row %lu of %s", len*sizeof *outname, ibq->id,
-	  p->up.catname);
+          "row %lu of %s", len*sizeof *outname, ibq->id,
+          p->up.catname);
 
   /* Save the correct CRPIX values: */
   crpix[0] = p->crpix[0] - os*(mkp->fpixel_i[0]-1);
@@ -222,8 +222,8 @@ saveindividual(struct mkonthread *mkp)
                            SPACK_STRING);
   else
     gal_fits_atof_correct_wcs(outname, "MockImg", FLOAT_IMG, ibq->img,
-                                   mkp->width[1], mkp->width[0], p->wcsheader,
-                                   p->wcsnkeyrec, crpix, SPACK_STRING);
+                              mkp->width[1], mkp->width[0], p->wcsheader,
+                              p->wcsnkeyrec, crpix, SPACK_STRING);
   ibq->indivcreated=1;
 
   /* Change 0.0f values to NAN: */
@@ -238,7 +238,8 @@ saveindividual(struct mkonthread *mkp)
     {
       errno=0;
       jobname=malloc((len+100)*sizeof *jobname);
-      if(jobname==NULL)	error(EXIT_FAILURE, errno, "jobname in mkprof.c");
+      if(jobname==NULL)
+        error(EXIT_FAILURE, errno, "jobname in mkprof.c");
       sprintf(jobname, "%s created.", outname);
       gal_timing_report(NULL, jobname, 2);
       free(jobname);
@@ -313,11 +314,11 @@ build(void *inparam)
   for(i=0;mkp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
     {
       /* Create a new builtqueue element with all the information. fbq
-	 will be used when we want to add ibq to p->bq. It is defined
-	 so we don't have to waste time traversing the ibq. Its
-	 characteristic compared to the other elements of ibq is that
-	 fbq->next==NULL. So to add ibq to p->bq, we just have to set
-	 fbq->next=p->bq and then set p->bq to ibq.*/
+         will be used when we want to add ibq to p->bq. It is defined
+         so we don't have to waste time traversing the ibq. Its
+         characteristic compared to the other elements of ibq is that
+         fbq->next==NULL. So to add ibq to p->bq, we just have to set
+         fbq->next=p->bq and then set p->bq to ibq.*/
       builtqueue_addempty(&mkp->ibq);
       ibq=mkp->ibq;
       ibq->id=mkp->indexs[i];
@@ -331,26 +332,27 @@ build(void *inparam)
 
       /* Find the bounding box size (NOT oversampled). */
       if((int)cat[p->fcol]==POINTCODE)
-	mkp->width[0]=mkp->width[1]=1;
+        mkp->width[0]=mkp->width[1]=1;
       else
         gal_box_ellipse_in_box(mkp->truncr, mkp->q*mkp->truncr,
                                cat[p->pcol]*DEGREESTORADIANS, mkp->width);
 
 
       /* Get the overlapping pixels using the starting points (NOT
-	 oversampled). */
+         oversampled). */
       gal_box_border_from_center(cat[p->xcol], cat[p->ycol], mkp->width,
                                  ibq->fpixel_i, ibq->lpixel_i);
       mkp->fpixel_i[0]=ibq->fpixel_i[0];
       mkp->fpixel_i[1]=ibq->fpixel_i[1];
-      ibq->overlaps = gal_box_overlap(mkp->onaxes, ibq->fpixel_i, ibq->lpixel_i,
-                                      ibq->fpixel_o, lpixel_o);
+      ibq->overlaps = gal_box_overlap(mkp->onaxes, ibq->fpixel_i,
+                                      ibq->lpixel_i, ibq->fpixel_o,
+                                      lpixel_o);
 
 
       /* Build the profile if necessary, After this, the width is
-	 oversampled. */
+         oversampled. */
       if(ibq->overlaps || p->individual || (ibq->ispsf && p->psfinimg==0))
-	{
+        {
           /* Put a copy of the main random number generator for this
              thread to use for this profile. */
           gsl_rng_memcpy(mkp->rng, p->rng);
@@ -361,48 +363,48 @@ build(void *inparam)
             gsl_rng_set(mkp->rng, gal_timing_time_based_rng_seed());
 
           /* Make the profile */
-	  makeoneprofile(mkp);
-	  if( p->individual || (ibq->ispsf && p->psfinimg==0))
-	    {
-	      saveindividual(mkp);
-	      if(ibq->ispsf && p->psfinimg==0)
-		ibq->overlaps=0;
-	    }
-	}
+          makeoneprofile(mkp);
+          if( p->individual || (ibq->ispsf && p->psfinimg==0))
+            {
+              saveindividual(mkp);
+              if(ibq->ispsf && p->psfinimg==0)
+                ibq->overlaps=0;
+            }
+        }
 
       /* Add ibq to bq if you can lock the mutex. */
       if(p->cp.numthreads>1)
-	{
-	  /* Try locking the mutex so no thread can change the value
-	     of p->bq. If you can lock it, then put the internal
-	     builtqueue on top of the general builtqueue. If you
-	     can't, continue adding to the internal builtqueue (make
-	     the next profiles) until you find a chance to lock the
-	     mutex. */
-	  lockresult=pthread_mutex_trylock(qlock);
-	  if(lockresult==0)     /* Mutex was successfully locked. */
-	    {
-	      /* Add this internal queue to system queue. */
-	      fbq->next=p->bq;
-	      p->bq=ibq;
+        {
+          /* Try locking the mutex so no thread can change the value
+             of p->bq. If you can lock it, then put the internal
+             builtqueue on top of the general builtqueue. If you
+             can't, continue adding to the internal builtqueue (make
+             the next profiles) until you find a chance to lock the
+             mutex. */
+          lockresult=pthread_mutex_trylock(qlock);
+          if(lockresult==0)     /* Mutex was successfully locked. */
+            {
+              /* Add this internal queue to system queue. */
+              fbq->next=p->bq;
+              p->bq=ibq;
 
-	      /* If the list was empty when you locked the mutex, then
-		 either `write` is waiting behind a condition variable
-		 for you to fill it up or not (either it hasn't got to
-		 setting the condition variable yet (this function
-		 locked the mutex before `write`) or it just got the
-		 list to be made and is busy writing the arrays in the
-		 output). In either case, pthread_cond_signal will
-		 work. */
-	      if(fbq->next==NULL)
-		pthread_cond_signal(qready);
-	      pthread_mutex_unlock(qlock);
+              /* If the list was empty when you locked the mutex, then
+                 either `write` is waiting behind a condition variable
+                 for you to fill it up or not (either it hasn't got to
+                 setting the condition variable yet (this function
+                 locked the mutex before `write`) or it just got the
+                 list to be made and is busy writing the arrays in the
+                 output). In either case, pthread_cond_signal will
+                 work. */
+              if(fbq->next==NULL)
+                pthread_cond_signal(qready);
+              pthread_mutex_unlock(qlock);
 
-	      /* Finally set both the internal queue and the first
-		 internal queue element to NULL.*/
-	      fbq=NULL;
-	      mkp->ibq=NULL;
-	    }
+              /* Finally set both the internal queue and the first
+                 internal queue element to NULL.*/
+              fbq=NULL;
+              mkp->ibq=NULL;
+            }
           /* The mutex couldn't be locked and there are no more
              objects for this thread to build (giving a chance for
              this thread to add up its built profiles). So we have to
@@ -410,13 +412,13 @@ build(void *inparam)
              builtqueue. */
           else if (mkp->indexs[i+1]==GAL_THREADS_NON_THRD_INDEX)
             {
-	      pthread_mutex_lock(qlock);
-	      fbq->next=p->bq;
-	      p->bq=ibq;
+              pthread_mutex_lock(qlock);
+              fbq->next=p->bq;
+              p->bq=ibq;
               pthread_cond_signal(qready);
-	      pthread_mutex_unlock(qlock);
+              pthread_mutex_unlock(qlock);
             }
-	}
+        }
     }
 
   /* Free the allocated space for this thread and wait until all other
@@ -460,15 +462,15 @@ writelog(struct mkprofparams *p)
   int int_cols[]={0, 2, 4, -1}, accu_cols[]={-1};
 
   sprintf(comments, "# Log file for "SPACK_STRING".\n"
-	  "# Run on %s"
-	  "# Column 0: Row number in catalog (starting from zero).\n"
-	  "# Column 1: Overlap magnitude with final image "
-	  "(zeropoint: %.3f).\n"
-	  "# Column 2: Number of Monte Carlo integration pixels.\n"
-	  "# Column 3: Fraction of brightness in Monte Carlo "
+          "# Run on %s"
+          "# Column 0: Row number in catalog (starting from zero).\n"
+          "# Column 1: Overlap magnitude with final image "
+          "(zeropoint: %.3f).\n"
+          "# Column 2: Number of Monte Carlo integration pixels.\n"
+          "# Column 3: Fraction of brightness in Monte Carlo "
           "integrated pixels.\n"
-	  "# Column 4: An individual image was created.\n",
-	  ctime(&p->rawtime), p->zeropoint);
+          "# Column 4: An individual image was created.\n",
+          ctime(&p->rawtime), p->zeropoint);
 
 
   gal_txtarray_array_to_txt(p->log, p->cs0, LOGNUMCOLS, comments, int_cols,
@@ -513,54 +515,54 @@ write(struct mkprofparams *p)
     {
       /* Set ibq. */
       if(ibq==NULL)
-	{
-	  if(p->cp.numthreads==1)
-	    ibq=p->bq;
-	  else
-	    {
-	      pthread_mutex_lock(&p->qlock);
-	      while(p->bq==NULL)
+        {
+          if(p->cp.numthreads==1)
+            ibq=p->bq;
+          else
+            {
+              pthread_mutex_lock(&p->qlock);
+              while(p->bq==NULL)
                 pthread_cond_wait(&p->qready, &p->qlock);
-	      ibq=p->bq;
-	      p->bq=NULL;
-	      pthread_mutex_unlock(&p->qlock);
-	    }
-	}
+              ibq=p->bq;
+              p->bq=NULL;
+              pthread_mutex_unlock(&p->qlock);
+            }
+        }
       sum=0.0f;
 
       /* Write the array pointed to by ibq into the output image. Note
-	 that the FITS and C arrays have opposite axis orders and FITS
-	 counting starts from 1, not zero. Also fpixel is the first
-	 (inclusive) pixel and so is lpixel (it is inclusive). */
+         that the FITS and C arrays have opposite axis orders and FITS
+         counting starts from 1, not zero. Also fpixel is the first
+         (inclusive) pixel and so is lpixel (it is inclusive). */
       if(ibq->overlaps && p->nomerged==0)
-	{
-	  /* Set the starting and ending points in the complete image. */
-	  i  = os * (ibq->fpixel_i[1]-1);
-	  j  = os * (ibq->fpixel_i[0]-1);
+        {
+          /* Set the starting and ending points in the complete image. */
+          i  = os * (ibq->fpixel_i[1]-1);
+          j  = os * (ibq->fpixel_i[0]-1);
 
-	  /* Set the starting and ending points in the overlapping
-	     image. Note that oversampling has already been taken
-	     into account in ibq->width. */
-	  ow = ibq->imgwidth;
-	  ii = os * (ibq->fpixel_o[1]-1);
-	  jj = os * (ibq->fpixel_o[0]-1);
+          /* Set the starting and ending points in the overlapping
+             image. Note that oversampling has already been taken
+             into account in ibq->width. */
+          ow = ibq->imgwidth;
+          ii = os * (ibq->fpixel_o[1]-1);
+          jj = os * (ibq->fpixel_o[0]-1);
 
-	  /* Find the width of the overlapping region: */
-	  iw = os*(ibq->lpixel_i[1]-ibq->fpixel_i[1]+1);
-	  jw = os*(ibq->lpixel_i[0]-ibq->fpixel_i[0]+1);
+          /* Find the width of the overlapping region: */
+          iw = os*(ibq->lpixel_i[1]-ibq->fpixel_i[1]+1);
+          jw = os*(ibq->lpixel_i[0]-ibq->fpixel_i[0]+1);
 
-	  /* Write the overlap to the actual image. Instead of writing
-	     two for loops and summing all the row and column indexs
-	     for every pixel and each image, we use pointer arithmetic
-	     which is much more efficient. Just think of one pointer
-	     that is advancing over the final image (*to) and one that
-	     is advancing over the overlap image (*from). Since we
-	     know the images overlap, iw and jw are both smaller than
-	     the two image number of columns and number of rows, so
-	     w-jw and ow-jw will always be positive. */
-	  to=out+i*w+j;
-	  from=ibq->img+ii*ow+jj;
-	  rowend=to+iw*w;
+          /* Write the overlap to the actual image. Instead of writing
+             two for loops and summing all the row and column indexs
+             for every pixel and each image, we use pointer arithmetic
+             which is much more efficient. Just think of one pointer
+             that is advancing over the final image (*to) and one that
+             is advancing over the overlap image (*from). Since we
+             know the images overlap, iw and jw are both smaller than
+             the two image number of columns and number of rows, so
+             w-jw and ow-jw will always be positive. */
+          to=out+i*w+j;
+          from=ibq->img+ii*ow+jj;
+          rowend=to+iw*w;
           do
             {
               colend=to+jw;
@@ -575,10 +577,10 @@ write(struct mkprofparams *p)
                   ++from;
                 }
               while(++to<colend);
-              to+=w-jw; from+=ow-jw;	     /* Go to next row. */
+              to+=w-jw; from+=ow-jw;             /* Go to next row. */
             }
           while(to<rowend);
-	}
+        }
 
       /* Fill the log array. */
       log=&p->log[ibq->id*LOGNUMCOLS];
@@ -591,21 +593,21 @@ write(struct mkprofparams *p)
       /* Report if in verbose mode. */
       ++complete;
       if(verb && p->nomerged==0)
-	{
-	  errno=0;
-	  jobname=malloc(100*sizeof *jobname);
-	  if(jobname==NULL)
-	    error(EXIT_FAILURE, errno, "jobname in mkprof.c");
-	  sprintf(jobname, "row %lu complete, %lu left to go",
-		  ibq->id, cs0-complete);
-	  gal_timing_report(NULL, jobname, 2);
-	  free(jobname);
-	}
+        {
+          errno=0;
+          jobname=malloc(100*sizeof *jobname);
+          if(jobname==NULL)
+            error(EXIT_FAILURE, errno, "jobname in mkprof.c");
+          sprintf(jobname, "row %lu complete, %lu left to go",
+                  ibq->id, cs0-complete);
+          gal_timing_report(NULL, jobname, 2);
+          free(jobname);
+        }
 
       /* Free the array and the queue element and change it to the
-	 next one and increment complete. Note that there is no
-	 problem to free a NULL pointer (when the built array didn't
-	 overlap). */
+         next one and increment complete. Note that there is no
+         problem to free a NULL pointer (when the built array didn't
+         overlap). */
       free(ibq->img);
       tbq=ibq->next;
       free(ibq);
@@ -634,15 +636,15 @@ write(struct mkprofparams *p)
                                        p->wcsheader, p->wcsnkeyrec,
                                        NULL, SPACK_STRING);
       if(verb)
-	{
-	  errno=0;
-	  jobname=malloc((strlen(p->mergedimgname)+100)*sizeof *jobname);
-	  if(jobname==NULL)
-	    error(EXIT_FAILURE, errno, "final report in mkprof.c");
-	  sprintf(jobname, "%s created.", p->mergedimgname);
-	  gal_timing_report(&t1, jobname, 1);
-	  free(jobname);
-	}
+        {
+          errno=0;
+          jobname=malloc((strlen(p->mergedimgname)+100)*sizeof *jobname);
+          if(jobname==NULL)
+            error(EXIT_FAILURE, errno, "final report in mkprof.c");
+          sprintf(jobname, "%s created.", p->mergedimgname);
+          gal_timing_report(&t1, jobname, 1);
+          free(jobname);
+        }
     }
 
   free(out);
@@ -674,7 +676,7 @@ void
 mkprof(struct mkprofparams *p)
 {
   int err;
-  pthread_t t;		 /* Thread id not used, all are saved here. */
+  pthread_t t;            /* Thread id not used, all are saved here. */
   pthread_attr_t attr;
   pthread_barrier_t b;
   struct mkonthread *mkp;
@@ -694,7 +696,7 @@ mkprof(struct mkprofparams *p)
   mkp=malloc(nt*sizeof *mkp);
   if(mkp==NULL)
     error(EXIT_FAILURE, errno,
-	  "%lu bytes in mkprof (mkprof.c) for mkp", (nt-1)*sizeof *mkp);
+          "%lu bytes in mkprof (mkprof.c) for mkp", (nt-1)*sizeof *mkp);
 
   /* Distribute the different profiles for different threads. Note
      that one thread is left out for writing, while nt-1 are left
@@ -717,8 +719,8 @@ mkprof(struct mkprofparams *p)
   else
     {
       /* Initialize the attributes. Note that this main thread will
-	 also have to be kept behind the barrier, so we need nt+1
-	 barrier stops. */
+         also have to be kept behind the barrier, so we need nt+1
+         barrier stops. */
       if(p->cs0<nt) nb=p->cs0+1;
       else nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
@@ -731,18 +733,18 @@ mkprof(struct mkprofparams *p)
 
       /* Spin off the threads: */
       for(i=0;i<nt;++i)
-	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
-	  {
-	    mkp[i].p=p;
-	    mkp[i].b=&b;
-	    mkp[i].ibq=NULL;
-	    mkp[i].onaxes=onaxes;
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+          {
+            mkp[i].p=p;
+            mkp[i].b=&b;
+            mkp[i].ibq=NULL;
+            mkp[i].onaxes=onaxes;
             mkp[i].rng=gsl_rng_clone(p->rng);
-	    mkp[i].indexs=&indexs[i*thrdcols];
-	    err=pthread_create(&t, &attr, build, &mkp[i]);
-	    if(err)
-	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
-	  }
+            mkp[i].indexs=&indexs[i*thrdcols];
+            err=pthread_create(&t, &attr, build, &mkp[i]);
+            if(err)
+              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+          }
     }
 
   /* Write the created arrays into the image. */

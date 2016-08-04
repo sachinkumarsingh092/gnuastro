@@ -165,7 +165,8 @@ dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
   if(b0_f1!=1 && b0_f1!=0)
     error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "this problem. In dilate0_erode1_4con (binary.c), the value to "
-          "b0_f1 is %u while it should be 0 or 1", PACKAGE_BUGREPORT, b0_f1);
+          "b0_f1 is %u while it should be 0 or 1", PACKAGE_BUGREPORT,
+          b0_f1);
 
   /* Set the foreground and background values. */
   if(b0_f1==0) {f=1; b=0;}
@@ -196,35 +197,35 @@ dilate0_erode1_4con(unsigned char *byt, size_t nr, size_t nc,
     {
       ind=(nr-1)*nc+j;
       if(byt[ind]==b
-	 && (byt[ind+1]==f || byt[ind-1]==f || byt[ind-nc]==f) )
-	byt[ind]=BINARYTMP;
+         && (byt[ind+1]==f || byt[ind-1]==f || byt[ind-nc]==f) )
+        byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
     {
       ind=i*nc;
       if(byt[ind]==b
-	 && (byt[ind+1]==f || byt[ind+nc]==f || byt[ind-nc]==f) )
-	byt[ind]=BINARYTMP;
+         && (byt[ind+1]==f || byt[ind+nc]==f || byt[ind-nc]==f) )
+        byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
     {
       ind=(i+1)*nc-1;
       if(byt[ind]==b
-	 && (byt[ind-1]==f || byt[ind+nc]==f || byt[ind-nc]==f) )
-	byt[ind]=BINARYTMP;
+         && (byt[ind-1]==f || byt[ind+nc]==f || byt[ind-nc]==f) )
+        byt[ind]=BINARYTMP;
     }
 
   /* Check the body: */
   for(i=1;i<nr-1;++i)
     for(j=1;j<nc-1;++j)
       {
-	ind=i*nc+j;
-	if(byt[ind]==b
-	   && (byt[ind-1]==f     || byt[ind+1]==f
-	       || byt[ind+nc]==f || byt[ind-nc]==f) )
-	  byt[ind]=BINARYTMP;
+        ind=i*nc+j;
+        if(byt[ind]==b
+           && (byt[ind-1]==f     || byt[ind+1]==f
+               || byt[ind+nc]==f || byt[ind-nc]==f) )
+          byt[ind]=BINARYTMP;
       }
 
   /* Set all the changed pixels to the proper values: */
@@ -249,7 +250,8 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
   if(b0_f1!=1 && b0_f1!=0)
     error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "this problem. In dilate0_erode1_4con (binary.c), the value to "
-          "b0_f1 is %u while it should be 0 or 1", PACKAGE_BUGREPORT, b0_f1);
+          "b0_f1 is %u while it should be 0 or 1", PACKAGE_BUGREPORT,
+          b0_f1);
 
   /* Set the foreground and background values: */
   if(b0_f1==0) {f=1; b=0;}
@@ -257,69 +259,69 @@ dilate0_erode1_8con(unsigned char *byt, size_t nr, size_t nc,
 
   /* Check the 4 corners: */
   if(byt[0]==b && (byt[1]==f
-		   || byt[nc]==f || byt[nc+1]==f) )
+                   || byt[nc]==f || byt[nc+1]==f) )
     byt[0]=BINARYTMP;
 
   if(byt[nc-1]==b && (byt[nc-2]==f
-		      || byt[2*nc-1]==f
-		      || byt[2*nc-2]==f) )
+                      || byt[2*nc-1]==f
+                      || byt[2*nc-2]==f) )
     byt[nc-1]=BINARYTMP;
 
   if(byt[(nr-1)*nc]==b
      && ( byt[(nr-2)*nc]==f || byt[(nr-1)*nc+1]==f
-	  || byt[(nr-2)*nc+1]==f) )
+          || byt[(nr-2)*nc+1]==f) )
     byt[(nr-1)*nc]=BINARYTMP;
 
   if(byt[nr*nc-1]==b
      && ( byt[nr*nc-2]==f || byt[nr*nc-1-nc]==f
-	  || byt[nr*nc-2-nc]==f) )
+          || byt[nr*nc-2-nc]==f) )
     byt[nr*nc-1]=BINARYTMP;
 
   /* Check the 4 sides: */
   for(j=1;j<nc-1;++j)
     if(byt[j]==b
        && ( byt[j+1]==f || byt[j-1]==f || byt[j+nc]==f
-	    || byt[j-1+nc]==f || byt[j+1+nc]==f) )
+            || byt[j-1+nc]==f || byt[j+1+nc]==f) )
       byt[j]=BINARYTMP;
 
   for(j=1;j<nc-1;++j)
     {
       ind=(nr-1)*nc+j;
       if(byt[ind]==b
-	 && ( byt[ind+1]==f || byt[ind-1]==f || byt[ind-nc]==f
-	      || byt[ind-1-nc]==f || byt[ind+1-nc]==f) )
-	byt[ind]=BINARYTMP;
+         && ( byt[ind+1]==f || byt[ind-1]==f || byt[ind-nc]==f
+              || byt[ind-1-nc]==f || byt[ind+1-nc]==f) )
+        byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
     {
       ind=i*nc;
       if(byt[ind]==b
-	 && ( byt[ind+1]==f || byt[ind+nc]==f || byt[ind-nc]==f
-	      || byt[ind+1-nc]==f || byt[ind+1+nc]==f) )
-	byt[ind]=BINARYTMP;
+         && ( byt[ind+1]==f || byt[ind+nc]==f || byt[ind-nc]==f
+              || byt[ind+1-nc]==f || byt[ind+1+nc]==f) )
+        byt[ind]=BINARYTMP;
     }
 
   for(i=1;i<nr-1;++i)
     {
       ind=(i+1)*nc-1;
       if(byt[ind]==b
-	 && (byt[ind-1]==f || byt[ind+nc]==f || byt[ind-nc]==f
-	     || byt[ind-1-nc]==f || byt[ind-1+nc]==f) )
-	byt[ind]=BINARYTMP;
+         && (byt[ind-1]==f || byt[ind+nc]==f || byt[ind-nc]==f
+             || byt[ind-1-nc]==f || byt[ind-1+nc]==f) )
+        byt[ind]=BINARYTMP;
     }
 
   /* Check the body: */
   for(i=1;i<nr-1;++i)
     for(j=1;j<nc-1;++j)
       {
-	ind=i*nc+j;
-	if(byt[ind]==b
-	   && (byt[ind-1]==f        || byt[ind+1]==f
-	       || byt[ind+nc]==f    || byt[ind-nc]==f
-	       || byt[ind-1-nc]==f  || byt[ind+1+nc]==f
-	       || byt[ind-1+nc]==f  || byt[ind+1-nc]==f) )
-	  byt[ind]=BINARYTMP;
+        ind=i*nc+j;
+        if(byt[ind]==b
+           && (byt[ind-1]==f        || byt[ind+1]==f
+               || byt[ind+nc]==f    || byt[ind-nc]==f
+               || byt[ind-1-nc]==f  || byt[ind+1+nc]==f
+               || byt[ind-1+nc]==f  || byt[ind+1-nc]==f) )
+          byt[ind]=BINARYTMP;
       }
 
   /* Set all the changed pixels to the proper values: */
@@ -394,13 +396,13 @@ fillleftside(unsigned char *inv, size_t idx, size_t idy,
       index=i*idy+2;
       if(inv[index]==1 && inv[index+idy]==0)
         {
-	  if(i+1-min_o<maxfill)
-	    for(j=min_o;j<=i+1;++j)
-	      inv[j*idy+1]=BINARYTMP;
-	  min_o=i+1;
+          if(i+1-min_o<maxfill)
+            for(j=min_o;j<=i+1;++j)
+              inv[j*idy+1]=BINARYTMP;
+          min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+idy]==1)
-	min_o=i;
+        min_o=i;
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
@@ -424,13 +426,13 @@ fillbottomside(unsigned char *inv, size_t idy,
       index=2*idy+i;
       if(inv[index]==1 && inv[index+1]==0)
         {
-	  if(i+1-min_o<maxfill)
-	    for(j=min_o;j<=i+1;++j)
-	      inv[idy+j]=BINARYTMP;
-	  min_o=i+1;
+          if(i+1-min_o<maxfill)
+            for(j=min_o;j<=i+1;++j)
+              inv[idy+j]=BINARYTMP;
+          min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+1]==1)
-	min_o=i;
+        min_o=i;
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
@@ -454,13 +456,13 @@ fillrightside(unsigned char *inv, size_t idx, size_t idy,
       index=i*idy+idy-3;
       if(inv[index]==1 && inv[index+idy]==0)
         {
-	  if(i+1-min_o<maxfill)
-	    for(j=min_o;j<=i+1;++j)
-	      inv[j*idy+idy-2]=BINARYTMP;
-	  min_o=i+1;
+          if(i+1-min_o<maxfill)
+            for(j=min_o;j<=i+1;++j)
+              inv[j*idy+idy-2]=BINARYTMP;
+          min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+idy]==1)
-	min_o=i;
+        min_o=i;
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
@@ -484,13 +486,13 @@ filltopside(unsigned char *inv, size_t idx, size_t idy,
       index=(idx-3)*idy+i;
       if(inv[index]==1 && inv[index+1]==0)
         {
-	  if(i+1-min_o<maxfill)
-	    for(j=min_o;j<=i+1;++j)
-	      inv[(idx-2)*idy+j]=BINARYTMP;
-	  min_o=i+1;
+          if(i+1-min_o<maxfill)
+            for(j=min_o;j<=i+1;++j)
+              inv[(idx-2)*idy+j]=BINARYTMP;
+          min_o=i+1;
         }
       else if(inv[index]==0 && inv[index+1]==1)
-	min_o=i;
+        min_o=i;
     }
   if(min_o!=1 && end-min_o<maxfill)
     for(j=min_o;j<=end;++j)
@@ -509,8 +511,8 @@ filltopside(unsigned char *inv, size_t idx, size_t idy,
    objects that are touching the image border. */
 void
 fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
-	   unsigned char **inv, size_t *oidx, size_t *oidy,
-	   size_t l, size_t b, size_t r, size_t t, int anyblank)
+           unsigned char **inv, size_t *oidx, size_t *oidy,
+           size_t l, size_t b, size_t r, size_t t, int anyblank)
 {
   unsigned char *tinv, *bp, *bf, *tp, *sp;
   size_t i, row, start, idx, idy, size, tdiff=2;

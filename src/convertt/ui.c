@@ -69,7 +69,7 @@ readconfig(char *filename, struct converttparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -86,7 +86,7 @@ readconfig(char *filename, struct converttparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -110,28 +110,29 @@ readconfig(char *filename, struct converttparams *p)
         gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
       else if(strcmp(name, "quality")==0)
-	{
-	  if(up->qualityset) continue;
+        {
+          if(up->qualityset) continue;
           gal_checkset_int_smaller_equal_to(value, &p->quality, name, key,
-                                            p->cp.spack, filename, lineno, 100);
+                                            p->cp.spack, filename, lineno,
+                                            100);
           if(p->quality<0)
             error(EXIT_FAILURE, 0, "the quality option should be positive");
-	  up->qualityset=1;
-	}
+          up->qualityset=1;
+        }
       else if(strcmp(name, "widthincm")==0)
-	{
-	  if(up->widthincmset) continue;
+        {
+          if(up->widthincmset) continue;
           gal_checkset_float_l_0(value, &p->widthincm, name, key, SPACK,
                                  filename, lineno);
-	  up->widthincmset=1;
-	}
+          up->widthincmset=1;
+        }
       else if(strcmp(name, "borderwidth")==0)
-	{
-	  if(up->borderwidthset) continue;
+        {
+          if(up->borderwidthset) continue;
           gal_checkset_int_el_zero(value, &p->borderwidth, name, key, SPACK,
                                    filename, lineno);
-	  up->borderwidthset=1;
-	}
+          up->borderwidthset=1;
+        }
 
 
 
@@ -139,29 +140,29 @@ readconfig(char *filename, struct converttparams *p)
 
       /* Flux: */
       else if(strcmp(name, "fluxlow")==0)
-	{
-	  if(up->fluxlowset) continue;
-          gal_checkset_any_double(value, &p->fluxlow, name, key, p->cp.spack,
-                                  filename, lineno);
+        {
+          if(up->fluxlowset) continue;
+          gal_checkset_any_double(value, &p->fluxlow, name, key,
+                                  p->cp.spack, filename, lineno);
           up->fluxlowset=1;
-	}
+        }
       else if(strcmp(name, "fluxhigh")==0)
-	{
-	  if(up->fluxhighset) continue;
-          gal_checkset_any_double(value, &p->fluxhigh, name, key, p->cp.spack,
-                                  filename, lineno);
+        {
+          if(up->fluxhighset) continue;
+          gal_checkset_any_double(value, &p->fluxhigh, name, key,
+                                  p->cp.spack, filename, lineno);
           up->fluxhighset=1;
-	}
+        }
       else if(strcmp(name, "maxbyte")==0)
-	{
-	  if(up->maxbyteset) continue;
+        {
+          if(up->maxbyteset) continue;
           gal_checkset_int_smaller_equal_to(value, &tmp, "maxbyte", key,
                                             p->cp.spack, NULL, 0, UINT8_MAX);
           if(tmp<0)
             error(EXIT_FAILURE, 0, "--maxbyte (-m) should be positive");
           p->maxbyte=tmp;
           p->up.maxbyteset=1;
-	}
+        }
 
 
 
@@ -171,8 +172,8 @@ readconfig(char *filename, struct converttparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);
@@ -303,22 +304,22 @@ makechangestruct(char *arg)
       while(*p==' ') {++p; continue;}
       if(*p==':') ++p;
       else
-	{
-	  fprintf(stderr, PACKAGE": In the conversion option, [from] "
-		  "and [to] values should be separated by a ':'. You "
-		  "have given a '%c': %s\n", *p, arg);
-	  exit(EXIT_FAILURE);
-	}
+        {
+          fprintf(stderr, PACKAGE": In the conversion option, [from] "
+                  "and [to] values should be separated by a ':'. You "
+                  "have given a '%c': %s\n", *p, arg);
+          exit(EXIT_FAILURE);
+        }
       c->to=strtof(p, &p);
       while(*p==' ') {++p; continue;}
       if(*p==',') p++;
       else if(*p!='\0')
-	{
-	  fprintf(stderr, PACKAGE": In the conversion option, [from] "
-		  "and [to] pairs should be separated by a ','. You have "
-		  "provided a '%c': %s\n", *p, arg);
-	  exit(EXIT_FAILURE);
-	}
+        {
+          fprintf(stderr, PACKAGE": In the conversion option, [from] "
+                  "and [to] pairs should be separated by a ','. You have "
+                  "provided a '%c': %s\n", *p, arg);
+          exit(EXIT_FAILURE);
+        }
       c->next=out;
       out=c;
     }
@@ -387,7 +388,7 @@ adddotautomaticoutput(struct converttparams *p)
 
   /* Set the automatic output and make sure we have write access. */
   gal_checkset_automatic_output(basename, cp->output, cp->removedirinfo,
-                  cp->dontdelete, &cp->output);
+                                cp->dontdelete, &cp->output);
   if( gal_checkset_dir_0_file_1(cp->output, cp->dontdelete)==0 )
     error(EXIT_FAILURE, 0, "%s is a directory", cp->output);
 }
@@ -469,11 +470,11 @@ sanitycheck(struct converttparams *p)
       else if(nameisjpeg(cp->output))
         {
 #ifndef HAS_LIBJPEG
-          error(EXIT_FAILURE, 0, "you have asked for a JPEG output, however, "
-                "when %s was configured libjpeg was not available. To write "
-                "to JPEG files, libjpeg is required. Please install it and "
-                "configure, make and install %s again", PACKAGE_STRING,
-                PACKAGE_STRING);
+          error(EXIT_FAILURE, 0, "you have asked for a JPEG output, "
+                "however, when %s was configured libjpeg was not "
+                "available. To write to JPEG files, libjpeg is required. "
+                "Please install it and configure, make and install %s "
+                "again", PACKAGE_STRING, PACKAGE_STRING);
 #else
           p->outputtype=JPEGFORMAT;
           if( nameisjpegsuffix(cp->output) )
@@ -589,11 +590,12 @@ preparearrays(struct converttparams *p)
             }
           p->numnul[p->numch]=
             gal_fits_hdu_to_array(names[i], hdu, &p->bitpixs[p->numch],
-                                  &array, &p->s0[p->numch], &p->s1[p->numch]);
+                                  &array, &p->s0[p->numch],
+                                  &p->s1[p->numch]);
           gal_fits_change_type(array, p->bitpixs[p->numch],
-                                    p->s0[p->numch]*p->s1[p->numch],
-                                    p->numnul[p->numch],
-                                    (void **)(&p->ch[p->numch]), DOUBLE_IMG);
+                               p->s0[p->numch]*p->s1[p->numch],
+                               p->numnul[p->numch],
+                               (void **)(&p->ch[p->numch]), DOUBLE_IMG);
           free(array);
           ++p->numch;
         }
@@ -606,8 +608,8 @@ preparearrays(struct converttparams *p)
 #ifndef HAS_LIBJPEG
           error(EXIT_FAILURE, 0, "you are giving a JPEG input, however, "
                 "when %s was configured libjpeg was not available. To read "
-                "from JPEG files, libjpeg is required. Please install it and "
-                "configure, make and install %s again", PACKAGE_STRING,
+                "from JPEG files, libjpeg is required. Please install it "
+                "and configure, make and install %s again", PACKAGE_STRING,
                 PACKAGE_STRING);
 #else
           preparejpeg(p, names[i]);

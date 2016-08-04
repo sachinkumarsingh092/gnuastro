@@ -166,7 +166,7 @@ thisdetectionisoneobject(struct clumpsthreadparams *ctp)
    is efficient. */
 void
 adjacencymatrixs(struct clumpsthreadparams *ctp,
-		 double *sns, double *sums, int *nums)
+                 double *sns, double *sums, int *nums)
 {
   int rpnum;
   float *imgss=ctp->p->imgss;
@@ -183,38 +183,38 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
   do
     if( olab[*ind]==SEGMENTINIT && !isnan(imgss[*ind]) )
       {
-	/* Initialize the values to be used: */
-	ii=0;
-	rpnum=1;
-	rpave=imgss[*ind];
-	memset(wngb, 0, sizeof(wngb));
+        /* Initialize the values to be used: */
+        ii=0;
+        rpnum=1;
+        rpave=imgss[*ind];
+        memset(wngb, 0, sizeof(wngb));
 
-	/* Find which grown clumps this river pixel touches.      */
-	GAL_NEIGHBORS_FILL_8_ALLIMG;
-	nf=(n=ngb)+numngb;
-	do
-	  if( olab[*n]>0 )
-	    {
+        /* Find which grown clumps this river pixel touches.      */
+        GAL_NEIGHBORS_FILL_8_ALLIMG;
+        nf=(n=ngb)+numngb;
+        do
+          if( olab[*n]>0 )
+            {
               if(!isnan(imgss[*n])) /* Add the flux of this neighbor */
                 {                   /* pixel for finding the average */
                   ++rpnum;          /* of this river pixel later.    */
                   rpave+=imgss[*n];
                 }
-	      for(i=0;i<ii;++i)
-		if(wngb[i]==olab[*n])
-		  break;
-	      if(i==ii) 	    /* label not yet added to wngb.  */
-		{
-		  wngb[ii]=olab[*n];
-		  ++ii;
-		}
-	    }
-	while(++n<nf);
+              for(i=0;i<ii;++i)
+                if(wngb[i]==olab[*n])
+                  break;
+              if(i==ii)             /* label not yet added to wngb.  */
+                {
+                  wngb[ii]=olab[*n];
+                  ++ii;
+                }
+            }
+        while(++n<nf);
 
-	/* If more than one neighboring label was found, fill in the
-	   'sums' and 'nums' adjacency matrixs with the values for
-	   this pixel. Recall that ii is the number of neighboring
-	   labels to this river pixel. */
+        /* If more than one neighboring label was found, fill in the
+           'sums' and 'nums' adjacency matrixs with the values for
+           this pixel. Recall that ii is the number of neighboring
+           labels to this river pixel. */
         if(ii>1)
           {
             rpave/=rpnum;
@@ -235,26 +235,26 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
   for(i=0;i<numclumps;++i)
     for(j=0;j<i;++j)
       if( nums [ ii=i*numclumps+j ] ) /* There is a connection! */
-	{
-	  ave = sums[ii]/nums[ii];
-	  /* In case the average is nagive (only possible if sums is
-	     negative), forget it. Note that even an area of 1 is
-	     acceptable, and we put no area criteria here, because the
-	     fact that a river exists between two clumps is
-	     important. */
-	  if( ave<0 )
-	    {
-	      nums[ii]=nums[j*numclumps+i]=0;
-	      sums[ii]=sums[j*numclumps+i]=0;
-	    }
-	  /* Everything is ready, calculate the SN for this river:  */
-	  else
-	    /* Calculate the SN for this river and put it in both
-	       sections of the SN adjacency matrix. Note that here we
-	       want the average SN of the river, not the total. This
-	       is why we haven't included the number of pixels. */
-	    sns[ii] = sns[j*numclumps+i] = c * ave / sqrt(ave+err);
-	}
+        {
+          ave = sums[ii]/nums[ii];
+          /* In case the average is nagive (only possible if sums is
+             negative), forget it. Note that even an area of 1 is
+             acceptable, and we put no area criteria here, because the
+             fact that a river exists between two clumps is
+             important. */
+          if( ave<0 )
+            {
+              nums[ii]=nums[j*numclumps+i]=0;
+              sums[ii]=sums[j*numclumps+i]=0;
+            }
+          /* Everything is ready, calculate the SN for this river:  */
+          else
+            /* Calculate the SN for this river and put it in both
+               sections of the SN adjacency matrix. Note that here we
+               want the average SN of the river, not the total. This
+               is why we haven't included the number of pixels. */
+            sns[ii] = sns[j*numclumps+i] = c * ave / sqrt(ave+err);
+        }
 
   /* To check the matrix specific detected region:
   if(ctp->thislabel==104)
@@ -327,7 +327,7 @@ grownclumpstoobjects(struct clumpsthreadparams *ctp)
     for(j=1;j<i;++j)
       if( nums[ ii=i*numclumps+j ] < ctp->p->minriverlength
           || sns[ii] < ctp->p->objbordersn )
-	nums[ ii ] = nums[ j*numclumps+i ]=0;
+        nums[ ii ] = nums[ j*numclumps+i ]=0;
 
 
   /* Find the connected regions and assign new labels (starting
@@ -366,13 +366,14 @@ newclumplabels(struct clumpsthreadparams *ctp)
 
   /* A simple sanity check. */
   if(ctp->numclumps<=2 || ctp->numobjects<=2)
-    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix it. "
-          "For some reason, the newclumplabels function (in segmentation.c) "
-          "was called for the %lu detected region, even though this region "
-          "has ctp->numclumps=%lu and ctp->numobjects=%lu! This function "
-          "should only be used when there is more than one object and "
-          "clump over a detected region", PACKAGE_BUGREPORT,
-          ctp->thislabel, ctp->numclumps, ctp->numobjects);
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
+          "it. For some reason, the newclumplabels function (in "
+          "segmentation.c) was called for the %lu detected region, even "
+          "though this region has ctp->numclumps=%lu and "
+          "ctp->numobjects=%lu! This function should only be used when "
+          "there is more than one object and clump over a detected region",
+          PACKAGE_BUGREPORT, ctp->thislabel, ctp->numclumps,
+          ctp->numobjects);
 
   /* 'numclumpsinobj' will keep the number of clumps in each object.
      Unlike the numbers of objects and clumps, this is the actual
@@ -663,9 +664,9 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(numobjsinit<numthreads) nb=numobjsinit+1;
       else                       nb=numthreads+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
@@ -675,8 +676,8 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
-	  {
+        if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+          {
             ctp[i].p=p;
             ctp[i].id=i;
             ctp[i].b=&b;
@@ -684,9 +685,9 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
             ctp[i].alllabinds=alllabinds;
             ctp[i].totalnummtx=&totalnummtx;
             ctp[i].indexs=&indexs[i*thrdcols];
-	    err=pthread_create(&t, &attr, segmentonthread, &ctp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
-	  }
+            err=pthread_create(&t, &attr, segmentonthread, &ctp[i]);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+          }
 
       /* Wait for all threads to finish and free the spaces. */
       pthread_barrier_wait(&b);

@@ -210,19 +210,19 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
   for(i=1;i<numside;++i)
     if(newlabs[i]==0)
       {
-	add_to_sll(&Q, i);
-	while(Q!=NULL)
-	  {
-	    pop_from_sll(&Q, &p);
-	    if(newlabs[p]!=curlab)
-	      {
-		newlabs[p]=curlab;
-		for(j=1;j<numside;++j)
-		  if( adj[p*numside+j] && newlabs[j]==0 )
-		    add_to_sll(&Q, j);
-	      }
-	  }
-	++curlab;
+        add_to_sll(&Q, i);
+        while(Q!=NULL)
+          {
+            pop_from_sll(&Q, &p);
+            if(newlabs[p]!=curlab)
+              {
+                newlabs[p]=curlab;
+                for(j=1;j<numside;++j)
+                  if( adj[p*numside+j] && newlabs[j]==0 )
+                    add_to_sll(&Q, j);
+              }
+          }
+        ++curlab;
       }
 
   /* For a check:
@@ -288,7 +288,7 @@ labareas(long *lab, size_t size, size_t numlabs, size_t **outareas)
 
 void
 removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
-			size_t *numlabs, size_t minarea)
+                        size_t *numlabs, size_t minarea)
 {
   size_t i, *areas;
   long *newlabs, curlab=1;
@@ -369,8 +369,8 @@ labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
       errno=0;
       labinds[i]=malloc(areas[i]*sizeof **labinds);
       if(labinds[i]==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for labinds[%lu] in labindexs "
-              "(label.c)", areas[i]*sizeof **labinds, i);
+        error(EXIT_FAILURE, errno, "%lu bytes for labinds[%lu] in "
+              "labindexs (label.c)", areas[i]*sizeof **labinds, i);
     }
 
   /* Fill in the indexs array. */
@@ -386,9 +386,9 @@ labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
     size_t j;
     for(i=1;i<numlabs;++i)
       {
-	printf("Lab: %lu\n", i);
-	for(j=0;j<areas[i];++j)
-	  printf("  %lu\n", labinds[i][j]);
+        printf("Lab: %lu\n", i);
+        for(j=0;j<areas[i];++j)
+          printf("  %lu\n", labinds[i][j]);
       }
     exit(0);
   }

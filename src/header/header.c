@@ -139,7 +139,7 @@ writeupdatekeys(fitsfile *fptr, struct gal_fits_header_ll **keylist,
       if(tmp->cfree) free(tmp->comment);
 
       /* Keep the pointer to the next keyword and free the allocated
-	 space for this keyword.*/
+         space for this keyword.*/
       ttmp=tmp->next;
       free(tmp);
       tmp=ttmp;

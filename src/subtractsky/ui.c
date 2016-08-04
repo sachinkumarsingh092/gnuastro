@@ -30,10 +30,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include <nproc.h>              /* From Gnulib.                     */
+#include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>   	/* Includes time.h and sys/time.h   */
+#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/statistics.h>
@@ -43,8 +43,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"		        /* Needs main.h                   */
-#include "args.h"	        /* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h                   */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -74,7 +74,7 @@ readconfig(char *filename, struct subtractskyparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -91,7 +91,7 @@ readconfig(char *filename, struct subtractskyparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -102,166 +102,166 @@ readconfig(char *filename, struct subtractskyparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-	{
-	  if(cp->hduset) continue;
-	  errno=0;
-	  cp->hdu=malloc(strlen(value)+1);
-	  if(cp->hdu==NULL)
-	    error(EXIT_FAILURE, errno, "space for HDU");
-	  strcpy(cp->hdu, value);
-	  cp->hduset=1;
-	}
+        {
+          if(cp->hduset) continue;
+          errno=0;
+          cp->hdu=malloc(strlen(value)+1);
+          if(cp->hdu==NULL)
+            error(EXIT_FAILURE, errno, "space for HDU");
+          strcpy(cp->hdu, value);
+          cp->hduset=1;
+        }
       else if(strcmp(name, "mask")==0)
-	{
-	  if(up->masknameset) continue;
-	  errno=0;
-	  up->maskname=malloc(strlen(value)+1);
-	  if(up->maskname==NULL)
-	    error(EXIT_FAILURE, errno, "space for mask name");
-	  strcpy(up->maskname, value);
-	  up->masknameset=1;
-	}
+        {
+          if(up->masknameset) continue;
+          errno=0;
+          up->maskname=malloc(strlen(value)+1);
+          if(up->maskname==NULL)
+            error(EXIT_FAILURE, errno, "space for mask name");
+          strcpy(up->maskname, value);
+          up->masknameset=1;
+        }
       else if(strcmp(name, "mhdu")==0)
-	{
-	  if(up->mhduset) continue;
-	  errno=0;
-	  up->mhdu=malloc(strlen(value)+1);
-	  if(up->mhdu==NULL)
-	    error(EXIT_FAILURE, errno, "space for mask HDU");
-	  strcpy(up->mhdu, value);
-	  up->mhduset=1;
-	}
+        {
+          if(up->mhduset) continue;
+          errno=0;
+          up->mhdu=malloc(strlen(value)+1);
+          if(up->mhdu==NULL)
+            error(EXIT_FAILURE, errno, "space for mask HDU");
+          strcpy(up->mhdu, value);
+          up->mhduset=1;
+        }
       else if(strcmp(name, "kernel")==0)
-	{
-	  if(up->kernelnameset) continue;
-	  errno=0;
-	  up->kernelname=malloc(strlen(value)+1);
-	  if(up->kernelname==NULL)
-	    error(EXIT_FAILURE, errno, "space for kernel name");
-	  strcpy(up->kernelname, value);
-	  up->kernelnameset=1;
-	}
+        {
+          if(up->kernelnameset) continue;
+          errno=0;
+          up->kernelname=malloc(strlen(value)+1);
+          if(up->kernelname==NULL)
+            error(EXIT_FAILURE, errno, "space for kernel name");
+          strcpy(up->kernelname, value);
+          up->kernelnameset=1;
+        }
       else if(strcmp(name, "khdu")==0)
-	{
-	  if(up->khduset) continue;
-	  errno=0;
-	  up->khdu=malloc(strlen(value)+1);
-	  if(up->khdu==NULL)
-	    error(EXIT_FAILURE, errno, "mpace for kernel HDU");
-	  strcpy(up->khdu, value);
-	  up->khduset=1;
-	}
+        {
+          if(up->khduset) continue;
+          errno=0;
+          up->khdu=malloc(strlen(value)+1);
+          if(up->khdu==NULL)
+            error(EXIT_FAILURE, errno, "mpace for kernel HDU");
+          strcpy(up->khdu, value);
+          up->khduset=1;
+        }
 
 
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-	{
-	  if(cp->outputset) continue;
-	  errno=0;
-	  cp->output=malloc(strlen(value)+1);
-	  if(cp->output==NULL)
-	    error(EXIT_FAILURE, errno, "space for output");
-	  strcpy(cp->output, value);
-	  cp->outputset=1;
-	}
+        {
+          if(cp->outputset) continue;
+          errno=0;
+          cp->output=malloc(strlen(value)+1);
+          if(cp->output==NULL)
+            error(EXIT_FAILURE, errno, "space for output");
+          strcpy(cp->output, value);
+          cp->outputset=1;
+        }
 
 
       /* Mesh grid: */
       else if(strcmp(name, "meshsize")==0)
-	{
-	  if(up->meshsizeset) continue;
-          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name, key, SPACK,
-                                    filename, lineno);
-	  up->meshsizeset=1;
-	}
+        {
+          if(up->meshsizeset) continue;
+          gal_checkset_sizet_l_zero(value, &p->mp.meshsize, name,
+                                    key, SPACK, filename, lineno);
+          up->meshsizeset=1;
+        }
       else if(strcmp(name, "nch1")==0)
-	{
-	  if(up->nch1set) continue;
+        {
+          if(up->nch1set) continue;
           gal_checkset_sizet_l_zero(value, &p->mp.nch1, name, key, SPACK,
                                     filename, lineno);
-	  up->nch1set=1;
-	}
+          up->nch1set=1;
+        }
       else if(strcmp(name, "nch2")==0)
-	{
-	  if(up->nch2set) continue;
+        {
+          if(up->nch2set) continue;
           gal_checkset_sizet_l_zero(value, &p->mp.nch2, name, key, SPACK,
                                     filename, lineno);
-	  up->nch2set=1;
-	}
+          up->nch2set=1;
+        }
       else if(strcmp(name, "lastmeshfrac")==0)
-	{
-	  if(up->lastmeshfracset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name, key, SPACK,
-                                     filename, lineno);
-	  up->lastmeshfracset=1;
-	}
+        {
+          if(up->lastmeshfracset) continue;
+          gal_checkset_float_l_0_s_1(value, &p->mp.lastmeshfrac, name,
+                                     key, SPACK, filename, lineno);
+          up->lastmeshfracset=1;
+        }
       else if(strcmp(name, "mirrordist")==0)
-	{
-	  if(up->mirrordistset) continue;
-          gal_checkset_float_l_0(value, &p->mp.mirrordist, name, key, SPACK,
-                                 filename, lineno);
-	  up->mirrordistset=1;
-	}
+        {
+          if(up->mirrordistset) continue;
+          gal_checkset_float_l_0(value, &p->mp.mirrordist, name, key,
+                                 SPACK, filename, lineno);
+          up->mirrordistset=1;
+        }
       else if(strcmp(name, "minmodeq")==0)
-	{
-	  if(up->minmodeqset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->mp.minmodeq, name, key, SPACK,
-                                     filename, lineno);
-	  up->minmodeqset=1;
-	}
+        {
+          if(up->minmodeqset) continue;
+          gal_checkset_float_l_0_s_1(value, &p->mp.minmodeq, name, key,
+                                     SPACK, filename, lineno);
+          up->minmodeqset=1;
+        }
       else if(strcmp(name, "numnearest")==0)
-	{
-	  if(up->numnearestset) continue;
-          gal_checkset_sizet_l_zero(value, &p->mp.numnearest, name, key, SPACK,
-                                    filename, lineno);
-	  up->numnearestset=1;
-	}
+        {
+          if(up->numnearestset) continue;
+          gal_checkset_sizet_l_zero(value, &p->mp.numnearest, name,
+                                    key, SPACK, filename, lineno);
+          up->numnearestset=1;
+        }
       else if(strcmp(name, "smoothwidth")==0)
-	{
-	  if(up->smoothwidthset) continue;
-          gal_checkset_sizet_p_odd(value, &p->mp.smoothwidth, name, key, SPACK,
-                                   filename, lineno);
-	  up->smoothwidthset=1;
-	}
+        {
+          if(up->smoothwidthset) continue;
+          gal_checkset_sizet_p_odd(value, &p->mp.smoothwidth, name,
+                                   key, SPACK, filename, lineno);
+          up->smoothwidthset=1;
+        }
       else if(strcmp(name, "fullconvolution")==0)
-	{
-	  if(up->fullconvolutionset) continue;
-          gal_checkset_int_zero_or_one(value, &p->mp.fullconvolution, name, key,
-                                       SPACK, filename, lineno);
-	  up->fullconvolutionset=1;
-	}
+        {
+          if(up->fullconvolutionset) continue;
+          gal_checkset_int_zero_or_one(value, &p->mp.fullconvolution,
+                                       name, key, SPACK, filename, lineno);
+          up->fullconvolutionset=1;
+        }
       else if(strcmp(name, "fullinterpolation")==0)
-	{
-	  if(up->fullinterpolationset) continue;
-          gal_checkset_int_zero_or_one(value, &p->mp.fullinterpolation, name,
-                                       key, SPACK, filename, lineno);
-	  up->fullinterpolationset=1;
-	}
+        {
+          if(up->fullinterpolationset) continue;
+          gal_checkset_int_zero_or_one(value, &p->mp.fullinterpolation,
+                                       name, key, SPACK, filename, lineno);
+          up->fullinterpolationset=1;
+        }
       else if(strcmp(name, "fullsmooth")==0)
-	{
-	  if(up->fullsmoothset) continue;
+        {
+          if(up->fullsmoothset) continue;
           gal_checkset_int_zero_or_one(value, &p->mp.fullsmooth, name, key,
                                        SPACK, filename, lineno);
-	  up->fullsmoothset=1;
-	}
+          up->fullsmoothset=1;
+        }
 
 
       /* Statistics: */
       else if(strcmp(name, "sigclipmultip")==0)
-	{
-	  if(up->sigclipmultipset) continue;
-          gal_checkset_float_l_0(value, &p->sigclipmultip, name, key, SPACK,
-                                 filename, lineno);
-	  up->sigclipmultipset=1;
-	}
+        {
+          if(up->sigclipmultipset) continue;
+          gal_checkset_float_l_0(value, &p->sigclipmultip, name, key,
+                                 SPACK, filename, lineno);
+          up->sigclipmultipset=1;
+        }
       else if(strcmp(name, "sigcliptolerance")==0)
-	{
-	  if(up->sigcliptoleranceset) continue;
-          gal_checkset_float_l_0_s_1(value, &p->sigcliptolerance, name, key,
-                                     SPACK, filename, lineno);
-	  up->sigcliptoleranceset=1;
-	}
+        {
+          if(up->sigcliptoleranceset) continue;
+          gal_checkset_float_l_0_s_1(value, &p->sigcliptolerance, name,
+                                     key, SPACK, filename, lineno);
+          up->sigcliptoleranceset=1;
+        }
 
 
       /* Operating modes: */
@@ -270,8 +270,8 @@ readconfig(char *filename, struct subtractskyparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);
@@ -295,37 +295,37 @@ printvalues(FILE *fp, struct subtractskyparams *p)
   if(cp->hduset)
     {
       if(gal_checkset_string_has_space(cp->hdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
+        fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "hdu", cp->hdu);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
+        fprintf(fp, CONF_SHOWFMT"%s\n", "hdu", cp->hdu);
     }
   if(up->masknameset)
     {
       if(gal_checkset_string_has_space(up->maskname))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
+        fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mask", up->maskname);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
+        fprintf(fp, CONF_SHOWFMT"%s\n", "mask", up->maskname);
     }
   if(up->mhdu)
     {
       if(gal_checkset_string_has_space(up->mhdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
+        fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "mhdu", up->mhdu);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
+        fprintf(fp, CONF_SHOWFMT"%s\n", "mhdu", up->mhdu);
     }
   if(up->kernelnameset)
     {
       if(gal_checkset_string_has_space(up->kernelname))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
+        fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "kernel", up->kernelname);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
+        fprintf(fp, CONF_SHOWFMT"%s\n", "kernel", up->kernelname);
     }
   if(up->khdu)
     {
       if(gal_checkset_string_has_space(up->khdu))
-	fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
+        fprintf(fp, CONF_SHOWFMT"\"%s\"\n", "khdu", up->khdu);
       else
-	fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
+        fprintf(fp, CONF_SHOWFMT"%s\n", "khdu", up->khdu);
     }
 
 
@@ -458,8 +458,8 @@ sanitycheck(struct subtractskyparams *p)
 
   /* Set the maskname and mask hdu accordingly: */
   gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                                 &p->up.maskname, p->up.mhdu, p->up.mhduset,
-                                 "mask");
+                            &p->up.maskname, p->up.mhdu, p->up.mhduset,
+                            "mask");
 
   /* Set the output name: */
   if(p->cp.output)
@@ -497,8 +497,8 @@ sanitycheck(struct subtractskyparams *p)
 
   /* Other checks: */
   if(p->mp.numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
-    error(EXIT_FAILURE, 0, "the smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %lu",
+    error(EXIT_FAILURE, 0, "the smallest possible number for "
+          "`--numnearest' (`-n') is %d. You have asked for: %lu",
           GAL_MESH_MIN_ACCEPTABLE_NEAREST, p->mp.numnearest);
 
   /* Set the constants in the gal_mesh_params structure. */

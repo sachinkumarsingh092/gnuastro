@@ -31,19 +31,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********                 Macros                **************/
 /**************************************************************/
 #define GAL_CHECKSET_CHECK_COL_IN_CAT(INCOL,NAME) {                     \
-    size_t i;								\
+    size_t i;                                                           \
                                                                         \
-    if( (INCOL) >= p->cs1 )						\
-      error(EXIT_FAILURE, 0, "%s only has %lu columns while you "	\
-	    "have requested column %lu (counting from zero) for "	\
-	    "`--%s`", p->up.catname, p->cs1, (INCOL), (NAME));		\
-									\
-    for(i=0;i<p->cs0;++i)						\
-      if( isnan(p->cat[i*p->cs1+(INCOL)]) )				\
-	error(EXIT_FAILURE, 0, "%s: column %lu (--%s) in row %lu "	\
-	      "could not be read as a number. See %s. Note that "	\
-	      "counting starts from zero",				\
-	      p->up.catname, (INCOL), (NAME), i, GAL_TXTARRAY_LOG);	\
+    if( (INCOL) >= p->cs1 )                                             \
+      error(EXIT_FAILURE, 0, "%s only has %lu columns while you "       \
+            "have requested column %lu (counting from zero) for "       \
+            "`--%s`", p->up.catname, p->cs1, (INCOL), (NAME));          \
+                                                                        \
+    for(i=0;i<p->cs0;++i)                                               \
+      if( isnan(p->cat[i*p->cs1+(INCOL)]) )                             \
+        error(EXIT_FAILURE, 0, "%s: column %lu (--%s) in row %lu "      \
+              "could not be read as a number. See %s. Note that "       \
+              "counting starts from zero",                              \
+              p->up.catname, (INCOL), (NAME), i, GAL_TXTARRAY_LOG);     \
   }
 
 
@@ -88,29 +88,29 @@ gal_checkset_int_zero_or_one(char *optarg, int *var, char *lo, char so,
                              char* spack, char *filename, size_t lineno);
 
 void
-gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so, char *spack,
-                        char *filename, size_t lineno);
+gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so,
+                        char *spack, char *filename, size_t lineno);
 
 void
-gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so, char *spack,
-                         char *filename, size_t lineno);
+gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so,
+                         char *spack, char *filename, size_t lineno);
 
 void
-gal_checkset_int_l_zero(char *optarg, int *var, char *lo, char so, char *spack,
-                        char *filename, size_t lineno);
+gal_checkset_int_l_zero(char *optarg, int *var, char *lo, char so,
+                        char *spack, char *filename, size_t lineno);
 
 void
-gal_checkset_int_smaller_equal_to(char *optarg, int *var, char *lo, char so,
-                                  char *spack, char *filename, size_t lineno,
-                                  long maxvalue);
+gal_checkset_int_smaller_equal_to(char *optarg, int *var, char *lo,
+                                  char so, char *spack, char *filename,
+                                  size_t lineno, long maxvalue);
 
 void
 gal_checkset_long_el_zero(char *optarg, long *var, char *lo, char so,
                           char *spack, char *filename, size_t lineno);
 
 void
-gal_checkset_any_long(char *optarg, long *var, char *lo, char so, char *spack,
-                      char *filename, size_t lineno);
+gal_checkset_any_long(char *optarg, long *var, char *lo, char so,
+                      char *spack, char *filename, size_t lineno);
 
 void
 gal_checkset_sizet_el_zero(char *optarg, size_t *var, char *lo, char so,
@@ -125,16 +125,16 @@ gal_checkset_sizet_p_odd(char *optarg, size_t *var, char *lo, char so,
                          char* spack, char *filename, size_t lineno);
 
 void
-gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so, char *spack,
-                       char *filename, size_t lineno);
+gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so,
+                       char *spack, char *filename, size_t lineno);
 
 void
 gal_checkset_float_l_0_s_1(char *optarg, float *var, char *lo, char so,
                            char *spack, char *filename, size_t lineno);
 
 void
-gal_checkset_any_float(char *optarg, float *var, char *lo, char so, char *spack,
-                       char *filename, size_t lineno);
+gal_checkset_any_float(char *optarg, float *var, char *lo, char so,
+                       char *spack, char *filename, size_t lineno);
 
 void
 gal_checkset_double_l_0(char *optarg, double *var, char *lo, char so,
@@ -197,8 +197,9 @@ int
 gal_checkset_dir_0_file_1(char *name, int dontdelete);
 
 void
-gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
-                              int dontdelete, char **outname);
+gal_checkset_automatic_output(char *inname, char *suffix,
+                              int removedirinfo, int dontdelete,
+                              char **outname);
 
 char *
 gal_checkset_dir_part(char *input);

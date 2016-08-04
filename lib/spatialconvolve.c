@@ -201,9 +201,9 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(is0*is1<nt) nb=is0*is1+1;
       else nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
@@ -213,12 +213,13 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
         if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
           {
             scp[i].b=&b;
-            gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0, ks1, nt,
-                                        edgecorrection, *out,
+            gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0,
+                                        ks1, nt, edgecorrection, *out,
                                         &indexs[i*thrdcols], &scp[i]);
-	    err=pthread_create(&t, &attr, gal_spatialconvolve_thread, &scp[i]);
-	    if(err)
-	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+            err=pthread_create(&t, &attr, gal_spatialconvolve_thread,
+                               &scp[i]);
+            if(err)
+              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

@@ -34,11 +34,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define GAL_CONFIGFILES_START_READING_LINE {                            \
-  ++lineno;								\
-  if(*line=='#') continue;						\
+    ++lineno;                                                           \
+  if(*line=='#') continue;                                              \
   else gal_configfiles_read_name_value(line, filename, lineno,          \
                                        &name, &value);                  \
-  if(name==NULL && value==NULL) continue;				\
+  if(name==NULL && value==NULL) continue;                               \
 }
 
 
@@ -47,23 +47,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    depend on functions that are different for different programs. So
    they have to be written into the functions with a macro. */
 #define GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(INDIR) {                      \
-    FILE *fp;								\
-    char *outfilename, *command;		 			\
+    FILE *fp;                                                           \
+    char *outfilename, *command;                                        \
     fp=gal_configfiles_write_local_config_stop(INDIR, CONFIG_FILE,      \
                                                SPACK, SPACK_NAME,       \
                                                &outfilename);           \
-    printvalues(fp, p);							\
-    errno=0;								\
-    if(fclose(fp)==-1)							\
+    printvalues(fp, p);                                                 \
+    errno=0;                                                            \
+    if(fclose(fp)==-1)                                                  \
       error(EXIT_FAILURE, errno, "%s", outfilename);                    \
     command=gal_checkset_malloc_cat("cat ", outfilename);               \
-    printf("Values saved in %s:\n\n", outfilename);			\
+    printf("Values saved in %s:\n\n", outfilename);                     \
     if(system(command))                                                 \
       error(EXIT_FAILURE, 0, "the `%s` command could not be run or "    \
             "failed", command);                                         \
-    free(outfilename);							\
-    free(command);							\
-    exit(EXIT_SUCCESS);							\
+    free(outfilename);                                                  \
+    free(command);                                                      \
+    exit(EXIT_SUCCESS);                                                 \
   }
 
 
@@ -71,7 +71,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define GAL_CONFIGFILES_CHECK_SET_CONFIG {                              \
-    char *userconfig_dir, *userconfig_file;				\
+    char *userconfig_dir, *userconfig_file;                             \
                                                                         \
     readconfig(CURDIRCONFIG_FILE, p);                                   \
     if(cp->setdirconf)                                                  \
@@ -100,8 +100,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
         if(cp->setusrconf)                                              \
           GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(userconfig_dir);            \
         readconfig(SYSCONFIG_FILE, p);                                  \
-        free(userconfig_file);						\
-        free(userconfig_dir);						\
+        free(userconfig_file);                                                \
+        free(userconfig_dir);                                                \
       }                                                                 \
   }
 
@@ -112,13 +112,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define GAL_CONFIGFILES_REPORT_NOTSET(var_name) {                       \
-    if(intro==0)							\
-      {									\
-	fprintf(stderr, SPACK": Parameter(s) not set: %s", (var_name));	\
-	intro=1;							\
-      }									\
-    else								\
-      fprintf(stderr, ", %s", (var_name));				\
+    if(intro==0)                                                        \
+      {                                                                 \
+        fprintf(stderr, SPACK": Parameter(s) not set: %s", (var_name)); \
+        intro=1;                                                        \
+      }                                                                 \
+    else                                                                \
+      fprintf(stderr, ", %s", (var_name));                              \
   }
 
 
@@ -126,22 +126,22 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define GAL_CONFIGFILES_END_OF_NOTSET_REPORT {                          \
-    if(intro)								\
-      {									\
-	char *userconfig_file;						\
-	fprintf(stderr, ".\n\n");					\
-	fprintf(stderr, "You can assign values in the local, user or "	\
-		"system wide default files. Otherwise you have to "	\
-		"explicitly call them each time. See `"SPACK" --help` "	\
-		"or `info "SPACK"` for more information.\n\n");		\
-	userconfig_file=                                                \
+    if(intro)                                                           \
+      {                                                                 \
+        char *userconfig_file;                                          \
+        fprintf(stderr, ".\n\n");                                       \
+        fprintf(stderr, "You can assign values in the local, user or "  \
+                "system wide default files. Otherwise you have to "     \
+                "explicitly call them each time. See `"SPACK" --help` " \
+                "or `info "SPACK"` for more information.\n\n");         \
+        userconfig_file=                                                \
         gal_configfiles_add_home_dir(USERCONFIG_FILEEND);               \
-	fprintf(stderr, "Default files checked (existing or not):\n"	\
-		"   %s\n   %s\n   %s\n", CURDIRCONFIG_FILE,		\
-		userconfig_file, SYSCONFIG_FILE);			\
-	free(userconfig_file);						\
-	exit(EXIT_FAILURE);						\
-      }									\
+        fprintf(stderr, "Default files checked (existing or not):\n"    \
+                "   %s\n   %s\n   %s\n", CURDIRCONFIG_FILE,             \
+                userconfig_file, SYSCONFIG_FILE);                       \
+        free(userconfig_file);                                          \
+        exit(EXIT_FAILURE);                                             \
+      }                                                                 \
   }
 
 
@@ -149,11 +149,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define GAL_CONFIGFILES_REPORT_PARAMETERS_SET {                         \
-    fprintf(stdout, "# "SPACK_STRING"\n");				\
-    fprintf(stdout, "# Configured on "CONFIGDATE" at "CONFIGTIME"\n");	\
-    fprintf(stdout, "# Written on %s", ctime(&p->rawtime));	        \
-    printvalues(stdout, p);						\
-    exit(EXIT_SUCCESS);							\
+    fprintf(stdout, "# "SPACK_STRING"\n");                              \
+    fprintf(stdout, "# Configured on "CONFIGDATE" at "CONFIGTIME"\n");  \
+    fprintf(stdout, "# Written on %s", ctime(&p->rawtime));             \
+    printvalues(stdout, p);                                             \
+    exit(EXIT_SUCCESS);                                                 \
   }
 
 

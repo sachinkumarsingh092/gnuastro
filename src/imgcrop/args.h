@@ -327,9 +327,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
     argp_error(state, "incorrect use of the equal sign (`=`). For short "
-	       "options, `=` should not be used and for long options, "
-	       "there should be no space between the option, equal sign "
-	       "and value");
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
 
   switch(key)
     {
@@ -337,14 +337,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Operating modes: */
     case 'I':
       if(p->up.imgmodeset)
-	argp_error(state, "only one of Image or WCS modes can be chosen");
+        argp_error(state, "only one of Image or WCS modes can be chosen");
       p->imgmode=1;
       p->wcsmode=0;
       p->up.imgmodeset=p->up.wcsmodeset=1;
       break;
     case 'W':
       if(p->up.wcsmodeset)
-	argp_error(state, "only one of Image or WCS modes can be chosen");
+        argp_error(state, "only one of Image or WCS modes can be chosen");
       p->imgmode=0;
       p->wcsmode=1;
       p->up.imgmodeset=p->up.wcsmodeset=1;
@@ -378,8 +378,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->keepblankcenter=1;
       break;
     case 'c':
-      gal_checkset_sizet_l_zero(arg, &p->checkcenter, "checkcenter", key, SPACK,
-                                NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &p->checkcenter, "checkcenter",
+                                key, SPACK, NULL, 0);
       p->up.checkcenterset=1;
       break;
     case 'p':
@@ -419,11 +419,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'x':
       gal_checkset_any_double(arg, &p->xc, "xc", key, SPACK, NULL, 0);
-      p->up.xcset=1;		/* Using FITS standard, not C. */
+      p->up.xcset=1;            /* Using FITS standard, not C. */
       break;
     case 'y':
       gal_checkset_any_double(arg, &p->yc, "yc", key, SPACK, NULL, 0);
-      p->up.ycset=1;		/* Using FITS standard, not C. */
+      p->up.ycset=1;            /* Using FITS standard, not C. */
       break;
     case 'a':
       gal_checkset_sizet_l_zero(arg, &tmp, "iwidth", key, SPACK, NULL, 0);
@@ -431,7 +431,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.iwidthset=1;
       break;
     case 'w':
-      gal_checkset_double_l_0(arg, &p->wwidth, "wwidth", key, SPACK, NULL, 0);
+      gal_checkset_double_l_0(arg, &p->wwidth, "wwidth", key, SPACK,
+                              NULL, 0);
       p->up.wwidthset=1;
       break;
     case 's':
@@ -459,20 +460,20 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
       /* See what type of input value it is and put it in. */
       if( gal_fits_name_is_fits(arg) )
-	{
-	  gal_linkedlist_add_to_stll(&p->up.gal_linkedlist_stll, arg);
-	  ++p->numimg;
-	}
+        {
+          gal_linkedlist_add_to_stll(&p->up.gal_linkedlist_stll, arg);
+          ++p->numimg;
+        }
       else
-	{
-	  if(p->up.catname)
-	    argp_error(state, "only one catalog file can be given");
-	  else
-	    {
-	      p->up.catname=arg;
-	      p->up.catset=1;
-	    }
-	}
+        {
+          if(p->up.catname)
+            argp_error(state, "only one catalog file can be given");
+          else
+            {
+              p->up.catname=arg;
+              p->up.catset=1;
+            }
+        }
       break;
 
 
@@ -482,18 +483,18 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* The command line options and arguments are finished. */
     case ARGP_KEY_END:
       if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-	 && p->cp.printparams==0)
-	{
-	  if(state->arg_num==0)
-	    argp_error(state, "no argument given");
-	  if(p->up.catname==NULL && !(p->up.xcset    || p->up.ycset
-				      || p->up.raset || p->up.decset
-				      || p->up.sectionset
+         && p->cp.printparams==0)
+        {
+          if(state->arg_num==0)
+            argp_error(state, "no argument given");
+          if(p->up.catname==NULL && !(p->up.xcset    || p->up.ycset
+                                      || p->up.raset || p->up.decset
+                                      || p->up.sectionset
                                       || p->up.polygonset))
-	    argp_error(state, "no catalog provided");
-	  if(p->up.gal_linkedlist_stll==NULL)
-	    argp_error(state, "no FITS image(s) provided");
-	}
+            argp_error(state, "no catalog provided");
+          if(p->up.gal_linkedlist_stll==NULL)
+            argp_error(state, "no FITS image(s) provided");
+        }
       break;
 
 
@@ -523,6 +524,6 @@ struct argp_child children[]=
 
 /* Basic structure defining the whole argument reading process. */
 static struct argp thisargp = {options, parse_opt, args_doc,
-			       doc, children, NULL, NULL};
+                               doc, children, NULL, NULL};
 
 #endif

@@ -38,16 +38,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct gal_mode_params
 {
-  float     *sorted;		/* Sorted array to be used.                */
-  size_t       size;		/* Number of elements in the sorted array. */
-  size_t       lowi;		/* Lower quantile of interval.             */
-  size_t       midi;		/* Middle quantile of interval.            */
-  size_t       midd;		/* Middle index of inteval.                */
-  size_t      highi;		/* Higher quantile of interval.            */
-  float   tolerance;		/* Tolerance level to terminate search.    */
-  size_t   numcheck;		/* Number of pixels after mode to check.   */
-  size_t   interval;		/* Interval to check pixels.               */
-  float   errorstdm;		/* Multiple of standard deviation.         */
+  float     *sorted;   /* Sorted array to be used.                */
+  size_t       size;   /* Number of elements in the sorted array. */
+  size_t       lowi;   /* Lower quantile of interval.             */
+  size_t       midi;   /* Middle quantile of interval.            */
+  size_t       midd;   /* Middle index of inteval.                */
+  size_t      highi;   /* Higher quantile of interval.            */
+  float   tolerance;   /* Tolerance level to terminate search.    */
+  size_t   numcheck;   /* Number of pixels after mode to check.   */
+  size_t   interval;   /* Interval to check pixels.               */
+  float   errorstdm;   /* Multiple of standard deviation.         */
 };
 
 void

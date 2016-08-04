@@ -28,9 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/time.h>		 /* Generate random seed. */
-#include <gsl/gsl_rng.h>	 /* Used in setrandoms.   */
-#include <gsl/gsl_randist.h>	 /* To make noise.        */
+#include <sys/time.h>            /* Generate random seed. */
+#include <gsl/gsl_rng.h>         /* Used in setrandoms.   */
+#include <gsl/gsl_randist.h>     /* To make noise.        */
 
 #include <gnuastro/timing.h>
 #include <gnuastro/fits.h>
@@ -54,15 +54,16 @@ void
 convertsaveoutput(struct mknoiseparams *p)
 {
   void *array;
+  char keyname1[FLEN_KEYWORD];
   struct gal_fits_header_ll *headers=NULL;
-  char keyname1[FLEN_KEYWORD], keyname2[FLEN_KEYWORD];
-  char keyname3[FLEN_KEYWORD], keyname4[FLEN_KEYWORD], keyname5[FLEN_KEYWORD];
+  char keyname2[FLEN_KEYWORD], keyname3[FLEN_KEYWORD];
+  char keyname4[FLEN_KEYWORD], keyname5[FLEN_KEYWORD];
 
   /* Convert the output to the input image format: */
   if(p->inputbitpix==DOUBLE_IMG || p->doubletype)
     {
       array=p->input;
-      p->inputbitpix=DOUBLE_IMG; /* In case it wasn't and p->doubletype==1 */
+      p->inputbitpix=DOUBLE_IMG; /* Not converted and p->doubletype==1 */
     }
   else
     gal_fits_change_type((void **)p->input, DOUBLE_IMG, p->is0*p->is1,
@@ -72,25 +73,25 @@ convertsaveoutput(struct mknoiseparams *p)
   gal_fits_file_name_in_keywords("INF", p->up.inputname, &headers);
   strcpy(keyname1, "BCKGRND");
   gal_fits_add_to_fits_header_ll_end(&headers, TDOUBLE, keyname1, 0,
-                                          &p->mbackground, 0, "Background "
-                                          "value (in magnitude) for noise.",
-                                          0, NULL);
+                                     &p->mbackground, 0, "Background "
+                                     "value (in magnitude) for noise.",
+                                     0, NULL);
   strcpy(keyname2, "BZRPNT");
   gal_fits_add_to_fits_header_ll_end(&headers, TDOUBLE, keyname2, 0,
-                                          &p->zeropoint, 0, "Zeropoint "
-                                          "magnitude of image.", 0, NULL);
+                                     &p->zeropoint, 0, "Zeropoint "
+                                     "magnitude of image.", 0, NULL);
   strcpy(keyname3, "STDADD");
   gal_fits_add_to_fits_header_ll_end(&headers, TDOUBLE, keyname3, 0,
-                                          &p->stdadd, 0, "Instrumental noise "
-                                          "in units of flux.", 0, NULL);
+                                     &p->stdadd, 0, "Instrumental noise "
+                                     "in units of flux.", 0, NULL);
   strcpy(keyname4, "RNGTYPE");
   gal_fits_add_to_fits_header_ll_end(&headers, TSTRING, keyname4, 0,
-                                          &p->rng_type, 0, "Random number "
-                                          "generator (by GSL) type.", 0, NULL);
+                                     &p->rng_type, 0, "Random number "
+                                     "generator (by GSL) type.", 0, NULL);
   strcpy(keyname5, "RNGSEED");
   gal_fits_add_to_fits_header_ll_end(&headers, TLONG, keyname5, 0,
-                                          &p->rng_seed, 0, "Random number "
-                                          "generator (by GSL) seed.", 0, NULL);
+                                     &p->rng_seed, 0, "Random number "
+                                     "generator (by GSL) seed.", 0, NULL);
 
   /* Save the output: */
   gal_fits_array_to_file(p->cp.output, "NoiseAdded", p->inputbitpix,

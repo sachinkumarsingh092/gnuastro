@@ -158,10 +158,10 @@ gal_statistics_float_second_max(float *in, size_t size, float *secondmax)
   do
     { /* Works for NAN, since NAN is not larger than any number. */
       if(*in>max)
-	{
-	  smax=max;
-	  max=*in;
-	}
+        {
+          smax=max;
+          max=*in;
+        }
       else if(*in>smax) smax=*in;
     }
   while(++in<fpt);
@@ -180,10 +180,10 @@ gal_statistics_float_second_min(float *in, size_t size, float *secondmin)
   do
     { /* Works for NAN, since NAN is not smaller than any number. */
       if(*in<min)
-	{
-	  smin=min;
-	  min=*in;
-	}
+        {
+          smin=min;
+          min=*in;
+        }
       else if(*in<smin) smin=*in;
     }
   while(++in<fpt);
@@ -260,8 +260,8 @@ gal_statistics_d_max_with_index(double *in, size_t size, double *max,
   do  /*  Works for NAN, see comments above. */
     if(*pt>tmax)
       {
-	tmax=*pt;
-	tindex=pt-in;
+        tmax=*pt;
+        tindex=pt-in;
       }
   while(++pt<fpt);
   *index=tindex;
@@ -283,8 +283,8 @@ gal_statistics_f_max_with_index(float *in, size_t size,
   do  /* Works for NAN, see comments above.x */
     if(*pt>tmax)
       {
-	tmax=*pt;
-	tindex=pt-in;
+        tmax=*pt;
+        tindex=pt-in;
       }
   while(++pt<fpt);
   *index=tindex;
@@ -306,8 +306,8 @@ gal_statistics_d_min_with_index(double *in, size_t size,
   do  /* Works for NAN, see comments above. */
     if(*pt<tmin)
       {
-	tmin=*pt;
-	tindex=pt-in;
+        tmin=*pt;
+        tindex=pt-in;
       }
   while(++pt<fpt);
   *index=tindex;
@@ -329,8 +329,8 @@ gal_statistics_f_min_with_index(float *in, size_t size,
   do /* Works for NAN, see comments above. */
     if(*pt<tmin)
       {
-	tmin=*pt;
-	tindex=pt-in;
+        tmin=*pt;
+        tindex=pt-in;
       }
   while(++pt<fpt);
   *index=tindex;
@@ -458,8 +458,8 @@ gal_statistics_float_sum_mask(float *in, unsigned char *mask,
   do
     if(*pt==0)
       {
-	sum+=in[pt-mask];
-	++counter;
+        sum+=in[pt-mask];
+        ++counter;
       }
   while(++pt<fpt);
 
@@ -483,8 +483,8 @@ gal_statistics_float_sum_mask_l(float *in, long *mask,
   do
     if(*pt==0)
       {
-	sum+=in[pt-mask];
-	++counter;
+        sum+=in[pt-mask];
+        ++counter;
       }
   while(++pt<fpt);
 
@@ -508,8 +508,8 @@ gal_statistics_float_sum_squared_mask(float *in, unsigned char *mask,
   do
     if(*pt==0)
       {
-	sum+=in[pt-mask] * in[pt-mask];
-	++counter;
+        sum+=in[pt-mask] * in[pt-mask];
+        ++counter;
       }
   while(++pt<fpt);
 
@@ -534,8 +534,8 @@ gal_statistics_float_sum_squared_mask_l(float *in, long *mask,
   do
     if(*pt==0)
       {
-	sum+=in[pt-mask] * in[pt-mask];
-	++counter;
+        sum+=in[pt-mask] * in[pt-mask];
+        ++counter;
       }
   while(++pt<fpt);
 
@@ -625,7 +625,7 @@ gal_statistics_f_ave_std(float *in, size_t size, float *ave,
       sum=gal_statistics_float_sum_mask(in, mask, size, &nsize1);
       sum2=gal_statistics_float_sum_squared_mask(in, mask, size, &nsize2);
       if(nsize1!=nsize2)
-	error(EXIT_FAILURE, 0, "a bug in gal_statistics_f_ave_std "
+        error(EXIT_FAILURE, 0, "a bug in gal_statistics_f_ave_std "
               "(lib/statistics.h).  Somehow the number of masked pixels is "
               "measured differently.  Please contact us so we can find the "
               "cause");
@@ -662,9 +662,9 @@ gal_statistics_f_ave_std_l(float *in, size_t size, float *ave,
       sum=gal_statistics_float_sum_mask_l(in, mask, size, &nsize1);
       sum2=gal_statistics_float_sum_squared_mask_l(in, mask, size, &nsize2);
       if(nsize1!=nsize2)
-	error(EXIT_FAILURE, 0, "a bug in favestl (lib/statistics.h). "
-	      "Somehow the number of masked pixels is measured "
-	      "differently. Please contact us so we can find the cause");
+        error(EXIT_FAILURE, 0, "a bug in favestl (lib/statistics.h). "
+              "Somehow the number of masked pixels is measured "
+              "differently. Please contact us so we can find the cause");
       size=nsize1;
     }
   *ave=sum/size;
@@ -698,15 +698,15 @@ gal_statistics_f_ave_std_mask_byt_0_in_region(float *in, unsigned char *byt,
       m=mask+startind;
       fb=(b=byt+startind)+s1;
       do
-	{
-	if(*m++==0 && *b==0)	/* `m` will definitely be checked and */
-	  {			/* incremented, while `b` might not.  */
-	    size++;
-	    sum   += *i;
-	    sumsq += *i * *i;
-	  }
-	++i;
-	}
+        {
+        if(*m++==0 && *b==0)     /* `m` will definitely be checked and */
+          {                      /* incremented, while `b` might not.  */
+            size++;
+            sum   += *i;
+            sumsq += *i * *i;
+          }
+        ++i;
+        }
       while(++b<fb);
       startind+=is1;
     }
@@ -834,15 +834,15 @@ gal_statistics_set_bins(float *sorted, size_t size, size_t numbins,
   if(min==max)
     {
       if(quant!=0.0f)
-	{
-	  min=sorted[ gal_statistics_index_from_quantile(size, quant)   ];
-	  max=sorted[ gal_statistics_index_from_quantile(size, 1-quant) ];
-	}
+        {
+          min=sorted[ gal_statistics_index_from_quantile(size, quant)   ];
+          max=sorted[ gal_statistics_index_from_quantile(size, 1-quant) ];
+        }
       else
-	{
-	  min=sorted[0];
-	  max=sorted[size-1];
-	}
+        {
+          min=sorted[0];
+          max=sorted[size-1];
+        }
     }
   binwidth=(max-min)/numbins;
 
@@ -924,10 +924,10 @@ gal_statistics_histogram(float *sorted, size_t size, float *bins,
   if(maxhistone)
     {
       for(i=0;i<numbins;++i)
-	if(bins[i*2+1]>max)
-	  max=bins[i*2+1];
+        if(bins[i*2+1]>max)
+          max=bins[i*2+1];
       for(i=0;i<numbins;++i)
-	bins[i*2+1]/=max;
+        bins[i*2+1]/=max;
     }
 
   /* In case you want to see the histogram:
@@ -1143,7 +1143,7 @@ gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
     {
       gal_arraymanip_float_copy(array, num_elem, &orderedarray);
       qsort(orderedarray, num_elem, sizeof*orderedarray,
-	    gal_qsort_float_increasing);
+            gal_qsort_float_increasing);
     }
   else orderedarray=array;
 
@@ -1160,33 +1160,33 @@ gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
                counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are NaN. If so, stop the
-	 process here (the user has not given a mask and some pixels
-	 have nan values!). */
+         process here (the user has not given a mask and some pixels
+         have nan values!). */
       if(isnan(ave) || isnan(std))
-	return 0;
+        return 0;
 
       /* Normally, oldstd should be larger than std, because the
-	 possible outliers have been removed. If it is not, it means
-	 that we have clipped too much! */
+         possible outliers have been removed. If it is not, it means
+         that we have clipped too much! */
       if(counter>0 && (oldstd-std)/std<accuracy)
-	{
-	  *outstd=oldstd; *outave=oldave; *outmed=oldmed;
-	  return 1;
-	}
+        {
+          *outstd=oldstd; *outave=oldave; *outmed=oldmed;
+          return 1;
+        }
 
       for(dpt=start; dpt<start+num_elem; ++dpt)
-	if (*dpt>med-sigma_multiple*std)
-	  {
-	    start=dpt;
-	    break;
-	  }
+        if (*dpt>med-sigma_multiple*std)
+          {
+            start=dpt;
+            break;
+          }
 
       for(dpt=oldstart+num_elem-1;dpt>start;dpt--)
-	if (*dpt<med+sigma_multiple*std)
-	  {
-	    num_elem=dpt-start+1;
-	    break;
-	  }
+        if (*dpt<med+sigma_multiple*std)
+          {
+            num_elem=dpt-start+1;
+            break;
+          }
 
       oldave=ave;
       oldmed=med;
@@ -1217,7 +1217,7 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
     {
       gal_arraymanip_float_copy(array, num_elem, &orderedarray);
       qsort(orderedarray, num_elem, sizeof*orderedarray,
-	    gal_qsort_float_increasing);
+            gal_qsort_float_increasing);
     }
   else orderedarray=array;
 
@@ -1234,26 +1234,26 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
                counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are nan. If so, stop the
-	 process here (the user has not given a mask and some pixels
-	 have nan values!). */
+         process here (the user has not given a mask and some pixels
+         have nan values!). */
       if(isnan(ave) || isnan(std))
-	return 0;
+        return 0;
 
 
       for(dpt=start; dpt<start+num_elem; ++dpt)
-	if (*dpt>med-sigma_multiple*std)
-	  {
-	    start=dpt;
-	    break;
-	  }
+        if (*dpt>med-sigma_multiple*std)
+          {
+            start=dpt;
+            break;
+          }
 
 
       for(dpt=oldstart+num_elem-1;dpt>start;dpt--)
-	if (*dpt<med+sigma_multiple*std)
-	  {
-	    num_elem=dpt-start+1;
-	    break;
-	  }
+        if (*dpt<med+sigma_multiple*std)
+          {
+            num_elem=dpt-start+1;
+            break;
+          }
     }
 
   if(o1_n0==0)
@@ -1326,10 +1326,10 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
   for(i=maxind+1;i<size-1;++i)
     if(slopes[i]<minslope)
       {
-	if(firstfound)
-	  break;
-	else
-	  firstfound=1;
+        if(firstfound)
+          break;
+        else
+          firstfound=1;
       }
   *outsize=i+1;
 

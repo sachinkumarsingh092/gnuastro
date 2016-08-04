@@ -29,10 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include <nproc.h>              /* From Gnulib.                     */
+#include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>   	/* Includes time.h and sys/time.h   */
+#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/commonargs.h>
@@ -40,8 +40,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"		        /* Needs main.h                   */
-#include "args.h"	        /* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h                   */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -71,7 +71,7 @@ readconfig(char *filename, struct imgwarpparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -88,7 +88,7 @@ readconfig(char *filename, struct imgwarpparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -103,19 +103,19 @@ readconfig(char *filename, struct imgwarpparams *p)
       if(strcmp(name, "hdu")==0)
         gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if(strcmp(name, "hstartwcs")==0)
-	{
-	  if(up->hstartwcsset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key, SPACK,
-                                     filename, lineno);
-	  up->hstartwcsset=1;
-	}
+        {
+          if(up->hstartwcsset) continue;
+          gal_checkset_sizet_el_zero(value, &p->hstartwcs, name, key,
+                                     SPACK, filename, lineno);
+          up->hstartwcsset=1;
+        }
       else if(strcmp(name, "hendwcs")==0)
-	{
-	  if(up->hendwcsset) continue;
-	  gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
+        {
+          if(up->hendwcsset) continue;
+          gal_checkset_sizet_el_zero(value, &p->hendwcs, name, key, SPACK,
                                      filename, lineno);
-	  up->hendwcsset=1;
-	}
+          up->hendwcsset=1;
+        }
 
 
 
@@ -131,10 +131,10 @@ readconfig(char *filename, struct imgwarpparams *p)
 
       else if(strcmp(name, "maxblankfrac")==0)
         {
-	  if(up->maxblankfracset) continue;
-	  gal_checkset_float_l_0_s_1(value, &p->maxblankfrac, name, key, SPACK,
-                                     filename, lineno);
-	  up->maxblankfracset=1;
+          if(up->maxblankfracset) continue;
+          gal_checkset_float_l_0_s_1(value, &p->maxblankfrac, name, key,
+                                     SPACK, filename, lineno);
+          up->maxblankfracset=1;
         }
 
 
@@ -146,8 +146,8 @@ readconfig(char *filename, struct imgwarpparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);

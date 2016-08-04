@@ -55,9 +55,9 @@ reportsimplestats(struct imgstatparams *p)
 
   /* Very simple and basic: */
   printf(SNAMEVAL FNAMEVAL FNAMEVAL, "Number of points", p->size,
-	 "Minimum", p->sorted[0], "Maximum", p->sorted[p->size-1]);
+         "Minimum", p->sorted[0], "Maximum", p->sorted[p->size-1]);
   printf(FNAMEVAL FNAMEVAL FNAMEVAL FNAMEVAL, "Sum", sum, "Mean", ave,
-	 "Standard deviation", std, "Median", med);
+         "Standard deviation", std, "Median", med);
 
   /* The mode: */
   gal_mode_index_in_sorted(p->sorted, p->size, p->mirrordist, &modeindex,
@@ -108,16 +108,16 @@ printasciihist(struct imgstatparams *p)
 
   /* Plot the ASCII histogram: */
   printf("   -- ASCII histogram in the range: %f  --  %f:\n",
-	 p->histmin, p->histmax);
+         p->histmin, p->histmax);
   for(i=ASCIIHISTHEIGHT;i>=0;--i)
     {
       printf("    |");
       for(j=0;j<ASCIIHISTNUMBINS;++j)
-	{
-	  if(bins[j*2+1]>=((float)i-0.5f)
-	     && bins[j*2+1]>0.0f) printf("*");
-	  else printf(" ");
-	}
+        {
+          if(bins[j*2+1]>=((float)i-0.5f)
+             && bins[j*2+1]>0.0f) printf("*");
+          else printf(" ");
+        }
       printf("\n");
     }
   printf("    |");
@@ -150,7 +150,7 @@ printhistcfp(struct imgstatparams *p, float *bins, size_t numbins,
   /* Get the time to print on the report. */
   time(&rawtime);
   fprintf(out, "# %s \n# %s, created on %s", SPACK_STRING, outputtype,
-	  ctime(&rawtime));
+          ctime(&rawtime));
   fprintf(out, "# Input (hdu): %s (%s)\n", p->up.inputname, p->cp.hdu);
   if(p->up.masknameset)
     fprintf(out, "# Mask (hdu): %s (%s)\n", p->up.maskname, p->up.mhdu);
@@ -234,32 +234,32 @@ imgstat(struct imgstatparams *p)
       /* Get the hisogram maximum value if it is needed for the
          cumulative frequency plot. */
       if(p->maxcfpeqmaxhist)
-	for(i=0;i<p->histnumbins;++i)
-	  if(bins[i*2+1]>maxhist)
-	    maxhist=bins[i*2+1];
+        for(i=0;i<p->histnumbins;++i)
+          if(bins[i*2+1]>maxhist)
+            maxhist=bins[i*2+1];
     }
 
   /* Make the cumulative distribution function: */
   if(p->cfpname)
     {
       if(p->cfpsimhist)
-	{
-	  p->cfpnum=p->histnumbins;
-	  for(i=0;i<p->cfpnum;++i)
-	    bins[i*2+1]=0.0f;
-	}
+        {
+          p->cfpnum=p->histnumbins;
+          for(i=0;i<p->cfpnum;++i)
+            bins[i*2+1]=0.0f;
+        }
       else
-	{
-	  if(p->histname) free(bins);
+        {
+          if(p->histname) free(bins);
           gal_statistics_set_bins(p->sorted, p->size, p->cfpnum, p->cfpmin,
                                   p->cfpmax, p->onebinvalue, quant, &bins);
-	}
+        }
       gal_statistics_cumulative_fp(p->sorted, p->size, bins,
                                    p->cfpnum, p->normcfp);
 
       if(p->maxcfpeqmaxhist)
-	for(i=0;i<p->cfpnum;++i)
-	  bins[i*2+1]*=(maxhist/p->size);
+        for(i=0;i<p->cfpnum;++i)
+          bins[i*2+1]*=(maxhist/p->size);
 
       printhistcfp(p, bins, p->cfpnum, p->cfpname, CFPSTRING);
     }
@@ -287,7 +287,7 @@ imgstat(struct imgstatparams *p)
       if(r==0)
         printf("   #### Could not converge\n");
       printf("   - %.2f sigma-clipping %lu times:\n",
-	     p->sigclipmultip, p->sigclipnum);
+             p->sigclipmultip, p->sigclipnum);
       gal_statistics_sigma_clip_certain_num(p->sorted, 1, p->size,
                                             p->sigclipmultip, p->sigclipnum,
                                             &ave, &med, &std, 1);

@@ -55,7 +55,7 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs);
 
 void
 removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
-			size_t *numlabs, size_t minarea);
+                        size_t *numlabs, size_t minarea);
 
 void
 labindexs(long *lab, size_t size, size_t numlabs, size_t **outareas,

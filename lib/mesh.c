@@ -392,7 +392,8 @@ gal_check_mesh_id(struct gal_mesh_params *mp, long **out)
   errno=0;
   *out=calloc(mp->s0*mp->s1, sizeof **out);
   if(*out==NULL)
-    error(EXIT_FAILURE, errno, "the array to show mesh labels in checkmesh");
+    error(EXIT_FAILURE, errno,
+          "the array to show mesh labels in checkmesh");
 
   /* Fill the indexs: */
   for(i=0;i<mp->nmeshi;++i)
@@ -418,7 +419,8 @@ gal_check_mesh_id(struct gal_mesh_params *mp, long **out)
    input image. Note that the check arrays are only the size of the
    number of meshs, not the actual input image size. */
 void
-gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1, float **out2)
+gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1,
+                      float **out2)
 {
   int ngarrays=mp->ngarrays;
   size_t gid, row, start, chbasedid, *types=mp->types;
@@ -430,8 +432,9 @@ gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1, float **out2)
      there is no overlap. */
   errno=0; *out1=malloc(mp->s0*mp->s1*sizeof **out1);
   if(*out1==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out1 in gal_mesh_check_garray "
-          "(mesh.c)", mp->s0*mp->s1*sizeof **out1);
+    error(EXIT_FAILURE, errno,
+          "%lu bytes for out1 in gal_mesh_check_garray (mesh.c)",
+          mp->s0*mp->s1*sizeof **out1);
   if(ngarrays==2)
     {
       errno=0; *out2=malloc(mp->s0*mp->s1*sizeof **out2);
@@ -481,8 +484,9 @@ gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1, float **out2)
 
 /* Save the mesh grid values into an output file. */
 void
-gal_mesh_value_file(struct gal_mesh_params *mp, char *filename, char *extname1,
-                    char *extname2, struct wcsprm *wcs, char *spack_string)
+gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
+                    char *extname1, char *extname2, struct wcsprm *wcs,
+                    char *spack_string)
 {
   float *tmp1=NULL, *tmp2=NULL;
 
@@ -499,8 +503,8 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename, char *extname1,
                              mp->gs1*mp->nch1, 0, wcs, NULL,
                              spack_string);
       if(mp->ngarrays==2)
-        /* Note that gal_mesh_full_garray will correct both the meshs if there
-           are two.*/
+        /* Note that gal_mesh_full_garray will correct both the meshs if
+           there are two.*/
         gal_fits_array_to_file(filename, extname2, FLOAT_IMG,
                                mp->fgarray2, mp->gs0*mp->nch2,
                                mp->gs1*mp->nch1, 0, wcs, NULL,
@@ -600,7 +604,7 @@ fillmeshinfo(struct gal_mesh_params *mp, size_t chs0, size_t chs1,
       if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)   /* Don't forget that C and FITS */
-	for(chj=0;chj<nch1;++chj) /* axises have different order. */
+        for(chj=0;chj<nch1;++chj) /* axises have different order. */
           {
             chid=chi*nch1+chj;
             for(i=0;i<lasti;++i)
@@ -630,7 +634,7 @@ fillmeshinfo(struct gal_mesh_params *mp, size_t chs0, size_t chs1,
       if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)
-	for(chj=0;chj<nch1;++chj)
+        for(chj=0;chj<nch1;++chj)
           {
             chid=chi*nch1+chj;
             for(j=0;j<lastj;++j)
@@ -659,7 +663,7 @@ fillmeshinfo(struct gal_mesh_params *mp, size_t chs0, size_t chs1,
       if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)
-	for(chj=0;chj<nch1;++chj)
+        for(chj=0;chj<nch1;++chj)
           {
             chid=chi*nch1+chj;
             for(i=0;i<lasti;++i)
@@ -688,24 +692,24 @@ fillmeshinfo(struct gal_mesh_params *mp, size_t chs0, size_t chs1,
       if(ts1[typeind]>mp->maxs1) mp->maxs1=ts1[typeind];
 
       for(chi=0;chi<nch2;++chi)
-	for(chj=0;chj<nch1;++chj)
-	  {
+        for(chj=0;chj<nch1;++chj)
+          {
             ++totalmeshcount;
-	    meshid=(chi*nch1+chj)*nmeshc + gs0*gs1-1;
-	    types[meshid]=typeind;
+            meshid=(chi*nch1+chj)*nmeshc + gs0*gs1-1;
+            types[meshid]=typeind;
             chindex[meshid]=gs0*gs1-1;
-	    imgindex[meshid]=( (chi*gs0+(gs0-1)) * nch1*gs1
+            imgindex[meshid]=( (chi*gs0+(gs0-1)) * nch1*gs1
                                + (chj*gs1+(gs1-1)) );
-	    start[meshid]=( (chi*chs0+(gs0-1)*meshsize) * s1
-				 + (chj*chs1+(gs1-1)*meshsize) );
-	  }
+            start[meshid]=( (chi*chs0+(gs0-1)*meshsize) * s1
+                                 + (chj*chs1+(gs1-1)*meshsize) );
+          }
     }
 
   /* Just for a check: */
   if(totalmeshcount!=mp->nmeshi)
-    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix it. "
-          "The basic information for some meshes has not been found (in "
-          "fillmeshinfo of mesh.c)", PACKAGE_BUGREPORT);
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
+          "it. The basic information for some meshes has not been found "
+          "(in fillmeshinfo of mesh.c)", PACKAGE_BUGREPORT);
 }
 
 
@@ -872,8 +876,9 @@ gal_mesh_free_mesh(struct gal_mesh_params *mp)
       allocated in case your operation needs one.
 */
 void
-gal_mesh_operate_on_mesh(struct gal_mesh_params *mp, void *(*meshfunc)(void *),
-                         size_t oneforallsize, int makegarray2, int initialize)
+gal_mesh_operate_on_mesh(struct gal_mesh_params *mp,
+                         void *(*meshfunc)(void *), size_t oneforallsize,
+                         int makegarray2, int initialize)
 {
   int err;
   size_t i, nb;
@@ -949,22 +954,22 @@ gal_mesh_operate_on_mesh(struct gal_mesh_params *mp, void *(*meshfunc)(void *),
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(mp->nmeshi<numthreads) nb=mp->nmeshi+1;
       else                      nb=numthreads+1;
       gal_threads_attr_barrier_init(&attr, &mp->b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
-	  {
+        if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+          {
             mtp[i].id=i;
-	    mtp[i].mp=mp;
-	    err=pthread_create(&t, &attr, meshfunc, &mtp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
-	  }
+            mtp[i].mp=mp;
+            err=pthread_create(&t, &attr, meshfunc, &mtp[i]);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+          }
 
       /* Wait for all threads to finish and free the spaces. */
       pthread_barrier_wait(&mp->b);
@@ -1095,8 +1100,8 @@ manhattandistance(long ind, long xc, long yc, long s1)
 
 
 /* Some of the variables have different names than the gal_mesh_params
-   structure because they are to be fed into the GAL_NEIGHBORS_FILL_4_ALLIMG
-   macro. */
+   structure because they are to be fed into the
+   GAL_NEIGHBORS_FILL_4_ALLIMG macro. */
 void *
 meshinterponthread(void *inparams)
 {
@@ -1210,11 +1215,12 @@ meshinterponthread(void *inparams)
                   mp->errstart, currentnum, thisind/mp->nmeshc, mtp->id,
                   thisind);
         }
-      gal_linkedlist_tosll_free(lQ);  /* The rest of the queue not needed. */
+      gal_linkedlist_tosll_free(lQ);  /* Rest of the queue not needed. */
 
 
       /* Find the median of the nearest neighbors and put it in: */
-      qsort(nearest1, numnearest, sizeof *nearest1, gal_qsort_float_increasing);
+      qsort(nearest1, numnearest, sizeof *nearest1,
+            gal_qsort_float_increasing);
       outgarray1[thisind] = ( numnearest%2 ?
                               nearest1[numnearest/2] : /* Odd.  */
                               (nearest1[numnearest/2]  /* Even. */
@@ -1272,22 +1278,22 @@ gal_mesh_interpolate(struct gal_mesh_params *mp, char *errstart)
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(mp->nmeshi<numthreads) nb=mp->nmeshi+1;
       else                      nb=numthreads+1;
       gal_threads_attr_barrier_init(&attr, &mp->b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
-	  {
+        if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+          {
             mtp[i].id=i;
-	    mtp[i].mp=mp;
-	    err=pthread_create(&t, &attr, meshinterponthread, &mtp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
-	  }
+            mtp[i].mp=mp;
+            err=pthread_create(&t, &attr, meshinterponthread, &mtp[i]);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+          }
 
       /* Wait for all threads to finish and free the spaces. */
       pthread_barrier_wait(&mp->b);
@@ -1380,16 +1386,17 @@ gal_mesh_smooth(struct gal_mesh_params *mp)
 
       /* Do the spatial convolution */
       gal_spatialconvolve_convolve(mp->fgarray1, gs0*mp->nch2, gs1*mp->nch1,
-                                   kernel, smoothwidth, smoothwidth, numthreads,
-                                   1, &sgarray1);
+                                   kernel, smoothwidth, smoothwidth,
+                                   numthreads, 1, &sgarray1);
 
       free(mp->fgarray1);
       mp->garray1=mp->fgarray1=sgarray1;
       if(mp->ngarrays==2)
         {
-          gal_spatialconvolve_convolve(mp->fgarray2, gs0*mp->nch2, gs1*mp->nch1,
-                                       kernel, smoothwidth, smoothwidth,
-                                       mp->numthreads, 1, &sgarray2);
+          gal_spatialconvolve_convolve(mp->fgarray2, gs0*mp->nch2,
+                                       gs1*mp->nch1, kernel, smoothwidth,
+                                       smoothwidth, mp->numthreads,
+                                       1, &sgarray2);
           free(mp->fgarray2);
           mp->garray2=mp->fgarray2=sgarray2;
         }
@@ -1415,8 +1422,9 @@ gal_mesh_smooth(struct gal_mesh_params *mp)
         if(mp->ngarrays==2)
           {
             charray=&mp->cgarray2[chid*nmeshc];
-            gal_spatialconvolve_convolve(charray, gs0, gs1, kernel, smoothwidth,
-                                         smoothwidth, numthreads, 1, &tmp);
+            gal_spatialconvolve_convolve(charray, gs0, gs1, kernel,
+                                         smoothwidth, smoothwidth,
+                                         numthreads, 1, &tmp);
             o=tmp; fp=(f=charray)+gs0*gs1; do *f=*o++; while(++f<fp);
             free(tmp);
           }
@@ -1483,7 +1491,7 @@ meshspatialconvonthreads(void *inparam)
       /* If the mesh is on the edge of the channel it should be
          treated differently compared to when it is not. */
       if( x>=xmin && ystart>=ymin && fx<xmax && fy<ymax )
-	{                       /* All pixels in this mesh are distant  */
+        {                       /* All pixels in this mesh are distant  */
           for(;x<fx;++x)        /* enough from the edge of the channel. */
             for(y=ystart;y<fy;++y)
               {
@@ -1502,12 +1510,12 @@ meshspatialconvonthreads(void *inparam)
                     conv[x*is1+y] = sum/ksum;
                   }
               }
-	}
+        }
       else
-	{                       /* Some pixels in this mesh are too  */
-	  for(;x<fx;++x)        /* close to the edge.                */
-	    for(y=ystart;y<fy;++y)
-	      {
+        {                       /* Some pixels in this mesh are too  */
+          for(;x<fx;++x)        /* close to the edge.                */
+            for(y=ystart;y<fy;++y)
+              {
                 if( isnan(img[x*is1+y]) )
                     conv[x*is1+y]=NAN;
                 else
@@ -1542,7 +1550,7 @@ meshspatialconvonthreads(void *inparam)
                     conv[x*is1+y] = sum/ksum;
                   }
             }
-	}
+        }
     }
 
   /* Free alltype and if multiple threads were used, wait until all
@@ -1625,24 +1633,24 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(mp->nmeshi<numthreads) nb=mp->nmeshi+1;
       else                      nb=numthreads+1;
       gal_threads_attr_barrier_init(&attr, &mp->b, nb);
 
       /* Spin off the threads: */
       for(i=0;i<numthreads;++i)
-	if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
-	  {
+        if(mp->indexs[i*mp->thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
+          {
             mtp[i].id=i;
-	    mtp[i].mp=mp;
+            mtp[i].mp=mp;
             mtp[i].conv=*conv;
             mtp[i].chbrd=chbrd;
-	    err=pthread_create(&t, &attr, meshspatialconvonthreads, &mtp[i]);
-	    if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
-	  }
+            err=pthread_create(&t, &attr, meshspatialconvonthreads, &mtp[i]);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+          }
 
       /* Wait for all threads to finish and free the spaces. */
       pthread_barrier_wait(&mp->b);
@@ -1659,17 +1667,18 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
 
 
 
-/* The indexs array for correcting the convolution on inner channel edges has
-   been allocated.  Note that gal_threads_dist_in_threads will distribute indexs
-   from zero to numpix-1.  After it, we should fill in all the channels.
+/* The indexs array for correcting the convolution on inner channel edges
+   has been allocated.  Note that gal_threads_dist_in_threads will
+   distribute indexs from zero to numpix-1.  After it, we should fill in
+   all the channels.
 
    The method of filling in the indexs array with the proper indexs to
    re-convolve is very similar to the method explained below in
-   gal_mesh_change_to_full_convolution, where it is explained how to count the
-   number of pixels that should be re-convolved. */
+   gal_mesh_change_to_full_convolution, where it is explained how to count
+   the number of pixels that should be re-convolved. */
 void
-corrconvindexs(struct gal_mesh_params *mp, size_t **indexs, size_t *numpix,
-               size_t *thrdcols)
+corrconvindexs(struct gal_mesh_params *mp, size_t **indexs,
+               size_t *numpix, size_t *thrdcols)
 {
   size_t i, j, a, b;
   size_t numthreads=mp->numthreads;
@@ -1740,8 +1749,8 @@ corrconvindexs(struct gal_mesh_params *mp, size_t **indexs, size_t *numpix,
               ahigh = i*npch0<hk0    ? 0  : i*npch0-hk0;
 
               /* For a check:
-              printf("2: alow: %-4lu ahigh: %-4lu. b: %-10lu (%lu -- %lu)\n",
-                     alow, ahigh, b, blow, bhigh);
+              printf("2: alow: %-4lu ahigh: %-4lu. b: %-10lu "
+                     "(%lu -- %lu)\n", alow, ahigh, b, blow, bhigh);
               */
               for(a=alow;a<ahigh;++a)
                 {
@@ -1791,10 +1800,11 @@ corrconvindexs(struct gal_mesh_params *mp, size_t **indexs, size_t *numpix,
    (whose distance from the channel edges is more than half the PSF),
    do not need to undergo convolution again.
 
-   Note that the pixels on the edges of the image do not need to undergo this
-   correction.  Basically this function is very similar to
-   gal_spatialconvolve_convolve (spatialconvolve.c), other than the fact that
-   the indexs are not over the full image but only a select number of pixels.
+   Note that the pixels on the edges of the image do not need to undergo
+   this correction.  Basically this function is very similar to
+   gal_spatialconvolve_convolve (spatialconvolve.c), other than the fact
+   that the indexs are not over the full image but only a select number of
+   pixels.
 */
 void
 gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
@@ -1819,8 +1829,8 @@ gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
   scp=malloc(mp->numthreads*sizeof *scp);
   if(scp==NULL)
     error(EXIT_FAILURE, errno,
-          "%lu bytes for scp in gal_mesh_change_to_full_convolution (mesh.c)",
-          mp->numthreads*sizeof *scp);
+          "%lu bytes for scp in gal_mesh_change_to_full_convolution "
+          "(mesh.c)", mp->numthreads*sizeof *scp);
 
 
   /* Put the indexs of the pixels to re-convolve here. */
@@ -1830,17 +1840,17 @@ gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
   /* Start the convolution on the desired pixels. */
   if(mp->numthreads==1)
     {
-      gal_spatialconvolve_pparams(mp->img, mp->s0, mp->s1, mp->kernel, mp->ks0,
-                                  mp->ks1, mp->numthreads, 1, conv, indexs,
-                                  &scp[0]);
+      gal_spatialconvolve_pparams(mp->img, mp->s0, mp->s1, mp->kernel,
+                                  mp->ks0, mp->ks1, mp->numthreads, 1,
+                                  conv, indexs, &scp[0]);
       gal_spatialconvolve_thread(&scp[0]);
     }
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if(numpix<mp->numthreads) nb=numpix+1;
       else                      nb=mp->numthreads+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
@@ -1853,9 +1863,10 @@ gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
             gal_spatialconvolve_pparams(mp->img, mp->s0, mp->s1, mp->kernel,
                                         mp->ks0, mp->ks1, mp->numthreads, 1,
                                         conv, &indexs[i*thrdcols], &scp[i]);
-	    err=pthread_create(&t, &attr, gal_spatialconvolve_thread, &scp[i]);
-	    if(err)
-	      error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+            err=pthread_create(&t, &attr, gal_spatialconvolve_thread,
+                               &scp[i]);
+            if(err)
+              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

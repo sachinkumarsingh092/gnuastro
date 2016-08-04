@@ -551,9 +551,9 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
   else
     {
       /* Initialize the attributes. Note that this running thread
-	 (that spinns off the nt threads) is also a thread, so the
-	 number the barrier should be one more than the number of
-	 threads spinned off. */
+         (that spinns off the nt threads) is also a thread, so the
+         number the barrier should be one more than the number of
+         threads spinned off. */
       if( multiple*p->ps0 < nt ) nb=multiple*p->ps0+1;
       else nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
@@ -567,9 +567,9 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             fp[i].stride=1; /* On each row, stride=1 */
             fp[i].indexs=&indexs[i*thrdcols];
             fp[i].forward1backwardn1=forward1backwardn1;
-	    err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
-	    if(err)
-	      error(EXIT_FAILURE, 0, "can't create thread %lu for rows",
+            err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
+            if(err)
+              error(EXIT_FAILURE, 0, "can't create thread %lu for rows",
                     i);
           }
 
@@ -606,10 +606,10 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             fp[i].stride=p->ps1; /* On each column, stride is p->ps1 */
             fp[i].indexs=&indexs[i*thrdcols];
             fp[i].forward1backwardn1=forward1backwardn1;
-	    err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
-	    if(err)
-	      error(EXIT_FAILURE, 0, "can't create thread %lu for columns",
-                    i);
+            err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
+            if(err)
+              error(EXIT_FAILURE, 0,
+                    "can't create thread %lu for columns", i);
           }
       pthread_barrier_wait(&b);
       pthread_attr_destroy(&attr);

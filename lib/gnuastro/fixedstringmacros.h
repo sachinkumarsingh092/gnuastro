@@ -24,69 +24,70 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define __GAL_COPYRIGHT_H__
 
 
-#define GAL_STRINGS_SHORT_COPYRIGHT                                      \
+#define GAL_STRINGS_SHORT_COPYRIGHT                                     \
   "Copyright (C) 2015-2016, Free Software Foundation, Inc."
 
 
-#define GAL_STRINGS_SHORT_LICENSE                                        \
+#define GAL_STRINGS_SHORT_LICENSE                                       \
   "License GPLv3+: GNU General public license version 3 or later."
 
 
-#define GAL_STRINGS_COPYRIGHT                                            \
-  GAL_STRINGS_SHORT_COPYRIGHT"\n"GAL_STRINGS_SHORT_LICENSE"\n"           \
-  "This is free software: you are free to change and redistribute it.\n" \
-  "There is NO WARRANTY, to the extent permitted by law."	  	 \
+#define GAL_STRINGS_COPYRIGHT                                           \
+  GAL_STRINGS_SHORT_COPYRIGHT"\n"GAL_STRINGS_SHORT_LICENSE"\n"          \
+  "This is free software: you are free to change and redistribute "     \
+  "it.\nThere is NO WARRANTY, to the extent permitted by law."          \
 
 
-#define GAL_STRINGS_TOP_HELP_INFO                                        \
+#define GAL_STRINGS_TOP_HELP_INFO                                       \
   "\n"SPACK_NAME" is part of "PACKAGE_STRING".\n"
 
 
 
 /* This is fixed for all the packages. */
-#define GAL_STRINGS_MORE_HELP_INFO                                       \
-  "\nFor more information, please run any of the "                       \
-  "following commands. They will respectively show you the `Invoking "	 \
-  SPACK_NAME"' subsection, the complete `"SPACK_NAME"' section, or the " \
-  "full "PACKAGE_NAME" manual. In particular the first contains "        \
-  "a very complete explanation of each option.\n\n"                      \
-  "     info "SPACK"\n\n"                                                \
-  "     info "SPACK_NAME"\n\n"						 \
-  "     info "PACKAGE_TARNAME"\n\n"                                      \
-  "If you couldn't find your answer in the manual, you can get "         \
-  "direct help from experienced Gnuastro users and developers. "         \
-  "For more information, please run:\n\n"                                \
-  "     info help-gnuastro\n\n"                                          \
-  SPACK_NAME" options:"                                                  \
+#define GAL_STRINGS_MORE_HELP_INFO                                      \
+  "\nFor more information, please run any of the "                      \
+  "following commands. They will respectively show you the `Invoking "  \
+  SPACK_NAME"' subsection, the complete `"SPACK_NAME"' section, or "    \
+  "the full "PACKAGE_NAME" manual. In particular the first contains "   \
+  "a very complete explanation of each option.\n\n"                     \
+  "     info "SPACK"\n\n"                                               \
+  "     info "SPACK_NAME"\n\n"                                          \
+  "     info "PACKAGE_TARNAME"\n\n"                                     \
+  "If you couldn't find your answer in the manual, you can get "        \
+  "direct help from experienced Gnuastro users and developers. "        \
+  "For more information, please run:\n\n"                               \
+  "     info help-gnuastro\n\n"                                         \
+  SPACK_NAME" options:"                                                 \
 
 
 
-#define GAL_STRINGS_MAIN_BIBTEX                                          \
-  "@ARTICLE{noisechisel,\n"                                              \
-  "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"                   \
-  "    title = \"{Noise-based Detection and Segmentation of Nebulous Objects}\",\n" \
-  "  journal = {\\apjs},\n"                                              \
-  "archivePrefix = \"arXiv\",\n"                                         \
-  "   eprint = {1505.01664},\n"                                          \
-  " primaryClass = \"astro-ph.IM\",\n"                                   \
-  " keywords = {galaxies: irregular, galaxies: photometry, "             \
-  "galaxies: structure, methods: data analysis, "                        \
-  "techniques: image processing, techniques: photometric},\n"            \
-  "     year = 2015,\n"                                                  \
-  "    month = sep,\n"                                                   \
-  "   volume = 220,\n"                                                   \
-  "      eid = {1},\n"                                                   \
-  "    pages = {1},\n"                                                   \
-  "      doi = {10.1088/0067-0049/220/1/1},\n"                           \
-  "   adsurl = {http://adsabs.harvard.edu/abs/2015ApJS..220....1A},\n"   \
-  "  adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"    \
+#define GAL_STRINGS_MAIN_BIBTEX                                         \
+  "@ARTICLE{noisechisel,\n"                                             \
+  "   author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"                  \
+  "    title = \"{Noise-based Detection and Segmentation of Nebulous "  \
+  "Objects}\",\n"                                                       \
+  "  journal = {\\apjs},\n"                                             \
+  "archivePrefix = \"arXiv\",\n"                                        \
+  "   eprint = {1505.01664},\n"                                         \
+  " primaryClass = \"astro-ph.IM\",\n"                                  \
+  " keywords = {galaxies: irregular, galaxies: photometry, "            \
+  "galaxies: structure, methods: data analysis, "                       \
+  "techniques: image processing, techniques: photometric},\n"           \
+  "     year = 2015,\n"                                                 \
+  "    month = sep,\n"                                                  \
+  "   volume = 220,\n"                                                  \
+  "      eid = {1},\n"                                                  \
+  "    pages = {1},\n"                                                  \
+  "      doi = {10.1088/0067-0049/220/1/1},\n"                          \
+  "   adsurl = {http://adsabs.harvard.edu/abs/2015ApJS..220....1A},\n"  \
+  "  adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"   \
   "}"
 
 
 /* This can be used in the end of error messages related to option
    values. */
-#define GAL_STRINGS_HOW_TO_CHECK_VALUES                                  \
-  " You can check all the input values with the `--printparams' "        \
+#define GAL_STRINGS_HOW_TO_CHECK_VALUES                                 \
+  " You can check all the input values with the `--printparams' "       \
   "(-P) option."
 
 #endif

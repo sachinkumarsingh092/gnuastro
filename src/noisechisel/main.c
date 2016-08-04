@@ -26,11 +26,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <progname.h>
 
-#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
+#include <gnuastro/timing.h>    /* Includes time.h and sys/time.h */
 
 #include "main.h"
 
-#include "ui.h"		        /* needs main.h.                  */
+#include "ui.h"                 /* needs main.h.                  */
 #include "noisechisel.h"        /* needs main.h.                  */
 
 int

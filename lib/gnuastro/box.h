@@ -24,7 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define __GAL_BOX_H__
 
 /*                        IMPORTANT NOTE:
-	 All the axises are based on the FITS standard, NOT C.
+         All the axises are based on the FITS standard, NOT C.
 */
 
 void

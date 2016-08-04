@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"		        /* needs main.h.                  */
+#include "ui.h"                  /* needs main.h.                  */
 #include "convertt.h"
 
 int

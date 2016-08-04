@@ -39,90 +39,90 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    *ngb       : Array keeping the neighbours indexs (allocated outside).
 */
 
-#define GAL_NEIGHBORS_FILL_4_REGION {                              \
-    numngb=0;							   \
-    if (*ind/is1!=x0  ) ngb[numngb++]=*ind-is1;			   \
-    if (*ind/is1!=x1-1) ngb[numngb++]=*ind+is1;			   \
-    if (*ind%is1!=y0  ) ngb[numngb++]=*ind-1;			   \
-    if (*ind%is1!=y1-1) ngb[numngb++]=*ind+1;			   \
+#define GAL_NEIGHBORS_FILL_4_REGION {                                   \
+    numngb=0;                                                           \
+    if (*ind/is1!=x0  ) ngb[numngb++]=*ind-is1;                         \
+    if (*ind/is1!=x1-1) ngb[numngb++]=*ind+is1;                         \
+    if (*ind%is1!=y0  ) ngb[numngb++]=*ind-1;                           \
+    if (*ind%is1!=y1-1) ngb[numngb++]=*ind+1;                           \
   }
 
 
-#define GAL_NEIGHBORS_FILL_4_ALLIMG {                              \
-    numngb=0;							   \
-    if (*ind/is1!=0    ) ngb[numngb++]=*ind-is1;		   \
-    if (*ind/is1!=is0-1) ngb[numngb++]=*ind+is1;		   \
-    if (*ind%is1!=0    ) ngb[numngb++]=*ind-1;			   \
-    if (*ind%is1!=is1-1) ngb[numngb++]=*ind+1;			   \
+#define GAL_NEIGHBORS_FILL_4_ALLIMG {                                   \
+    numngb=0;                                                           \
+    if (*ind/is1!=0    ) ngb[numngb++]=*ind-is1;                        \
+    if (*ind/is1!=is0-1) ngb[numngb++]=*ind+is1;                        \
+    if (*ind%is1!=0    ) ngb[numngb++]=*ind-1;                          \
+    if (*ind%is1!=is1-1) ngb[numngb++]=*ind+1;                          \
   }
 
 
-#define GAL_NEIGHBORS_FILL_8_REGION {                              \
-    unsigned char bl=0, br=0, tl=0, tr=0;			   \
-    numngb=0;						           \
-    if (*ind/is1!=x0  ) {ngb[numngb++]=*ind-is1; ++bl; ++br;}	   \
-    if (*ind/is1!=x1-1) {ngb[numngb++]=*ind+is1; ++tl; ++tr;}	   \
-    if (*ind%is1!=y0  ) {ngb[numngb++]=*ind-1;   ++bl; ++tl;}	   \
-    if (*ind%is1!=y1-1) {ngb[numngb++]=*ind+1;   ++tr; ++br;}	   \
-    if (numngb==4)						   \
-      {								   \
-	numngb=8;						   \
-	ngb[4]=*ind-is1-1; ngb[5]=*ind-is1+1;			   \
-	ngb[6]=*ind+is1-1; ngb[7]=*ind+is1+1;			   \
-      }								   \
-    else							   \
-      {								   \
-	if(bl==2) ngb[numngb++]=*ind-is1-1;			   \
-	if(br==2) ngb[numngb++]=*ind-is1+1;			   \
-	if(tl==2) ngb[numngb++]=*ind+is1-1;			   \
-	if(tr==2) ngb[numngb++]=*ind+is1+1;			   \
-      }								   \
+#define GAL_NEIGHBORS_FILL_8_REGION {                                   \
+    unsigned char bl=0, br=0, tl=0, tr=0;                               \
+    numngb=0;                                                           \
+    if (*ind/is1!=x0  ) {ngb[numngb++]=*ind-is1; ++bl; ++br;}           \
+    if (*ind/is1!=x1-1) {ngb[numngb++]=*ind+is1; ++tl; ++tr;}           \
+    if (*ind%is1!=y0  ) {ngb[numngb++]=*ind-1;   ++bl; ++tl;}           \
+    if (*ind%is1!=y1-1) {ngb[numngb++]=*ind+1;   ++tr; ++br;}           \
+    if (numngb==4)                                                      \
+      {                                                                 \
+        numngb=8;                                                       \
+        ngb[4]=*ind-is1-1; ngb[5]=*ind-is1+1;                           \
+        ngb[6]=*ind+is1-1; ngb[7]=*ind+is1+1;                           \
+      }                                                                 \
+    else                                                                \
+      {                                                                 \
+        if(bl==2) ngb[numngb++]=*ind-is1-1;                             \
+        if(br==2) ngb[numngb++]=*ind-is1+1;                             \
+        if(tl==2) ngb[numngb++]=*ind+is1-1;                             \
+        if(tr==2) ngb[numngb++]=*ind+is1+1;                             \
+      }                                                                 \
   }
 
 
-#define GAL_NEIGHBORS_FILL_8_ALLIMG {                              \
-    unsigned char bl=0, br=0, tl=0, tr=0;			   \
-    numngb=0;						           \
-    if (*ind/is1!=0     ) {ngb[numngb++]=*ind-is1; ++bl; ++br;}	   \
-    if (*ind/is1!=is0-1 ) {ngb[numngb++]=*ind+is1; ++tl; ++tr;}	   \
-    if (*ind%is1!=0     ) {ngb[numngb++]=*ind-1;   ++bl; ++tl;}	   \
-    if (*ind%is1!=is1-1 ) {ngb[numngb++]=*ind+1;   ++tr; ++br;}	   \
-    if (numngb==4)						   \
-      {								   \
-	numngb=8;						   \
-	ngb[4]=*ind-is1-1; ngb[5]=*ind-is1+1;			   \
-	ngb[6]=*ind+is1-1; ngb[7]=*ind+is1+1;			   \
-      }								   \
-    else							   \
-      {								   \
-	if(bl==2) ngb[numngb++]=*ind-is1-1;			   \
-	if(br==2) ngb[numngb++]=*ind-is1+1;			   \
-	if(tl==2) ngb[numngb++]=*ind+is1-1;			   \
-	if(tr==2) ngb[numngb++]=*ind+is1+1;			   \
-      }								   \
+#define GAL_NEIGHBORS_FILL_8_ALLIMG {                                   \
+    unsigned char bl=0, br=0, tl=0, tr=0;                               \
+    numngb=0;                                                           \
+    if (*ind/is1!=0     ) {ngb[numngb++]=*ind-is1; ++bl; ++br;}         \
+    if (*ind/is1!=is0-1 ) {ngb[numngb++]=*ind+is1; ++tl; ++tr;}         \
+    if (*ind%is1!=0     ) {ngb[numngb++]=*ind-1;   ++bl; ++tl;}         \
+    if (*ind%is1!=is1-1 ) {ngb[numngb++]=*ind+1;   ++tr; ++br;}         \
+    if (numngb==4)                                                      \
+      {                                                                 \
+        numngb=8;                                                       \
+        ngb[4]=*ind-is1-1; ngb[5]=*ind-is1+1;                           \
+        ngb[6]=*ind+is1-1; ngb[7]=*ind+is1+1;                           \
+      }                                                                 \
+    else                                                                \
+      {                                                                 \
+        if(bl==2) ngb[numngb++]=*ind-is1-1;                             \
+        if(br==2) ngb[numngb++]=*ind-is1+1;                             \
+        if(tl==2) ngb[numngb++]=*ind+is1-1;                             \
+        if(tr==2) ngb[numngb++]=*ind+is1+1;                             \
+      }                                                                 \
   }
 
 
-#define GAL_NEIGHBORS_FILL_8_ALLIMG_IJ {                           \
-    unsigned char bl=0, br=0, tl=0, tr=0;			   \
-    numngb=0;						           \
-    if (i!=0     ) {ngb[numngb++]=(i-1)*is1+j; ++bl; ++br;}	   \
-    if (i!=is0-1 ) {ngb[numngb++]=(i+1)*is1+j; ++tl; ++tr;}	   \
-    if (j!=0     ) {ngb[numngb++]=i*is1+j-1;   ++bl; ++tl;}	   \
-    if (j!=is1-1 ) {ngb[numngb++]=i*is1+j+1;   ++tr; ++br;}	   \
-    if (numngb==4)						   \
-      {								   \
-	numngb=8;						   \
-	ngb[4]=(i-1)*is1+j-1; ngb[5]=(i-1)*is1+j+1;		   \
-	ngb[6]=(i+1)*is1+j-1; ngb[7]=(i+1)*is1+j+1;		   \
-      }								   \
-    else							   \
-      {								   \
-	if(bl==2) ngb[numngb++]=(i-1)*is1+j-1;			   \
-	if(br==2) ngb[numngb++]=(i-1)*is1+j+1;			   \
-	if(tl==2) ngb[numngb++]=(i+1)*is1+j-1;			   \
-	if(tr==2) ngb[numngb++]=(i+1)*is1+j+1;			   \
-      }								   \
+#define GAL_NEIGHBORS_FILL_8_ALLIMG_IJ {                                \
+    unsigned char bl=0, br=0, tl=0, tr=0;                               \
+    numngb=0;                                                           \
+    if (i!=0     ) {ngb[numngb++]=(i-1)*is1+j; ++bl; ++br;}             \
+    if (i!=is0-1 ) {ngb[numngb++]=(i+1)*is1+j; ++tl; ++tr;}             \
+    if (j!=0     ) {ngb[numngb++]=i*is1+j-1;   ++bl; ++tl;}             \
+    if (j!=is1-1 ) {ngb[numngb++]=i*is1+j+1;   ++tr; ++br;}             \
+    if (numngb==4)                                                      \
+      {                                                                 \
+        numngb=8;                                                       \
+        ngb[4]=(i-1)*is1+j-1; ngb[5]=(i-1)*is1+j+1;                     \
+        ngb[6]=(i+1)*is1+j-1; ngb[7]=(i+1)*is1+j+1;                     \
+      }                                                                 \
+    else                                                                \
+      {                                                                 \
+        if(bl==2) ngb[numngb++]=(i-1)*is1+j-1;                          \
+        if(br==2) ngb[numngb++]=(i-1)*is1+j+1;                          \
+        if(tl==2) ngb[numngb++]=(i+1)*is1+j-1;                          \
+        if(tr==2) ngb[numngb++]=(i+1)*is1+j+1;                          \
+      }                                                                 \
   }
 
 #endif

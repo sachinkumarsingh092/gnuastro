@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <gsl/gsl_sf_gamma.h>	/* For total Sersic brightness. */
+#include <gsl/gsl_sf_gamma.h>   /* For total Sersic brightness. */
 
 #include "main.h"
 #include "mkprof.h"             /* Needs main.h, astrthreads.h */
@@ -118,7 +118,7 @@ sersic_b(double n)
 {
   if(n<=0.35f)
     error(EXIT_FAILURE, 0, "the Sersic index cannot be smaller "
-	  "than 0.35. It is %.3f", n);
+          "than 0.35. It is %.3f", n);
   return 2*n-(1/3)+(4/(405*n))+(46/(25515*n*n))+
     (131/(1148175*n*n*n)-(2194697/(30690717750*n*n*n*n)));
 }
@@ -133,7 +133,7 @@ double
 Sersic(struct mkonthread *mkp)
 {
   return exp( mkp->sersic_nb
-	      * ( pow(mkp->r/mkp->sersic_re, mkp->sersic_inv_n) -1 ) );
+              * ( pow(mkp->r/mkp->sersic_re, mkp->sersic_inv_n) -1 ) );
 }
 
 
@@ -147,7 +147,7 @@ double
 totsersic(double n, double re, double b, double q)
 {
   return (2*M_PI*re*re*exp(b)*n*pow(b, -2*n)*q*
-	  gsl_sf_gamma(2*n));
+          gsl_sf_gamma(2*n));
 }
 
 

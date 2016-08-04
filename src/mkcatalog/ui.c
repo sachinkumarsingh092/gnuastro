@@ -30,10 +30,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include <nproc.h>              /* From Gnulib.                     */
+#include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
+#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/commonargs.h>
@@ -41,8 +41,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"		        /* Needs main.h                   */
-#include "args.h"	        /* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h                   */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -73,7 +73,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -90,7 +90,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -105,27 +105,34 @@ readconfig(char *filename, struct mkcatalogparams *p)
       if(strcmp(name, "hdu")==0)
         gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
       else if (strcmp(name, "mask")==0)
-        gal_checkset_allocate_copy_set(value, &up->maskname, &up->masknameset);
+        gal_checkset_allocate_copy_set(value, &up->maskname,
+                                       &up->masknameset);
       else if (strcmp(name, "mhdu")==0)
         gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
       else if (strcmp(name, "objlabs")==0)
         gal_checkset_allocate_copy_set(value, &up->objlabsname,
                                        &up->objlabsnameset);
       else if (strcmp(name, "objhdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->objhdu, &up->objhduset);
+        gal_checkset_allocate_copy_set(value, &up->objhdu,
+                                       &up->objhduset);
       else if (strcmp(name, "clumplabs")==0)
         gal_checkset_allocate_copy_set(value, &up->clumplabsname,
                                        &up->clumplabsnameset);
       else if (strcmp(name, "clumphdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->clumphdu, &up->clumphduset);
+        gal_checkset_allocate_copy_set(value, &up->clumphdu,
+                                       &up->clumphduset);
       else if (strcmp(name, "skyfilename")==0)
-        gal_checkset_allocate_copy_set(value, &up->skyname, &up->skynameset);
+        gal_checkset_allocate_copy_set(value, &up->skyname,
+                                       &up->skynameset);
       else if (strcmp(name, "skyhdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->skyhdu, &up->skyhduset);
+        gal_checkset_allocate_copy_set(value, &up->skyhdu,
+                                       &up->skyhduset);
       else if (strcmp(name, "stdfilename")==0)
-        gal_checkset_allocate_copy_set(value, &up->stdname, &up->stdnameset);
+        gal_checkset_allocate_copy_set(value, &up->stdname,
+                                       &up->stdnameset);
       else if (strcmp(name, "stdhdu")==0)
-        gal_checkset_allocate_copy_set(value, &up->stdhdu, &up->stdhduset);
+        gal_checkset_allocate_copy_set(value, &up->stdhdu,
+                                       &up->stdhduset);
       else if (strcmp(name, "zeropoint")==0)
         {
           if(up->zeropointset) continue;
@@ -136,22 +143,23 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if (strcmp(name, "skysubtracted")==0)
         {
           if(up->skysubtractedset) continue;
-          gal_checkset_int_zero_or_one(value, &p->skysubtracted, name, key,
-                                       SPACK, filename, lineno);
+          gal_checkset_int_zero_or_one(value, &p->skysubtracted, name,
+                                       key, SPACK, filename, lineno);
           up->skysubtractedset=1;
         }
       else if(strcmp(name, "threshold")==0)
         {
           if(up->thresholdset) continue;
-          gal_checkset_any_double(value, &p->threshold, name, key, SPACK,
-                   filename, lineno);
+          gal_checkset_any_double(value, &p->threshold, name, key,
+                                  SPACK, filename, lineno);
           up->thresholdset=1;
         }
 
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output,
+                                       &cp->outputset);
       else if(strcmp(name, "nsigmag")==0)
         {
           if(up->nsigmagset) continue;
@@ -169,29 +177,29 @@ readconfig(char *filename, struct mkcatalogparams *p)
       else if(strcmp(name, "floatwidth")==0)
         {
           if(up->floatwidthset) continue;
-          gal_checkset_int_l_zero(value, &p->floatwidth, name, key, SPACK,
-                                  filename, lineno);
+          gal_checkset_int_l_zero(value, &p->floatwidth, name, key,
+                                  SPACK, filename, lineno);
           up->floatwidthset=1;
         }
       else if(strcmp(name, "accuwidth")==0)
         {
           if(up->accuwidthset) continue;
-          gal_checkset_int_l_zero(value, &p->accuwidth, name, key, SPACK,
-                                  filename, lineno);
+          gal_checkset_int_l_zero(value, &p->accuwidth, name, key,
+                                  SPACK, filename, lineno);
           up->accuwidthset=1;
         }
       else if(strcmp(name, "floatprecision")==0)
         {
           if(up->floatprecisionset) continue;
-          gal_checkset_int_l_zero(value, &p->floatprecision, name, key, SPACK,
-                                  filename, lineno);
+          gal_checkset_int_l_zero(value, &p->floatprecision, name,
+                                  key, SPACK, filename, lineno);
           up->floatprecisionset=1;
         }
       else if(strcmp(name, "accuprecision")==0)
         {
           if(up->accuprecisionset) continue;
-          gal_checkset_int_l_zero(value, &p->accuprecision, name, key, SPACK,
-                                  filename, lineno);
+          gal_checkset_int_l_zero(value, &p->accuprecision, name,
+                                  key, SPACK, filename, lineno);
           up->accuprecisionset=1;
         }
 
@@ -548,8 +556,8 @@ readconfig(char *filename, struct mkcatalogparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);
@@ -578,19 +586,24 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
   if(up->mhduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("mhdu", up->mhdu);
   if(up->objlabsnameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("objlabs", up->objlabsname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("objlabs",
+                                               up->objlabsname);
   if(up->objhduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("objhdu", up->objhdu);
   if(up->clumplabsnameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("clumplabs", up->clumplabsname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("clumplabs",
+                                               up->clumplabsname);
   if(up->clumphduset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("clumphdu", up->clumphdu);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("clumphdu",
+                                               up->clumphdu);
   if(up->skynameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("skyfilename", up->skyname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("skyfilename",
+                                               up->skyname);
   if(up->skyhduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("skyhdu", up->skyhdu);
   if(up->stdnameset)
-    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("stdfilename", up->stdname);
+    GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("stdfilename",
+                                               up->stdname);
   if(up->stdhduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("stdhdu", up->stdhdu);
   if(up->zeropointset)
@@ -830,22 +843,22 @@ sanitycheck(struct mkcatalogparams *p)
 
   /* Set the names of the files. */
   gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                                 &p->up.maskname, p->up.mhdu, p->up.mhduset,
-                                 "mask");
+                            &p->up.maskname, p->up.mhdu, p->up.mhduset,
+                            "mask");
   gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu,
-                                 p->up.objlabsnameset, &p->up.objlabsname,
-                                 p->up.objhdu, p->up.objhduset,
-                                 "object labels");
+                            p->up.objlabsnameset, &p->up.objlabsname,
+                            p->up.objhdu, p->up.objhduset,
+                            "object labels");
   gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu,
-                                 p->up.clumplabsnameset, &p->up.clumplabsname,
-                                 p->up.clumphdu, p->up.clumphduset,
-                                 "clump labels");
+                            p->up.clumplabsnameset, &p->up.clumplabsname,
+                            p->up.clumphdu, p->up.clumphduset,
+                            "clump labels");
   gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.skynameset,
-                                 &p->up.skyname, p->up.skyhdu, p->up.skyhduset,
-                                 "sky value image");
+                            &p->up.skyname, p->up.skyhdu, p->up.skyhduset,
+                            "sky value image");
   gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.stdnameset,
-                                 &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
-                                 "sky standard deviation");
+                            &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
+                            "sky standard deviation");
 
   /* Read the number of labels for the objects:  */
   keys[0].keyname="DETSN";        keys[0].datatype=TDOUBLE;
@@ -883,8 +896,8 @@ sanitycheck(struct mkcatalogparams *p)
       if( OFlxWhtX!=OFlxWhtY-1 || OFlxWhtRA!=OFlxWhtDec-1 )
         error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
               "fix the problem. X(%d) and Y(%d), or Ra(%d) and Dec(%d) "
-              "columns in the information array are not immediately after "
-              "each other", PACKAGE_BUGREPORT, OFlxWhtX, OFlxWhtY,
+              "columns in the information array are not immediately "
+              "after each other", PACKAGE_BUGREPORT, OFlxWhtX, OFlxWhtY,
               OFlxWhtRA, OFlxWhtDec);
     }
 
@@ -970,8 +983,8 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
   /* Make sure it has no blank pixels. */
   if(anyblank)
     error(EXIT_FAILURE, 0, "the Sky and Sky standard deviation images "
-          "should not have any blank values. %s (hdu: %s) has blank pixels",
-          filename, hdu);
+          "should not have any blank values. %s (hdu: %s) has blank "
+          "pixels", filename, hdu);
 
   /* Make sure it has the same size as the image. */
   if(s0!=p->s0 || s1!=p->s1)
@@ -1151,10 +1164,11 @@ preparearrays(struct mkcatalogparams *p)
           p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         default:
-          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-                "fix the problem. For some reason p->allcols[%lu] is given "
-                "the value %lu which is not recognized in preparearrays "
-                "(ui.c)", PACKAGE_BUGREPORT, i, p->allcols[i]);
+          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
+                "can fix the problem. For some reason p->allcols[%lu] "
+                "is given the value %lu which is not recognized in "
+                "preparearrays (ui.c)", PACKAGE_BUGREPORT, i,
+                p->allcols[i]);
         }
     }
 
@@ -1167,7 +1181,8 @@ preparearrays(struct mkcatalogparams *p)
       gal_fits_file_to_float(p->up.inputname, p->up.maskname, p->cp.hdu,
                                   p->up.mhdu, &p->img, &bitpix, &anyblank,
                                   &p->s0, &p->s1);
-      gal_fits_read_wcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+      gal_fits_read_wcs(p->up.inputname, p->cp.hdu, 0, 0, &p->nwcs,
+                        &p->wcs);
 
 
       /* Read and check the other arrays: */
@@ -1191,7 +1206,8 @@ preparearrays(struct mkcatalogparams *p)
       if(p->clumpncols>0 && p->numclumps>0)
         {
           errno=0;
-          p->clumpcat=malloc(p->clumpncols*p->numclumps*sizeof *p->clumpcat);
+          p->clumpcat=malloc(p->clumpncols*p->numclumps
+                             * sizeof *p->clumpcat);
           if(p->clumpcat==NULL)
             error(EXIT_FAILURE, errno, "%lu bytes for p->clumpcat in "
                   "preprarearrays (ui.c)",

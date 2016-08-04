@@ -44,13 +44,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define NOTEMSG_SMALLERONE  "should be >=0 and <=1"
 
 
-#define CHECKFULLNUMBER   if(*tailptr!='\0'){				\
-    if(filename)							\
-      error_at_line(EXIT_FAILURE, 0, filename, lineno,			\
-		    FIXEDFORFILE" "NOTEMSG_NOTNUMBER, lo, optarg);	\
-    else								\
-      error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_NOTNUMBER,	\
-	    lo, so, optarg);						\
+#define CHECKFULLNUMBER   if(*tailptr!='\0'){                           \
+    if(filename)                                                        \
+      error_at_line(EXIT_FAILURE, 0, filename, lineno,                  \
+                    FIXEDFORFILE" "NOTEMSG_NOTNUMBER, lo, optarg);      \
+    else                                                                \
+      error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_NOTNUMBER,        \
+            lo, so, optarg);                                            \
   }
 
 
@@ -112,11 +112,11 @@ gal_checkset_int_zero_or_one(char *optarg, int *var, char *lo, char so,
   if(tmp!=0 && tmp!=1)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_EQZEROORONE, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_EQZEROORONE, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_EQZEROORONE,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_EQZEROORONE,
+              lo, so, optarg);
     }
 }
 
@@ -137,11 +137,11 @@ gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so, char *spack,
   if(tmp!=4 && tmp!=8)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_EQZEROORONE, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_EQZEROORONE, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_EQZEROORONE,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_EQZEROORONE,
+              lo, so, optarg);
     }
 }
 
@@ -161,11 +161,11 @@ gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so, char *spack,
   if(tmp<0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LEQZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LEQZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LEQZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LEQZERO,
+              lo, so, optarg);
     }
 }
 
@@ -185,11 +185,11 @@ gal_checkset_int_l_zero(char *optarg, int *var, char *lo, char so, char *spack,
   if(tmp<=0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
+              lo, so, optarg);
     }
 }
 
@@ -210,11 +210,11 @@ gal_checkset_int_smaller_equal_to(char *optarg, int *var, char *lo, char so,
   if(tmp>maxvalue)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_4OR8, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_4OR8, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_4OR8,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_4OR8,
+              lo, so, optarg);
     }
 }
 
@@ -234,11 +234,11 @@ gal_checkset_long_el_zero(char *optarg, long *var, char *lo, char so,
   if(tmp<0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LEQZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LEQZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LEQZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LEQZERO,
+              lo, so, optarg);
     }
 }
 
@@ -277,11 +277,11 @@ gal_checkset_sizet_el_zero(char *optarg, size_t *var, char *lo, char so,
   if(tmp<0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LEQZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LEQZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LEQZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LEQZERO,
+              lo, so, optarg);
     }
 }
 
@@ -301,11 +301,11 @@ gal_checkset_sizet_l_zero(char *optarg, size_t *var, char *lo, char so,
   if(tmp<=0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
+              lo, so, optarg);
     }
 }
 
@@ -326,11 +326,11 @@ gal_checkset_sizet_p_odd(char *optarg, size_t *var, char *lo, char so,
   if(tmp<0 || tmp%2==0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" should be >0 and odd.", lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" should be >0 and odd.", lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be >0 and odd",
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be >0 and odd",
+              lo, so, optarg);
     }
 }
 
@@ -350,11 +350,11 @@ gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so, char* spack,
   if(tmp<=0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
+              lo, so, optarg);
     }
 }
 
@@ -374,11 +374,11 @@ gal_checkset_float_l_0_s_1(char *optarg, float *var, char *lo, char so,
   if(tmp>1.0f || tmp<0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_SMALLERONE, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_SMALLERONE, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_SMALLERONE,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_SMALLERONE,
+              lo, so, optarg);
     }
 }
 
@@ -410,11 +410,11 @@ gal_checkset_double_l_0(char *optarg, double *var, char *lo, char so,
   if(tmp<=0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
+              lo, so, optarg);
     }
 }
 
@@ -434,11 +434,11 @@ gal_checkset_double_el_0(char *optarg, double *var, char *lo, char so,
   if(tmp<0)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" "NOTEMSG_LARGERZERO, lo, optarg);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
-	      lo, so, optarg);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" "NOTEMSG_LARGERZERO,
+              lo, so, optarg);
     }
 }
 
@@ -459,11 +459,11 @@ gal_checkset_double_l_value(char *optarg, double *var, char *lo, char so,
   if(tmp<=value)
     {
       if(filename)
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      FIXEDFORFILE" should be > %.4f", lo, optarg, value);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      FIXEDFORFILE" should be > %.4f", lo, optarg, value);
       else
-	error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be > %.4f",
-	      lo, so, optarg, value);
+        error(EXIT_FAILURE, 0, FIXEDFOROPTION" should be > %.4f",
+              lo, so, optarg, value);
     }
 }
 
@@ -510,7 +510,7 @@ gal_checkset_string_has_space(char *in)
     switch(*in)
       {
       case ' ': case '\t': case '\v':
-	return 1;
+        return 1;
       }
   while(*(++in)!='\0');
   return 0;
@@ -609,10 +609,10 @@ gal_checkset_check_file(char *filename)
   FILE *tmpfile;
   errno=0;
   tmpfile = fopen(filename, "r");
-  if(tmpfile)			/* The file opened. */
+  if(tmpfile)                        /* The file opened. */
     {
       if(fclose(tmpfile)==EOF)
-	error(EXIT_FAILURE, errno, "%s", filename);
+        error(EXIT_FAILURE, errno, "%s", filename);
     }
   else
     error(EXIT_FAILURE, errno, "%s", filename);
@@ -634,21 +634,21 @@ gal_checkset_check_remove_file(char *filename, int dontdelete)
      `r+`. */
   errno=0;
   tmpfile=fopen(filename, "r+");
-  if (tmpfile)			/* The file opened. */
+  if (tmpfile)                        /* The file opened. */
     {
       /* Close the file and make sure that it should be deleted. */
       errno=0;
       if(fclose(tmpfile))
-	error(EXIT_FAILURE, errno, "%s", filename);
+        error(EXIT_FAILURE, errno, "%s", filename);
       if(dontdelete)
-	error(EXIT_FAILURE, 0, "%s already exists and you have "
-	      "asked to not remove it with the `--dontdelete` "
-	      "(`-D`) option", filename);
+        error(EXIT_FAILURE, 0, "%s already exists and you have "
+              "asked to not remove it with the `--dontdelete` "
+              "(`-D`) option", filename);
 
       /* Delete the file: */
       errno=0;
       if(unlink(filename))
-	error(EXIT_FAILURE, errno, "%s", filename);
+        error(EXIT_FAILURE, errno, "%s", filename);
     }
   /* If the file doesn't exist, there is no problem, we wanted to
      remove it any way! Any other kind of error should not be
@@ -680,42 +680,42 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
   errno=0;
   if(stat(name, &nameinfo)!=0)
     {
-      if(errno==ENOENT)	/* ENOENT: No such file or directory. */
-	{/* Make the file temporarily and see if everything is ok. */
-	  errno=0;
-	  tmpfile=fopen(name, "w");
-	  if (tmpfile)
-	    {
-	      fprintf(tmpfile, "Only to test write access.");
-	      errno=0;
-	      if(fclose(tmpfile))
-		error(EXIT_FAILURE, errno, "%s", name);
-	      errno=0;
-	      if(unlink(name))
-		error(EXIT_FAILURE, errno, "%s", name);
-	    }
-	  else
-	    error(EXIT_FAILURE, errno, "%s", name);
-	  return 1;		/* It is a file name, GOOD */
-	}
-      else			/* Some strange condition, ABORT */
-	error(EXIT_FAILURE, errno, "%s", name);
+      if(errno==ENOENT)        /* ENOENT: No such file or directory. */
+        {/* Make the file temporarily and see if everything is ok. */
+          errno=0;
+          tmpfile=fopen(name, "w");
+          if (tmpfile)
+            {
+              fprintf(tmpfile, "Only to test write access.");
+              errno=0;
+              if(fclose(tmpfile))
+                error(EXIT_FAILURE, errno, "%s", name);
+              errno=0;
+              if(unlink(name))
+                error(EXIT_FAILURE, errno, "%s", name);
+            }
+          else
+            error(EXIT_FAILURE, errno, "%s", name);
+          return 1;                    /* It is a file name, GOOD */
+        }
+      else                             /* Some strange condition, ABORT */
+        error(EXIT_FAILURE, errno, "%s", name);
     }
 
-  if(S_ISDIR(nameinfo.st_mode))	/* It is a directory, BAD */
+  if(S_ISDIR(nameinfo.st_mode))        /* It is a directory, BAD */
     return 0;
-  else if (S_ISREG(nameinfo.st_mode)) /* It is a file, GOOD. */
+  else if (S_ISREG(nameinfo.st_mode))  /* It is a file, GOOD. */
     {
       gal_checkset_check_remove_file(name, dontdelete);
       return 1;
     }
-  else 				/* Not a file or a dir, ABORT */
+  else                                 /* Not a file or a dir, ABORT */
     error(EXIT_FAILURE, 0, "%s not a file or a directory", name);
 
-  error(EXIT_FAILURE, 0, "a bug! In gal_checkset_dir_0_file_1, (in checkset.c) "
-	"The process should not reach the end of the function! Please "
-        "contact us at "PACKAGE_BUGREPORT" so we can see what went wrong "
-        "and fix it in future updates");
+  error(EXIT_FAILURE, 0, "a bug! In gal_checkset_dir_0_file_1, (in "
+        "checkset.c). The process should not reach the end of the "
+        "function! Please contact us at "PACKAGE_BUGREPORT" so we can "
+        "see what went wrong and fix it in future updates");
   return 0;
 }
 
@@ -728,7 +728,7 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
    be removed and the given suffix will be put in the end. */
 void
 gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
-		int dontdelete, char **outname)
+                int dontdelete, char **outname)
 {
   char *out;
   size_t i, l, offset=0;
@@ -746,15 +746,15 @@ gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
   for(i=l;i!=0;--i)
     {
       /* We don't want to remove any '.' in a directory name so if a
-	 '/' is encountered in our search from the end of the file
-	 name, we won't continue. */
+         '/' is encountered in our search from the end of the file
+         name, we won't continue. */
       if(out[i]=='/') break;
       else if(out[i]=='.')
-	{
-	  out[i]='\0';
-	  strcat(out, suffix);
-	  break;
-	}
+        {
+          out[i]='\0';
+          strcat(out, suffix);
+          break;
+        }
     }
 
   /* If it is desired to remove the directory information from the
@@ -764,12 +764,12 @@ gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
   if(removedirinfo)
     {
       l=strlen(out);
-      for(i=l;i!=0;--i)	 	  /* Find the last forward slash.      */
-	if(out[i]=='/')
-	  {offset=i+1; break;}
+      for(i=l;i!=0;--i)         /* Find the last forward slash.      */
+        if(out[i]=='/')
+          {offset=i+1; break;}
       if(offset)
-	for(i=offset;i<=l;++i)	/* <= because we want to shift the   */
-	  out[i-offset]=out[i]; /* '\0' character in the string too. */
+        for(i=offset;i<=l;++i)  /* <= because we want to shift the   */
+          out[i-offset]=out[i]; /* '\0' character in the string too. */
     }
 
   /* Remove the created filename if it already exits. */
@@ -877,24 +877,24 @@ gal_checkset_check_dir_write_add_slash(char **dirname)
   file_d=mkstemp(tmpname);
   if(file_d==-1)
     error(EXIT_FAILURE, errno, "cannot write output in the directory %s",
-	  indir);
+          indir);
   /*
   errno=0;
   printf("\n\n%s\n\n", tmpname);
   if( write(file_d, buf, strlen(buf)) == -1 )
     error(EXIT_FAILURE, errno, "%s: writing to this temporary file to "
-	  "check the given `%s` directory", tmpname, indir);
+          "check the given `%s` directory", tmpname, indir);
   */
   errno=0;
   if( close(file_d) == -1 )
     error(EXIT_FAILURE, errno, "%s: Closing this temporary file to check "
-	  "the given `%s` directory", tmpname, indir);
+          "the given `%s` directory", tmpname, indir);
 
   /* Delete the temporary file: */
   errno=0;
   if(unlink(tmpname)==-1)
     error(EXIT_FAILURE, errno, "%s: removing this temporary file made "
-	  "to check the given `%s directory`", tmpname, indir);
+          "to check the given `%s directory`", tmpname, indir);
 
   /* Remove the extra characters that were added for the random name. */
   tmpname[strlen(tmpname)-14]='\0';

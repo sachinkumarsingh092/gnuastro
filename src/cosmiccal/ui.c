@@ -30,11 +30,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include <nproc.h>              /* From Gnulib.                     */
+#include <nproc.h>               /* From Gnulib.                   */
 #include <gsl/gsl_const_mksa.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
+#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/commonargs.h>
@@ -42,8 +42,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"		        /* Needs main.h                   */
-#include "args.h"	        /* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h                   */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -73,7 +73,7 @@ readconfig(char *filename, struct cosmiccalparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -90,7 +90,7 @@ readconfig(char *filename, struct cosmiccalparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -103,58 +103,58 @@ readconfig(char *filename, struct cosmiccalparams *p)
 
       /* Inputs: */
       if(strcmp(name, "redshift")==0)
-	{
-	  if(up->redshiftset) continue;
+        {
+          if(up->redshiftset) continue;
           gal_checkset_double_el_0(value, &p->redshift, name, key,
                                       SPACK, filename, lineno);
-	  up->redshiftset=1;
-	}
+          up->redshiftset=1;
+        }
       else if(strcmp(name, "H0")==0)
-	{
-	  if(up->H0set) continue;
+        {
+          if(up->H0set) continue;
           gal_checkset_double_el_0(value, &p->H0, name, key, SPACK,
                                       filename, lineno);
-	  up->H0set=1;
-	}
+          up->H0set=1;
+        }
       else if(strcmp(name, "olambda")==0)
-	{
-	  if(up->olambdaset) continue;
+        {
+          if(up->olambdaset) continue;
           gal_checkset_double_el_0(value, &p->olambda, name, key,
                                       SPACK, filename, lineno);
-	  up->olambdaset=1;
-	}
+          up->olambdaset=1;
+        }
       else if(strcmp(name, "omatter")==0)
-	{
-	  if(up->omatterset) continue;
+        {
+          if(up->omatterset) continue;
           gal_checkset_double_el_0(value, &p->omatter, name, key,
                                       SPACK, filename, lineno);
-	  up->omatterset=1;
-	}
+          up->omatterset=1;
+        }
       else if(strcmp(name, "oradiation")==0)
-	{
-	  if(up->oradiationset) continue;
+        {
+          if(up->oradiationset) continue;
           gal_checkset_double_el_0(value, &p->oradiation, name, key,
                                    SPACK, filename, lineno);
-	  up->oradiationset=1;
-	}
+          up->oradiationset=1;
+        }
 
 
 
       /* Outputs */
       else if(strcmp(name, "onlyvolume")==0)
-	{
-	  if(up->onlyvolumeset) continue;
+        {
+          if(up->onlyvolumeset) continue;
           gal_checkset_int_zero_or_one(value, &p->onlyvolume, name, key,
                                        SPACK, filename, lineno);
-	  up->onlyvolumeset=1;
-	}
+          up->onlyvolumeset=1;
+        }
       else if(strcmp(name, "onlyabsmagconv")==0)
-	{
-	  if(up->onlyabsmagconvset) continue;
+        {
+          if(up->onlyabsmagconvset) continue;
           gal_checkset_int_zero_or_one(value, &p->onlyabsmagconv, name,
                                        key, SPACK, filename, lineno);
-	  up->onlyabsmagconvset=1;
-	}
+          up->onlyabsmagconvset=1;
+        }
 
 
 
@@ -164,8 +164,8 @@ readconfig(char *filename, struct cosmiccalparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);

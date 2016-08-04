@@ -89,32 +89,32 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
     {
       add=0;
       switch(*pt)
-	{
-	case ',':
-	  ++dim;
-	  if(dim==2)
-	    error(EXIT_FAILURE, 0, "Extra `,` in `%s`", section);
-	  forl='f';
-	  ++pt;
-	  break;
-	case ':':
-	  forl='l';
-	  ++pt;
-	  break;
-	case '.':
-	  error(EXIT_FAILURE, 0, "the numbers in the argument to "
-		"`--section` (`-s') have to be integers. You input "
-		"includes a float number: %s",
-		section);
-	  break;
-	case ' ': case '\t':
-	  ++pt;
-	  break;
+        {
+        case ',':
+          ++dim;
+          if(dim==2)
+            error(EXIT_FAILURE, 0, "Extra `,` in `%s`", section);
+          forl='f';
+          ++pt;
+          break;
+        case ':':
+          forl='l';
+          ++pt;
+          break;
+        case '.':
+          error(EXIT_FAILURE, 0, "the numbers in the argument to "
+                "`--section` (`-s') have to be integers. You input "
+                "includes a float number: %s",
+                section);
+          break;
+        case ' ': case '\t':
+          ++pt;
+          break;
         case '*':
           add=1;                /* If it is an asterisk, then add the */
           ++pt;                 /* given value to the maximum size of */
           break;                /* the image. */
-	default:
+        default:
           break;
         }
 
@@ -126,7 +126,7 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
       */
 
       /* Make sure if a number was read at all? */
-      if(tailptr==pt)	        /* No number was read!             */
+      if(tailptr==pt)                /* No number was read!             */
         {
           if(add) read=0;       /* We have a * followed by `:' or `,'. */
           else    continue;
@@ -152,14 +152,14 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
 
   if(fpixel[0]>=lpixel[0] || fpixel[1]>=lpixel[1])
     error(EXIT_FAILURE, 0, "the bottom left corner coordinates "
-	  "cannot be larger or equal to the top right's! Your section "
-	  "string (%s) has been read as: bottom left coordinate "
-	  "(%ld, %ld) to top right coordinate (%ld, %ld)",
-	  section, fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
+          "cannot be larger or equal to the top right's! Your section "
+          "string (%s) has been read as: bottom left coordinate "
+          "(%ld, %ld) to top right coordinate (%ld, %ld)",
+          section, fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
 
   /*
   printf("\n%s\nfpixel=(%ld, %ld), lpixel=(%ld, %ld)\n\n", section,
-	 fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
+         fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
   exit(0);
   */
 }
@@ -182,21 +182,21 @@ polygonparser(struct imgcropparams *p)
   while(*pt!='\0')
     {
       switch(*pt)
-	{
-	case ',':
-	  ++dim;
-	  if(dim==2)
-	    error(EXIT_FAILURE, 0, "Extra `,` in `%s`", p->up.polygon);
-	  ++pt;
-	  break;
-	case ':':
+        {
+        case ',':
+          ++dim;
+          if(dim==2)
+            error(EXIT_FAILURE, 0, "Extra `,` in `%s`", p->up.polygon);
+          ++pt;
+          break;
+        case ':':
           if(dim==0)
             error(EXIT_FAILURE, 0, "not enough coordinates for at least "
                   "one polygon vertex (in %s)", p->up.polygon);
           dim=0;
-	  ++pt;
-	  break;
-	default:
+          ++pt;
+          break;
+        default:
           break;
         }
 
@@ -217,14 +217,15 @@ polygonparser(struct imgcropparams *p)
           */
 
           /* Make sure if a number was read at all? */
-          if(tailptr==pt)	        /* No number was read!             */
+          if(tailptr==pt) /* No number was read! */
             error(EXIT_FAILURE, 0, "%s could not be parsed as a floating "
                   "point number", tailptr);
 
           /* If this was the second dimension, then put the values
              into the linked list: */
           if(dim==1)
-            gal_linkedlist_add_to_tdll(&gal_linkedlist_tdll, read[0], read[1]);
+            gal_linkedlist_add_to_tdll(&gal_linkedlist_tdll, read[0],
+                                       read[1]);
 
           /* The job here is done, start from tailptr */
           pt=tailptr;
@@ -232,7 +233,8 @@ polygonparser(struct imgcropparams *p)
     }
 
   /* Convert the linked list to an array: */
-  gal_linkedlist_tdll_to_array_inv(gal_linkedlist_tdll, &array, &p->nvertices);
+  gal_linkedlist_tdll_to_array_inv(gal_linkedlist_tdll, &array,
+                                   &p->nvertices);
   if(p->imgmode) { p->ipolygon=array; p->wpolygon=NULL;  }
   else           { p->ipolygon=NULL;  p->wpolygon=array; }
 
@@ -330,7 +332,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) ba[i]=*bb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
+            ba[i]=*bb;
         }
       free(bb);
       break;
@@ -339,7 +342,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) sa[i]=*sb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
+            sa[i]=*sb;
         }
       free(sb);
       break;
@@ -348,7 +352,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) la[i]=*lb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
+            la[i]=*lb;
         }
       free(lb);
       break;
@@ -357,7 +362,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) La[i]=*Lb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
+            La[i]=*Lb;
         }
       free(Lb);
       break;
@@ -366,7 +372,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) fa[i]=*fb;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
+            fa[i]=*fb;
         }
       free(fb);
       break;
@@ -375,7 +382,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
-          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon) da[i]=*db;
+          if(gal_polygon_pin(ipolygon, point, nvertices)==outpolygon)
+            da[i]=*db;
         }
       free(db);
       break;
@@ -423,21 +431,22 @@ changezerotonan(void *array, size_t size, int bitpix)
     case FLOAT_IMG:
       ffp=(fp=array)+size;
       do
-	if(*fp==0.0f) *fp=NAN;
+        if(*fp==0.0f) *fp=NAN;
       while(++fp<ffp);
       break;
 
     case DOUBLE_IMG:
       fdp=(dp=array)+size;
       do
-	if(*dp==0.0f) *dp=NAN;
+        if(*dp==0.0f) *dp=NAN;
       while(++dp<fdp);
       break;
 
     default:
       error(EXIT_FAILURE, 0, "in changezerotonan, bitpix is not "
-	    "recognized! This is out of the users control and is a bug, "
-	    "please report it to us so we see how it was caused and fix it");
+            "recognized! This is out of the users control and is a bug, "
+            "please report it to us so we see how it was caused and fix "
+            "it");
     }
 }
 
@@ -460,24 +469,24 @@ cropname(struct cropparams *crp)
       errno=0;
       log->name=malloc(crp->outlen);
       if(log->name==NULL)
-	error(EXIT_FAILURE, errno, "imgmode.c, %lu bytes on "
-	      "imgcroponthreads", crp->outlen);
+        error(EXIT_FAILURE, errno, "imgmode.c, %lu bytes on "
+              "imgcroponthreads", crp->outlen);
       sprintf(log->name, "%s%lu%s", cp->output, crp->outindex+1,
-	      p->suffix);
+              p->suffix);
       gal_checkset_check_remove_file(log->name, cp->dontdelete);
     }
   else
     {
       /* Set the output name. */
       if(p->outnameisfile)            /* An output file was specified. */
-	{
-	  log->name=cp->output;
-	  gal_checkset_check_remove_file(log->name, cp->dontdelete);
-	}
-      else	  /* The output was a directory, use automatic output. */
-	gal_checkset_automatic_output(p->imgs[crp->imgindex].name, p->suffix,
-			cp->removedirinfo, cp->dontdelete,
-			&log->name);
+        {
+          log->name=cp->output;
+          gal_checkset_check_remove_file(log->name, cp->dontdelete);
+        }
+      else          /* The output was a directory, use automatic output. */
+        gal_checkset_automatic_output(p->imgs[crp->imgindex].name,
+                                      p->suffix, cp->removedirinfo,
+                                      cp->dontdelete, &log->name);
     }
 }
 
@@ -505,22 +514,22 @@ cropflpixel(struct cropparams *crp)
       else if(p->up.xcset)
         gal_box_border_from_center(p->xc, p->yc, p->iwidth, fpixel, lpixel);
       else if(p->up.sectionset)
-	sectionparser(p->section, naxes, fpixel, lpixel);
+        sectionparser(p->section, naxes, fpixel, lpixel);
       else if(p->up.polygonset)
         {
           if(p->outpolygon==0)
             imgpolygonflpixel(p->ipolygon, p->nvertices, fpixel, lpixel);
         }
       else
-	error(EXIT_FAILURE, 0, "a bug! In image mode, neither of the "
-	      "following has been set: a catalog, a central pixel, "
-	      "a section or a polygon in the image. Please contact us "
+        error(EXIT_FAILURE, 0, "a bug! In image mode, neither of the "
+              "following has been set: a catalog, a central pixel, "
+              "a section or a polygon in the image. Please contact us "
               "to see how it got to this impossible place! You should "
               "have been warned of this condition long before ImageCrop "
               "reaches this point");
     }
   else if(p->wcsmode) /* In wcsmode, crp->world is already filled.       */
-    {		      /* Note that p->iwidth was set based on p->wwidth. */
+    {                 /* Note that p->iwidth was set based on p->wwidth. */
       if(p->up.polygonset)
         { /* Fill crp->ipolygon in wcspolygonpixel, then set flpixel*/
           fillcrpipolygon(crp);
@@ -544,8 +553,8 @@ cropflpixel(struct cropparams *crp)
     }
   else
     error(EXIT_FAILURE, 0, "a bug! in cropflpixel (crop.c), "
-	  "neither imgmode or wcsmode are set. Please contact us so "
-	  "we can see how it got to this impossible place");
+          "neither imgmode or wcsmode are set. Please contact us so "
+          "we can see how it got to this impossible place");
 
   /* If the user only wants regions outside to the polygon, then set
      the fpixel and lpixel to cover the full input image. */
@@ -573,7 +582,7 @@ cropflpixel(struct cropparams *crp)
 */
 void
 firstcropmakearray(struct cropparams *crp, long *fpixel_i,
-		   long *lpixel_i, long *fpixel_c, long *lpixel_c)
+                   long *lpixel_i, long *fpixel_c, long *lpixel_c)
 {
   size_t i;
   fitsfile *ofp;
@@ -618,7 +627,7 @@ firstcropmakearray(struct cropparams *crp, long *fpixel_i,
   if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
      || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
     if(fits_write_key(ofp, crp->p->datatype, "BLANK",
-		      crp->p->bitnul, "pixels with no data", &status) )
+                      crp->p->bitnul, "pixels with no data", &status) )
       gal_fits_io_error(status, "adding Blank");
   if(fits_write_null_img(ofp, 1, naxes[0]*naxes[1], &status))
     gal_fits_io_error(status, "writing null array");
@@ -694,29 +703,29 @@ onecrop(struct cropparams *crp)
   if( gal_box_overlap(img->naxes, fpixel_i, lpixel_i, fpixel_o, lpixel_o) )
     {
       /* Make the output FITS image and initialize it with an array of
-	 NaN or BLANK values. Note that for FLOAT_IMG and DOUBLE_IMG,
-	 it will automatically fill them with the NaN value.*/
+         NaN or BLANK values. Note that for FLOAT_IMG and DOUBLE_IMG,
+         it will automatically fill them with the NaN value.*/
       if(crp->outfits==NULL)
-	firstcropmakearray(crp, fpixel_i, lpixel_i, fpixel_o, lpixel_o);
+        firstcropmakearray(crp, fpixel_i, lpixel_i, fpixel_o, lpixel_o);
       ofp=crp->outfits;
 
 
       /* Read the desired part of the image, then write it into this
-	 array. */
+         array. */
       cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
       array=gal_fits_bitpix_alloc(cropsize, bitpix);
       status=0;
       if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
-			  p->bitnul, array, &anynul, &status))
-	gal_fits_io_error(status, NULL);
+                          p->bitnul, array, &anynul, &status))
+        gal_fits_io_error(status, NULL);
 
 
       /* If we have a floating point or double image, pixels with zero
-	 value should actually be a NaN. Unless the user specificly
-	 asks for it, make the conversion.*/
+         value should actually be a NaN. Unless the user specificly
+         asks for it, make the conversion.*/
       if(p->zeroisnotblank==0
-	 && (bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG) )
-	changezerotonan(array, cropsize, bitpix);
+         && (bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG) )
+        changezerotonan(array, cropsize, bitpix);
 
 
       /* If a polygon is given, remove all the pixels within or
@@ -735,21 +744,21 @@ onecrop(struct cropparams *crp)
       /* Write the array into the image. */
       status=0;
       if( fits_write_subset(ofp, p->datatype, fpixel_o, lpixel_o,
-			    array, &status) )
-	gal_fits_io_error(status, NULL);
+                            array, &status) )
+        gal_fits_io_error(status, NULL);
 
 
       /* A section has been added to the cropped image from this input
-	 image, so increment crp->imgcount and save the information of
-	 this image. */
+         image, so increment crp->imgcount and save the information of
+         this image. */
       sprintf(basename, "ICF%lu", ++p->log[crp->outindex].numimg);
       gal_fits_file_name_in_keywords(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
-	      fpixel_i[1], lpixel_i[1]+1);
+              fpixel_i[1], lpixel_i[1]+1);
       gal_fits_add_to_fits_header_ll_end(&headers, TSTRING, regionkey, 0,
-                                              region, 0, "Range of pixels "
-                                              "used for this output.", 0, NULL);
+                                         region, 0, "Range of pixels "
+                                         "used for this output.", 0, NULL);
       gal_fits_update_keys(ofp, &headers);
 
 
@@ -821,7 +830,7 @@ iscenterfilled(struct cropparams *crp)
   size=checkcenter*checkcenter;
   array=gal_fits_bitpix_alloc(size, bitpix);
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
-		       p->bitnul, array, &anynul, &status) )
+                       p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);
 
   /* Depending on bitpix, check the central pixels of the image. */
@@ -864,8 +873,8 @@ iscenterfilled(struct cropparams *crp)
 
     default:
       error(EXIT_FAILURE, 0, "in iscenterfilled, the bitbix is not "
-	    "recognized! This is not possible by the user, so it is a "
-	    "a bug. Please contact us so we can correct it");
+            "recognized! This is not possible by the user, so it is a "
+            "a bug. Please contact us so we can correct it");
     }
   free(array);
 
@@ -909,16 +918,16 @@ printlog(struct imgcropparams *p)
   if(p->up.catset && p->cp.verb)
     for(i=0;log[i].name;++i)
       if(log[i].numimg)
-	{
-	  if(log[i].centerfilled || p->keepblankcenter)
-	    {
-	      ++numfiles;
-	      if(log[i].numimg>1)
-		++numstitched;
-	    }
-	  if(log[i].centerfilled)
-	    ++numcentfilled;
-	}
+        {
+          if(log[i].centerfilled || p->keepblankcenter)
+            {
+              ++numfiles;
+              if(log[i].numimg>1)
+                ++numstitched;
+            }
+          if(log[i].centerfilled)
+            ++numcentfilled;
+        }
 
   /* Check to see if the file exists and remove if if it is ok. */
   gal_checkset_check_remove_file(LOGFILENAME, p->cp.dontdelete);
@@ -933,19 +942,19 @@ printlog(struct imgcropparams *p)
     {
       /* First print the comments to the file. */
       fprintf(logfile,
-	      "# "SPACK_STRING" log file.\n"
-	      "# "SPACK_NAME" was run on %s#\n",
-	      ctime(&p->rawtime));
+              "# "SPACK_STRING" log file.\n"
+              "# "SPACK_NAME" was run on %s#\n",
+              ctime(&p->rawtime));
       if(p->keepblankcenter==0)
-	fprintf(logfile, "# NOTE: by default images with a blank "
-		"center are deleted.\n# To keep such images, run again "
-		"with `--keepblankcenter`.\n#\n");
+        fprintf(logfile, "# NOTE: by default images with a blank "
+                "center are deleted.\n# To keep such images, run again "
+                "with `--keepblankcenter`.\n#\n");
       fprintf(logfile,
-	      "# Column numbers below start from zero.\n"
-	      "# 0: Output file name.\n"
-	      "# 1: Number of images used in this cropped image.\n"
-	      "# 2: Are the central %lu pixels filled? (1: yes, 0: no)\n",
-	      p->checkcenter);
+              "# Column numbers below start from zero.\n"
+              "# 0: Output file name.\n"
+              "# 1: Number of images used in this cropped image.\n"
+              "# 2: Are the central %lu pixels filled? (1: yes, 0: no)\n",
+              p->checkcenter);
 
       /* Then print each output's information. */
       for(i=0;log[i].name;++i)
@@ -954,23 +963,23 @@ printlog(struct imgcropparams *p)
 
       /* Report Summary: */
       if(p->cp.verb && p->up.catset)
-	{
-	  sprintf(msg, "%lu images created.", numfiles);
-	  gal_timing_report(NULL, msg, 1);
-	  sprintf(msg, "%lu filled in the center.",
-		  numcentfilled);
-	  gal_timing_report(NULL, msg, 1);
-	  if(numstitched)
-	    {
-	      sprintf(msg, "%lu used more than one input.",
-		      numstitched);
-	      gal_timing_report(NULL, msg, 1);
-	    }
-	}
+        {
+          sprintf(msg, "%lu images created.", numfiles);
+          gal_timing_report(NULL, msg, 1);
+          sprintf(msg, "%lu filled in the center.",
+                  numcentfilled);
+          gal_timing_report(NULL, msg, 1);
+          if(numstitched)
+            {
+              sprintf(msg, "%lu used more than one input.",
+                      numstitched);
+              gal_timing_report(NULL, msg, 1);
+            }
+        }
 
       /* Close the file. */
       errno=0;
       if(fclose(logfile))
-	error(EXIT_FAILURE, errno, LOGFILENAME" could not be closed");
+        error(EXIT_FAILURE, errno, LOGFILENAME" could not be closed");
     }
 }

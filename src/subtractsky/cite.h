@@ -25,14 +25,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #define SUBTRACTSKYBIBTEX ""
 
-#define PRINTCITEABORT {						\
-    printf("\nWe hope %s has been useful for your research.\n"		\
-	   "Citations are vital for the continued work on %s.\n"	\
-	   "Thank you for citing it in your research paper.\n"		\
-	   "\nPlease cite as \"%s\":\n\n%s\n\n%s",			\
-	   SPACK_NAME, SPACK_NAME, SPACK_STRING,                        \
-           GAL_STRINGS_MAIN_BIBTEX, SUBTRACTSKYBIBTEX);		        \
-    exit(EXIT_SUCCESS);							\
+#define PRINTCITEABORT {                                                \
+    printf("\nWe hope %s has been useful for your research.\n"          \
+           "Citations are vital for the continued work on %s.\n"        \
+           "Thank you for citing it in your research paper.\n"          \
+           "\nPlease cite as \"%s\":\n\n%s\n\n%s",                      \
+           SPACK_NAME, SPACK_NAME, SPACK_STRING,                        \
+           GAL_STRINGS_MAIN_BIBTEX, SUBTRACTSKYBIBTEX);                 \
+    exit(EXIT_SUCCESS);                                                 \
 }
 
 #endif

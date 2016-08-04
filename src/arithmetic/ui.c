@@ -30,10 +30,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include <nproc.h>              /* From Gnulib.                     */
+#include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>    /* Includes time.h and sys/time.h   */
+#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
@@ -41,8 +41,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"		        /* Needs main.h                   */
-#include "args.h"	        /* Needs main.h, includes argp.h. */
+#include "ui.h"                  /* Needs main.h                   */
+#include "args.h"                /* Needs main.h, includes argp.h. */
 
 
 /* Set the file names of the places where the default parameters are
@@ -73,7 +73,7 @@ readconfig(char *filename, struct imgarithparams *p)
   char *line, *name, *value;
   struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
-  char key='a';	/* Not used, just a place holder. */
+  char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
      might be intentional, so there is no error. If a parameter is
@@ -90,7 +90,7 @@ readconfig(char *filename, struct imgarithparams *p)
   line=malloc(len*sizeof *line);
   if(line==NULL)
     error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
-	  len * sizeof *line);
+          len * sizeof *line);
 
   /* Read the tokens in the file:  */
   while(getline(&line, &len, fp) != -1)
@@ -120,7 +120,8 @@ readconfig(char *filename, struct imgarithparams *p)
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->output,
+                                       &cp->outputset);
 
 
       /* Operating modes: */
@@ -129,8 +130,8 @@ readconfig(char *filename, struct imgarithparams *p)
 
 
       else
-	error_at_line(EXIT_FAILURE, 0, filename, lineno,
-		      "`%s` not recognized.\n", name);
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s` not recognized.\n", name);
     }
 
   free(line);
@@ -293,8 +294,8 @@ sanitycheck(struct imgarithparams *p)
     {
       /* Set the p->up.maskname accordingly: */
       gal_fits_file_or_ext_name(token->v, p->cp.hdu,
-                                     p->up.masknameset, &p->up.maskname,
-                                     p->up.mhdu, p->up.mhduset, "mask");
+                                p->up.masknameset, &p->up.maskname,
+                                p->up.mhdu, p->up.mhduset, "mask");
 
       /* Set the name of the output file: */
       if(p->cp.outputset)

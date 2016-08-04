@@ -239,8 +239,8 @@ gal_linkedlist_pop_from_tsll_start(struct gal_linkedlist_tsll **first,
 /******************* Ordered size_t: */
 struct gal_linkedlist_osll
 {
-  size_t v;			/* The actual value. */
-  float s;			/* The parameter to sort by. */
+  size_t v;                       /* The actual value. */
+  float s;                        /* The parameter to sort by. */
   struct gal_linkedlist_osll *next;
 };
 

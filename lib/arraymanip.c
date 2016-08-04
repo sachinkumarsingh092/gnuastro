@@ -50,7 +50,7 @@ gal_arraymanip_uchar_init_on_region(unsigned char *in, const unsigned char v,
     {
       fp = (p=in+start) + s1;
       do
-	*p=v;
+        *p=v;
       while(++p<fp);
       start+=is1;
     }
@@ -81,7 +81,7 @@ gal_arraymanip_long_init_on_region(long *in, const long v, size_t start,
     {
       fp = (p=in+start) + s1;
       do
-	*p=v;
+        *p=v;
       while(++p<fp);
       start+=is1;
     }

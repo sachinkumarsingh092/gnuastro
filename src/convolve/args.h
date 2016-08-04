@@ -264,9 +264,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
      user is warned and the program is stopped: */
   if(arg && arg[0]=='=')
     argp_error(state, "incorrect use of the equal sign (`=`). For short "
-	       "options, `=` should not be used and for long options, "
-	       "there should be no space between the option, equal sign "
-	       "and value");
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
 
   switch(key)
     {
@@ -327,7 +327,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
    /* Operating mode: */
     case 'p':
       if(p->up.frequencyset)
-	argp_error(state, "only one of spatial or frequency domain "
+        argp_error(state, "only one of spatial or frequency domain "
                    "convolution modes may be chosen");
       p->spatial=1;
       p->frequency=0;
@@ -335,7 +335,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'f':
       if(p->up.spatialset)
-	argp_error(state, "only one of spatial or frequency domain "
+        argp_error(state, "only one of spatial or frequency domain "
                    "convolution modes may be chosen");
       p->spatial=0;
       p->frequency=1;
@@ -368,13 +368,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* The command line options and arguments are finished. */
     case ARGP_KEY_END:
       if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-	 && p->cp.printparams==0)
-	{
-	  if(state->arg_num==0)
-	    argp_error(state, "no argument given");
-	  if(p->up.inputname==NULL)
-	    argp_error(state, "no input files provided");
-	}
+         && p->cp.printparams==0)
+        {
+          if(state->arg_num==0)
+            argp_error(state, "no argument given");
+          if(p->up.inputname==NULL)
+            argp_error(state, "no input files provided");
+        }
       break;
 
 
@@ -405,6 +405,6 @@ struct argp_child children[]=
 
 /* Basic structure defining the whole argument reading process. */
 static struct argp thisargp = {options, parse_opt, args_doc,
-			       doc, children, NULL, NULL};
+                               doc, children, NULL, NULL};
 
 #endif

@@ -172,7 +172,7 @@ gal_linkedlist_print_fll_array(struct gal_linkedlist_fll **afll, size_t num)
     {
       printf(" %lu:\n", i);
       for(tmp=afll[i];tmp!=NULL;tmp=tmp->next)
-	printf("%f, ", tmp->v);
+        printf("%f, ", tmp->v);
       printf("\n");
     }
 }
@@ -534,7 +534,7 @@ gal_linkedlist_add_to_tsll_end(struct gal_linkedlist_tsll **last, size_t value)
   newnode->v=value;
   newnode->next=*last;
   newnode->prev=NULL;
-  if(*last)			/* If *list is not NULL */
+  if(*last)                        /* If *list is not NULL */
     (*last)->prev=newnode;
   *last=newnode;
 }
@@ -602,21 +602,21 @@ gal_linkedlist_add_to_osll(struct gal_linkedlist_osll **list,
     {
       if(tosort<tmp->s) break;
       /* No need for else, it will only come here if the condition
-	 above is not satisfied. */
+         above is not satisfied. */
       prev=tmp;
       tmp=tmp->next;
     }
 
-  if(tmp==NULL)	     /* This is the largest value so far. */
-    {		     /* '*list' only changes if it is NULL. */
+  if(tmp==NULL)      /* This is the largest value so far. */
+    {                /* '*list' only changes if it is NULL. */
       newnode->next=NULL;
       if(prev) prev->next=newnode;   /* 'prev' is not NULL! */
-      else     *list=newnode;	     /* Only for initial node. */
+      else     *list=newnode;        /* Only for initial node. */
     }
   else
     {
       if(prev) prev->next=newnode;
-      else     *list=newnode;	/* 'tosort' is smaller than all. */
+      else     *list=newnode;        /* 'tosort' is smaller than all. */
       newnode->next=tmp;
     }
 }
@@ -687,7 +687,7 @@ gal_linkedlist_osll_into_sll(struct gal_linkedlist_osll *in,
             |
    NULL <-- (v0,s0) <--> (v1,s1) <--> ... (vn,sn) --> NULL
                                           |
-			   smallest pointer
+                           smallest pointer
 
    Where s(n)>s(n+1) for all n.
 */
@@ -700,7 +700,7 @@ gal_linkedlist_print_tosll(struct gal_linkedlist_tosll *l,
   while(l!=NULL)
     {
       printf("\t%-5lu (%lu, %.4f) \n", counter++,
-	     l->v, l->s);
+             l->v, l->s);
       l=l->next;
       printf("\t\t\t\t(%lu, %.4f)\n", s->v, s->s);
       s=s->prev;
@@ -734,32 +734,32 @@ gal_linkedlist_add_to_tosll_end(struct gal_linkedlist_tosll **largest,
     {
       if(tosort >= tmp->s) break;
       /* No need for else, it will only come here if the condition
-	 above is not satisfied. */
+         above is not satisfied. */
       newnode->prev=tmp;
       tmp=tmp->next;
     }
 
-  if(tmp==NULL)	     /* This is the smallest value so far.     */
-    {		     /* '*largest' only changes if it is NULL. */
+  if(tmp==NULL)      /* This is the smallest value so far.     */
+    {                /* '*largest' only changes if it is NULL. */
       newnode->next=NULL;
       *smallest=newnode;
-      if(newnode->prev)		/* 'prev' is not NULL! */
-	newnode->prev->next=newnode;
-      else			/* 'prev is NULL, Only first. */
-	*largest=newnode;
+      if(newnode->prev)         /* 'prev' is not NULL! */
+        newnode->prev->next=newnode;
+      else                      /* 'prev is NULL, Only first. */
+        *largest=newnode;
     }
   else
     {
       if(newnode->prev)
-	{
-	  newnode->prev->next->prev=newnode;
-	  newnode->prev->next=newnode;
-	}
+        {
+          newnode->prev->next->prev=newnode;
+          newnode->prev->next=newnode;
+        }
       else
-	{
-	  (*largest)->prev=newnode;
-	  *largest=newnode;       /* 'tosort' is larger than all. */
-	}
+        {
+          (*largest)->prev=newnode;
+          *largest=newnode;       /* 'tosort' is larger than all. */
+        }
       newnode->next=tmp;
     }
 }
@@ -802,10 +802,10 @@ gal_linkedlist_smallest_tosll(struct gal_linkedlist_tosll *largest,
   while(tmp!=NULL)
     {
       if(tmp->next==NULL)
-	{
-	  *smallest=tmp;
-	  break;
-	}
+        {
+          *smallest=tmp;
+          break;
+        }
       tmp=tmp->next;
     }
 
