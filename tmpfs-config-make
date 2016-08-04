@@ -1,0 +1,144 @@
+#! /bin/sh
+
+# This script will configure and build Gnuastro in parallel within a
+# temporary tmpfs directory in the RAM. Then it will create a symbolic link
+# to access that temporary directory which is called 'build'. Ideally this
+# script should only be run the first time when you want to run
+# './configure' and 'make'. For future builds 'make' should be run in the
+# 'build' directory, either run 'cd build' first, or 'make -C build'. If
+# the configure script dependencies didn't change, you can also run this
+# script again to run make in the build directory.
+#
+# MOTIVATION:
+#
+# The configure and build process involves the creation, reading, and
+# modification of a large number of files (input/output, or I/O). Therefore
+# file I/O issues can directly affect the work of developers who need to
+# configure and build Gnuastro numerous times. Some such issues are listed
+# below:
+#
+#   - I/O will cause wear and tear on both the HDDs (mechanical failures)
+#     and SSDs (decreasing the lifetime).
+#
+#   - Having the built files mixed with the source files can greatly affect
+#     backing up (synchronization) of source files (since it involves the
+#     management of a large number of small files that are changed a
+#     lot. Such systems can ofcourse be configured to ignore some files and
+#     directories but that will require a high level of customization.
+#
+# One solution to these problems is the tmpfs file system (see
+# https://en.wikipedia.org/wiki/Tmpfs). Any file in tmpfs is actually
+# stored in the RAM (and possibly SAWP), not on HDDs or SSDs. The RAM is
+# built for a large number of fast file I/O. Therefore the large number of
+# file I/O will not harm the HDDs or SSDs. However, due to the volatile
+# nature of RAM, files in the tmpfs filesystem will be permanently lost
+# after a power-off. Since all configured and built files are derivative
+# files (not files that have been directly written by hand) there is no
+# problem in this and this feature can be considered and automatic cleanup.
+#
+# The modern GNU C library (and thus the Linux kernel) define the
+# '/dev/shm' directory for this purpose (POSIX shared memory). Therefore
+# this script takes '/dev/shm' as the default temporary directory (the
+# value to TMPDIR). This script will make a 'gnuastro' directory in TMPDIR,
+# and a symbolic link to it called "build" in the top source directory.  It
+# will then internally change to that directory and configure and build
+# (run 'make -kjN') Gnuastro in there.
+#
+# After this script is run, you can 'cd build' and run other 'make'
+# commands (for example 'make pdf', 'make check', or 'make install') from
+# there. In Emacs, the command to be run with the 'M-x compile' command can
+# be changed to 'cd build; make -kjN' (N is an integer >=1) instead of the
+# default 'make -k'. In this manner, the 'M-x recompile' command to be run
+# during the development will also build in the RAM while you modify the
+# source in your non-volatile HDD or SSD.
+#
+# To further speed up the build process, this script will build ('make')
+# Gnuastro on multiple threads (value to the 'NUM_THREADS' variable
+# bellow). This script can also be used in any other source file that uses
+# the GNU build system.
+#
+#
+#
+# Original author: Mohammad Akhlaghi <akhlaghi@gnu.org>
+# Contributing author(s):
+#   Mosè Giordano <mose@gnu.org>
+# Copyright (C) 2016, Free Software Foundation, Inc.
+#
+# Gnuastro is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Gnuastro is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
+
+
+# Set the variables:
+NUM_THREADS=8
+TMPDIR=/dev/shm
+
+
+# Check if TMPDIR exists
+if [ ! -d $TMPDIR ]; then
+    echo "$TMPDIR doesn't exist. Aborted."
+    exit 1
+fi
+
+
+# Set the build directory name in tmpfs. If the .version file exists, use
+# it to allow multiple version builds there (which might happen during
+# development).
+if [ -f .version ]; then
+    build_dir=$TMPDIR/gnuastro-$(cat .version)
+else
+    build_dir=$TMPDIR/gnuastro
+fi
+
+
+# Make the build directory in tmpfs (if it doesn't already exist).
+if [ ! -d $build_dir ]; then
+    mkdir $build_dir
+fi
+
+
+# Make a symbolic link to the tmpfs build directory for users to easily
+# access the built files and also follow the progress. We are first
+# deleting any existing symbolic link and remaking it since the possible
+# deletion of $build_dir during the development can complicate the
+# pre-existing symbolic link.
+build_sym=build
+if [ -h $build_sym ]; then
+    # Delete a harmless symbolic link, if present.
+    rm $build_sym
+fi
+
+
+# Create the link only if the symbolic link doesn't exist.
+if [ ! -e $build_sym ]; then
+    ln -s $build_dir $build_sym
+else
+    echo "$build_sym already exists here and is not a symbolic link."
+    echo "Aborted."
+    exit 1
+fi
+
+
+# Keep the address of this source directory and go into the build directory
+# to start the configure and/or build:
+srcdir=$(pwd)
+cd $build_dir
+
+
+# If a 'Makefile' doesn't exist, then configure Gnuastro:
+if [ ! -f Makefile ]; then
+    $srcdir/configure --srcdir=$srcdir
+fi
+
+
+# Build Gnuastro in that directory with the specified number of threads
+make -kj$NUM_THREADS
