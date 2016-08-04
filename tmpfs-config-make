@@ -90,13 +90,19 @@ if [ ! -d $TMPDIR ]; then
 fi
 
 
+# Keep the address of this source directory (where this script is being run
+# from) which we will need later.
+srcdir=$(pwd)
+
+
 # Set the build directory name in tmpfs. If the .version file exists, use
 # it to allow multiple version builds there (which might happen during
 # development).
+basedir=$(basename -- "$srcdir")
 if [ -f .version ]; then
-    build_dir=$TMPDIR/gnuastro-$(cat .version)
+    build_dir=$TMPDIR/"$basedir"-$(cat .version)
 else
-    build_dir=$TMPDIR/gnuastro
+    build_dir=$TMPDIR/"$basedir"
 fi
 
 
@@ -128,9 +134,7 @@ else
 fi
 
 
-# Keep the address of this source directory and go into the build directory
-# to start the configure and/or build:
-srcdir=$(pwd)
+# Go into the build directory to start the configure and/or build:
 cd $build_dir
 
 
