@@ -42,6 +42,36 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Write the log entry for each crop.
+
+   A maximum length of FILENAME_BUFFER_IN_VERB characters is set for the
+   filename to be displayed in stdout in verbose mode. This length is set
+   to make the output on the user's terminal reasonable (in one line). So
+   when the filename is longer than this, its first set of characters are
+   truncated. In the log-file there is no truncation, therefore the log
+   file should be used for checking the outputs, not the outputs printed on
+   the screen. */
+void
+reportcrop(struct imgcroplog *log)
+{
+  size_t outnamelen=strlen(log->name);;
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
+
+  /* Define the output string based on the length of the output file. */
+  if ( outnamelen > FILENAME_BUFFER_IN_VERB )
+    sprintf(msg, "...%s %lu %d",
+            &log->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
+            log->numimg, log->centerfilled);
+  else
+    sprintf(msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %lu %d",
+            log->name, log->numimg, log->centerfilled);
+  gal_timing_report(NULL, msg, 2);
+}
+
+
+
+
+
 void *
 imgmodecrop(void *inparam)
 {
@@ -49,11 +79,10 @@ imgmodecrop(void *inparam)
   struct imgcropparams *p=crp->p;
   struct gal_commonparams *cp=&p->cp;
 
+  size_t i;
   int status;
-  size_t i, outnamelen;
   struct inputimgs *img;
   struct imgcroplog *log;
-  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
 
   /* In image mode, we always only have one image. */
   crp->imgindex=0;
@@ -99,29 +128,8 @@ imgmodecrop(void *inparam)
         }
       else log->centerfilled=0;
 
-      /* Write the log entry for this crop, in this mode, each output image
-         was only cropped from one image. Then print the result on the
-         terminal, if the user asked for it.
-
-         A maximum length of FILENAME_BUFFER_IN_VERB characters is set for
-         the filename. This length is set to make the output on the user's
-         terminal reasonable (in one line). So when the filename is longer
-         than this, its first set of characters are truncated. In the
-         log-file there is no truncation, therefore the log file should be
-         used for checking the outputs, not the outputs printed on the
-         screen. */
-      if(cp->verb)
-        {
-          outnamelen = strlen(log->name);
-          if ( outnamelen > FILENAME_BUFFER_IN_VERB )
-            sprintf(msg, "...%s %lu %d",
-                    &log->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
-                    log->numimg, log->centerfilled);
-          else
-            sprintf(msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %lu %d",
-                    log->name, log->numimg, log->centerfilled);
-          gal_timing_report(NULL, msg, 2);
-        }
+      /* Report the status on stdout if verbose mode is requested. */
+      if(cp->verb) reportcrop(log);
     }
 
   /* Close the input image. */
@@ -150,7 +158,6 @@ wcsmodecrop(void *inparam)
   size_t i;
   int status, tcatset=0;
   struct imgcroplog *log;
-  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
 
   /* Go over all the output objects for this thread. */
   for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
@@ -218,15 +225,8 @@ wcsmodecrop(void *inparam)
           log->centerfilled=0;
         }
 
-      /* Write the log entry for this crop, in this mode, each output
-         image was only cropped from one image. Then print the result
-         on the terminal, if the user askd for it. */
-      if(p->cp.verb)
-        {
-          sprintf(msg, "%-30s %lu %d", log->name, log->numimg,
-                  log->centerfilled);
-          gal_timing_report(NULL, msg, 2);
-        }
+      /* Report the status on stdout if verbose mode is requested. */
+      if(p->cp.verb) reportcrop(log);
     }
 
   /* Wait until all other threads finish. */
