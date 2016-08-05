@@ -267,6 +267,7 @@ Configuring
 * Gnuastro configure options::  Configure options particular to Gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
+* Configure and build in RAM::  For minimal use of HDD or SSD, and clean source.
 
 Common behavior
 
@@ -3001,6 +3002,7 @@ are discussed.
 * Gnuastro configure options::  Configure options particular to Gnuastro.
 * Installation directory::      Specify the directory to install.
 * Executable names::            Changing executable names.
+* Configure and build in RAM::  For minimal use of HDD or SSD, and clean source.
 @end menu
 
 @node Gnuastro configure options, Installation directory, Configuring, Configuring
@@ -3365,7 +3367,7 @@ names as important system programs or libraries.
 
 
 
-@node Executable names,  , Installation directory, Configuring
+@node Executable names, Configure and build in RAM, Installation directory, Configuring
 @subsubsection Executable names
 
 @cindex Executable names
@@ -3462,6 +3464,88 @@ $ ./configure --program-transform-name='s/ast/ /'
 @end example
 
 
+
+@node Configure and build in RAM,  , Executable names, Configuring
+@subsubsection Configure and build in RAM
+
+@cindex File I/O
+@cindex Input/Output, file
+The configure and build process involves the creation, reading, and
+modification of a large number of files (input/output, or I/O). Therefore
+file I/O issues can directly affect the work of developers who need to
+configure and build Gnuastro numerous times. Some of these issues are
+listed below:
+
+@itemize
+@cindex HDD
+@cindex SSD
+@item
+I/O will cause wear and tear on both the HDDs (mechanical failures) and
+SSDs (decreasing the lifetime).
+
+@cindex Backup
+@item
+Having the built files mixed with the source files can greatly affect
+backing up (synchronization) of source files (since it involves the
+management of a large number of small files that are regularly
+changed. Backup software can ofcourse be configured to ignore the built
+files and directories. However, since the built files are mixed with the
+source files and can have a large variety, this will require a high level
+of customization.
+@end itemize
+
+@cindex tmpfs file system
+@cindex file systems, tmpfs
+One solution to address both these problems is to use the
+@url{https://en.wikipedia.org/wiki/Tmpfs, tmpfs file system}. Any file in
+tmpfs is actually stored in the RAM (and possibly SAWP), not on HDDs or
+SSDs. The RAM is built for extensive and fast I/O. Therefore the large
+number of file I/Os associated with configuring and building will not harm
+the HDDs or SSDs. Due to the volatile nature of RAM, files in the tmpfs
+filesystem will be permanently lost after a power-off. Since all configured
+and built files are derivative files (not files that have been directly
+written by hand) there is no problem in this and this feature can be
+considered as an automatic cleanup.
+
+@cindex Linux kernel
+@cindex GNU C Library
+@cindex GNU Build System
+The modern GNU C Library (and thus the Linux kernel) define the
+@file{/dev/shm} directory for this purpose (POSIX shared memory). So using
+GNU Build System's ability to build in a separate directory (not
+necessarily in the source directory), we can configure and build the
+programs in @file{/dev/shm} to benefit from the RAM. To simplify the
+process, Gnuastro comes with a @file{tmpfs-config-make} script. This script
+will create a directory in the shared memory, and put a symbolic link to it
+(called @file{build}) in the top source directory (the backup/sync software
+therefore only needs to ignore this single link/file). The script will then
+internally change to that directory and configure and build (@command{make
+-kjN}, where @command{N} is the number of threads for a parallel build)
+Gnuastro in there. To benefit from this script, simply run the following
+command instead of @command{./configure} and @command{make}:
+
+@example
+$ ./tmpfs-config-make
+@end example
+
+@cindex GNU Emacs
+After this script is finished, you can `@command{cd build}' and run other
+Make commands (for example, `@command{make check}', `@command{make
+install}', or `@command{make pdf}') from there. In Emacs, the command to be
+run with the @command{M-x compile} command (by default: @command{make -k})
+can be changed to `@command{cd build; make -kjN}', or `@command{make -C
+build -kjN}' (@command{N} is the number of threads; an integer
+@mymath{\geq1}). For subsequent builds (during development) the
+@command{M-x recompile} command will also do all the building in the RAM
+while you modify the clean, and backed-up source files and make
+minimal/efficient use of your non-volatile HDD or SSD.
+
+This script can be used in any software which is configured and built using
+the GNU Build System. Just copy it in, and run it from, the top source
+directory of that software. The default number of threads and location of
+the shared memory (@file{/dev/shm}) are currently hard-coded within the
+script. If you need to change them, please open the script with a text
+editor and set their values manually.
 
 @node Tests, A4 print book, Configuring, Build and install
 @subsection Tests
