@@ -273,8 +273,14 @@ imgcrop(struct imgcropparams *p)
   struct cropparams *crp;
   size_t i, *indexs, thrdcols;
   size_t nt=p->cp.numthreads, nb;
+  void *(*modefunction)(void *)=NULL;
 
-  if(!p->imgmode && !p->wcsmode)
+  /* Set the function to run: */
+  if(p->imgmode)
+    modefunction=&imgmodecrop;
+  else if(p->wcsmode)
+    modefunction=&wcsmodecrop;
+  else
     error(EXIT_FAILURE, 0, "a bug! Somehow in imgcrop (imgcrop.c), "
           "neither the imgmode is on or the wcsmode! Please contact us "
           "so we can fix it, thanks");
@@ -307,10 +313,7 @@ imgcrop(struct imgcropparams *p)
     {
       crp[0].p=p;
       crp[0].indexs=indexs;
-      if(p->imgmode)
-        imgmodecrop(&crp[0]);
-      else if(p->wcsmode)
-        wcsmodecrop(&crp[0]);
+      modefunction(&crp[0]);
     }
   else
     {
@@ -330,10 +333,7 @@ imgcrop(struct imgcropparams *p)
             crp[i].b=&b;
             crp[i].outlen=crp[0].outlen;
             crp[i].indexs=&indexs[i*thrdcols];
-            if(p->imgmode)
-              err=pthread_create(&t, &attr, imgmodecrop, &crp[i]);
-            else if(p->wcsmode)
-              err=pthread_create(&t, &attr, wcsmodecrop, &crp[i]);
+            err=pthread_create(&t, &attr, modefunction, &crp[i]);
             if(err)
               error(EXIT_FAILURE, 0, "can't create thread %lu", i);
           }
