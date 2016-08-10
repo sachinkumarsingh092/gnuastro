@@ -117,7 +117,8 @@ EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el .version   \
              tmpfs-config-make bootstrapped/m4/gnulib-cache.m4             \
              bootstrapped/README .autom4te.cfg lib/gnuastro/commonargs.h   \
              lib/gnuastro/commonparams.h lib/gnuastro/fixedstringmacros.h  \
-             lib/gnuastro/neighbors.h lib/gnuastro/README
+             lib/gnuastro/neighbors.h lib/gnuastro/README                  \
+             tests/during-dev.sh
 
 
 
