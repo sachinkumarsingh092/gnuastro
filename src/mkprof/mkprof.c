@@ -59,73 +59,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/**************************************************************/
-/************        Prepare WCS parameters       *************/
-/**************************************************************/
-void
-preparewcs(struct mkprofparams *p)
-{
-  int status;
-  struct wcsprm wcs;
-  long os=p->oversample;
-
-  /* Initialize the structure (allocate all the arrays). */
-  wcs.flag=-1;
-  if( (status=wcsini(1, 2, &wcs)) )
-    error(EXIT_FAILURE, 0, "wcsinit error %d: %s",
-          status, wcs_errmsg[status]);
-
-  /* Correct the CRPIX values. */
-  p->crpix[0]=p->crpix[0]*os+p->shift[0]-os/2;
-  p->crpix[1]=p->crpix[1]*os+p->shift[1]-os/2;
-
-  /* Fill in all the important input array values. */
-  wcs.equinox=2000.0f;
-  wcs.crpix[0]=p->crpix[0];
-  wcs.crpix[1]=p->crpix[1];
-  wcs.crval[0]=p->crval[0];
-  wcs.crval[1]=p->crval[1];
-  wcs.pc[0]=-1.0f*p->resolution/3600/p->oversample;
-  wcs.pc[3]=p->resolution/3600/p->oversample;
-  wcs.pc[1]=wcs.pc[2]=0.0f;
-  wcs.cdelt[0]=wcs.cdelt[1]=1.0f;
-  strcpy(wcs.cunit[0], "deg");
-  strcpy(wcs.cunit[1], "deg");
-  strcpy(wcs.ctype[0], "RA---TAN");
-  strcpy(wcs.ctype[1], "DEC--TAN");
-
-  /* Set up the wcs structure: */
-  if( (status=wcsset(&wcs)) )
-    error(EXIT_FAILURE, 0, "wcsset error %d: %s", status,
-          wcs_errmsg[status]);
-
-  /* Write the WCS structure to a header string. */
-  if( (status=wcshdo(WCSHDO_safe, &wcs, &p->wcsnkeyrec, &p->wcsheader)) )
-    error(EXIT_FAILURE, 0, "wcshdo error %d: %s", status,
-          wcs_errmsg[status]);
-
-  /* Free the allocated spaces by wcsini/wcsset: */
-  if( (status=wcsfree(&wcs)) )
-    error(EXIT_FAILURE, 0, "wcsfree error %d: %s", status,
-          wcs_errmsg[status]);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -203,7 +136,7 @@ saveindividual(struct mkonthread *mkp)
   crpix[0] = p->crpix[0] - os*(mkp->fpixel_i[0]-1);
   crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
 
-  /* Write the name and save the FITS image: */
+  /* Write the name and remove a similarly named file. */
   sprintf(outname, "%s%lu_%s", outdir, ibq->id, p->basename);
   gal_checkset_check_remove_file(outname, p->cp.dontdelete);
 
@@ -614,27 +547,41 @@ write(struct mkprofparams *p)
       ibq=tbq;
     }
 
-  /* Write the final array to the final FITS image. */
+  /* Write the final array to the output FITS image. */
   if(p->nomerged==0)
     {
+      /* Get the current time for verbose output. */
       if(verb) gettimeofday(&t1, NULL);
+
+      /* If the background image had a special file type, MakeProfile's
+         output should also have the same type. So here we check the type
+         and if its not float, we change to that type. */
       if(p->up.backname)
         {
-          if(bitpix==FLOAT_IMG) array=out;
-          else gal_fits_change_type(p->out, FLOAT_IMG,
-                                         p->naxes[1]*p->naxes[0],
-                                         p->anyblank, &array, bitpix);
-          gal_fits_array_to_file(p->mergedimgname, "MockImg on back",
-                                 bitpix, array, p->naxes[1],
-                                 p->naxes[0], p->anyblank, p->wcs,
-                                 NULL, SPACK_STRING);
-          if(bitpix!=FLOAT_IMG) free(array);
+          if(bitpix==FLOAT_IMG)
+            array=out;
+          else
+            gal_fits_change_type(out, FLOAT_IMG, p->naxes[1]*p->naxes[0],
+                                 p->anyblank, &array, bitpix);
         }
       else
-        gal_fits_atof_correct_wcs(p->mergedimgname, "MockImg", FLOAT_IMG,
-                                       out, p->naxes[1], p->naxes[0],
-                                       p->wcsheader, p->wcsnkeyrec,
-                                       NULL, SPACK_STRING);
+        {
+          array=out;
+          bitpix=FLOAT_IMG;
+        }
+
+      /* Write the array inside the output FITS file. */
+      gal_fits_array_to_file(p->mergedimgname, "MockImg on back",
+                             bitpix, array, p->naxes[1],
+                             p->naxes[0], p->anyblank, p->wcs,
+                             NULL, SPACK_STRING);
+
+      /* Free `array' when it was not a simple assignment but an
+         allocation,*/
+      if(p->up.backname && bitpix!=FLOAT_IMG)
+        free(array);
+
+      /* In verbose mode, print the information. */
       if(verb)
         {
           errno=0;
@@ -684,10 +631,6 @@ mkprof(struct mkprofparams *p)
   size_t nt=p->cp.numthreads, nb;
   long onaxes[2], os=p->oversample;
 
-  /* Get the WCS header strings ready to put into the FITS
-     image(s). */
-  if(p->up.backname==NULL)
-    preparewcs(p);
 
   /* Allocate the arrays to keep the thread and parameters for each
      thread. Note that we only want nt-1 threads to do the
@@ -766,5 +709,4 @@ mkprof(struct mkprofparams *p)
   /* Free the allocated spaces. */
   free(mkp);
   free(indexs);
-  free(p->wcsheader);
 }

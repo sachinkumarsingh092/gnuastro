@@ -41,17 +41,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /**********              XY to RADEC               ************/
 /**************************************************************/
-/* Convert the X and y coordinates in a larger array to ra and dec
-   coordinates in that same array. xy points to the first element in
-   the X column and radec points to the first element in the RA
-   column. The columns for Y and Dec have to be immediately after X
-   and RA.
+/* Use the X and Y columns in a larger array to fill the RA and Dec columns
+   in that same array. `xy' points to the first element in the X column and
+   `radec' points to the first element in the RA column. The columns for Y
+   and Dec have to be immediately after X and RA.
 
-   It appears that WCSLIB can only deal with static allocation. At
-   least in its tests it only uses static allocation. I tried dynamic
-   allocation, but it didn't work. So I can't use the vector
-   functionalities of WCSLIB and have to translate each point
-   separately.
+   It appears that WCSLIB can only deal with static allocation. At least in
+   its tests it only uses static allocation. I tried dynamic allocation,
+   but it didn't work. So I can't use the vector functionalities of WCSLIB
+   and have to translate each point separately.
 */
 void
 gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
@@ -85,6 +83,8 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
 
 
 
+/* Similar to the gal_wcs_xyarray_to_radec, but the reverse: to convert an
+   array of RA-Dec to X-Y. */
 void
 gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
                           size_t number, size_t width)
@@ -104,9 +104,10 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
           if(status)
             error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
                   wcs_errmsg[status]);
+
           /* For a check:
-             printf("(%f, %f) --> (%f, %f)\n", xy[i*width], xy[i*width+1],
-                    radec[i*width], radec[i*width+1]);
+          printf("(%f, %f) --> (%f, %f)\n", radec[i*width], radec[i*width+1],
+                 xy[i*width], xy[i*width+1]);
           */
         }
     }

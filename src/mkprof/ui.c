@@ -29,9 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <nproc.h>              /* From Gnulib.                   */
+#include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/box.h>
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
@@ -211,6 +212,20 @@ readconfig(char *filename, struct mkprofparams *p)
                                      filename, lineno);
           up->ycolset=1;
         }
+      else if(strcmp(name, "racol")==0)
+        {
+          if(up->racolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->racol, name, key, SPACK,
+                                     filename, lineno);
+          up->racolset=1;
+        }
+      else if(strcmp(name, "deccol")==0)
+        {
+          if(up->deccolset) continue;
+          gal_checkset_sizet_el_zero(value, &p->deccol, name, key, SPACK,
+                                     filename, lineno);
+          up->deccolset=1;
+        }
       else if(strcmp(name, "fcol")==0)
         {
           if(up->fcolset) continue;
@@ -360,6 +375,10 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "xcol", p->xcol);
   if(up->ycolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "ycol", p->ycol);
+  if(up->racolset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "racol", p->racol);
+  if(up->deccolset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "deccol", p->deccol);
   if(up->fcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "fcol", p->fcol);
   if(up->rcolset)
@@ -414,10 +433,6 @@ checkifset(struct mkprofparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("tolerance");
   if(up->zeropointset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("zeropoint");
-  if(up->xcolset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("xcol");
-  if(up->ycolset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("ycol");
   if(up->fcolset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("fcol");
   if(up->rcolset==0)
@@ -448,6 +463,27 @@ checkifset(struct mkprofparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("crval2");
   if(up->resolutionset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("resolution");
+
+
+  /* The X and Y columns are only needed when the RA and Dec columns have
+     not been given. */
+  if(up->racolset==0 && up->deccolset==0)
+    {
+      if(up->xcolset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("xcol");
+      if(up->ycolset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("ycol");
+    }
+  /* The `if' statment above made sure that at least one of the RA and Dec
+     columns have been specified. So make sure that both are specified. */
+  else if(up->racolset!=up->deccolset)
+    {
+      if(up->racolset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("racol");
+      if(up->deccolset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("deccol");
+    }
+
   GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
 
@@ -478,18 +514,23 @@ sanitycheck(struct mkprofparams *p)
 {
   int d0f1;
   long width[2]={1,1};
-  char *tmpname=NULL;
+  struct uiparams *up=&p->up;
   double truncr, *cat=p->cat, *row;
   size_t i, j, columns[9], cs1=p->cs1;
+  char *tmpname=NULL, *xcolstr, *ycolstr;
 
 
   /* Make sure the input file exists. */
   gal_checkset_check_file(p->up.catname);
 
 
-  /* Check if over-sampling is an odd number, then convert the
-     oversampling rate into the double type. */
-  if(p->oversample%2==0) ++p->oversample;
+  /* Check if over-sampling is an odd number, then set/modify the
+     respective values.*/
+  if(p->oversample%2==0)
+    error(EXIT_FAILURE, 0, "the value to the `--oversample' (`-s') option "
+          "must be an odd number. Please run the following command for a "
+          "complete explanation:\n\n  info gnuastro \"Oversampling\"\n\nOr "
+          "See the \"Oversampling\" section of the Gnuastro book.");
   p->halfpixel = 0.5f/p->oversample;
   p->naxes[0] *= p->oversample;
   p->naxes[1] *= p->oversample;
@@ -501,6 +542,29 @@ sanitycheck(struct mkprofparams *p)
     error(EXIT_FAILURE, 0, "`--setconsttomin' and `--setconsttonan' have "
           "been called together! The constant profile values can only have "
           "one value. So these two options cannot be called together");
+
+
+
+  /* When the RA and Dec columns have been given use them for the profile
+     positions instead of the X and Y columns. In the next step we are
+     going to convert the RAs and Decs to Xs and Ys and until then, we are
+     just dealing with the columns, not the actual values, so it is safe
+     (and greatfly simplifies the sanity checks below) to set xcol to ra
+     column and ycol to deccol. Also use this check to set the string that
+     should be printed if the column is not within the catalog's number of
+     columsn*/
+  if(up->racolset)
+    {
+      p->xcol=p->racol;
+      p->ycol=p->deccol;
+      xcolstr="racol";
+      ycolstr="deccol";
+    }
+  else
+    {
+      xcolstr="xcol";
+      ycolstr="ycol";
+    }
 
 
   /* If the column numbers are not equal. */
@@ -517,8 +581,8 @@ sanitycheck(struct mkprofparams *p)
 
 
   /* If all the columns are within the catalog: */
-  GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, "xcol");
-  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, "ycol");
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, xcolstr);
+  GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, ycolstr);
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->fcol, "fcol");
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->rcol, "rcol");
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->ncol, "ncol");
@@ -644,10 +708,71 @@ sanitycheck(struct mkprofparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 void
+preparewcs(struct mkprofparams *p)
+{
+  int status;
+  struct wcsprm *wcs;
+  long os=p->oversample;
+
+  /* Allocate the memory necessary for the wcsprm structure. */
+  errno=0;
+  wcs=p->wcs=malloc(sizeof *wcs);
+  if(wcs==NULL)
+    error(EXIT_FAILURE, errno, "%lu for wcs in preparewcs", sizeof *wcs);
+
+  /* Initialize the structure (allocate all the arrays). */
+  wcs->flag=-1;
+  if( (status=wcsini(1, 2, wcs)) )
+    error(EXIT_FAILURE, 0, "wcsinit error %d: %s",
+          status, wcs_errmsg[status]);
+
+  /* Correct the CRPIX values based on oversampling and shifting. */
+  p->crpix[0] = p->crpix[0]*os + p->shift[0] - os/2;
+  p->crpix[1] = p->crpix[1]*os + p->shift[1] - os/2;
+
+  /* Fill in all the important WCS structure parameters. */
+  wcs->equinox=2000.0f;
+  wcs->crpix[0]=p->crpix[0];
+  wcs->crpix[1]=p->crpix[1];
+  wcs->crval[0]=p->crval[0];
+  wcs->crval[1]=p->crval[1];
+  wcs->pc[0]=-1.0f*p->resolution/3600/p->oversample;
+  wcs->pc[3]=p->resolution/3600/p->oversample;
+  wcs->pc[1]=wcs->pc[2]=0.0f;
+  wcs->cdelt[0]=wcs->cdelt[1]=1.0f;
+  strcpy(wcs->cunit[0], "deg");
+  strcpy(wcs->cunit[1], "deg");
+  strcpy(wcs->ctype[0], "RA---TAN");
+  strcpy(wcs->ctype[1], "DEC--TAN");
+
+  /* Set up the wcs structure with the constants defined above. */
+  status=wcsset(wcs);
+  if(status)
+    error(EXIT_FAILURE, 0, "wcsset error %d: %s", status,
+          wcs_errmsg[status]);
+
+  /* When individual mode is requested, write the WCS structure to a header
+     string to speed up the process: if we don't do it here, this process
+     will be necessary on every individual profile's output. */
+  if(p->individual)
+    {
+      status=wcshdo(WCSHDO_safe, wcs, &p->wcsnkeyrec, &p->wcsheader);
+      if(status)
+        error(EXIT_FAILURE, 0, "wcshdo error %d: %s", status,
+              wcs_errmsg[status]);
+    }
+}
+
+
+
+
+
+void
 preparearrays(struct mkprofparams *p)
 {
-  void *array;
-  size_t naxes[2];
+  void *array=NULL;
+  size_t i, naxes[2];
+  double *wcstoimg=NULL;
 
   /* Allocate space for the log file: */
   p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
@@ -690,6 +815,63 @@ preparearrays(struct mkprofparams *p)
       if(p->setconsttomin)
         error(EXIT_FAILURE, 0, "the `--setconsttomin' option can only be "
               "called when an input background image is also provided");
+    }
+
+
+  /* If there is no WCS structure (either no background image given or the
+     background image didn't have any WCS structure), then prepare the WCS
+     based on the given options. */
+  if(p->wcs==NULL)
+    preparewcs(p);
+
+
+  /* Convert the RA and Dec to X and Y. We will make a temporary array with
+     four rows and the same number of columns, then use that array and the
+     WCS structure to get X and Y values. Those X and Y values will then be
+     replaced with the RAs and Decs of the original catalog. Recall that
+     this is only done in the RAM, not the actual input file, so there is
+     no problem. One of the reasons we are doing this is that WCSLIB needs
+     the X and Ys and the RA and Decs to be in touching pieces of memory
+     and we can't guarantee that (the user might have these columns in
+     any order). */
+  if(p->up.racolset)
+    {
+      /* Allocate the space for the temporary array. */
+      errno=0;
+      wcstoimg=malloc(4*p->cs0*sizeof *wcstoimg);
+      if(wcstoimg==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for wcstoimg",
+              4*p->cs0*sizeof *wcstoimg);
+
+
+      /* Fill in the first two columns with the RA and Dec. */
+      for(i=0;i<p->cs0;++i)
+        {
+          wcstoimg[ i*4   ] = p->cat[ i*p->cs1+p->racol  ];
+          wcstoimg[ i*4+1 ] = p->cat[ i*p->cs1+p->deccol ];
+          wcstoimg[ i*4+2 ] = wcstoimg[ i*4+3 ] = NAN;
+        }
+
+
+      /* Convert the X and Y to RA and Dec. */
+      gal_wcs_radec_array_to_xy(p->wcs, wcstoimg, wcstoimg+2, p->cs0, 4);
+
+
+      /* Write the produced X and Y into the input catalog, note that in
+         `sanitycheck', xcol became identical to racol and ycol to
+         deccol. Note that oversampling has been applied to the WCS
+         structure. However, when X and Y are given, oversampling is not
+         applied at this point, so we have to correct for the WCS's
+         oversampling.*/
+      for(i=0;i<p->cs0;++i)
+        {
+          p->cat[ i*p->cs1+p->xcol  ] = wcstoimg[ i*4+2 ] / p->oversample;
+          p->cat[ i*p->cs1+p->ycol  ] = wcstoimg[ i*4+3 ] / p->oversample;
+        }
+
+
+      /* Free the temporary array space. */
+      free(wcstoimg);
     }
 
 
@@ -738,6 +920,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   cp->removedirinfo = 1;
 
   p->constant       = 1;
+  p->wcs            = NULL;
 
   /* Read the arguments. */
   errno=0;
@@ -828,6 +1011,8 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 void
 freeandreport(struct mkprofparams *p, struct timeval *t1)
 {
+  int status;
+
   /* Free all the allocated arrays. */
   free(p->cat);
   free(p->cp.hdu);
@@ -846,8 +1031,15 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
       free(p->cp.output);
       free(p->mergedimgname);
     }
-  if(p->up.backname)
-    wcsvfree(&p->nwcs, &p->wcs);
+
+  /* Free the WCS headers string that was defined for individual mode. */
+  if(p->individual)
+    free(p->wcsheader);
+
+  /* Free the WCS structure. */
+  if( (status=wcsvfree(&p->nwcs, &p->wcs)) )
+    error(EXIT_FAILURE, 0, "wcsfree error %d: %s", status,
+          wcs_errmsg[status]);
 
   /* Free the random number generator: */
   gsl_rng_free(p->rng);

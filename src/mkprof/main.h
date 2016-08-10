@@ -113,6 +113,8 @@ struct uiparams
   int            fcolset;
   int            xcolset;
   int            ycolset;
+  int           racolset;
+  int          deccolset;
   int            rcolset;
   int            ncolset;
   int            pcolset;
@@ -158,6 +160,8 @@ struct mkprofparams
   size_t            fcol;  /* Column specifying profile function.      */
   size_t            xcol;  /* X column of profile center.              */
   size_t            ycol;  /* Y column of profile center.              */
+  size_t           racol;  /* RA column of profile center.             */
+  size_t          deccol;  /* Dec column of profile center.            */
   size_t            rcol;  /* Effective radius of profile.             */
   size_t            ncol;  /* Sersic index column of profile.          */
   size_t            pcol;  /* Position angle column of profile.        */

@@ -1417,11 +1417,14 @@ gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
 
 
 
+/* `atof' stands for "array to file". This is essentially the same as
+   `gal_fits_array_to_file' except that the WCS structure's CRPIX values
+   have changed. */
 void
 gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
-                               void *array, size_t s0, size_t s1,
-                               char *wcsheader, int wcsnkeyrec,
-                               double *crpix, char *spack_string)
+                          void *array, size_t s0, size_t s1,
+                          char *wcsheader, int wcsnkeyrec,
+                          double *crpix, char *spack_string)
 {
   fitsfile *fptr;
   int status=0, datatype;

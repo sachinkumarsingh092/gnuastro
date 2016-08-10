@@ -30,20 +30,18 @@ export topsrc=$(top_srcdir);                        \
 export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
-TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh			\
-mkprof/mosaic3.sh mkprof/mosaic4.sh imgcrop/imgcat.sh			\
-imgcrop/wcscat.sh imgcrop/xcyc.sh imgcrop/xcycnoblank.sh		\
-imgcrop/section.sh imgcrop/radec.sh imgcrop/imgpolygon.sh		\
-imgcrop/imgoutpolygon.sh imgcrop/wcspolygon.sh convertt/fitstotxt.sh	\
-convertt/fitstojpeg.sh convertt/blankch.sh convertt/jpegtotxt.sh	\
-convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh			\
-convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh		\
-imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh	\
-mkprof/ellipticalmasks.sh header/write.sh header/print.sh		\
-header/update.sh header/delete.sh imgstat/basicstats.sh			\
-subtractsky/subtractsky.sh noisechisel/noisechisel.sh			\
-mkcatalog/simple.sh arithmetic/snimage.sh arithmetic/onlynumbers.sh	\
-cosmiccal/simpletest.sh
+TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh mkprof/mosaic3.sh   \
+mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh imgcrop/wcscat.sh    \
+imgcrop/xcyc.sh imgcrop/xcycnoblank.sh imgcrop/section.sh imgcrop/radec.sh  \
+imgcrop/imgpolygon.sh imgcrop/imgoutpolygon.sh imgcrop/wcspolygon.sh        \
+convertt/fitstotxt.sh convertt/fitstojpeg.sh convertt/blankch.sh            \
+convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh     \
+convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh	            \
+imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh         \
+mkprof/ellipticalmasks.sh header/write.sh header/print.sh header/update.sh  \
+header/delete.sh imgstat/basicstats.sh subtractsky/subtractsky.sh           \
+noisechisel/noisechisel.sh mkcatalog/simple.sh arithmetic/snimage.sh        \
+arithmetic/onlynumbers.sh cosmiccal/simpletest.sh
 
 EXTRA_DIST = $(TESTS) mkprof/mkprofcat1.txt			\
 mkprof/mkprofcat1_mask.txt mkprof/mkprofcat2.txt		\
@@ -77,6 +75,7 @@ mkprof/mosaic1.sh: prepconf.sh.log
 mkprof/mosaic2.sh: prepconf.sh.log
 mkprof/mosaic3.sh: prepconf.sh.log
 mkprof/mosaic4.sh: prepconf.sh.log
+mkprof/radeccat.sh: prepconf.sh.log
 imgcrop/imgcat.sh: mkprof/mosaic1.sh.log
 imgcrop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
                    mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log

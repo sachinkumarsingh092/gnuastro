@@ -12652,11 +12652,27 @@ used for making an elliptical annulus (with a width of 1 or 2 pixels).
 
 @item --xcol
 (@option{=INT}) The center of the profiles along the first FITS axis
-(horizontal when viewed in SAO ds9).
+(horizontal when viewed in SAO ds9). See the explanations for
+@option{--racol} for precedence when both image and WCS coordinate columns
+are given.
 
 @item --ycol
 (@option{=INT}) The center of the profiles along the second FITS axis
-(vertical when viewed in SAO ds9).
+(vertical when viewed in SAO ds9). Similar to @option{--xcol}.
+
+@item --racol
+(@option{=INT}) The profile center's right ascension. Along with
+@option{--deccol}, these WCS coordinate columns are not mandatory. If they
+are not given, the @option{--xcol} and @option{--ycol} options will be used
+to specify the profile's central position and vice-versa. However, if image
+coordinate columns (@option{--xcol} and @option{--ycol}) and WCS coordinate
+columns (@option{--racol} and @option{--deccol}) are given, the WCS
+coordinate columns take precedence and image coordinate columns will be
+ignored.
+
+@item --deccol
+(@option{=INT}) The profile center's declination. Similar to
+@option{--racol}.
 
 @item --rcol
 (@option{=INT}) The radius parameter of the profiles. Effective radius

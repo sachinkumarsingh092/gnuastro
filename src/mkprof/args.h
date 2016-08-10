@@ -63,7 +63,7 @@ const char doc[] =
    a d f g j k l u v
    B C E F G H I J L O Q T U W Z
 
-   Maximum integer used so far: 515.
+   Maximum integer used so far: 517
 */
 static struct argp_option options[] =
   {
@@ -276,6 +276,22 @@ static struct argp_option options[] =
       "INT",
       0,
       "Center along second FITS axis (vertical).",
+      4
+    },
+    {
+      "racol",
+      516,
+      "INT",
+      0,
+      "Center right ascension.",
+      4
+    },
+    {
+      "deccol",
+      517,
+      "INT",
+      0,
+      "Center declination.",
       4
     },
     {
@@ -531,6 +547,16 @@ parse_opt(int key, char *arg, struct argp_state *state)
       gal_checkset_sizet_el_zero(arg, &p->ycol, "ycol", ' ', p->cp.spack,
                                  NULL, 0);
       p->up.ycolset=1;
+      break;
+    case 516:
+      gal_checkset_sizet_el_zero(arg, &p->racol, "racol", ' ', p->cp.spack,
+                                 NULL, 0);
+      p->up.racolset=1;
+      break;
+    case 517:
+      gal_checkset_sizet_el_zero(arg, &p->deccol, "deccol", ' ', p->cp.spack,
+                                 NULL, 0);
+      p->up.deccolset=1;
       break;
     case 502:
       gal_checkset_sizet_el_zero(arg, &p->fcol, "fcol", ' ', p->cp.spack,

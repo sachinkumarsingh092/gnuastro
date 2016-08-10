@@ -541,8 +541,7 @@ preparewcs(struct mkcatalogparams *p, size_t col)
          the first row is not used by any object or colump (since
          their indexes begin from 1).*/
       gal_wcs_xy_array_to_radec(p->wcs, p->info+p->icols+xc,
-                                      p->info+p->icols+rc,
-                                      p->num, p->icols);
+                                p->info+p->icols+rc, p->num, p->icols);
 
 
       /* Set the flag of the converted columns to 1.0f, so the
