@@ -25,12 +25,18 @@
 # manually before each major development activity.
 #
 # This file will be changed alot during development. So please make sure
-# you have left the variable values empty before making commit so each
-# developer is guided to set them for their own case. Alternatively you can
-# reset this file to its version controlled status before making your
-# commit:
+# you have left the variable values empty before committing. This will
+# remind each developer running this script to set the values based on
+# their particular work. Alternatively you can reset this file to its
+# version controlled status before committing your main work with the
+# command below:
 #
 #     git checkout -- tests/during-dev.sh
+#
+# This file can also be used as a model to write a test for the work you
+# have done (to be checked with `make check'). Just copy and paste an
+# existing test from the utility and replace the last few lines based on
+# this file.
 #
 # Original author:
 #     Mohammad Akhlaghi <akhlaghi@gnu.org>
