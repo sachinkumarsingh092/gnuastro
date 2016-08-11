@@ -66,12 +66,19 @@
 # directory, then set `builddir' to `./'. If you want the outputs to be in
 # the top source directory, set it to `./'. Since 'build' is the assumed
 # symbolic link in `tmpfs-config-make', it is also assumed in the version
-# controlled version of this script.
+# controlled version of this script. Note, if your directory names have
+# space characters in them, quote the full value
 builddir=build
 outdir=
 
 
-# Set the utility name, along with its arguments and options.
+# Set the utility name, along with its arguments and options. NOTE, for
+# multiple arguments and options, please put them all between quotation
+# marks so the space characters are included. If there are spaces in the
+# values of the options or arguments, quote them two times (once for this
+# script, and once for the utility. In such cases it might be easier to
+# just add the argument/option to the final script that runs the utility
+# rather than these variables.
 utilname=
 arguments=
 options=
@@ -86,9 +93,9 @@ options=
 # First, make sure the variables are set. Note that arguments and options
 # are not absolutly vital! so they are not checked here. The utility will
 # warn and halt if it needs them.
-if [ x$outdir = x ];   then echo "outdir is not set.";   exit 1; fi
-if [ x$builddir = x ]; then echo "builddir is not set."; exit 1; fi
-if [ x$utilname = x ]; then echo "utilname is not set."; exit 1; fi
+if [ x"$outdir" = x ];   then echo "outdir is not set.";   exit 1; fi
+if [ x$utilname = x ];   then echo "utilname is not set."; exit 1; fi
+if [ x"$builddir" = x ]; then echo "builddir is not set."; exit 1; fi
 
 
 # If builddir is relative, then append the current directory to make it
@@ -96,16 +103,17 @@ if [ x$utilname = x ]; then echo "utilname is not set."; exit 1; fi
 # for executing the utility and we need to know the absolute address of the
 # top build directory.
 if [ ! "${builddir:0:1}" = "/" ]; then
-   builddir=$(pwd)/$builddir
+   builddir=$(pwd)"/$builddir"
 fi
 
 
 # Set the utility's executable file name
-utility=$builddir/src/$utilname/ast$utilname
+utility="$builddir/src/$utilname/ast$utilname"
 
 
-# If the utility is already built, then remove the executable.
-if [ -f $utility ]; then rm $utility; fi
+# If the utility is already built, then remove the executable so it is
+# definitely remade.
+if [ -f "$utility" ]; then rm "$utility"; fi
 
 
 # Make Gnuastro (note that during development, it is sometimes necessary to
@@ -113,7 +121,11 @@ if [ -f $utility ]; then rm $utility; fi
 # the output directory and run the utility with the given arguments and
 # options.
 curdir=$(pwd)
-if make -C $builddir; then
-    cd $outdir
-    $utility $arguments $options
+if make -C "$builddir"; then
+
+    # Change to the output directory.
+    cd "$outdir"
+
+    # Run the built utility with the given arguments and options.
+    "$utility" $arguments $options
 fi
