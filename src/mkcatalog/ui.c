@@ -948,7 +948,7 @@ checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
 
   /* Read the file: */
   gal_fits_file_to_long(filename, hdu, array, &bitpix,
-                             &anyblank, &s0, &s1);
+                        &anyblank, &s0, &s1);
 
   /* Make sure it has an integer type. */
   if(bitpix==FLOAT_IMG || bitpix==DOUBLE_IMG)

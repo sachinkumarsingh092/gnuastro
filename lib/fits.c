@@ -940,7 +940,7 @@ gal_fits_add_to_fits_header_ll_end(struct gal_fits_header_ll **list,
 
 void
 gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
-                                    struct gal_fits_header_ll **list)
+                               struct gal_fits_header_ll **list)
 {
   char *keyname, *value;
   size_t numkey=1, maxlength;
