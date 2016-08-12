@@ -51,6 +51,9 @@ void
 gal_arraymanip_freplace_value(float *in, size_t size, float from, float to);
 
 void
+gal_arraymanip_freplace_nonnans(float *in, size_t size, float to);
+
+void
 gal_arraymanip_no_nans(float *in, size_t *size);
 
 void

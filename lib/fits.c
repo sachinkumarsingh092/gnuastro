@@ -734,7 +734,7 @@ hdutypestring(int hdutype)
    desired type. */
 void
 gal_fits_read_hdu(char *filename, char *hdu, int desiredtype,
-                       fitsfile **outfptr)
+                  fitsfile **outfptr)
 {
   size_t len;
   char *ffname;

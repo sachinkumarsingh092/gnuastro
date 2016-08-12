@@ -206,6 +206,20 @@ gal_arraymanip_freplace_value(float *in, size_t size, float from, float to)
 
 
 
+/* Only replace non-NaN values in a float array. */
+void
+gal_arraymanip_freplace_nonnans(float *in, size_t size, float to)
+{
+  float *fpt;
+  fpt=in+size;
+  do
+    *in = isnan(*in) ? *in : to;
+  while(++in<fpt);
+}
+
+
+
+
 
 /* Move all the non-NaN elements in the array to the start of the
    array so that the non-NaN alements are contiguous. This is useful
