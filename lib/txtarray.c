@@ -142,18 +142,24 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
 
 
 /* Macro functions: */
-#define CONVERTANDSAVE {                                                \
-    errno=0; tailptr=NULL;                                              \
-  array[ts0*s1+ts1]=strtod(token, &tailptr);                            \
-  if(errno)                                                             \
-    error_at_line(EXIT_FAILURE, errno, "%s", lineno, token, filename);  \
-  if(*tailptr!='\0')                                                    \
-    {                                                                   \
-      savetolog(&log, filename, lineno, ts0, ts1, token);               \
-      array[ts0*s1+ts1]=NAN;                                            \
-    }                                                                   \
-  ++ts1;                                                                \
-  }
+double
+convertandsave(char *token, size_t lineno, char *filename, FILE *log,
+               size_t ts0, size_t ts1)
+{
+  double dout;
+  char *tailptr=NULL;
+
+  errno=0;
+  dout=strtod(token, &tailptr);
+  if(errno)
+    error_at_line(EXIT_FAILURE, errno, "%s", lineno, token, filename);
+  if(*tailptr!='\0')
+    {
+      savetolog(&log, filename, lineno, ts0, ts1, token);
+      dout=NAN;
+    }
+  return dout;
+}
 
 
 
@@ -163,7 +169,7 @@ void
 filltable(char *filename, double *array, size_t s0, size_t s1)
 {
   FILE *fp, *log=NULL;
-  char *line=NULL, *token, *tailptr;
+  char *line=NULL, *token;
   size_t len=200, lineno=0, ts0, ts1;
 
   /* Open the file: */
@@ -201,9 +207,15 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
         continue;
 
       /* Convert the first token and put it into the array: */
-      CONVERTANDSAVE;
+      array[ts0*s1+ts1]=convertandsave(token, lineno, filename,
+                                       log, ts0, ts1);
+      ++ts1;
 
-      /* Read the rest of the tokens: */
+      /* Read the rest of the tokens in this line. We had to do the first
+         token separately because of the nature of strtok: it can only be
+         used recursively after one proper call, see the GNU C Library
+         documentation for a complete explanation (this is a C standard
+         function, but GNU C Library has a wonderful manual). */
       while( (token=strtok(NULL, GAL_TXTARRAY_DELIMITERS))!=NULL )
         {
           if(ts1>=s1)
@@ -211,7 +223,9 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
                           "Too many columns on this line. The number of "
                           "columns should be the same as the first row "
                           "of the table.");
-          CONVERTANDSAVE;
+          array[ts0*s1+ts1]=convertandsave(token, lineno, filename,
+                                           log, ts0, ts1);
+          ++ts1;
         }
       if(ts1<s1-1)                /* It should be s1-1. */
         error_at_line(EXIT_FAILURE, 0, filename, lineno,
