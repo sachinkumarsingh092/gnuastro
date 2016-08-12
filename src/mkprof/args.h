@@ -61,7 +61,7 @@ const char doc[] =
    Available letters (-V which is used by GNU is also removed):
 
    a d f g j k l u v
-   A B C E G H I J L M O Q T U W Z
+   A B E G H I J L M O Q T U W Z
 
    Maximum integer used so far: 517
 */
@@ -104,6 +104,14 @@ static struct argp_option options[] =
       "INT",
       0,
       "Number of pixels along second FITS axis.",
+      2
+    },
+    {
+      "inputascanvas",
+      'C',
+      0,
+      0,
+      "Use input image for output size and WCS.",
       2
     },
     {
@@ -464,6 +472,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
                                 NULL, 0);
       p->naxes[1]=tmp;
       p->up.naxis2set=1;
+      break;
+    case 'C':
+      p->up.inputascanvas=1;
+      p->up.inputascanvasset=1;
       break;
     case 's':
       gal_checkset_sizet_l_zero(arg, &p->oversample, "oversample", key,

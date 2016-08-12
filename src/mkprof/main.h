@@ -89,6 +89,7 @@ struct uiparams
   char          *backhdu;  /* HDU of background image.                 */
   char          *catname;  /* Name of catalog of parameters.           */
   int        prepforconv;  /* Shift and expand by size of first psf.   */
+  int      inputascanvas;  /* Input image's header for size and WCS.   */
 
   /* Check if all parameters are read (use .def file for
      comparison). The non optional parameters (like the catalog and
@@ -100,6 +101,7 @@ struct uiparams
   int          naxis2set;
   int      oversampleset;
   int     circumwidthset;
+  int   inputascanvasset;
 
   int        tunitinpset;
   int       numrandomset;

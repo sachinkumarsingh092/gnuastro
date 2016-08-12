@@ -37,6 +37,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
+#include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
@@ -113,6 +114,13 @@ readconfig(char *filename, struct mkprofparams *p)
                                     filename, lineno);
           p->naxes[0]=tmp;
           up->naxis1set=1;
+        }
+      else if(strcmp(name, "inputascanvas")==0)
+        {
+          if(up->inputascanvasset) continue;
+          gal_checkset_int_zero_or_one(value, &up->inputascanvas, name,
+                                       key, SPACK, filename, lineno);
+          up->inputascanvasset=1;
         }
       else if(strcmp(name, "naxis2")==0)
         {
@@ -278,7 +286,8 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "mforflatpix")==0)
         {
           if(up->mforflatpixset) continue;
-          p->mforflatpix=1;
+          gal_checkset_int_zero_or_one(value, &p->mforflatpix, name, key,
+                                       SPACK, filename, lineno);
           up->mforflatpixset=1;
         }
 
@@ -361,6 +370,8 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->naxes[0]);
   if(up->naxis2set)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->naxes[1]);
+  if(up->inputascanvasset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "inputascanvas", up->inputascanvas);
   if(up->oversampleset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
 
@@ -453,24 +464,32 @@ checkifset(struct mkprofparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("qcol");
   if(up->mcolset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("mcol");
-  if(up->naxis1set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("naxis1");
-  if(up->naxis2set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("naxis2");
   if(up->oversampleset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("oversample");
   if(up->circumwidthset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("circumwidth");
-  if(up->crpix1set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("crpix1");
-  if(up->crpix2set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("crpix2");
-  if(up->crval1set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("crval1");
-  if(up->crval2set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("crval2");
-  if(up->resolutionset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("resolution");
+
+
+  /* The output image size and WCS are only necessary if the user doesn't
+     want to use the input image's properties or doesn't want to make the
+     profiles on a background image. */
+  if(up->inputascanvasset==0 || p->up.backname)
+    {
+      if(up->naxis1set==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("naxis1");
+      if(up->naxis2set==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("naxis2");
+      if(up->crpix1set==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("crpix1");
+      if(up->crpix2set==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("crpix2");
+      if(up->crval1set==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("crval1");
+      if(up->crval2set==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("crval2");
+      if(up->resolutionset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("resolution");
+    }
 
 
   /* The X and Y columns are only needed when the RA and Dec columns have
@@ -794,11 +813,13 @@ preparearrays(struct mkprofparams *p)
      image to build the profiles over. */
   if(p->up.backname)
     {
+      /* Read the input WCS. */
+      gal_fits_read_wcs(p->up.backname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+
       /* Read in the background image and its coordinates: */
       p->anyblank=gal_fits_hdu_to_array(p->up.backname, p->cp.hdu,
                                         &p->bitpix, &array,
                                         &naxes[1], &naxes[0]);
-      gal_fits_read_wcs(p->up.backname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
       p->naxes[1]=naxes[1];
       p->naxes[0]=naxes[0];
 
@@ -809,9 +830,15 @@ preparearrays(struct mkprofparams *p)
       else
         {
           gal_fits_change_type(array, p->bitpix, p->naxes[1]*p->naxes[0],
-                               p->anyblank, (void **)(&p->out), FLOAT_IMG);
+                               p->anyblank, (void **)(&p->out),
+                               FLOAT_IMG);
           free(array);
         }
+
+      /* If the user just wanted the headers, then change all non-NaN
+         pixels to 0.0f. */
+      if(p->up.inputascanvas)
+        gal_arraymanip_freplace_nonnans(p->out, naxes[0]*naxes[1], 0.0f);
     }
   else
     p->bitpix=FLOAT_IMG;
@@ -909,13 +936,15 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
-  cp->spack         = SPACK;
-  cp->verb          = 1;
-  cp->numthreads    = num_processors(NPROC_CURRENT);
-  cp->removedirinfo = 1;
+  cp->spack            = SPACK;
+  cp->verb             = 1;
+  cp->numthreads       = num_processors(NPROC_CURRENT);
+  cp->removedirinfo    = 1;
 
-  p->wcs            = NULL;
-  p->mforflatpix    = 0;
+  p->out               = NULL;
+  p->wcs               = NULL;
+  p->mforflatpix       = 0;
+  p->up.inputascanvas  = 0;
 
   /* Read the arguments. */
   errno=0;

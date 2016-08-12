@@ -12436,6 +12436,25 @@ option is ignored.
 second FITS axis (vertical when viewed in SAO ds9), see the
 explanation for @option{--naxis1}.
 
+@item -C
+@itemx --inputascanvas
+When an image is given as an argument, use the input image as the canvas to
+make all the mock profiles. In practice, this option only changes the
+non-blank pixels (see @ref{Blank pixels}) of the input image (in memory
+after reading, not the actual input file) to zero before making the
+profiles. The profiles are then built on those cleared pixels. With this
+option (like when building on a background image) none of the
+`@option{--naxis1}', `@option{--naxis2}', `@option{--crpix1}',
+`@option{--crpix2}', `@option{--crval1}', `@option{--crval2}', and
+`@option{--resolution}' are necessary.
+
+This option can be very useful when the mock image is to be made over a
+real sky region and compared to a real image (that might have blank
+pixels. One example can be when you want to make circular or elliptical
+labeled regions to feed into MakeCatalog along with NoiseChisel's outputs
+for aperture photometry. See the discussion and examples under the
+`@option{--mforflatpix}' for more.
+
 @item -s
 @itemx --oversample
 (@option{=INT}) The scale to over-sample the profiles and final

@@ -416,8 +416,8 @@ write(struct mkprofparams *p)
   size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
 
 
-  /* Allocate the output array. */
-  if(p->up.backname)
+  /* Allocate the output array if necessary. */
+  if(p->out)
     out=p->out;
   else
     {
