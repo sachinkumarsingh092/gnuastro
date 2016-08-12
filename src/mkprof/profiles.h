@@ -51,6 +51,6 @@ double
 Circumference(struct mkonthread *mkp);
 
 double
-Fixed(struct mkonthread *mkp);
+Flat(struct mkonthread *mkp);
 
 #endif

@@ -25,7 +25,7 @@
 prog=mkprof
 execname=../src/$prog/ast$prog
 img=convolve_spatial_warped_noised.fits
-cat=$topsrc/tests/$prog/mkprofcat1_mask.txt
+cat=$topsrc/tests/$prog/ellipticalmasks.txt
 
 
 
@@ -49,5 +49,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat $img --setconsttomin --replace --oversample=1 \
-          --output="masks.fits"
+$execname $cat $img --mforflatpix --replace --oversample=1 \
+          --output="ellipticalmasks.fits"

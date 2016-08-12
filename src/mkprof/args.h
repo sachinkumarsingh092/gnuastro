@@ -61,7 +61,7 @@ const char doc[] =
    Available letters (-V which is used by GNU is also removed):
 
    a d f g j k l u v
-   B C E F G H I J L O Q T U W Z
+   A B C E G H I J L M O Q T U W Z
 
    Maximum integer used so far: 517
 */
@@ -213,22 +213,6 @@ static struct argp_option options[] =
       3
     },
     {
-      "setconsttomin",
-      'M',
-      0,
-      0,
-      "Set constant profile values to input minimum",
-      3
-    },
-    {
-      "setconsttonan",
-      'A',
-      0,
-      0,
-      "Set constant profile values to NaN.",
-      3
-    },
-    {
       "replace",
       'R',
       0,
@@ -351,6 +335,14 @@ static struct argp_option options[] =
       "Truncation in units of --rcol, unless --tunitinp.",
       4
     },
+    {
+      "mforflatpix",
+      'F',
+      0,
+      0,
+      "mcol is flat pixel value (when f is 4 or 5)",
+      4
+    },
 
 
 
@@ -462,12 +454,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output: */
     case 'x':
-      gal_checkset_sizet_l_zero(arg, &tmp, "naxis1", key, p->cp.spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &tmp, "naxis1", key, p->cp.spack,
+                                NULL, 0);
       p->naxes[0]=tmp;
       p->up.naxis1set=1;
       break;
     case 'y':
-      gal_checkset_sizet_l_zero(arg, &tmp, "naxis2", key, p->cp.spack, NULL, 0);
+      gal_checkset_sizet_l_zero(arg, &tmp, "naxis2", key, p->cp.spack,
+                                NULL, 0);
       p->naxes[1]=tmp;
       p->up.naxis2set=1;
       break;
@@ -484,12 +478,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
                                   p->cp.spack, MINCIRCUMWIDTH, NULL, 0);
       p->up.circumwidthset=1;
       break;
-    case 'M':
-      p->setconsttomin=1;
-      break;
-    case 'A':
-      p->setconsttonan=1;
-      break;
     case 'R':
       p->replace=1;
       break;
@@ -501,13 +489,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.numrandomset=1;
       break;
     case 't':
-      gal_checkset_float_l_0(arg, &p->tolerance, "tolerance", key, p->cp.spack,
-                             NULL, 0);
+      gal_checkset_float_l_0(arg, &p->tolerance, "tolerance", key,
+                             p->cp.spack, NULL, 0);
       p->up.toleranceset=1;
       break;
     case 'z':
-      gal_checkset_any_float(arg, &p->zeropoint, "zeropoint", key, p->cp.spack,
-                             NULL, 0);
+      gal_checkset_any_float(arg, &p->zeropoint, "zeropoint", key,
+                             p->cp.spack, NULL, 0);
       p->up.zeropointset=1;
       break;
     case 'p':
@@ -592,6 +580,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       gal_checkset_sizet_el_zero(arg, &p->tcol, "tcol", ' ', p->cp.spack,
                                  NULL, 0);
       p->up.tcolset=1;
+      break;
+    case 'F':
+      p->mforflatpix=1;
+      p->up.mforflatpixset=1;
       break;
 
 

@@ -49,7 +49,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #define EPSREL_FOR_INTEG   2
 #define MINCIRCUMWIDTH     0.5f
-#define CONSTFORNAN        -FLT_MAX
 
 /* Log columns:
 
@@ -121,6 +120,7 @@ struct uiparams
   int            qcolset;
   int            mcolset;
   int            tcolset;
+  int     mforflatpixset;
 
   int          crpix1set;
   int          crpix2set;
@@ -144,10 +144,7 @@ struct mkprofparams
   int         individual;  /* ==1: Build all catalog separately.       */
 
   /* Profiles */
-  int      setconsttonan;  /* ==1: Constant value = NaN.               */
-  int      setconsttomin;  /* ==1: Constant value = image minimum.     */
   int            replace;  /* Replace overlaping profile pixel values. */
-  float         constant;  /* Value for constant profiles.             */
   size_t       numrandom;  /* Number of radom points for integration.  */
   float        tolerance;  /* Accuracy to stop integration.            */
   float        zeropoint;  /* Magnitude of zero point flux.            */
@@ -168,6 +165,7 @@ struct mkprofparams
   size_t            qcol;  /* Axis ratio column of profile.            */
   size_t            mcol;  /* Magnitude column.                        */
   size_t            tcol;  /* Truncation of the profiles.              */
+  int        mforflatpix;  /* mcol is flat pixel value (f is 4 or 5). */
 
   /* Random number generator */
   gsl_rng           *rng;  /* Main instance of random number generator.*/

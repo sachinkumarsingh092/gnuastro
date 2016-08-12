@@ -12574,39 +12574,29 @@ cases, besides de-convolution, you will have to set
 ImageWarp (see @ref{ImageWarp}), the peak flux will be different.
 @end cartouche
 
-@item -M
-@itemx --setconsttomin
-For profiles that have a constant value (no variation from pixel to
-pixel), set the constant value to the minimum value in the image. This
-is very useful if the profiles with constant value are to be used as
-masks. When displaying the images in a document (and inverting the
-images as is automatically done in ConvertType), the masked pixels
-will become white.
-
-@item -A
-@itemx --setconsttonan
-Similar to @option{--setconsttomin}, but the constant value is a NaN
-value. Since all Gnuastro programs treat NaN valued pixels as masked,
-this is useful for immediately masking some pixels in the image that
-have an elliptical shape without the need to creating a new mask
-image.
-
 @item -R
 @itemx --replace
-Do not add pixel values to each other, replace them. By default, when
-two profiles overlap, the final pixel value is the sum of all the
-profiles that overlap on that pixel. When this option is given, the
-pixels are not added but replaced by newer profiles.
+Do not add the pixels of each profile over the background (possibly crowded
+by other profiles), replace them. By default, when two profiles overlap,
+the final pixel value is the sum of all the profiles that overlap on that
+pixel. When this option is given, the pixels are not added but replaced by
+the newer profile's pixel and any value under it is lost.
 
 @cindex CPU threads
 @cindex Threads, CPU
-When order does matter, make sure to use this function with
-@option{--numthreads=1}. When multiple threads are used, the separate
-profiles are built asynchronously and not in order. Since order does
-not matter in an addition, this causes no problems by default but has
-to be considered when this option is given. Using multiple threads is
-no problem if the profiles are to be used as a mask (with
-@option{--setconsttomin}) since all their pixel values are the same.
+When order matters, make sure to use this function with
+`@option{--numthreads=1}'. When multiple threads are used, the separate
+profiles are built asynchronously and not in order. Since order does not
+matter in an addition, this causes no problems by default but has to be
+considered when this option is given. Using multiple threads is no problem
+if the profiles are to be used as a mask with a blank or fixed value (see
+`@option{--mforflatpix}') since all their pixel values are the same.
+
+Note that only non-zero pixels are replaced. With radial profiles (for
+example S@'ersic or Moffat) only values above zero will be part of the
+profile. However, when using flat profiles with the
+`@option{--mforflatpix}' option, you should be careful not to give a
+@code{0.0} value as the flat profile's pixel value.
 
 @item -w
 @itemx --circumwidth
@@ -12700,6 +12690,43 @@ is in units of the radial parameter of the profile (the value in the
 @option{--rcol} of the catalog). If @option{--tunitinp} is given, this
 value is interpreted in units of pixels (prior to oversampling)
 irrespective of the profile.
+
+@item -F
+@itemx --mforflatpix
+When making fixed value profiles (flat and circumference, see
+`@option{--fcol}'), don't use the value in the column specified by
+`@option{--mcol}' as the magnitude. Instead use it as the exact value that
+all the pixels of these profiles should have. This option is irrelevant for
+other types of profiles. This option is very useful for creating masks, or
+labeled regions in an image. Any integer, or floating point value can used
+in this column with this option, including @code{NaN} (or `@code{nan}', or
+`@code{NAN}', case is irrelevant), and infinities (@code{inf}, @code{-inf},
+or @code{+inf}).
+
+For example, with this option if you set the value in the magnitude column
+(@option{--mcol}) to @code{NaN}, you can create an elliptical or circular
+mask over an image (which can be given as the argument), see @ref{Blank
+pixels}. Another useful application of this option is to create labeled
+elliptical or circular apertures in an image. To do this, set the value in
+the magnitude column to the label you want for this profile. This labeled
+image can then be used in combination with NoiseChisel's output (see
+@ref{NoiseChisel output}) to do aperture photometry with MakeCatalog (see
+@ref{MakeCatalog}).
+
+Alternatively, if you want to mark regions of the image (for example with
+an elliptical circumference) and you don't want to use NaN values (as
+explained above) for some technical reason, you can get the minimum or
+maximum value in the image @footnote{The minimum will give a better result,
+because the maximum can be too high compared to most pixels in the image,
+making it harder to display.} using Arithmetic (see @ref{Arithmetic}), then
+use that value in the magnitude column along with this option for all the
+profiles.
+
+Please note that when using MakeProfiles on an already existing image, you
+have to set `@option{--oversample=1}'. Otherwise all the profiles will be
+scaled up based on the oversampling scale in your configuration files (see
+@ref{Configuration files}) unless you have accounted for oversampling in
+your catalog.
 
 @end table
 

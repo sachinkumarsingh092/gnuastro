@@ -275,6 +275,12 @@ readconfig(char *filename, struct mkprofparams *p)
                                      filename, lineno);
           up->tcolset=1;
         }
+      else if(strcmp(name, "mforflatpix")==0)
+        {
+          if(up->mforflatpixset) continue;
+          p->mforflatpix=1;
+          up->mforflatpixset=1;
+        }
 
 
 
@@ -391,8 +397,10 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "qcol", p->qcol);
   if(up->mcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "mcol", p->mcol);
-  if(up->mcolset)
+  if(up->tcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "tcol", p->tcol);
+  if(up->mforflatpixset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "mforflatpix", p->tcol);
 
   fprintf(fp, "\n# WCS:\n");
   if(up->crpix1set)
@@ -520,9 +528,6 @@ sanitycheck(struct mkprofparams *p)
   char *tmpname=NULL, *xcolstr, *ycolstr;
 
 
-  /* Make sure the input file exists. */
-  gal_checkset_check_file(p->up.catname);
-
 
   /* Check if over-sampling is an odd number, then set/modify the
      respective values.*/
@@ -534,14 +539,6 @@ sanitycheck(struct mkprofparams *p)
   p->halfpixel = 0.5f/p->oversample;
   p->naxes[0] *= p->oversample;
   p->naxes[1] *= p->oversample;
-
-
-
-  /* Check if the set constant options are not called together: */
-  if(p->setconsttomin && p->setconsttonan)
-    error(EXIT_FAILURE, 0, "`--setconsttomin' and `--setconsttonan' have "
-          "been called together! The constant profile values can only have "
-          "one value. So these two options cannot be called together");
 
 
 
@@ -580,7 +577,7 @@ sanitycheck(struct mkprofparams *p)
               "all have to be different", columns[i]);
 
 
-  /* If all the columns are within the catalog: */
+  /* If all the columns are within the catalog and have proper values. */
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->xcol, xcolstr);
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->ycol, ycolstr);
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->fcol, "fcol");
@@ -588,8 +585,20 @@ sanitycheck(struct mkprofparams *p)
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->ncol, "ncol");
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->pcol, "pcol");
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->qcol, "qcol");
-  GAL_CHECKSET_CHECK_COL_IN_CAT(p->mcol, "mcol");
+  GAL_CHECKSET_CHECK_COL_NUM_IN_CAT(p->mcol, "mcol");
   GAL_CHECKSET_CHECK_COL_IN_CAT(p->tcol, "tcol");
+
+
+  /* If there were terms that gal_txtarray_txt_to_array could not read,
+     delete the log file. Note that don't care about the whole input
+     catalog, we just want the columns that are important to
+     MakeProfiles. The GAL_CHECKSET_CHECK_COL_IN_CAT tests above checked
+     those columns and they are fine. For example the user might have some
+     alphabetic information in the input file, but as long as the columns
+     we want are correct, we have no problem. We can't remove this line
+     before those tests, because in their errors, those tests guide the
+     reader to check the `txtarray.log' file. */
+  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
 
   /* Check if all the profile codes are within the desired range: */
@@ -803,19 +812,9 @@ preparearrays(struct mkprofparams *p)
                                p->anyblank, (void **)(&p->out), FLOAT_IMG);
           free(array);
         }
-
-      /* If setconsttomin is called, then there should be an input image: */
-      if(p->setconsttomin)
-        gal_statistics_float_min(p->out, p->naxes[1]*p->naxes[0],
-                                 &p->constant);
     }
   else
-    {
-      p->bitpix=FLOAT_IMG;
-      if(p->setconsttomin)
-        error(EXIT_FAILURE, 0, "the `--setconsttomin' option can only be "
-              "called when an input background image is also provided");
-    }
+    p->bitpix=FLOAT_IMG;
 
 
   /* If there is no WCS structure (either no background image given or the
@@ -874,10 +873,6 @@ preparearrays(struct mkprofparams *p)
       free(wcstoimg);
     }
 
-
-  /* If the constant is to be NaN, then set it: */
-  if(p->setconsttonan) p->constant=CONSTFORNAN;
-
   /* Allocate the random number generator: */
   gsl_rng_env_setup();
   p->rng=gsl_rng_alloc(gsl_rng_default);
@@ -909,8 +904,8 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
 {
   char *jobname;
   struct timeval t1;
-  char message[GAL_TIMING_VERB_MSG_LENGTH_V];
   struct gal_commonparams *cp=&p->cp;
+  char message[GAL_TIMING_VERB_MSG_LENGTH_V];
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
@@ -919,8 +914,8 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   cp->numthreads    = num_processors(NPROC_CURRENT);
   cp->removedirinfo = 1;
 
-  p->constant       = 1;
   p->wcs            = NULL;
+  p->mforflatpix    = 0;
 
   /* Read the arguments. */
   errno=0;
@@ -945,10 +940,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
      which case, cp->output should be the current directory. */
   if(p->cp.outputset==0)
     {
-      p->cp.output=malloc(2+1); /* 2 is length of "./" */
-      if(p->cp.output==NULL)
-        error(EXIT_FAILURE, errno, "space for output");
-      strcpy(p->cp.output, "./");
+      gal_checkset_allocate_copy("./", &p->cp.output);
       p->cp.outputset=1;
     }
 
@@ -956,7 +948,6 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
      created by gal_txtarray_txt_to_array. */
   gettimeofday(&t1, NULL);
   sanitycheck(p);
-  gal_checkset_check_remove_file(GAL_TXTARRAY_LOG, 0);
 
   /* Prepare the necessary arrays: */
   preparearrays(p);
@@ -965,6 +956,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
+
       errno=0;
       jobname=malloc(strlen(p->up.catname)+100*sizeof *jobname);
       if(jobname==NULL)
@@ -983,6 +975,9 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
                   gsl_rng_default_seed);
           gal_timing_report(NULL, message, 1);
         }
+
+      sprintf(message, "Using %lu threads.", cp->numthreads);
+      gal_timing_report(NULL, message, 1);
     }
 }
 

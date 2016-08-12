@@ -140,13 +140,6 @@ saveindividual(struct mkonthread *mkp)
   sprintf(outname, "%s%lu_%s", outdir, ibq->id, p->basename);
   gal_checkset_check_remove_file(outname, p->cp.dontdelete);
 
-  /* Change NaN values to 0.0f: */
-  gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
-                                NAN, 0.0f);
-  if(p->setconsttonan)
-    gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
-                                  CONSTFORNAN, NAN);
-
   /* Write the array to file (A separately built PSF doesn't need WCS
      coordinates): */
   if(ibq->ispsf && p->psfinimg==0)
@@ -158,13 +151,6 @@ saveindividual(struct mkonthread *mkp)
                               mkp->width[1], mkp->width[0], p->wcsheader,
                               p->wcsnkeyrec, crpix, SPACK_STRING);
   ibq->indivcreated=1;
-
-  /* Change 0.0f values to NAN: */
-  if(p->setconsttonan)
-    gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
-                                  NAN, CONSTFORNAN);
-  gal_arraymanip_freplace_value(ibq->img, mkp->width[1]*mkp->width[0],
-                                0.0f, NAN);
 
   /* Report if in verbose mode. */
   if(p->cp.verb)
@@ -498,19 +484,24 @@ write(struct mkprofparams *p)
           rowend=to+iw*w;
           do
             {
+              /* Go over all the pixels in this row and write this profile
+                 into the final output array. Just note that when
+                 replacing, we don't want to replace those pixels that have
+                 a zero value, since no profile existed there. */
               colend=to+jw;
               do
                 {
-                  if(!isnan(*from))
-                    {
-                      *from = p->setconsttonan ? NAN : *from;
-                      sum+=*from;
-                      *to = replace ? *from : *to+*from;
-                    }
+                  *to  = ( replace
+                           ? ( *from==0.0f ? *to : *from )
+                           :  *to + *from );
+                  sum += *from;
                   ++from;
                 }
               while(++to<colend);
-              to+=w-jw; from+=ow-jw;             /* Go to next row. */
+
+              /* Go to the next row. */
+              to   += w-jw;
+              from += ow-jw;
             }
           while(to<rowend);
         }

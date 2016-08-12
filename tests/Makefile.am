@@ -44,7 +44,7 @@ noisechisel/noisechisel.sh mkcatalog/simple.sh arithmetic/snimage.sh        \
 arithmetic/onlynumbers.sh cosmiccal/simpletest.sh
 
 EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt               \
-mkprof/mkprofcat1_mask.txt mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt	\
+mkprof/ellipticalmasks.txt mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt	\
 mkprof/mkprofcat4.txt mkprof/radeccat.txt imgcrop/cat.txt
 
 CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps

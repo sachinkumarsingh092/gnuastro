@@ -66,6 +66,7 @@ r_el(struct mkonthread *mkp)
 
 
 
+/* Calculate the cercular distance of a pixel to the profile center. */
 float
 r_circle(size_t p, struct mkonthread *mkp)
 {
@@ -440,6 +441,7 @@ setprofparams(struct mkonthread *mkp)
   switch (mkp->type)
     {
     case SERSICCODE:
+      mkp->correction       = 1;
       mkp->profile          = &Sersic;
       mkp->sersic_re        = cat[rcol];
       mkp->sersic_inv_n     = 1.0f/cat[p->ncol];
@@ -447,43 +449,85 @@ setprofparams(struct mkonthread *mkp)
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
       break;
 
+
+
     case MOFFATCODE:
+      mkp->correction       = 1;
       mkp->profile          = &Moffat;
       mkp->moffat_nb        = -1.0f*cat[p->ncol];
       mkp->moffat_alphasq   = moffat_alpha(cat[rcol], cat[p->ncol]);
       mkp->moffat_alphasq  *= mkp->moffat_alphasq;
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
       if(p->psfinimg==0 && p->individual==0)
-        { mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
+        {
+          mkp->brightness   = 1.0f; /* When the PSF is a separate image, */
+          cat[p->xcol]      = 0.0f; /* it should be centered and have a  */
+          cat[p->ycol]      = 0.0f; /* total brightness of 1.0f. */
+        }
       break;
 
+
+
     case GAUSSIANCODE:
+      mkp->correction       = 1;
       mkp->profile          = &Gaussian;
       sigma                 = cat[rcol]/2.35482f;
       mkp->gaussian_c       = -1.0f/(2.0f*sigma*sigma);
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
       if(p->psfinimg==0 && p->individual==0)
-        { mkp->brightness=1.0f; cat[p->xcol]=0.0f; cat[p->ycol]=0.0f; }
+        {
+          mkp->brightness   = 1.0f; /* Same as the explanations for    */
+          cat[p->xcol]      = 0.0f; /* The Moffat profile. */
+          cat[p->ycol]      = 0.0f;
+        }
       break;
+
+
 
     case POINTCODE:
-      mkp->profile          = &Fixed;
-      mkp->fixedvalue       = 1;
+      mkp->correction       = 1;
+      mkp->fixedvalue       = 1.0f;
+      mkp->profile          = &Flat;
       break;
 
+
+
     case FLATCODE:
-      mkp->profile          = &Fixed;
-      mkp->fixedvalue       = p->constant;
+      mkp->profile          = &Flat;
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
+      if(p->mforflatpix)
+        {
+          mkp->correction   = 0;
+          mkp->fixedvalue   = cat[p->mcol];
+        }
+      else
+        {
+          mkp->correction   = 1;
+          mkp->fixedvalue   = 1.0f;
+        }
       break;
+
+
 
     case CIRCUMFERENCECODE:
       mkp->profile          = &Circumference;
-      mkp->fixedvalue       = p->constant;
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
       mkp->intruncr         = mkp->truncr - p->circumwidth;
-      if(mkp->intruncr<0.0f) mkp->intruncr=0.0f;
+      if(p->mforflatpix)
+        {
+          mkp->correction   = 0;
+          mkp->fixedvalue   = cat[p->mcol];
+        }
+      else
+        {
+          mkp->correction   = 1;
+          mkp->fixedvalue   = 1.0f;
+        }
+      if(mkp->intruncr<0.0f)
+        mkp->intruncr       = 0.0f;
       break;
+
+
 
     default:
       error(EXIT_FAILURE, 0, "a bug in setprofparams (oneprofile.c)! "
@@ -548,27 +592,33 @@ makeoneprofile(struct mkonthread *mkp)
   mkp->ibq->imgwidth=mkp->width[0];
 
 
-  /* Allocate the array and build it. */
+  /* Allocate and clear the array for this one profile. */
   errno=0;
   size=mkp->width[0]*mkp->width[1];
-  mkp->ibq->img=malloc(size*sizeof *mkp->ibq->img);
+  mkp->ibq->img=calloc(size, sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
     error(EXIT_FAILURE, 0, "%lu bytes for object in row %lu of data in %s",
           size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
-  gal_arraymanip_fset_const(mkp->ibq->img, size, NAN);
 
 
   /* Build the profile in the image. */
   makepixbypix(mkp);
 
 
-  /* Correct the sum of pixels in it. If the profile is a fixed
-     constant, then its value is set in the Fixed function in
-     profiles.c. */
-  if(p->setconsttomin==0 && p->setconsttonan==0)
+  /* Correct the sum of pixels in the profile so it has the fixed total
+     magnitude or pixel value, mkp->correction was set in
+     setprofparams. Note that the profiles were not normalized during the
+     building.*/
+  if(mkp->correction)
     {
+      /* First get the sum of all the pixels in the profile. */
       sum=gal_statistics_float_sum(mkp->ibq->img, size);
-      mkp->ibq->accufrac/=sum;
+
+      /* Correct the fraction of brightness that was calculated
+         accurately (not using the pixel center). */
+      mkp->ibq->accufrac /= sum;
+
+      /* Correct all the profile pixels. */
       if(p->magatpeak)
         gal_arraymanip_fmultip_const(mkp->ibq->img, size,
                                      mkp->brightness/mkp->peakflux);

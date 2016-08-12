@@ -158,7 +158,7 @@ totsersic(double n, double re, double b, double q)
 double
 Circumference(struct mkonthread *mkp)
 {
-  return mkp->r > mkp->intruncr ? mkp->fixedvalue : NAN;
+  return mkp->r > mkp->intruncr ? mkp->fixedvalue : 0.0f;
 }
 
 
@@ -167,7 +167,7 @@ Circumference(struct mkonthread *mkp)
 
 /* Always returns a fixed value: */
 double
-Fixed(struct mkonthread *mkp)
+Flat(struct mkonthread *mkp)
 {
   return mkp->fixedvalue;
 }
