@@ -754,7 +754,7 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
       default:
         error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
               "fix the problem. For some reason p->allcols[%d] is given "
-              "the value %lu which is not recognized in preparearrays "
+              "the value %lu which is not recognized in printvalues "
               "(ui.c)", PACKAGE_BUGREPORT, i, p->allcols[i]);
       }
 
@@ -1279,7 +1279,7 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
   /* Read the arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
-    error(EXIT_FAILURE, errno, "aarsing arguments");
+    error(EXIT_FAILURE, errno, "parsing arguments");
 
 
   /* Add the user default values and save them if asked. */
