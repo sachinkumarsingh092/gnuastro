@@ -524,7 +524,7 @@ fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
   /* Allocate the temporary inverse array: */
   errno=0; tinv=malloc(size*sizeof *tinv);
   if(tinv==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tinv (label.c)",
+    error(EXIT_FAILURE, errno, "%lu bytes for tinv (binary.c)",
           size*sizeof *tinv);
 
   /* Fill in the central regions of the inverse array: */
@@ -618,7 +618,7 @@ fillboundedholes(unsigned char *in, size_t s0, size_t s1, int anyblank)
   errno=0; hlab=malloc(idx*idy*sizeof *hlab);
   if(hlab==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for hlab in filllabeledholes "
-          "(label.c)", idx*idy*sizeof *hlab);
+          "(binary.c)", idx*idy*sizeof *hlab);
 
 
   /* Find the hole labels */
