@@ -70,16 +70,19 @@ makeoutput(struct noisechiselparams *p)
                          s0, s1, 0, p->wcs, NULL, SPACK_STRING);
 
 
-  /* The object labels image with a keyword mentioning the number of
-     objects. */
+  /* Add the necessary FITS keywords for MakeCatalog when reading the
+     objects image. */
+  gal_fits_add_to_fits_header_ll(&keys, TSTRING, "WCLUMPS", 0, "yes", 0,
+                                 "Is there a clumps image companion?",
+                                 0, NULL);
   num[0]=p->numobjects-1;
   gal_fits_add_to_fits_header_ll(&keys, TLONG, "NOBJS", 0, num, 0,
-                                      "Number of objects in the image.", 0,
-                                      NULL);
+                                 "Number of objects in the image.", 0,
+                                 NULL);
   dpt=&p->detsn;
   gal_fits_add_to_fits_header_ll(&keys, TDOUBLE, "DETSN", 0, dpt, 0,
-                                      "Signal to noise of true "
-                                      "pseudo-detections.", 0, NULL);
+                                 "Signal to noise of true "
+                                 "pseudo-detections.", 0, NULL);
   gal_fits_array_to_file(p->cp.output, "Objects", LONG_IMG, p->olab,
                          s0, s1, p->anyblank, p->wcs, keys,
                          SPACK_STRING);
@@ -92,12 +95,12 @@ makeoutput(struct noisechiselparams *p)
      on the 3rd and 4th extensions. */
   num[0] = p->detectonly ? 0 : p->numclumps-1;
   gal_fits_add_to_fits_header_ll(&keys, TLONG, "NCLUMPS", 0, num, 0,
-                                      "Number of clumps in the image.", 0,
-                                      NULL);
+                                 "Number of clumps in the image.", 0,
+                                 NULL);
   dpt=&p->clumpsn;
   gal_fits_add_to_fits_header_ll(&keys, TDOUBLE, "CLUMPSN", 0, dpt, 0,
-                                      "Signal to noise of true clumps.", 0,
-                                      NULL);
+                                 "Signal to noise of true clumps.", 0,
+                                 NULL);
   gal_fits_array_to_file(p->cp.output, "Clumps", LONG_IMG, p->clab, s0,
                          s1, p->anyblank, p->wcs, keys, SPACK_STRING);
   keys=NULL;
