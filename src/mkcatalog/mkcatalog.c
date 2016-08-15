@@ -154,7 +154,7 @@ firstpass(struct mkcatalogparams *p)
               }
           }
 
-        if(clumps[i]>0)
+        if(clumps && clumps[i]>0)
           {
             /* The largest clump ID over each object is the number of
                clumps that object has. */
@@ -191,11 +191,10 @@ firstpass(struct mkcatalogparams *p)
 
 
 
-/* In the second pass, we have the number of clumps so we can find
-   store the total values for the clumps. In this second round we can
-   also find second order moments of the objects if we want to. */
+/* In the second pass, we have the number of clumps so we can find the
+   total values for the clumps. */
 void
-secondpass(struct mkcatalogparams *p)
+clumppass(struct mkcatalogparams *p)
 {
   float imgss;
   double x, y, sx, sy;
@@ -412,6 +411,11 @@ makeoutput(struct mkcatalogparams *p)
   for(p->obj0clump1=0;p->obj0clump1<2;++p->obj0clump1)
     {
 
+      /* If no clumps image was provided, then ignore the clumps
+         catalog. */
+      if(p->obj0clump1==1 && p->clumps==NULL)
+        continue;
+
 
       /* Do the preparations for this round: */
       p->intcounter=p->accucounter=p->curcol=0;
@@ -483,13 +487,16 @@ makeoutput(struct mkcatalogparams *p)
       strcat(comment, p->line);
 
       sn = p->obj0clump1 ? p->clumpsn : p->detsn;
-      sprintf(tline, "%s limiting Signal to noise ratio: ",
-              p->obj0clump1 ? "Clump" : "Detection");
-      sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", tline, sn);
-      strcat(comment, p->line);
-      if(p->obj0clump1==0)
-          strcat(comment, "# (NOTE: limits above are for detections, not "
-                 "objects)\n");
+      if(!isnan(sn))
+        {
+          sprintf(tline, "%s limiting Signal to noise ratio: ",
+                  p->obj0clump1 ? "Clump" : "Detection");
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", tline, sn);
+          strcat(comment, p->line);
+          if(p->obj0clump1==0)
+            strcat(comment, "# (NOTE: limits above are for detections, not "
+                   "objects)\n");
+        }
 
 
       /* If cpscorr was used, report it: */
@@ -518,8 +525,9 @@ makeoutput(struct mkcatalogparams *p)
       strcat(comment, "#\n# Columns:\n# --------\n");
 
 
-      /* Fill the catalog array, in the end set the last elements in intcols and
-         accucols to -1, so gal_txtarray_array_to_txt knows when to stop. */
+      /* Fill the catalog array, in the end set the last elements in
+         intcols and accucols to -1, so gal_txtarray_array_to_txt knows
+         when to stop. */
       for(p->curcol=0;p->curcol<p->numcols;++p->curcol)
         {
           col=cols[p->curcol];
@@ -687,8 +695,9 @@ makeoutput(struct mkcatalogparams *p)
 
 
       /* Write the catalog to file: */
-      gal_txtarray_array_to_txt(p->cat, p->num, p->numcols, comment, p->intcols,
-                                p->accucols, space, prec, 'f', p->filename);
+      gal_txtarray_array_to_txt(p->cat, p->num, p->numcols, comment,
+                                p->intcols, p->accucols, space, prec,
+                                'f', p->filename);
 
       /* Clean up: */
       free(p->intcols);
@@ -723,7 +732,7 @@ mkcatalog(struct mkcatalogparams *p)
 {
   /* Run through the data for the first time: */
   firstpass(p);
-  secondpass(p);
+  if(p->clumps) clumppass(p);
 
   /* Write the output: */
   makeoutput(p);

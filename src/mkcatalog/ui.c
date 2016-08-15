@@ -36,6 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
+#include <gnuastro/statistics.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
 
@@ -836,51 +837,43 @@ checkifset(struct mkcatalogparams *p)
 void
 sanitycheck(struct mkcatalogparams *p)
 {
-  struct gal_fits_read_header_keys keys[2];
+  struct uiparams *up=&p->up;
+  struct gal_fits_read_header_keys keys[1];
 
   /* Make sure the input file exists. */
-  gal_checkset_check_file(p->up.inputname);
+  gal_checkset_check_file(up->inputname);
 
   /* Set the names of the files. */
-  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,
-                            &p->up.maskname, p->up.mhdu, p->up.mhduset,
+  gal_fits_file_or_ext_name(up->inputname, p->cp.hdu, up->masknameset,
+                            &up->maskname, up->mhdu, up->mhduset,
                             "mask");
-  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu,
-                            p->up.objlabsnameset, &p->up.objlabsname,
-                            p->up.objhdu, p->up.objhduset,
+  gal_fits_file_or_ext_name(up->inputname, p->cp.hdu,
+                            up->objlabsnameset, &up->objlabsname,
+                            up->objhdu, up->objhduset,
                             "object labels");
-  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu,
-                            p->up.clumplabsnameset, &p->up.clumplabsname,
-                            p->up.clumphdu, p->up.clumphduset,
-                            "clump labels");
-  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.skynameset,
-                            &p->up.skyname, p->up.skyhdu, p->up.skyhduset,
+  gal_fits_file_or_ext_name(up->inputname, p->cp.hdu, up->skynameset,
+                            &up->skyname, up->skyhdu, up->skyhduset,
                             "sky value image");
-  gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.stdnameset,
-                            &p->up.stdname, p->up.stdhdu, p->up.stdhduset,
+  gal_fits_file_or_ext_name(up->inputname, p->cp.hdu, up->stdnameset,
+                            &up->stdname, up->stdhdu, up->stdhduset,
                             "sky standard deviation");
 
-  /* Read the number of labels for the objects:  */
-  keys[0].keyname="DETSN";        keys[0].datatype=TDOUBLE;
-  keys[1].keyname="NOBJS";        keys[1].datatype=TLONG;
-  gal_fits_read_keywords(p->up.objlabsname, p->up.objhdu, keys, 2);
-  p->detsn=keys[0].d;
-  p->numobjects=keys[1].l;
-
-  /* Read the clumps information. Note that the datatypes don't change. */
-  keys[0].keyname="CLUMPSN";
-  keys[1].keyname="NCLUMPS";
-  gal_fits_read_keywords(p->up.clumplabsname, p->up.clumphdu, keys, 2);
-  p->clumpsn=keys[0].d;
-  p->numclumps=keys[1].l;
-
-  /* Read the minimum and maximum standard deviation values. */
-  keys[0].keyname="MINSTD";       keys[0].datatype=TFLOAT;
-  keys[1].keyname="MEDSTD";       keys[1].datatype=TFLOAT;
-  gal_fits_read_keywords(p->up.stdname, p->up.stdhdu, keys, 2);
-  p->minstd=keys[0].f;
-  p->medstd=keys[1].f;
-  p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
+  /* The WCLUMPS (with-clumps) keyword in the object HDU says that there is
+     also a clumps image accompaning the object image. If it exists and its
+     value is `yes' (not case sensitive), then set the image name to the
+     proper string. Otherwise, set the image name to NULL, so future
+     functions can check. */
+  keys[0].str[0]='\0';
+  keys[0].datatype=TSTRING;
+  keys[0].keyname="WCLUMPS";
+  gal_fits_read_keywords(up->objlabsname, up->objhdu, keys, 1);
+  if(strcasecmp(keys[0].str, "yes"))
+    up->clumplabsname=NULL;
+  else
+    gal_fits_file_or_ext_name(up->inputname, p->cp.hdu,
+                              up->clumplabsnameset, &up->clumplabsname,
+                              up->clumphdu, up->clumphduset,
+                              "clump labels");
 
   /* When the RA and Dec are needed, make sure that the X and Y
      columns and the RA and Dec columns in the information array are
@@ -891,7 +884,7 @@ sanitycheck(struct mkcatalogparams *p)
 
      NOTE: the information array is separate from the output array
   */
-  if(p->up.raset || p->up.decset)
+  if(up->raset || up->decset)
     {
       if( OFlxWhtX!=OFlxWhtY-1 || OFlxWhtRA!=OFlxWhtDec-1 )
         error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
@@ -909,10 +902,10 @@ sanitycheck(struct mkcatalogparams *p)
     }
   else
     {
-      gal_checkset_automatic_output(p->up.inputname, "_o.txt",
+      gal_checkset_automatic_output(up->inputname, "_o.txt",
                                     p->cp.removedirinfo, p->cp.dontdelete,
                                     &p->ocatname);
-      gal_checkset_automatic_output(p->up.inputname, "_c.txt",
+      gal_checkset_automatic_output(up->inputname, "_c.txt",
                                     p->cp.removedirinfo, p->cp.dontdelete,
                                     &p->ccatname);
     }
@@ -992,6 +985,92 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
           "%s (hdu: %s) is %lu x %lu. The images should have the same "
           "size", filename, hdu, s1, s0, p->up.inputname,
           p->cp.hdu, p->s1, p->s0);
+}
+
+
+
+
+
+/* Read the necessary keywords and if they aren't present do the
+   appropriate action. */
+void
+readkeywords(struct mkcatalogparams *p)
+{
+  long numobjects;
+  size_t size=p->s0*p->s1;
+  struct uiparams *up=&p->up;
+  struct gal_fits_read_header_keys keys[2];
+
+  /* Read keywords from the standard deviation image:  */
+  keys[0].keyname="MINSTD";   keys[0].datatype=TFLOAT;
+  keys[1].keyname="MEDSTD";   keys[1].datatype=TFLOAT;
+  gal_fits_read_keywords(up->stdname, up->stdhdu, keys, 2);
+
+  /* The minimum standard deviation value. */
+  if(keys[0].status)
+    gal_statistics_float_min(p->std, size, &p->minstd);
+  else
+    p->minstd=keys[0].f;
+  p->cpscorr = p->minstd>1 ? 1.0f : p->minstd;
+
+  /* Median standard deviation value (only necessary in catalog
+     comments). */
+  if(keys[1].status)
+    {
+      p->medstd=gal_statistics_median(p->std, size);
+      fprintf(stderr, "Warning: Could not find the MEDSTD keyword in %s "
+              "(hdu: %s). The median standard deviation is thus found on"
+              "the (interpolated) standard deviation image. NoiseChisel "
+              "finds the median before interpolation, so the reported value "
+              "in the final catalog will not be accurate (will depend on "
+              "how many meshs were blank and their spatial position "
+              "relative to the non-blank ones.", up->stdname, up->stdhdu);
+    }
+  else
+    p->medstd=keys[1].f;
+
+  /* Read the keywords from the objects image:  */
+  keys[0].keyname="DETSN";     keys[0].datatype=TDOUBLE;
+  keys[1].keyname="NOBJS";     keys[1].datatype=TLONG;
+  gal_fits_read_keywords(up->objlabsname, up->objhdu, keys, 2);
+
+  /* If DETSN is not given, there is no way we can calculate it here, so we
+     will just set it to NaN to check and not report in the end. */
+  p->detsn = keys[0].status ? NAN : keys[0].d;
+
+  /* Read the total number of objects. */
+  if(keys[1].status)
+    {
+      gal_statistics_long_non_blank_max(p->objects, size, &numobjects,
+                                        GAL_FITS_LONG_BLANK);
+      p->numobjects=numobjects;
+    }
+  else
+    p->numobjects=keys[1].l;
+
+  /* Read the clumps information if it is necessary.
+
+     Note that unlike finding the number of objects, finding the number of
+     clumps is not an easy process, since the clumps of each object start
+     with a label of one. So if the number of clumps is not given, we have
+     to abort. For now, is up to the program that built the clumps to give
+     the total number, later we can take a procedure to find them (for
+     example first only taking the positive labels (that are clumps) and
+     making a binary image, then running the connected component algorithm
+     to find the number of clumps in the image.*/
+  if(up->clumplabsname)
+    {
+      keys[0].keyname="CLUMPSN";
+      keys[1].keyname="NCLUMPS";
+      gal_fits_read_keywords(up->clumplabsname, up->clumphdu, keys, 2);
+      p->clumpsn = keys[0].status ? NAN : keys[0].d;
+      if(keys[1].status)
+        error(EXIT_FAILURE, 0, "couldn't find NCLUMPS in the header of "
+              "%s (hdu: %s).", up->clumplabsname, up->clumphdu);
+      else
+        p->numclumps=keys[1].l;
+    }
+
 }
 
 
@@ -1185,12 +1264,19 @@ preparearrays(struct mkcatalogparams *p)
                         &p->wcs);
 
 
-      /* Read and check the other arrays: */
-      checksetlong(p, p->up.objlabsname, p->up.objhdu, &p->objects);
-      checksetlong(p, p->up.clumplabsname, p->up.clumphdu, &p->clumps);
+      /* Read and check the object, sky and skystd HDUs. Note that the
+         clumps image is only used when the objects image says a clumps
+         image exists. */
       checksetfloat(p, p->up.skyname, p->up.skyhdu, &p->sky);
       checksetfloat(p, p->up.stdname, p->up.stdhdu, &p->std);
+      checksetlong(p, p->up.objlabsname, p->up.objhdu, &p->objects);
+      if(p->up.clumplabsname)
+        checksetlong(p, p->up.clumplabsname, p->up.clumphdu, &p->clumps);
+      else
+        p->clumps=NULL;
 
+      /* Read the necessary keywords. */
+      readkeywords(p);
 
       /* Allocate the catalog arrays: */
       if(p->objncols>0 && p->numobjects>0)
@@ -1312,8 +1398,9 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
         printf("  - Mask   %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);
       printf("  - Objects %s (hdu: %s)\n", p->up.objlabsname,
              p->up.objhdu);
-      printf("  - Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
-             p->up.clumphdu);
+      if(p->up.clumplabsname)
+        printf("  - Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
+               p->up.clumphdu);
       printf("  - Sky     %s (hdu: %s)\n", p->up.skyname, p->up.skyhdu);
       printf("  - Sky STD %s (hdu: %s)\n", p->up.stdname, p->up.stdhdu);
     }
