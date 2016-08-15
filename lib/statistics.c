@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <float.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <gnuastro/qsort.h>
@@ -44,6 +45,46 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /****************************************************************
  *****************    Mininum and Maximum    ********************
  ****************************************************************/
+/* Find the the minimum (non-blank) value in an array of type long. Note
+   that the long type doesn't have a NaN value like the floats above. So as
+   blank pixels, a value in the range of acceptable values is given. so we
+   have to explicitly ignore those values.*/
+void
+gal_statistics_long_non_blank_min(long *in, size_t size, long *min,
+                                  long blank)
+{
+  long tmin=INT32_MAX, *lpt;
+  lpt=in+size;
+  do
+    if(*in!=blank && *in<tmin)
+      tmin=*in;
+  while(++in<lpt);
+  *min=tmin;
+}
+
+
+
+
+
+/* Find the the minimum (non-blank) value in an array of type long. See the
+   explanation above `gal_statistics_long_min'. */
+void
+gal_statistics_long_non_blank_max(long *in, size_t size, long *max,
+                                  long blank)
+{
+  long tmax=INT32_MIN, *lpt;
+  lpt=in+size;
+  do
+    if(*in!=blank && *in>tmax)
+      tmax=*in;
+  while(++in<lpt);
+  *max=tmax;
+}
+
+
+
+
+
 void
 gal_statistics_float_min(float *in, size_t size, float *min)
 {

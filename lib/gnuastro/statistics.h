@@ -31,6 +31,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  *****************    Mininum and Maximum    ********************
  ****************************************************************/
 void
+gal_statistics_long_non_blank_min(long *in, size_t size, long *min,
+                                  long blank);
+
+void
+gal_statistics_long_non_blank_max(long *in, size_t size, long *max,
+                                  long blank);
+
+void
 gal_statistics_float_min(float *in, size_t size, float *min);
 
 void
