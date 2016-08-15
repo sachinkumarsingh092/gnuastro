@@ -103,15 +103,16 @@ struct gal_fits_header_ll
 
 struct gal_fits_read_header_keys
 {
-  char   *keyname;
-  int    datatype;
-  char         *c;
-  unsigned char u;
-  short         s;
-  long          l;
-  LONGLONG      L;
-  float         f;
-  double        d;
+  int            status;
+  char         *keyname;
+  int          datatype;
+  char  str[FLEN_VALUE];
+  unsigned char       u;
+  short               s;
+  long                l;
+  LONGLONG            L;
+  float               f;
+  double              d;
 };
 
 
@@ -137,7 +138,7 @@ gal_fits_add_to_fits_header_ll_end(struct gal_fits_header_ll **list,
 
 void
 gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
-                                    struct gal_fits_header_ll **list);
+                               struct gal_fits_header_ll **list);
 
 void
 gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec);
@@ -179,7 +180,7 @@ gal_fits_bitpix_alloc(size_t size, int bitpix);
 
 void
 gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
-                          void **out, int outbitpix);
+                     void **out, int outbitpix);
 
 void
 gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs,
