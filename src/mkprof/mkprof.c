@@ -544,32 +544,22 @@ write(struct mkprofparams *p)
       /* Get the current time for verbose output. */
       if(verb) gettimeofday(&t1, NULL);
 
-      /* If the background image had a special file type, MakeProfile's
-         output should also have the same type. So here we check the type
-         and if its not float, we change to that type. */
-      if(p->up.backname)
-        {
-          if(bitpix==FLOAT_IMG)
-            array=out;
-          else
-            gal_fits_change_type(out, FLOAT_IMG, p->naxes[1]*p->naxes[0],
-                                 p->anyblank, &array, bitpix);
-        }
+      /* Make a temporary array of the desired type for writing the
+         output. */
+      if(bitpix==FLOAT_IMG)
+        array=out;
       else
-        {
-          array=out;
-          bitpix=FLOAT_IMG;
-        }
+        gal_fits_change_type(out, FLOAT_IMG, p->naxes[1]*p->naxes[0],
+                             p->anyblank, &array, bitpix);
 
-      /* Write the array inside the output FITS file. */
-      gal_fits_array_to_file(p->mergedimgname, "MockImg on back",
+      /* Write the array to the output FITS file. */
+      gal_fits_array_to_file(p->mergedimgname, "Mock image",
                              bitpix, array, p->naxes[1],
                              p->naxes[0], p->anyblank, p->wcs,
                              NULL, SPACK_STRING);
 
-      /* Free `array' when it was not a simple assignment but an
-         allocation,*/
-      if(p->up.backname && bitpix!=FLOAT_IMG)
+      /* Free `array' if it was allocated separately.*/
+      if(bitpix!=FLOAT_IMG)
         free(array);
 
       /* In verbose mode, print the information. */

@@ -50,4 +50,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 # Actual test script
 # ==================
 $execname $cat $img --mforflatpix --oversample=1 --inputascanvas  \
-          --output="inputascanvas.fits"
+          --type=long --output="inputascanvas.fits"

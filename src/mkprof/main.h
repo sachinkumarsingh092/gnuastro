@@ -31,8 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Progarm name macros: */
-#define SPACK           "astmkprof" /* Subpackage executable name. */
-#define SPACK_NAME      "MakeProfiles"     /* Subpackage full name.       */
+#define SPACK           "astmkprof"      /* Subpackage executable name. */
+#define SPACK_NAME      "MakeProfiles"   /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
 #define LOGFILENAME     SPACK".log"
 #define LOGNUMCOLS      5
@@ -85,6 +85,7 @@ struct builtqueue
 
 struct uiparams
 {
+  int               type;  /* User's desired output bitpix.            */
   char         *backname;  /* Name of background image file name.      */
   char          *backhdu;  /* HDU of background image.                 */
   char          *catname;  /* Name of catalog of parameters.           */
@@ -101,6 +102,8 @@ struct uiparams
   int          naxis2set;
   int      oversampleset;
   int     circumwidthset;
+  int         replaceset;
+  int            typeset;
   int   inputascanvasset;
 
   int        tunitinpset;

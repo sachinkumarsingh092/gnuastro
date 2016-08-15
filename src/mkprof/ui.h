@@ -24,6 +24,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define UI_H
 
 void
+checksaveouttype(struct mkprofparams *p, char *arg);
+
+void
 setparams(int argc, char *argv[], struct mkprofparams *p);
 
 void

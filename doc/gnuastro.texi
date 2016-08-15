@@ -12436,6 +12436,20 @@ option is ignored.
 second FITS axis (vertical when viewed in SAO ds9), see the
 explanation for @option{--naxis1}.
 
+@item -T
+@itemx --type
+(@option{=STR}) Type of the output image pixels (specified by @code{BITPIX}
+in the FITS standard). It can have any one of the following values:
+@option{byte}, @option{short}, @option{long}, @option{longlong},
+@option{float}, @option{double}. Internally, the images are made in the
+float type, but upon writing of the single output (not individual
+profiles), the image will be converted to the type specified by this
+option.
+
+When a background image is given without the @option{--inputascanvas}
+option, it is assumed that you want the output in the same format as the
+background, therefore the value to this option is ignored.
+
 @item -C
 @itemx --inputascanvas
 When an image is given as an argument, use the input image as the canvas to
@@ -12443,10 +12457,11 @@ make all the mock profiles. In practice, this option only changes the
 non-blank pixels (see @ref{Blank pixels}) of the input image (in memory
 after reading, not the actual input file) to zero before making the
 profiles. The profiles are then built on those cleared pixels. With this
-option (like when building on a background image) none of the
-`@option{--naxis1}', `@option{--naxis2}', `@option{--crpix1}',
-`@option{--crpix2}', `@option{--crval1}', `@option{--crval2}', and
-`@option{--resolution}' are necessary.
+option (like when building on a background image) the values to
+@option{--naxis1}, @option{--naxis2}, @option{--crpix1}, @option{--crpix2},
+@option{--crval1}, @option{--crval2}, and @option{--resolution} are
+ignored. However, if @option{--type} is given, its value will take
+precedence over the background image type.
 
 This option can be very useful when the mock image is to be made over a
 real sky region and compared to a real image (that might have blank

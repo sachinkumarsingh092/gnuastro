@@ -61,7 +61,7 @@ const char doc[] =
    Available letters (-V which is used by GNU is also removed):
 
    a d f g j k l u v
-   A B E G H I J L M O Q T U W Z
+   A B E G H I J L M O Q U W Z
 
    Maximum integer used so far: 517
 */
@@ -144,6 +144,14 @@ static struct argp_option options[] =
       0,
       0,
       "Do not create a merged image of all profiles.",
+      2
+    },
+    {
+      "type",
+      'T',
+      "STR",
+      0,
+      "byte, short, long, longlong, float, double.",
       2
     },
 
@@ -492,6 +500,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'R':
       p->replace=1;
+      p->up.replaceset=1;
+      break;
+    case 'T':
+      checksaveouttype(p, arg);
       break;
 
     /* Profiles: */

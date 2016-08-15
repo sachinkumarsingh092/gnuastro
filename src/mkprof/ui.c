@@ -66,6 +66,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /**************       Options and parameters    ***************/
 /**************************************************************/
+/* Check if the value to the `--type' option is recognized,  */
+void
+checksaveouttype(struct mkprofparams *p, char *arg)
+{
+  /* First check if the value is one of the accepted types. */
+  if     (strcmp(arg, "byte")==0)     p->up.type=BYTE_IMG;
+  else if(strcmp(arg, "short")==0)    p->up.type=SHORT_IMG;
+  else if(strcmp(arg, "long")==0)     p->up.type=LONG_IMG;
+  else if(strcmp(arg, "longlong")==0) p->up.type=LONGLONG_IMG;
+  else if(strcmp(arg, "float")==0)    p->up.type=FLOAT_IMG;
+  else if(strcmp(arg, "double")==0)   p->up.type=DOUBLE_IMG;
+  else
+    error(EXIT_FAILURE, 0, "given value of the `--type' (`-T') option "
+          "(`%s') is not recognized. It must be `byte', `short', `long' "
+          "`longlong', `float', or `double'.", arg);
+
+  /* Flag this option as set: */
+  p->up.typeset=1;
+}
+
+
+
+
+
 void
 readconfig(char *filename, struct mkprofparams *p)
 {
@@ -103,6 +127,8 @@ readconfig(char *filename, struct mkprofparams *p)
       if(strcmp(name, "hdu")==0)
         gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
+
+
       /* Outputs: */
       else if(strcmp(name, "output")==0)
         gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
@@ -136,6 +162,18 @@ readconfig(char *filename, struct mkprofparams *p)
           gal_checkset_sizet_l_zero(value, &p->oversample, name, key,
                                     SPACK, filename, lineno);
           up->oversampleset=1;
+        }
+      else if(strcmp(name, "replace")==0)
+        {
+          if(up->replaceset) continue;
+          gal_checkset_int_zero_or_one(value, &p->replace, name,
+                                       key, SPACK, filename, lineno);
+          up->replaceset=1;
+        }
+      else if(strcmp(name, "type")==0)
+        {
+          if(p->up.typeset) continue;
+          checksaveouttype(p, value);
         }
 
 
@@ -374,6 +412,10 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%d\n", "inputascanvas", up->inputascanvas);
   if(up->oversampleset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
+  if(up->replaceset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "replace", p->replace);
+  if(up->typeset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "type", up->type);
 
   fprintf(fp, "\n# Profiles:\n");
   if(up->tunitinpset)
@@ -411,7 +453,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(up->tcolset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "tcol", p->tcol);
   if(up->mforflatpixset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "mforflatpix", p->tcol);
+    fprintf(fp, CONF_SHOWFMT"%d\n", "mforflatpix", p->mforflatpix);
 
   fprintf(fp, "\n# WCS:\n");
   if(up->crpix1set)
@@ -470,11 +512,12 @@ checkifset(struct mkprofparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("circumwidth");
 
 
-  /* The output image size and WCS are only necessary if the user doesn't
-     want to use the input image's properties or doesn't want to make the
-     profiles on a background image. */
-  if(up->inputascanvasset==0 || p->up.backname)
+  /* The output image size, type, and WCS are only necessary if the user
+     has not provided an input image. */
+  if(p->up.backname==NULL)
     {
+      if(up->typeset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("type");
       if(up->naxis1set==0)
         GAL_CONFIGFILES_REPORT_NOTSET("naxis1");
       if(up->naxis2set==0)
@@ -801,6 +844,7 @@ preparearrays(struct mkprofparams *p)
   void *array=NULL;
   size_t i, naxes[2];
   double *wcstoimg=NULL;
+  struct uiparams *up=&p->up;
 
   /* Allocate space for the log file: */
   p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
@@ -811,13 +855,13 @@ preparearrays(struct mkprofparams *p)
 
   /* If a background image is specified, then use that as the output
      image to build the profiles over. */
-  if(p->up.backname)
+  if(up->backname)
     {
       /* Read the input WCS. */
-      gal_fits_read_wcs(p->up.backname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
+      gal_fits_read_wcs(up->backname, p->cp.hdu, 0, 0, &p->nwcs, &p->wcs);
 
       /* Read in the background image and its coordinates: */
-      p->anyblank=gal_fits_hdu_to_array(p->up.backname, p->cp.hdu,
+      p->anyblank=gal_fits_hdu_to_array(up->backname, p->cp.hdu,
                                         &p->bitpix, &array,
                                         &naxes[1], &naxes[0]);
       p->naxes[1]=naxes[1];
@@ -837,19 +881,19 @@ preparearrays(struct mkprofparams *p)
 
       /* If the user just wanted the headers, then change all non-NaN
          pixels to 0.0f. */
-      if(p->up.inputascanvas)
+      if(up->inputascanvas)
         gal_arraymanip_freplace_nonnans(p->out, naxes[0]*naxes[1], 0.0f);
     }
-  else
-    p->bitpix=FLOAT_IMG;
 
 
-  /* If there is no WCS structure (either no background image given or the
-     background image didn't have any WCS structure), then prepare the WCS
-     based on the given options. */
+  /* Make the WCS structure if it has not been set so far. */
   if(p->wcs==NULL)
     preparewcs(p);
 
+  /* Set the output image type when a background image is not specified,
+     or when inputascanvas is called (with a background image). */
+  if(!up->backname || up->inputascanvas)
+    p->bitpix=up->type;
 
   /* Convert the RA and Dec to X and Y. We will make a temporary array with
      four rows and the same number of columns, then use that array and the
@@ -860,7 +904,7 @@ preparearrays(struct mkprofparams *p)
      the X and Ys and the RA and Decs to be in touching pieces of memory
      and we can't guarantee that (the user might have these columns in
      any order). */
-  if(p->up.racolset)
+  if(up->racolset)
     {
       /* Allocate the space for the temporary array. */
       errno=0;
