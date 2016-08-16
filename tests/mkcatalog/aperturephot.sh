@@ -1,4 +1,4 @@
-# Make labeled regions on an image with blank pixels.
+# Make a simple catalog for NoiseChisel's output.
 #
 # See the Tests subsection of the manual for a complete explanation
 # (in the Installing gnuastro section).
@@ -22,10 +22,10 @@
 # Set the variabels (The executable is in the build tree). Do the
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
-prog=mkprof
+prog=mkcatalog
+objimg=inputascanvas.fits
 execname=../src/$prog/ast$prog
-img=convolve_spatial_noised.fits
-cat=$topsrc/tests/$prog/inputascanvas.txt
+img=convolve_spatial_noised_labeled.fits
 
 
 
@@ -49,5 +49,5 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat $img --mforflatpix --inputascanvas  \
-          --type=long --output="inputascanvas.fits"
+$execname $img --objlabs=$objimg --objhdu=0 --output=aperturephot.txt  \
+          --sn --magnitude --dec --ra --y --x

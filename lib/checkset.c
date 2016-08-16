@@ -738,9 +738,9 @@ gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
      this.*/
   out=gal_checkset_malloc_cat(inname, suffix);
 
-  /* Put the input in the space and remove all elements including and after '.'.
-     Note that if there is no '.' in the name, gal_checkset_malloc_cat has
-     already appended inname and suffix.*/
+  /* Put the input in the space and remove all elements including and after
+     '.'.  Note that if there is no '.' in the name,
+     gal_checkset_malloc_cat has already appended inname and suffix.*/
   l=strlen(inname);
   strcpy(out, inname);
   for(i=l;i!=0;--i)

@@ -30,18 +30,19 @@ export topsrc=$(top_srcdir);                        \
 export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
-TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh mkprof/mosaic3.sh  \
-mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh imgcrop/wcscat.sh   \
-imgcrop/xcyc.sh imgcrop/xcycnoblank.sh imgcrop/section.sh imgcrop/radec.sh \
-imgcrop/imgpolygon.sh imgcrop/imgoutpolygon.sh imgcrop/wcspolygon.sh       \
-convertt/fitstotxt.sh convertt/fitstojpeg.sh convertt/blankch.sh           \
-convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh    \
-convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh            \
-imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh        \
-mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh header/write.sh          \
-header/print.sh header/update.sh header/delete.sh imgstat/basicstats.sh	   \
-subtractsky/subtractsky.sh noisechisel/noisechisel.sh mkcatalog/simple.sh  \
-arithmetic/snimage.sh arithmetic/onlynumbers.sh cosmiccal/simpletest.sh
+TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh mkprof/mosaic3.sh   \
+mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh imgcrop/wcscat.sh    \
+imgcrop/xcyc.sh imgcrop/xcycnoblank.sh imgcrop/section.sh imgcrop/radec.sh  \
+imgcrop/imgpolygon.sh imgcrop/imgoutpolygon.sh imgcrop/wcspolygon.sh        \
+convertt/fitstotxt.sh convertt/fitstojpeg.sh convertt/blankch.sh            \
+convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh     \
+convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh             \
+imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh         \
+mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh header/write.sh           \
+header/print.sh header/update.sh header/delete.sh imgstat/basicstats.sh     \
+subtractsky/subtractsky.sh noisechisel/noisechisel.sh mkcatalog/simple.sh   \
+mkcatalog/aperturephot.sh arithmetic/snimage.sh arithmetic/onlynumbers.sh   \
+cosmiccal/simpletest.sh
 
 EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                  \
 mkprof/ellipticalmasks.txt mkprof/inputascanvas.txt mkprof/mkprofcat2.txt  \
@@ -102,7 +103,7 @@ imgwarp/imgwarp_scale.sh: convolve/spatial.sh.log
 imgwarp/homographic.sh: convolve/spatial.sh.log
 mknoise/addnoise.sh: imgwarp/imgwarp_scale.sh.log
 mkprof/ellipticalmasks.sh: mknoise/addnoise.sh.log
-mkprof/inputascanvas.sh: mkprof/ellipticalmasks.sh.log
+mkprof/inputascanvas.sh: mknoise/addnoise.sh.log
 header/write.sh: convolve/spatial.sh.log
 header/print.sh: header/write.sh.log
 header/update.sh: header/write.sh.log
@@ -111,6 +112,8 @@ imgstat/basicstats.sh: mknoise/addnoise.sh.log
 subtractsky/subtractsky.sh: mknoise/addnoise.sh.log
 noisechisel/noisechisel.sh: mknoise/addnoise.sh.log
 mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
+mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
+                           mkprof/inputascanvas.sh
 arithmetic/snimage.sh: noisechisel/noisechisel.sh.log
 arithmetic/onlynumbers.sh: prepconf.sh.log
 cosmiccal/simpletest.sh: prepconf.sh.log

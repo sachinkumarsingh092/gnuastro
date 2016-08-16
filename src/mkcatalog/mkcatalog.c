@@ -464,9 +464,12 @@ makeoutput(struct mkcatalogparams *p)
       sprintf(p->line, "# Objects %s (hdu: %s)\n", p->up.objlabsname,
               p->up.objhdu);
       strcat(comment, p->line);
-      sprintf(p->line, "# Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
-              p->up.clumphdu);
-      strcat(comment, p->line);
+      if(p->up.clumplabsname)
+        {
+          sprintf(p->line, "# Clumps  %s (hdu: %s)\n", p->up.clumplabsname,
+                  p->up.clumphdu);
+          strcat(comment, p->line);
+        }
       sprintf(p->line, "# Sky     %s (hdu: %s)\n", p->up.skyname,
               p->up.skyhdu);
       strcat(comment, p->line);

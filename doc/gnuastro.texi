@@ -11167,7 +11167,7 @@ minimum variance.
 @node Invoking astmkcatalog, Adding new columns to MakeCatalog, Measuring elliptical parameters, MakeCatalog
 @subsection Invoking MakeCatalog
 
-MakeCatalog will make a catalog from an input image and a labeled
+MakeCatalog will make a catalog from an input image and at least on labeled
 image. The executable name is @file{astmkcatalog} with the following
 general template
 
@@ -11197,14 +11197,42 @@ input, there is no more need to inform MakeCatalog of the mask image,
 see @ref{NoiseChisel output}. The options common to all Gnuastro
 programs are explained in @ref{Common options}.
 
-By default two catalogs will be made: one for the objects (suffixed
-with @file{_o.txt}) and another for the clumps (suffixed with
-@file{_c.txt}). Therefore if any value is given to the
-@option{--output} option, MakeCatalogs will simply append the two
-suffixes to it as the output file names. So if you want to specify an
-output name, it is best that it not have any suffix. If no value is
-given to the @option{--output} option, MakeCatalog will use the input
-name, see @ref{Automatic output}.
+MakeCatalog needs 4 (or 5) images as input. These images can be separate
+extensions in one file (NoiseChisel's default output), or each can have its
+own file and its own extension. The full 5 images are listed in
+@ref{NoiseChisel output}. However, the clump labels image is not mandatory
+(when no clump catalog is required, for example in aperture
+photometry). When inspecting the object labels image, MakeProfiles will
+look for a @code{WCLUMPS} (short for with-clumps) header keyword. If that
+keyword is present and has a value of @code{yes} (not case sensitive, so
+@code{Yes}, or @code{YES} are also acceptable) then a clump image must also
+be provided and a clump catalog will be made. When @code{WCLUMPS} isn't
+present or has any other value, only an object catalog will be created and
+all clump related options will be ignored.
+
+@cindex Photometry, aperture
+@cindex Aperture photometry
+For example, if you only need an object catalog from NoiseChisel's output,
+you can use Header (see @ref{Header}) to modify or remove the
+@code{WCLUMPS} keyword in the objects HDU, then run MakeCatalog on
+it. Another example can be aperture photometry: let's assume you have made
+your labeled image (defining the apertures) with MakeProfiles. Clumps are
+not defined in this context, so besides the input and labeled image, you
+only need NoiseChisel's Sky and Sky standard deviation images. Since
+MakeProfile's output doesn't contain the @code{WCLUMPS} keyword, you just
+have to specify your labeled image with the @option{--objlabs} option and
+also set its HDU and no clumps catalog will be created. Note that labeled
+images have to be an integer type. Therefore, when using MakeProfiles to
+define the apertures/labels, you can use @option{--type=long} for example.
+
+When a clump catalog is also desired, two catalogs will be made: one for
+the objects (suffixed with @file{_o.txt}) and another for the clumps
+(suffixed with @file{_c.txt}). Therefore if any value is given to the
+@option{--output} option, MakeCatalogs will replace these two suffixes with
+any existing suffix in the given value. If no output value is given,
+MakeCatalog will use the input name, see @ref{Automatic output}. When only
+building an object catalog, any suffix in the value to output will just be
+replaced with @file{.txt}.
 
 The first set of options specify the properties of the inputs. Other
 necessary input images are treated very much like a mask image, see
@@ -11267,18 +11295,16 @@ only relevant when the Signal to noise ratio is to be calculated.
 
 @item -T
 @itemx --threshold
-(@option{=FLT}) For all the columns, only consider pixels that are
-above a given relative threshold. Symbolizing the value of this option
-as @mymath{T}, the Sky for a pixel at @mymath{(i,j)} with
-@mymath{\mu_{i,j}} and its Standard deviation with
-@mymath{\sigma_{ij}}, that pixel will only be used if its value
-(@mymath{B_{ij}}) satisfies this condition:
-@mymath{B_{ij}>\mu_{ij}+{T}\sigma_{ij}}. The only calculations that
-will not be affected are is the average river values
-(@option{--riverave}), since they are used as a reference. A commented
-row will be added in the header of the output catalog that will print
-the given value, since this is a very important issue, it starts with
-@command{**IMPORTANT**}.
+(@option{=FLT}) For all the columns, only consider pixels that are above a
+given relative threshold. Symbolizing the value of this option as
+@mymath{T}, the Sky for a pixel at @mymath{(i,j)} with @mymath{\mu_{ij}}
+and its Standard deviation with @mymath{\sigma_{ij}}, that pixel will only
+be used if its value (@mymath{B_{ij}}) satisfies this condition:
+@mymath{B_{ij}>\mu_{ij}+{T}\sigma_{ij}}. The only calculations that will
+not be affected are is the average river values (@option{--riverave}),
+since they are used as a reference. A commented row will be added in the
+header of the output catalog that will print the given value, since this is
+a very important issue, it starts with @command{**IMPORTANT**}.
 
 NoiseChisel will detect very diffuse signal which is useful in most
 cases where the aggregate properties of the detections are desired,
@@ -12348,7 +12374,7 @@ $ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 @end example
 
 @noindent
-If mock galaxies are to be made, the catalog (which stores the
+If mock images are to be made, the catalog (which stores the
 parameters for each mock profile) is the mandatory argument. The input
 catalog has to be a text file formatted in a table with columns
 separated by space, tab or comma (@key{,}) characters. See @ref{Common

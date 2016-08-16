@@ -838,6 +838,7 @@ void
 sanitycheck(struct mkcatalogparams *p)
 {
   struct uiparams *up=&p->up;
+  struct gal_commonparams *cp=&p->cp;
   struct gal_fits_read_header_keys keys[1];
 
   /* Make sure the input file exists. */
@@ -894,21 +895,16 @@ sanitycheck(struct mkcatalogparams *p)
               OFlxWhtRA, OFlxWhtDec);
     }
 
-  /* Set the output names: */
-  if(p->cp.outputset)
-    {
-      p->ocatname=gal_checkset_malloc_cat(p->cp.output, "_o.txt");
-      p->ccatname=gal_checkset_malloc_cat(p->cp.output, "_c.txt");
-    }
-  else
-    {
-      gal_checkset_automatic_output(up->inputname, "_o.txt",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->ocatname);
-      gal_checkset_automatic_output(up->inputname, "_c.txt",
-                                    p->cp.removedirinfo, p->cp.dontdelete,
-                                    &p->ccatname);
-    }
+  /* Set the output names, based on if the output is set or not. */
+  gal_checkset_automatic_output(cp->outputset ? cp->output : up->inputname,
+                                up->clumplabsname ? "_o.txt" : ".txt",
+                                cp->outputset ? 0 : p->cp.removedirinfo,
+                                p->cp.dontdelete, &p->ocatname);
+  if(up->clumplabsname)
+    gal_checkset_automatic_output(cp->outputset ? cp->output : up->inputname,
+                                  "_c.txt",
+                                  cp->outputset ? 0 : p->cp.removedirinfo,
+                                  p->cp.dontdelete, &p->ccatname);
 }
 
 
