@@ -361,7 +361,7 @@ blanktovalue(void *array, int bitpix, size_t size, void *value)
 
 void
 gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
-                          void **out, int outbitpix)
+                     void **out, int outbitpix)
 {
   size_t i=0;
   unsigned char *b, *bf, *ib=in, *iib=in;
@@ -773,11 +773,19 @@ gal_fits_read_hdu(char *filename, char *hdu, int desiredtype,
 /* Read keywords from a FITS file. The gal_fits_read_header_keys pointer is
    an array of gal_fits_read_header_keys structures, which keep the basic
    information for each keyword that is to be read and also stores the
-   value in the appropriate type.*/
+   value in the appropriate type.
+
+   ABOUT THE STRING VALUES:
+
+   The space for a string value is statically allocated within the
+   `gal_fits_read_header_keys' structure (to be `FLEN_VALUE' characters,
+   `FLEN_VALUE' is defined by CFITSIO). So if the value is necessary where
+   `gal_fits_read_header_keys' is no longer available, then you have to
+   allocate space dynamically and copy the string there.
+*/
 void
 gal_fits_read_keywords(char *filename, char *hdu,
-                            struct gal_fits_read_header_keys *keys,
-                            size_t num)
+                       struct gal_fits_read_header_keys *keys, size_t num)
 {
   int status=0;
   char *ffname;
@@ -800,10 +808,14 @@ gal_fits_read_keywords(char *filename, char *hdu,
   /* Get the desired keywords. */
   for(i=0;i<num;++i)
     {
+      /* Initialize the status: */
+      keys[i].status=0;
+
+      /* Set the value-pointer based on the required type. */
       switch(keys[i].datatype)
         {
         case TSTRING:
-          valueptr=&keys[i].c;
+          valueptr=keys[i].str;
           break;
         case TBYTE:
           valueptr=&keys[i].u;
@@ -827,9 +839,26 @@ gal_fits_read_keywords(char *filename, char *hdu,
           error(EXIT_FAILURE, 0, "the value of keys[%lu].datatype (=%d) "
                 "is not recognized", i, keys[i].datatype);
         }
-      if( fits_read_key(fptr, keys[i].datatype, keys[i].keyname,
-                        valueptr, NULL, &status) )
-        gal_fits_io_error(status, "reading the keyword");
+
+      /* Read the keyword and place its value in the poitner. */
+      fits_read_key(fptr, keys[i].datatype, keys[i].keyname,
+                    valueptr, NULL, &keys[i].status);
+
+
+      /* In some cases, the caller might be fine with some kinds of errors,
+         so we will only report an error here is the situation is not
+         expected. For example, the caller might have alternatives for a
+         keyword if it doesn't exist, or the non-existence of a keyword
+         might itself be meaningful. So when the key doesn't exist, this
+         function will not abort, it will just keep the status.
+
+         The reason only non-existance is acceptable is this: if the
+         keyword does exist, but CFITSIO cannot read it due to some
+         technical difficulty, then the user probably wanted to give the
+         value. But is not aware of the technical problem.
+       */
+      if(keys[i].status!=0 && keys[i].status!=KEY_NO_EXIST)
+        gal_fits_io_error(keys[i].status, "reading the keyword");
     }
 
   /* Close the FITS file. */
@@ -1049,7 +1078,7 @@ gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec)
    the pointer to the linked list (to correct it after we finish). */
 void
 gal_fits_update_keys(fitsfile *fptr,
-                          struct gal_fits_header_ll **keylist)
+                     struct gal_fits_header_ll **keylist)
 {
   int status=0;
   struct gal_fits_header_ll *tmp, *ttmp;
@@ -1094,8 +1123,8 @@ gal_fits_update_keys(fitsfile *fptr,
 
 void
 gal_fits_copyright_end(fitsfile *fptr,
-                            struct gal_fits_header_ll *headers,
-                            char *spack_string)
+                       struct gal_fits_header_ll *headers,
+                       char *spack_string)
 {
   size_t i;
   int status=0;
@@ -1496,8 +1525,8 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
    to the appropriate value. */
 void
 gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
-                               char **othername, char *ohdu, int ohduset,
-                               char *type)
+                          char **othername, char *ohdu, int ohduset,
+                          char *type)
 {
   if(othernameset)
     {
@@ -1540,8 +1569,8 @@ gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
    return it back to the input type if you please. */
 void
 gal_fits_file_to_float(char *inputname, char *maskname, char *inhdu,
-                            char *mhdu, float **img, int *inbitpix,
-                            int *anyblank, size_t *ins0, size_t *ins1)
+                       char *mhdu, float **img, int *inbitpix,
+                       int *anyblank, size_t *ins0, size_t *ins1)
 {
   void *array;
   int maskbitpix;
@@ -1605,8 +1634,8 @@ gal_fits_file_to_float(char *inputname, char *maskname, char *inhdu,
 /* Similar to filetofloat, but for double type */
 void
 gal_fits_file_to_double(char *inputname, char *maskname, char *inhdu,
-                             char *mhdu, double **img, int *inbitpix,
-                             int *anyblank, size_t *ins0, size_t *ins1)
+                        char *mhdu, double **img, int *inbitpix,
+                        int *anyblank, size_t *ins0, size_t *ins1)
 {
   void *array;
   int maskbitpix;
@@ -1671,8 +1700,8 @@ gal_fits_file_to_double(char *inputname, char *maskname, char *inhdu,
 
 void
 gal_fits_file_to_long(char *inputname, char *inhdu, long **img,
-                           int *inbitpix, int *anyblank, size_t *ins0,
-                           size_t *ins1)
+                      int *inbitpix, int *anyblank, size_t *ins0,
+                      size_t *ins1)
 {
   void *array;
 
@@ -1695,7 +1724,7 @@ gal_fits_file_to_long(char *inputname, char *inhdu, long **img,
 
 void
 gal_fits_prep_float_kernel(char *inputname, char *inhdu, float **outkernel,
-                                size_t *ins0, size_t *ins1)
+                           size_t *ins0, size_t *ins1)
 {
   size_t i, size;
   double sum=0.0f;

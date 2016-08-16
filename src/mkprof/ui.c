@@ -415,7 +415,27 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(up->replaceset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "replace", p->replace);
   if(up->typeset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "type", up->type);
+    {
+      switch(up->type)
+        {
+        case BYTE_IMG:
+          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "byte");
+        case SHORT_IMG:
+          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "short");
+        case LONG_IMG:
+          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "long");
+        case LONGLONG_IMG:
+          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "longlong");
+        case FLOAT_IMG:
+          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "float");
+        case DOUBLE_IMG:
+          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "double");
+        default:
+          error(EXIT_FAILURE, 0, "a bug! the value of up->type is not "
+                "recognized in `ui.c'. Please contact us at %s so we can "
+                "address the problem.", PACKAGE_BUGREPORT);
+        }
+    }
 
   fprintf(fp, "\n# Profiles:\n");
   if(up->tunitinpset)

@@ -25,12 +25,12 @@
 ## Utility and its sources
 bin_PROGRAMS = astmkcatalog
 
-astmkcatalog_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
+astmkcatalog_SOURCES = main.c main.h cite.h ui.c ui.h args.h          \
 mkcatalog.c mkcatalog.h columns.c columns.h
 
-astmkcatalog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
--lgalconfigfiles -lgalfits -lgalwcs -lgalcheckset -lgaltiming	\
--lgallinkedlist -lgaltxtarray
+astmkcatalog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la       \
+-lgalconfigfiles -lgalstatistics -lgalarraymanip -lgalqsort -lgalfits \
+-lgalwcs -lgalcheckset -lgaltiming -lgallinkedlist -lgaltxtarray
 
 
 
