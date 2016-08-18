@@ -652,6 +652,10 @@ makeoutput(struct mkcatalogparams *p)
               brightnessmag(p, tmpcol, target, MKCATMAG);
               break;
 
+            case CATMAGNITUDEERR:
+              sncol(p, 1, target);
+              break;
+
             case CATCLUMPSMAGNITUDE:
               brightnessmag(p, OBrightnessC, MKCATCINO, MKCATMAG);
               break;
@@ -665,7 +669,7 @@ makeoutput(struct mkcatalogparams *p)
               break;
 
             case CATSN:
-              sncol(p);
+              sncol(p, 0, target);
               break;
 
             case CATSKY:

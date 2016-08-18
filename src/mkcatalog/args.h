@@ -71,7 +71,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   e f g k l u v w
+   f g k l u v w
    F G J L Q R U W X Y Z
 
    Number keys used: <=533
@@ -463,6 +463,14 @@ static struct argp_option options[] =
       3
     },
     {
+      "magnitudeerr",
+      'e',
+      0,
+      0,
+      "Total magnitude error.",
+      3
+    },
+    {
       "clumpsmagnitude",
       512,
       0,
@@ -789,6 +797,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'm':
       add_to_sll(&p->allcolsll, CATMAGNITUDE);
       p->up.magnitudeset=1;
+      break;
+    case 'e':
+      add_to_sll(&p->allcolsll, CATMAGNITUDEERR);
+      p->up.magnitudeerrset=1;
       break;
     case 512:
       add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);

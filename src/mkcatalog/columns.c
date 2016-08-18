@@ -919,10 +919,10 @@ skystd(struct mkcatalogparams *p, size_t col)
 
 
 void
-sncol(struct mkcatalogparams *p)
+sncol(struct mkcatalogparams *p, int sn0_magerr1, char *target)
 {
   size_t i;
-  double I, O, Ni, errpt, *row;
+  double sn, I, O, Ni, errpt, *row;
   size_t stdcol        = p->obj0clump1 ? CSTD        : OSTD;
   size_t areacol       = p->obj0clump1 ? CAREA       : OAREA;
   size_t brightnesscol = p->obj0clump1 ? CBrightness : OBrightness;
@@ -938,8 +938,13 @@ sncol(struct mkcatalogparams *p)
     setclumpbrightness(p);
 
   /* For the comments: */
-  p->unitp = CATUNITRATIO;
-  sprintf(p->description, "%lu: Signal to noise ratio.", p->curcol);
+  p->unitp = sn0_magerr1 ? CATUNITMAG : CATUNITRATIO;
+  if(sn0_magerr1)
+    sprintf(p->description, "%lu: %s Magnitude error.", p->curcol,
+            target);
+  else
+    sprintf(p->description, "%lu: %s signal to noise ratio.", p->curcol,
+            target);
 
   /* Calculate the signal to noise ratio. Recall that for the objects,
      the sky value was subtracted from oinfo, but for the clumps, it
@@ -995,9 +1000,38 @@ sncol(struct mkcatalogparams *p)
                     + errpt * (p->skysubtracted ? 1.0f : 2.0f) );
         }
 
-      /* Fill in the output column */
-      p->cat[i * p->numcols + p->curcol ] =
-        ( sqrt(Ni/p->cpscorr)*I / sqrt( errpt ) );
+      /* Fill in the output column. Note that magnitude error is directly
+         derivable from the S/N:
+
+         To derive the error in measuring the magnitude from the S/N, let's
+         take `F' as the flux, `Z' is the zeropoint, `M' is the magnitude,
+         `S' is the S/N, and `D' to stand for capital delta (or error in a
+         value) then from
+
+              `M = -2.5*log10(F) + Z'
+
+         we get the following equation after calculating the derivative
+         with respect to F.
+
+              `dM/df = -2.5 * ( 1 / ( F * ln(10) ) )'
+
+         From the Tailor series, `DM' can be written as:
+
+              `DM = dM/dF * DF'
+
+         So
+
+              `DM = |-2.5/ln(10)| * DF/F'
+
+         But `DF/F' is just the inverse of the Signal to noise ratio, or
+         `1/S'. So
+
+              `DM = 2.5 / ( S * ln(10) )'
+      */
+      sn = sqrt(Ni/p->cpscorr)*I / sqrt( errpt );
+      p->cat[i * p->numcols + p->curcol ] = ( sn0_magerr1
+                                              ? ( 2.5 / (sn*log(10)) )
+                                              : sn );
     }
 
 }

@@ -11564,7 +11564,20 @@ with no threshold!
 
 @item -m
 @itemx --magnitude
-The magnitude of all clumps or objects, see @option{--brightness}.
+The magnitude of clumps or objects, see @option{--brightness}.
+
+@item -e
+@itemx --magnitudeerr
+The magnitude error of clumps or objects. The magnitude error is calculated
+from the signal-to-noise ratio (see @option{--sn}, abbreviated as
+@mymath{S}): @mymath{\Delta{M}=2.5/(S\times\ln{10})}. Note that until now
+this error assumes un-correlated pixel values and also does not include the
+error in estimating the aperture (or error in generating the labeled
+image).
+
+For now these factors have to be found by other means.
+@url{https://savannah.gnu.org/task/index.php?14124, Task 14124} has been
+defined for work on adding these sources of error too.
 
 @item --clumpsmagnitude
 [Objects] The magnitude of all clumps in this object, see

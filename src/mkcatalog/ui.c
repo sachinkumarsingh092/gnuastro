@@ -440,6 +440,15 @@ readconfig(char *filename, struct mkcatalogparams *p)
           add_to_sll(&p->allcolsll, CATMAGNITUDE);
           up->magnitudeset=1;
         }
+      else if(strcmp(name, "magnitudeerr")==0)
+        {
+          if(up->magnitudeerrset) continue;
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
+          if(!yes) continue;
+          add_to_sll(&p->allcolsll, CATMAGNITUDEERR);
+          up->magnitudeerrset=1;
+        }
       else if(strcmp(name, "clumpsmagnitude")==0)
         {
           if(up->clumpsmagnitudeset) continue;
@@ -715,6 +724,9 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
         break;
       case CATMAGNITUDE:
         fprintf(fp, CONF_SHOWFMT"%d\n", "magnitude", 1);
+        break;
+      case CATMAGNITUDEERR:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "magnitudeerr", 1);
         break;
       case CATCLUMPSMAGNITUDE:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsmagnitude", 1);
@@ -1190,6 +1202,10 @@ preparearrays(struct mkcatalogparams *p)
           p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
         case CATMAGNITUDE:
+          p->objcols[p->objncols++] = p->allcols[i];
+          p->clumpcols[p->clumpncols++] = p->allcols[i];
+          break;
+        case CATMAGNITUDEERR:
           p->objcols[p->objncols++] = p->allcols[i];
           p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;

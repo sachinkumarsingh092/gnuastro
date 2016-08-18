@@ -190,6 +190,7 @@ enum outcols
     CATCLUMPSBRIGHTNESS,
     CATNORIVERBRIGHTNESS,
     CATMAGNITUDE,
+    CATMAGNITUDEERR,
     CATCLUMPSMAGNITUDE,
     CATRIVERAVE,
     CATRIVERNUM,
@@ -269,6 +270,7 @@ struct uiparams
   int     clumpsbrightnessset;
   int    noriverbrightnessset;
   int            magnitudeset;
+  int         magnitudeerrset;
   int      clumpsmagnitudeset;
   int             riveraveset;
   int             rivernumset;

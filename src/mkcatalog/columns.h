@@ -76,6 +76,6 @@ void
 skystd(struct mkcatalogparams *p, size_t col);
 
 void
-sncol(struct mkcatalogparams *p);
+sncol(struct mkcatalogparams *p, int sn0_magerr1, char *target);
 
 #endif
