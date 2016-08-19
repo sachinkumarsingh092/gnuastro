@@ -695,159 +695,159 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Catalog columns: */
     case 'i':
-      add_to_sll(&p->allcolsll, CATID);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATID);
       p->up.idset=1;
       break;
     case 'j':
-      add_to_sll(&p->allcolsll, CATHOSTOBJID);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATHOSTOBJID);
       p->up.hostobjidset=1;
       break;
     case 'I':
-      add_to_sll(&p->allcolsll, CATIDINHOSTOBJ);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATIDINHOSTOBJ);
       p->up.idinhostobjset=1;
       break;
     case 'C':
-      add_to_sll(&p->allcolsll, CATNUMCLUMPS);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATNUMCLUMPS);
       p->up.numclumpsset=1;
       break;
     case 'a':
-      add_to_sll(&p->allcolsll, CATAREA);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATAREA);
       p->up.areaset=1;
       break;
     case 513:
-      add_to_sll(&p->allcolsll, CATCLUMPSAREA);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSAREA);
       p->up.clumpsareaset=1;
       break;
     case 'x':
-      add_to_sll(&p->allcolsll, CATX);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATX);
       p->up.xset=1;
       break;
     case 'y':
-      add_to_sll(&p->allcolsll, CATY);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATY);
       p->up.yset=1;
       break;
     case 522:
-      add_to_sll(&p->allcolsll, CATGEOX);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOX);
       p->up.geoxset=1;
       break;
     case 523:
-      add_to_sll(&p->allcolsll, CATGEOY);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOY);
       p->up.geoyset=1;
       break;
     case 507:
-      add_to_sll(&p->allcolsll, CATCLUMPSX);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSX);
       p->up.clumpsxset=1;
       break;
     case 508:
-      add_to_sll(&p->allcolsll, CATCLUMPSY);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSY);
       p->up.clumpsyset=1;
       break;
     case 524:
-      add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
       p->up.clumpsgeoxset=1;
       break;
     case 525:
-      add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
       p->up.clumpsgeoyset=1;
       break;
     case 'r':
-      add_to_sll(&p->allcolsll, CATRA);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATRA);
       p->up.raset=1;
       break;
     case 'd':
-      add_to_sll(&p->allcolsll, CATDEC);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATDEC);
       p->up.decset=1;
       break;
     case 526:
-      add_to_sll(&p->allcolsll, CATGEORA);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEORA);
       p->up.georaset=1;
       break;
     case 527:
-      add_to_sll(&p->allcolsll, CATGEODEC);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEODEC);
       p->up.geodecset=1;
       break;
     case 509:
-      add_to_sll(&p->allcolsll, CATCLUMPSRA);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSRA);
       p->up.clumpsraset=1;
       break;
     case 510:
-      add_to_sll(&p->allcolsll, CATCLUMPSDEC);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSDEC);
       p->up.clumpsdecset=1;
       break;
     case 528:
-      add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
       p->up.clumpsgeoraset=1;
       break;
     case 529:
-      add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
       p->up.clumpsgeodecset=1;
       break;
     case 'b':
-      add_to_sll(&p->allcolsll, CATBRIGHTNESS);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATBRIGHTNESS);
       p->up.brightnessset=1;
       break;
     case 511:
-      add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
       p->up.clumpsbrightnessset=1;
       break;
     case 533:
-      add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
       p->up.noriverbrightnessset=1;
       break;
     case 'm':
-      add_to_sll(&p->allcolsll, CATMAGNITUDE);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATMAGNITUDE);
       p->up.magnitudeset=1;
       break;
     case 'e':
-      add_to_sll(&p->allcolsll, CATMAGNITUDEERR);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATMAGNITUDEERR);
       p->up.magnitudeerrset=1;
       break;
     case 512:
-      add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
       p->up.clumpsmagnitudeset=1;
       break;
     case 514:
-      add_to_sll(&p->allcolsll, CATRIVERAVE);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATRIVERAVE);
       p->up.riveraveset=1;
       break;
     case 515:
-      add_to_sll(&p->allcolsll, CATRIVERNUM);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATRIVERNUM);
       p->up.rivernumset=1;
       break;
     case 'n':
-      add_to_sll(&p->allcolsll, CATSN);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATSN);
       p->up.snset=1;
       break;
     case 505:
-      add_to_sll(&p->allcolsll, CATSKY);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATSKY);
       p->up.skyset=1;
       break;
     case 506:
-      add_to_sll(&p->allcolsll, CATSTD);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATSTD);
       p->up.stdset=1;
       break;
     case 'A':
-      add_to_sll(&p->allcolsll, CATSEMIMAJOR);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATSEMIMAJOR);
       p->up.semimajorset=1;
       break;
     case 'B':
-      add_to_sll(&p->allcolsll, CATSEMIMINOR);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATSEMIMINOR);
       p->up.semiminorset=1;
       break;
     case 'p':
-      add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
       p->up.positionangleset=1;
       break;
     case 530:
-      add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
       p->up.geosemimajorset=1;
       break;
     case 531:
-      add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
       p->up.geosemiminorset=1;
       break;
     case 532:
-      add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
       p->up.geopositionangleset=1;
       break;
 

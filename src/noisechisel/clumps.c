@@ -169,8 +169,8 @@ oversegment(struct clumpsthreadparams *ctp)
                     "can fix this problem. In oversegment (clumps.c) Q and "
                     "cleanup should be NULL but while checking the equal "
                     "flux regions they aren't", PACKAGE_BUGREPORT);
-            add_to_sll(&Q, *pind);
-            add_to_sll(&cleanup, *pind);
+            gal_linkedlist_add_to_sll(&Q, *pind);
+            gal_linkedlist_add_to_sll(&cleanup, *pind);
             clab[*pind]=SEGMENTTMPCHECK;
 
             /* Find all the pixels that have the same flux and are
@@ -178,7 +178,7 @@ oversegment(struct clumpsthreadparams *ctp)
             while(Q!=NULL)
               {
                 /* Pop an element from the queue. */
-                pop_from_sll(&Q, ind);
+                gal_linkedlist_pop_from_sll(&Q, ind);
 
                 /* Check the vicinity of this pixel that was just
                    popped to see if it can find any already labeled
@@ -202,8 +202,8 @@ oversegment(struct clumpsthreadparams *ctp)
                         if( nlab == SEGMENTINIT && arr[*n] == arr[*pind] )
                           {
                             clab[*n]=SEGMENTTMPCHECK;
-                            add_to_sll(&cleanup, *n);
-                            add_to_sll(&Q, *n);
+                            gal_linkedlist_add_to_sll(&cleanup, *n);
+                            gal_linkedlist_add_to_sll(&Q, *n);
                           }
                         /* If this neighbour has a positive nlab, it
                            means that it belongs to another object, so
@@ -251,7 +251,7 @@ oversegment(struct clumpsthreadparams *ctp)
                of the image and were a river pixel. */
             while(cleanup!=NULL)
               {
-                pop_from_sll(&cleanup, &pix);
+                gal_linkedlist_pop_from_sll(&cleanup, &pix);
                 /* If it was on the sides of the image, it has been
                    changed to a river pixel. */
                 if(clab[pix]==SEGMENTTMPCHECK)

@@ -398,14 +398,15 @@ gal_linkedlist_num_in_stll(struct gal_linkedlist_stll *list)
  *****************           size_t          ********************
  ****************************************************************/
 void
-add_to_sll(struct gal_linkedlist_sll **list, size_t value)
+gal_linkedlist_add_to_sll(struct gal_linkedlist_sll **list, size_t value)
 {
   struct gal_linkedlist_sll *newnode;
 
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "linkedlist: New element in gal_linkedlist_sll");
+    error(EXIT_FAILURE, errno,
+          "linkedlist: New element in gal_linkedlist_sll");
 
   newnode->v=value;
   newnode->next=*list;
@@ -417,7 +418,7 @@ add_to_sll(struct gal_linkedlist_sll **list, size_t value)
 
 
 void
-pop_from_sll(struct gal_linkedlist_sll **list, size_t *value)
+gal_linkedlist_pop_from_sll(struct gal_linkedlist_sll **list, size_t *value)
 {
   struct gal_linkedlist_sll *tmp;
   tmp=*list;
@@ -431,7 +432,7 @@ pop_from_sll(struct gal_linkedlist_sll **list, size_t *value)
 
 
 size_t
-numinsll(struct gal_linkedlist_sll *list)
+gal_linkedlist_num_in_sll(struct gal_linkedlist_sll *list)
 {
   size_t num=0;
   struct gal_linkedlist_sll *tmp;
@@ -451,7 +452,7 @@ gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
   size_t i=0, *tf;
   struct gal_linkedlist_sll *tmp;
 
-  *num=numinsll(list);
+  *num=gal_linkedlist_num_in_sll(list);
 
   errno=0;
   *f=malloc(*num*sizeof(size_t));
@@ -651,7 +652,7 @@ gal_linkedlist_osll_into_sll(struct gal_linkedlist_osll *in,
   while(in!=NULL)
     {
       tmp=in->next;
-      add_to_sll(out, in->v);
+      gal_linkedlist_add_to_sll(out, in->v);
       free(in);
       in=tmp;
     }
@@ -827,7 +828,7 @@ gal_linkedlist_tosll_into_sll(struct gal_linkedlist_tosll *in,
   while(in!=NULL)
     {
       tmp=in->next;
-      add_to_sll(out, in->v);
+      gal_linkedlist_add_to_sll(out, in->v);
       free(in);
       in=tmp;
     }

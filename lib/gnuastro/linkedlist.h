@@ -164,13 +164,13 @@ struct gal_linkedlist_sll
 };
 
 void
-add_to_sll(struct gal_linkedlist_sll **list, size_t value);
+gal_linkedlist_add_to_sll(struct gal_linkedlist_sll **list, size_t value);
 
 void
-pop_from_sll(struct gal_linkedlist_sll **list, size_t *value);
+gal_linkedlist_pop_from_sll(struct gal_linkedlist_sll **list, size_t *value);
 
 size_t
-numinsll(struct gal_linkedlist_sll *list);
+gal_linkedlist_num_in_xsll(struct gal_linkedlist_sll *list);
 
 void
 gal_linkedlist_print_sll(struct gal_linkedlist_sll *list);

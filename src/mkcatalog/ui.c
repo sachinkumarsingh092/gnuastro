@@ -212,7 +212,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATID);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATID);
           up->idset=1;
         }
       else if(strcmp(name, "hostobjid")==0)
@@ -221,7 +221,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATHOSTOBJID);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATHOSTOBJID);
           up->hostobjidset=1;
         }
       else if(strcmp(name, "idinhostobj")==0)
@@ -230,7 +230,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATIDINHOSTOBJ);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATIDINHOSTOBJ);
           up->idinhostobjset=1;
         }
       else if(strcmp(name, "numclumps")==0)
@@ -239,7 +239,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATNUMCLUMPS);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATNUMCLUMPS);
           up->numclumpsset=1;
         }
       else if(strcmp(name, "area")==0)
@@ -248,7 +248,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATAREA);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATAREA);
           up->areaset=1;
         }
       else if(strcmp(name, "clumpsarea")==0)
@@ -257,7 +257,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSAREA);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSAREA);
           up->clumpsareaset=1;
         }
       else if(strcmp(name, "x")==0)
@@ -266,7 +266,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATX);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATX);
           up->xset=1;
         }
       else if(strcmp(name, "y")==0)
@@ -275,7 +275,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATY);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATY);
           up->yset=1;
         }
       else if(strcmp(name, "geox")==0)
@@ -284,7 +284,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATGEOX);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOX);
           up->geoxset=1;
         }
       else if(strcmp(name, "geoy")==0)
@@ -293,7 +293,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATGEOY);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOY);
           up->geoyset=1;
         }
       else if(strcmp(name, "clumpsx")==0)
@@ -302,7 +302,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSX);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSX);
           up->clumpsxset=1;
         }
       else if(strcmp(name, "clumpsy")==0)
@@ -311,7 +311,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSY);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSY);
           up->clumpsyset=1;
         }
       else if(strcmp(name, "clumpsgeox")==0)
@@ -320,7 +320,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEOX);
           up->clumpsgeoxset=1;
         }
       else if(strcmp(name, "clumpsgeoy")==0)
@@ -329,7 +329,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEOY);
           up->clumpsgeoyset=1;
         }
       else if(strcmp(name, "ra")==0)
@@ -338,7 +338,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATRA);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATRA);
           up->raset=1;
         }
       else if(strcmp(name, "dec")==0)
@@ -347,7 +347,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATDEC);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATDEC);
           up->decset=1;
         }
       else if(strcmp(name, "geora")==0)
@@ -356,7 +356,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATGEORA);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATGEORA);
           up->georaset=1;
         }
       else if(strcmp(name, "geodec")==0)
@@ -365,7 +365,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATGEODEC);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATGEODEC);
           up->geodecset=1;
         }
       else if(strcmp(name, "clumpsra")==0)
@@ -374,7 +374,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSRA);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSRA);
           up->clumpsraset=1;
         }
       else if(strcmp(name, "clumpsdec")==0)
@@ -383,7 +383,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSDEC);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSDEC);
           up->clumpsdecset=1;
         }
       else if(strcmp(name, "clumpsgeora")==0)
@@ -392,7 +392,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEORA);
           up->clumpsgeoraset=1;
         }
       else if(strcmp(name, "clumpsgeodec")==0)
@@ -401,7 +401,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSGEODEC);
           up->clumpsgeodecset=1;
         }
       else if(strcmp(name, "brightness")==0)
@@ -410,7 +410,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATBRIGHTNESS);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATBRIGHTNESS);
           up->brightnessset=1;
         }
       else if(strcmp(name, "clumpsbrightness")==0)
@@ -419,7 +419,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSBRIGHTNESS);
           p->up.clumpsbrightnessset=1;
         }
       else if(strcmp(name, "noriverbrightness")==0)
@@ -428,7 +428,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATNORIVERBRIGHTNESS);
           p->up.noriverbrightnessset=1;
         }
       else if(strcmp(name, "magnitude")==0)
@@ -437,7 +437,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATMAGNITUDE);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATMAGNITUDE);
           up->magnitudeset=1;
         }
       else if(strcmp(name, "magnitudeerr")==0)
@@ -446,7 +446,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATMAGNITUDEERR);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATMAGNITUDEERR);
           up->magnitudeerrset=1;
         }
       else if(strcmp(name, "clumpsmagnitude")==0)
@@ -455,7 +455,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
           up->clumpsmagnitudeset=1;
         }
       else if(strcmp(name, "riverave")==0)
@@ -464,7 +464,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATRIVERAVE);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATRIVERAVE);
           up->riveraveset=1;
         }
       else if(strcmp(name, "rivernum")==0)
@@ -473,7 +473,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATRIVERNUM);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATRIVERNUM);
           up->rivernumset=1;
         }
       else if(strcmp(name, "sn")==0)
@@ -482,7 +482,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATSN);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATSN);
           up->snset=1;
         }
       else if(strcmp(name, "sky")==0)
@@ -491,7 +491,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATSKY);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATSKY);
           up->skyset=1;
         }
       else if(strcmp(name, "std")==0)
@@ -500,7 +500,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATSTD);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATSTD);
           up->stdset=1;
         }
       else if(strcmp(name, "semimajor")==0)
@@ -509,7 +509,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATSEMIMAJOR);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATSEMIMAJOR);
           up->semimajorset=1;
         }
       else if(strcmp(name, "semiminor")==0)
@@ -518,7 +518,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATSEMIMINOR);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATSEMIMINOR);
           up->semiminorset=1;
         }
       else if(strcmp(name, "positionangle")==0)
@@ -527,7 +527,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATPOSITIONANGLE);
           up->positionangleset=1;
         }
       else if(strcmp(name, "geosemimajor")==0)
@@ -536,7 +536,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOSEMIMAJOR);
           up->geosemimajorset=1;
         }
       else if(strcmp(name, "geosemiminor")==0)
@@ -545,7 +545,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOSEMIMINOR);
           up->geosemiminorset=1;
         }
       else if(strcmp(name, "geopositionangle")==0)
@@ -554,7 +554,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
                                        filename, lineno);
           if(!yes) continue;
-          add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATGEOPOSITIONANGLE);
           up->geopositionangleset=1;
         }
 

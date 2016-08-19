@@ -90,21 +90,21 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
         if(byt[i] && !lab[i])
           {
             lab[i]=curlab;
-            add_to_sll(&Q, i);
+            gal_linkedlist_add_to_sll(&Q, i);
             while(Q!=NULL)
               {
                 /* Pop from the queue */
-                pop_from_sll(&Q, &p);
+                gal_linkedlist_pop_from_sll(&Q, &p);
 
                 /* Check the four connected neighbors: */
                 if(p/s1>0    && byt[p-s1] && !lab[p-s1])
-                  {add_to_sll(&Q, p-s1); lab[p-s1]=curlab;}
+                  {gal_linkedlist_add_to_sll(&Q, p-s1); lab[p-s1]=curlab;}
                 if(p/s1<s0t1 && byt[p+s1] && !lab[p+s1])
-                  {add_to_sll(&Q, p+s1); lab[p+s1]=curlab;}
+                  {gal_linkedlist_add_to_sll(&Q, p+s1); lab[p+s1]=curlab;}
                 if(p%s1>0    && byt[p-1]  && !lab[p-1])
-                  {add_to_sll(&Q, p-1); lab[p-1]=curlab;}
+                  {gal_linkedlist_add_to_sll(&Q, p-1); lab[p-1]=curlab;}
                 if(p%s1<s1t1 && byt[p+1]  && !lab[p+1])
-                  {add_to_sll(&Q, p+1); lab[p+1]=curlab;}
+                  {gal_linkedlist_add_to_sll(&Q, p+1); lab[p+1]=curlab;}
               }
             ++curlab;
           }
@@ -116,12 +116,12 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
         if(byt[i] && !lab[i])
           {
             lab[i]=curlab;
-            add_to_sll(&Q, i);
+            gal_linkedlist_add_to_sll(&Q, i);
 
             while(Q!=NULL)
               {
 
-                pop_from_sll(&Q, &p);
+                gal_linkedlist_pop_from_sll(&Q, &p);
 
                 /* Set the counters for the corners in 8-connectivity */
                 counter=bl=br=tl=tr=0;
@@ -131,48 +131,70 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
                   {
                     ++counter; ++bl; ++br;
                     if(byt[p-s1] && !lab[p-s1])
-                      {add_to_sll(&Q, p-s1); lab[p-s1]=curlab;}
+                      {gal_linkedlist_add_to_sll(&Q, p-s1); lab[p-s1]=curlab;}
                   }
                 if(p/s1<s0t1)
                   {
                     ++counter; ++tl; ++tr;
                     if(byt[p+s1] && !lab[p+s1])
-                      {add_to_sll(&Q, p+s1); lab[p+s1]=curlab;}
+                      {gal_linkedlist_add_to_sll(&Q, p+s1); lab[p+s1]=curlab;}
                   }
                 if(p%s1>0)
                   {
                     ++counter; ++bl; ++tl;
                     if(byt[p-1]  && !lab[p-1])
-                      {add_to_sll(&Q, p-1); lab[p-1]=curlab;}
+                      {gal_linkedlist_add_to_sll(&Q, p-1); lab[p-1]=curlab;}
                   }
                 if(p%s1<s1t1)
                   {
                     ++counter; ++tr; ++br;
                     if(byt[p+1]  && !lab[p+1])
-                      {add_to_sll(&Q, p+1); lab[p+1]=curlab;}
+                      {gal_linkedlist_add_to_sll(&Q, p+1); lab[p+1]=curlab;}
                   }
 
                 if(counter==4)  /* All four corners are in the image. */
                   {
                     if(byt[p-s1-1] && !lab[p-s1-1])
-                      {add_to_sll(&Q, p-s1-1); lab[p-s1-1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p-s1-1);
+                        lab[p-s1-1]=curlab;
+                      }
                     if(byt[p-s1+1] && !lab[p-s1+1])
-                      {add_to_sll(&Q, p-s1+1); lab[p-s1+1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p-s1+1);
+                        lab[p-s1+1]=curlab;
+                      }
                     if(byt[p+s1-1] && !lab[p+s1-1])
-                      {add_to_sll(&Q, p+s1-1); lab[p+s1-1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p+s1-1);
+                        lab[p+s1-1]=curlab;
+                      }
                     if(byt[p+s1+1] && !lab[p+s1+1])
-                      {add_to_sll(&Q, p+s1+1); lab[p+s1+1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p+s1+1);
+                        lab[p+s1+1]=curlab;
+                      }
                   }
                 else            /* At least one corner isn't in the image. */
                   {
                     if(bl==2 && byt[p-s1-1] && !lab[p-s1-1])
-                      {add_to_sll(&Q, p-s1-1); lab[p-s1-1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p-s1-1);
+                        lab[p-s1-1]=curlab;
+                      }
                     if(br==2 && byt[p-s1+1] && !lab[p-s1+1])
-                      {add_to_sll(&Q, p-s1+1); lab[p-s1+1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p-s1+1);
+                        lab[p-s1+1]=curlab;
+                      }
                     if(tl==2 && byt[p+s1-1] && !lab[p+s1-1])
-                      {add_to_sll(&Q, p+s1-1); lab[p+s1-1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p+s1-1);
+                        lab[p+s1-1]=curlab;}
                     if(tr==2 && byt[p+s1+1] && !lab[p+s1+1])
-                      {add_to_sll(&Q, p+s1+1); lab[p+s1+1]=curlab;}
+                      {
+                        gal_linkedlist_add_to_sll(&Q, p+s1+1);
+                        lab[p+s1+1]=curlab;}
                   }
               }
             ++curlab;
@@ -210,16 +232,16 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
   for(i=1;i<numside;++i)
     if(newlabs[i]==0)
       {
-        add_to_sll(&Q, i);
+        gal_linkedlist_add_to_sll(&Q, i);
         while(Q!=NULL)
           {
-            pop_from_sll(&Q, &p);
+            gal_linkedlist_pop_from_sll(&Q, &p);
             if(newlabs[p]!=curlab)
               {
                 newlabs[p]=curlab;
                 for(j=1;j<numside;++j)
                   if( adj[p*numside+j] && newlabs[j]==0 )
-                    add_to_sll(&Q, j);
+                    gal_linkedlist_add_to_sll(&Q, j);
               }
           }
         ++curlab;

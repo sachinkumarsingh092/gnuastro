@@ -343,7 +343,7 @@ makepixbypix(struct mkonthread *mkp)
   /* Order doesn't matter any more, add all the pixels you find. */
   while(Q)
     {
-      pop_from_sll(&Q, ind);        /* ind=&p */
+      gal_linkedlist_pop_from_sll(&Q, ind);        /* ind=&p */
       mkp->x=(p/is1-xc)/os;
       mkp->y=(p%is1-yc)/os;
       r_el(mkp);
@@ -374,7 +374,7 @@ makepixbypix(struct mkonthread *mkp)
         if(byt[*n]==0)
           {
             byt[*n]=1;
-            add_to_sll(&Q, *n);
+            gal_linkedlist_add_to_sll(&Q, *n);
           }
       while(++n<nf);
     }
