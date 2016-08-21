@@ -88,14 +88,24 @@ endif
 if COND_SUBTRACTSKY
   MAYBE_SUBTRACTSKY = src/subtractsky
 endif
+#if COND_TEMPLATE
+#  MAYBE_TEMPLATE = src/TEMPLATE
+#endif
 if COND_GNULIBCHECK
   MAYBE_GNULIBCHECK = bootstrapped/tests
 endif
-SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)    \
-$(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)	   \
-$(MAYBE_IMGCROP) $(MAYBE_IMGSTAT) $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG)	   \
-$(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY) \
-doc tests
+
+# Note that by default `COND_TEMPLATE' is not set in configure, it is
+# commented, and exists only as a template for you to copy and paste to
+# name your new utility. The same rule is applied here (in the `if'
+# conditions above). When `MAYBE_TEMPLATE' is not defined, then Make
+# will see it as a blank string and igonore it, so there is no problem with
+# having an uncommented `MAYBE_TEMPLATE' as a value in `SUBDIRS'.
+SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)     \
+$(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)      \
+$(MAYBE_IMGCROP) $(MAYBE_IMGSTAT) $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG)       \
+$(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY)  \
+$(MAYBE_TEMPLATE) doc tests
 
 
 

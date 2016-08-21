@@ -303,6 +303,12 @@ AC_ARG_ENABLE([subtractsky],
 	      [AS_IF([test "x$enable_subtractsky" != xno],
                      [enable_subtractsky=yes; ayes=true])],
               [enable_subtractsky=notset])
+#AC_ARG_ENABLE([TEMPLATE],
+#              [AS_HELP_STRING([--enable-TEMPLATE],
+#  	            [Install TEMPLATE and other enabled packages only.])],
+#	      [AS_IF([test "x$enable_TEMPLATE" != xno],
+#                     [enable_TEMPLATE=yes; ayes=true])],
+#              [enable_TEMPLATE=notset])
 
 
 
@@ -331,6 +337,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=no])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=no])
        AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=no])
+#      AS_IF([test $enable_TEMPLATE = notset], [enable_TEMPLATE=no])
        ],
 
       [AS_IF([test $enable_convertt = notset], [enable_convertt=yes])
@@ -346,6 +353,7 @@ AS_IF([test $ayes = true ],
        AS_IF([test $enable_mkprof = notset], [enable_mkprof=yes])
        AS_IF([test $enable_noisechisel = notset], [enable_noisechisel=yes])
        AS_IF([test $enable_subtractsky = notset], [enable_subtractsky=yes])
+#      AS_IF([test $enable_TEMPLATE = notset], [enable_TEMPLATE=yes])
        ]
      )
 
@@ -367,12 +375,15 @@ AM_CONDITIONAL([COND_MKNOISE], [test $enable_mknoise = yes])
 AM_CONDITIONAL([COND_MKPROF], [test $enable_mkprof = yes])
 AM_CONDITIONAL([COND_NOISECHISEL], [test $enable_noisechisel = yes])
 AM_CONDITIONAL([COND_SUBTRACTSKY], [test $enable_subtractsky = yes])
+#AM_CONDITIONAL([COND_TEMPLATE], [test $enable_TEMPLATE = yes])
 
 
 
 
 
-# Tell autoconf what to work on:
+# Tell autoconf what to work on: TEMPLATE cannot be put and then
+# commented here like the cases above, so don't forget to add your new
+# utility name here.
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
