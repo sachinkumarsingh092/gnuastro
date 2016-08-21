@@ -88,6 +88,9 @@ endif
 if COND_SUBTRACTSKY
   MAYBE_SUBTRACTSKY = src/subtractsky
 endif
+if COND_TABLE
+  MAYBE_TABLE = src/table
+endif
 #if COND_TEMPLATE
 #  MAYBE_TEMPLATE = src/TEMPLATE
 #endif
