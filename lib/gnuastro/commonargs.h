@@ -248,19 +248,11 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input/output: */
     case 'h':
-      errno=0;
-      cp->hdu=malloc(strlen(arg)+1);
-      if(cp->hdu==NULL) error(EXIT_FAILURE, 0, "space for hdu");
-      strcpy(cp->hdu, arg);
-      cp->hduset=1;
+      gal_checkset_allocate_copy_set(arg, &cp->hdu, &cp->hduset);
       break;
     case 'o':
-      errno=0;
-      cp->output=malloc(strlen(arg)+1);
-      if(cp->output==NULL) error(EXIT_FAILURE, 0, "space for output");
-      strcpy(cp->output, arg); /* This allocation is done so cp->output */
-      cp->outputset=1;         /* Can always be freed when set, because */
-      break;                   /* It usually needs modifications.       */
+      gal_checkset_allocate_copy_set(arg, &cp->output, &cp->outputset);
+      break;
     case 'D':
       cp->dontdelete=1;
       break;

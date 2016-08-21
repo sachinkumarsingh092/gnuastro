@@ -102,55 +102,22 @@ readconfig(char *filename, struct noisechiselparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        {
-          if(cp->hduset) continue;
-          errno=0;
-          cp->hdu=malloc(strlen(value)+1);
-          if(cp->hdu==NULL)
-            error(EXIT_FAILURE, errno, "space for HDU");
-          strcpy(cp->hdu, value);
-          cp->hduset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
+
       else if(strcmp(name, "mask")==0)
-        {
-          if(up->masknameset) continue;
-          errno=0;
-          up->maskname=malloc(strlen(value)+1);
-          if(up->maskname==NULL)
-            error(EXIT_FAILURE, errno, "space for mask name");
-          strcpy(up->maskname, value);
-          up->masknameset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &up->maskname,
+                                       &up->masknameset);
+
       else if(strcmp(name, "mhdu")==0)
-        {
-          if(up->mhduset) continue;
-          errno=0;
-          up->mhdu=malloc(strlen(value)+1);
-          if(up->mhdu==NULL)
-            error(EXIT_FAILURE, errno, "space for mask HDU");
-          strcpy(up->mhdu, value);
-          up->mhduset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &up->mhdu, &up->mhduset);
+
       else if(strcmp(name, "kernel")==0)
-        {
-          if(up->kernelnameset) continue;
-          errno=0;
-          up->kernelname=malloc(strlen(value)+1);
-          if(up->kernelname==NULL)
-            error(EXIT_FAILURE, errno, "space for kernel name");
-          strcpy(up->kernelname, value);
-          up->kernelnameset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &up->kernelname,
+                                       &up->kernelnameset);
+
       else if(strcmp(name, "khdu")==0)
-        {
-          if(up->khduset) continue;
-          errno=0;
-          up->khdu=malloc(strlen(value)+1);
-          if(up->khdu==NULL)
-            error(EXIT_FAILURE, errno, "space for kernel HDU");
-          strcpy(up->khdu, value);
-          up->khduset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &up->khdu, &up->khduset);
+
       else if(strcmp(name, "skysubtracted")==0)
         {
           if(up->skysubtractedset) continue;
@@ -177,15 +144,8 @@ readconfig(char *filename, struct noisechiselparams *p)
 
       /* Outputs */
       else if(strcmp(name, "output")==0)
-        {
-          if(cp->outputset) continue;
-          errno=0;
-          cp->output=malloc(strlen(value)+1);
-          if(cp->output==NULL)
-            error(EXIT_FAILURE, errno, "space for output");
-          strcpy(cp->output, value);
-          cp->outputset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
+
       else if(strcmp(name, "grownclumps")==0)
         {
           if(up->grownclumpsset) continue;

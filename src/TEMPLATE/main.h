@@ -48,7 +48,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 struct uiparams
 {
-  char                     *inputname;  /* Name of input file.             */
+  char             *inputname;  /* Name of input file.             */
 };
 
 

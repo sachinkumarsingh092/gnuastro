@@ -102,15 +102,7 @@ readconfig(char *filename, struct headerparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        {
-          if(cp->hduset) continue;
-          errno=0;
-          cp->hdu=malloc(strlen(value)+1);
-          if(cp->hdu==NULL)
-            error(EXIT_FAILURE, errno, "space for HDU");
-          strcpy(cp->hdu, value);
-          cp->hduset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
 
 

@@ -217,25 +217,12 @@ readconfig(char *filename, struct imgcropparams *p)
           up->checkcenterset=1;
         }
       else if(strcmp(name, "output")==0)
-        {
-          if(cp->outputset) continue;
-          errno=0;
-          cp->output=malloc(strlen(value)+1);
-          if(cp->output==NULL)
-            error(EXIT_FAILURE, errno, "space for output");
-          strcpy(cp->output, value);
-          cp->outputset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
+
       else if(strcmp(name, "suffix")==0)
-        {
-          if(up->suffixset) continue;
-          errno=0;
-          p->suffix=malloc(strlen(value)+1);
-          if(p->suffix==NULL)
-            error(EXIT_FAILURE, errno, "space for prefix");
-          strcpy(p->suffix, value);
-          up->suffixset=1;
-        }
+        gal_checkset_allocate_copy_set(value, &p->suffix, &up->suffixset);
+
+
 
       /* Read options common to all programs */
       GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
