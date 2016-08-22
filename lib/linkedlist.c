@@ -447,9 +447,9 @@ gal_linkedlist_num_in_sll(struct gal_linkedlist_sll *list)
 
 void
 gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
-                            size_t **f, size_t *num)
+                            size_t **f, size_t *num, int inverse)
 {
-  size_t i=0, *tf;
+  size_t i, *tf;
   struct gal_linkedlist_sll *tmp;
 
   *num=gal_linkedlist_num_in_sll(list);
@@ -461,8 +461,13 @@ gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
           "with %lu elements", *num);
   tf=*f;
 
-  for(tmp=list;tmp!=NULL;tmp=tmp->next)
-    tf[i++]=tmp->v;
+  i = inverse ? *num-1: 0;
+  if(inverse)
+    for(tmp=list;tmp!=NULL;tmp=tmp->next)
+      tf[i--]=tmp->v;
+  else
+    for(tmp=list;tmp!=NULL;tmp=tmp->next)
+      tf[i++]=tmp->v;
 }
 
 

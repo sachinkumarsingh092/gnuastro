@@ -70,8 +70,8 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b c d e f g j k l m n p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z
+   a b d e f g j k l m n p r s t u v w x y z
+   A B C E F G H J L M O Q R T U W X Y Z
 
    Number keys used: Nothing!
 
@@ -83,6 +83,22 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Input:",
+      1
+    },
+    {
+      "column",
+      'c',
+      "STR",
+      0,
+      "Input column name, number or regular expression.",
+      1
+    },
+    {
+      "ignorecase",
+      'I',
+      0,
+      0,
+      "Ignore case when matching column names.",
       1
     },
 
@@ -124,6 +140,7 @@ static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
   /* Save the arguments structure: */
+  char *tstring;
   struct tableparams *p = state->input;
 
   /* Set the pointer to the common parameters for all programs
@@ -147,6 +164,15 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
     /* Input: */
+    case 'c':
+      gal_checkset_allocate_copy(arg, &tstring);
+      gal_linkedlist_add_to_stll(&p->up.columns, tstring);
+      break;
+
+    case 'I':
+      p->up.ignorecase=1;
+      p->up.ignorecaseset=1;
+      break;
 
 
     /* Output: */

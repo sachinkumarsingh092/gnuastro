@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
+#include <regex.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fitsio.h>
@@ -69,9 +70,9 @@ readconfig(char *filename, struct tableparams *p)
 {
   FILE *fp;
   size_t lineno=0, len=200;
-  char *line, *name, *value;
   /*struct uiparams *up=&p->up;*/
   struct gal_commonparams *cp=&p->cp;
+  char *line, *name, *value, *tstring;
   char key='a';        /* Not used, just a place holder. */
 
   /* When the file doesn't exist or can't be opened, it is ignored. It
@@ -103,6 +104,20 @@ readconfig(char *filename, struct tableparams *p)
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
         gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->outputset);
+
+      else if(strcmp(name, "column")==0)
+        {
+          gal_checkset_allocate_copy(value, &tstring);
+          gal_linkedlist_add_to_stll(&p->up.columns, tstring);
+        }
+
+      else if(strcmp(name, "ignorecase")==0)
+        {
+          if(p->up.ignorecaseset) continue;
+          gal_checkset_int_zero_or_one(value, &p->up.ignorecase, "ignorecase",
+                                       key, SPACK, filename, lineno);
+          p->up.ignorecaseset=1;
+        }
 
 
 
@@ -143,6 +158,7 @@ void
 printvalues(FILE *fp, struct tableparams *p)
 {
   struct uiparams *up=&p->up;
+  struct gal_linkedlist_stll *tmp;
   struct gal_commonparams *cp=&p->cp;
 
 
@@ -151,6 +167,11 @@ printvalues(FILE *fp, struct tableparams *p)
   fprintf(fp, "\n# Input image:\n");
   if(cp->hduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
+  if(up->columns)
+    for(tmp=up->columns;tmp!=NULL;tmp=tmp->next)
+      GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("column", tmp->v);
+  if(up->ignorecaseset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "ignorecase", up->ignorecase);
 
 
   /* For the operating mode, first put the macro to print the common
@@ -429,7 +450,6 @@ sanitycheck(struct tableparams *p)
           "anything other than a FITS binary table.");
 
 
-
   /* Print the column information and exit successfully if the
      `--information' option is given. */
   if(p->up.information)
@@ -446,6 +466,10 @@ sanitycheck(struct tableparams *p)
         error(EXIT_FAILURE, 0, "the `--information' (`-i') option is only "
               "defined for FITS tables");
     }
+
+  /* The user doesn't just want to see the table information, they actually
+     want to print something. So if no columns are specified, then print
+     all columns. */
 }
 
 
@@ -469,10 +493,160 @@ sanitycheck(struct tableparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
+/* FUnction to print regular expression error. This is taken from the GNU C
+   library manual, with small modifications to fit out style, */
+void
+regexerrorexit(int errcode, regex_t *compiled, char *input)
+{
+  char *regexerrbuf;
+  size_t length = regerror (errcode, compiled, NULL, 0);
+
+  errno=0;
+  regexerrbuf=malloc(length);
+  if(regexerrbuf==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for regexerrbuf", length);
+  (void) regerror(errcode, compiled, regexerrbuf, length);
+
+  error(EXIT_FAILURE, 0, "Regular expression error: %s in value to "
+        "`--column' (`-c'): `%s'", regexerrbuf, input);
+}
+
+
+
+
+
+/* If values were given to the columns option, use them to make a list of
+   columns that must be output. Note that because regular expressions are
+   also allowed as values to the column option, we have no idea how many
+   columns must be printed at first, so we define a linked list to keep the
+   column numbers for later.*/
+void
+outputcolumns(struct tableparams *p)
+{
+  size_t i;
+  long tlong;
+  regex_t *regex;
+  int regreturn=0;
+  char *tailptr, *colstring;
+  struct gal_linkedlist_sll *colsll=NULL;
+
+  /* Go through each given column string and take the appropriate step. */
+  while(p->up.columns)
+    {
+      /* Pop out the top node in the string linked list. */
+      gal_linkedlist_pop_from_stll(&p->up.columns, &colstring);
+
+
+      /* First, see if this given column is an integer or a name/regex. If
+         the string is an integer, then tailptr shoult point to the null
+         character. If it points to anything else, it shows that we are not
+         dealing with an integer (usable as a column number). So floating
+         point values are also not acceptable. */
+      tlong=strtol(colstring, &tailptr,0);
+      if(*tailptr=='\0')
+        {
+          /* Make sure we are not dealing with a negative number! */
+          if(tlong<0)
+            error(EXIT_FAILURE, 0, "the column numbers given to the "
+                  "`--column' (`-c') option must not be negative, you "
+                  "have given a value of `%ld'", tlong);
+
+          /* Check if the given value is not larger than the number of
+             columns in the input catalog. */
+          if(tlong>p->ncols)
+            error(EXIT_FAILURE, 0, "%s (hdu: %s) has %lu columns, but "
+                  "you have asked for column number %lu", p->up.fitsname,
+                  p->cp.hdu, p->ncols, tlong);
+
+          /* Everything seems to be fine, put this column number in the
+             output column numbers linked list. Note that internally, the
+             column numbers start from 0, not 1.*/
+          gal_linkedlist_add_to_sll(&colsll, tlong-1);
+        }
+      else
+        {
+          /* First we need to make sure that the full column information is
+             ready (so we can parse the values of the column names in
+             p->ttype). Note that the parsing function to read all column
+             information is not set by default. Note that this is only done
+             once (for the first string value to the `--column' option).*/
+          if(p->ttype==NULL)
+            readallcolinfo(p->fitsptr, p->ncols, &p->typecode,
+                           &p->tform, &p->ttype, &p->tunit);
+
+          /* Allocate the regex_t structure: */
+          errno=0; regex=malloc(sizeof *regex);
+          if(regex==NULL)
+            error(EXIT_FAILURE, errno, "%lu bytes for regex", sizeof *regex);
+
+          /* Go through all the columns names and see if this matches
+             them. But first we have to "compile" the string into the
+             regular expression, see the "POSIX Regular Expression
+             Compilation" section of the GNU C Library.
+
+             About the case of the string: the FITS standard says: "It is
+             _strongly recommended_ that every field of the table be
+             assigned a unique, case insensitive name with this keyword..."
+             So the column names can be case-sensitive.
+
+             Here, we don't care about the details of a match, the only
+             important thing is a match, so we are using the REG_NOSUB
+             flag.*/
+          regreturn=0;
+          regreturn=regcomp(regex, colstring, ( p->up.ignorecase
+                                                ? REG_NOSUB + REG_ICASE
+                                                : REG_NOSUB ) );
+          if(regreturn)
+            regexerrorexit(regreturn, regex, colstring);
+
+
+          /* With the regex structure "compile"d you can go through all the
+             column names. Just note that column names are not mandatory in
+             the FITS standard, so some (or all) columns might not have
+             names, if so `p->ttype[i]' will be NULL. */
+          for(i=0;i<p->ncols;++i)
+            if(p->ttype[i] && regexec(regex, p->ttype[i], 0, 0, 0)==0)
+                gal_linkedlist_add_to_sll(&colsll, i);
+
+          /* Free the regex_t structure: */
+          regfree(regex);
+        }
+
+      /* We don't need this user provided column string any more. */
+      free(colstring);
+    }
+
+  /* Put the desired columns (in reverse order due to the nature of a
+     linked list) into an array to read from later, then pop everything to
+     the un-used `i' variable from the list (which will automatically free
+     any allocate space). */
+  gal_linkedlist_sll_to_array(colsll, &p->ocols, &p->nocols, 1);
+  while(colsll) gal_linkedlist_pop_from_sll(&colsll, &i);
+}
+
+
+
+
+
 void
 preparearrays(struct tableparams *p)
 {
+  size_t i;
 
+  /* Set the columns that should be included in the output. If up->columns
+     is set, then use it, otherwise, set all the columns for printing. */
+  if(p->up.columns)
+    outputcolumns(p);
+  else
+    {
+      p->nocols=p->ncols;
+      errno=0;
+      p->ocols=malloc(p->nocols * sizeof *p->ocols);
+      if(p->ocols==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for p->ocols",
+              p->nocols * sizeof *p->ocols);
+      for(i=0;i<p->nocols;++i) p->ocols[i]=i;
+    }
 }
 
 
@@ -509,8 +683,10 @@ setparams(int argc, char *argv[], struct tableparams *p)
   cp->numthreads    = num_processors(NPROC_CURRENT);
   cp->removedirinfo = 1;
 
-  /* Initialize this utility's special variables. */
+  /* Initialize this utility's pointers to NULL. */
+  up->columns=NULL;
   up->txtname=up->fitsname=NULL;
+  p->tform=p->ttype=p->tunit=NULL;
 
   /* Read the arguments. */
   errno=0;
@@ -523,6 +699,9 @@ setparams(int argc, char *argv[], struct tableparams *p)
   /* Check if all the required parameters are set. */
   checkifset(p);
 
+  /* Reverse the columns linked list here (before possibly printing).*/
+  gal_linkedlist_reverse_stll(&up->columns);
+
   /* Print the values for each parameter. */
   if(cp->printparams)
     GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
@@ -532,6 +711,7 @@ setparams(int argc, char *argv[], struct tableparams *p)
 
   /* Make the array of input images. */
   preparearrays(p);
+
 }
 
 
@@ -559,15 +739,25 @@ setparams(int argc, char *argv[], struct tableparams *p)
 void
 freeandreport(struct tableparams *p)
 {
+  size_t i;
   int status=0;
 
   /* Free the allocated arrays: */
-  free(p->tform);
-  free(p->ttype);
-  free(p->tunit);
+  free(p->ocols);
   free(p->cp.hdu);
   free(p->typecode);
   free(p->cp.output);
+
+  /* Free the internal pointers first, then the actual arrays: */
+  for(i=0;i<p->ncols;++i)
+    {
+      if(p->tform) free(p->tform[i]);
+      if(p->ttype) free(p->ttype[i]);
+      if(p->tunit) free(p->tunit[i]);
+    }
+  free(p->tform);
+  free(p->ttype);
+  free(p->tunit);
 
   /* Close the FITS file: */
   if(p->up.fitsname && fits_close_file(p->fitsptr, &status))

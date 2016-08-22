@@ -1095,7 +1095,7 @@ preparearrays(struct mkcatalogparams *p)
 
   /* Prepare the columns and allocate the p->objcols and p->clumpcols
      arrays to keep the macros of what output they should keep. */
-  gal_linkedlist_sll_to_array(p->allcolsll, &p->allcols, &p->allncols);
+  gal_linkedlist_sll_to_array(p->allcolsll, &p->allcols, &p->allncols, 0);
   if(p->allncols==0)
     error(EXIT_FAILURE, 0, "no columns specified for output");
   errno=0; p->objcols=malloc(p->allncols*sizeof *p->objcols);

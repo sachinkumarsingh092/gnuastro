@@ -42,12 +42,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* User interface structure. */
 struct uiparams
 {
-  int             information;  /* ==1, only print FITS information. */
-  char              *fitsname;  /* Name of input FITS file.          */
-  char               *txtname;  /* Name of input text file.          */
+  int             information;  /* ==1, only print FITS information.    */
+  char              *fitsname;  /* Name of input FITS file.             */
+  char               *txtname;  /* Name of input text file.             */
+  int              ignorecase;  /* Ignore case matching column names.   */
 
   int                inputset;
   int          informationset;
+  int           ignorecaseset;
+
+  struct gal_linkedlist_stll *columns;
 };
 
 
@@ -58,19 +62,23 @@ struct uiparams
 struct tableparams
 {
   /* Other structures: */
-  struct uiparams          up;  /* User interface parameters.         */
-  struct gal_commonparams  cp;  /* Common parameters.                 */
+  struct uiparams          up;  /* User interface parameters.           */
+  struct gal_commonparams  cp;  /* Common parameters.                   */
 
   /* Input: */
-  fitsfile           *fitsptr;  /* FITS pointer (input or output).    */
+  fitsfile           *fitsptr;  /* FITS pointer (input or output).      */
+
+  /* Output: */
+  size_t               nocols;  /* Number of output columns.            */
+  size_t               *ocols;  /* Output column indexs in input table. */
 
   /* FITS table */
-  size_t                nrows;  /* Number of rows in table.           */
-  size_t                ncols;  /* Number of columns in table.        */
-  int               *typecode;  /* Type of data in column.            */
-  char                **tform;  /* TFORM (another format for type).   */
-  char                **ttype;  /* Column name (one word).            */
-  char                **tunit;  /* Unit of values in column.          */
+  size_t                nrows;  /* Number of rows in table.             */
+  size_t                ncols;  /* Number of columns in table.          */
+  int               *typecode;  /* Type of data in column.              */
+  char                **tform;  /* TFORM (another format for type).     */
+  char                **ttype;  /* Column name (one word).              */
+  char                **tunit;  /* Unit of values in column.            */
 
   /* Internal: */
   int                onlyview;
