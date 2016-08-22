@@ -1583,6 +1583,28 @@ gal_fits_tform_to_dtype(char tform)
 
 
 
+/* Get the size of a table HDU. CFITSIO doesn't use size_t, also we want to
+   check status here.*/
+void
+gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols)
+{
+  long lnrows;
+  int incols, status=0;
+
+  /* Read the sizes and put them in. */
+  fits_get_num_rows(fitsptr, &lnrows, &status);
+  fits_get_num_cols(fitsptr, &incols, &status);
+  *ncols=incols;
+  *nrows=lnrows;
+
+  /* Report an error if any was issued. */
+  gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
 
 
 

@@ -42,8 +42,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* User interface structure. */
 struct uiparams
 {
-  char              *fitsname;  /* Name of input FITS file.        */
-  char               *txtname;  /* Name of input text file.        */
+  int             information;  /* ==1, only print FITS information. */
+  char              *fitsname;  /* Name of input FITS file.          */
+  char               *txtname;  /* Name of input text file.          */
 
   int                inputset;
   int          informationset;
@@ -61,7 +62,6 @@ struct tableparams
   struct gal_commonparams  cp;  /* Common parameters.                 */
 
   /* Input: */
-  int             information;  /* ==1: only print information.       */
   fitsfile           *fitsptr;  /* FITS pointer (input or output).    */
 
   /* FITS table */

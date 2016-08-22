@@ -36,72 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Print all the column information: */
-void
-printinfo(struct tableparams *p)
-{
-  size_t i;
-  char *typestring=NULL;
 
-  printf("%s (hdu: %s)\n", p->up.fitsname, p->cp.hdu);
-  printf("Number of rows: %lu\n", p->nrows);
-  printf("Column information\n");
-  printf("------------------\n");
-  for(i=1;i<=p->ncols;++i)
-    {
-      switch(p->typecode[i])
-        {
-        case TBIT:
-          typestring="bit";
-          break;
-        case TBYTE:
-          typestring="byte";
-          break;
-        case TLOGICAL:
-          typestring="logicals";
-          break;
-        case TSTRING:
-          typestring="string";
-          break;
-        case TSHORT:
-          typestring="short";
-          break;
-        case TLONG:
-          typestring="long";
-          break;
-        case TLONGLONG:
-          typestring="longlong";
-          break;
-        case TFLOAT:
-          typestring="float";
-          break;
-        case TDOUBLE:
-          typestring="double";
-          break;
-        case TCOMPLEX:
-          typestring="complex";
-          break;
-        case TDBLCOMPLEX:
-          typestring="dblcomplex";
-          break;
-        case TSBYTE:
-          typestring="signed byte";
-          break;
-        case TUINT:
-          typestring="unsigned int";
-          break;
-        case TUSHORT:
-          typestring="unsigned short";
-          break;
-        default:
-          error(EXIT_FAILURE, 0, "%d (from TFORM%lu='%c') is not a "
-                "recognized CFITSIO datatype.",
-                p->typecode[i], i, p->tform[i][0]);
-        }
-      printf("%-3lu %-25s %-20s %s\n", i, p->ttype[i], typestring,
-             p->tunit[i]);
-    }
-
-}
 
 
 
@@ -110,5 +45,5 @@ printinfo(struct tableparams *p)
 void
 table(struct tableparams *p)
 {
-  if(p->information) printinfo(p);
+
 }

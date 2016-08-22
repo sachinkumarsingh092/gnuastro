@@ -218,6 +218,9 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
 int
 gal_fits_tform_to_dtype(char tform);
 
+void
+gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
+
 
 
 

@@ -116,7 +116,7 @@ readconfig(char *filename, struct tableparams *p)
       else if (strcmp(name, "information")==0)
         {
           if(p->up.informationset) continue;
-          gal_checkset_int_zero_or_one(value, &p->information, name,
+          gal_checkset_int_zero_or_one(value, &p->up.information, name,
                                        key, SPACK, filename, lineno);
           p->up.informationset=1;
         }
@@ -142,7 +142,7 @@ readconfig(char *filename, struct tableparams *p)
 void
 printvalues(FILE *fp, struct tableparams *p)
 {
-  /*struct uiparams *up=&p->up;*/
+  struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
 
 
@@ -157,6 +157,9 @@ printvalues(FILE *fp, struct tableparams *p)
      options, then the (possible options particular to this
      program). */
   fprintf(fp, "\n# Operating mode:\n");
+  if(up->informationset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "information", up->information);
+
   GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
 }
 
@@ -199,9 +202,8 @@ checkifset(struct tableparams *p)
 
 
 
-
 /**************************************************************/
-/***************       Sanity Check         *******************/
+/************     Read and Write column info    ***************/
 /**************************************************************/
 /* This function will read all the table information from a FITS table HDU
    and store them in arrays for use later. It is mainly good for getting
@@ -210,49 +212,39 @@ checkifset(struct tableparams *p)
    the keywords, so it is much more efficient than having to ask for each
    column's information separately.*/
 void
-readallcolinfo(char *filename, char *hdu, size_t *nrows,
-               size_t *ncols, int **otypecode, char ***otform,
-               char ***ottype, char ***otunit, fitsfile **outfptr)
+readallcolinfo(fitsfile *fitsptr, size_t ncols, int **otypecode,
+               char ***otform, char ***ottype, char ***otunit)
 {
-  long lnrows;
   size_t index;
   char *tailptr, **c, **fc;
+  int i, status=0, *typecode;
   char **tform, **ttype, **tunit;
-  int i, status=0, incols, *typecode;
   char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
 
-  /* Set the FITS pointer and check the HDU type. */
-  gal_fits_read_hdu(filename, hdu, 1, outfptr);
-
-  /* Get the size of the table. incols is incremented because the indexs of
-     the FITS keywords start from 1, not zero. */
-  fits_get_num_rows(*outfptr, &lnrows, &status);
-  fits_get_num_cols(*outfptr, &incols, &status);
-  *ncols=incols++;
-  *nrows=lnrows;
 
   /* Allocate the arrays to keep the column information. Initialize the
      arrays with a NULL pointer to make sure that they are all found in the
      end if they are necessary.*/
-  errno=0; typecode=*otypecode=malloc(incols * sizeof *typecode);
+  errno=0; typecode=*otypecode=malloc(ncols * sizeof *typecode);
   if(typecode==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for typecode",
-          incols * sizeof *typecode);
-  errno=0; tform=*otform=malloc(incols * sizeof *tform);
+          ncols * sizeof *typecode);
+  errno=0; tform=*otform=malloc(ncols * sizeof *tform);
   if(tform==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for tform",
-          incols * sizeof *tform);
-  fc=(c=tform)+incols; do *c++=NULL; while(c<fc);
-  errno=0; ttype=*ottype=malloc(incols * sizeof *ttype);
+          ncols * sizeof *tform);
+  fc=(c=tform)+ncols; do *c++=NULL; while(c<fc);
+  errno=0; ttype=*ottype=malloc(ncols * sizeof *ttype);
   if(ttype==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for ttype",
-          incols * sizeof *ttype);
-  fc=(c=ttype)+incols; do *c++=NULL; while(c<fc);
-  errno=0; tunit=*otunit=malloc(incols * sizeof *tunit);
+          ncols * sizeof *ttype);
+  fc=(c=ttype)+ncols; do *c++=NULL; while(c<fc);
+  errno=0; tunit=*otunit=malloc(ncols * sizeof *tunit);
   if(tunit==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for tunit",
-          incols * sizeof *tunit);
-  fc=(c=tunit)+incols; do *c++=NULL; while(c<fc);
+          ncols * sizeof *tunit);
+  fc=(c=tunit)+ncols; do *c++=NULL; while(c<fc);
+
 
   /* Read all the keywords one by one and if they match, then put them in
      the correct value. Note that we are starting from keyword 9 because
@@ -261,16 +253,27 @@ readallcolinfo(char *filename, char *hdu, size_t *nrows,
   for(i=9; strcmp(keyname, "END"); ++i)
     {
       /* Read the next keyword. */
-      fits_read_keyn(*outfptr, i, keyname, value, NULL, &status);
+      fits_read_keyn(fitsptr, i, keyname, value, NULL, &status);
 
       /* Check the type of the keyword. */
       if(strncmp(keyname, "TFORM", 5)==0)
         {
+          /* Currently we can only read repeat==1 cases. When no number
+             exists before the defined capital letter, it defaults to 1,
+             but if a number exists (for example `5D'), then the repeat is
+             5 (there are actually five values here. Note that value[0] is
+             a single quote.*/
+          if(isdigit(value[1] && value[1]!='1'))
+             error(EXIT_FAILURE, 0, "The repeat value of column %d is "
+                   "%c, currently Table can only use columns with a repeat "
+                   "of 1.", i+1, value[1]);
+
+
           /* The values to TFORM are only a single character, so start the
              pointer to copy at 1 and put the string terminator at 3. */
           value[2]='\0';
-          index=strtoul(&keyname[5], &tailptr, 10);
-          if(index<incols)
+          index=strtoul(&keyname[5], &tailptr, 10)-1;
+          if(index<ncols)
             {
               gal_checkset_allocate_copy(&value[1], &tform[index] );
               typecode[index]=gal_fits_tform_to_dtype(value[1]);
@@ -284,57 +287,165 @@ readallcolinfo(char *filename, char *hdu, size_t *nrows,
              remove them to have a simple string that might be used else
              where too (without the single quotes). */
           value[strlen(value)-1]='\0';
-          index=strtoul(&keyname[5], &tailptr, 10);
-          if(index<incols)
+          index=strtoul(&keyname[5], &tailptr, 10)-1;
+          if(index<ncols)
             gal_checkset_allocate_copy(&value[1], &ttype[index] );
         }
       else if(strncmp(keyname, "TUNIT", 5)==0)
         {
           /* similar to ttype, see above.*/
           value[strlen(value)-1]='\0';
-          index=strtoul(&keyname[5], &tailptr, 10);
-          if(index<incols)
+          index=strtoul(&keyname[5], &tailptr, 10)-1;
+          if(index<ncols)
             gal_checkset_allocate_copy(&value[1], &tunit[index] );
         }
     }
 
-  /* Check if all values were set: */
-  for(i=1;i<=*ncols;++i)
-    {
-      if(!tform[i])
-         error(EXIT_FAILURE, 0, "TFORM%d could not be found in header", i);
-      if(!ttype[i])
-         error(EXIT_FAILURE, 0, "TTYPE%d could not be found in header", i);
-      if(!tunit[i])
-         error(EXIT_FAILURE, 0, "TUNIT%d could not be found in header", i);
-    }
+
+  /* Check if the mandatory TFORMn values are set: */
+  for(i=0;i<ncols;++i)
+    if(!tform[i])
+      error(EXIT_FAILURE, 0, "TFORM%d could not be found in header", i+1);
 
 
   /* For a checkup:
   for(i=1;i<=*ncols;++i)
     printf("%d: %s, %s, %s\n", i, tform[i], ttype[i], tunit[i]);
   */
+}
 
+
+
+
+/* Print the column information. */
+void
+printinfo(struct tableparams *p)
+{
+  size_t i;
+  char *typestring=NULL;
+
+  printf("%s (hdu: %s)\n", p->up.fitsname, p->cp.hdu);
+  printf("Column information\n");
+  printf("---------------------------------------------------------\n");
+  printf("%-5s%-25s%-20s%s\n", "No.", "Column name", "Data type",
+         "Units");
+  printf("---------------------------------------------------------\n");
+  for(i=0;i<p->ncols;++i)
+    {
+      switch(p->typecode[i])
+        {
+        case TBIT:
+          typestring="bit";
+          break;
+        case TBYTE:
+          typestring="byte";
+          break;
+        case TLOGICAL:
+          typestring="logicals";
+          break;
+        case TSTRING:
+          typestring="string";
+          break;
+        case TSHORT:
+          typestring="short";
+          break;
+        case TLONG:
+          typestring="long";
+          break;
+        case TLONGLONG:
+          typestring="longlong";
+          break;
+        case TFLOAT:
+          typestring="float";
+          break;
+        case TDOUBLE:
+          typestring="double";
+          break;
+        case TCOMPLEX:
+          typestring="complex";
+          break;
+        case TDBLCOMPLEX:
+          typestring="dblcomplex";
+          break;
+        case TSBYTE:
+          typestring="signed byte";
+          break;
+        case TUINT:
+          typestring="unsigned int";
+          break;
+        case TUSHORT:
+          typestring="unsigned short";
+          break;
+        default:
+          error(EXIT_FAILURE, 0, "%d (from TFORM%lu='%c') is not a "
+                "recognized CFITSIO datatype.",
+                p->typecode[i], i, p->tform[i][0]);
+        }
+      printf("%-5lu%-25s%-20s%s\n", i+1, p->ttype[i] ? p->ttype[i] : "---",
+             typestring, p->tunit[i] ? p->tunit[i] : "---");
+    }
+
+
+  /* Print the number of rows: */
+  printf("---------------------------------------------------------\n");
+  printf("Number of rows: %lu\n", p->nrows);
 }
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/***************       Sanity Check         *******************/
+/**************************************************************/
 void
 sanitycheck(struct tableparams *p)
 {
 
   /* Set the FITS pointer and check the type of the fits file. */
   if(p->up.fitsname)
-    readallcolinfo(p->up.fitsname, p->cp.hdu, &p->nrows,
-                   &p->ncols, &p->typecode, &p->tform,
-                   &p->ttype, &p->tunit, &p->fitsptr);
+    {
+      gal_fits_read_hdu(p->up.fitsname, p->cp.hdu, 1, &p->fitsptr);
+      gal_fits_table_size(p->fitsptr, &p->nrows, &p->ncols);
+    }
   else
     error(EXIT_FAILURE, 0, "Table is a new addition to Gnuastro and "
           "and under heavy development, it currently doesn't support "
           "anything other than a FITS binary table.");
 
+
+
+  /* Print the column information and exit successfully if the
+     `--information' option is given. */
+  if(p->up.information)
+    {
+      if(p->up.fitsname)
+        {
+          readallcolinfo(p->fitsptr, p->ncols, &p->typecode,
+                         &p->tform, &p->ttype, &p->tunit);
+          printinfo(p);
+          freeandreport(p);
+          exit(EXIT_SUCCESS);
+        }
+      else
+        error(EXIT_FAILURE, 0, "the `--information' (`-i') option is only "
+              "defined for FITS tables");
+    }
 }
 
 
@@ -451,7 +562,11 @@ freeandreport(struct tableparams *p)
   int status=0;
 
   /* Free the allocated arrays: */
+  free(p->tform);
+  free(p->ttype);
+  free(p->tunit);
   free(p->cp.hdu);
+  free(p->typecode);
   free(p->cp.output);
 
   /* Close the FITS file: */

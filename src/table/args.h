@@ -154,7 +154,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Operating modes: */
     case 'i':
-      p->information=1;
+      p->up.information=1;
       p->up.informationset=1;
       break;
 
