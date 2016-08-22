@@ -36,9 +36,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
+
+/* User interface structure. */
 struct uiparams
 {
-  char             *inputname;  /* Name of input file.             */
+  char              *fitsname;  /* Name of input FITS file.        */
+  char               *txtname;  /* Name of input text file.        */
+
+  int                inputset;
   int          informationset;
 };
 
@@ -46,6 +53,7 @@ struct uiparams
 
 
 
+/* Main program parameters structure */
 struct tableparams
 {
   /* Other structures: */
@@ -54,6 +62,15 @@ struct tableparams
 
   /* Input: */
   int             information;  /* ==1: only print information.       */
+  fitsfile           *fitsptr;  /* FITS pointer (input or output).    */
+
+  /* FITS table */
+  size_t                nrows;  /* Number of rows in table.           */
+  size_t                ncols;  /* Number of columns in table.        */
+  int               *typecode;  /* Type of data in column.            */
+  char                **tform;  /* TFORM (another format for type).   */
+  char                **ttype;  /* Column name (one word).            */
+  char                **tunit;  /* Unit of values in column.          */
 
   /* Internal: */
   int                onlyview;

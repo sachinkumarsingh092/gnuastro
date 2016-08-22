@@ -733,7 +733,7 @@ hdutypestring(int hdutype)
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
 void
-gal_fits_read_hdu(char *filename, char *hdu, int desiredtype,
+gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
                   fitsfile **outfptr)
 {
   size_t len;
@@ -758,11 +758,24 @@ gal_fits_read_hdu(char *filename, char *hdu, int desiredtype,
   if (fits_get_hdu_type(fptr, &hdutype, &status) )
     gal_fits_io_error(status, NULL);
 
-  if(hdutype!=desiredtype)
-    error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not %s",
-          filename, hdu, hdutypestring(hdutype),
-          hdutypestring(desiredtype));
 
+  /* Check if the type of the HDU is the expected type. We could have
+     written these as && conditions, but this is easier to read, it makes
+     no meaningful difference to the compiler. */
+  if(img0_tab1)
+    {
+      if(hdutype==IMAGE_HDU)
+        error(EXIT_FAILURE, 0, "%s: HDU %s is an image, not a table",
+              filename, hdu);
+    }
+  else
+    {
+      if(hdutype!=IMAGE_HDU)
+        error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not an image",
+              filename, hdu, hdutypestring(hdutype));
+    }
+
+  /* Clean up. */
   free(ffname);
 }
 
@@ -1309,7 +1322,7 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
   fitsfile *fptr;
 
   /* Check HDU for realistic conditions: */
-  gal_fits_read_hdu(filename, hdu, IMAGE_HDU, &fptr);
+  gal_fits_read_hdu(filename, hdu, 0, &fptr);
 
   /* Read the WCS information: */
   gal_fits_read_wcs_from_pointer(fptr, nwcs, wcs, hstartwcs, hendwcs);
@@ -1332,7 +1345,7 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
    the macros in fitsarrayvv.h and depends on the type of the data.*/
 int
 gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
-                                void **array, size_t *s0, size_t *s1)
+                      void **array, size_t *s0, size_t *s1)
 {
   void *bitblank;
   fitsfile *fptr;
@@ -1340,7 +1353,7 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
   long naxes[2], fpixel[]={1,1};
 
   /* Check HDU for realistic conditions: */
-  gal_fits_read_hdu(filename, hdu, IMAGE_HDU, &fptr);
+  gal_fits_read_hdu(filename, hdu, 0, &fptr);
 
   /* Get the bitpix and size of the image: */
   gal_fits_img_bitpix_size(fptr, bitpix, naxes);
@@ -1494,6 +1507,76 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
 
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********                 Table                  ************/
+/**************************************************************/
+/* The values to the TFORM header keyword are single letter capital
+   letters, but that is useless in identifying the data type of the
+   column. So this function will do the conversion based on the CFITSIO
+   manual.*/
+int
+gal_fits_tform_to_dtype(char tform)
+{
+  switch(tform)
+    {
+    case 'X':
+      return TBIT;
+    case 'B':
+      return TBYTE;
+    case 'L':
+      return TLOGICAL;
+    case 'A':
+      return TSTRING;
+    case 'I':
+      return TSHORT;
+    case 'J':
+      return TLONG;
+    case 'K':
+      return TLONGLONG;
+    case 'E':
+      return TFLOAT;
+    case 'D':
+      return TDOUBLE;
+    case 'C':
+      return TCOMPLEX;
+    case 'M':
+      return TDBLCOMPLEX;
+    case 'S':
+      return TSBYTE;
+    case 'V':
+      return TUINT;
+    case 'U':
+      return TUSHORT;
+    default:
+      error(EXIT_FAILURE, 0, "'%c' is not a recognized CFITSIO value for "
+            "the TFORMn header keyword(s).", tform);
+    }
+
+  error(EXIT_FAILURE, 0, "A bug! Please contact us so we can fix this. "
+        "For some reason, control has reached to the end of the "
+        "gal_fits_tform_to_dtype function in fits.c.");
+  return -1;
 }
 
 

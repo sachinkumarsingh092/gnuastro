@@ -621,7 +621,7 @@ preparearrays(struct imgcropparams *p)
       status=0;
       img=&p->imgs[i];
       gal_linkedlist_pop_from_stll(&p->up.gal_linkedlist_stll, &img->name);
-      gal_fits_read_hdu(img->name, p->cp.hdu, IMAGE_HDU, &tmpfits);
+      gal_fits_read_hdu(img->name, p->cp.hdu, 0, &tmpfits);
       gal_fits_img_bitpix_size(tmpfits, &p->bitpix, img->naxes);
       gal_fits_read_wcs_from_pointer(tmpfits, &img->nwcs, &img->wcs,
                                      p->hstartwcs, p->hendwcs);

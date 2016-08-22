@@ -172,7 +172,7 @@ void
 gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxis);
 
 void
-gal_fits_read_hdu(char *filename, char *hdu, int desiredtype,
+gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
                   fitsfile **outfptr);
 
 void *
@@ -207,6 +207,16 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
                           void *array, size_t s0, size_t s1,
                           char *wcsheader, int wcsnkeyrec,
                           double *crpix, char *spack_string);
+
+
+
+
+
+/**************************************************************/
+/**********                  Table                 ************/
+/**************************************************************/
+int
+gal_fits_tform_to_dtype(char tform);
 
 
 

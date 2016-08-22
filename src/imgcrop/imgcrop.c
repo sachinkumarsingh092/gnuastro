@@ -90,7 +90,7 @@ imgmodecrop(void *inparam)
   /* The whole catalog is from one image, so you can get the
      information here:*/
   img=&p->imgs[crp->imgindex];
-  gal_fits_read_hdu(img->name, cp->hdu, IMAGE_HDU, &crp->infits);
+  gal_fits_read_hdu(img->name, cp->hdu, 0, &crp->infits);
 
   /* Go over all the outputs that are assigned to this thread: */
   for(i=0;crp->indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
@@ -181,7 +181,7 @@ wcsmodecrop(void *inparam)
         if(radecoverlap(crp))
           {
             gal_fits_read_hdu(p->imgs[crp->imgindex].name, p->cp.hdu,
-                                        IMAGE_HDU, &crp->infits);
+                              0, &crp->infits);
 
             if(log->name==NULL) cropname(crp);
 

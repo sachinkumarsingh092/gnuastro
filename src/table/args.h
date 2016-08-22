@@ -155,39 +155,35 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Operating modes: */
     case 'i':
       p->information=1;
-      p->informationset=1;
+      p->up.informationset=1;
       break;
 
 
     /* Read the non-option arguments: */
     case ARGP_KEY_ARG:
 
-      /* See what type of input value it is and put it in. */
+      /* Table gets only one input argument. */
+      if(p->up.inputset)
+        argp_error(state, "only one input file should be given");
+
+      /* This is the first (and must be only) argument. */
+      p->up.inputset=1;
+
+      /* See what type of input this is, and save the value. */
       if( gal_fits_name_is_fits(arg) )
-        {
-          if(p->up.inputname)
-            argp_error(state, "only one input image should be given");
-          else
-            p->up.inputname=arg;
-        }
+        p->up.fitsname=arg;
       else
-        argp_error(state, "%s is not a valid file type", arg);
+        p->up.txtname=arg;
+
       break;
-
-
-
 
 
     /* The command line options and arguments are finished. */
     case ARGP_KEY_END:
       if(p->cp.setdirconf==0 && p->cp.setusrconf==0
          && p->cp.printparams==0)
-        {
-          if(state->arg_num==0)
-            argp_error(state, "no argument given");
-          if(p->up.inputname==NULL)
-            argp_error(state, "no input FITS image(s) provided");
-        }
+        if(state->arg_num==0)
+          argp_error(state, "no argument given");
       break;
 
 
