@@ -42,19 +42,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    or small types (like char), the maximum value is considered as a blank
    value, since the minimum value of an unsigned type is zero and zero is
    often meaningful in contexts were unsigned values are used. */
-#define GAL_FITS_STRING_BLANK            NULL
-#define GAL_FITS_BYTE_BLANK              UCHAR_MAX
-#define GAL_FITS_LOGICAL_BLANK           SCHAR_MAX
-#define GAL_FITS_SHORT_BLANK             INT16_MIN
-#define GAL_FITS_LONG_BLANK              INT32_MIN
-#define GAL_FITS_LLONG_BLANK             INT64_MIN
-#define GAL_FITS_FLOAT_BLANK             NAN
-#define GAL_FITS_TCOMPLEX_BLANK(cptr)    GSL_SET_COMPLEX((cptr),NAN,NAN)
-#define GAL_FITS_TDBLCOMPLEX_BLANK(cptr) GSL_SET_COMPLEX((cptr),NAN,NAN)
-#define GAL_FITS_INT_BLANK               INT_MIN
-#define GAL_FITS_SBYTE_BLANK             SCHAR_MAX
-#define GAL_FITS_UINT_BLANK              UINT_MAX
-#define GAL_FITS_USHORT_BLANK            USHRT_MAX
+#define GAL_FITS_STRING_BLANK     NULL
+#define GAL_FITS_BYTE_BLANK       UCHAR_MAX
+#define GAL_FITS_LOGICAL_BLANK    SCHAR_MAX
+#define GAL_FITS_SHORT_BLANK      INT16_MIN
+#define GAL_FITS_LONG_BLANK       INT32_MIN
+#define GAL_FITS_LLONG_BLANK      INT64_MIN
+#define GAL_FITS_FLOAT_BLANK      NAN
+#define GAL_FITS_DOUBLE_BLANK     NAN
+#define GAL_FITS_INT_BLANK        INT_MIN
+#define GAL_FITS_SBYTE_BLANK      SCHAR_MAX
+#define GAL_FITS_UINT_BLANK       UINT_MAX
+#define GAL_FITS_USHORT_BLANK     USHRT_MAX
+#define GAL_FITS_ULONG_BLANK      ULONG_MAX
 
 
 
@@ -182,6 +182,9 @@ gal_fits_datatype_blank(int datatype);
 
 void
 gal_fits_convert_blank(void *array, int bitpix, size_t size, void *value);
+
+void
+gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value);
 
 int
 gal_fits_bitpix_to_dtype(int bitpix);

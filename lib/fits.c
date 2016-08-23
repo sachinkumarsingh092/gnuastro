@@ -167,6 +167,12 @@ gal_fits_bitpix_to_dtype(int bitpix)
       return TFLOAT;
     case DOUBLE_IMG:
       return TDOUBLE;
+    case SBYTE_IMG:
+      return TSBYTE;
+    case USHORT_IMG:
+      return TUSHORT;
+    case ULONG_IMG:
+      return TULONG;
     default:
       error(EXIT_FAILURE, 0, "bitpix value of %d not recognized",
             bitpix);
@@ -243,11 +249,12 @@ gal_fits_datatype_blank(int datatype)
   LONGLONG *L;
   float *f;
   double *d;
-  gsl_complex_float *complex;
-  gsl_complex *dblcomplex;
+  gsl_complex_float *cx;
+  gsl_complex *dcx;
   int *i;
   unsigned int *ui;
   unsigned short *us;
+  unsigned long *ul;
 
   errno=0;
   switch(datatype)
@@ -320,24 +327,24 @@ gal_fits_datatype_blank(int datatype)
       if(d==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for blank TDOUBLE",
               sizeof *d);
-      *d=GAL_FITS_FLOAT_BLANK;
+      *d=GAL_FITS_DOUBLE_BLANK;
       return d;
 
     case TCOMPLEX:
-      complex=malloc(sizeof *complex);
-      if(complex==NULL)
+      cx=malloc(sizeof *cx);
+      if(cx==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for blank TCOMPLEX",
-              sizeof *complex);
-      GAL_FITS_TCOMPLEX_BLANK(complex);
-      return complex;
+              sizeof *cx);
+      GSL_SET_COMPLEX(cx,GAL_FITS_FLOAT_BLANK,GAL_FITS_FLOAT_BLANK);
+      return cx;
 
     case TDBLCOMPLEX:
-      dblcomplex=malloc(sizeof *dblcomplex);
-      if(dblcomplex==NULL)
+      dcx=malloc(sizeof *dcx);
+      if(dcx==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for blank TDBLCOMPLEX",
-              sizeof *dblcomplex);
-      GAL_FITS_TCOMPLEX_BLANK(dblcomplex);
-      return dblcomplex;
+              sizeof *dcx);
+      GSL_SET_COMPLEX(dcx,GAL_FITS_DOUBLE_BLANK,GAL_FITS_DOUBLE_BLANK);
+      return dcx;
 
     case TINT:
       i=malloc(sizeof *i);
@@ -362,6 +369,14 @@ gal_fits_datatype_blank(int datatype)
               sizeof *us);
       *ui=GAL_FITS_USHORT_BLANK;
       return us;
+
+    case TULONG:
+      ul=malloc(sizeof *ul);
+      if(ul==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TULONG",
+              sizeof *ul);
+      *ul=GAL_FITS_ULONG_BLANK;
+      return ul;
 
 
     default:
@@ -464,6 +479,10 @@ gal_fits_datatype_alloc(size_t size, int datatype)
       size *= sizeof (unsigned short);
       break;
 
+    case TULONG:
+      size *= sizeof (unsigned long);
+      break;
+
     default:
       error(EXIT_FAILURE, 0, "datatype value of %d not recognized in "
             "gal_fits_datatype_alloc", datatype);
@@ -483,54 +502,155 @@ gal_fits_datatype_alloc(size_t size, int datatype)
 
 
 void
-blanktovalue(void *array, int bitpix, size_t size, void *value)
+gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
 {
-  /* 'value' will only be read from one of these based on bitpix. Which the
-     caller assigned. If there is any problem, it is their responsability,
-     not this functions :-).*/
-  unsigned char *b, *bf, bv=*(uint8_t *) value;
-  short *s, *sf, sv=*(int16_t *) value;
-  long *l, *lf, lv=*(int32_t *) value;
-  LONGLONG *L, *Lf, Lv=*(int64_t *) value;
-  float   *f, *ff, fv=*(float   *) value;
-  double  *d, *df, dv=*(double  *) value;
+  /* 'value' will only be read from one of these based on the
+     datatype. Which the caller assigned. If there is any problem, it is
+     their responsability, not this function's.*/
+  unsigned char *b, *bf,        bv = *(uint8_t *) value;
+  char *c, *cf,                 cv = *(char *) value;
+  char **str, **strf,        *strv = *(char **) value;
+  short *s, *sf,                sv = *(int16_t *) value;
+  long *l, *lf,                 lv = *(int32_t *) value;
+  LONGLONG *L, *Lf,             Lv = *(int64_t *) value;
+  float   *f, *ff,              fv = *(float *) value;
+  double  *d, *df,              dv = *(double *) value;
+  gsl_complex_float *cx, *cxf, cxv = *(gsl_complex_float *) value;
+  gsl_complex *dcx, *dcxf,    dcxv = *(gsl_complex *) value;
+  int *in, *inf,               inv = *(int *) value;
+  unsigned int *ui, *uif,      uiv = *(unsigned int *) value;
+  unsigned short *us, *usf,    usv = *(unsigned short *) value;
+  unsigned long *ul, *ulf,     ulv = *(unsigned long *) value;
 
-  switch(bitpix)
+  switch(datatype)
     {
-    case BYTE_IMG:
+    case TBIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
+            "datatype, please get in touch with us to implement it.");
+
+    case TBYTE:
       bf=(b=array)+size;
-      do if(*b==GAL_FITS_BYTE_BLANK) *b=bv; while(++b<bf);
+      do if(*b==GAL_FITS_BYTE_BLANK) *b++=bv; while(b<bf);
       break;
 
-    case SHORT_IMG:
+
+    case TLOGICAL: case TSBYTE:
+      cf=(c=array)+size;
+      do if(*c==GAL_FITS_LOGICAL_BLANK) *c++=cv; while(c<cf);
+      break;
+
+
+    case TSTRING:
+      strf=(str=array)+size;
+      do if(*str==GAL_FITS_STRING_BLANK) *str++=strv; while(str<strf);
+      break;
+
+
+    case TSHORT:
       sf=(s=array)+size;
-      do if(*s==GAL_FITS_SHORT_BLANK) *s=sv; while(++s<sf);
+      do if(*s==GAL_FITS_SHORT_BLANK) *s++=sv; while(s<sf);
       break;
 
-    case LONG_IMG:
+
+    case TLONG:
       lf=(l=array)+size;
-      do if(*l==GAL_FITS_LONG_BLANK) *l=lv; while(++l<lf);
+      do if(*l==GAL_FITS_LONG_BLANK) *l++=lv; while(l<lf);
       break;
 
-    case LONGLONG_IMG:
+
+    case TLONGLONG:
       Lf=(L=array)+size;
-      do if(*L==GAL_FITS_LLONG_BLANK) *L=Lv; while(++L<Lf);
+      do if(*L==GAL_FITS_LLONG_BLANK) *L++=Lv; while(L<Lf);
       break;
 
-    case FLOAT_IMG:
+
+      /* Note that a NaN value is not equal to another NaN value, so we
+         can't use the easy check for cases were the blank value is
+         NaN. Also note that `isnan' is actually a macro, so it works for
+         both float and double types.*/
+    case TFLOAT:
       ff=(f=array)+size;
-      do if(*f==GAL_FITS_FLOAT_BLANK) *f=fv; while(++f<ff);
+      if(isnan(GAL_FITS_FLOAT_BLANK))
+        do if(isnan(*f)) *f++=fv; while(f<ff);
+      else
+        do if(*f==GAL_FITS_FLOAT_BLANK) *f++=fv; while(f<ff);
       break;
 
-    case DOUBLE_IMG:
+
+    case TDOUBLE:
       df=(d=array)+size;
-      do if(*d==GAL_FITS_FLOAT_BLANK) *d=dv; while(++d<df);
+      if(isnan(GAL_FITS_DOUBLE_BLANK))
+        do if(isnan(*d)) *d++=dv; while(d<df);
+      else
+        do if(*d==GAL_FITS_FLOAT_BLANK) *d++=dv; while(d<df);
+      break;
+
+
+    case TCOMPLEX:
+      cxf=(cx=array)+size;
+      if(isnan(GAL_FITS_FLOAT_BLANK))
+          do
+            if(isnan(GSL_COMPLEX_P_REAL(cx))
+               && isnan(GSL_COMPLEX_P_IMAG(cx)) )
+              GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
+                              GSL_COMPLEX_P_IMAG(&cxv));
+          while(++cx<cxf);
+      else
+        do
+          if( GSL_COMPLEX_P_REAL(cx) == GAL_FITS_FLOAT_BLANK
+              && GSL_COMPLEX_P_IMAG(cx) == GAL_FITS_FLOAT_BLANK)
+            GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
+                            GSL_COMPLEX_P_IMAG(&cxv));
+        while(++cx<cxf);
+      break;
+
+
+    case TDBLCOMPLEX:
+      dcxf=(dcx=array)+size;
+      if(isnan(GAL_FITS_DOUBLE_BLANK))
+          do
+            if(isnan(GSL_COMPLEX_P_REAL(dcx))
+               && isnan(GSL_COMPLEX_P_IMAG(dcx)) )
+              GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
+                              GSL_COMPLEX_P_IMAG(&dcxv));
+          while(++dcx<dcxf);
+      else
+        do
+          if( GSL_COMPLEX_P_REAL(dcx) == GAL_FITS_FLOAT_BLANK
+              && GSL_COMPLEX_P_IMAG(dcx) == GAL_FITS_FLOAT_BLANK)
+            GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
+                            GSL_COMPLEX_P_IMAG(&dcxv));
+        while(++dcx<dcxf);
+      break;
+
+
+    case TINT:
+      inf=(in=array)+size;
+      do if(*in==GAL_FITS_INT_BLANK) *in++=inv; while(in<inf);
+      break;
+
+
+    case TUINT:
+      uif=(ui=array)+size;
+      do if(*ui==GAL_FITS_UINT_BLANK) *ui++=uiv; while(ui<uif);
+      break;
+
+
+    case TUSHORT:
+      usf=(us=array)+size;
+      do if(*us==GAL_FITS_USHORT_BLANK) *us++=usv; while(us<usf);
+      break;
+
+
+    case TULONG:
+      ulf=(ul=array)+size;
+      do if(*ul==GAL_FITS_ULONG_BLANK) *ul++=ulv; while(ul<ulf);
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "a bug! Bitpix value of %d not recognized. "
+      error(EXIT_FAILURE, 0, "a bug! datatype value of %d not recognized. "
             "This should not happen here (blanktovalue in fitsarrayvv.c). "
-            "Please contact us at %s to see how this happened", bitpix,
+            "Please contact us at %s to see how this happened", datatype,
             PACKAGE_BUGREPORT);
     }
 }
