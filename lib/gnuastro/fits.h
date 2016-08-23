@@ -194,7 +194,7 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
                   fitsfile **outfptr);
 
 void *
-gal_fits_bitpix_alloc(size_t size, int bitpix);
+gal_fits_datatype_alloc(size_t size, int datatype);
 
 void
 gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,

@@ -713,7 +713,7 @@ onecrop(struct cropparams *crp)
       /* Read the desired part of the image, then write it into this
          array. */
       cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
-      array=gal_fits_bitpix_alloc(cropsize, bitpix);
+      array=gal_fits_datatype_alloc(cropsize, p->datatype);
       status=0;
       if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
                           p->bitnul, array, &anynul, &status))
@@ -828,7 +828,7 @@ iscenterfilled(struct cropparams *crp)
 
   /* Allocate the array and read in the pixels. */
   size=checkcenter*checkcenter;
-  array=gal_fits_bitpix_alloc(size, bitpix);
+  array=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_dtype(bitpix) );
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
                        p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);

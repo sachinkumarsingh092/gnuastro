@@ -178,6 +178,58 @@ gal_fits_bitpix_to_dtype(int bitpix)
 
 
 
+/* The values to the TFORM header keyword are single letter capital
+   letters, but that is useless in identifying the data type of the
+   column. So this function will do the conversion based on the CFITSIO
+   manual.*/
+int
+gal_fits_tform_to_dtype(char tform)
+{
+  switch(tform)
+    {
+    case 'X':
+      return TBIT;
+    case 'B':
+      return TBYTE;
+    case 'L':
+      return TLOGICAL;
+    case 'A':
+      return TSTRING;
+    case 'I':
+      return TSHORT;
+    case 'J':
+      return TLONG;
+    case 'K':
+      return TLONGLONG;
+    case 'E':
+      return TFLOAT;
+    case 'D':
+      return TDOUBLE;
+    case 'C':
+      return TCOMPLEX;
+    case 'M':
+      return TDBLCOMPLEX;
+    case 'S':
+      return TSBYTE;
+    case 'V':
+      return TUINT;
+    case 'U':
+      return TUSHORT;
+    default:
+      error(EXIT_FAILURE, 0, "'%c' is not a recognized CFITSIO value for "
+            "the TFORMn header keyword(s).", tform);
+    }
+
+  error(EXIT_FAILURE, 0, "A bug! Please contact us so we can fix this. "
+        "For some reason, control has reached to the end of the "
+        "gal_fits_tform_to_dtype function in fits.c.");
+  return -1;
+}
+
+
+
+
+
 void *
 gal_fits_datatype_blank(int datatype)
 {
@@ -201,8 +253,8 @@ gal_fits_datatype_blank(int datatype)
   switch(datatype)
     {
     case TBIT:
-      error(EXIT_FAILURE, 0, "Currently GSL doesn't support TBIT datatype, "
-            "please get in touch with us to implement it.");
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
+            "datatype, please get in touch with us to implement it.");
 
     case TBYTE:
       b=malloc(sizeof *b);
@@ -324,55 +376,104 @@ gal_fits_datatype_blank(int datatype)
 
 
 
-/* Allocate an array based on the value of bitpix. */
+/* Allocate an array based on the value of bitpix. Note that the argument
+   `size' is the number of elements, necessary in the array, the number of
+   bytes each element needs will be determined internaly by this function
+   using the datatype argument, so you don't have to worry about it. */
 void *
-gal_fits_bitpix_alloc(size_t size, int bitpix)
+gal_fits_datatype_alloc(size_t size, int datatype)
 {
   void *array;
 
   /* Allocate space for the array to keep the image. */
-  switch(bitpix)
+  switch(datatype)
     {
-    case BYTE_IMG:
-      size*=sizeof(unsigned char);
+    case TBIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
+            "datatype, please get in touch with us to implement it.");
+
+      /* The parenthesis after sizeof is not a function, it is actually a
+         type cast, so we have put a space between size of and the
+         parenthesis to highlight this. In C, `sizeof' is an operator, not
+         a function.*/
+    case TBYTE:
+      size *= sizeof (unsigned char);
       break;
 
-    case SHORT_IMG:
-      size*=sizeof(short);
+    case TLOGICAL: case TSBYTE:
+      size *= sizeof (char);
       break;
 
-    case LONG_IMG:
-      size*=sizeof(long);
+    case TSTRING:
+      size *= sizeof (char *);
       break;
 
-    case LONGLONG_IMG:
-      size*=sizeof(LONGLONG);
+    case TSHORT:
+      size *= sizeof (short);
       break;
 
-    case FLOAT_IMG:
-      if(sizeof(float)!=4)
+    case TLONG:
+      size *= sizeof (long);
+      break;
+
+    case TLONGLONG:
+      size *= sizeof (LONGLONG);
+      break;
+
+    case TFLOAT:
+      if( sizeof (float) != 4 )
         error(EXIT_FAILURE, 0,
               "`float` is not 32bits on this machine. The FITS standard "
               "Requires this size");
-      size*=sizeof(float);
+      size *= sizeof (float);
       break;
 
-    case DOUBLE_IMG:
-      if(sizeof(double)!=8)
+    case TDOUBLE:
+      if( sizeof (double) != 8 )
         error(EXIT_FAILURE, 0,
               "`double` is not 64bits on this machine. The FITS standard "
               "requires this size");
-      size*=sizeof(double);
+      size *= sizeof (double);
+      break;
+
+    case TCOMPLEX:
+      if( sizeof (float) != 4 )
+        error(EXIT_FAILURE, 0,
+              "`float` is not 32bits on this machine. The FITS standard "
+              "Requires this size");
+      size *= sizeof (gsl_complex_float);
+      break;
+
+    case TDBLCOMPLEX:
+      if( sizeof (double) != 8 )
+        error(EXIT_FAILURE, 0,
+              "`double` is not 64bits on this machine. The FITS standard "
+              "requires this size");
+      size *= sizeof (gsl_complex);
+      break;
+
+    case TINT:
+      size *= sizeof (int);
+      break;
+
+    case TUINT:
+      size *= sizeof (unsigned int);
+      break;
+
+    case TUSHORT:
+      size *= sizeof (unsigned short);
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized", bitpix);
+      error(EXIT_FAILURE, 0, "datatype value of %d not recognized in "
+            "gal_fits_datatype_alloc", datatype);
     }
 
   errno=0;
   array=malloc(size);
   if(array==NULL)
-    error(EXIT_FAILURE, errno, "array of %lu bytes", size);
+    error(EXIT_FAILURE, errno,
+          "array of %lu bytes in gal_fits_datatype_alloc", size);
 
   return array;
 }
@@ -451,7 +552,7 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
   double *d, *df, *id=in, *iid=in;
 
   /* Allocate space for the output and start filling it. */
-  *out=gal_fits_bitpix_alloc(size, outbitpix);
+  *out=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_dtype(outbitpix) );
   switch(outbitpix)
     {
     case BYTE_IMG:
@@ -1428,8 +1529,8 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
 {
   void *bitblank;
   fitsfile *fptr;
-  int status=0, anyblank=0;
   long naxes[2], fpixel[]={1,1};
+  int status=0, anyblank=0, datatype;
 
   /* Check HDU for realistic conditions: */
   gal_fits_read_hdu(filename, hdu, 0, &fptr);
@@ -1440,8 +1541,9 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
   *s1=naxes[0];
 
   /* Allocate space for the array. */
-  bitblank=gal_fits_datatype_blank( gal_fits_bitpix_to_dtype(*bitpix) );
-  *array=gal_fits_bitpix_alloc(*s0 * *s1, *bitpix);
+  datatype=gal_fits_bitpix_to_dtype(*bitpix);
+  bitblank=gal_fits_datatype_blank(datatype);
+  *array=gal_fits_datatype_alloc(*s0 * *s1, datatype);
 
   /* Read the image into the allocated array: */
   fits_read_pix(fptr, gal_fits_bitpix_to_dtype(*bitpix), fpixel,
@@ -1610,58 +1712,6 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
 /**************************************************************/
 /**********                 Table                  ************/
 /**************************************************************/
-/* The values to the TFORM header keyword are single letter capital
-   letters, but that is useless in identifying the data type of the
-   column. So this function will do the conversion based on the CFITSIO
-   manual.*/
-int
-gal_fits_tform_to_dtype(char tform)
-{
-  switch(tform)
-    {
-    case 'X':
-      return TBIT;
-    case 'B':
-      return TBYTE;
-    case 'L':
-      return TLOGICAL;
-    case 'A':
-      return TSTRING;
-    case 'I':
-      return TSHORT;
-    case 'J':
-      return TLONG;
-    case 'K':
-      return TLONGLONG;
-    case 'E':
-      return TFLOAT;
-    case 'D':
-      return TDOUBLE;
-    case 'C':
-      return TCOMPLEX;
-    case 'M':
-      return TDBLCOMPLEX;
-    case 'S':
-      return TSBYTE;
-    case 'V':
-      return TUINT;
-    case 'U':
-      return TUSHORT;
-    default:
-      error(EXIT_FAILURE, 0, "'%c' is not a recognized CFITSIO value for "
-            "the TFORMn header keyword(s).", tform);
-    }
-
-  error(EXIT_FAILURE, 0, "A bug! Please contact us so we can fix this. "
-        "For some reason, control has reached to the end of the "
-        "gal_fits_tform_to_dtype function in fits.c.");
-  return -1;
-}
-
-
-
-
-
 /* Get the size of a table HDU. CFITSIO doesn't use size_t, also we want to
    check status here.*/
 void
