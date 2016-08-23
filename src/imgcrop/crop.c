@@ -295,8 +295,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
   LONGLONG *Lb, *La=array;
   unsigned char *bb, *ba=array;
   double *db, *ipolygon, point[2], *da=array;
-  int outpolygon=crp->p->outpolygon, bitpix=crp->p->bitpix;
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
+  int outpolygon=crp->p->outpolygon, datatype=crp->p->datatype;
 
 
   /* First of all, allocate enough space to put a copy of the input
@@ -325,10 +325,10 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
 
   /* Go over all the pixels in the image and if they are within the
      polygon keep them if the user has asked for it.*/
-  switch(bitpix)
+  switch(datatype)
     {
-    case BYTE_IMG:
-      bb=gal_fits_bitpix_blank(bitpix);
+    case TBYTE:
+      bb=gal_fits_datatype_blank(datatype);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -337,8 +337,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(bb);
       break;
-    case SHORT_IMG:
-      sb=gal_fits_bitpix_blank(bitpix);
+    case TSHORT:
+      sb=gal_fits_datatype_blank(datatype);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -347,8 +347,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(sb);
       break;
-    case LONG_IMG:
-      lb=gal_fits_bitpix_blank(bitpix);
+    case TLONG:
+      lb=gal_fits_datatype_blank(datatype);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -357,8 +357,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(lb);
       break;
-    case LONGLONG_IMG:
-      Lb=gal_fits_bitpix_blank(bitpix);
+    case TLONGLONG:
+      Lb=gal_fits_datatype_blank(datatype);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -367,8 +367,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(Lb);
       break;
-    case FLOAT_IMG:
-      fb=gal_fits_bitpix_blank(bitpix);
+    case TFLOAT:
+      fb=gal_fits_datatype_blank(datatype);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -377,8 +377,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(fb);
       break;
-    case DOUBLE_IMG:
-      db=gal_fits_bitpix_blank(bitpix);
+    case TDOUBLE:
+      db=gal_fits_datatype_blank(datatype);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -390,8 +390,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
     default:
       error(EXIT_FAILURE, 0, "a bug! Please contact us at %s, so we "
             "can fix the problem. For some reason, an unrecognized "
-            "bitpix value (%d) has been seen in polygonmask (crop.c)",
-            PACKAGE_BUGREPORT, bitpix);
+            "datatype value (%d) has been seen in polygonmask (crop.c)",
+            PACKAGE_BUGREPORT, datatype);
     }
 
   /* Clean up: */

@@ -26,18 +26,36 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
+#include <limits.h>
 
 #include <fitsio.h>
 #include <wcslib/wcs.h>
 #include <wcslib/wcshdr.h>
 #include <wcslib/wcsfix.h>
+#include <gsl/gsl_complex.h>
 
-#define GAL_FITS_STRING_BLANK   NULL
-#define GAL_FITS_BYTE_BLANK     UCHAR_MAX /* 0 is often meaningful here! */
-#define GAL_FITS_SHORT_BLANK    INT16_MIN
-#define GAL_FITS_LONG_BLANK     INT32_MIN
-#define GAL_FITS_LLONG_BLANK    INT64_MIN
-#define GAL_FITS_FLOAT_BLANK    NAN
+
+
+
+
+/* Order is based on the CFITSIO manual. Note that for the unsigned types
+   or small types (like char), the maximum value is considered as a blank
+   value, since the minimum value of an unsigned type is zero and zero is
+   often meaningful in contexts were unsigned values are used. */
+#define GAL_FITS_STRING_BLANK            NULL
+#define GAL_FITS_BYTE_BLANK              UCHAR_MAX
+#define GAL_FITS_LOGICAL_BLANK           SCHAR_MAX
+#define GAL_FITS_SHORT_BLANK             INT16_MIN
+#define GAL_FITS_LONG_BLANK              INT32_MIN
+#define GAL_FITS_LLONG_BLANK             INT64_MIN
+#define GAL_FITS_FLOAT_BLANK             NAN
+#define GAL_FITS_TCOMPLEX_BLANK(cptr)    GSL_SET_COMPLEX((cptr),NAN,NAN)
+#define GAL_FITS_TDBLCOMPLEX_BLANK(cptr) GSL_SET_COMPLEX((cptr),NAN,NAN)
+#define GAL_FITS_INT_BLANK               INT_MIN
+#define GAL_FITS_SBYTE_BLANK             SCHAR_MAX
+#define GAL_FITS_UINT_BLANK              UINT_MAX
+#define GAL_FITS_USHORT_BLANK            USHRT_MAX
+
 
 
 
@@ -160,7 +178,7 @@ gal_fits_copyright_end(fitsfile *fptr,
  ******************        Read/Write        *****************
  *************************************************************/
 void *
-gal_fits_bitpix_blank(int bitpix);
+gal_fits_datatype_blank(int datatype);
 
 void
 gal_fits_convert_blank(void *array, int bitpix, size_t size, void *value);

@@ -179,63 +179,142 @@ gal_fits_bitpix_to_dtype(int bitpix)
 
 
 void *
-gal_fits_bitpix_blank(int bitpix)
+gal_fits_datatype_blank(int datatype)
 {
+  /* Define the pointers, note that we are ordering them based on the
+     CFITSIO manual to be more easily comparable. */
   unsigned char *b;
+  char *c;
+  char **str;
   short *s;
   long *l;
   LONGLONG *L;
   float *f;
   double *d;
+  gsl_complex_float *complex;
+  gsl_complex *dblcomplex;
+  int *i;
+  unsigned int *ui;
+  unsigned short *us;
 
   errno=0;
-  switch(bitpix)
+  switch(datatype)
     {
-    case BYTE_IMG:
-      b=malloc(sizeof(unsigned char));
+    case TBIT:
+      error(EXIT_FAILURE, 0, "Currently GSL doesn't support TBIT datatype, "
+            "please get in touch with us to implement it.");
+
+    case TBYTE:
+      b=malloc(sizeof *b);
       if(b==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(unsigned char));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TBYTE",
+              sizeof *b);
       *b=GAL_FITS_BYTE_BLANK;
       return b;
 
-    case SHORT_IMG:
-      s=malloc(sizeof(short));
+      /* CFITSIO says "int for keywords, char for table columns". Here we
+         are only assuming table columns. So in practice this also applies
+         to TSBYTE.*/
+    case TLOGICAL: case TSBYTE:
+      c=malloc(sizeof *c);
+      if(c==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TLOGICAL, or TSBYTE",
+              sizeof *c);
+      *c=GAL_FITS_LOGICAL_BLANK;
+      return c;
+
+    case TSTRING:
+      str=malloc(sizeof *str);
+      if(str==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TSTRING",
+              sizeof *s);
+      *str=GAL_FITS_STRING_BLANK;
+      return str;
+
+    case TSHORT:
+      s=malloc(sizeof *s);
       if(s==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(short));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TSHORT",
+              sizeof *s);
       *s=GAL_FITS_SHORT_BLANK;
       return s;
 
-    case LONG_IMG:
-      l=malloc(sizeof(long));
+    case TLONG:
+      l=malloc(sizeof *l);
       if(l==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(long));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TLONG",
+              sizeof *l);
       *l=GAL_FITS_LONG_BLANK;
       return l;
 
-    case LONGLONG_IMG:
-      L=malloc(sizeof(LONGLONG));
+    case TLONGLONG:
+      L=malloc(sizeof *L);
       if(L==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(LONGLONG));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TLONGLONG",
+              sizeof *L);
       *L=GAL_FITS_LLONG_BLANK;
       return L;
 
-    case FLOAT_IMG:
-      f=malloc(sizeof(float));
+    case TFLOAT:
+      f=malloc(sizeof *f);
       if(f==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(float));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TFLOAT",
+              sizeof *f);
       *f=GAL_FITS_FLOAT_BLANK;
       return f;
 
-    case DOUBLE_IMG:
-      d=malloc(sizeof(double));
+    case TDOUBLE:
+      d=malloc(sizeof *d);
       if(d==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(double));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TDOUBLE",
+              sizeof *d);
       *d=GAL_FITS_FLOAT_BLANK;
       return d;
 
+    case TCOMPLEX:
+      complex=malloc(sizeof *complex);
+      if(complex==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TCOMPLEX",
+              sizeof *complex);
+      GAL_FITS_TCOMPLEX_BLANK(complex);
+      return complex;
+
+    case TDBLCOMPLEX:
+      dblcomplex=malloc(sizeof *dblcomplex);
+      if(dblcomplex==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TDBLCOMPLEX",
+              sizeof *dblcomplex);
+      GAL_FITS_TCOMPLEX_BLANK(dblcomplex);
+      return dblcomplex;
+
+    case TINT:
+      i=malloc(sizeof *i);
+      if(i==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TINT",
+              sizeof *i);
+      *i=GAL_FITS_INT_BLANK;
+      return i;
+
+    case TUINT:
+      ui=malloc(sizeof *ui);
+      if(ui==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TUINT",
+              sizeof *ui);
+      *ui=GAL_FITS_UINT_BLANK;
+      return ui;
+
+    case TUSHORT:
+      us=malloc(sizeof *us);
+      if(us==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TUSHORT",
+              sizeof *us);
+      *ui=GAL_FITS_USHORT_BLANK;
+      return us;
+
+
     default:
-      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized",
-            bitpix);
+      error(EXIT_FAILURE, 0, "datatype value of %d not recognized",
+            datatype);
     }
 
   return NULL;
@@ -1361,7 +1440,7 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
   *s1=naxes[0];
 
   /* Allocate space for the array. */
-  bitblank=gal_fits_bitpix_blank(*bitpix);
+  bitblank=gal_fits_datatype_blank( gal_fits_bitpix_to_dtype(*bitpix) );
   *array=gal_fits_bitpix_alloc(*s0 * *s1, *bitpix);
 
   /* Read the image into the allocated array: */
@@ -1429,7 +1508,7 @@ gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
     if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
        || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
       {
-        blank=gal_fits_bitpix_blank(bitpix);
+        blank=gal_fits_datatype_blank( gal_fits_bitpix_to_dtype(bitpix) );
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           gal_fits_io_error(status, "adding the BLANK keyword");

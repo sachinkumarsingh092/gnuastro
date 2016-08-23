@@ -648,7 +648,7 @@ preparearrays(struct imgcropparams *p)
         {
           firstbitpix=p->bitpix;
           p->datatype=gal_fits_bitpix_to_dtype(p->bitpix);
-          p->bitnul=gal_fits_bitpix_blank(p->bitpix);
+          p->bitnul=gal_fits_datatype_blank(p->datatype);
         }
       else if(firstbitpix!=p->bitpix)
         error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "
