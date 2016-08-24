@@ -205,6 +205,9 @@ gal_checkset_allocate_copy_set(char *arg, char **copy, int *set);
 void
 gal_checkset_check_file(char *filename);
 
+int
+gal_checkset_check_file_report(char *filename);
+
 void
 gal_checkset_check_remove_file(char *filename, int dontdelete);
 

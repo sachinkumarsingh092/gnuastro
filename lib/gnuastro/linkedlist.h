@@ -170,14 +170,14 @@ void
 gal_linkedlist_pop_from_sll(struct gal_linkedlist_sll **list, size_t *value);
 
 size_t
-gal_linkedlist_num_in_xsll(struct gal_linkedlist_sll *list);
+gal_linkedlist_num_in_sll(struct gal_linkedlist_sll *list);
 
 void
 gal_linkedlist_print_sll(struct gal_linkedlist_sll *list);
 
 void
 gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
-                            size_t **f, size_t *num);
+                            size_t **f, size_t *num, int inverse);
 
 void
 gal_linkedlist_free_sll(struct gal_linkedlist_sll *list);

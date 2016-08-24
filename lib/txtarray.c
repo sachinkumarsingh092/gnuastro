@@ -292,8 +292,8 @@ gal_txtarray_txt_to_array(char *filename, double **array,
    by writeasciitable and makes an array of formatting conditions that
    is suitable for printing.  */
 void
-doformatting(int numcols, char **fmt, int *int_cols, int *accu_cols,
-             int *space, int *prec, char forg)
+gal_txtarray_printf_format(int numcols, char **fmt, int *int_cols,
+                           int *accu_cols, int *space, int *prec, char forg)
 {
   int i,j, found=0;
 
@@ -403,7 +403,8 @@ gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1,
           "column with %lu elements", s1);
 
   /* Prepare the formatting for each column */
-  doformatting(s1, fmt, int_cols, accu_cols, space, prec, forg);
+  gal_txtarray_printf_format(s1, fmt, int_cols, accu_cols,
+                             space, prec, forg);
 
   /* Open the output file: */
   errno=0;

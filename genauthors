@@ -153,6 +153,8 @@ for util in src/* "lib/" "doc/"; do
     elif [ $util = src/mkprof      ]; then name=MakeProfile
     elif [ $util = src/noisechisel ]; then name=NoiseChisel
     elif [ $util = src/subtractsky ]; then name=SubtractSky
+    elif [ $util = src/table       ]; then name=Table
+    elif [ $util = src/TEMPLATE    ]; then name=TEMPLATE
     elif [ $util = lib/            ]; then name=Libraries
     elif [ $util = doc/            ]; then name=Documentation
     else echo; echo; echo "genauthors.sh: $util not recognized!"; exit 1;

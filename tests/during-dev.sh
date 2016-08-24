@@ -102,8 +102,9 @@ if [ x"$builddir" = x ]; then echo "builddir is not set."; exit 1; fi
 # absolute. This is done because we will be going into the output directory
 # for executing the utility and we need to know the absolute address of the
 # top build directory.
+srcdir=$(pwd)
 if [ ! "${builddir:0:1}" = "/" ]; then
-   builddir=$(pwd)"/$builddir"
+   builddir="$srcdir/$builddir"
 fi
 
 
@@ -120,11 +121,28 @@ if [ -f "$utility" ]; then rm "$utility"; fi
 # edit/rebuild the libraries too). If Make is successful, then change to
 # the output directory and run the utility with the given arguments and
 # options.
-curdir=$(pwd)
+#
+# Before actually running put a copy of the configuration file in the
+# output directory and also add the onlydirconf option so user or system
+# wide configuration files don't interfere.
 if make -C "$builddir"; then
 
     # Change to the output directory.
     cd "$outdir"
+
+    # Make the .gnuastro directory if it doesn't exist.
+    if [ ! -d .gnuastro ]; then
+       mkdir .gnuastro
+    fi
+
+    # Put a copy of this utility's configuration file there and add the
+    # onlydirconf option. We are first printing an empty line just in case
+    # the last line in the configuration file doesn't actualy end with a
+    # new line (in which case the appended string will be added to the end
+    # of the last line).
+    cp "$srcdir/src/$utilname/ast$utilname.conf" .gnuastro/
+    echo ""               >> .gnuastro/ast$utilname.conf
+    echo " onlydirconf 1" >> .gnuastro/ast$utilname.conf
 
     # Run the built utility with the given arguments and options.
     "$utility" $arguments $options

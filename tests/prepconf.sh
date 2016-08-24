@@ -76,7 +76,7 @@ EOF
 # by `make check'.
 for prog in arithmetic convertt convolve cosmiccal header imgcrop \
             imgstat imgwarp mkcatalog mknoise mkprof noisechisel  \
-            subtractsky
+            subtractsky table
 do
 
     # Copy the configuration file from the utility source and add the

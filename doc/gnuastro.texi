@@ -51,6 +51,9 @@ Texts.  A copy of the license is included in the section entitled
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
 
+* Table: (gnuastro)Table. Read and write FITS binary or ASCII tables.
+* asttable: (gnuastro)Invoking asttable. Options to Table.
+
 * Convolve: (gnuastro)Convolve. Convolve an input file with kernel.
 * astconvolve: (gnuastro)Invoking astconvolve. Options to Convolve.
 
@@ -186,7 +189,7 @@ sub-component to a title is present.
 * Tutorials::                   Tutorials or Cookbooks.
 * Installation::                Requirements and installation.
 * Common behavior::             Common behavior in all programs.
-* Files::                       File information and type conversion.
+* Extensions and Tables::       Tools to operate on extensions and tables.
 * Image manipulation::          Tools for basic image manipulation.
 * Image analysis::              Analyze images.
 * Modeling and fittings::       Make and fit models.
@@ -311,10 +314,11 @@ Getting help
 * Info::                        View complete book in terminal.
 * help-gnuastro mailing list::  Contacting experienced users.
 
-Files
+Extensions and Tables
 
 * Header::                      Print and manipulate data file header.
 * ConvertType::                 Convert data to various formats.
+* Table::                       Read and Write FITS tables to plain text.
 
 Header
 
@@ -325,6 +329,10 @@ ConvertType
 * Recognized file types::       Recognized file types
 * Color::                       Some explanations on color.
 * Invoking astconvertt::        Options and arguments to ConvertType.
+
+Table
+
+* Invoking asttable::           Options and arguments to Table.
 
 Image manipulation
 
@@ -3766,7 +3774,7 @@ If your problem was not listed above, please file a bug report
 
 
 
-@node Common behavior, Files, Installation, Top
+@node Common behavior, Extensions and Tables, Installation, Top
 @chapter Common behavior
 
 There are some facts that are common to all the programs in Gnuastro
@@ -5175,30 +5183,42 @@ END
 
 
 
-@node Files, Image manipulation, Common behavior, Top
-@chapter Files
+@node Extensions and Tables, Image manipulation, Common behavior, Top
+@chapter Extensions and Tables
 
 @cindex File operations
 @cindex Operations on files
 @cindex General file operations
-This chapter documents the programs in Gnuastro that are provided for
-getting information on the contents of a data file or converting a
-file format. Before working on a FITS file, it is commonly the case
-that you are not sure how many extensions it has within it and also
-what each extension is (image, table or blank). In other cases you
-want to use the data in a FITS file in other programs (for example in
-reports) that don't recognize the FITS format.
+This chapter documents those Gnuastro utilities that don't directly operate
+on the contents of the data file, they just print information, or convert
+from different data types. Before working on a FITS file, it is commonly
+the case that you are not sure how many extensions it has within it and
+also what each extension is (image, table or blank). In such cases, Header
+(see @ref{Header}) can be handy by printing the full header of a FITS file
+to the terminal for easy inspection.
+
+In other cases you want to use the data in a FITS file in other programs
+(for example in reports) that don't recognize the FITS format, for example
+converting a FITS image into a Jpeg, or PDF format image. ConvertType (see
+@ref{ConvertType}) was built for such situations. Finally, the FITS format
+is not just for images, it can also store tables. Binary tables in
+particular can be very useful in storing very large catalogs or tables
+compared to a plain text file. Table (see @ref{Table}) can be used to
+choose certain table columns in a FITS table and see them as a human
+readable output on the terminal, or to save them in another plain text or
+FITS table.
 
 @menu
 * Header::                      Print and manipulate data file header.
 * ConvertType::                 Convert data to various formats.
+* Table::                       Read and Write FITS tables to plain text.
 @end menu
 
 
 
 
 
-@node Header, ConvertType, Files, Files
+@node Header, ConvertType, Extensions and Tables, Extensions and Tables
 @section Header
 
 The FITS standard requires each extension of a FITS file to have a
@@ -5432,7 +5452,7 @@ continue with the rest of actions.
 
 
 
-@node ConvertType,  , Header, Files
+@node ConvertType, Table, Header, Extensions and Tables
 @section ConvertType
 
 @cindex Data format conversion
@@ -5922,6 +5942,212 @@ is best to call this option so the image is not inverted.
 
 @end table
 
+@node Table,  , ConvertType, Extensions and Tables
+@section Table
+
+The FITS standard is not just for storing astronomical images, from its
+early days, it also included tables. Tables are the products of processing
+astronomical images and spectra. For example in Gnuastro, MakeCatalog will
+process the defined pixels over an object and produce a catalog (see
+@ref{MakeCatalog}). For each identified object, MakeCatalog can print its
+position on the image or sky, its total brightness and many other
+information that is deducible from the given image. Each one of these
+properties is a column in its output catalog (or table) and for each input
+object, we have a row.
+
+When there are only a small number of objects (rows) and not too many
+properties (columns), then a simple plain text file is mainly enough to
+store, transfer, or even use the produced data. However, to be more
+efficient in all these aspects, astronomers have defined the FITS binary
+table standard to store data in a binary (0 and 1) format, not plain
+text. This can offer major advantages in all those aspects: the file size
+will be greatly reduced and the reading and writing will be faster (because
+the RAM and CPU also work in binary).
+
+The FITS standard also defines a standard for ASCII tables, where the data
+are stored in the human readable ASCII format, but within the FITS file
+structure. These are mainly useful for keeping ASCII data along with images
+and possibly binary data as multiple (conceptually related) extensions
+within a FITS file.
+
+@cindex AWK
+@cindex GNU AWK
+However, this comes at a cost: binary tables are not easily readable by
+human eyes. There is no standard on how the zero and ones should be
+interpretted. The Unix-like operating systems have flurished because of a
+simple fact: communication between the various tools is based on human
+readible characters@footnote{In ``The art of Unix programming'', Eric
+Raymond makes this suggestion to programmers: ``When you feel the urge to
+design a complex binary file format, or a complex binary application
+protocol, it is generally wise to lie down until the feeling
+passes.''. This is a great book and strongly recommended, give it a look if
+you want to truely enjoy your work/life in this environment.}. So while the
+FITS table standards are very beneficial for the tools that recognize them,
+they are hard to use in the vast majority of available software. This cases
+some major limitations for their generic use.
+
+`Table' is Gnuastro's solution to this problem. With Table, FITS tables
+(ASCII or binary) are directly accessible to the Unix-like operating
+systems power-users (those working the command-line or shell, see
+@ref{Command-line interface}). With Table, a FITS table (in binary or ASCII
+formats) is only one command away from AWK (or any other tool you want to
+use). Just like a plain text file that you read with the @command{cat}
+command. You can pipe the output of Table into any other tool for
+higher-level processing, see the examples in @ref{Invoking asttable} for
+some very simple examples.
+
+@menu
+* Invoking asttable::           Options and arguments to Table.
+@end menu
+
+@node Invoking asttable,  , Table, Table
+@subsection Invoking Table
+
+Table will convert FITS binary and ASCII tables into other such tables, or
+print them on the command-line, or save them in a plain text file. Output
+columns can also be determined by number or regular expression matching of
+column names. The executable name is @file{asttable} with the following
+general template
+
+@example
+$ asttable [OPTION...] InputFile
+@end example
+
+@noindent
+One line examples:
+
+@example
+## Get the table column information (name, data type, or units)
+$ asttable bintab.fits --information
+
+## Only print those columns which have a name starting with "MAG_"
+$ asttable bintab.fits --columns=^MAG_
+
+## Only print the 2nd column, and the third column multiplied by 5
+$ asttable bintab.fits | awk '@{print $2, 5*$3@}'
+
+## Only print those rows with a value in the 10th column above 100000
+$ asttable bintab.fits | awk '$10>10e5 @{print@}'
+
+## Sort the output columns by the third column, save output
+$ asttable bintab.fits | sort -k3 > output.txt
+
+## Convert a plain text table to a binary FITS table
+$ asttable plaintext.txt --output=inbinary.fits
+@end example
+
+Table can accept plain text files, or binary and ASCII FITS table
+extensions in a FITS file. For the full list of options common to all
+Gnuastro utilities please see @ref{Common options}. Options can also be
+stored in directory, user or system-wide configuration files to avoid
+repeating on the command-line, see @ref{Configuration files}. Currently all
+plain text files are processed (and thus printed, or saved to a binary FITS
+table) as double floating point types. We are still working on this many
+many more features.
+
+Table does not follow Automatic output that is common in most Gnuastro, see
+@ref{Automatic output}. If no value is given to the @option{--output}
+option, the desired columns will be printed to the standard output (on the
+command-line). This feature makes it very useful to directly pipe the
+output as input to other programs as the examples above demonstrate. Note
+that the options below which relate to print formatting are only relevant
+when the output is in human readable format (on the command-line and plain
+text files), they are ignored when the output is a binary FITS table.
+
+@table @option
+
+@item -i
+@itemx --information
+Print the information for each column and abort. The information for each
+column will be printed as a row on the command-line. The column name (if
+present), units (if present) and datatype will printed. Note that the FITS
+standard does not require a name or units for columns, only the datatype is
+mandatory.
+
+@item -c
+@itemx --column
+(@option{=STR} or @option{=INT}) Specify the columns to output for this
+table. If an integer number is given, the column number will be used
+(counting from 1). Otherwise the value (a string) will be passed to an
+internal regular expression processor which will try to match all the
+columns in the table with the given regular expression. Currently only FITS
+tables might have column names (it is an optional feature in the FITS
+standard). There is currently no particular standard to name plain text
+columns.
+
+This option can be called any number of times with one run of Table. The
+order of the output columns will be determined by the input order. This
+option is also not mandatory. If not given, all the input table columns are
+output.
+
+Regular expressions are a very powerful tool in matching text and since
+FITS binary tables usually have a large number of columns, this feature can
+greatly simply the selection of the output columns.
+
+@item -I
+@itemx --ignorescase
+Ignore case while matching the column names with the value(s) of the
+@option{--column} option. The FITS standard suggests to treat the column
+names as case insensitive, however it is not a requirement.
+
+@item --feg
+(@option{=STR}) Format of printing floating point numbers in non-binary
+outputs. It can only accept one of the three following values (same as C's
+@code{printf}):
+@itemize
+@item
+@key{f}: Print complete floating point value, this is good when the numbers
+aren't too small, for example @mymath{3.286}. But it will print all the
+zeros in @mymath{3.2\times10^{-15}}.
+
+@item
+@key{e}: Only print in exponential format. This is good for very large or
+very small numbers, but can make reading the values of more ordinary
+numbers a little hard.
+
+@item
+@key{g}: Let the system choose which representation is better for the
+number.
+@end itemize
+
+@item --sintwidth
+(@option{=INT}) The minimum width (number of characters) for printing
+columns of shorter integer datatypes. The shorter datatypes are considered
+to be signed and unsigned characters, short integers, integers.
+
+@item --lintwidth
+(@option{=INT}) The minimum width (number of characters) for printing
+columns of longer datatypes. The longer datatypes are considered to be long
+and longlong types.
+
+@item --floatwidth
+(@option{=INT}) The minimum width (number of characters) for printing
+columns of single precision floating point datatypes.
+
+@item --doublewidth
+(@option{=INT}) The minimum width (number of characters) for printing
+columns of double precision floating point datatypes.
+
+@item --strwidth
+(@option{=INT}) The minimum width (number of characters) for printing
+columns of strings (given as one column, the FITS standard allows ASCII
+strings as table elements).
+
+@item --floatprecision
+(@option{=INT}) The number of digits to print after the floating point for
+single precision floating point numbers.
+
+@item --doubleprecision
+(@option{=INT}) The number of digits to print after the floating point for
+double precision floating point numbers.
+
+@item --fitstabletype
+(@option{=STR}) The type of FITS table when a FITS file is specified as the
+output. This option can only have two values: @option{binary}, or
+@option{ascii}. However, currently ASCII FITS table outputs are not yet
+implemented due to lack of need. If you need it, please get in touch with
+so we implement it.
+@end table
 
 
 
@@ -5939,17 +6165,14 @@ is best to call this option so the image is not inverted.
 
 
 
-
-
-
-@node Image manipulation, Image analysis, Files, Top
+@node Image manipulation, Image analysis, Extensions and Tables, Top
 @chapter Image manipulation
 
-Images are one of the major formats of data that is used in
-astronomy. The functions in this chapter explain the GNU Astronomy
-Utilities which are provided for their manipulation. For example
-cropping out a part of a larger image or convolving the image with a
-given kernel or applying a transformation to it.
+Images are one of the major formats of data that is used in astronomy. The
+functions in this chapter explain the GNU Astronomy Utilities which are
+provided for their manipulation. For example cropping out a part of a
+larger image or convolving the image with a given kernel or applying a
+transformation to it.
 
 @menu
 * ImageCrop::                   Crop region(s) from FITS image(s).

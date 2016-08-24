@@ -29,7 +29,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include <gnuastro/fits.h>
 #include <gnuastro/checkset.h>
@@ -167,6 +166,12 @@ gal_fits_bitpix_to_dtype(int bitpix)
       return TFLOAT;
     case DOUBLE_IMG:
       return TDOUBLE;
+    case SBYTE_IMG:
+      return TSBYTE;
+    case USHORT_IMG:
+      return TUSHORT;
+    case ULONG_IMG:
+      return TULONG;
     default:
       error(EXIT_FAILURE, 0, "bitpix value of %d not recognized",
             bitpix);
@@ -178,64 +183,204 @@ gal_fits_bitpix_to_dtype(int bitpix)
 
 
 
-void *
-gal_fits_bitpix_blank(int bitpix)
+/* The values to the TFORM header keyword are single letter capital
+   letters, but that is useless in identifying the data type of the
+   column. So this function will do the conversion based on the CFITSIO
+   manual.*/
+int
+gal_fits_tform_to_dtype(char tform)
 {
+  switch(tform)
+    {
+    case 'X':
+      return TBIT;
+    case 'B':
+      return TBYTE;
+    case 'L':
+      return TLOGICAL;
+    case 'A':
+      return TSTRING;
+    case 'I':
+      return TSHORT;
+    case 'J':
+      return TLONG;
+    case 'K':
+      return TLONGLONG;
+    case 'E':
+      return TFLOAT;
+    case 'D':
+      return TDOUBLE;
+    case 'C':
+      return TCOMPLEX;
+    case 'M':
+      return TDBLCOMPLEX;
+    case 'S':
+      return TSBYTE;
+    case 'V':
+      return TUINT;
+    case 'U':
+      return TUSHORT;
+    default:
+      error(EXIT_FAILURE, 0, "'%c' is not a recognized CFITSIO value for "
+            "the TFORMn header keyword(s).", tform);
+    }
+
+  error(EXIT_FAILURE, 0, "A bug! Please contact us so we can fix this. "
+        "For some reason, control has reached to the end of the "
+        "gal_fits_tform_to_dtype function in fits.c.");
+  return -1;
+}
+
+
+
+
+
+void *
+gal_fits_datatype_blank(int datatype)
+{
+  /* Define the pointers, note that we are ordering them based on the
+     CFITSIO manual to be more easily comparable. */
   unsigned char *b;
+  char *c;
+  char **str;
   short *s;
   long *l;
   LONGLONG *L;
   float *f;
   double *d;
+  gsl_complex_float *cx;
+  gsl_complex *dcx;
+  int *i;
+  unsigned int *ui;
+  unsigned short *us;
+  unsigned long *ul;
 
   errno=0;
-  switch(bitpix)
+  switch(datatype)
     {
-    case BYTE_IMG:
-      b=malloc(sizeof(unsigned char));
+    case TBIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
+            "datatype, please get in touch with us to implement it.");
+
+    case TBYTE:
+      b=malloc(sizeof *b);
       if(b==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(unsigned char));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TBYTE",
+              sizeof *b);
       *b=GAL_FITS_BYTE_BLANK;
       return b;
 
-    case SHORT_IMG:
-      s=malloc(sizeof(short));
+      /* CFITSIO says "int for keywords, char for table columns". Here we
+         are only assuming table columns. So in practice this also applies
+         to TSBYTE.*/
+    case TLOGICAL: case TSBYTE:
+      c=malloc(sizeof *c);
+      if(c==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TLOGICAL, or TSBYTE",
+              sizeof *c);
+      *c=GAL_FITS_LOGICAL_BLANK;
+      return c;
+
+    case TSTRING:
+      str=malloc(sizeof *str);
+      if(str==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TSTRING",
+              sizeof *s);
+      *str=GAL_FITS_STRING_BLANK;
+      return str;
+
+    case TSHORT:
+      s=malloc(sizeof *s);
       if(s==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(short));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TSHORT",
+              sizeof *s);
       *s=GAL_FITS_SHORT_BLANK;
       return s;
 
-    case LONG_IMG:
-      l=malloc(sizeof(long));
+    case TLONG:
+      l=malloc(sizeof *l);
       if(l==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(long));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TLONG",
+              sizeof *l);
       *l=GAL_FITS_LONG_BLANK;
       return l;
 
-    case LONGLONG_IMG:
-      L=malloc(sizeof(LONGLONG));
+    case TLONGLONG:
+      L=malloc(sizeof *L);
       if(L==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(LONGLONG));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TLONGLONG",
+              sizeof *L);
       *L=GAL_FITS_LLONG_BLANK;
       return L;
 
-    case FLOAT_IMG:
-      f=malloc(sizeof(float));
+    case TFLOAT:
+      f=malloc(sizeof *f);
       if(f==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(float));
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TFLOAT",
+              sizeof *f);
       *f=GAL_FITS_FLOAT_BLANK;
       return f;
 
-    case DOUBLE_IMG:
-      d=malloc(sizeof(double));
+    case TDOUBLE:
+      d=malloc(sizeof *d);
       if(d==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", sizeof(double));
-      *d=GAL_FITS_FLOAT_BLANK;
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TDOUBLE",
+              sizeof *d);
+      *d=GAL_FITS_DOUBLE_BLANK;
       return d;
 
+    case TCOMPLEX:
+      cx=malloc(sizeof *cx);
+      if(cx==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TCOMPLEX",
+              sizeof *cx);
+      GSL_SET_COMPLEX(cx,GAL_FITS_FLOAT_BLANK,GAL_FITS_FLOAT_BLANK);
+      return cx;
+
+    case TDBLCOMPLEX:
+      dcx=malloc(sizeof *dcx);
+      if(dcx==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TDBLCOMPLEX",
+              sizeof *dcx);
+      GSL_SET_COMPLEX(dcx,GAL_FITS_DOUBLE_BLANK,GAL_FITS_DOUBLE_BLANK);
+      return dcx;
+
+    case TINT:
+      i=malloc(sizeof *i);
+      if(i==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TINT",
+              sizeof *i);
+      *i=GAL_FITS_INT_BLANK;
+      return i;
+
+    case TUINT:
+      ui=malloc(sizeof *ui);
+      if(ui==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TUINT",
+              sizeof *ui);
+      *ui=GAL_FITS_UINT_BLANK;
+      return ui;
+
+    case TUSHORT:
+      us=malloc(sizeof *us);
+      if(us==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TUSHORT",
+              sizeof *us);
+      *ui=GAL_FITS_USHORT_BLANK;
+      return us;
+
+    case TULONG:
+      ul=malloc(sizeof *ul);
+      if(ul==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for blank TULONG",
+              sizeof *ul);
+      *ul=GAL_FITS_ULONG_BLANK;
+      return ul;
+
+
     default:
-      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized",
-            bitpix);
+      error(EXIT_FAILURE, 0, "datatype value of %d not recognized",
+            datatype);
     }
 
   return NULL;
@@ -245,55 +390,108 @@ gal_fits_bitpix_blank(int bitpix)
 
 
 
-/* Allocate an array based on the value of bitpix. */
+/* Allocate an array based on the value of bitpix. Note that the argument
+   `size' is the number of elements, necessary in the array, the number of
+   bytes each element needs will be determined internaly by this function
+   using the datatype argument, so you don't have to worry about it. */
 void *
-gal_fits_bitpix_alloc(size_t size, int bitpix)
+gal_fits_datatype_alloc(size_t size, int datatype)
 {
   void *array;
 
   /* Allocate space for the array to keep the image. */
-  switch(bitpix)
+  switch(datatype)
     {
-    case BYTE_IMG:
-      size*=sizeof(unsigned char);
+    case TBIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
+            "datatype, please get in touch with us to implement it.");
+
+      /* The parenthesis after sizeof is not a function, it is actually a
+         type cast, so we have put a space between size of and the
+         parenthesis to highlight this. In C, `sizeof' is an operator, not
+         a function.*/
+    case TBYTE:
+      size *= sizeof (unsigned char);
       break;
 
-    case SHORT_IMG:
-      size*=sizeof(short);
+    case TLOGICAL: case TSBYTE:
+      size *= sizeof (char);
       break;
 
-    case LONG_IMG:
-      size*=sizeof(long);
+    case TSTRING:
+      size *= sizeof (char *);
       break;
 
-    case LONGLONG_IMG:
-      size*=sizeof(LONGLONG);
+    case TSHORT:
+      size *= sizeof (short);
       break;
 
-    case FLOAT_IMG:
-      if(sizeof(float)!=4)
+    case TLONG:
+      size *= sizeof (long);
+      break;
+
+    case TLONGLONG:
+      size *= sizeof (LONGLONG);
+      break;
+
+    case TFLOAT:
+      if( sizeof (float) != 4 )
         error(EXIT_FAILURE, 0,
               "`float` is not 32bits on this machine. The FITS standard "
               "Requires this size");
-      size*=sizeof(float);
+      size *= sizeof (float);
       break;
 
-    case DOUBLE_IMG:
-      if(sizeof(double)!=8)
+    case TDOUBLE:
+      if( sizeof (double) != 8 )
         error(EXIT_FAILURE, 0,
               "`double` is not 64bits on this machine. The FITS standard "
               "requires this size");
-      size*=sizeof(double);
+      size *= sizeof (double);
+      break;
+
+    case TCOMPLEX:
+      if( sizeof (float) != 4 )
+        error(EXIT_FAILURE, 0,
+              "`float` is not 32bits on this machine. The FITS standard "
+              "Requires this size");
+      size *= sizeof (gsl_complex_float);
+      break;
+
+    case TDBLCOMPLEX:
+      if( sizeof (double) != 8 )
+        error(EXIT_FAILURE, 0,
+              "`double` is not 64bits on this machine. The FITS standard "
+              "requires this size");
+      size *= sizeof (gsl_complex);
+      break;
+
+    case TINT:
+      size *= sizeof (int);
+      break;
+
+    case TUINT:
+      size *= sizeof (unsigned int);
+      break;
+
+    case TUSHORT:
+      size *= sizeof (unsigned short);
+      break;
+
+    case TULONG:
+      size *= sizeof (unsigned long);
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized", bitpix);
+      error(EXIT_FAILURE, 0, "datatype value of %d not recognized in "
+            "gal_fits_datatype_alloc", datatype);
     }
 
   errno=0;
   array=malloc(size);
   if(array==NULL)
-    error(EXIT_FAILURE, errno, "array of %lu bytes", size);
+    error(EXIT_FAILURE, errno,
+          "array of %lu bytes in gal_fits_datatype_alloc", size);
 
   return array;
 }
@@ -303,54 +501,155 @@ gal_fits_bitpix_alloc(size_t size, int bitpix)
 
 
 void
-blanktovalue(void *array, int bitpix, size_t size, void *value)
+gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
 {
-  /* 'value' will only be read from one of these based on bitpix. Which the
-     caller assigned. If there is any problem, it is their responsability,
-     not this functions :-).*/
-  unsigned char *b, *bf, bv=*(uint8_t *) value;
-  short *s, *sf, sv=*(int16_t *) value;
-  long *l, *lf, lv=*(int32_t *) value;
-  LONGLONG *L, *Lf, Lv=*(int64_t *) value;
-  float   *f, *ff, fv=*(float   *) value;
-  double  *d, *df, dv=*(double  *) value;
+  /* 'value' will only be read from one of these based on the
+     datatype. Which the caller assigned. If there is any problem, it is
+     their responsability, not this function's.*/
+  unsigned char *b, *bf,        bv = *(uint8_t *) value;
+  char *c, *cf,                 cv = *(char *) value;
+  char **str, **strf,        *strv = *(char **) value;
+  short *s, *sf,                sv = *(int16_t *) value;
+  long *l, *lf,                 lv = *(int32_t *) value;
+  LONGLONG *L, *Lf,             Lv = *(int64_t *) value;
+  float   *f, *ff,              fv = *(float *) value;
+  double  *d, *df,              dv = *(double *) value;
+  gsl_complex_float *cx, *cxf, cxv = *(gsl_complex_float *) value;
+  gsl_complex *dcx, *dcxf,    dcxv = *(gsl_complex *) value;
+  int *in, *inf,               inv = *(int *) value;
+  unsigned int *ui, *uif,      uiv = *(unsigned int *) value;
+  unsigned short *us, *usf,    usv = *(unsigned short *) value;
+  unsigned long *ul, *ulf,     ulv = *(unsigned long *) value;
 
-  switch(bitpix)
+  switch(datatype)
     {
-    case BYTE_IMG:
+    case TBIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
+            "datatype, please get in touch with us to implement it.");
+
+    case TBYTE:
       bf=(b=array)+size;
-      do if(*b==GAL_FITS_BYTE_BLANK) *b=bv; while(++b<bf);
+      do if(*b==GAL_FITS_BYTE_BLANK) *b++=bv; while(b<bf);
       break;
 
-    case SHORT_IMG:
+
+    case TLOGICAL: case TSBYTE:
+      cf=(c=array)+size;
+      do if(*c==GAL_FITS_LOGICAL_BLANK) *c++=cv; while(c<cf);
+      break;
+
+
+    case TSTRING:
+      strf=(str=array)+size;
+      do if(*str==GAL_FITS_STRING_BLANK) *str++=strv; while(str<strf);
+      break;
+
+
+    case TSHORT:
       sf=(s=array)+size;
-      do if(*s==GAL_FITS_SHORT_BLANK) *s=sv; while(++s<sf);
+      do if(*s==GAL_FITS_SHORT_BLANK) *s++=sv; while(s<sf);
       break;
 
-    case LONG_IMG:
+
+    case TLONG:
       lf=(l=array)+size;
-      do if(*l==GAL_FITS_LONG_BLANK) *l=lv; while(++l<lf);
+      do if(*l==GAL_FITS_LONG_BLANK) *l++=lv; while(l<lf);
       break;
 
-    case LONGLONG_IMG:
+
+    case TLONGLONG:
       Lf=(L=array)+size;
-      do if(*L==GAL_FITS_LLONG_BLANK) *L=Lv; while(++L<Lf);
+      do if(*L==GAL_FITS_LLONG_BLANK) *L++=Lv; while(L<Lf);
       break;
 
-    case FLOAT_IMG:
+
+      /* Note that a NaN value is not equal to another NaN value, so we
+         can't use the easy check for cases were the blank value is
+         NaN. Also note that `isnan' is actually a macro, so it works for
+         both float and double types.*/
+    case TFLOAT:
       ff=(f=array)+size;
-      do if(*f==GAL_FITS_FLOAT_BLANK) *f=fv; while(++f<ff);
+      if(isnan(GAL_FITS_FLOAT_BLANK))
+        do if(isnan(*f)) *f++=fv; while(f<ff);
+      else
+        do if(*f==GAL_FITS_FLOAT_BLANK) *f++=fv; while(f<ff);
       break;
 
-    case DOUBLE_IMG:
+
+    case TDOUBLE:
       df=(d=array)+size;
-      do if(*d==GAL_FITS_FLOAT_BLANK) *d=dv; while(++d<df);
+      if(isnan(GAL_FITS_DOUBLE_BLANK))
+        do if(isnan(*d)) *d++=dv; while(d<df);
+      else
+        do if(*d==GAL_FITS_FLOAT_BLANK) *d++=dv; while(d<df);
+      break;
+
+
+    case TCOMPLEX:
+      cxf=(cx=array)+size;
+      if(isnan(GAL_FITS_FLOAT_BLANK))
+          do
+            if(isnan(GSL_COMPLEX_P_REAL(cx))
+               && isnan(GSL_COMPLEX_P_IMAG(cx)) )
+              GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
+                              GSL_COMPLEX_P_IMAG(&cxv));
+          while(++cx<cxf);
+      else
+        do
+          if( GSL_COMPLEX_P_REAL(cx) == GAL_FITS_FLOAT_BLANK
+              && GSL_COMPLEX_P_IMAG(cx) == GAL_FITS_FLOAT_BLANK)
+            GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
+                            GSL_COMPLEX_P_IMAG(&cxv));
+        while(++cx<cxf);
+      break;
+
+
+    case TDBLCOMPLEX:
+      dcxf=(dcx=array)+size;
+      if(isnan(GAL_FITS_DOUBLE_BLANK))
+          do
+            if(isnan(GSL_COMPLEX_P_REAL(dcx))
+               && isnan(GSL_COMPLEX_P_IMAG(dcx)) )
+              GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
+                              GSL_COMPLEX_P_IMAG(&dcxv));
+          while(++dcx<dcxf);
+      else
+        do
+          if( GSL_COMPLEX_P_REAL(dcx) == GAL_FITS_FLOAT_BLANK
+              && GSL_COMPLEX_P_IMAG(dcx) == GAL_FITS_FLOAT_BLANK)
+            GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
+                            GSL_COMPLEX_P_IMAG(&dcxv));
+        while(++dcx<dcxf);
+      break;
+
+
+    case TINT:
+      inf=(in=array)+size;
+      do if(*in==GAL_FITS_INT_BLANK) *in++=inv; while(in<inf);
+      break;
+
+
+    case TUINT:
+      uif=(ui=array)+size;
+      do if(*ui==GAL_FITS_UINT_BLANK) *ui++=uiv; while(ui<uif);
+      break;
+
+
+    case TUSHORT:
+      usf=(us=array)+size;
+      do if(*us==GAL_FITS_USHORT_BLANK) *us++=usv; while(us<usf);
+      break;
+
+
+    case TULONG:
+      ulf=(ul=array)+size;
+      do if(*ul==GAL_FITS_ULONG_BLANK) *ul++=ulv; while(ul<ulf);
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "a bug! Bitpix value of %d not recognized. "
+      error(EXIT_FAILURE, 0, "a bug! datatype value of %d not recognized. "
             "This should not happen here (blanktovalue in fitsarrayvv.c). "
-            "Please contact us at %s to see how this happened", bitpix,
+            "Please contact us at %s to see how this happened", datatype,
             PACKAGE_BUGREPORT);
     }
 }
@@ -364,15 +663,15 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
                      void **out, int outbitpix)
 {
   size_t i=0;
-  unsigned char *b, *bf, *ib=in, *iib=in;
-  short *s, *sf, *is=in, *iis=in;
-  long *l, *lf, *il=in, *iil=in;
-  LONGLONG *L, *Lf, *iL=in, *iiL=in;
-  float *f, *ff, *iif=in, *iiif=in;
-  double *d, *df, *id=in, *iid=in;
+  unsigned char *b, *bf,  *ib=in,  *iib=in;
+  short         *s, *sf,  *is=in,  *iis=in;
+  long          *l, *lf,  *il=in,  *iil=in;
+  LONGLONG      *L, *Lf,  *iL=in,  *iiL=in;
+  float         *f, *ff, *iif=in, *iiif=in;
+  double        *d, *df,  *id=in,  *iid=in;
 
   /* Allocate space for the output and start filling it. */
-  *out=gal_fits_bitpix_alloc(size, outbitpix);
+  *out=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_dtype(outbitpix) );
   switch(outbitpix)
     {
     case BYTE_IMG:
@@ -733,7 +1032,7 @@ hdutypestring(int hdutype)
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
 void
-gal_fits_read_hdu(char *filename, char *hdu, int desiredtype,
+gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
                   fitsfile **outfptr)
 {
   size_t len;
@@ -758,11 +1057,24 @@ gal_fits_read_hdu(char *filename, char *hdu, int desiredtype,
   if (fits_get_hdu_type(fptr, &hdutype, &status) )
     gal_fits_io_error(status, NULL);
 
-  if(hdutype!=desiredtype)
-    error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not %s",
-          filename, hdu, hdutypestring(hdutype),
-          hdutypestring(desiredtype));
 
+  /* Check if the type of the HDU is the expected type. We could have
+     written these as && conditions, but this is easier to read, it makes
+     no meaningful difference to the compiler. */
+  if(img0_tab1)
+    {
+      if(hdutype==IMAGE_HDU)
+        error(EXIT_FAILURE, 0, "%s: HDU %s is an image, not a table",
+              filename, hdu);
+    }
+  else
+    {
+      if(hdutype!=IMAGE_HDU)
+        error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not an image",
+              filename, hdu, hdutypestring(hdutype));
+    }
+
+  /* Clean up. */
   free(ffname);
 }
 
@@ -1309,7 +1621,7 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
   fitsfile *fptr;
 
   /* Check HDU for realistic conditions: */
-  gal_fits_read_hdu(filename, hdu, IMAGE_HDU, &fptr);
+  gal_fits_read_hdu(filename, hdu, 0, &fptr);
 
   /* Read the WCS information: */
   gal_fits_read_wcs_from_pointer(fptr, nwcs, wcs, hstartwcs, hendwcs);
@@ -1332,15 +1644,15 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
    the macros in fitsarrayvv.h and depends on the type of the data.*/
 int
 gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
-                                void **array, size_t *s0, size_t *s1)
+                      void **array, size_t *s0, size_t *s1)
 {
   void *bitblank;
   fitsfile *fptr;
-  int status=0, anyblank=0;
   long naxes[2], fpixel[]={1,1};
+  int status=0, anyblank=0, datatype;
 
   /* Check HDU for realistic conditions: */
-  gal_fits_read_hdu(filename, hdu, IMAGE_HDU, &fptr);
+  gal_fits_read_hdu(filename, hdu, 0, &fptr);
 
   /* Get the bitpix and size of the image: */
   gal_fits_img_bitpix_size(fptr, bitpix, naxes);
@@ -1348,8 +1660,9 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
   *s1=naxes[0];
 
   /* Allocate space for the array. */
-  bitblank=gal_fits_bitpix_blank(*bitpix);
-  *array=gal_fits_bitpix_alloc(*s0 * *s1, *bitpix);
+  datatype=gal_fits_bitpix_to_dtype(*bitpix);
+  bitblank=gal_fits_datatype_blank(datatype);
+  *array=gal_fits_datatype_alloc(*s0 * *s1, datatype);
 
   /* Read the image into the allocated array: */
   fits_read_pix(fptr, gal_fits_bitpix_to_dtype(*bitpix), fpixel,
@@ -1416,7 +1729,7 @@ gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
     if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
        || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
       {
-        blank=gal_fits_bitpix_blank(bitpix);
+        blank=gal_fits_datatype_blank( gal_fits_bitpix_to_dtype(bitpix) );
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           gal_fits_io_error(status, "adding the BLANK keyword");
@@ -1494,6 +1807,85 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
 
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********                 Table                  ************/
+/**************************************************************/
+/* Get the size of a table HDU. CFITSIO doesn't use size_t, also we want to
+   check status here.*/
+void
+gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols)
+{
+  long lnrows;
+  int incols, status=0;
+
+  /* Read the sizes and put them in. */
+  fits_get_num_rows(fitsptr, &lnrows, &status);
+  fits_get_num_cols(fitsptr, &incols, &status);
+  *ncols=incols;
+  *nrows=lnrows;
+
+  /* Report an error if any was issued. */
+  gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
+int
+gal_fits_table_type(fitsfile *fptr)
+{
+  int status=0;
+  char value[FLEN_VALUE];
+
+  fits_read_key(fptr, TSTRING, "XTENSION", value, NULL, &status);
+
+  if(status==0)
+    {
+      if(!strcmp(value, "TABLE   "))
+        return ASCII_TBL;
+      else if(!strcmp(value, "BINTABLE"))
+        return BINARY_TBL;
+      else
+        error(EXIT_FAILURE, 0, "The `XTENSION' keyword of this FITS file "
+              "doesn't have a standard value (`%s')", value);
+    }
+  else
+    {
+      if(status==KEY_NO_EXIST)
+        error(EXIT_FAILURE, 0, "the `gal_fits_table_type' function was "
+              "called on a FITS extension which is not a table. As part "
+              "of a utility, this is bug, so please contact us at %s so "
+              "we can fix it.", PACKAGE_BUGREPORT);
+      else
+        gal_fits_io_error(status, NULL);
+    }
+
+  error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it. "
+        "for some reason, the control of `gal_fits_table_type' has reached "
+        "the end of the function! This must not happen", PACKAGE_BUGREPORT);
+  return -1;
 }
 
 
