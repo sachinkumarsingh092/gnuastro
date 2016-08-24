@@ -73,7 +73,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b d e f g j k l m n p r s t u v w x y z
+   a b d e f g j k l m n p r s u v w x y z
    A B C E F G H J L M O Q R T U W X Y Z
 
    Number keys used: 1008
@@ -177,6 +177,14 @@ static struct argp_option options[] =
       "`double' column(s) precision.",
       2
     },
+    {
+      "fitstabletype",
+      't',
+      "STR",
+      0,
+      "Only `ascii', or `binary' are acceptable.",
+      2
+    },
 
 
 
@@ -245,7 +253,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output: */
     case 1001:
-      checkfge(arg, &p->up.feg);
+      checksetfge(arg, &p->up.feg, NULL, 0);
       p->up.fegset=1;
       break;
 
@@ -289,6 +297,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       gal_checkset_sizet_el_zero(arg, &p->up.doubleprecision,
                                  "doubleprecision", key, SPACK, NULL, 0);
       p->up.doubleprecisionset=1;
+      break;
+
+    case 't':
+      checksetfitstabletype(arg, &p->up.feg, NULL, 0);
+      p->up.fitstabletypeset=1;
       break;
 
 

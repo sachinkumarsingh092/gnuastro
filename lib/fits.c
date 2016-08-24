@@ -29,7 +29,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include <gnuastro/fits.h>
 #include <gnuastro/checkset.h>
@@ -1848,6 +1847,45 @@ gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols)
 
   /* Report an error if any was issued. */
   gal_fits_io_error(status, NULL);
+}
+
+
+
+
+
+int
+gal_fits_table_type(fitsfile *fptr)
+{
+  int status=0;
+  char value[FLEN_VALUE];
+
+  fits_read_key(fptr, TSTRING, "XTENSION", value, NULL, &status);
+
+  if(status==0)
+    {
+      if(!strcmp(value, "TABLE   "))
+        return ASCII_TBL;
+      else if(!strcmp(value, "BINTABLE"))
+        return BINARY_TBL;
+      else
+        error(EXIT_FAILURE, 0, "The `XTENSION' keyword of this FITS file "
+              "doesn't have a standard value (`%s')", value);
+    }
+  else
+    {
+      if(status==KEY_NO_EXIST)
+        error(EXIT_FAILURE, 0, "the `gal_fits_table_type' function was "
+              "called on a FITS extension which is not a table. As part "
+              "of a utility, this is bug, so please contact us at %s so "
+              "we can fix it.", PACKAGE_BUGREPORT);
+      else
+        gal_fits_io_error(status, NULL);
+    }
+
+  error(EXIT_FAILURE, 0, "A bug! Please contact us at %s so we can fix it. "
+        "for some reason, the control of `gal_fits_table_type' has reached "
+        "the end of the function! This must not happen", PACKAGE_BUGREPORT);
+  return -1;
 }
 
 

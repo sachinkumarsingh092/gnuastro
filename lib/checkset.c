@@ -125,8 +125,8 @@ gal_checkset_int_zero_or_one(char *optarg, int *var, char *lo, char so,
 
 
 void
-gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so, char *spack,
-                        char *filename, size_t lineno)
+gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so,
+                        char *spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -150,8 +150,8 @@ gal_checkset_int_4_or_8(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
-gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so, char *spack,
-                         char *filename, size_t lineno)
+gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so,
+                         char *spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -174,8 +174,8 @@ gal_checkset_int_el_zero(char *optarg, int *var, char *lo, char so, char *spack,
 
 
 void
-gal_checkset_int_l_zero(char *optarg, int *var, char *lo, char so, char *spack,
-                        char *filename, size_t lineno)
+gal_checkset_int_l_zero(char *optarg, int *var, char *lo, char so,
+                        char *spack, char *filename, size_t lineno)
 {
   long tmp;
   char *tailptr;
@@ -247,8 +247,8 @@ gal_checkset_long_el_zero(char *optarg, long *var, char *lo, char so,
 
 
 void
-gal_checkset_any_long(char *optarg, long *var, char *lo, char so, char *spack,
-                      char *filename, size_t lineno)
+gal_checkset_any_long(char *optarg, long *var, char *lo, char so,
+                      char *spack, char *filename, size_t lineno)
 {
   char *tailptr;
   *var=strtol(optarg, &tailptr, 0);
@@ -339,8 +339,8 @@ gal_checkset_sizet_p_odd(char *optarg, size_t *var, char *lo, char so,
 
 
 void
-gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so, char* spack,
-                       char *filename, size_t lineno)
+gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so,
+                       char* spack, char *filename, size_t lineno)
 {
   float tmp;
   char *tailptr;
@@ -386,8 +386,8 @@ gal_checkset_float_l_0_s_1(char *optarg, float *var, char *lo, char so,
 
 
 void
-gal_checkset_any_float(char *optarg, float *var, char *lo, char so, char *spack,
-                       char *filename, size_t lineno)
+gal_checkset_any_float(char *optarg, float *var, char *lo, char so,
+                       char *spack, char *filename, size_t lineno)
 {
   char *tailptr;
   *var=strtof(optarg, &tailptr);
@@ -622,6 +622,28 @@ gal_checkset_check_file(char *filename)
 
 
 
+/* Similar to `gal_checkset_check_file', but will report the result instead
+   of doing it quietly. */
+int
+gal_checkset_check_file_report(char *filename)
+{
+  FILE *tmpfile;
+  errno=0;
+  tmpfile = fopen(filename, "r");
+  if(tmpfile)                        /* The file opened. */
+    {
+      if(fclose(tmpfile)==EOF)
+        error(EXIT_FAILURE, errno, "%s", filename);
+      return 1;
+    }
+  else
+    return 0;
+}
+
+
+
+
+
 /* Check if a file exists. If so, remove it. */
 void
 gal_checkset_check_remove_file(char *filename, int dontdelete)
@@ -672,10 +694,10 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
   struct stat nameinfo;
 
   if(name==NULL)
-    error(EXIT_FAILURE, 0, "a bug! The input to the gal_checkset_dir_0_file_1 "
-          "function in checkset.c should not be NULL. Please contact us at "
-          PACKAGE_BUGREPORT" so we can see what went wrong and fix it in "
-          "future updates");
+    error(EXIT_FAILURE, 0, "a bug! The input to the "
+          "gal_checkset_dir_0_file_1 function in checkset.c should not "
+          "be NULL. Please contact us at "PACKAGE_BUGREPORT" so we can "
+          "see what went wrong and fix it in future updates");
 
   errno=0;
   if(stat(name, &nameinfo)!=0)

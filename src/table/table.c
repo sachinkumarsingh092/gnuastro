@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <gnuastro/fits.h>
 
@@ -156,34 +157,57 @@ setformatstring(struct tableparams *p, size_t outcolid)
 void
 readinputcols(struct tableparams *p)
 {
-  size_t i;
-  void *nulval;
+  double *colfromtxt;
   struct outcolumn *col;
   int datatype, status=0;
+  size_t i, j, nrows=p->nrows, incols=p->up.ncols;
 
   /* Get the contents of each table column: */
   for(i=0;i<p->nocols;++i)
     {
       /* Variables for simple reading */
       col=&p->ocols[i];
+
       datatype=col->datatype;
 
-      /* Allocate the blank value and array to keep the actual of this
-         column. */
-      nulval=gal_fits_datatype_blank(datatype);
-      col->data=gal_fits_datatype_alloc(p->nrows, datatype);
+      /* Allocate the blank value for this column. Note that we will also
+         need the blankvalue for a text file when outputing to a FITS. */
+      col->nulval=gal_fits_datatype_blank(datatype);
 
-      /* Call CFITSIO to read the column information. */
-      fits_read_col(p->fitsptr, datatype, col->inindex+1, 1, 1,
-                    p->nrows, nulval, col->data, &col->anynul,
-                    &status);
+      /* Read the input column. */
+      if(p->fitsptr)
+        {
+          /* Allocate space for the data in this column */
+          col->data=gal_fits_datatype_alloc(nrows, datatype);
 
-      /* Free the space allocated for the blank value, we don't need it any
-         more: it is an internal macro to Gnuastro (see `fits.h'), */
-      free(nulval);
+          /* Call CFITSIO to read the column information. */
+          fits_read_col(p->fitsptr, datatype, col->inindex+1, 1, 1,
+                        nrows, col->nulval, col->data, &col->anynul,
+                        &status);
+        }
+      else
+        {
+          /* This is a text file, read by Gnuastro's current txtarray
+             library. This library currently only reads a 2D table into a
+             2D array of type double. The important thing here is that the
+             array is row-contiguous. But here we want column contiguous
+             data. So we allocate an array to only put this column's values
+             in.*/
+          errno=0;
+          colfromtxt=col->data=malloc(nrows * sizeof *col->data);
 
-      /* Set the format string to print the column values. */
-      setformatstring(p, i);
+          if(col->data==NULL)
+            error(EXIT_FAILURE, errno, "%lu bytes for col->data",
+                  nrows * sizeof *col->data);
+          for(j=0;j<nrows;++j)
+            colfromtxt[j]=p->up.txtarray[ j * incols + col->inindex ];
+        }
+
+      /* Set the format string to print the column values if the output is
+         to be printed as text (either in a text file or to the standard
+         output. */
+      if(p->outputtotxt || p->outputtostdout)
+        setformatstring(p, i);
     }
 }
 
@@ -210,11 +234,90 @@ readinputcols(struct tableparams *p)
 /***************       Output table         *******************/
 /**************************************************************/
 void
+saveouttofits(struct tableparams *p)
+{
+  size_t i;
+  int status=0;
+  fitsfile *fptr;
+  struct uiparams *up=&p->up;
+  char **ttype, **tform, **tunit;
+  struct outcolumn *ocols=p->ocols;
+
+  /* Allocate the information arrays for CFITSIO. */
+  errno=0;
+  ttype=malloc(p->nocols*sizeof *ttype);
+  if(ttype==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for ttype",
+          p->nocols*sizeof *ttype);
+  errno=0;
+  tform=malloc(p->nocols*sizeof *tform);
+  if(tform==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for tform",
+          p->nocols*sizeof *tform);
+  errno=0;
+  tunit=malloc(p->nocols*sizeof *tunit);
+  if(tunit==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for tunit",
+          p->nocols*sizeof *tunit);
+
+  /* Fill in the information arrays: */
+  for(i=0;i<p->nocols;++i)
+    {
+      tform[i]=up->ttstr[ ocols[i].inindex ];
+      ttype[i]=up->tname[ ocols[i].inindex ];
+      tunit[i]=up->tunit[ ocols[i].inindex ];
+    }
+
+  /* Open the output FITS file. */
+  if(access(p->cp.output,F_OK) != -1 )
+    fits_open_file(&fptr, p->cp.output, READWRITE, &status);
+  else
+    fits_create_file(&fptr, p->cp.output, &status);
+
+  /* Create a new table extension */
+  fits_create_tbl(fptr, p->fitstabletype, p->nrows, p->nocols, ttype,
+                  tform, tunit, "Table", &status);
+
+  /* Write this column's data into the FITS file. */
+  for(i=0;i<p->nocols;++i)
+    fits_write_colnull(fptr, ocols[i].datatype, i+1, 1, 1, p->nrows,
+                       ocols[i].data, ocols[i].nulval, &status);
+
+  /* Include the ending comments and close the file. */
+  gal_fits_copyright_end(fptr, NULL, SPACK_STRING);
+  fits_close_file(fptr, &status);
+  gal_fits_io_error(status, NULL);
+
+  /* Clean up */
+  free(ttype);
+  free(tform);
+  free(tunit);
+}
+
+
+
+
+
+void
 printoutput(struct tableparams *p)
 {
+  FILE *fp;
   size_t i, row;
   struct outcolumn *ocols=p->ocols;
 
+  /* Determine the output stream and open the file for writing if its a
+     file. */
+  if(p->outputtotxt)
+    {
+      errno=0;
+      fp=fopen(p->cp.output, "w");
+      if(fp==NULL)
+        error(EXIT_FAILURE, errno, "%s", p->cp.output);
+    }
+  else
+    fp=stdout;
+
+  /* Print each column and each row: */
   for(row=0;row<p->nrows;++row)
     {
       for(i=0;i<p->nocols;++i)
@@ -226,35 +329,35 @@ printoutput(struct tableparams *p)
                   "it.", PACKAGE_BUGREPORT);
 
           case TBYTE:
-            printf(ocols[i].fmt, ((unsigned char *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((unsigned char *)ocols[i].data)[row]);
             break;
 
           case TLOGICAL: case TSBYTE:
-            printf(ocols[i].fmt, ((char *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((char *)ocols[i].data)[row]);
             break;
 
           case TSTRING:
-            printf(ocols[i].fmt, ((char **)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((char **)ocols[i].data)[row]);
             break;
 
           case TSHORT:
-            printf(ocols[i].fmt, ((short *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((short *)ocols[i].data)[row]);
             break;
 
           case TLONG:
-            printf(ocols[i].fmt, ((long *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((long *)ocols[i].data)[row]);
             break;
 
           case TLONGLONG:
-            printf(ocols[i].fmt, ((LONGLONG *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((LONGLONG *)ocols[i].data)[row]);
             break;
 
           case TFLOAT:
-            printf(ocols[i].fmt, ((float *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((float *)ocols[i].data)[row]);
             break;
 
           case TDOUBLE:
-            printf(ocols[i].fmt, ((double *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((double *)ocols[i].data)[row]);
             break;
 
           case TCOMPLEX:
@@ -270,26 +373,34 @@ printoutput(struct tableparams *p)
             break;
 
           case TINT:
-            printf(ocols[i].fmt, ((char *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((char *)ocols[i].data)[row]);
             break;
 
           case TUINT:
-            printf(ocols[i].fmt, ((unsigned int *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((unsigned int *)ocols[i].data)[row]);
             break;
 
           case TUSHORT:
-            printf(ocols[i].fmt, ((unsigned short *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((unsigned short *)ocols[i].data)[row]);
             break;
 
           case TULONG:
-            printf(ocols[i].fmt, ((unsigned long *)ocols[i].data)[row]);
+            fprintf(fp, ocols[i].fmt, ((unsigned long *)ocols[i].data)[row]);
             break;
 
           default:
             error(EXIT_FAILURE, 0, "datatype value of %d not recognized in "
                   "printoutput", ocols[i].datatype);
           }
-      printf("\n");
+      fprintf(fp, "\n");
+    }
+
+  /* If we printed to a file, then close it. */
+  if(p->outputtotxt)
+    {
+      errno=0;
+      if( fclose(fp) == EOF )
+        error(EXIT_FAILURE, errno, "%s", p->cp.output);
     }
 }
 
@@ -319,5 +430,8 @@ table(struct tableparams *p)
 {
   readinputcols(p);
 
-  printoutput(p);
+  if(p->outputtofits)
+    saveouttofits(p);
+  else
+    printoutput(p);
 }

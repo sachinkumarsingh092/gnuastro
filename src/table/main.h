@@ -41,6 +41,7 @@ struct outcolumn
   size_t inindex;               /* Row index (from 0) in input array.   */
   int   datatype;               /* Type of data (from CFITSIO macros).  */
   int     anynul;               /* If there is any blank characters.    */
+  void   *nulval;               /* The blank value for this column.     */
   void     *data;               /* Array keeping the column data.       */
   char fmt[MAX_COL_FORMAT_LENGTH];  /* format to use in printf.         */
 };
@@ -60,9 +61,11 @@ struct uiparams
   /* Input table parameters. */
   size_t                ncols;  /* Number of columns in table.          */
   int               *datatype;  /* Type of data in column.              */
-  char                **tform;  /* TFORM (another format for type).     */
-  char                **ttype;  /* Column name (one word).              */
+  char                **ttstr;  /* TFORM (another format for type).     */
+  char                **tname;  /* Column name (one word).              */
   char                **tunit;  /* Unit of values in column.            */
+  double            *txtarray;  /* Array keeping text file values.      */
+  int         infitstabletype;  /* Input table is ASCII or binary.      */
 
   /* Print parameters: */
   int                     feg;  /* format of floating points.           */
@@ -86,6 +89,7 @@ struct uiparams
   int             strwidthset;
   int       floatprecisionset;
   int      doubleprecisionset;
+  int        fitstabletypeset;
 
 
   struct gal_linkedlist_stll *columns;
@@ -109,6 +113,10 @@ struct tableparams
   size_t                nrows;  /* Number of rows in table.             */
   size_t               nocols;  /* Number of output columns.            */
   struct outcolumn     *ocols;  /* Array of output column informatio.   */
+  int            outputtofits;  /* ==1: output is a FITS file.          */
+  int             outputtotxt;  /* ==1: output is a text file.          */
+  int          outputtostdout;  /* ==1: output is the standard output.  */
+  int           fitstabletype;  /* ASCII, or binary table CFITSIO macro.*/
 
   /* Internal: */
   int                onlyview;

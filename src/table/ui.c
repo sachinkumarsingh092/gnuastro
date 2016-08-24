@@ -67,13 +67,46 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /* Check the value given for the fge option. */
 void
-checkfge(char *optarg, int *fge)
+checksetfge(char *optarg, int *fge, char *filename, size_t lineno)
 {
   *fge=optarg[0];
   if( *fge!='f' && *fge!='g' && *fge!='g' )
-    error(EXIT_FAILURE, 0, "the value of `--fge' (`-f') must only be "
-          "one of the three `f', `g', or `e' characters. You have "
-          "given `%s'.", optarg);
+    {
+      if(filename)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "the value of `fge' must only be one of the three "
+                      "`f', `g', or `e' characters. You have given `%s'",
+                      optarg);
+      else
+        error(EXIT_FAILURE, 0, "the value of `--fge' (`-f') must only be "
+              "one of the three `f', `g', or `e' characters. You have "
+              "given `%s'", optarg);
+    }
+}
+
+
+
+
+
+void
+checksetfitstabletype(char *optarg, int *fitstabletype, char *filename,
+                   size_t lineno)
+{
+  if( !strcmp(optarg, "ascii") )
+    *fitstabletype=ASCII_TBL;
+  else if( !strcmp(optarg, "binary") )
+    *fitstabletype=BINARY_TBL;
+  else
+    {
+      if(filename)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "The value to the `fitstabletype' must be either "
+                      "`ascii', or `binary'. You have given `%s'", optarg);
+      else
+        error(EXIT_FAILURE, 0, "The value to the `--fitstabletype' (`-t') "
+              "option must be either one of `ascii', or `binary'. You have, "
+              "given `%s'", optarg);
+    }
 }
 
 
@@ -118,7 +151,7 @@ readconfig(char *filename, struct tableparams *p)
 
       /* Inputs: */
       if(strcmp(name, "hdu")==0)
-        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->outputset);
+        gal_checkset_allocate_copy_set(value, &cp->hdu, &cp->hduset);
 
       else if(strcmp(name, "column")==0)
         {
@@ -143,7 +176,7 @@ readconfig(char *filename, struct tableparams *p)
       else if (strcmp(name, "feg")==0)
         {
           if(p->up.fegset) continue;
-          checkfge(value, &p->up.feg);
+          checksetfge(value, &p->up.feg, filename, lineno);
           p->up.fegset=1;
         }
 
@@ -201,6 +234,12 @@ readconfig(char *filename, struct tableparams *p)
           gal_checkset_sizet_el_zero(value, &p->up.doubleprecision,
                                        name, key, SPACK, filename, lineno);
           p->up.doubleprecisionset=1;
+        }
+      else if (strcmp(name, "fitstabletype")==0)
+        {
+          if(p->up.fitstabletypeset) continue;
+          checksetfitstabletype(value, &p->fitstabletype, filename, lineno);
+          p->up.fitstabletypeset=1;
         }
 
 
@@ -269,6 +308,9 @@ printvalues(FILE *fp, struct tableparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "floatprecision", up->floatprecision);
   if(up->doubleprecisionset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "doubleprecision", up->doubleprecision);
+  if(up->fitstabletypeset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "fitstabletype",
+            p->fitstabletype==ASCII_TBL ? "ascii" : "binary");
 
 
   /* For the operating mode, first put the macro to print the common
@@ -315,6 +357,8 @@ checkifset(struct tableparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("floatprecision");
   if(up->doubleprecisionset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("doubleprecision");
+  if(up->fitstabletypeset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("fitstabletype");
 
   GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
@@ -337,9 +381,62 @@ checkifset(struct tableparams *p)
 
 
 
+
 /**************************************************************/
 /************     Read and Write column info    ***************/
 /**************************************************************/
+
+/*  */
+  /* Allocate the arrays to keep the column information. Initialize the
+     arrays with a NULL pointer to make sure that they are all found in the
+     end if they are necessary. The values that are directly read from the
+     input file are initialized to NULL, so they can be treated
+     appropriately if they do not exist in the input (for example if they
+     are mandatory, or if they need to be printed).*/
+void
+allocinputcolinfo(struct tableparams *p)
+{
+  char **c, **fc;
+  size_t ncols=p->up.ncols;
+  struct uiparams *up=&p->up;
+
+  /* up->datatype keeps the type of data in each column as CFITSIO type
+     macros. */
+  errno=0;
+  up->datatype=malloc(ncols * sizeof *up->datatype);
+  if(up->datatype==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for up->datatype",
+          ncols * sizeof *up->datatype);
+
+  /* up->ttstr keeps the actual string used to specify the datatype. */
+  errno=0;
+  up->ttstr=malloc(ncols * sizeof *up->ttstr);
+  if(up->ttstr==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for ttstr",
+          ncols * sizeof *up->ttstr);
+  fc=(c=up->ttstr)+ncols; do *c++=NULL; while(c<fc);
+
+  /* up->tname keeps the name of the column. */
+  errno=0;
+  up->tname=malloc(ncols * sizeof *up->tname);
+  if(up->tname==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for tname",
+          ncols * sizeof *up->tname);
+  fc=(c=up->tname)+ncols; do *c++=NULL; while(c<fc);
+
+  /* up->tunit keeps the input units of the column. */
+  errno=0;
+  up->tunit=malloc(ncols * sizeof *up->tunit);
+  if(up->tunit==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for tunit",
+          ncols * sizeof *up->tunit);
+  fc=(c=up->tunit)+ncols; do *c++=NULL; while(c<fc);
+}
+
+
+
+
+
 /* This function will read all the table information from a FITS table HDU
    and store them in arrays for use later. It is mainly good for getting
    all the information in a FITS table HDU. This function will only go
@@ -347,38 +444,17 @@ checkifset(struct tableparams *p)
    the keywords, so it is much more efficient than having to ask for each
    column's information separately.*/
 void
-readallcolinfo(fitsfile *fitsptr, size_t ncols, int **otypecode,
-               char ***otform, char ***ottype, char ***otunit)
+allfitscolinfo(struct tableparams *p)
 {
-  size_t index;
-  char *tailptr, **c, **fc;
-  int i, status=0, *typecode;
-  char **tform, **ttype, **tunit;
+  char *tailptr;
+  int i, status=0;
+  struct uiparams *up=&p->up;
+  size_t index, ncols=p->up.ncols;
   char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
 
 
-  /* Allocate the arrays to keep the column information. Initialize the
-     arrays with a NULL pointer to make sure that they are all found in the
-     end if they are necessary.*/
-  errno=0; typecode=*otypecode=malloc(ncols * sizeof *typecode);
-  if(typecode==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for typecode",
-          ncols * sizeof *typecode);
-  errno=0; tform=*otform=malloc(ncols * sizeof *tform);
-  if(tform==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tform",
-          ncols * sizeof *tform);
-  fc=(c=tform)+ncols; do *c++=NULL; while(c<fc);
-  errno=0; ttype=*ottype=malloc(ncols * sizeof *ttype);
-  if(ttype==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for ttype",
-          ncols * sizeof *ttype);
-  fc=(c=ttype)+ncols; do *c++=NULL; while(c<fc);
-  errno=0; tunit=*otunit=malloc(ncols * sizeof *tunit);
-  if(tunit==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tunit",
-          ncols * sizeof *tunit);
-  fc=(c=tunit)+ncols; do *c++=NULL; while(c<fc);
+  /* First allocate the arrays to keep the input column information. */
+  allocinputcolinfo(p);
 
 
   /* Read all the keywords one by one and if they match, then put them in
@@ -388,7 +464,7 @@ readallcolinfo(fitsfile *fitsptr, size_t ncols, int **otypecode,
   for(i=9; strcmp(keyname, "END"); ++i)
     {
       /* Read the next keyword. */
-      fits_read_keyn(fitsptr, i, keyname, value, NULL, &status);
+      fits_read_keyn(p->fitsptr, i, keyname, value, NULL, &status);
 
       /* Check the type of the keyword. */
       if(strncmp(keyname, "TFORM", 5)==0)
@@ -410,8 +486,8 @@ readallcolinfo(fitsfile *fitsptr, size_t ncols, int **otypecode,
           index=strtoul(&keyname[5], &tailptr, 10)-1;
           if(index<ncols)
             {
-              gal_checkset_allocate_copy(&value[1], &tform[index] );
-              typecode[index]=gal_fits_tform_to_dtype(value[1]);
+              gal_checkset_allocate_copy(&value[1], &up->ttstr[index] );
+              up->datatype[index]=gal_fits_tform_to_dtype(value[1]);
             }
         }
       else if(strncmp(keyname, "TTYPE", 5)==0)
@@ -424,29 +500,61 @@ readallcolinfo(fitsfile *fitsptr, size_t ncols, int **otypecode,
           value[strlen(value)-1]='\0';
           index=strtoul(&keyname[5], &tailptr, 10)-1;
           if(index<ncols)
-            gal_checkset_allocate_copy(&value[1], &ttype[index] );
+            gal_checkset_allocate_copy(&value[1], &up->tname[index] );
         }
       else if(strncmp(keyname, "TUNIT", 5)==0)
         {
-          /* similar to ttype, see above.*/
+          /* similar to tname, see above.*/
           value[strlen(value)-1]='\0';
           index=strtoul(&keyname[5], &tailptr, 10)-1;
           if(index<ncols)
-            gal_checkset_allocate_copy(&value[1], &tunit[index] );
+            gal_checkset_allocate_copy(&value[1], &up->tunit[index] );
         }
     }
 
 
   /* Check if the mandatory TFORMn values are set: */
   for(i=0;i<ncols;++i)
-    if(!tform[i])
+    if(!up->ttstr[i])
       error(EXIT_FAILURE, 0, "TFORM%d could not be found in header", i+1);
+}
 
 
-  /* For a checkup:
-  for(i=1;i<=*ncols;++i)
-    printf("%d: %s, %s, %s\n", i, tform[i], ttype[i], tunit[i]);
-  */
+
+
+
+/* Prepare column information from a text input file. Note that we are
+   currently using Gnuastro's very simple txtarray library, which was only
+   designed for a 2D array of floating point numbers. Later, we must update
+   it to be more aware of the types of input columns and also accept
+   non-number columns.*/
+void
+alltxtcolinfo(struct tableparams *p)
+{
+  size_t i;
+  size_t ncols=p->up.ncols;
+
+  /* Check if there were any strings in the array. If there were strings,
+     then warn the user that we currently can't deal with them. */
+  if(gal_checkset_check_file_report(GAL_TXTARRAY_LOG))
+    error(EXIT_FAILURE, 0, "The input text file `%s' contained "
+          "non-numerical values (probably strings). Please see `%s' for "
+          "a listing of all such terms. Currently Table cannot operate on "
+          "such files. We are working on correcting this issue.",
+          p->up.txtname, GAL_TXTARRAY_LOG);
+
+  /* Allocate the arrays to keep the input column information. */
+  allocinputcolinfo(p);
+
+  /* Set all the column types to double and leave the other fields
+     blank.*/
+  for(i=0;i<ncols;++i)
+    {
+      p->up.datatype[i]=TDOUBLE;
+      gal_checkset_allocate_copy("D", &p->up.ttstr[i] );
+      gal_checkset_allocate_copy("", &p->up.tname[i] );
+      gal_checkset_allocate_copy("", &p->up.tunit[i] );
+    }
 }
 
 
@@ -460,8 +568,11 @@ printinfo(struct tableparams *p)
   char *typestring=NULL;
   struct uiparams *up=&p->up;
 
-  printf("%s (hdu: %s)\n", p->up.fitsname, p->cp.hdu);
   printf("---------------------------------------------------------\n");
+  if(up->fitsname)
+    printf("%s (hdu: %s)\n", p->up.fitsname, p->cp.hdu);
+  else
+    printf("%s\n", p->up.txtname);
   printf("%-5s%-25s%-15s%s\n", "No.", "Column name", "Units",
          "Data type");
   printf("---------------------------------------------------------\n");
@@ -514,9 +625,9 @@ printinfo(struct tableparams *p)
         default:
           error(EXIT_FAILURE, 0, "%d (from TFORM%lu='%c') is not a "
                 "recognized CFITSIO datatype.", up->datatype[i],
-                i, up->tform[i][0]);
+                i, up->ttstr[i][0]);
         }
-      printf("%-5lu%-25s%-15s%s\n", i+1, up->ttype[i] ? up->ttype[i] : "---",
+      printf("%-5lu%-25s%-15s%s\n", i+1, up->tname[i] ? up->tname[i] : "---",
              up->tunit[i] ? up->tunit[i] : "---", typestring);
     }
 
@@ -553,39 +664,58 @@ sanitycheck(struct tableparams *p)
 {
   struct uiparams *up=&p->up;
 
-  /* Set the FITS pointer and check the type of the fits file. */
-  if(p->up.fitsname)
+  /* If the desired FITS output type is ASCII, then inform the user that
+     this type is not yet supported. */
+  if(up->fitsname && p->fitstabletype==ASCII_TBL)
+    error(EXIT_FAILURE, 0, "output to ASCII type FITS tables is currently "
+          "not supported (due to lack of need!). If you need this feature, "
+          "please get in touch with us at %s so we can increase the "
+          "priority of this feature.", PACKAGE_BUGREPORT);
+
+  if(up->fitsname)
     {
+      /* Set the FITS pointer and check the type of the fits file. */
       gal_fits_read_hdu(p->up.fitsname, p->cp.hdu, 1, &p->fitsptr);
       gal_fits_table_size(p->fitsptr, &p->nrows, &up->ncols);
-      readallcolinfo(p->fitsptr, up->ncols, &up->datatype,
-                     &up->tform, &up->ttype, &up->tunit);
+      up->infitstabletype=gal_fits_table_type(p->fitsptr);
+      allfitscolinfo(p);
     }
   else
-    error(EXIT_FAILURE, 0, "Table is a new addition to Gnuastro and "
-          "and under heavy development, it currently doesn't support "
-          "anything other than a FITS binary table.");
-
+    {
+      /* Read the text file into an input array and make the basic column
+         information. */
+      gal_txtarray_txt_to_array(up->txtname, &up->txtarray, &p->nrows,
+                                &up->ncols);
+      alltxtcolinfo(p);
+    }
 
   /* Print the column information and exit successfully if the
      `--information' option is given. */
   if(p->up.information)
     {
-      if(p->up.fitsname)
-        {
-          printinfo(p);
-          freeandreport(p);
-          exit(EXIT_SUCCESS);
-        }
-      else
-        error(EXIT_FAILURE, 0, "the `--information' (`-i') option is only "
-              "defined for FITS tables");
+      printinfo(p);
+      freeandreport(p);
+      exit(EXIT_SUCCESS);
     }
 
-  /* The user doesn't just want to see the table information, they actually
-     want to print something. So if no columns are specified, then print
-     all columns. */
+  /* Check the status of the output file. If no output file is set, then
+     the output will be printed to standard output on the terminal.*/
+  p->outputtofits=p->outputtotxt=p->outputtostdout=0;
+  if(p->cp.outputset)
+    {
+      /* First check if the file exists and remove it if it does. */
+      gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
+
+      /* Now set the type of output. */
+      if(gal_fits_name_is_fits(p->cp.output))
+        p->outputtofits=1;
+      else
+        p->outputtotxt=1;
+    }
+  else
+    p->outputtostdout=1;
 }
+
 
 
 
@@ -711,9 +841,9 @@ outputcolumns(struct tableparams *p)
           /* With the regex structure "compile"d you can go through all the
              column names. Just note that column names are not mandatory in
              the FITS standard, so some (or all) columns might not have
-             names, if so `p->ttype[i]' will be NULL. */
+             names, if so `p->tname[i]' will be NULL. */
           for(i=0;i<up->ncols;++i)
-            if(up->ttype[i] && regexec(regex, up->ttype[i], 0, 0, 0)==0)
+            if(up->tname[i] && regexec(regex, up->tname[i], 0, 0, 0)==0)
               gal_linkedlist_add_to_sll(&colsll, i);
 
           /* Free the regex_t structure: */
@@ -757,6 +887,9 @@ preparearrays(struct tableparams *p)
 {
   size_t i;
   struct uiparams *up=&p->up;
+
+  /* Reverse the columns linked list here (before possibly printing).*/
+  gal_linkedlist_reverse_stll(&up->columns);
 
   /* Set the columns that should be included in the output. If up->columns
      is set, then use it, otherwise, set all the columns for printing. */
@@ -816,7 +949,7 @@ setparams(int argc, char *argv[], struct tableparams *p)
   p->ocols=NULL;
   up->columns=NULL;
   up->txtname=up->fitsname=NULL;
-  up->tform=up->ttype=up->tunit=NULL;
+  up->ttstr=up->tname=up->tunit=NULL;
 
   /* Read the arguments. */
   errno=0;
@@ -828,9 +961,6 @@ setparams(int argc, char *argv[], struct tableparams *p)
 
   /* Check if all the required parameters are set. */
   checkifset(p);
-
-  /* Reverse the columns linked list here (before possibly printing).*/
-  gal_linkedlist_reverse_stll(&up->columns);
 
   /* Print the values for each parameter. */
   if(cp->printparams)
@@ -882,17 +1012,18 @@ freeandreport(struct tableparams *p)
   /* Free the input column information: */
   for(i=0;i<up->ncols;++i)
     {
-      if(up->tform) free(up->tform[i]);
-      if(up->ttype) free(up->ttype[i]);
+      if(up->ttstr) free(up->ttstr[i]);
+      if(up->tname) free(up->tname[i]);
       if(up->tunit) free(up->tunit[i]);
     }
-  free(up->tform);
-  free(up->ttype);
+  free(up->ttstr);
+  free(up->tname);
   free(up->tunit);
 
   /* Free the output column information: */
   for(i=0;i<p->nocols;++i)
     {
+      free(p->ocols[i].nulval);
       if(p->ocols[i].datatype==TSTRING)
         {
           rowofstrings=(char **)(p->ocols[i].data);

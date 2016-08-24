@@ -42,12 +42,12 @@ mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh header/write.sh           \
 header/print.sh header/update.sh header/delete.sh imgstat/basicstats.sh     \
 subtractsky/subtractsky.sh noisechisel/noisechisel.sh mkcatalog/simple.sh   \
 mkcatalog/aperturephot.sh arithmetic/snimage.sh arithmetic/onlynumbers.sh   \
-cosmiccal/simpletest.sh
+cosmiccal/simpletest.sh table/asciitobinary.sh table/binarytoascii.sh
 
 EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                  \
 mkprof/ellipticalmasks.txt mkprof/inputascanvas.txt mkprof/mkprofcat2.txt  \
 mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt mkprof/radeccat.txt            \
-imgcrop/cat.txt
+imgcrop/cat.txt table/asciitobinary.txt
 
 CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps
 
@@ -78,6 +78,8 @@ mkprof/mosaic2.sh: prepconf.sh.log
 mkprof/mosaic3.sh: prepconf.sh.log
 mkprof/mosaic4.sh: prepconf.sh.log
 mkprof/radeccat.sh: prepconf.sh.log
+table/asciitobinary.sh: prepconf.sh.log
+table/binarytoascii.sh: table/asciitobinary.sh.log
 imgcrop/imgcat.sh: mkprof/mosaic1.sh.log
 imgcrop/wcscat.sh: mkprof/mosaic1.sh.log mkprof/mosaic2.sh.log     \
                    mkprof/mosaic3.sh.log mkprof/mosaic4.sh.log

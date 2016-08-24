@@ -242,6 +242,9 @@ gal_fits_tform_to_dtype(char tform);
 void
 gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
 
+int
+gal_fits_table_type(fitsfile *fptr);
+
 
 
 
