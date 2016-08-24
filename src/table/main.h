@@ -31,9 +31,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SPACK_NAME      "Table"    /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
 
+#define MAX_COL_FORMAT_LENGTH 20
 
 
 
+/* Structure to keep the information for each output column */
+struct outcolumn
+{
+  size_t inindex;               /* Row index (from 0) in input array.   */
+  int   datatype;               /* Type of data (from CFITSIO macros).  */
+  int     anynul;               /* If there is any blank characters.    */
+  void     *data;               /* Array keeping the column data.       */
+  char fmt[MAX_COL_FORMAT_LENGTH];  /* format to use in printf.         */
+};
 
 
 
@@ -47,9 +57,36 @@ struct uiparams
   char               *txtname;  /* Name of input text file.             */
   int              ignorecase;  /* Ignore case matching column names.   */
 
+  /* Input table parameters. */
+  size_t                ncols;  /* Number of columns in table.          */
+  int               *datatype;  /* Type of data in column.              */
+  char                **tform;  /* TFORM (another format for type).     */
+  char                **ttype;  /* Column name (one word).              */
+  char                **tunit;  /* Unit of values in column.            */
+
+  /* Print parameters: */
+  int                     feg;  /* format of floating points.           */
+  size_t            sintwidth;  /* Full width for short integers.       */
+  size_t            lintwidth;  /* Full width for short integers.       */
+  size_t           floatwidth;  /* Full width for all floats.           */
+  size_t          doublewidth;  /* Full width for all doubles.          */
+  size_t             strwidth;  /* Full width for all floats.           */
+  size_t       floatprecision;  /* Number of decimals for floats.       */
+  size_t      doubleprecision;  /* Number of decimals for doubles.      */
+
+  /* If values are set: */
   int                inputset;
   int          informationset;
   int           ignorecaseset;
+  int                  fegset;
+  int            sintwidthset;
+  int            lintwidthset;
+  int           floatwidthset;
+  int          doublewidthset;
+  int             strwidthset;
+  int       floatprecisionset;
+  int      doubleprecisionset;
+
 
   struct gal_linkedlist_stll *columns;
 };
@@ -69,20 +106,13 @@ struct tableparams
   fitsfile           *fitsptr;  /* FITS pointer (input or output).      */
 
   /* Output: */
-  size_t               nocols;  /* Number of output columns.            */
-  size_t               *ocols;  /* Output column indexs in input table. */
-
-  /* FITS table */
   size_t                nrows;  /* Number of rows in table.             */
-  size_t                ncols;  /* Number of columns in table.          */
-  int               *typecode;  /* Type of data in column.              */
-  char                **tform;  /* TFORM (another format for type).     */
-  char                **ttype;  /* Column name (one word).              */
-  char                **tunit;  /* Unit of values in column.            */
+  size_t               nocols;  /* Number of output columns.            */
+  struct outcolumn     *ocols;  /* Array of output column informatio.   */
 
   /* Internal: */
   int                onlyview;
-  time_t              rawtime;  /* Starting time of the program.      */
+  time_t              rawtime;  /* Starting time of the program.        */
 };
 
 #endif

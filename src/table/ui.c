@@ -65,6 +65,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /**************       Options and parameters    ***************/
 /**************************************************************/
+/* Check the value given for the fge option. */
+void
+checkfge(char *optarg, int *fge)
+{
+  *fge=optarg[0];
+  if( *fge!='f' && *fge!='g' && *fge!='g' )
+    error(EXIT_FAILURE, 0, "the value of `--fge' (`-f') must only be "
+          "one of the three `f', `g', or `e' characters. You have "
+          "given `%s'.", optarg);
+}
+
+
+
+
+
 void
 readconfig(char *filename, struct tableparams *p)
 {
@@ -125,6 +140,69 @@ readconfig(char *filename, struct tableparams *p)
       else if(strcmp(name, "output")==0)
         gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
+      else if (strcmp(name, "feg")==0)
+        {
+          if(p->up.fegset) continue;
+          checkfge(value, &p->up.feg);
+          p->up.fegset=1;
+        }
+
+      else if (strcmp(name, "sintwidth")==0)
+        {
+          if(p->up.sintwidthset) continue;
+          gal_checkset_sizet_el_zero(value, &p->up.sintwidth, name,
+                                       key, SPACK, filename, lineno);
+          p->up.sintwidthset=1;
+        }
+
+      else if (strcmp(name, "lintwidth")==0)
+        {
+          if(p->up.lintwidthset) continue;
+          gal_checkset_sizet_el_zero(value, &p->up.lintwidth, name,
+                                       key, SPACK, filename, lineno);
+          p->up.lintwidthset=1;
+        }
+
+      else if (strcmp(name, "floatwidth")==0)
+        {
+          if(p->up.floatwidthset) continue;
+          gal_checkset_sizet_el_zero(value, &p->up.floatwidth, name,
+                                       key, SPACK, filename, lineno);
+          p->up.floatwidthset=1;
+        }
+
+      else if (strcmp(name, "doublewidth")==0)
+        {
+          if(p->up.doublewidthset) continue;
+          gal_checkset_sizet_el_zero(value, &p->up.doublewidth, name,
+                                       key, SPACK, filename, lineno);
+          p->up.doublewidthset=1;
+        }
+
+      else if (strcmp(name, "strwidth")==0)
+        {
+          if(p->up.strwidthset) continue;
+          gal_checkset_sizet_el_zero(value, &p->up.strwidth, name,
+                                       key, SPACK, filename, lineno);
+          p->up.strwidthset=1;
+        }
+
+      else if (strcmp(name, "floatprecision")==0)
+        {
+          if(p->up.floatprecisionset) continue;
+          gal_checkset_sizet_el_zero(value, &p->up.floatprecision,
+                                       name, key, SPACK, filename, lineno);
+          p->up.floatprecisionset=1;
+        }
+
+      else if (strcmp(name, "doubleprecision")==0)
+        {
+          if(p->up.doubleprecisionset) continue;
+          gal_checkset_sizet_el_zero(value, &p->up.doubleprecision,
+                                       name, key, SPACK, filename, lineno);
+          p->up.doubleprecisionset=1;
+        }
+
 
 
       /* Operating modes: */
@@ -164,7 +242,7 @@ printvalues(FILE *fp, struct tableparams *p)
 
   /* Print all the options that are set. Separate each group with a
      commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input image:\n");
+  fprintf(fp, "\n# Input:\n");
   if(cp->hduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->columns)
@@ -172,6 +250,25 @@ printvalues(FILE *fp, struct tableparams *p)
       GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("column", tmp->v);
   if(up->ignorecaseset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "ignorecase", up->ignorecase);
+
+
+  fprintf(fp, "\n# Output:\n");
+  if(up->fegset)
+    fprintf(fp, CONF_SHOWFMT"%c\n", "feg", up->feg);
+  if(up->sintwidthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "sintwidth", up->sintwidth);
+  if(up->lintwidthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "lintwidth", up->lintwidth);
+  if(up->floatwidthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "floatwidth", up->floatwidth);
+  if(up->doublewidthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "doublewidth", up->doublewidth);
+  if(up->strwidthset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "strwidth", up->strwidth);
+  if(up->floatprecisionset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "floatprecision", up->floatprecision);
+  if(up->doubleprecisionset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "doubleprecision", up->doubleprecision);
 
 
   /* For the operating mode, first put the macro to print the common
@@ -195,12 +292,29 @@ void
 checkifset(struct tableparams *p)
 {
   /*struct uiparams *up=&p->up;*/
+  struct uiparams *up=&p->up;
   struct gal_commonparams *cp=&p->cp;
 
   int intro=0;
   if(cp->hduset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("hdu");
 
+  if(up->fegset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("feg");
+  if(up->sintwidthset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("sintwidth");
+  if(up->lintwidthset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("lintwidth");
+  if(up->floatwidthset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("floatwidth");
+  if(up->doublewidthset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("doublewidth");
+  if(up->strwidthset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("strwidth");
+  if(up->floatprecisionset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("floatprecision");
+  if(up->doubleprecisionset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("doubleprecision");
 
   GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
@@ -344,16 +458,16 @@ printinfo(struct tableparams *p)
 {
   size_t i;
   char *typestring=NULL;
+  struct uiparams *up=&p->up;
 
   printf("%s (hdu: %s)\n", p->up.fitsname, p->cp.hdu);
-  printf("Column information\n");
   printf("---------------------------------------------------------\n");
-  printf("%-5s%-25s%-20s%s\n", "No.", "Column name", "Data type",
-         "Units");
+  printf("%-5s%-25s%-15s%s\n", "No.", "Column name", "Units",
+         "Data type");
   printf("---------------------------------------------------------\n");
-  for(i=0;i<p->ncols;++i)
+  for(i=0;i<up->ncols;++i)
     {
-      switch(p->typecode[i])
+      switch(up->datatype[i])
         {
         case TBIT:
           typestring="bit";
@@ -399,11 +513,11 @@ printinfo(struct tableparams *p)
           break;
         default:
           error(EXIT_FAILURE, 0, "%d (from TFORM%lu='%c') is not a "
-                "recognized CFITSIO datatype.",
-                p->typecode[i], i, p->tform[i][0]);
+                "recognized CFITSIO datatype.", up->datatype[i],
+                i, up->tform[i][0]);
         }
-      printf("%-5lu%-25s%-20s%s\n", i+1, p->ttype[i] ? p->ttype[i] : "---",
-             typestring, p->tunit[i] ? p->tunit[i] : "---");
+      printf("%-5lu%-25s%-15s%s\n", i+1, up->ttype[i] ? up->ttype[i] : "---",
+             up->tunit[i] ? up->tunit[i] : "---", typestring);
     }
 
 
@@ -437,12 +551,15 @@ printinfo(struct tableparams *p)
 void
 sanitycheck(struct tableparams *p)
 {
+  struct uiparams *up=&p->up;
 
   /* Set the FITS pointer and check the type of the fits file. */
   if(p->up.fitsname)
     {
       gal_fits_read_hdu(p->up.fitsname, p->cp.hdu, 1, &p->fitsptr);
-      gal_fits_table_size(p->fitsptr, &p->nrows, &p->ncols);
+      gal_fits_table_size(p->fitsptr, &p->nrows, &up->ncols);
+      readallcolinfo(p->fitsptr, up->ncols, &up->datatype,
+                     &up->tform, &up->ttype, &up->tunit);
     }
   else
     error(EXIT_FAILURE, 0, "Table is a new addition to Gnuastro and "
@@ -456,8 +573,6 @@ sanitycheck(struct tableparams *p)
     {
       if(p->up.fitsname)
         {
-          readallcolinfo(p->fitsptr, p->ncols, &p->typecode,
-                         &p->tform, &p->ttype, &p->tunit);
           printinfo(p);
           freeandreport(p);
           exit(EXIT_SUCCESS);
@@ -493,6 +608,7 @@ sanitycheck(struct tableparams *p)
 /**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
+
 /* FUnction to print regular expression error. This is taken from the GNU C
    library manual, with small modifications to fit out style, */
 void
@@ -523,11 +639,12 @@ regexerrorexit(int errcode, regex_t *compiled, char *input)
 void
 outputcolumns(struct tableparams *p)
 {
-  size_t i;
   long tlong;
   regex_t *regex;
   int regreturn=0;
+  size_t i, inindex;
   char *tailptr, *colstring;
+  struct uiparams *up=&p->up;
   struct gal_linkedlist_sll *colsll=NULL;
 
   /* Go through each given column string and take the appropriate step. */
@@ -553,10 +670,10 @@ outputcolumns(struct tableparams *p)
 
           /* Check if the given value is not larger than the number of
              columns in the input catalog. */
-          if(tlong>p->ncols)
+          if(tlong>up->ncols)
             error(EXIT_FAILURE, 0, "%s (hdu: %s) has %lu columns, but "
                   "you have asked for column number %lu", p->up.fitsname,
-                  p->cp.hdu, p->ncols, tlong);
+                  p->cp.hdu, up->ncols, tlong);
 
           /* Everything seems to be fine, put this column number in the
              output column numbers linked list. Note that internally, the
@@ -565,15 +682,6 @@ outputcolumns(struct tableparams *p)
         }
       else
         {
-          /* First we need to make sure that the full column information is
-             ready (so we can parse the values of the column names in
-             p->ttype). Note that the parsing function to read all column
-             information is not set by default. Note that this is only done
-             once (for the first string value to the `--column' option).*/
-          if(p->ttype==NULL)
-            readallcolinfo(p->fitsptr, p->ncols, &p->typecode,
-                           &p->tform, &p->ttype, &p->tunit);
-
           /* Allocate the regex_t structure: */
           errno=0; regex=malloc(sizeof *regex);
           if(regex==NULL)
@@ -604,9 +712,9 @@ outputcolumns(struct tableparams *p)
              column names. Just note that column names are not mandatory in
              the FITS standard, so some (or all) columns might not have
              names, if so `p->ttype[i]' will be NULL. */
-          for(i=0;i<p->ncols;++i)
-            if(p->ttype[i] && regexec(regex, p->ttype[i], 0, 0, 0)==0)
-                gal_linkedlist_add_to_sll(&colsll, i);
+          for(i=0;i<up->ncols;++i)
+            if(up->ttype[i] && regexec(regex, up->ttype[i], 0, 0, 0)==0)
+              gal_linkedlist_add_to_sll(&colsll, i);
 
           /* Free the regex_t structure: */
           regfree(regex);
@@ -616,12 +724,28 @@ outputcolumns(struct tableparams *p)
       free(colstring);
     }
 
-  /* Put the desired columns (in reverse order due to the nature of a
-     linked list) into an array to read from later, then pop everything to
-     the un-used `i' variable from the list (which will automatically free
-     any allocate space). */
-  gal_linkedlist_sll_to_array(colsll, &p->ocols, &p->nocols, 1);
-  while(colsll) gal_linkedlist_pop_from_sll(&colsll, &i);
+  /* Based on the number of columns found above, allocate an array of
+     `outcolumn' structures to keep the information for each column. */
+  p->nocols=gal_linkedlist_num_in_sll(colsll);
+  errno=0;
+  p->ocols=malloc(p->nocols*sizeof *p->ocols);
+  if(p->ocols==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->ocols",
+          p->nocols*sizeof *p->ocols);
+
+  /* Fill in the output column with the needed input table
+     information. Note that a simple linked list is first-in-last-out, so
+     we have to fill in the output columns in reverse order. Also, note
+     that we are popping from the linked list keeping the indexs of the
+     output columns and thus also freeing their allocated space. */
+  i=p->nocols-1;
+  while(colsll)
+    {
+      gal_linkedlist_pop_from_sll(&colsll, &inindex);
+      p->ocols[i].datatype=up->datatype[inindex];
+      p->ocols[i].inindex=inindex;
+      --i;
+    }
 }
 
 
@@ -632,6 +756,7 @@ void
 preparearrays(struct tableparams *p)
 {
   size_t i;
+  struct uiparams *up=&p->up;
 
   /* Set the columns that should be included in the output. If up->columns
      is set, then use it, otherwise, set all the columns for printing. */
@@ -639,13 +764,17 @@ preparearrays(struct tableparams *p)
     outputcolumns(p);
   else
     {
-      p->nocols=p->ncols;
+      p->nocols=up->ncols;
       errno=0;
       p->ocols=malloc(p->nocols * sizeof *p->ocols);
       if(p->ocols==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for p->ocols",
               p->nocols * sizeof *p->ocols);
-      for(i=0;i<p->nocols;++i) p->ocols[i]=i;
+      for(i=0;i<p->nocols;++i)
+        {
+          p->ocols[i].datatype=up->datatype[i];
+          p->ocols[i].inindex=i;
+        }
     }
 }
 
@@ -684,9 +813,10 @@ setparams(int argc, char *argv[], struct tableparams *p)
   cp->removedirinfo = 1;
 
   /* Initialize this utility's pointers to NULL. */
+  p->ocols=NULL;
   up->columns=NULL;
   up->txtname=up->fitsname=NULL;
-  p->tform=p->ttype=p->tunit=NULL;
+  up->tform=up->ttype=up->tunit=NULL;
 
   /* Read the arguments. */
   errno=0;
@@ -739,25 +869,40 @@ setparams(int argc, char *argv[], struct tableparams *p)
 void
 freeandreport(struct tableparams *p)
 {
-  size_t i;
+  size_t i, j;
   int status=0;
+  char **rowofstrings;
+  struct uiparams *up=&p->up;
 
   /* Free the allocated arrays: */
-  free(p->ocols);
   free(p->cp.hdu);
-  free(p->typecode);
+  free(up->datatype);
   free(p->cp.output);
 
-  /* Free the internal pointers first, then the actual arrays: */
-  for(i=0;i<p->ncols;++i)
+  /* Free the input column information: */
+  for(i=0;i<up->ncols;++i)
     {
-      if(p->tform) free(p->tform[i]);
-      if(p->ttype) free(p->ttype[i]);
-      if(p->tunit) free(p->tunit[i]);
+      if(up->tform) free(up->tform[i]);
+      if(up->ttype) free(up->ttype[i]);
+      if(up->tunit) free(up->tunit[i]);
     }
-  free(p->tform);
-  free(p->ttype);
-  free(p->tunit);
+  free(up->tform);
+  free(up->ttype);
+  free(up->tunit);
+
+  /* Free the output column information: */
+  for(i=0;i<p->nocols;++i)
+    {
+      if(p->ocols[i].datatype==TSTRING)
+        {
+          rowofstrings=(char **)(p->ocols[i].data);
+          for(j=0;j<p->nrows;++j)
+            free(rowofstrings[j]);
+        }
+      else
+        free(p->ocols[i].data);
+    }
+  free(p->ocols);
 
   /* Close the FITS file: */
   if(p->up.fitsname && fits_close_file(p->fitsptr, &status))
