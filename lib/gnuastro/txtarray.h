@@ -50,6 +50,10 @@ gal_txtarray_txt_to_array(char *filename, double **array,
                           size_t *s0, size_t *s1);
 
 void
+gal_txtarray_printf_format(int numcols, char **fmt, int *int_cols,
+                           int *accu_cols, int *space, int *prec, char forg);
+
+void
 gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
                           int *int_cols, int *accu_cols, int *space, int *prec,
                           char forg, const char *filename);

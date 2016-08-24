@@ -664,12 +664,12 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
                      void **out, int outbitpix)
 {
   size_t i=0;
-  unsigned char *b, *bf, *ib=in, *iib=in;
-  short *s, *sf, *is=in, *iis=in;
-  long *l, *lf, *il=in, *iil=in;
-  LONGLONG *L, *Lf, *iL=in, *iiL=in;
-  float *f, *ff, *iif=in, *iiif=in;
-  double *d, *df, *id=in, *iid=in;
+  unsigned char *b, *bf,  *ib=in,  *iib=in;
+  short         *s, *sf,  *is=in,  *iis=in;
+  long          *l, *lf,  *il=in,  *iil=in;
+  LONGLONG      *L, *Lf,  *iL=in,  *iiL=in;
+  float         *f, *ff, *iif=in, *iiif=in;
+  double        *d, *df,  *id=in,  *iid=in;
 
   /* Allocate space for the output and start filling it. */
   *out=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_dtype(outbitpix) );
