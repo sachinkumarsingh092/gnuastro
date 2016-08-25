@@ -760,6 +760,96 @@ findmax(struct imgarithparams *p)
 
 
 
+int
+smaller(double left, double right)
+{ return left<right; }
+
+int
+larger(double left, double right)
+{ return left>right; }
+
+int
+equal(double left, double right)
+{ return left==right; }
+
+int
+smallerequal(double left, double right)
+{ return left<=right; }
+
+int
+largerequal(double left, double right)
+{ return left>=right; }
+
+
+
+
+
+void
+conditionals(struct imgarithparams *p, char *operator)
+{
+  size_t size;
+  double fnum, snum;            /* First or second number.    */
+  double *farr, *sarr;          /* First or second array.     */
+  double *f, *s, *ff, *ss;
+  int (*thisfunction)(double, double)=NULL;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+  pop_operand(p, &snum, &sarr, operator);
+
+  /* Set the total number of pixels, note that we can't do this in the
+     definition of the variable because p->s0 and p->s1 will be set in
+     pop_operand for the first image. */
+  size=p->s0*p->s1;
+
+  if(!strcmp(operator, "<"))       thisfunction = &smaller;
+  else if(!strcmp(operator, ">"))  thisfunction = &larger;
+  else if(!strcmp(operator, "==")) thisfunction = &equal;
+  else if(!strcmp(operator, "<=")) thisfunction = &smallerequal;
+  else if(!strcmp(operator, ">=")) thisfunction = &largerequal;
+  else
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
+          "can address the problem. The value of `operator' in "
+          "conditionals (%s) is not recognized",
+          PACKAGE_BUGREPORT, operator);
+
+  /* Do the operation: */
+  if(farr && sarr)              /* Both are arrays. */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      ff=(f=farr)+size;
+      ss=(s=sarr)+size;
+      do *s = thisfunction(*s, *f++); while(++s<ss);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
+
+      /* Clean up. */
+      free(farr);
+    }
+  else if(farr)                 /* Only the first is an array. */
+    {
+      ff=(f=farr)+size;
+      do *f = thisfunction(snum, *f); while(++f<ff);
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+    }
+  else if(sarr)                 /* Only the first is an array. */
+    {
+      ss=(s=sarr)+size;
+      do *s = thisfunction(*s, fnum); while(++s<ss);
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
+    }
+  else                          /* Both are numbers.           */
+    add_operand(p, NOOPTFILENAME, thisfunction(snum, fnum), NOOPTARRAY);
+}
+
+
+
+
+
 
 
 
@@ -822,6 +912,11 @@ reversepolish(struct imgarithparams *p)
                   || !strcmp(token->v, "max")
                   || !strcmp(token->v, "average")
                   || !strcmp(token->v, "median")) alloppixs(p, token->v);
+          else if(!strcmp(token->v, "<")
+                  || !strcmp(token->v, ">")
+                  || !strcmp(token->v, "==")
+                  || !strcmp(token->v, "<=")
+                  || !strcmp(token->v, ">=")) conditionals(p, token->v);
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as an operator", token->v);

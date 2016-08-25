@@ -6824,16 +6824,16 @@ referenced Wikipedia article provides some excellent explanation on
 this notation but here we will give a short summary for
 self-sufficiency.
 
-In the postfix notation, the operator is placed after the operands, as
-we will see below this removes the need to define parenthesis for most
-ordinary operators. For example, instead of writing @command{5+6}, we
-write @command{5 6 +}. To easily understand how this notation works,
-you can think of each operand a node in a first-in-first-out
-stack. Every time an operator is confronted, it pops the number of
-operands it needs from the top of the stack (so they don't exist in
-the stack any more), does its operation and pushes the result back on
-top of the stack. So if you want the average of 5 and 6, you would
-write: @command{5 6 + 2 /}. The operations that are done are:
+In the postfix notation, the operator is placed after the operands, as we
+will see below this removes the need to define parenthesis for most
+ordinary operators. For example, instead of writing @command{5+6}, we write
+@command{5 6 +}. To easily understand how this notation works, you can
+think of each operand as a node in a first-in-first-out stack. Every time
+an operator is confronted, it pops the number of operands it needs from the
+top of the stack (so they don't exist in the stack any more), does its
+operation and pushes the result back on top of the stack. So if you want
+the average of 5 and 6, you would write: @command{5 6 + 2 /}. The
+operations that are done are:
 
 @enumerate
 @item
@@ -6853,24 +6853,24 @@ the stack (top-most is @command{2}, then @command{11}) and divide the
 second one by the first.
 @end enumerate
 
-In Gnuastro's Arithmetic, the operands can be FITS images or
-numbers. As you can see, very complicated procedures can be created
-without the need for parenthesis. Even functions which take an
-arbitrary number of arguments can be defined in this notation. For
-example the Postscript language@footnote{See the EPS and PDF part of
-@ref{Recognized file types} for a little more on the Postscript
-language.} (the programming language for PDF files) uses this notation
-style
+In Gnuastro's Arithmetic, the operands can be FITS images or numbers. As
+you can see, very complicated procedures can be created without the need
+for parenthesis. Even functions which take an arbitrary number of arguments
+can be defined in this notation. For example the Postscript
+language@footnote{See the EPS and PDF part of @ref{Recognized file types}
+for a little more on the Postscript language.} (the programming language in
+Postscript and compiled into PDF files) uses this notation.
 
 @node Arithmetic operators, Invoking astarithmetic, Reverse polish notation, Arithmetic
 @subsection Arithmetic operators
 
-The recognized operators in Arithmetic are listed below. See
-@ref{Reverse polish notation} for more on how the operators and
-operands should be ordered on the command-line. The operands to all
-operators can be a data array (for example a FITS image) or a number,
-the output will be an array or number according to the inputs. For
-example a number multiplied by an array will produce an array.
+The recognized operators in Arithmetic are listed below. See @ref{Reverse
+polish notation} for more on how the operators and operands should be
+ordered on the command-line. The operands to all operators can be a data
+array (for example a FITS image) or a number, the output will be an array
+or number according to the inputs. For example a number multiplied by an
+array will produce an array. The conditional operators will return pixel,
+or numerical values of 0 (false) or 1 (true).
 
 @table @command
 
@@ -6955,6 +6955,33 @@ the average of the respective pixels in all operands in the stack
 @item median
 Similar to @command{min}, but the pixels of the output will contain
 the median of the respective pixels in all operands in the stack.
+
+@item <
+Smaller than: If the second popped (or left operand in infix notation, see
+@ref{Reverse polish notation}) value is smaller than the right operand,
+then this function will return a value of 1, otherwise it will return a
+value of 0. If both operands are images, then all the pixels will be
+compared with their counter parts in the other image. If only one operand
+is an image, then all the pixels will be compared with the number. Finally
+if both are numbers, then the output is also just one number (0 or 1).
+
+@item >
+Larger than: similar to the @code{<} (smaller than operator), but returning
+1 when the second popped operand is larger than the first.
+
+@item ==
+Equality: similar to the @code{<} (smaller than operator), but returning 1
+when the second popped operand is equal (to double precison floating point
+accuracy) to the first.
+
+@item <=
+Smaller or equal: similar to the @code{<} (smaller than operator), but
+returning 1 when the second popped operand is smaller or equal to the
+first.
+
+@item >=
+Larger or equal: similar to the @code{<} (smaller than operator), but
+returning 1 when the second popped operand is larger or equal to the first.
 
 @end table
 
