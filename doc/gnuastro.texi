@@ -5983,8 +5983,8 @@ protocol, it is generally wise to lie down until the feeling
 passes.''. This is a great book and strongly recommended, give it a look if
 you want to truely enjoy your work/life in this environment.}. So while the
 FITS table standards are very beneficial for the tools that recognize them,
-they are hard to use in the vast majority of available software. This cases
-some major limitations for their generic use.
+they are hard to use in the vast majority of available software. This
+creates limitations for their generic use.
 
 `Table' is Gnuastro's solution to this problem. With Table, FITS tables
 (ASCII or binary) are directly accessible to the Unix-like operating
