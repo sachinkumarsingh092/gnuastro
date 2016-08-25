@@ -750,32 +750,47 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
    be removed and the given suffix will be put in the end. */
 void
 gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
-                int dontdelete, char **outname)
+                              int dontdelete, char **outname)
 {
   char *out;
   size_t i, l, offset=0;
 
-  /* Note that we are just using malloccat here to allocate the right
-     space! The contents of the allocated space will be changed after
-     this.*/
+  /* Merge the contents of the input name and suffix name (while also
+     allocating the necessary space).*/
   out=gal_checkset_malloc_cat(inname, suffix);
 
-  /* Put the input in the space and remove all elements including and after
-     '.'.  Note that if there is no '.' in the name,
-     gal_checkset_malloc_cat has already appended inname and suffix.*/
-  l=strlen(inname);
-  strcpy(out, inname);
-  for(i=l;i!=0;--i)
+  /* If there is actually a suffix, replace it with the (possibly) existing
+     suffix. */
+  if(suffix[0]!='\0')
     {
-      /* We don't want to remove any '.' in a directory name so if a
-         '/' is encountered in our search from the end of the file
-         name, we won't continue. */
-      if(out[i]=='/') break;
-      else if(out[i]=='.')
+      /* Start from the end of the input array*/
+      l=strlen(inname);
+      for(i=l-1;i!=0;--i)
         {
-          out[i]='\0';
-          strcat(out, suffix);
-          break;
+          /* We don't want to touch anything before a `/' (directory
+             names). We are only concerned with file names here. */
+          if(out[i]=='/')
+            {
+              /* When `/' is the last input character, then the input is
+                 clearly not a filename, but a directory name. In this
+                 case, adding a suffix is meaningless (a suffix belongs to
+                 a filename for Gnuastro's tools). So close the string
+                 after the `/' and leave the loop. However, if the `/'
+                 isn't the last input name charector, there is probably a
+                 filename (without a "." suffix), so break from the
+                 loop. No further action is required, since we initially
+                 allocated the necessary space and concatenated the input
+                 and suffix arrays. */
+              if(i==l-1)
+                out[i+1]='\0';
+              break;
+            }
+          else if(out[i]=='.')
+            {
+              out[i]='\0';
+              strcat(out, suffix);
+              break;
+            }
         }
     }
 
