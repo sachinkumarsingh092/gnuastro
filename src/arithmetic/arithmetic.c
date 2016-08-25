@@ -109,20 +109,6 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
           operator);
 
 
-  /* Do a sanity check. The basic idea behind this is that all the
-     conditionals below will evaluate to 1 or 0. So if more than one
-     of them are true, then the sum will be larger than 1 and if none
-     of them are true then the sum will be 0. So if the sum (check) is
-     not equal to 1, then there is a bug and the user should be
-     warned. The parenthesis will help in avoiding compiler
-     warnings.*/
-  if( (strlen(operands->filename)>0) + !(isnan(operands->number))
-      + (operands->array!=NOOPTARRAY) != 1)
-    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix the "
-          "problem. For some reason, one node in the operands linked list "
-          "has more than one value", PACKAGE_BUGREPORT);
-
-
   /* Set the array output. If filename is present then read the file
      and fill in the array, if not then just set the array. */
   if(strlen(operands->filename))
@@ -820,7 +806,7 @@ conditionals(struct imgarithparams *p, char *operator)
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
          here. */
-      ff=(f=farr)+size;
+      f=farr;
       ss=(s=sarr)+size;
       do *s = thisfunction(*s, *f++); while(++s<ss);
 
@@ -844,6 +830,61 @@ conditionals(struct imgarithparams *p, char *operator)
     }
   else                          /* Both are numbers.           */
     add_operand(p, NOOPTFILENAME, thisfunction(snum, fnum), NOOPTARRAY);
+}
+
+
+
+
+
+/* Replace the pixels in the second popped element with the first. While
+   choosing the pixels that are selected from the third The third popped
+   element. The third is considered to be an array that can only be filled
+   with 0 or 1. */
+void
+where(struct imgarithparams *p)
+{
+  size_t size;
+  double *f, *s, *t, *ss;
+  double fnum, snum, tnum;      /* First, second, or third number.    */
+  double *farr, *sarr, *tarr;   /* First, second, or third array.     */
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, "where");
+  pop_operand(p, &snum, &sarr, "where");
+  pop_operand(p, &tnum, &tarr, "where");
+
+  /* Set the total number of pixels, note that we can't do this in the
+     definition of the variable because p->s0 and p->s1 will be set in
+     pop_operand for the first image. */
+  size=p->s0*p->s1;
+
+  /* Do the operation: */
+  if(sarr && tarr)              /* Both are arrays. */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      t=tarr;
+      ss=(s=sarr)+size;
+      if(farr)
+        {
+          f=farr;
+          do *s = *t++ ? *f++ : *s; while(++s<ss);
+        }
+      else
+        do *s = *t++ ? fnum : *s; while(++s<ss);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
+
+      /* Clean up. */
+      free(farr);
+      free(tarr);
+    }
+  else
+    error(EXIT_FAILURE, 0, "the first and second arguments (second and "
+          "third popped elements) to `where' have to be arrays.");
 }
 
 
@@ -917,6 +958,7 @@ reversepolish(struct imgarithparams *p)
                   || !strcmp(token->v, "==")
                   || !strcmp(token->v, "<=")
                   || !strcmp(token->v, ">=")) conditionals(p, token->v);
+          else if(!strcmp(token->v, "where")) where(p);
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as an operator", token->v);

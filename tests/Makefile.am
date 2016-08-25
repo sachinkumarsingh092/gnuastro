@@ -42,7 +42,8 @@ mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh header/write.sh           \
 header/print.sh header/update.sh header/delete.sh imgstat/basicstats.sh     \
 subtractsky/subtractsky.sh noisechisel/noisechisel.sh mkcatalog/simple.sh   \
 mkcatalog/aperturephot.sh arithmetic/snimage.sh arithmetic/onlynumbers.sh   \
-cosmiccal/simpletest.sh table/asciitobinary.sh table/binarytoascii.sh
+arithmetic/where.sh cosmiccal/simpletest.sh table/asciitobinary.sh          \
+table/binarytoascii.sh
 
 EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                  \
 mkprof/ellipticalmasks.txt mkprof/inputascanvas.txt mkprof/mkprofcat2.txt  \
@@ -117,5 +118,6 @@ mkcatalog/simple.sh: noisechisel/noisechisel.sh.log
 mkcatalog/aperturephot.sh: noisechisel/noisechisel.sh.log          \
                            mkprof/inputascanvas.sh
 arithmetic/snimage.sh: noisechisel/noisechisel.sh.log
+arithmetic/where.sh: noisechisel/noisechisel.sh.log
 arithmetic/onlynumbers.sh: prepconf.sh.log
 cosmiccal/simpletest.sh: prepconf.sh.log
