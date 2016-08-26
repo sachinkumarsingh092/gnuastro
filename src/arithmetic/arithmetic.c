@@ -744,11 +744,11 @@ findmax(struct imgarithparams *p)
 
 
 int
-smaller(double left, double right)
+lessthan(double left, double right)
 { return left<right; }
 
 int
-larger(double left, double right)
+greaterthan(double left, double right)
 { return left>right; }
 
 int
@@ -756,11 +756,11 @@ equal(double left, double right)
 { return left==right; }
 
 int
-smallerequal(double left, double right)
+lessequal(double left, double right)
 { return left<=right; }
 
 int
-largerequal(double left, double right)
+greaterequal(double left, double right)
 { return left>=right; }
 
 
@@ -785,11 +785,11 @@ conditionals(struct imgarithparams *p, char *operator)
      pop_operand for the first image. */
   size=p->s0*p->s1;
 
-  if(!strcmp(operator, "<"))       thisfunction = &smaller;
-  else if(!strcmp(operator, ">"))  thisfunction = &larger;
-  else if(!strcmp(operator, "==")) thisfunction = &equal;
-  else if(!strcmp(operator, "<=")) thisfunction = &smallerequal;
-  else if(!strcmp(operator, ">=")) thisfunction = &largerequal;
+  if(!strcmp(operator, "lt"))       thisfunction = &lessthan;
+  else if(!strcmp(operator, "gt"))  thisfunction = &greaterthan;
+  else if(!strcmp(operator, "eq"))  thisfunction = &equal;
+  else if(!strcmp(operator, "le"))  thisfunction = &lessequal;
+  else if(!strcmp(operator, "ge"))  thisfunction = &greaterequal;
   else
     error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
           "can address the problem. The value of `operator' in "
@@ -949,11 +949,11 @@ reversepolish(struct imgarithparams *p)
                   || !strcmp(token->v, "max")
                   || !strcmp(token->v, "average")
                   || !strcmp(token->v, "median")) alloppixs(p, token->v);
-          else if(!strcmp(token->v, "<")
-                  || !strcmp(token->v, ">")
-                  || !strcmp(token->v, "==")
-                  || !strcmp(token->v, "<=")
-                  || !strcmp(token->v, ">=")) conditionals(p, token->v);
+          else if(!strcmp(token->v, "lt")
+                  || !strcmp(token->v, "gt")
+                  || !strcmp(token->v, "eq")
+                  || !strcmp(token->v, "le")
+                  || !strcmp(token->v, "ge")) conditionals(p, token->v);
           else if(!strcmp(token->v, "where")) where(p);
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "

@@ -165,8 +165,17 @@ parse_opt(int key, char *arg, struct argp_state *state)
      here: */
   state->child_inputs[0]=&p->cp;
 
-  /* There is no check for the equal character here because in
-     Arithmetic, the equal sign can be an argument. */
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
 
   switch(key)
     {

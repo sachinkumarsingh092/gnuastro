@@ -6956,31 +6956,31 @@ the average of the respective pixels in all operands in the stack
 Similar to @command{min}, but the pixels of the output will contain
 the median of the respective pixels in all operands in the stack.
 
-@item <
-Smaller than: If the second popped (or left operand in infix notation, see
-@ref{Reverse polish notation}) value is smaller than the right operand,
-then this function will return a value of 1, otherwise it will return a
-value of 0. If both operands are images, then all the pixels will be
-compared with their counter parts in the other image. If only one operand
-is an image, then all the pixels will be compared with the number. Finally
-if both are numbers, then the output is also just one number (0 or 1).
+@item lt
+Less than: If the second popped (or left operand in infix notation, see
+@ref{Reverse polish notation}) value is smaller than the first popped
+operand, then this function will return a value of 1, otherwise it will
+return a value of 0. If both operands are images, then all the pixels will
+be compared with their counterparts in the other image. If only one operand
+is an image, then all the pixels will be compared with the the single value
+(number) of the other operand. Finally if both are numbers, then the output
+is also just one number (0 or 1).
 
-@item >
-Larger than: similar to the @code{<} (smaller than operator), but returning
-1 when the second popped operand is larger than the first.
+@item gt
+Greater than: similar to @code{lt} (`less than' operator), but
+returning 1 when the second popped operand is greater than the first.
 
-@item ==
-Equality: similar to the @code{<} (smaller than operator), but returning 1
+@item eq
+Equality: similar to @code{lt} (`less than' operator), but returning 1
 when the second popped operand is equal (to double precison floating point
 accuracy) to the first.
 
-@item <=
-Smaller or equal: similar to the @code{<} (smaller than operator), but
-returning 1 when the second popped operand is smaller or equal to the
-first.
+@item le
+Less or equal: similar to @code{lt} (`less than' operator), but returning 1
+when the second popped operand is smaller or equal to the first.
 
-@item >=
-Larger or equal: similar to the @code{<} (smaller than operator), but
+@item ge
+Greater or equal: similar to @code{lt} (`less than' operator), but
 returning 1 when the second popped operand is larger or equal to the first.
 
 @item where
