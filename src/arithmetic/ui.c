@@ -122,6 +122,12 @@ readconfig(char *filename, struct imgarithparams *p)
       else if(strcmp(name, "output")==0)
         gal_checkset_allocate_copy_set(value, &cp->output,
                                        &cp->outputset);
+      else if(strcmp(name, "type")==0)
+        {
+          if(p->up.typeset) continue;
+          gal_checkset_known_types(value, &p->type, filename, lineno);
+          p->up.typeset=1;
+        }
 
 
       /* Operating modes: */
@@ -167,6 +173,8 @@ printvalues(FILE *fp, struct imgarithparams *p)
   fprintf(fp, "\n# Output:\n");
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
+  if(up->typeset)
+    gal_configfiles_print_type(fp, p->type);
 
 
   /* For the operating mode, first put the macro to print the common
@@ -190,6 +198,10 @@ checkifset(struct imgarithparams *p)
   int intro=0;
   char comment[100];
   size_t numhdus=gal_linkedlist_num_in_stll(p->hdus);
+
+  /* Output parameters: */
+  if(p->up.typeset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("type");
 
   /* Make sure the number of HDUs is not less than the total number of
      FITS images. If there are more HDUs than there are FITS images,

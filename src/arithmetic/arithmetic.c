@@ -155,9 +155,6 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
       /* Free the HDU string: */
       free(hdu);
 
-      /* Set the bitpix of the output. */
-      if(bitpix==DOUBLE_IMG) p->obitpix=DOUBLE_IMG;
-
       /* Add to the number of popped FITS images: */
       ++p->popcounter;
     }
@@ -923,7 +920,6 @@ reversepolish(struct imgarithparams *p)
   /* Prepare the processing: */
   p->s0=p->s1=0;
   p->operands=NULL;
-  p->obitpix=FLOAT_IMG;
   p->addcounter=p->popcounter=0;
 
   /* Go over each input token and do the work. */
@@ -976,24 +972,26 @@ reversepolish(struct imgarithparams *p)
      FITS image, if not, simply print the floating point number. */
   if(p->operands->array)
     {
-      /* If none of the inputs had a double type, then convert the
-         output array into a float and then save it. Note that the
-         last operand must be an array. */
-      if(p->obitpix==FLOAT_IMG)
-        {
-          gal_fits_change_type(p->operands->array, DOUBLE_IMG,
-                                    p->s0*p->s1, p->anyblank,
-                                    (void **)(&farray), FLOAT_IMG);
-          gal_fits_array_to_file(p->cp.output, "astimgarith",
-                                 FLOAT_IMG, farray, p->s0, p->s1,
-                                 p->anyblank, p->wcs, NULL,
-                                 SPACK_STRING);
-        }
-      else
+      /* Internally, all arrays were double type. But the user could set
+         the the output type using the type option. So if the user has
+         asked for anything other than a double, we will have to convert
+         the arrays.*/
+      if(p->type==DOUBLE_IMG)
         gal_fits_array_to_file(p->cp.output, "astimgarith",
                                DOUBLE_IMG, p->operands->array,
                                p->s0, p->s1, p->anyblank,
                                p->wcs, NULL, SPACK_STRING);
+      else
+        {
+          gal_fits_change_type(p->operands->array, DOUBLE_IMG,
+                               p->s0*p->s1, p->anyblank,
+                               (void **)(&farray), p->type);
+          gal_fits_array_to_file(p->cp.output, "astimgarith",
+                                 p->type, farray, p->s0, p->s1,
+                                 p->anyblank, p->wcs, NULL,
+                                 SPACK_STRING);
+        }
+
     }
   else
     printf("%g\n", p->operands->number);

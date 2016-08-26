@@ -71,6 +71,7 @@ struct uiparams
   char        *maskname;  /* Name of mask image.                        */
   char            *mhdu;  /* Mask image HDU.                            */
 
+  int           typeset;
   int       masknameset;
   int masknameallocated;
   int           mhduset;
@@ -93,13 +94,12 @@ struct imgarithparams
   size_t        popcounter;  /* The number of FITS images popped.       */
   size_t                s0;  /* Length of image along first C axis.     */
   size_t                s1;  /* Length of image along second C axis.    */
-  int              obitpix;  /* The type of the output image.           */
   int                 nwcs;  /* The number of WCS coordinates.          */
   struct wcsprm       *wcs;  /* The WCS structure.                      */
   int             anyblank;  /* If there are blank pixels in the image. */
 
   /* Output: */
-
+  int                 type;  /* User's desired output bixpix value.     */
 
   /* Operating mode: */
 

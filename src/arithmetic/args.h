@@ -82,7 +82,7 @@ const char doc[] =
 /* Available letters for short options:
 
    a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H I J L O Q R T U W X Y Z
+   A B C E F G H I J L O Q R U W X Y Z
 
    Number keys used: <=500
 
@@ -127,6 +127,14 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
+      2
+    },
+    {
+      "type",
+      'T',
+      "STR",
+      0,
+      "byte, short, long, longlong, float, double.",
       2
     },
 
@@ -185,6 +193,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
 
 
+    /* Output */
+    case 'T':
+      gal_checkset_known_types(arg, &p->type, NULL, 0);
+      p->up.typeset=1;
+      break;
 
     /* Operating modes: */
 
