@@ -66,30 +66,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /**************       Options and parameters    ***************/
 /**************************************************************/
-/* Check if the value to the `--type' option is recognized,  */
-void
-checksaveouttype(struct mkprofparams *p, char *arg)
-{
-  /* First check if the value is one of the accepted types. */
-  if     (strcmp(arg, "byte")==0)     p->up.type=BYTE_IMG;
-  else if(strcmp(arg, "short")==0)    p->up.type=SHORT_IMG;
-  else if(strcmp(arg, "long")==0)     p->up.type=LONG_IMG;
-  else if(strcmp(arg, "longlong")==0) p->up.type=LONGLONG_IMG;
-  else if(strcmp(arg, "float")==0)    p->up.type=FLOAT_IMG;
-  else if(strcmp(arg, "double")==0)   p->up.type=DOUBLE_IMG;
-  else
-    error(EXIT_FAILURE, 0, "given value of the `--type' (`-T') option "
-          "(`%s') is not recognized. It must be `byte', `short', `long' "
-          "`longlong', `float', or `double'.", arg);
-
-  /* Flag this option as set: */
-  p->up.typeset=1;
-}
-
-
-
-
-
 void
 readconfig(char *filename, struct mkprofparams *p)
 {
@@ -173,7 +149,8 @@ readconfig(char *filename, struct mkprofparams *p)
       else if(strcmp(name, "type")==0)
         {
           if(p->up.typeset) continue;
-          checksaveouttype(p, value);
+          gal_checkset_known_types(value, &p->up.type, filename, lineno);
+          p->up.typeset=1;
         }
 
 
@@ -415,27 +392,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(up->replaceset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "replace", p->replace);
   if(up->typeset)
-    {
-      switch(up->type)
-        {
-        case BYTE_IMG:
-          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "byte");
-        case SHORT_IMG:
-          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "short");
-        case LONG_IMG:
-          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "long");
-        case LONGLONG_IMG:
-          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "longlong");
-        case FLOAT_IMG:
-          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "float");
-        case DOUBLE_IMG:
-          fprintf(fp, CONF_SHOWFMT"%s\n", "type", "double");
-        default:
-          error(EXIT_FAILURE, 0, "a bug! the value of up->type is not "
-                "recognized in `ui.c'. Please contact us at %s so we can "
-                "address the problem.", PACKAGE_BUGREPORT);
-        }
-    }
+    gal_configfiles_print_type(fp, p->up.type);
 
   fprintf(fp, "\n# Profiles:\n");
   if(up->tunitinpset)

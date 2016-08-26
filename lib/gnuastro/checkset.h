@@ -172,6 +172,16 @@ gal_checkset_any_double(char *optarg, double *var, char *lo, char so,
 
 
 
+/**************************************************************/
+/**********          Check fixed strings           ************/
+/**************************************************************/
+void
+gal_checkset_known_types(char *optarg, int *bitpix, char *filename,
+                         size_t lineno);
+
+
+
+
 
 
 

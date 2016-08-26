@@ -201,3 +201,31 @@ gal_configfiles_write_local_config_stop(char *indir, char *filename,
 
   return fp;
 }
+
+
+
+
+
+void
+gal_configfiles_print_type(FILE *fp, int bitpix)
+{
+  switch(bitpix)
+    {
+    case BYTE_IMG:
+      fprintf(fp, CONF_SHOWFMT"%s\n", "type", "byte");
+    case SHORT_IMG:
+      fprintf(fp, CONF_SHOWFMT"%s\n", "type", "short");
+    case LONG_IMG:
+      fprintf(fp, CONF_SHOWFMT"%s\n", "type", "long");
+    case LONGLONG_IMG:
+      fprintf(fp, CONF_SHOWFMT"%s\n", "type", "longlong");
+    case FLOAT_IMG:
+      fprintf(fp, CONF_SHOWFMT"%s\n", "type", "float");
+    case DOUBLE_IMG:
+      fprintf(fp, CONF_SHOWFMT"%s\n", "type", "double");
+    default:
+      error(EXIT_FAILURE, 0, "a bug! the value of bitpix is not recognized "
+            "in `gal_configfiles_print_type'. Please contact us at %s so "
+            "we can address the problem.", PACKAGE_BUGREPORT);
+    }
+}

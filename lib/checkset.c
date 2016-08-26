@@ -31,6 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include <fitsio.h>
+
 #include <gnuastro/checkset.h>
 
 
@@ -481,6 +483,54 @@ gal_checkset_any_double(char *optarg, double *var, char *lo, char so,
   CHECKFULLNUMBER;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********          Check fixed strings           ************/
+/**************************************************************/
+/* Check if the value to the `--type' option is recognized, if so set the
+   integer value. */
+void
+gal_checkset_known_types(char *optarg, int *bitpix, char *filename,
+                         size_t lineno)
+{
+  /* First check if the value is one of the accepted types. */
+  if     (strcmp(optarg, "byte")==0)     *bitpix=BYTE_IMG;
+  else if(strcmp(optarg, "short")==0)    *bitpix=SHORT_IMG;
+  else if(strcmp(optarg, "long")==0)     *bitpix=LONG_IMG;
+  else if(strcmp(optarg, "longlong")==0) *bitpix=LONGLONG_IMG;
+  else if(strcmp(optarg, "float")==0)    *bitpix=FLOAT_IMG;
+  else if(strcmp(optarg, "double")==0)   *bitpix=DOUBLE_IMG;
+  else
+    {
+      if(filename)
+        error_at_line(EXIT_FAILURE, 0, filename, lineno, "given value of "
+                      "the `type' option (`%s') is not recognized. It must "
+                      "be `byte', `short', `long', `longlong', `float', or "
+                      "`double'.", optarg);
+      else
+        error(EXIT_FAILURE, 0, "given value of the `--type' (`-T') option "
+              "(`%s') is not recognized. It must be `byte', `short', `long' "
+              "`longlong', `float', or `double'.", optarg);
+    }
+}
 
 
 

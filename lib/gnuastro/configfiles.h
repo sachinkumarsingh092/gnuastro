@@ -225,5 +225,7 @@ FILE *
 gal_configfiles_write_local_config_stop(char *indir, char *filename,
                                         char *spack, char *spack_name,
                                         char **outfilename);
+void
+gal_configfiles_print_type(FILE *fp, int bitpix);
 
 #endif

@@ -503,7 +503,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.replaceset=1;
       break;
     case 'T':
-      checksaveouttype(p, arg);
+      gal_checkset_known_types(arg, &p->up.type, NULL, 0);
+      p->up.typeset=1;
       break;
 
     /* Profiles: */
