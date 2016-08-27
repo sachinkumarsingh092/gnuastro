@@ -29,10 +29,7 @@ astconvolve_SOURCES = main.c main.h args.h ui.c ui.h convolve.c	\
 convolve.h cite.h
 
 astconvolve_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		   \
--lgalcheckset -lgalfits -lgaltiming -lgalconfigfiles -lgalmesh		   \
--lgalthreads -lgalspatialconvolve -lgalbox -lgalarraymanip -lgalstatistics \
--lgalqsort -lgallinkedlist
-
+-lgnuastro
 
 
 

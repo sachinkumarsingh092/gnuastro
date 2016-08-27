@@ -29,9 +29,7 @@ astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h eps.c	\
 eps.h jpeg.c jpeg.h convertt.c convertt.h
 
 astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgalconfigfiles -lgalfits -lgaltxtarray -lgalcheckset -lgaltiming	\
--lgallinkedlist -lgalstatistics -lgalarraymanip -lgalqsort
-
+-lgnuastro
 
 
 

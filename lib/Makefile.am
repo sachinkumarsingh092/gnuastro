@@ -21,49 +21,24 @@
 
 
 
+# Define the main library file
+lib_LTLIBRARIES = libgnuastro.la
 
-## Make libraries of the files that are shared between all the
-## programs:
+
+# Specify the library .c files
+libgnuastro_la_SOURCES = arraymanip.c box.c checkset.c configfiles.c	  \
+  fits.c linkedlist.c mesh.c mode.c polygon.c qsort.c spatialconvolve.c	  \
+  statistics.c threads.c timing.c txtarray.c wcs.c
+
+
+# Specify the installed headers, note that we are not blindly including all
+# `.h' files in the headersdir directory. Some of the header files don't
+# need to be installed.
 headersdir=$(top_srcdir)/lib/gnuastro
-noinst_LTLIBRARIES = libgalconfigfiles.la libgalfits.la libgaltxtarray.la \
-libgalcheckset.la libgallinkedlist.la libgaltiming.la libgalthreads.la	  \
-libgalbox.la libgalarraymanip.la libgalstatistics.la			  \
-libgalspatialconvolve.la libgalmesh.la libgalmode.la libgalqsort.la	  \
-libgalpolygon.la libgalwcs.la
-
-libgalbox_la_SOURCES = box.c $(headersdir)/box.h
-
-libgalwcs_la_SOURCES = wcs.c $(headersdir)/wcs.h
-
-libgalfits_la_SOURCES = fits.c $(headersdir)/fits.h
-
-libgalmesh_la_SOURCES = mesh.c $(headersdir)/mesh.h
-
-libgalmode_la_SOURCES = mode.c $(headersdir)/mode.h
-
-libgalqsort_la_SOURCES = qsort.c $(headersdir)/qsort.h
-
-libgaltiming_la_SOURCES = timing.c $(headersdir)/timing.h
-
-libgalpolygon_la_SOURCES = polygon.c $(headersdir)/polygon.h
-
-libgalthreads_la_SOURCES = threads.c $(headersdir)/threads.h
-
-libgalcheckset_la_SOURCES = checkset.c $(headersdir)/checkset.h
-
-libgaltxtarray_la_SOURCES = txtarray.c $(headersdir)/txtarray.h
-
-libgallinkedlist_la_SOURCES = linkedlist.c $(headersdir)/linkedlist.h
-
-libgalstatistics_la_SOURCES = statistics.c $(headersdir)/statistics.h
-
-libgalarraymanip_la_SOURCES = arraymanip.c $(headersdir)/arraymanip.h
-
-libgalconfigfiles_la_SOURCES = configfiles.c $(headersdir)/configfiles.h
-
-
-
-# Dependent libraries:
-libgalspatialconvolve_la_SOURCES = spatialconvolve.c	\
-	$(headersdir)/spatialconvolve.h
-libgalspatialconvolve_la_LDFLAGS = -lgalthreads -lgalbox
+pkginclude_HEADERS = $(headersdir)/arraymanip.h $(headersdir)/box.h       \
+  $(headersdir)/checkset.h $(headersdir)/configfiles.h                    \
+  $(headersdir)/fits.h $(headersdir)/linkedlist.h $(headersdir)/mesh.h    \
+  $(headersdir)/mode.h $(headersdir)/polygon.h $(headersdir)/qsort.h      \
+  $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h              \
+  $(headersdir)/threads.h $(headersdir)/timing.h $(headersdir)/txtarray.h \
+  $(headersdir)/wcs.h

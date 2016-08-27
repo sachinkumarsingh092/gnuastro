@@ -29,8 +29,7 @@ astarithmetic_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 arithmetic.c arithmetic.h
 
 astarithmetic_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
--lgalconfigfiles -lgalfits -lgalcheckset -lgaltiming -lgallinkedlist	\
--lgalmode -lgalstatistics -lgalarraymanip -lgalqsort
+-lgnuastro
 
 
 

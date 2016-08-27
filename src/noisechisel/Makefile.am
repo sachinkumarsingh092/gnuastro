@@ -31,9 +31,7 @@ label.c label.h detection.c detection.h sky.c sky.h segmentation.c	\
 segmentation.h clumps.c clumps.h
 
 astnoisechisel_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
--lgalconfigfiles -lgalfits -lgalcheckset -lgaltiming -lgalmesh		\
--lgalspatialconvolve -lgalthreads -lgalmode -lgalstatistics		\
--lgalarraymanip -lgalqsort -lgallinkedlist -lgalbox
+-lgnuastro
 
 
 

@@ -29,8 +29,7 @@ astTEMPLATE_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 TEMPLATE.c TEMPLATE.h
 
 astTEMPLATE_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgalconfigfiles -lgalfits -lgalcheckset -lgaltiming -lgallinkedlist
-
+-lgnuastro
 
 
 

@@ -29,8 +29,7 @@ asttable_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
 table.c table.h
 
 asttable_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la             \
--lgalconfigfiles -lgalfits -lgalcheckset -lgaltiming -lgallinkedlist    \
--lgaltxtarray
+-lgnuastro
 
 
 
