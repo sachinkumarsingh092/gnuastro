@@ -10707,6 +10707,21 @@ edge with it. The 8-connected neighbors on the other hand include the
 corner with this pixel. See Figure 6 (a) and (b) in Akhlaghi and
 Ichikawa (2015) for a demonstration.
 
+@item --noerodequant
+Pure erosion is going to carve off sharp and small objects completely out
+of the detected regions. This option can be used to avoid missing such
+sharp and small objects (which have significant pixels, but not over a
+large area). All pixels with a value larger than the significance level
+specified by this option will not be eroded during the erosion step
+above. However, they will undergo the erosion and dilation of the opening
+step below.
+
+Like the @option{--qthresh} option, the significance level is
+determined using the quantile (a value between 0 and 1). Just as a
+reminder, in the normal distribution, @mymath{1\sigma}, @mymath{1.5\sigma},
+and @mymath{2\sigma} are approximately on the 0.84, 0.93, and 0.98
+quantiles.
+
 @item -p
 @itemx --opening
 (@option{=INT}) Depth of opening to be applied to the eroded binary

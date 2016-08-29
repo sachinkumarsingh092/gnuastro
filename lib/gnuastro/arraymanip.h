@@ -60,6 +60,10 @@ void
 gal_arraymanip_no_nans_double(double *in, size_t *size);
 
 void
+gal_arraymanip_uchar_replace(unsigned char *in, size_t size,
+                             unsigned char from, unsigned char to);
+
+void
 gal_arraymanip_fmultip_const(float *in, size_t size, float a);
 
 void

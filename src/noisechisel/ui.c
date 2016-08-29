@@ -264,6 +264,13 @@ readconfig(char *filename, struct noisechiselparams *p)
                                   SPACK, filename, lineno);
           up->erodengbset=1;
         }
+      else if(strcmp(name, "noerodequant")==0)
+        {
+          if(up->noerodequantset) continue;
+          gal_checkset_float_l_0_s_1(value, &p->noerodequant, name, key,
+                                     SPACK, filename, lineno);
+          up->noerodequantset=1;
+        }
       else if(strcmp(name, "opening")==0)
         {
           if(up->openingset) continue;
@@ -470,6 +477,8 @@ printvalues(FILE *fp, struct noisechiselparams *p)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "erode", p->erode);
   if(up->erodengbset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "erodengb", p->erodengb);
+  if(up->noerodequantset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "noerodequant", p->noerodequant);
   if(up->openingset)
     fprintf(fp, CONF_SHOWFMT"%lu\n", "opening", p->opening);
   if(up->openingngbset)
@@ -577,6 +586,8 @@ checkifset(struct noisechiselparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("erode");
   if(up->erodengbset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("erodengb");
+  if(up->noerodequantset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("noerodequant");
   if(up->openingset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("opening");
   if(up->openingngbset==0)
@@ -644,6 +655,13 @@ sanitycheck(struct noisechiselparams *p)
 
   /* Make sure the input file exists. */
   gal_checkset_check_file(p->up.inputname);
+
+  /* Make sure that the noerode quantile is larger than qthresh. */
+  if( p->noerodequant <= p->qthresh)
+    error(EXIT_FAILURE, 0, "The quantile for no erosion (`--noerodequant') "
+          "must be larger than the base quantile threshold (`--qthresh', "
+          "or `-t'). You have provided %.4f and %.4f for the former and "
+          "latter, respectively.", p->noerodequant, p->qthresh);
 
   /* Set the maskname and mask hdu accordingly: */
   gal_fits_file_or_ext_name(p->up.inputname, p->cp.hdu, p->up.masknameset,

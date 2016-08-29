@@ -75,7 +75,7 @@ const char doc[] =
    f j w x z
    A J K W X Y Z
 
-   Used numbers: <=518 (except 503, and 515)
+   Used numbers: <=518 (except 515)
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -325,6 +325,14 @@ static struct argp_option options[] =
       "4or8",
       0,
       "Use 4 or 8 connectivity in erosion.",
+      4
+    },
+    {
+      "noerodequant",
+      503,
+      "FLT",
+      0,
+      "Quantile for no erosion.",
       4
     },
     {
@@ -680,6 +688,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       gal_checkset_int_4_or_8(arg, &p->erodengb, "erodengb", key, SPACK,
                               NULL, 0);
       p->up.erodengbset=1;
+      break;
+    case 503:
+      gal_checkset_float_l_0_s_1(arg, &p->qthresh, "noerodequant", key,
+                                 SPACK, NULL, 0);
+      p->up.noerodequantset=1;
       break;
     case 'p':
       gal_checkset_sizet_el_zero(arg, &p->opening, "opening", key, SPACK,

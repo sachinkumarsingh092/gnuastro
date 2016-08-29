@@ -35,6 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/spatialconvolve.h>
 
 #include "main.h"
+#include "binary.h"
 #include "noisechisel.h"
 
 
@@ -59,7 +60,6 @@ qthreshonmesh(void *inparam)
   float *mponeforall=mp->oneforall;
   float *oneforall=&mponeforall[mtp->id*mp->maxs0*mp->maxs1];
 
-  float qthresh=p->qthresh;
   size_t modeindex=(size_t)(-1);
   size_t s0, s1, ind, row, num, start, is1=mp->s1;
   size_t i, *indexs=&mp->indexs[mtp->id*mp->thrdcols];
@@ -97,12 +97,18 @@ qthreshonmesh(void *inparam)
       /* Do the desired operation on the mesh: */
       if(num)
         {
-          qsort(oneforall, num, sizeof *oneforall, gal_qsort_float_increasing);
-          gal_mode_index_in_sorted(oneforall, num, mirrordist, &modeindex,
-                                   &modesym);
-          if( modesym>GAL_MODE_SYM_GOOD && (float)modeindex/(float)num>minmodeq)
-            mp->garray1[ind]=
-              oneforall[gal_statistics_index_from_quantile(num, qthresh)];
+          qsort(oneforall, num, sizeof *oneforall,
+                gal_qsort_float_increasing);
+          gal_mode_index_in_sorted(oneforall, num, mirrordist,
+                                   &modeindex, &modesym);
+          if( modesym>GAL_MODE_SYM_GOOD
+              && (float)modeindex/(float)num>minmodeq)
+            {
+              mp->garray1[ind] = oneforall[
+                 gal_statistics_index_from_quantile(num, p->qthresh) ];
+              mp->garray2[ind] = oneforall[
+                 gal_statistics_index_from_quantile(num, p->noerodequant) ];
+            }
         }
     }
 
@@ -127,17 +133,18 @@ qthreshonmesh(void *inparam)
 void
 applythreshold(struct noisechiselparams *p)
 {
-  struct gal_mesh_params *mp=&p->smp; /* `mp' instead of `smp' so you can try */
-                                      /* with p->lmp if you like.             */
+  struct gal_mesh_params *mp=&p->smp; /* `mp' instead of `smp' so you     */
+                                      /* can try with p->lmp if you like. */
+  float qthreshv, nethreshv;
   unsigned char *b, *byt=p->byt;
   size_t gs0=mp->gs0, gs1=mp->gs1, nch1=mp->nch1;
   size_t s0, s1, fs1=mp->gs1*mp->nch1, chid, inchid;
+  float *f, *fp, *garray1=mp->garray1, *array=p->conv;
   size_t *types=mp->types, *ts0=mp->ts0, *ts1=mp->ts1;
   size_t i, f0, f1, nmeshi=mp->nmeshi, nmeshc=mp->nmeshc;
   size_t row, startind, *start=mp->start, meshid, is1=mp->s1;
-  float *f, *fp, thresh, *garray1=mp->garray1, *array=p->conv;
 
-    /* Fill the array: */
+  /* Fill the array: */
   for(i=0;i<nmeshi;++i)
     {
       /* Set the proper meshid. */
@@ -153,19 +160,32 @@ applythreshold(struct noisechiselparams *p)
 
       /* Fill the output array with the value in this mesh: */
       row=0;
-      thresh=garray1[i];
+      qthreshv=garray1[i];
       s0=ts0[types[meshid]];
       s1=ts1[types[meshid]];
       startind=start[meshid];
+      nethreshv=mp->garray2[i];
       do
         {
-          b = byt + startind + row * is1;
-          fp= ( f = array + startind + row * is1 ) + s1;
-          do *b++ = isnan(*f) || *f>thresh ? 1 : 0; while(++f<fp);
+          b  = byt + startind + row * is1;
+          fp = ( f = array + startind + row * is1 ) + s1;
+          do
+            /* The image might have NaN pixels too, in which case any
+               comparison will fail and the value in `b' will be 0, This is
+               no problem, after this loop, all NaN pixels will be set to a
+               fixed blank value. */
+            *b++ = ( *f>qthreshv
+                     ? ( *f>nethreshv ? BINARYNOOP : 1 )
+                     : 0 );
+          while(++f<fp);
           ++row;
         }
       while(row<s0);
     }
+
+  /* If there are any NaN pixels (in the float image), set them to the
+     blank value for the unsigned character type. */
+  if(p->anyblank) setbytblank(p->img, p->byt, p->smp.s0*p->smp.s1);
 }
 
 
@@ -177,21 +197,23 @@ findapplyqthreshold(struct noisechiselparams *p)
 {
   struct gal_mesh_params *mp=&p->smp;
 
-  /* Find the threshold on each mesh: */
-  gal_mesh_operate_on_mesh(mp, qthreshonmesh, sizeof(float), 0, 1);
+  /* Find the threshold on each mesh that has the proper conditions. */
+  gal_mesh_operate_on_mesh(mp, qthreshonmesh, sizeof(float), 1, 1);
   if(p->threshname)
-    gal_mesh_value_file(mp, p->threshname, "Quantile values", NULL,
-                        p->wcs, SPACK_STRING);
+    gal_mesh_value_file(mp, p->threshname, "Quantile threshold value",
+                        "No erode threshold value", p->wcs, SPACK_STRING);
 
+  /* Interpolate to have a value for each mesh. */
   gal_mesh_interpolate(mp, "Interpolating quantile threshold");
   if(p->threshname)
-    gal_mesh_value_file(mp, p->threshname, "Interpolated", NULL,
-                        p->wcs, SPACK_STRING);
+    gal_mesh_value_file(mp, p->threshname, "qthreshv interpolated",
+                        "nethreshv interpolated", p->wcs, SPACK_STRING);
 
+  /* Smooth the interpolation  */
   gal_mesh_smooth(mp);
   if(p->threshname)
-    gal_mesh_value_file(mp, p->threshname, "smoothed", NULL,
-                        p->wcs, SPACK_STRING);
+    gal_mesh_value_file(mp, p->threshname, "qthreshv smoothed",
+                        "nethreshv smoothed", p->wcs, SPACK_STRING);
 
   /* Apply the threshold on all the pixels: */
   applythreshold(p);

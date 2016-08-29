@@ -72,7 +72,7 @@ struct gal_mesh_thread_params
 
    In short, the meshs in each channel have to be contiguous to
    facilitate the neighbor analysis in interpolation and other channel
-   specific jobs.g
+   specific jobs.
 
    The operations on the meshs might need more than one output, for
    example the mean and the standard deviation. So we have two garrays

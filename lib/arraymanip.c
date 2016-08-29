@@ -210,8 +210,7 @@ gal_arraymanip_freplace_value(float *in, size_t size, float from, float to)
 void
 gal_arraymanip_freplace_nonnans(float *in, size_t size, float to)
 {
-  float *fpt;
-  fpt=in+size;
+  float *fpt=in+size;
   do
     *in = isnan(*in) ? *in : to;
   while(++in<fpt);
@@ -256,6 +255,20 @@ gal_arraymanip_no_nans_double(double *in, size_t *size)
       }
   while(++in<fp);
   *size=outsize;
+}
+
+
+
+
+
+void
+gal_arraymanip_uchar_replace(unsigned char *in, size_t size,
+                             unsigned char from, unsigned char to)
+{
+  unsigned char *fpt=in+size;
+  do
+    *in = *in==from ? to : *in;
+  while(++in<fpt);
 }
 
 

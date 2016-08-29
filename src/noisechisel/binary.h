@@ -34,8 +34,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Special values: */
-#define BINARYTMP 2
+/* Special values:
+
+     BINARYNOOP:   Value that no binary operation should be preformed on.
+     BINARYTMP:    Temporary value to use within one function.
+
+   Note that through the `setbytblank' function, practically we are using
+   the value `GAL_FITS_BYTE_BLANK' (from `gnuastro/fits.h') for blank
+   binary values. Recall that due to the nature of the CPU (which operates
+   on 8-bits), in practice it is much more efficient to work on a byte (or
+   8-bits) rather than each bit. So in practice we can use 256 values for
+   meta-data analyais (like blank values, or temporary values at etc),
+   eventhough the main values we are working with are 0 and 1.
+*/
+#define BINARYNOOP  2
+#define BINARYTMP   3
 
 
 

@@ -66,14 +66,13 @@ void
 initialdetection(struct noisechiselparams *p)
 {
   int verb=p->cp.verb;
-  char report[GAL_TIMING_VERB_MSG_LENGTHS_2_V];
   size_t i, s0=p->smp.s0, s1=p->smp.s1;
   char *detectionname=p->detectionname;
+  char report[GAL_TIMING_VERB_MSG_LENGTHS_2_V];
 
   /* Find the threshold and apply it, if there are blank pixels in the
      image, set those pixels to the binary blank value too: */
   findapplyqthreshold(p);
-  if(p->anyblank)  setbytblank(p->img, p->byt, s0*s1);
   if(detectionname)
     gal_fits_array_to_file(detectionname, "Thresholded", BYTE_IMG,
                            p->byt, s0, s1, p->anyblank, p->wcs, NULL,
@@ -87,13 +86,17 @@ initialdetection(struct noisechiselparams *p)
 
 
 
-  /* Erode the thresholded image: */
+
+  /* Erode the thresholded image, then convert the pixels that should not
+     have been eroded back to 1 so the next step (opening) can be
+     completely ignorant of them. */
   if(p->erodengb==4)
     for(i=0;i<p->erode;++i)
       dilate0_erode1_4con(p->byt, s0, s1, 1);
   else
     for(i=0;i<p->erode;++i)
       dilate0_erode1_8con(p->byt, s0, s1, 1);
+  gal_arraymanip_uchar_replace(p->byt, s0*s1, BINARYNOOP, 1);
   if(detectionname)
     gal_fits_array_to_file(detectionname, "Eroded", BYTE_IMG, p->byt,
                            s0, s1, p->anyblank, p->wcs, NULL,
@@ -104,6 +107,7 @@ initialdetection(struct noisechiselparams *p)
               p->erode, p->erodengb==4 ? "4" : "8");
       gal_timing_report(NULL, report, 2);
     }
+
 
 
 
@@ -119,6 +123,7 @@ initialdetection(struct noisechiselparams *p)
               p->opening, p->openingngb==4 ? "4" : "8");
       gal_timing_report(NULL, report, 2);
     }
+
 
 
 

@@ -860,10 +860,10 @@ gal_mesh_free_mesh(struct gal_mesh_params *mp)
    1. A pointer to the gal_mesh_params structure that keeps all the
       information.
 
-   2. A pointer to a function that returns and gets a `void *' as its
-      only argument. This function will be directly given to
-      pthread_create. Through this function, you can any function that
-      you wish to operate on the mesh grid with.
+   2. A pointer to a function that returns and gets a `void *' as its only
+      argument. This function will be directly given to
+      pthread_create. Through this argument, you can choose the function to
+      operate on the mesh grid.
 
    3. The size of each element to copy the mesh grid into, this has to
       be type size of the same type that constitutes `img' in
@@ -873,7 +873,9 @@ gal_mesh_free_mesh(struct gal_mesh_params *mp)
       example sort them) in each mesh.
 
    4. If the value of this argument is 1, then a second garray will be
-      allocated in case your operation needs one.
+      allocated in case your operation needs it.
+
+   5. Wether the allocated garrays should be initialized or not.
 */
 void
 gal_mesh_operate_on_mesh(struct gal_mesh_params *mp,
