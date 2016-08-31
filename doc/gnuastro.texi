@@ -6997,7 +6997,7 @@ values of 0 or 1) directly. You will mostly use them internally, for
 example:
 
 @example
-$ astarithmetic a.fits 100 > b.fits c.fits where
+$ astarithmetic a.fits 100 gt b.fits c.fits where
 @end example
 
 will be read as: Make a conditional image where all the pixels of

@@ -866,8 +866,12 @@ where(struct imgarithparams *p)
       ss=(s=sarr)+size;
       if(farr)
         {
+          printf("\nhere\n");
           f=farr;
-          do *s = *t++ ? *f++ : *s; while(++s<ss);
+          /* Note that we need to increment "f" after the check and
+             replace. If the increment is inside the conditional replace,
+             then when t==0, the increment won't work.*/
+          do {*s = *t++ ? *f : *s; ++f;} while(++s<ss);
         }
       else
         do *s = *t++ ? fnum : *s; while(++s<ss);
