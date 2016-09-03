@@ -170,7 +170,9 @@ make
 
 # Run gendocs.sh to generate all the files:
 ../bootstrapped/build-aux/gendocs.sh --email bug-gnuastro@gnu.org gnuastro \
-   "$booktitle" --html " " -o $tmpdir -I ../bootstrapped/doc
+                                     "$booktitle" --html " " -o $tmpdir    \
+                                     -I ../bootstrapped/doc                \
+                                     -I ../bootstrapped/build-aux
 
 
 
