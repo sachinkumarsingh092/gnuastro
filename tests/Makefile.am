@@ -18,6 +18,12 @@
 ## You should have received a copy of the GNU General Public License
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
+
+
+
+
+# Translate conditions that came from `./configure' into variables that can
+# be used here.
 if COND_HASGHOSTSCRIPT
   MAYBE_HASGHOSTSCRIPT = "yes"
 endif
@@ -25,32 +31,65 @@ if COND_HASLIBJPEG
   MAYBE_HASLIBJPEG = "yes"
 endif
 
+
+
+
+
+# Environment variables for the test scripts.
 AM_TESTS_ENVIRONMENT =                              \
 export topsrc=$(top_srcdir);                        \
 export haslibjpeg=$(MAYBE_HASLIBJPEG);              \
 export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
+
+
+
+
+# Compilations that are to be done with `make check'.
+LDADD = -lgnuastro
+check_PROGRAMS = version
+version_SOURCES = lib/version.c
+
+
+
+
+# The actual test scripts that are run:
 TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh mkprof/mosaic3.sh   \
-mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh imgcrop/wcscat.sh    \
-imgcrop/xcyc.sh imgcrop/xcycnoblank.sh imgcrop/section.sh imgcrop/radec.sh  \
-imgcrop/imgpolygon.sh imgcrop/imgoutpolygon.sh imgcrop/wcspolygon.sh        \
-convertt/fitstotxt.sh convertt/fitstojpeg.sh convertt/blankch.sh            \
-convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh     \
-convertt/fitstopdf.sh convolve/spatial.sh convolve/frequency.sh             \
-imgwarp/imgwarp_scale.sh imgwarp/homographic.sh mknoise/addnoise.sh         \
-mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh header/write.sh           \
-header/print.sh header/update.sh header/delete.sh imgstat/basicstats.sh     \
-subtractsky/subtractsky.sh noisechisel/noisechisel.sh mkcatalog/simple.sh   \
-mkcatalog/aperturephot.sh arithmetic/snimage.sh arithmetic/onlynumbers.sh   \
-arithmetic/where.sh cosmiccal/simpletest.sh table/asciitobinary.sh          \
-table/binarytoascii.sh
+  mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh imgcrop/wcscat.sh  \
+  imgcrop/xcyc.sh imgcrop/xcycnoblank.sh imgcrop/section.sh                 \
+  imgcrop/radec.sh imgcrop/imgpolygon.sh imgcrop/imgoutpolygon.sh           \
+  imgcrop/wcspolygon.sh convertt/fitstotxt.sh convertt/fitstojpeg.sh        \
+  convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh      \
+  convertt/jpegtofits.sh convertt/fitstopdf.sh convolve/spatial.sh          \
+  convolve/frequency.sh imgwarp/imgwarp_scale.sh imgwarp/homographic.sh     \
+  mknoise/addnoise.sh mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh     \
+  header/write.sh header/print.sh header/update.sh header/delete.sh         \
+  imgstat/basicstats.sh subtractsky/subtractsky.sh                          \
+  noisechisel/noisechisel.sh mkcatalog/simple.sh mkcatalog/aperturephot.sh  \
+  arithmetic/snimage.sh arithmetic/onlynumbers.sh arithmetic/where.sh       \
+  cosmiccal/simpletest.sh table/asciitobinary.sh table/binarytoascii.sh     \
+  $(check_PROGRAMS)
 
-EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                  \
-mkprof/ellipticalmasks.txt mkprof/inputascanvas.txt mkprof/mkprofcat2.txt  \
-mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt mkprof/radeccat.txt            \
-imgcrop/cat.txt table/asciitobinary.txt
 
+
+
+
+# Files to distribute along with the tests.
+EXTRA_DIST = $(TESTS) during-dev.sh mkprof/mkprofcat1.txt                   \
+  mkprof/ellipticalmasks.txt mkprof/inputascanvas.txt                       \
+  mkprof/mkprofcat2.txt mkprof/mkprofcat3.txt mkprof/mkprofcat4.txt         \
+  mkprof/radeccat.txt imgcrop/cat.txt table/asciitobinary.txt
+
+
+
+
+
+# Files that must be cleaned with `make clean'.
 CLEANFILES = *.log *.txt *.jpg *.fits *.pdf *.eps
+
+
+
+
 
 # CLEANFILES is only for files, not directories. Therefore we are using
 # Automake's extending rules to clean the temporary `.gnuastro' directory
@@ -73,7 +112,6 @@ clean-local:; rm -rf .gnuastro
 ## IMPORTANT: So even if the program fails, the .log file is created. The
 ## check if the input for a test exists or not should be checked in the
 ## test that depends on it, it can't be done here in the Makefile.
-
 mkprof/mosaic1.sh: prepconf.sh.log
 mkprof/mosaic2.sh: prepconf.sh.log
 mkprof/mosaic3.sh: prepconf.sh.log
