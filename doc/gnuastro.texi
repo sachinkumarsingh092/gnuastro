@@ -194,6 +194,7 @@ sub-component to a title is present.
 * Image analysis::              Analyze images.
 * Modeling and fittings::       Make and fit models.
 * High-level calculations::     Physical calculations.
+* Libraries::                   Use Gnuastro in your own code.
 * Developing::                  The development environment.
 * GNU Astronomy Utilities list::  List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
@@ -490,6 +491,10 @@ CosmicCalculator
 * Distance on a 2D curved space::  Distances in 2D for simplicity
 * Extending distance concepts to 3D::  Going to 3D (our real universe).
 * Invoking astcosmiccal::       How to run CosmicCalculator
+
+Libraries
+
+* How to link with the libraries::  Guide on linking with libraries
 
 Developing
 
@@ -13550,7 +13555,7 @@ were of integer types.
 
 
 
-@node High-level calculations, Developing, Modeling and fittings, Top
+@node High-level calculations, Libraries, Modeling and fittings, Top
 @chapter High-level calculations
 
 After the reduction of raw data (for example with the utilities in
@@ -13962,7 +13967,85 @@ of options and how to effectively use them.
 
 
 
-@node Developing, GNU Astronomy Utilities list, High-level calculations, Top
+@node Libraries, Developing, High-level calculations, Top
+@chapter Libraries
+
+Each utility or program in Gnuastro (or any program in general) is actually
+a collection of functions that is compiled into one executable file which
+can communicate directly with the outside world (for example the shell, see
+@ref{Command-line interface}). A compiled collection of functions
+@emph{without} any connection to the outside world is a library. By
+defining your own connections to the outside world in your a separate
+program, you can call a library's functions and compile them all together
+into a new program or utility. This way you can use Gnuastro at a
+lower-level, using the same building blocks (library functions) that
+Gnuastro's utilities benefit from in your own programs.
+
+
+
+
+
+@menu
+* How to link with the libraries::  Guide on linking with libraries
+@end menu
+
+@node How to link with the libraries,  , Libraries, Libraries
+@section How to link with the libraries
+
+All Gnuastro library functions are compiled into one file depending on how
+you would like to link to the libraries: @file{libgnuastro.a} and
+@file{libgnuastro.so}. Both contain all the functions that are discussed in
+this chapter. They are both installed in the @file{prefix/lib} directory
+(see @ref{Installation directory} for @file{prefix}).
+
+@cindex Static library
+@cindex Dynamic library
+@cindex Library, static
+@cindex Library, dynamic
+The first compiled code (with a @file{.a} suffix) is a static library which
+actually gets included into your program's executable file when you link to
+it. Since it is integrated into your program's code, it can be very
+efficient and if you uninstall Gnuastro or try to run it on a system that
+doesn't have Gnuastro, your program will still run. The second (with a
+@file{.so} suffix) is known as a dynamic library, the code from dynamic
+libraries will not be included in your executable file, each time your
+program is run, it will find the library and take the code from there. The
+main advantage of dynamic libraries is that when the library is updated,
+your program will use the updated library without the need to recompile
+your program. If you do static linking, you will have to recompile your
+program to benefit from the updated library. There are more factors to
+consider, these might be some of the more important ones but this is
+certainly not a thorough comparison.
+
+The compiled library files described above are not enough for actually
+using the libraries. Before linking, the compiler also needs to know the
+general description of the functions which you will be linking to: what
+type of input arguments each function needs and what type of output it
+produces. In C, these description files are known as a `header'
+(conventionally having a @file{.h} suffix). Unlike the compiled library
+code which was only one file, there are commonly many headers, classified
+by context (with similar functions described in one header file). In the
+case of Gnuastro, all the headers are installed in
+@file{prefix/include/gnuastro/} (see @ref{Installation directory}). Another
+major difference is that headers are human-readable: you can open them in a
+text editor and actually read them.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node Developing, GNU Astronomy Utilities list, Libraries, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested
