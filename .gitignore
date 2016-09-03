@@ -73,6 +73,7 @@ snippet
 config.h
 stamp-h1
 Makefile
+asttable
 ltmain.sh
 .dirstamp
 configure
@@ -122,6 +123,7 @@ doc/gnuastro.vrs
 # ignore the whole directory (and everything within it). This is more
 # efficient then leaving it to try to fit patterns.
 
+.libs/
 /gnulib/
 /bootstrapped/
 /doc/plotsrc/tikz/
