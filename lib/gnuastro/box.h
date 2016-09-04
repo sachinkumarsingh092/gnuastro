@@ -23,6 +23,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_BOX_H__
 #define __GAL_BOX_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
+
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
+
+
 /*                        IMPORTANT NOTE:
          All the axises are based on the FITS standard, NOT C.
 */
@@ -38,4 +62,8 @@ int
 gal_box_overlap(long *naxes, long *fpixel_i, long *lpixel_i,
                 long *fpixel_o, long *lpixel_o);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_BOX_H__ */

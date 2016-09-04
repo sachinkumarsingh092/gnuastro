@@ -22,10 +22,36 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_GNUASTRO_H__
 #define __GAL_GNUASTRO_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
+
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
 
 
 /* Report the Gnuastro version number. */
 char *
 gal_gnuastro_version(void);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_GNUASTRO_H__ */

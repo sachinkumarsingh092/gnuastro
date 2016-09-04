@@ -23,13 +23,29 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_MESH_H__
 #define __GAL_MESH_H__
 
-
-
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 #include <wcslib/wcs.h>
-
 #include <gnuastro/threads.h>
 
 
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
@@ -197,4 +213,8 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv);
 void
 gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_MESH_H__ */

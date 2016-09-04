@@ -23,6 +23,31 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_QSORT_H__
 #define __GAL_QSORT_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
+
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
+
+
+
 /* Pointer used to sort the indexs of an array based on their flux
    (value in this array). */
 extern float *gal_qsort_index_arr;
@@ -48,4 +73,8 @@ gal_qsort_double_decreasing(const void * a, const void * b);
 int
 gal_qsort_double_increasing(const void * a, const void * b);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_QSORT_H__ */

@@ -23,8 +23,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_CHECKSET_H__
 #define __GAL_CHECKSET_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 #include <math.h>
 #include <fitsio.h>
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
+
 
 
 /**************************************************************/
@@ -72,26 +94,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /****************************************************************
  ************      Check and convert strings    *****************
  ****************************************************************/
 int
 strisdouble(char *string, double *out);
-
-
 
 
 
@@ -170,20 +177,12 @@ gal_checkset_any_double(char *optarg, double *var, char *lo, char so,
 
 
 
-
-
 /**************************************************************/
 /**********          Check fixed strings           ************/
 /**************************************************************/
 void
 gal_checkset_known_types(char *optarg, int *bitpix, char *filename,
                          size_t lineno);
-
-
-
-
-
-
 
 
 
@@ -201,10 +200,6 @@ gal_checkset_allocate_copy(char *arg, char **copy);
 
 void
 gal_checkset_allocate_copy_set(char *arg, char **copy, int *set);
-
-
-
-
 
 
 
@@ -238,4 +233,8 @@ gal_checkset_not_dir_part(char *input);
 void
 gal_checkset_check_dir_write_add_slash(char **dirname);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_CHECKSET_H__ */

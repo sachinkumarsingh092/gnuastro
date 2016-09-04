@@ -23,6 +23,28 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_SLL_H__
 #define __GAL_SLL_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
+
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
 
 
 /******************* Two doubles (for coordinates) */
@@ -53,23 +75,6 @@ gal_linkedlist_free_tdll(struct gal_linkedlist_tdll *list);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /******************* float: */
 struct gal_linkedlist_fll
 {
@@ -78,13 +83,16 @@ struct gal_linkedlist_fll
 };
 
 void
-gal_linkedlist_print_fll_array(struct gal_linkedlist_fll **afll, size_t num);
+gal_linkedlist_print_fll_array(struct gal_linkedlist_fll **afll,
+                               size_t num);
 
 void
-gal_linkedlist_add_to_fll(struct gal_linkedlist_fll **list, float value);
+gal_linkedlist_add_to_fll(struct gal_linkedlist_fll **list,
+                          float value);
 
 void
-gal_linkedlist_pop_from_fll(struct gal_linkedlist_fll **list, float *value);
+gal_linkedlist_pop_from_fll(struct gal_linkedlist_fll **list,
+                            float *value);
 
 size_t
 gal_linkedlist_num_in_fll(struct gal_linkedlist_fll *list);
@@ -97,24 +105,8 @@ void
 gal_linkedlist_free_fll(struct gal_linkedlist_fll *list);
 
 void
-gal_linkedlist_free_fll_array(struct gal_linkedlist_fll **afll, size_t num);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+gal_linkedlist_free_fll_array(struct gal_linkedlist_fll **afll,
+                              size_t num);
 
 
 
@@ -126,10 +118,12 @@ struct gal_linkedlist_stll
 };
 
 void
-gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value);
+gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list,
+                           char *value);
 
 void
-gal_linkedlist_pop_from_stll(struct gal_linkedlist_stll **list, char **value);
+gal_linkedlist_pop_from_stll(struct gal_linkedlist_stll **list,
+                             char **value);
 
 void
 gal_linkedlist_reverse_stll(struct gal_linkedlist_stll **list);
@@ -142,20 +136,6 @@ gal_linkedlist_num_in_stll(struct gal_linkedlist_stll *list);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /******************* size_t: */
 struct gal_linkedlist_sll
 {
@@ -164,10 +144,12 @@ struct gal_linkedlist_sll
 };
 
 void
-gal_linkedlist_add_to_sll(struct gal_linkedlist_sll **list, size_t value);
+gal_linkedlist_add_to_sll(struct gal_linkedlist_sll **list,
+                          size_t value);
 
 void
-gal_linkedlist_pop_from_sll(struct gal_linkedlist_sll **list, size_t *value);
+gal_linkedlist_pop_from_sll(struct gal_linkedlist_sll **list,
+                            size_t *value);
 
 size_t
 gal_linkedlist_num_in_sll(struct gal_linkedlist_sll *list);
@@ -181,23 +163,6 @@ gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
 
 void
 gal_linkedlist_free_sll(struct gal_linkedlist_sll *list);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -216,23 +181,6 @@ gal_linkedlist_add_to_tsll_end(struct gal_linkedlist_tsll **last,
 void
 gal_linkedlist_pop_from_tsll_start(struct gal_linkedlist_tsll **first,
                                    size_t *value);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -255,23 +203,6 @@ gal_linkedlist_pop_from_osll(struct gal_linkedlist_osll **list,
 void
 gal_linkedlist_osll_into_sll(struct gal_linkedlist_osll *in,
                              struct gal_linkedlist_sll **out);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -309,4 +240,8 @@ gal_linkedlist_tosll_into_sll(struct gal_linkedlist_tosll *in,
 void
 gal_linkedlist_tosll_free(struct gal_linkedlist_tosll *largest);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_LINKEDLIST_H__ */

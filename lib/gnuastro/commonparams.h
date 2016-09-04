@@ -24,36 +24,37 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define __GAL_COMMONPARAMS_H__
 
 
+
 /* The structure keeping all the common parameters in gnuastro. This
    could be part of commonargs.h, but since main.h in all those
    programs will need this structure, there will be problems about the
    unused `commonargp` structure.*/
 struct gal_commonparams
 {
-  char        *spack;  /* Subpackage name.                              */
+  char        *spack;  /* Subpackage name.                          */
 
   /* Input/Output: */
-  char       *output;  /* Directory containg output.                    */
-  char          *hdu;  /* Image extension.                              */
-  int     dontdelete;  /* ==1: Don't delete existing.                   */
-  int  removedirinfo;  /* ==1: Remove directory information.            */
+  char       *output;  /* Directory containg output.                */
+  char          *hdu;  /* Image extension.                          */
+  int     dontdelete;  /* ==1: Don't delete existing.               */
+  int  removedirinfo;  /* ==1: Remove directory information.        */
 
   /* Operating modes: */
-  int           verb;  /* ==1: report steps. ==0 don't.                 */
-  int    printparams;  /* Only print the used values.                   */
-  int     setdirconf;  /* ==1: Set the current directory default values.*/
-  int     setusrconf;  /* ==1: Set the user default values.             */
-  size_t  numthreads;  /* Number of threads to use.                     */
-  int    onlydirconf;  /* Only check current directory conf. file.      */
-  char  *onlyversion;  /* The string of the requested version.          */
-  int          nolog;  /* ==1: do not make a log file.                  */
+  int           verb;  /* ==1: report steps. ==0 don't.             */
+  int    printparams;  /* Only print the used values.               */
+  int     setdirconf;  /* ==1: Set the current directory config.    */
+  int     setusrconf;  /* ==1: Set the user default values.         */
+  size_t  numthreads;  /* Number of threads to use.                 */
+  int    onlydirconf;  /* Only check current directory conf. file.  */
+  char  *onlyversion;  /* The string of the requested version.      */
+  int          nolog;  /* ==1: do not make a log file.              */
 
   /* Check: */
-  int  numthreadsset;  /* If the number of threads are set.             */
-  int onlyversionset;  /* If the only version option is set.            */
-  int         hduset;  /* If the input image extension is set.          */
-  int      outputset;  /* If the output is set.                         */
-  int       nologset;  /* If nolog is set. */
+  int  numthreadsset;  /* If the number of threads are set.         */
+  int onlyversionset;  /* If the only version option is set.        */
+  int         hduset;  /* If the input image extension is set.      */
+  int      outputset;  /* If the output is set.                     */
+  int       nologset;  /* If nolog is set.                          */
 };
 
 #endif

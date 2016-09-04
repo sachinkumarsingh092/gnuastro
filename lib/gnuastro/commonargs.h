@@ -290,4 +290,6 @@ static struct argp commonargp = {gal_commonargs_options,
                                  gal_checkset_commonargs_cparse_opt,
                                  NULL, NULL, NULL, NULL, NULL};
 
-#endif
+
+
+#endif  /* __GAL_COMMONARGS_H__ */

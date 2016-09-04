@@ -58,6 +58,7 @@ anywarnings=no
 # Checks for programs.
 : ${CFLAGS=""}
 AC_PROG_CC
+AC_PROG_CXX
 gl_EARLY
 AM_PROG_AR
 LT_INIT

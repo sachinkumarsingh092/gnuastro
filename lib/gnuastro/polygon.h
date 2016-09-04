@@ -23,7 +23,27 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_POLYGON_H__
 #define __GAL_POLYGON_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
@@ -126,4 +146,9 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
 
 #define GAL_POLYGON_MIN_OF_TWO(A, B) ((A)<(B)+GAL_POLYGON_ROUND_ERR ? (A) : (B))
 #define GAL_POLYGON_MAX_OF_TWO(A, B) ((A)>(B)-GAL_POLYGON_ROUND_ERR ? (A) : (B))
-#endif
+
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_POLYGON_H__ */

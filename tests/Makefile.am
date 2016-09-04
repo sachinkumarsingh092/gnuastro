@@ -47,28 +47,28 @@ export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
 # Compilations that are to be done with `make check'.
 LDADD = -lgnuastro
-check_PROGRAMS = version
-version_SOURCES = lib/version.c
+check_PROGRAMS = versionc versioncpp
+versionc_SOURCES = lib/versionc.c
+versioncpp_SOURCES = lib/versioncpp.cpp
 
 
 
 
 # The actual test scripts that are run:
-TESTS = prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh mkprof/mosaic3.sh   \
-  mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh imgcrop/wcscat.sh  \
-  imgcrop/xcyc.sh imgcrop/xcycnoblank.sh imgcrop/section.sh                 \
-  imgcrop/radec.sh imgcrop/imgpolygon.sh imgcrop/imgoutpolygon.sh           \
-  imgcrop/wcspolygon.sh convertt/fitstotxt.sh convertt/fitstojpeg.sh        \
-  convertt/blankch.sh convertt/jpegtotxt.sh convertt/fitstojpegcmyk.sh      \
-  convertt/jpegtofits.sh convertt/fitstopdf.sh convolve/spatial.sh          \
-  convolve/frequency.sh imgwarp/imgwarp_scale.sh imgwarp/homographic.sh     \
-  mknoise/addnoise.sh mkprof/ellipticalmasks.sh mkprof/inputascanvas.sh     \
-  header/write.sh header/print.sh header/update.sh header/delete.sh         \
-  imgstat/basicstats.sh subtractsky/subtractsky.sh                          \
-  noisechisel/noisechisel.sh mkcatalog/simple.sh mkcatalog/aperturephot.sh  \
-  arithmetic/snimage.sh arithmetic/onlynumbers.sh arithmetic/where.sh       \
-  cosmiccal/simpletest.sh table/asciitobinary.sh table/binarytoascii.sh     \
-  $(check_PROGRAMS)
+TESTS = $(check_PROGRAMS) prepconf.sh mkprof/mosaic1.sh mkprof/mosaic2.sh     \
+  mkprof/mosaic3.sh mkprof/mosaic4.sh mkprof/radeccat.sh imgcrop/imgcat.sh    \
+  imgcrop/wcscat.sh imgcrop/xcyc.sh imgcrop/xcycnoblank.sh                    \
+  imgcrop/section.sh imgcrop/radec.sh imgcrop/imgpolygon.sh                   \
+  imgcrop/imgoutpolygon.sh imgcrop/wcspolygon.sh convertt/fitstotxt.sh        \
+  convertt/fitstojpeg.sh convertt/blankch.sh convertt/jpegtotxt.sh            \
+  convertt/fitstojpegcmyk.sh convertt/jpegtofits.sh convertt/fitstopdf.sh     \
+  convolve/spatial.sh convolve/frequency.sh imgwarp/imgwarp_scale.sh          \
+  imgwarp/homographic.sh mknoise/addnoise.sh mkprof/ellipticalmasks.sh        \
+  mkprof/inputascanvas.sh header/write.sh header/print.sh header/update.sh    \
+  header/delete.sh imgstat/basicstats.sh subtractsky/subtractsky.sh           \
+  noisechisel/noisechisel.sh mkcatalog/simple.sh mkcatalog/aperturephot.sh    \
+  arithmetic/snimage.sh arithmetic/onlynumbers.sh arithmetic/where.sh         \
+  cosmiccal/simpletest.sh table/asciitobinary.sh table/binarytoascii.sh
 
 
 
