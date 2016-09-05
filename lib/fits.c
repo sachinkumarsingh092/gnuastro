@@ -366,7 +366,7 @@ gal_fits_datatype_blank(int datatype)
       if(us==NULL)
         error(EXIT_FAILURE, errno, "%lu bytes for blank TUSHORT",
               sizeof *us);
-      *ui=GAL_FITS_USHORT_BLANK;
+      *us=GAL_FITS_USHORT_BLANK;
       return us;
 
     case TULONG:
