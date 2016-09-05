@@ -690,8 +690,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
       p->up.erodengbset=1;
       break;
     case 503:
-      gal_checkset_float_l_0_s_1(arg, &p->qthresh, "noerodequant", key,
-                                 SPACK, NULL, 0);
+      gal_checkset_float_l_0_s_1(arg, &p->noerodequant, "noerodequant",
+                                 key, SPACK, NULL, 0);
       p->up.noerodequantset=1;
       break;
     case 'p':
