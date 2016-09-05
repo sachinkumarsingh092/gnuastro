@@ -7017,6 +7017,31 @@ produce unpredictable outputs. In any case, the input images are not
 affected, they are only read.
 @end cartouche
 
+@cartouche
+@noindent
+@strong{Blank pixels:} Currently all Arithmetic operations are internally
+done in double precision floating points. So all blank pixels in the image
+(see @ref{Blank pixels}) will be stored as IEEE NaN values. One particular
+aspect of NaN values is that by definition they will fail on @emph{any}
+comparison, so a NaN is not equal to NaN! Currently, Gnuastro has no way to
+select only blank pixels but we have defined task 14146 to do it when we
+get the chance or someone offers to help.
+
+One way you can exploit this property of the NaN value to your advantage is
+when you want a fully zero-valued image (even over the blank pixels) based
+on an already existing image (with same size and world coordinate system
+settings). The following command will produce this for you:
+
+@example
+$ astarithmetic input.fits nan eq --output=all-zeros.fits
+@end example
+
+@noindent
+Note that on the command-line you can write NaN in any case (for example
+@command{NaN}, or @command{NAN} are also acceptable). Reading NaN as a
+floating point number in Gnuastro isn't case-sensitive.
+@end cartouche
+
 
 @node Invoking astarithmetic,  , Arithmetic operators, Arithmetic
 @subsection Invoking Arithmetic
