@@ -905,7 +905,6 @@ where(struct imgarithparams *p)
       ss=(s=sarr)+size;
       if(farr)
         {
-          printf("\nhere\n");
           f=farr;
           /* Note that we need to increment "f" after the check and
              replace. If the increment is inside the conditional replace,
