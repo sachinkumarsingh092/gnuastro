@@ -748,20 +748,24 @@ lessthan(double left, double right)
 { return left<right; }
 
 int
+lessequal(double left, double right)
+{ return left<=right; }
+
+int
 greaterthan(double left, double right)
 { return left>right; }
+
+int
+greaterequal(double left, double right)
+{ return left>=right; }
 
 int
 equal(double left, double right)
 { return left==right; }
 
 int
-lessequal(double left, double right)
-{ return left<=right; }
-
-int
-greaterequal(double left, double right)
-{ return left>=right; }
+notequal(double left, double right)
+{ return left!=right; }
 
 
 
@@ -786,10 +790,11 @@ conditionals(struct imgarithparams *p, char *operator)
   size=p->s0*p->s1;
 
   if(!strcmp(operator, "lt"))       thisfunction = &lessthan;
-  else if(!strcmp(operator, "gt"))  thisfunction = &greaterthan;
-  else if(!strcmp(operator, "eq"))  thisfunction = &equal;
   else if(!strcmp(operator, "le"))  thisfunction = &lessequal;
+  else if(!strcmp(operator, "gt"))  thisfunction = &greaterthan;
   else if(!strcmp(operator, "ge"))  thisfunction = &greaterequal;
+  else if(!strcmp(operator, "eq"))  thisfunction = &equal;
+  else if(!strcmp(operator, "neq")) thisfunction = &notequal;
   else
     error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
           "can address the problem. The value of `operator' in "
@@ -954,10 +959,11 @@ reversepolish(struct imgarithparams *p)
                   || !strcmp(token->v, "average")
                   || !strcmp(token->v, "median")) alloppixs(p, token->v);
           else if(!strcmp(token->v, "lt")
-                  || !strcmp(token->v, "gt")
-                  || !strcmp(token->v, "eq")
                   || !strcmp(token->v, "le")
-                  || !strcmp(token->v, "ge")) conditionals(p, token->v);
+                  || !strcmp(token->v, "gt")
+                  || !strcmp(token->v, "ge")
+                  || !strcmp(token->v, "eq")
+                  || !strcmp(token->v, "neq")) conditionals(p, token->v);
           else if(!strcmp(token->v, "where")) where(p);
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "

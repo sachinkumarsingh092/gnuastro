@@ -6966,22 +6966,27 @@ is an image, then all the pixels will be compared with the the single value
 (number) of the other operand. Finally if both are numbers, then the output
 is also just one number (0 or 1).
 
-@item gt
-Greater than: similar to @code{lt} (`less than' operator), but
-returning 1 when the second popped operand is greater than the first.
-
-@item eq
-Equality: similar to @code{lt} (`less than' operator), but returning 1
-when the second popped operand is equal (to double precison floating point
-accuracy) to the first.
-
 @item le
 Less or equal: similar to @code{lt} (`less than' operator), but returning 1
 when the second popped operand is smaller or equal to the first.
 
+@item gt
+Greater than: similar to @code{lt} (`less than' operator), but
+returning 1 when the second popped operand is greater than the first.
+
 @item ge
 Greater or equal: similar to @code{lt} (`less than' operator), but
 returning 1 when the second popped operand is larger or equal to the first.
+
+@item eq
+Equality: similar to @code{lt} (`less than' operator), but returning 1 when
+the two popped operands are equal (to double precison floating point
+accuracy).
+
+@item neq
+Non-Equality: similar to @code{lt} (`less than' operator), but returning 1
+when the two popped operands are @emph{not} equal (to double precison
+floating point accuracy).
 
 @item where
 Change the pixel values `where' a certain condition holds. The conditional
