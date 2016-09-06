@@ -68,7 +68,7 @@ const char doc[] =
   "Please see the manual for more information. "
   "\n\nThe operators/functions recognized by "SPACK_NAME" are: +, -, *, /, "
   "abs, pow, sqrt, log, log10, minvalue, maxvalue, min, max, average, median, "
-  "lt, le, gt, ge, eq, neq. Please run `info gnuastro \"Arithmetic "
+  "lt, le, gt, ge, eq, neq, isblank. Please run `info gnuastro \"Arithmetic "
   "operators\"' for detailed information on each operator. Note that "
   "multiplication should be quoted (like \"*\", or '*') to avoid shell "
   "expansion.\n"

@@ -6988,6 +6988,16 @@ Non-Equality: similar to @code{lt} (`less than' operator), but returning 1
 when the two popped operands are @emph{not} equal (to double precison
 floating point accuracy).
 
+@cindex Blank pixel
+@item isblank
+Test for a blank value (see @ref{Blank pixels}). In essence, this is very
+similar to the conditional operators: the output is either 1 or 0 (see the
+`less than' operator above). The difference is that it only needs one
+operand. Because of the definition of a blank pixel, a blank value is not
+even equal to itself, so you cannot use the equal operator above to select
+blank pixels. See the ``Blank pixels'' box below for more on Blank pixels
+in Arithmetic.
+
 @item where
 Change the pixel values `where' a certain condition holds. The conditional
 operators above can be used to define the condition. This operator requires
@@ -7028,9 +7038,9 @@ affected, they are only read.
 done in double precision floating points. So all blank pixels in the image
 (see @ref{Blank pixels}) will be stored as IEEE NaN values. One particular
 aspect of NaN values is that by definition they will fail on @emph{any}
-comparison, so a NaN is not equal to NaN! Currently, Gnuastro has no way to
-select only blank pixels but we have defined task 14146 to do it when we
-get the chance or someone offers to help.
+comparison. Hence both equal and not-equal operators will fail when both
+their operands are NaN! The only way to select blank pixels is through the
+@command{isblank} operator explained above.
 
 One way you can exploit this property of the NaN value to your advantage is
 when you want a fully zero-valued image (even over the blank pixels) based
@@ -9839,7 +9849,7 @@ $ astsubtractsky --nch1=2 --nch2=2 image.fits
 $ astsubtractsky --mask=maskforimage.fits image.fits
 @end example
 
-@cindex Blank pixels
+@cindex Blank pixel
 The only required input to SubtractSky is the input data file that
 currently has to be only a 2D image. But in the future it might be
 useful to use it for 1D or 3D data too. Any pixels in the image with a

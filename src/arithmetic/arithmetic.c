@@ -838,6 +838,40 @@ conditionals(struct imgarithparams *p, char *operator)
 
 
 
+/* In order to not conflict with the internal C `is...' functions, and in
+   particular the `isblank' function, we are calling this function
+   opisblank for operator-isblank. */
+void
+opisblank(struct imgarithparams *p)
+{
+  size_t size=p->s0*p->s1;
+  char *operator="isblank";
+  double *f, *ff, fnum, *farr;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+
+  /* Do the operation: */
+  if(farr)                       /* Operand is array.        */
+    {
+      /* Do the operation, note that the output is stored in the first
+         input. Also note that since the linked list is
+         first-in-first-out, the second operand should be put first
+         here. */
+      ff=(f=farr)+size;
+      do *f = isnan(*f); while(++f<ff);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+    }
+  else                          /* Operand is a number.      */
+    add_operand(p, NOOPTFILENAME, isnan(fnum), NOOPTARRAY);
+}
+
+
+
+
+
 /* Replace the pixels in the second popped element with the first. While
    choosing the pixels that are selected from the third The third popped
    element. The third is considered to be an array that can only be filled
@@ -964,6 +998,7 @@ reversepolish(struct imgarithparams *p)
                   || !strcmp(token->v, "ge")
                   || !strcmp(token->v, "eq")
                   || !strcmp(token->v, "neq")) conditionals(p, token->v);
+          else if(!strcmp(token->v, "isblank")) opisblank(p);
           else if(!strcmp(token->v, "where")) where(p);
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
