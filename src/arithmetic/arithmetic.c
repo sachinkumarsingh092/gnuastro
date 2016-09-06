@@ -844,12 +844,17 @@ conditionals(struct imgarithparams *p, char *operator)
 void
 opisblank(struct imgarithparams *p)
 {
-  size_t size=p->s0*p->s1;
+  size_t size;
   char *operator="isblank";
   double *f, *ff, fnum, *farr;
 
   /* Pop out the number of operands needed. */
   pop_operand(p, &fnum, &farr, operator);
+
+  /* Set the total number of pixels, note that we can't do this in the
+     definition of the variable because p->s0 and p->s1 will be set in
+     pop_operand for the first image. */
+  size=p->s0*p->s1;
 
   /* Do the operation: */
   if(farr)                       /* Operand is array.        */
