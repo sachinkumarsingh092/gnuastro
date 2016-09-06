@@ -5253,7 +5253,7 @@ One line examples:
 $ astheader image.fits
 $ astheader --update=OLDKEY,153.034,"Old keyword comment"
 $ astheader --remove=COMMENT --comment="Anything you like ;-)."
-$ astheader --add=MYKEY1,20.00,"An example keyword" --add=MYKEY2,fd
+$ astheader --write=MYKEY1,20.00,"An example keyword" --write=MYKEY2,fd
 @end example
 
 @cindex HDU
