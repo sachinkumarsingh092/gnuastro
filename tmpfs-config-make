@@ -111,9 +111,11 @@ cd $build_dir
 
 
 
-# If a 'Makefile' doesn't exist, then configure Gnuastro:
+# If a 'Makefile' doesn't exist, then configure Gnuastro. If you want to do
+# debugging, then uncomment the ending of the line. Note that static
+# linking is necessary for some tools like Valgrind to give a clean output.
 if [ ! -f Makefile ]; then
-    $srcdir/configure --srcdir=$srcdir
+    $srcdir/configure --srcdir=$srcdir #CFLAGS="-g -O0" LDFLAGS="-static"
 fi
 
 
