@@ -132,7 +132,7 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
           gal_fits_read_wcs(filename, hdu, 0, 0, &p->nwcs, &p->wcs);
         }
       gal_fits_file_to_double(filename, maskname, hdu, mhdu,
-                                   array, &bitpix, &p->anyblank, &s0, &s1);
+                              array, &bitpix, &p->anyblank, &s0, &s1);
 
       /* If the output size was not set yet, then set it. Otherwise,
          make sure the size of this image is the same as the previous
@@ -958,7 +958,7 @@ where(struct imgarithparams *p)
 void
 reversepolish(struct imgarithparams *p)
 {
-  float *farray;
+  void *array;
   double number;
   char *tokeepvalue;
   struct gal_linkedlist_stll *token;
@@ -1031,15 +1031,14 @@ reversepolish(struct imgarithparams *p)
                                p->wcs, NULL, SPACK_STRING);
       else
         {
-          gal_fits_change_type(p->operands->array, DOUBLE_IMG,
-                               p->s0*p->s1, p->anyblank,
-                               (void **)(&farray), p->type);
-          gal_fits_array_to_file(p->cp.output, "astimgarith",
-                                 p->type, farray, p->s0, p->s1,
-                                 p->anyblank, p->wcs, NULL,
-                                 SPACK_STRING);
+          gal_fits_change_type(p->operands->array, DOUBLE_IMG, p->s0*p->s1,
+                               p->anyblank, &array, p->type);
+          gal_fits_array_to_file(p->cp.output, "astimgarith", p->type,
+                                 array, p->s0, p->s1, p->anyblank, p->wcs,
+                                 NULL, SPACK_STRING);
+          free(array);
         }
-
+      free(p->operands->array);
     }
   else
     printf("%g\n", p->operands->number);
