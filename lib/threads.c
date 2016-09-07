@@ -46,10 +46,9 @@ int
 pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
                      unsigned int count)
 {
-  int err, junk=*attr;
+  int err;
 
   /* Sanity check: */
-  junk=junk+1;               /* So there is no unused variable warning. */
   if(count==0)
     {
       errno = EINVAL;
@@ -143,7 +142,7 @@ pthread_barrier_wait(pthread_barrier_t *b)
    (size_t) -1, which is larger than any possible index!. */
 void
 gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
-              size_t *outthrdcols)
+                            size_t *outthrdcols)
 {
   size_t *sp, *fp;
   size_t i, *thrds, thrdcols;
