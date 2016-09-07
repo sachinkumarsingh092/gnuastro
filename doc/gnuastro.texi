@@ -6999,26 +6999,26 @@ blank pixels. See the ``Blank pixels'' box below for more on Blank pixels
 in Arithmetic.
 
 @item where
-Change the pixel values `where' a certain condition holds. The conditional
-operators above can be used to define the condition. This operator requires
-three operands, for example, @command{a.fits b.fits c.fits where} will
-result in pixels from @file{b.fits}, where @file{a.fits} has true
-(@mymath{=1}) values, to be replaced by the respective pixels in
-@file{c.fits}. The first popped operand (@file{c.fits} in this example, can
-also be a number, but the second and third have to be images.
-
-Commonly you won't be dealing with conditional images (that only have pixel
-values of 0 or 1) directly. You will mostly use them internally, for
-example:
+Change the input (pixel) value `where' a certain condition holds. The
+conditional operators above can be used to define the condition. Three
+operands are required for @command{where}, with the format of:
+@example
+astarithmetic in.fits condition.fits new.fits where
+@end example
+The first two operands above have to be images or all three operands have
+to be numbers. In the former case (when the first two are images), the
+third operand can be an image or a number. The value of any pixel in
+@file{in.fits} that corresponds to a non-zero pixel of
+@file{condition.fits} will be changed to the value of the same pixel in
+@file{new.fits}. Commonly you won't be dealing with an actual FITS file of
+a conditional image. You will probably actually define the condition in the
+same run or Arithmetic based on some other reference. For example the case
+below:
 
 @example
-$ astarithmetic a.fits 100 gt b.fits c.fits where
+$ astarithmetic in.fits reference.fits 100 gt new.fits where
 @end example
 
-will be read as: Make a conditional image where all the pixels of
-@file{a.fits} that have a value larger than 100 get values of 1, the rest
-0. Any pixel in @file{b.fits} with a corresponding conditional image pixel
-of 1, will be replaced by the corresponding pixel in @file{c.fits}.
 
 @end table
 

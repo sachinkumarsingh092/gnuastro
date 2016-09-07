@@ -885,14 +885,14 @@ void
 where(struct imgarithparams *p)
 {
   size_t size;
-  double *f, *s, *t, *ss;
-  double fnum, snum, tnum;      /* First, second, or third number.    */
-  double *farr, *sarr, *tarr;   /* First, second, or third array.     */
+  double *n, *c, *i, *ii;
+  double nnum, cnum, inum;      /* First, second, or third number.    */
+  double *narr, *carr, *iarr;   /* First, second, or third array.     */
 
-  /* Pop out the number of operands needed. */
-  pop_operand(p, &fnum, &farr, "where");
-  pop_operand(p, &snum, &sarr, "where");
-  pop_operand(p, &tnum, &tarr, "where");
+  /* ORDER IS VERY IMPORTANT HERE. Pop out the number of operands needed. */
+  pop_operand(p, &nnum, &narr, "where");              /* New value. */
+  pop_operand(p, &cnum, &carr, "where");              /* Condition. */
+  pop_operand(p, &inum, &iarr, "where");              /* Input.     */
 
   /* Set the total number of pixels, note that we can't do this in the
      definition of the variable because p->s0 and p->s1 will be set in
@@ -900,35 +900,34 @@ where(struct imgarithparams *p)
   size=p->s0*p->s1;
 
   /* Do the operation: */
-  if(sarr && tarr)              /* Both are arrays. */
+  if(iarr && carr)              /* Both are arrays. */
     {
-      /* Do the operation, note that the output is stored in the first
-         input. Also note that since the linked list is
-         first-in-first-out, the second operand should be put first
-         here. */
-      t=tarr;
-      ss=(s=sarr)+size;
-      if(farr)
+      c=carr;
+      ii=(i=iarr)+size;
+      if(narr)                  /* `new' is an array, not number. */
         {
-          f=farr;
+          n=narr;
           /* Note that we need to increment "f" after the check and
              replace. If the increment is inside the conditional replace,
              then when t==0, the increment won't work.*/
-          do {*s = *t++ ? *f : *s; ++f;} while(++s<ss);
+          do {*i = *c++ ? *n : *i; ++n;} while(++i<ii);
         }
-      else
-        do *s = *t++ ? fnum : *s; while(++s<ss);
+      else                      /* `new' is a number, not array. */
+        do *i = *c++ ? nnum : *i; while(++i<ii);
 
       /* Push the output onto the stack. */
-      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, iarr);
 
       /* Clean up. */
-      free(farr);
-      free(tarr);
+      free(carr);
+      free(narr);
     }
+  else if ( iarr==NULL && carr==NULL && narr==NULL )
+    add_operand(p, NOOPTFILENAME, cnum ? nnum : inum, NOOPTARRAY);
   else
     error(EXIT_FAILURE, 0, "the first and second arguments (second and "
-          "third popped elements) to `where' have to be arrays.");
+          "third popped elements) to `where' have to be arrays, or all have "
+          "to be numbers.");
 }
 
 

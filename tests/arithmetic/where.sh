@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $img 0 eq $img nan where -h1 -h0 --output=where.fits
+$execname $img $img 0 eq nan where -h0 -h1 --output=where.fits
