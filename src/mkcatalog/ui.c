@@ -981,11 +981,12 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
   gal_fits_file_to_float(filename, NULL, hdu, NULL, array, &bitpix,
                               &anyblank, &s0, &s1);
 
-  /* Make sure it has no blank pixels. */
+  /* Make sure it has no blank pixels.
   if(anyblank)
     error(EXIT_FAILURE, 0, "the Sky and Sky standard deviation images "
           "should not have any blank values. %s (hdu: %s) has blank "
           "pixels", filename, hdu);
+  */
 
   /* Make sure it has the same size as the image. */
   if(s0!=p->s0 || s1!=p->s1)
@@ -1027,7 +1028,7 @@ readkeywords(struct mkcatalogparams *p)
     {
       p->medstd=gal_statistics_median(p->std, size);
       fprintf(stderr, "Warning: Could not find the MEDSTD keyword in %s "
-              "(hdu: %s). The median standard deviation is thus found on"
+              "(hdu: %s). The median standard deviation is thus found on "
               "the (interpolated) standard deviation image. NoiseChisel "
               "finds the median before interpolation, so the reported value "
               "in the final catalog will not be accurate (will depend on "
