@@ -6998,22 +6998,41 @@ even equal to itself, so you cannot use the equal operator above to select
 blank pixels. See the ``Blank pixels'' box below for more on Blank pixels
 in Arithmetic.
 
+@item and
+Logical AND: returns 1 if both operands have a non-zero value and 0 if both
+are zero. Both operands have to be the same kind: either both images or
+both numbers.
+
+@item or
+Logical OR: returns 1 if either one of the operands is non-zero and 0 only
+when both operators are zero. Both operands have to be the same kind:
+either both images or both numbers.
+
+@item not
+Logical NOT: returns 1 when the operand is zero and 0 when the operand is
+non-zero. The operand can be an image or number, for an image, it is
+applied to each pixel separately.
+
 @item where
 Change the input (pixel) value `where' a certain condition holds. The
 conditional operators above can be used to define the condition. Three
-operands are required for @command{where}, with the format of:
+operands are required for @command{where}. The input format is demonstrated
+in this simplified example:
 @example
 astarithmetic in.fits condition.fits new.fits where
 @end example
-The first two operands above have to be images or all three operands have
-to be numbers. In the former case (when the first two are images), the
-third operand can be an image or a number. The value of any pixel in
-@file{in.fits} that corresponds to a non-zero pixel of
-@file{condition.fits} will be changed to the value of the same pixel in
-@file{new.fits}. Commonly you won't be dealing with an actual FITS file of
-a conditional image. You will probably actually define the condition in the
-same run or Arithmetic based on some other reference. For example the case
-below:
+The third and second popped operands (@file{in.fits} and
+@file{condition.fits} above, see @ref{Reverse polish notation}) have to be
+images or all three operands have to be numbers. In the former case (when
+the first two are images), the third operand can be an image or a
+number. The value of any pixel in @file{in.fits} that corresponds to a
+non-zero pixel of @file{condition.fits} will be changed to the value of the
+same pixel in @file{new.fits} (or a fixed number if the first popped
+operand is a number). Commonly you won't be dealing with an actual FITS
+file of a conditional image. You will probably define the condition in the
+same run based on some other reference image and use the conditional and
+logical operators above to make a true/false (or one/zero) image for you
+internally. For example the case below:
 
 @example
 $ astarithmetic in.fits reference.fits 100 gt new.fits where
@@ -7034,13 +7053,13 @@ affected, they are only read.
 
 @cartouche
 @noindent
-@strong{Blank pixels:} Currently all Arithmetic operations are internally
-done in double precision floating points. So all blank pixels in the image
-(see @ref{Blank pixels}) will be stored as IEEE NaN values. One particular
-aspect of NaN values is that by definition they will fail on @emph{any}
-comparison. Hence both equal and not-equal operators will fail when both
-their operands are NaN! The only way to select blank pixels is through the
-@command{isblank} operator explained above.
+@strong{Blank pixels in Arithmetic:} Currently all Arithmetic operations
+are internally done in double precision floating points. So all blank
+pixels in the image (see @ref{Blank pixels}) will be stored as IEEE NaN
+values. One particular aspect of NaN values is that by definition they will
+fail on @emph{any} comparison. Hence both equal and not-equal operators
+will fail when both their operands are NaN! The only way to select blank
+pixels is through the @command{isblank} operator explained above.
 
 One way you can exploit this property of the NaN value to your advantage is
 when you want a fully zero-valued image (even over the blank pixels) based

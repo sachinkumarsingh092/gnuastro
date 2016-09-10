@@ -838,6 +838,82 @@ conditionals(struct imgarithparams *p, char *operator)
 
 
 
+void
+andor(struct imgarithparams *p, char *operator)
+{
+  double *f, *s, *ff;
+  double fnum, snum, *farr, *sarr;
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+  pop_operand(p, &snum, &sarr, operator);
+
+  /* Do a small sanity check: */
+  if(strcmp(operator, "and") && strcmp(operator, "or") )
+    error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
+          "can address the problem. The value of `operator' in "
+          "`andor' (%s) is not recognized", PACKAGE_BUGREPORT, operator);
+
+  /* Do the operation: */
+  if(farr && sarr)
+    {
+      /* Fill the first array with the result. IMPORTANT: It is important
+         that the second array pointer is the first checked array, since it
+         is also incremented. In the `or' operation, if `*f' is successful,
+         `*s++' is never called and so not incremented. */
+      s = sarr;
+      ff = (f=farr) + p->s0*p->s1;
+      if(!strcmp(operator, "and"))
+        do *f = *s++ && *f; while(++f<ff);
+      else
+        do *f = *s++ || *f; while(++f<ff);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+
+      /* Clean up */
+      free(sarr);
+    }
+  else if(farr==NULL || sarr==NULL)
+    error(EXIT_FAILURE, 0, "The `and' and `or' operators need two operators "
+          "of the same type: either both images or both numbers.");
+  else
+    add_operand(p, NOOPTFILENAME,
+                !strcmp(operator, "and") ? fnum && snum : fnum || snum,
+                NOOPTARRAY);
+}
+
+
+
+
+void
+notfunc(struct imgarithparams *p)
+{
+  double *f, *ff;
+  double fnum, *farr;
+  char *operator="not";
+
+  /* Pop out the number of operands needed. */
+  pop_operand(p, &fnum, &farr, operator);
+
+  /* Do the operation: */
+  if(farr)
+    {
+      /* Fill the array with the output values. */
+      ff = (f=farr) + p->s0*p->s1;
+      do *f = !(*f); while(++f<ff);
+
+      /* Push the output onto the stack. */
+      add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
+    }
+  else
+    add_operand(p, NOOPTFILENAME, !fnum, NOOPTARRAY);
+}
+
+
+
+
+
 /* In order to not conflict with the internal C `is...' functions, and in
    particular the `isblank' function, we are calling this function
    opisblank for operator-isblank. */
@@ -980,17 +1056,17 @@ reversepolish(struct imgarithparams *p)
         add_operand(p, NOOPTFILENAME, number, NOOPTARRAY);
       else
         {
-          if     (!strcmp(token->v, "+"))       sum(p);
-          else if(!strcmp(token->v, "-"))       subtract(p);
-          else if(!strcmp(token->v, "*"))       multiply(p);
-          else if(!strcmp(token->v, "/"))       divide(p);
-          else if(!strcmp(token->v, "abs"))     takeabs(p);
-          else if(!strcmp(token->v, "pow"))     topower(p, NULL);
-          else if(!strcmp(token->v, "sqrt"))    takesqrt(p);
-          else if(!strcmp(token->v, "log"))     takelog(p);
-          else if(!strcmp(token->v, "log10"))   takelog10(p);
-          else if(!strcmp(token->v, "minvalue"))findmin(p);
-          else if(!strcmp(token->v, "maxvalue"))findmax(p);
+          if     (!strcmp(token->v, "+"))         sum(p);
+          else if(!strcmp(token->v, "-"))         subtract(p);
+          else if(!strcmp(token->v, "*"))         multiply(p);
+          else if(!strcmp(token->v, "/"))         divide(p);
+          else if(!strcmp(token->v, "abs"))       takeabs(p);
+          else if(!strcmp(token->v, "pow"))       topower(p, NULL);
+          else if(!strcmp(token->v, "sqrt"))      takesqrt(p);
+          else if(!strcmp(token->v, "log"))       takelog(p);
+          else if(!strcmp(token->v, "log10"))     takelog10(p);
+          else if(!strcmp(token->v, "minvalue"))  findmin(p);
+          else if(!strcmp(token->v, "maxvalue"))  findmax(p);
           else if(!strcmp(token->v, "min")
                   || !strcmp(token->v, "max")
                   || !strcmp(token->v, "average")
@@ -1000,9 +1076,12 @@ reversepolish(struct imgarithparams *p)
                   || !strcmp(token->v, "gt")
                   || !strcmp(token->v, "ge")
                   || !strcmp(token->v, "eq")
-                  || !strcmp(token->v, "neq")) conditionals(p, token->v);
-          else if(!strcmp(token->v, "isblank")) opisblank(p);
-          else if(!strcmp(token->v, "where")) where(p);
+                  || !strcmp(token->v, "neq"))    conditionals(p, token->v);
+          else if(!strcmp(token->v, "and")
+                  || !strcmp(token->v, "or"))     andor(p, token->v);
+          else if(!strcmp(token->v, "not"))       notfunc(p);
+          else if(!strcmp(token->v, "isblank"))   opisblank(p);
+          else if(!strcmp(token->v, "where"))     where(p);
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as an operator", token->v);
