@@ -22,6 +22,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <time.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
@@ -42,17 +43,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 http://blog.albertarmea.com/post/47089939939/using-pthread-barrier-on-mac-os-x
  */
 #ifndef HAVE_PTHREAD_BARRIER
+
+/* Initialize the barrier structure. A barrier is a high-level way to wait
+   until several threads have finished. */
 int
 pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
-                     unsigned int count)
+                     unsigned int limit)
 {
   int err;
 
   /* Sanity check: */
-  if(count==0)
+  if(limit==0)
     {
       errno = EINVAL;
-      error(EXIT_FAILURE, errno, "in pthread_barrier_init, count is zero");
+      error(EXIT_FAILURE, errno, "in pthread_barrier_init, limit is zero");
     }
 
   /* Initialize the mutex: */
@@ -69,8 +73,8 @@ pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
     }
 
   /* set the values: */
-  b->tripCount=count;
-  b->count=0;
+  b->limit=limit;
+  b->condfinished=b->count=0;
 
   return 0;
 }
@@ -79,36 +83,65 @@ pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
 
 
 
-int
-pthread_barrier_destroy(pthread_barrier_t *b)
-{
-  pthread_cond_destroy(&b->cond);
-  pthread_mutex_destroy(&b->mutex);
-  return 0;
-}
-
-
-
-
-
+/* Suspend the calling thread (tell it to wait), until the limiting number
+   of barriers is reached by the other threads. When the number isn't
+   reached yet (process goes into the `else'), then we use the
+   `pthread_cond_wait' function, which will wait until a broadcast is
+   announced by another thread that succeeds the `if'. After the thread no
+   longer needs the condition variable, we increment `b->condfinished' so
+   `pthread_barrier_destroy' can know if it should wait (sleep) or
+   continue.*/
 int
 pthread_barrier_wait(pthread_barrier_t *b)
 {
   pthread_mutex_lock(&b->mutex);
-  ++(b->count);
-  if(b->count >= b->tripCount)
+  ++b->count;
+  if(b->count >= b->limit)
     {
-      b->count = 0;
       pthread_cond_broadcast(&b->cond);
+      ++b->condfinished;
       pthread_mutex_unlock(&b->mutex);
       return 1;
     }
   else
     {
-      pthread_cond_wait(&b->cond, &(b->mutex));
+      /* Initially b->count is smaller than b->limit, otherwise control
+         would never have reached here. However, when it get to
+         `pthread_cond_wait', this thread goes into a suspended period and
+         is only awaken when a broad-cast is made. But we only want this
+         thread to finish when b->count >= b->limit, so we have this while
+         loop. */
+      while(b->count < b->limit)
+        pthread_cond_wait(&b->cond, &b->mutex);
+      ++b->condfinished;
       pthread_mutex_unlock(&b->mutex);
       return 0;
     }
+}
+
+
+
+
+
+/* Wait until all the threads that were blocked behind this barrier have
+   finished (don't need the mutex and condition variable anymore. Then
+   destroy the two. After this function, you can safely re-use the
+   pthread_barrier_t structure. */
+int
+pthread_barrier_destroy(pthread_barrier_t *b)
+{
+  struct timespec request, remaining;
+
+  /* Wait until no more threads need the barrier. */
+  request.tv_sec=0;
+  request.tv_nsec=GAL_THREADS_BARRIER_DESTROY_NANOSECS;
+  while( b->condfinished < b->limit )
+    nanosleep(&request, &remaining);
+
+  /* Destroy the condition variable and mutex */
+  pthread_cond_destroy(&b->cond);
+  pthread_mutex_destroy(&b->mutex);
+  return 0;
 }
 #endif
 

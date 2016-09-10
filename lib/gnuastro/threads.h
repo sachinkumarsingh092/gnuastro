@@ -49,6 +49,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*****************************************************************/
 #ifndef HAVE_PTHREAD_BARRIER
 
+/* Integer number of nano-seconds that `pthread_barrier_destroy' should
+   wait for a check to see if all barriers have been reached. */
+#define GAL_THREADS_BARRIER_DESTROY_NANOSECS 1000
+
 typedef int pthread_barrierattr_t;
 
 typedef struct
@@ -56,17 +60,19 @@ typedef struct
   pthread_mutex_t mutex;
   pthread_cond_t   cond;
   size_t          count;
-  size_t      tripCount;
+  size_t          limit;
+  size_t   condfinished;
 } pthread_barrier_t;
 
 int
 pthread_barrier_init(pthread_barrier_t *b, pthread_barrierattr_t *attr,
-                     unsigned int count);
-int
-pthread_barrier_destroy(pthread_barrier_t *b);
+                     unsigned int limit);
 
 int
 pthread_barrier_wait(pthread_barrier_t *b);
+
+int
+pthread_barrier_destroy(pthread_barrier_t *b);
 
 #endif
 
