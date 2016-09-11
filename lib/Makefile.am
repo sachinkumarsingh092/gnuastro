@@ -19,6 +19,12 @@
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
+## Necessary flags. NOTE: $(top_srcdir)/bootstrapped/lib is only necessary
+## for internally compiled utilities and libraries. It must not be included
+## during the tests since the bootstrapped libraries are not installed.
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
+
+
 # Define the main compiled library file
 lib_LTLIBRARIES = libgnuastro.la
 

@@ -47,7 +47,6 @@ export hasghostscript=$(MAYBE_HASGHOSTSCRIPT);
 
 # Compilations that are to be done with `make check'.
 LDADD = -lgnuastro
-CPPFLAGS = -I$(top_srcdir)/lib
 check_PROGRAMS = versionc versioncpp
 versionc_SOURCES = lib/versionc.c
 versioncpp_SOURCES = lib/versioncpp.cpp

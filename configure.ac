@@ -81,7 +81,7 @@ LT_INIT
 # layers of quotations there.
 CFLAGS="-Wall -O3 $CFLAGS"
 LDFLAGS="-L\$(top_builddir)/lib $LDFLAGS"
-CPPFLAGS="-DSYSCONFIG_DIR=\\\"$sysconfdir\\\" -I\$(top_srcdir)/lib -I\$(top_srcdir)/bootstrapped/lib $CPPFLAGS"
+CPPFLAGS="-DSYSCONFIG_DIR=\\\"$sysconfdir\\\" -I\$(top_srcdir)/lib $CPPFLAGS"
 
 
 
