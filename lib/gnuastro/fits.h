@@ -23,11 +23,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_FITS_H__
 #define __GAL_FITS_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
 #include <limits.h>
-
 #include <fitsio.h>
 #include <wcslib/wcs.h>
 #include <wcslib/wcshdr.h>
@@ -35,6 +36,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_complex.h>
 
 
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
@@ -280,4 +298,8 @@ void
 gal_fits_prep_float_kernel(char *inputname, char *inhdu, float **kernel,
                            size_t *ins0, size_t *ins1);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_FITS_H__ */

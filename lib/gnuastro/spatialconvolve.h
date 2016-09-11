@@ -23,14 +23,28 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_SPATIALCONVOLVE_H__
 #define __GAL_SPATIALCONVOLVE_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
+#include <gnuastro/threads.h>           /* For pthread_barrier_t: */
 
 
 
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
 
-/* For pthread_barrier_t: */
-#include <gnuastro/threads.h>
 
 
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
@@ -59,13 +73,12 @@ struct gal_spatialconvolve_params
 
 
 
-
-
 /* Functions: */
 void
-gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
-                            size_t ks0, size_t ks1, size_t nt,
-                            int edgecorrection, float *out, size_t *indexs,
+gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1,
+                            float *kernel, size_t ks0, size_t ks1,
+                            size_t nt, int edgecorrection, float *out,
+                            size_t *indexs,
                             struct gal_spatialconvolve_params *scp);
 
 void *
@@ -76,4 +89,8 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
                              float *kernel, size_t ks0, size_t ks1,
                              size_t nt, int edgecorrection, float **out);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_SPATIALCONVOLVE_H__ */

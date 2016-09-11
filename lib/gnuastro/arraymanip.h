@@ -23,6 +23,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_ARRAYMANIP_H__
 #define __GAL_ARRAYMANIP_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
+
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
+
+
 void
 gal_arraymanip_uchar_init_on_region(unsigned char *in, const unsigned char v,
                                     size_t start, size_t s0, size_t s1,
@@ -126,4 +150,8 @@ gal_arraymanip_dlog10_array(double *in1, size_t size);
 void
 gal_arraymanip_dabs_array(double *in1, size_t size);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_ARRAYMANIP_H__ */

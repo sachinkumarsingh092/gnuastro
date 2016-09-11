@@ -23,10 +23,27 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_TXTARRAY_H__
 #define __GAL_TXTARRAY_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 #include <float.h>
 
 
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
 
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
@@ -58,4 +75,7 @@ gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
                           int *int_cols, int *accu_cols, int *space, int *prec,
                           char forg, const char *filename);
 
-#endif
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_TXTARRAY_H__ */

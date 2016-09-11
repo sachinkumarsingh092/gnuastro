@@ -23,7 +23,31 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_STATISTICS_H__
 #define __GAL_STATISTICS_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
+
+
+/* Maximum number of tests for sigma-clipping convergence */
 #define GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE 50
 
 
@@ -240,4 +264,9 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
 /****************************************************************/
 void
 gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize);
-#endif
+
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_STATISTICS_H__ */

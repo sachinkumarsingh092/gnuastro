@@ -23,24 +23,33 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_THREADS_H__
 #define __GAL_THREADS_H__
 
-
-
-
-
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 #include <pthread.h>
 
 
 
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
 
 
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
+
+
+/* Constant to use for non-existant index */
 #define GAL_THREADS_NON_THRD_INDEX (size_t)(-1)
-
-
-
-
-
-
-
 
 
 
@@ -78,24 +87,6 @@ pthread_barrier_destroy(pthread_barrier_t *b);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*****************************************************************/
 /****************      gnuastro functions       ******************/
 /*****************************************************************/
@@ -107,4 +98,8 @@ void
 gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
                               size_t numthreads);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_THREADS_H__ */

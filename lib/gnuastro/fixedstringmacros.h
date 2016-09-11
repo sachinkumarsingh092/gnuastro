@@ -20,8 +20,9 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_COPYRIGHT_H__
-#define __GAL_COPYRIGHT_H__
+#ifndef __GAL_FIXEDSTRINGMACROS_H__
+#define __GAL_FIXEDSTRINGMACROS_H__
+
 
 
 #define GAL_STRINGS_SHORT_COPYRIGHT                                     \
@@ -90,4 +91,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   " You can check all the input values with the `--printparams' "       \
   "(-P) option."
 
-#endif
+
+
+#endif           /* __GAL_FIXEDSTRINGMACROS_H__ */

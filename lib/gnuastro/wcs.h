@@ -23,7 +23,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_WCS_H__
 #define __GAL_WCS_H__
 
+/* Include other headers if necessary here. Note that other header files
+   must be included before the C++ preparations below */
 #include <wcslib/wcs.h>
+
+
+
+/* C++ Preparations */
+#undef __BEGIN_C_DECLS
+#undef __END_C_DECLS
+#ifdef __cplusplus
+# define __BEGIN_C_DECLS extern "C" {
+# define __END_C_DECLS }
+#else
+# define __BEGIN_C_DECLS                /* empty */
+# define __END_C_DECLS                  /* empty */
+#endif
+/* End of C++ preparations */
+
+
+
+/* Actual header contants (the above were for the Pre-processor). */
+__BEGIN_C_DECLS  /* From C++ preparations */
+
+
 
 void
 gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
@@ -36,4 +59,8 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);
 
-#endif
+
+
+__END_C_DECLS    /* From C++ preparations */
+
+#endif           /* __GAL_WCS_H__ */
