@@ -24,7 +24,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <progname.h>
 
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 
@@ -40,9 +39,6 @@ main(int argc, char *argv[])
 
   /* Set the starting time.*/
   time(&p.rawtime);
-
-  /* Set the program name (needed by non-gnu operating systems): */
-  set_program_name (argv[0]);
 
   /* Read the input parameters.*/
   setparams(argc, argv, &p);
