@@ -111,11 +111,19 @@ cd $build_dir
 
 
 
-# If a 'Makefile' doesn't exist, then configure Gnuastro. If you want to do
-# debugging, then uncomment the ending of the line. Note that static
-# linking is necessary for some tools like Valgrind to give a clean output.
+# If a 'Makefile' doesn't exist, then configure Gnuastro.
+#
+# FOR DEBUGGING: uncomment the second half of this line. Gnuastro uses GNU
+# Libtool to build shared libraries for highly portable and maintainable
+# usage on a wide variety of systems. While this is great for binaries, it
+# can be a pain when trying to debug. For this reason, compilation of
+# shared libraries can be turned off by specifying the --disable-shared
+# option to configure. With static libraries, compilation (the `make'
+# command) will also significantly speed up. Also, by default (in
+# `configure.ac'), we have set optimization flags which have to be
+# cancelled in debugging.
 if [ ! -f Makefile ]; then
-    $srcdir/configure --srcdir=$srcdir #CFLAGS="-g -O0" LDFLAGS="-static"
+    $srcdir/configure --srcdir=$srcdir #--disable-shared CFLAGS="-g -O0"
 fi
 
 
