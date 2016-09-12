@@ -505,8 +505,8 @@ Developing
 * Internal libraries::          Internal static (not installed) libraries.
 * Header files::                Library and common headers.
 * Program source::              Conventions for the code.
+* Building and debugging::      Build and possibly debug during development.
 * Test scripts::                Understanding the test scripts.
-* Building::                    Explanations on building.
 * Contributing to Gnuastro::    Share your changes with all users.
 * After making changes::        Checklist to finalize your changes.
 
@@ -3554,9 +3554,9 @@ while you modify the clean, and backed-up source files and make
 minimal/efficient use of your non-volatile HDD or SSD.
 
 This script can be used in any software which is configured and built using
-the GNU Build System. Just copy it in, and run it from, the top source
-directory of that software. The default number of threads and location of
-the shared memory (@file{/dev/shm}) are currently hard-coded within the
+the GNU Build System. Just copy it in the top source directory of that
+software and run it from there. The default number of threads and location
+of the shared memory (@file{/dev/shm}) are currently hard-coded within the
 script. If you need to change them, please open the script with a text
 editor and set their values manually.
 
@@ -14135,8 +14135,8 @@ discussed. Finally some notes on the building process are given.
 * Internal libraries::          Internal static (not installed) libraries.
 * Header files::                Library and common headers.
 * Program source::              Conventions for the code.
+* Building and debugging::      Build and possibly debug during development.
 * Test scripts::                Understanding the test scripts.
-* Building::                    Explanations on building.
 * Contributing to Gnuastro::    Share your changes with all users.
 * After making changes::        Checklist to finalize your changes.
 @end menu
@@ -14558,7 +14558,7 @@ four or eight connectivity in a region of an image or the whole image.
 @end table
 
 
-@node Program source, Test scripts, Header files, Developing
+@node Program source, Building and debugging, Header files, Developing
 @section Program source
 
 @cindex Source file navigation
@@ -15135,7 +15135,75 @@ context is fairly continuous for a first time reader (who hasn't seen
 the book or had known of Gnuastro before you made your change).
 @end enumerate
 
-@node Test scripts, Building, Program source, Developing
+
+
+
+
+@node Building and debugging, Test scripts, Program source, Developing
+@section Building and debugging
+
+@cindex GNU Libtool
+@cindex GNU Autoconf
+@cindex GNU Automake
+@cindex GNU build system
+To build the various programs and libraries in Gnuastro, the GNU build
+system is used which defines the steps in @ref{Quick start}. It consists of
+GNU Autoconf and GNU Automake and GNU Libtool which are collectively known
+as GNU Autotools. They provide a very portable system to check the
+environment a program is to be installed on prior to compiling and set the
+compilation conditions based on the particular user. They also make
+installing everything in their standard places very easy for the
+programmer. Most of the small caps files that you see in the top source
+directory of the tarball are created by these three tools (see @ref{Version
+controlled source}).
+
+@cindex @file{tmpfs-config-make}
+@cindex @file{tests/during-dev.sh}
+To facilitate the building and testing of your work during development,
+Gnuastro comes with two scripts: @file{tmpfs-config-make} and
+@file{tests/during-dev.sh}. The former is fully described in @ref{Configure
+and build in RAM}. During development, you would commonly run this command
+only once (at the start of your work). The latter is designed to be run
+each time you make a change and want to test your work (with some possible
+input and output). The script itself is heavily commented and thoroughly
+discribes the best way to use it, so we won't repeat it here. As a summary:
+you specify the build directory, an output directory (for the built program
+to be run in and also contains the inputs), the utility's short name and
+the arguments and options that it should be run with. This script will then
+build Gnuastro, go to the output directory and run the built executable
+from there. One option for the output directory might be your desktop, so
+you can easily see the output files and delete them when you are
+finished. The main purpose of these scripts is to keep your source
+directory clean and facilitate your development.
+
+@cindex Debugging
+@cindex Optimization
+By default all the programs are compiled with optimization flags for
+increased speed. A side effect of optimization is that valuable debugging
+information is lost. All the libraries are also linked as shared libraries
+by default. Shared libraries further complicate the debugging process and
+significantly slow down the compilation (the @command{make} command). So
+during development it is recommended to configure Gnuastro as follows:
+
+@example
+$ ./configure --disable-shared CFLAGS="-g -O0"
+@end example
+
+@noindent
+These options to configure are already included in
+@file{tmpfs-config-make}, you just have to uncomment them.
+
+In order to understand the building process, you can go through the
+Autoconf, Automake and Libtool manuals, like all GNU manuals they provide
+both a great tutorial and technical documentation. The ``A small Hello
+World'' section in Automake's manual (in chapter 2) can be a good starting
+guide after you have read the seperate introductions.
+
+
+
+
+
+@node Test scripts, Contributing to Gnuastro, Building and debugging, Developing
 @section Test scripts
 
 @cindex Test scripts
@@ -15161,15 +15229,16 @@ executable.
 
 @cindex Build tree
 @cindex Source tree
-The most important thing to have in mind about all the test scripts is
-that they are run from inside the @file{tests/} directory in the
-``build tree''. Which can be different from the directory they are
-stored in (known as the ``source tree''). This distinction is made by
-GNU Autoconf and Automake (which configure, build and install
-Gnuastro) so that you can install the program even if you don't have
-write access to the directory keeping the source files. See the
-``Parallel build trees (a.k.a VPATH builds)'' in the Automake manual
-for a nice explanation.
+@cindex @file{tmpfs-config-make}
+The most important thing to have in mind about all the test scripts is that
+they are run from inside the @file{tests/} directory in the ``build
+tree''. Which can be different from the directory they are stored in (known
+as the ``source tree''). The @file{tmpfs-config-make} script uses this
+feature (see @ref{Configure and build in RAM}). This distinction is made by
+GNU Autoconf and Automake (which configure, build and install Gnuastro) so
+that you can install the program even if you don't have write access to the
+directory keeping the source files. See the ``Parallel build trees (a.k.a
+VPATH builds)'' in the Automake manual for a nice explanation.
 
 Because of this, any possible data that was not generated by other
 tests (and is thus in the build tree), for example the catalogs in
@@ -15185,49 +15254,8 @@ also true for images or files that were produced by other tests.
 
 
 
-@node Building, Contributing to Gnuastro, Test scripts, Developing
-@section Building
 
-@cindex GNU Libtool
-@cindex GNU Autoconf
-@cindex GNU Automake
-@cindex GNU build system
-To build the various programs and libraries in Gnuastro, the GNU build
-system is used which defines the steps in @ref{Quick start}. It consists of
-GNU Autoconf and GNU Automake and GNU Libtool which are collectively known
-as GNU Autotools. They provide a very portable system to check the
-environment a program is to be installed on prior to compiling and set the
-compilation conditions based on the particular user. They also make
-installing everything in their standard places very easy for the
-programmer. Most of the small caps files that you see in the top source
-directory are created by these three tools.
-
-By default all the programs are compiled with optimization flags for
-increased speed. A side effect is that valuable debugging information
-is lost. To compile with the debugging flag set on (and no
-optimization) you can add the following options to configure:
-
-@example
-$ ./configure CFLAGS="-g -O0"
-@end example
-
-In order to understand the building process, you can go through the
-Autoconf, Automake and Libtool manuals, like all GNU manuals they
-provide both a great tutorial and technical documentation. The ``A
-small Hello World'' section in Automake's manual (in chapter 2) can be
-a good starting guide after you have read the introductions of
-both. To get a good understand of how these three operate separately
-yet the codes are all mixed, there is a great tutorial
-book@footnote{@url{https://www.sourceware.org/autobook/}} which you
-can get you started off.
-
-
-
-
-
-
-
-@node Contributing to Gnuastro, After making changes, Building, Developing
+@node Contributing to Gnuastro, After making changes, Test scripts, Developing
 @section Contributing to Gnuastro
 
 You have this great idea or have found a good fix to a problem which you
