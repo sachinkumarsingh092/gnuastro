@@ -32,10 +32,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/configfiles.h>
 
 #include "main.h"
@@ -467,9 +467,9 @@ preparearrays(struct convolveparams *p)
          becomes 1 (and their division would be meaningful!).*/
       size=p->is0*p->is1;
       sum=gal_statistics_float_sum(p->input, size);
-      gal_arraymanip_fmultip_const(p->input, size, 1/sum);
+      gal_array_fmultip_const(p->input, size, 1/sum);
       sum=gal_statistics_float_sum(p->kernel, size);
-      gal_arraymanip_fmultip_const(p->kernel, size, 1/sum);
+      gal_array_fmultip_const(p->kernel, size, 1/sum);
     }
 
   /* Read the kernel. If there is anything particular to Convolve, then
@@ -503,7 +503,7 @@ preparearrays(struct convolveparams *p)
           if(p->kernelnorm)
             {
               sum=gal_statistics_float_sum(kernel, size);
-              gal_arraymanip_fmultip_const(kernel, size, 1/sum);
+              gal_array_fmultip_const(kernel, size, 1/sum);
             }
 
           /* Flip the kernel: */

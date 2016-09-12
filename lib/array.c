@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <pthread.h>
 
-#include <gnuastro/arraymanip.h>
+#include <gnuastro/array.h>
 
 
 
@@ -39,9 +39,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
  **********************       Initialize        **********************
  *********************************************************************/
 void
-gal_arraymanip_uchar_init_on_region(unsigned char *in, const unsigned char v,
-                                    size_t start, size_t s0, size_t s1,
-                                    size_t is1)
+gal_array_uchar_init_on_region(unsigned char *in, const unsigned char v,
+                               size_t start, size_t s0, size_t s1,
+                               size_t is1)
 {
   size_t r;
   unsigned char *p, *fp;
@@ -60,7 +60,7 @@ gal_arraymanip_uchar_init_on_region(unsigned char *in, const unsigned char v,
 
 
 void
-gal_arraymanip_long_init(long *in, size_t size, const long v)
+gal_array_long_init(long *in, size_t size, const long v)
 {
   long *end=in+size;
   do *in++=v; while(in<end);
@@ -71,8 +71,8 @@ gal_arraymanip_long_init(long *in, size_t size, const long v)
 
 
 void
-gal_arraymanip_long_init_on_region(long *in, const long v, size_t start,
-                                   size_t s0, size_t s1, size_t is1)
+gal_array_long_init_on_region(long *in, const long v, size_t start,
+                              size_t s0, size_t s1, size_t is1)
 {
   size_t r;
   long *p, *fp;
@@ -110,7 +110,7 @@ gal_arraymanip_long_init_on_region(long *in, const long v, size_t start,
  **********************       Copy array        **********************
  *********************************************************************/
 void
-gal_arraymanip_uchar_copy(unsigned char *in, size_t size, unsigned char **out)
+gal_array_uchar_copy(unsigned char *in, size_t size, unsigned char **out)
 {
   unsigned char *fp=in+size, *o;
 
@@ -126,7 +126,7 @@ gal_arraymanip_uchar_copy(unsigned char *in, size_t size, unsigned char **out)
 
 
 void
-gal_arraymanip_float_copy(float *in, size_t size, float **out)
+gal_array_float_copy(float *in, size_t size, float **out)
 {
   float *fp=in+size, *o;
 
@@ -142,7 +142,7 @@ gal_arraymanip_float_copy(float *in, size_t size, float **out)
 
 
 void
-gal_arraymanip_float_copy_values(float *in, size_t size, float **out)
+gal_array_float_copy_values(float *in, size_t size, float **out)
 {
   float *fp=in+size, *o=*out;
   do *o++=*in; while(++in<fp);
@@ -171,7 +171,7 @@ gal_arraymanip_float_copy_values(float *in, size_t size, float **out)
  **********************         Values          **********************
  *********************************************************************/
 void
-gal_arraymanip_fset_const(float *in, size_t size, float a)
+gal_array_fset_const(float *in, size_t size, float a)
 {
   float *fpt;
   fpt=in+size;
@@ -185,7 +185,7 @@ gal_arraymanip_fset_const(float *in, size_t size, float a)
 
 
 void
-gal_arraymanip_freplace_value(float *in, size_t size, float from, float to)
+gal_array_freplace_value(float *in, size_t size, float from, float to)
 {
   float *fpt;
   fpt=in+size;
@@ -208,7 +208,7 @@ gal_arraymanip_freplace_value(float *in, size_t size, float from, float to)
 
 /* Only replace non-NaN values in a float array. */
 void
-gal_arraymanip_freplace_nonnans(float *in, size_t size, float to)
+gal_array_freplace_nonnans(float *in, size_t size, float to)
 {
   float *fpt=in+size;
   do
@@ -224,7 +224,7 @@ gal_arraymanip_freplace_nonnans(float *in, size_t size, float to)
    array so that the non-NaN alements are contiguous. This is useful
    for cases where you want to sort the data.*/
 void
-gal_arraymanip_no_nans(float *in, size_t *size)
+gal_array_no_nans(float *in, size_t *size)
 {
   size_t outsize=0;
   float *f=in, *fp=in+*size;
@@ -243,7 +243,7 @@ gal_arraymanip_no_nans(float *in, size_t *size)
 
 
 void
-gal_arraymanip_no_nans_double(double *in, size_t *size)
+gal_array_no_nans_double(double *in, size_t *size)
 {
   size_t outsize=0;
   double *f=in, *fp=in+*size;
@@ -262,8 +262,8 @@ gal_arraymanip_no_nans_double(double *in, size_t *size)
 
 
 void
-gal_arraymanip_uchar_replace(unsigned char *in, size_t size,
-                             unsigned char from, unsigned char to)
+gal_array_uchar_replace(unsigned char *in, size_t size,
+                        unsigned char from, unsigned char to)
 {
   unsigned char *fpt=in+size;
   do
@@ -293,7 +293,7 @@ gal_arraymanip_uchar_replace(unsigned char *in, size_t size,
  **********************   Multiply or Sum with  **********************
  *********************************************************************/
 void
-gal_arraymanip_fmultip_const(float *in, size_t size, float a)
+gal_array_fmultip_const(float *in, size_t size, float a)
 {
   float *fpt;
   fpt=in+size;
@@ -307,7 +307,7 @@ gal_arraymanip_fmultip_const(float *in, size_t size, float a)
 
 
 void
-gal_arraymanip_fsum_const(float *in, size_t size, float a)
+gal_array_fsum_const(float *in, size_t size, float a)
 {
   float *fpt;
   fpt=in+size;
@@ -321,15 +321,15 @@ gal_arraymanip_fsum_const(float *in, size_t size, float a)
 
 
 float *
-gal_arraymanip_fsum_arrays(float *in1, float *in2, size_t size)
+gal_array_fsum_arrays(float *in1, float *in2, size_t size)
 {
   float *out, *o, *op;
 
   errno=0;
   o=out=malloc(size*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out in gal_arraymanip_fsum_arrays"
-          " (arraymanip.c)", size*sizeof *out);
+    error(EXIT_FAILURE, errno, "%lu bytes for out in gal_array_fsum_arrays"
+          " (array.c)", size*sizeof *out);
 
   op=o+size;
   do *o = *in1++ + *in2++; while(++o<op);
@@ -342,7 +342,7 @@ gal_arraymanip_fsum_arrays(float *in1, float *in2, size_t size)
 
 
 void
-gal_arraymanip_dmultip_const(double *in, size_t size, double a)
+gal_array_dmultip_const(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -353,7 +353,7 @@ gal_arraymanip_dmultip_const(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_dmultip_arrays(double *in1, double *in2, size_t size)
+gal_array_dmultip_arrays(double *in1, double *in2, size_t size)
 {
   double *dpt;
   dpt=in1+size;
@@ -365,7 +365,7 @@ gal_arraymanip_dmultip_arrays(double *in1, double *in2, size_t size)
 
 
 void
-gal_arraymanip_ddivide_const(double *in, size_t size, double a)
+gal_array_ddivide_const(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -377,7 +377,7 @@ gal_arraymanip_ddivide_const(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_dconst_divide(double *in, size_t size, double a)
+gal_array_dconst_divide(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -388,7 +388,7 @@ gal_arraymanip_dconst_divide(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_ddivide_arrays(double *in1, double *in2, size_t size)
+gal_array_ddivide_arrays(double *in1, double *in2, size_t size)
 {
   double *dpt;
   dpt=in1+size;
@@ -399,7 +399,7 @@ gal_arraymanip_ddivide_arrays(double *in1, double *in2, size_t size)
 
 
 void
-gal_arraymanip_dsum_const(double *in, size_t size, double a)
+gal_array_dsum_const(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -411,7 +411,7 @@ gal_arraymanip_dsum_const(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_dsum_arrays(double *in1, double *in2, size_t size)
+gal_array_dsum_arrays(double *in1, double *in2, size_t size)
 {
   double *dpt;
   dpt=in1+size;
@@ -421,7 +421,7 @@ gal_arraymanip_dsum_arrays(double *in1, double *in2, size_t size)
 
 
 void
-gal_arraymanip_dsubtract_const(double *in, size_t size, double a)
+gal_array_dsubtract_const(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -433,7 +433,7 @@ gal_arraymanip_dsubtract_const(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_dconst_subtract(double *in, size_t size, double a)
+gal_array_dconst_subtract(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -445,7 +445,7 @@ gal_arraymanip_dconst_subtract(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_dsubtract_arrays(double *in1, double *in2, size_t size)
+gal_array_dsubtract_arrays(double *in1, double *in2, size_t size)
 {
   double *dpt;
   dpt=in1+size;
@@ -455,7 +455,7 @@ gal_arraymanip_dsubtract_arrays(double *in1, double *in2, size_t size)
 
 
 void
-gal_arraymanip_dpower_const(double *in, size_t size, double a)
+gal_array_dpower_const(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -472,7 +472,7 @@ gal_arraymanip_dpower_const(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_dconst_power(double *in, size_t size, double a)
+gal_array_dconst_power(double *in, size_t size, double a)
 {
   double *dpt;
   dpt=in+size;
@@ -484,7 +484,7 @@ gal_arraymanip_dconst_power(double *in, size_t size, double a)
 
 
 void
-gal_arraymanip_dpower_arrays(double *in1, double *in2, size_t size)
+gal_array_dpower_arrays(double *in1, double *in2, size_t size)
 {
   double *dpt;
   dpt=in1+size;
@@ -496,7 +496,7 @@ gal_arraymanip_dpower_arrays(double *in1, double *in2, size_t size)
 
 
 void
-gal_arraymanip_dlog_array(double *in, size_t size)
+gal_array_dlog_array(double *in, size_t size)
 {
   double *dpt;
   dpt=in+size;
@@ -509,7 +509,7 @@ gal_arraymanip_dlog_array(double *in, size_t size)
 
 
 void
-gal_arraymanip_dlog10_array(double *in, size_t size)
+gal_array_dlog10_array(double *in, size_t size)
 {
   double *dpt;
   dpt=in+size;
@@ -522,7 +522,7 @@ gal_arraymanip_dlog10_array(double *in, size_t size)
 
 
 void
-gal_arraymanip_dabs_array(double *in, size_t size)
+gal_array_dabs_array(double *in, size_t size)
 {
   double *dpt;
   dpt=in+size;

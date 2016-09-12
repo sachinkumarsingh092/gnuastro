@@ -29,11 +29,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/mesh.h>
+#include <gnuastro/array.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/checkset.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 
 #include "main.h"
@@ -96,7 +96,7 @@ initialdetection(struct noisechiselparams *p)
   else
     for(i=0;i<p->erode;++i)
       dilate0_erode1_8con(p->byt, s0, s1, 1);
-  gal_arraymanip_uchar_replace(p->byt, s0*s1, BINARYNOOP, 1);
+  gal_array_uchar_replace(p->byt, s0*s1, BINARYNOOP, 1);
   if(detectionname)
     gal_fits_array_to_file(detectionname, "Eroded", BYTE_IMG, p->byt,
                            s0, s1, p->anyblank, p->wcs, NULL,
@@ -534,18 +534,18 @@ detsnthresh(struct noisechiselparams *p)
      times (once for the sky region and once for the detected
      region). So the first time we operate on it,  */
   if(p->b0f1==0)
-    gal_arraymanip_uchar_copy(p->dbyt, s0*s1, &originaldbyt);
+    gal_array_uchar_copy(p->dbyt, s0*s1, &originaldbyt);
 
   /* Find the psudo-detections: */
   if(p->detectionname)
     {
       p->stepnum=1;
       /* Backup of p->dbyt in tmp */
-      gal_arraymanip_uchar_copy(p->dbyt, s0*s1, &tmp);
+      gal_array_uchar_copy(p->dbyt, s0*s1, &tmp);
       while(p->stepnum<4)
         {
           free(p->dbyt);    /* Free the old, p->dbyt, put the original */
-          gal_arraymanip_uchar_copy(tmp, s0*s1, &p->dbyt);
+          gal_array_uchar_copy(tmp, s0*s1, &p->dbyt);
           gal_mesh_operate_on_mesh(lmp, detectpseudos,
                                    sizeof(unsigned char), 0, 0);
           switch(p->stepnum)

@@ -34,10 +34,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/array.h>
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h   */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
@@ -487,14 +487,14 @@ preparearrays(struct imgstatparams *p)
   if(p->ignoremin)
     {
       gal_statistics_float_min(p->img, p->size, &min);
-      gal_arraymanip_freplace_value(p->img, p->size, min, NAN);
+      gal_array_freplace_value(p->img, p->size, min, NAN);
     }
 
   /* Move all the non-nan elements to the start of the array: */
-  gal_arraymanip_no_nans(p->img, &p->size);
+  gal_array_no_nans(p->img, &p->size);
 
   /* Make a sorted array for most of the jobs: */
-  gal_arraymanip_float_copy(p->img, p->size, &p->sorted);
+  gal_array_float_copy(p->img, p->size, &p->sorted);
   qsort(p->sorted, p->size, sizeof *p->sorted, gal_qsort_float_increasing);
 
   /* Check the given range: */

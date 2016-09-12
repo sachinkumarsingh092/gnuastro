@@ -30,8 +30,8 @@ lib_LTLIBRARIES = libgnuastro.la
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = arraymanip.c box.c checkset.c configfiles.c      \
-  fits.c gnuastro.c linkedlist.c mesh.c mode.c polygon.c qsort.c          \
+libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c  \
+  gnuastro.c linkedlist.c mesh.c mode.c polygon.c qsort.c               \
   spatialconvolve.c statistics.c threads.c timing.c txtarray.c wcs.c
 
 
@@ -39,10 +39,10 @@ libgnuastro_la_SOURCES = arraymanip.c box.c checkset.c configfiles.c      \
 # `.h' files in the $(headersdir) directory. Some of the header files don't
 # need to be installed.
 headersdir=$(top_srcdir)/lib/gnuastro
-pkginclude_HEADERS = $(headersdir)/arraymanip.h $(headersdir)/box.h        \
+pkginclude_HEADERS = $(headersdir)/array.h $(headersdir)/box.h             \
   $(headersdir)/checkset.h $(headersdir)/configfiles.h                     \
   $(headersdir)/fits.h $(headersdir)/gnuastro.h $(headersdir)/linkedlist.h \
   $(headersdir)/mesh.h $(headersdir)/mode.h $(headersdir)/polygon.h        \
-  $(headersdir)/qsort.h $(headersdir)/spatialconvolve.h                    \
+  $(headersdir)/qsort.h $(headersdir)/spatialconvolve.h			   \
   $(headersdir)/statistics.h $(headersdir)/threads.h                       \
   $(headersdir)/timing.h $(headersdir)/txtarray.h $(headersdir)/wcs.h

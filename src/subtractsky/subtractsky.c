@@ -31,9 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/mesh.h>
 #include <gnuastro/mode.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/array.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/arraymanip.h>
 
 #include "main.h"
 
@@ -229,8 +229,8 @@ subtractsky(struct subtractskyparams *p)
 
 
   /* Subtract the sky value */
-  gal_arraymanip_fmultip_const(sky, s0*s1, -1.0f);
-  skysubtracted=gal_arraymanip_fsum_arrays(mp->img, sky, s0*s1);
+  gal_array_fmultip_const(sky, s0*s1, -1.0f);
+  skysubtracted=gal_array_fsum_arrays(mp->img, sky, s0*s1);
   gal_fits_array_to_file(p->cp.output ,"SkySubtracted", FLOAT_IMG,
                          skysubtracted, s0, s1, p->anyblank, p->wcs,
                          NULL, SPACK_STRING);

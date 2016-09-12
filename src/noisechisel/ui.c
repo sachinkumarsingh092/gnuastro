@@ -33,11 +33,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <nproc.h>               /* From Gnulib.                   */
 
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/timing.h>     /* includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/commonargs.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/configfiles.h>
 

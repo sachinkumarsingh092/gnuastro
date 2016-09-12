@@ -34,9 +34,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_integration.h> /* gsl_integration_qng  */
 
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/neighbors.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
 
@@ -620,10 +620,10 @@ makeoneprofile(struct mkonthread *mkp)
 
       /* Correct all the profile pixels. */
       if(p->magatpeak)
-        gal_arraymanip_fmultip_const(mkp->ibq->img, size,
-                                     mkp->brightness/mkp->peakflux);
+        gal_array_fmultip_const(mkp->ibq->img, size,
+                                mkp->brightness/mkp->peakflux);
       else
-        gal_arraymanip_fmultip_const(mkp->ibq->img, size,
-                                     mkp->brightness/sum);
+        gal_array_fmultip_const(mkp->ibq->img, size,
+                                mkp->brightness/sum);
     }
 }

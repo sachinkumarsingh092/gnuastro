@@ -30,11 +30,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/checkset.h>
 #include <gnuastro/neighbors.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/linkedlist.h>
 #include <gnuastro/statistics.h>
 
@@ -965,7 +965,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
           ctp->numclumps*sizeof *newlabs);
 
   /* We want the removed regions to become SEGMENTINIT. */
-  gal_arraymanip_long_init(newlabs, ctp->numclumps, SEGMENTINIT);
+  gal_array_long_init(newlabs, ctp->numclumps, SEGMENTINIT);
 
   /* Set the new labels: */
   if(ctp->p->keepmaxnearriver)

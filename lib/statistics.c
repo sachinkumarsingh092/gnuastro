@@ -31,8 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/qsort.h>
+#include <gnuastro/array.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/arraymanip.h>
 
 
 
@@ -786,8 +786,8 @@ gal_statistics_median(float *array, size_t insize)
 
   /* Make a copy of the input, shift all its non-NaN elements to the
      start of the array, then sort them and find the median. */
-  gal_arraymanip_float_copy(array, insize, &copy);
-  gal_arraymanip_no_nans(copy, &size);
+  gal_array_float_copy(array, insize, &copy);
+  gal_array_no_nans(copy, &size);
   medind=gal_statistics_index_from_quantile(size, 0.5);
   qsort(copy, size, sizeof*copy, gal_qsort_float_increasing);
   median=copy[medind];
@@ -808,7 +808,7 @@ gal_statistics_median_double_in_place(double *array, size_t insize)
 
   /* Shift all its non-NaN elements to the start of the array, then
      sort them and find the median. */
-  gal_arraymanip_no_nans_double(array, &size);
+  gal_array_no_nans_double(array, &size);
 
   /* If all the elements are NaN (size==0), then return NaN,
      otherwise, find the median. */
@@ -1182,7 +1182,7 @@ gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
 
   if(o1_n0==0)
     {
-      gal_arraymanip_float_copy(array, num_elem, &orderedarray);
+      gal_array_float_copy(array, num_elem, &orderedarray);
       qsort(orderedarray, num_elem, sizeof*orderedarray,
             gal_qsort_float_increasing);
     }
@@ -1256,7 +1256,7 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
 
   if(o1_n0==0)
     {
-      gal_arraymanip_float_copy(array, num_elem, &orderedarray);
+      gal_array_float_copy(array, num_elem, &orderedarray);
       qsort(orderedarray, num_elem, sizeof*orderedarray,
             gal_qsort_float_increasing);
     }

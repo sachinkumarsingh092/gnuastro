@@ -30,8 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/checkset.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 
 #include "main.h"
@@ -213,7 +213,7 @@ sum(struct imgarithparams *p)
     {
       /* Do the operation, note that the output is stored in the first
          input. */
-      gal_arraymanip_dsum_arrays(farr, sarr, size);
+      gal_array_dsum_arrays(farr, sarr, size);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
@@ -223,12 +223,12 @@ sum(struct imgarithparams *p)
     }
   else if(farr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dsum_const(farr, size, snum);
+      gal_array_dsum_const(farr, size, snum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
     }
   else if(sarr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dsum_const(sarr, size, fnum);
+      gal_array_dsum_const(sarr, size, fnum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
     }
   else                          /* Both are numbers.           */
@@ -264,7 +264,7 @@ subtract(struct imgarithparams *p)
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
          here. */
-      gal_arraymanip_dsubtract_arrays(sarr, farr, size);
+      gal_array_dsubtract_arrays(sarr, farr, size);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
@@ -274,12 +274,12 @@ subtract(struct imgarithparams *p)
     }
   else if(farr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dconst_subtract(farr, size, snum);
+      gal_array_dconst_subtract(farr, size, snum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
     }
   else if(sarr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dsubtract_const(sarr, size, fnum);
+      gal_array_dsubtract_const(sarr, size, fnum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
     }
   else                          /* Both are numbers.           */
@@ -311,7 +311,7 @@ multiply(struct imgarithparams *p)
   if(farr && sarr)              /* Both are arrays. */
     {
       /* Do the operation, note that the output is stored in farr. */
-      gal_arraymanip_dmultip_arrays(farr, sarr, size);
+      gal_array_dmultip_arrays(farr, sarr, size);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
@@ -321,12 +321,12 @@ multiply(struct imgarithparams *p)
     }
   else if(farr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dmultip_const(farr, size, snum);
+      gal_array_dmultip_const(farr, size, snum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
     }
   else if(sarr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dmultip_const(sarr, size, fnum);
+      gal_array_dmultip_const(sarr, size, fnum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
     }
   else                          /* Both are numbers.           */
@@ -361,7 +361,7 @@ divide(struct imgarithparams *p)
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
          here. */
-      gal_arraymanip_ddivide_arrays(sarr, farr, size);
+      gal_array_ddivide_arrays(sarr, farr, size);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
@@ -371,12 +371,12 @@ divide(struct imgarithparams *p)
     }
   else if(farr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dconst_divide(farr, size, snum);
+      gal_array_dconst_divide(farr, size, snum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
     }
   else if(sarr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_ddivide_const(sarr, size, fnum);
+      gal_array_ddivide_const(sarr, size, fnum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
     }
   else                          /* Both are numbers.           */
@@ -412,7 +412,7 @@ topower(struct imgarithparams *p, char *op)
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
          here. */
-      gal_arraymanip_dpower_arrays(sarr, farr, size);
+      gal_array_dpower_arrays(sarr, farr, size);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
@@ -423,12 +423,12 @@ topower(struct imgarithparams *p, char *op)
     }
   else if(farr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dconst_power(farr, size, snum);
+      gal_array_dconst_power(farr, size, snum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
     }
   else if(sarr)                 /* Only the first is an array. */
     {
-      gal_arraymanip_dpower_const(sarr, size, fnum);
+      gal_array_dpower_const(sarr, size, fnum);
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, sarr);
     }
   else                          /* Both are numbers.           */
@@ -608,7 +608,7 @@ takelog(struct imgarithparams *p)
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
          here. */
-      gal_arraymanip_dlog_array(farr, p->s0*p->s1);
+      gal_array_dlog_array(farr, p->s0*p->s1);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
@@ -637,7 +637,7 @@ takelog10(struct imgarithparams *p)
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
          here. */
-      gal_arraymanip_dlog10_array(farr, p->s0*p->s1);
+      gal_array_dlog10_array(farr, p->s0*p->s1);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);
@@ -666,7 +666,7 @@ takeabs(struct imgarithparams *p)
          input. Also note that since the linked list is
          first-in-first-out, the second operand should be put first
          here. */
-      gal_arraymanip_dabs_array(farr, p->s0*p->s1);
+      gal_array_dabs_array(farr, p->s0*p->s1);
 
       /* Push the output onto the stack. */
       add_operand(p, NOOPTFILENAME, NOOPTNUMBER, farr);

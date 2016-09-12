@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/mode.h>
-#include <gnuastro/arraymanip.h>
+#include <gnuastro/array.h>
 #include <gnuastro/statistics.h>
 
 
@@ -115,7 +115,7 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
 
   /* Find the index of the mirror and make the mirror array: */
   mf=sorted[mirrorindex];
-  gal_arraymanip_float_copy(sorted, size, &actual);
+  gal_array_float_copy(sorted, size, &actual);
   makemirrored(sorted, mirrorindex, &mirror, &msize);
 
 
@@ -131,8 +131,8 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   /* set the mirror pixel to have the value of zero.*/
   min-=mf;
   max-=mf;
-  gal_arraymanip_fsum_const(actual, size, -1.0f*mf);
-  gal_arraymanip_fsum_const(mirror, msize, -1.0f*mf);
+  gal_array_fsum_const(actual, size, -1.0f*mf);
+  gal_array_fsum_const(mirror, msize, -1.0f*mf);
 
 
   /* Allocate space for the 3 column array keeping the histograms:*/

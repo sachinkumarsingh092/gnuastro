@@ -29,8 +29,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/timing.h>
-#include <gnuastro/arraymanip.h>
 
 #include "main.h"
 
@@ -231,13 +231,13 @@ noisechisel(struct noisechiselparams *p)
       gal_fits_array_to_file(p->maskdetname, "Input", FLOAT_IMG,
                              p->img, s0, s1, p->anyblank, p->wcs,
                              NULL, SPACK_STRING);
-      gal_arraymanip_float_copy(p->img, s0*s1, &imgcopy);
+      gal_array_float_copy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 0);
       gal_fits_array_to_file(p->maskdetname, "Undetected masked",
                              FLOAT_IMG, imgcopy, s0, s1, p->anyblank,
                              p->wcs, NULL, SPACK_STRING);
       free(imgcopy);
-      gal_arraymanip_float_copy(p->img, s0*s1, &imgcopy);
+      gal_array_float_copy(p->img, s0*s1, &imgcopy);
       maskbackorforeground(imgcopy, s0*s1, p->byt, 1);
       gal_fits_array_to_file(p->maskdetname, "Detected masked",
                              FLOAT_IMG, imgcopy, s0, s1, p->anyblank,

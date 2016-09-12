@@ -34,10 +34,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/box.h>
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
+#include <gnuastro/array.h>
 #include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
 #include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
-#include <gnuastro/arraymanip.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/commonargs.h>
 #include <gnuastro/configfiles.h>
@@ -859,7 +859,7 @@ preparearrays(struct mkprofparams *p)
       /* If the user just wanted the headers, then change all non-NaN
          pixels to 0.0f. */
       if(up->inputascanvas)
-        gal_arraymanip_freplace_nonnans(p->out, naxes[0]*naxes[1], 0.0f);
+        gal_array_freplace_nonnans(p->out, naxes[0]*naxes[1], 0.0f);
     }
 
 
