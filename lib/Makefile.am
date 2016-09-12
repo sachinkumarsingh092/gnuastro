@@ -33,6 +33,7 @@ lib_LTLIBRARIES = libgnuastro.la
 libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c  \
   gnuastro.c linkedlist.c mesh.c mode.c polygon.c qsort.c               \
   spatialconvolve.c statistics.c threads.c timing.c txtarray.c wcs.c
+libgnuastro_la_LDFLAGS = -version-info 0:0:0
 
 
 # Specify the installed headers, note that we are not blindly including all
