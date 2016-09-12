@@ -45,7 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**********************************************************************/
 /*****************       Read a text table        *********************/
 /**********************************************************************/
-void
+static void
 txttablesize(char *filename, size_t *outs0, size_t *outs1)
 {
   FILE *fp;
@@ -111,7 +111,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
 
 
 
-void
+static void
 savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
           size_t s1, char *token)
 {
@@ -142,7 +142,7 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
 
 
 /* Macro functions: */
-double
+static double
 convertandsave(char *token, size_t lineno, char *filename, FILE *log,
                size_t ts0, size_t ts1)
 {
@@ -165,7 +165,7 @@ convertandsave(char *token, size_t lineno, char *filename, FILE *log,
 
 
 
-void
+static void
 filltable(char *filename, double *array, size_t s0, size_t s1)
 {
   FILE *fp, *log=NULL;

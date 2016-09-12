@@ -128,7 +128,7 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
    sin^2(distance)/2=sin^2( (d1-d2)/2 )+cos(d1)*cos(d2)*sin^2( (r1-r2)/2 )
 */
 double
-angulardistance(double r1, double d1, double r2, double d2)
+gal_wcs_angular_distance(double r1, double d1, double r2, double d2)
 {
   double a=sin( (d1-d2)/2 );
   double b=sin( (r1-r2)/2 );
@@ -167,8 +167,8 @@ gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
   */
 
   /* Get the area in stradians. */
-  st= ( angulardistance(radec[0], radec[1], radec[2], radec[3]) *
-        angulardistance(radec[0], radec[1], radec[4], radec[5]) );
+  st= ( gal_wcs_angular_distance(radec[0], radec[1], radec[2], radec[3]) *
+        gal_wcs_angular_distance(radec[0], radec[1], radec[4], radec[5]) );
 
   /* Convert the stradians to arcsec^2:
 

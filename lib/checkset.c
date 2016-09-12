@@ -64,7 +64,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* See if a given string is a floating point number, if so, put it in
    the number.*/
 int
-strisdouble(char *string, double *out)
+gal_checkset_str_is_double(char *string, double *out)
 {
   char *tailptr;
   double tmp=*out;

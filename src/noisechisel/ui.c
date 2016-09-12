@@ -957,12 +957,12 @@ preparearrays(struct noisechiselparams *p)
       gal_fits_array_to_file(p->meshname, "Input", FLOAT_IMG,
                              smp->img, s0, s1, p->anyblank, p->wcs,
                              NULL, SPACK_STRING);
-      gal_check_mesh_id(smp, &meshindexs);
+      gal_mesh_check_mesh_id(smp, &meshindexs);
       gal_fits_array_to_file(p->meshname, "SmallMeshIndexs",
                              LONG_IMG, meshindexs, s0, s1, 0, p->wcs,
                              NULL, SPACK_STRING);
       free(meshindexs);
-      gal_check_mesh_id(lmp, &meshindexs);
+      gal_mesh_check_mesh_id(lmp, &meshindexs);
       gal_fits_array_to_file(p->meshname, "LargeMeshIndexs", LONG_IMG,
                              meshindexs, s0, s1, 0, p->wcs,
                              NULL, SPACK_STRING);

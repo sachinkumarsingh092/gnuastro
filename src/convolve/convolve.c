@@ -767,7 +767,7 @@ convolve(struct convolveparams *p)
       gal_mesh_make_mesh(mp);
       if(p->meshname)
         {
-          gal_check_mesh_id(mp, &meshindexs);
+          gal_mesh_check_mesh_id(mp, &meshindexs);
           gal_fits_array_to_file(p->meshname, "Input", FLOAT_IMG,
                                  p->mp.img, mp->s0, mp->s1,
                                  p->anyblank, p->wcs, NULL,

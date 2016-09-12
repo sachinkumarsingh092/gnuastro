@@ -380,7 +380,7 @@ gal_mesh_full_garray(struct gal_mesh_params *mp, int reverse)
 /*********************************************************************/
 /* Save the meshid of each pixel into an array the size of the image. */
 void
-gal_check_mesh_id(struct gal_mesh_params *mp, long **out)
+gal_mesh_check_mesh_id(struct gal_mesh_params *mp, long **out)
 {
   long i, *l, *lp;
   size_t row, start, *types=mp->types;
@@ -577,7 +577,7 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
    id of 1. In the actual function, the indexs are given in the order
    the types are found.
  */
-void
+static void
 fillmeshinfo(struct gal_mesh_params *mp, size_t chs0, size_t chs1,
              size_t lasts0, size_t lasts1)
 {
@@ -1005,7 +1005,7 @@ gal_mesh_operate_on_mesh(struct gal_mesh_params *mp,
 /*********************************************************************/
 /********************         Interpolate         ********************/
 /*********************************************************************/
-void
+static void
 preparemeshinterparrays(struct gal_mesh_params *mp)
 {
   size_t bs0=mp->gs0, bs1=mp->gs1;
@@ -1092,7 +1092,7 @@ preparemeshinterparrays(struct gal_mesh_params *mp)
    the differences. But here we are not dealing with subpixel
    distances, so manhattan distance is fine. It also avoids the square
    root function which is much slower. */
-float
+static float
 manhattandistance(long ind, long xc, long yc, long s1)
 {
   return labs(ind%s1 - xc) + labs(ind/s1 - yc);
@@ -1104,7 +1104,7 @@ manhattandistance(long ind, long xc, long yc, long s1)
 /* Some of the variables have different names than the gal_mesh_params
    structure because they are to be fed into the
    GAL_NEIGHBORS_FILL_4_ALLIMG macro. */
-void *
+static void *
 meshinterponthread(void *inparams)
 {
   struct gal_mesh_thread_params *mtp=(struct gal_mesh_thread_params *)inparams;
@@ -1457,7 +1457,7 @@ gal_mesh_smooth(struct gal_mesh_params *mp)
 /*********************************************************************/
 /********************      Convolve in mesh       ********************/
 /*********************************************************************/
-void*
+static void*
 meshspatialconvonthreads(void *inparam)
 {
   struct gal_mesh_thread_params *mtp = (struct gal_mesh_thread_params *)inparam;
@@ -1678,7 +1678,7 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
    re-convolve is very similar to the method explained below in
    gal_mesh_change_to_full_convolution, where it is explained how to count
    the number of pixels that should be re-convolved. */
-void
+static void
 corrconvindexs(struct gal_mesh_params *mp, size_t **indexs,
                size_t *numpix, size_t *thrdcols)
 {

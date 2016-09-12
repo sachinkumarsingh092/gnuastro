@@ -1052,7 +1052,7 @@ reversepolish(struct imgarithparams *p)
          specified operation on them. */
       if(gal_fits_name_is_fits(token->v))
         add_operand(p, token->v, NOOPTNUMBER, NOOPTARRAY);
-      else if(strisdouble(token->v, &number))
+      else if(gal_checkset_str_is_double(token->v, &number))
         add_operand(p, NOOPTFILENAME, number, NOOPTARRAY);
       else
         {

@@ -438,7 +438,7 @@ gal_statistics_float_sum_num(float *in, size_t *size)
 
 
 
-double
+static double
 doublesumnum(double *in, size_t *size)
 {
   double *fpt;

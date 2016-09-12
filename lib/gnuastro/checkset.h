@@ -98,7 +98,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
  ************      Check and convert strings    *****************
  ****************************************************************/
 int
-strisdouble(char *string, double *out);
+gal_checkset_str_is_double(char *string, double *out);
 
 
 

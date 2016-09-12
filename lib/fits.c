@@ -1006,7 +1006,7 @@ gal_fits_num_hdus(char *filename, int *numhdu)
 /**************************************************************/
 /**********       Check FITS image HDUs:      ************/
 /**************************************************************/
-char *
+static char *
 hdutypestring(int hdutype)
 {
   switch(hdutype)

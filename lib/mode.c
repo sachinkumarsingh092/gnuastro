@@ -72,7 +72,7 @@ the functions below.
 /* This is used for the plots, it will allocate an array and put the
    mirrored array values in it. `mi` is the index the mirror is to
    be placed on.  */
-void
+static void
 makemirrored(float *in, size_t mi, float **outmirror, size_t *outsize)
 {
   size_t i, size;
@@ -275,7 +275,7 @@ gal_mode_make_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   `j`. So, if we keep the previous `j` in `prevj` then, all we have to
   do is to start incrementing `j` from `prevj`. This will really help
   in speeding up the job :-D. Only for the first element, `prevj=0`.*/
-size_t
+static size_t
 mirrormaxdiff(float *a, size_t size, size_t m,
               size_t numcheck, size_t interval, size_t stdm)
 {
@@ -361,7 +361,7 @@ mirrormaxdiff(float *a, size_t size, size_t m,
 
    We need a fourth point to be placed between. With this configuration,
    the probing point is located at: */
-size_t
+static size_t
 modegoldenselection(struct gal_mode_params *mp)
 {
   size_t di, dd;
@@ -473,7 +473,7 @@ modegoldenselection(struct gal_mode_params *mp)
    the symmetricity of the mode can be quantified as: (b-m)/(m-a). For
    a completly symmetric mode, this should be 1. Note that the search
    for `b` only goes to the 95% of the distribution.  */
-void
+static void
 modesymmetricity(float *a, size_t size, size_t mi, float errorstdm,
                  float *sym)
 {

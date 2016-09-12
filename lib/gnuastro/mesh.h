@@ -179,7 +179,7 @@ size_t
 gal_mesh_img_xy_to_mesh_id(struct gal_mesh_params *mp, size_t x, size_t y);
 
 void
-gal_check_mesh_id(struct gal_mesh_params *mp, long **out);
+gal_mesh_check_mesh_id(struct gal_mesh_params *mp, long **out);
 
 void
 gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1, float **out2);
