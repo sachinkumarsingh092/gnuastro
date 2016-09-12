@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageWarp - Warp images using projective mapping.
-ImageWarp is part of GNU Astronomy Utilities (Gnuastro) package.
+Polygon related functions and macros.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
