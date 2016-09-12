@@ -48,6 +48,18 @@ AC_CONFIG_MACRO_DIRS([bootstrapped/m4])
 
 
 
+# Library version, see the GNU Libtool manual ("Library interface versions"
+# section for the exact definition of each) for
+GAL_CURRENT=0
+GAL_REVISION=0
+GAL_AGE=0
+GAL_LT_VERSION="${GAL_CURRENT}:${GAL_REVISION}:${GAL_AGE}"
+AC_SUBST(GAL_LT_VERSION)
+
+
+
+
+
 # By default we assume no warnings
 anywarnings=no
 

@@ -25,15 +25,15 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-# Define the main compiled library file
+# Define the main compiled library file and its Libtool version.
 lib_LTLIBRARIES = libgnuastro.la
+libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 
 
 # Specify the library .c files
 libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c  \
   gnuastro.c linkedlist.c mesh.c mode.c polygon.c qsort.c               \
   spatialconvolve.c statistics.c threads.c timing.c txtarray.c wcs.c
-libgnuastro_la_LDFLAGS = -version-info 0:0:0
 
 
 # Specify the installed headers, note that we are not blindly including all
@@ -47,3 +47,26 @@ pkginclude_HEADERS = $(headersdir)/array.h $(headersdir)/box.h             \
   $(headersdir)/qsort.h $(headersdir)/spatialconvolve.h			   \
   $(headersdir)/statistics.h $(headersdir)/threads.h                       \
   $(headersdir)/timing.h $(headersdir)/txtarray.h $(headersdir)/wcs.h
+
+
+# Definitions for Gnuastro's the pkg-config file (inspired from GSL's
+# Makefile.am)
+CLEANFILES = gnuastro.pc
+EXTRA_DIST = gnuastro.pc.in
+pkgconfig_DATA = gnuastro.pc
+pkgconfigdir = $(libdir)/pkgconfig
+
+# Build Gnuastro's pkg-config file based on the information in the
+# Makefile after the Makefile has been built.
+gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
+	rm -f $@ $@.tmp
+	$(SED)                                      \
+	-e 's|@prefix[@]|$(prefix)|g'               \
+	-e 's|@exec_prefix[@]|$(exec_prefix)|g'     \
+	-e 's|@libdir[@]|$(libdir)|g'               \
+	-e 's|@includedir[@]|$(includedir)|g'       \
+	-e 's|@LIBS[@]|$(LIBS)|g'                   \
+	-e 's|@VERSION[@]|$(VERSION)|g'             \
+	'$(srcdir)/$@.in' >>$@.tmp
+	chmod a-w $@.tmp
+	mv $@.tmp $@
