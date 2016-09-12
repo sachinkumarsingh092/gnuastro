@@ -1,0 +1,47 @@
+Gnuastro release checklist
+==========================
+
+This file is primarily intended for the Gnuastro maintainer and lists the
+set of operations to do before making each release. This should be done
+after all the commits needed for this release have been completed.
+
+IMPORTANT NOTE: This is currently a draft, it will be complete with the 0.2
+version release.
+
+ - Update the NEWS file (use `git log --reverse gnuastro_vA.B..HEAD').
+
+ - Check if README includes all the recent updates and important features.
+
+ - Check if THANKS is up to date and include recently updated
+   people/institutions.
+
+ - Update the library version in (`lib/Makefile.am'). See the `Updating
+   library version information' section of the GNU Libtool manual as a
+   guide.
+
+ - Commit all the changes and tag the commit.
+
+ - Make sure all the bootstrapping tools are up to date (keep the versions
+   somewhere to use in the release).
+
+ - `git clean -fxd'
+
+ - `./bootstrap --copy --gnulib-srcdir=/path/to/gnulib'
+
+ - `./tmpfs-config-make'
+
+ - `cd build'
+
+ - `make distcheck -j8'
+
+ - Generate the GNU FTP upload script. This step and later steps will be
+   added later.
+
+ - Update the links on the webpage (`doc/gnuastro-top.html' and possible
+   translations).
+
+ - Build the full webpage (the `doc/forwebpage' script) and check if
+   everything is OK after the upload.
+
+ - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org' and
+   Savannah.
