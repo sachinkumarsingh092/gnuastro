@@ -494,7 +494,14 @@ CosmicCalculator
 
 Libraries
 
-* How to link with the libraries::  Guide on linking with libraries
+* Review of library fundamentals::  Guide on libraries and linking.
+* Gnuastro library::            Description of all library functions.
+* The TEMPLATE utility::        Template for building a new utility.
+
+Review of library fundamentals
+
+* Headers::                     Header files included in source.
+* Linking::                     Linking the compiled source files into one.
 
 Developing
 
@@ -3279,12 +3286,14 @@ Now that you know your system will look into @file{~/.local/bin} for
 executables, you can tell Gnuastro's configure script to install everything
 in the top @file{~/.local} directory using the @option{--prefix}
 option. The configure script will then put the executables in
-@file{~/.local/bin}, the libraries in @file{~/.local/lib} and so on. When
-you subsequently run @command{$ make install}, all the install-able files
-will be put in their respective directory under @file{~/.local/} (as
-discussed above). Note that tilde (`@key{~}') expansion will not happen if
-you put a `@key{=}' between @option{--prefix} and
-@file{~/.local}@footnote{If you insist on using `@key{=}', you can use
+@file{~/.local/bin}, the compiled library files in @file{~/.local/lib}, the
+library header files in @file{~/.local/include} and so on (see @ref{Review
+of library fundamentals} for a review of the compiled library files and the
+headers). When you subsequently run @command{$ make install}, all the
+install-able files will be put in their respective directory under
+@file{~/.local/} (as discussed above). Note that tilde (`@key{~}')
+expansion will not happen if you put a `@key{=}' between @option{--prefix}
+and @file{~/.local}@footnote{If you insist on using `@key{=}', you can use
 @option{--prefix=$HOME/.local}.}, so we have avoided it here, see
 @ref{Options}.
 
@@ -3301,11 +3310,11 @@ You can install everything (including libraries like GSL, CFITSIO, or
 WCSLIB) locally by configuring them as above. However, recall that
 @command{PATH} is only for executable files, not libraries. Therefore, when
 building programs or libraries@footnote{For example WCSLIB which needs
-CFITSIO.} that depend on libraries you installed like this, you have to
-guide your compiler to the directories it can find the shared libraries and
-included (header) files. To do that, you have to define the
-@command{LDFLAGS} and @command{CPPFLAGS} environment variables
-respectively. These can also be done while calling with @file{./configure}:
+CFITSIO, or Gnuastro which needs both.} that depend on libraries you
+installed like this, you have to guide your compiler to the necessary
+directories. To do that, you have to define the @command{LDFLAGS} and
+@command{CPPFLAGS} environment variables respectively. This can be done
+while calling @file{./configure}:
 
 @example
 $ ./configure LDFLAGS=-L/home/name/.local/lib            \
@@ -14029,27 +14038,180 @@ of options and how to effectively use them.
 @node Libraries, Developing, High-level calculations, Top
 @chapter Libraries
 
-Each utility or program in Gnuastro (or any program in general) is actually
-a collection of functions that is compiled into one executable file which
-can communicate directly with the outside world (for example the shell, see
-@ref{Command-line interface}). A compiled collection of functions
-@emph{without} any connection to the outside world is a library. By
-defining your own connections to the outside world in your a separate
-program, you can call a library's functions and compile them all together
-into a new program or utility. This way you can use Gnuastro at a
-lower-level, using the same building blocks (library functions) that
-Gnuastro's utilities benefit from in your own programs.
+Each utility or program in Gnuastro that was discussed in the prior
+chapters (or any program in general) is a collection of functions that is
+compiled into one executable file which can communicate directly with the
+outside world. The outside world in this context is the operating
+system. By communication, we mean that control is directly passed to a
+program from the operating system with a (possible) set of inputs and after
+it is finished, the program will pass control back to the operating
+system. For programs written in C and C++, the unique @code{main} function
+is in charge of this communication.
 
+On the other hand, a library is also a collection of functions that is
+compiled into one executable file, but unlike programs, libraries don't
+have a @code{main} function. Therefore they can't communicate directly with
+the outside world. This gives you the chance to write your own @code{main}
+function and call library functions from within it. After compiling your
+program into a binary executable, you just have to @emph{link} it to the
+library and you are ready to run (execute) your program. In this way, you
+can use Gnuastro at a much lower-level and in combination with other
+libraries on your system, you can significantly boost your creativity.
 
-
+This chapter starts with a basic introduction to libraries and how you can
+use them in @ref{Review of library fundamentals}. The separate functions in
+the Gnuastro library are then introduced (classified by context) in
+@ref{Gnuastro library}. If you end up rutinely using a fixed set of library
+functions, with a well-defined input and output, it will be much more
+beneficial if you define a utility for the job. Therefore in @ref{The
+TEMPLATE utility} we discuss how you can modify a template utility that is
+provided with Gnuastro to easily add a new utility.
 
 
 @menu
-* How to link with the libraries::  Guide on linking with libraries
+* Review of library fundamentals::  Guide on libraries and linking.
+* Gnuastro library::            Description of all library functions.
+* The TEMPLATE utility::        Template for building a new utility.
 @end menu
 
-@node How to link with the libraries,  , Libraries, Libraries
-@section How to link with the libraries
+@node Review of library fundamentals, Gnuastro library, Libraries, Libraries
+@section Review of library fundamentals
+
+Gnuastro's libraries are written in the C programming language. In @ref{Why
+C}, we have thoroughly discussed the reasons behind this choice. C was
+actually created to write Unix. Therefore understanding the way C works can
+greatly help in effectively using of programs and libraries. Unfortunately
+most documentation on these important aspects are too technical. So for the
+readers that are not yet fully familiar with this, in the following
+subsections we will give a brief review of some important aspects of C that
+can help your use of the libraries and understand the confusing errors you
+get when trying to install programs that depend on other libraries. If you
+are already familiar with these concepts, please skip this section and go
+directly to @ref{Gnuastro library} for the function details.
+
+@menu
+* Headers::                     Header files included in source.
+* Linking::                     Linking the compiled source files into one.
+@end menu
+
+@node Headers, Linking, Review of library fundamentals, Review of library fundamentals
+@subsection Headers
+
+@cindex Pre-Processor
+C source code is read from top to bottom in the source file, therefore
+program components (for example variables, data structures and functions)
+should all be @emph{defined} or @emph{declared} closer to the top of the
+source file (before they are used). @emph{Defining} something in C or C++
+is jargon for providing its full details. @emph{Declaraing} it, on the
+other-hand, is jargon for only providing the minimum information needed for
+the compiler to pass it temporarily and fill in the detailed definition
+later.
+
+As an example, for a function, the @emph{declaration} only contains the
+inputs and their data-types along with the output's type@footnote{Recall
+that in C, functions only have one output.}. The @emph{definition} adds to
+the declaration by including the exact details of what operations are done
+to the inputs to generate the output. You can think of the declaration as a
+building's address in the city, and the definition as the building's
+complete blueprints. When the compiler confronts a function during its
+processing, it doesn't need to know anything about how the inputs are
+processed to generate the output, the declaration (the address) is
+enough. Therefore by @emph{declaring} the functions once at the start of
+the source files, we don't have to worry about @emph{defining} them after
+they are used.
+
+Function definitions can become very long and managing all the necessary
+functions in one file is any programmer's nightmare. Therefore, as we will
+see later (in @ref{Linking}), the functions don't necessarily need to be
+defined in the source file where they are used. As long as their
+definitions are ultimately linked to the final executable, everything will
+be fine. For now, it is just important to remember that the functions that
+are called within one source file have to be declared within the source
+file (declarations are mandatory), but not necessarily defined there.
+
+@cindex Modularity
+The ultimate purpose of all the above is modularity, or ``the degree to
+which a system's components may be separated and recombined'' (from
+Wikipedia). The more modular the source code of a program or library, the
+more all the hard work that went into creating it can be reused by others
+for a wider range of problems. So in the design of libraries and programs,
+it is common to define contextually similar functions in one source
+file. For example, in Gnuastro, functions that calculate the median, mean
+and other statistical functions are defined in @file{lib/statistics.c},
+while functions that deal directly with FITS files are defined in
+@file{lib/fits.c}.
+
+Keeping the definition of similar functions in a separate file greatly
+helps their management and modularity, but it doesn't make things much
+easier for the caller's source code: recall that while definitions are
+optional, declarations are mandatory. To make things easier, programmers
+have adopted the header file convention: the header file of a source code
+contains all the declarations that a caller would need to be able to use
+its functions. For example, in Gnuastro, @file{lib/statistics.c} (file
+containing function definitions) comes with a
+@file{lib/gnuastro/statistics.h} (only containing function declarations).
+
+The declarations in the header need to be @emph{include}d into the caller's
+source code with a special pre-processor command: @code{#include
+<path/to/header.h>}. As the name suggests, the @emph{pre-processor} goes
+through the source code prior to the processor (or compiler). One of its
+jobs is to include, or merge, the contents of files that are mentioned like
+this in the source code, so the compiler sees them all as one. This allows
+you (the caller) to include many declarations into your code with only one
+line.
+
+Try opening some of the @file{.c} files in @file{lib/} with a text editor
+to see the include directives at the start of the file (after the copyright
+notice). Let's take @file{lib/fits.c} as an example. You will notice that
+files like @file{stdio.h}, or @file{string.h} are not in this directory (or
+anywhere within Gnuastro. However, the Gnuastro header files (like
+@file{gnuastro/fits.h}) are indeed within this directory. To find the
+header files, the pre-processor can also search in places other than the
+current directory. You can specify those with the
+@option{-I/path/to/include/directory} option when calling the compiler
+(which includes the pre-processor). On most systems the basic C header
+files (like the @file{stdio.h} and @file{string.h} mentioned above) are
+located in @file{/usr/include/} (this @file{include/} is taken from the
+pre-processor's @code{#include} directive). Your compiler is configured to
+automatically search that directory (and some others), so you don't have to
+explictly mention it. Go ahead, look into the @file{/usr/include} directory
+and find @file{stdio.h} for example.
+
+If the pre-processor can't find the included files, it will abort with an
+error. Infact not knowing a library's installation directory is a very
+common when building programs that depend on it, see @ref{Known
+issues}. However in the build system used by Gnuastro (and most other
+programs/libraries), the compiler is invoked many times@footnote{Nearly
+every command you see being executed after @command{make} is one call to
+the compiler.}. Hence, it is really hard (not to mention error-prone,
+frustrating and ugly) to manually add or modify this option on each
+call. To solve this problem, there are conventional environment variables
+for the various kinds of compiler options (or flags).  These environment
+variables are used in every call to the compiler. The environment variable
+used for the C Pre-Processor (or CPP) is @command{CPPFLAGS}. So by giving
+@command{CPPFLAGS} a value once, you can be sure that each call to the
+compiler will be affected. See @ref{Known issues} for an example of how to
+set this variable at configure time.
+
+As described in @ref{Installation directory}, you can select the top
+installation directory of a library, when you @command{./configure} it. All
+the separate components will be put in their separate subdirectory under
+that, for example the utilities/programs, compiled libraries and library
+headers will go into @file{prefix/bin}, @file{prefix/lib}, and
+@file{prefix/include} respectively. Libraries that contain diverse
+collections of functions (like GSL, WCSLIB, and Gnuastro), put their header
+files in a subdirectory unique to themselves for easier management, for
+example @file{prefix/include/gnuastro}. Since the top @file{include/}
+directory is usually known to the compiler, you need to keep the
+subdirectory when including the headers from such libraries, for example
+@code{#include <gnuastro/fits.h>}.
+
+
+@node Linking,  , Headers, Review of library fundamentals
+@subsection Linking
+
+After you run `make' during the building of Gnuastro you will see that for
+each @file{.c} file, two new files are created:
 
 All Gnuastro library functions are compiled into one file depending on how
 you would like to link to the libraries: @file{libgnuastro.a} and
@@ -14088,6 +14250,32 @@ case of Gnuastro, all the headers are installed in
 @file{prefix/include/gnuastro/} (see @ref{Installation directory}). Another
 major difference is that headers are human-readable: you can open them in a
 text editor and actually read them.
+
+@node Gnuastro library, The TEMPLATE utility, Review of library fundamentals, Libraries
+@section Gnuastro library
+
+In the binary library, all the functions are compiled together into one
+file. However, the header files (and underlying C source code) are
+classified by context.
+
+
+@node The TEMPLATE utility,  , Gnuastro library, Libraries
+@section The TEMPLATE utility
+
+The extra creativity offered by libraries comes at a cost: you have to
+actually write your @code{main} function in the programming language of
+your choice, and compile it before you can use it. So when an operation can
+be done in a Gnuastro utility, it is much more worthwhile to simply use the
+utility, instead of the underlying libraries. Historically, Gnuastro was
+first designed to be a collection of utilities, but as shared functions
+between the separate utilities grew, we used internal (not installed)
+libraries in the first (0.1) release and with the 0.2 release, the
+libraries are installed for general use, independent of the utilities. To
+define a new utility (that satisfies Gnuastro's common behaviour explained
+in @ref{Common behavior}) for common library operations you can use the
+template utility in @file{src/TEMPLATE/}. You just have to copy that
+directory into a new one, choose a name for your new utility and begin
+writing your code (also see @ref{Mandatory source code files}).
 
 
 
