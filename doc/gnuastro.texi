@@ -502,7 +502,11 @@ Review of library fundamentals
 
 * Headers::                     Header files included in source.
 * Linking::                     Linking the compiled source files into one.
-* Summary and small example::   Short summary and a building instructions.
+* Summary and example on libraries::  A summary and example on using libraries.
+
+Gnuastro library
+
+* Overall package (gnuastro.h)::  Macros related to the whole package.
 
 Developing
 
@@ -14049,15 +14053,16 @@ it is finished, the program will pass control back to the operating
 system. For programs written in C and C++, the unique @code{main} function
 is in charge of this communication.
 
-On the other hand, a library is also a collection of functions that is
-compiled into one executable file, but unlike programs, libraries don't
-have a @code{main} function. Therefore they can't communicate directly with
-the outside world. This gives you the chance to write your own @code{main}
-function and call library functions from within it. After compiling your
-program into a binary executable, you just have to @emph{link} it to the
-library and you are ready to run (execute) your program. In this way, you
-can use Gnuastro at a much lower-level, and in combination with other
-libraries on your system, you can significantly boost your creativity.
+Similar to a program, a library is also a collection of functions that is
+compiled into one executable file. However, unlike programs, libraries
+don't have a @code{main} function. Therefore they can't communicate
+directly with the outside world. This gives you the chance to write your
+own @code{main} function and call library functions from within it. After
+compiling your program into a binary executable, you just have to
+@emph{link} it to the library and you are ready to run (execute) your
+program. In this way, you can use Gnuastro at a much lower-level, and in
+combination with other libraries on your system, you can significantly
+boost your creativity.
 
 This chapter starts with a basic introduction to libraries and how you can
 use them in @ref{Review of library fundamentals}. The separate functions in
@@ -14080,17 +14085,15 @@ provided with Gnuastro to easily add a new utility.
 
 Gnuastro's libraries are written in the C programming language. In @ref{Why
 C}, we have thoroughly discussed the reasons behind this choice. C was
-actually created to write Unix. Therefore understanding the way C works can
-greatly help in effectively using of programs and libraries in all
-Unix-like operating systems. Unfortunately most documentation on these
-important aspects are too technical for a beginner. So for the readers that
-are not yet fully familiar with this, in the following subsections we will
-give a brief review of some important aspects of C that can help your use
-of the libraries and understand the confusing errors you get when trying to
-install programs that depend on other libraries. First we will discuss
-header files in @ref{Headers} and then go onto @ref{Linking}. If you are
-already familiar with these concepts, please skip this section and go
-directly to @ref{Gnuastro library}.
+actually created to write Unix, thus understanding the way C works can
+greatly help in effectively using programs and libraries in all Unix-like
+operating systems. Therefore, in the following subsections some important
+aspects of C, as it relates to libraries (and thus programs that depend on
+them) on Unix are reviewed. First we will discuss header files in
+@ref{Headers} and then go onto @ref{Linking}. This section finishes with
+@ref{Summary and example on libraries}. If you are already familiar with
+these concepts, please skip this section and go directly to @ref{Gnuastro
+library}.
 
 @cindex Modularity
 In theory, a full operating system (or any software) can be written as one
@@ -14099,19 +14102,19 @@ discussed in the subsections below). However, writing that single function
 and maintaining it (adding new features, fixing bugs, documentation and
 etc) would be a programmer or scientist's worst nightmare! Futhermore, all
 the hard work that went into creating it cannot be reused in other
-software: every programmer or scientist would have to re-invent the
+software: every other programmer or scientist would have to re-invent the
 wheel. The ultimate purpose behind libraries (which come with headers and
 have to be linked) is to address this problem and increase modularity:
 ``the degree to which a system's components may be separated and
 recombined'' (from Wikipedia). The more modular the source code of a
 program or library, the easier maintaining it will be, and all the hard
-work that went into creating it can be reused by others for a wider range
-of problems.
+work that went into creating it can be reused for a wider range of
+problems.
 
 @menu
 * Headers::                     Header files included in source.
 * Linking::                     Linking the compiled source files into one.
-* Summary and small example::   Short summary and a building instructions.
+* Summary and example on libraries::  A summary and example on using libraries.
 @end menu
 
 @node Headers, Linking, Review of library fundamentals, Review of library fundamentals
@@ -14146,7 +14149,9 @@ What you see above is the @emph{definition} of this function: it shows you
 (and the compiler) exactly what it does to the two @code{double} type
 inputs and that the output also has a @code{double} type. Note that a
 function's internal operations are rarely so simple and short, it can be
-arbitrarily long and complicated. The declaration for this function is:
+arbitrarily long and complicated. This unreasonably short and simple
+function was chosen here for ease of reading. The declaration for this
+function is:
 
 @example
 double
@@ -14217,71 +14222,87 @@ installed with the library into your system, you don't even need to keep a
 copy of them for each separate program, making things even more convenient.
 
 Try opening some of the @file{.c} files in Gnuastro's @file{lib/} directory
-with a text editor to see the include directives at the start of the file
-(after the copyright notice). Let's take @file{lib/fits.c} as an
+with a text editor to check out the include directives at the start of the
+file (after the copyright notice). Let's take @file{lib/fits.c} as an
 example. You will notice that Gnuastro's header files (like
 @file{gnuastro/fits.h}) are indeed within this directory (the @file{fits.h}
 file is in the @file{gnuastro/} directory). You will notice that files like
 @file{stdio.h}, or @file{string.h} are not in this directory (or anywhere
 within Gnuastro).
 
-To find the header files, the pre-processor can also search in places other
-than the current directory. You can specify those directories with the
-@option{-I/path/to/include/directory} option @footnote{Try running
-Gnuastro's @command{make} and find the directories given to the compiler
-with the @option{-I} option.} when calling the compiler (which includes the
-pre-processor). On most systems the basic C header files (like
-@file{stdio.h} and @file{string.h} mentioned above) are located in
+On most systems the basic C header files (like @file{stdio.h} and
+@file{string.h} mentioned above) are located in
 @file{/usr/include/}@footnote{The @file{include/} directory name is taken
 from the pre-processor's @code{#include} directive, which is also the
 motivation behind the `I' in the @option{-I} option to the
 pre-processor.}. Your compiler is configured to automatically search that
 directory (and possibly others), so you don't have to explictly mention
 these directories. Go ahead, look into the @file{/usr/include} directory
-and find @file{stdio.h} for example.
+and find @file{stdio.h} for example. When the necessary header files are
+not in those specific libraries, the pre-processor can also search in
+places other than the current directory. You can specify those directories
+with this pre-processor option@footnote{Try running Gnuastro's
+@command{make} and find the directories given to the compiler with the
+@option{-I} option.}:
+
+@table @option
+@item -I DIR
+``Add the directory @file{DIR} to the list of directories to be searched
+for header files.  Directories named by '-I' are searched before the
+standard system include directories.  If the directory @file{DIR} is a
+standard system include directory, the option is ignored to ensure that the
+default search order for system directories and the special treatment of
+system headers are not defeated...'' (quoted from the GNU Compiler
+Collection manual). Note that the space between @key{I} and the directory
+is optional and commonly not used.
+@end table
 
 If the pre-processor can't find the included files, it will abort with an
 error. Infact a common error when building programs that depend on a
-library is that the compiler doesn't not know where a library's header are
-(see @ref{Known issues}). So you have to inform the compiler of the
-location of the library's headers when its building the higher-level
-software. For a small software with one or two source files, this can be
-done manually. However, to enhance modularity, Gnuastro (and most other
-programs/libraries) contain many source files, so the compiler is invoked
-many times@footnote{Nearly every command you see being executed after
-running @command{make} is one call to the compiler.}. This makes manual
-addition or modification of this function practically impossible.
+library is that the compiler doesn't not know where a library's header is
+(see @ref{Known issues}). So you have to manually tell the compiler where
+to look for the library's headers with the @option{-I} option. For a small
+software with one or two source files, this can be done manually (see
+@ref{Summary and example on libraries}). However, to enhance modularity,
+Gnuastro (and most other programs/libraries) contain many source files, so
+the compiler is invoked many times@footnote{Nearly every command you see
+being executed after running @command{make} is one call to the
+compiler.}. This makes manual addition or modification of this option
+practically impossible.
 
+@cindex GNU build system
 @cindex @command{CPPFLAGS}
-To solve this problem, there are conventional environment variables for the
-various kinds of compiler options (or flags).  These environment variables
-are used in every call to the compiler (they can be empty). The environment
-variable used for the C Pre-Processor (or CPP) is @command{CPPFLAGS}. By
-giving @command{CPPFLAGS} a value once, you can be sure that each call to
-the compiler will be affected. See @ref{Known issues} for an example of how
-to set this variable at configure time.
+To solve this problem, in the GNU build system, there are conventional
+environment variables for the various kinds of compiler options (or flags).
+These environment variables are used in every call to the compiler (they
+can be empty). The environment variable used for the C Pre-Processor (or
+CPP) is @command{CPPFLAGS}. By giving @command{CPPFLAGS} a value once, you
+can be sure that each call to the compiler will be affected. See @ref{Known
+issues} for an example of how to set this variable at configure time.
 
 @cindex GNU Build system
 As described in @ref{Installation directory}, you can select the top
 installation directory of a software using the GNU build system, when you
 @command{./configure} it. All the separate components will be put in their
 separate subdirectory under that, for example the utilities/programs,
-compiled libraries and library headers will go into @file{prefix/bin},
-@file{prefix/lib}, and @file{prefix/include} respectively. For enhanced
-modularity, libraries that contain diverse collections of functions (like
-GSL, WCSLIB, and Gnuastro), put their header files in a subdirectory unique
-to themselves. For example all Gnuastro's header files are installed in
-@file{prefix/include/gnuastro}. Since the top @file{prefix/include}
-directory is usually known to the compiler, in your source code, you need
-to keep the library's subdirectory when including the headers from such
-libraries, for example @code{#include <gnuastro/fits.h>}. Not all libraries
-need to follow this convension, for example CFITSIO only has one header
-(@file{fitsio.h}) which is directly installed in @file{prefix/include}.
+compiled libraries and library headers will go into @file{$prefix/bin}
+(replace @file{$prefix} with a directory), @file{$prefix/lib}, and
+@file{$prefix/include} respectively. For enhanced modularity, libraries
+that contain diverse collections of functions (like GSL, WCSLIB, and
+Gnuastro), put their header files in a subdirectory unique to
+themselves. For example all Gnuastro's header files are installed in
+@file{$prefix/include/gnuastro}. In your source code, you need to keep the
+library's subdirectory when including the headers from such libraries, for
+example @code{#include <gnuastro/fits.h>}@footnote{the top
+@file{$prefix/include} directory is usually known to the compiler}. Not all
+libraries need to follow this convension, for example CFITSIO only has one
+header (@file{fitsio.h}) which is directly installed in
+@file{$prefix/include}.
 
 
 
 
-@node Linking, Summary and small example, Headers, Review of library fundamentals
+@node Linking, Summary and example on libraries, Headers, Review of library fundamentals
 @subsection Linking
 
 @cindex GNU Libtool
@@ -14314,20 +14335,26 @@ This will print a list of all the functions (more generally, `symbols')
 that were called within @file{src/arithmetic/arithmetic.c} along with some
 further information (for example a @code{T} in the second column shows that
 this function is actually defined here, @code{U} says that it is undefined
-here. Try opening the @file{.c} file to check for your self. Run
-@command{info nm} for more information.
+here). Try opening the @file{.c} file to check some of these functions for
+your self. Run @command{info nm} for more information.
 
 @cindex Static linking
 @cindex Linking: Static
-In the case of Arithmetic (a program/utility) the contents of all these
-object files are copied (and re-ordered) into one final executable file
-which we can run from the operating system. When the symbols
-(computer-readable function definitions in most cases) are copied into the
-output like this, we call the process @emph{static} linking. Let's assume
-you have installed Gnuastro into the default @file{/usr/local} (see
-@ref{Installation directory}). So please try @command{nm} on it to see how
-it now contains the symbols from all the @file{.o} files that went into
-making it:
+To recap, the @emph{compiler} created the separate object files mentioned
+above for each @file{.c} file. The @emph{linker} will then combine all the
+symbols of the various object files (and libraries) into one program or
+library. In the case of Arithmetic (a program/utility) the contents of the
+object files in @file{src/arithmetic/} are copied (and re-ordered) into one
+final executable file which we can run from the operating system. When the
+symbols (computer-readable function definitions in most cases) are copied
+into the output like this, we call the process @emph{static} linking. Let's
+have a closer look at static linking: we'll assume you have installed
+Gnuastro into the default @file{/usr/local/} directory (see
+@ref{Installation directory}). If you tried the @command{nm} command on one
+of Arithmetic's object files above, then with the command below you can
+confirm that all the functions that were defined in the object files (had a
+@code{T} in the second column) are also defined in the @file{astarithmetic}
+executable:
 
 @example
 $ nm /usr/local/bin/astarithmetic
@@ -14335,8 +14362,8 @@ $ nm /usr/local/bin/astarithmetic
 
 @noindent
 But you will notice that there are still many undefined symbols (have a
-@code{U} in the second column), for example all the Gnuastro library
-functions that start with `@code{gal_}':
+@code{U} in the second column). One class of such functions are Gnuastro's
+own library functions that start with `@code{gal_}':
 
 @example
 $ nm /usr/local/bin/astarithmetic | grep gal_
@@ -14351,52 +14378,58 @@ These undefined symbols (functions) will be linked to the executable
 everytime you run arithmetic. Therefore they are known as dynamically
 @emph{linked} libraries @footnote{Do not confuse dynamicly @emph{linked}
 libraries with dynamically @emph{loaded} libraries. The former (that is
-discussed here) are only loaded at the program startup. However, the latter
-can be loaded anytime during the program's execution, they are also known
-as plugins.}. When the functions of a library need to be dynamically
+discussed here) are only loaded once at the program startup. However, the
+latter can be loaded anytime during the program's execution, they are also
+known as plugins.}. When the functions of a library need to be dynamically
 linked, the library is known as a shared library. As we saw above, static
 linking is done when the executable is being built. However, when a library
 is linked dynamically, its symbols are only checked with the available
 libraries at build time: they are not actually copied into the
 executable. Everytime you run the program, the linker will be activated and
-link to the installed library. If you want all the libraries to be
-statically linked to the executables, you have to tell Libtool (which
-Gnuastro uses for the linking) to disable shared libraries at configure
-time@footnote{Libtool is very common and is commonly used. Therefore, you
-can use this option to configure on most programs using the GNU build
-system if you want static linking.}:
+will try to link the program to the installed library before it starts. If
+you want all the libraries to be statically linked to the executables, you
+have to tell Libtool (which Gnuastro uses for the linking) to disable
+shared libraries at configure time@footnote{Libtool is very common and is
+commonly used. Therefore, you can use this option to configure on most
+programs using the GNU build system if you want static linking.}:
 
 @example
 $ configure --disable-shared
 @end example
 
 @noindent
-Try configuring, building and installing Gnuastro like this. Then check the
-@code{gal_} symbols in the installed Arithmetic executable like before. You
-will see that they are actually copied this time (have a @code{T} in the
-second column). If the second column doesn't convince you, look at the
-executable file size with the following command:
+Try configuring, statically building and installing Gnuastro with the
+command above. Then check the @code{gal_} symbols in the installed
+Arithmetic executable like before. You will see that they are actually
+copied this time (have a @code{T} in the second column). If the second
+column doesn't convince you, look at the executable file size with the
+following command:
 
 @example
 $ ls -lh /usr/local/bin/astarithmetic
 @end example
 
 @noindent
-It is roughly 100 kilo-bytes and 4.2 mega-bytes with dynamic and static
-linking respectively. This huge difference would have been very significant
-in the old days, but with the roughly tera-byte storages commonly in use
-today, it is negligible. Fortunately, output file size is not the only
-benefit of dynamic linking: since it links to the libraries at run-time
-(rather than build-time), when an update comes for the required libraries,
-you don't have to re-build the programs or libraries that depend on it. The
-updated implementation will automatically be used. To be fair, this also
-does present a few other problems:
+It should be around 4.2 Megabytes with this static linking. If you
+configure and build Gnuastro again with shared libraries enabled (which is
+the default), you will notice that it is roughly 100 Kilobytes! This huge
+difference would have been very significant in the old days, but with the
+roughly Terabyte storages commonly in use today, it is
+negligible. Fortunately, output file size is not the only benefit of
+dynamic linking: since it links to the libraries at run-time (rather than
+build-time), you don't have to re-build a higher-level program or library
+when an update comes for one of the lower-level libraries it depends
+on. You just install the new low-level library and it will automatically be
+used next time in your higher-level tools. To be fair, this also creates a
+few complications@footnote{Both of these can be avoided by joining the
+mailing lists of the lower-level libraries and checking the changes in
+newer versions before installing them. Updates that result in such
+behaviors are generally heavily emphasized in the release notes.}:
 
 @itemize
 @item
-Reproducibility: Even though your high-level program or library has the
-same version as before, with the updated library, you might not get the
-same results.
+Reproducibility: Even though your high-level tool has the same version as
+before, with the updated library, you might not get the same results.
 @item
 Broken links: if some functions have been changed or removed in the updated
 library, then the linker will abort with an error at run-time. Therefore
@@ -14405,18 +14438,18 @@ you need to re-build your higher-level program or library.
 
 @cindex GNU C library
 To see a list of all the shared libraries that are needed for a program or
-a shared library, you can use the GNU C library's @command{ldd}@footnote{If
-your operating system is not using the GNU C library, you might need
-another tool.} program, for example:
+a shared library to run, you can use the GNU C library's
+@command{ldd}@footnote{If your operating system is not using the GNU C
+library, you might need another tool.} utility, for example:
 
 @example
 $ ldd /usr/local/bin/astarithmetic
 @end example
 
-The Library file names start with a @file{lib} and end with suffix
-depending on their type as described below. In between these two is the
-name of the library, for example @file{libgnuastro.a} (is Gnuastro's static
-library) and @file{libgsl.so.0.0.0} is GSL's shared library.
+Library file names start with a @file{lib} and end with suffix depending on
+their type as described below. In between these two is the name of the
+library, for example @file{libgnuastro.a} (Gnuastro's static library) and
+@file{libgsl.so.0.0.0} (GSL's shared library).
 
 @itemize
 @item
@@ -14438,7 +14471,8 @@ more.
 
 For each shared library, we also have two symbolic links ending with
 @file{.so.X} and @file{.so}. They are automatically set by the installer,
-but you can change them when you have multiple versions of a library.
+but you can change them (point them to another version of the library) when
+you have multiple versions on your system.
 
 @end itemize
 
@@ -14449,41 +14483,50 @@ the @file{prefix/lib/} directory (see @ref{Installation directory}). In
 this way other programs can make which ever kind of link that they want.
 
 To link with a library, the linker needs to know where to find the
-library. You do that with two separate options to the linker:
+library. You do that with two separate options to the linker (see
+@ref{Summary and example on libraries} for an example):
 
 @table @option
-@item -L
-This option is used to specify the directories to search for libraries, for
-example @file{-L/usr/local/lib}, or @file{-L/home/yourname/.local/lib}. You
-can make multiple calls to this option, guiding the linker to look into
-several directories.
+@item -L DIR
+Will tell the linker to look into @file{DIR} for the libraries. For example
+@file{-L/usr/local/lib}, or @file{-L/home/yourname/.local/lib}. You can
+make multiple calls to this option, so the linker looks into several
+directories. Note that the space between @key{L} and the directory is
+optional and commonly not used.
 
-@item -l
-The unique filename of the library. As discussed above, library file names
-have fixed parts which must not be given to this option. So @option{-lgsl}
-will guide the linker to either look for @file{libgsl.a} or
-@file{libgsl.so} (depending on the type of linking it is suppose to do).
+@item -lLIBRARY
+Specify the unique name of a library to be linked. As discussed above,
+library file names have fixed parts which must not be given to this
+option. So @option{-lgsl} will guide the linker to either look for
+@file{libgsl.a} or @file{libgsl.so} (depending on the type of linking it is
+suppose to do). You can link many libraries by repeated calls to this
+option.
 
-One very important issue about this option is that its place on the command
-line matters: As soon as the linker hits this option, it gets a list of the
-undefined symbols it has found so far and tries to find them in the library
-specified by this option. After the search in this library has finished,
-this library's contents are completely discarded from the linker's
-memory. So if a later object file or library uses one of the symbols in
-this library and this library is not present any more on the command-line,
-the linker will abort with an error. As an example, Gnuastro's
-@code{gal_array_dlog10_array} function depends on the @code{log10} function
-of the C Math library (specified with @option{-lm}). So this will fail:
-@option{-lm -lgnuastro}, but @option{-lgnuastro -lm}, it will successfully
-build your program.
+@strong{Very important: } The place of this option on the command line
+matters. This is often a source of confusion for beginners, so let's assume
+you have asked the linker to link with library A using this option. As soon
+as the linker confronts this option, it looks into the list of the
+undefined symbols it has found until that point and does a search in
+library A for any of those symbols. If any pending undefined symbol is
+found in library A, it is used. After the search in undefined symbols is
+complete, the contents of library A are completely discarded from the
+linker's memory. Therefore, if a later object file or library uses an
+unlinked symbol in library A, the linker will abort after it has finished
+its search in all the input libraries or object files.
+
+As an example, Gnuastro's @code{gal_array_dlog10_array} function depends on
+the @code{log10} function of the C Math library (specified with
+@option{-lm}). So the proper way to link something that uses this function
+is @option{-lgnuastro -lm}. If instead, you give: @option{-lm -lgnuastro}
+the linker will complain and abort.
 
 @end table
 
 
 
 
-@node Summary and small example,  , Linking, Review of library fundamentals
-@subsection Summary and small example
+@node Summary and example on libraries,  , Linking, Review of library fundamentals
+@subsection Summary and example on libraries
 
 After the mostly abstract discussions of @ref{Headers} and @ref{Linking},
 we'll give a small tutorial here. But before that, let's recall the general
@@ -14515,57 +14558,136 @@ be linked to other executables (it has many entry points).
 
 @cindex GCC
 @cindex GNU Compiler Collection
-
 The GNU Compiler Collection (or GCC for short) will do all three steps. So
-as a first example, copy the @file{tests/lib/versionc.c} in a test
-directory, this small program will use the Gnuastro library function
-@code{gal_gnuastro_version} to print the version of Gnuastro. It is good
-practice for a program to report the versions of its dependencies for later
-reproducibility, so this function will (hopefully) be used a lot. To
-compile this program you can run this command:
+as a first example, from Gnuastro's source, copy the
+@file{tests/lib/versionc.c} in a test directory. This small program will
+use the @code{GAL_GNUASTRO_VERSION} to print the version of Gnuastro (see
+@ref{Version numbering}). It is good practice for a program to report the
+versions of its dependencies for later reproducibility, so this function
+will (hopefully) be used a lot. To compile this program you can run this
+command from the same directory that contains the C source file. Since this
+function just uses a macro (defined in the header), it doesn't need to link
+to gnuastro to work.
 
 @example
-$ gcc versionc.c -o gnuastro-version -lgnuastro
+$ gcc versionc.c -o gnuastro-version
 @end example
 
-If your top installation directory (let's call it @file{$prefix}) is not
-recognized by GCC, you will get errors for unknown header files or
-libraries. So you should run GCC as follows (telling it where to find the
-header files and libraries as described in the previous sections):
+If your top installation directory (let's call it @file{$prefix}, see
+@ref{Installation directory}) is not recognized by GCC, you will get
+pre-processor errors for unknown header files. To fix the problem, you
+should run GCC as follows: telling it where to find the header files (see
+@ref{Headers}):
 
 @example
-$ gcc -I$prefix/include -L$prefix/lib versionc.c -lgnuastro     \
-      -o gnuastro-version
+$ gcc -I$prefix/include versionc.c -o gnuastro-version
 @end example
 
 @noindent
 The @option{-o} option is used to specify the name of the output
 executable, without it the output file name will be @file{a.out},
 independent of your input file name(s). This single command has done all
-the three steps above: try removing the @option{-lgnuastro} option and you
-will see a linker error. You are now ready to run the program with
+the preprocessor, compilation and linker operations. You are now ready to
+run the program with
 
 @example
 $ ./gnuastro-version
 @end example
 
-This simple Gnuastro function didn't need linking to any other library. But
-if your program needs WCS coordinate transformations, needs to read a FITS
-file, or needs mathematical operations (which include its linear algebra
-operations), you also need to add these libraries in the call to GCC:
-@option{-lgnuastro -lwcs -lcfitsio -lgsl -lgslcblas -lm}. In @ref{Gnuastro
-library} where we document each function, it is mentioned which libraries
-(if any) must also be linked when you call a function.
+This simple Gnuastro function didn't need linking. But if your program
+needs WCS coordinate transformations, needs to read a FITS file, or needs
+mathematical operations (which include its linear algebra operations), you
+also need to add these libraries in the call to GCC: @option{-lgnuastro
+-lwcs -lcfitsio -lgsl -lgslcblas -lm}. In @ref{Gnuastro library} where we
+document each function, it is mentioned which libraries (if any) must also
+be linked when you call a function.
 
 
 
 @node Gnuastro library, The TEMPLATE utility, Review of library fundamentals, Libraries
 @section Gnuastro library
 
-In the binary library, all the functions are compiled together into one
-file. However, the header files (and underlying C source code) are
-classified by context.
+Gnuastro library's exported constructs (functions, macros, data structures,
+or global variables) are classified by context into multiple header files
+(see @ref{Headers})@footnote{Within Gnuastro's source, all installed
+@file{.h} files in @file{lib/gnuastro/} are accompanied by a @file{.c} file
+in @file{/lib/}.}. In this section, the functions in each header will be
+discussed under a separate sub-section, which includes the name of the
+header. Assuming a function declaration is in @file{headername.h}, you can
+include its declaration in your source code with:
 
+@example
+# include <gnuastro/headername.h>
+@end example
+
+@noindent
+The names of all constructs are prefixed with @code{gal_headername_} (or
+@code{GAL_HEADERNAME_} for macros). The @code{gal_} prefix stands for
+@emph{G}NU @emph{A}stronomy @emph{L}ibrary. The @code{headername} prefix is
+replaced by the header file name (without the @file{.h}) which contains the
+construct.
+
+All Gnuastro library functions are compiled into a single file which can be
+linked on the command-line with the @option{-lgnuastro} option, (see
+@ref{Linking} and @ref{Summary and example on libraries} for an
+introduction). Gnuastro library is a high-level library which depends on
+lower level libraries for some operations (see
+@ref{Dependencies}). Therefore if at least one of Gnuastro's functions in
+your program use functions from the dependencies, you will also need to
+link those dependencies after linking with Gnuastro. The outside libraries
+that need to be linked for such functions are mentioned following the
+function name. In the rare case that all dependencies are necessary, you
+should link the following libraries:
+
+@example
+-lgnuastro -ljpeg -lwcs -lcfitsio -lgsl -lgslcblas -pthread -lm
+@end example
+
+@cartouche
+@noindent
+@strong{Libraries are still under heavy development: } Gnuastro was
+initially created to be a collection of command-line utilities. However, as
+the utilities and their the shared functions grew, internal (not installed)
+libraries were added. With the 0.2 release, the libraries are
+installable. In the next releases, Gnuastro's library structure will
+undergo significant evolution for enhanced modularity. It will stabilize
+with the removal of this notice. So as long as this notice is present,
+please install newer versions with extreme care: check the @file{NEWS} file
+for changes in the interface.
+@end cartouche
+
+@menu
+* Overall package (gnuastro.h)::  Macros related to the whole package.
+@end menu
+
+@node Overall package (gnuastro.h),  , Gnuastro library, Gnuastro library
+@subsection Overall package (@file{gnuastro.h})
+
+The @file{gnuastro/gnuastro.h} header contains information about the full
+Gnuastro package. Gnuastro developers should note that this is the only
+header that is not available within Gnuastro, it is only available to a
+Gnuastro library user @emph{after} installation. Within Gnuastro,
+@file{config.h} (which is included in every Gnuastro @file{.c} file, see
+@ref{Coding conventions}) should have more than enough information about
+the overall Gnuastro installation.
+
+@deffn Macro GAL_GNUASTRO_VERSION
+This macro can be used as a string
+literal@footnote{@url{https://en.wikipedia.org/wiki/String_literal}}
+containing the version of Gnuastro that is being used. See @ref{Version
+numbering} for the version formats. For example:
+
+@example
+printf("Gnuastro version: %s\n", GAL_GNUASTRO_VERSION);
+@end example
+
+@noindent
+or
+
+@example
+char *gnuastro_version=GAL_GNUASTRO_VERSION;
+@end example
+@end deffn
 
 @node The TEMPLATE utility,  , Gnuastro library, Libraries
 @section The TEMPLATE utility
@@ -15379,25 +15501,24 @@ is very long.
 All installed header files should be in the @file{lib/gnuastro} directory
 (under the top Gnuastro source directory). After installation, they will be
 put in the @file{$prefix/include/gnuastro} directory (see @ref{Installation
-directory} for @file{$prefix}). Therefore Gnuastro's headers can be
-included in source files with the following line.
+directory} for @file{$prefix}). Therefore with this convention Gnuastro's
+headers can be included in internal (to Gnuastro) and external (a library
+user) source files with the same line
 @example
 # include <gnuastro/headername.h>
 @end example
 Note that unlike the GSL convention, the header file names are not prefixed
-with a `@file{gnuastro_}'. The reason is that the headers depend on each
-other (the include line above is present in the headers too). So if the
-user chooses to avoid the @file{gnuastro/} directory when installing
-Gnuastro the dependencies of the headers will break and Gnuastro cannot be
-compiled. Therefore the `@file{gnuastro_}' prefix to the file names is
+with a `@file{gal_}'. If a user manually mixes the Gnuastro (or GSL)
+headers with other headers, compilation will break because the installed
+headers depend on each other (the @code{#include} directive, with the
+@file{gnuastro/} directory, above is present in the installed headers
+too). Therefore the `@file{gal_}' prefix to the file names is
 redundant@footnote{Note that this applies to GSL's header files too, for
-example see @file{eigen/gsl_eigen.h} in GSL's source files. However, GSL
-uses this prefix to find the headers that will be installed, therefore it
-is necessary there. With this convention, Gnuastro already has all its
-installed headers in the @file{lib/gnuastro/} directory so it doesn't have
-any operational necessity.}. With this convention, the coding of Gnuastro's
-utilities will be the same as a user's code working on their own separate
-project.
+example see @file{eigen/gsl_eigen.h} in GSL's source files. GSL uses the
+@file{gsl_} filename prefix to separate the headers that will be installed
+from those that won't. Therefore this filename prefix a technical internal
+issue there, which we believe will only confuse the user who doesn't need
+to get involved with such issues.}.
 
 @item
 @cindex GNU coding standards
@@ -15419,11 +15540,6 @@ utility or library they are reading. This convention does make the function
 names longer (a little harder to write), but the extra documentation it
 provides convention plays an important role in Gnuastro and is worth the
 cost.
-
-@item
-All installed libraries should have a name like @code{libgalbox.a} (this is
-specified in the @file{Makefile.am} files in each directory, not in the
-actual C source code).
 
 @item
 @cindex GNU Emacs
