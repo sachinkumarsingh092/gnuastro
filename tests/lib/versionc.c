@@ -28,17 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 main(void)
 {
-  /* Pointer to the string version */
-  char *version=NULL;
-
-  /* Fill in both with the version string. */
-  version=gal_gnuastro_version();
-
   /* Print the version. */
-  printf("Gnuastro version is: %s\n", version);
-
-  /* Free the allocated space for the version. */
-  free(version);
+  printf("Gnuastro version is: %s\n", GAL_GNUASTRO_VERSION);
 
   /* Cleanup and return */
   return EXIT_SUCCESS;

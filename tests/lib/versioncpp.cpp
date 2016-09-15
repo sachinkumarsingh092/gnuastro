@@ -28,9 +28,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 main(void)
 {
-  char *version=NULL;
-  version=gal_gnuastro_version();
-  std::cout << "Gnuastro version is: " << version << ".";
-  free(version);
+  std::cout << "Gnuastro version is: " << GAL_GNUASTRO_VERSION << ".\n";
   return EXIT_SUCCESS;
 }

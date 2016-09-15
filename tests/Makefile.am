@@ -35,6 +35,15 @@ endif
 
 
 
+# `gnuastro.h' is built by `../lib/Makefile.am' and is only meant for
+# outside users (internally `config.h' has everything. Thus, we need to add
+# it to the include directories of the test programs in this directory.
+AM_CPPFLAGS = -I../lib
+
+
+
+
+
 # Environment variables for the test scripts.
 AM_TESTS_ENVIRONMENT =                              \
 export topsrc=$(top_srcdir);                        \
