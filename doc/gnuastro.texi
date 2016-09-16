@@ -503,6 +503,7 @@ Review of library fundamentals
 * Headers::                     Header files included in source.
 * Linking::                     Linking the compiled source files into one.
 * Summary and example on libraries::  A summary and example on using libraries.
+* Automatic linking script::    Shell function for automatic linking.
 
 Gnuastro library
 
@@ -14115,6 +14116,7 @@ problems.
 * Headers::                     Header files included in source.
 * Linking::                     Linking the compiled source files into one.
 * Summary and example on libraries::  A summary and example on using libraries.
+* Automatic linking script::    Shell function for automatic linking.
 @end menu
 
 @node Headers, Linking, Review of library fundamentals, Review of library fundamentals
@@ -14525,7 +14527,7 @@ the linker will complain and abort.
 
 
 
-@node Summary and example on libraries,  , Linking, Review of library fundamentals
+@node Summary and example on libraries, Automatic linking script, Linking, Review of library fundamentals
 @subsection Summary and example on libraries
 
 After the mostly abstract discussions of @ref{Headers} and @ref{Linking},
@@ -14559,49 +14561,105 @@ be linked to other executables (it has many entry points).
 @cindex GCC
 @cindex GNU Compiler Collection
 The GNU Compiler Collection (or GCC for short) will do all three steps. So
-as a first example, from Gnuastro's source, copy the
-@file{tests/lib/versionc.c} in a test directory. This small program will
-use the @code{GAL_GNUASTRO_VERSION} to print the version of Gnuastro (see
-@ref{Version numbering}). It is good practice for a program to report the
-versions of its dependencies for later reproducibility, so this function
-will (hopefully) be used a lot. To compile this program you can run this
-command from the same directory that contains the C source file. Since this
-function just uses a macro (defined in the header), it doesn't need to link
-to gnuastro to work.
+as a first example, from Gnuastro's source, go to @file{tests/lib/}. This
+directory contains the library tests, you can use these as some simple
+tutorials. For this demonstration, we will compile and run the
+@file{arraymanip.c}. This small program will call Gnuastro library for some
+simple operations on an array (open it and have a look). To compile this
+program, run this command inside the directory containing it.
 
 @example
-$ gcc versionc.c -o gnuastro-version
-@end example
-
-If your top installation directory (let's call it @file{$prefix}, see
-@ref{Installation directory}) is not recognized by GCC, you will get
-pre-processor errors for unknown header files. To fix the problem, you
-should run GCC as follows: telling it where to find the header files (see
-@ref{Headers}):
-
-@example
-$ gcc -I$prefix/include versionc.c -o gnuastro-version
+$ gcc arraymanip.c -lgnuastro -lm -o arraymanip
 @end example
 
 @noindent
-The @option{-o} option is used to specify the name of the output
-executable, without it the output file name will be @file{a.out},
-independent of your input file name(s). This single command has done all
-the preprocessor, compilation and linker operations. You are now ready to
-run the program with
+The two @option{-lgnuastro} and @option{-lm} options (in this order) tell
+GCC to first link with the Gnuastro library and then with C's math
+library. The @option{-o} option is used to specify the name of the output
+executable, without it the output file name will be @file{a.out} (on most
+OSs), independent of your input file name(s).
+
+If your top Gnuastro installation directory (let's call it @file{$prefix},
+see @ref{Installation directory}) is not recognized by GCC, you will get
+pre-processor errors for unknown header files. Once you fix it, you will
+get linker errors for undefined functions. To fix both, you should run GCC
+as follows: additionally telling it which directories it can find
+Gnuastro's headers and compiled library (see @ref{Headers} and
+@ref{Linking}):
 
 @example
-$ ./gnuastro-version
+$ gcc -I$prefix/include -L$prefix/lib arraymanip.c -lgnuastro -lm     \
+      -o arraymanip
 @end example
 
-This simple Gnuastro function didn't need linking. But if your program
-needs WCS coordinate transformations, needs to read a FITS file, or needs
-mathematical operations (which include its linear algebra operations), you
-also need to add these libraries in the call to GCC: @option{-lgnuastro
--lwcs -lcfitsio -lgsl -lgslcblas -lm}. In @ref{Gnuastro library} where we
-document each function, it is mentioned which libraries (if any) must also
-be linked when you call a function.
+@noindent
+This single command has done all the preprocessor, compilation and linker
+operations. Therefore no intermediate files (object files in particular)
+were created, only a single output executable was created. You are now
+ready to run the program with:
 
+@example
+$ ./arraymanip
+@end example
+
+The Gnuastro functions called by this program only needed to be linked with
+the C math library. But if your program needs WCS coordinate
+transformations, needs to read a FITS file, needs special math operations
+(which include its linear algebra operations), or you want it to run on
+multiple CPU threads, you also need to add these libraries in the call to
+GCC: @option{-lgnuastro -lwcs -lcfitsio -lgsl -lgslcblas -pthread -lm}. In
+@ref{Gnuastro library}, where each function is documented, it is mentioned
+which libraries (if any) must also be linked when you call a function. If
+you feel all these linkings can be confusing, please have a look at
+@ref{Automatic linking script}.
+
+
+@node Automatic linking script,  , Summary and example on libraries, Review of library fundamentals
+@subsection Automatic linking script
+The number and order of libraries that are necessary for linking a program
+with Gnuastro library might be too confusing when you need to compile a
+small program for one particular job (with one source file). To solve this
+problem, please add these lines to your @file{~/.bashrc} with a text editor
+and replace @code{PREFIX} with Gnuastro's installation directory (see
+@ref{Installation directory}).
+
+@example
+# Compile and correctly link Gnuastro related programs
+function gnuastro-gcc @{
+  libtool --mode=link gcc $1.c $2 PREFIX/lib/libgnuastro.la -o $1
+@}
+@end example
+
+@cindex GNU Libtool
+This tiny shell function uses GNU Libtool to find the necessary libraries
+to link against. Libtool uses the same libraries that were checked when you
+configured Gnuastro to link your program. So in the future, if Gnuastro's
+prerequisite libraries change, you don't have to worry. Afterwards, when
+you want to compile a C program that uses Gnuastro library (for example
+@file{myprog.c}), just run the following command from the directory which
+contains the source file:
+
+@example
+gnuastro-gcc myprog
+@end example
+
+@noindent
+If your program needs to link with libraries other than those needed by
+Gnuastro, you can specify them as a second argument (within double quotes):
+
+@example
+gnuastro-gcc myprog "-lfirst -lsecond"
+@end example
+
+@noindent
+If you also want to execute the compiled program without typing a second
+command, add @command{&& ./myprog} to either of the lines above, like the
+example below. If your program can take arguments, then you can also
+include them afterwards.
+
+@example
+gnuastro-gcc myprog && ./myprog
+@end example
 
 
 @node Gnuastro library, The TEMPLATE utility, Review of library fundamentals, Libraries
@@ -14636,12 +14694,11 @@ lower level libraries for some operations (see
 your program use functions from the dependencies, you will also need to
 link those dependencies after linking with Gnuastro. The outside libraries
 that need to be linked for such functions are mentioned following the
-function name. In the rare case that all dependencies are necessary, you
-should link the following libraries:
+function name. See @ref{Automatic linking script} for a small shell
+function to worry about the libraries to link against and let you focus on
+your exciting science.
 
-@example
--lgnuastro -ljpeg -lwcs -lcfitsio -lgsl -lgslcblas -pthread -lm
-@end example
+
 
 @cartouche
 @noindent
