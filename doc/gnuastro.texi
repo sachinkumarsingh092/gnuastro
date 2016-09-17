@@ -13,11 +13,13 @@
 @c So dashes and underscores can be used in HTMLs
 @allowcodebreaks true
 
+@c So function output type is printed on first line
+@deftypefnnewline on
+
 @c Use section titles in cross references, not node titles.
 @xrefautomaticsectiontitle on
 
 @c For the indexes:
-@syncodeindex fn cp
 @syncodeindex vr cp
 @syncodeindex pg cp
 
@@ -507,7 +509,8 @@ Review of library fundamentals
 
 Gnuastro library
 
-* Overall package (gnuastro.h)::  Macros related to the whole package.
+* Overall package (gnuastro.h)::  Related to the whole package.
+* Bounding box (box.h)::        Finding bounding boxes in an image.
 
 Developing
 
@@ -682,8 +685,7 @@ was changed.
 @end quotation
 
 @cindex Anscombe's quartet
-@cindex Good statistical analysis
-@cindex Statistical analysis, good
+@cindex Statistical analysis
 Anscombe's quartet
 @footnote{@url{http://en.wikipedia.org/wiki/Anscombe%27s_quartet}}
 demonstrates how four data sets with widely different shapes (when
@@ -1029,7 +1031,7 @@ fully explained, easy and (hopefully) entertaining.
 @cindex Linux
 @cindex GNU/Linux
 @cindex GNU C library
-@cindex GNU compiler collection
+@cindex GNU Compiler Collection
 You might have already noticed that we are not using the name ``Linux'',
 but ``GNU/Linux''. Please take the time to have a look at the following
 essays and FAQs for a complete understanding of this very important
@@ -1454,10 +1456,17 @@ We would also like to gratefully thank Mohammad-reza Khellat, Alan Lefor,
 and Yahya Sefidbakht for their useful and constructive comments and
 suggestions. Finally we should thank all the (sometimes anonymous)
 developers in various online forums which patiently answered all our small
-(but important) technical questions.
+(but important) technical questions. All work on Gnuastro has been
+voluntary, but we are most grateful to the following institutions (in
+chronological order) for hosting us in our research:
 
-
-
+@quotation
+Ministry of education, culture, sports, science and technology (MEXT), Japan.@*
+Tohoku University Astronomical Institute, Sendai, Japan.@*
+University of Salento, Lecce, Italy.@*
+Centre national de la recherche scientifique (CNRS), France.@*
+Centre de Recherche Astrophysique de Lyon, University of Lyon 1, France.@*
+@end quotation
 
 
 
@@ -2487,11 +2496,11 @@ package manager.
 @table @asis
 
 @item GNU Portability Library (Gnulib)
-@cindex Gnulib
 @cindex GNU C library
-@cindex GNU Portability Library
+@cindex Gnulib: GNU Portability Library
+@cindex GNU Portability Library (Gnulib)
 To ensure portability for a wider range of operating systems (those that
-don't include GNU C Library, namely glibc), Gnuastro depends on the GNU
+don't include GNU C library, namely glibc), Gnuastro depends on the GNU
 portability library, or Gnulib. Gnulib keeps a copy of all the functions in
 glibc, implemented (as much as possible) to be portable to other operating
 systems. The @file{bootstrap} script can automatically clone Gnulib (as a
@@ -2754,7 +2763,8 @@ with the main repository see @ref{Synchronizing}.
 
 @cindex Bootstrapping
 @cindex GNU Autoconf Archive
-@cindex GNU Portability Library
+@cindex Gnulib: GNU Portability Library
+@cindex GNU Portability Library (Gnulib)
 @cindex Automatically created build files
 @noindent
 The version controlled source code lacks the source files that we have not
@@ -2765,8 +2775,6 @@ to immediately configure, build, and install Gnuastro. However from the
 perspective of version control, they are just bloatware and sources of
 confusion (since they are not changed by Gnuastro developers).
 
-@cindex Gnulib
-@cindex GNU Portability Library (Gnulib)
 The process of automatically building and importing necessary files into
 the cloned directory is known as @emph{bootstrapping}. All the instructions
 for an automatic bootstrapping are available in @file{bootstrap} and
@@ -2818,16 +2826,18 @@ $ cd $TOPGNUASTRO/gnuastro
 $ ./bootstrap --copy --gnulib-srcdir=$DEVDIR/gnulib
 @end example
 
+
 @cindex GNU Texinfo
 @cindex GNU Libtool
 @cindex GNU Autoconf
 @cindex GNU Automake
+@cindex GNU C library
 @cindex GNU build system
 Since Gnulib and Autoconf archives are now available in your local
 directories, you don't need an internet connection every time you decide to
 remove all untracked files and redo the bootstrap (see box below). You can
 also use the same command on any other project that uses Gnulib. All the
-necessary GNU C Library functions, Autoconf macros and Automake inputs are
+necessary GNU C library functions, Autoconf macros and Automake inputs are
 now available along with the book figures. The standard GNU build system
 (@ref{Quick start}) will do the rest of the job.
 
@@ -3059,11 +3069,12 @@ very similar to the @option{--enable-progname}, but will build and
 install all the other programs except this one.
 
 @item --enable-gnulibcheck
-@cindex GNU C Library
-@cindex GNU Portability Library
+@cindex GNU C library
+@cindex Gnulib: GNU Portability Library
+@cindex GNU Portability Library (Gnulib)
 Enable checks on the GNU Portability Library (Gnulib). Gnulib is used
 by Gnuastro to enable users of non-GNU based operating systems (that
-don't use GNU C Library or glibc) to compile and use the advanced
+don't use GNU C library or glibc) to compile and use the advanced
 features that this library provides. We make extensive use of such
 functions. If you give this option to @command{$ ./configure}, when
 you run @command{$ make check}, first the functions in Gnulib will be
@@ -3536,9 +3547,9 @@ written by hand) there is no problem in this and this feature can be
 considered as an automatic cleanup.
 
 @cindex Linux kernel
-@cindex GNU C Library
-@cindex GNU Build System
-The modern GNU C Library (and thus the Linux kernel) define the
+@cindex GNU C library
+@cindex GNU build system
+The modern GNU C library (and thus the Linux kernel) define the
 @file{/dev/shm} directory for this purpose (POSIX shared memory). So using
 GNU Build System's ability to build in a separate directory (not
 necessarily in the source directory), we can configure and build the
@@ -3710,8 +3721,9 @@ for @file{LD_LIBRARY_PATH} explained below.
 @end itemize
 
 @item
-@cindex GNU Portability Library
 @vindex --enable-gnulibcheck
+@cindex Gnulib: GNU Portability Library
+@cindex GNU Portability Library (Gnulib)
 @command{$ make}: @emph{Complains about an unknown function on a
 non-GNU based operating system.} In this case, please run @command{$
 ./configure} with the @option{--enable-gnulibcheck} option to see if
@@ -4110,7 +4122,7 @@ To facilitate the job of the users and developers, all the programs in
 Gnuastro share some basic command-line options for the same
 operations where they are relevant. The list of options is provided
 below. It is noteworthy that these similar options are hard-wired into
-the programming of all of Gnuastro programs using GNU C Library's
+the programming of all of Gnuastro programs using GNU C library's
 argument parser merging ability.
 
 @cindex Irrelevant options
@@ -5032,10 +5044,10 @@ this manner:
 $ export ARGP_HELP_FMT=rmargin=100,opt-doc-col=20
 @end example
 @cindex @file{.bashrc}
-This will affect all GNU programs using GNU C Library's @file{argp.h}
+This will affect all GNU programs using GNU C library's @file{argp.h}
 facilities as long as the environment variable is in memory. You can
 see the full list of these formatting parameters in the ``Argp User
-Customization'' part of the GNU C Library manual. If you are more
+Customization'' part of the GNU C library manual. If you are more
 comfortable to read the @option{--help} outputs of all GNU software in
 your customized format, you can add your customizations (similar to
 the line above, without the @command{$} sign) to your @file{~/.bashrc}
@@ -5099,7 +5111,7 @@ provided in Info, your whole GNU/Linux life will significantly
 improve.
 
 @cindex GNU Emacs
-@cindex GNU C Library
+@cindex GNU C library
 Once you've become an efficient navigator in Info, you can go to any
 part of this book or any other GNU software or library manual, no
 matter how long it is, in a matter of seconds. It also blends nicely
@@ -9348,7 +9360,7 @@ the histogram. But the image pixels can have any distribution, and the
 histogram results are very inaccurate (there is a large dispersion)
 and depend on bin-widths.
 
-@cindex @mymath{\sigma}-clipping
+@cindex sigma-clipping
 @item
 Another approach was to iteratively clip the brightest pixels in the
 image (which is known as @mymath{\sigma}-clipping, since the reference
@@ -14282,7 +14294,7 @@ CPP) is @command{CPPFLAGS}. By giving @command{CPPFLAGS} a value once, you
 can be sure that each call to the compiler will be affected. See @ref{Known
 issues} for an example of how to set this variable at configure time.
 
-@cindex GNU Build system
+@cindex GNU build system
 As described in @ref{Installation directory}, you can select the top
 installation directory of a software using the GNU build system, when you
 @command{./configure} it. All the separate components will be put in their
@@ -14714,10 +14726,11 @@ for changes in the interface.
 @end cartouche
 
 @menu
-* Overall package (gnuastro.h)::  Macros related to the whole package.
+* Overall package (gnuastro.h)::  Related to the whole package.
+* Bounding box (box.h)::        Finding bounding boxes in an image.
 @end menu
 
-@node Overall package (gnuastro.h),  , Gnuastro library, Gnuastro library
+@node Overall package (gnuastro.h), Bounding box (box.h), Gnuastro library, Gnuastro library
 @subsection Overall package (@file{gnuastro.h})
 
 The @file{gnuastro/gnuastro.h} header contains information about the full
@@ -14745,6 +14758,48 @@ or
 char *gnuastro_version=GAL_GNUASTRO_VERSION;
 @end example
 @end deffn
+
+
+
+
+
+@node Bounding box (box.h),  , Overall package (gnuastro.h), Gnuastro library
+@subsection Bounding box (@file{box.h})
+
+Functions related to reporing a the bouding box of certain inputs are
+declared in @file{gnuastro/box.h}. All coordinates in this header are in
+the FITS format (first axis is the horizontal and the second axis is
+vertical).
+
+@deftypefun void gal_box_ellipse_in_box (double @var{A}, double @var{B}, double @var{theta_rad}, long @var{*width})
+Any ellipse can be enclosed into a rectangular box. The purpose of this
+function is to give the height and width of that box. @var{A} is the
+ellipse major axis, @var{B} is the minor axis, @var{theta_rad} is the
+position angle in radians. The @var{width} array will contain the output
+size in long integer type. @code{width[0]}, and @code{width[1]} are the
+number of pixels along the first and second FITS axis.
+@end deftypefun
+
+@deftypefun void gal_box_border_from_center (double @var{xc}, double @var{yc}, long @var{*width}, long @var{*fpixel}, long @var{*lpixel})
+Given the center (@var{xc} and @var{yc}) and width (two element array) of a
+box, return the coordinates of the first @var{fpixel} and last @var{lpixel}
+pixels (both are two element arrays.
+@end deftypefun
+
+@deftypefun int gal_box_overlap (long @var{*naxes}, long @var{*fpixel_i}, long @var{*lpixel_i}, long @var{*fpixel_o}, long @var{*lpixel_o})
+We have an image of size @var{naxes} and want to get the overlap of the
+image with a box. This function will return 1 if there is an overlap and 0
+if there isn't. The input and output box are specified by their first and
+last pixels. When there is an overlap, the coordinates of the first and
+last pixels of the overlap will be put in @var{fpixel_o} and
+@var{lpixel_o}.
+@end deftypefun
+
+
+
+
+
+
 
 @node The TEMPLATE utility,  , Gnuastro library, Libraries
 @section The TEMPLATE utility
@@ -14947,14 +15002,14 @@ usage and ``high speed'' is desired.
 
 The core processing functions of each program are written mostly with
 the basic ISO C90 standard. We do make lots of use of the GNU
-additions to the C language in the GNU C Library, but these additional
+additions to the C language in the GNU C library, but these additional
 functions are mainly used in the user interface functions (reading
 your inputs and preparing them prior to or after the analysis). The
 actual algorithms, which most scientists would be more interested in,
 are much more closer to ISO C90. For this reason, the source files
 containing user interface code and those containing actual processing
 code are clearly separated, see @ref{Program source}. If anything
-particular to the GNU C Library is used in the processing functions,
+particular to the GNU C library is used in the processing functions,
 it is explained in the comments in between the code.
 
 @cindex GNU Coreutils
@@ -15339,7 +15394,7 @@ int verb=p->cp.verb;
 
 @item args.h
 @cindex Argp argument parser
-The argument parser structures (which are used by GNU C Library's
+The argument parser structures (which are used by GNU C library's
 Argp) for each program are defined in @file{args.h}. They are separate
 global variables and function definitions that will be used by
 Argp. We recommend going through the appropriate section in GNU C
@@ -15508,7 +15563,8 @@ The headers should be classified (by an empty line) into separate
 groups:
 
 @enumerate
-@cindex GNU Portability Library
+@cindex Gnulib: GNU Portability Library
+@cindex GNU Portability Library (Gnulib)
 @item
 @code{#include <config.h>}: This must be the first code line (not
 commented or blank) in each source file. It sets macros that the GNU
@@ -16506,7 +16562,7 @@ SAO ds9 window: @clicksequence{File@click{}Open Other@click{}Open
 Multi Ext Cube} and then choose the Multi extension FITS file in your
 computer's file structure.
 
-@findex ds9 -mecube
+@cindex @option{-mecube} (ds9)
 The method above is a little tedious to do every time you want view a
 multi-extension FITS file. Fortunately SAO ds9 also provides options
 that you can use to specify a particular behavior. One of those
@@ -16727,6 +16783,8 @@ $ ./pgdemoXX
 
 @c Print the index and finish:
 @node Index,  , GNU Free Documentation License, Top
+@unnumbered Function index
+@printindex fn
 @unnumbered Index
 @printindex cp
 
