@@ -31,30 +31,38 @@ libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 
 
 # Specify the library .c files
-BUILT_SOURCES = gnuastro/gnuastro.h
-libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c  \
-  linkedlist.c mesh.c mode.c polygon.c qsort.c spatialconvolve.c        \
+libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c	\
+  linkedlist.c mesh.c mode.c polygon.c qsort.c spatialconvolve.c	\
   statistics.c threads.c timing.c txtarray.c wcs.c
 
 
-# Specify the installed headers, note that we are not blindly including all
-# `.h' files in the $(headersdir) directory. Some of the header files don't
-# need to be installed.
-headersdir=$(top_srcdir)/lib/gnuastro
+# Installed headers, note that we are not blindly including all `.h' files
+# in the $(headersdir) directory. Some of the header files don't need to be
+# installed.
 pkginclude_HEADERS = gnuastro/gnuastro.h $(headersdir)/array.h             \
-  $(headersdir)/box.h $(headersdir)/checkset.h $(headersdir)/configfiles.h \
-  $(headersdir)/fits.h $(headersdir)/linkedlist.h $(headersdir)/mesh.h     \
-  $(headersdir)/mode.h $(headersdir)/polygon.h $(headersdir)/qsort.h       \
-  $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h               \
-  $(headersdir)/threads.h $(headersdir)/timing.h $(headersdir)/txtarray.h  \
-  $(headersdir)/wcs.h
+  $(headersdir)/box.h $(headersdir)/fits.h $(headersdir)/linkedlist.h      \
+  $(headersdir)/mesh.h $(headersdir)/mode.h $(headersdir)/polygon.h        \
+  $(headersdir)/qsort.h $(headersdir)/spatialconvolve.h                    \
+  $(headersdir)/statistics.h $(headersdir)/threads.h $(headersdir)/wcs.h   \
+  $(headersdir)/txtarray.h
+
+
+# Files to distribute in the tarball. For the headers: these are internal
+# headers and don't need to be installed. Headers are only mentioned within
+# the source files, and if they are not explicitly mentioned somewhere in
+# the Makefile, they will not distributed, so we need to explicitly tell
+# Automake to distribute them here.
+headersdir=$(top_srcdir)/lib/gnuastro
+EXTRA_DIST = gnuastro.pc.in gnuastro.h.in $(headersdir)/commonargs.h       \
+  $(headersdir)/commonparams.h $(headersdir)/fixedstringmacros.h           \
+  $(headersdir)/neighbors.h $(headersdir)/checkset.h                       \
+  $(headersdir)/configfiles.h $(headersdir)/timing.h $(headersdir)/README
 
 
 # Definitions for Gnuastro's the pkg-config file (inspired from GSL's
 # Makefile.am)
 pkgconfig_DATA = gnuastro.pc
 pkgconfigdir = $(libdir)/pkgconfig
-EXTRA_DIST = gnuastro.pc.in gnuastro.h.in
 CLEANFILES = gnuastro.pc gnuastro/gnuastro.h
 
 

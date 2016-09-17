@@ -40,8 +40,6 @@ BUILT_SOURCES = $(top_srcdir)/AUTHORS
 
 
 
-
-
 ## Directories to check:
 ## =====================
 ##
@@ -98,17 +96,22 @@ if COND_GNULIBCHECK
   MAYBE_GNULIBCHECK = bootstrapped/tests
 endif
 
-# Note that by default `COND_TEMPLATE' is not set in configure, it is
-# commented, and exists only as a template for you to copy and paste to
-# name your new utility. The same rule is applied here (in the `if'
-# conditions above). When `MAYBE_TEMPLATE' is not defined, then Make
-# will see it as a blank string and igonore it, so there is no problem with
-# having an uncommented `MAYBE_TEMPLATE' as a value in `SUBDIRS'.
-SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)     \
-$(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)      \
-$(MAYBE_IMGCROP) $(MAYBE_IMGSTAT) $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG)       \
-$(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL) $(MAYBE_SUBTRACTSKY)  \
-$(MAYBE_TABLE) $(MAYBE_TEMPLATE) doc tests
+
+
+## Subdirectories to build
+## =======================
+##
+## Note that by default `COND_TEMPLATE' is not set in configure, it is
+## commented, and exists only as a template for you to copy and paste to
+## name your new utility. The same rule is applied here (in the `if'
+## conditions above). When `MAYBE_TEMPLATE' is not defined, then Make will
+## see it as a blank string and igonore it, so there is no problem with
+## having an uncommented `MAYBE_TEMPLATE' as a value in `SUBDIRS'.
+SUBDIRS = bootstrapped/lib $(MAYBE_GNULIBCHECK) lib $(MAYBE_ARITHMETIC)    \
+  $(MAYBE_CONVERTT) $(MAYBE_CONVOLVE) $(MAYBE_COSMICCAL) $(MAYBE_HEADER)   \
+  $(MAYBE_IMGCROP) $(MAYBE_IMGSTAT) $(MAYBE_IMGWARP) $(MAYBE_MKCATALOG)    \
+  $(MAYBE_MKNOISE) $(MAYBE_MKPROF) $(MAYBE_NOISECHISEL)                    \
+  $(MAYBE_SUBTRACTSKY) $(MAYBE_TABLE) $(MAYBE_TEMPLATE) doc tests
 
 
 
@@ -127,10 +130,8 @@ dist_doc_DATA = README
 ## Files that are only distributed
 ## ===============================
 EXTRA_DIST = bootstrap bootstrap.conf genauthors .dir-locals.el .version   \
-             tmpfs-config-make bootstrapped/m4/gnulib-cache.m4             \
-             bootstrapped/README .autom4te.cfg lib/gnuastro/commonargs.h   \
-             lib/gnuastro/commonparams.h lib/gnuastro/fixedstringmacros.h  \
-             lib/gnuastro/neighbors.h lib/gnuastro/README
+  tmpfs-config-make bootstrapped/m4/gnulib-cache.m4 bootstrapped/README    \
+  .autom4te.cfg
 
 
 
@@ -165,17 +166,17 @@ all-local:
 	 echo;                                                                       \
 	fi
 
-# We cannot do the writing persmission test at configure time. Here is a
-# quote from the generated ./configure script: The prefix variables...
-#
-#   "... are left unexpanded so users can "make install exec_prefix=/foo"
-#   and all the variables that are supposed to be based on exec_prefix by
-#   default will actually change."
-#
-# So actually, they can also do that after `make check'. Usually
-# professional users would want to do such a thing, so they can ignore the
-# NOTE. This note is mostly for beginners and it is not written to convey
-# that this is the ONLY solution.
+## We cannot do the writing persmission test at configure time. Here is a
+## quote from the generated ./configure script: The prefix variables...
+##
+##   "... are left unexpanded so users can "make install exec_prefix=/foo"
+##   and all the variables that are supposed to be based on exec_prefix by
+##   default will actually change."
+##
+## So actually, they can also do that after `make check'. Usually
+## professional users would want to do such a thing, so they can ignore the
+## NOTE. This note is mostly for beginners and it is not written to convey
+## that this is the ONLY solution.
 check-local:
 	@if [ x$(GUIDEMESSAGE) = xyes ]; then                                        \
 	 echo;                                                                       \
@@ -205,9 +206,9 @@ check-local:
 	 echo;                                                                       \
 	fi
 
-# Note that the `\' characters in the GNU head here are not printed on the
-# command line. So we have to consider them. The ASCII GNU head is taken
-# from: https://www.gnu.org/graphics/gnu-ascii.html
+## Note that the `\' characters in the GNU head here are not printed on the
+## command line. So we have to consider them. The ASCII GNU head is taken
+## from: https://www.gnu.org/graphics/gnu-ascii.html
 install-exec-local:
 	@if [ x$(GUIDEMESSAGE) = xyes ]; then                                        \
 	 echo;                                                                       \
