@@ -53,9 +53,6 @@ Texts.  A copy of the license is included in the section entitled
 * ConvertType: (gnuastro)ConvertType. Convert different file types.
 * astconvertt: (gnuastro)Invoking astconvertt. Options to ConvertType.
 
-* Table: (gnuastro)Table. Read and write FITS binary or ASCII tables.
-* asttable: (gnuastro)Invoking asttable. Options to Table.
-
 * Convolve: (gnuastro)Convolve. Convolve an input file with kernel.
 * astconvolve: (gnuastro)Invoking astconvolve. Options to Convolve.
 
@@ -91,6 +88,9 @@ Texts.  A copy of the license is included in the section entitled
 
 * SubtractSky: (gnuastro)SubtractSky. Find and subtract the sky value.
 * astsubtractsky: (gnuastro)Invoking astsubtractsky. Options to SubtractSky.
+
+* Table: (gnuastro)Table. Read and write FITS binary or ASCII tables.
+* asttable: (gnuastro)Invoking asttable. Options to Table.
 
 @end direntry
 
@@ -508,9 +508,10 @@ Review of library fundamentals
 
 Gnuastro library
 
-* Overall package (gnuastro.h)::  Related to the whole package.
-* Bounding box (box.h)::        Finding bounding boxes in an image.
-* FITS files (fits.h)::         Reading and manipulating FITS data.
+* Overall package::             Macros for the whole package.
+* Array manipulation::          Functions for manipulating arrays.
+* Bounding box::                Finding the bounding box.
+* FITS files::                  Working with FITS datat.
 
 FITS files (@file{fits.h})
 
@@ -14747,12 +14748,13 @@ for changes in the interface.
 @end cartouche
 
 @menu
-* Overall package (gnuastro.h)::  Related to the whole package.
-* Bounding box (box.h)::        Finding bounding boxes in an image.
-* FITS files (fits.h)::         Reading and manipulating FITS data.
+* Overall package::             Macros for the whole package.
+* Array manipulation::          Functions for manipulating arrays.
+* Bounding box::                Finding the bounding box.
+* FITS files::                  Working with FITS datat.
 @end menu
 
-@node Overall package (gnuastro.h), Bounding box (box.h), Gnuastro library, Gnuastro library
+@node Overall package, Array manipulation, Gnuastro library, Gnuastro library
 @subsection Overall package (@file{gnuastro.h})
 
 The @file{gnuastro/gnuastro.h} header contains information about the full
@@ -14783,9 +14785,186 @@ char *gnuastro_version=GAL_GNUASTRO_VERSION;
 
 
 
+@node Array manipulation, Bounding box, Overall package, Gnuastro library
+@subsection Array manipulation (@file{array.h})
+
+When working on arrays, certain operations are commonly necessary. It is
+very easy to write a loop for such operations, however such loops can
+unnecessarily make the code harder to write, read, and debug. So, it is
+much more cleaner if these operations are defined elsewhere. The
+declarations of these functions are available in @file{gnuastro/array.h}.
+
+In C, an array is a contiguous region of memory. So for most operations
+here, the dimentionality of the data is irrelevant, we just need the total
+size of the array. Please note that these functions are still very
+rudimentary, primarily intended for Gnuastro's internal operations. In
+future releases, these functions will be updated to be more suitable for a
+generic library.
+
+@deftypefun void gal_array_uchar_init_on_region (unsigned char @code{*in}, const unsigned char @code{v}, size_t @code{start}, size_t @code{s0}, size_t @code{s1}, size_t @code{is1})
+Initialize a region of the array @code{in} to the value @code{v}. The
+region is defined by the 1D index of the first pixel (@code{start}) and its
+C array (opposite of FITS array) width (@code{s0}) and height
+(@code{s1}). The full C array width is defined by @code{is1}.
+@end deftypefun
+
+@deftypefun void gal_array_long_init (long @code{*in}, size_t @code{size}, const long @code{v})
+Initialize the long type array @code{in} with @code{size} elements to the
+value @code{v}.
+@end deftypefun
+
+@deftypefun void gal_array_long_init_on_region (long @code{*in}, const long @code{v}, size_t @code{start}, size_t @code{s0}, size_t @code{s1}, size_t @code{is1})
+Similar to @code{gal_array_uchar_init_on_region} but for long type arrays.
+@end deftypefun
+
+@deftypefun void gal_array_uchar_copy (unsigned char @code{*in}, size_t @code{size}, unsigned char @code{**out})
+Allocate space for and copy the input array @code{in} with @code{size}
+elements into an output array (@code{out}).
+@end deftypefun
+
+@deftypefun void gal_array_float_copy (float @code{*in}, size_t @code{size}, float @code{**out})
+Similar to @code{gal_array_uchar_copy} but for the single precision
+floating point type.
+@end deftypefun
+
+@deftypefun void gal_array_float_copy_noalloc (float @code{*in}, size_t @code{size}, float @code{*out})
+Similar to @code{gal_array_float_copy} but the @code{out} array must
+already be allocated.
+@end deftypefun
+
+@deftypefun void gal_array_fset_const (float @code{*in}, size_t @code{size}, float @code{a})
+Set the input array @code{in} with @code{size} elements to the constant
+value @code{a}.
+@end deftypefun
+
+@deftypefun void gal_array_freplace_value (float @code{*in}, size_t @code{size}, float @code{from}, float @code{to})
+@cindex NaN
+Replace all elements with value @code{from} to value @code{to} in the
+@code{in} array with @code{size} elements. @code{from} can be a NaN value,
+in this case, C's @code{isnan} function is used, not @code{==}.
+@end deftypefun
+
+@deftypefun void gal_array_freplace_nonnans (float @code{*in}, size_t @code{size}, float @code{to})
+Replace any non-NaN value in the array @code{in} with @code{size} elements
+to the value @code{to}.
+@end deftypefun
+
+@deftypefun void gal_array_no_nans (float @code{*in}, size_t @code{*size})
+Move all the non-NaN elements in the array @code{in} to the start of the
+array so that the non-NaN alements are contiguous. This is useful for cases
+where you want to sort the data. Note that before this function,
+@code{size} must point to the initial size of the array. After this
+function returns, size will point to the new size of the array, with only
+non-Nan elements.
+@end deftypefun
+
+@deftypefun void gal_array_no_nans_double (double @code{*in}, size_t @code{*size})
+Similar to @code{gal_array_no_nans} but for double types.
+@end deftypefun
+
+@deftypefun void gal_array_uchar_replace (unsigned char @code{*in}, size_t @code{size}, unsigned char @code{from}, unsigned char @code{to})
+Replace all elements with value @code{from} to value @code{to} in the
+@code{in} array with @code{size} elements.
+@end deftypefun
+
+@deftypefun void gal_array_fmultip_const (float @code{*in}, size_t @code{size}, float @code{a})
+Multiply all elements in the float array @code{in} with size @code{size} by
+the constant @code{a}.
+@end deftypefun
+
+@deftypefun void gal_array_fsum_const (float @code{*in}, size_t @code{size}, float @code{a})
+Add all elements in the float array @code{in} with size @code{size} by the
+constant @code{a}.
+@end deftypefun
+
+@deftypefun {float *} gal_array_fsum_arrays (float @code{*in1}, float @code{*in2}, size_t @code{size})
+Add the two arrays @code{in1} and @code{in2} and keep the result in a newly
+allocated array. The returned value is a pointer to that array.
+@end deftypefun
+
+@deftypefun void gal_array_dmultip_const (double @code{*in}, size_t @code{size}, double @code{a})
+Multiply the double type array @code{in} with @code{size} elements with the
+constant @code{a}.
+@end deftypefun
+
+@deftypefun void gal_array_dmultip_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
+Multiply the two double type arrays @code{in1} with @code{in2} (both with
+@code{size} elements) with each other and store the output in the first
+array.
+@end deftypefun
+
+@deftypefun void gal_array_ddivide_const (double @code{*in}, size_t @code{size}, double @code{a})
+Divide the double type array @code{in} with @code{size} elements by the
+constant @code{a}.
+@end deftypefun
+
+@deftypefun void gal_array_dconst_divide (double @code{*in}, size_t @code{size}, double @code{a})
+Divide the constant @code{a} by the array @code{in} with @code{size} and
+store the result for each pixel in the array.
+@end deftypefun
+
+@deftypefun void gal_array_ddivide_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
+Divide each element of the two double array @code{in1} by the elements in
+@code{in2} (both with @code{size} elements) and store the output in the
+first array.
+@end deftypefun
+
+@deftypefun void gal_array_dsum_const (double @code{*in}, size_t @code{size}, double @code{a})
+Add the double type array @code{in} with @code{size} elements with the
+constant @code{a}.
+@end deftypefun
+
+@deftypefun void gal_array_dsum_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
+Add the two double type arrays @code{in1} with @code{in2} (both with
+@code{size} elements) with each other and store the output in the first
+array.
+@end deftypefun
+
+@deftypefun void gal_array_dsubtract_const (double @code{*in}, size_t @code{size}, double @code{a})
+Subtract the double type array @code{in} with @code{size} elements from the
+constant @code{a}.
+@end deftypefun
+
+@deftypefun void gal_array_dconst_subtract (double @code{*in}, size_t @code{size}, double @code{a})
+Subtract the constant @code{a} from the array @code{in} with @code{size}
+and store the result for each pixel in the array.
+@end deftypefun
+
+@deftypefun void gal_array_dsubtract_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
+Subtract each element of th the double type array @code{in2} from
+@code{in1} and put the result in the first array.
+@end deftypefun
+
+@deftypefun void gal_array_dpower_const (double @code{*in}, size_t @code{size}, double @code{a})
+Each element in the intput array is taken to the power of of @code{a} and
+stored in place.
+@end deftypefun
+
+@deftypefun void gal_array_dconst_power (double @code{*in}, size_t @code{size}, double @code{a})
+The constant @code{a} is taken to the power of each element in the intput
+array (@code{in}) and stored in place.
+@end deftypefun
+
+@deftypefun void gal_array_dpower_arrays (double @code{*in1}, double @code{*in2}, size_t @code{size})
+Each element in the first input array is taken to the power of the same
+element in the second array.
+@end deftypefun
+
+@deftypefun void gal_array_dlog_array (double @code{*in1}, size_t @code{size})
+The natural logarithm of the input array is taken and stored in place.
+@end deftypefun
+
+@deftypefun void gal_array_dlog10_array (double @code{*in1}, size_t @code{size})
+The base-10 logarithm of the input array is taken and stored in place.
+@end deftypefun
+
+@deftypefun void gal_array_dabs_array (double @code{*in1}, size_t @code{size})
+Replace each element of the input array with its absolute value.
+@end deftypefun
 
 
-@node Bounding box (box.h), FITS files (fits.h), Overall package (gnuastro.h), Gnuastro library
+
+@node Bounding box, FITS files, Array manipulation, Gnuastro library
 @subsection Bounding box (@file{box.h})
 
 Functions related to reporing a the bouding box of certain inputs are
@@ -14817,7 +14996,7 @@ last pixels of the overlap will be put in @code{fpixel_o} and
 @code{lpixel_o}.
 @end deftypefun
 
-@node FITS files (fits.h),  , Bounding box (box.h), Gnuastro library
+@node FITS files,  , Bounding box, Gnuastro library
 @subsection FITS files (@file{fits.h})
 
 @cindex FITS
@@ -14849,7 +15028,7 @@ the different Gnuastro functions available.
 * FITS functions::              Functions to work on FITS data.
 @end menu
 
-@node CFITSIO datatype, FITS macros and data structures, FITS files (fits.h), FITS files (fits.h)
+@node CFITSIO datatype, FITS macros and data structures, FITS files, FITS files
 @subsubsection CFITSIO @code{datatype}
 
 @cindex Data type
@@ -14908,7 +15087,7 @@ be careful!
 @end cartouche
 
 
-@node FITS macros and data structures, FITS functions, CFITSIO datatype, FITS files (fits.h)
+@node FITS macros and data structures, FITS functions, CFITSIO datatype, FITS files
 @subsubsection FITS macros and data structures
 
 To facilitate handling of fixed/standard values and store, or pass multiple
@@ -15022,7 +15201,7 @@ struct gal_fits_key_ll
 
 
 
-@node FITS functions,  , FITS macros and data structures, FITS files (fits.h)
+@node FITS functions,  , FITS macros and data structures, FITS files
 @subsubsection FITS functions
 
 Gnuastro provides the following functions to deal with FITS data related

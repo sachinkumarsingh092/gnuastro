@@ -66,7 +66,7 @@ void
 gal_array_float_copy(float *in, size_t size, float **out);
 
 void
-gal_array_float_copy_values(float *in, size_t size, float **out);
+gal_array_float_copy_noalloc(float *in, size_t size, float *out);
 
 void
 gal_array_fset_const(float *in, size_t size, float a);

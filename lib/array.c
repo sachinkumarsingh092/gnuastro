@@ -27,7 +27,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <pthread.h>
 
 #include <gnuastro/array.h>
@@ -142,10 +141,10 @@ gal_array_float_copy(float *in, size_t size, float **out)
 
 
 void
-gal_array_float_copy_values(float *in, size_t size, float **out)
+gal_array_float_copy_noalloc(float *in, size_t size, float *out)
 {
-  float *fp=in+size, *o=*out;
-  do *o++=*in; while(++in<fp);
+  float *fp=in+size;
+  do *out++=*in; while(++in<fp);
 }
 
 
