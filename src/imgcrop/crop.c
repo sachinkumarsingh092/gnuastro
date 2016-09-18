@@ -685,7 +685,7 @@ onecrop(struct cropparams *crp)
   char basename[FLEN_KEYWORD];
   long fpixel_i[2] , lpixel_i[2];
   fitsfile *ifp=crp->infits, *ofp;
-  struct gal_fits_header_ll *headers=NULL;
+  struct gal_fits_key_ll *headers=NULL;
   int status=0, anynul=0, bitpix=p->bitpix;
   long fpixel_o[2], lpixel_o[2], inc[2]={1,1};
   char region[FLEN_VALUE], regionkey[FLEN_KEYWORD];
@@ -756,9 +756,9 @@ onecrop(struct cropparams *crp)
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
               fpixel_i[1], lpixel_i[1]+1);
-      gal_fits_add_to_fits_header_ll_end(&headers, TSTRING, regionkey, 0,
-                                         region, 0, "Range of pixels "
-                                         "used for this output.", 0, NULL);
+      gal_fits_add_to_key_ll_end(&headers, TSTRING, regionkey, 0, region, 0,
+                                 "Range of pixels used for this output.", 0,
+                                 NULL);
       gal_fits_update_keys(ofp, &headers);
 
 
@@ -828,7 +828,7 @@ iscenterfilled(struct cropparams *crp)
 
   /* Allocate the array and read in the pixels. */
   size=checkcenter*checkcenter;
-  array=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_dtype(bitpix) );
+  array=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_datatype(bitpix) );
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
                        p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);

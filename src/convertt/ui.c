@@ -464,7 +464,7 @@ sanitycheck(struct converttparams *p)
       if(gal_fits_name_is_fits(cp->output))
         {
           p->outputtype=FITSFORMAT;
-          if( gal_fits_name_is_fits_suffix(cp->output) )
+          if( gal_fits_suffix_is_fits(cp->output) )
             adddotautomaticoutput(p);
         }
       else if(nameisjpeg(cp->output))

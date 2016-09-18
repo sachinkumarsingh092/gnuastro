@@ -850,8 +850,8 @@ void
 sanitycheck(struct mkcatalogparams *p)
 {
   struct uiparams *up=&p->up;
+  struct gal_fits_key keys[1];
   struct gal_commonparams *cp=&p->cp;
-  struct gal_fits_read_header_keys keys[1];
 
   /* Make sure the input file exists. */
   gal_checkset_check_file(up->inputname);
@@ -1008,7 +1008,7 @@ readkeywords(struct mkcatalogparams *p)
   long numobjects;
   size_t size=p->s0*p->s1;
   struct uiparams *up=&p->up;
-  struct gal_fits_read_header_keys keys[2];
+  struct gal_fits_key keys[2];
 
   /* Read keywords from the standard deviation image:  */
   keys[0].keyname="MINSTD";   keys[0].datatype=TFLOAT;

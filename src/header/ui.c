@@ -268,7 +268,7 @@ setuprename(struct headerparams *p)
 
 void
 fillfitsheaderll(struct gal_linkedlist_stll *input,
-                 struct gal_fits_header_ll **output)
+                 struct gal_fits_key_ll **output)
 {
   long l, *lp;
   void *fvalue;
@@ -376,8 +376,8 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
         }
 
 
-      gal_fits_add_to_fits_header_ll(output, datatype, keyname, 0,
-                                     fvalue, vfree, comment, 0, unit);
+      gal_fits_add_to_key_ll(output, datatype, keyname, 0,
+                             fvalue, vfree, comment, 0, unit);
       free(original);
     }
 }

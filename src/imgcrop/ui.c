@@ -634,7 +634,7 @@ preparearrays(struct imgcropparams *p)
       if(firstbitpix==0)
         {
           firstbitpix=p->bitpix;
-          p->datatype=gal_fits_bitpix_to_dtype(p->bitpix);
+          p->datatype=gal_fits_bitpix_to_datatype(p->bitpix);
           p->bitnul=gal_fits_datatype_blank(p->datatype);
         }
       else if(firstbitpix!=p->bitpix)

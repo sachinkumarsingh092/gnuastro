@@ -94,13 +94,13 @@ gal_fits_name_is_fits(char *name)
 
 
 int
-gal_fits_name_is_fits_suffix(char *name)
+gal_fits_suffix_is_fits(char *suffix)
 {
-  if (strcmp(name, "fits") == 0 || strcmp(name, ".fits") == 0
-      || strcmp(name, "fits.gz") == 0 || strcmp(name, ".fits.gz") == 0
-      || strcmp(name, "fits.Z") == 0 || strcmp(name, ".fits.Z") == 0
-      || strcmp(name, "imh") == 0 || strcmp(name, ".imh") == 0
-      || strcmp(name, "fits.fz") == 0 || strcmp(name, ".fits.fz") == 0)
+  if (strcmp(suffix, "fits") == 0 || strcmp(suffix, ".fits") == 0
+      || strcmp(suffix, "fits.gz") == 0 || strcmp(suffix, ".fits.gz") == 0
+      || strcmp(suffix, "fits.Z") == 0 || strcmp(suffix, ".fits.Z") == 0
+      || strcmp(suffix, "imh") == 0 || strcmp(suffix, ".imh") == 0
+      || strcmp(suffix, "fits.fz") == 0 || strcmp(suffix, ".fits.fz") == 0)
    return 1;
  else
    return 0;
@@ -127,30 +127,9 @@ gal_fits_name_is_fits_suffix(char *name)
 /*************************************************************
  **************      BITPIX Dependancies       ***************
  *************************************************************/
-void
-gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxes)
-{
-  int status=0, maxdim=10, naxis;
-
-  if( fits_get_img_param(fptr, maxdim, bitpix, &naxis, naxes, &status) )
-    gal_fits_io_error(status, NULL);
-
-  if(naxis!=2)
-    error(EXIT_FAILURE, 0, "currently only a 2 dimensional image array "
-          "is supported. Your array is %d dimension(s). %s", naxis,
-          naxis ? "Please contact us to add this feature." : "This might "
-          "Be due to the fact that the data in images with multiple "
-          "extensions are sometimes put on the second extension. If this "
-          "is the case, try changing the hdu (maybe to --hdu=1)");
-}
-
-
-
-
-
 /* Set datatype (in CFITSIO) based on BITPIX. */
 int
-gal_fits_bitpix_to_dtype(int bitpix)
+gal_fits_bitpix_to_datatype(int bitpix)
 {
   switch(bitpix)
     {
@@ -188,7 +167,7 @@ gal_fits_bitpix_to_dtype(int bitpix)
    column. So this function will do the conversion based on the CFITSIO
    manual.*/
 int
-gal_fits_tform_to_dtype(char tform)
+gal_fits_tform_to_datatype(char tform)
 {
   switch(tform)
     {
@@ -227,8 +206,29 @@ gal_fits_tform_to_dtype(char tform)
 
   error(EXIT_FAILURE, 0, "A bug! Please contact us so we can fix this. "
         "For some reason, control has reached to the end of the "
-        "gal_fits_tform_to_dtype function in fits.c.");
+        "gal_fits_tform_to_datatype function in fits.c.");
   return -1;
+}
+
+
+
+
+
+void
+gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxes)
+{
+  int status=0, maxdim=10, naxis;
+
+  if( fits_get_img_param(fptr, maxdim, bitpix, &naxis, naxes, &status) )
+    gal_fits_io_error(status, NULL);
+
+  if(naxis!=2)
+    error(EXIT_FAILURE, 0, "currently only a 2 dimensional image array "
+          "is supported. Your array is %d dimension(s). %s", naxis,
+          naxis ? "Please contact us to add this feature." : "This might "
+          "Be due to the fact that the data in images with multiple "
+          "extensions are sometimes put on the second extension. If this "
+          "is the case, try changing the hdu (maybe to --hdu=1)");
 }
 
 
@@ -671,7 +671,7 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
   double        *d, *df,  *id=in,  *iid=in;
 
   /* Allocate space for the output and start filling it. */
-  *out=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_dtype(outbitpix) );
+  *out=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_datatype(outbitpix) );
   switch(outbitpix)
     {
     case BYTE_IMG:
@@ -1082,22 +1082,22 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
 
 
 
-/* Read keywords from a FITS file. The gal_fits_read_header_keys pointer is
-   an array of gal_fits_read_header_keys structures, which keep the basic
-   information for each keyword that is to be read and also stores the
-   value in the appropriate type.
+/* Read keywords from a FITS file. The gal_fits_key pointer is an array of
+   gal_fits_key structures, which keep the basic information for each
+   keyword that is to be read and also stores the value in the appropriate
+   type.
 
    ABOUT THE STRING VALUES:
 
    The space for a string value is statically allocated within the
-   `gal_fits_read_header_keys' structure (to be `FLEN_VALUE' characters,
-   `FLEN_VALUE' is defined by CFITSIO). So if the value is necessary where
-   `gal_fits_read_header_keys' is no longer available, then you have to
-   allocate space dynamically and copy the string there.
+   `gal_fits_key' structure (to be `FLEN_VALUE' characters, `FLEN_VALUE' is
+   defined by CFITSIO). So if the value is necessary where `gal_fits_key'
+   is no longer available, then you have to allocate space dynamically and
+   copy the string there.
 */
 void
-gal_fits_read_keywords(char *filename, char *hdu,
-                       struct gal_fits_read_header_keys *keys, size_t num)
+gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
+                       size_t num)
 {
   int status=0;
   char *ffname;
@@ -1208,19 +1208,18 @@ gal_fits_read_keywords(char *filename, char *hdu,
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
-gal_fits_add_to_fits_header_ll(struct gal_fits_header_ll **list,
-                               int datatype, char *keyname, int kfree,
-                               void *value, int vfree, char *comment,
-                               int cfree, char *unit)
+gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,
+                       char *keyname, int kfree, void *value, int vfree,
+                       char *comment, int cfree, char *unit)
 {
-  struct gal_fits_header_ll *newnode;
+  struct gal_fits_key_ll *newnode;
 
   /* Allocate space for the new node and fill it in. */
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
-          "linkedlist: new element in gal_fits_header_ll");
+          "linkedlist: new element in gal_fits_key_ll");
   newnode->datatype=datatype;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -1239,19 +1238,18 @@ gal_fits_add_to_fits_header_ll(struct gal_fits_header_ll **list,
 
 
 void
-gal_fits_add_to_fits_header_ll_end(struct gal_fits_header_ll **list,
-                                   int datatype, char *keyname, int kfree,
-                                   void *value, int vfree, char *comment,
-                                   int cfree, char *unit)
+gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int datatype,
+                           char *keyname, int kfree, void *value, int vfree,
+                           char *comment, int cfree, char *unit)
 {
-  struct gal_fits_header_ll *newnode, *tmp;
+  struct gal_fits_key_ll *newnode, *tmp;
 
   /* Allocate space for the new node and fill it in. */
   errno=0;
   newnode=malloc(sizeof *newnode);
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
-          "linkedlist: new element in gal_fits_header_ll");
+          "linkedlist: new element in gal_fits_key_ll");
   newnode->datatype=datatype;
   newnode->keyname=keyname;
   newnode->value=value;
@@ -1281,7 +1279,7 @@ gal_fits_add_to_fits_header_ll_end(struct gal_fits_header_ll **list,
 
 void
 gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
-                               struct gal_fits_header_ll **list)
+                               struct gal_fits_key_ll **list)
 {
   char *keyname, *value;
   size_t numkey=1, maxlength;
@@ -1317,8 +1315,8 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
          length was copied. */
       if(value[maxlength-1]=='\0')
         {
-          gal_fits_add_to_fits_header_ll_end(list, TSTRING, keyname, 1,
-                                             value, 1, NULL, 0, NULL);
+          gal_fits_add_to_key_ll_end(list, TSTRING, keyname, 1,
+                                     value, 1, NULL, 0, NULL);
           break;
         }
       else
@@ -1339,8 +1337,8 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
                   filename, maxlength);
 
           /* Convert the last useful character and save the file name.*/
-          gal_fits_add_to_fits_header_ll_end(list, TSTRING, keyname, 1,
-                                             value, 1, NULL, 0, NULL);
+          gal_fits_add_to_key_ll_end(list, TSTRING, keyname, 1,
+                                     value, 1, NULL, 0, NULL);
           i+=j+1;
         }
     }
@@ -1385,15 +1383,14 @@ gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec)
 
 
 
-/* Write the keywords in the gal_fits_header_ll linked list to the FITS
+/* Write the keywords in the gal_fits_key_ll linked list to the FITS
    file. Every keyword that is written is freed, that is why we need
    the pointer to the linked list (to correct it after we finish). */
 void
-gal_fits_update_keys(fitsfile *fptr,
-                     struct gal_fits_header_ll **keylist)
+gal_fits_update_keys(fitsfile *fptr, struct gal_fits_key_ll **keylist)
 {
   int status=0;
-  struct gal_fits_header_ll *tmp, *ttmp;
+  struct gal_fits_key_ll *tmp, *ttmp;
 
   tmp=*keylist;
   while(tmp!=NULL)
@@ -1434,9 +1431,8 @@ gal_fits_update_keys(fitsfile *fptr,
 
 
 void
-gal_fits_copyright_end(fitsfile *fptr,
-                       struct gal_fits_header_ll *headers,
-                       char *spack_string)
+gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
+                            char *spack_string)
 {
   size_t i;
   int status=0;
@@ -1532,8 +1528,7 @@ gal_fits_copyright_end(fitsfile *fptr,
    Don't call this function within a thread or use a mutex.
 */
 void
-gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs,
-                               struct wcsprm **wcs,
+gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
                                size_t hstartwcs, size_t hendwcs)
 {
   /* Declaratins: */
@@ -1660,12 +1655,12 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
   *s1=naxes[0];
 
   /* Allocate space for the array. */
-  datatype=gal_fits_bitpix_to_dtype(*bitpix);
+  datatype=gal_fits_bitpix_to_datatype(*bitpix);
   bitblank=gal_fits_datatype_blank(datatype);
   *array=gal_fits_datatype_alloc(*s0 * *s1, datatype);
 
   /* Read the image into the allocated array: */
-  fits_read_pix(fptr, gal_fits_bitpix_to_dtype(*bitpix), fpixel,
+  fits_read_pix(fptr, gal_fits_bitpix_to_datatype(*bitpix), fpixel,
                 *s0 * *s1, bitblank, *array, &anyblank, &status);
   if(status) gal_fits_io_error(status, NULL);
   free(bitblank);
@@ -1701,11 +1696,9 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
  ******************      Array to FITS      ******************
  *************************************************************/
 void
-gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
-                       void *array, size_t s0, size_t s1, int anyblank,
-                       struct wcsprm *wcs,
-                       struct gal_fits_header_ll *headers,
-                       char *spack_string)
+gal_fits_array_to_file(char *filename, char *extname, int bitpix, void *array,
+                       size_t s0, size_t s1, int anyblank, struct wcsprm *wcs,
+                       struct gal_fits_key_ll *headers, char *spack_string)
 {
   int nkeyrec;
   void *blank;
@@ -1714,7 +1707,7 @@ gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
   int status=0, datatype;
   long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
 
-  datatype=gal_fits_bitpix_to_dtype(bitpix);
+  datatype=gal_fits_bitpix_to_datatype(bitpix);
   nelements=naxes[0]*naxes[1];
 
   if(access(filename,F_OK) != -1 )
@@ -1729,14 +1722,14 @@ gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
     if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
        || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
       {
-        blank=gal_fits_datatype_blank( gal_fits_bitpix_to_dtype(bitpix) );
+        blank=gal_fits_datatype_blank( gal_fits_bitpix_to_datatype(bitpix) );
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           gal_fits_io_error(status, "adding the BLANK keyword");
         free(blank);
       }
 
-  fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
+  fits_write_key(fptr, TSTRING, "EXTNAME", extname, "", &status);
   gal_fits_io_error(status, NULL);
 
   if(wcs)
@@ -1749,7 +1742,7 @@ gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
       gal_fits_add_wcs_to_header(fptr, wcsheader, nkeyrec);
     }
 
-  gal_fits_copyright_end(fptr, headers, spack_string);
+  gal_fits_write_keys_version(fptr, headers, spack_string);
 
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
@@ -1763,16 +1756,15 @@ gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
    `gal_fits_array_to_file' except that the WCS structure's CRPIX values
    have changed. */
 void
-gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
-                          void *array, size_t s0, size_t s1,
-                          char *wcsheader, int wcsnkeyrec,
+gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix, void *array,
+                          size_t s0, size_t s1, char *wcsheader, int wcsnkeyrec,
                           double *crpix, char *spack_string)
 {
   fitsfile *fptr;
   int status=0, datatype;
   long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
 
-  datatype=gal_fits_bitpix_to_dtype(bitpix);
+  datatype=gal_fits_bitpix_to_datatype(bitpix);
   nelements=naxes[0]*naxes[1];
 
   if(access(filename,F_OK) != -1 )
@@ -1803,7 +1795,7 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
         }
     }
 
-  gal_fits_copyright_end(fptr, NULL, spack_string);
+  gal_fits_write_keys_version(fptr, NULL, spack_string);
 
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);

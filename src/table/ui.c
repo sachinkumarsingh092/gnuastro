@@ -487,7 +487,7 @@ allfitscolinfo(struct tableparams *p)
           if(index<ncols)
             {
               gal_checkset_allocate_copy(&value[1], &up->ttstr[index] );
-              up->datatype[index]=gal_fits_tform_to_dtype(value[1]);
+              up->datatype[index]=gal_fits_tform_to_datatype(value[1]);
             }
         }
       else if(strncmp(keyname, "TTYPE", 5)==0)

@@ -112,7 +112,7 @@ imgmodecrop(void *inparam)
           log->centerfilled=iscenterfilled(crp);
 
           /* Add the final headers and close output FITS image: */
-          gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
+          gal_fits_write_keys_version(crp->outfits, NULL, SPACK_STRING);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close "
@@ -200,7 +200,7 @@ wcsmodecrop(void *inparam)
         {
           log->centerfilled=iscenterfilled(crp);
 
-          gal_fits_copyright_end(crp->outfits, NULL, SPACK_STRING);
+          gal_fits_write_keys_version(crp->outfits, NULL, SPACK_STRING);
           status=0;
           if( fits_close_file(crp->outfits, &status) )
             gal_fits_io_error(status, "CFITSIO could not close the "

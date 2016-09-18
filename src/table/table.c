@@ -284,7 +284,7 @@ saveouttofits(struct tableparams *p)
                        ocols[i].data, ocols[i].nulval, &status);
 
   /* Include the ending comments and close the file. */
-  gal_fits_copyright_end(fptr, NULL, SPACK_STRING);
+  gal_fits_write_keys_version(fptr, NULL, SPACK_STRING);
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
 

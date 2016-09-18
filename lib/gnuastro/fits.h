@@ -78,25 +78,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-
-/*
-
-For some reason, CFITSIO does not use the standard stdint fixed size
-types! It uses the subjective 'short', 'int' and 'long' variables
-which can differ in size from system to system!!!!!!!!!!!!!!!
-
-In the 32bit systems that 'long' was 32 bits or 4 bytes, has passed
-but the names have stuck! The FITS standard defines LONG_IMG as a
-32bit signed type, but CFITSIO converts it to a local 'long' which is
-64 bits on a modern (64 bit) system!!!! This is simply absurd and very
-confusing!!!! It should have stuck to the standard, not the name of
-the variable!
-
-Because of this we have to stick to this wrong convention too.
-
- */
-
-
 /*************************************************************
  ******************         Basic          *******************
  *************************************************************/
@@ -107,10 +88,7 @@ int
 gal_fits_name_is_fits(char *name);
 
 int
-gal_fits_name_is_fits_suffix(char *name);
-
-void
-gal_fits_num_hdus(char *filename, int *numhdu);
+gal_fits_suffix_is_fits(char *suffix);
 
 
 
@@ -120,35 +98,35 @@ gal_fits_num_hdus(char *filename, int *numhdu);
  ******************         Header          ******************
  *************************************************************/
 /* To create a linked list of headers. */
-struct gal_fits_header_ll
+struct gal_fits_key_ll
 {
-  int                 kfree;   /* ==1, keyname will be freed.          */
-  int                 vfree;   /* ==1, value will be freed.            */
-  int                 cfree;   /* ==1, comment will be freed.          */
-  int              datatype;   /* Data type of the keyword             */
-  char             *keyname;   /* Name of keyword.                     */
-  void               *value;   /* Pointer to the value of the keyword. */
-  char             *comment;   /* Comment for the keyword.             */
-  char                *unit;   /* Units of the keyword.                */
-  struct gal_fits_header_ll *next;   /* Pointer to the next element.         */
+  int                    kfree;   /* ==1, free keyword name.   */
+  int                    vfree;   /* ==1, free keyword value.  */
+  int                    cfree;   /* ==1, free comment.        */
+  int                 datatype;   /* Keyword value datatype.   */
+  char                *keyname;   /* Keyword Name.             */
+  void                  *value;   /* Keyword value.            */
+  char                *comment;   /* Keyword comment.          */
+  char                   *unit;   /* Keyword unit.             */
+  struct gal_fits_key_ll *next;   /* Pointer next keyword.     */
 };
 
 
 
 
 
-struct gal_fits_read_header_keys
+struct gal_fits_key
 {
-  int            status;
-  char         *keyname;
-  int          datatype;
-  char  str[FLEN_VALUE];
-  unsigned char       u;
-  short               s;
-  long                l;
-  LONGLONG            L;
-  float               f;
-  double              d;
+  int            status;        /* CFITSIO status.        */
+  char         *keyname;        /* Name of keyword.       */
+  int          datatype;        /* Type of keyword value. */
+  char  str[FLEN_VALUE];        /* String value.          */
+  unsigned char       u;        /* Byte value.            */
+  short               s;        /* Short integer value.   */
+  long                l;        /* Long integer value.    */
+  LONGLONG            L;        /* Long Long value.       */
+  float               f;        /* Float value.           */
+  double              d;        /* Double value.          */
 };
 
 
@@ -156,37 +134,32 @@ struct gal_fits_read_header_keys
 
 
 void
-gal_fits_read_keywords(char *filename, char *hdu,
-                       struct gal_fits_read_header_keys *out,
+gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *out,
                        size_t num);
 
 void
-gal_fits_add_to_fits_header_ll(struct gal_fits_header_ll **list,
-                               int datatype, char *keyname, int kfree,
-                               void *value, int vfree, char *comment,
-                               int cfree, char *unit);
+gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,
+                       char *keyname, int kfree, void *value, int vfree,
+                       char *comment, int cfree, char *unit);
 
 void
-gal_fits_add_to_fits_header_ll_end(struct gal_fits_header_ll **list,
-                                   int datatype, char *keyname, int kfree,
-                                   void *value, int vfree, char *comment,
-                                   int cfree, char *unit);
+gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int datatype,
+                           char *keyname, int kfree, void *value, int vfree,
+                           char *comment, int cfree, char *unit);
 
 void
 gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
-                               struct gal_fits_header_ll **list);
+                               struct gal_fits_key_ll **list);
 
 void
 gal_fits_add_wcs_to_header(fitsfile *fptr, char *wcsheader, int nkeyrec);
 
 void
-gal_fits_update_keys(fitsfile *fptr,
-                     struct gal_fits_header_ll **keylist);
+gal_fits_update_keys(fitsfile *fptr, struct gal_fits_key_ll **keylist);
 
 void
-gal_fits_copyright_end(fitsfile *fptr,
-                       struct gal_fits_header_ll *headers,
-                       char *spack_string);
+gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
+                            char *spack_string);
 
 
 
@@ -205,7 +178,7 @@ void
 gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value);
 
 int
-gal_fits_bitpix_to_dtype(int bitpix);
+gal_fits_bitpix_to_datatype(int bitpix);
 
 void
 gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxis);
@@ -220,6 +193,9 @@ gal_fits_datatype_alloc(size_t size, int datatype);
 void
 gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
                      void **out, int outbitpix);
+
+void
+gal_fits_num_hdus(char *filename, int *numhdu);
 
 void
 gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs,
@@ -237,8 +213,7 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
 void
 gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
                        void *array, size_t s0, size_t s1, int anyblank,
-                       struct wcsprm *wcs,
-                       struct gal_fits_header_ll *headers,
+                       struct wcsprm *wcs, struct gal_fits_key_ll *headers,
                        char *spack_string);
 
 void
@@ -255,7 +230,7 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
 /**********                  Table                 ************/
 /**************************************************************/
 int
-gal_fits_tform_to_dtype(char tform);
+gal_fits_tform_to_datatype(char tform);
 
 void
 gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);

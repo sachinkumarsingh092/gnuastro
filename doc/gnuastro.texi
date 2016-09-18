@@ -498,7 +498,6 @@ Libraries
 
 * Review of library fundamentals::  Guide on libraries and linking.
 * Gnuastro library::            Description of all library functions.
-* The TEMPLATE utility::        Template for building a new utility.
 
 Review of library fundamentals
 
@@ -511,6 +510,13 @@ Gnuastro library
 
 * Overall package (gnuastro.h)::  Related to the whole package.
 * Bounding box (box.h)::        Finding bounding boxes in an image.
+* FITS files (fits.h)::         Reading and manipulating FITS data.
+
+FITS files (@file{fits.h})
+
+* CFITSIO datatype::            Addressing different types of data
+* FITS macros and data structures::  Gnuastro FITS related macros and structures.
+* FITS functions::              Functions to work on FITS data.
 
 Developing
 
@@ -532,6 +538,7 @@ Program source
 * Coding conventions::          Basic conventions for coding structure.
 * Multithreaded programming::   Gnuastro's multithreaded programming style.
 * Documentation::               Documentation is an integral part of Gnuastro.
+* The TEMPLATE utility::        A template to create new utilities.
 
 Mandatory source code files
 
@@ -14082,15 +14089,14 @@ use them in @ref{Review of library fundamentals}. The separate functions in
 the Gnuastro library are then introduced (classified by context) in
 @ref{Gnuastro library}. If you end up rutinely using a fixed set of library
 functions, with a well-defined input and output, it will be much more
-beneficial if you define a utility for the job. Therefore in @ref{The
-TEMPLATE utility} we discuss how you can modify a template utility that is
-provided with Gnuastro to easily add a new utility.
+beneficial if you define a utility for the job. You can also look into
+@ref{The TEMPLATE utility} to easily define your own utility(s) from these
+and other libraries.
 
 
 @menu
 * Review of library fundamentals::  Guide on libraries and linking.
 * Gnuastro library::            Description of all library functions.
-* The TEMPLATE utility::        Template for building a new utility.
 @end menu
 
 @node Review of library fundamentals, Gnuastro library, Libraries, Libraries
@@ -14218,10 +14224,25 @@ definitions) comes with @file{lib/gnuastro/statistics.h} (only containing
 function declarations).
 
 The discussion above was mainly focused on functions, however, there are
-many more programming constructs such as data structures and pre-processor
-macros. Like functions, they also need to be known to the compiler when it
-confronts a call to them. So the header file also contains their
+many more programming constructs such as pre-processor macros and data
+structures. Like functions, they also need to be known to the compiler when
+it confronts a call to them. So the header file also contains their
 definitions or declarations when they are necessary for the functions.
+
+@cindex Macro
+@cindex Structures
+@cindex Data structures
+@cindex Pre-processor macros
+Pre-processor macros (or macros for short) are replaced with their defined
+value by the pre-processor before compilation. Conventionally they are
+written only in capital letters to be easily recognized. It is just
+important to understand that the compiler doesn't see the macros, it sees
+their fixed values. So when a header specifies macros you can do your
+programming without worrying about the actual values.  The standard C types
+(for example @code{int}, or @code{float}) are very low-level and basic. We
+can collect multiple C types into a @emph{structure} for a higher-level way
+to keep and pass-along data. See @ref{FITS macros and data structures} for
+some examples of macros and data structures.
 
 The contents in the header need to be @emph{include}d into the caller's
 source code with a special pre-processor command: @code{#include
@@ -14674,7 +14695,7 @@ gnuastro-gcc myprog && ./myprog
 @end example
 
 
-@node Gnuastro library, The TEMPLATE utility, Review of library fundamentals, Libraries
+@node Gnuastro library,  , Review of library fundamentals, Libraries
 @section Gnuastro library
 
 Gnuastro library's exported constructs (functions, macros, data structures,
@@ -14728,6 +14749,7 @@ for changes in the interface.
 @menu
 * Overall package (gnuastro.h)::  Related to the whole package.
 * Bounding box (box.h)::        Finding bounding boxes in an image.
+* FITS files (fits.h)::         Reading and manipulating FITS data.
 @end menu
 
 @node Overall package (gnuastro.h), Bounding box (box.h), Gnuastro library, Gnuastro library
@@ -14763,7 +14785,7 @@ char *gnuastro_version=GAL_GNUASTRO_VERSION;
 
 
 
-@node Bounding box (box.h),  , Overall package (gnuastro.h), Gnuastro library
+@node Bounding box (box.h), FITS files (fits.h), Overall package (gnuastro.h), Gnuastro library
 @subsection Bounding box (@file{box.h})
 
 Functions related to reporing a the bouding box of certain inputs are
@@ -14771,53 +14793,514 @@ declared in @file{gnuastro/box.h}. All coordinates in this header are in
 the FITS format (first axis is the horizontal and the second axis is
 vertical).
 
-@deftypefun void gal_box_ellipse_in_box (double @var{A}, double @var{B}, double @var{theta_rad}, long @var{*width})
+@deftypefun void gal_box_ellipse_in_box (double @code{A}, double @code{B}, double @code{theta_rad}, long @code{*width})
 Any ellipse can be enclosed into a rectangular box. The purpose of this
-function is to give the height and width of that box. @var{A} is the
-ellipse major axis, @var{B} is the minor axis, @var{theta_rad} is the
-position angle in radians. The @var{width} array will contain the output
+function is to give the height and width of that box. @code{A} is the
+ellipse major axis, @code{B} is the minor axis, @code{theta_rad} is the
+position angle in radians. The @code{width} array will contain the output
 size in long integer type. @code{width[0]}, and @code{width[1]} are the
 number of pixels along the first and second FITS axis.
 @end deftypefun
 
-@deftypefun void gal_box_border_from_center (double @var{xc}, double @var{yc}, long @var{*width}, long @var{*fpixel}, long @var{*lpixel})
-Given the center (@var{xc} and @var{yc}) and width (two element array) of a
-box, return the coordinates of the first @var{fpixel} and last @var{lpixel}
+@deftypefun void gal_box_border_from_center (double @code{xc}, double @code{yc}, long @code{*width}, long @code{*fpixel}, long @code{*lpixel})
+Given the center (@code{xc} and @code{yc}) and width (two element array) of a
+box, return the coordinates of the first @code{fpixel} and last @code{lpixel}
 pixels (both are two element arrays.
 @end deftypefun
 
-@deftypefun int gal_box_overlap (long @var{*naxes}, long @var{*fpixel_i}, long @var{*lpixel_i}, long @var{*fpixel_o}, long @var{*lpixel_o})
-We have an image of size @var{naxes} and want to get the overlap of the
+@deftypefun int gal_box_overlap (long @code{*naxes}, long @code{*fpixel_i}, long @code{*lpixel_i}, long @code{*fpixel_o}, long @code{*lpixel_o})
+We have an image of size @code{naxes} and want to get the overlap of the
 image with a box. This function will return 1 if there is an overlap and 0
 if there isn't. The input and output box are specified by their first and
 last pixels. When there is an overlap, the coordinates of the first and
-last pixels of the overlap will be put in @var{fpixel_o} and
-@var{lpixel_o}.
+last pixels of the overlap will be put in @code{fpixel_o} and
+@code{lpixel_o}.
 @end deftypefun
 
+@node FITS files (fits.h),  , Bounding box (box.h), Gnuastro library
+@subsection FITS files (@file{fits.h})
+
+@cindex FITS
+@cindex CFITSIO
+The FITS format is the most common format to store data (images and tables)
+in astronomy. The CFITSIO library already provides a very good low-level
+set of functions for manipulating FITS data. Some CFITSIO operations (with
+well-defined inputs and outputs) are commonly needed in a special
+order. Therefore Gnuastro comes with the macros, data structures and
+functions introduced in this section. These functions are actually wrappers
+around CFITSIO functions for a higher-level (easier) access to FITS
+data. So if you feel these functions don't exactly do what you want, we
+strongly recommend reading the CFITSIO manual to use it directly.
+
+All the functions and macros introduced in this section are declared in
+@file{gnuastro/fits.h}.  When you include this header, you are also
+including CFITSIO's @file{fitsio.h} header. So you don't need to explicitly
+include @file{fitsio.h} anymore and can freely use any of its macros or
+functions in your code along with those discussed here. In @ref{CFITSIO
+datatype} we first have a look at the way data types are referenced in
+CFITSIO (and thus Gnuastro). @ref{FITS macros and data structures} defines
+the macros and data structures that can be used in functions for a unified
+format. This subsection finished with @ref{FITS functions}, which introduce
+the different Gnuastro functions available.
+
+@menu
+* CFITSIO datatype::            Addressing different types of data
+* FITS macros and data structures::  Gnuastro FITS related macros and structures.
+* FITS functions::              Functions to work on FITS data.
+@end menu
+
+@node CFITSIO datatype, FITS macros and data structures, FITS files (fits.h), FITS files (fits.h)
+@subsubsection CFITSIO @code{datatype}
+
+@cindex Data type
+@cindex Type of data
+@cindex FITS: data type
+Data can have multiple types: standards to convert a number of bits (which
+can only have values of 0 and 1) to different number formats (for example
+integer or floating point numbers). To store data, the FITS standard
+defines two major formats: images and tables. An image has a single type
+for all its data elements (a pixel in a 2D image). A table has a single
+type for every one of its columns. In both cases, the FITS header stores
+this information. All the FITS data types correspond to C types (for
+example @code{short}, @code{int}, @code{float}, or @code{long}.
+
+@cindex CFITSIO
+@cindex @code{BITPIX}
+In images, the @code{BITPIX} header keyword specifies the type of data in
+each pixel. Within CFITSIO, the different acceptable values of
+@code{BITPIX} are stored as macros ending with @code{_IMG}. For example
+@code{BYTE_IMG}, or @code{DOUBLE_IMG}. See Section 4.1, ``CFITSIO
+Definitions'', in the CFITSIO manual for the recognized CFITSIO types and
+their macros. However, the FITS standard also accepts tables: each column
+in a FITS table has a unique @code{TFORM} header keyword which specifies
+the type of data in that column. The variety of types in a FITS table can
+be much larger than an image and thus the standard for identifying them
+differs.
+
+To address these different formats of identifying the type in a uniform
+infra-structure, CFITSIO identifies a general collection of macros
+referring to types which can be internally used in all cases (images and
+tables). Thus in CFITSIO, the variable name @code{datatype} when we are
+referring to this general collection of types. The image types are a subset
+of the table column types, so each acceptable @code{datatype} corresponds
+to one of the table types. The macros for each recognized CFITSIO
+@code{datatype} start with @code{T}, for example @code{TBYTE},
+@code{TDOUBLE}. In CFITSIO (and thus here in Gnuastro), the @code{datatype}
+is most commonly used, so this variable only accepts one of the accepted
+@code{T} macros. When the @code{BITPIX} value is desired (as input or
+output), the variable is called @code{bitpix}.
+
+In Gnuastro, the functions @code{gal_fits_bitpix_to_datatype} and
+@code{gal_fits_tform_to_datatype} are provided to convert @code{bitpix} and
+@code{tform} values to @code{datatype}.
+
+@cartouche
+@noindent
+@cindex @file{stdint.h}
+@strong{CFITSIO integer types:} CFITSIO does not use the standard fixed
+integer size types of @file{stdint.h}! It uses the subjective @code{short},
+@code{int} and @code{long} variables which can differ in size from system
+to system. For example, the FITS standard defines @code{LONG_IMG} as a
+32bit signed integer type, but CFITSIO converts it to a local @code{long}
+which is 64 bits on a modern (64 bit) machine. To use CFITSIO, we had to
+adopt the same convention in Gnuastro. This issue can cause confusions, so
+be careful!
+@end cartouche
+
+
+@node FITS macros and data structures, FITS functions, CFITSIO datatype, FITS files (fits.h)
+@subsubsection FITS macros and data structures
+
+To facilitate handling of fixed/standard values and store, or pass multiple
+related variables in your programs, Gnuastro defines the following FITS
+related macros and data structures, see @ref{Headers} for a more detailed
+discussion.
+
+@deffn  Macro GAL_FITS_STRING_BLANK
+@deffnx Macro GAL_FITS_BYTE_BLANK
+@deffnx Macro GAL_FITS_LOGICAL_BLANK
+@deffnx Macro GAL_FITS_SHORT_BLANK
+@deffnx Macro GAL_FITS_LONG_BLANK
+@deffnx Macro GAL_FITS_LLONG_BLANK
+@deffnx Macro GAL_FITS_FLOAT_BLANK
+@deffnx Macro GAL_FITS_DOUBLE_BLANK
+@deffnx Macro GAL_FITS_INT_BLANK
+@deffnx Macro GAL_FITS_SBYTE_BLANK
+@deffnx Macro GAL_FITS_UINT_BLANK
+@deffnx Macro GAL_FITS_USHORT_BLANK
+@deffnx Macro GAL_FITS_ULONG_BLANK
+@cindex Blank pixel
+These macros keep Gnuastro's blank value constant for all the recognized
+datatypes in CFITSIO (see @ref{Blank pixels} for a discussion on blank
+values). The values for the different types are mostly the lowest or
+highest possible value for that type (for unsigned types and 8-bit types,
+the maximum is used). So you can safely ignore the actual value and simply
+use these values to check. See explanation under the @ref{CFITSIO datatype}
+function for more on types of data in FITS.
+
+@cindex NaN
+@cindex isnan
+@cindex IEEE NaN
+The @code{float} and @code{double} types use the IEEE NaN values and for
+string it is a @code{NULL} pointer. By definition, a NaN value fails in
+every condition check, so a NaN value is not equal to itself and the check
+@code{variable==GAL_FITS_FLOAT_BLANK} will fail even if the value in
+@code{variable} is NaN. Therefore, to check for blank values in floating
+point types be careful to use C's @code{isnan} function.
+@end deffn
+
+
+@deftp Structure gal_fits_key
+Structure for reading FITS header keywords. This structure will keep the
+name and value of one keyword. The value will be stored in the element
+corresponding to the type of the value. When multiple keywords must be
+read, you can define an array of this structure, for example the following
+declaration will allocate an array of five keywords to be read.
+
+@example
+struct gal_fits_key keys[5];
+@end example
+
+The names of the keywords can then be stored separately in the array and
+this expression will store the values in each element.
+
+@example
+gal_fits_read_keywords("filename.fits", hdu, gal_fits_key, 5);
+@end example
+
+The FITS standard defines a maximum length for the value of keyword, so the
+space for the @code{str} element is statically allocated
+(@code{FLEN_VALUE}, which is defined in CFITSIO). So if the string value is
+necessary where @code{gal_fits_key} is no longer available, then you have
+to allocate space dynamically and copy the string there.
+@end deftp
+@example
+struct gal_fits_key
+@{
+  int            status;        /* CFITSIO status.        */
+  char         *keyname;        /* Name of keyword.       */
+  int          datatype;        /* Type of keyword value. */
+  char  str[FLEN_VALUE];        /* String value.          */
+  unsigned char       u;        /* Byte value.            */
+  short               s;        /* Short integer value.   */
+  long                l;        /* Long integer value.    */
+  LONGLONG            L;        /* Long Long value.       */
+  float               f;        /* Float value.           */
+  double              d;        /* Double value.          */
+@};
+@end example
+
+
+
+@deftp Structure gal_fits_key_ll
+@cindex Linked list
+@cindex last-in-first-out
+@cindex first-in-first-out
+Structure for writing FITS keywords. This structure is used for one
+keyword. However, with the @code{next} element, it can link to another
+keyword thus creating a linked list to add any number of keywords easily
+and at any step during your program. Adding new keywords doesn't have to be
+done manually, the @code{gal_fits_add_to_key_ll} and
+@code{gal_fits_add_to_key_ll_end} will add new keywords for you to the
+start or end of the list to make a last-in-first-out or first-in-last-out
+list.
+@end deftp
+@example
+struct gal_fits_key_ll
+@{
+  int                    kfree;   /* ==1, free keyword name.   */
+  int                    vfree;   /* ==1, free keyword value.  */
+  int                    cfree;   /* ==1, free comment.        */
+  int                 datatype;   /* Keyword value datatype.   */
+  char                *keyname;   /* Keyword Name.             */
+  void                  *value;   /* Keyword value.            */
+  char                *comment;   /* Keyword comment.          */
+  char                   *unit;   /* Keyword unit.             */
+  struct gal_fits_key_ll *next;   /* Pointer next keyword.     */
+@};
+@end example
+
+
+
+@node FITS functions,  , FITS macros and data structures, FITS files (fits.h)
+@subsubsection FITS functions
+
+Gnuastro provides the following functions to deal with FITS data related
+operations. FITS data can have a variety of types, see @ref{CFITSIO
+datatype} for a discussion on this, in particular the integer variables
+named @code{datatype}, @code{bitpix}, and @code{tform}. See @ref{FITS
+macros and data structures} for the strure and macro definitions.
+
+@deftypefun void gal_fits_io_error (int @code{status}, char @code{*message})
+Report the input or output error as a string and print it along with a
+short statement that an error in CFITSIO occurred. All CFITSIO functions
+will change the value of @code{status} if an error occurs. This function
+will print the CFITSIO error string from the value of @code{status}
+followed by an optional @code{message} that you can add to it. If the value
+of @code{message} is @code{NULL}, then a default message will be printed.
+@end deftypefun
+
+@deftypefun int gal_fits_name_is_fits (char @code{*name})
+Return @code{1} if the string pointed by @code{name} is a standard FITS
+filename (or more generally: can be read by CFITSIO) and @code{0} if it
+isn't. See @ref{Arguments} for the standard FITS filenames.
+@end deftypefun
+
+@deftypefun int gal_fits_suffix_is_fits (char @code{*suffix})
+Return @code{1} if the string pointed by @code{suffix} is a standard FITS
+suffix (or more generally: can be read by CFITSIO) and @code{0} if it
+isn't. @code{suffix} can contain a dot or not (for example both
+@file{.fits} and @file{fits} will return @code{1}. See @ref{Arguments} for
+the standard FITS filenames.
+@end deftypefun
+
+@deftypefun int gal_fits_bitpix_to_datatype (int @code{bitpix})
+Return the datatype corresponding to the given @code{bitpix} (value to the
+@code{BITPIX} header keyword) in a FITS image.
+@end deftypefun
+
+@deftypefun int gal_fits_tform_to_datatype (char @code{tform})
+Return the datatype corresponding to the given @code{tform} character of a
+FITS table column: value to the @code{TFORM} header keyword for the
+column. Note that in the FITS standard, @code{TFORM} values are characters.
+@end deftypefun
+
+@deftypefun void gal_fits_img_bitpix_size (fitsfile @code{*fptr}, int @code{*bitpix}, long @code{*naxes})
+Return the datatype (in FITS @code{BITPIX} format) and image size of a FITS
+HDU specified with the @code{fitsfile} pointer (defined in CFITSIO). So the
+HDU must have been already opened. If the number of dimentions is not 2,
+this function will retun an error and abort.
+@end deftypefun
+
+@deftypefun {void *} gal_fits_datatype_blank (int @code{datatype})
+Allocate the necessary space and put the blank value of type
+@code{datatype} in it. Finally, return the pointer to the allocated
+space. This pointer is commonly necessary when calling CFITSIO read
+functions as @code{nulval}. See @ref{CFITSIO datatype}.
+@end deftypefun
+
+@deftypefun {void *} gal_fits_datatype_alloc (size_t @code{size}, int @code{datatype})
+Allocate an array of @code{size} elements of type @code{datatype}. See
+@ref{CFITSIO datatype}.
+@end deftypefun
+
+@deftypefun void gal_fits_blank_to_value (void @code{*array}, int @code{datatype}, size_t @code{size}, void @code{*value})
+Convert the blank values in @code{array} (with @code{size} elements) into
+the value pointed by @code{value}.
+@end deftypefun
+
+@deftypefun void gal_fits_change_type (void @code{*in}, int @code{inbitpix}, size_t @code{size}, int @code{anyblank}, void @code{**out}, int @code{outbitpix})
+Convert the @code{in} array (with @code{inbitpix} type) into an array of
+type @code{outbitpix} that is pointed by @code{out}. Space will be
+allocated for the output array within this function.
+@end deftypefun
+
+@deftypefun void gal_fits_num_hdus (char @file{*filename}, int @code{*numhdu})
+Find the number of HDUs in @file{filename} and store it in the space
+pointed to by @code{numhdu}.
+@end deftypefun
+
+@deftypefun void gal_fits_read_hdu (char @code{*filename}, char @code{*hdu}, unsigned char @code{img0_tab1}, fitsfile @code{**outfptr})
+Open the HDU @code{hdu} (a string) of the @file{filename} FITS file into
+the @code{outfptr}. See @option{--hdu} option in @ref{Input output} for the
+accepted HDU formats.
+@end deftypefun
+
+@deftypefun void gal_fits_read_keywords (char @code{*filename}, char @code{*hdu}, struct gal_fits_key @code{*keys}, size_t @code{num})
+Read @code{num} keywords (identified in the @code{keys} array) in the
+@code{hdu} HDU of @file{filename}. See @ref{FITS macros and data
+structures} for the definition of @code{gal_fits_key} and its recommended
+usage with this function.
+
+CFITSIO will look for the next keyword starting from the last keyword
+found. Therefore, it is most efficient to specify the keywords in the same
+order as they appear in the desired HDU.
+@end deftypefun
+
+@deftypefun void gal_fits_add_to_key_ll (struct gal_fits_key_ll @code{**list}, int @code{datatype}, char @code{*keyname}, int @code{kfree}, void @code{*value}, int @code{vfree}, char @code{*comment}, int @code{cfree}, char @code{*unit})
+Add an element to the top of the @code{gal_fits_key_ll} linked list for
+writing keywords. This structure (or linked list) is used to write FITS
+keywords and is fully described in @ref{FITS macros and data
+structures}. Each variable also has the same name as the structure element
+that is described there.
+
+@cindex last-in-first-out
+Assuming all the keywords were added with this function, you will have a
+last-in-first-out list: as the the name suggests, the last keyword you add
+to the list will be the first one that gets popped out and thus written in
+the FITS file header.
+@end deftypefun
+
+@deftypefun void gal_fits_add_to_key_ll_end (struct gal_fits_key_ll @code{**list}, int @code{datatype}, char @code{*keyname}, int @code{kfree}, void @code{*value}, int @code{vfree}, char @code{*comment}, int @code{cfree}, char @code{*unit})
+@cindex first-in-first-out
+Similar to @code{gal_fits_add_to_key_ll}, except the keyword is added to
+the end of the list, creating a first-in-first-out list. Therefore the
+order the keywords are written to the FITS header is the same as the order
+you have called this function.
+@end deftypefun
+
+@deftypefun void gal_fits_file_name_in_keywords (char @code{*keynamebase}, char @code{*filename}, struct gal_fits_key_ll @code{**list})
+Put a filename into the @code{gal_fits_key_ll} list to later write into a
+HDU header. The FITS standard sets a maximum length for the value of a
+keyword. This creates problems with file names (including directories),
+because they can become very long. Therefore, when the filename is longer
+than the maximum length of a FITS keyword value, this function will break
+it into several keywords. The @code{keynamebase} string will be appended
+with a @code{_N} (N>0) and used as the keyword name.
+@end deftypefun
+
+@deftypefun void gal_fits_add_wcs_to_header (fitsfile @code{*fptr}, char @code{*wcsheader}, int @code{nkeyrec})
+Add the WCS information into the header of the HDU pointed to by
+@code{fptr}. The WCS information must already be converted into a long
+string with the FITS conventions. To help in identifying the WCS
+information, a few blank lines and a title will be added ontop.
+@end deftypefun
+
+@deftypefun void gal_fits_update_keys (fitsfile @code{*fptr}, struct gal_fits_key_ll @code{**keylist})
+Given the an opened FITS HDU (pointed to by @code{fptr}), this function
+will write, or update, all the keywords given in @code{keylist}. See
+@ref{FITS macros and data structures} for more information on the
+@code{gal_fits_key_ll} structure or linked list.
+@end deftypefun
+
+@deftypefun void gal_fits_write_keys_version (fitsfile @code{*fptr}, struct gal_fits_key_ll @code{*headers}, char @code{*spack_string})
+Write or update (all the) keyword(s) in @code{headers} into the FITS
+pointer, but also the date, name of your program (@code{spack_string}),
+along with the verisons of Gnuastro, CFITSIO, WCSLIB (when available) into
+the header, see @ref{Output headers}.  Since the data processing depends on
+the versions of the libraries you have used, it is strongly recommended to
+include this information in every FITS output. See @ref{FITS macros and
+data structures} for more information on the @code{gal_fits_key_ll}
+structure or linked list.
+@end deftypefun
+
+@deftypefun void gal_fits_read_wcs_from_pointer (fitsfile @code{*fptr}, int @code{*nwcs}, struct wcsprm @code{**wcs}, size_t @code{hstartwcs}, size_t @code{hendwcs})
+Read the WCSLIB WCS structure (@code{wcs}, and @code{nwcs} the number of WCS
+structures) from the FITS pointer @code{fptr}. In some cases, it might be
+necessary to only consider header keywords between a certain range. You can
+define the range of keywords to look for WCS information with the
+@code{hstartwcs} and @code{hendwcs} arguments. The range of header keywords
+will only be considered when the value of @code{hstartwcs} is less than
+@code{hendwcs}, so if you don't want to limit the range, set both values to
+0. After you have finished using the WCS structure, use
+@code{wcsvfree(&nwcs,&wcs);} to free it.
+
+@cartouche
+@noindent
+@cindex WCSLIB
+@cindex Thread-saftey
+@strong{WCSLIB is not thread-safe: } WCSLIB's @code{wcspih} function is
+used by to read the FITS keywords into WCSLIB's internal WCS
+structures. Unfortunately this function is not thread-safe. Therefore be
+sure to call that function, or Gnuastro's
+@code{gal_fits_read_wcs_from_pointer} and @code{gal_fits_read_wcs}
+functions, when you aren't using threads.
+@end cartouche
+@end deftypefun
+
+@deftypefun void gal_fits_read_wcs (char @code{*filename}, char @code{*hdu}, size_t @code{hstartwcs}, size_t @code{hendwcs}, int @code{*nwcs}, struct wcsprm @code{**wcs})
+Read the WCSLIB WCS structure (@code{wcs} and @code{nwcs} the number of WCS
+structures) from a FITS file (@code{hdu} in @code{filename}). This is
+basically just a wrapper around the @code{gal_fits_read_wcs_from_pointer}
+function, see that function for more.
+@end deftypefun
+
+@deftypefun int gal_fits_hdu_to_array (char @code{*filename}, char @code{*hdu}, int @code{*bitpix}, void @code{**array}, size_t @code{*s0}, size_t @code{*s1})
+Read the FITS image (in the @code{hdu} extension of @code{filename}). The
+image array will be stored in @code{array} and the number of pixels in the
+first and second C axis will be stored in @code{s0} and @code{s1}. The type
+of the array will be kept in @code{bitpix}. See @option{--hdu} in
+@ref{Input output} for the acceptable formats of @code{hdu}.
+@end deftypefun
+
+@deftypefun void gal_fits_array_to_file (char @code{*filename}, char @code{*extname}, int @code{bitpix}, void @code{*array}, size_t @code{s0}, size_t @code{s1}, int @code{anyblank}, struct wcsprm @code{*wcs}, struct gal_fits_key_ll @code{*headers}, char @code{*spack_string})
+Write the array @code{array} (with sizes @code{s0} and @code{s1}, type
+@code{bitpix}, and WCS structure @code{wcs}) into the FITS file
+@file{filename} and extension name @code{extname}. If the array has any
+blank pixels, then you can set @code{anyblank} to 1. All the headers in
+@code{headers} will also be written to this extension and
+@code{spack_string} is the name of your program (which can include a
+version number), which will be written in the output header.
+@end deftypefun
+
+@deftypefun void gal_fits_atof_correct_wcs (char @code{*filename}, char @code{*hdu}, int @code{bitpix}, void @code{*array}, size_t @code{s0}, size_t @code{s1}, char @code{*wcsheader}, int @code{wcsnkeyrec}, double @code{*crpix}, char @code{*spack_string})
+This is essentially the same as @code{gal_fits_array_to_file}, but through
+the two element @code{crpix} array, you can change the final @code{CRPIX}
+keywords that will be written in the FITS file.
+@end deftypefun
+
+@deftypefun void gal_fits_table_size (fitsfile @code{*fitsptr}, size_t @code{*nrows}, size_t @code{*ncols})
+Get the number of rows (@code{nrows}) and columns (@code{ncols}) in a FITS
+table within the @code{fitsptr}.
+@end deftypefun
+
+@deftypefun int gal_fits_table_type (fitsfile @code{*fptr})
+Return the type of the table: @code{ASCII_TBL} and @code{BINARY_TBL} for an
+ASCII or binary table. These two macros are defined by CFITSIO.
+@end deftypefun
+
+@deftypefun void gal_fits_file_or_ext_name (char @code{*inputname}, char @code{*inhdu}, int @code{othernameset}, char @code{**othername}, char @code{*ohdu}, int @code{ohduset}, char @code{*type})
+This is mainly a function used in Gnuastro utilities. Since a FITS image
+can have many extensions, usually related data are stored within one FITS
+file. For example an image, its masked pixels, and the sky standard
+deviation of the noise are various extensions of one FITS file. It would be
+very inconvenient if the same file name would have to be repeated in a call
+to a utility for all images that are within one file.
+
+To easily manage things, within Gnuastro, each input variable also has an
+integer variable with the same name, but suffixed with @code{set}. The job
+of this function is to use the name of the main input image and based on
+the other arguments, determine what filename should be used for each
+type. The final argument (@code{type}) is the type of input you want, for
+example, if you were expecting a mask image, you can give the value
+@code{"mask"} as type. @code{type} is just used to report errors.
+@end deftypefun
+
+@deftypefun void gal_fits_file_to_float (char @code{*inputname}, char @code{*maskname}, char @code{*inhdu}, char @code{*mhdu}, float @code{**img}, int @code{*inbitpix}, int @code{*anyblank}, size_t @code{*ins0}, size_t @code{*ins1})
+Read a FITS image HDU (@code{inhdu} in @file{inputname}) as a @code{float}
+type array. An optional mask image and mask hdu can also be given. Single
+precision floating point types are one of the most common types to store
+data: the observation noise is usually much larger than the extra precision
+(and thus volume in your computer, and slower processing) offered by double
+precision floating point types. With this function, so when you work
+internally with floating points, you can use this function to directly read
+a FITS image array into a floating point array.
+@end deftypefun
+
+@deftypefun void gal_fits_file_to_double (char @code{*inputname}, char @code{*maskname}, char @code{*inhdu}, char @code{*mhdu}, double @code{**img}, int @code{*inbitpix}, int @code{*anyblank}, size_t @code{*ins0}, size_t @code{*ins1})
+Similar to @code{gal_fits_file_to_float}, but for double precision floating
+point type. In some contexts, the internal operations must be done in
+double precision floating point types, irrespective of the input type and
+this function can be used to directly read a file into an array of this
+type.
+@end deftypefun
+
+@deftypefun void gal_fits_file_to_long (char @code{*inputname}, char @code{*inhdu}, long @code{**img}, int @code{*inbitpix}, int @code{*anyblank}, size_t @code{*ins0}, size_t @code{*ins1})
+@cindex Labeled image
+@cindex Segmentation map
+Similar to @code{gal_fits_file_to_float}, but will read the image specified
+by @file{inputname} (@code{inhdu}) into a long integer type. Long integer
+types are commonly used to store things like segmentation maps or labeled
+images.
+@end deftypefun
+
+@deftypefun void gal_fits_prep_float_kernel (char @code{*inputname}, char @code{*inhdu}, float @code{**outkernel}, size_t @code{*ins0}, size_t @code{*ins1})
+@cindex Convolution kernel
+@cindex Kernel: convolution
+Read @file{inputname} (@code{inhdu}) will be read as a floating point array
+to be used as a convolution kernel. Convolution kernels are commonly
+necessary in astronomical image processing, but they need to have certain
+properties: their dimensions have to be an odd number and they must not
+have any blank pixels. In both cases, this function will abort with an
+error notice.
+@end deftypefun
+
+@c@deftypefun
+@c@end deftypefun
 
 
 
 
-
-
-@node The TEMPLATE utility,  , Gnuastro library, Libraries
-@section The TEMPLATE utility
-
-The extra creativity offered by libraries comes at a cost: you have to
-actually write your @code{main} function in the programming language of
-your choice, and compile it before you can use it. So when an operation can
-be done in a Gnuastro utility, it is much more worthwhile to simply use the
-utility, instead of the underlying libraries. Historically, Gnuastro was
-first designed to be a collection of utilities, but as shared functions
-between the separate utilities grew, we used internal (not installed)
-libraries in the first (0.1) release and with the 0.2 release, the
-libraries are installed for general use, independent of the utilities. To
-define a new utility (that satisfies Gnuastro's common behaviour explained
-in @ref{Common behavior}) for common library operations you can use the
-template utility in @file{src/TEMPLATE/}. You just have to copy that
-directory into a new one, choose a name for your new utility and begin
-writing your code (also see @ref{Mandatory source code files}).
 
 
 
@@ -15310,6 +15793,7 @@ read along.
 * Coding conventions::          Basic conventions for coding structure.
 * Multithreaded programming::   Gnuastro's multithreaded programming style.
 * Documentation::               Documentation is an integral part of Gnuastro.
+* The TEMPLATE utility::        A template to create new utilities.
 @end menu
 
 @node Mandatory source code files, Coding conventions, Program source, Program source
@@ -15789,7 +16273,7 @@ and also the ones that benefit most from threads, see the LLNL
 introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
 
 
-@node Documentation,  , Multithreaded programming, Program source
+@node Documentation, The TEMPLATE utility, Multithreaded programming, Program source
 @subsection Documentation
 
 Documentation (this book) is an integral part of Gnuastro.
@@ -15859,6 +16343,72 @@ and see if you didn't miss any change in the coding and to see if the
 context is fairly continuous for a first time reader (who hasn't seen
 the book or had known of Gnuastro before you made your change).
 @end enumerate
+
+
+
+
+
+@node The TEMPLATE utility,  , Documentation, Program source
+@subsection The TEMPLATE utility
+
+The @file{src/} directory contains the source code for each utility in a
+separate subdirectory. The @file{src/TEMPLATE} directory contains the
+bare-minimum files to create a new utility. It can be used to understand
+the conventions described in @ref{Program source}, or to easily create a
+new utility.
+
+The extra creativity offered by libraries comes at a cost: you have to
+actually write your @code{main} function in the programming language of
+your choice, and compile it before you can use it. You will also need to
+find a way to pass input and output information to the function. So when an
+operation can be done in a Gnuastro utility, it is much more worthwhile to
+simply use the utility, instead of the underlying libraries.
+
+Historically, Gnuastro was first designed to be a collection of utilities,
+but as shared functions between the separate utilities grew, we used
+internal (not installed) libraries in the first (0.1) release and with the
+0.2 release, the libraries are installed for general use, independent of
+the utilities. To define your new utility based on this template, just take
+the following steps:
+
+@enumerate
+@item
+Select a name for your new utility (for example @file{myutil}).
+
+@item
+Copy the @file{TEMPLATE} directory to a directory with your utility's name:
+@example
+$ cp -R src/TEMPLATE src/myutil
+@end example
+
+@item
+Open @file{configure.ac} in the top Gnuastro source. This file manages the
+operations that are done when a user runs @file{./configure}. Going down
+the file, you will notice repetative parts for each utility. Copy one of
+those and correct the names of the copied utility to your new utility
+name. We follow alphabetic ordering here, so please place it
+correctly. There are multiple places where this has to be done, so be
+patient and go down to the bottom of the file. Ultimately add
+@file{src/myutil/Makefile} to @code{AC_CONFIG_FILES}, only here the
+ordering depends on the length of the name.
+
+@item
+Open @file{Makefile.am} in the top Gnuastro source. Similar to the previous
+step, add your new utility similar to all the other utilites.
+
+@item
+Change @code{TEMPLATE} to @code{myutil} in the file names and contents of
+the files in the @file{src/myutil/} directory.
+
+@item
+Run the following command to re-build the configuration and build system to
+include your new utility:
+@example
+$ autoreconf -f
+@end example
+@end enumerate
+
+
 
 
 
@@ -16489,6 +17039,11 @@ arXiv:1505.01664}.
 (@file{astsubtractsky}, @ref{SubtractSky}) Find and subtract sky value by
 comparing the mode and median on a mesh grid.
 
+@item Table
+(@file{asttable}, @ref{Table}) Convert FITS binary and ASCII tables into
+other such tables, print them on the command-line, save them in a plain
+text file, or get the FITS table information.
+
 @end table
 
 
@@ -16783,7 +17338,7 @@ $ ./pgdemoXX
 
 @c Print the index and finish:
 @node Index,  , GNU Free Documentation License, Top
-@unnumbered Function index
+@unnumbered Index: Macros, structures and functions
 @printindex fn
 @unnumbered Index
 @printindex cp

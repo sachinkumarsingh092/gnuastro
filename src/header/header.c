@@ -79,11 +79,11 @@ haserror(struct headerparams *p, int actionid, char *string, int status)
 
 
 void
-writeupdatekeys(fitsfile *fptr, struct gal_fits_header_ll **keylist,
+writeupdatekeys(fitsfile *fptr, struct gal_fits_key_ll **keylist,
                 int u1w2)
 {
   int status=0;
-  struct gal_fits_header_ll *tmp, *ttmp;
+  struct gal_fits_key_ll *tmp, *ttmp;
 
   tmp=*keylist;
   while(tmp!=NULL)
