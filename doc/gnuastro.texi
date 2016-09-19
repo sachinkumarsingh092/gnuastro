@@ -512,6 +512,7 @@ Gnuastro library
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
+* Linked lists::                Various types of linked lists.
 
 FITS files (@file{fits.h})
 
@@ -14740,11 +14741,14 @@ your exciting science.
 initially created to be a collection of command-line utilities. However, as
 the utilities and their the shared functions grew, internal (not installed)
 libraries were added. With the 0.2 release, the libraries are
-installable. In the next releases, Gnuastro's library structure will
-undergo significant evolution for enhanced modularity. It will stabilize
-with the removal of this notice. So as long as this notice is present,
-please install newer versions with extreme care: check the @file{NEWS} file
-for changes in the interface.
+installable. Because of this history in these early phases, the libraries
+are not fully programmer friendly yet: they abort the program on an error,
+their naming and arguments are not fully uniform, or modular, and most of
+the interesting functions (that are currently only used within one utility)
+are still internal to the utility. During the next releases, Gnuastro's
+library structure will undergo significant evolution to address all these
+problems. It will stabilize with the removal of this notice. Check the
+@file{NEWS} file for interface changes.
 @end cartouche
 
 @menu
@@ -14752,6 +14756,7 @@ for changes in the interface.
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
+* Linked lists::                Various types of linked lists.
 @end menu
 
 @node Overall package, Array manipulation, Gnuastro library, Gnuastro library
@@ -14996,7 +15001,7 @@ last pixels of the overlap will be put in @code{fpixel_o} and
 @code{lpixel_o}.
 @end deftypefun
 
-@node FITS files,  , Bounding box, Gnuastro library
+@node FITS files, Linked lists, Bounding box, Gnuastro library
 @subsection FITS files (@file{fits.h})
 
 @cindex FITS
@@ -15478,7 +15483,399 @@ error notice.
 @c@end deftypefun
 
 
+@node Linked lists,  , FITS files, Gnuastro library
+@subsection Linked lists (@file{linkedlist.h})
 
+@cindex Array
+@cindex Linked list
+An array is a contiguous region of memory that is very efficient and easy
+to use for recording and later accessing the data. One major problem with
+an array is that the number of elements that go into it must be known in
+advance. This is where linked lists can be very useful: like a metal chain,
+each @emph{node} in a linked list is an independent C structure, keeping
+its own data along with pointer(s) to its immediate neighbor(s). Below we
+have one simple linked list node structure along with an ASCII art
+schematic of how we can use the @code{next} pointer to add any number of
+elements to the list that we want. The linked list is terminated when
+@code{next} is a @code{NULL} pointer.
+
+@c The second and last lines lines are pushed line space forward, because
+@c the `@{' at the start of the line is only seen as `{' in the book.
+@example
+struct float_ll           /*     ---------    ---------              */
+@{                        /*     | Value |    | Value |              */
+  float          value;  /*     |  ---  |    |  ---  |              */
+  struct ll_node *next;  /*     |  next-|--> |  next-|--> NULL      */
+@}                        /*     ---------    ---------              */
+@end example
+
+The schematic shows another great advantage of linked lists: it is very
+easy to add or remove a node anywhere in the list (you just have to change
+one pointer in the structure above). You initially define a variable of
+this type with a @code{NULL} pointer as shown below, then you use functions
+provided for that type of linked list to add elements to the list or pop
+elements from it.
+
+@example
+struct float_ll *mylist=NULL
+@end example
+
+@cindex last-in-first-out
+@cindex first-in-first-out
+@noindent
+When you add an element to the list, it is conventionally added to the
+``top'' of the list: the general list pointer will point to the newly
+created node, which will point to the previously created node and so on. So
+when you ``pop'' from the top of the list, you are actually retrieving the
+last value you put in and changing the list pointer to the next oldest
+node. This is thus known as a ``last-in-first-out'' list. This is the most
+convenient type of linked list (easier to implement and faster to
+process). Alternatively, you can add each newly created node at the end of
+the list. If you do that, you will get a ``first-in-first-out'' list. But
+that will force you to go through the whole list for each new element that
+is created (this can slow down the processing)@footnote{A better way to get
+a first-in-first-out is to first keep the data as last-in-first-out until
+they are all read. Afterwards, pop each node and immediately add it to the
+new list: practically reversing the last-in-first-out list to a
+first-in-first-out one.}.
+
+Each node in a linked list doesn't have to have a single pointer to the
+next node like the example above. We can define each node with two pointers
+to both the next and previous neighbors, this is called a ``Doubly linked
+list''. In general, lists are very powerful and simple constructs that can
+be very useful. But going into more detail would be out of the scope of
+this short introduction in this
+book. @url{https://en.wikipedia.org/wiki/Linked_list, Wikipedia} has a nice
+and more thorough discussion of the various types of lists, so for more,
+please have a look at that article.
+
+In this section we will review the functions and structures that are
+available in Gnuastro for working on linked lists. For each linked-list
+node sturcture, we will first introduce the structure, then the functions
+for working on the structure. All these structures and functions are
+defined and declared in @file{gnuastro/linkedlist.h}.
+
+
+@deftp Structure gal_linkedlist_fll
+Float linked list (@code{fll}). Each node in this singly-linked list can
+have a single float type value.
+@end deftp
+@example
+struct gal_linkedlist_fll
+@{
+    float                         v;
+    struct gal_linkedlist_fll *next;
+@};
+@end example
+
+@deftypefun void gal_linkedlist_print_fll_array (struct gal_linkedlist_fll @code{**afll}, size_t @code{num})
+Print all the values within the linked list to the output terminal. This
+can be used for inspecting the status of the list during development.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_add_to_fll (struct gal_linkedlist_fll @code{**list}, float @code{value})
+Allocate space for a new node in @code{list}, and put @code{value} into
+it. The new node will be added to the top of the list. So after this
+function, the already existing nodes will be appended to the new node and
+@code{list} will point to the newly created node.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_pop_from_fll (struct gal_linkedlist_fll @code{**list}, float @code{*value})
+Pop a node from the top of @code{list} and put its values in
+@code{value}. This function will also free the allocated space for the
+popped node and after this function, @code{list} will point to the next
+node.
+@end deftypefun
+
+@deftypefun size_t gal_linkedlist_num_in_fll (struct gal_linkedlist_fll @code{*list})
+Return the number of nodes in @code{list}, the contents of @code{list} will
+be untouched.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_fll_to_array (struct gal_linkedlist_fll @code{*list}, float @code{**f}, size_t @code{*num})
+Put the elements of @code{list} into an array @code{f} and store the number
+of nodes in the list in @code{num}. The array will be filled in the same
+order as popped elements from the list. This function will allocate space
+for the @code{num} element @code{f} array internally, so you have to free
+it afterwards.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_free_fll (struct gal_linkedlist_fll @code{*list})
+Free the space for all the nodes in @code{list}. Note that any values
+within the nodes will also be discarded. This can be used when the list is
+no longer relevant for you. For example, you might have already converted
+the list to an array for future usage with
+@code{gal_linkedlist_fll_to_array}.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_free_fll_array (struct gal_linkedlist_fll @code{**afll}, size_t @code{num})
+Free an array of @code{gal_linkedlist_fll} linked lists (@code{num}
+elements). Each element of the array is a pointer to a linked list, so we
+first need to free the separate linked lists, then the array.
+@end deftypefun
+
+
+@deftp Structure gal_linkedlist_tdll
+Two doubles linked list (@code{tdll}. Each node in this singly-linked list
+can have two double type values. It can be used to store an unknown number
+of floating point coordinates (for example RA and Dec).
+@end deftp
+@example
+struct gal_linkedlist_tdll
+@{
+    double                         a;
+    double                         b;
+    struct gal_linkedlist_tdll *next;
+@};
+@end example
+
+@deftypefun void gal_linkedlist_add_to_tdll (struct gal_linkedlist_tdll @code{**list}, double @code{a}, double @code{b})
+Allocate space for a new node in @code{list}, and put the values @code{a}
+and @code{b} into it. The new node will be added to the top of the list. So
+after this function, the already existing nodes will be appended to the new
+node and @code{list} will point to the newly created node.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_pop_from_tdll (struct gal_linkedlist_tdll @code{**list}, double @code{*a}, double @code{*b})
+Pop a node from the top of @code{list} and put its values in @code{a} and
+@code{b}. This function will also free the allocated space for the popped
+node and after this function, @code{list} will point to the next node.
+@end deftypefun
+
+@deftypefun size_t gal_linkedlist_num_int_dll (struct gal_linkedlist_tdll @code{*list})
+Return the number of nodes in @code{list}. The contents of @code{list} will
+be untouched.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_tdll_to_array_inv (struct gal_linkedlist_tdll @code{*list}, double @code{**d}, size_t @code{*num})
+Put the elements of @code{list} into an array @code{d} in inverse order and
+store the number of nodes in the list in @code{num}. This function will
+allocate space for the @mymath{2\times}@code{num} element array internally
+so you have to free it afterwards. The two values for each node will be
+stored adjacently, so the array can be seen as a 2D array with @code{num}
+rows and 2 columns.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_free_tdll (struct gal_linkedlist_tdll @code{*list})
+Free the space for all the nodes in @code{list}. Note that any values
+within the nodes will also be discarded. This can be used when the list is
+no longer relevant for you. For example, you might have already converted
+the list to an array for future usage with
+@code{gal_linkedlist_tdll_to_array_inv}.
+@end deftypefun
+
+
+@deftp Structure gal_linkedlist_stll
+String linked list (@code{stll}. Each node in this singly-linked list has a
+string variable.
+@end deftp
+@example
+struct gal_linkedlist_stll
+@{
+    char                          *v;
+    struct gal_linkedlist_stll *next;
+@};
+@end example
+
+@deftypefun void gal_linkedlist_add_to_stll (struct gal_linkedlist_stll @code{**list}, char @code{*value})
+Allocate space for a new node in @code{list}, and store the @code{value}
+pointer into it. The new node will be added to the top of the list. So
+after this function, the already existing nodes will be appended to the new
+node and @code{list} will point to the newly created node.
+
+It is important to remember that this function will only copy the pointer
+in the node, it will not allocate space for the string. So the string
+either has to be a literal string (with a fixed address) or dynamically
+allocated when this linked list is to be filled and used within one
+function.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_pop_from_stll (struct gal_linkedlist_stll @code{**list}, char @code{**value})
+Pop a node from the top of @code{list} and put its pointer in
+@code{value}. This function will also free the allocated space for the
+popped node and after this function, @code{list} will point to the next
+node.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_reverse_stll (struct gal_linkedlist_stll @code{**list})
+Reverse the linked list. The @code{gal_linkedlist_add_to_stll} function
+will make a last-in-first-out list, but commonly you will need a
+first-in-first-out list. This function can thus be useful after adding to
+the list has finished.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_print_stll (struct gal_linkedlist_stll @code{*list})
+Print all the values within the linked list to the output terminal. This
+can be used for inspecting the status of the list during development.
+@end deftypefun
+
+@deftypefun size_t gal_linkedlist_num_in_stll (struct gal_linkedlist_stll @code{*list})
+Return the number of nodes in @code{list}. The contents of @code{list} will
+be untouched.
+@end deftypefun
+
+@deftp Structure gal_linkedlist_sll
+@cindex @code{size_t}
+@code{size_t} linked list (@code{sll}. Each node in this singly-linked list
+contains a @code{size_t} value. The @code{size_t} type is commonly used for
+``size'' related values: it is an un-signed type (negative values are not
+defined for it), therefore it is ideal for dealing with things like pixel
+indexes in an image (which can not be negative and can be very large).
+@end deftp
+@example
+struct gal_linkedlist_sll
+@{
+    size_t                        v;
+    struct gal_linkedlist_sll *next;
+@};
+@end example
+
+@deftypefun void gal_linkedlist_add_to_sll (struct gal_linkedlist_sll @code{**list}, size_t @code{value})
+Allocate space for a new node in @code{list}, and store @code{value} into
+it. The new node will be added to the top of the list. So after this
+function, the already existing nodes will be appended to the new node and
+@code{list} will point to the newly created node.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_pop_from_sll (struct gal_linkedlist_sll @code{**list}, size_t @code{*value})
+Pop a node from the top of @code{list} and put its value in
+@code{value}. This function will also free the allocated space for the
+popped node and after this function, @code{list} will point to the next
+node.
+@end deftypefun
+
+@deftypefun size_t gal_linkedlist_num_in_sll (struct gal_linkedlist_sll @code{*list})
+Return the number of nodes in @code{list}. The contents of @code{list} will
+be untouched.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_print_sll (struct gal_linkedlist_sll @code{*list})
+Print all the values within the linked list to the output terminal. This
+can be used for inspecting the status of the list during development.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_sll_to_array (struct gal_linkedlist_sll @code{*list}, size_t @code{**s}, size_t @code{*num}, int @code{inverse})
+Put the elements of @code{list} into an array @code{s} and store the number
+of nodes in the list in @code{num}. This function will allocate space for
+the @code{num} element array internally so you have to free it
+afterwards. If the value in @code{inverse} is @code{1}, then the first
+popped value in the list will be the last element in the array, otherwise,
+the array will be filled in the same order that the elements were popped.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_free_sll (struct gal_linkedlist_sll @code{*list})
+Free the space for all the nodes in @code{list}. Note that any values
+within the nodes will also be discarded. This can be used when the list is
+no longer relevant for you. For example, you might have already converted
+the list to an array for future usage with
+@code{gal_linkedlist_sll_to_array}.
+@end deftypefun
+
+@deftp Structure gal_linkedlist_osll
+@cindex @code{size_t}
+Ordered @code{size_t} linked list (@code{osll}. Each node in this
+singly-linked list contains a @code{size_t} value and a floating point
+value. The floating point value is used as a reference to add new nodes in
+a sorted manner. At any moment, the first popped node in this list will
+have the smallest @code{tosort} value, and subsequent nodes will have
+larger to values.
+@end deftp
+@example
+struct gal_linkedlist_osll
+@{
+  size_t                         v;
+  float                          s;
+  struct gal_linkedlist_osll *next;
+@};
+@end example
+
+@deftypefun void gal_linkedlist_add_to_osll (struct gal_linkedlist_osll @code{**list}, size_t @code{value}, float @code{tosort})
+Allocate space for a new node in @code{list}, and store @code{value} into
+it. The new node will be added to the list based on the @code{tosort}
+value.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_pop_from_osll (struct gal_linkedlist_osll @code{**list}, size_t @code{*value}, float @code{*sortvalue})
+Pop a node from the top of @code{list}, put its value in @code{value} and
+its sort value in @code{sortvalue}. This function will also free the
+allocated space for the popped node and after this function, @code{list}
+will point to the next node (which has a larger @code{tosort} element).
+@end deftypefun
+
+@deftypefun void gal_linkedlist_osll_into_sll (struct gal_linkedlist_osll @code{*in}, struct gal_linkedlist_sll @code{**out})
+Convert the orderd @code{size_t} linked list into an ordinary @code{size_t}
+linked list (no longer sorted). This can be useful when all the elements
+have been added and you just need to pop-out elements.
+@end deftypefun
+
+@deftp Structure gal_linkedlist_tosll
+@cindex @code{size_t}
+Two-way, ordered @code{size_t} linked list (@code{tosll}. Each node in this
+Doubly-linked list contains a @code{size_t} value and a floating point
+value. The floating point value is used as a reference to add new nodes in
+a sorted manner. In the functions here, this linked list can be pointed to
+by two pointers (largest and smallest) with the following format:
+@example
+            largest pointer
+            |
+   NULL <-- (v0,s0) <--> (v1,s1) <--> ... (vn,sn) --> NULL
+                                          |
+                           smallest pointer
+@end example
+At any moment, the two pointers will point the nodes containing the
+``largest'' and ``smallest'' values and the rest of the nodes will be
+ordered. This is useful when during the operations (where an un-known
+number new nodes will be added continuesly) it is important to also know
+the minimum and maximum values.
+@end deftp
+@example
+struct gal_linkedlist_tosll
+@{
+  size_t                          v;
+  float                           s;
+  struct gal_linkedlist_tosll *prev;
+  struct gal_linkedlist_tosll *next;
+@};
+@end example
+
+@deftypefun void gal_linkedlist_print_tosll (struct gal_linkedlist_tosll @code{*largest}, struct gal_linkedlist_tosll @code{*smallest})
+Print all the values within the linked list to the output terminal. This
+can be used for inspecting the status of the list during development.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_add_to_tosll_end (struct gal_linkedlist_tosll @code{**largest}, struct gal_linkedlist_tosll @code{**smallest}, size_t @code{value}, float @code{tosort})
+Allocate space for a new node in @code{list}, and store @code{value} into
+it. The new node will be added to the list based on the @code{s} value as
+described in the description of @code{gal_linkedlist_tosll}. If this is the
+first node to be added to the list, both the @code{largest} and
+@code{smallest} pointers can be @code{NULL}.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_pop_from_tosll_start (struct gal_linkedlist_tosll @code{**lartest}, struct gal_linkedlist_tosll @code{**smallest}, size_t @code{*value}, float @code{*tosort})
+Pop the node with the smallest @code{s} of @code{list}, then put its value
+in @code{value} and its sort value in @code{sortvalue}. This function will
+also free the allocated space for the popped node and after this function,
+@code{largest} and @code{smallest} will be modified respectively. Note that
+even though only the smallest pointer will be popped, when there was only
+one node in the list, the @code{largest} pointer also has to change, so we
+need both.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_smallest_tosll (struct gal_linkedlist_tosll @code{*largest}, struct gal_linkedlist_tosll @code{**smallest})
+Given the @code{largest} pointer, set @code{smallest} as described in
+@code{gal_linkedlist_tosll}.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_tosll_into_sll (struct gal_linkedlist_tosll @code{*in}, struct gal_linkedlist_sll @code{**out})
+Convert the two-way orderd @code{size_t} linked list into an ordinary
+@code{size_t} linked list (no longer sorted). This can be useful when all
+the elements have been added and you just need to pop-out elements.
+@end deftypefun
+
+@deftypefun void gal_linkedlist_tosll_free (struct gal_linkedlist_tosll @code{*largest})
+Free the space for all the nodes in @code{largest}. Note that any values
+within the nodes will also be discarded.
+@end deftypefun
 
 
 
@@ -15499,17 +15896,16 @@ error notice.
 @node Developing, GNU Astronomy Utilities list, Libraries, Top
 @chapter Developing
 
-The basic idea of GNU Astronomy Utilities is for an interested
-astronomer to be able to easily understand the code of any of the
-programs, be able to modify the code if she feels there is an
-improvement and finally, to be able to add new programs to the
-existing utilities for their own benefit, and the larger community if
-they are willing to share it. In short, we hope that at least from the
-software point of view, the ``obscurantist faith in the expert's
-special skill and in his personal knowledge and authority'' can be
-broken, see @ref{Science and its tools}. The following software
-architecture can be one of the most basic and easy to understand for
-any interested inquirer.
+The basic idea of GNU Astronomy Utilities is for an interested astronomer
+to be able to easily understand the code of any of the programs, be able to
+modify the code if she feels there is an improvement and finally, to be
+able to add new programs to the existing utilities for their own benefit,
+and the larger community if they are willing to share it. In short, we hope
+that at least from the software point of view, the ``obscurantist faith in
+the expert's special skill and in his personal knowledge and authority''
+can be broken, see @ref{Science and its tools}. The following software
+architecture can be one of the most basic and easy to understand for any
+interested inquirer.
 
 First some general design choices are tackled. It is followed by a
 short explanation of the version controlled source. The libraries and
@@ -17518,6 +17914,12 @@ $ ./pgdemoXX
 @c Print the index and finish:
 @node Index,  , GNU Free Documentation License, Top
 @unnumbered Index: Macros, structures and functions
+All Gnuastro library macros start with @code{GAL_} and structures and
+functions start with @code{gal_} for @emph{G}NU @emph{A}stronomy
+@emph{L}ibrary. The next element in the name is the name of the header
+which declares or defines them, so to use the @code{gal_array_fset_const}
+function, you have to @code{#include <gnuastro/array.h}. See @ref{Gnuastro
+library} for more.
 @printindex fn
 @unnumbered Index
 @printindex cp

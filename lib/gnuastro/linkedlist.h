@@ -47,34 +47,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/******************* Two doubles (for coordinates) */
-struct gal_linkedlist_tdll
-{
-    double a;
-    double b;
-    struct gal_linkedlist_tdll *next;
-};
-
-void
-gal_linkedlist_add_to_tdll(struct gal_linkedlist_tdll **list,
-                           double a, double b);
-
-void
-gal_linkedlist_pop_from_tdll(struct gal_linkedlist_tdll **list,
-                             double *a, double *b);
-
-size_t
-gal_linkedlist_num_int_dll(struct gal_linkedlist_tdll *list);
-
-void
-gal_linkedlist_tdll_to_array_inv(struct gal_linkedlist_tdll *list,
-                                 double **d, size_t *num);
-
-void
-gal_linkedlist_free_tdll(struct gal_linkedlist_tdll *list);
-
-
-
 /******************* float: */
 struct gal_linkedlist_fll
 {
@@ -107,6 +79,38 @@ gal_linkedlist_free_fll(struct gal_linkedlist_fll *list);
 void
 gal_linkedlist_free_fll_array(struct gal_linkedlist_fll **afll,
                               size_t num);
+
+
+
+
+
+/******************* Two doubles (for coordinates) */
+struct gal_linkedlist_tdll
+{
+    double a;
+    double b;
+    struct gal_linkedlist_tdll *next;
+};
+
+void
+gal_linkedlist_add_to_tdll(struct gal_linkedlist_tdll **list,
+                           double a, double b);
+
+void
+gal_linkedlist_pop_from_tdll(struct gal_linkedlist_tdll **list,
+                             double *a, double *b);
+
+size_t
+gal_linkedlist_num_int_dll(struct gal_linkedlist_tdll *list);
+
+void
+gal_linkedlist_tdll_to_array_inv(struct gal_linkedlist_tdll *list,
+                                 double **d, size_t *num);
+
+void
+gal_linkedlist_free_tdll(struct gal_linkedlist_tdll *list);
+
+
 
 
 
@@ -159,28 +163,14 @@ gal_linkedlist_print_sll(struct gal_linkedlist_sll *list);
 
 void
 gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
-                            size_t **f, size_t *num, int inverse);
+                            size_t **s, size_t *num, int inverse);
 
 void
 gal_linkedlist_free_sll(struct gal_linkedlist_sll *list);
 
 
 
-/******************* Two way size_t: */
-struct gal_linkedlist_tsll
-{
-  size_t v;
-  struct gal_linkedlist_tsll *next;
-  struct gal_linkedlist_tsll *prev;
-};
 
-void
-gal_linkedlist_add_to_tsll_end(struct gal_linkedlist_tsll **last,
-                               size_t value);
-
-void
-gal_linkedlist_pop_from_tsll_start(struct gal_linkedlist_tsll **first,
-                                   size_t *value);
 
 
 
@@ -206,6 +196,7 @@ gal_linkedlist_osll_into_sll(struct gal_linkedlist_osll *in,
 
 
 
+
 /******************* Two way ordered size_t: */
 struct gal_linkedlist_tosll
 {
@@ -216,8 +207,8 @@ struct gal_linkedlist_tosll
 };
 
 void
-gal_linkedlist_print_tosll(struct gal_linkedlist_tosll *l,
-                           struct gal_linkedlist_tosll *s);
+gal_linkedlist_print_tosll(struct gal_linkedlist_tosll *largest,
+                           struct gal_linkedlist_tosll *smallest);
 
 void
 gal_linkedlist_add_to_tosll_end(struct gal_linkedlist_tosll **largest,
