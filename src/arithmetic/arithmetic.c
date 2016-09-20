@@ -157,6 +157,9 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
 
       /* Add to the number of popped FITS images: */
       ++p->popcounter;
+
+      /* Report the read image if desired: */
+      if(p->cp.verb) printf("%s is read.\n", filename);
     }
   else
     *array=operands->array;

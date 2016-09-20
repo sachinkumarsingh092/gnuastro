@@ -7064,9 +7064,11 @@ Change the input (pixel) value `where' a certain condition holds. The
 conditional operators above can be used to define the condition. Three
 operands are required for @command{where}. The input format is demonstrated
 in this simplified example:
+
 @example
-astarithmetic in.fits condition.fits new.fits where
+$ astarithmetic in.fits condition.fits new.fits where
 @end example
+
 The third and second popped operands (@file{in.fits} and
 @file{condition.fits} above, see @ref{Reverse polish notation}) have to be
 images or all three operands have to be numbers. In the former case (when
