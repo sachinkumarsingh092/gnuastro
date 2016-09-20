@@ -513,6 +513,7 @@ Gnuastro library
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
 * Linked lists::                Various types of linked lists.
+* Mesh grid for an image::      Breaking an image into a grid.
 
 FITS files (@file{fits.h})
 
@@ -572,29 +573,31 @@ SAO ds9
 @cindex GNU coding standards
 @cindex GNU Astronomy Utilities (Gnuastro)
 The GNU Astronomy Utilities (Gnuastro) is an official GNU package
-consisting of separate programs for the manipulation and analysis of
-astronomical data. See @ref{GNU Astronomy Utilities list} for the full
-list. All the various utilities share the same basic command-line user
-interface for the comfort of both the users and developers. GNU
-Astronomy Utilities is written to comply fully with the GNU coding
-standards so it integrates finely with the GNU/Linux operating
-system. This also enables astronomers to expect a fully familiar
-experience in the source code, building, installing and command-line
-user interaction that they have seen in all the other GNU software
-that they use. The official and always up to date version of
-book/manual is freely available under @ref{GNU Free Documentation
-License} in various formats (pdf, html, plain text, info, and as its
-Texinfo source) at @url{http://www.gnu.org/software/gnuastro/manual/}.
+consisting of separate programs and libraries for the manipulation and
+analysis of astronomical data. See @ref{GNU Astronomy Utilities list} for
+the full list of programs and @ref{Libraries}. All the various utilities
+share the same basic command-line user interface for the comfort of both
+the users and developers. Gnuastro is written to comply fully with the GNU
+coding standards so it integrates finely with the GNU/Linux operating
+system. This also enables astronomers to expect a fully familiar experience
+in the source code, building, installing and command-line user interaction
+that they have seen in all the other GNU software that they use. The
+official and always up to date version of book/manual is freely available
+under @ref{GNU Free Documentation License} in various formats (pdf, html,
+plain text, info, and as its Texinfo source) at
+@url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
-specified most of the topics in chapters 2 and 3 are common to all GNU
-software, for example installation, managing command-line options or
-getting help. So if you are new to this environment, we encourage you
-to go through these chapters carefully. They can be a starting point
-from which you can continue to learn more from each program's own
-manual and fully enjoy this wonderful environment. This book is
-written so someone who is completely new to GNU/Linux can get going
-very soon, see @ref{New to GNU/Linux?}.
+specified most of the topics in @ref{Installation} and @ref{Common
+behavior} are common to all GNU software, for example installation,
+managing command-line options or getting help (also see @ref{New to
+GNU/Linux?}). So if you are new to this empowering environment, we
+encourage you to go through these chapters carefully. They can be a
+starting point from which you can continue to learn more from each
+program's own manual and fully enjoy this wonderful environment. Gnuastro
+also comes with a large set of libraries, so you can write your own
+programs using Gnuastro's building blocks, see @ref{Review of library
+fundamentals} for an introduction.
 
 Finally it must be mentioned that in Gnuastro, no change to any
 program will be released before it has been fully documented in this
@@ -628,14 +631,16 @@ Gnuastro has a small set of mandatory dependencies and some optional ones
 for added functionality, see @ref{Dependencies}. The latest official
 release tarball is always available at
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz,
-@file{gnuastro-latest.tar.gz}}, see @ref{Release tarball}. If you have
-downloaded the tarball in the @file{TOPGNUASTRO} directory and the
-dependencies are installed, you can unpack, compile, check and install
-Gnuastro with the following commands:
+@file{gnuastro-latest.tar.gz}}@footnote{The same tar command (@command{$
+tar xf}) can also be used to unpack @file{tar.xz} and @file{tar.lz}
+tarballs.}, see @ref{Release tarball}. If you have downloaded the tarball
+in the @file{TOPGNUASTRO} directory and the dependencies are installed, you
+can unpack, compile, check and install Gnuastro with the following
+commands:
 
 @example
 $ cd TOPGNUASTRO
-$ tar -zxvf gnuastro-latest.tar.gz
+$ tar xf gnuastro-latest.tar.gz
 $ cd gnuastro-X.X                  # Replace X.X with version number
 $ ./configure
 $ make
@@ -2309,7 +2314,7 @@ run the following commands after you have downloaded
 @file{gsl-latest.tar.gz}}:
 
 @example
-$ tar -zxvf gsl-latest.tar.gz
+$ tar xf gsl-latest.tar.gz
 $ cd gsl-X.X                     # Replace X.X with version number
 $ ./configure
 $ make
@@ -2372,7 +2377,7 @@ you have downloaded
 @file{cfitsio_latest.tar.gz}} and are in the same directory:
 
 @example
-$ tar -vxzf cfitsio_latest.tar.gz
+$ tar xf cfitsio_latest.tar.gz
 $ cd cfitsio
 $ ./configure --prefix=/usr/local --enable-sse2 --enable-reentrant
 $ make
@@ -2417,7 +2422,7 @@ the @option{--without-pgplot} option as shown below. Let's assume you have
 downloaded @url{ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib.tar.bz2,
 @file{wcslib.tar.bz2}} and are in the same directory:
 @example
-$ tar -jxvf wcslib.tar.bz2
+$ tar xf wcslib.tar.bz2
 $ cd wcslib-X.X                    # Replace X.X with version number
 $ ./configure --without-pgplot LIBS="-pthread -lm"
 $ make
@@ -9437,16 +9442,15 @@ parts.
 
 @cindex Channel
 The bias current on each amplifier is different, and normally bias
-subtraction is not accurately done. So even after subtracting the
-measured bias current, you can usually still identify identify the
-boundaries of different amplifiers by eye. See Figure 11(a) in
-Akhlaghi and Ichikawa (2015) for an example. This results in the final
-reduced data to have non-uniform amplifier-shaped regions with higher
-or lower background flux values. Such systematic biases will then
-propagate to all subsequent measurements we do on the data (for
-example photometry and subsequent stellar mass and star formation rate
-measurements in the case of galaxies). Therefore an accurate sky
-subtraction routine should also be able to account for such biases.
+subtraction is not accurately done. So even after subtracting the measured
+bias current, you can usually still identify the boundaries of different
+amplifiers by eye. See Figure 11(a) in Akhlaghi and Ichikawa (2015) for an
+example. This results in the final reduced data to have non-uniform
+amplifier-shaped regions with higher or lower background flux values. Such
+systematic biases will then propagate to all subsequent measurements we do
+on the data (for example photometry and subsequent stellar mass and star
+formation rate measurements in the case of galaxies). Therefore an accurate
+sky subtraction routine should also be able to account for such biases.
 
 To get an accurate result, the mesh boundaries should be located
 exactly on the amplifier boundaries. Otherwise, some meshes will
@@ -9467,17 +9471,16 @@ the detector only has one amplifier, you can set the number of
 channels in both axises to 1.
 
 Unlike the channel size, that has to be an exact multiple of the image
-size, the mesh size can be any number. If it is not an exact multiple
-of the image side, the last (rightest, for the first FITS dimension,
-and highest for the second when viewed in SAO ds9) mesh will have a
-different size than the rest. If the remainder of the image size
-divided by mesh size is larger than a certain fraction (value to
-@option{--lastmeshfrac}) of the mesh size along each axis, a new
-(smaller) mesh will be put there instead of a larger mesh. This is
-done to avoid the last mesh becoming too large compared to the other
-meshes in the grid. Generally, it is best practice to choose the mesh
-size such that the last mesh is only a few (negligible) pixels wider
-or thinner than the rest.
+size, the mesh size can be any number. If it is not an exact multiple of
+the image side, the last mesh (rightest, for the first FITS dimension, and
+highest for the second when viewed in SAO ds9) will have a different size
+than the rest. If the remainder of the image size divided by mesh size is
+larger than a certain fraction (value to @option{--lastmeshfrac}) of the
+mesh size along each axis, a new (smaller) mesh will be put there instead
+of a larger mesh. This is done to avoid the last mesh becoming too large
+compared to the other meshes in the grid. Generally, it is best practice to
+choose the mesh size such that the last mesh is only a few (negligible)
+pixels wider or thinner than the rest.
 
 The final mesh grid can be seen on the image with the
 @option{--checkmesh} option that is available to all programs which
@@ -14757,6 +14760,7 @@ problems. It will stabilize with the removal of this notice. Check the
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
 * Linked lists::                Various types of linked lists.
+* Mesh grid for an image::      Breaking an image into a grid.
 @end menu
 
 @node Overall package, Array manipulation, Gnuastro library, Gnuastro library
@@ -15158,6 +15162,7 @@ space for the @code{str} element is statically allocated
 necessary where @code{gal_fits_key} is no longer available, then you have
 to allocate space dynamically and copy the string there.
 @end deftp
+
 @example
 struct gal_fits_key
 @{
@@ -15187,8 +15192,10 @@ and at any step during your program. Adding new keywords doesn't have to be
 done manually, the @code{gal_fits_add_to_key_ll} and
 @code{gal_fits_add_to_key_ll_end} will add new keywords for you to the
 start or end of the list to make a last-in-first-out or first-in-last-out
-list.
+list. See @ref{Linked lists} for more on the nature of linked lists and
+more similar structures.
 @end deftp
+
 @example
 struct gal_fits_key_ll
 @{
@@ -15483,7 +15490,7 @@ error notice.
 @c@end deftypefun
 
 
-@node Linked lists,  , FITS files, Gnuastro library
+@node Linked lists, Mesh grid for an image, FITS files, Gnuastro library
 @subsection Linked lists (@file{linkedlist.h})
 
 @cindex Array
@@ -15502,7 +15509,7 @@ elements to the list that we want. The linked list is terminated when
 @c The second and last lines lines are pushed line space forward, because
 @c the `@{' at the start of the line is only seen as `{' in the book.
 @example
-struct float_ll           /*     ---------    ---------              */
+struct float_ll          /*     ---------    ---------              */
 @{                        /*     | Value |    | Value |              */
   float          value;  /*     |  ---  |    |  ---  |              */
   struct ll_node *next;  /*     |  next-|--> |  next-|--> NULL      */
@@ -15824,9 +15831,9 @@ by two pointers (largest and smallest) with the following format:
 @end example
 At any moment, the two pointers will point the nodes containing the
 ``largest'' and ``smallest'' values and the rest of the nodes will be
-ordered. This is useful when during the operations (where an un-known
-number new nodes will be added continuesly) it is important to also know
-the minimum and maximum values.
+sorted. This is useful when an unknown number of nodes are being added
+continuously and during the operations it is important to have the nodes in
+a sorted format.
 @end deftp
 @example
 struct gal_linkedlist_tosll
@@ -15878,7 +15885,219 @@ within the nodes will also be discarded.
 @end deftypefun
 
 
+@node Mesh grid for an image,  , Linked lists, Gnuastro library
+@subsection Mesh grid for an image (@file{mesh.h})
 
+The basic concepts behind the mesh and channel grids in Gnuastro were
+explained in @ref{Tiling an image}. Besides the improved measurement
+purposes introduced there, tiling an image can also greatly speed up some
+processing operations over the image, since each mesh can be given to a
+different thread and so the CPU can be working on multiple regions of the
+image simultaneously. The mesh structure and functions introduced here are
+declared in @file{gnuastro/mesh.h} and allow you to also use operate on an
+image mesh.
+
+Please note that as discussed in @ref{Gnuastro library}, most library
+functions will significantly evolve with future releases. The mesh
+structure and functions introduced here are high on this list: until now
+they were only internally used and so not much attention had been paid to
+their usability outside Gnuastro. Gnuastro's @file{lib/mesh.c} contains the
+full function definitions and is heavily commented, please also consult
+that file if the explanations here are not clear enough. However, the basic
+idea behind this structure, and the functions to manipulate data over it,
+is a powerful tool that can be generically used in many contexts. So please
+use the structure and functions here very critically and share your
+criticisms, thoughts and ideas on them. Hopefully in future releases the
+structure and functions were will evolve to become an easy to use and
+generically applicable mesh grid system.
+
+
+
+@deftp Structure gal_mesh_params
+This structure keeps all the necessary paramters for a particular mesh and
+channel grid over an image. This structure only keeps the information about
+the mesh and channel grid structure. It doesn't keep a copy of the
+different parts of the image. So when working on several images of the same
+size, you can use the same mesh structure. Its individual elements are too
+many to fully list here, if you are interested please look into the
+installed @file{gnuastro/mesh.h} header.
+
+One important component of the structure which is commonly used in the
+functions is the @code{garray}, where each mesh has a unique
+@code{gid}. @code{garray} stands for grid-array. It is used for operations
+on the mesh grid, where one value is to be assigned for each mesh. It has
+one element for each mesh in the image. However, due to the (possible)
+existence of channels (see @ref{Tiling an image}), each channel needs its
+own contiguous part (group of meshes) in the full @code{garray}. Each
+channel has @code{gs0*gs1} (dimentions of meshes in each channel)
+elements. There are @code{nch} parts (or channels) in total.  In short, the
+meshs in each channel have to be contiguous to facilitate the neighbor
+analysis in interpolation and other channel specific jobs. So, the over-all
+structure can be viewed as a 3D array. The operations on the meshs might
+need more than one output, for example the mean and the standard
+deviation. So we have two @code{garray}s and two @code{nearest} arrays (for
+interpolation).
+@end deftp
+
+@deftypefun size_t gal_mesh_ch_based_id_from_gid (struct gal_mesh_params @code{*mp}, size_t @code{gid})
+As discussed in the description of @code{gal_mesh_params}, there are two
+interal ways to refer to a mesh (with an ID):
+
+@itemize
+@item
+By default, the mesh IDs are set based on their position within the
+channels (so the meshs in each channel are contiguous). We call this the
+channel-based mesh ID. The @code{cgarray1} and @code{cgarray2} in
+@code{gal_mesh_params} store the mesh values based on this ID. All the
+basic mesh properties, like their types and height and widths are stored
+based on this ID.
+
+@item
+If the user asks for a full image interpolation or smoothing, then two new
+arrays are created called @code{fgarray1} and @code{fgarray2}. These arrays
+keep the mesh values as they appear on the image, irrespective of which
+channel they belong to. We call this the image-based ID. The image based ID
+is contiguous over the image.
+@end itemize
+
+The @code{garray1} and @code{garray2} pointers can point to either the
+@code{cgarrays} or the @code{fgarrays}. Ideally, the user should not worry
+about what garray is pointing to. The caller knows the type of IDs they are
+using, but they don't know what to put into @code{garray}. We call the ID
+that should be put into garray the channel-based ID. It can be either of
+the two kinds above. So we have the following two functions
+@code{gal_mesh_ch_based_id_from_gid} and
+@code{gal_mesh_gid_from_ch_based_id} for changing between these IDs.
+
+The former (this function) is used when you are going over the elements in
+garray (and you are completley ignorant to which one of cgarrays or
+fgarrays garray points to) and you need the channel based IDs to get basic
+mesh information like the mesh type and size.
+@end deftypefun
+
+@deftypefun size_t gal_mesh_gid_from_ch_based_id (struct gal_mesh_params @code{*mp}, size_t @code{chbasedid})
+See the explanations in @code{gal_mesh_ch_based_id_from_gid} first. This
+function is used when you are going over the meshs through the
+channel-based IDs, but you need to know what ID to use for @code{garray}.
+@end deftypefun
+
+@deftypefun size_t gal_mesh_img_xy_to_mesh_id (struct gal_mesh_params @code{*mp}, size_t @code{x}, size_t @code{y})
+You have a pixel's position as @code{x} and @code{y} in the final image (in
+C-based dimentions) and want to know the id to be used in the
+@code{garray}s to get a value for this pixel in the mesh-grid. This
+function will return that ID. As an example, you can get the mesh value at
+a specific position in the image with:
+@example
+mp->garray[ gal_mesh_img_xy_to_mesh_id(mp, x, y) ];
+@end example
+@end deftypefun
+
+@deftypefun void gal_mesh_check_mesh_id (struct gal_mesh_params @code{*mp}, long @code{**out})
+Save the meshid of each pixel into an array the size of the original
+image. All the pixels over the mesh will get the value of the mesh ID. The
+output array @code{out} can then be written to a FITS file for
+viewing. This is mainly used for checking/debugging purposes, hence the
+@code{check} in the name.
+@end deftypefun
+
+@deftypefun void gal_mesh_check_garray (struct gal_mesh_params @code{*mp}, float @code{**out1}, float @code{**out2})
+Save the values in the @code{garray}s of the input @code{mp} structure into
+two arrays the size of the input image. All the pixels over each mesh will
+get the value corresponding to that mesh in the @code{garray}s. The output
+arrays can then be written to a FITS file for viewing. This is mainly used
+for checking/debugging purposes, hence the @code{check} in the
+name. @code{out2} will only be set if there are two @code{garray}s.
+@end deftypefun
+
+@deftypefun void gal_mesh_value_file (struct gal_mesh_params @code{*mp}, char @code{*filename}, char @code{*extname1}, char @code{*extname2}, struct wcsprm @code{*wcs}, char @code{*spack_string})
+Save the mesh grid values into the @file{filename} FITS file with
+@code{extname1} and @code{extname2} extension names (for the two possible
+@code{garrays}), a WCS structure may also optionally be given and
+@code{spack_string} is the name of your program to be written in the
+header. The output FITS file will have one pixel for each mesh, so its
+dimentions will be significantly smaller than the input image. If you want
+the mesh values in the same dimention as the input image, use
+@code{gal_mesh_check_garray}.
+@end deftypefun
+
+@deftypefun void gal_mesh_full_garray (struct gal_mesh_params @code{*mp}, int @code{reverse})
+As described in @code{gal_mesh_ch_based_id_from_gid}, the there can be two
+arrays that keep a value for each mesh in @code{gal_mesh_params}:
+@code{cgarray} and @code{fgarray}. When @code{reverse==0}, then this
+function will fill in the @code{fgarray}s using the @code{cgarray}s and
+vice-versa when @code{reverse==1}.
+@end deftypefun
+
+@deftypefun void gal_mesh_make_mesh (struct gal_mesh_params @code{*mp})
+Make the mesh structure using the basic information that must already be
+present within it. The complete list of necessary parameters are as
+follows, but note that some might not be necessary for your desired
+funcionality. @code{s0}, @code{s1}, @code{ks0}, @code{ks1}, @code{nch1},
+@code{nch2}, @code{kernel}, @code{img}, @code{params}, @code{minmodeq},
+@code{mirrordist}, @code{fullsmooth}, @code{numnearest},
+@code{smoothwidth}, @code{lastmeshfrac}, @code{meshbasedcheck},
+@code{interponlyblank}, @code{fullinterpolation}, @code{numthreads}. See
+the installed @file{gnuastro/mesh.h} for a comment on each parameter within
+the @code{gal_mesh_params} structure.
+@end deftypefun
+
+@deftypefun void gal_mesh_free_mesh (struct gal_mesh_params @code{*mp})
+Free all the allocated spaces within the @code{gal_mesh_params} structure.
+@end deftypefun
+
+@deftypefun void gal_mesh_operate_on_mesh (struct gal_mesh_params @code{*mp}, void @code{*(*meshfunc)(void *)}, size_t @code{oneforallsize}, int @code{makegarray2}, int @code{initialize})
+@cindex NaN
+@cindex Pthread
+@cindex IEEE NaN
+Run the @code{meshfunc} function on each mesh in parallel. As the
+declaration above shows, @code{meshfunc} should only take one @code{void *}
+input and return one @code{void *} output. This function will setup a
+pthread environment and make @code{mp->numthreads} (a number!) calls
+@code{meshfunc} which will work on each
+mesh. @code{gal_mesh_operate_on_mesh} will return when all the threads have
+finished their work. If @code{meshfunc} needs to store more than one value
+for each mesh, then set @code{makegarray2=1}. When @code{initialize==1},
+the @code{garray}(s) will be initialized to NaN.
+
+This function is commonly used within Gnuastro (mainly in NoiseChisel, see
+@ref{NoiseChisel}), so search for its applications in the utilities for
+some real-world examples. You can do this with the following command in the
+top Gnuastro source directory (after unpacking the tarball):
+@example
+grep -r gal_mesh_operate_on_mesh ./src/*
+@end example
+@end deftypefun
+
+@deftypefun void gal_mesh_interpolate (struct gal_mesh_params @code{*mp}, char @code{*errstart})
+@cindex NaN
+@cindex IEEE NaN
+Interpolate the mesh values (@code{garray}s). After you have run a function
+on all the meshes with @code{gal_mesh_operate_on_mesh}, some meshes might
+not get any values. This function will fill the meshes that didn't get any
+values (have a value of NaN) using the meshes that received a value. The
+interpolation is done based on the nearest neighbors, specified within the
+@code{gal_mesh_params} structure.
+@end deftypefun
+
+@deftypefun void gal_mesh_smooth (struct gal_mesh_params @code{*mp})
+Smooth the mesh values arrays based on the parameters in
+@code{gal_mesh_params}.
+@end deftypefun
+
+@deftypefun void gal_mesh_spatial_convolve_on_mesh (struct gal_mesh_params @code{*mp}, float @code{**conv})
+Do spatial convolution (see @ref{Spatial domain convolution}) on each
+channel of the mesh grid indendently, therefore two adjacent pixels within
+the image that are not in the same channel will not affect eachother during
+the convolution.
+@end deftypefun
+
+@deftypefun void gal_mesh_change_to_full_convolution (struct gal_mesh_params @code{*mp}, float @code{*conv})
+After running @code{gal_mesh_spatial_convolve_on_mesh}, it might become
+necessary to change the convolution into a full image convolution. This
+function will do the convolution process only on the regions near the
+channel borders that need to be changed, the rest of the pixels will not be
+changed by this function.
+@end deftypefun
 
 
 
@@ -16936,15 +17155,11 @@ The extra creativity offered by libraries comes at a cost: you have to
 actually write your @code{main} function in the programming language of
 your choice, and compile it before you can use it. You will also need to
 find a way to pass input and output information to the function. So when an
-operation can be done in a Gnuastro utility, it is much more worthwhile to
-simply use the utility, instead of the underlying libraries.
-
-Historically, Gnuastro was first designed to be a collection of utilities,
-but as shared functions between the separate utilities grew, we used
-internal (not installed) libraries in the first (0.1) release and with the
-0.2 release, the libraries are installed for general use, independent of
-the utilities. To define your new utility based on this template, just take
-the following steps:
+operation has well-defined inputs and outputs and is commonly needed, it is
+much more worthwhile to simply do the work in a utility (either by
+modifying an existing one or creating a new one), instead of the using
+underlying libraries every time. To define your new utility based on this
+template, just take the following steps:
 
 @enumerate
 @item
@@ -16976,11 +17191,12 @@ Change @code{TEMPLATE} to @code{myutil} in the file names and contents of
 the files in the @file{src/myutil/} directory.
 
 @item
-Run the following command to re-build the configuration and build system to
-include your new utility:
+Run the following command to re-build the configuration and build system.
 @example
 $ autoreconf -f
 @end example
+Your new utility will be built the next time you run @command{./configure}
+and @command{make}.
 @end enumerate
 
 
@@ -17657,7 +17873,7 @@ directory) with the following commands (@code{x.x.x} is the version
 number):
 
 @example
-$ tar -zxvf ds9.linux64.x.x.x.tar.gz
+$ tar xf ds9.linux64.x.x.x.tar.gz
 $ sudo mv ds9 /usr/local/bin
 @end example
 
@@ -17793,11 +18009,11 @@ WCSLIB. Installing it is a little tricky (mainly because it is so
 old!).
 
 You can download the most recent version from the FTP link in its
-webpage@footnote{@url{http://www.astro.caltech.edu/~tjp/pgplot/}}. You
-can unpack it with the @command{tar -vxzf} command. Let's assume the
-directory you have unpacked it to is @file{PGPLOT}, most probably it
-is: @file{/home/username/Downloads/pgplot/}.  open the
-@file{drivers.list} file:
+webpage@footnote{@url{http://www.astro.caltech.edu/~tjp/pgplot/}}. You can
+unpack it with the @command{tar xf} command. Let's assume the directory you
+have unpacked it to is @file{PGPLOT}, most probably it is:
+@file{/home/username/Downloads/pgplot/}.  open the @file{drivers.list}
+file:
 @example
 $ gedit drivers.list
 @end example
@@ -17914,12 +18130,12 @@ $ ./pgdemoXX
 @c Print the index and finish:
 @node Index,  , GNU Free Documentation License, Top
 @unnumbered Index: Macros, structures and functions
-All Gnuastro library macros start with @code{GAL_} and structures and
-functions start with @code{gal_} for @emph{G}NU @emph{A}stronomy
-@emph{L}ibrary. The next element in the name is the name of the header
-which declares or defines them, so to use the @code{gal_array_fset_const}
-function, you have to @code{#include <gnuastro/array.h}. See @ref{Gnuastro
-library} for more.
+All Gnuastro library's exported macros start with @code{GAL_}, and its
+exported structures and functions start with @code{gal_}. This abbreviation
+stands for @emph{G}NU @emph{A}stronomy @emph{L}ibrary. The next element in
+the name is the name of the header which declares or defines them, so to
+use the @code{gal_array_fset_const} function, you have to @code{#include
+<gnuastro/array.h>}. See @ref{Gnuastro library} for more.
 @printindex fn
 @unnumbered Index
 @printindex cp

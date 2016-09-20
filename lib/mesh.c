@@ -83,45 +83,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********************************************************************/
 /************       Finding the proper mesh ID      ******************/
 /*********************************************************************/
-/* There are two interal ways to store the IDs of the meshs:
-
-   1. By default, the mesh IDs are set based on their position within
-      the channels (so the meshs in each channel are contiguous). We
-      call this the channel-based mesh ID. The cgarray1 and cgarray2
-      store the mesh values based on this ID. All the basic mesh
-      properties, like their types and height and widths are stored
-      based on this ID.
-
-   2. If the user asks for a full image interpolation or smoothing,
-      then two new arrays are created called fgarray1 and
-      fgarray2. These arrays keep the mesh values as they appear on
-      the image, irrespective of which channel they belong to. We call
-      this the image-based ID. The image based ID is contiguous over
-      the image.
-
-  There is a third pointer called garray1 and garray2. These can point
-  to either the cgarrays or the fgarrays. Ideally, the user should be
-  completely ignorant to what garray is pointing to. The caller knows
-  the type of IDs they are using, but they don't know what to put into
-  garray. We call the ID that should be put into garray the
-  garray-based ID. It can be either of the two kinds above.
-
-  So we have made the following two functions:
-
-    gal_mesh_ch_based_id_from_gid:
-
-       This is useful for when you are going over the elements in
-       garray (and you are completley ignorant to which one of
-       cgarrays or fgarrays garray points to) and you need the channel
-       based IDs to get basic mesh information like the mesh type and
-       size.
-
-    gal_mesh_gid_from_ch_based_id:
-
-       This function is useful for the opposite case: you are going
-       over the meshs through the channel-based IDs, but you need to
-       know what ID to use for garray.
-*/
+/* This is useful for when you are going over the elements in garray (and
+you are completley ignorant to which one of cgarrays or fgarrays garray
+points to) and you need the channel based IDs to get basic mesh information
+like the mesh type and size. */
 size_t
 gal_mesh_ch_based_id_from_gid(struct gal_mesh_params *mp, size_t gid)
 {
@@ -273,9 +238,9 @@ gal_mesh_img_xy_to_mesh_id(struct gal_mesh_params *mp, size_t x, size_t y)
 /*********************************************************************/
 /* By default, the garray1 and garray2 arrays keep the meshes of each
    channel contiguously. So in practice, each channel is like a small
-   independent image. This will cause problems when we want to work on
-   the meshs irrespective of which channel they belong to. This
-   function allocates and fills in the fgarray1 and fgarray2 arrays.
+   independent image. This will cause problems when we want to work on the
+   meshs irrespective of which channel they belong to. This function
+   allocates and fills in the fgarray1 and fgarray2 arrays.
 
    The explanation above is for the case when reverse==0. If it is set
    equal to 1 (or any non-zero number), then
@@ -1806,8 +1771,7 @@ corrconvindexs(struct gal_mesh_params *mp, size_t **indexs,
    this correction.  Basically this function is very similar to
    gal_spatialconvolve_convolve (spatialconvolve.c), other than the fact
    that the indexs are not over the full image but only a select number of
-   pixels.
-*/
+   pixels. */
 void
 gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
 {

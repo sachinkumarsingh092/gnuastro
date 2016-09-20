@@ -76,25 +76,6 @@ struct gal_mesh_thread_params
 
 
 
-/*
-   garray:
-   -------
-
-   Or grid-array. It is used for operations on the mesh grid, where
-   one value is to be assigned for each mesh. It has one element for
-   each mesh in the image.  Each channel has its own part of this
-   larger array. The respective parts have gs0*gs1 elements. There are
-   `nch' parts (or channels). in total.
-
-   In short, the meshs in each channel have to be contiguous to
-   facilitate the neighbor analysis in interpolation and other channel
-   specific jobs.
-
-   The operations on the meshs might need more than one output, for
-   example the mean and the standard deviation. So we have two garrays
-   and two nearest arrays. So the garrays have to be used such that
-   they are both either valid on one mesh or not.
-*/
 struct gal_mesh_params
 {
   /* Image: */
