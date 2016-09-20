@@ -34,7 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/array.h>
 #include <gnuastro/statistics.h>
 
-
+#include "gnuastro/mode.h"
 
 
 
@@ -1381,4 +1381,215 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
   */
 
   free(slopes);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************/
+/*************          Mode calculation         ****************/
+/****************************************************************/
+void
+gal_statistics_mode_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
+                                 float min, float max, size_t numbins,
+                                 char *histsname, char *cfpsname,
+                                 float mirrorplotdist)
+{
+  FILE *fp;
+  size_t i, msize;
+  float *out, maxhist=-FLT_MAX, maxcfp, d;
+  int normhist=0, maxhistone=0, normcfp=0;
+  float *bins, *mirror, *actual, mf, onebinvalue=0.0f;
+
+
+  /* Find the index of the mirror and make the mirror array: */
+  mf=sorted[mirrorindex];
+  gal_array_float_copy(sorted, size, &actual);
+  makemirrored(sorted, mirrorindex, &mirror, &msize);
+
+
+  /* Set the best range if asked for, such that the mirror is on the
+     1/3 of the image scale. */
+  if(mirrorplotdist!=0.0f)
+    {
+      min=actual[gal_statistics_index_from_quantile(size, 0.001f)];
+      max=mf+mirrorplotdist*(mf-min);
+    }
+
+
+  /* set the mirror pixel to have the value of zero.*/
+  min-=mf;
+  max-=mf;
+  gal_array_fsum_const(actual, size, -1.0f*mf);
+  gal_array_fsum_const(mirror, msize, -1.0f*mf);
+
+
+  /* Allocate space for the 3 column array keeping the histograms:*/
+  errno=0;
+  out=malloc(numbins*3*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for out in "
+          "gal_mode_make_mirror_plots (mode.c)", numbins*3*sizeof *out);
+
+
+  /* Define the bin sides: */
+  gal_statistics_set_bins(actual, size, numbins, min,
+                          max, onebinvalue, 0, &bins);
+
+
+  /* Find the histogram of the actual data and put it in out. Note
+     that maxhistone=0, because here we want to use one value for both
+     histograms so they are comparable. */
+  gal_statistics_histogram(actual, size, bins, numbins,
+                           normhist, maxhistone);
+  for(i=0;i<numbins;++i)
+    if(bins[i*2+1]>maxhist) maxhist=bins[i*2+1];
+  for(i=0;i<numbins;++i)
+    { out[i*3]=bins[i*2]; out[i*3+1]=bins[i*2+1]/maxhist; bins[i*2+1]=0.0f;}
+  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
+  d=(out[3]-out[0])/2;
+
+
+  /* Find the histogram of the mirrired distribution and put it in
+     out: */
+  gal_statistics_histogram(mirror, msize, bins, numbins, normhist,
+                           maxhistone);
+  for(i=0;i<numbins;++i)
+    { out[i*3+2]=bins[i*2+1]/maxhist; bins[i*2+1]=0.0f;}
+  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
+
+
+  /* Print out the histogram: */
+  errno=0;
+  fp=fopen(histsname, "w");
+  if(fp==NULL)
+    error(EXIT_FAILURE, errno, "could not open file %s", histsname);
+  fprintf(fp, "# Histogram of actual and mirrored distributions.\n");
+  fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
+  fprintf(fp, "# Column 1: Input data.\n");
+  fprintf(fp, "# Column 2: Mirror distribution.\n");
+  for(i=0;i<numbins;++i)
+    fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3]+d,
+            out[i*3+1], out[i*3+2]);
+  fclose(fp);
+
+
+
+
+  /* Find the cumulative frequency plots of the two distributions: */
+  gal_statistics_cumulative_fp(actual, size, bins, numbins, normcfp);
+  for(i=0;i<numbins;++i)
+    { out[i*3+1]=bins[i*2+1]; bins[i*2+1]=0.0f; }
+  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
+  gal_statistics_cumulative_fp(mirror, msize, bins, numbins, normcfp);
+  for(i=0;i<numbins;++i)
+    { out[i*3+2]=bins[i*2+1]; bins[i*2+1]=0.0f;}
+  bins[i*2+1]=0.0f; /* bins[] actually has numbins+1 elements. */
+
+
+  /* Since the two cumultiave frequency plots have to be on scale, see
+     which one is larger and divided both CFPs by the size of the
+     larger one. Then print the CFPs. */
+  if(size>msize) maxcfp=size;
+  else maxcfp=msize;
+  errno=0;
+  fp=fopen(cfpsname, "w");
+  if(fp==NULL)
+    error(EXIT_FAILURE, errno, "could not open file %s", cfpsname);
+  fprintf(fp, "# Cumulative frequency plot (average index in bin) of\n"
+          "# Actual and mirrored distributions.\n");
+  fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
+  fprintf(fp, "# Column 1: Actual data.\n");
+  fprintf(fp, "# Column 2: Mirror distribution.\n");
+  for(i=0;i<numbins;++i)
+    fprintf(fp, "%-25.6f%-25.6f%-25.6f\n", out[i*3],
+            out[i*3+1]/maxcfp, out[i*3+2]/maxcfp);
+  fclose(fp);
+
+
+  /* Clean up. */
+  free(out);
+  free(bins);
+  free(mirror);
+  free(actual);
+}
+
+
+
+
+
+/* It happens that you have the symmetricity and you want the flux
+   value at that point, this function will do that job. In practice,
+   it just finds bf from the equation to calculate symmetricity in
+   modesymmetricity. */
+float
+gal_statistics_mode_value_from_sym(float *sorted, size_t size,
+                                   size_t modeindex, float sym)
+{
+  float mf=sorted[modeindex];
+  float af=
+    sorted[gal_statistics_index_from_quantile(2*modeindex+1,
+                           GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT)];
+  return sym*(mf-af)+mf;
+}
+
+
+
+
+
+/* Find the quantile of the mode of a sorted distribution. The return
+   value is either 0 (not accurate) or 1 (accurate). Accuracy is
+   defined based on the difference between the maximum and minimum
+   maxdiffs that were found during the golden section search.
+
+   A good mode will have:
+
+   modequant=(float)(modeindex)/(float)size;
+   modesym>GAL_MODE_SYM_GOOD && modequant>GAL_MODE_LOW_QUANT_GOOD
+*/
+void
+gal_statistics_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
+                                    size_t *modeindex, float *modesym)
+{
+  struct gal_statistics_mode_params mp;
+
+  /* Initialize the gal_mode_params structure: */
+  mp.size=size;
+  mp.sorted=sorted;
+  mp.tolerance=0.01;
+  mp.numcheck=size/2;
+  mp.errorstdm=errorstdm;
+  if(mp.numcheck>1000)
+    mp.interval=mp.numcheck/1000;
+  else mp.interval=1;
+  mp.lowi  = gal_statistics_index_from_quantile(size,
+                                 GAL_STATISTICS_MODE_LOW_QUANTILE);
+  mp.highi = gal_statistics_index_from_quantile(size,
+                                 GAL_STATISTICS_MODE_HIGH_QUANTILE);
+  mp.midi  = (((float)mp.highi
+               + MODE_GOLDEN_RATIO*(float)mp.lowi)
+              /(1+MODE_GOLDEN_RATIO));
+  mp.midd  = mirrormaxdiff(mp.sorted, mp.size, mp.midi, mp.numcheck,
+                           mp.interval, mp.errorstdm);
+
+  /* Do the golden section search and find the resulting
+     symmetricity. */
+  *modeindex=modegoldenselection(&mp);
+  modesymmetricity(sorted, size, *modeindex, errorstdm, modesym);
 }

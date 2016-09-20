@@ -107,8 +107,10 @@ avestdonthread(void *inparam)
 
       /* Do the desired operation on the mesh: */
       qsort(sorted, num, sizeof *oneforall, gal_qsort_float_increasing);
-      gal_mode_index_in_sorted(sorted, num, mirrordist, &modeindex, &modesym);
-      if( modesym>GAL_MODE_SYM_GOOD && (float)modeindex/(float)num>minmodeq )
+      gal_statistics_mode_index_in_sorted(sorted, num, mirrordist,
+                                          &modeindex, &modesym);
+      if( modesym>GAL_STATISTICS_MODE_SYM_GOOD
+          && (float)modeindex/(float)num>minmodeq )
         {
           /* If cofa was defined, then oneforall was not sorted. */
           if(cofa)

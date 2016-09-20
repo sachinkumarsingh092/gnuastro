@@ -99,9 +99,9 @@ qthreshonmesh(void *inparam)
         {
           qsort(oneforall, num, sizeof *oneforall,
                 gal_qsort_float_increasing);
-          gal_mode_index_in_sorted(oneforall, num, mirrordist,
-                                   &modeindex, &modesym);
-          if( modesym>GAL_MODE_SYM_GOOD
+          gal_statistics_mode_index_in_sorted(oneforall, num, mirrordist,
+                                              &modeindex, &modesym);
+          if( modesym>GAL_STATISTICS_MODE_SYM_GOOD
               && (float)modeindex/(float)num>minmodeq)
             {
               mp->garray1[ind] = oneforall[

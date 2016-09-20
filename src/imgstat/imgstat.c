@@ -30,7 +30,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include <gnuastro/mode.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/statistics.h>
 
@@ -60,27 +59,30 @@ reportsimplestats(struct imgstatparams *p)
          "Standard deviation", std, "Median", med);
 
   /* The mode: */
-  gal_mode_index_in_sorted(p->sorted, p->size, p->mirrordist, &modeindex,
-                           &modesym);
+  gal_statistics_mode_index_in_sorted(p->sorted, p->size, p->mirrordist,
+                                      &modeindex, &modesym);
   modequant=(float)(modeindex)/(float)(p->size);
 
   /* Report the values: */
   printf("   -- %-45s%.4f   %g\n", "Mode (quantile, value)",
          modequant, p->sorted[modeindex]);
-  symvalue=gal_mode_value_from_sym(p->sorted, p->size, modeindex, modesym);
+  symvalue=gal_statistics_mode_value_from_sym(p->sorted, p->size,
+                                              modeindex, modesym);
   printf("   -- %-45s%.4f   %g\n", "Mode symmetricity and its cutoff"
          " value", modesym, symvalue);
-  if(modesym<GAL_MODE_SYM_GOOD)
+  if(modesym<GAL_STATISTICS_MODE_SYM_GOOD)
     printf("      ## MODE SYMMETRICITY IS TOO LOW ##\n");
 
   /* Save the mode histogram and cumulative frequency plot. Note
      that if the histograms are to be built, then
      mhistname!=NULL. */
   if(p->mhistname)
-    gal_mode_make_mirror_plots(p->sorted, p->size, modeindex, p->histmin,
-                               p->histmax, p->histnumbins, p->mhistname,
-                               p->mcfpname, p->histrangeformirror ? 0.0f
-                               : p->mirrorplotdist);
+    gal_statistics_mode_mirror_plots(p->sorted, p->size, modeindex,
+                                     p->histmin, p->histmax,
+                                     p->histnumbins, p->mhistname,
+                                     p->mcfpname, (p->histrangeformirror
+                                                   ? 0.0f
+                                                   : p->mirrorplotdist) );
 }
 
 
@@ -266,13 +268,13 @@ imgstat(struct imgstatparams *p)
 
   /* Make the mirror distribution if asked for: */
   if(isnan(p->mirror)==0)
-    gal_mode_make_mirror_plots(p->sorted, p->size,
-                               gal_statistics_index_from_quantile(p->size,
-                                                                  p->mirror),
-                               p->histmin, p->histmax, p->histnumbins,
-                               p->mirrorhist, p->mirrorcfp,
-                               p->histrangeformirror ? 0.0f
-                               : p->mirrorplotdist);
+    gal_statistics_mode_mirror_plots(p->sorted, p->size,
+                                     gal_statistics_index_from_quantile(p->size,
+                                                                        p->mirror),
+                                     p->histmin, p->histmax, p->histnumbins,
+                                     p->mirrorhist, p->mirrorcfp,
+                                     (p->histrangeformirror ? 0.0f
+                                      : p->mirrorplotdist));
 
   /* Print out the Sigma clippings: */
   if(p->sigclip && p->cp.verb)

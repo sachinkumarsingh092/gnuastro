@@ -267,6 +267,48 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize);
 
 
 
+
+
+/****************************************************************/
+/*************               Mode                ****************/
+/****************************************************************/
+#define GAL_STATISTICS_MODE_LOW_QUANTILE  0.01f
+#define GAL_STATISTICS_MODE_HIGH_QUANTILE 0.51f
+
+#define GAL_STATISTICS_MODE_SYM_GOOD        0.2f
+#define GAL_STATISTICS_MODE_LOW_QUANT_GOOD  0.02f
+
+#define GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT 0.01f
+
+struct gal_statistics_mode_params
+{
+  float     *sorted;   /* Sorted array to be used.                */
+  size_t       size;   /* Number of elements in the sorted array. */
+  size_t       lowi;   /* Lower quantile of interval.             */
+  size_t       midi;   /* Middle quantile of interval.            */
+  size_t       midd;   /* Middle index of inteval.                */
+  size_t      highi;   /* Higher quantile of interval.            */
+  float   tolerance;   /* Tolerance level to terminate search.    */
+  size_t   numcheck;   /* Number of pixels after mode to check.   */
+  size_t   interval;   /* Interval to check pixels.               */
+  float   errorstdm;   /* Multiple of standard deviation.         */
+};
+
+void
+gal_statistics_mode_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
+                                 float min, float max, size_t numbins,
+                                 char *histsname, char *cfpsname,
+                                 float mirrorplotdist);
+
+float
+gal_statistics_mode_value_from_sym(float *sorted, size_t size, size_t modeindex,
+                                   float sym);
+
+void
+gal_statistics_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
+                                    size_t *modeindex, float *modesym);
+
+
 __END_C_DECLS    /* From C++ preparations */
 
 #endif           /* __GAL_STATISTICS_H__ */
