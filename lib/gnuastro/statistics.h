@@ -172,23 +172,6 @@ void
 gal_statistics_f_ave_std_l(float *in, size_t size, float *ave,
                            float *std, long *mask);
 
-void
-gal_statistics_f_ave_std_mask_byt_0_in_region(float *in, unsigned char *byt,
-                                              unsigned char *mask,
-                                              size_t startind, size_t s0,
-                                              size_t s1, size_t is1,
-                                              float *ave, float *std);
-
-void
-gal_statistics_f_ave_std_mask_byt_0_in_regions_clip(float *in,
-                                                    unsigned char *byt,
-                                                    unsigned char *mask,
-                                                    size_t startind,
-                                                    size_t s0, size_t s1,
-                                                    size_t is1,
-                                                    size_t numback, float *ave,
-                                                    float *std);
-
 
 
 
@@ -246,14 +229,15 @@ gal_statistics_index_from_quantile(size_t size, float quant);
 int
 gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
                                    float sigma_multiple, float accuracy,
-                                   float *outave, float *outmed, float *outstd,
-                                   int print);
+                                   float *outave, float *outmed,
+                                   float *outstd, int print);
 
 int
-gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
-                                      float sigma_multiple, size_t numtimes,
-                                      float *outave, float *outmed,
-                                      float *outstd, int print);
+gal_statistics_sigma_clip_certain_num(float *array, int o1_n0,
+                                      size_t num_elem, float sigma_multiple,
+                                      size_t numtimes, float *outave,
+                                      float *outmed, float *outstd,
+                                      int print);
 
 
 
@@ -295,18 +279,19 @@ struct gal_statistics_mode_params
 };
 
 void
-gal_statistics_mode_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
-                                 float min, float max, size_t numbins,
-                                 char *histsname, char *cfpsname,
-                                 float mirrorplotdist);
+gal_statistics_mode_mirror_plots(float *sorted, size_t size,
+                                 size_t mirrorindex, float min, float max,
+                                 size_t numbins, char *histsname,
+                                 char *cfpsname, float mirrorplotdist);
 
 float
-gal_statistics_mode_value_from_sym(float *sorted, size_t size, size_t modeindex,
-                                   float sym);
+gal_statistics_mode_value_from_sym(float *sorted, size_t size,
+                                   size_t modeindex, float sym);
 
 void
-gal_statistics_mode_index_in_sorted(float *sorted, size_t size, float errorstdm,
-                                    size_t *modeindex, float *modesym);
+gal_statistics_mode_index_in_sorted(float *sorted, size_t size,
+                                    float errorstdm, size_t *modeindex,
+                                    float *modesym);
 
 
 __END_C_DECLS    /* From C++ preparations */

@@ -45,9 +45,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************             Each thread             ****************/
 /*******************************************************************/
 void
-gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1, float *kernel,
-                            size_t ks0, size_t ks1, size_t nt,
-                            int edgecorrection, float *out, size_t *indexs,
+gal_spatialconvolve_pparams(float *input, size_t is0, size_t is1,
+                            float *kernel, size_t ks0, size_t ks1,
+                            size_t nt, int edgecorrection, float *out,
+                            size_t *indexs,
                             struct gal_spatialconvolve_params *scp)
 {
   /* Put the simple values in: */
@@ -162,7 +163,8 @@ gal_spatialconvolve_thread(void *inparam)
 void
 gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
                              float *kernel, size_t ks0, size_t ks1,
-                             size_t nt, int edgecorrection, float **out)
+                             size_t numthreads, int edgecorrection,
+                             float **out)
 {
   int err;
   pthread_t t;          /* All thread ids saved in this, not used. */
@@ -174,10 +176,10 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
 
   /* Array keeping thread parameters for each thread. */
   errno=0;
-  scp=malloc(nt*sizeof *scp);
+  scp=malloc(numthreads*sizeof *scp);
   if(scp==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes in gal_spatialconvolve_convolve "
-          "(spatialconvolve.c) for scp", nt*sizeof *scp);
+          "(spatialconvolve.c) for scp", numthreads*sizeof *scp);
 
 
   /* Allocate the output array: */
@@ -189,33 +191,34 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
 
 
   /* Distribute the image pixels into the threads: */
-  gal_threads_dist_in_threads(is0*is1, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(is0*is1, numthreads, &indexs, &thrdcols);
 
   /* Start the convolution. */
-  if(nt==1)
+  if(numthreads==1)
     {
-      gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0, ks1, nt,
-                                  edgecorrection, *out, indexs, &scp[0]);
+      gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0, ks1,
+                                  numthreads, edgecorrection, *out, indexs,
+                                  &scp[0]);
       gal_spatialconvolve_thread(&scp[0]);
     }
   else
     {
-      /* Initialize the attributes. Note that this running thread
-         (that spinns off the nt threads) is also a thread, so the
-         number the barrier should be one more than the number of
-         threads spinned off. */
-      if(is0*is1<nt) nb=is0*is1+1;
-      else nb=nt+1;
+      /* Initialize the attributes. Note that this running thread (that
+         spinns off the numthreads threads) is also a thread, so the number
+         the barrier should be one more than the number of threads spinned
+         off. */
+      if(is0*is1<numthreads) nb=is0*is1+1;
+      else nb=numthreads+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
 
       /* Spin off the threads: */
-      for(i=0;i<nt;++i)
+      for(i=0;i<numthreads;++i)
         if(indexs[i*thrdcols]!=GAL_THREADS_NON_THRD_INDEX)
           {
             scp[i].b=&b;
             gal_spatialconvolve_pparams(input, is0, is1, kernel, ks0,
-                                        ks1, nt, edgecorrection, *out,
-                                        &indexs[i*thrdcols], &scp[i]);
+                                        ks1, numthreads, edgecorrection,
+                                        *out, &indexs[i*thrdcols], &scp[i]);
             err=pthread_create(&t, &attr, gal_spatialconvolve_thread,
                                &scp[i]);
             if(err)

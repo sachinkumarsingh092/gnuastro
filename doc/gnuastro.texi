@@ -516,6 +516,8 @@ Gnuastro library
 * Mesh grid for an image::      Breaking an image into a grid.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
+* Spatial convolution::         Doing spatial convolution on an image
+* Statistical operations::      Functions for basic statistics.
 
 FITS files (@file{fits.h})
 
@@ -14767,6 +14769,8 @@ problems. It will stabilize with the removal of this notice. Check the
 * Mesh grid for an image::      Breaking an image into a grid.
 * Polygons::                    Working with the vertices of a polygon.
 * Qsort functions::             Helper functions for Qsort.
+* Spatial convolution::         Doing spatial convolution on an image
+* Statistical operations::      Functions for basic statistics.
 @end menu
 
 @node Overall package, Array manipulation, Gnuastro library, Gnuastro library
@@ -16217,7 +16221,7 @@ both polygons have to be sorted in an anti-clock-wise manner.
 
 
 
-@node Qsort functions,  , Polygons, Gnuastro library
+@node Qsort functions, Spatial convolution, Polygons, Gnuastro library
 @subsection Qsort functions (@file{qsort.h})
 
 The C programming language comes with the @code{qsort} (Quick sort)
@@ -16291,6 +16295,357 @@ main (void)
 @noindent
 The output will be: @code{2, 0, 1, 3}.
 @end deftypefun
+
+
+
+@node Spatial convolution, Statistical operations, Qsort functions, Gnuastro library
+@subsection Spatial convolution (@file{spatialconvolve.h})
+
+Convolution is a common operation in data processing and is fully explained
+in @ref{Spatial domain convolution} as part of @ref{Convolve}. We will
+therefore not explain the details, or its purpose here. The main high-level
+function here is @code{gal_spatialconvolve_convolve} which will do spatial
+convolution on multiple threads. The structure and functions introduced
+here are declared in @file{gnuastro/spatialconvolve.h}.
+
+In the first release of the Gnuastro libraries, this is the most high-level
+library since it was needed by multiple utilities. In future releases this
+library will most probably merge with the frequency domain convolution
+functions to allow programmers to choose from the type of convolution they
+want. The main
+
+@deffn Structure gal_spatialconvolve_params
+This structure keeps all the basic convolution information so subsequent
+calls can be simpler. Please see the header for the details of its
+elements, complemented with comments.
+@end deffn
+
+@deftypefun void gal_spatialconvolve_pparams (float @code{*input}, size_t @code{is0}, size_t @code{is1}, float @code{*kernel}, size_t @code{ks0}, size_t @code{ks1}, size_t @code{nt}, int @code{edgecorrection}, float @code{*out}, size_t @code{*indexs}, struct gal_spatialconvolve_params @code{*scp})
+Initialize @code{gal_spatialconvolve_params} with the given arguments.
+@end deftypefun
+
+@deftypefun {void *} gal_spatialconvolve_thread (void @code{*inparam})
+This function should be passed onto @code{pthread_create} to create a new
+thread for convolutionn on a region of the image.
+@end deftypefun
+
+@deftypefun void gal_spatialconvolve_convolve (float @code{*input}, size_t @code{is0}, size_t @code{is1}, float @code{*kernel}, size_t @code{ks0}, size_t @code{ks1}, size_t @code{numthreads}, int @code{edgecorrection}, float @code{**out})
+Convolve @code{input} (with @code{is0*is1} pixels) with the @code{kernel}
+(with @code{ks0*ks1}) on @code{numthreads} CPU threads. If you want
+edge-correction (see @ref{Edges in the spatial domain}), then set
+@code{edgecorrection} to @code{1}, otherwise set it to @code{0}. Memory
+will be allocated for the output and the convolved image will be stored in
+@code{out}.
+@end deftypefun
+
+
+@node Statistical operations,  , Spatial convolution, Gnuastro library
+@subsection Statistical operations (@file{statistics.h})
+
+This header includes a large variety of very basic statistical operators
+for various data types. Please note that we expect to greatly simplify the
+functions here for easier and more general usage in future releases. Since
+these functions are used in various parts of Gnuastro for multiple
+purposes, in this first library release (Gnuastro 0.2), there might be
+parallels, or non-homogenous arguments.
+
+@deffn Structure GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE
+The maximum number of times to try for @mymath{\sigma}-clipping (see
+@ref{Sigma clipping}).
+@end deffn
+
+@deftypefun void gal_statistics_long_non_blank_min (long @code{*in}, size_t @code{size}, long @code{*min}, long  @code{blank})
+Find the the minimum (non-blank) value in the @code{in} array (with
+@code{size} elements). The long type doesn't have a NaN value like the
+float types, see @ref{Blank pixels}. So as blank pixels, a value in the
+range of acceptable values (@code{blank} must be given so it is explictly
+ignored. You can use @code{GAL_FITS_LONG_BLANK} in @file{gnuastro/fits.h}.
+@end deftypefun
+
+@deftypefun void gal_statistics_long_non_blank_max (long @code{*in}, size_t @code{size}, long @code{*max}, long @code{blank})
+Similar to @code{gal_statistics_long_non_blank_min}, but find the maximum.
+@end deftypefun
+
+@deftypefun void gal_statistics_float_min (float @code{*in}, size_t @code{size}, float @code{*min})
+Find the minimum value in the single precision floating point @code{in}
+array (with @code{size} elements) and store the value in @code{min}. Note
+that for all floating point types, any blank (NaN) value will be
+automatically ignored in this function.
+@end deftypefun
+
+@deftypefun void gal_statistics_float_max (float @code{*in}, size_t @code{size}, float @code{*max})
+Similar to @code{gal_statistics_float_min} but find the maximum.
+@end deftypefun
+
+@deftypefun void gal_statistics_double_min (double @code{*in}, size_t @code{size}, double @code{*min})
+Similar to @code{gal_statistics_float_min} but for double precision
+floating point types.
+@end deftypefun
+
+@deftypefun double gal_statistics_double_min_return (double @code{*in}, size_t @code{size})
+Similar to @code{gal_statistics_double_min} but minmium will be returned,
+not put in a pointer.
+@end deftypefun
+
+@deftypefun void gal_statistics_double_max (double @code{*in}, size_t @code{size}, double @code{*max})
+Similar to @code{gal_statistics_double_min}, but find maximum value.
+@end deftypefun
+
+@deftypefun double gal_statistics_double_max_return (double @code{*in}, size_t @code{size})
+Similar to @code{gal_statistics_double_max_return}, but return maximum.
+@end deftypefun
+
+@deftypefun void gal_statistics_float_max_masked (float @code{*in}, unsigned char @code{*mask}, size_t @code{size}, float @code{*max})
+Only find maximum where @code{mask} has a value of @code{0}.
+@end deftypefun
+
+@deftypefun void gal_statistics_float_second_max (float @code{*in}, size_t @code{size}, float @code{*secondmax})
+Find the second largest value in the array.
+@end deftypefun
+
+@deftypefun void gal_statistics_float_second_min (float @code{*in}, size_t @code{size}, float @code{*secondmin})
+Find the second smallest value in the array.
+@end deftypefun
+
+@deftypefun void gal_statistics_f_min_max (float @code{*in}, size_t @code{size}, float @code{*min}, float @code{*max})
+Find the minimum and maximum simultaneously for single precision floating
+poitn types.
+@end deftypefun
+
+@deftypefun void gal_statistics_d_min_max (double @code{*in}, size_t @code{size}, double @code{*min}, double @code{*max})
+Similar to @code{gal_statistics_f_min_max}, but for double precision
+floating point types.
+@end deftypefun
+
+@deftypefun void gal_statistics_f_max_with_index (float @code{*in}, size_t @code{size}, float @code{*max}, size_t @code{*index})
+Find the maximum value in the array along with its index for a single
+precision floating point array.
+@end deftypefun
+
+@deftypefun void gal_statistics_d_max_with_index (double @code{*in}, size_t @code{size}, double @code{*max}, size_t @code{*index})
+Similar to @code{gal_statistics_f_max_with_index}, but for a double
+precision floating point array.
+@end deftypefun
+
+@deftypefun void gal_statistics_d_min_with_index (double @code{*in}, size_t @code{size}, double @code{*min}, size_t @code{*index})
+@end deftypefun
+
+@deftypefun void gal_statistics_f_min_with_index (float @code{*in}, size_t @code{size}, float @code{*min}, size_t @code{*index})
+@end deftypefun
+
+@deftypefun float gal_statistics_float_sum (float @code{*in}, size_t @code{size})
+Return the sum of the single precision floating point arrays. Note that NaN
+values will be ignored.
+@end deftypefun
+
+@deftypefun float gal_statistics_float_sum_num (float @code{*in}, size_t @code{*size})
+Return the sum of elements in the floating point array along with the
+number of used (non-Nan) elements.
+@end deftypefun
+
+@deftypefun float gal_statistics_float_sum_squared (float @code{*in}, size_t @code{size})
+Return the sum of squares of non-NaN elements in the array.
+@end deftypefun
+
+@deftypefun float gal_statistics_float_sum_mask (float @code{*in}, unsigned char @code{*mask}, size_t @code{size}, size_t @code{*nsize})
+Given a mask (@code{mask}), return the sum of elements with a @code{mask}
+value of @code{0} (masked pixels are considered to have a non-zero value)
+and put the number of used elements in @code{nsize}.
+@end deftypefun
+
+@deftypefun float gal_statistics_float_sum_mask_l (float @code{*in}, long @code{*mask}, size_t @code{size}, size_t @code{*nsize})
+Similar to @code{gal_statistics_float_sum_mask}, but when the mask is a
+long type.
+@end deftypefun
+
+@deftypefun float gal_statistics_float_sum_squared_mask (float @code{*in}, unsigned char @code{*mask}, size_t @code{size}, size_t @code{*nsize})
+Return the sum of the squared elements in @code{in} that are not masked
+(corresponding element in @code{mask} is @code{0}.
+@end deftypefun
+
+@deftypefun float gal_statistics_float_sum_squared_mask_l (float @code{*in}, long @code{*mask}, size_t @code{size}, size_t @code{*nsize})
+Similar to @code{gal_statistics_float_sum_squared_mask} but when the mask
+is a long type.
+@end deftypefun
+
+@deftypefun float gal_statistics_float_average (float @code{*in}, size_t @code{size})
+Return the average of the single precision floating point array @code{in}
+with @code{size} elements.
+@end deftypefun
+
+@deftypefun double gal_statistics_double_average (double @code{*in}, size_t @code{size})
+Return the average of the double precision floating point array @code{in}
+with @code{size} elements.
+@end deftypefun
+
+@deftypefun void gal_statistics_f_ave (float @code{*in}, size_t @code{size}, float @code{*ave}, unsigned char @code{*mask})
+Return the average of the single precision floating point array @code{in}
+with @code{size} elements, do not use those elements where @code{mask} is
+non-zero.
+@end deftypefun
+
+@deftypefun void gal_statistics_f_ave_l (float @code{*in}, size_t @code{size}, float @code{*ave}, long @code{*mask})
+Similar to @code{gal_statistics_f_ave}, but when the mask is of type long.
+@end deftypefun
+
+@deftypefun void gal_statistics_f_ave_std (float @code{*in}, size_t @code{size}, float @code{*ave}, float @code{*std}, unsigned char @code{*mask})
+Find the average and standard deviation of the @code{in} array for pixels
+where @code{mask} has value of @code{0}.
+@end deftypefun
+
+@deftypefun void gal_statistics_f_ave_std_l (float @code{*in}, size_t @code{size}, float @code{*ave}, float @code{*std}, long @code{*mask})
+Similar to @code{gal_statistics_f_ave_std}, but when the mask has a type of
+long.
+@end deftypefun
+
+@deftypefun float gal_statistics_median (float @code{*array}, size_t @code{insize})
+Return the median value of a single precision floating point array
+@code{array} (which has @code{insize} elements).
+@end deftypefun
+
+@deftypefun double gal_statistics_median_double_in_place (double @code{*array}, size_t @code{insize})
+Return the median value of a double precision floating point array
+@code{array} (which has @code{insize} elements). After this function, the
+elements of @code{array} are also sorted.
+@end deftypefun
+
+@deftypefun void gal_statistics_set_bins (float @code{*sorted}, size_t @code{size}, size_t @code{numbins}, float @code{min}, float @code{max}, float @code{onebinvalue}, float @code{quant}, float @code{**obins})
+Given the input @code{sorted} array with @code{size} elements, a given
+number of @code{numbins}, an optional @code{min} and @code{max}, find the
+the bin starting points and keep them in @code{obins}. @code{obins} has two
+columns, and this function only fills the first column. The second will be
+filled by the histogram or cumulative distribution plots.
+
+If @code{onebinvalue} is NaN, then the bins above will be reported.
+However, if it is not NaN, all the bins will be shifted such that the lower
+value of one of the bins will be placed on this value of this variable (if
+it is in the range of the data). When @code{min==max}, the actual data
+range will be used. When @code{quant} is not zero (let's say it has the
+value @mymath{q}, for quantile) and @code{min==max} then the automatic
+range finder will use the values at the quantiles @mymath{q} and
+@mymath{1-q}.
+@end deftypefun
+
+@deftypefun void gal_statistics_histogram (float @code{*sorted}, size_t @code{size}, float @code{*bins}, size_t @code{numbins}, int @code{normhist}, int @code{maxhistone})
+Build the histogram of the data (@code{sorted}, with @code{size} elements)
+in the @code{bins} array which also contains the starting bin values and
+has @code{numbins} rows. See @code{gal_statistics_set_bins}.
+
+When @code{normhist} is non-zero, the histogram will be normalized so the
+sum of all the bin values is unity. When @code{maxhistone} is non-zero, the
+histogram is scaled such that the bin with the largest value gets a value
+of 1.
+@end deftypefun
+
+@deftypefun void gal_statistics_cumulative_fp (float @code{*sorted}, size_t @code{size}, float @code{*bins}, size_t @code{numbins}, int @code{normcfp})
+Build the cumulative frequency plot of the data (@code{sorted}, with
+@code{size} elements) in the @code{bins} array which also contains the
+starting bin values and has @code{numbins} rows. See
+@code{gal_statistics_set_bins}. When @code{normcfp} is non-zero, the
+cumulative frequency plot will be normalized so the last bin has a value of
+1.
+@end deftypefun
+
+@deftypefun void gal_statistics_save_hist (float @code{*sorted}, size_t @code{size}, size_t @code{numbins}, char @code{*filename}, char @code{*comment})
+Create a histogram of the data in @code{sorted} (and @code{size} elements)
+with @code{numbins} and save it into an ASCII text file named
+@file{filename} with a possible set of comments (pointed to by
+@code{comment} before he table.
+@end deftypefun
+
+@deftypefun size_t gal_statistics_index_from_quantile (size_t @code{size}, float @code{quant})
+Given the number of elements (@code{size}), return the index corresponding
+to the quantile @code{quant}.
+@end deftypefun
+
+@deftypefun int gal_statistics_sigma_clip_converge (float @code{*array}, int @code{o1_n0}, size_t @code{num_elem}, float @code{sigma_multiple}, float @code{accuracy}, float @code{*outave}, float @code{*outmed}, float @code{*outstd}, int @code{print})
+Calculate the @mymath{\sigma}-clipped (by convergence) average, median and
+standard deviation on the array @code{array} with @code{num_elem} elements
+(see @ref{Sigma clipping}). If @code{o1_n0==1}, then it is assumed that the
+input array is sorted. @code{sigma_multiple} is the multiple of
+@mymath{\sigma} used in the @mymath{\sigma}-clipping. If the
+@mymath{\sigma}-clipping did converge, then this function will return
+@code{0}, otherwise, it will return @code{1}. If @code{print} is non-zero,
+then the average, median and standard deviation of each step are printed.
+@end deftypefun
+
+@deftypefun int gal_statistics_sigma_clip_certain_num (float @code{*array}, int @code{o1_n0}, size_t @code{num_elem}, float @code{sigma_multiple}, size_t @code{numtimes}, float @code{*outave}, float @code{*outmed}, float @code{*outstd}, int @code{print})
+Calculate the @mymath{\sigma}-clipped (with a fixed number of times)
+average, median and standard deviation on the array @code{array} with
+@code{num_elem} elements (see @ref{Sigma clipping}). If @code{o1_n0==1},
+then it is assumed that the input array is sorted. @code{sigma_multiple} is
+the multiple of @mymath{\sigma} and @code{numtimes} is the number of times
+@mymath{\sigma}-clipping is done. If the @mymath{\sigma}-clipping was
+normally done, then this function will return @code{0}, otherwise, it will
+return @code{1}. If @code{print} is non-zero, then the average, median and
+standard deviation of each step are printed.
+@end deftypefun
+
+@deftypefun void gal_statistics_remove_outliers_flat_cdf (float @code{*sorted}, size_t @code{*outsize})
+Remove the outliers in a distribution based on the slope of the cumulative
+frequency plot (when it becomes too flat). Before this function,
+@code{outssize} will point to the number of elements in @code{sorted},
+after this function, it will be the number of elements that are not
+outliers.
+@end deftypefun
+
+@deffn Macro GAL_STATISTICS_MODE_LOW_QUANTILE
+The lower quantile used in calculating the mode.
+@end deffn
+
+@deffn Macro GAL_STATISTICS_MODE_HIGH_QUANTILE
+The lower quantile used in calculating the mode.
+@end deffn
+
+@deffn Macro GAL_STATISTICS_MODE_SYM_GOOD
+The acceptable value for the mode calculation symmetry.
+@end deffn
+
+@deffn Macro GAL_STATISTICS_MODE_LOW_QUANT_GOOD
+The lowest quantile that an acceptable mode can have.
+@end deffn
+
+@deffn Macro GAL_STATISTICS_MODE_SYMMETRICITY_LOW_QUANT
+Lower quantile for calculating the symmetricity.
+@end deffn
+
+@deffn Structure gal_statistics_mode_params
+The input parameters for the mode functions, this is mainly an internal
+structure and will become hidden in future releases.
+@end deffn
+
+@deftypefun void gal_statistics_mode_mirror_plots (float @code{*sorted}, size_t @code{size}, size_t @code{mirrorindex}, float @code{min}, float @code{max}, size_t @code{numbins}, char @code{*histsname}, char @code{*cfpsname}, float @code{mirrorplotdist})
+Create a mirror plot based on the index given by @code{mirrorindex}. The
+mode calculation function procedure is defined in Appendix C of Akhlaghi
+and Ichikawa (2015, ApJS 220, 1. arXiv:1505.01664).
+@end deftypefun
+
+@deftypefun float gal_statistics_mode_value_from_sym (float @code{*sorted}, size_t @code{size}, size_t @code{modeindex}, float @code{sym})
+It happens that you have the symmetricity and you want the flux value at
+that point, this function will do that job. The mode calculation function
+procedure is defined in Appendix C of Akhlaghi and Ichikawa (2015, ApJS
+220, 1. arXiv:1505.01664).
+@end deftypefun
+
+@deftypefun void gal_statistics_mode_index_in_sorted (float @code{*sorted}, size_t @code{size}, float @code{errorstdm}, size_t @code{*modeindex}, float @code{*modesym})
+Find the quantile of the mode of a sorted distribution. The return value is
+either @code{0} (not accurate) or @code{1} (accurate). The mode calculation
+function procedure is defined in Appendix C of Akhlaghi and Ichikawa (2015,
+ApJS 220, 1. arXiv:1505.01664).
+@end deftypefun
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @node Developing, GNU Astronomy Utilities list, Libraries, Top
 @chapter Developing

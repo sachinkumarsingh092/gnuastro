@@ -716,45 +716,7 @@ gal_statistics_f_ave_std_l(float *in, size_t size, float *ave,
 
 
 
-/* Find the average and standard deviation of all pixels on a
-   region. A region in a larger image is defined by its starting pixel
-   (`start`), its height (s0) and width (s1). This function will find
-   the sum and sumsquared of all the nonmasked (==0 in mask[]) and non
-   marked (==0 in byt) pixels in the region. */
-void
-gal_statistics_f_ave_std_mask_byt_0_in_region(float *in, unsigned char *byt,
-                                              unsigned char *mask,
-                                              size_t startind, size_t s0,
-                                              size_t s1, size_t is1,
-                                              float *ave, float *std)
-{
-  float *i;
-  size_t r, size=0;
-  double sum=0, sumsq=0;
-  unsigned char *m, *b, *fb;
 
-  for(r=0;r<s0;++r)
-    {
-      i=in+startind;
-      m=mask+startind;
-      fb=(b=byt+startind)+s1;
-      do
-        {
-        if(*m++==0 && *b==0)     /* `m` will definitely be checked and */
-          {                      /* incremented, while `b` might not.  */
-            size++;
-            sum   += *i;
-            sumsq += *i * *i;
-          }
-        ++i;
-        }
-      while(++b<fb);
-      startind+=is1;
-    }
-
-  *ave = sum/size;
-  *std = sqrt( (sumsq-sum*sum/size)/size );
-}
 
 
 
