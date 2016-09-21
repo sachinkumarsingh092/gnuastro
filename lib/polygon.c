@@ -33,54 +33,90 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/polygon.h>
 
 
+
+
+
+/***************************************************************/
+/**************            MACROS             ******************/
+/***************************************************************/
+/* The cross product of two points from the center. */
+#define GAL_POLYGON_CROSS_PRODUCT(A, B) ( (A)[0]*(B)[1] - (B)[0]*(A)[1] )
+
+
+
+
+/* Find the cross product (2*area) between three points. Each point is
+   assumed to be a pointer that has atleast two values within it. */
+#define GAL_POLYGON_TRI_CROSS_PRODUCT(A, B, C)    \
+  ( ( (B)[0]-(A)[0] ) * ( (C)[1]-(A)[1] ) -       \
+    ( (C)[0]-(A)[0] ) * ( (B)[1]-(A)[1] ) )       \
+
+
+
+
+
+/* We have the line A-B. We want to see if C is to the left of this
+   line or to its right. This function will return 1 if it is to the
+   left. It uses the basic property of vector multiplication: If the
+   three points are anti-clockwise (the point is to the left), then
+   the vector multiplication is positive, if it is negative, then it
+   is clockwise (c is to the right).
+
+   Ofcourse it is very important that A be below or equal to B in both
+   the X and Y directions. The rounding error might give
+   -0.0000000000001 (I didn't count the number of zeros!!) instead of
+   zero for the area. Zero would indicate that they are on the same
+   line in this case this should give a true result.
+*/
+#define GAL_POLYGON_LEFT_OF_LINE(A, B, C)                               \
+  ( GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) > -GAL_POLYGON_ROUND_ERR ) /* >= 0 */
+
+
+
+
+/* See if the three points are collinear, similar to GAL_POLYGON_LEFT_OF_LINE
+   except that the result has to be exactly zero. */
+#define GAL_POLYGON_COLLINEAR_WITH_LINE(A, B, C)                        \
+  (GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) > -GAL_POLYGON_ROUND_ERR \
+   && GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) < GAL_POLYGON_ROUND_ERR) /* == 0 */
+
+
+
+
+/* Similar to GAL_POLYGON_LEFT_OF_LINE except that if they are on the same line,
+   this will return 0 (so that it is not on the left). Therefore the
+   name is "proper left". */
+#define GAL_POLYGON_PROP_LEFT_OF_LINE(A, B, C)                          \
+  ( GAL_POLYGON_TRI_CROSS_PRODUCT((A), (B), (C)) > GAL_POLYGON_ROUND_ERR ) /* > 0   */
+
+
+#define GAL_POLYGON_MIN_OF_TWO(A, B) ((A)<(B)+GAL_POLYGON_ROUND_ERR ? (A) : (B))
+#define GAL_POLYGON_MAX_OF_TWO(A, B) ((A)>(B)-GAL_POLYGON_ROUND_ERR ? (A) : (B))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /***************************************************************/
 /**************       Basic operations        ******************/
 /***************************************************************/
 
-/* We have a simple polygon (that can result from projection, so its
-   edges don't collide or it doesn't have holes) and we want to order
-   its corners in an anticlockwise fashion. This is necessary for
-   clipping it and finding its area later. Depending on the
-   transformation, the corners can have practically any order even if
-   before the transformation, they were ordered.
-
-   The input is an array containing the coordinates (two values) of
-   each corner. `n' is the number of corners. So the length of the
-   input should be 2*n. The output is an array with `n' elements
-   specifying the indexs in order. The reason the indexes are output
-   is that for all the pixels in the image, in a homographic
-   transform, the order is the same. So the input is unchanged, only
-   `n' values will be put in the ordinds array. Such that calling the
-   input coordinates in the following fashion will give an
-   anti-clockwise order for 4 points for example:
-
-   1st vertice: in[ordinds[0]*2], in[ordinds[0]*2+1]
-   2nd vertice: in[ordinds[1]*2], in[ordinds[1]*2+1]
-   3rd vertice: in[ordinds[2]*2], in[ordinds[2]*2+1]
-   4th vertice: in[ordinds[3]*2], in[ordinds[3]*2+1]
-
-   This is very similar to the Graham scan in finding the Convex
-   Hull. However, in projection we will never have a concave polygon
-   (the left condition below, where this algorithm will get to E
-   before D), we will always have a convex polygon (right case) or E
-   won't exist!
-
-                 Concave Polygon        Convex Polygon
-
-                  D --------C          D------------- C
-                    \      |         E /            |
-                     \E    |           \            |
-                     /     |            \           |
-                   A--------B             A ---------B
-
-   This is because we are always going to be calculating the area of
-   the overlap between a quadrilateral and the pixel grid or the
-   quadrilaterral its self.
-
-   GAL_POLYGON_MAX_CORNERS is defined so there will be no need to allocate
-   these temporary arrays seprately. Since we are dealing with pixels,
-   the polygon can't really have too many vertices.
-*/
+/* Sort the pixels in anti clock-wise order.*/
 void
 gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
 {

@@ -514,6 +514,8 @@ Gnuastro library
 * FITS files::                  Working with FITS datat.
 * Linked lists::                Various types of linked lists.
 * Mesh grid for an image::      Breaking an image into a grid.
+* Polygons::                    Working with the vertices of a polygon.
+* Qsort functions::             Helper functions for Qsort.
 
 FITS files (@file{fits.h})
 
@@ -14763,6 +14765,8 @@ problems. It will stabilize with the removal of this notice. Check the
 * FITS files::                  Working with FITS datat.
 * Linked lists::                Various types of linked lists.
 * Mesh grid for an image::      Breaking an image into a grid.
+* Polygons::                    Working with the vertices of a polygon.
+* Qsort functions::             Helper functions for Qsort.
 @end menu
 
 @node Overall package, Array manipulation, Gnuastro library, Gnuastro library
@@ -15887,7 +15891,7 @@ within the nodes will also be discarded.
 @end deftypefun
 
 
-@node Mesh grid for an image,  , Linked lists, Gnuastro library
+@node Mesh grid for an image, Polygons, Linked lists, Gnuastro library
 @subsection Mesh grid for an image (@file{mesh.h})
 
 The basic concepts behind the mesh and channel grids in Gnuastro were
@@ -16103,16 +16107,190 @@ changed by this function.
 
 
 
+@node Polygons, Qsort functions, Mesh grid for an image, Gnuastro library
+@subsection Polygons (@file{polygon.h})
+
+Polygons are commonly necessary in image processing. In Gnuastro, they are
+used in ImageCrop (see @ref{ImageCrop}) for cutting out non-rectangular
+regions of a image. ImageWarp (see @ref{ImageWarp}) uses them to warp the
+images into a new pixel grid. The polygon related Gnuastro library macros
+and functions are introduced here.
+
+In all the functions here the vertices (and points) are defined as an
+array. So a polygon with 4 vertices will be identified with an array of 8
+elements with the first two elements keeping the 2D coordinates of the
+first vertice and so on.
+
+@deffn Macro GAL_POLYGON_MAX_CORNERS
+The largest number of vertices a polygon can have in this library.
+@end deffn
+
+@deffn Macro GAL_POLYGON_ROUND_ERR
+@cindex Round-off error
+We have to consider floating point round-off errors when dealing with
+polygons. For example we will take @code{A} as the maximum of @code{A} and
+@code{B} when @code{A>B-GAL_POLYGON_ROUND_ERR}.
+@end deffn
+
+@deftypefun void gal_polygon_ordered_corners (double @code{*in}, size_t @code{n}, size_t @code{*ordinds})
+We have a simple polygon (that can result from projection, so its edges
+don't collide or it doesn't have holes) and we want to order its corners in
+an anticlockwise fashion. This is necessary for clipping it and finding its
+area later. The input vertices can have practically any order.
+
+The input (@code{in}) is an array containing the coordinates (two values)
+of each vertice. @code{n} is the number of corners. So @code{in} should
+have @code{2*n} elements. The output (@code{ordinds}) is an array with
+@code{n} elements specifying the indexs in order. This array must have been
+allocated before calling this function. The indexes are output for more
+generic usage, for example in a homographic transform (necessary in warping
+an image, see @ref{Warping basics}), the necessary order of vertices is the
+same for all the pixels. In other words, only the positions of the vertices
+change, not the way they need to be ordered. Therefore, this function would
+only be necessary once.
+
+As a summary, the input is unchanged, only @code{n} values will be put in
+the @code{ordinds} array. Such that calling the input coordinates in the
+following fashion will give an anti-clockwise order when there are 4
+vertices:
+
+@example
+1st vertice: in[ordinds[0]*2], in[ordinds[0]*2+1]
+2nd vertice: in[ordinds[1]*2], in[ordinds[1]*2+1]
+3rd vertice: in[ordinds[2]*2], in[ordinds[2]*2+1]
+4th vertice: in[ordinds[3]*2], in[ordinds[3]*2+1]
+@end example
+
+@cindex Convex Hull
+@noindent
+The implementation of this is very similar to the Graham scan in finding
+the Convex Hull. However, in projection we will never have a concave
+polygon (the left condition below, where this algorithm will get to E
+before D), we will always have a convex polygon (right case) or E won't
+exist!
+
+@example
+            Concave Polygon        Convex Polygon
+
+             D --------C          D------------- C
+              \        |        E /              |
+               \E      |          \              |
+               /       |           \             |
+              A--------B             A ----------B
+@end example
+
+This is because we are always going to be calculating the area of the
+overlap between a quadrilateral and the pixel grid or the quadrilaterral
+its self.
+
+The @code{GAL_POLYGON_MAX_CORNERS} macro is defined so there will be no
+need to allocate these temporary arrays seprately. Since we are dealing
+with pixels, the polygon can't really have too many vertices.
+
+@end deftypefun
+
+@deftypefun double gal_polygon_area (double @code{*v}, size_t @code{n})
+Find the area of a polygon with vertices defined in @code{v}. @code{v}
+points to an array of doubles which keep the positions of the vertices such
+that @code{v[0]} and @code{v[1]} are the positions of the first vertice to
+be considered.
+@end deftypefun
+
+@deftypefun int gal_polygon_pin (double @code{*v}, double @code{*p}, size_t @code{n})
+Return @code{1} if the point @code{p} is within the polygon whose vertices
+are defined by @code{v} and @code{0} otherwise. Note that the vertices of
+the polygon have to be sorted in an anti-clock-wise manner.
+@end deftypefun
+
+@deftypefun int gal_polygon_ppropin (double @code{*v}, double @code{*p}, size_t @code{n})
+Similar to @code{gal_polygon_pin}, except that if the point @code{p} is on
+one of the edges of a polygon, this will return @code{0}.
+@end deftypefun
+
+@deftypefun void gal_polygon_clip (double @code{*s}, size_t @code{n}, double @code{*c}, size_t @code{m}, double @code{*o}, size_t @code{*numcrn})
+Clip (find the overlap of) two polygons. This function uses the
+@url{https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm,
+Sutherland-Hodgman} polygon clipping algorithm. Note that the vertices of
+both polygons have to be sorted in an anti-clock-wise manner.
+@end deftypefun
 
 
 
 
+@node Qsort functions,  , Polygons, Gnuastro library
+@subsection Qsort functions (@file{qsort.h})
 
+The C programming language comes with the @code{qsort} (Quick sort)
+function. By allowing you to define the sorting based on the data,
+@code{qsort} is a generic function which allows you to sort any kind of
+data structure. The functions here are all meant to be passed onto
+@code{qsort} for sorting the respective types of data in the respective
+manner. Because of this all these functions have the same two argument
+types.
 
+@deffn {Global variable} {float *gal_qsort_index_arr}
+Pointer to a floating point array to use as a reference in
+@code{gal_qsort_index_float_decreasing}, see the explanation there for
+more.
+@end deffn
 
+@deftypefun int gal_qsort_int_decreasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort an integer array in
+decreasing order.
+@end deftypefun
 
+@deftypefun int gal_qsort_int_increasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort an integer array in
+increasing order.
+@end deftypefun
 
+@deftypefun int gal_qsort_float_decreasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort a single precision
+floating point array in decreasing order.
+@end deftypefun
 
+@deftypefun int gal_qsort_float_increasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort a single precision
+floating point array in increasing order.
+@end deftypefun
+
+@deftypefun int gal_qsort_double_decreasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort a double precision
+floating point array in decreasing order.
+@end deftypefun
+
+@deftypefun int gal_qsort_double_increasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort a double precision
+floating point array in increasing order.
+@end deftypefun
+
+@deftypefun int gal_qsort_index_float_decreasing (const void @code{*a}, const void @code{*b})
+When passed to @code{qsort}, this function will sort a @code{size_t} array
+based on decreasing values in the @code{gal_qsort_index_arr} single
+precision floating poiny array. The floating point array will not be
+changed, it is only read. For example, if we have the following source
+code:
+
+@example
+#include <stdio.h>
+#include <stdlib.h>           /* qsort is defined in stdlib.h. */
+#include <gnuastro/qsort.h>
+
+int
+main (void)
+@{
+  size_t s[4]=@{0, 1, 2, 3@};
+  float f[4]=@{1.3,0.2,1.8,0.1@};
+  gal_qsort_index_arr=f;
+  qsort(s, 4, sizeof(size_t), gal_qsort_index_float_decreasing);
+  printf("%lu, %lu, %lu, %lu\n", s[0], s[1], s[2], s[3]);
+  return EXIT_SUCCESS;
+@}
+@end example
+
+@noindent
+The output will be: @code{2, 0, 1, 3}.
+@end deftypefun
 
 @node Developing, GNU Astronomy Utilities list, Libraries, Top
 @chapter Developing
