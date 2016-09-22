@@ -508,7 +508,7 @@ Review of library fundamentals
 
 Gnuastro library
 
-* Overall package::             Macros for the whole package.
+* Installation information::    General information about the installation.
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
@@ -518,12 +518,18 @@ Gnuastro library
 * Qsort functions::             Helper functions for Qsort.
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
+* Multithreaded programming::   Facilitating use of pthreads.
 
 FITS files (@file{fits.h})
 
 * CFITSIO datatype::            Addressing different types of data
 * FITS macros and data structures::  Gnuastro FITS related macros and structures.
 * FITS functions::              Functions to work on FITS data.
+
+Multithreaded programming (@file{threads.h})
+
+* Implementation of pthread_barrier::  Some systems don't have pthread_barrier
+* Gnuastro's thread related functions::  Functions for managing threads.
 
 Developing
 
@@ -543,7 +549,6 @@ Program source
 
 * Mandatory source code files::  How the source files of each program are managed.
 * Coding conventions::          Basic conventions for coding structure.
-* Multithreaded programming::   Gnuastro's multithreaded programming style.
 * Documentation::               Documentation is an integral part of Gnuastro.
 * The TEMPLATE utility::        A template to create new utilities.
 
@@ -3442,7 +3447,7 @@ complete names also enable you to easily search for the programs.
 To facilitate typing the names in, we suggest using the shell
 auto-complete. With this facility you can find the executable you want
 very easily. It is very similar to file name completion in the
-shell. For example, simply by typing the letters bellow (where
+shell. For example, simply by typing the letters below (where
 @key{[TAB]} stands for the Tab key on your keyboard)
 
 @example
@@ -14761,7 +14766,7 @@ problems. It will stabilize with the removal of this notice. Check the
 @end cartouche
 
 @menu
-* Overall package::             Macros for the whole package.
+* Installation information::    General information about the installation.
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
@@ -14771,18 +14776,19 @@ problems. It will stabilize with the removal of this notice. Check the
 * Qsort functions::             Helper functions for Qsort.
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
+* Multithreaded programming::   Facilitating use of pthreads.
 @end menu
 
-@node Overall package, Array manipulation, Gnuastro library, Gnuastro library
-@subsection Overall package (@file{gnuastro.h})
+@node Installation information, Array manipulation, Gnuastro library, Gnuastro library
+@subsection Installation information (@file{gnuastro.h})
 
 The @file{gnuastro/gnuastro.h} header contains information about the full
-Gnuastro package. Gnuastro developers should note that this is the only
-header that is not available within Gnuastro, it is only available to a
-Gnuastro library user @emph{after} installation. Within Gnuastro,
-@file{config.h} (which is included in every Gnuastro @file{.c} file, see
-@ref{Coding conventions}) should have more than enough information about
-the overall Gnuastro installation.
+Gnuastro installation on your system. Gnuastro developers should note that
+this is the only header that is not available within Gnuastro, it is only
+available to a Gnuastro library user @emph{after} installation. Within
+Gnuastro, @file{config.h} (which is included in every Gnuastro @file{.c}
+file, see @ref{Coding conventions}) should have more than enough
+information about the overall Gnuastro installation.
 
 @deffn Macro GAL_GNUASTRO_VERSION
 This macro can be used as a string
@@ -14803,8 +14809,16 @@ char *gnuastro_version=GAL_GNUASTRO_VERSION;
 @end deffn
 
 
+@deffn Macro GAL_GNUASTRO_PTHREAD_BARRIER
+The POSIX threads standard define barriers as an optional
+requirement. Therefore, some operating systems choose to not include
+it. While installing Gnuastro, we check if your system has this construct
+and if so, we give this macro a value of @code{1}, otherwise it will have a
+value of @code{0}. see @ref{Implementation of pthread_barrier} for more.
+@end deffn
 
-@node Array manipulation, Bounding box, Overall package, Gnuastro library
+
+@node Array manipulation, Bounding box, Installation information, Gnuastro library
 @subsection Array manipulation (@file{array.h})
 
 When working on arrays, certain operations are commonly necessary. It is
@@ -16339,15 +16353,22 @@ will be allocated for the output and the convolved image will be stored in
 @end deftypefun
 
 
-@node Statistical operations,  , Spatial convolution, Gnuastro library
+
+
+
+@node Statistical operations, Multithreaded programming, Spatial convolution, Gnuastro library
 @subsection Statistical operations (@file{statistics.h})
 
 This header includes a large variety of very basic statistical operators
 for various data types. Please note that we expect to greatly simplify the
-functions here for easier and more general usage in future releases. Since
-these functions are used in various parts of Gnuastro for multiple
-purposes, in this first library release (Gnuastro 0.2), there might be
-parallels, or non-homogenous arguments.
+functions here for easier and more general usage in future
+releases. Ideally, they should be completely removed and the GNU Scientific
+Library's functions should be used. Since these functions are used in
+various parts of Gnuastro for multiple purposes, in this first library
+release (Gnuastro 0.2), there might be parallels, or non-homogenous
+arguments. Such situations arise here because of the history of Gnuastro:
+the libraries gew out of the utilities, so it will take a little while to
+correct.
 
 @deffn Structure GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE
 The maximum number of times to try for @mymath{\sigma}-clipping (see
@@ -16636,6 +16657,181 @@ ApJS 220, 1. arXiv:1505.01664).
 
 
 
+
+@node Multithreaded programming,  , Statistical operations, Gnuastro library
+@subsection Multithreaded programming (@file{threads.h})
+
+@cindex Multithreaded programming
+In modern times, newer CPU generations don't have significantly higher
+frequencies any more. However, CPUs are being manufactured with more cores,
+enabling more than one operation (thread) at each instant. This can be very
+useful to speed up many apsects of processing and in particular image
+processing.
+
+Most of the programs in Gnuastro utilize multi-threaded programming for the
+CPU intensive processing steps. This can potentially lead to a significant
+decrease in the running time of a program, see @ref{A note on threads}. In
+terms of reading the code, you don't need to know anything about
+multi-threaded programming. You can simply follow the case where only one
+thread is to be used. In these cases, threads are not used and can be
+completely ignored. To write multi-threaded programs, the thread helper
+functions of @ref{Gnuastro's thread related functions}, you can greatly
+simplify a the process of spinning-off threads.
+
+@cindex POSIX threads library
+@cindex Lawrence Livermore National Laboratory
+At the time K&R's book was written, using threads was not common, so C's
+threading capabilities aren't introduced there. We use POSIX threads for
+multi-threaded programming, defined in the @file{pthread.h} system wide
+header. There are various resources for learning to use POSIX threads, the
+excellent tutorial from
+@url{https://computing.llnl.gov/tutorials/pthreads/, LLNL} is a very good
+start.  The book `Advanced programming in the Unix
+environment'@footnote{Don't let the title scare you! The two chapters on
+Multi-threaded programming are very self-sufficient and don't need any more
+knowledge than K&R.}, by Richard Stevens and Stephen Rago, Addison-Wesley,
+2013 (Third edition) also has two chapters explaining the POSIX thread
+constructs which can be very helpful.
+
+@cindex OpenMP
+An alternative to POSIX threads was OpenMP, but POSIX threads are low
+level, allowing much more control, while being easier to understand, see
+@ref{Why C}. All the situations where threads are used are completely
+independent with minimal need of coordination between the threads.  Such
+problems are known as ``embarrassingly parallel'' problems. They are some
+of the simplest problems to solve with threads and also the ones that
+benefit most from threads, see the LLNL
+introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
+
+One very useful POSIX threads concept is
+@code{pthread_barrier}. Unfortunately, it is only an optional feature in
+the POSIX standard, so some operating systems don't include it. Therefore
+in @ref{Implementation of pthread_barrier}, we introduce our own
+implementation. You can ignore this section if your system has this
+construct. Following that, we describe the helper functions in this header
+that can greatly simplify the initializing of a multi-threaded program, see
+@ref{Gnuastro's thread related functions} for more.
+
+@menu
+* Implementation of pthread_barrier::  Some systems don't have pthread_barrier
+* Gnuastro's thread related functions::  Functions for managing threads.
+@end menu
+
+@node Implementation of pthread_barrier, Gnuastro's thread related functions, Multithreaded programming, Multithreaded programming
+@subsubsection Implementation of @code{pthread_barrier}
+@cindex POSIX threads
+@cindex pthread_barrier
+One optional feature of the POSIX Threads standard is the
+@code{pthread_barrier} concept. It is a very useful high-level construct
+that allows for independent threads to ``wait'' behind a ``barrier'' for
+the rest after they finish. Barriers can thus greatly simplify the code in
+a multi-threaded program, so they are heavily used in Gnuastro. However,
+since its an optional feature in the POSIX standard, some operating systems
+don't include it. So to make Gnuastro portable, we have written our own
+implementation of those @code{pthread_barrier} functions.
+
+At @command{./configure} time, Gnuastro will check if
+@code{pthread_barrier} constructs are available on your system or not. If
+@code{pthread_barrier} is not available, our internal implementation will
+be compiled into the Gnuastro library and the definitions and declarations
+below will be usable in your code with @code{#include
+<gnuastro/threads.h>}.
+
+@deffn Type pthread_barrierattr_t
+Type to specify the attributes of a POSIX threads barrier.
+@end deffn
+
+@deffn Type pthread_barrier_t
+The structure defining the POSIX threads barrier.
+@end deffn
+
+@deftypefun int pthread_barrier_init (pthread_barrier_t @code{*b}, pthread_barrierattr_t @code{*attr}, unsigned int @code{limit})
+Initialize the POSIX threads barrier @code{b}, with the attributes
+@code{attr} with a total number of @code{limit} threads that must remain
+behind it. This function is called before spinning off threads.
+@end deftypefun
+
+@deftypefun int pthread_barrier_wait (pthread_barrier_t @code{*b})
+This function is called within each thread, just before it is ready to
+return. Once a thread's function hits this, it will ``wait'' until all the
+other functions are also finished.
+@end deftypefun
+
+@deftypefun int pthread_barrier_destroy (pthread_barrier_t @code{*b})
+Destroy all the information in the barrier structure. This should be called
+by the function that spinned off the threads after all the threads have
+finished.
+
+@cartouche
+@noindent
+@strong{Destroy a barrier before re-using it:} It is very important to
+destroy the barrier before reusing it. This destroy function not only
+destroys the internal structures, it also waits (in 1 microsecond
+intervals, so you will not notice!) until all the threads don't need the
+barrier structure any more. Without destrying, if you immediately spin off
+new threads with the barrier, then the internal structure of the remaining
+threads will get mixed with the new ones and you will get extremely hard to
+debug errors.
+@end cartouche
+@end deftypefun
+
+@node Gnuastro's thread related functions,  , Implementation of pthread_barrier, Multithreaded programming
+@subsubsection Gnuastro's thread related functions
+
+These are some high-level functions in @file{gnuastro/threads.h} to
+facilitate programming in with POSIX threads. We have created a simple C
+program for testing these functions in @file{tests/lib/multithread.c}. This
+small program was compiled and run on your system when you ran
+@command{make check}. You can use it as a template to easily create small
+multithreaded programs and efficiently use your powerful CPU.
+
+@deffn Macro GAL_THREADS_NON_THRD_INDEX
+This value will be used in the output of @code{gal_threads_dist_in_threads}
+as a non-index. It plays the same role as a string's null character:
+`@code{\0}': as soon as the parser sees this value, it will stop
+continuing.
+@end deffn
+
+@deftypefun void gal_threads_attr_barrier_init (pthread_attr_t @code{*attr}, pthread_barrier_t @code{*b}, size_t @code{limit})
+@cindex Detached threads
+Initialize the general thread attribute @code{attr} and the barrier
+@code{b} with @code{limit} threads to wait behind the barrier. For maximum
+efficiency, the threads initialized with this function will be detached.
+Therefore no communication is possible between these threads and in
+particular @code{pthread_join} won't work on these threads. You have to use
+the barrier constructs to wait for all threads to finish.
+@end deftypefun
+
+@deftypefun void gal_threads_dist_in_threads (size_t @code{numactions}, size_t @code{numthreads}, size_t @code{**outthrds}, size_t @code{*outthrdcols})
+
+Identify the ``index''es (starting from 0) of the actions to be done on
+each thread in the @code{outthrds} array. @code{outthrds} is treated as a
+2D array with @code{numthreads} rows and @code{outthrdcols}. The indexs in
+each row, identify the actions that should be done by one thread. Please
+see the explanation below to understand the purpose of this operation.
+
+Let's assume you have @mymath{A} actions (where there is only one function
+and the input values differ for each action) and @mymath{T} threads
+available to the system with @mymath{A>T} (common values for these two
+would be @mymath{A>1000} and @mymath{T<10}). Spinning off a thread is not a
+cheap job and requires a significant number of CPU cycles. Therefore,
+creating @mymath{A} threads is not the best way to address such a
+problem. The most efficient way to manage the actions is such that only
+@mymath{T} threads are created, and each thread works on a list of actions
+(internally) in series (at most @mymath{A/T}). This way your system spends
+the minimum time necessary to create and destroy threads while getting all
+the actions done.
+
+This function does this management for you: each row in the @code{outthrds}
+array contains the indexs of actions which must be done by one
+thread. @code{outthrds} contains @code{outthrdcols} columns. In using
+@code{outthrds}, you don't have to know the number of columns: you can
+check to see if the index is @code{GAL_THREADS_NON_THRD_INDEX}. Exactly the
+same as you would when checking if have finished parsing a string. Please
+see the example program in @file{tests/lib/multithread.c} for a
+demonstration.
+
+@end deftypefun
 
 
 
@@ -17120,7 +17316,6 @@ read along.
 @menu
 * Mandatory source code files::  How the source files of each program are managed.
 * Coding conventions::          Basic conventions for coding structure.
-* Multithreaded programming::   Gnuastro's multithreaded programming style.
 * Documentation::               Documentation is an integral part of Gnuastro.
 * The TEMPLATE utility::        A template to create new utilities.
 @end menu
@@ -17284,7 +17479,7 @@ programs with @option{--cite}, see @ref{Operating modes}.
 * Multithreaded programming::   Gnuastro uses POSIX threads.
 @end menu
 
-@node Coding conventions, Multithreaded programming, Mandatory source code files, Program source
+@node Coding conventions, Documentation, Mandatory source code files, Program source
 @subsection Coding conventions
 
 @cindex GNU coding standards
@@ -17564,45 +17759,9 @@ which contains nice animated images of using Emacs.
 @end cartouche
 
 
-@node Multithreaded programming, Documentation, Coding conventions, Program source
-@subsection Multithreaded programming
-
-@cindex Multithreaded programming
-Most of the programs in Gnuastro utilize multi-threaded programming
-for the CPU intensive processing steps. This can potentially lead to a
-significant decrease in the running time of a program, see @ref{A note
-on threads}. In terms of reading the code, you don't need to know
-anything about multi-threaded programming. You can simply follow the
-case where only one thread is to be used. In these cases, threads are
-not used and can be completely ignored.
-
-@cindex POSIX threads library
-@cindex Lawrence Livermore National Laboratory
-At the time K&R's book was written, using threads was not common. We
-use POSIX threads for multi-threaded programming, defined in the
-@file{pthread.h} system wide header. There are various resources for
-learning to use POSIX threads, the excellent tutorial from Lawrence
-Livermore National
-Laboratory@footnote{@url{https://computing.llnl.gov/tutorials/pthreads/}}
-is a very good start.  The book `Advanced programming in the Unix
-environment'@footnote{Don't let the title scare you! The two chapters
-on Multi-threaded programming are very self sufficient and don't need
-any more knowledge than K&R.}, by Richard Stevens and Stephen Rago,
-Addison-Wesley, 2013 (Third edition) also has two chapters explaining
-the POSIX thread constructs which can be very helpful.
-
-@cindex OpenMP
-An alternative to POSIX threads was OpenMP, but POSIX threads are low
-level, allowing much more control, while being easier to understand,
-see @ref{Why C}. All the situations where threads are used are
-completely independent with minimal need of coordination between the
-threads.  Such problems are known as ``embarrassingly parallel''
-problems. They are some of the simplest problems to solve with threads
-and also the ones that benefit most from threads, see the LLNL
-introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
 
 
-@node Documentation, The TEMPLATE utility, Multithreaded programming, Program source
+@node Documentation, The TEMPLATE utility, Coding conventions, Program source
 @subsection Documentation
 
 Documentation (this book) is an integral part of Gnuastro.
@@ -18670,7 +18829,10 @@ exported structures and functions start with @code{gal_}. This abbreviation
 stands for @emph{G}NU @emph{A}stronomy @emph{L}ibrary. The next element in
 the name is the name of the header which declares or defines them, so to
 use the @code{gal_array_fset_const} function, you have to @code{#include
-<gnuastro/array.h>}. See @ref{Gnuastro library} for more.
+<gnuastro/array.h>}. See @ref{Gnuastro library} for more. The
+@code{pthread_barrier} constructs are our implementation and are only
+available on systems that don't have them, see @ref{Implementation of
+pthread_barrier}.
 @printindex fn
 @unnumbered Index
 @printindex cp

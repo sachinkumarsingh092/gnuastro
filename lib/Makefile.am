@@ -70,7 +70,9 @@ CLEANFILES = gnuastro.pc gnuastro/gnuastro.h
 gnuastro/gnuastro.h: Makefile gnuastro.h.in
 	rm -f $@ $@.tmp
 	$(MKDIR_P) gnuastro
-	$(SED) -e 's|@VERSION[@]|$(VERSION)|g' $(srcdir)/gnuastro.h.in >> $@.tmp
+	$(SED) -e 's|@VERSION[@]|$(VERSION)|g'                          \
+	       -e 's|@HAS_PTHREAD_BARRIER[@]|$(HAS_PTHREAD_BARRIER)|g'  \
+               $(srcdir)/gnuastro.h.in >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 

@@ -79,6 +79,20 @@ LT_INIT
 
 
 
+# This macro will let the libraries know that we are now in the Gnuastro
+# build system, not on the user's system. While we are building Gnuastro,
+# we have the important installation information in `config.h'. But in the
+# user's own programs, this information is defined in
+# `gnuastro/gnuastro.h'. With this macro, the installed headers can decide
+# if the latter should be included or not. Note that `gnuastro/gnuastro.h'
+# is only built at installation time and doesn't exist when building
+# Gnuastro. Therefore, this macro must not be defined in a user's program.
+AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
+
+
+
+
+
 # Generic flags for all subdirectories. Note that when order matters, we
 # want the user values to be set (and thus used) after the default
 # values. The "AM_" versions of these variables will be confined to the
@@ -134,8 +148,11 @@ AC_SEARCH_LIBS([wcspih], [wcs], [],
 AC_CHECK_LIB([wcs], [wcslib_version],
              [AC_DEFINE([HAVE_WCSLIBVERSION], [1], [Has wcslib_version])],
              [], [-lcfitsio -lm])
-AC_CHECK_LIB([pthread], [pthread_barrier_wait],
-             [AC_DEFINE([HAVE_PTHREAD_BARRIER], [1], [Has pthread_barrier])])
+AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
+             [has_pthread_barrier=0])
+AC_DEFINE_UNQUOTED([GAL_GNUASTRO_PTHREAD_BARRIER], [$has_pthread_barrier],
+                   [System has pthread_barrier])
+AC_SUBST(HAS_PTHREAD_BARRIER, [$has_pthread_barrier])
 
 
 

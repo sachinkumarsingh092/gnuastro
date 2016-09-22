@@ -42,7 +42,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Re-implementation of the example code given in:
 http://blog.albertarmea.com/post/47089939939/using-pthread-barrier-on-mac-os-x
  */
-#ifndef HAVE_PTHREAD_BARRIER
+#if GAL_GNUASTRO_PTHREAD_BARRIER == 0
 
 /* Initialize the barrier structure. A barrier is a high-level way to wait
    until several threads have finished. */
@@ -143,7 +143,8 @@ pthread_barrier_destroy(pthread_barrier_t *b)
   pthread_mutex_destroy(&b->mutex);
   return 0;
 }
-#endif
+
+#endif  /* GAL_GNUASTRO_PTHREAD_BARRIER == 0 */
 
 
 
@@ -167,35 +168,35 @@ pthread_barrier_destroy(pthread_barrier_t *b)
 /*******************************************************************/
 /************     Distribute job indexs in threads    **************/
 /*******************************************************************/
-/* We have `nindexs` jobs and we want their indexs to be divided
-   between `nthrds` CPU threads. This function will give each index to
+/* We have `numactions` jobs and we want their indexs to be divided
+   between `numthreads` CPU threads. This function will give each index to
    a thread such that the maximum difference between the number of
    images for each thread is 1. The results will be saved in a 2D
    array of `outthrdcols` columns and each row will finish with a
    (size_t) -1, which is larger than any possible index!. */
 void
-gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
-                            size_t *outthrdcols)
+gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
+                            size_t **outthrds, size_t *outthrdcols)
 {
   size_t *sp, *fp;
   size_t i, *thrds, thrdcols;
-  *outthrdcols = thrdcols = nindexs/nthrds+2;
+  *outthrdcols = thrdcols = numactions/numthreads+2;
 
   errno=0;
-  thrds=*outthrds=malloc(nthrds*thrdcols*sizeof *thrds);
+  thrds=*outthrds=malloc(numthreads*thrdcols*sizeof *thrds);
   if(thrds==NULL)
     error(EXIT_FAILURE, errno, "allocating thrds in prepindexsinthreads");
 
   /* Initialize all the elements to NONINDEX. */
-  fp=(sp=thrds)+nthrds*thrdcols;
+  fp=(sp=thrds)+numthreads*thrdcols;
   do *sp=GAL_THREADS_NON_THRD_INDEX; while(++sp<fp);
 
   /* Distribute the labels in the threads.  */
-  for(i=0;i<nindexs;++i)
-    thrds[ (i%nthrds)*thrdcols+(i/nthrds) ] = i;
+  for(i=0;i<numactions;++i)
+    thrds[ (i%numthreads)*thrdcols+(i/numthreads) ] = i;
 
   /* In case you want to see the result:
-  for(i=0;i<nthrds;++i)
+  for(i=0;i<numthreads;++i)
     {
       size_t j;
       printf("\n\n############################\n");
@@ -214,7 +215,7 @@ gal_threads_dist_in_threads(size_t nindexs, size_t nthrds, size_t **outthrds,
 
 void
 gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
-                              size_t numthreads)
+                              size_t limit)
 {
   int err;
 
@@ -222,6 +223,6 @@ gal_threads_attr_barrier_init(pthread_attr_t *attr, pthread_barrier_t *b,
   if(err) error(EXIT_FAILURE, 0, "thread attr not initialized");
   err=pthread_attr_setdetachstate(attr, PTHREAD_CREATE_DETACHED);
   if(err) error(EXIT_FAILURE, 0, "thread attr not detached");
-  err=pthread_barrier_init(b, NULL, numthreads);
+  err=pthread_barrier_init(b, NULL, limit);
   if(err) error(EXIT_FAILURE, 0, "thread barrier not initialized");
 }
