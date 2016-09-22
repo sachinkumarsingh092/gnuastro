@@ -53,7 +53,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 */
 void
 gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
-                          size_t number, size_t width)
+                          size_t number, size_t stride)
 {
   size_t i;
   double imgcrd[2], phi, theta;
@@ -61,19 +61,19 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
 
   for(i=0;i<number;++i)
     {
-      if(isnan(xy[i*width]) || isnan(xy[i*width+1]))
-        radec[i*width]=radec[i*width+1]=NAN;
+      if(isnan(xy[i*stride]) || isnan(xy[i*stride+1]))
+        radec[i*stride]=radec[i*stride+1]=NAN;
       else
         {
-          status=wcsp2s(wcs, ncoord, nelem, xy+i*width, imgcrd, &phi,
-                        &theta, radec+i*width, &stat);
+          status=wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
+                        &theta, radec+i*stride, &stat);
           if(status)
             error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
                   wcs_errmsg[status]);
 
           /* For a check:
-             printf("(%f, %f) --> (%f, %f)\n", xy[i*width], xy[i*width+1],
-                    radec[i*width], radec[i*width+1]);
+             printf("(%f, %f) --> (%f, %f)\n", xy[i*stride], xy[i*stride+1],
+                    radec[i*stride], radec[i*stride+1]);
           */
         }
     }
@@ -87,7 +87,7 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
    array of RA-Dec to X-Y. */
 void
 gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
-                          size_t number, size_t width)
+                          size_t number, size_t stride)
 {
   size_t i;
   double imgcrd[2], phi, theta;
@@ -95,19 +95,19 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
 
   for(i=0;i<number;++i)
     {
-      if(isnan(radec[i*width]) || isnan(radec[i*width+1]))
-        radec[i*width]=radec[i*width+1]=NAN;
+      if(isnan(radec[i*stride]) || isnan(radec[i*stride+1]))
+        radec[i*stride]=radec[i*stride+1]=NAN;
       else
         {
-          status=wcss2p(wcs, ncoord, nelem, radec+i*width, &phi, &theta,
-                        imgcrd, xy+i*width, &stat);
+          status=wcss2p(wcs, ncoord, nelem, radec+i*stride, &phi, &theta,
+                        imgcrd, xy+i*stride, &stat);
           if(status)
             error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
                   wcs_errmsg[status]);
 
           /* For a check:
-          printf("(%f, %f) --> (%f, %f)\n", radec[i*width], radec[i*width+1],
-                 xy[i*width], xy[i*width+1]);
+          printf("(%f, %f) --> (%f, %f)\n", radec[i*stride], radec[i*stride+1],
+                 xy[i*stride], xy[i*stride+1]);
           */
         }
     }

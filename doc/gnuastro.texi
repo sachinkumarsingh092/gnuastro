@@ -519,6 +519,8 @@ Gnuastro library
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
+* World Coordinate System::     Dealing with the world coordinate system.
+* Text table into a C array::   Read an ASCII text table into a C array.
 
 FITS files (@file{fits.h})
 
@@ -14777,6 +14779,8 @@ problems. It will stabilize with the removal of this notice. Check the
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
+* World Coordinate System::     Dealing with the world coordinate system.
+* Text table into a C array::   Read an ASCII text table into a C array.
 @end menu
 
 @node Installation information, Array manipulation, Gnuastro library, Gnuastro library
@@ -16246,8 +16250,8 @@ data structure. The functions here are all meant to be passed onto
 manner. Because of this all these functions have the same two argument
 types.
 
-@deffn {Global variable} {float *gal_qsort_index_arr}
-Pointer to a floating point array to use as a reference in
+@deffn {Global variable} {gal_qsort_index_arr}
+Pointer to a floating point array (@code{float *}) to use as a reference in
 @code{gal_qsort_index_float_decreasing}, see the explanation there for
 more.
 @end deffn
@@ -16658,7 +16662,7 @@ ApJS 220, 1. arXiv:1505.01664).
 
 
 
-@node Multithreaded programming,  , Statistical operations, Gnuastro library
+@node Multithreaded programming, World Coordinate System, Statistical operations, Gnuastro library
 @subsection Multithreaded programming (@file{threads.h})
 
 @cindex Multithreaded programming
@@ -16832,6 +16836,129 @@ see the example program in @file{tests/lib/multithread.c} for a
 demonstration.
 
 @end deftypefun
+
+
+
+
+@node Text table into a C array,  , World Coordinate System, Gnuastro library
+@subsection Text table into a C array (@file{txtarray.h})
+
+One of the most common formats to store and transfer normally sized data
+are ASCII files (which can be seen on a text editor). During your
+processing experiments (with the data, or what programmers call
+``developing'') you will also often want to see how your data is being
+processed and one of the easiest ways to check out out your arrays is to
+write them out as an ASCII file and check them. The functions here are
+mainly focused on tables that contain numbers.
+
+@deffn Macro GAL_TXTARRAY_LOG
+When an element of the input table cannot be read as a number, the column
+and row number of the element are stored along with the element into one
+row of a log file. This macro contains the name of the log-file.
+@end deffn
+
+
+@deftypefun void gal_txtarray_txt_to_array (char @code{*filename}, double @code{**array}, size_t @code{*s0}, size_t @code{*s1})
+Store the ASCII text table in @file{filename} into the C array @code{array}
+which has @code{s0} rows and @code{s1} columns. Any blank lines or lines
+starting with @code{#} (comments) will be ignored. The column delimiters
+(separating one column from the previous and next) are `@code{ }' (space),
+`@code{,}', `TAB'.
+@end deftypefun
+
+@deftypefun void gal_txtarray_printf_format (int @code{numcols}, char @code{**fmt}, int @code{*int_cols}, int @code{*accu_cols}, int @code{*space}, int @code{*prec}, char @code{forg})
+Return the @code{printf} formatting string (@code{fmt}) for @code{numcols}
+columns. Three types of output columns are assumed: integers, normal
+accuracy floating points and extra-precision floating points. Normally most
+columns will not need too much accuracy when printing (for example only 3
+decimals might be enough). However usually a very limited number of columns
+will need more precision (like RA and Dec). So to store space (each
+character is a byte) and also make the table more readable, we allow these
+two types of floating points.
+
+@code{int_cols} and @code{accu_cols} are arrays containing the column
+numbers (starting from zero) that contain integers and extra-accuracy
+columns. The ending of the column indexes in @code{int_cols} and
+@code{accu_cols} is defined by a negative number. @code{space} is a three
+element array which will keep the number of characters that must be used
+for the integer, normal-accuracy and extra-accuracy columns. @code{prec} is
+a two element array which contains the number of decimas to print for the
+normal and extra accuracy columns. @code{forg} (read as `f-or-g') is the
+@code{printf} type for the floating point numbers: either @code{f} (as in
+@code{%f}, which will only print decimals) and @code{g} (as in @code{%g},
+for either printing decimals or exponentials). See
+@code{gal_txtarray_array_to_txt} for more.
+@end deftypefun
+
+@deftypefun void gal_txtarray_array_to_txt (double @code{*array}, size_t @code{s0}, size_t @code{s1}, char @code{*comments}, int @code{*int_cols}, int @code{*accu_cols}, int @code{*space}, int @code{*prec}, char @code{forg}, const char @code{*filename})
+Print the C array @code{array} (with @code{s0} rows and @code{s1} columns)
+as an ASCII text table in @code{filename}. The string pointed to by
+@code{comments} will be printed at the top of the table. See the
+explanation of @code{gal_txtarray_printf_format} for the other arguments.
+@end deftypefun
+
+
+
+
+
+@node World Coordinate System, Text table into a C array, Multithreaded programming, Gnuastro library
+@subsection World Coordinate System (@file{wcs.h})
+
+The FITS world coordinate system is a mechanism to give physical values to
+the data points. In the case of images, it can be used to convert pixel
+images to celestial coordinates like the right ascension and
+declination. Gnuastro doesn't have any functions to actually do the
+transformations, the standard tool for doing this in astronomy is WCSLIB
+(see @ref{WCSLIB}). The functions introduced here are just wrappers around
+the lower-level functions provided by WCSLIB.
+
+@deftypefun void gal_wcs_xy_array_to_radec (struct wcsprm @code{*wcs}, double @code{*xy}, double @code{*radec}, size_t @code{number}, size_t @code{stride})
+Convert the image coordinates @code{xy} (a two column array with
+@code{number} rows) to world coordinates @code{wcs} (also a two column
+array, which has to have been allocated prior to this function) using the
+conversion parameters in @code{wcs}. @code{stride} is the number of columns
+in a larger array, see below.
+
+It might happen that you have one array which contains both the image and
+world coordinates along with many more columns. @code{stride} is the width
+of that larger array. If such an array doesn't exist and @code{xy} and
+@code{radec} are separately allocated arrays with
+@mymath{2\times}@code{number} elements, then just set the value of
+@code{stride} to @code{2}.
+@end deftypefun
+
+@deftypefun void gal_wcs_radec_array_to_xy (struct wcsprm @code{*wcs}, double @code{*radec}, double @code{*xy}, size_t @code{number}, size_t @code{stride})
+Similar to @code{gal_wcs_xy_array_to_radec} but convert the world
+coordinates in @code{radec} to image coordinates in @code{xy}.
+@end deftypefun
+
+@deftypefun double gal_wcs_angular_distance (double @code{r1}, double @code{d1}, double @code{r2}, double @code{d2})
+Return the angular distance between a point located at (@code{r1},
+@code{d1}) to (@code{r2}, @code{d2}). The distance (along a great circle)
+on a sphere between two points is calculated with the equation below. Since
+the pixel sides are usually very small, we won't be using the direct
+formula:
+
+@dispmath {\cos(d)=\sin(d_1)\sin(d_2)+\cos(d_1)\cos(d_2)\cos(r_1-r_2)}
+
+Here, we will be using the
+@url{https://en.wikipedia.org/wiki/Haversine_formula, Haversine formula}
+which better considering floating point errors:
+
+@dispmath{{\sin^2(d)\over 2}=\sin^2\left( {d_1-d_2\over 2} \right)+\cos(d_1)\cos(d_2)\sin^2\left( {r_1-r_2\over 2} \right)}
+@end deftypefun
+
+@deftypefun double gal_wcs_pixel_area_arcsec2 (struct wcsprm @code{*wcs})
+Given the WCS structure @code{wcs} calculate the pixel area in
+arcsec-squared.
+@end deftypefun
+
+
+
+
+
+
+
 
 
 

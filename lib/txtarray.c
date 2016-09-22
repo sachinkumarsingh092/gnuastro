@@ -35,6 +35,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Internal macros */
+#define GAL_TXTARRAY_FMT_LENGTH     50
+#define GAL_TXTARRAY_DELIMITERS    " ,\t\n"
 
 
 

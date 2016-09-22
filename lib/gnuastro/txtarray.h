@@ -48,8 +48,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Simple macros: */
-#define GAL_TXTARRAY_FMT_LENGTH     50
-#define GAL_TXTARRAY_DELIMITERS    " ,\t\n"
 #define GAL_TXTARRAY_LOG "txtarray.log"
 
 
