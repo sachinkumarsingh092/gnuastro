@@ -3,7 +3,7 @@
 # Generate a list of authors from the git repository, it will only
 # actually do anything if a .git file exists. Run like this:
 #
-#    ./genauthors top/src/dir
+#    ./genauthors top/bin/dir
 #
 # Note that some authors might have changed their email addresses over
 # the course of their contributions to Gnuastro. Fortunately Git has a
@@ -137,24 +137,24 @@ echo "" >> "$outauthors"
 
 
 # Go over each part of Gnuastro and add the authors:
-for util in src/* "lib/" "doc/"; do
+for util in bin/* "lib/" "doc/"; do
 
     # Set the name of the utility
-    if   [ $util = src/arithmetic  ]; then name=Arithmetic
-    elif [ $util = src/convertt    ]; then name=ConvertType
-    elif [ $util = src/convolve    ]; then name=Convolve
-    elif [ $util = src/cosmiccal   ]; then name=CosmicCalculator
-    elif [ $util = src/header      ]; then name=Header
-    elif [ $util = src/imgcrop     ]; then name=ImageCrop
-    elif [ $util = src/imgstat     ]; then name=ImageStatistics
-    elif [ $util = src/imgwarp     ]; then name=ImageWarp
-    elif [ $util = src/mkcatalog   ]; then name=MakeCatalog
-    elif [ $util = src/mknoise     ]; then name=MakeNoise
-    elif [ $util = src/mkprof      ]; then name=MakeProfile
-    elif [ $util = src/noisechisel ]; then name=NoiseChisel
-    elif [ $util = src/subtractsky ]; then name=SubtractSky
-    elif [ $util = src/table       ]; then name=Table
-    elif [ $util = src/TEMPLATE    ]; then name=TEMPLATE
+    if   [ $util = bin/arithmetic  ]; then name=Arithmetic
+    elif [ $util = bin/convertt    ]; then name=ConvertType
+    elif [ $util = bin/convolve    ]; then name=Convolve
+    elif [ $util = bin/cosmiccal   ]; then name=CosmicCalculator
+    elif [ $util = bin/header      ]; then name=Header
+    elif [ $util = bin/imgcrop     ]; then name=ImageCrop
+    elif [ $util = bin/imgstat     ]; then name=ImageStatistics
+    elif [ $util = bin/imgwarp     ]; then name=ImageWarp
+    elif [ $util = bin/mkcatalog   ]; then name=MakeCatalog
+    elif [ $util = bin/mknoise     ]; then name=MakeNoise
+    elif [ $util = bin/mkprof      ]; then name=MakeProfile
+    elif [ $util = bin/noisechisel ]; then name=NoiseChisel
+    elif [ $util = bin/subtractsky ]; then name=SubtractSky
+    elif [ $util = bin/table       ]; then name=Table
+    elif [ $util = bin/TEMPLATE    ]; then name=TEMPLATE
     elif [ $util = lib/            ]; then name=Libraries
     elif [ $util = doc/            ]; then name=Documentation
     else echo; echo; echo "genauthors.sh: $util not recognized!"; exit 1;

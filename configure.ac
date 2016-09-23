@@ -427,20 +427,20 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
 		 tests/Makefile
-                 src/table/Makefile
-                 src/mkprof/Makefile
-                 src/header/Makefile
-                 src/mknoise/Makefile
-		 src/imgcrop/Makefile
-           	 src/imgstat/Makefile
-       		 src/imgwarp/Makefile
-                 src/convertt/Makefile
-                 src/convolve/Makefile
-                 src/cosmiccal/Makefile
-           	 src/mkcatalog/Makefile
-                 src/arithmetic/Makefile
-                 src/noisechisel/Makefile
-                 src/subtractsky/Makefile
+                 bin/table/Makefile
+                 bin/mkprof/Makefile
+                 bin/header/Makefile
+                 bin/mknoise/Makefile
+		 bin/imgcrop/Makefile
+           	 bin/imgstat/Makefile
+       		 bin/imgwarp/Makefile
+                 bin/convertt/Makefile
+                 bin/convolve/Makefile
+                 bin/cosmiccal/Makefile
+           	 bin/mkcatalog/Makefile
+                 bin/arithmetic/Makefile
+                 bin/noisechisel/Makefile
+                 bin/subtractsky/Makefile
                  bootstrapped/lib/Makefile
                  bootstrapped/tests/Makefile
                  ])

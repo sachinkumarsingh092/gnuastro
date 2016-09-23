@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=imgwarp
 img=convolve_spatial.fits
-execname=../src/$prog/ast$prog
+execname=../bin/$prog/ast$prog
 
 
 

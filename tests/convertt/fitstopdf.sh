@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=convertt
 img=imgcrop_section.fits
-execname=../src/$prog/ast$prog
+execname=../bin/$prog/ast$prog
 
 
 

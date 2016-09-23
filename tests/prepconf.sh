@@ -81,7 +81,7 @@ do
 
     # Copy the configuration file from the utility source and add the
     # options added here.
-    cat $topsrc/src/$prog/ast$prog.conf addedoptions.txt          \
+    cat $topsrc/bin/$prog/ast$prog.conf addedoptions.txt          \
         > .gnuastro/ast$prog.conf
 
 done

@@ -30,7 +30,7 @@
 # basic checks to see if the executable is made or if the defaults
 # file exists (basicchecks.sh is in the source tree).
 prog=mkprof
-execname=../src/$prog/ast$prog
+execname=../bin/$prog/ast$prog
 cat=$topsrc/tests/$prog/mkprofcat2.txt
 
 

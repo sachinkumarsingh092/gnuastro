@@ -50,7 +50,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*********************************************************************/
 
 /* Macro to see if the label is indexable (belongs to an object or
-   not). See the explanation in src/noisechisel/label.h. */
+   not). See the explanation in bin/noisechisel/label.h. */
 #if GAL_FITS_LONG_BLANK<0
 #define ISINDEXABLEOBJLABEL (objects[i]>0)
 #define ISINDEXABLECLPLABEL (clumps[i]>0)

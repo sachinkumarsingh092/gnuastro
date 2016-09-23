@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=mkcatalog
 objimg=inputascanvas.fits
-execname=../src/$prog/ast$prog
+execname=../bin/$prog/ast$prog
 img=convolve_spatial_noised_labeled.fits
 
 

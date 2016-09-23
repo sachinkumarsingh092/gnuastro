@@ -14313,7 +14313,7 @@ library is that the compiler doesn't not know where a library's header is
 to look for the library's headers with the @option{-I} option. For a small
 software with one or two source files, this can be done manually (see
 @ref{Summary and example on libraries}). However, to enhance modularity,
-Gnuastro (and most other programs/libraries) contain many source files, so
+Gnuastro (and most other bin/libraries) contain many source files, so
 the compiler is invoked many times@footnote{Nearly every command you see
 being executed after running @command{make} is one call to the
 compiler.}. This makes manual addition or modification of this option
@@ -14361,7 +14361,7 @@ To enhance modularity, similar functions are defined in one source file
 compiled) into a computer-readable ``object'' file (ending with
 @file{.o}). Note that object files are also created when building
 utilities/programs, they aren't particular to libraries. Try opening
-Gnuastro's @file{lib/} and @file{src/progname/} directories after running
+Gnuastro's @file{lib/} and @file{bin/progname/} directories after running
 @command{make} to see these object files@footnote{Gnuastro uses GNU Libtool
 for portable library creation. Libtool will also make a @file{.lo} file for
 each @file{.c} file when building libraries (@file{.lo} files are
@@ -14376,12 +14376,12 @@ functions you can use the @command{nm} program which is part of GNU
 Binutils. For example from the top Gnuastro directory, run:
 
 @example
-$ nm src/arithmetic/arithmetic.o
+$ nm bin/arithmetic/arithmetic.o
 @end example
 
 @noindent
 This will print a list of all the functions (more generally, `symbols')
-that were called within @file{src/arithmetic/arithmetic.c} along with some
+that were called within @file{bin/arithmetic/arithmetic.c} along with some
 further information (for example a @code{T} in the second column shows that
 this function is actually defined here, @code{U} says that it is undefined
 here). Try opening the @file{.c} file to check some of these functions for
@@ -14393,7 +14393,7 @@ To recap, the @emph{compiler} created the separate object files mentioned
 above for each @file{.c} file. The @emph{linker} will then combine all the
 symbols of the various object files (and libraries) into one program or
 library. In the case of Arithmetic (a program) the contents of the object
-files in @file{src/arithmetic/} are copied (and re-ordered) into one final
+files in @file{bin/arithmetic/} are copied (and re-ordered) into one final
 executable file which we can run from the operating system. When the
 symbols (computer-readable function definitions in most cases) are copied
 into the output like this, we call the process @emph{static} linking. Let's
@@ -16088,7 +16088,7 @@ This function is commonly used within Gnuastro (mainly in NoiseChisel, see
 some real-world examples. You can do this with the following command in the
 top Gnuastro source directory (after unpacking the tarball):
 @example
-grep -r gal_mesh_operate_on_mesh ./src/*
+grep -r gal_mesh_operate_on_mesh ./bin/*
 @end example
 @end deftypefun
 
@@ -17449,7 +17449,7 @@ read along.
 Some programs might need lots of source files and if there is no fixed
 convention, navigating them can become very hard for a new inquirer
 into the code. The following source files exist in every program's
-source directory (which is located in @file{src/progname}). For small
+source directory (which is located in @file{bin/progname}). For small
 programs, these files are enough. Larger programs will need more
 files. In general for writing other source files, please choose
 filenames that are descriptive.
@@ -17962,9 +17962,9 @@ the book or had known of Gnuastro before you made your change).
 @node The TEMPLATE program,  , Documentation, Program source
 @subsection The TEMPLATE program
 
-In the @code{Version controlled source}, the @file{src/} directory contains
+In the @code{Version controlled source}, the @file{bin/} directory contains
 the source code for each program in a separate subdirectory. The
-@file{src/TEMPLATE} directory contains the bare-minimum files to create a
+@file{bin/TEMPLATE} directory contains the bare-minimum files to create a
 new program. It can be used to understand the conventions described in
 @ref{Program source}, or to easily create a new program.
 
@@ -17985,7 +17985,7 @@ Select a name for your new program (for example @file{myprog}).
 @item
 Copy the @file{TEMPLATE} directory to a directory with your program's name:
 @example
-$ cp -R src/TEMPLATE src/myprog
+$ cp -R bin/TEMPLATE bin/myprog
 @end example
 
 @item
@@ -17996,7 +17996,7 @@ those and correct the names of the copied program to your new program
 name. We follow alphabetic ordering here, so please place it
 correctly. There are multiple places where this has to be done, so be
 patient and go down to the bottom of the file. Ultimately add
-@file{src/myprog/Makefile} to @code{AC_CONFIG_FILES}, only here the
+@file{bin/myprog/Makefile} to @code{AC_CONFIG_FILES}, only here the
 ordering depends on the length of the name.
 
 @item
@@ -18005,7 +18005,7 @@ step, add your new program similar to all the other utilites.
 
 @item
 Change @code{TEMPLATE} to @code{myprog} in the file names and contents of
-the files in the @file{src/myprog/} directory.
+the files in the @file{bin/myprog/} directory.
 
 @item
 Run the following command to re-build the configuration and build system.

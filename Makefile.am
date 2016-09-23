@@ -48,49 +48,49 @@ BUILT_SOURCES = $(top_srcdir)/AUTHORS
 ## problem is internal to gnulib or still persists after all the
 ## Gnulib tests have been done.
 if COND_ARITHMETIC
-  MAYBE_ARITHMETIC = src/arithmetic
+  MAYBE_ARITHMETIC = bin/arithmetic
 endif
 if COND_CONVERTT
-  MAYBE_CONVERTT = src/convertt
+  MAYBE_CONVERTT = bin/convertt
 endif
 if COND_CONVOLVE
-  MAYBE_CONVOLVE = src/convolve
+  MAYBE_CONVOLVE = bin/convolve
 endif
 if COND_COSMICCAL
-  MAYBE_COSMICCAL = src/cosmiccal
+  MAYBE_COSMICCAL = bin/cosmiccal
 endif
 if COND_HEADER
-  MAYBE_HEADER = src/header
+  MAYBE_HEADER = bin/header
 endif
 if COND_IMGCROP
-  MAYBE_IMGCROP = src/imgcrop
+  MAYBE_IMGCROP = bin/imgcrop
 endif
 if COND_IMGSTAT
-  MAYBE_IMGSTAT = src/imgstat
+  MAYBE_IMGSTAT = bin/imgstat
 endif
 if COND_IMGWARP
-  MAYBE_IMGWARP = src/imgwarp
+  MAYBE_IMGWARP = bin/imgwarp
 endif
 if COND_MKCATALOG
-  MAYBE_MKCATALOG = src/mkcatalog
+  MAYBE_MKCATALOG = bin/mkcatalog
 endif
 if COND_MKNOISE
-  MAYBE_MKNOISE = src/mknoise
+  MAYBE_MKNOISE = bin/mknoise
 endif
 if COND_MKPROF
-  MAYBE_MKPROF = src/mkprof
+  MAYBE_MKPROF = bin/mkprof
 endif
 if COND_NOISECHISEL
-  MAYBE_NOISECHISEL = src/noisechisel
+  MAYBE_NOISECHISEL = bin/noisechisel
 endif
 if COND_SUBTRACTSKY
-  MAYBE_SUBTRACTSKY = src/subtractsky
+  MAYBE_SUBTRACTSKY = bin/subtractsky
 endif
 if COND_TABLE
-  MAYBE_TABLE = src/table
+  MAYBE_TABLE = bin/table
 endif
 #if COND_TEMPLATE
-#  MAYBE_TEMPLATE = src/TEMPLATE
+#  MAYBE_TEMPLATE = bin/TEMPLATE
 #endif
 if COND_GNULIBCHECK
   MAYBE_GNULIBCHECK = bootstrapped/tests

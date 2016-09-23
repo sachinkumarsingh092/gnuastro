@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=convertt
 img=blankch.jpg
-execname=../src/$prog/ast$prog
+execname=../bin/$prog/ast$prog
 
 
 

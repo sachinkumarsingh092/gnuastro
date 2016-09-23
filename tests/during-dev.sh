@@ -109,7 +109,7 @@ fi
 
 
 # Set the utility's executable file name
-utility="$builddir/src/$utilname/ast$utilname"
+utility="$builddir/bin/$utilname/ast$utilname"
 
 
 # If the utility is already built, then remove the executable so it is
@@ -140,7 +140,7 @@ if make -C "$builddir"; then
     # the last line in the configuration file doesn't actualy end with a
     # new line (in which case the appended string will be added to the end
     # of the last line).
-    cp "$srcdir/src/$utilname/ast$utilname.conf" .gnuastro/
+    cp "$srcdir/bin/$utilname/ast$utilname.conf" .gnuastro/
     echo ""               >> .gnuastro/ast$utilname.conf
     echo " onlydirconf 1" >> .gnuastro/ast$utilname.conf
 

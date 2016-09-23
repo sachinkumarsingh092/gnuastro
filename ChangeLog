@@ -31,7 +31,7 @@
 
 2015-10-18  Mosè Giordano  <mose@gnu.org>
 
-	* src/imgcrop/imgcrop.c (imgcrop): Do not use modefunction to set
+	* bin/imgcrop/imgcrop.c (imgcrop): Do not use modefunction to set
 	the function, run the functions manually instead.  Fixes
 	bug#45380.
 
@@ -42,15 +42,15 @@
 
 	* doc/forwebpage.sh: Use canonical path for bash shell.
 
-	* doc/plotsrc/conversions.sh: Ditto.
+	* doc/plotbin/conversions.sh: Ditto.
 
 2015-10-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/noisechisel.c (makeoutput): Added a "raw" term
+	* bin/noisechisel/noisechisel.c (makeoutput): Added a "raw" term
 	in the comments of the noise statistics so emphasize that this is
 	from the raw mesh grid and not the interpolated and smoothed grid.
 
-	* src/mkcatalog/mkcatalog.c (makeoutput): As explained below.
+	* bin/mkcatalog/mkcatalog.c (makeoutput): As explained below.
 
 	* doc/gnuastro.texi (Depth and limiting magnitude): Changed the
 	sigma which representes depth from the maximum to the median. The
@@ -61,7 +61,7 @@
 
 2015-10-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/imgcrop/ui.c (checkifset): Removed the hstartwcs and hendwcs
+	* bin/imgcrop/ui.c (checkifset): Removed the hstartwcs and hendwcs
 	options as mandatory arguments.
 
 	* lib/fitsarrayvv.c (readfitswcs): Now applies the hstartwcs and
@@ -77,7 +77,7 @@
 	explanations in for the depth and limiting magnitude to be more
 	realistic.
 
-	* src/mkcatalog/mkcatalog.c (makeoutput): Removed the limiting
+	* bin/mkcatalog/mkcatalog.c (makeoutput): Removed the limiting
 	magnitude calculation that was previously defined since it's
 	physical meaning is very unclear (it was mainly put as a
 	test). Also changed the surface brightness limit to a per-pixel
@@ -86,39 +86,39 @@
 
 2015-09-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/mkprof.c (mkprof): Only print a log file if the
+	* bin/mkprof/mkprof.c (mkprof): Only print a log file if the
 	`--nolog' option is not called.
 
-	* src/imgcrop/imgcrop.c (imgcrop): Only print a log file if the
+	* bin/imgcrop/imgcrop.c (imgcrop): Only print a log file if the
 	`--nolog' option is not called.
 
-	* src/mkprof/main.h (mkprofparams): Removed the p->dir0file1
+	* bin/mkprof/main.h (mkprofparams): Removed the p->dir0file1
 	parameter from the main structure.
 
 	* tests/mkprof/mosaic1.sh: Corrected the name of the first output
 	for the new individual name configuration (where the output file
 	name is suffixed to the row number).
 
-	* src/mkprof/ui.c (sanitycheck): Now everything based on the
+	* bin/mkprof/ui.c (sanitycheck): Now everything based on the
 	situation the basic information for the next steps is set here.
 
-	* src/mkprof/mkprof.c (saveindividual): Removed the name checking
+	* bin/mkprof/mkprof.c (saveindividual): Removed the name checking
 	here. All the necessary information is now set in ui.c.
 
 2015-09-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/imgwarp/imgwarp.c (imgwarponthread): Now calculates the
+	* bin/imgwarp/imgwarp.c (imgwarponthread): Now calculates the
 	fraction of area that is blank (NaN) and if that fraction is
 	larger than a user defined value, then the output pixel will be
 	blank. Before the blank fraction was ignored.
 
-	* src/imgstat/imgstat.c (reportsimplestats): Now uses the value to
+	* bin/imgstat/imgstat.c (reportsimplestats): Now uses the value to
 	the `--mirrordist' option instead of the fixed value of 1.5.
 	(reportsimplestats): Report the `NOT ACCURATE' warning in a
 	separate line to make reading by AWK easier, also removed comma
 	between outputs for the same reason.
 
-	* src/*/ui.c (readconfig): Now uses macros for common options.
+	* bin/*/ui.c (readconfig): Now uses macros for common options.
 	(printvalues): Similarly uses macros for common options.
 
 	* lib/statistics.c (sigmaclip_converge): Removed commas between
@@ -136,17 +136,17 @@
 
 2015-08-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/thresh.c (snthresh): The check on the number of
+	* bin/noisechisel/thresh.c (snthresh): The check on the number of
 	objects in finding the S/N threshold is now done before sorting
 	the S/N table.
 
-	* src/convolve/convolve.c (removepaddingcorrectroundoff): When the
+	* bin/convolve/convolve.c (removepaddingcorrectroundoff): When the
 	maximum radius is smaller than the input images, then the final
 	kernel will be shrinked to have no only-zero column or row.
 
 2015-08-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/convolve.c (frequencyconvolve): Divide the arrays
+	* bin/convolve/convolve.c (frequencyconvolve): Divide the arrays
 	when the kernel should be made, multiply them when convolution is
 	to be done.
 	(frequencyconvolve): When in deconvolution mode, it will go to
@@ -154,22 +154,22 @@
 
 2015-07-31  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/convolve.c (makepaddedcomplex): Added a check to
+	* bin/convolve/convolve.c (makepaddedcomplex): Added a check to
 	make the padded image size an even number in both dimensions by
 	adding one pixel if it is odd. This was done because FFT
 	operations work much faster on even sized arrays.
 
 2015-07-22  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/thresh.c (snthresh): Had mistakenly used
+	* bin/noisechisel/thresh.c (snthresh): Had mistakenly used
 	`p->detquant', for both detection and segmentation! This is now
 	corrected.
 
-	* src/mkcatalog/mkcatalog.c (secondpass): Sets the river flux to
+	* bin/mkcatalog/mkcatalog.c (secondpass): Sets the river flux to
 	Sky for when the grown clumps are used, see the explanation
 	bellow.
 
-	* src/mkcatalog/columns.c (brightnessmag): Corrected the
+	* bin/mkcatalog/columns.c (brightnessmag): Corrected the
 	definition of brightness. It was incorrectly dividing the total
 	brightness by the area when the user asked for brightness.
 	(sncol): Can now work accurately when grown clumps are also
@@ -179,10 +179,10 @@
 
 2015-07-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/segmentation.c (nextavailablelabel): Now
+	* bin/noisechisel/segmentation.c (nextavailablelabel): Now
 	accounts for the `--grownclumps' option.
 
-	* src/noisechisel/args.h (options): Corrected the type of output
+	* bin/noisechisel/args.h (options): Corrected the type of output
 	for `--gthresh'. I had forgot to include any for it!
 
 2015-07-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
@@ -191,13 +191,13 @@
 	pixelsteradians. Changed the units to arcsec^2 because it is more
 	useful.
 
-	* src/noisechisel/detection.c (detlabelsn): Now using a new sum of
+	* bin/noisechisel/detection.c (detlabelsn): Now using a new sum of
 	pixel values for flux weighted center of profile. The values are
 	stored as one column in the
 
 2015-07-07  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkcatalog/mkcatalog.c (firstpass): Use only positive (after
+	* bin/mkcatalog/mkcatalog.c (firstpass): Use only positive (after
 	subtracting sky) fluxes as weights for the flux weighted
 	center. Also calculate the geometric center (irrespective of
 	flux), so in case there are no positive pixels, the geometric
@@ -219,8 +219,8 @@
 	(makeoutput): The magnitude and S/N information is printed even if
 	the user has not asked for magnitudes and S/Ns.
 
-	* src/mkcatalog/columns.c (sncol): Renamed variables to fit the
-	clumpsntable function in src/noisechisel/clumps.c. Also, the river
+	* bin/mkcatalog/columns.c (sncol): Renamed variables to fit the
+	clumpsntable function in bin/noisechisel/clumps.c. Also, the river
 	flux is subtracted here, not before.
 
 	* lib/fitsarrayvv.c: The numblank variable did not actually store
@@ -231,7 +231,7 @@
 
 2015-07-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/noisechisel.c (noisechisel): After dilation, 4
+	* bin/noisechisel/noisechisel.c (noisechisel): After dilation, 4
 	connectivity was used to find the labels of the connected
 	components. However, when we are looking around the river pixels
 	in the segmentation process, we are looking in their 8-connected
@@ -241,7 +241,7 @@
 	clump that is touching it. It took me several frustrating hours to
 	find this very simple bug!
 
-	* src/noisechisel/clumps.c (oversegment): NaN (masked) pixels are
+	* bin/noisechisel/clumps.c (oversegment): NaN (masked) pixels are
 	no longer fed into this function. So the conditions to check for
 	them, especially in setting the top index are removed.
 	(getclumpinfo): Now uses a different number for the sum of flux
@@ -254,11 +254,11 @@
 
 2015-07-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkcatalog/columns.c (brightnessfluxmag): Previously
+	* bin/mkcatalog/columns.c (brightnessfluxmag): Previously
 	fluxmag. Now this function gives the brightness, flux and
 	magnitude depending on its input parameters.
 
-	* src/mkcatalog/args.h (options): Corrected all usage of "flux"
+	* bin/mkcatalog/args.h (options): Corrected all usage of "flux"
 	and "brightness".
 
 	* doc/gnuastro.texi: Corrected all usage of "flux" and
@@ -273,29 +273,29 @@
 
 2015-07-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkcatalog/mkcatalog.c (firstpass): Now accounts for blank
+	* bin/mkcatalog/mkcatalog.c (firstpass): Now accounts for blank
 	labeled pixels.
 	(setcpscorr): Now finds both the minimum and maximum of the STD,
 	maximum for finding the 5sigma magnitude.
 
-	* src/mkcatalog/main.h (CATUNITMAG): Changed unit for magnitudes.
+	* bin/mkcatalog/main.h (CATUNITMAG): Changed unit for magnitudes.
 
 2015-06-26  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/thresh.c (qthreshonmesh): Only sort and find the
+	* bin/noisechisel/thresh.c (qthreshonmesh): Only sort and find the
 	quantile if there actually is any pixels!
 	(applydetectionthresholdskysub): Now accounts for blank pixels.
 
-	* src/noisechisel/segmentation.c (segmentation): Now only works on
+	* bin/noisechisel/segmentation.c (segmentation): Now only works on
 	non-blank pixels.
 
-	* src/noisechisel/label.c (BF_concmp): Now accounts for blank
+	* bin/noisechisel/label.c (BF_concmp): Now accounts for blank
 	pixels in both unsigned char and long arrays.
 	(labareas): Accounts for blank pixels.
 	(removesmallarea_relabel): Accounts for blank pixels.
 	(labindexs): Accounts for blank pixels.
 
-	* src/noisechisel/detection.c (detlabelsn): Now also removes
+	* bin/noisechisel/detection.c (detlabelsn): Now also removes
 	detections in the sky area that cover a detection after filling
 	holes.
 	(removefalsedetections): Changed to applydetsn.
@@ -311,7 +311,7 @@
 	(dbytolaboverlap): Now accounts for masked unsigned char and long
 	arrays.
 
-	* src/noisechisel/clumps.c (clumpsntableonmesh): Previously
+	* bin/noisechisel/clumps.c (clumpsntableonmesh): Previously
 	clumpsnthreshonmesh. Moved all the countings and conditionals to
 	another function to find the S/N threshold from one distribution
 	over the image and not in the large meshs.
@@ -320,7 +320,7 @@
 	S/N threshold using a fixed function for both detection and
 	segmentation (snthresh in thresh.c).
 
-	* src/noisechisel/binary.c: The fixed value of 2 is changed
+	* bin/noisechisel/binary.c: The fixed value of 2 is changed
 	BINARYNAN which is defined in binary.h. This makes managing the
 	special values to use more easy, especially now that FITSBYTEBLANK
 	is also being used from fitsarrayvv.h.
@@ -330,7 +330,7 @@
 	accounts for blank pixels and completely ignores them.
 	(fillboundedholes): Similar to fh_makeinv.
 
-	* src/noisechisel/: The mesh based signal to noise calculations
+	* bin/noisechisel/: The mesh based signal to noise calculations
 	are now gone and one value is calculated for the full image. This
 	allows for much better accuracy. Most of the steps in NoiseChisel
 	were modified to take this into account. Also blank pixels are now
@@ -341,15 +341,15 @@
 
 2015-06-25  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/imgcrop/args.h (options): Changed inpolygon to
+	* bin/imgcrop/args.h (options): Changed inpolygon to
 	outpolygon. Everywhere that inpolygon appeared, it is now
 	outpolygon.
 
-	* src/imgcrop/wcsmode.c (wcscheckprepare): Check for both axises
+	* bin/imgcrop/wcsmode.c (wcscheckprepare): Check for both axises
 	having the same pixel scale now incorporates floating point
 	errors.
 
-	* src/imgcrop/crop.c (imgpolygonflpixel): Now gets the vertices
+	* bin/imgcrop/crop.c (imgpolygonflpixel): Now gets the vertices
 	and their number instead of the cropparams structure. This was
 	done to make it be more general and use it in both Image mode and
 	WCS mode.
@@ -362,7 +362,7 @@
 	function. This was done to be a generic check, for all kinds of
 	input, not just the mask.
 
-	* src/ : All the functions to make a copy of an input and print
+	* bin/ : All the functions to make a copy of an input and print
 	string values were changed. These were mainly in ui.c and args.h
 	for each program.  Until now, for each option, I would allocate,
 	check and set the proper values, but now, I wrote a small function
@@ -371,17 +371,17 @@
 
 2015-06-12  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/subtractsky/args.h (options): Removed the
+	* bin/subtractsky/args.h (options): Removed the
 	--checkinterpolation option.
 
-	* src/subtractsky/subtractsky.c (subtractsky): Similar to below.
+	* bin/subtractsky/subtractsky.c (subtractsky): Similar to below.
 
-	* src/noisechisel/thresh.c (findapplyqthreshold): Similar to
+	* bin/noisechisel/thresh.c (findapplyqthreshold): Similar to
 	below.
 
-	* src/noisechisel/sky.c (findavestdongrid): Similar to below.
+	* bin/noisechisel/sky.c (findavestdongrid): Similar to below.
 
-	* src/noisechisel/detection.c (findsnthreshongrid): Now using
+	* bin/noisechisel/detection.c (findsnthreshongrid): Now using
 	meshvaluefile from mesh.h instead of checking its self. Once the
 	--meshbasedcheck was added, doing all the checks in each function
 	was too long and repetative. So I just made this function to do
@@ -389,7 +389,7 @@
 
 2015-06-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/args.h (options): `minbfrac' and `minnumfalse'
+	* bin/noisechisel/args.h (options): `minbfrac' and `minnumfalse'
 	options moved under the `Input' category from the detections
 	category. This move was because these two options are used by both
 	the detection and segmentation steps and thus keeping them under
@@ -399,12 +399,12 @@
 
 2015-06-10  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mknoise/astmknoise.conf: Default background magnitude
+	* bin/mknoise/astmknoise.conf: Default background magnitude
 	changed to -10 and zeropoint to 0.0.
 
 2015-06-09  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/clumps.c: All functions now use the
+	* bin/noisechisel/clumps.c: All functions now use the
 	clumpsthreadparams structure as input instead of a list of
 	arguments.
 	(oversegment): ctp->topinds now keeps a good value when the clump
@@ -415,41 +415,41 @@
 
 2015-06-08  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/thresh.c (applydetectionthresholdskysub):
+	* bin/noisechisel/thresh.c (applydetectionthresholdskysub):
 	Similar to below, uses p->imgss for sky subtracted image.
 
-	* src/noisechisel/sky.c (subtractskyimg): Does not touch the input
+	* bin/noisechisel/sky.c (subtractskyimg): Does not touch the input
 	image, puts the sky subtracted value in p->imgss.
 
-	* src/noisechisel/noisechisel.c (noisechisel): Removed the
+	* bin/noisechisel/noisechisel.c (noisechisel): Removed the
 	allocation of the mesh structures to ui.c
 
-	* src/noisechisel/detection.c (detlabelsn): Uses p->imgss for the
+	* bin/noisechisel/detection.c (detlabelsn): Uses p->imgss for the
 	sky subtracted image.
 
 2015-06-07  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/oneprofile.c (randompoints): The random number
+	* bin/mkprof/oneprofile.c (randompoints): The random number
 	generator is now allocated (cloned) with the build thread and for
 	every profile the seed is independently set once. Before each
 	pixel would allocate and seed the random number generator
 	individually!
 
-	* src/mkprof/astmkprof.conf: Changed default zeropoint magnitude
+	* bin/mkprof/astmkprof.conf: Changed default zeropoint magnitude
 	to 0.00.
 
-	* src/mknoise/mknoise.c (mknoise): moved the random number
+	* bin/mknoise/mknoise.c (mknoise): moved the random number
 	generator to ui.c to make things faster and more easier to
 	understand.
 
-	* src/mknoise/args.h (argp_option): Removed the `backgroundinmean'
+	* bin/mknoise/args.h (argp_option): Removed the `backgroundinmean'
 	option, because I couldn't figure out what use it would have. If
 	it is needed we can add it again later!
 
-	* src/imgstat/args.h (argp_option): Changed `binonzero' option to
+	* bin/imgstat/args.h (argp_option): Changed `binonzero' option to
 	the more general `onebinvalue' option.
 
-	* src/convolve/convolve.c (removepaddingcorrectroundoff):
+	* bin/convolve/convolve.c (removepaddingcorrectroundoff):
 	Corrected bug: would return *d in both cases! It is corrected now.
 
 2015-06-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
@@ -461,12 +461,12 @@
 	mature enough but now it seems to be very nicely working. All the
 	functions that used this were also changed.
 
-	* src/noisechisel/astnoisechisel.conf: Changed default
+	* bin/noisechisel/astnoisechisel.conf: Changed default
 	lastmeshfrac to 0.51 from 0.6.
 
 2015-06-04  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/subtractsky/subtractsky.c (avestdonthread): No more need for
+	* bin/subtractsky/subtractsky.c (avestdonthread): No more need for
 	setnan. Since all the meshes are initialized to NaN anyway.
 
 	* lib/mesh.c: Previously, the garrays would be allocated and freed
@@ -482,7 +482,7 @@
 
 2015-06-03  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/noisechisel/astnoisechisel.conf: Changed default dthresh to
+	* bin/noisechisel/astnoisechisel.conf: Changed default dthresh to
 	-0.1.
 
 	* lib/statistics.c (histogram): Corrected the function. Until now,
@@ -514,7 +514,7 @@
 
 2015-05-27  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/args.h (options): Remove the `noedgecorrection'
+	* bin/convolve/args.h (options): Remove the `noedgecorrection'
 	option. Since it was useless. Also changed the old short option
 	for spatial (`s') to `p'. Because `s' is now needed for the mesh
 	size option. Also changed the old short option for khdu (`H') to
@@ -535,7 +535,7 @@
 
 2015-05-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/imgcrop/crop.c (sectionparser): When only a `*' was given
+	* bin/imgcrop/crop.c (sectionparser): When only a `*' was given
 	with no positive or negative following number, a segmentation
 	fault would happen. This bug is now fixed.
 
@@ -547,7 +547,7 @@
 	* lib/mode.c (modesymmetricity): Corrrected topi to account for
 	the case when 2*mi is larger than size.
 
-	* src/subtractsky/args.h: --numnearest and --kernelwidth moved to
+	* bin/subtractsky/args.h: --numnearest and --kernelwidth moved to
 	the `Mesh grid' part of the help output. --checksmoothing and
 	--checkinterpolation also moved to the `Mesh grid' part.
 
@@ -565,12 +565,12 @@
 
 2015-05-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/convolve.c (complextoreal): Changed the two states
+	* bin/convolve/convolve.c (complextoreal): Changed the two states
 	to three to add only conerting the real part of an array.
 
 2015-05-15  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/convolve.c (removepaddingcorrectroundoff): The
+	* bin/convolve/convolve.c (removepaddingcorrectroundoff): The
 	limit to check for floating point errors is now set by a macro and
 	changed to 1e-10 instead of 1e-17.
 
@@ -608,7 +608,7 @@
 
 2015-05-05  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/subtractsky/ui.c (preparearrays): Moved the function that
+	* bin/subtractsky/ui.c (preparearrays): Moved the function that
 	reads any input as float and incorporates the mask into it.
 
 	* include/fixedstringmacros.h (MOREHELPINFO): Removed long
@@ -625,32 +625,32 @@
 
 2015-04-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/oneprofile.c (makepixbypix): When in circumference
+	* bin/mkprof/oneprofile.c (makepixbypix): When in circumference
 	mode, if the truncation radius is reached, it is filled with the
 	profile value. This is done so very elongated profiles can at
 	least show a one pixel circumference.
 
-	* src/mkprof/main.h (MINCIRCUMWIDTH): Changed to 0.5f.
+	* bin/mkprof/main.h (MINCIRCUMWIDTH): Changed to 0.5f.
 
 	* lib/checkset.c (doublelvalue): Corrected bad value report when
 	options are called.
 
 2015-04-21  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/ui.c (freeandreport): Avoided double-free by only
+	* bin/mkprof/ui.c (freeandreport): Avoided double-free by only
 	freeing mergeedimgname when it is not equal to output.
 
-	* src/mkprof/oneprofile.c (makepixbypix): Will only do monte carlo
+	* bin/mkprof/oneprofile.c (makepixbypix): Will only do monte carlo
 	integration when the profile is not a constant value.
 	(setprofparams): Changed the function of point to `Fixed'.
 
-	* src/mkprof/mkprof.c (write): Changed to replace and read from an
+	* bin/mkprof/mkprof.c (write): Changed to replace and read from an
 	image and add profiles on that.
 
 	* lib/statistics.c: All float and double functions can now work
 	with NaN too.
 
-	* src/mkprof/ui.c (setparams): Catalog is always given, no need to
+	* bin/mkprof/ui.c (setparams): Catalog is always given, no need to
 	check.
 
 	* doc/gnuastro.texi: Removed all "Future updates ..." subsections
@@ -665,11 +665,11 @@
 
 2015-04-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/mkprof.c: Corrected condition when a thread would
+	* bin/mkprof/mkprof.c: Corrected condition when a thread would
 	finish `build' profiles but the last set of its profiles wouldn't
 	pass onto `write'.
 
-	* src/mknoise/: Changed background flux unit to magnitudes, not
+	* bin/mknoise/: Changed background flux unit to magnitudes, not
 	flux.
 
 	* THANKS: Added institutions which also helped.
@@ -691,7 +691,7 @@
 	(arraytofitsimg): Added numblank as a variable, to deal with blank
 	pixels.
 
-	* src/imgwarp/imgwarp.c (imgwarppreparations): Coorected the point
+	* bin/imgwarp/imgwarp.c (imgwarppreparations): Coorected the point
 	(1.0f, 1.0f) to be center of the first pixel, not zero.
 
 	* lib/fitsarrayvv.c (copyrightandend): Removed the Copyright
@@ -700,15 +700,15 @@
 
 2015-04-01  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/imgwarp/args.h: Temporarily removed the wrap option. Will be
+	* bin/imgwarp/args.h: Temporarily removed the wrap option. Will be
 	added later.
 
 2015-03-24  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/imgcrop/ui.c (preparearrays): Aborts if in WCS mode and the
+	* bin/imgcrop/ui.c (preparearrays): Aborts if in WCS mode and the
 	wcsprm structure could not be started.
 
-	* src/imgcrop/crop.c (firstcropmakearray): Only adds WCS headers
+	* bin/imgcrop/crop.c (firstcropmakearray): Only adds WCS headers
 	if the wcsprm structure is defined.
 
 	* lib/fitsarrayvv.c (readwcs): If any error occurs, a warning
@@ -719,14 +719,14 @@
 	* tests/convertt/: If libjpeg is not present, the tests will be
 	skipped.
 
-	* src/convertt/: libjpeg is now optional.
+	* bin/convertt/: libjpeg is now optional.
 
 	* configure.ac: Changed libjpeg to an optional requirement. So if
 	it is not available, Gnuastro can still be built.
 
 2015-03-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/ui.c (preparearrays): The flip parts was missing a
+	* bin/convolve/ui.c (preparearrays): The flip parts was missing a
 	-1.
 
 	* doc/gnuastro.texi: Changed all `gnuastro' occurrences in the
@@ -734,21 +734,21 @@
 
 2015-03-14  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/convolve.c: Added frequency domain convolution.
+	* bin/convolve/convolve.c: Added frequency domain convolution.
 
 2015-03-12  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/ui.c (setparams): Added condition for no output given.
+	* bin/mkprof/ui.c (setparams): Added condition for no output given.
 
-	* src/mkprof/astmkprof.conf: Removed output.
+	* bin/mkprof/astmkprof.conf: Removed output.
 
-	* src/imgcrop/ui.c (sanitycheck): Moved check of reentrancy in
+	* bin/imgcrop/ui.c (sanitycheck): Moved check of reentrancy in
 	cfitsio to the end so if numthreads is set to 1, there is no
 	problem.
 
-	* src/convertt/ui.c (sanitycheck): Added check if output is not set.
+	* bin/convertt/ui.c (sanitycheck): Added check if output is not set.
 
-	* src/convertt/astconvertt.conf: Removed output.
+	* bin/convertt/astconvertt.conf: Removed output.
 
 	* lib/spatialconvolve.c: First version complete.
 
@@ -757,7 +757,7 @@
 
 2015-03-11  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/: Adding new functions and steps.
+	* bin/convolve/: Adding new functions and steps.
 
 	* ./: Copyright transferred to the FSF. Copyright notices in all
 	files changed.
@@ -790,7 +790,7 @@
 
 2015-03-02  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convolve/: Work started on Convolve.
+	* bin/convolve/: Work started on Convolve.
 
 	* lib/fitsarrayvv.c: Changed array types from intXX_t to short,
 	long and LONGLONG. Unfortuantely this is how CFITSIO works.
@@ -827,7 +827,7 @@
 
 2015-02-17  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convertt/eps.c: Functions for binary image added.
+	* bin/convertt/eps.c: Functions for binary image added.
 
 	* lib/fitsarrayvv.c (nameisfits): Check length.
 
@@ -845,15 +845,15 @@
 
 2015-02-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convertt/args.h (argp_options): `convert` changed to
+	* bin/convertt/args.h (argp_options): `convert` changed to
 	`change`. Since the program name is also convert this could cause
 	confusions.
 
 	* doc/gnuastro.texi (Invoking astconvertt): Option explanations.
 
-	* src/convertt/jpeg.c (savejpeg): Corrected the pixel ordering.
+	* bin/convertt/jpeg.c (savejpeg): Corrected the pixel ordering.
 
-	* src/convertt/convertt.c (doubleto8bit): Find minimum and maximum
+	* bin/convertt/convertt.c (doubleto8bit): Find minimum and maximum
 	for all colors to set the scale, not just one color.
 
 	* lib/fitsarrayvv.c (arraytofitsimg): Will not remove comments.
@@ -869,9 +869,9 @@
 
 2015-02-11  Mohammad Akhlaghi  <mohammad@akbari>
 
-	* src/convertt/ui.c (preparearrays): Added.
+	* bin/convertt/ui.c (preparearrays): Added.
 
-	* src/convertt/jpeg.c (preparejpeg): Added.
+	* bin/convertt/jpeg.c (preparejpeg): Added.
 
 	* doc/gnuastro.texi (Files): Added chapter
 	(ConvertType): Added section
@@ -879,7 +879,7 @@
 
 2015-02-08  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/convertt: Started working on ConvertType.
+	* bin/convertt: Started working on ConvertType.
 
 	* lib/checkset.c (intsmallerequalto): Function Added.
 
@@ -908,19 +908,19 @@
 
 2015-01-19  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/ui.c: Steps for reading and checking WCS parameters
+	* bin/mkprof/ui.c: Steps for reading and checking WCS parameters
 	added.
 
-	* src/mkprof/oneprofile.c (ispsf): Added for a fixed place to
+	* bin/mkprof/oneprofile.c (ispsf): Added for a fixed place to
 	check if a profile is a PSF.
 	(makeoneprofile): Finding mkp->xc and mkp->yc moved here.
 
-	* src/mkprof/mkprof.c (preparewcs): Added.
+	* bin/mkprof/mkprof.c (preparewcs): Added.
 	(build): Removed finding mkp->xc and mkp->yc.
 
-	* src/mkprof/args.h (argp_option): Added WCS related options.
+	* bin/mkprof/args.h (argp_option): Added WCS related options.
 
-	* src/imgcrop/imgcrop.c (imgcrop): Number of barriers, corrected
+	* bin/imgcrop/imgcrop.c (imgcrop): Number of barriers, corrected
 	for when the number of jobs was less than the number of threads.
 
 	* lib/fitsarrayvv.c (addwcstoheader): Changed the WCS structure to
@@ -933,31 +933,31 @@
 
 2015-01-18  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/mkprof.c (writelog): Added.
+	* bin/mkprof/mkprof.c (writelog): Added.
 	(write): Completed.
 
-	* src/mkprof/args.h (arg_option): Added `--nomerged`.
+	* bin/mkprof/args.h (arg_option): Added `--nomerged`.
 
 	* lib/txtarrayvv.c (doformatting): Added option to use `f` in
 	printf or `g`.
 
 2015-01-16  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/mkprof.c (builtqueue_addempty): Added.
+	* bin/mkprof/mkprof.c (builtqueue_addempty): Added.
 	(saveindividual): Added.
 	(build): Is working until the profile is built.
 
-	* src/mkprof/ellipse.h: Function taken to `box.h`.
+	* bin/mkprof/ellipse.h: Function taken to `box.h`.
 
-	* src/mkprof/ellipse.c: Function taken to `box.c`.
+	* bin/mkprof/ellipse.c: Function taken to `box.c`.
 
-	* src/mkprof/args.h (argp_option): added `--numrandom`, changed
+	* bin/mkprof/args.h (argp_option): added `--numrandom`, changed
 	`mginimg` to `psfinimg`.
 
-	* src/imgcrop/main.h (imgcropparams): iwidth is now a 2 element
+	* bin/imgcrop/main.h (imgcropparams): iwidth is now a 2 element
 	array.
 
-	* src/imgcrop/crop.c: Removed `borderfromcenter` and
+	* bin/imgcrop/crop.c: Removed `borderfromcenter` and
 	`correctflpixels` to `lib/box.c`.
 
 	* lib/stats.h: Changed to `statistics.h`, all non-used functions
@@ -984,18 +984,18 @@
 
 2015-01-13  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mkprof/ui.c (preparearrays): Added.
+	* bin/mkprof/ui.c (preparearrays): Added.
 	(setparams): numthreads initialized to configured value.
 
-	* src/mkprof/mkprof.c (build): Added.
+	* bin/mkprof/mkprof.c (build): Added.
 	(write): Added.
 	(mkprof): Parallel jobs configured.
 
-	* src/mkprof/ellipse.c: Added
+	* bin/mkprof/ellipse.c: Added
 
-	* src/mkprof/args.h (argp_option): Changed psfprofsinimg to mginimg.
+	* bin/mkprof/args.h (argp_option): Changed psfprofsinimg to mginimg.
 
-	* src/imgcrop/imgcrop.c (imgcrop): Used attrbarrierinit.
+	* bin/imgcrop/imgcrop.c (imgcrop): Used attrbarrierinit.
 
 	* lib/astrthreads.c (attrbarrierinit): Added.
 
@@ -1003,7 +1003,7 @@
 
 2015-01-12  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/imgcrop/imgcrop.c: Using pthread_barrier_wait for
+	* bin/imgcrop/imgcrop.c: Using pthread_barrier_wait for
 	synchronizing threads instead of the mutexes and conditional
 	variables before.
 
@@ -1037,9 +1037,9 @@
 
 2015-01-06  Mohammad Akhlaghi  <akhlaghi@gnu.org>
 
-	* src/mockgals/args.h (parse_opt): Removed the check below.
+	* bin/mockgals/args.h (parse_opt): Removed the check below.
 
-	* src/imgcrop/args.h (parse_opt): Removed the check below.
+	* bin/imgcrop/args.h (parse_opt): Removed the check below.
 
 	* include/commonargs.h (cparse_opt): Added check for not calling
 	`--setdirconf` and `--setusrconf` together.
@@ -1049,8 +1049,8 @@
 	* doc/formath.texi: Added. A set of macros to write equations
 	nicely in TeX, HTML (using MathJax).
 
-	* src/imgcrop/astrimgcrop.def: renamed to
-	src/imgcrop/astrimgcrop.conf.
+	* bin/imgcrop/astrimgcrop.def: renamed to
+	bin/imgcrop/astrimgcrop.conf.
 
 	* lib/defaults.c: renamed to include/configfiles.c.
 
@@ -1086,10 +1086,10 @@
 	* tests/Makefile.am (AM_TESTS_ENVIRONMENT): Corrected test
 	environment.
 
-	* src/imgcrop/ui.c (setparams): Moved all similar actions to the
+	* bin/imgcrop/ui.c (setparams): Moved all similar actions to the
 	CHECKSETDEFAULTS macro in defaults.h
 
-	* src/imgcrop/Makefile.am (AM_CPPFLAGS): New (previously in
+	* bin/imgcrop/Makefile.am (AM_CPPFLAGS): New (previously in
 	AM_CFLAGS).
 
 	* lib/defaults.c (addhomedir): Now returns char *.

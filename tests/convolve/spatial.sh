@@ -25,7 +25,7 @@
 psf=psf.fits
 prog=convolve
 img=mkprofcat1.fits
-execname=../src/$prog/ast$prog
+execname=../bin/$prog/ast$prog
 
 
 

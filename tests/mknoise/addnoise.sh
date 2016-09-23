@@ -29,7 +29,7 @@
 # tested on a larger image.
 prog=mknoise
 img1=convolve_spatial.fits
-execname=../src/$prog/ast$prog
+execname=../bin/$prog/ast$prog
 img2=convolve_spatial_warped.fits
 
 
