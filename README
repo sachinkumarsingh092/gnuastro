@@ -1,31 +1,32 @@
-GNU Astronomy Utilities 0.1
-===========================
+GNU Astronomy Utilities
+=======================
 
-GNU Astronomy Utilities (Gnuastro) 0.1 is an official GNU package
-consisting of a set of utilities, or executable programs for astronomical
-data manipulation and analysis directly from the command-line and no
-mini-environment. It also contains a large collection of useful libraries
-which will be installable in near future (next releases). The full package
-comes with a comprehensive book or documentation in various formats (plain
-text, info, PDF and HTML):
+GNU Astronomy Utilities (Gnuastro) is an official GNU package of programs
+and a library functions for astronomical data manipulation and
+analysis. The programs run directory on the operating system's command-line
+enabling easy operation and usage with other installed programs in shell
+scripts or Makefiles. The libraries are also usable in C and C++
+programs. The full package comes with a comprehensive book or documentation
+in various formats (plain text, info, PDF and HTML):
 
     http://www.gnu.org/software/gnuastro/manual/
 
-The Gnuastro book explains all the mathematical, physical and where
-necessary even historical concepts for effective usage of all the utilities
-along with short examples for each utility and full descriptions of all
-their options (in the "Invoking ProgramName' sections). There is also a
-separate chapter devoted to tutorials for effectively use the utilities
-together and along with other system software (see Chapter 2).
+The Gnuastro book explains all the mathematical, physical and even
+historical concepts (when necessary) for effective usage of all the
+programs and libraries along with short examples for each program and full
+descriptions of all their options (in the "Invoking ProgramName'
+sections). There is also a separate chapter devoted to tutorials for
+effectively use Gnuastro combined with other software already available on
+your Unix-like operating system (see Chapter 2).
 
-If you have already installed gnuastro, you can read the full manual by
+If you have already installed gnuastro, you can read the full book by
 running the following command. You can go through the whole book by
 pressing the 'SPACE' key, and leave the Info environment at any time by
 pressing 'q' key, see "Getting help" below for more.
 
     info gnuastro
 
-The utilities released in version 0.1 are listed below followed by their
+The utilities released in version 0.2 are listed below followed by their
 executable name in parenthesis and a short description. This list is
 ordered alphabetically. In the book, they are grouped and ordered by
 context under categories/chapters.
@@ -80,7 +81,12 @@ context under categories/chapters.
   - SubtractSky (astsubtractsky): Find and subtract sky value by comparing
     the mode and median on a mesh grid.
 
-All the various utilities share the same basic command line user interface
+  - Table (asttable): convert FITS binary and ASCII tables into other such
+    tables, or print them on the command-line, or save them in a plain text
+    file.  Output columns can also be determined by number or regular
+    expression matching of column names.
+
+All the various programs share the same basic command-line user interface
 and a set of common options for the comfort of both the users and
 developers. Gnuastro is written to comply fully with the GNU coding
 standards so it integrates finely with the GNU/Linux operating system and
@@ -127,7 +133,7 @@ the standard GNU Build system as shown below. After the './configure'
 command, Gnuastro will print messages upon the successful completion of
 each step, giving further information and suggestions for the next steps.
 
-    tar -zxvf gnuastro-latest.tar.gz
+    tar xf gnuastro-latest.tar.gz
     cd gnuastro-0.1
     ./configure
     make

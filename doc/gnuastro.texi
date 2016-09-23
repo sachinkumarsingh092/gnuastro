@@ -190,7 +190,7 @@ sub-component to a title is present.
 * Introduction::                General introduction.
 * Tutorials::                   Tutorials or Cookbooks.
 * Installation::                Requirements and installation.
-* Common behavior::             Common behavior in all programs.
+* Common program behavior::     Common behavior in all programs.
 * Extensions and Tables::       Tools to operate on extensions and tables.
 * Image manipulation::          Tools for basic image manipulation.
 * Image analysis::              Analyze images.
@@ -198,7 +198,7 @@ sub-component to a title is present.
 * High-level calculations::     Physical calculations.
 * Libraries::                   Use Gnuastro in your own code.
 * Developing::                  The development environment.
-* Gnuastro programs list::  List and short summary of Gnuastro.
+* Gnuastro programs list::      List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
 * GNU Free Documentation License::  Full FDL text.
 * Index::                       Index of terms
@@ -275,11 +275,11 @@ Configuring
 * Executable names::            Changing executable names.
 * Configure and build in RAM::  For minimal use of HDD or SSD, and clean source.
 
-Common behavior
+Common program behavior
 
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
-* Threads in GNU Astronomy Utilities::  How threads are managed in Gnuastro.
+* Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
@@ -304,7 +304,7 @@ Configuration files
 * Current directory and User wide::  Local and user configuration files.
 * System wide::                 System wide configuration files.
 
-Threads in GNU Astronomy Utilities
+Threads in Gnuastro
 
 * A note on threads::           Caution and suggestion on using threads.
 * How to run simultaneous operations::  How to run things simultaneously.
@@ -519,8 +519,8 @@ Gnuastro library
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
-* World Coordinate System::     Dealing with the world coordinate system.
 * Text table into a C array::   Read an ASCII text table into a C array.
+* World Coordinate System::     Dealing with the world coordinate system.
 
 FITS files (@file{fits.h})
 
@@ -536,28 +536,21 @@ Multithreaded programming (@file{threads.h})
 Developing
 
 * Why C::                       Why Gnuastro is designed in C.
-* Design philosophy::           General ideas behind the package structure.
+* Program design philosophy::   General ideas behind the package structure.
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
 * Developing mailing lists::    Stay up to date with Gnuastro's development.
-* Internal libraries::          Internal static (not installed) libraries.
-* Header files::                Library and common headers.
+* Coding conventions::          Gnuastro coding conventions.
 * Program source::              Conventions for the code.
+* Documentation::               Documentation is an integral part of Gnuastro.
 * Building and debugging::      Build and possibly debug during development.
 * Test scripts::                Understanding the test scripts.
+* Developer's checklist::       Checklist to finalize your changes.
 * Contributing to Gnuastro::    Share your changes with all users.
-* After making changes::        Checklist to finalize your changes.
 
 Program source
 
-* Mandatory source code files::  How the source files of each program are managed.
-* Coding conventions::          Basic conventions for coding structure.
-* Documentation::               Documentation is an integral part of Gnuastro.
-* The TEMPLATE program::        A template to create new programs.
-
-Mandatory source code files
-
-* Coding conventions::          Conventions used for coding
-* Multithreaded programming::   Gnuastro uses POSIX threads.
+* Mandatory source code files::  Description of files common to all programs.
+* The TEMPLATE program::        Template for easy creation of a new program.
 
 Contributing to Gnuastro
 
@@ -583,32 +576,31 @@ SAO ds9
 
 @cindex GNU coding standards
 @cindex GNU Astronomy Utilities (Gnuastro)
-The GNU Astronomy Utilities (Gnuastro) is an official GNU package
-consisting of separate programs and libraries for the manipulation and
-analysis of astronomical data. See @ref{Gnuastro programs list} for
-the full list of programs and @ref{Gnuastro library}. All the various
-utilities share the same basic command-line user interface for the comfort
-of both the users and developers. Gnuastro is written to comply fully with
-the GNU coding standards so it integrates finely with the GNU/Linux
-operating system. This also enables astronomers to expect a fully familiar
-experience in the source code, building, installing and command-line user
-interaction that they have seen in all the other GNU software that they
-use. The official and always up to date version of book/manual is freely
-available under @ref{GNU Free Documentation License} in various formats
-(pdf, html, plain text, info, and as its Texinfo source) at
+GNU Astronomy Utilities (Gnuastro) is an official GNU package consisting of
+separate programs and libraries for the manipulation and analysis of
+astronomical data. All the programs share the same basic command-line user
+interface for the comfort of both the users and developers. Gnuastro is
+written to comply fully with the GNU coding standards so it integrates
+finely with the GNU/Linux operating system. This also enables astronomers
+to expect a fully familiar experience in the source code, building,
+installing and command-line user interaction that they have seen in all the
+other GNU software that they use. The official and always up to date
+version of this book (or manual) is freely available under @ref{GNU Free
+Documentation License} in various formats (pdf, html, plain text, info, and
+as its Texinfo source) at
 @url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
-specified most of the topics in @ref{Installation} and @ref{Common
+specified most of the topics in @ref{Installation} and @ref{Common program
 behavior} are common to all GNU software, for example installation,
 managing command-line options or getting help (also see @ref{New to
 GNU/Linux?}). So if you are new to this empowering environment, we
 encourage you to go through these chapters carefully. They can be a
 starting point from which you can continue to learn more from each
-program's own manual and fully enjoy this wonderful environment. Gnuastro
-also comes with a large set of libraries, so you can write your own
-programs using Gnuastro's building blocks, see @ref{Review of library
-fundamentals} for an introduction.
+program's own manual and fully benefit from and enjoy this wonderful
+environment. Gnuastro also comes with a large set of libraries, so you can
+write your own programs using Gnuastro's building blocks, see @ref{Review
+of library fundamentals} for an introduction.
 
 Finally it must be mentioned that in Gnuastro, no change to any
 program will be released before it has been fully documented in this
@@ -632,15 +624,15 @@ founding basis of the Gnuastro.
 @node Quick start, Science and its tools, Introduction, Introduction
 @section Quick start
 
-@cindex Uncompress source
-@cindex Source, uncompress
+@cindex Test
+@cindex Check
 @cindex Build
 @cindex Compile
-@cindex Check
-@cindex Test
-Gnuastro has a small set of mandatory dependencies and some optional ones
-for added functionality, see @ref{Dependencies}. The latest official
-release tarball is always available at
+@cindex Uncompress source
+@cindex Source, uncompress
+Gnuastro has three mandatory dependencies and two optional ones for added
+functionality, see @ref{Dependencies}. The latest official release tarball
+is always available as
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz,
 @file{gnuastro-latest.tar.gz}}@footnote{The same tar command (@command{$
 tar xf}) can also be used to unpack @file{tar.xz} and @file{tar.lz}
@@ -663,7 +655,7 @@ $ sudo make install
 
 See @ref{Known issues} if you confront any complications.  For each program
 there is an `Invoke ProgramName' sub-section in this book which explains
-how the programs should be run on the command-line. It can be read on the
+how the programs should be run on the command-line. You can read it on the
 command-line by running the command @command{$ info astprogname}, see
 @ref{Naming convention} and @ref{Getting help}. The `Invoke ProgramName'
 sub-section starts with a few examples of each program and goes on to
@@ -757,7 +749,7 @@ two major differences: the code and the explanations are segregated:
 the code is moved within the actual Gnuastro software source code and
 the underlying explanations are given here. In the source code every
 non-trivial step is heavily commented and correlated with this book,
-it follows the same logic of this book, and all the utilities follow a
+it follows the same logic of this book, and all the programs follow a
 similar internal data, function and file structure, see @ref{Program
 source}. Complementing the code, this book focuses on thoroughly
 explaining the concepts behind those codes (history, mathematics,
@@ -786,7 +778,7 @@ together, the developers of Gnuastro aim to impose the minimum
 requirements on you (in computer science, engineering and even the
 mathematics behind the tools) to understand and modify any step of
 Gnuastro if you feel the need to do so, see @ref{Why C} and
-@ref{Design philosophy}.
+@ref{Program design philosophy}.
 
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
@@ -927,20 +919,21 @@ License}.
 
 @cindex Names, programs
 @cindex Program names
-GNU Astronomy Utilities is a package of independent programs and a
-collection of libraries. Each program has an official name which consists
-of one or two words, describing what they do. The latter are printed with
-no space, for example NoiseChisel or ImageCrop. On the command-line, you
-can run them with their executable names which start with an @file{ast} and
-might be an abbreviation of the official name, for example
-@file{astnoisechisel} or @file{astimgcrop}, see @ref{Executable names}.
+Gnuastro is a package of independent programs and a collection of
+libraries, here we are mainly concerned with the programs. Each program has
+an official name which consists of one or two words, describing what they
+do. The latter are printed with no space, for example NoiseChisel or
+ImageCrop. On the command-line, you can run them with their executable
+names which start with an @file{ast} and might be an abbreviation of the
+official name, for example @file{astnoisechisel} or @file{astimgcrop}, see
+@ref{Executable names}.
 
 @pindex ProgramName
 @pindex @file{astprogname}
 We will use ``ProgramName'' for a generic official program name and
 @file{astprogname} for a generic executable name. In this book, the
 programs are classified based on what they do and thoroughly explained. An
-alphabetical list of the utilities that are installed on your system with
+alphabetical list of the programs that are installed on your system with
 this installation are given in @ref{Gnuastro programs list}. That list also
 contains the executable names and version numbers along with a one line
 description.
@@ -958,17 +951,17 @@ description.
 Gnuastro can have two formats of version numbers, for official and
 unofficial releases. Official Gnuastro releases are announced on the
 @command{info-gnuastro} mailing list, they have a version control tag in
-Gnuastro's development history and their version numbers are formatted like
-``@file{A.B}''. @file{A} is a major version number, marking a significant
-planned achievement (for example see @ref{GNU Astronomy Utilities 1.0}),
-while @file{B} is a minor version number, see below for more on the
-distinction. Note that the numbers are not decimals, so version 2.34 is
-much more recent than version 2.5, which is not equal to 2.50.
+Gnuastro's development history, and their version numbers are formatted
+like ``@file{A.B}''. @file{A} is a major version number, marking a
+significant planned achievement (for example see @ref{GNU Astronomy
+Utilities 1.0}), while @file{B} is a minor version number, see below for
+more on the distinction. Note that the numbers are not decimals, so version
+2.34 is much more recent than version 2.5, which is not equal to 2.50.
 
 Gnuastro also allows a unique version number for unofficial
 releases. Unofficial releases can mark any point in Gnuastro's development
 history. This is done to allow astronomers to easily use any point in the
-version controlled source for their data-analysis and research
+version controlled history for their data-analysis and research
 publication. See @ref{Version controlled source} for a complete
 introduction. This section is not just for developers and is very
 straightforward, so please have a look if you are interested in the
@@ -984,24 +977,24 @@ the first 4 or 5 characters of the commit hash number@footnote{Each point
 in Gnuastro's history is uniquely identified with a 40 character long hash
 which is created from its contents and previous history for example:
 @code{5b17501d8f29ba3cd610673261e6e2229c846d35}. So the string @file{D} in
-the version for this commit could be @file{5b17}.}. Therefore, the
-unofficial version number `@code{3.92.8-29c8}', corresponds to the 8th
-commit after the official version @code{3.92} and its commit hash begins
-with @code{29c8}. This number is sort-able (unlike the raw hash) and as
-shown above is very descriptive of the state of the unofficial release. Of
-course an official release is preferred for publication (since its tarballs
-are easily available and it has gone through more tests, making it more
+the version for this commit could be @file{5b17}, or
+@file{5b175}.}. Therefore, the unofficial version number
+`@code{3.92.8-29c8}', corresponds to the 8th commit after the official
+version @code{3.92} and its commit hash begins with @code{29c8}. The
+unofficial version number is sort-able (unlike the raw hash) and as shown
+above is very descriptive of the state of the unofficial release. Of course
+an official release is preferred for publication (since its tarballs are
+easily available and it has gone through more tests, making it more
 stable), so if an official release is announced prior to your publication's
 final review, please consider updating to the official release.
 
 The major version number is set by a major goal which is defined by the
-developers and user community of Gnuastro and individual utilities before
-hand, see @ref{GNU Astronomy Utilities 1.0} for example. The incremental
-work done in minor releases are commonly small steps in achieving the major
-goal. Therefore, there is no limit on the number of minor releases and the
-difference between the (assumed) versions 2.927 and 3.0 can be a very
-small (negligible to the user) improvement that finalizes the defined
-goals.
+developers and user community before hand, for example see @ref{GNU
+Astronomy Utilities 1.0}. The incremental work done in minor releases are
+commonly small steps in achieving the major goal. Therefore, there is no
+limit on the number of minor releases and the difference between the
+(hypothetical) versions 2.927 and 3.0 can be a very small (negligible to
+the user) improvement that finalizes the defined goals.
 
 @menu
 * GNU Astronomy Utilities 1.0::  Plans for version 1.0 release
@@ -1010,28 +1003,34 @@ goals.
 @node GNU Astronomy Utilities 1.0,  , Version numbering, Version numbering
 @subsection GNU Astronomy Utilities 1.0
 @cindex Gnuastro major version number
-The major version number of Gnuastro is increased similar to that of
-each program. Currently (prior to Gnuastro 1.0), the aim is to have a
+Currently (prior to Gnuastro 1.0), the aim of Gnuastro is to have a
 complete system for data manipulation and analysis at least similar to
-IRAF@footnote{@url{http://iraf.noao.edu/}}. So an astronomer can take
-all the standard data analysis steps (starting from raw data to the
-final reduced product and standard post-reduction tools) with the
-various programs in Gnuastro.
+IRAF@footnote{@url{http://iraf.noao.edu/}}. So an astronomer can take all
+the standard data analysis steps (starting from raw data to the final
+reduced product and standard post-reduction tools) with the various
+programs in Gnuastro.
 
 @cindex Shell script
-The maintainers of each camera or detector on a telescope can provide
-a completely transparent shell script to the observer for data
+The maintainers of each camera or detector on a telescope can provide a
+completely transparent shell script or Makefile to the observer for data
 analysis. This script can set configuration files for all the required
-programs to work with that particular camera. The script can then run
-the proper programs in the proper sequence. The user/observer can
-easily follow the standard shell script to understand (and modify)
-each step and the parameters used easily. Bash (or other modern
-GNU/Linux shell scripts) are very powerful and made for this gluing
-job. This will simultaneously improve performance and transparency.
+programs to work with that particular camera. The script can then run the
+proper programs in the proper sequence. The user/observer can easily follow
+the standard shell script to understand (and modify) each step and the
+parameters used easily. Bash (or other modern GNU/Linux shell scripts) are
+very powerful and made for this gluing job. This will simultaneously
+improve performance and transparency. Shell scripting (or Makefiles) are
+also very basic constructs that are easy to learn and readily available as
+part of the Unix-like operating systems. If there is no program to do a
+desired step, Gnuastro's libraries can be used to build specific programs.
 
-In order to achieve this and allow maximal creativity with the shell,
-the various programs have to be very low level programs and completely
-independent. Something like the GNU Coreutils.
+The main factor is that all observatories or projects can freely contribute
+to Gnuastro and all simultaneously benefit from it (since it doesn't belong
+to any particular one of them), much like how for-profit organizations (for
+example RedHat, or Intel and many others) are major contributors to free
+and open source software for their shared benefit. Gnuastro's copyright has
+been fully awarded to GNU, so it doesn't belong to any particular
+astronomer or astronomical facility or project.
 
 
 
@@ -1225,7 +1224,7 @@ incorrect or unexpected result, or to behave in unintended ways''. So
 when you see that a program is crashing, not reading your input
 correctly, giving the wrong results, or not writing your output
 correctly, you have found a bug. In such cases, it is best if you
-report the bug to the developers. The utilities will also report bugs
+report the bug to the developers. The programs will also report bugs
 in known impossible situations (which are caused by something
 unexpected) and will ask the users to report the bug.
 
@@ -1362,7 +1361,7 @@ top of the page immediately under the title, see @ref{Gnuastro project
 webpage}. If you want to request a feature to an existing program, click on
 the ``Display Criteria'' above the list and under ``Category'', choose that
 particular program. Under ``Category'' you can also see the existing
-suggestions for new utilities or other cases like installation,
+suggestions for new programs or other cases like installation,
 documentation or libraries. Also be sure to set the ``Open/Closed'' value
 to ``Any''.
 
@@ -1392,7 +1391,7 @@ people in contact.
 @cartouche
 @noindent
 @strong{Gnuastro is a collection of low level programs:} As described in
-@ref{Design philosophy}, a founding principle of Gnuastro is that each
+@ref{Program design philosophy}, a founding principle of Gnuastro is that each
 library or program should be very basic and low-level. High level jobs
 should be done by running the separate programs or using separate functions
 in succession through a shell script or calling the libraries by higher
@@ -2193,7 +2192,7 @@ night's measurements on the ecliptic.
 
 
 
-@node Installation, Common behavior, Tutorials, Top
+@node Installation, Common program behavior, Tutorials, Top
 @chapter Installation
 
 @cindex Installation
@@ -2356,7 +2355,7 @@ option by the distribution. This option allows CFITSIO to open a file in
 multiple threads, it can thus provide great speed improvements. If CFITSIO
 was not configured with this option, any program which needs this
 capability will warn you and abort when you ask for multiple threads (see
-@ref{Threads in GNU Astronomy Utilities}).
+@ref{Threads in Gnuastro}).
 
 To install CFITSIO from source, we strongly recommend that you have a look
 through Chapter 2 (Creating the CFITSIO library) of the CFITSIO manual and
@@ -2753,7 +2752,7 @@ $ git clone git://git.sv.gnu.org/gnuastro.git
 
 @noindent
 The @file{$TOPGNUASTRO/gnuastro} directory will contain hand-written
-(version controlled) source code for Gnuastro's utilities, libraries, this
+(version controlled) source code for Gnuastro's programs, libraries, this
 book and the tests. All are divided into sub-directories with standard and
 very descriptive names. The version controlled files in the top cloned
 directory are either mainly in capital letters (for example @file{THANKS}
@@ -2934,7 +2933,7 @@ The most important reason for running this command is to generate a version
 number for your Gnuastro snapshot. This generated version number will
 include the commit information if you are building Gnuastro from any point
 in Gnuastro's history (see @ref{Version numbering}). Since the version
-number is included in nearly all outputs of the utilities, this can help
+number is included in nearly all outputs of the programs, this can help
 you later exactly reproduce an old result by checking out the exact point
 in Gnuastro's history that produced those results. Therefore, be sure to
 run `@file{autoconf -f}' after every synchronization. You can also run them
@@ -3617,9 +3616,9 @@ editor and set their values manually.
 @cindex @file{mock.fits}
 @cindex Tests, running
 @cindex Checking tests
-After successfully building (compiling) the programs with the
-@command{$ make} command you can check the installation before
-installing. To run the tests on your newly build utilities, run
+After successfully building (compiling) the programs with the @command{$
+make} command you can check the installation before installing. To run the
+tests, run
 
 @example
 $ make check
@@ -3830,8 +3829,8 @@ If your problem was not listed above, please file a bug report
 
 
 
-@node Common behavior, Extensions and Tables, Installation, Top
-@chapter Common behavior
+@node Common program behavior, Extensions and Tables, Installation, Top
+@chapter Common program behavior
 
 There are some facts that are common to all the programs in Gnuastro
 which are mainly to do with user interaction. In this chapter these
@@ -3847,20 +3846,20 @@ the keyboard!) help on the command-line.
 @menu
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
-* Threads in GNU Astronomy Utilities::  How threads are managed in Gnuastro.
+* Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
 @end menu
 
-@node Command-line, Configuration files, Common behavior, Common behavior
+@node Command-line, Configuration files, Common program behavior, Common program behavior
 @section Command-line
 
-All the programs in GNU Astronomy Utilities are customized through the
-standard GNU style command-line options. First a general outline of
-how to make best use of these options is discussed and finally the
-options that are common to all the programs in Gnuastro are listed.
+All the programs in Gnuastro are customized through the standard GNU style
+command-line options. First a general outline of how to make best use of
+these options is discussed and finally the options that are common to all
+the programs in Gnuastro are listed.
 
 @cindex Metacharacters
 @cindex Token separation
@@ -3938,12 +3937,11 @@ quotes are much more easier, elegant and readable.
 
 @node Arguments, Options, Arguments and options, Command-line
 @subsection Arguments
-In GNU Astronomy Utilities, the names of the input data files and
-ASCII tables are mostly specified as arguments, you can generally
-specify them in any order unless otherwise stated for a particular
-program. Everything particular about how a program treats arguments,
-is explained under the ``Invoking ProgramName'' section for that
-program.
+In Gnuastro, the names of the input data files and ASCII tables are mostly
+specified as arguments, you can generally specify them in any order unless
+otherwise stated for a particular program. Everything particular about how
+a program treats arguments, is explained under the ``Invoking ProgramName''
+section for that program.
 
 Generally, if there is a standard file name extension for a particular
 format, that filename extension is used to separate the kinds of
@@ -4140,7 +4138,7 @@ based on it (for example C++, Java and Python).
 @node Common options,  , Options, Command-line
 @subsection Common options
 
-@cindex Options common to all utilities
+@cindex Options common to all programs
 @cindex Gnuastro common options
 To facilitate the job of the users and developers, all the programs in
 Gnuastro share some basic command-line options for the same
@@ -4191,7 +4189,7 @@ help you find the extension you want, far beyond the simple extension
 number and name. See CFITSIO manual's ``HDU Location Specification''
 section for a very complete explanation with several examples.
 
-Note that in some utilities, the behavior of @option{--hdu} might be
+Note that in some programs, the behavior of @option{--hdu} might be
 different, for example see @ref{Invoking astarithmetic}, were it can
 be called multiple times and the value of each all will be stored.
 
@@ -4284,12 +4282,12 @@ the tools offered in Gnuastro to be useful in your research, please
 use the output of this command to cite the program and Gnuastro in
 your research paper. Thank you.
 
-GNU Astronomy Utilities is still new, there is no separate paper only
-devoted to Gnuastro yet. Therefore currently the paper to cite for
-Gnuastro is the paper for NoiseChisel which is the first published
-paper introducing Gnuastro to the astronomical community. Upon
-reaching a certain point, a paper completely devoted to Gnuastro will
-be published, see @ref{GNU Astronomy Utilities 1.0}.
+Gnuastro is still new, there is no separate paper only devoted to Gnuastro
+yet. Therefore currently the paper to cite for Gnuastro is the paper for
+NoiseChisel which is the first published paper introducing Gnuastro to the
+astronomical community. Upon reaching a certain point, a paper completely
+devoted to Gnuastro will be published, see @ref{GNU Astronomy Utilities
+1.0}.
 
 @item -P
 @itemx --printparams
@@ -4358,8 +4356,8 @@ Log file will be generated.
 @cindex Number of CPU threads to use
 @item -N
 @itemx --numthreads
-(@option{=INT}) Set the number of CPU threads to use. See @ref{Threads
-in GNU Astronomy Utilities}.
+(@option{=INT}) Set the number of CPU threads to use. See @ref{Threads in
+Gnuastro}.
 
 @end vtable
 
@@ -4368,7 +4366,7 @@ in GNU Astronomy Utilities}.
 
 
 
-@node Configuration files, Threads in GNU Astronomy Utilities, Command-line, Common behavior
+@node Configuration files, Threads in Gnuastro, Command-line, Common program behavior
 @section Configuration files
 
 @cindex @file{etc}
@@ -4398,7 +4396,7 @@ necessary parameters are not given through any of these methods, the
 program will list the missing necessary parameters and abort. The only
 exception to this is @option{--numthreads}, whose default value is
 determined at run-time using the number of threads available to your
-system, see @ref{Threads in GNU Astronomy Utilities}. Of course, you can
+system, see @ref{Threads in Gnuastro}. Of course, you can
 still provide a default value for the number of threads at any of the
 levels below, but if you don't, the program will not abort. Also note that
 through automatic output name generation, the value to the @option{--output}
@@ -4482,7 +4480,7 @@ Command-line options, for this particular execution.
 
 @item
 Current directory, for all executions in the directory from which any
-of the utilities is run (@file{./.gnuastro/}).
+of the programs is run (@file{./.gnuastro/}).
 
 @item
 The user's home directory, for all the executions of a particular
@@ -4574,8 +4572,8 @@ self.
 
 
 
-@node Threads in GNU Astronomy Utilities, Final parameter values, Configuration files, Common behavior
-@section Threads in GNU Astronomy Utilities
+@node Threads in Gnuastro, Final parameter values, Configuration files, Common program behavior
+@section Threads in Gnuastro
 
 @pindex nproc
 @cindex pthread
@@ -4613,7 +4611,7 @@ or in the options.
 * How to run simultaneous operations::  How to run things simultaneously.
 @end menu
 
-@node A note on threads, How to run simultaneous operations, Threads in GNU Astronomy Utilities, Threads in GNU Astronomy Utilities
+@node A note on threads, How to run simultaneous operations, Threads in Gnuastro, Threads in Gnuastro
 @subsection A note on threads
 
 @cindex Using multiple threads
@@ -4677,7 +4675,7 @@ explained above.
 
 
 
-@node How to run simultaneous operations,  , A note on threads, Threads in GNU Astronomy Utilities
+@node How to run simultaneous operations,  , A note on threads, Threads in Gnuastro
 @subsection How to run simultaneous operations
 
 There are two approaches to simultaneously execute a program: using
@@ -4747,7 +4745,7 @@ the independent targets simultaneously.
 
 
 
-@node Final parameter values, Automatic output, Threads in GNU Astronomy Utilities, Common behavior
+@node Final parameter values, Automatic output, Threads in Gnuastro, Common program behavior
 @section Final parameter values, reproduce previous results
 
 @vindex -P
@@ -4831,7 +4829,7 @@ other configuration file value will be used.
 
 
 
-@node Automatic output, Getting help, Final parameter values, Common behavior
+@node Automatic output, Getting help, Final parameter values, Common program behavior
 @section Automatic output
 
 @cindex Automatic output file names
@@ -4885,7 +4883,7 @@ ABC01.jpg ABC02.jpg DEF01_labeled.fits
 
 
 
-@node Getting help, Output headers, Automatic output, Common behavior
+@node Getting help, Output headers, Automatic output, Common program behavior
 @section Getting help
 
 @cindex Help
@@ -5200,7 +5198,7 @@ list. We have other mailing lists and tools for those purposes, see
 
 
 
-@node Output headers,  , Getting help, Common behavior
+@node Output headers,  , Getting help, Common program behavior
 @section Output headers
 
 @cindex Output FITS headers
@@ -5237,13 +5235,13 @@ END
 
 
 
-@node Extensions and Tables, Image manipulation, Common behavior, Top
+@node Extensions and Tables, Image manipulation, Common program behavior, Top
 @chapter Extensions and Tables
 
 @cindex File operations
 @cindex Operations on files
 @cindex General file operations
-This chapter documents those Gnuastro utilities that don't directly operate
+This chapter documents those Gnuastro programs that don't directly operate
 on the contents of the data file, they just print information, or convert
 from different data types. Before working on a FITS file, it is commonly
 the case that you are not sure how many extensions it has within it and
@@ -6518,12 +6516,12 @@ provide the crop box parameters with command-line options.
 
 @cindex Asynchronous thread allocation
 When in catalog mode, ImageCrop will run in parallel unless you set
-@option{--numthreads=1}, see @ref{Threads in GNU Astronomy
-Utilities}. Note that when multiple threads are being used, in verbose
-mode, the outputs will not be in order. This is because the threads
-are asynchronous and thus not started in order. This has no effect on
-the output, see @ref{Hubble visually checks and classifies his
-catalog} for a tutorial on effectively using this feature.
+@option{--numthreads=1}, see @ref{Threads in Gnuastro}. Note that when
+multiple threads are being used, in verbose mode, the outputs will not be
+in order. This is because the threads are asynchronous and thus not started
+in order. This has no effect on the output, see @ref{Hubble visually checks
+and classifies his catalog} for a tutorial on effectively using this
+feature.
 
 @menu
 * astimgcrop options::          A list of all the options with explanation.
@@ -10561,23 +10559,25 @@ runs.
 @node NoiseChisel, MakeCatalog, ImageStatistics, Image analysis
 @section NoiseChisel
 
-Once raw data have gone through the initial reduction process (through
-the programs in @ref{Image manipulation}). We are ready to derive
-scientific results out of them. Unfortunately in most cases, the
-scientifically interesting targets are deeply drowned in a sea of
-noise. NoiseChisel is Gnuastro's tool to detect signal in
-noise. Infact, NoiseChisel was the motivation behind creating Gnuastro
-and has @url{http://arxiv.org/abs/1505.01664, a full journal
-article}@footnote{It is currently under production by the
-Astrophysical Journal Supplement Series. It can also be read in arXiv:
-@url{http://arxiv.org/abs/1505.01664}.} devoted to its
-techniques. Following the explanations for the options in
-@ref{NoiseChisel options} should also give you a relatively good idea
-of the steps. Currently the paper does a very thorough job at
+Once raw data have gone through the initial reduction process (through the
+programs in @ref{Image manipulation}). We are ready to derive scientific
+results out of them. Unfortunately in most cases, the scientifically
+interesting targets are deeply drowned in a sea of noise. NoiseChisel is
+Gnuastro's tool to detect signal in noise. Infact, NoiseChisel was the
+motivation behind creating Gnuastro and has a journal article devoted to
+its techniques: @url{http://arxiv.org/abs/1505.01664, arXiv:1505.01664},
+published in 2015 by the Astrophysical Journal Supplement Series
+220.
+
+Following the explanations for the options in @ref{NoiseChisel options}
+should provide a relatively good idea of how NoiseChisel works, but it is
+recommended to see the paper since it does a very thorough job at
 explaining the concepts and methods of NoiseChisel with abundant
-demonstrations for each step. However, the paper cannot undergo any
-further updates, so as the development of NoiseChisel evolves, this
-section will grow.
+demonstrations for each step. However, the paper cannot undergo any further
+updates, but NoiseChisel will evolve: better algorithms or steps will be
+found, thus options will be added or removed. So this section is the
+definitive guide. Please follow the @file{NEWS} file with each release for
+such updates.
 
 @cindex Detection
 Detection is the process of separating signal from noise. In other
@@ -10589,17 +10589,16 @@ example when two galaxies lie sufficiently close to each other to be
 detected as one object.
 
 @cindex Noise-based detection
-NoiseChisel was the first software to make use of a noise-based
-concept to detection and segmentation. In this method, instead of
-emphasizing on the signal and trying to guess the properties of the
-to-be-detected targets prior to detection (for example assuming that
-it is an ellipse), the emphasis is put on the noise in the image and
-it imposes statistically negligible requirements on the signal. The
-name of NoiseChisel is derived from the first thing it does after
-thresholding the image: to erode it. In mathematical morphology,
-erosion on pixels can be pictured as carving off boundary pixels. So
-what NoiseChisel does is similar to what a wood chisel or stone chisel
-does. It is just not a hardware but software.
+NoiseChisel was the first software to make use of a noise-based concept to
+detection and segmentation. In this method, instead of emphasizing on the
+signal and trying to guess the properties of the to-be-detected targets
+prior to detection (for example assuming that it is an ellipse), the
+emphasis is put on the noise in the image and it imposes statistically
+negligible requirements on the signal. The name of NoiseChisel is derived
+from the first thing it does after thresholding the image: to erode it. In
+mathematical morphology, erosion on pixels can be pictured as carving off
+boundary pixels. So what NoiseChisel does is similar to what a wood chisel
+or stone chisel do. It is just not a hardware but software.
 
 @menu
 * Invoking astnoisechisel::     Options and arguments for NoiseChisel.
@@ -12050,7 +12049,7 @@ with the first FITS axis in degrees.
 @subsection Adding new columns to MakeCatalog
 
 The common development characteristics of MakeCatalog and other
-Gnuastro utilities is explained in @ref{Developing}. This section
+Gnuastro programs is explained in @ref{Developing}. This section
 might be more clearly understood after reading that
 chapter. MakeCatalog has been designed to allow easy addition of new
 columns, here we will give a fast over-view of the steps you need to
@@ -12787,12 +12786,12 @@ $ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 @end example
 
 @noindent
-If mock images are to be made, the catalog (which stores the
-parameters for each mock profile) is the mandatory argument. The input
-catalog has to be a text file formatted in a table with columns
-separated by space, tab or comma (@key{,}) characters. See @ref{Common
-behavior} for a complete explanation of some common behaviour and
-options in all Gnuastro programs including MakeProfiles.
+If mock images are to be made, the catalog (which stores the parameters for
+each mock profile) is the mandatory argument. The input catalog has to be a
+text file formatted in a table with columns separated by space, tab or
+comma (@key{,}) characters. See @ref{Common program behavior} for a
+complete explanation of some common behaviour and options in all Gnuastro
+programs including MakeProfiles.
 
 If a data image file (see @ref{Arguments}) is given, the pixels of
 that image are used as the background value for every pixel. The flux
@@ -13640,7 +13639,7 @@ were of integer types.
 @c @cindex Manipulating tables
 @c The FITS standard also specifies tables as a form of data that can be
 @c stored in the extensions of a FITS file. These tables can be ASCII
-@c tables or binary tables. The utilities in this section provide the
+@c tables or binary tables. The programs in this section provide the
 @c tools to directly read and write to FITS tables.
 @c
 @c The software for this section have to be added ....
@@ -13666,9 +13665,9 @@ were of integer types.
 @node High-level calculations, Libraries, Modeling and fittings, Top
 @chapter High-level calculations
 
-After the reduction of raw data (for example with the utilities in
+After the reduction of raw data (for example with the programs in
 @ref{Image manipulation}) you will have reduced images/data ready for
-processing/analyzing (for example with the utilities in @ref{Image
+processing/analyzing (for example with the programs in @ref{Image
 analysis}). But the processed/analyzed data (or catalogs) are still
 not enough to derive any scientific result. Even higher-level analysis
 is still needed to convert the observed magnitudes, sizes or volumes
@@ -14333,9 +14332,9 @@ issues} for an example of how to set this variable at configure time.
 As described in @ref{Installation directory}, you can select the top
 installation directory of a software using the GNU build system, when you
 @command{./configure} it. All the separate components will be put in their
-separate subdirectory under that, for example the utilities/programs,
-compiled libraries and library headers will go into @file{$prefix/bin}
-(replace @file{$prefix} with a directory), @file{$prefix/lib}, and
+separate subdirectory under that, for example the programs, compiled
+libraries and library headers will go into @file{$prefix/bin} (replace
+@file{$prefix} with a directory), @file{$prefix/lib}, and
 @file{$prefix/include} respectively. For enhanced modularity, libraries
 that contain diverse collections of functions (like GSL, WCSLIB, and
 Gnuastro), put their header files in a subdirectory unique to
@@ -14359,12 +14358,12 @@ To enhance modularity, similar functions are defined in one source file
 (with a @file{.c} suffix, see @ref{Headers} for more). After running
 @command{make}, each human-readable, @file{.c} file is translated (or
 compiled) into a computer-readable ``object'' file (ending with
-@file{.o}). Note that object files are also created when building
-utilities/programs, they aren't particular to libraries. Try opening
-Gnuastro's @file{lib/} and @file{bin/progname/} directories after running
-@command{make} to see these object files@footnote{Gnuastro uses GNU Libtool
-for portable library creation. Libtool will also make a @file{.lo} file for
-each @file{.c} file when building libraries (@file{.lo} files are
+@file{.o}). Note that object files are also created when building programs,
+they aren't particular to libraries. Try opening Gnuastro's @file{lib/} and
+@file{bin/progname/} directories after running @command{make} to see these
+object files@footnote{Gnuastro uses GNU Libtool for portable library
+creation. Libtool will also make a @file{.lo} file for each @file{.c} file
+when building libraries (@file{.lo} files are
 human-readable).}. Afterwards, the object files are @emph{linked} together
 to create an executable program or a library.
 
@@ -14750,8 +14749,8 @@ your exciting science.
 @cartouche
 @noindent
 @strong{Libraries are still under heavy development: } Gnuastro was
-initially created to be a collection of command-line utilities. However, as
-the utilities and their the shared functions grew, internal (not installed)
+initially created to be a collection of command-line programs. However, as
+the programs and their the shared functions grew, internal (not installed)
 libraries were added. With the 0.2 release, the libraries are
 installable. Because of this history in these early phases, the libraries
 are not fully programmer friendly yet: they abort the program on an error,
@@ -14775,8 +14774,8 @@ problems. It will stabilize with the removal of this notice. Check the
 * Spatial convolution::         Doing spatial convolution on an image
 * Statistical operations::      Functions for basic statistics.
 * Multithreaded programming::   Facilitating use of pthreads.
-* World Coordinate System::     Dealing with the world coordinate system.
 * Text table into a C array::   Read an ASCII text table into a C array.
+* World Coordinate System::     Dealing with the world coordinate system.
 @end menu
 
 @node Installation information, Array manipulation, Gnuastro library, Gnuastro library
@@ -15406,10 +15405,10 @@ will only be considered when the value of @code{hstartwcs} is less than
 @cindex Thread-saftey
 @strong{WCSLIB is not thread-safe: } WCSLIB's @code{wcspih} function is
 used by to read the FITS keywords into WCSLIB's internal WCS
-structures. Unfortunately this function is not thread-safe. Therefore be
-sure to call that function, or Gnuastro's
-@code{gal_fits_read_wcs_from_pointer} and @code{gal_fits_read_wcs}
-functions, when you aren't using threads.
+structures. Unfortunately this function is not thread-safe. Therefore, be
+sure to call that function (or Gnuastro's
+@code{gal_fits_read_wcs_from_pointer} and @code{gal_fits_read_wcs}) before
+spinning off threads, see @ref{Multithreaded programming}.
 @end cartouche
 @end deftypefun
 
@@ -15455,7 +15454,7 @@ ASCII or binary table. These two macros are defined by CFITSIO.
 @end deftypefun
 
 @deftypefun void gal_fits_file_or_ext_name (char @code{*inputname}, char @code{*inhdu}, int @code{othernameset}, char @code{**othername}, char @code{*ohdu}, int @code{ohduset}, char @code{*type})
-This is mainly a function used in Gnuastro utilities. Since a FITS image
+This is mainly a function used in Gnuastro programs. Since a FITS image
 can have many extensions, usually related data are stored within one FITS
 file. For example an image, its masked pixels, and the sky standard
 deviation of the noise are various extensions of one FITS file. It would be
@@ -16084,7 +16083,7 @@ for each mesh, then set @code{makegarray2=1}. When @code{initialize==1},
 the @code{garray}(s) will be initialized to NaN.
 
 This function is commonly used within Gnuastro (mainly in NoiseChisel, see
-@ref{NoiseChisel}), so search for its applications in the utilities for
+@ref{NoiseChisel}), so search for its applications in the programs for
 some real-world examples. You can do this with the following command in the
 top Gnuastro source directory (after unpacking the tarball):
 @example
@@ -16323,7 +16322,7 @@ convolution on multiple threads. The structure and functions introduced
 here are declared in @file{gnuastro/spatialconvolve.h}.
 
 In the first release of the Gnuastro libraries, this is the most high-level
-library since it was needed by multiple utilities. In future releases this
+library since it was needed by multiple programs. In future releases this
 library will most probably merge with the frequency domain convolution
 functions to allow programmers to choose from the type of convolution they
 want. The main
@@ -16367,7 +16366,7 @@ Library's functions should be used. Since these functions are used in
 various parts of Gnuastro for multiple purposes, in this first library
 release (Gnuastro 0.2), there might be parallels, or non-homogenous
 arguments. Such situations arise here because of the history of Gnuastro:
-the libraries gew out of the utilities, so it will take a little while to
+the libraries gew out of the programs, so it will take a little while to
 correct.
 
 @deffn Structure GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE
@@ -16658,7 +16657,7 @@ ApJS 220, 1. arXiv:1505.01664).
 
 
 
-@node Multithreaded programming, World Coordinate System, Statistical operations, Gnuastro library
+@node Multithreaded programming, Text table into a C array, Statistical operations, Gnuastro library
 @subsection Multithreaded programming (@file{threads.h})
 
 @cindex Multithreaded programming
@@ -16674,9 +16673,7 @@ decrease in the running time of a program, see @ref{A note on threads}. In
 terms of reading the code, you don't need to know anything about
 multi-threaded programming. You can simply follow the case where only one
 thread is to be used. In these cases, threads are not used and can be
-completely ignored. To write multi-threaded programs, the thread helper
-functions of @ref{Gnuastro's thread related functions}, you can greatly
-simplify a the process of spinning-off threads.
+completely ignored.
 
 @cindex POSIX threads library
 @cindex Lawrence Livermore National Laboratory
@@ -16703,13 +16700,13 @@ of the simplest problems to solve with threads and also the ones that
 benefit most from threads, see the LLNL
 introduction@footnote{@url{https://computing.llnl.gov/tutorials/parallel_comp/}}.
 
-One very useful POSIX threads concept is
+One very useful POSIX thread concept is
 @code{pthread_barrier}. Unfortunately, it is only an optional feature in
 the POSIX standard, so some operating systems don't include it. Therefore
 in @ref{Implementation of pthread_barrier}, we introduce our own
 implementation. You can ignore this section if your system has this
 construct. Following that, we describe the helper functions in this header
-that can greatly simplify the initializing of a multi-threaded program, see
+that can greatly simplify writing a multi-threaded program, see
 @ref{Gnuastro's thread related functions} for more.
 
 @menu
@@ -16742,13 +16739,13 @@ Type to specify the attributes of a POSIX threads barrier.
 @end deffn
 
 @deffn Type pthread_barrier_t
-The structure defining the POSIX threads barrier.
+Structure defining the POSIX threads barrier.
 @end deffn
 
 @deftypefun int pthread_barrier_init (pthread_barrier_t @code{*b}, pthread_barrierattr_t @code{*attr}, unsigned int @code{limit})
-Initialize the POSIX threads barrier @code{b}, with the attributes
-@code{attr} with a total number of @code{limit} threads that must remain
-behind it. This function is called before spinning off threads.
+Initialize the barrier @code{b}, with the attributes @code{attr} and total
+@code{limit} (a number of) threads that must wait behind it. This function
+must be called before spinning off threads.
 @end deftypefun
 
 @deftypefun int pthread_barrier_wait (pthread_barrier_t @code{*b})
@@ -16765,13 +16762,13 @@ finished.
 @cartouche
 @noindent
 @strong{Destroy a barrier before re-using it:} It is very important to
-destroy the barrier before reusing it. This destroy function not only
-destroys the internal structures, it also waits (in 1 microsecond
+destroy the barrier before (possibly) reusing it. This destroy function not
+only destroys the internal structures, it also waits (in 1 microsecond
 intervals, so you will not notice!) until all the threads don't need the
-barrier structure any more. Without destrying, if you immediately spin off
-new threads with the barrier, then the internal structure of the remaining
-threads will get mixed with the new ones and you will get extremely hard to
-debug errors.
+barrier structure any more. If you immediately start spinning off new
+threads with a not-destroyed barrier, then the internal structure of the
+remaining threads will get mixed with the new ones and you will get very
+strange and apparently random errors that are extremely hard to debug.
 @end cartouche
 @end deftypefun
 
@@ -16806,9 +16803,10 @@ the barrier constructs to wait for all threads to finish.
 
 Identify the ``index''es (starting from 0) of the actions to be done on
 each thread in the @code{outthrds} array. @code{outthrds} is treated as a
-2D array with @code{numthreads} rows and @code{outthrdcols}. The indexs in
-each row, identify the actions that should be done by one thread. Please
-see the explanation below to understand the purpose of this operation.
+2D array with @code{numthreads} rows and @code{outthrdcols} columns. The
+indexs in each row, identify the actions that should be done by one
+thread. Please see the explanation below to understand the purpose of this
+operation.
 
 Let's assume you have @mymath{A} actions (where there is only one function
 and the input values differ for each action) and @mymath{T} threads
@@ -16818,25 +16816,24 @@ cheap job and requires a significant number of CPU cycles. Therefore,
 creating @mymath{A} threads is not the best way to address such a
 problem. The most efficient way to manage the actions is such that only
 @mymath{T} threads are created, and each thread works on a list of actions
-(internally) in series (at most @mymath{A/T}). This way your system spends
-the minimum time necessary to create and destroy threads while getting all
-the actions done.
+identified for it in series (one after the other). This way your CPU will
+get all the actions done with minimal overhead.
 
-This function does this management for you: each row in the @code{outthrds}
-array contains the indexs of actions which must be done by one
-thread. @code{outthrds} contains @code{outthrdcols} columns. In using
-@code{outthrds}, you don't have to know the number of columns: you can
-check to see if the index is @code{GAL_THREADS_NON_THRD_INDEX}. Exactly the
-same as you would when checking if have finished parsing a string. Please
-see the example program in @file{tests/lib/multithread.c} for a
-demonstration.
+The purpose of this function is to do do what we explained above: each row
+in the @code{outthrds} array contains the indexs of actions which must be
+done by one thread. @code{outthrds} contains @code{outthrdcols} columns. In
+using @code{outthrds}, you don't have to know the number of columns. The
+@code{GAL_THREADS_NON_THRD_INDEX} macro has a role very similar to a
+string's @code{\0}: every row finishes with this macro, so can easily stop
+parsing the indexes in the row when you confront it. Please see the example
+program in @file{tests/lib/multithread.c} for a demonstration.
 
 @end deftypefun
 
 
 
 
-@node Text table into a C array,  , World Coordinate System, Gnuastro library
+@node Text table into a C array, World Coordinate System, Multithreaded programming, Gnuastro library
 @subsection Text table into a C array (@file{txtarray.h})
 
 One of the most common formats to store and transfer normally sized data
@@ -16897,7 +16894,7 @@ explanation of @code{gal_txtarray_printf_format} for the other arguments.
 
 
 
-@node World Coordinate System, Text table into a C array, Multithreaded programming, Gnuastro library
+@node World Coordinate System,  , Text table into a C array, Gnuastro library
 @subsection World Coordinate System (@file{wcs.h})
 
 The FITS world coordinate system is a mechanism to give physical values to
@@ -16970,42 +16967,47 @@ arcsec-squared.
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested astronomer
-to be able to easily understand the code of any of the programs, be able to
-modify the code if she feels there is an improvement and finally, to be
-able to add new programs to the existing utilities for their own benefit,
-and the larger community if they are willing to share it. In short, we hope
-that at least from the software point of view, the ``obscurantist faith in
-the expert's special skill and in his personal knowledge and authority''
-can be broken, see @ref{Science and its tools}. The following software
-architecture can be one of the most basic and easy to understand for any
-interested inquirer.
+to be able to easily understand the code of any of the programs or
+libraries, be able to modify the code if s/he feels there is an improvement
+and finally, to be able to add new programs or libraries for their own
+benefit, and the larger community if they are willing to share it. In
+short, we hope that at least from the software point of view, the
+``obscurantist faith in the expert's special skill and in his personal
+knowledge and authority'' can be broken, see @ref{Science and its
+tools}. The following software architecture can be one of the most basic
+and easy to understand for any interested inquirer.
 
-First some general design choices are tackled. It is followed by a
-short explanation of the version controlled source. The libraries and
-headers in their respective directories are then explained. Later the
-the basic conventions for managing the code in each program to
-facilitate reading the code by an outside inquirer is
-discussed. Finally some notes on the building process are given.
+In this chapter, first some general design choices are tackled in @code{Why
+C} and @code{Program design philosophy}. The project management webpage and
+mailing lists are explained in @ref{Gnuastro project management} and
+@code{Developing mailing lists}. In @ref{Coding conventions}, Gnuastro's
+adopted coding conventions are discussed and is followed by @ref{Program
+source} which describes how to easily navigate the source files in each
+program and also contains a template program to easily add new
+programs. Some other general aspects are then discussed:
+@ref{Documentation}, @ref{Building and debugging}, @ref{Test scripts}, and
+@ref{Developer's checklist}. This chapter finishes with a full description
+of Gnuastro's work-flow in @ref{Contributing to Gnuastro}.
 
 
 @menu
 * Why C::                       Why Gnuastro is designed in C.
-* Design philosophy::           General ideas behind the package structure.
+* Program design philosophy::   General ideas behind the package structure.
 * Gnuastro project webpage::    Central hub for Gnuastro activities.
 * Developing mailing lists::    Stay up to date with Gnuastro's development.
-* Internal libraries::          Internal static (not installed) libraries.
-* Header files::                Library and common headers.
+* Coding conventions::          Gnuastro coding conventions.
 * Program source::              Conventions for the code.
+* Documentation::               Documentation is an integral part of Gnuastro.
 * Building and debugging::      Build and possibly debug during development.
 * Test scripts::                Understanding the test scripts.
+* Developer's checklist::       Checklist to finalize your changes.
 * Contributing to Gnuastro::    Share your changes with all users.
-* After making changes::        Checklist to finalize your changes.
 @end menu
 
 
 
 
-@node Why C, Design philosophy, Developing, Developing
+@node Why C, Program design philosophy, Developing, Developing
 @section Why C programming language?
 @cindex C programming language
 @cindex C++ programming language
@@ -17024,36 +17026,34 @@ software.
 @cindex Ritchie, Dennis
 @cindex Kernighan, Brian
 @cindex Stroustrup, Bjarne
-Simplicity can best be demonstrated in a comparison of the main books
-of C++ and C. The ``C programming language''@footnote{Brian Kernighan,
-Dennis Ritchie. @emph{The C programming language}. Prentice Hall,
-Inc., Second edition, 1988. It is also commonly known as K&R and is
-based on the ANSI C and ISO C90 standards.} book, written by the
-authors of C, is only 286 pages and covers a very good fraction of the
-language, it has also remained unchanged from 1988. C is the main
-programming language of nearly all operating systems and there is no
-plan of any significant update. The most recent ``C++ programming
-language''@footnote{Bjarne Stroustrup. @emph{The C++ programming
-language}. Addison-Wesley Professional; 4 edition, 2013.}  book, also
-written by its author, on the other hand has 1366 pages and its fourth
-edition came out in 2013!  As discussed in @ref{Science and its
-tools}, it is very important for other scientists to be able to
-readily read the code of a program at their will with minimum
+Simplicity can best be demonstrated in a comparison of the main books of
+C++ and C. The ``C programming language''@footnote{Brian Kernighan, Dennis
+Ritchie. @emph{The C programming language}. Prentice Hall, Inc., Second
+edition, 1988. It is also commonly known as K&R and is based on the ANSI C
+and ISO C90 standards.} book, written by the authors of C, is only 286
+pages and covers a very good fraction of the language, it has also remained
+unchanged from 1988. C is the main programming language of nearly all
+operating systems and there is no plan of any significant update. On the
+other hand, the most recent ``C++ programming language''@footnote{Bjarne
+Stroustrup. @emph{The C++ programming language}. Addison-Wesley
+Professional; 4 edition, 2013.}  book, also written by its author, has 1366
+pages and its fourth edition came out in 2013!  As discussed in
+@ref{Science and its tools}, it is very important for other scientists to
+be able to readily read the code of a program at their will with minimum
 requirements.
 
 @cindex Object oriented programming
-In C++, inheriting objects in the object oriented programming paradigm
-and their internal functions make the code very easy to write for the
+In C++, inheriting objects in the object oriented programming paradigm and
+their internal functions make the code very easy to write for the
 programmer who is deeply invested in those objects and understands all
-their relations well. But it simultaneously makes reading the program
-for a first time reader (a curious scientist who wants to know only
-how a small step was done) extremely hard. Before understanding the
-methods, the scientist has to invest a lot of time in understanding
-those objects and their relations. But in C, if only simple structures
-are used, all variables can be given as the basic language types for
-example @code{int}s or @code{float}s and their pointers to define
-arrays. So when an outside reader is only interested in one part of
-the program, that part is all they have to understand.
+their relations well. But it simultaneously makes reading the program for a
+first time reader (a curious scientist who wants to know only how a small
+step was done) extremely hard. Before understanding the methods, the
+scientist has to invest a lot of time in understanding those objects and
+their relations. But in C all variables can be given as the basic language
+types for example @code{int}s or @code{float}s and their pointers to define
+arrays. So when an outside reader is only interested in one part of the
+program, that part is all they have to understand.
 
 Recently it is also becoming common to write scientific software in
 Python, or a combination of it with C or C++. Python is a high level
@@ -17065,71 +17065,63 @@ is great and is highly encouraged. A very good example might be
 plotting, in which Python is undoubtedly one of the best.
 
 But as the data sets increase in size and the processing becomes very
-complicated, the speed of Python scripts significantly decrease. So
-when the program doesn't change too often and is widely used in a
-large community mostly on large data sets (like astronomical images),
-using Python will waste a lot of valuable research-hours. Some use
-Python as a wrapper for C or C++ functions to fix the speed
-issue. However because such actions allow separate programs to share
-memory (through Python), the code in such programs tends to become
-extremely complicated very soon, which is contrary to the principles
-in @ref{Science and its tools}.
+complicated, the speed of Python scripts significantly decrease. So when
+the program doesn't change too often and is widely used in a large
+community mostly on large data sets (like astronomical images), using
+Python will waste a lot of valuable research-hours. It is possible to wrap
+C or C++ functions with Python to fix the speed issue.
 
-Like C++, Python is object oriented, so as explained above, it needs a
-high level of experience with that particular program to fully
-understand its inner workings. To make things worse, since it is
-mainly for fast and on the go programming, it constantly undergoes
-significant changes, such that Python 2.x and Python 3.x are not
-compatible. Lots of research teams that invested heavily in Python 2.x
-cannot benefit from Python 3.x or future versions any more. Some
-converters are available, but since they are automatic, lots of
-complications might arise in the conversion. Thus, re-writing all the
-changes would be the only truly reliable option. If a research
-project begins using Python 3.x today, there is no telling how
+Like C++, Python is object oriented, so as explained above, it needs a high
+level of experience with that particular program to fully understand its
+inner workings. To make things worse, since it is mainly for fast and on
+the go programming, it can undergo significant changes. One recent example
+is how Python 2.x and Python 3.x are not compatible. Lots of research teams
+that invested heavily in Python 2.x cannot benefit from Python 3.x or
+future versions any more. Some converters are available, but since they are
+automatic, lots of complications might arise in the conversion. Thus,
+re-writing all the changes would be the only truly reliable option. If a
+research project begins using Python 3.x today, there is no telling how
 compatible their investments will be when Python 4.x or 5.x will come
-out. This stems from the core principles of Python, which are very
-useful when you look in the `on the go' basis as described before
-and not future usage.
+out. This stems from the core principles of Python, which are very useful
+when you look in the `on the go' basis as described before and not future
+usage. Future-proof code (as long as current operating systems will be
+used) will be written in C.
 
-The portability of C is best demonstrated by the fact that both C++
-and Python are part of the C-family of programming languages which
-also include Java, Perl, and many other languages. C libraries can be
-immediately included in C++ and with tools like
-SWIG@footnote{@url{http://swig.org/}} it is easily possible to use the
-C libraries in programs that are written in those languages. This will
-allow other scientists to use the libraries in Gnuastro with any of
-those languages. Gnuastro's libraries are currently static and not
-installed, but we are working on making them shared and
-installable@footnote{@url{http://savannah.gnu.org/task/?13765}}. Following
-that we will be working on allowing the creation of libraries in
-different languages at configure time
-@footnote{@url{http://savannah.gnu.org/task/?13786}}.
+The portability of C is best demonstrated by the fact that both C++ and
+Python are part of the C-family of programming languages which also include
+Java, Perl, and many other languages. C libraries can be immediately
+included in C++ and with it is easily possible to write wrappers for C
+libraries in programs in all C-family programming languages. This will
+allow other scientists to benefit from C libraries with any of those
+languages. With version 0.2, Gnuastro's C library is installed along with
+the programs and task
+13786@footnote{@url{http://savannah.gnu.org/task/?13786}} has been defined
+to add wrappers for higher level languages.
 
 @cindex Low level programming
 @cindex Programming, low level
 The final reason was speed. This is another very important aspect of C
-which is not independent of simplicity (first reason discussed
-above). The abstractions provided by the higher-level languages (which
-also makes learning them harder for a newcomer) comes at the cost of
-speed. Since C is a low-level language@footnote{Low-level languages
-are those that directly operate the hardware like assembly
-languages. So C is actually a high-level language, but it can be
-considered the lowest-level high-level language.}(closer to the
-hardware), it is much less complex for both the human reader and the
-computer. The former was discussed above in simplicity and the latter
-helps in making the program run more efficiently (faster). This thus
-allows for a closer relation between the scientist/programmer
-(program) and the actual data/processing. The GNU coding
-standards@footnote{@url{http://www.gnu.org/prep/standards/}} also
-encourage the use of C over all other languages when generality of
-usage and ``high speed'' is desired.
+which is not independent of simplicity (first reason discussed above). The
+abstractions provided by the higher-level languages (which also makes
+learning them harder for a newcomer) comes at the cost of speed. Since C is
+a low-level language@footnote{Low-level languages are those that directly
+operate the hardware like assembly languages. So C is actually a high-level
+language, but it can be considered one of the lowest-level, high-level
+languages.} (closer to the hardware), it is much less complex for both the
+human reader and the computer. The former was discussed above in simplicity
+and the latter helps in making the program run more efficiently
+(faster). This thus allows for a closer relation between the
+scientist/programmer (program) and the actual data/processing. The GNU
+coding standards@footnote{@url{http://www.gnu.org/prep/standards/}} also
+encourage the use of C over all other languages when generality of usage
+and ``high speed'' is desired.
 
 
 
 
 
-@node Design philosophy, Gnuastro project webpage, Why C, Developing
-@section Design philosophy
+@node Program design philosophy, Gnuastro project webpage, Why C, Developing
+@section Program design philosophy
 
 The core processing functions of each program are written mostly with
 the basic ISO C90 standard. We do make lots of use of the GNU
@@ -17144,7 +17136,7 @@ particular to the GNU C library is used in the processing functions,
 it is explained in the comments in between the code.
 
 @cindex GNU Coreutils
-Similar to GNU Coreutils, all the Gnuastro utilities provide very low
+Similar to GNU Coreutils, all the Gnuastro programs provide very low
 level operations. This enables you to use the GNU Bash scripting
 language (which is the default in most GNU/Linux operating systems) or
 any other shell you might be using to operate on a large number of
@@ -17163,7 +17155,7 @@ tables to immediately check your results. If you want to include the
 plots in a document, you can use the PGFplots package within @LaTeX{},
 no attempt is made to include such operations in Gnuastro. In short,
 Bash can act as a glue to connect the inputs and outputs of all these
-various Gnuastro utilities (and other programs) in any fashion you
+various Gnuastro programs (and other programs) in any fashion you
 please.
 
 The advantage of this architecture is that the programs become small
@@ -17179,23 +17171,9 @@ which beautifully describes the design philosophy and practice which
 lead to the success of Unix-based operating
 systems@footnote{KISS principle: Keep It Simple, Stupid!}.
 
-Finally, and arguably the most important, principle of Gnuastro is
-this: Gnuastro is not planned to be a repository of creative programs
-with no clear purpose. The purpose of each program and all the major
-operations it does have to be very clearly documented and aligned with
-the general purpose of Gnuastro. Through the main management hub, we
-have a set of planned tasks and bugs, see @ref{Gnuastro project
-webpage}. If you have a plan to add something and want it to be an
-official part of Gnuastro, please check there and if it (or something
-similar to it) doesn't already exist, then add it. This will notify
-all the developers of your intent, so potentially parallel operations
-do not occur and similar ideas can be discussed. If something similar
-to your idea already exists, you can contact the person in charge and
-join that work.
 
 
-
-@node Gnuastro project webpage, Developing mailing lists, Design philosophy, Developing
+@node Gnuastro project webpage, Developing mailing lists, Program design philosophy, Developing
 @section Gnuastro project webpage
 
 @cindex Bug
@@ -17250,7 +17228,7 @@ All the trackers can be browsed by a (possibly anonymous) visitor, but to
 edit and comment on the Bugs and Tasks trackers, you have to be a
 registered Gnuastro developer. When posting an issue to a tracker, it is
 very important to choose the `Category' and `Item Group' options
-accurately. The first contains a list of all Gnuastro's utilities along
+accurately. The first contains a list of all Gnuastro's programs along
 with `Installation', `New program' and `Webpage'. The ``Item Group''
 contains the nature of the issue, for example if it is a `Crash' in the
 software (a bug), or a problem in the documentation (also a bug) or a
@@ -17294,7 +17272,7 @@ tutorial.
 @end cartouche
 
 
-@node Developing mailing lists, Internal libraries, Gnuastro project webpage, Developing
+@node Developing mailing lists, Coding conventions, Gnuastro project webpage, Developing
 @section Developing mailing lists
 
 To keep the developers and interested users up to date with the activity
@@ -17340,270 +17318,8 @@ issue or task will state the respective ID so you can find it easily.
 
 
 
-
-
-
-
-
-
-@node Internal libraries, Header files, Developing mailing lists, Developing
-@section Internal libraries
-
-@cindex Static libraries
-@cindex Internal libraries
-@cindex Convenience libraries
-@cindex Libraries, convenience
-Libraries are binary (compiled) files which are not executable them
-selves, but once linked with other binary files, they form the
-building blocks of larger programs. Several functions are commonly
-used by all or several of the programs in Gnuastro. Therefore they are
-written as separate libraries so we don't have to maintain duplicate
-code. Such libraries are commonly referred to as convenience
-libraries. They are mostly to do with interaction with the outside
-world (of the program), for example setting up the configuration
-files, reading text catalogs or wrappers for CFITSIO and WCSLIB to
-facilitate reading and writing of FITS files. The names of the
-libraries are usually descriptive enough on the kind of functions they
-keep.
-
-Currently these libraries are not installed along with Gnuastro, they
-are only statically linked to any program needing them in the build
-directory and remain or are deleted from there. Note that in a static
-link, the contents of the library are merged with the executable, so
-they are no longer needed after the linking (you can safely delete
-them after installing the executable). In the future if need be, they
-can also be installed so they can be used by other programs too.
-
-
-@node Header files, Program source, Internal libraries, Developing
-@section Header files
-
-@cindex Header files
-The @file{include/} directory contains the headers for Gnuastro's
-internal libraries (see @ref{Internal libraries}) and several
-header-only files in the @file{include} directory. Below is a list of
-the latter type.
-
-@table @code
-
-@item commonargs.h
-@cindex @file{commonargs.h}
-All the programs have a common set of options, see @ref{Common
-options}. Instead of including separately them and making sure they
-are identical in the implementation of all programs, the GNU C
-library's ability to merge independent argument parsers with Argp is
-used. This ensures that they are identical in all programs with only
-one file to work on. The common options and the function to parse them
-are thus defined in this header file. All the argument parsers in
-various programs are merged with this argument parser to read the
-user's input.
-
-@item commonparams.h
-@cindex @file{commonparams.h}
-The structure that keeps the values of the common arguments and
-whether they have been set or not is defined in this header file.
-
-@item fixedstringmacros.h
-@cindex @file{fixedstringmacros.h}
-Some strings are fixed in all the programs, only the relevant names of
-the packages must be put in them. The various names for each package
-are defined in their @file{main.h} source file with macros of fixed
-names. For example the copyright notice, or parts of the top
-information in the @option{--help} output.
-
-@item neighbors.h
-@cindex @file{neighbors.h}
-The macros in this header find the neighbors of a pixel index using
-four or eight connectivity in a region of an image or the whole image.
-
-@end table
-
-
-@node Program source, Building and debugging, Header files, Developing
-@section Program source
-
-@cindex Source file navigation
-@cindex Navigating source files
-@cindex Program structure convention
-@cindex Convention for program source
-@cindex Gnuastro program structure convention
-Besides the fact that all the programs share some functions that were
-explained in @ref{Internal libraries}, everything else about each
-program is completely independent. In this section the conventions
-used in all the program sources are explained. To easily understand
-the explanations in this section, it is good to open the source files
-of one or several of the programs in Gnuastro and inspect them as you
-read along.
-
-
-@menu
-* Mandatory source code files::  How the source files of each program are managed.
-* Coding conventions::          Basic conventions for coding structure.
-* Documentation::               Documentation is an integral part of Gnuastro.
-* The TEMPLATE program::        A template to create new utilities.
-@end menu
-
-@node Mandatory source code files, Coding conventions, Program source, Program source
-@subsection Mandatory source code files
-
-Some programs might need lots of source files and if there is no fixed
-convention, navigating them can become very hard for a new inquirer
-into the code. The following source files exist in every program's
-source directory (which is located in @file{bin/progname}). For small
-programs, these files are enough. Larger programs will need more
-files. In general for writing other source files, please choose
-filenames that are descriptive.
-
-@vtable @file
-
-@item main.c
-@cindex @code{main} function
-Each executable has a @code{main} function, which is located in
-@file{main.c}. Therefore this file in any program's source code will
-be the starting point. No actual processing functions are to be
-defined in this file, the function(s) in this file are only meant to
-connect the most high level steps of each program. Generally,
-@code{main} will first call the top user interface function to read
-user input and make all the preparations. Then it will pass control to
-the top processing function for that program. The functions to do both
-these jobs must be defined in other source files.
-
-@item main.h
-@cindex Top root structure
-@cindex @code{prognameparams}
-@cindex Root parameter structure
-@cindex Main parameters C structure
-All the major parameters which will be used in the program must be
-stored in a structure which is defined in @file{main.h}. The name of
-this structure is usually @code{prognameparams}, for example
-@code{imgcropparams}. So @code{#include "main.h"} will be a staple in
-all the source codes of the program and most of the functions. Keeping
-all the major parameters of a program in this structure has the major
-benefit that most functions will only need one argument: a pointer to
-this structure. This will significantly facilitate the job of the
-programmer, the inquirer and the computer. All the programs in
-Gnuastro are designed to be low-level, small and independent parts, so
-this structure should not get too large.
-
-The main root structure of a program contains at least two other
-structures: a structure only keeping parameters for user interface
-functions, which is also defined in @file{main.h} and the
-@code{commonparams} structure which is defined in
-@file{commonparams.h}, see @ref{Header files}. The main structure can
-become very large and since the programmer and inquirer often don't
-need to be confused with these parameters mixed with the actual
-processing parameters, they are conveniently defined in another
-structure which is named @code{uiparams} and is also defined in
-@file{main.h}. It could be defined in @file{ui.h} (see below) so the
-main functions remain completely ignorant to it, but its parameters
-might be needed for reporting input conditions, so it is included as
-part of the main program structure.
-
-@cindex @code{p}
-This top root structure is conveniently called @code{p} (short for
-parameters) by all the programs. The @code{uiparams} structure is
-called @code{up} (for user parameters) and the @code{commonparams}
-structure is called @code{cp}. With this convention any reader can
-immediately understand where to look for the definition of one
-parameter.
-
-@cindex Structure de-reference operator
-@cindex Operator, structure de-reference
-With this basic root structure, source code of functions can
-potentially become full of structure de-reference operators
-(@command{->}) which can make the code very un-readable. In order to
-avoid this, whenever a parameter is used more than a couple of times
-in a function, a parameter of the same type and with the same name (so
-it can be searched) as the desired parameter should be defined and put
-the value of the root structure inside of it in definition time. For
-example
-
-@example
-char *hdu=p->cp.hdu;
-int verb=p->cp.verb;
-@end example
-
-@item args.h
-@cindex Argp argument parser
-The argument parser structures (which are used by GNU C library's
-Argp) for each program are defined in @file{args.h}. They are separate
-global variables and function definitions that will be used by
-Argp. We recommend going through the appropriate section in GNU C
-library to understand their exact meaning, although they should be
-descriptive and understandable enough by looking at a few of the
-programs.
-
-@item ui.c, ui.h
-@cindex User interface functions
-@cindex Functions for user interface
-The user interface functions are also a unique set of functions in all
-the programs, so they are particularly named @file{ui.c} and
-@file{ui.h} in all the programs. Everything related to reading the
-user input arguments and options, checking the configuration files and
-checking the consistency of the input parameters before the actual
-program is run should be done in this file. Since most functions are
-the same, with only the internal checks and structure parameters
-differing, we recommend going through several of the examples and
-structuring your @file{ui.c} in a similar fashion with the rest of the
-programs.
-
-@cindex @code{setparams} function
-The most high-level function in @file{ui.c} is named @code{setparams}
-which accepts @code{int argc, char *argv[]} and a pointer to the root
-structure for that program, see the explanation for
-@file{main.h}. This is the function that @code{main} calls. The basic
-idea of the functions in this file is that the processing functions
-should need a minimum number of such checks. With this convention an
-inquirer who only wants to understand only one part (mostly the
-processing part and not user input details) of the code can easily do
-so. It also makes all the errors related to input appear before the
-processing begins which is more convenient for the user.
-
-@item progname.c
-@cindex Top processing source file
-The main processing functions in each program which keep the
-function(s) that @code{main()} will call are in a file named
-@file{progname.c}, for example @file{imgcrop.c} or
-@file{noisechisel.c}. The function within these files which
-@code{main()} calls is also named after the program, for example
-
-@example
-void
-imgcrop(struct imgcropparams *p)
-@end example
-
-@noindent
-or
-
-@example
-void
-noisechisel(struct noisechiselparams *p)
-@end example
-
-@noindent
-In this manner, if an inquirer is interested the processing steps,
-they can immediately come and check this file for the first processing
-step without having to go through @file{main.c} first. In most
-situations, any failure in any step of the programs will result in an
-informative error message and an immediate abort in the program. So
-there is no need for return values. Under more complicated situations
-where a return value might be necessary, @code{void} will be replaced
-with an @code{int} in the examples above.
-
-@item cite.h
-@cindex Citation information
-This file keeps the function to be called if the user runs any of the
-programs with @option{--cite}, see @ref{Operating modes}.
-
-@end vtable
-
-@menu
-* Coding conventions::          Conventions used for coding
-* Multithreaded programming::   Gnuastro uses POSIX threads.
-@end menu
-
-@node Coding conventions, Documentation, Mandatory source code files, Program source
-@subsection Coding conventions
+@node Coding conventions, Program source, Developing mailing lists, Developing
+@section Coding conventions
 
 @cindex GNU coding standards
 @cindex Gnuastro coding convention
@@ -17713,9 +17429,9 @@ Installed library header files (for example @file{cfitsio.h} or
 @code{<>}, for example @code{#include <nproc.h>}.
 @item
 Gnuastro common headers and libraries, for example @file{fits.h} or
-@file{neighbors.h}, see @ref{Header files}.
+@file{neighbors.h}, see @ref{Headers}.
 @item
-For utilities, the @file{main.h} file (which is needed by the next group of
+For programs, the @file{main.h} file (which is needed by the next group of
 headers).
 @item
 That particular program's header files, for example @file{mkprof.h}, or
@@ -17883,83 +17599,185 @@ which contains nice animated images of using Emacs.
 
 
 
+@node Program source, Documentation, Coding conventions, Developing
+@section Program source
 
-@node Documentation, The TEMPLATE program, Coding conventions, Program source
-@subsection Documentation
-
-Documentation (this book) is an integral part of Gnuastro.
-Documentation is not considered a separate project. So, no change is
-considered valid for implementation unless the respective parts of the
-book have also been updated. The following procedure can be a good
-suggestion to take when you have a new idea and are about to start
-implementing it.
-
-The steps below are not a requirement, the important thing is that
-when you send the program to be included in Gnuastro, the book and
-the code have to both be fully up-to-date and compatible and the
-purpose should be very clearly explained. You can follow any path you
-choose to do this, the following path was what we found to be most
-successful during the initial design and implementation steps of
-Gnuastro.
-
-@enumerate
-@item
-Edit the book and fully explain your desired change, such that your
-idea is completely embedded in the general context of the book with
-no sense of discontinuity for a first time reader. This will allow you
-to plan the idea much more accurately and in the general context of
-Gnuastro or a particular program. Later on, when you are coding, this
-general context will significantly help you as a road-map.
-
-A very important part of this process is the program introduction,
-which explains the purposes of the program. Before actually starting
-to code, explain your idea's purpose thoroughly in the start of the
-program section you wish to add or edit. While actually writing its
-purpose for a new reader, you will probably get some very valuable
-ideas that you hadn't thought of before, this has occurred several
-times during the creation of Gnuastro. If an introduction already
-exists, embed or blend your idea's purpose with the existing
-purposes. We emphasize that doing this is equally useful for you (as
-the programmer) as it is useful for the user (reader). Recall that the
-purpose of a program is very important, see @ref{Design philosophy}.
-
-As you have already noticed for every program, it is very important
-that the basics of the science and technique be explained in separate
-subsections prior to the `Invoking Programname' subsection. If you are
-writing a new program or your addition involves a new concept, also
-include such subsections and explain the concepts so a person
-completely unfamiliar with the concepts can get a general initial
-understanding. You don't have to go deep into the details, just enough
-to get an interested person (with absolutely no background)
-started. If you feel you can't do that, then you have probably not
-understood the concept yourself! Have in mind that your only
-limitation in length is the fatigue of the reader after reading a long
-text, nothing else.
-
-It might also help if you start implementing your idea in the
-`Invoking ProgramName' subsection (explaining the options and
-arguments you have in mind) at this stage too. Actually starting to
-write it here will really help you later when you are coding.
-
-@item
-After you have finished adding your initial intended plan to the
-book, then start coding your change or new program within the
-Gnuastro source files. While you are coding, you will notice that
-somethings should be different from what you wrote in the book (your
-initial plan). So correct them as you are actually coding.
-
-@item
-In the end, read the section in the book that you edited completely
-and see if you didn't miss any change in the coding and to see if the
-context is fairly continuous for a first time reader (who hasn't seen
-the book or had known of Gnuastro before you made your change).
-@end enumerate
+@cindex Source file navigation
+@cindex Navigating source files
+@cindex Program structure convention
+@cindex Convention for program source
+@cindex Gnuastro program structure convention
+Besides the fact that all the programs share some functions that were
+explained in @ref{Libraries}, everything else about each program is
+completely independent. In this section the conventions used in all the
+program sources are explained in @ref{Mandatory source code files}. To
+easily understand the explanations in this section you can use @ref{The
+TEMPLATE program} which contains the bare minimum code for one
+program. This template can also be used to easily add new utilities.
 
 
 
+@menu
+* Mandatory source code files::  Description of files common to all programs.
+* The TEMPLATE program::        Template for easy creation of a new program.
+@end menu
 
+@node Mandatory source code files, The TEMPLATE program, Program source, Program source
+@subsection Mandatory source code files
 
-@node The TEMPLATE program,  , Documentation, Program source
+Some programs might need lots of source files and if there is no fixed
+convention, navigating them can become very hard for a new inquirer
+into the code. The following source files exist in every program's
+source directory (which is located in @file{bin/progname}). For small
+programs, these files are enough. Larger programs will need more
+files. In general for writing other source files, please choose
+filenames that are descriptive.
+
+@vtable @file
+
+@item main.c
+@cindex @code{main} function
+Each executable has a @code{main} function, which is located in
+@file{main.c}. Therefore this file in any program's source code will
+be the starting point. No actual processing functions are to be
+defined in this file, the function(s) in this file are only meant to
+connect the most high level steps of each program. Generally,
+@code{main} will first call the top user interface function to read
+user input and make all the preparations. Then it will pass control to
+the top processing function for that program. The functions to do both
+these jobs must be defined in other source files.
+
+@item main.h
+@cindex Top root structure
+@cindex @code{prognameparams}
+@cindex Root parameter structure
+@cindex Main parameters C structure
+All the major parameters which will be used in the program must be
+stored in a structure which is defined in @file{main.h}. The name of
+this structure is usually @code{prognameparams}, for example
+@code{imgcropparams}. So @code{#include "main.h"} will be a staple in
+all the source codes of the program and most of the functions. Keeping
+all the major parameters of a program in this structure has the major
+benefit that most functions will only need one argument: a pointer to
+this structure. This will significantly facilitate the job of the
+programmer, the inquirer and the computer. All the programs in
+Gnuastro are designed to be low-level, small and independent parts, so
+this structure should not get too large.
+
+The main root structure of a program contains at least two other
+structures: a structure only keeping parameters for user interface
+functions, which is also defined in @file{main.h} and the
+@code{commonparams} structure which is defined in
+@file{lib/gnuastro/commonparams.h}@footnote{
+@file{lib/gnuastro/commonparams.h} is a program-specific header and not
+installed as part of the libraries.}. The main structure can become very
+large and since the programmer and inquirer often don't need to be confused
+with these parameters mixed with the actual processing parameters, they are
+conveniently defined in another structure which is named @code{uiparams}
+and is also defined in @file{main.h}. It could be defined in @file{ui.h}
+(see below) so the main functions remain completely ignorant to it, but its
+parameters might be needed for reporting input conditions, so it is
+included as part of the main program structure.
+
+@cindex @code{p}
+This top root structure is conveniently called @code{p} (short for
+parameters) by all the programs. The @code{uiparams} structure is
+called @code{up} (for user parameters) and the @code{commonparams}
+structure is called @code{cp}. With this convention any reader can
+immediately understand where to look for the definition of one
+parameter.
+
+@cindex Structure de-reference operator
+@cindex Operator, structure de-reference
+With this basic root structure, source code of functions can
+potentially become full of structure de-reference operators
+(@command{->}) which can make the code very un-readable. In order to
+avoid this, whenever a parameter is used more than a couple of times
+in a function, a parameter of the same type and with the same name (so
+it can be searched) as the desired parameter should be defined and put
+the value of the root structure inside of it in definition time. For
+example
+
+@example
+char *hdu=p->cp.hdu;
+int verb=p->cp.verb;
+@end example
+
+@item args.h
+@cindex Argp argument parser
+The argument parser structures (which are used by GNU C library's
+Argp) for each program are defined in @file{args.h}. They are separate
+global variables and function definitions that will be used by
+Argp. We recommend going through the appropriate section in GNU C
+library to understand their exact meaning, although they should be
+descriptive and understandable enough by looking at a few of the
+programs.
+
+@item ui.c, ui.h
+@cindex User interface functions
+@cindex Functions for user interface
+The user interface functions are also a unique set of functions in all
+the programs, so they are particularly named @file{ui.c} and
+@file{ui.h} in all the programs. Everything related to reading the
+user input arguments and options, checking the configuration files and
+checking the consistency of the input parameters before the actual
+program is run should be done in this file. Since most functions are
+the same, with only the internal checks and structure parameters
+differing, we recommend going through several of the examples and
+structuring your @file{ui.c} in a similar fashion with the rest of the
+programs.
+
+@cindex @code{setparams} function
+The most high-level function in @file{ui.c} is named @code{setparams}
+which accepts @code{int argc, char *argv[]} and a pointer to the root
+structure for that program, see the explanation for
+@file{main.h}. This is the function that @code{main} calls. The basic
+idea of the functions in this file is that the processing functions
+should need a minimum number of such checks. With this convention an
+inquirer who only wants to understand only one part (mostly the
+processing part and not user input details) of the code can easily do
+so. It also makes all the errors related to input appear before the
+processing begins which is more convenient for the user.
+
+@item progname.c
+@cindex Top processing source file
+The main processing functions in each program which keep the
+function(s) that @code{main()} will call are in a file named
+@file{progname.c}, for example @file{imgcrop.c} or
+@file{noisechisel.c}. The function within these files which
+@code{main()} calls is also named after the program, for example
+
+@example
+void
+imgcrop(struct imgcropparams *p)
+@end example
+
+@noindent
+or
+
+@example
+void
+noisechisel(struct noisechiselparams *p)
+@end example
+
+@noindent
+In this manner, if an inquirer is interested the processing steps,
+they can immediately come and check this file for the first processing
+step without having to go through @file{main.c} first. In most
+situations, any failure in any step of the programs will result in an
+informative error message and an immediate abort in the program. So
+there is no need for return values. Under more complicated situations
+where a return value might be necessary, @code{void} will be replaced
+with an @code{int} in the examples above.
+
+@item cite.h
+@cindex Citation information
+This file keeps the function to be called if the user runs any of the
+programs with @option{--cite}, see @ref{Operating modes}.
+
+@end vtable
+
+@node The TEMPLATE program,  , Mandatory source code files, Program source
 @subsection The TEMPLATE program
 
 In the @code{Version controlled source}, the @file{bin/} directory contains
@@ -18022,7 +17840,86 @@ and @command{make}.
 
 
 
-@node Building and debugging, Test scripts, Program source, Developing
+@node Documentation, Building and debugging, Program source, Developing
+@section Documentation
+
+Documentation (this book) is an integral part of Gnuastro.
+Documentation is not considered a separate project. So, no change is
+considered valid for implementation unless the respective parts of the
+book have also been updated. The following procedure can be a good
+suggestion to take when you have a new idea and are about to start
+implementing it.
+
+The steps below are not a requirement, the important thing is that
+when you send the program to be included in Gnuastro, the book and
+the code have to both be fully up-to-date and compatible and the
+purpose should be very clearly explained. You can follow any path you
+choose to do this, the following path was what we found to be most
+successful during the initial design and implementation steps of
+Gnuastro.
+
+@enumerate
+@item
+Edit the book and fully explain your desired change, such that your
+idea is completely embedded in the general context of the book with
+no sense of discontinuity for a first time reader. This will allow you
+to plan the idea much more accurately and in the general context of
+Gnuastro or a particular program. Later on, when you are coding, this
+general context will significantly help you as a road-map.
+
+A very important part of this process is the program introduction, which
+explains the purposes of the program. Before actually starting to code,
+explain your idea's purpose thoroughly in the start of the program section
+you wish to add or edit. While actually writing its purpose for a new
+reader, you will probably get some very valuable ideas that you hadn't
+thought of before, this has occurred several times during the creation of
+Gnuastro. If an introduction already exists, embed or blend your idea's
+purpose with the existing purposes. We emphasize that doing this is equally
+useful for you (as the programmer) as it is useful for the user
+(reader). Recall that the purpose of a program is very important, see
+@ref{Program design philosophy}.
+
+As you have already noticed for every program, it is very important
+that the basics of the science and technique be explained in separate
+subsections prior to the `Invoking Programname' subsection. If you are
+writing a new program or your addition involves a new concept, also
+include such subsections and explain the concepts so a person
+completely unfamiliar with the concepts can get a general initial
+understanding. You don't have to go deep into the details, just enough
+to get an interested person (with absolutely no background)
+started. If you feel you can't do that, then you have probably not
+understood the concept yourself! Have in mind that your only
+limitation in length is the fatigue of the reader after reading a long
+text, nothing else.
+
+It might also help if you start implementing your idea in the
+`Invoking ProgramName' subsection (explaining the options and
+arguments you have in mind) at this stage too. Actually starting to
+write it here will really help you later when you are coding.
+
+@item
+After you have finished adding your initial intended plan to the
+book, then start coding your change or new program within the
+Gnuastro source files. While you are coding, you will notice that
+somethings should be different from what you wrote in the book (your
+initial plan). So correct them as you are actually coding.
+
+@item
+In the end, read the section in the book that you edited completely
+and see if you didn't miss any change in the coding and to see if the
+context is fairly continuous for a first time reader (who hasn't seen
+the book or had known of Gnuastro before you made your change).
+@end enumerate
+
+
+
+
+
+
+
+
+
+@node Building and debugging, Test scripts, Documentation, Developing
 @section Building and debugging
 
 @cindex GNU Libtool
@@ -18086,7 +17983,7 @@ guide after you have read the seperate introductions.
 
 
 
-@node Test scripts, Contributing to Gnuastro, Building and debugging, Developing
+@node Test scripts, Developer's checklist, Building and debugging, Developing
 @section Test scripts
 
 @cindex Test scripts
@@ -18134,11 +18031,59 @@ run), so they don't need to be prefixed with that variable. This is
 also true for images or files that were produced by other tests.
 
 
+@node Developer's checklist, Contributing to Gnuastro, Test scripts, Developing
+@section Developer's checklist
+This is a checklist of things to do after applying your changes/additions
+in Gnuastro:
+
+@enumerate
+
+@item
+If the change is non-trivial, write test(s) in the @file{tests/progname/}
+directory to test the change(s)/addition(s) you have made. Then add their
+file names to @file{tests/Makefile.am}.
+
+@item
+Run @command{$ make check} to make sure everything is working correctly.
+
+@item
+Make sure the documentation (this book) is completely up to date with your
+changes, see @ref{Documentation}.
+
+@item
+Commit your change to your issue branch (see @ref{Production workflow} and
+@ref{Forking tutorial}) Afterwards, run Autoreconf to generate the
+appropriate version number:
+
+@example
+$ autoreconf -f
+@end example
+
+@cindex Making a distribution package
+@item
+Finally, to make sure everything will be built, installed and checked
+correctly run
+
+@example
+$ make distcheck
+@end example
+
+@noindent
+This command will create a distribution file (ending with @file{.tar.gz})
+and try to compile it in the most general cases, then it will run the tests
+on what it has built in its own mini-environment. If @command{$ make
+distcheck} finishes successfully, then you are safe to send your changes to
+us to implement or for your own purposes. See @ref{Production workflow} and
+@ref{Forking tutorial}.
+
+@end enumerate
 
 
 
 
-@node Contributing to Gnuastro, After making changes, Test scripts, Developing
+
+
+@node Contributing to Gnuastro,  , Developer's checklist, Developing
 @section Contributing to Gnuastro
 
 You have this great idea or have found a good fix to a problem which you
@@ -18147,7 +18092,7 @@ general design of Gnuastro in the previous sections of this chapter (see
 @ref{Developing}) and want to start working on and sharing your new
 addition/change with the whole community as part of the official
 release. This is great and your contribution is most welcome. This section
-and the next (see @ref{After making changes}) are written in the hope of
+and the next (see @ref{Developer's checklist}) are written in the hope of
 making it as easy as possible for you to share your great idea with the
 Gnuastro community.
 
@@ -18299,7 +18244,7 @@ the development of Gnuastro, so please adhere to the following guidelines.
 @item
 The body should be very descriptive. Start the commit message body by
 explaining what changes your commit makes from a user's perspective (added,
-changed, or removed options, or arguments to utilities or libraries, or
+changed, or removed options, or arguments to programs or libraries, or
 modified algorithms, or new installation step, or etc).
 
 @item
@@ -18499,52 +18444,7 @@ most recent history point and thus simplify the final merging of your work.
 
 
 
-@node After making changes,  , Contributing to Gnuastro, Developing
-@section After making changes
-This is a checklist of things to do after applying your changes/additions
-in Gnuastro:
 
-@enumerate
-
-@item
-If the change is non-trivial, write test(s) in the @file{tests/progname/}
-directory to test the change(s)/addition(s) you have made. Then add their
-file names to @file{tests/Makefile.am}.
-
-@item
-Run @command{$ make check} to make sure everything is working correctly.
-
-@item
-Make sure the documentation (this book) is completely up to date with your
-changes, see @ref{Documentation}.
-
-@item
-Commit your change to your issue branch (see @ref{Production workflow} and
-@ref{Forking tutorial}) Afterwards, run Autoreconf to generate the
-appropriate version number:
-
-@example
-$ autoreconf -f
-@end example
-
-@cindex Making a distribution package
-@item
-Finally, to make sure everything will be built, installed and checked
-correctly run
-
-@example
-$ make distcheck
-@end example
-
-@noindent
-This command will create a distribution file (ending with @file{.tar.gz})
-and try to compile it in the most general cases, then it will run the tests
-on what it has built in its own mini-environment. If @command{$ make
-distcheck} finishes successfully, then you are safe to send your changes to
-us to implement or for your own purposes. See @ref{Production workflow} and
-@ref{Forking tutorial}.
-
-@end enumerate
 
 
 
