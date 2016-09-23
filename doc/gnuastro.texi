@@ -25,9 +25,9 @@
 
 @c Copyright information:
 @copying
-This book documents version @value{VERSION} of the GNU Astronomy
-Utilities, providing various individual tools with similar user
-interface for astronomical data manipulation and analysis.
+This book documents version @value{VERSION} of the GNU Astronomy Utilities
+(Gnuastro). Gnuastro provides various programs and libraries for
+astronomical data manipulation and analysis.
 
 Copyright @copyright{} 2015-2016 Free Software Foundation, Inc.
 
@@ -116,7 +116,7 @@ Texts.  A copy of the license is included in the section entitled
 @c Print title information:
 @titlepage
 @title GNU Astronomy Utilities
-@subtitle Astronomical data manipulation and analysis
+@subtitle Astronomical data manipulation and analysis programs and libraries
 @subtitle for version @value{VERSION}, @value{UPDATED}
 @author Mohammad Akhlaghi
 
@@ -198,7 +198,7 @@ sub-component to a title is present.
 * High-level calculations::     Physical calculations.
 * Libraries::                   Use Gnuastro in your own code.
 * Developing::                  The development environment.
-* GNU Astronomy Utilities list::  List and short summary of Gnuastro.
+* Gnuastro programs list::  List and short summary of Gnuastro.
 * Other useful software::       Installing other useful software.
 * GNU Free Documentation License::  Full FDL text.
 * Index::                       Index of terms
@@ -552,7 +552,7 @@ Program source
 * Mandatory source code files::  How the source files of each program are managed.
 * Coding conventions::          Basic conventions for coding structure.
 * Documentation::               Documentation is an integral part of Gnuastro.
-* The TEMPLATE utility::        A template to create new utilities.
+* The TEMPLATE program::        A template to create new programs.
 
 Mandatory source code files
 
@@ -585,17 +585,17 @@ SAO ds9
 @cindex GNU Astronomy Utilities (Gnuastro)
 The GNU Astronomy Utilities (Gnuastro) is an official GNU package
 consisting of separate programs and libraries for the manipulation and
-analysis of astronomical data. See @ref{GNU Astronomy Utilities list} for
-the full list of programs and @ref{Libraries}. All the various utilities
-share the same basic command-line user interface for the comfort of both
-the users and developers. Gnuastro is written to comply fully with the GNU
-coding standards so it integrates finely with the GNU/Linux operating
-system. This also enables astronomers to expect a fully familiar experience
-in the source code, building, installing and command-line user interaction
-that they have seen in all the other GNU software that they use. The
-official and always up to date version of book/manual is freely available
-under @ref{GNU Free Documentation License} in various formats (pdf, html,
-plain text, info, and as its Texinfo source) at
+analysis of astronomical data. See @ref{Gnuastro programs list} for
+the full list of programs and @ref{Gnuastro library}. All the various
+utilities share the same basic command-line user interface for the comfort
+of both the users and developers. Gnuastro is written to comply fully with
+the GNU coding standards so it integrates finely with the GNU/Linux
+operating system. This also enables astronomers to expect a fully familiar
+experience in the source code, building, installing and command-line user
+interaction that they have seen in all the other GNU software that they
+use. The official and always up to date version of book/manual is freely
+available under @ref{GNU Free Documentation License} in various formats
+(pdf, html, plain text, info, and as its Texinfo source) at
 @url{http://www.gnu.org/software/gnuastro/manual/}.
 
 For users who are new to the GNU/Linux environment, unless otherwise
@@ -927,24 +927,23 @@ License}.
 
 @cindex Names, programs
 @cindex Program names
-GNU Astronomy Utilities is a package of independent utilities or
-programs. Each utility has an official name which consists of one or
-two words, describing what they do. The latter are printed with no
-space, for example NoiseChisel or ImageCrop. On the command-line, you
-can run them with their executable names which start with an
-@file{ast} and might be an abbreviation of the official name, for
-example @file{astnoisechisel} or @file{astimgcrop}, see
-@ref{Executable names}.
+GNU Astronomy Utilities is a package of independent programs and a
+collection of libraries. Each program has an official name which consists
+of one or two words, describing what they do. The latter are printed with
+no space, for example NoiseChisel or ImageCrop. On the command-line, you
+can run them with their executable names which start with an @file{ast} and
+might be an abbreviation of the official name, for example
+@file{astnoisechisel} or @file{astimgcrop}, see @ref{Executable names}.
 
 @pindex ProgramName
 @pindex @file{astprogname}
 We will use ``ProgramName'' for a generic official program name and
 @file{astprogname} for a generic executable name. In this book, the
-programs are classified based on what they do and thoroughly
-explained. An alphabetical list of the utilities that are installed on
-your system with this installation are given in @ref{GNU Astronomy
-Utilities list}. That list also contains the executable names and
-version numbers along with a one line description.
+programs are classified based on what they do and thoroughly explained. An
+alphabetical list of the utilities that are installed on your system with
+this installation are given in @ref{Gnuastro programs list}. That list also
+contains the executable names and version numbers along with a one line
+description.
 
 
 
@@ -1232,15 +1231,15 @@ unexpected) and will ask the users to report the bug.
 
 @cindex Bug reporting
 Prior to actually filing a bug report, it is best to search previous
-reports. The issue might have already been found and even solved. The
-best place to check if your bug has already been discussed is the bugs
-tracker on @ref{Gnuastro project webpage} at
+reports. The issue might have already been found and even solved. The best
+place to check if your bug has already been discussed is the bugs tracker
+on @ref{Gnuastro project webpage} at
 @url{https://savannah.gnu.org/bugs/?group=gnuastro}. In the top search
-fields (under ``Display Criteria'') set the ``Open/Closed'' drop-down
-menu to ``Any'' and choose the respective utility in ``Category'' and
-click the ``Apply'' button. The results colored green have already
-been solved and the status of those colored in red is shown in the
-table.
+fields (under ``Display Criteria'') set the ``Open/Closed'' drop-down menu
+to ``Any'' and choose the respective program or general category of the bug
+in ``Category'' and click the ``Apply'' button. The results colored green
+have already been solved and the status of those colored in red is shown in
+the table.
 
 @cindex Version control
 Recently corrected bugs are probably not yet publicly released because
@@ -1354,18 +1353,18 @@ is a full chapter devoted to developing it: @ref{Developing}.
 
 @cindex Feature requests
 @cindex Additions to Gnuastro
-We would always be very happy to hear of suggested new features. For
-every program there are already lists of features that we are planning
-to add. You can see the current list of plans from the Gnuastro
-project webpage at @url{https://savannah.gnu.org/projects/gnuastro/}
-and following @clicksequence{``Tasks''@click{}``Browse''} on the
-horizontal menu at the top of the page immediately under the title,
-see @ref{Gnuastro project webpage}. If you want to request a feature
-to an existing utility, click on the ``Display Criteria'' above the
-list and under ``Category'', choose that particular program. Under
-``Category'' you can also see the existing suggestions for new
-utilities or other cases like installation, documentation or
-libraries. Also be sure to set the ``Open/Closed'' value to ``Any''.
+We would always be very happy to hear of suggested new features. For every
+program there are already lists of features that we are planning to
+add. You can see the current list of plans from the Gnuastro project
+webpage at @url{https://savannah.gnu.org/projects/gnuastro/} and following
+@clicksequence{``Tasks''@click{}``Browse''} on the horizontal menu at the
+top of the page immediately under the title, see @ref{Gnuastro project
+webpage}. If you want to request a feature to an existing program, click on
+the ``Display Criteria'' above the list and under ``Category'', choose that
+particular program. Under ``Category'' you can also see the existing
+suggestions for new utilities or other cases like installation,
+documentation or libraries. Also be sure to set the ``Open/Closed'' value
+to ``Any''.
 
 If the feature you want to suggest is not already listed in the task
 manager, then follow the steps that are fully described in @ref{Report
@@ -1392,14 +1391,14 @@ people in contact.
 
 @cartouche
 @noindent
-@strong{Gnuastro is a collection of low level programs:} As described
-in @ref{Design philosophy}, a founding principle of Gnuastro is that
-each library or utility should be very basic and low-level. High level
-jobs should be done by running the separate programs in succession
-through a shell script or calling the libraries by higher level
-functions, see the examples in @ref{Tutorials}. So when making the
-suggestions please consider how your desired job can best be broken
-into separate steps and modularized.
+@strong{Gnuastro is a collection of low level programs:} As described in
+@ref{Design philosophy}, a founding principle of Gnuastro is that each
+library or program should be very basic and low-level. High level jobs
+should be done by running the separate programs or using separate functions
+in succession through a shell script or calling the libraries by higher
+level functions, see the examples in @ref{Tutorials}. So when making the
+suggestions please consider how your desired job can best be broken into
+separate steps and modularized.
 @end cartouche
 
 
@@ -1616,18 +1615,18 @@ $ pwd
 $ ls
 @end example
 
-Hubble has multiple images in @file{/mnt/data/images}, some of his
-targets might be on the edges of an image and so several images need
-to be stitched to give a good view of them. Also his extra Galactic
-targets belong to various pointings in the sky, so they are not in one
-large image. Gnuastro's ImageCrop is just the utility he wants. The
-catalog in @file{extragalactic.txt} is a plain text file which stores
-the basic information of all his known 200 extra Galactic nebulae. In
-its second column it has each object's Right Ascension (the first
-column is a label he has given to each object) and in the third the
-object's declination.  Having read the Gnuastro manual, he knows that
-all counting is done starting from zero, so the RA and Dec columns
-have number 1 and 2 respectively.
+Hubble has multiple images in @file{/mnt/data/images}, some of his targets
+might be on the edges of an image and so several images need to be stitched
+to give a good view of them. Also his extra Galactic targets belong to
+various pointings in the sky, so they are not in one large
+image. Gnuastro's ImageCrop is just the program he wants. The catalog in
+@file{extragalactic.txt} is a plain text file which stores the basic
+information of all his known 200 extra Galactic nebulae. In its second
+column it has each object's Right Ascension (the first column is a label he
+has given to each object) and in the third the object's declination.
+Having read the Gnuastro manual, he knows that all counting is done
+starting from zero, so the RA and Dec columns have number 1 and 2
+respectively.
 
 @example
 $ astimgcrop --racol=1 --deccol=2 /mnt/data/images/*.fits     \
@@ -2587,8 +2586,9 @@ Library above for instructions on obtaining it and keeping it up to date.
 @item GNU Libtool (@command{libtool})
 @cindex GNU Libtool
 GNU Libtool is in charge of building all the libraries in Gnuastro. The
-libraries contain functions that are used by more than one utility and are
-thus put in a separate directory (@file{lib/}).
+libraries contain functions that are used by more than one program and are
+installed for use in other programs. They are thus put in a separate
+directory (@file{lib/}).
 
 @item GNU help2man (@command{help2man})
 @cindex GNU help2man
@@ -2871,7 +2871,7 @@ now available along with the book figures. The standard GNU build system
 @strong{Undoing the bootstrap:} During the development, it might happen
 that you want to remove all the automatically generated and imported
 files. In other words, you might want to reverse the bootstrap
-process. Fortunately Git has a good utility for this job: @command{git
+process. Fortunately Git has a good program for this job: @command{git
 clean}. Run the following command and every file that is not version
 controlled will be removed.
 
@@ -3508,15 +3508,14 @@ have two executable versions of a program.
 
 @cindex SED, stream editor
 @cindex Stream editor, SED
-The third configure option allows you to set the executable name at
-install time using the SED utility. SED is a very useful `stream
-editor'. There are various resources on the internet to use it
-effectively. However, we should caution that using configure options
-will change the actual executable name of the installed program and on
-every re-install (an update for example), you have to also add this
-option to keep the old executable name updated. Also note that the
-documentation or configuration files do not change from their standard
-names either.
+The third configure option allows you to set the executable name at install
+time using the SED program. SED is a very useful `stream editor'. There are
+various resources on the internet to use it effectively. However, we should
+caution that using configure options will change the actual executable name
+of the installed program and on every re-install (an update for example),
+you have to also add this option to keep the old executable name
+updated. Also note that the documentation or configuration files do not
+change from their standard names either.
 
 @cindex Removing @file{ast} from executables
 For example, let's assume that typing @file{ast} on every invocation
@@ -4324,19 +4323,18 @@ Update the user configuration file from the command-line options and
 quit. See explanation under @option{--setdirconf} for more details.
 
 @item --onlydirconf
-Only read the current (local) directory configuration file and ignore
-the rest of the configuration files, see @ref{Configuration file
-precedence} and @ref{Current directory and User wide}. This can be
-very useful when you want your results to be exactly reproducible. All
-the configuration files can be put in the hidden @file{./.gnuastro/}
-directory in the current directory, or the hidden directory can be a
-symbolic link to the directory containing the configuration
-files. Then with this option you can ensure that no other
-configuration file is read. So if your local configuration file lacks
-some parameters, which ever Gnuastro utility you are using will will
-warn you and abort, enabling you to exactly set all the necessary
-parameters without unknowingly relying on some user or system wide
-option values.
+Only read the current (local) directory configuration file and ignore the
+rest of the configuration files, see @ref{Configuration file precedence}
+and @ref{Current directory and User wide}. This can be very useful when you
+want your results to be exactly reproducible. All the configuration files
+can be put in the hidden @file{./.gnuastro/} directory in the current
+directory, or the hidden directory can be a symbolic link to the directory
+containing the configuration files. Then with this option you can ensure
+that no other configuration file is read. So if your local configuration
+file lacks some parameters, which ever Gnuastro program you are using will
+will warn you and abort, enabling you to exactly set all the necessary
+parameters without unknowingly relying on some user or system wide option
+values.
 
 @option{onlydirconf} can also be used in the configuration files (with
 a value of @option{0} or @option{1}), see @ref{Configuration file
@@ -4722,15 +4720,14 @@ nicely in the page. If you type the whole command in one line, you
 should remove it.
 
 @item Make
-Make is a utility built for specifying ``targets'', ``prerequisites''
-and ``recipes''. It allows you to define very complicated dependency
-structures for complicated processes that commonly start off with a
-large list of inputs and builds them based on the dependencies you
-define. GNU Make@footnote{@url{https://www.gnu.org/software/make/}} is
-the most common implementation which (like nearly all GNU programs
-comes with a wonderful
-manual@footnote{@url{https://www.gnu.org/software/make/manual/}}). It
-is very basic and short (the most important part is about 100 pages).
+Make is a program built for specifying ``targets'', ``prerequisites'' and
+``recipes''. It allows you to define very complicated dependency structures
+for complicated processes that commonly start off with a large list of
+inputs and builds them based on the dependencies you define. GNU
+Make@footnote{@url{https://www.gnu.org/software/make/}} is the most common
+implementation which (like nearly all GNU programs comes with a wonderful
+manual@footnote{@url{https://www.gnu.org/software/make/manual/}}). It is
+very basic and short (the most important part is about 100 pages).
 
 Make has the @option{--jobs} (@option{-j}) which allows you to specify
 the maximum number of jobs that can be done simultaneously. For
@@ -14081,15 +14078,14 @@ of options and how to effectively use them.
 @node Libraries, Developing, High-level calculations, Top
 @chapter Libraries
 
-Each utility or program in Gnuastro that was discussed in the prior
-chapters (or any program in general) is a collection of functions that is
-compiled into one executable file which can communicate directly with the
-outside world. The outside world in this context is the operating
-system. By communication, we mean that control is directly passed to a
-program from the operating system with a (possible) set of inputs and after
-it is finished, the program will pass control back to the operating
-system. For programs written in C and C++, the unique @code{main} function
-is in charge of this communication.
+Each program in Gnuastro that was discussed in the prior chapters (or any
+program in general) is a collection of functions that is compiled into one
+executable file which can communicate directly with the outside world. The
+outside world in this context is the operating system. By communication, we
+mean that control is directly passed to a program from the operating system
+with a (possible) set of inputs and after it is finished, the program will
+pass control back to the operating system. For programs written in C and
+C++, the unique @code{main} function is in charge of this communication.
 
 Similar to a program, a library is also a collection of functions that is
 compiled into one executable file. However, unlike programs, libraries
@@ -14107,9 +14103,9 @@ use them in @ref{Review of library fundamentals}. The separate functions in
 the Gnuastro library are then introduced (classified by context) in
 @ref{Gnuastro library}. If you end up rutinely using a fixed set of library
 functions, with a well-defined input and output, it will be much more
-beneficial if you define a utility for the job. You can also look into
-@ref{The TEMPLATE utility} to easily define your own utility(s) from these
-and other libraries.
+beneficial if you define a program for the job. Therefore, in its
+@ref{Version controlled source}, Gnuastro comes with the @ref{The TEMPLATE
+program} to easily define your own programs(s).
 
 
 @menu
@@ -14376,7 +14372,7 @@ to create an executable program or a library.
 The object files contain the full definition of the functions in the
 respective @file{.c} file along with a list of any other function (or
 generally ``symbol'') that is referenced there. To get a list of those
-functions you can use the @command{nm} utility which is part of GNU
+functions you can use the @command{nm} program which is part of GNU
 Binutils. For example from the top Gnuastro directory, run:
 
 @example
@@ -14396,9 +14392,9 @@ your self. Run @command{info nm} for more information.
 To recap, the @emph{compiler} created the separate object files mentioned
 above for each @file{.c} file. The @emph{linker} will then combine all the
 symbols of the various object files (and libraries) into one program or
-library. In the case of Arithmetic (a program/utility) the contents of the
-object files in @file{src/arithmetic/} are copied (and re-ordered) into one
-final executable file which we can run from the operating system. When the
+library. In the case of Arithmetic (a program) the contents of the object
+files in @file{src/arithmetic/} are copied (and re-ordered) into one final
+executable file which we can run from the operating system. When the
 symbols (computer-readable function definitions in most cases) are copied
 into the output like this, we call the process @emph{static} linking. Let's
 have a closer look at static linking: we'll assume you have installed
@@ -14493,7 +14489,7 @@ you need to re-build your higher-level program or library.
 To see a list of all the shared libraries that are needed for a program or
 a shared library to run, you can use the GNU C library's
 @command{ldd}@footnote{If your operating system is not using the GNU C
-library, you might need another tool.} utility, for example:
+library, you might need another tool.} program, for example:
 
 @example
 $ ldd /usr/local/bin/astarithmetic
@@ -14604,9 +14600,9 @@ The @strong{linker} will link the called function definitions from various
 compiled files to create one unified object. When the unified product has a
 @code{main} function, this function is the product's only entry point,
 enabling the operating system or user to directly interact with it, so the
-product is a program/utility. When the product doesn't have a @code{main}
-function, the linker's product is a library and its exported functions can
-be linked to other executables (it has many entry points).
+product is a program. When the product doesn't have a @code{main} function,
+the linker's product is a library and its exported functions can be linked
+to other executables (it has many entry points).
 @end enumerate
 
 @cindex GCC
@@ -14760,8 +14756,8 @@ libraries were added. With the 0.2 release, the libraries are
 installable. Because of this history in these early phases, the libraries
 are not fully programmer friendly yet: they abort the program on an error,
 their naming and arguments are not fully uniform, or modular, and most of
-the interesting functions (that are currently only used within one utility)
-are still internal to the utility. During the next releases, Gnuastro's
+the interesting functions (that are currently only used within one program)
+are still internal to the program. During the next releases, Gnuastro's
 library structure will undergo significant evolution to address all these
 problems. It will stabilize with the removal of this notice. Check the
 @file{NEWS} file for interface changes.
@@ -15464,7 +15460,7 @@ can have many extensions, usually related data are stored within one FITS
 file. For example an image, its masked pixels, and the sky standard
 deviation of the noise are various extensions of one FITS file. It would be
 very inconvenient if the same file name would have to be repeated in a call
-to a utility for all images that are within one file.
+to a program for all images that are within one file.
 
 To easily manage things, within Gnuastro, each input variable also has an
 integer variable with the same name, but suffixed with @code{set}. The job
@@ -16970,7 +16966,7 @@ arcsec-squared.
 
 
 
-@node Developing, GNU Astronomy Utilities list, Libraries, Top
+@node Developing, Gnuastro programs list, Libraries, Top
 @chapter Developing
 
 The basic idea of GNU Astronomy Utilities is for an interested astronomer
@@ -17250,15 +17246,15 @@ features/capabilities) that are to be added to Gnuastro.
 @end table
 
 @noindent
-All the trackers can be browsed by a (possibly anonymous) visitor, but
-to edit and comment on the Bugs and Tasks trackers, you have to be a
-registered Gnuastro developer. When posting an issue to a tracker, it
-is very important to choose the `Category' and `Item Group' options
-accurately. The first contains a list of all Gnuastro's utilities
-along with `Installation', `New utility' and `Webpage'. The ``Item
-Group'' contains the nature of the issue, for example if it is a
-`Crash' in the software (a bug), or a problem in the documentation
-(also a bug) or a feature request or an enhancement.
+All the trackers can be browsed by a (possibly anonymous) visitor, but to
+edit and comment on the Bugs and Tasks trackers, you have to be a
+registered Gnuastro developer. When posting an issue to a tracker, it is
+very important to choose the `Category' and `Item Group' options
+accurately. The first contains a list of all Gnuastro's utilities along
+with `Installation', `New program' and `Webpage'. The ``Item Group''
+contains the nature of the issue, for example if it is a `Crash' in the
+software (a bug), or a problem in the documentation (also a bug) or a
+feature request or an enhancement.
 
 The set of horizontal links on the top of the page (Starting with
 `Main' and `Homepage' and finishing with `News') are the easiest way
@@ -17444,7 +17440,7 @@ read along.
 * Mandatory source code files::  How the source files of each program are managed.
 * Coding conventions::          Basic conventions for coding structure.
 * Documentation::               Documentation is an integral part of Gnuastro.
-* The TEMPLATE utility::        A template to create new utilities.
+* The TEMPLATE program::        A template to create new utilities.
 @end menu
 
 @node Mandatory source code files, Coding conventions, Program source, Program source
@@ -17784,7 +17780,7 @@ directories, replace @file{lib/} with @file{$prefix/include/} (see
 
 This is necessary to give any user (who is not familiar with the library
 structure) the ability to follow the code of a function that is not in the
-utility or library they are reading. This convention does make the function
+program or library they are reading. This convention does make the function
 names longer (a little harder to write), but the extra documentation it
 provides convention plays an important role in Gnuastro and is worth the
 cost.
@@ -17888,7 +17884,7 @@ which contains nice animated images of using Emacs.
 
 
 
-@node Documentation, The TEMPLATE utility, Coding conventions, Program source
+@node Documentation, The TEMPLATE program, Coding conventions, Program source
 @subsection Documentation
 
 Documentation (this book) is an integral part of Gnuastro.
@@ -17963,60 +17959,60 @@ the book or had known of Gnuastro before you made your change).
 
 
 
-@node The TEMPLATE utility,  , Documentation, Program source
-@subsection The TEMPLATE utility
+@node The TEMPLATE program,  , Documentation, Program source
+@subsection The TEMPLATE program
 
-The @file{src/} directory contains the source code for each utility in a
-separate subdirectory. The @file{src/TEMPLATE} directory contains the
-bare-minimum files to create a new utility. It can be used to understand
-the conventions described in @ref{Program source}, or to easily create a
-new utility.
+In the @code{Version controlled source}, the @file{src/} directory contains
+the source code for each program in a separate subdirectory. The
+@file{src/TEMPLATE} directory contains the bare-minimum files to create a
+new program. It can be used to understand the conventions described in
+@ref{Program source}, or to easily create a new program.
 
 The extra creativity offered by libraries comes at a cost: you have to
 actually write your @code{main} function in the programming language of
 your choice, and compile it before you can use it. You will also need to
 find a way to pass input and output information to the function. So when an
 operation has well-defined inputs and outputs and is commonly needed, it is
-much more worthwhile to simply do the work in a utility (either by
+much more worthwhile to simply do the work in a program (either by
 modifying an existing one or creating a new one), instead of the using
-underlying libraries every time. To define your new utility based on this
+underlying libraries every time. To define your new program based on this
 template, just take the following steps:
 
 @enumerate
 @item
-Select a name for your new utility (for example @file{myutil}).
+Select a name for your new program (for example @file{myprog}).
 
 @item
-Copy the @file{TEMPLATE} directory to a directory with your utility's name:
+Copy the @file{TEMPLATE} directory to a directory with your program's name:
 @example
-$ cp -R src/TEMPLATE src/myutil
+$ cp -R src/TEMPLATE src/myprog
 @end example
 
 @item
 Open @file{configure.ac} in the top Gnuastro source. This file manages the
 operations that are done when a user runs @file{./configure}. Going down
-the file, you will notice repetative parts for each utility. Copy one of
-those and correct the names of the copied utility to your new utility
+the file, you will notice repetative parts for each program. Copy one of
+those and correct the names of the copied program to your new program
 name. We follow alphabetic ordering here, so please place it
 correctly. There are multiple places where this has to be done, so be
 patient and go down to the bottom of the file. Ultimately add
-@file{src/myutil/Makefile} to @code{AC_CONFIG_FILES}, only here the
+@file{src/myprog/Makefile} to @code{AC_CONFIG_FILES}, only here the
 ordering depends on the length of the name.
 
 @item
 Open @file{Makefile.am} in the top Gnuastro source. Similar to the previous
-step, add your new utility similar to all the other utilites.
+step, add your new program similar to all the other utilites.
 
 @item
-Change @code{TEMPLATE} to @code{myutil} in the file names and contents of
-the files in the @file{src/myutil/} directory.
+Change @code{TEMPLATE} to @code{myprog} in the file names and contents of
+the files in the @file{src/myprog/} directory.
 
 @item
 Run the following command to re-build the configuration and build system.
 @example
 $ autoreconf -f
 @end example
-Your new utility will be built the next time you run @command{./configure}
+Your new program will be built the next time you run @command{./configure}
 and @command{make}.
 @end enumerate
 
@@ -18055,7 +18051,7 @@ each time you make a change and want to test your work (with some possible
 input and output). The script itself is heavily commented and thoroughly
 discribes the best way to use it, so we won't repeat it here. As a summary:
 you specify the build directory, an output directory (for the built program
-to be run in and also contains the inputs), the utility's short name and
+to be run in and also contains the inputs), the program's short name and
 the arguments and options that it should be run with. This script will then
 build Gnuastro, go to the output directory and run the built executable
 from there. One option for the output directory might be your desktop, so
@@ -18569,8 +18565,8 @@ us to implement or for your own purposes. See @ref{Production workflow} and
 
 
 
-@node GNU Astronomy Utilities list, Other useful software, Developing, Top
-@appendix GNU Astronomy Utilities list
+@node Gnuastro programs list, Other useful software, Developing, Top
+@appendix Gnuastro programs list
 
 GNU Astronomy Utilities @value{VERSION}, contains the following
 programs. They are sorted in alphabetical order and followed by their
@@ -18667,7 +18663,7 @@ text file, or get the FITS table information.
 
 
 
-@node Other useful software, GNU Free Documentation License, GNU Astronomy Utilities list, Top
+@node Other useful software, GNU Free Documentation License, Gnuastro programs list, Top
 @appendix Other useful software
 
 In this appendix the installation of programs and libraries that are
