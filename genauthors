@@ -92,77 +92,12 @@ fi
 
 
 # Print the top of the AUTHORS file.
-outauthors="$1/AUTHORS"
-echo "GNU Astronomy Utilities authors
-===============================
-
-List of authors (and their relative contribution) for this version of GNU
-Astronomy Utilities (Gnuastro). The relative contribution is measured by
-the number of commits made in the version controlled history.
+echo "GNU Astronomy Utilities (Gnuastro) authors
+==========================================
 
 Generated for $gnuastroversion.
-
-The format for each author is: [Number of commits] [Name] (email)
-
-
-Aggregate list of all authors
------------------------------
-
-List of all authors irrespective of which part of Gnuastro they contributed
-to with their email address, the rows are ordered alphabetically." > \
-"$outauthors"
-# This extra line is to have a blank line between the explanations and the
-# list.
-echo "" >> "$outauthors"
-
+Ordered by number of commits in the Git project history.
+" > $1/AUTHORS
 
 # Generate the aggregate list
-git --git-dir=$1/.git shortlog --summary --email --no-merges >> "$outauthors"
-
-
-# For each utility, print the list of authors:
-echo "
-
-Separated by part of Gnuastro
------------------------------
-
-Authors listed under the respective part of Gnuastro: utility, libraries,
-or documentation. Note that a single commit might include multiple parts of
-Gnuastro (especially in the libraries and documentation). The authors in
-each part are sorted by the number of commits, see the aggregate list for
-emails." >> "$outauthors"
-
-# A blank line to separate the list below from the explanations.
-echo "" >> "$outauthors"
-
-
-# Go over each part of Gnuastro and add the authors:
-for util in bin/* "lib/" "doc/"; do
-
-    # Set the name of the utility
-    if   [ $util = bin/arithmetic  ]; then name=Arithmetic
-    elif [ $util = bin/convertt    ]; then name=ConvertType
-    elif [ $util = bin/convolve    ]; then name=Convolve
-    elif [ $util = bin/cosmiccal   ]; then name=CosmicCalculator
-    elif [ $util = bin/header      ]; then name=Header
-    elif [ $util = bin/imgcrop     ]; then name=ImageCrop
-    elif [ $util = bin/imgstat     ]; then name=ImageStatistics
-    elif [ $util = bin/imgwarp     ]; then name=ImageWarp
-    elif [ $util = bin/mkcatalog   ]; then name=MakeCatalog
-    elif [ $util = bin/mknoise     ]; then name=MakeNoise
-    elif [ $util = bin/mkprof      ]; then name=MakeProfile
-    elif [ $util = bin/noisechisel ]; then name=NoiseChisel
-    elif [ $util = bin/subtractsky ]; then name=SubtractSky
-    elif [ $util = bin/table       ]; then name=Table
-    elif [ $util = bin/TEMPLATE    ]; then name=TEMPLATE
-    elif [ $util = lib/            ]; then name=Libraries
-    elif [ $util = doc/            ]; then name=Documentation
-    else echo; echo; echo "genauthors.sh: $util not recognized!"; exit 1;
-    fi
-
-    # Fill in the authors of each part:
-    echo $name >> "$outauthors"
-    git --git-dir=$1/.git shortlog --numbered --summary     \
-        --no-merges -- $util >> "$outauthors"
-    echo "" >> "$outauthors"
-done
+git --git-dir=$1/.git shortlog --summary --email --no-merges >> $1/AUTHORS
