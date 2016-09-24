@@ -105,8 +105,11 @@ astarithmetic
 astnoisechisel
 astsubtractsky
 autom4te.cache
+lib/gnuastro.h
+lib/gnuastro.pc
 doc/gnuastro.cps
 doc/gnuastro.vrs
+lib/gnuastro/gnuastro.h
 
 
 

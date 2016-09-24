@@ -26,8 +26,8 @@
 # CVS to upload them there.
 #
 #
-# NOTE FOR FIRST TIME MAINTAINERS
-# -------------------------------
+# NOTE FOR FIRST TIME
+# -------------------
 #
 # The GNU webpage is version controlled by CVS and operates based on
 # it. CVS is no longer popular anymore, but the commands below should
@@ -181,13 +181,13 @@ make
 # Delete all the temporary files that gendocs.sh left behind
 rm -f gnuastro.aux gnuastro.cp gnuastro.cps gnuastro.fn gnuastro.ky \
    gnuastro.log gnuastro.pg gnuastro.toc gnuastro.tp gnuastro.vr    \
-   gnuastro.vrs
+   gnuastro.vrs gnuastro.fns gnuastro.tps
 
 
 
 
 # Copy the two necessary files in the manual directory:
-cp javascript.html style.css $tmpdir/
+cp javascript.html style.css fonts.css $tmpdir/
 
 
 
@@ -251,6 +251,7 @@ do
                 cssbase="../"
                 jsbase="../../"
             fi
+            echo "<link rel=\"stylesheet\" type=\"text/css\" href=\""$cssbase"fonts.css\">" >> tmp.html
             echo "<link rel=\"stylesheet\" type=\"text/css\" href=\""$cssbase"style.css\">" >> tmp.html
             if [ $hasjavascript = "yes" ]; then
                 echo "<script src=\""$jsbase"MathJax/MathJax.js?config=TeX-AMS_HTML\"></script>" >> tmp.html
@@ -278,14 +279,14 @@ do
                 echo "</noscript>" >> tmp.html
                 echo "" >> tmp.html
             fi
-            echo "<p><a href=\"http://www.gnu.org/software/gnuastro/manual\">Read in other formats</a>." >> tmp.html
+            echo "<p class=\"bottom-links\"><a href=\"http://www.gnu.org/software/gnuastro/manual\">Read in other formats</a>.</p>" >> tmp.html
             if [ $hasjavascript = "yes" ]; then
-                echo "<br><a href=\"http://www.gnu.org/software/gnuastro/manual/javascript.html\" rel=\"jslicense\">JavaScript license information</a>" >> tmp.html
+                echo "<p class=\"bottom-links\"><a href=\"http://www.gnu.org/software/gnuastro/manual/javascript.html\" rel=\"jslicense\">JavaScript license information</a></p>" >> tmp.html
             fi
             # Note that the htmldatecomment put after this line is later
             # used to ignore this line in the diffs (so the months on the
             # webpage don't change if this page hasn't changed).
-            echo "<br><a href=\"http://www.gnu.org/software/gnuastro\">GNU Astronomy Utilities</a> manual, $thismonth.</p> $htmldatecomment" >> tmp.html
+            echo "<p class=\"bottom-links\"><a href=\"http://www.gnu.org/software/gnuastro\">GNU Astronomy Utilities</a> manual, $thismonth.</p> $htmldatecomment" >> tmp.html
         fi
 
         #Do any modifications to the line:
@@ -303,7 +304,8 @@ do
 
             # Add a title.
             if [ $addtitle = "yes" ]; then
-            echo "<h2>$booktitle</h2>" >> tmp.html
+                echo "<h2>$booktitle</h2>" >> tmp.html
+                echo "<hr>" >> tmp.html
             fi
         fi
     done < "$file"
@@ -314,12 +316,11 @@ echo %%%%% DONE %%%%%
 
 
 
-# Copy the gnuastro-top.html page into index.html (by only if it actually
+# Copy the gnuastro-top.html page into index.html (but only if it actually
 # differs from it.
 if ! diff gnuastro-top.html $topwebcheckout/gnuastro/index.html; then
     cp gnuastro-top.html $topwebcheckout/gnuastro/index.html
 fi
-
 
 
 

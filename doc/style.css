@@ -1,70 +1,238 @@
-body
-{
-    padding:1em;
+/* CSS stylesheet for webfonts in Gnuastro's manual webpage.
+
+Original author:
+    Mohammad Akhlaghi <akhlaghi@gnu.org>
+Contributing author(s):
+Copyright (C) 2016 Free Software Foundation, Inc.
+
+This stylesheet is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public Licence as
+published by the Free software foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This stylesheet is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+A copy of the GNU General Public License is available at
+<http://www.gnu.org/licenses>.*/
+
+
+/* Layout
+
+   The CSS Style rules categorized as "Layout" here are to do with the
+   general layout of the final page, not to with the text in it. */
+
+/* These are HTML5 elements that will not be recognized by older
+   versions, by setting their "display" to "block" we are telling the
+   browser's that don't support HTML5 to put them on their own
+   starting line link <p>. */
+article,
+figure,
+footer,
+header,
+main,
+nav,
+copyright,
+section{
     display: block;
-    font-family:verdana,helvetica,arial,sans-serif;
 }
 
 
 
 
-img
-{
-    width:90%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+
+/* This clearfix class will make the size of the container of several
+   boxes equal to the larger of the two (mainly important for the
+   height). So when the div container class contains a sidebar and
+   main, its the hight of the container containing the two will be
+   equal to the largest of the two. This is taken from the "HTML and
+   CSS Visual Quickstart Guide" eighth edition. */
+.clearfix:before,
+.clearfix:after{
+    content: " ";
+    display: table;
+}
+.clearfix:after{
+    clear: both;
+}
+.clearfix{
+    *zoom: 1;
 }
 
 
 
 
-code,
-samp
-    {
-        color:#000000;
-        font-size: 90%;
-        border-width: 1px;
-        border-radius:2px;
-        border-style: solid;
-        border-color: #B0B0B0;
-        font-family:"courier new";
-    }
 
-div.example
-{
-    width:auto;
-    color:#000000;
-    font-size: 125%;
-    padding-left: 1em;
-    margin:0 4em 0 2em;
-    border:1px solid #d4d4d4;
-    background-color:#f1f1f1;
-    font-family:"courier new";
+
+
+
+
+
+/* Text and figure layouts. */
+
+/* All the elements: We want the width value to contain the padding
+   and border values too. */
+*{
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-table.cartouche
-{
-    margin:10px;
-    border:solid;
-    border-width:1px;
-    padding-left:1em;
-    padding-right:1em;
-    border-radius:10px;
-    background-color:#EE9A49;
+/* In a narrow screen it is much easier to read fonts that are
+   slightly larger than the standard size. */
+body{
+    font-size: 110%;		/* Default browser size.           */
+    font-weight: 100;		/* Thin fonts for all pages.       */
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    font-family: open_sanslight, sans-serif;
 }
 
 
+/* Paragraphs
+
+   By default all the paragraphs are indented, except for those that
+   are immediately following a header, their indentation is set to
+   zero. */
+p{
+    margin-top: 0;
+    text-indent: 1em;
+    line-height: 1.3;
+    margin-bottom: 0.2em;
+}
+
+em {
+    font-weight: 100;
+    font-style: italic;
+}
+
+/* Header (and bottom) links to next and previous titles: */
+.header p {
+    text-indent: 0;
+    font-size: 85%;
+}
+
+/* Paragraphs that are immediately after a header or a header and an image,
+   or within dd structures, or have links before them (from the index) must
+   not have any indentation.*/
+p.bottom-links, dd p,
+h1+p, h1+img+p, h1+figure+p, h1+a+p, h1+a+a+p,
+h2+p, h2+img+p, h2+figure+p, h2+a+p, h2+a+a+p,
+h3+p, h3+img+p, h3+figure+p, h3+a+p, h3+a+a+p,
+h4+p, h4+img+p, h4+figure+p, h4+a+p, h4+a+a+p,
+h5+p, h5+img+p, h5+figure+p, h5+a+p, h5+a+a+p,
+h6+p, h6+img+p, h6+figure+p, h6+a+p, h6+a+a+p, {
+    text-indent: 0;
+}
+
+p.bottom-links {
+    font-size: 90%;
+}
+
+dd{
+    padding-bottom: 1em;
+}
+
+/* Headers
+
+   The default body font-weight is 100 (thin), so the default "bold"
+   weight of these headers will make them too thick. Therefore we set
+   these headings to have a font-weight or normal or 400.*/
+h1, h2, h3, h4, h5, h6{
+    font-weight: 400;
+    margin-bottom: 0.3em;
+}
+h1{
+    margin-top: 0;
+    font-size: 1.8em;
+}
+h2{ font-size: 1.5em; }
+h3{ font-size: 1.3em; }
+h4{ font-size: 1.2em; }
+h5{ font-size: 1.1em; }
+h6{ font-size: 1.0em; }
+
+
+/* Images */
+.float{
+    width: 80%;
+    margin: auto;
+    padding: 1em 0 1em 0;
+}
+.float img{
+    width: 100%;
+}
+.float-caption p {
+    font-size: 90%;
+    text-indent: 0;
+}
+
+
+/* Example code blocks */
+div.example {
+    width: 90%;
+    color: #000000;
+    font-size: 100%;
+    padding: 0 0 0 1em;
+    margin: 0.5em auto;
+    border: 1px solid #d4d4d4;
+    background-color: #f1f1f1;
+    font-family: "courier new";
+}
+code, samp {
+    background-color: #f9f9f9;
+}
+
+
+/* Links
+
+   The links are distinguished from the main text by being a brigher
+   shade of gray but bolder. When they are in focus, active or the
+   mouse is hovering over them, they become darker.*/
+a{
+    font-size: 95%;
+    font-weight: 400;
+    text-decoration: none;
+}
 a:link,
-a:visited,
-a:hover,
-a:active
-      {
-          text-decoration:none;
-          font-weight:bold;
-          color:#B13E0F;
-      }
-a:hover
-      {
-          color:#FF9F00;
-      }
+a:visited{ color: #1a3b9f; }
+a:focus,
+a:active,
+a:hover{ color: #0099ff; }
+
+
+
+/* Sub and Super scripts
+
+   Leave line spacing unchanged when <sub> and <sup> are used. */
+sub,
+sup{
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+sup{ top: -0.5em; }
+sub{ bottom: -0.25em; }
+
+
+
+/* Footnotes: */
+.footnote h4 {
+    font-size: 90%;
+}
+.footnote h3 {
+    font-size: 80%;
+    display: inline;
+}
+.footnote p {
+    font-size: 80%;
+}
+
+
+/* MathJax: */
+.MathJax {
+    font-size: 3em;
+}
