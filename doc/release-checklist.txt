@@ -8,7 +8,7 @@ after all the commits needed for this release have been completed.
 IMPORTANT NOTE: This is currently a draft, it will be complete with the 0.2
 version release.
 
- - Update the library version in (the values starting with `GAL_' in
+ - Update the library version (the values starting with `GAL_' in
    `configure.ac'). See the `Updating library version information' section
    of the GNU Libtool manual as a guide.
 

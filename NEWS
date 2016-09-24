@@ -1,6 +1,6 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-* Noteworthy changes in release 0.1.XXX (2016-09-23) [alpha] Until commit af59e45: Replaced all occurances of utility to program in book.
+* Noteworthy changes in release 0.1.152 (library 0.0.0) (2016-09-24) [alpha]
 
 ** Bug fixes
 
@@ -24,10 +24,11 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   `polygon.h', `qsort.h', `spatialconvolve.h', `statistics.h', `threads.h',
   `wcs.h', `txtarray.h' (task #13765).
 
-  Gnuastro now comes with a script in its top source directory to configure
-  and build Gnuastro (or any other program using the GNU build system) in
-  the tmpfs (on the RAM) for those systems that have it. See the new
-  "Configure and build in RAM" section in the book for more (task #14100).
+  Gnuastro now comes with a script in its top source directory
+  (`tmpfs-config-make') to configure and build Gnuastro (or any other
+  program using the GNU build system) in the tmpfs (on the RAM) for those
+  systems that have it. See the new "Configure and build in RAM" section in
+  the book for more (task #14100).
 
 ** New features
 
@@ -40,7 +41,7 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   #14115).
 
   MakeProfiles can now use input image as canvas. Instead of specifying the
-  WSC and image size paramteres manually, with the new `--inputascanvas'
+  WSC and image size paramteres manually. With the new `--inputascanvas'
   option, MakeProfiles will get this information (along with blank pixels)
   from an already existing image (task #14116).
 
@@ -54,9 +55,9 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
   true: `where'. The new `isblank' operator will also enable you to select
   blank, or masked, pixels (task #14146).
 
-  The `--noerodequant' in NoiseChisel enables it to detect more sharper
-  profiles by disabling erosion on pixels above a certain quantile (task
-  #14139).
+  The `--noerodequant' in NoiseChisel enables it to detect small and
+  sharper profiles by disabling erosion on pixels above a certain quantile
+  (task #14139).
 
 ** Changes in behavior
 
