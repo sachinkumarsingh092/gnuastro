@@ -257,6 +257,7 @@ do
                 cssbase="../"
                 jsbase="../../"
             fi
+            echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" >> tmp.html
             echo "<link rel=\"stylesheet\" type=\"text/css\" href=\""$cssbase"fonts.css\">" >> tmp.html
             echo "<link rel=\"stylesheet\" type=\"text/css\" href=\""$cssbase"style.css\">" >> tmp.html
             if [ $hasjavascript = "yes" ]; then
@@ -287,15 +288,15 @@ do
             fi
 
             # Add "Read in other formats":
-            echo "<p class=\"bottom-links\"><a href=\"$cssbase/index.html\">Read in other formats</a>.</p>" >> tmp.html
+            echo "<p class=\"bottom-links\"><a href=\"https://www.gnu.org/software/gnuastro/manual/index.html\">Read in other formats</a>.</p>" >> tmp.html
 
             # If there is any Javascript in the page, then let the users know.
             if [ $hasjavascript = "yes" ]; then
-                echo "<p class=\"bottom-links\"><a href=\"$cssbase/javascript.html\" rel=\"jslicense\">JavaScript license information</a></p>" >> tmp.html
+                echo "<p class=\"bottom-links\"><a href=\"https://www.gnu.org/software/gnuastro/manual/javascript.html\" rel=\"jslicense\">JavaScript license information</a></p>" >> tmp.html
             fi
 
             # Put a link to the main Gnuastro webpage.
-            echo "<p class=\"bottom-links\"><a href=\"$jsbase/index.html\">GNU Astronomy Utilities</a> $version manual, $thismonth.</p>" >> tmp.html
+            echo "<p class=\"bottom-links\"><a href=\"https://www.gnu.org/software/gnuastro/index.html\">GNU Astronomy Utilities</a> $version manual, $thismonth.</p>" >> tmp.html
 
         fi
 

@@ -86,10 +86,10 @@ section{
 /* In a narrow screen it is much easier to read fonts that are
    slightly larger than the standard size. */
 body{
+    margin: 0;
     font-size: 110%;		/* Default browser size.           */
     font-weight: 100;		/* Thin fonts for all pages.       */
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+    padding: 0 0.5em 0 0.5em;
     font-family: open_sanslight, sans-serif;
 }
 
@@ -232,6 +232,15 @@ table.cartouche {
     padding:0.5em 1em 0 1em;
     border-radius:10px;
     background-color:#e6eaf4;
+}
+
+
+
+
+
+/* Menu tables */
+table.menu {
+    font-size: 95%;
 }
 
 
