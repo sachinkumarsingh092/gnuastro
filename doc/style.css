@@ -19,6 +19,9 @@ A copy of the GNU General Public License is available at
 <http://www.gnu.org/licenses>.*/
 
 
+
+
+
 /* Layout
 
    The CSS Style rules categorized as "Layout" here are to do with the
@@ -91,49 +94,8 @@ body{
 }
 
 
-/* Paragraphs
 
-   By default all the paragraphs are indented, except for those that
-   are immediately following a header, their indentation is set to
-   zero. */
-p{
-    margin-top: 0;
-    text-indent: 1em;
-    line-height: 1.3;
-    margin-bottom: 0.2em;
-}
 
-em {
-    font-weight: 100;
-    font-style: italic;
-}
-
-/* Header (and bottom) links to next and previous titles: */
-.header p {
-    text-indent: 0;
-    font-size: 85%;
-}
-
-/* Paragraphs that are immediately after a header or a header and an image,
-   or within dd structures, or have links before them (from the index) must
-   not have any indentation.*/
-p.bottom-links, dd p,
-h1+p, h1+img+p, h1+figure+p, h1+a+p, h1+a+a+p,
-h2+p, h2+img+p, h2+figure+p, h2+a+p, h2+a+a+p,
-h3+p, h3+img+p, h3+figure+p, h3+a+p, h3+a+a+p,
-h4+p, h4+img+p, h4+figure+p, h4+a+p, h4+a+a+p,
-h5+p, h5+img+p, h5+figure+p, h5+a+p, h5+a+a+p,
-h6+p, h6+img+p, h6+figure+p, h6+a+p, h6+a+a+p, {
-    text-indent: 0;
-}
-
-p.bottom-links {
-    font-size: 90%;
-}
-
-dd{
-    padding-bottom: 1em;
-}
 
 /* Headers
 
@@ -155,6 +117,76 @@ h5{ font-size: 1.1em; }
 h6{ font-size: 1.0em; }
 
 
+
+
+
+/* Paragraphs
+
+   By default all the paragraphs are indented, except for those that
+   are immediately following a header, their indentation is set to
+   zero. */
+p{
+    margin-top: 0;
+    text-indent: 0;
+    line-height: 1.3;
+    margin-bottom: 0.2em;
+}
+
+/* Paragraphs that follow other paragraphs should be indented.*/
+p+p, p+*+p {
+    text-indent: 1em;
+}
+
+/* Header (and bottom) links to next and previous titles: */
+.header p {
+    font-size: 85%;
+}
+
+/* Size of bottom links. Also note that since we have multiple bottom
+   links, we need to make sure there is no indentation. */
+p.bottom-links {
+    text-indent: 0;
+    font-size: 90%;
+}
+
+/* When there are multiple footnotes the rules above will indent the
+   footnote contents, so we have to explicitly ask for no indentation: */
+.footnote p {
+    text-indent: 0;
+}
+
+
+
+
+
+/* The emphasis lines */
+em {
+    font-size: 90%;
+    font-weight: 100;
+    font-style: italic;
+}
+
+
+
+
+/* Lists: */
+li {
+    padding-bottom: 0.4em;
+}
+
+
+
+
+
+/* dd elements */
+dd{
+    padding-bottom: 0.4em;
+}
+
+
+
+
+
 /* Images */
 .float{
     width: 80%;
@@ -168,6 +200,9 @@ h6{ font-size: 1.0em; }
     font-size: 90%;
     text-indent: 0;
 }
+
+
+
 
 
 /* Example code blocks */
@@ -184,6 +219,23 @@ div.example {
 code, samp {
     background-color: #f9f9f9;
 }
+
+
+
+
+
+/* Cartouche boxes. */
+table.cartouche {
+    margin:10px;
+    border:solid;
+    border-width:1px;
+    padding:0.5em 1em 0 1em;
+    border-radius:10px;
+    background-color:#e6eaf4;
+}
+
+
+
 
 
 /* Links
@@ -204,6 +256,8 @@ a:hover{ color: #0099ff; }
 
 
 
+
+
 /* Sub and Super scripts
 
    Leave line spacing unchanged when <sub> and <sup> are used. */
@@ -219,6 +273,8 @@ sub{ bottom: -0.25em; }
 
 
 
+
+
 /* Footnotes: */
 .footnote h4 {
     font-size: 90%;
@@ -229,10 +285,4 @@ sub{ bottom: -0.25em; }
 }
 .footnote p {
     font-size: 80%;
-}
-
-
-/* MathJax: */
-.MathJax {
-    font-size: 3em;
 }

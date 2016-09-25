@@ -7,7 +7,10 @@
 # first time. NOTE: This script is defined to be run in Gnuastro's `doc/'
 # directory. It should not be called from anywhere else.
 #
-#    ./forwebpage /temporary/directory /destination/directory
+#    # IMPORTANT: do not end the destination directory with a `/'.
+#    ./forwebpage /destination/directory
+#
+# The temporary directory will be named `/destination/directory_tmp'.
 #
 # This script will first run gendocs.sh on the Texinfo source which creates
 # the standrard GNU webpage style documentation page. Then it does some
@@ -99,13 +102,16 @@ set -o errexit                  # Stop if a program returns false.
 umask 002
 
 # Set the temporary directory name:
-tmpdir=$1
+tmpdir=$1_tmp
 
 # Top CVS (webpage checkout) copy
-topwebcheckout=$2
+topwebcheckout=$1
 
 # Set the title value
 booktitle="GNU Astronomy Utilities"
+
+# Get the version of the manual:
+version=$(awk '$2=="VERSION" {print $3}' version.texi)
 
 # If the temporary directory already exists, warn the user and abort.
 # gendocs.sh will write everything there and we want everything there to be
@@ -214,8 +220,8 @@ IFS=''
 
 # Make the proper corrections to the HTML files:
 echo
-htmldatecomment='<!-- Inserted date. This line will be ignored by diff -->'
 echo %%%%% Correcting the HTMLs %%%%%
+
 # Correct the address of the `(dir)' links on the top pages of both
 # HTML outputs. In the $tmpdir/gnuastro.html, it is `dir.html#top'
 # which should be change to index.html. In
@@ -279,14 +285,18 @@ do
                 echo "</noscript>" >> tmp.html
                 echo "" >> tmp.html
             fi
-            echo "<p class=\"bottom-links\"><a href=\"http://www.gnu.org/software/gnuastro/manual\">Read in other formats</a>.</p>" >> tmp.html
+
+            # Add "Read in other formats":
+            echo "<p class=\"bottom-links\"><a href=\"$cssbase/index.html\">Read in other formats</a>.</p>" >> tmp.html
+
+            # If there is any Javascript in the page, then let the users know.
             if [ $hasjavascript = "yes" ]; then
-                echo "<p class=\"bottom-links\"><a href=\"http://www.gnu.org/software/gnuastro/manual/javascript.html\" rel=\"jslicense\">JavaScript license information</a></p>" >> tmp.html
+                echo "<p class=\"bottom-links\"><a href=\"$cssbase/javascript.html\" rel=\"jslicense\">JavaScript license information</a></p>" >> tmp.html
             fi
-            # Note that the htmldatecomment put after this line is later
-            # used to ignore this line in the diffs (so the months on the
-            # webpage don't change if this page hasn't changed).
-            echo "<p class=\"bottom-links\"><a href=\"http://www.gnu.org/software/gnuastro\">GNU Astronomy Utilities</a> manual, $thismonth.</p> $htmldatecomment" >> tmp.html
+
+            # Put a link to the main Gnuastro webpage.
+            echo "<p class=\"bottom-links\"><a href=\"$jsbase/index.html\">GNU Astronomy Utilities</a> $version manual, $thismonth.</p>" >> tmp.html
+
         fi
 
         #Do any modifications to the line:
@@ -340,8 +350,7 @@ do
     # realpath is part of GNU Coreutils.
     relname=$(realpath $filename --relative-to=$tmpdir)
     if ! diff $filename $topwebcheckout/gnuastro/manual/$relname \
-            -I '<!-- This book documents version'                \
-            -I "$htmldatecomment"; then
+            -I '<!-- This book documents version'; then
         cp $filename $topwebcheckout/gnuastro/manual/$relname;
         echo "$relname:"
         echo " -- Copied to for upload"
