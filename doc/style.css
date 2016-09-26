@@ -87,12 +87,21 @@ section{
    slightly larger than the standard size. */
 body{
     margin: 0;
-    font-size: 110%;		/* Default browser size.           */
+    font-size: 100%;		/* Default browser's font size.    */
     font-weight: 100;		/* Thin fonts for all pages.       */
     padding: 0 0.5em 0 0.5em;
     font-family: open_sanslight, sans-serif;
 }
 
+/* When we have a wide screen (independent of the browser), the text
+   can be hard to read, so we put a limit on the width within the
+   browser with the max-width variable. */
+@media screen and (min-width: 32em) {
+    body {
+	margin: 0 auto;	        /* To center the page.             */
+	max-width: 60em;        /* Page width depends on font size.*/
+    }
+}
 
 
 
@@ -120,11 +129,7 @@ h6{ font-size: 1.0em; }
 
 
 
-/* Paragraphs
-
-   By default all the paragraphs are indented, except for those that
-   are immediately following a header, their indentation is set to
-   zero. */
+/* Paragraphs */
 p{
     margin-top: 0;
     text-indent: 0;
