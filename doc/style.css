@@ -98,6 +98,7 @@ body{
    browser with the max-width variable. */
 @media screen and (min-width: 32em) {
     body {
+	font-size: 105%;        /* Default browser's font size.    */
 	margin: 0 auto;	        /* To center the page.             */
 	max-width: 60em;        /* Page width depends on font size.*/
     }
@@ -169,6 +170,25 @@ em {
     font-size: 90%;
     font-weight: 100;
     font-style: italic;
+}
+
+
+
+
+
+/* Quotes */
+blockquote {
+    font-size: 90%;
+    margin-top: 0.75em;
+    padding-bottom: 0;
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+blockquote+div {
+    margin-bottom: 0.75em;
+}
+blockquote+:not(div) {
+    margin-top: 0.75em;
 }
 
 
