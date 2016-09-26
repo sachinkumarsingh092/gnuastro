@@ -88,6 +88,3 @@ gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 	'$(srcdir)/$@.in' >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
-
-clean-local:
-	rm -rf gnuastro

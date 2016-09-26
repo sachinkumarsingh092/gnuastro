@@ -29,7 +29,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/mesh.h>
-#include <gnuastro/mode.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/array.h>
 #include <gnuastro/timing.h>

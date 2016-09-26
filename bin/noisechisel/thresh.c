@@ -27,7 +27,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
-#include <gnuastro/mode.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/timing.h>
 #include <gnuastro/checkset.h>
