@@ -2,15 +2,12 @@ Gnuastro release checklist
 ==========================
 
 This file is primarily intended for the Gnuastro maintainer and lists the
-set of operations to do before making each release. This should be done
-after all the commits needed for this release have been completed.
+set of operations to do for making each release. This should be done after
+all the commits needed for this release have been completed.
 
-IMPORTANT NOTE: This is currently a draft, it will be complete with the 0.2
-version release.
-
- - Update the library version (the values starting with `GAL_' in
-   `configure.ac'). See the `Updating library version information' section
-   of the GNU Libtool manual as a guide.
+ - Only in a stable release: update the library version (the values
+   starting with `GAL_' in `configure.ac'). See the `Updating library
+   version information' section of the GNU Libtool manual as a guide.
 
  - Update the NEWS file (use `git log --reverse gnuastro_vA.B..HEAD').
 
@@ -21,7 +18,9 @@ version release.
  - Check if THANKS is up to date and includes recently updated
    people/institutions.
 
- - Commit all the changes and tag the commit for the release.
+ - Commit all the changes above
+
+ - Only in a stable release: Tag the commit for the release.
 
  - Make sure all the bootstrapping tools are up to date (keep the
    versions in text file to use in the release), then bootstrap and
@@ -48,11 +47,13 @@ version release.
        $  /path/to/gnulib/build-aux/gnupload --to ftp.gnu.org:gnuastro   \
                --replace --symlink-regex gnuastro-X.X.tar.gz
 
- - Update the version numbers and on the webpage (`doc/gnuastro-top.html'
-   and possible translations).
+ - Update the the top webpage (`doc/gnuastro-top.html' and possible
+   translations).
 
- - Build the full webpage (the `doc/forwebpage' script) and check if
-   everything is OK after the upload.
+ - Build the manual in all the formats and upload everything:
+
+       $ cd doc  # From the top source directory:
+       $ ./forwebpage /path/to/local/copy/of/webpage
 
  - Announce the release on `info-gnuastro@gnu.org', `info-gnu@gnu.org' and
-   Savannah.
+   Savannah news.
