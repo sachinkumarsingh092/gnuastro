@@ -31,6 +31,7 @@ all the commits needed for this release have been completed.
    $ ./tmpfs-config-make
    $ cd build
    $ make distcheck -j8
+   $ make dist-lzip
 
  - Upload the tarball with the command below: Note that `gnupload'
    uses `ncftpput' which comes with the `ncftp' package. The replaces
@@ -45,7 +46,8 @@ all the commits needed for this release have been completed.
    For a stable release:
 
        $  /path/to/gnulib/build-aux/gnupload --to ftp.gnu.org:gnuastro   \
-               --replace --symlink-regex gnuastro-X.X.tar.gz
+               --replace --symlink-regex                                 \
+               gnuastro-X.X.tar.gz gnuastro-X.X.tar.lz
 
  - Update the the top webpage (`doc/gnuastro-top.html' and possible
    translations).

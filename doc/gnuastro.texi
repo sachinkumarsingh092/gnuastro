@@ -628,23 +628,27 @@ founding basis of the Gnuastro.
 @cindex Check
 @cindex Build
 @cindex Compile
+@cindex GNU Tar
 @cindex Uncompress source
 @cindex Source, uncompress
 Gnuastro has three mandatory dependencies and two optional ones for added
 functionality, see @ref{Dependencies}. The latest official release tarball
 is always available as
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz,
-@file{gnuastro-latest.tar.gz}}@footnote{The same tar command (@command{$
-tar xf}) can also be used to unpack @file{tar.xz} and @file{tar.lz}
-tarballs.}, see @ref{Release tarball}. If you have downloaded the tarball
-in the @file{TOPGNUASTRO} directory and the dependencies are installed, you
-can unpack, compile, check and install Gnuastro with the following
-commands:
+@file{gnuastro-latest.tar.gz}}. For better compression (faster download),
+we also provide an Lzip compressed tarball at
+@url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.lz,
+@file{gnuastro-latest.tar.lz}}, see @ref{Release tarball} for more details
+on the tarball release. If you have downloaded the tarball in the
+@file{TOPGNUASTRO} directory and the dependencies are installed, you can
+unpack, compile, check and install Gnuastro with the following commands. If
+you use GNU Tar, the same command (@command{$ tar xf}) can also be used to
+unpack @file{.tar.xz} and @file{.tar.lz} tarballs.
 
 @example
 $ cd TOPGNUASTRO
-$ tar xf gnuastro-latest.tar.gz
-$ cd gnuastro-X.X                  # Replace X.X with version number
+$ tar xf gnuastro-latest.tar.gz    # Also usable for `.lz' and `.xz'.
+$ cd gnuastro-X.X                  # Replace X.X with version number.
 $ ./configure
 $ make
 $ make check
@@ -2706,6 +2710,24 @@ activities, please clone the version controlled source as described in
 @ref{Version controlled source}.
 
 @end table
+
+@cindex Gzip
+@cindex Lzip
+Gnuastro's official tarball is released with two formats: Gzip (with suffix
+@file{.tar.gz}) and Lzip (with suffix @file{.tar.lz}). The former is a very
+well-known and widely used compression program created by GNU and available
+in most systems. The latter provides a better compression rate and more
+robust archival capacity. For example Gnuastro 0.2's tarball was 2.8MB and
+4.2MB with Lzip and Gzip respectively. From the
+@url{http://www.nongnu.org/lzip/lzip.html, Lzip webpage}: ``Lzip is a
+lossless data compressor with a user interface similar to the one of gzip
+or bzip2. Lzip can compress about as fast as gzip (@command{lzip -0}), or
+compress most files more than bzip2 (@command{lzip -9}). Decompression
+speed is intermediate between gzip and bzip2. Lzip is better than gzip and
+bzip2 from a data recovery perspective.'' However, Lzip is currently not
+too common, so it might not be pre-installed in your operating
+system. Installing it from your operating system's package manager or from
+source is very easy.
 
 The GNU FTP server is mirrored (has backups) in various locations on the
 globe (@url{http://www.gnu.org/order/ftp.html}). You can use the closest
