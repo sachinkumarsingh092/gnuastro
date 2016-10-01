@@ -216,6 +216,13 @@ readconfig(char *filename, struct mkprofparams *p)
                                       lineno);
           up->circumwidthset=1;
         }
+      else if(strcmp(name, "envseed")==0)
+        {
+          if(up->envseedset) continue;
+          gal_checkset_int_zero_or_one(value, &p->envseed, name, key,
+                                       SPACK, filename, lineno);
+          up->envseedset=1;
+        }
 
 
 
@@ -405,6 +412,8 @@ printvalues(FILE *fp, struct mkprofparams *p)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "zeropoint", p->zeropoint);
   if(up->circumwidthset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "circumwidth", p->circumwidth);
+  if(up->envseedset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "envseed", p->envseed);
 
   fprintf(fp, "\n# Catalog:\n");
   if(up->xcolset)

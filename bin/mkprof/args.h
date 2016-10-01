@@ -548,6 +548,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'e':
       p->envseed=1;
+      p->up.envseedset=1;
       break;
 
    /* Catalog */

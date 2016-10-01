@@ -47,6 +47,7 @@ struct uiparams
   int      zeropointset;
   int         stdaddset;
   int       randseedset;
+  int        envseedset;
 };
 
 

@@ -102,6 +102,7 @@ struct uiparams
   int          naxis2set;
   int      oversampleset;
   int     circumwidthset;
+  int         envseedset;
   int         replaceset;
   int            typeset;
   int   inputascanvasset;

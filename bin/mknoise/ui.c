@@ -125,6 +125,13 @@ readconfig(char *filename, struct mknoiseparams *p)
                                    filename, lineno);
           up->stdaddset=1;
         }
+      else if(strcmp(name, "envseed")==0)
+        {
+          if(up->envseedset) continue;
+          gal_checkset_int_zero_or_one(value, &p->envseed, name, key,
+                                       SPACK, filename, lineno);
+          up->envseedset=1;
+        }
 
 
 
@@ -170,6 +177,8 @@ printvalues(FILE *fp, struct mknoiseparams *p)
     fprintf(fp, CONF_SHOWFMT"%f\n", "zeropoint", p->zeropoint);
   if(up->stdaddset)
     fprintf(fp, CONF_SHOWFMT"%f\n", "stdadd", p->stdadd);
+  if(up->envseedset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "envseed", p->envseed);
 
 
   fprintf(fp, "\n# Output parameters:\n");
