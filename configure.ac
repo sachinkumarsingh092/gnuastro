@@ -503,7 +503,7 @@ AS_IF([test x$enable_guide_message = xyes],
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
                AS_ECHO(["    If PDF outputs are desired from ConvertType, it will abort"])
                AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])])
-        AS_ECHO(["  All checks related to warning(s) will be skipped."])
+        AS_ECHO(["  All checks related to the warning(s) will be skipped."])
         AS_ECHO([])
       ]
      )

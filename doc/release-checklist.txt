@@ -43,7 +43,7 @@ all the commits needed for this release have been completed.
                --replace --symlink-regex="s/X.X.XXX-XXXX/alpha-latest/"    \
                gnuastro-X.X.XXX-XXXX.tar.gz
 
-   For a stable release:
+   - For a stable release:
 
        $  /path/to/gnulib/build-aux/gnupload --to ftp.gnu.org:gnuastro   \
                --replace --symlink-regex                                 \

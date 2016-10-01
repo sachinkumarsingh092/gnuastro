@@ -122,8 +122,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
         if(cp->setusrconf)                                              \
           GAL_CONFIGFILES_SAVE_LOCAL_CONFIG(userconfig_dir);            \
         readconfig(SYSCONFIG_FILE, p);                                  \
-        free(userconfig_file);                                                \
-        free(userconfig_dir);                                                \
+        free(userconfig_file);                                          \
+        free(userconfig_dir);                                           \
       }                                                                 \
   }
 
@@ -136,11 +136,12 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_CONFIGFILES_REPORT_NOTSET(var_name) {                       \
     if(intro==0)                                                        \
       {                                                                 \
-        fprintf(stderr, SPACK": Parameter(s) not set: %s", (var_name)); \
+        fprintf(stderr, SPACK": Parameter(s) not set: `%s'",            \
+                (var_name));                                            \
         intro=1;                                                        \
       }                                                                 \
     else                                                                \
-      fprintf(stderr, ", %s", (var_name));                              \
+      fprintf(stderr, ", `%s'", (var_name));                            \
   }
 
 
@@ -154,8 +155,9 @@ __BEGIN_C_DECLS  /* From C++ preparations */
         fprintf(stderr, ".\n\n");                                       \
         fprintf(stderr, "You can assign values in the local, user or "  \
                 "system wide default files. Otherwise you have to "     \
-                "explicitly call them each time. See `"SPACK" --help` " \
-                "or `info "SPACK"` for more information.\n\n");         \
+                "explicitly assign a value to them each time as a "     \
+                "command-line option. See `%s --help` or `info %s` for "\
+                "more information.\n\n", SPACK, SPACK);                 \
         userconfig_file=                                                \
         gal_configfiles_add_home_dir(USERCONFIG_FILEEND);               \
         fprintf(stderr, "Default files checked (existing or not):\n"    \
