@@ -535,12 +535,6 @@ makeoutput(struct mkcatalogparams *p)
       /* If an upper limit was output then report its parameters: */
       if(p->obj0clump1==0 && p->up.upperlimitmagset)
         {
-          if(p->upmask)
-            {
-              sprintf(p->line, "# Upper limit magnitude mask %s (hdu: %s)\n",
-                      p->up.upmaskname, p->up.upmaskhdu);
-              strcat(comment, p->line);
-            }
           sprintf(p->line, "# "CATDESCRIPTLENGTH"%lu\n", "Number of upper "
                   "limit magnitude samples", p->upnum);
           strcat(comment, p->line);
