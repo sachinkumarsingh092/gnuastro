@@ -476,6 +476,14 @@ makeoutput(struct mkcatalogparams *p)
       sprintf(p->line, "# Sky STD %s (hdu: %s)\n", p->up.stdname,
               p->up.stdhdu);
       strcat(comment, p->line);
+      if(p->obj0clump1==0 && p->upmask)
+        {
+          sprintf(p->line, "# Upper limit magnitude mask %s (hdu: %s)\n",
+                  p->up.upmaskname, p->up.upmaskhdu);
+          strcat(comment, p->line);
+        }
+
+
 
 
       /* If a magnitude is also desired, print the zero point
@@ -520,6 +528,41 @@ makeoutput(struct mkcatalogparams *p)
           sprintf(p->line, "# "CATDESCRIPTLENGTH"%g\n", "**IMPORTANT** "
                   "Pixel threshold (multiple of local std)",
                   p->threshold);
+          strcat(comment, p->line);
+        }
+
+      /* If an upper limit was output then report its parameters: */
+      if(p->obj0clump1==0 && p->up.upperlimitmagset)
+        {
+          if(p->upmask)
+            {
+              sprintf(p->line, "# Upper limit magnitude mask %s (hdu: %s)\n",
+                      p->up.upmaskname, p->up.upmaskhdu);
+              strcat(comment, p->line);
+            }
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%lu\n", "Number of upper "
+                  "limit magnitude samples", p->upnum);
+          strcat(comment, p->line);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%lu\n", "Number of threads "
+                  "used for upper limit magnitude",
+                  p->cp.numthreads);
+          strcat(comment, p->line);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%s\n", "Random number "
+                  "generator type for upper limit magnitude",
+                  gsl_rng_default->name);
+          strcat(comment, p->line);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%lu\n", "Random number "
+                  "generator seed for upper limit magnitude",
+                  gsl_rng_default_seed);
+          strcat(comment, p->line);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", "STD multiple for "
+                  "upper limit magnitude sigma-clip", p->upsclipmultip);
+          strcat(comment, p->line);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", "STD accuracy "
+                  "to stop upper limit magnitude sigma-clip", p->upsclipaccu);
+          strcat(comment, p->line);
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%.3f\n", "Multiple of "
+                  "sigma for final upper limit magnitude", p->upnsigma);
           strcat(comment, p->line);
         }
 
@@ -658,6 +701,10 @@ makeoutput(struct mkcatalogparams *p)
 
             case CATCLUMPSMAGNITUDE:
               brightnessmag(p, OBrightnessC, MKCATCINO, MKCATMAG);
+              break;
+
+            case CATUPPERLIMITMAG:
+              upperlimitcol(p);
               break;
 
             case CATRIVERAVE:

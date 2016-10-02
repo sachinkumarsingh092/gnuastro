@@ -23,6 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <gsl/gsl_rng.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/commonparams.h>
 
@@ -86,6 +87,7 @@ enum objectcols
     OFlxWhtDec,          /* Dec of (OFlxWhtX, OFlxWhtY).            */
     OAREAC,              /* Area of clumps in this object.          */
     OBrightnessC,        /* Brightness  in object clumps.           */
+    OUpperBright,        /* Upper limit brightness for this object. */
     OFlxWhtCX,           /* Sum of (flux-sky)*x on object clumps.   */
     OFlxWhtCY,           /* Sum of (flux-sky)*y on obj. clumps.     */
     OFlxWhtCXX,          /* Sum of (flux-sky)*x*x on object clumps. */
@@ -134,6 +136,7 @@ enum clumpcols
     CFlxWhtDec,          /* Dec of (CFlxWhtX, CFlxWhtY).            */
     CBrightness,         /* River subtracted brightness.            */
     CNoRiverBrightness,  /* Sky (not river) subtracted brightness.  */
+    CUpperBright,        /* Upper limit brightness for this clump.  */
     CRivAve,             /* Average value in rivers around clump.   */
     CRivArea,            /* Num river pixels around this clump.     */
     CSKY,                /* Sum of sky value on this object.        */
@@ -192,6 +195,7 @@ enum outcols
     CATMAGNITUDE,
     CATMAGNITUDEERR,
     CATCLUMPSMAGNITUDE,
+    CATUPPERLIMITMAG,
     CATRIVERAVE,
     CATRIVERNUM,
     CATSN,
@@ -222,6 +226,8 @@ struct uiparams
   char                *skyhdu;  /* Sky HDU name.                     */
   char               *stdname;  /* Sky STD value image file name.    */
   char                *stdhdu;  /* Sky STD HDU name.                 */
+  char            *upmaskname;  /* Name of mask for upper magnitude. */
+  char             *upmaskhdu;  /* HDU Name of mask for upper mag.   */
 
   int             masknameset;
   int                 mhduset;
@@ -233,6 +239,8 @@ struct uiparams
   int               skyhduset;
   int              stdnameset;
   int               stdhduset;
+  int              envseedset;
+
   int            zeropointset;
   int        skysubtractedset;
   int            thresholdset;
@@ -243,6 +251,13 @@ struct uiparams
   int       floatprecisionset;
   int        accuprecisionset;
   int              nsigmagset;
+
+  int           upmasknameset;
+  int            upmaskhduset;
+  int                upnumset;
+  int        upsclipmultipset;
+  int          upsclipaccuset;
+  int             upnsigmaset;
 
   int                   idset;
   int            hostobjidset;
@@ -272,6 +287,7 @@ struct uiparams
   int            magnitudeset;
   int         magnitudeerrset;
   int      clumpsmagnitudeset;
+  int        upperlimitmagset;
   int             riveraveset;
   int             rivernumset;
   int                   snset;
@@ -309,6 +325,7 @@ struct mkcatalogparams
   int           skysubtracted;  /* Input is already sky subtracted.   */
   double              nsigmag;  /* Multiple of Sky STD to report mag. */
   double            threshold;  /* Only pixels larger than this *STD. */
+  int                 envseed;  /* Use GSL_RNG_SEED for random seed.  */
 
   /* Output: */
   char              *ocatname;  /* File name of object catalog.       */
@@ -318,6 +335,13 @@ struct mkcatalogparams
   int               accuwidth;  /* Width of accurate float columns.   */
   int          floatprecision;  /* Floating point precision.          */
   int           accuprecision;  /* Accurate floating point precision. */
+
+  /* Upper limit: */
+  long                *upmask;  /* Mask array, only for upper liimit. */
+  size_t                upnum;  /* Number of random samples.          */
+  float         upsclipmultip;  /* Sigma clip multiple for std calc.  */
+  float           upsclipaccu;  /* Sigma clip accuracy for std calc.  */
+  float              upnsigma;  /* Multiple of sigma for upper-limit. */
 
   /* Operating mode: */
 

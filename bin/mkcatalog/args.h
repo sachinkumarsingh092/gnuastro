@@ -74,7 +74,7 @@ const char doc[] =
    f g k l u v w
    F G J L Q R U W X Y Z
 
-   Number keys used: <=533
+   Number keys used: <= 541
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -193,6 +193,7 @@ static struct argp_option options[] =
 
 
 
+
     {
       0, 0, 0, 0,
       "Output:",
@@ -251,8 +252,74 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Catalog columns:",
+      "Upper limit magnitude:",
       3
+    },
+    {
+      "upmask",
+      535,
+      "STR",
+      0,
+      "Mask image file name only for upper limit.",
+      3
+    },
+    {
+      "upmaskhdu",
+      536,
+      "STR",
+      0,
+      "Upper limit mask image header name or number.",
+      3
+    },
+    {
+      "upnum",
+      537,
+      "INT",
+      0,
+      "Number of randomly positioned samples.",
+      3
+    },
+    {
+      "envseed",
+      540,
+      0,
+      0,
+      "Random number generator info from environment.",
+      3
+    },
+    {
+      "upsclipmultip",
+      538,
+      "FLT",
+      0,
+      "Sigma clipping multiple of std.",
+      3
+    },
+    {
+      "upsclipaccu",
+      539,
+      "FLT",
+      0,
+      "Acceptable relative diff to stop clipping.",
+      3
+    },
+    {
+      "upnsigma",
+      541,
+      "FLT",
+      0,
+      "Multiple of final sigma to use.",
+      3
+    },
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Catalog columns:",
+      4
     },
     {
       "id",
@@ -260,7 +327,7 @@ static struct argp_option options[] =
       0,
       0,
       "Overall ID of this object or clump.",
-      3
+      4
     },
     {
       "hostobjid",
@@ -268,7 +335,7 @@ static struct argp_option options[] =
       0,
       0,
       "ID of object hosting this clump.",
-      3
+      4
     },
     {
       "idinhostobj",
@@ -276,7 +343,7 @@ static struct argp_option options[] =
       0,
       0,
       "ID of clump in host object.",
-      3
+      4
     },
     {
       "numclumps",
@@ -284,7 +351,7 @@ static struct argp_option options[] =
       0,
       0,
       "Number of clumps in this object.",
-      3
+      4
     },
     {
       "area",
@@ -292,7 +359,7 @@ static struct argp_option options[] =
       0,
       0,
       "Number of pixels.",
-      3
+      4
     },
     {
       "clumpsarea",
@@ -300,7 +367,7 @@ static struct argp_option options[] =
       0,
       0,
       "Area of clumps in an object.",
-      3
+      4
     },
     {
       "x",
@@ -308,7 +375,7 @@ static struct argp_option options[] =
       0,
       0,
       "All obj. flux weighted center (first FITS axis).",
-      3
+      4
     },
     {
       "y",
@@ -316,7 +383,7 @@ static struct argp_option options[] =
       0,
       0,
       "All obj. flux weighted center (second FITS axis).",
-      3
+      4
     },
     {
       "geox",
@@ -324,7 +391,7 @@ static struct argp_option options[] =
       0,
       0,
       "All obj. geometric center (first FITS axis).",
-      3
+      4
     },
     {
       "geoy",
@@ -332,7 +399,7 @@ static struct argp_option options[] =
       0,
       0,
       "All obj. geometric center (second FITS axis).",
-      3
+      4
     },
     {
       "clumpsx",
@@ -340,7 +407,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps flux weighted center (first FITS axis).",
-      3
+      4
     },
     {
       "clumpsy",
@@ -348,7 +415,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps flux weighted center (second FITS axis).",
-      3
+      4
     },
     {
       "clumpsgeox",
@@ -356,7 +423,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps geometric center (first FITS axis).",
-      3
+      4
     },
     {
       "clumpsgeoy",
@@ -364,7 +431,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps geometric center (second FITS axis).",
-      3
+      4
     },
     {
       "ra",
@@ -372,7 +439,7 @@ static struct argp_option options[] =
       0,
       0,
       "All object flux weighted center right ascension.",
-      3
+      4
     },
     {
       "dec",
@@ -380,7 +447,7 @@ static struct argp_option options[] =
       0,
       0,
       "All object flux weighted center declination.",
-      3
+      4
     },
     {
       "geora",
@@ -388,7 +455,7 @@ static struct argp_option options[] =
       0,
       0,
       "All object geometric center right ascension.",
-      3
+      4
     },
     {
       "geodec",
@@ -396,7 +463,7 @@ static struct argp_option options[] =
       0,
       0,
       "All object geometric center declination.",
-      3
+      4
     },
     {
       "clumpsra",
@@ -404,7 +471,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps flux weighted center right ascension.",
-      3
+      4
     },
     {
       "clumpsdec",
@@ -412,7 +479,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps flux weighted center declination.",
-      3
+      4
     },
     {
       "clumpsgeora",
@@ -420,7 +487,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps geometric center right ascension.",
-      3
+      4
     },
     {
       "clumpsgeodec",
@@ -428,7 +495,7 @@ static struct argp_option options[] =
       0,
       0,
       "Clumps geometric center declination.",
-      3
+      4
     },
     {
       "brightness",
@@ -436,7 +503,7 @@ static struct argp_option options[] =
       0,
       0,
       "Brightness (sum of pixel values).",
-      3
+      4
     },
     {
       "clumpbrightness",
@@ -444,7 +511,7 @@ static struct argp_option options[] =
       0,
       0,
       "Brightness in clumps of an object.",
-      3
+      4
     },
     {
       "noriverbrightness",
@@ -452,7 +519,7 @@ static struct argp_option options[] =
       0,
       0,
       "Sky (not river) subtracted clump brightness.",
-      3
+      4
     },
     {
       "magnitude",
@@ -460,7 +527,7 @@ static struct argp_option options[] =
       0,
       0,
       "Total magnitude.",
-      3
+      4
     },
     {
       "magnitudeerr",
@@ -468,7 +535,7 @@ static struct argp_option options[] =
       0,
       0,
       "Total magnitude error.",
-      3
+      4
     },
     {
       "clumpsmagnitude",
@@ -476,7 +543,15 @@ static struct argp_option options[] =
       0,
       0,
       "Total magnitude of clumps in this object.",
-      3
+      4
+    },
+    {
+      "upperlimitmag",
+      534,
+      0,
+      0,
+      "Upper limit magnitude for each clump or object.",
+      4
     },
     {
       "riverave",
@@ -484,7 +559,7 @@ static struct argp_option options[] =
       0,
       0,
       "Average river value surrounding this clump.",
-      3
+      4
     },
     {
       "rivernum",
@@ -492,7 +567,7 @@ static struct argp_option options[] =
       0,
       0,
       "Number of river pixels surrounding this clump.",
-      3
+      4
     },
     {
       "sn",
@@ -500,7 +575,7 @@ static struct argp_option options[] =
       0,
       0,
       "Signal to noise ratio column.",
-      3
+      4
     },
     {
       "sky",
@@ -508,7 +583,7 @@ static struct argp_option options[] =
       0,
       0,
       "Sky value.",
-      3
+      4
     },
     {
       "std",
@@ -516,7 +591,7 @@ static struct argp_option options[] =
       0,
       0,
       "Sky standard deviation.",
-      3
+      4
     },
     {
       "semimajor",
@@ -524,7 +599,7 @@ static struct argp_option options[] =
       0,
       0,
       "Flux weighted Semi-major axis.",
-      3
+      4
     },
     {
       "semiminor",
@@ -532,7 +607,7 @@ static struct argp_option options[] =
       0,
       0,
       "Flux weighted Semi-minor axis.",
-      3
+      4
     },
     {
       "positionangle",
@@ -540,7 +615,7 @@ static struct argp_option options[] =
       0,
       0,
       "Flux weighted Position angle.",
-      3
+      4
     },
     {
       "geosemimajor",
@@ -548,7 +623,7 @@ static struct argp_option options[] =
       0,
       0,
       "Flux weighted Semi-major axis.",
-      3
+      4
     },
     {
       "geosemiminor",
@@ -556,7 +631,7 @@ static struct argp_option options[] =
       0,
       0,
       "Flux weighted Semi-minor axis.",
-      3
+      4
     },
     {
       "geopositionangle",
@@ -564,7 +639,7 @@ static struct argp_option options[] =
       0,
       0,
       "Flux weighted Position angle.",
-      3
+      4
     },
 
 
@@ -613,7 +688,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Input: */
     case 'M':
-      gal_checkset_allocate_copy_set(arg, &p->up.maskname, &p->up.masknameset);
+      gal_checkset_allocate_copy_set(arg, &p->up.maskname,
+                                     &p->up.masknameset);
       break;
     case 'H':
       gal_checkset_allocate_copy_set(arg, &p->up.mhdu, &p->up.mhduset);
@@ -630,7 +706,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
                                      &p->up.clumplabsnameset);
       break;
     case 502:
-      gal_checkset_allocate_copy_set(arg, &p->up.clumphdu, &p->up.clumphduset);
+      gal_checkset_allocate_copy_set(arg, &p->up.clumphdu,
+                                     &p->up.clumphduset);
       break;
     case 's':
       gal_checkset_allocate_copy_set(arg, &p->up.skyname, &p->up.skynameset);
@@ -691,6 +768,42 @@ parse_opt(int key, char *arg, struct argp_state *state)
                               key, SPACK, NULL, 0);
       p->up.accuprecisionset=1;
       break;
+
+
+    /* Upper limit magnitude */
+    case 535:
+      gal_checkset_allocate_copy_set(arg, &p->up.upmaskname,
+                                     &p->up.upmasknameset);
+      break;
+    case 536:
+      gal_checkset_allocate_copy_set(arg, &p->up.upmaskhdu,
+                                     &p->up.upmaskhduset);
+      break;
+    case 537:
+      gal_checkset_sizet_l_zero(arg, &p->upnum, "upnum", key, SPACK,
+                                NULL, 0);
+      p->up.upnumset=1;
+      break;
+    case 540:
+      p->envseed=1;
+      p->up.envseedset=1;
+      break;
+    case 538:
+      gal_checkset_float_l_0(arg, &p->upsclipmultip, "upsclipmultip",
+                             key, SPACK, NULL, 0);
+      p->up.upsclipmultipset=1;
+      break;
+    case 539:
+      gal_checkset_float_l_0_s_1(arg, &p->upsclipaccu, "upsclipaccu",
+                                 key, SPACK, NULL, 0);
+      p->up.upsclipaccuset=1;
+      break;
+    case 541:
+      gal_checkset_float_l_0(arg, &p->upnsigma, "upnsigma", key,
+                             SPACK, NULL, 0);
+      p->up.upnsigmaset=1;
+      break;
+
 
 
     /* Catalog columns: */
@@ -805,6 +918,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 512:
       gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
       p->up.clumpsmagnitudeset=1;
+      break;
+    case 534:
+      gal_linkedlist_add_to_sll(&p->allcolsll, CATUPPERLIMITMAG);
+      p->up.upperlimitmagset=1;
       break;
     case 514:
       gal_linkedlist_add_to_sll(&p->allcolsll, CATRIVERAVE);

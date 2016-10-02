@@ -29,7 +29,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 bin_PROGRAMS = astmkcatalog
 
 astmkcatalog_SOURCES = main.c main.h cite.h ui.c ui.h args.h          \
-mkcatalog.c mkcatalog.h columns.c columns.h
+mkcatalog.c mkcatalog.h columns.c columns.h upperlimit.c upperlimit.h
 
 astmkcatalog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la       \
 -lgnuastro

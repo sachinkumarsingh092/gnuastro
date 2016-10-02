@@ -439,7 +439,7 @@ Invoking NoiseChisel
 
 MakeCatalog
 
-* Depth and limiting magnitude::  For comparing different catalogs.
+* Quantifying data limits::     For comparing different catalogs.
 * Measuring elliptical parameters::  Estimating elliptical parameters.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
 * Adding new columns to MakeCatalog::  How to add new columns.
@@ -7024,7 +7024,7 @@ the maximum of the respective pixels in all operands in the stack.
 
 @item average
 Similar to @command{min}, but the pixels of the output will contain
-the average of the respective pixels in all operands in the stack
+the average of the respective pixels in all operands in the stack.
 
 @item median
 Similar to @command{min}, but the pixels of the output will contain
@@ -7736,24 +7736,22 @@ the following sum of periodic functions:
 f(l)=\displaystyle\sum_{n=-\infty}^{\infty}c_ne^{i{2{\pi}n\over L}l} }
 
 @noindent
-Note that the different frequencies (@mymath{2{\pi}n/L}, in units of
-cycles per meters for example) are not arbitrary. They are all integer
-multiples of the fundamental frequency of
-@mymath{\omega_0=2\pi/L}. Recall that @mymath{L} was the length of the
-signal we want to model. Therefore, we see that the smallest possible
-frequency (or the frequency resolution) in the end, depends on the
-length we observed the signal or @mymath{L}. In the case of each
-dimension on an image, this is the size of the image in the respective
-dimension. The frequencies have been defined in this ``harmonic''
-fashion to insure that the final sum is periodic outside of the
-@mymath{[l_0, l_0+L]} interval too. At this point, you might be
-thinking that the sky is not periodic with the same period as my
-camera's view angle. You are absolutely right! The important thing is
-that since your camera's observed region is the only region we are
-``observing'' and will be using, the rest of the sky is irrelevant; so
-we can safely assume the is periodic outside of it. However, this
-working assumption will haunt us later in @ref{Edges in the frequency
-domain}.
+Note that the different frequencies (@mymath{2{\pi}n/L}, in units of cycles
+per meters for example) are not arbitrary. They are all integer multiples
+of the fundamental frequency of @mymath{\omega_0=2\pi/L}. Recall that
+@mymath{L} was the length of the signal we want to model. Therefore, we see
+that the smallest possible frequency (or the frequency resolution) in the
+end, depends on the length we observed the signal or @mymath{L}. In the
+case of each dimension on an image, this is the size of the image in the
+respective dimension. The frequencies have been defined in this
+``harmonic'' fashion to insure that the final sum is periodic outside of
+the @mymath{[l_0, l_0+L]} interval too. At this point, you might be
+thinking that the sky is not periodic with the same period as my camera's
+view angle. You are absolutely right! The important thing is that since
+your camera's observed region is the only region we are ``observing'' and
+will be using, the rest of the sky is irrelevant; so we can safely assume
+the sky is periodic outside of it. However, this working assumption will
+haunt us later in @ref{Edges in the frequency domain}.
 
 The frequencies are thus determined by definition. So all we need to
 do is to find the coefficients (@mymath{c_n}), or magnitudes, or radii
@@ -11281,7 +11279,7 @@ transformations on the labeled image.
 
 
 @menu
-* Depth and limiting magnitude::  For comparing different catalogs.
+* Quantifying data limits::     For comparing different catalogs.
 * Measuring elliptical parameters::  Estimating elliptical parameters.
 * Invoking astmkcatalog::       Options and arguments to MakeCatalog.
 * Adding new columns to MakeCatalog::  How to add new columns.
@@ -11290,132 +11288,161 @@ transformations on the labeled image.
 
 
 
-@node Depth and limiting magnitude, Measuring elliptical parameters, MakeCatalog, MakeCatalog
-@subsection Depth and limiting magnitude
+@node Quantifying data limits, Measuring elliptical parameters, MakeCatalog, MakeCatalog
+@subsection Quantifying data limits
 
 @cindex Depth
 @cindex Clump magnitude limit
 @cindex Object magnitude limit
 @cindex Limit, object/clump magnitude
 @cindex Magnitude, object/clump detection limit
-Different observations have different noise properties and different
-detection methods (or one method with a different set of parameters)
-will have different abilities to detect certain objects in an
-image. Therefore it is very important that there be a scale on which
-we can compare different observations (images) and detection methods
-to objectively quantify the noise and our ability to detect signal in
-it.
+Different datasets (images in the case of MakeCatalog) have different noise
+properties and different detection methods (or one method with a different
+set of parameters) will have different abilities to detect or measure
+certain kinds of objects in an image. Therefore it is very important to
+quantify our ability to detect and measure signal in noise. In this section
+we discuss these limits that are very important in any analysis.
 
-Due to the presence of correlated noise in processed images (which are
-used for scientific deductions), we cannot simply deduce the limiting
-signal properties from those of the noise. Hence a different measure
-is needed for each. To quantify the level of noise, we define
-@emph{depth} and to quantify the ability to reliably detect/study
-objects with that methodology we define the magnitude limit. In
-astronomy, it is common to use the magnitude (a unit-less scale) and
-not physical units, see @ref{Flux Brightness and magnitude}. Therefore
-both these measures will be in units of magnitudes, but since
-magnitudes don't have units, we are just showing them like units as a
-place holder for clarity.
+In astronomy, it is common to use the magnitude (a unit-less scale) and
+physical units, see @ref{Flux Brightness and magnitude}. Therefore all the
+measured discussed here are commonly defined in units of magnitudes.
 
 @table @asis
 
 @item Depth
-[magnitude] As we make more observations on one region of the sky and
-add the images over each other, we are able to decrease the standard
-deviation of the noise in each pixel@footnote{This is true for any
-noisy data, not just astronomical images}. Qualitatively, this
-decrease manifests its self by making fainter (per pixel) parts of the
-objects in the image more visible. Quantitatively, it increases the
-Signal to noise ratio, since the signal is fixed but the noise is
-decreased. It is very important to have in mind that noise is defined
-per pixel (or independent data measurement unit), not per object.
+As we make more observations on one region of the sky and add the images
+over each other, we are able to decrease the standard deviation of the
+noise in each pixel@footnote{This is true for any noisy data, not just
+astronomical images}. Qualitatively, this decrease manifests its self by
+making fainter (per pixel) parts of the objects in the image more
+visible. Quantitatively, it increases the Signal to noise ratio, since the
+signal is fixed but the noise is decreased. It is very important to have in
+mind that here, noise is defined per pixel (or in the units of our data
+measurement), not per object.
 
-You can think of the noise as muddy water that is completely covering
-a flat ground@footnote{The ground is the sky value in this analogy,
-see @ref{Sky value}. Note that this analogy only holds for a flat sky
-value across the surface of the image or ground.} with some
-hills@footnote{The hills are astronomical objects in this
-analogy. Brighter parts of the object are higher from the ground.} in
-it. Let's assume that in your first observation the muddy water has
-just been stirred and you can't see anything through it. As you wait
-and make more observations, the mud settles down and the @emph{depth}
-of the transparent water increases as you wait. The summits of hills
-begin to appear. As the depth of clear water increases, the parts of
-the hills with lower heights can be seen more clearly.
+You can think of the noise as muddy water that is completely covering a
+flat ground@footnote{The ground is the sky value in this analogy, see
+@ref{Sky value}. Note that this analogy only holds for a flat sky value
+across the surface of the image or ground.} with some regions higher than
+the others@footnote{The peaks are (parts of) astronomical objects in this
+analogy.} in it. In this analogy, height is brightness. Let's assume that
+in your first observation the muddy water has just been stirred and you
+can't see anything through it. As you wait and make more observations, the
+mud settles down and the @emph{depth} of the transparent water increases as
+you wait. The summits of hills begin to appear. As the depth of clear water
+increases, the parts of the hills with lower heights (less surface
+brightness) can be seen more clearly.
 
 @cindex Depth
 The outputs of NoiseChisel include the Sky standard deviation
-(@mymath{\sigma}) on every group of pixels (a mesh) that were
-calculated from the undetected pixels in that mesh, see @ref{Tiling an
-image} and @ref{NoiseChisel output}. Let's take @mymath{\sigma_m} as
-the median @mymath{\sigma} over the successful meshes in the image
-(prior to interpolation or smoothing, see @ref{Grid interpolation and
-smoothing}). Note that even though on different instruments, pixels
-have different physical sizes (for example in @mymath{\mu}m),
-nevertheless, a pixel is the unit of data collection. Therefore, as
-far as noise is considered, the physical or projected size of the
-pixels is irrelevant. We thus define the @emph{depth} of each data set
-as the magnitude of @mymath{\sigma_m}.
+(@mymath{\sigma}) on every group of pixels (a mesh) that were calculated
+from the undetected pixels in that mesh, see @ref{Tiling an image} and
+@ref{NoiseChisel output}. Let's take @mymath{\sigma_m} as the median
+@mymath{\sigma} over the successful meshes in the image (prior to
+interpolation or smoothing, see @ref{Grid interpolation and smoothing}).
 
-As an example, the XDF survey covers part of the sky that the Hubble
-space telescope has observed the most (for 85 orbits) and is
-consequently very small (@mymath{\sim4} arcmin@mymath{^2}). On the
-other hand, the CANDELS survey, is one of the widest multi-color
-surveys covering several fields (about 720 arcmin@mymath{^2}) but its
-deepest fields have only 9 orbits observation. The depth of the XDF
-and CANDELS-deep surveys in the near infrared WFC3/F160W filter are
-respectively 34.40 and 32.45 magnitudes. In a single orbit image, this
-same field has a depth of 31.32. Note that a larger magnitude
-corresponds to less brightness, see @ref{Flux Brightness and
-magnitude}.
+On different instruments pixels have different physical sizes (for example
+in micro-meters, or spatial angle over the sky), nevertheless, a pixel is
+our unit of data collection. In other words, while quantifying the noise,
+the physical or projected size of the pixels is irrelevant. We thus define
+the @emph{depth} of each dataset (or image) as the magnitude of
+@mymath{\sigma_m}.
 
-@item Magnitude limit
-@cindex False detections
-@cindex Detections false
-[magnitude] Because of noise and methodology, no detection algorithm
-can be perfect and this parameter specifies the limits of the combined
-data and methodology used for detection. Assuming a fixed shape for
-all the targets, for any algorithm and its accompanying set of input
-parameters, there is always a certain magnitude limit below which the
-detections (pseudo-detections or clumps in NoiseChisel, see
-@ref{NoiseChisel}) are no longer usable/reliable.
+@cindex XDF
+@cindex CANDELS
+As an example, the XDF survey covers part of the sky that the Hubble space
+telescope has observed the most (for 85 orbits) and is consequently very
+small (@mymath{\sim4} arcmin@mymath{^2}). On the other hand, the CANDELS
+survey, is one of the widest multi-color surveys covering several fields
+(about 720 arcmin@mymath{^2}) but its deepest fields have only 9 orbits
+observation. The depth of the XDF and CANDELS-deep surveys in the near
+infrared WFC3/F160W filter are respectively 34.40 and 32.45 magnitudes. In
+a single orbit image, this same field has a depth of 31.32. Recall that a
+larger magnitude corresponds to less brightness, see @ref{Flux Brightness
+and magnitude}.
+
+@item Upper limit magnitude
+Due to the noisy nature of data, it is possible to get arbitrarily low
+values for a faint object's brightness (or arbitrarily high
+magnitudes). Given the scatter caused by the noise, such small values are
+meaningless: another similar depth observation will give a radically
+different value. This problem is most common when you use one image/filter
+to generate target labels (which specify which pixels belong to which
+object, see @ref{NoiseChisel output} and @ref{MakeCatalog}) and another
+image/filter to generate a catalog for measuring colors.
+
+The object might not be visible in the filter used for the latter image, or
+the image @emph{depth} (see above) might be much shallower. So you will get
+unreasonbly faint magnitudes. For example when the depth of the image is 32
+magnitudes, a measurement that gives a magnitude of 36 for a
+@mymath{\sim100} pixel object is clearly unreliable. In another similar
+depth image, we might measure a magnitude of 30 for it, and yet another
+might give 33. Furthermore, due to the noise scatter so close to the depth
+of the dataset, the total brightness might actually get measured as a
+negative value, so no magnitude can be defined (recall that a magnitude is
+a base-10 logarithm).
+
+@cindex Upper limit magnitude
+@cindex Magnitude, upper limit
+Using such unreliable measurements will directly affect our analysis, so we
+must not use them. However, all is not lost! Given our limited depth, there
+is one thing we can deduce about the object's magnitude: we can say that if
+something actually exists here (possibly burried deep under the noise), it
+must have a magnitude that is fainter than an @emph{upper limit
+magnitude}. To find this upper limit magnitude, we place the object's
+footprint (segmentation map) over random parts of the image where there are
+no detections, so we only have pure (possibly correlated) noise and
+undetected objects. Doing this a large number of times will give us a
+distribution of brightness values. The standard deviation (@mymath{\sigma})
+of that distribution can be used to quantify the upper limit magnitude.
 
 @cindex Correlated noise
-While adding more data sets does have the advantage of decreasing the
-standard deviation of the noise, it also produces correlated
-noise. Correlated noise is produced because the raw data sets are
-warped (rotated, shifted or resampled in general, see
-@ref{ImageWarp}) before they are added with each other. This
-correlated noise manifests as a `smoothing' or `blurring' over the
-image. Therefore pixels in added images are no longer separate or
-independently measured data elements, they are `correlated' and this
-produces a hurdle in our ability to detect objects in them.
+Traditionally, faint/small object photometry was done using fixed circular
+apertures (for example with a diameter of @mymath{N} arcseconds). In this
+way, the upper limit was like the depth discussed above: one value for the
+whole image. But with the much more advanced hardware and software of
+today, we can make customized segmentation maps for each object. The number
+of pixels (are of the object) used directly affects the final distribution
+and thus magnitude. Also the image correlated noise might actually create
+certain patters, so the shape of the object can also affect the result. So
+in MakeCatalog, the upper limit magnitude is found for each object in the
+image separately. Not one value for the whole image.
 
-@cindex Number count
-To find the limiting magnitude, you have to use the output of
-MakeCatalog and plot the number of objects as a function of magnitude
-with your favorite plotting tool, this is called a ``number count''
-plot. It is simply a histogram of the catalog in each magnitude
-bin. This histogram can be used in many ways to specify a magnitude
-limit, for example see Akhlaghi et al. (2015, in preparation) for one
-method of using multiple depth images in order to find this limit.
+@item Completeness limit
+@cindex Completeness
+As the surface brightness of the objects decreases, the ability to detect
+them will also decrease. An important statistic is thus the fraction of
+objects of similar morphology and brightness that will be identified with
+our detection algorithm/parameters in the given image. This fraction is
+known as completeness. For brighter objects, completeness is 1: all bright
+objects that might exist over the imagde will be detected. However, as we
+go to lower surface brightness objects, we fail to detect some and
+gradually we are not able to detect anything any more. For a given profile,
+the magnitude where the completeness drops below a certain level usually
+above @mymath{90\%} is known as the completeness limit.
+
+@cindex Purity
+@cindex False detections
+@cindex Detections false
+Another important parameter in measuring completeness is purity: the
+fraction of true detections to all true detections. In effect purity is the
+measure of contamination by false detections: the higher the purity, the
+lower the contamination. Completeness and purity are anti-correlated: if we
+can allow a large number of false detections (that we might be able to
+remove by other means), we can significantly increase theh completeness
+limit.
+
+One traditional way to measure the completeness and purity of a given
+sample is by embedding mock profiles in regions of the image with no
+detection. However in such a study we must be really careful to choose
+model profiles as similar to the target of interest as possible.
 
 @end table
 
-@cindex Zero-point magnitude
-@noindent
-For any data-set and detection algorithm (with a specific set of
-parameters), the depth and limiting magnitudes can differ. The first
-is reported in the comments section of the catalog plain text
-file. Note that the accuracy in estimating the zero-point magnitude is
-a very important factor in an accurate comparison between magnitudes
-measured for different images, on possibly different instruments and
-cameras, see @ref{Flux Brightness and magnitude}.
 
 
 
-@node Measuring elliptical parameters, Invoking astmkcatalog, Depth and limiting magnitude, MakeCatalog
+@node Measuring elliptical parameters, Invoking astmkcatalog, Quantifying data limits, MakeCatalog
 @subsection Measuring elliptical parameters
 
 One of the most important class of parameters that are important for
@@ -11807,7 +11834,92 @@ in more accurate floating point display.
 
 @end table
 
-@noindent
+The upper limit magnitude was discussed in @ref{Quantifying data
+limits}. Unlike other measured values/columns in MakeCatalog, the upper
+limit magnitude needs several defined parameters which are discussed
+here. All the upper limit magnitude specific options start with @option{up}
+for upper limit, except for @option{--envseed} that is also present in
+other programs and is general for any job requiring random number
+generation.
+
+@cindex Reproducibility
+One very important consideration in Gnuastro is reproducibility. Therefore,
+the values to all of these parameters along with others (like the random
+number generator type and seed) are also reported in the comments of the
+final catalog when the upper limit magnitude column is desired. One of
+those parameters is the number of threads used in this run of MakeCatalog.
+This might seem irrelevant.
+
+The job of sampling a large number of positions over the image is an
+``embarrasingly parallel'' kind of problem which can greatly benefit from
+threads. For maximum efficiency, the objects in the catalog are divided
+between the threads and the random number generator is used independently
+on each thread. So even when the random number generator type and seed are
+identical, if the number of threads differ, you will get different
+results. Ofcourse, the difference is due to scatter and is statistically
+negligible, but it is not exactly reproducible (which is important in some
+contexts).
+
+@table @option
+
+@item --upmask
+(@option{=STR}) File name of mask image to use for upper-limit
+calculation. In some cases (especially when doing matched photometry), the
+object labels specified in the main input and mask image might not be
+adequate. In other words they do not necessarily have to cover @emph{all}
+detected objects: the user might have selected only a few of the objects in
+their labeled image. All the non-zero pixels of the image specified by this
+option (in the @option{--upmaskhdu} extension) will be set as blank for the
+upper limit magnitude calculation.
+
+For example, when you are using labels from another image, you can give
+NoiseChisel's objects image output for this image as the value to this
+option. In this way, you can be sure that regions with data do not harm
+your distribution. See @ref{Quantifying data limits} for more on the upper
+limit magnitude.
+
+@item --upmaskhdu
+(@option{=STR}) The extension in the file specified by @option{--upmask}.
+
+@item --upnum
+(@option{=INT}) The number of random samples to take for all the objects. A
+larger value to this option will give a more accurate result
+(assymptotically), but it will also slow down the process. When a randomly
+positioned sample overlaps with a detected/masked pixel it is not counted
+and another random position is found until the object completely lies over
+an undetected region. So you can be sure that for each object, this many
+samples over undetected objects are made. See the upper limit magnitude
+discussion in @ref{Quantifying data limits} for more.
+
+@item --envseed
+Read the random number generator type and seed value from the environment
+(see @ref{Generating random numbers}). Random numbers are used in
+calculating the random positions of different samples of each object.
+
+@item --upsclipmultip
+(@option{=FLT}) The multiple of @mymath{\sigma} to use in
+@mymath{\sigma}-clipping the final distribution (see @ref{Sigma
+clipping}). The images might have some artifacts or some regions with
+signal in the image might not have been removed correctly. If a random
+sampling falls over such regions, they can significantly bias the final
+standard deviation. To avoid the effect of such outliers, after the
+distribution is found, it is @mymath{\sigma}-clipped (by convergence).
+
+@item --upsclipaccu
+(@option{=FLT}) Relative difference between two successive @mymath{\sigma}
+measurements to halt the @mymath{\sigma}-clipping process by convergence,
+see the explanations for @option{--upsclipmultip} for more.
+
+@item --upnsigma
+(@option{=FLT}) The multiple of the standard deviation (or @mymath{\sigma})
+used to measure the magnitude. Note that this is the final @mymath{\sigma}
+produced after the @mymath{\sigma}-clipping.
+
+@end table
+
+
+
+
 The final group of options particular to MakeCatalog are those that
 specify which columns should be displayed in the output catalogs. For
 each column there is an option, if it has been called on the command
@@ -12004,6 +12116,14 @@ defined for work on adding these sources of error too.
 [Objects] The magnitude of all clumps in this object, see
 @option{--clumpbrightness}.
 
+@item --upperlimitmag
+[Objects] The upper limit magnitude for this object. The object's footprint
+is used over randomly positioned parts of the image that do not cover a
+detected object. The standard deviation of the final distribution is then
+the upper limit magnitude, see @ref{Quantifying data limits} for a complete
+explanation. This is very important for the fainter objects in the image
+where the measured magnitudes are not reliable.
+
 @item --riverave
 [Clumps] The average brightness of the river pixels around this
 clump. River pixels were defined in Akhlaghi and Ichikawa 2015. In
@@ -12094,26 +12214,26 @@ will need to also modify the respective @code{firstpass} and
 @code{secondpass} functions and define new information table columns
 in @file{main.h}.
 
-For all the steps below, it is easiest to just copy and paste an
-existing option and change the variables in each step. In all these
-different places, the options are sorted in the same order (same order
-as @ref{Invoking astmkcatalog}). This allows a particular option to be
-easily found in all steps. Therefore in adding your new option, be
-sure to keep it in the same relative place in the list (it doesn't
-necessarily have to be in the end), and near conceptually similar
-options.
+For all the steps below, it is easiest to just copy and paste an existing
+option and change the variables in each step. In all these different
+places, the options are sorted in the same order (same order as
+@ref{Invoking astmkcatalog}). This allows a particular column/option to be
+easily found in all steps. Therefore in adding your new option, be sure to
+keep it in the same relative place in the list in all the separate places
+(it doesn't necessarily have to be in the end), and near conceptually
+similar options.
 
 @table @file
 
 @item main.h
 The @code{objectcols} and @code{clumpcols} enumerated variables
-(@code{enum}) define the labels for the separate information table
-columns (the raw pixel calculations). If your new calculation requires
-new raw columns, the add them. The @code{outcols} enumerated variables
-define the recognized output columns. You will need to add a new name
-for your desired column here, then add a row for your new parameter in
-the @code{uiparams} structure, the name should be the same as the one
-you used in @code{outcols} (in small caps).
+(@code{enum}) define the labels for the separate information table columns
+(the raw pixel calculations). If your new calculation requires new raw
+columns, the add new macros for them. The @code{outcols} enumerated
+variables define the recognized output columns. You will need to add a new
+name for your desired column here, then add a row for your new parameter in
+the @code{uiparams} structure, the name should be the same as the one you
+used in @code{outcols} (in small caps).
 
 @cindex GNU C library
 @item args.h
@@ -12123,26 +12243,28 @@ that the option name be the same as the name you put in @code{outcols}
 (in @file{main.h}), like the other options that are already
 defined.
 
-Define a new option in @code{argp_option} (rows between the @code{@{}
-and @code{@}}). The first is the name of the option, the second is its
-short option name (see @ref{Options}), it is best to use a number (so
-no short option is defined for the user) which in Gnuastro is defined
-to be a number larger than 500. All the used numbers are shown in the
-comment immediately above @code{argp_option} structure, increase that
-number by one and use that number for your new option. The next two
-values should be @code{0} and the last should be a short description
-of your option.
+Define a new option in @code{argp_option} (rows between the @code{@{} and
+@code{@}}). The first is the name of the option, the second is its short
+option name (see @ref{Options}). The next two values should be @code{0} and
+the last should be a short description of your option/column. For the
+second element is best to use a number (so no short option is defined for
+the user) which in Gnuastro is defined to be a number larger than 500. The
+range of used numbers (and short option names) are shown in the comment
+immediately above @code{argp_option} structure, increase that number by one
+and use that number for your new option.
 
-Go down to the @code{parse_opt} function and add a @code{case} for
-your specific option (using the same number you specified above), then
-update the contents.
+Go down to the @code{parse_opt} function and add a @code{case} for your
+specific option (using the same number you specified above), then update
+the contents, based on the new macros you defined @code{main.h}.
 
 @item ui.c
-In the @code{readconfig} function, add an @code{else if} for your
-option (easiest to just copy and paste, then update). In the
-@code{printvalues} function's @code{switch} structure, add a
-@code{case} for your option. Finally, in the @code{preparearrays}
-function, add a @code{case} for your new output column.
+In the @code{readconfig} function, add an @code{else if} for your option
+(easiest to just copy and paste, then update). In the @code{printvalues}
+function's @code{switch} structure, add a @code{case} for your
+option. Finally, in the @code{preparearrays} function, add a @code{case}
+for your new output column. Note that if the column is to be used for both
+objects and clumps, you need to set both @code{p->objcols} and
+@code{p->clumpcols}.
 
 @item mkcatalog.c
 If your procedure needs new raw calculations, add a new line to
@@ -12366,14 +12488,14 @@ namely the pixels, also produces a very small `spread' in the image.
 @cindex Convolution
 @cindex Image blurring
 @cindex PSF image size
-Convolution is the mathematical process by which we can apply a
-`spread' to an image, or in other words blur the image, see
-@ref{Convolution process}. The Brightness of an object should remain
-unchanged after convolution, see @ref{Flux Brightness and
-magnitude}. Therefore, it is important that the sum of all the pixels
-of the PSF be unity. The image also has to have an odd number of
-pixels on its sides so one pixel can be defined as the center. In
-MakeProfiles, the PSF can be set by the two methods explained below.
+Convolution is the mathematical process by which we can apply a `spread' to
+an image, or in other words blur the image, see @ref{Convolution
+process}. The Brightness of an object should remain unchanged after
+convolution, see @ref{Flux Brightness and magnitude}. Therefore, it is
+important that the sum of all the pixels of the PSF be unity. The PSF image
+also has to have an odd number of pixels on its sides so one pixel can be
+defined as the center. In MakeProfiles, the PSF can be set by the two
+methods explained below.
 
 @table @asis
 
@@ -15095,7 +15217,7 @@ defines two major formats: images and tables. An image has a single type
 for all its data elements (a pixel in a 2D image). A table has a single
 type for every one of its columns. In both cases, the FITS header stores
 this information. All the FITS data types correspond to C types (for
-example @code{short}, @code{int}, @code{float}, or @code{long}.
+example @code{short}, @code{int}, @code{float}, or @code{long}).
 
 @cindex CFITSIO
 @cindex @code{BITPIX}

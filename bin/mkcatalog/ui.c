@@ -157,6 +157,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
         }
 
 
+
       /* Outputs */
       else if(strcmp(name, "output")==0)
         gal_checkset_allocate_copy_set(value, &cp->output,
@@ -203,6 +204,51 @@ readconfig(char *filename, struct mkcatalogparams *p)
                                   key, SPACK, filename, lineno);
           up->accuprecisionset=1;
         }
+
+
+      /* Upper limit magnitude */
+      else if (strcmp(name, "upmaskname")==0)
+        gal_checkset_allocate_copy_set(value, &up->upmaskname,
+                                       &up->upmasknameset);
+      else if (strcmp(name, "upmaskhdu")==0)
+        gal_checkset_allocate_copy_set(value, &up->upmaskhdu,
+                                       &up->upmaskhduset);
+      else if(strcmp(name, "upnum")==0)
+        {
+          if(up->upnumset) continue;
+          gal_checkset_sizet_l_zero(value, &p->upnum, name,
+                                  key, SPACK, filename, lineno);
+          up->upnumset=1;
+        }
+      else if(strcmp(name, "envseed")==0)
+        {
+          if(up->envseedset) continue;
+          gal_checkset_int_zero_or_one(value, &p->envseed, name, key,
+                                       SPACK, filename, lineno);
+          up->envseedset=1;
+        }
+      else if(strcmp(name, "upsclipmultip")==0)
+        {
+          if(up->upsclipmultipset) continue;
+          gal_checkset_float_l_0(value, &p->upsclipmultip, name,
+                                 key, SPACK, filename, lineno);
+          up->upsclipmultipset=1;
+        }
+      else if(strcmp(name, "upsclipaccu")==0)
+        {
+          if(up->upsclipaccuset) continue;
+          gal_checkset_float_l_0_s_1(value, &p->upsclipaccu, name,
+                                    key, SPACK, filename, lineno);
+          up->upsclipaccuset=1;
+        }
+      else if(strcmp(name, "upnsigma")==0)
+        {
+          if(up->upnsigmaset) continue;
+          gal_checkset_float_l_0(value, &p->upnsigma, name,
+                                 key, SPACK, filename, lineno);
+          up->upnsigmaset=1;
+        }
+
 
 
       /* Catalog columns */
@@ -458,6 +504,15 @@ readconfig(char *filename, struct mkcatalogparams *p)
           gal_linkedlist_add_to_sll(&p->allcolsll, CATCLUMPSMAGNITUDE);
           up->clumpsmagnitudeset=1;
         }
+      else if(strcmp(name, "upperlimitmag")==0)
+        {
+          if(up->upperlimitmagset) continue;
+          gal_checkset_int_zero_or_one(value, &yes, name, key, SPACK,
+                                       filename, lineno);
+          if(!yes) continue;
+          gal_linkedlist_add_to_sll(&p->allcolsll, CATUPPERLIMITMAG);
+          up->upperlimitmagset=1;
+        }
       else if(strcmp(name, "riverave")==0)
         {
           if(up->riveraveset) continue;
@@ -640,6 +695,24 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
   if(up->accuprecisionset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "accuprecision", p->accuprecision);
 
+  /* Upper limit magnitude */
+  fprintf(fp, "\n# Upper limit magnitude:\n");
+  if(up->upmasknameset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "upmaskname", up->upmaskname);
+  if(up->upmaskhduset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "upmaskhdu", up->upmaskhdu);
+  if(up->upnumset)
+    fprintf(fp, CONF_SHOWFMT"%lu\n", "upnum", p->upnum);
+  if(up->envseedset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "envseed", p->envseed);
+  if(up->upsclipmultipset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "upsclipmultip", p->upsclipmultip);
+  if(up->upsclipaccuset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "upsclipaccu", p->upsclipaccu);
+  if(up->upnsigmaset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "upnsigma", p->upnsigma);
+
+
   /* Catalog columns, since order is important. Notice that they have
      to be printed in opposite order (because of the way they are read
      through a simple linked list). */
@@ -718,6 +791,9 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
         break;
       case CATCLUMPSBRIGHTNESS:
         fprintf(fp, CONF_SHOWFMT"%d\n", "clumpsbrightness", 1);
+        break;
+      case CATUPPERLIMITMAG:
+        fprintf(fp, CONF_SHOWFMT"%d\n", "upperlimitmag", 1);
         break;
       case CATNORIVERBRIGHTNESS:
         fprintf(fp, CONF_SHOWFMT"%d\n", "noriverbrightness", 1);
@@ -820,6 +896,19 @@ checkifset(struct mkcatalogparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("floatprecision");
   if(up->accuprecisionset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("accuprecision");
+
+  /* Upper limit magnitude. */
+  if(p->up.upperlimitmagset)
+    {
+      if(p->up.upnumset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("upnum");
+      if(p->up.upsclipmultipset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("upsclipmultip");
+      if(p->up.upsclipaccuset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("upsclipaccu");
+      if(p->up.upnsigmaset==0)
+        GAL_CONFIGFILES_REPORT_NOTSET("upnsigma");
+    }
 
   GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
 }
@@ -1199,6 +1288,9 @@ preparearrays(struct mkcatalogparams *p)
         case CATCLUMPSBRIGHTNESS:
           p->objcols[p->objncols++] = p->allcols[i];
           break;
+        case CATUPPERLIMITMAG:
+          p->objcols[p->objncols++] = p->allcols[i];
+          break;
         case CATNORIVERBRIGHTNESS:
           p->clumpcols[p->clumpncols++] = p->allcols[i];
           break;
@@ -1285,8 +1377,11 @@ preparearrays(struct mkcatalogparams *p)
       checksetlong(p, p->up.objlabsname, p->up.objhdu, &p->objects);
       if(p->up.clumplabsname)
         checksetlong(p, p->up.clumplabsname, p->up.clumphdu, &p->clumps);
-      else
-        p->clumps=NULL;
+      else p->clumps=NULL;
+      if(p->up.upmasknameset)
+        checksetlong(p, p->up.upmaskname, p->up.upmaskhdu, &p->upmask);
+      else p->upmask=NULL;
+
 
       /* Read the necessary keywords. */
       readkeywords(p);
@@ -1336,6 +1431,14 @@ preparearrays(struct mkcatalogparams *p)
   for(i=1;i<=p->numclumps;++i)
     p->cinfo[i*CCOLUMNS+CPOSSHIFTX]=p->cinfo[i*CCOLUMNS+CPOSSHIFTY]=NAN;
 
+  /* Allocate the random number generator: */
+  if(p->up.upperlimitmagset)
+    {
+      gsl_rng_env_setup();
+      if(p->envseed==0)
+        gsl_rng_default_seed=gal_timing_time_based_rng_seed();
+    }
+
   /* Clean up: */
   gal_linkedlist_free_sll(p->allcolsll);
 }
@@ -1380,7 +1483,6 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-
   /* Add the user default values and save them if asked. */
   GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
@@ -1393,7 +1495,6 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
      file names. So we first have to check if an input */
   if(p->up.inputname)
     sanitycheck(p);
-
 
   /* Make the array of input images. */
   preparearrays(p);
@@ -1416,6 +1517,16 @@ setparams(int argc, char *argv[], struct mkcatalogparams *p)
                p->up.clumphdu);
       printf("  - Sky     %s (hdu: %s)\n", p->up.skyname, p->up.skyhdu);
       printf("  - Sky STD %s (hdu: %s)\n", p->up.stdname, p->up.stdhdu);
+      if(p->up.upperlimitmagset)
+        {
+          if(p->up.upmasknameset)
+            printf("  - Upper limit mask: %s (hdu: %s)\n", p->up.inputname,
+                   p->cp.hdu);
+          printf("  - RNG type for upper-limit magnitude: %s\n",
+                 gsl_rng_default->name);
+          printf("  - RNG seed for upper-limit magnitude: %ld\n",
+                 gsl_rng_default_seed);
+        }
     }
 }
 
@@ -1462,6 +1573,7 @@ freeandreport(struct mkcatalogparams *p, struct timeval *t1)
   free(p->up.skyhdu);
   free(p->up.stdhdu);
   free(p->up.clumphdu);
+  if(p->upmask) free(p->upmask);
   if(p->up.mhduset) free(p->up.mhdu);
   if(p->wcs) wcsvfree(&p->nwcs, &p->wcs);
   if(p->up.skynameset) free(p->up.skyname);

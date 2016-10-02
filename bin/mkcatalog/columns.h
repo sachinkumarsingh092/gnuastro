@@ -73,6 +73,9 @@ brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
               char *scale);
 
 void
+upperlimitcol(struct mkcatalogparams *p);
+
+void
 skystd(struct mkcatalogparams *p, size_t col);
 
 void

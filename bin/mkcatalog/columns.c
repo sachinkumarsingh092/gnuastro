@@ -43,6 +43,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "columns.h"
 #include "mkcatalog.h"
+#include "upperlimit.h"
 
 
 
@@ -882,6 +883,42 @@ brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
   /* Set the header information: */
   add = (col==CNoRiverBrightness) ? " sky (not river) subtracted " : " ";
   sprintf(p->description, "%lu: %s%s%s.", p->curcol, target, add, scale);
+}
+
+
+
+
+
+void
+upperlimitcol(struct mkcatalogparams *p)
+{
+  size_t i;
+  float *std;
+  double *ptr;
+
+  /* For the comments: */
+  p->unitp = CATUNITMAG;
+  sprintf(p->description, "%lu: Upper limit magnitude for this %s.",
+          p->curcol, p->name);
+
+
+  /* Correct the raw values (divide them by area) if not already
+     done. */
+  std=upperlimit(p->img, p->sky, p->objects, p->upmask, p->s0, p->s1,
+                 p->upnum, p->cp.numthreads, p->envseed, p->upsclipmultip,
+                 p->upsclipaccu);
+
+
+  /* Write the standard deviations values in the final catalog as
+     magnitudes. */
+  for(i=0;i<p->num;++i)
+    {
+      /* `ptr' is defined for a short/readable line. */
+      ptr  = &p->cat[i * p->numcols + p->curcol ];
+      *ptr =  -2.5f * log10( p->upnsigma*std[i+1] ) + p->zeropoint;
+    }
+
+  free(std);
 }
 
 
