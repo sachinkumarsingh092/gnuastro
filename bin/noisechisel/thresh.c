@@ -28,10 +28,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/qsort.h>
-#include <gnuastro/timing.h>
-#include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/spatialconvolve.h>
+
+#include <timing.h>
+#include <checkset.h>
 
 #include "main.h"
 #include "binary.h"

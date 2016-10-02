@@ -27,7 +27,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_rng.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/commonparams.h>
+
+#include <commonparams.h>
 
 
 /* Progarm name macros: */

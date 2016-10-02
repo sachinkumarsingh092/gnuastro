@@ -30,18 +30,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
-#include <nproc.h>               /* From Gnulib.                     */
-
 #include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
 #include <gnuastro/array.h>
-#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h   */
-#include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/statistics.h>
-#include <gnuastro/commonargs.h>
-#include <gnuastro/configfiles.h>
-#include <gnuastro/fixedstringmacros.h>
+
+#include <nproc.h>               /* From Gnulib.                     */
+#include <timing.h>              /* Includes time.h and sys/time.h   */
+#include <checkset.h>
+#include <commonargs.h>
+#include <configfiles.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 

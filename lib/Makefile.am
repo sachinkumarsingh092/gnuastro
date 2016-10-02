@@ -46,16 +46,15 @@ pkginclude_HEADERS = gnuastro/gnuastro.h $(headersdir)/array.h          \
   $(headersdir)/threads.h $(headersdir)/wcs.h $(headersdir)/txtarray.h
 
 
-# Files to distribute in the tarball. For the headers: these are internal
-# headers and don't need to be installed. Headers are only mentioned within
-# the source files, and if they are not explicitly mentioned somewhere in
-# the Makefile, they will not distributed, so we need to explicitly tell
-# Automake to distribute them here.
+# Files to distribute in the tarball. These are internal headers and don't
+# need to be installed. Headers are only mentioned within the source files,
+# and if they are not explicitly mentioned somewhere in the Makefile, they
+# will not distributed, so we need to explicitly tell Automake to
+# distribute them here.
 headersdir=$(top_srcdir)/lib/gnuastro
-EXTRA_DIST = gnuastro.pc.in gnuastro.h.in $(headersdir)/commonargs.h      \
-  $(headersdir)/commonparams.h $(headersdir)/fixedstringmacros.h          \
-  $(headersdir)/mode.h $(headersdir)/neighbors.h $(headersdir)/checkset.h \
-  $(headersdir)/configfiles.h $(headersdir)/timing.h $(headersdir)/README
+EXTRA_DIST = gnuastro.pc.in gnuastro.h.in checkset.h commonargs.h       \
+  commonparams.h configfiles.h fixedstringmacros.h mode.h neighbors.h   \
+  timing.h $(headersdir)/README
 
 
 # Definitions for Gnuastro's the pkg-config file (inspired from GSL's

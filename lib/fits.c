@@ -31,8 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/checkset.h>
-#include <gnuastro/fixedstringmacros.h>
+
+#include "checkset.h"
+#include "fixedstringmacros.h"
 
 
 /*************************************************************

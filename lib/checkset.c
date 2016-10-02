@@ -33,7 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <fitsio.h>
 
-#include <gnuastro/checkset.h>
+#include "checkset.h"
 
 
 #define FIXEDFORFILE        "The value of `%s` (given as %s)"

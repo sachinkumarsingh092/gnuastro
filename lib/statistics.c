@@ -34,7 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/array.h>
 #include <gnuastro/statistics.h>
 
-#include "gnuastro/mode.h"
+#include "mode.h"
 
 
 

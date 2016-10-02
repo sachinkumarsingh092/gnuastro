@@ -31,10 +31,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/mesh.h>
 #include <gnuastro/array.h>
 #include <gnuastro/qsort.h>
-#include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
-#include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
+
+#include <timing.h>
+#include <checkset.h>
 
 #include "main.h"
 

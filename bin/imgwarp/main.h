@@ -25,7 +25,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <pthread.h>
 
-#include <gnuastro/commonparams.h>
+#include <commonparams.h>
 
 
 

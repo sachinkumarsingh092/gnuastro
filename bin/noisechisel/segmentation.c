@@ -30,7 +30,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/qsort.h>
-#include <gnuastro/neighbors.h>
+
+#include <neighbors.h>
 
 #include "main.h"
 

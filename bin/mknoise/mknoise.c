@@ -29,11 +29,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 #include <sys/time.h>            /* Generate random seed. */
+
 #include <gsl/gsl_rng.h>         /* Used in setrandoms.   */
+#include <gnuastro/fits.h>
 #include <gsl/gsl_randist.h>     /* To make noise.        */
 
-#include <gnuastro/timing.h>
-#include <gnuastro/fits.h>
+#include <timing.h>
 
 #include "main.h"
 

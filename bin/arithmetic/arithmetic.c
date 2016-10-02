@@ -31,8 +31,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
-#include <gnuastro/checkset.h>
 #include <gnuastro/statistics.h>
+
+#include <checkset.h>
 
 #include "main.h"
 #include "arithmetic.h"            /* needs main.h.                  */

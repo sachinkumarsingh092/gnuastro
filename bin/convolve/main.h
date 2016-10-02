@@ -27,7 +27,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/mesh.h>
 #include <gnuastro/threads.h>
-#include <gnuastro/commonparams.h>
+
+#include <commonparams.h>
 
 
 

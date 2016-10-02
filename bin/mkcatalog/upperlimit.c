@@ -31,11 +31,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gsl/gsl_rng.h>
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/txtarray.h>
 #include <gnuastro/statistics.h>
 #include <gsl/gsl_statistics_double.h>
+
+#include <timing.h>
 
 #include "upperlimit.h"
 

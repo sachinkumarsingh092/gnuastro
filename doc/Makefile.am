@@ -97,7 +97,7 @@ endif
 # it. Unfortunately as far as I know, pattern rules are not portable in all
 # implementations of Make, so we have to list all the utilities manually.
 toputildir=$(top_builddir)/bin
-ALLMANSDEP = $(top_srcdir)/lib/gnuastro/commonargs.h
+ALLMANSDEP = $(top_srcdir)/lib/commonargs.h
 man/astarithmetic.1: $(top_srcdir)/bin/arithmetic/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) $(toputildir)/arithmetic/astarithmetic
 man/astconvertt.1: $(top_srcdir)/bin/convertt/args.h  $(ALLMANSDEP)

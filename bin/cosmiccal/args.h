@@ -25,9 +25,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <argp.h>
 
-#include <gnuastro/commonargs.h>
 #include <gnuastro/linkedlist.h>
-#include <gnuastro/fixedstringmacros.h>
+
+#include <commonargs.h>
+#include <fixedstringmacros.h>
 
 
 

@@ -24,7 +24,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define MAIN_H
 
 #include <gnuastro/fits.h>
-#include <gnuastro/commonparams.h>
+
+#include <commonparams.h>
 
 /* Progarm name macros: */
 #define SPACK           "astheader" /* Subpackage executable name. */

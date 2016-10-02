@@ -29,9 +29,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <fitsio.h>
 
-#include <gnuastro/checkset.h>
-#include <gnuastro/commonparams.h>
-#include <gnuastro/fixedstringmacros.h>
+#include <checkset.h>
+#include <commonparams.h>
+#include <fixedstringmacros.h>
 
 /* These are separate in each package. */
 #include "main.h"

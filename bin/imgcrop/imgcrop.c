@@ -30,9 +30,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>
 #include <gnuastro/threads.h>
-#include <gnuastro/checkset.h>
+
+#include <timing.h>
+#include <checkset.h>
 
 #include "main.h"
 

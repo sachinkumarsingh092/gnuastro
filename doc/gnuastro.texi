@@ -17567,13 +17567,13 @@ additions/modifications to C library headers.
 The C library (or GNU C library) header files, for example
 @file{stdio.h} or @file{errno.h}.
 @item
-Installed library header files (for example @file{cfitsio.h} or
-@file{gsl/gsl_rng.h}), and Gnulib-specific headers (for example
-@file{nproc.h}). Note that the latter are imported with @code{""}, not
-@code{<>}, for example @code{#include <nproc.h>}.
+Installed library header files, including Gnuastro's installed headers (for
+example @file{cfitsio.h} or @file{gsl/gsl_rng.h}, or
+@file{gnuastro/fits.h}).
 @item
-Gnuastro common headers and libraries, for example @file{fits.h} or
-@file{neighbors.h}, see @ref{Headers}.
+Gnuastro's internal headers (that are not installed), for example
+@file{commonparams.h}, or Gnulib's headers (which are also not installed)
+like @file{nproc.h}.
 @item
 For programs, the @file{main.h} file (which is needed by the next group of
 headers).

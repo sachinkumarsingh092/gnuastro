@@ -30,8 +30,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include <gnuastro/timing.h>
 #include <gnuastro/statistics.h>
+
+#include <timing.h>
 
 #include "main.h"
 #include "imgstat.h"

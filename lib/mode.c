@@ -29,9 +29,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include <stdlib.h>
 
-#include <gnuastro/mode.h>
 #include <gnuastro/array.h>
 #include <gnuastro/statistics.h>
+
+#include "mode.h"
 
 
 /****************************************************************

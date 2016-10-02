@@ -35,10 +35,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
-#include <gnuastro/timing.h>
-#include <gnuastro/neighbors.h>
 #include <gnuastro/statistics.h>
 #include <gnuastro/linkedlist.h>
+
+#include <timing.h>
+#include <neighbors.h>
 
 #include "main.h"
 

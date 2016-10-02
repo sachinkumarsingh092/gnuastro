@@ -34,11 +34,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gsl/gsl_const_mksa.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/timing.h>     /* Includes time.h and sys/time.h */
-#include <gnuastro/checkset.h>
 #include <gnuastro/txtarray.h>
-#include <gnuastro/commonargs.h>
-#include <gnuastro/configfiles.h>
+
+#include <timing.h>     /* Includes time.h and sys/time.h */
+#include <checkset.h>
+#include <commonargs.h>
+#include <configfiles.h>
 
 #include "main.h"
 

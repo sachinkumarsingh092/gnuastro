@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <gnuastro/commonparams.h>
+#include <commonparams.h>
 
 /* Progarm name macros: */
 #define SPACK           "astcosmiccal" /* Subpackage executable name. */
