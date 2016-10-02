@@ -643,11 +643,11 @@ on the tarball release. If you have downloaded the tarball in the
 @file{TOPGNUASTRO} directory and the dependencies are installed, you can
 unpack, compile, check and install Gnuastro with the following commands. If
 you use GNU Tar, the same command (@command{$ tar xf}) can also be used to
-unpack @file{.tar.xz} and @file{.tar.lz} tarballs.
+unpack @file{.tar.lz} tarballs.
 
 @example
 $ cd TOPGNUASTRO
-$ tar xf gnuastro-latest.tar.gz    # Also usable for `.lz' and `.xz'.
+$ tar xf gnuastro-latest.tar.gz    # This works on `.tar.lz' too.
 $ cd gnuastro-X.X                  # Replace X.X with version number.
 $ ./configure
 $ make
@@ -2716,7 +2716,7 @@ activities, please clone the version controlled source as described in
 Gnuastro's official tarball is released with two formats: Gzip (with suffix
 @file{.tar.gz}) and Lzip (with suffix @file{.tar.lz}). The former is a very
 well-known and widely used compression program created by GNU and available
-in most systems. The latter provides a better compression rate and more
+in most systems. The latter provides a better compression ratio and more
 robust archival capacity. For example Gnuastro 0.2's tarball was 2.8MB and
 4.2MB with Lzip and Gzip respectively. From the
 @url{http://www.nongnu.org/lzip/lzip.html, Lzip webpage}: ``Lzip is a
@@ -5889,18 +5889,18 @@ quality of your output quality (pixels don't get different values).
 @itemx --hex
 @cindex ASCII85 encoding
 @cindex Hexadecimal encoding
-Use Hexadecimal encoding in creating EPS output. By default the
-ASCII85 encoding is used which provides a much better compression
-rate. When converted to PDF (or included in @TeX{} or @LaTeX{} which
-is finally saved as a PDF file), an efficient binary encoding is used
-which is far more efficient than both of them. The choice of EPS
-encoding will thus have no effect on the final PDF.
+Use Hexadecimal encoding in creating EPS output. By default the ASCII85
+encoding is used which provides a much better compression ratio. When
+converted to PDF (or included in @TeX{} or @LaTeX{} which is finally saved
+as a PDF file), an efficient binary encoding is used which is far more
+efficient than both of them. The choice of EPS encoding will thus have no
+effect on the final PDF.
 
 So if you want to transfer your EPS files (for example if you want to
 submit your paper to arXiv or journals in PostScript), their storage
 might become important if you have large images or lots of small
 ones. By default ASCII85 encoding is used which offers a much better
-compression rate (nearly 40 percent) compared to Hexadecimal encoding.
+compression ratio (nearly 40 percent) compared to Hexadecimal encoding.
 
 @item -u
 @itemx --quality
