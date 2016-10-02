@@ -159,10 +159,12 @@ __BEGIN_C_DECLS  /* From C++ preparations */
                 "command-line option. See `%s --help` or `info %s` for "\
                 "more information.\n\n", SPACK, SPACK);                 \
         userconfig_file=                                                \
-        gal_configfiles_add_home_dir(USERCONFIG_FILEEND);               \
-        fprintf(stderr, "Default files checked (existing or not):\n"    \
-                "   %s\n   %s\n   %s\n", CURDIRCONFIG_FILE,             \
-                userconfig_file, SYSCONFIG_FILE);                       \
+          gal_configfiles_add_home_dir(USERCONFIG_FILEEND);             \
+        fprintf(stderr, "Default files checked (existing or not):\n");  \
+        fprintf(stderr, "   %s\n", CURDIRCONFIG_FILE);                  \
+        if(p->cp.onlydirconf==0)                                        \
+          fprintf(stderr, "   %s\n   %s\n", userconfig_file,            \
+                  SYSCONFIG_FILE);                                      \
         free(userconfig_file);                                          \
         exit(EXIT_FAILURE);                                             \
       }                                                                 \
