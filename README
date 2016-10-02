@@ -3,11 +3,11 @@ GNU Astronomy Utilities
 
 GNU Astronomy Utilities (Gnuastro) is an official GNU package of programs
 and a library functions for astronomical data manipulation and
-analysis. The programs run directory on the operating system's command-line
-enabling easy operation and usage with other installed programs in shell
-scripts or Makefiles. The libraries are also usable in C and C++
-programs. The full package comes with a comprehensive book or documentation
-in various formats (plain text, info, PDF and HTML):
+analysis. The programs are run directory on the operating system's
+command-line enabling easy and efficient operation combined with other
+installed programs in shell scripts or Makefiles. The libraries are also
+usable in C and C++ programs. The full package comes with a comprehensive
+book or documentation in various formats (plain text, info, PDF and HTML):
 
     http://www.gnu.org/software/gnuastro/manual/
 
@@ -22,11 +22,12 @@ your Unix-like operating system (see Chapter 2).
 If you have already installed gnuastro, you can read the full book by
 running the following command. You can go through the whole book by
 pressing the 'SPACE' key, and leave the Info environment at any time by
-pressing 'q' key, see "Getting help" below for more.
+pressing 'q' key. See the "Getting help" section below (in this file) or in
+the book for more.
 
     info gnuastro
 
-The utilities released in version 0.2 are listed below followed by their
+The programs released in version 0.2 are listed below followed by their
 executable name in parenthesis and a short description. This list is
 ordered alphabetically. In the book, they are grouped and ordered by
 context under categories/chapters.
@@ -86,8 +87,8 @@ context under categories/chapters.
     file.  Output columns can also be determined by number or regular
     expression matching of column names.
 
-All the various programs share the same basic command-line user interface
-and a set of common options for the comfort of both the users and
+All the programs share the same basic command-line user interface and a set
+of common options for the comfort of both the users and
 developers. Gnuastro is written to comply fully with the GNU coding
 standards so it integrates finely with the GNU/Linux operating system and
 Unix-like operating systems in general. This also enables astronomers to
@@ -96,14 +97,14 @@ and command line user interaction that they have seen in all the other GNU
 software that they use.
 
 Behind the scenes, Gnuastro comes with a very robust infra-structure
-enabling easy addition of new utilities and new features to existing
-utilities and a full chapter devoted to explaining how to develop most
+enabling easy addition of new programs and new features to existing
+programs and a full chapter devoted to explaining how to develop most
 effectively (see the "Developing" chapter). Please join us in developing
 this comprehensive and low level set of tools for astronomical data
 manipulation and analysis. The copyright owner of Gnuastro is the Free
 Software Foundation to guarantee its freedom in the future, and not any
 particular astronomer or astronomical project, or astronomical institution,
-so please join us.
+so please join us and feel free to use it in your research.
 
 
 
@@ -133,7 +134,7 @@ the standard GNU Build system as shown below. After the './configure'
 command, Gnuastro will print messages upon the successful completion of
 each step, giving further information and suggestions for the next steps.
 
-    tar xf gnuastro-latest.tar.gz
+    tar xf gnuastro-latest.tar.gz        # Also works for `tar.lz' files
     cd gnuastro-0.1
     ./configure
     make
@@ -169,14 +170,14 @@ is short and only takes about an hour, so we strongly recommend it):
 
     info info
 
-To immediately get a short list of each utility's options and a short
+To immediately get a short list of each programs's options and a short
 explanation of each, please run:
 
     astprogname --help             # For example 'astnoisechisel --help'
 
 Ultimately you can send a mail to 'help-gnuastro@gnu.org' to get help in
 installing or using Gnuastro. Some Gnuastro developers and active users are
-subscribed to this list and are ready to help you in using these utilities.
+subscribed to this list and are ready to help you in using these programs.
 
 
 
