@@ -71,14 +71,28 @@ all the commits needed for this release have been completed.
 
    - For a stable release:
 
-       $  /path/to/gnulib/build-aux/gnupload --to ftp.gnu.org:gnuastro   \
-               --replace --symlink-regex                                 \
+       $  /path/to/gnulib/build-aux/gnupload --to ftp.gnu.org:gnuastro     \
+               --replace --symlink-regex                                   \
                gnuastro-X.X.tar.gz gnuastro-X.X.tar.lz
 
 
- - Build the manual in all the formats and upload everything:
+ - Prepare the announcement, this command will calculate the checksums and
+   also make the links ready. You just have to add a starting and ending
+   similar to previous announcements in a text editor.
 
-       $ cd doc  # From the top source directory:
+     $ /path/to/gnulib/build-aux/announce-gen --release-type=stable        \
+              --package-name=gnuastro --previous-version=0.1               \
+              --current-version=0.2 --gpg-key-id=16A8A4B2AEC42AFF          \
+              --url-directory=http://ftp.gnu.org/gnu/gnuastro              \
+              --archive-suffix=tar.lz > announcement.txt
+
+
+ - Build the manual in all the formats and upload everything. Note that you
+   will need to configure Gnuastro in the main source directory to build
+   the full webpage with this script.
+
+       $ ./configure
+       $ cd doc
        $ ./forwebpage /path/to/local/copy/of/webpage
 
 
