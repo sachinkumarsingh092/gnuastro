@@ -16984,9 +16984,9 @@ One of the most common formats to store and transfer normally sized data
 are ASCII files (which can be seen on a text editor). During your
 processing experiments (with the data, or what programmers call
 ``developing'') you will also often want to see how your data is being
-processed and one of the easiest ways to check out out your arrays is to
-write them out as an ASCII file and check them. The functions here are
-mainly focused on tables that contain numbers.
+processed and one of the easiest ways to check out your arrays is to write
+them out as an ASCII file and check them. The functions here are mainly
+focused on tables that contain numbers.
 
 @deffn Macro GAL_TXTARRAY_LOG
 When an element of the input table cannot be read as a number, the column

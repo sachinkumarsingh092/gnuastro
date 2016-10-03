@@ -216,11 +216,11 @@ install-exec-local:
 	 echo "==================================================================="; \
 	 echo "      ,           , ";                                                \
 	 echo "     /             \ ";                                               \
-	 echo "    ((__-^^-,-^^-__))        Congratulations!";                       \
-	 echo "     \`-_---' \`---_-'         GNU Astronomy Utilities (Gnuastro),";  \
-	 echo "      \`--|o\` 'o|--'          Version $(VERSION)";                   \
+	 echo "    ((__-^^-,-^^-__))       Congratulations!";                        \
+	 echo "     \`-_---' \`---_-'        GNU Astronomy Utilities (Gnuastro),";   \
+	 echo "      \`--|o\` 'o|--'         Version $(VERSION)";                    \
 	 echo "         \  \`  / ";                                                  \
-	 echo "          ): :(              Successfully installed on this sytem.";  \
+	 echo "          ): :(             Successfully installed on this system.";  \
 	 echo "          :o_o: ";                                                    \
 	 echo "           \"-\" ";                                                   \
 	 echo;                                                                       \

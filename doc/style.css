@@ -130,17 +130,97 @@ h6{ font-size: 1.0em; }
 
 
 
-/* Paragraphs */
+/* Paragraphs: by default they are indented. */
 p{
     margin-top: 0;
-    text-indent: 0;
-    line-height: 1.3;
+    line-height: 1.4;
+    text-indent: 1em;
     margin-bottom: 0.2em;
 }
 
-/* Paragraphs that follow other paragraphs should be indented.*/
-p+p, p+*+p {
-    text-indent: 1em;
+
+/* Select all paragraphs that must not be indented. Some of them don't need
+   any `:first-of-type' because:
+
+    - The `header's have only one <p> in the HTMLs.
+
+    - All `<p>'s in the `.footnote's and `.bottom-links's must have no
+      indentation, not just the first ones. */
+.header p,
+.footnote p,
+p.bottom-links,
+dd p:first-of-type,
+li p:first-of-type,
+.cartouche p:first-of-type,
+blockquote p:first-of-type,
+.float-caption p:first-of-type,
+h1 + p,
+h1 + :not(p) + p,
+h1 + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h1 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h2 + p,
+h2 + :not(p) + p,
+h2 + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h2 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h3 + p,
+h3 + :not(p) + p,
+h3 + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h3 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h4 + p,
+h4 + :not(p) + p,
+h4 + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h4 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h5 + p,
+h5 + :not(p) + p,
+h5 + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h5 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h6 + p,
+h6 + :not(p) + p,
+h6 + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p,
+h6 + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + :not(p) + p {
+    text-indent: 0;
 }
 
 /* Header (and bottom) links to next and previous titles: */
@@ -151,14 +231,7 @@ p+p, p+*+p {
 /* Size of bottom links. Also note that since we have multiple bottom
    links, we need to make sure there is no indentation. */
 p.bottom-links {
-    text-indent: 0;
     font-size: 90%;
-}
-
-/* When there are multiple footnotes the rules above will indent the
-   footnote contents, so we have to explicitly ask for no indentation: */
-.footnote p {
-    text-indent: 0;
 }
 
 
@@ -223,7 +296,6 @@ dd{
 }
 .float-caption p {
     font-size: 90%;
-    text-indent: 0;
 }
 
 
@@ -266,6 +338,7 @@ table.cartouche {
 /* Menu tables */
 table.menu {
     font-size: 95%;
+    padding: 0.5em 0 0 1em;
 }
 
 
