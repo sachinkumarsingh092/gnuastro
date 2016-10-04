@@ -49,6 +49,9 @@ struct uiparams
   char       *matrixname;  /* Name of transform file.                  */
   char     *matrixstring;  /* String containing transform elements.    */
 
+  int              align;  /* ==1: Align the image.                    */
+  int           alignset;
+
   int    matrixstringset;
   int    maxblankfracset;
   int       hstartwcsset;

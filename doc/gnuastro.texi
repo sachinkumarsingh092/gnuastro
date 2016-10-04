@@ -9133,14 +9133,17 @@ scaled.}.
 
 @item -m
 @itemx --matrix
-(@option{=STR}) The warp/transformation matrix. All the elements in
-this matrix must be separated by any number of space, tab or comma
-(@key{,}) characters. If you want to use the first two, then be sure
-to wrap the matrix within double quotation marks (@key{"}) so they are
-not confused with other arguments on the command-line, see
-@ref{Options}. This also applies to values in the configuration files,
-see @ref{Configuration file format}.  The transformation matrix can be
-either 2 by 2 or 3 by 3 array, see @ref{Warping basics}.
+(@option{=STR}) The warp/transformation matrix. All the elements in this
+matrix must be separated by any number of space, tab or comma (@key{,})
+characters. If you want to use the first two, then be sure to wrap the
+matrix within double quotation marks (@key{"}) so they are not confused
+with other arguments on the command-line, see @ref{Options}. This also
+applies to values in the configuration files, see @ref{Configuration file
+format}.  The transformation matrix can be either 2 by 2 or 3 by 3
+array. In the former case (if a 2 by 2 matrix is given), then a translation
+is also added to correct for the FITS definition of position to create a
+usable 3 by 3 matrix (see @ref{Warping basics}, @ref{Merging multiple
+warpings}, and the box above for more).
 
 @cindex NaN
 The determinant of the matrix has to be non-zero and it must not

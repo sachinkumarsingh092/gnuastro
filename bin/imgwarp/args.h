@@ -71,7 +71,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a c e f g i j k l p r s t u v w x y
+   c e f g i j k l p r s t u v w x y
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: <=502
@@ -108,6 +108,14 @@ static struct argp_option options[] =
       "INT",
       0,
       "Header keyword number to stop reading WCS.",
+      1
+    },
+    {
+      "align",
+      'a',
+      0,
+      0,
+      "Dec on vertical axis and RA on inv. horizontal.",
       1
     },
 
@@ -227,6 +235,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       gal_checkset_float_l_0_s_1(arg, &p->maxblankfrac, "maxblankfrac", key,
                                  SPACK, NULL, 0);
       p->up.maxblankfracset=1;
+      break;
+    case 'a':
+      p->up.align=1;
+      p->up.alignset=1;
       break;
 
 

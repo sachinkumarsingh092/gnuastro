@@ -137,6 +137,13 @@ readconfig(char *filename, struct imgwarpparams *p)
                                      SPACK, filename, lineno);
           up->maxblankfracset=1;
         }
+      else if(strcmp(name, "align")==0)
+        {
+          if(up->alignset) continue;
+          gal_checkset_int_zero_or_one(value, &up->align, name, key,
+                                       SPACK, filename, lineno);
+          up->alignset=1;
+        }
 
 
 
@@ -237,7 +244,7 @@ checkifset(struct imgwarpparams *p)
 
 
 /**************************************************************/
-/***************        Read Matrix         *******************/
+/***************       Prepare Matrix       *******************/
 /**************************************************************/
 void
 readmatrixoption(struct imgwarpparams *p)
@@ -245,12 +252,20 @@ readmatrixoption(struct imgwarpparams *p)
   size_t counter=0;
   char *t, *tailptr;
 
+  /* Check if a matrix string is actually present. */
+  if(p->up.matrixstring==NULL)
+    error(EXIT_FAILURE, 0, "No warping matrix string has been and no "
+          "other means of estimating the warping matrix (a file or other "
+          "options have been specified");
+
+  /* Allocate the necessary space. */
   errno=0;
   p->matrix=malloc(9*sizeof *p->matrix);
   if(p->matrix==NULL)
     error(EXIT_FAILURE, errno, "%lu bytes for temporary array to keep "
           "the matrix option", 9*sizeof *p->matrix);
 
+  /* Go over the string and set the values. */
   t=p->up.matrixstring;
   while(*t!='\0')
     {
@@ -274,19 +289,117 @@ readmatrixoption(struct imgwarpparams *p)
         }
     }
 
-  switch(counter)
+  /* Add the other necessary information: */
+  if(counter==4)
+    p->ms1=p->ms0=2;
+  else if (counter==9)
+    p->ms1=p->ms0=3;
+  else
+    error(EXIT_FAILURE, 0, "there are %lu numbers in the string `%s'! "
+          "It should contain 4 or 9 numbers (for a 2 by 2 or 3 by 3 "
+          "matrix)", counter, p->up.matrixstring);
+}
+
+
+
+
+
+/* Set the matrix so the image is aligned with the axises */
+void
+makealignmatrix(struct imgwarpparams *p)
+{
+  error(EXIT_FAILURE, 0, "The align feature is not implemented yet.");
+}
+
+
+
+
+
+/* Fill in the warping matrix elements based on the options/arguments */
+void
+preparematrix(struct imgwarpparams *p)
+{
+  double *tmp;
+  int mcheck=0;
+
+
+  /* Make sure that none of the matrix creation options/arguments are given
+     together. Note that a matrix string is optional (will only be used if
+     there is no matrix file). */
+  mcheck=p->up.alignset + (p->up.matrixname!=NULL);
+  if( mcheck > 1 )
+    error(EXIT_FAILURE, 0, "More than one method to define the warping "
+          "matrix has been given. Please only specify one.");
+
+
+  /* Read the input image WCS structure. We are doing this here because
+     some of the matrix operations might need it. */
+  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
+                    p->hendwcs, &p->nwcs, &p->wcs);
+
+
+  /* Depending on the given situation make the matrix. */
+  if(p->up.alignset)
+    makealignmatrix(p);
+  else
     {
-    case 4:
-      p->ms1=p->ms0=2;
-      break;
-    case 9:
-      p->ms1=p->ms0=3;
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "there are %lu numbers in the string `%s'! "
-            "It should contain 4 or 9 numbers (for a 2 by 2 or 3 by 3 "
-            "matrix)", counter, p->up.matrixstring);
+      if(p->up.matrixname)
+        gal_txtarray_txt_to_array(p->up.matrixname, &p->matrix,
+                                  &p->ms0, &p->ms1);
+      else
+        readmatrixoption(p);
+  }
+
+
+  /* Convert a 2 by 2 matrix into a 3 by 3 matrix and also correct it for
+     the FITS definition. */
+  if(p->ms0==2 && p->ms1==2)
+    {
+      errno=0;
+      tmp=malloc(9*sizeof *tmp);
+      if(tmp==NULL)
+        error(EXIT_FAILURE, errno, "%lu bytes for 3 by 3 matrix",
+              9*sizeof *tmp);
+
+      /* Put the four identical elements in place. */
+      tmp[0]=p->matrix[0];
+      tmp[1]=p->matrix[1];
+      tmp[3]=p->matrix[2];
+      tmp[4]=p->matrix[3];
+
+      /* Add the other elements. Note that we need to correct for the FITS
+         standard that defines the coordinates of the center of the first
+         pixel in the image to be 1. We want 0 to be the coordinates of the
+         bottom corner of the image.
+
+         1  0  0.5     a  b  0     a  b  0.5
+         0  1  0.5  *  c  d  0  =  c  d  0.5
+         0  0   1      0  0  1     0  0   1
+
+         and
+
+         a  b  0.5     1  0  -0.5     a  b  (a*-0.5)+(b*-0.5)+0.5
+         c  d  0.5  *  0  1  -0.5  =  c  d  (c*-0.5)+(d*-0.5)+0.5
+         0  0   1      0  0   1       0  0           1
+      */
+      tmp[8] = 1.0f;
+      tmp[6] = tmp[7] = 0.0f;
+      tmp[2] = ((p->matrix[0] + p->matrix[1]) * -0.5f) + 0.5f;
+      tmp[5] = ((p->matrix[2] + p->matrix[3]) * -0.5f) + 0.5f;
+
+      /* Free the previously allocated 2D matrix and put the put the newly
+         allocated array with correct values in it. */
+      free(p->matrix);
+      p->matrix=tmp;
+
+      /* Set the new sizes */
+      p->ms0=p->ms1==3;
     }
+  else if (p->ms0!=3 || p->ms1!=3)
+    error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
+          "address the problem. For some reason p->ms0=%lu and p->ms1=%lu! "
+          "They should both have a value of 3.", PACKAGE_BUGREPORT,
+          p->ms0, p->ms1);
 }
 
 
@@ -314,7 +427,7 @@ readmatrixoption(struct imgwarpparams *p)
 void
 sanitycheck(struct imgwarpparams *p)
 {
-  double *d, *df, *tmp, *m=p->matrix;
+  double *d, *df, *m=p->matrix;
 
   /* Make sure the input file exists. */
   gal_checkset_check_file(p->up.inputname);
@@ -351,25 +464,6 @@ sanitycheck(struct imgwarpparams *p)
          - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7] == 0) ) )
       error(EXIT_FAILURE, 0, "the determinant of the given matrix "
             "is zero");
-
-  /* If the matrix only has two components, then convert it to
-     three. */
-  if(p->ms0==2)
-    {
-      errno=0;
-      tmp=malloc(9*sizeof *tmp);
-      if(tmp==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for 3 by 3 matrix",
-              9*sizeof *tmp);
-      tmp[0]=m[0];
-      tmp[1]=m[1];
-      tmp[3]=m[2];
-      tmp[4]=m[3];
-      tmp[8]=1.0f;
-      tmp[7]=tmp[6]=tmp[5]=tmp[2]=0.0f;
-      free(p->matrix);
-      m=p->matrix=tmp;
-    }
 
   /* Check if the transformation is spatially invariant */
 }
@@ -417,8 +511,6 @@ preparearrays(struct imgwarpparams *p)
                                 (void **)&p->input, DOUBLE_IMG);
       free(array);
     }
-  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
-                              p->hendwcs, &p->nwcs, &p->wcs);
 
   /* Make the inverse matrix: */
   errno=0;
@@ -497,11 +589,8 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   if(cp->printparams)
     GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
-  /* Read catalog if given. */
-  if(p->up.matrixname)
-    gal_txtarray_txt_to_array(p->up.matrixname, &p->matrix, &p->ms0, &p->ms1);
-  else
-    readmatrixoption(p);
+  /* Read the input matrix */
+  preparematrix(p);
 
   /* Do a sanity check. */
   sanitycheck(p);
