@@ -25,6 +25,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/threads.h>
 
+
+/* Limits to account for floating point errors: */
+#define ABSOLUTEFLTERROR 1e-10
+#define RELATIVEFLTERROR 1e-6
+
+
+/* Internal structure. */
 struct iwpparams
 {
   /* General input parameters: */
@@ -35,6 +42,8 @@ struct iwpparams
   pthread_barrier_t    *b;    /* Barrier to keep threads waiting.      */
 };
 
+
+/* Extenal functions. */
 void
 imgwarp(struct imgwarpparams *p);
 

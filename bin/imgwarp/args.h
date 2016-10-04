@@ -95,6 +95,14 @@ static struct argp_option options[] =
       1
     },
     {
+      "align",
+      'a',
+      0,
+      0,
+      "Align the image and celestial axes.",
+      1
+    },
+    {
       "hstartwcs",
       501,
       "INT",
@@ -108,14 +116,6 @@ static struct argp_option options[] =
       "INT",
       0,
       "Header keyword number to stop reading WCS.",
-      1
-    },
-    {
-      "align",
-      'a',
-      0,
-      0,
-      "Dec on vertical axis and RA on inv. horizontal.",
       1
     },
 

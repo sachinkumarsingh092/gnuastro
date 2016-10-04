@@ -9139,11 +9139,13 @@ characters. If you want to use the first two, then be sure to wrap the
 matrix within double quotation marks (@key{"}) so they are not confused
 with other arguments on the command-line, see @ref{Options}. This also
 applies to values in the configuration files, see @ref{Configuration file
-format}.  The transformation matrix can be either 2 by 2 or 3 by 3
-array. In the former case (if a 2 by 2 matrix is given), then a translation
-is also added to correct for the FITS definition of position to create a
-usable 3 by 3 matrix (see @ref{Warping basics}, @ref{Merging multiple
-warpings}, and the box above for more).
+format}.
+
+The transformation matrix can be either 2 by 2 or 3 by 3 array. In the
+former case (if a 2 by 2 matrix is given), then it is converted to a 3 by 3
+matrix with two translation terms added to correct for the FITS definition
+of position (see @ref{Warping basics}, @ref{Merging multiple warpings}, and
+the box above for more).
 
 @cindex NaN
 The determinant of the matrix has to be non-zero and it must not
@@ -9151,6 +9153,14 @@ contain any non-number values (for example infinities or NaNs). The
 elements of the matrix have to be written row by row. So for the
 general homography matrix of @ref{Warping basics}, it should be called
 with @command{--matrix=a,b,c,d,e,f,g,h,1}.
+
+@item -a
+@item --align
+Align the image and celestial (WCS) axes, such that the vertical image
+direction (when viewed in SAO ds9) corresponds to the declination and the
+horizontal axis is the inverse of the Right Ascension (RA). The inverse of
+the RA is chosen so the image can correspond to what you would actually see
+on the sky and is common in most survey images.
 
 @item --hstartwcs
 (@option{=INT}) Specify the first header keyword number (line) that

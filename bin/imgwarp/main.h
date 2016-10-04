@@ -65,7 +65,7 @@ struct uiparams
 struct imgwarpparams
 {
   /* Other structures: */
-  struct uiparams     up;  /* User interface parameters.                 */
+  struct uiparams      up;  /* User interface parameters.                 */
   struct gal_commonparams cp; /* Common parameters.                      */
 
   /* Input: */

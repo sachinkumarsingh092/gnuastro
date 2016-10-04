@@ -31,6 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <nproc.h>               /* From Gnulib.                   */
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/txtarray.h>
 
@@ -186,6 +187,9 @@ printvalues(FILE *fp, struct imgwarpparams *p)
   if(up->matrixstringset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("matrix", up->matrixstring);
 
+  if(up->alignset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "align", up->align);
+
   if(cp->outputset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("output", cp->output);
 
@@ -304,11 +308,101 @@ readmatrixoption(struct imgwarpparams *p)
 
 
 
-/* Set the matrix so the image is aligned with the axises */
+/* Set the matrix so the image is aligned with the axises. Note that
+   WCSLIB automatically fills the CRPI */
 void
 makealignmatrix(struct imgwarpparams *p)
 {
-  error(EXIT_FAILURE, 0, "The align feature is not implemented yet.");
+  double A, dx, dy;
+  double w[4]={0,0,0,0};
+
+  /* Check if there is only two WCS axises: */
+  if(p->wcs->naxis!=2)
+    error(EXIT_FAILURE, 0, "the WCS structure of %s (hdu: %s) has %d "
+          "axises. For the `--align' option to operate it must be 2",
+          p->up.inputname, p->cp.hdu, p->wcs->naxis);
+
+  /* Depending on the type of data, make the input matrix. Note that
+     wcs->altlin is actually bit flags, not integers, so we have to compare
+     with powers of two. */
+  if(p->wcs->altlin==1)
+    {
+      w[0]=p->wcs->cdelt[0]*p->wcs->pc[0];
+      w[1]=p->wcs->cdelt[0]*p->wcs->pc[1];
+      w[2]=p->wcs->cdelt[1]*p->wcs->pc[2];
+      w[3]=p->wcs->cdelt[1]*p->wcs->pc[3];
+    }
+  else
+    error(EXIT_FAILURE, 0, "currently the `--align' option only recognizes "
+          "PCi_j keywords, not any others");
+
+  /* Find the pixel scale along the two dimensions. Note that we will be
+     using the scale along the image X axis for both values. */
+  gal_wcs_pixel_scale_deg(p->wcs, &dx, &dy);
+
+  /* Allocate space for the matrix: */
+  errno=0;
+  p->matrix=malloc(4*sizeof *p->matrix);
+  if(p->matrix==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->matrix",
+          4*sizeof *p->matrix);
+  p->ms0=p->ms1=2;
+
+  /* Lets call the given WCS orientation `W', the rotation matrix we want
+     to find as `X' and the final (aligned matrix) to have just one useful
+     value: `a' (which is the pixel scale):
+
+        x0  x1       w0  w1      -a  0
+        x2  x3   *   w2  w3   =   0  a
+
+     Let's open up the matrix multiplication, so we can find the `X'
+     elements as function of the `W' elements and `a'.
+
+        x0*w0 + x1*w2 = -a                                         (1)
+        x0*w1 + x1*w3 =  0                                         (2)
+        x2*w0 + x3*w2 =  0                                         (3)
+        x2*w1 + x3*w3 =  a                                         (4)
+
+     Let's bring the X with the smaller index in each equation to the left
+     side:
+
+        x0 = (-w2/w0)*x1 - a/w0                                    (5)
+        x0 = (-w3/w1)*x1                                           (6)
+        x2 = (-w2/w0)*x3                                           (7)
+        x2 = (-w3/w1)*x3 + a/w1                                    (8)
+
+    Using (5) and (6) we can find x0 and x1, by first eliminating x0:
+
+       (-w2/w0)*x1 - a/w0 = (-w3/w1)*x1 -> (w3/w1 - w2/w0) * x1 = a/w0
+
+    For easy reading/writing, let's define: A = (w3/w1 - w2/w0)
+
+       --> x1 = a / w0 / A
+       --> x0 = -1 * x1 * w3 / w1
+
+    Similar to the above, we can find x2 and x3 from (7) and (8):
+
+       (-w2/w0)*x3 = (-w3/w1)*x3 + a/w1 -> (w3/w1 - w2/w0) * x3 = a/w1
+
+       --> x3 = a / w1 / A
+       --> x2 = -1 * x3 * w2 / w0
+
+   */
+  A = (w[3]/w[1]) - (w[2]/w[0]);
+  p->matrix[1] = dx / w[0] / A;
+  p->matrix[3] = dx / w[1] / A;
+  p->matrix[0] = -1 * p->matrix[1] * w[3] / w[1];
+  p->matrix[2] = -1 * p->matrix[3] * w[2] / w[0];
+
+  /* For a check:
+  printf("dx: %e\n", dx);
+  printf("w:\n");
+  printf("  %.8e    %.8e\n", w[0], w[1]);
+  printf("  %.8e    %.8e\n", w[2], w[3]);
+  printf("x:\n");
+  printf("  %.8e    %.8e\n", p->matrix[0], p->matrix[1]);
+  printf("  %.8e    %.8e\n", p->matrix[2], p->matrix[3]);
+  */
 }
 
 
