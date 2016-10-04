@@ -71,7 +71,7 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j k l p r s t u v w x y
+   c e f g i j k l p t u v w x y
    A B C E F G H I J L M O Q R T U W X Y Z
 
    Number keys used: <=502
@@ -92,14 +92,6 @@ static struct argp_option options[] =
       "STR",
       0,
       "Warp/Transform matrix elements.",
-      1
-    },
-    {
-      "align",
-      'a',
-      0,
-      0,
-      "Align the image and celestial axes.",
       1
     },
     {
@@ -127,6 +119,30 @@ static struct argp_option options[] =
       0, 0, 0, 0,
       "Output:",
       2
+    },
+    {
+      "align",
+      'a',
+      0,
+      0,
+      "Align the image and celestial axes.",
+      1
+    },
+    {
+      "rotate",
+      'r',
+      "FLT",
+      0,
+      "Rotate by the given angle in degrees.",
+      1
+    },
+    {
+      "scale",
+      's',
+      "FLT",
+      0,
+      "Scale the image by the given factor.",
+      1
     },
     {
       "nowcscorrection",
@@ -239,6 +255,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'a':
       p->up.align=1;
       p->up.alignset=1;
+      break;
+    case 'r':
+      gal_checkset_any_float(arg, &p->up.rotate, "rotate", key, SPACK, NULL, 0);
+      p->up.rotateset=1;
+      break;
+    case 's':
+      gal_checkset_any_float(arg, &p->up.scale, "scale", key, SPACK, NULL, 0);
+      p->up.scaleset=1;
       break;
 
 

@@ -50,7 +50,11 @@ struct uiparams
   char     *matrixstring;  /* String containing transform elements.    */
 
   int              align;  /* ==1: Align the image.                    */
+  float           rotate;  /* Rotation degrees in degrees.             */
+  float            scale;  /* Scaling factor.                          */
   int           alignset;
+  int          rotateset;
+  int           scaleset;
 
   int    matrixstringset;
   int    maxblankfracset;

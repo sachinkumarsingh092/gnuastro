@@ -145,6 +145,20 @@ readconfig(char *filename, struct imgwarpparams *p)
                                        SPACK, filename, lineno);
           up->alignset=1;
         }
+      else if(strcmp(name, "rotate")==0)
+        {
+          if(up->rotateset) continue;
+          gal_checkset_any_float(value, &up->rotate, name, key, SPACK,
+                                 filename, lineno);
+          up->rotateset=1;
+        }
+      else if(strcmp(name, "scale")==0)
+        {
+          if(up->scaleset) continue;
+          gal_checkset_any_float(value, &up->scale, name, key, SPACK,
+                                 filename, lineno);
+          up->scaleset=1;
+        }
 
 
 
@@ -186,9 +200,12 @@ printvalues(FILE *fp, struct imgwarpparams *p)
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("matrix", up->matrixstring);
-
   if(up->alignset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "align", up->align);
+  if(up->rotateset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "rotate", up->rotate);
+  if(up->scaleset)
+    fprintf(fp, CONF_SHOWFMT"%.3f\n", "scale", up->scale);
 
   if(cp->outputset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("output", cp->output);
@@ -220,8 +237,6 @@ checkifset(struct imgwarpparams *p)
   int intro=0;
   if(cp->hduset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("hdu");
-  if(up->matrixstringset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("matrix");
   if(up->maxblankfracset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("maxblankfrac");
 
@@ -255,12 +270,6 @@ readmatrixoption(struct imgwarpparams *p)
 {
   size_t counter=0;
   char *t, *tailptr;
-
-  /* Check if a matrix string is actually present. */
-  if(p->up.matrixstring==NULL)
-    error(EXIT_FAILURE, 0, "No warping matrix string has been and no "
-          "other means of estimating the warping matrix (a file or other "
-          "options have been specified");
 
   /* Allocate the necessary space. */
   errno=0;
@@ -344,7 +353,7 @@ makealignmatrix(struct imgwarpparams *p)
   errno=0;
   p->matrix=malloc(4*sizeof *p->matrix);
   if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->matrix",
+    error(EXIT_FAILURE, errno, "%lu bytes for p->matrix in makealignmatrix",
           4*sizeof *p->matrix);
   p->ms0=p->ms1=2;
 
@@ -409,18 +418,51 @@ makealignmatrix(struct imgwarpparams *p)
 
 
 
+/* Create rotation matrix */
+void
+makebasicmatrix(struct imgwarpparams *p)
+{
+  struct uiparams *up=&p->up;
+
+  /* Allocate space for the matrix: */
+  errno=0;
+  p->matrix=malloc(4*sizeof *p->matrix);
+  if(p->matrix==NULL)
+    error(EXIT_FAILURE, errno, "%lu bytes for p->matrix in makerotationmatrix",
+          4*sizeof *p->matrix);
+  p->ms0=p->ms1=2;
+
+  /* Put in the elements */
+  if(up->rotateset)
+    {
+      p->matrix[1] = sin( up->rotate*M_PI/180 );
+      p->matrix[2] = p->matrix[1] * -1.0f;
+      p->matrix[3] = p->matrix[0] = cos( up->rotate*M_PI/180 );
+    }
+  else if (up->scaleset)
+    {
+      p->matrix[1] = p->matrix[2] = 0.0f;
+      p->matrix[0] = p->matrix[3] = up->scale;
+    }
+}
+
+
+
+
+
 /* Fill in the warping matrix elements based on the options/arguments */
 void
 preparematrix(struct imgwarpparams *p)
 {
   double *tmp;
   int mcheck=0;
-
+  struct uiparams *up=&p->up;
 
   /* Make sure that none of the matrix creation options/arguments are given
      together. Note that a matrix string is optional (will only be used if
      there is no matrix file). */
-  mcheck=p->up.alignset + (p->up.matrixname!=NULL);
+  mcheck = ( up->alignset + up->rotateset + up->scaleset +
+             (up->matrixname!=NULL) );
   if( mcheck > 1 )
     error(EXIT_FAILURE, 0, "More than one method to define the warping "
           "matrix has been given. Please only specify one.");
@@ -428,20 +470,29 @@ preparematrix(struct imgwarpparams *p)
 
   /* Read the input image WCS structure. We are doing this here because
      some of the matrix operations might need it. */
-  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
+  gal_fits_read_wcs(up->inputname, p->cp.hdu, p->hstartwcs,
                     p->hendwcs, &p->nwcs, &p->wcs);
 
 
   /* Depending on the given situation make the matrix. */
-  if(p->up.alignset)
+  if(up->alignset)
     makealignmatrix(p);
+  else if( up->rotateset || up->scaleset)
+    makebasicmatrix(p);
   else
     {
-      if(p->up.matrixname)
-        gal_txtarray_txt_to_array(p->up.matrixname, &p->matrix,
+      if(up->matrixname)
+        gal_txtarray_txt_to_array(up->matrixname, &p->matrix,
                                   &p->ms0, &p->ms1);
       else
-        readmatrixoption(p);
+        {
+          /* Check if a matrix string is actually present. */
+          if(up->matrixstringset==0)
+            error(EXIT_FAILURE, 0, "no warping matrix string has been and "
+                  "no other means of making the warping matrix (a file or "
+                  "other options have been specified");
+          readmatrixoption(p);
+        }
   }
 
 

@@ -9075,18 +9075,23 @@ One line examples:
 
 @example
 $ astimgwarp matrix.txt image.fits
+$ astimgwarp --align rawimage.fits
+$ astimgwarp --scale 1.82 image.fits
+$ astimgwarp --rotate=37.92 image.fits
 $ astimgwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
 $ astimgwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
 @end example
 
-ImageWarp can accept two arguments, one (the input image) is mandatory
-if any processing is to be done. An optional argument is a plain text
-file that will keep the warp/transform matrix, see @ref{Warping
-basics}. There is also the @option{--matrix} option from which the
-matrix can be literally specified on the command-line. If both are
-present when calling ImageWarp, the contents of the plain text file
-have higher precedence. The general options to all Gnuastro programs
-can be seen in @ref{Common options}.
+ImageWarp can accept two arguments, one (an image) is mandatory if any
+processing is to be done. An optional argument is a plain text file, which
+must contain the warp/transform matrix, see @ref{Warping basics}. There is
+also the @option{--matrix} option from which the matrix can be literally
+specified on the command-line. If both are present when calling ImageWarp,
+the contents of the plain text file have higher precedence. You can also
+specify standard transformations without an explicit matrix as discussed
+below. If multiple transformations are specified, then ImageWarp will
+inform you and abort. The general options to all Gnuastro programs can be
+seen in @ref{Common options}.
 
 @cindex WCSLIB
 @cindex World Coordinate System
@@ -9155,12 +9160,27 @@ general homography matrix of @ref{Warping basics}, it should be called
 with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
 @item -a
-@item --align
+@itemx --align
 Align the image and celestial (WCS) axes, such that the vertical image
 direction (when viewed in SAO ds9) corresponds to the declination and the
 horizontal axis is the inverse of the Right Ascension (RA). The inverse of
 the RA is chosen so the image can correspond to what you would actually see
 on the sky and is common in most survey images.
+
+@item -r
+@itemx --rotate
+(@option{=FLT}) Rotate the input image by the given angle in degrees. Note
+that commonly, the WCS structure of the image is set such that the RA is
+the inverse of the image horizontal axis which increases towards the right
+in the FITS standard and as viewed by SAO ds9. So the default center for
+rotation is on the right of the image. If you want to rotate about other
+points, you have to define your own transformation matrix by first shifting
+the central point, then applying your rotation and then returning the
+center back to the original position, see @ref{Merging multiple warpings}.
+
+@item -s
+@itemx --scale
+(@option{=FLT}) Scale the input image by the given factor.
 
 @item --hstartwcs
 (@option{=INT}) Specify the first header keyword number (line) that
