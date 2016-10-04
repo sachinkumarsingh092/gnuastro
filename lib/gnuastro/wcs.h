@@ -57,7 +57,10 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
                           size_t number, size_t width);
 
 double
-gal_wcs_angular_distance(double r1, double d1, double r2, double d2);
+gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2);
+
+void
+gal_wcs_pixel_scale_deg(struct wcsprm *wcs, double *dx, double *dy);
 
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);

@@ -126,14 +126,40 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
    floating point errors (from Wikipedia:)
 
    sin^2(distance)/2=sin^2( (d1-d2)/2 )+cos(d1)*cos(d2)*sin^2( (r1-r2)/2 )
+
+   Inputs and outputs are all in degrees.
 */
 double
-gal_wcs_angular_distance(double r1, double d1, double r2, double d2)
+gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2)
 {
-  double a=sin( (d1-d2)/2 );
-  double b=sin( (r1-r2)/2 );
+  /* Convert degrees to radians. */
+  double r1r=r1*M_PI/180, d1r=d1*M_PI/180;
+  double r2r=r2*M_PI/180, d2r=d2*M_PI/180;
 
-  return 2*asin( sqrt( a*a + cos(d1)*cos(d2)*b*b) );
+  /* To make things easier to read: */
+  double a=sin( (d1r-d2r)/2 );
+  double b=sin( (r1r-r2r)/2 );
+
+  /* Return the result: */
+  return 2*asin( sqrt( a*a + cos(d1r)*cos(d2r)*b*b) ) * 180/M_PI;
+}
+
+
+
+
+/* Return the pixel scale of the image in both dimentions in degrees. */
+void
+gal_wcs_pixel_scale_deg(struct wcsprm *wcs, double *dx, double *dy)
+{
+  double radec[6], xy[]={0,0,1,0,0,1};
+
+  /* Get the RA and Dec of the bottom left, bottom right and top left
+     sides of the first pixel in the image. */
+  gal_wcs_xy_array_to_radec(wcs, xy, radec, 3, 2);
+
+  /* Calculate the distances and convert back to degrees: */
+  *dx = gal_wcs_angular_distance_deg(radec[0], radec[1], radec[2], radec[3]);
+  *dy = gal_wcs_angular_distance_deg(radec[0], radec[1], radec[4], radec[5]);
 }
 
 
@@ -148,32 +174,11 @@ gal_wcs_angular_distance(double r1, double d1, double r2, double d2)
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs)
 {
-  double xy[]={0,0,1,0,0,1};
-  double st, *d, *df, radec[6];
+  double dx, dy;
 
-  /* Get the RA and Dec of the bottom left, bottom right and top left
-     sides of the first pixel in the image. */
-  gal_wcs_xy_array_to_radec(wcs, xy, radec, 3, 2);
+  /* Get the pixel scales along each axis in degrees. */
+  gal_wcs_pixel_scale_deg(wcs, &dx, &dy);
 
-  /* Covert the RA and dec values to radians for easy calculation: */
-  df=(d=radec)+6; do *d++ *= M_PI/180.0f; while(d<df);
-
-  /* For a check:
-  printf("\n\nAlong first axis: %g\nAlong second axis: %g\n\n",
-         ( angulardistance(radec[0], radec[1], radec[2], radec[3])
-           *180/M_PI*3600 ),
-         ( angulardistance(radec[0], radec[1], radec[4], radec[5])
-           *180/M_PI*3600 ) );
-  */
-
-  /* Get the area in stradians. */
-  st= ( gal_wcs_angular_distance(radec[0], radec[1], radec[2], radec[3]) *
-        gal_wcs_angular_distance(radec[0], radec[1], radec[4], radec[5]) );
-
-  /* Convert the stradians to arcsec^2:
-
-     1deg^2 = (180/PI)^2 * 1stradian.
-     1arcsec^2 = (3600*3600) * 1degree^2
-   */
-  return st*180.0f*180.0f*3600.0f*3600.0f/(M_PI*M_PI);
+  /* Return the result */
+  return dx * dy * 3600.0f * 3600.0f;
 }

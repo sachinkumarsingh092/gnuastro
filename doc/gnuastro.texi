@@ -17072,20 +17072,26 @@ Similar to @code{gal_wcs_xy_array_to_radec} but convert the world
 coordinates in @code{radec} to image coordinates in @code{xy}.
 @end deftypefun
 
-@deftypefun double gal_wcs_angular_distance (double @code{r1}, double @code{d1}, double @code{r2}, double @code{d2})
-Return the angular distance between a point located at (@code{r1},
-@code{d1}) to (@code{r2}, @code{d2}). The distance (along a great circle)
-on a sphere between two points is calculated with the equation below. Since
-the pixel sides are usually very small, we won't be using the direct
-formula:
+@deftypefun double gal_wcs_angular_distance_deg (double @code{r1}, double @code{d1}, double @code{r2}, double @code{d2})
+Return the angular distance (in degrees) between a point located at
+(@code{r1}, @code{d1}) to (@code{r2}, @code{d2}). All input coordinates are
+in degrees. The distance (along a great circle) on a sphere between two
+points is calculated with the equation below. Since the pixel sides are
+usually very small, we won't be using the direct formula:
 
 @dispmath {\cos(d)=\sin(d_1)\sin(d_2)+\cos(d_1)\cos(d_2)\cos(r_1-r_2)}
 
 Here, we will be using the
 @url{https://en.wikipedia.org/wiki/Haversine_formula, Haversine formula}
-which better considering floating point errors:
+which is better considering floating point errors:
 
 @dispmath{{\sin^2(d)\over 2}=\sin^2\left( {d_1-d_2\over 2} \right)+\cos(d_1)\cos(d_2)\sin^2\left( {r_1-r_2\over 2} \right)}
+@end deftypefun
+
+@deftypefun void gal_wcs_pixel_scale_deg (struct wcsprm @code{*wcs}, double @code{*dx}, double @code{*dy})
+Return the pixel scale of the WCS structure @code{wcs} for the two image
+dimensions @code{dx} and @code{dy} in degrees. Here, the X-axis is the
+first FITS axis, or the horizontal axis when viewed in SAO ds9.
 @end deftypefun
 
 @deftypefun double gal_wcs_pixel_area_arcsec2 (struct wcsprm @code{*wcs})
