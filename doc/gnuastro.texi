@@ -5470,16 +5470,27 @@ example:
 @end example
 
 @noindent
-The value can be any numerical or string value. Other than the
-@code{KEYWORD}, all the other values are optional. To leave a given
-token empty, follow the preceding comma (@key{,}) immediately with the
-next. If any space character is present around the commas, it will be
-considered part of the respective token. So if more than one token has
-space characters within it, the safest method to specify a value to
-this option is to put double quotation marks around each individual
-token that needs it. Note that without double quotation marks, space
-characters will be seen as option separators and can lead to undefined
-behavior.
+The value can be any numerical or string value@footnote{Some tricky
+situations arise with values like `@command{87095e5}', if this was intended
+to be a number it will be kept in the header as @code{8709500000} and there
+is no problem. But this can also be a shortened Git commit hash. In the
+latter case, it should be treated as a string and stored as it is
+written. Commit hashes are very important in keeping the history of a file
+during your research and such values might arise without you noticing them
+in your reproduction pipeline. One solution is to use @command{git
+describe} instead of the short hash alone. A less recommended solution is
+to add a space after the commit hash and Header will write the value as
+`@command{87095e5 }' in the header. If you later compare the strings on the
+shell, the space character will be ignored by the shell in the latter
+solution and there will be no problem.}. Other than the @code{KEYWORD}, all
+the other values are optional. To leave a given token empty, follow the
+preceding comma (@key{,}) immediately with the next. If any space character
+is present around the commas, it will be considered part of the respective
+token. So if more than one token has space characters within it, the safest
+method to specify a value to this option is to put double quotation marks
+around each individual token that needs it. Note that without double
+quotation marks, space characters will be seen as option separators and can
+lead to undefined behavior.
 
 @item -w
 @itemx --write
