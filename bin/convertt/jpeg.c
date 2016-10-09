@@ -28,7 +28,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <setjmp.h>
 #include <string.h>
-#ifdef HAS_LIBJPEG
+#ifdef HAVE_LIBJPEG
   #include <jpeglib.h>
 #endif
 
@@ -101,7 +101,7 @@ nameisjpegsuffix(char *name)
 
 
 
-#ifdef HAS_LIBJPEG
+#ifdef HAVE_LIBJPEG
 /*************************************************************
  **************        Read a JPEG image        **************
  *************************************************************/
@@ -395,4 +395,4 @@ savejpeg(struct converttparams *p)
 
   free(jsr);
 }
-#endif  /* HAS_LIBJPEG */
+#endif  /* HAVE_LIBJPEG */

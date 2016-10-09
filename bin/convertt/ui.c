@@ -469,7 +469,7 @@ sanitycheck(struct converttparams *p)
         }
       else if(nameisjpeg(cp->output))
         {
-#ifndef HAS_LIBJPEG
+#ifndef HAVE_LIBJPEG
           error(EXIT_FAILURE, 0, "you have asked for a JPEG output, "
                 "however, when %s was configured libjpeg was not "
                 "available. To write to JPEG files, libjpeg is required. "
@@ -605,7 +605,7 @@ preparearrays(struct converttparams *p)
       /* JPEG: */
       else if ( nameisjpeg(names[i]) )
         {
-#ifndef HAS_LIBJPEG
+#ifndef HAVE_LIBJPEG
           error(EXIT_FAILURE, 0, "you are giving a JPEG input, however, "
                 "when %s was configured libjpeg was not available. To read "
                 "from JPEG files, libjpeg is required. Please install it "

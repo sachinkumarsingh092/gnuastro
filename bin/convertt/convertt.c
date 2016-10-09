@@ -403,7 +403,7 @@ convertt(struct converttparams *p)
       break;
     case JPEGFORMAT:
       doubleto8bit(p);
-#ifdef HAS_LIBJPEG
+#ifdef HAVE_LIBJPEG
       savejpeg(p);
 #else
       error(EXIT_FAILURE, 0, "you have asked for a JPEG output, however, "

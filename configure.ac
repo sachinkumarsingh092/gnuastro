@@ -146,13 +146,13 @@ AC_SEARCH_LIBS([wcspih], [wcs], [],
 # have already been checked. We don't need to add them to the LIBS
 # variable, so we are using AC_CHECK_LIB for these tests.
 AC_CHECK_LIB([wcs], [wcslib_version],
-             [AC_DEFINE([HAVE_WCSLIBVERSION], [1], [Has wcslib_version])],
+             [AC_DEFINE([HAVE_WCSLIB_VERSION], [1], [Has wcslib_version])],
              [], [-lcfitsio -lm])
 AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
              [has_pthread_barrier=0])
-AC_DEFINE_UNQUOTED([GAL_GNUASTRO_PTHREAD_BARRIER], [$has_pthread_barrier],
+AC_DEFINE_UNQUOTED([GAL_GNUASTRO_HAVE_PTHREAD_BARRIER], [$has_pthread_barrier],
                    [System has pthread_barrier])
-AC_SUBST(HAS_PTHREAD_BARRIER, [$has_pthread_barrier])
+AC_SUBST(HAVE_PTHREAD_BARRIER, [$has_pthread_barrier])
 
 
 
@@ -193,7 +193,7 @@ AC_MSG_RESULT([done])
 AC_SEARCH_LIBS([jpeg_stdio_dest], [jpeg],
                [has_libjpeg=yes], [has_libjpeg=no])
 AS_IF([test "x$has_libjpeg" = "xyes"],
-      [AC_DEFINE([HAS_LIBJPEG], [], [Has libjpeg])],
+      [AC_DEFINE([HAVE_LIBJPEG], [], [Has libjpeg])],
       [anywarnings=yes])
 AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 
@@ -487,13 +487,12 @@ AS_IF([test x$enable_guide_message = xyes],
   AS_ECHO([===================================================================])
   AS_ECHO([===================================================================])
   AS_ECHO(["$PACKAGE_NAME (Gnuastro) $PACKAGE_VERSION is successfully"])
-  AS_ECHO(["configured for this machine. To build it please run:"])
-  AS_ECHO([])
-  AS_ECHO(["    make"])
+  AS_ECHO(["configured for this machine."])
   AS_ECHO([])
   AS_IF([test "x$anywarnings" = xyes],
       [
         AS_ECHO(["Configuration warning(s):"])
+        AS_ECHO([])
         AS_IF([test "x$has_libjpeg" = "xno"],
               [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])
                AS_ECHO(["    If JPEG outputs are desired from ConvertType, it will warn"])
@@ -502,11 +501,16 @@ AS_IF([test x$enable_guide_message = xyes],
               [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])
                AS_ECHO(["    If PDF outputs are desired from ConvertType, it will abort"])
-               AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])])
+               AS_ECHO(["    with an EPS output which you can convert to PDF by other means."])
+               AS_ECHO([]) ])
         AS_ECHO(["  All checks related to the warning(s) will be skipped."])
         AS_ECHO([])
       ]
      )
+  AS_ECHO(["To build Gnuastro $PACKAGE_VERSION, please run:"])
+  AS_ECHO([])
+  AS_ECHO(["    make"])
+  AS_ECHO([])
   AS_ECHO(["(Build faster on N threads with 'make -jN'.)"])
   AS_ECHO(["(Configure with '--disable-guide-message' for no messages.)"])
   AS_ECHO([===================================================================])

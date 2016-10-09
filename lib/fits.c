@@ -1445,7 +1445,7 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
      defined. Sometime in the future were everyone has moved to more
      recent versions of WCSLIB, we can remove this macro and its check
      in configure.ac.*/
-#ifdef HAVE_WCSLIBVERSION
+#ifdef HAVE_WCSLIB_VERSION
   int wcslibvers[3];
   char wcslibversion[20];
   const char *wcslibversion_const;
@@ -1473,14 +1473,20 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
 
   /* Write all the information: */
   fits_write_date(fptr, &status);
+
+  /* Write the version of CFITSIO */
   fits_update_key(fptr, TSTRING, "CFITSIO", cfitsioversion,
                   "CFITSIO version.", &status);
-#ifdef HAVE_WCSLIBVERSION
+
+  /* Write the WCSLIB version */
+#ifdef HAVE_WCSLIB_VERSION
   wcslibversion_const=wcslib_version(wcslibvers);
   strcpy(wcslibversion, wcslibversion_const);
   fits_update_key(fptr, TSTRING, "WCSLIB", wcslibversion,
                   "WCSLIB version.", &status);
 #endif
+
+  /* Write the Gnuastro version. */
   fits_update_key(fptr, TSTRING, "GNUASTRO", PACKAGE_VERSION,
                   "GNU Astronomy Utilities version.", &status);
   fits_write_comment(fptr, PACKAGE_STRING, &status);

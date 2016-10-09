@@ -160,6 +160,7 @@ all-local:
 	 echo;                                                                       \
 	 echo "    make check";                                                      \
 	 echo;                                                                       \
+	 echo "(Check faster on N threads with 'make check -jN'.)";                  \
 	 echo "(The following \"Leaving directory\" notices can be ignored.)";       \
 	 echo "==================================================================="; \
 	 echo "==================================================================="; \

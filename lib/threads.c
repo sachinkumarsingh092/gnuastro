@@ -42,7 +42,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Re-implementation of the example code given in:
 http://blog.albertarmea.com/post/47089939939/using-pthread-barrier-on-mac-os-x
  */
-#if GAL_GNUASTRO_PTHREAD_BARRIER == 0
+#if GAL_GNUASTRO_HAVE_PTHREAD_BARRIER == 0
 
 /* Initialize the barrier structure. A barrier is a high-level way to wait
    until several threads have finished. */
@@ -144,7 +144,7 @@ pthread_barrier_destroy(pthread_barrier_t *b)
   return 0;
 }
 
-#endif  /* GAL_GNUASTRO_PTHREAD_BARRIER == 0 */
+#endif  /* GAL_GNUASTRO_HAVE_PTHREAD_BARRIER == 0 */
 
 
 
