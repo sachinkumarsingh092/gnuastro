@@ -3802,17 +3802,32 @@ installed from source.} Similar to the case for @file{LDFLAGS}
 @command{CPPFLAGS=-I/usr/local/include} to @command{./configure} to
 re-configure Gnuastro, then re-run make.
 
+@item
+@cindex @code{rpl_malloc}
+@cindex GNU portability library
+@command{$ make check}: @emph{Complaint about @code{rpl_malloc} before the
+tests begin.} This is a problem with the different ways different operating
+systems implement C's @code{malloc} function. It doesn't happen when
+building Gnuastro with @command{$ make} because the GNU Portability Library
+(Gnulib) is used to compensate for the differences. But in @command{make
+check}, Gnulib is not used, so this error might pop-up there. To fix it,
+please re-run configure like below (adding any other options/arguments you
+might have already used):
+
+@example
+./configure ac_cv_func_malloc_0_nonnull=yes
+@end example
+
 @cindex Tests, only one passes
 @cindex @file{LD_LIBRARY_PATH}
 @item
-@command{$ make check}: @emph{Only one (the first) test passes, all the
-rest fail.}  It is highly likely that your distribution doesn't look
-into the @file{/usr/local/lib} directory when searching for shared
-libraries. To make sure it is added to the list of directories, run
-the following command and restart your terminal: (you can ignore the
-@command{\} and extra space if you type it, it is only necessary if
-you copy and paste). See @ref{Installation directory} for more
-details.
+@command{$ make check}: @emph{Only one @file{.sh} test passes, all the rest
+fail.}  It is highly likely that your distribution doesn't look into the
+@file{/usr/local/lib} directory when searching for shared libraries. To
+make sure it is added to the list of directories, run the following command
+and restart your terminal: (you can ignore the @command{\} and extra space
+if you type it, it is only necessary if you copy and paste). See
+@ref{Installation directory} for more details.
 @example
 echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' \
      >> ~/.bashrc
