@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/box.h>
+#include <gnuastro/git.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
 #include <gnuastro/threads.h>
@@ -377,12 +378,15 @@ build(void *inparam)
 void
 writelog(struct mkprofparams *p)
 {
-  char comments[1000];
   int space[]={6, 10, 15}, prec[]={3, 6};
   int int_cols[]={0, 2, 4, -1}, accu_cols[]={-1};
+  char comments[1000], gitdescribe[100], *gd=gal_git_describe();
+
+  if(gd) sprintf(gitdescribe, " from %s,", gd);
+  else   gitdescribe[0]='\0';
 
   sprintf(comments, "# Log file for "SPACK_STRING".\n"
-          "# Run on %s"
+          "# Created%s on %s"
           "# Column 0: Row number in catalog (starting from zero).\n"
           "# Column 1: Overlap magnitude with final image "
           "(zeropoint: %.3f).\n"
@@ -390,7 +394,7 @@ writelog(struct mkprofparams *p)
           "# Column 3: Fraction of brightness in Monte Carlo "
           "integrated pixels.\n"
           "# Column 4: An individual image was created.\n",
-          ctime(&p->rawtime), p->zeropoint);
+          ctime(&p->rawtime), gitdescribe, p->zeropoint);
 
 
   gal_txtarray_array_to_txt(p->log, p->cs0, LOGNUMCOLS, comments, int_cols,

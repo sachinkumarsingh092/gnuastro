@@ -1,10 +1,11 @@
 /*********************************************************************
-Functions dealing with general aspects of all Gnuastro.
+Functions to facilitate using the Git library.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2016, Free Software Foundation, Inc.
+Copyright (C) 2015, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -19,21 +20,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_GNUASTRO_H__
-#define __GAL_GNUASTRO_H__
-
-/* Include other headers if necessary here. Note that other header files
-   must be included before the C++ preparations below */
+#ifndef __GAL_GIT_H__
+#define __GAL_GIT_H__
 
 
-
-/* Macros. In gnuastro.h.in, the values in `@' --- `@'', will be replaced
-   with installation specific values. */
-#define GAL_GNUASTRO_VERSION "@VERSION@"
-#define GAL_GNUASTRO_HAVE_LIBGIT2 @HAVE_LIBGIT2@
-#define GAL_GNUASTRO_HAVE_PTHREAD_BARRIER @HAVE_PTHREAD_BARRIER@
-
-
+#if GAL_GNUASTRO_HAVE_LIBGIT2 == 1
+#include <git2.h>
+#endif
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -54,9 +47,12 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Only make the Git definitions if the system has LIBGIT2,  */
+char *
+gal_git_describe();
 
 
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_GNUASTRO_H__ */
+#endif           /* __GAL_GIT_H__ */

@@ -31,19 +31,20 @@ libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c	\
-  linkedlist.c mesh.c mode.c polygon.c qsort.c spatialconvolve.c	\
+libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c  \
+  git.c linkedlist.c mesh.c mode.c polygon.c qsort.c spatialconvolve.c  \
   statistics.c threads.c timing.c txtarray.c wcs.c
 
 
 # Installed headers, note that we are not blindly including all `.h' files
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
-pkginclude_HEADERS = gnuastro/gnuastro.h $(headersdir)/array.h          \
-  $(headersdir)/box.h $(headersdir)/fits.h $(headersdir)/linkedlist.h   \
-  $(headersdir)/mesh.h $(headersdir)/polygon.h $(headersdir)/qsort.h    \
-  $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h            \
-  $(headersdir)/threads.h $(headersdir)/wcs.h $(headersdir)/txtarray.h
+pkginclude_HEADERS = gnuastro/gnuastro.h $(headersdir)/array.h            \
+  $(headersdir)/box.h $(headersdir)/fits.h $(headersdir)/git.h            \
+  $(headersdir)/linkedlist.h $(headersdir)/mesh.h $(headersdir)/polygon.h \
+  $(headersdir)/qsort.h $(headersdir)/spatialconvolve.h                   \
+  $(headersdir)/statistics.h $(headersdir)/threads.h $(headersdir)/wcs.h  \
+  $(headersdir)/txtarray.h
 
 
 # Files to distribute in the tarball. These are internal headers and don't
@@ -69,8 +70,9 @@ CLEANFILES = gnuastro.pc gnuastro/gnuastro.h
 gnuastro/gnuastro.h: Makefile gnuastro.h.in
 	rm -f $@ $@.tmp
 	$(MKDIR_P) gnuastro
-	$(SED) -e 's|@VERSION[@]|$(VERSION)|g'                          \
-	       -e 's|@HAS_PTHREAD_BARRIER[@]|$(HAS_PTHREAD_BARRIER)|g'  \
+	$(SED) -e 's|@VERSION[@]|$(VERSION)|g'                            \
+	       -e 's|@HAVE_LIBGIT2[@]|$(HAVE_LIBGIT2)|g'                  \
+	       -e 's|@HAVE_PTHREAD_BARRIER[@]|$(HAVE_PTHREAD_BARRIER)|g'  \
                $(srcdir)/gnuastro.h.in >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@

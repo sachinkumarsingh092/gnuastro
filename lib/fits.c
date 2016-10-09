@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <unistd.h>
 
+#include <gnuastro/git.h>
 #include <gnuastro/fits.h>
 
 #include "checkset.h"
@@ -1437,6 +1438,7 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
 {
   size_t i;
   int status=0;
+  char *gitdescribe;
   char cfitsioversion[20];
   char startblank[]="              / ";
   char *cp, *cpf, blankrec[80], titlerec[80];
@@ -1457,16 +1459,23 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
   titlerec[79]='\0';
   cp=blankrec; do *cp=' '; while(++cp<cpf);
 
-  /*Print the starting information for the header.  */
+  /* If any header keywords are specified add them: */
+  if(headers)
+    {
+      fits_write_record(fptr, blankrec, &status);
+      sprintf(titlerec, "%s%s", startblank, spack_string);
+      for(i=strlen(titlerec);i<79;++i) titlerec[i]=' ';
+      fits_write_record(fptr, titlerec, &status);
+      gal_fits_update_keys(fptr, &headers);
+    }
+
+
+  /* Start printing the version information */
   fits_write_record(fptr, blankrec, &status);
-  sprintf(titlerec, "%s%s:", startblank, spack_string);
+  sprintf(titlerec, "%sVersions and date", startblank);
   for(i=strlen(titlerec);i<79;++i) titlerec[i]=' ';
   fits_write_record(fptr, titlerec, &status);
   gal_fits_io_error(status, NULL);
-
-  /* If any header keywords are specified add them: */
-  if(headers)
-    gal_fits_update_keys(fptr, &headers);
 
   /* Set the version of CFITSIO as a string. */
   sprintf(cfitsioversion, "%-.2f", CFITSIO_VERSION);
@@ -1489,12 +1498,18 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
   /* Write the Gnuastro version. */
   fits_update_key(fptr, TSTRING, "GNUASTRO", PACKAGE_VERSION,
                   "GNU Astronomy Utilities version.", &status);
-  fits_write_comment(fptr, PACKAGE_STRING, &status);
-  fits_write_comment(fptr, PACKAGE_URL, &status);
-  /*
-  fits_write_comment(fptr, GAL_STRINGS_SHORT_COPYRIGHT, &status);
-  fits_write_comment(fptr, GAL_STRINGS_SHORT_LICENSE, &status);
-  */
+
+  /* If we are in a version controlled directory and have libgit2
+     installed, write the commit description into the FITS file. */
+  gitdescribe=gal_git_describe();
+  if(gitdescribe)
+    {
+      fits_update_key(fptr, TSTRING, "COMMIT", gitdescribe,
+                      "Git's commit description in running dir.", &status);
+      free(gitdescribe);
+    }
+
+  /* Report any error if a problem came up */
   gal_fits_io_error(status, NULL);
 }
 

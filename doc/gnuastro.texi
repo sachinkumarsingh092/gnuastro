@@ -512,6 +512,7 @@ Gnuastro library
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
+* Git wrappers::                Wrappers for functions in libgit2.
 * Linked lists::                Various types of linked lists.
 * Mesh grid for an image::      Breaking an image into a grid.
 * Polygons::                    Working with the vertices of a polygon.
@@ -2467,6 +2468,16 @@ library later, you will have to rebuild Gnuastro and reinstall it for it to
 take effect.
 
 @table @asis
+
+@item libgit2
+@cindex Git
+@cindex libgit2
+@cindex Version control systems
+Git is one of the most common version control systems (see @ref{Version
+controlled source}). When @file{libgit2} is present, all Gnuastro's outputs
+will contain the version number of the working directory's repository for
+future reproducibility. See the @command{COMMIT} keyword header in
+@ref{Output headers} for a discussion.
 
 @item libjpeg
 @pindex libjpeg
@@ -5225,26 +5236,78 @@ list. We have other mailing lists and tools for those purposes, see
 
 @cindex Output FITS headers
 @cindex CFITSIO version on outputs
-The output FITS files created by Gnuastro will have the following two
-keywords: @command{DATE}, @command{CFITSIO}, @command{WCSLIB} and
-@command{GNUASTRO}. The first specifies the time in UT of the file
-being created. The next three specify the versions of CFITSIO, WCSLIB
-and Gnuastro that was used to make the file. Note that WCSLIB has only
-recently added the version reporting capability. If you version of
-WCSLIB doesn't have this capability, it will not be reported. Some
-basic information about Gnuastro is also printed. The example below
-shows the last few keywords of one of the outputs of ImageCrop.
+The output FITS files created by Gnuastro's programs have some or all of
+the following standard keywords to keep the basic date and version
+information of Gnuastro, its dependencies and the pipeline that is using
+Gnuastro.
+
+@table @command
+
+@item DATE
+The creation time of the FITS file. This date is written directly by
+CFITSIO and is in UT format.
+
+@item COMMIT
+The commit description (output of `@command{$ git describe}') from the
+directory where you called any of Gnuastro's programs. If the directory is
+not version controlled or you don't have @file{libgit2} installed (see
+@ref{Optional dependencies}) then this key will not be present.
+
+At first sight, version control appears to be mainly a tool for software
+developers. However, a research's progress is almost identical to software
+development: first you have a rough idea that starts with handful of
+steps. But as the first results appear to be promising, you will have to
+extend it to make it more robust and work in all the situations your
+research covers, not just your first test samples. Slowly you will find
+wrong assumptions or bad implementations that need to be fixed (`bugs' in
+software development parlance). Finally, when you submit the research to
+your collaborators or a journal, many comments and suggestions will come in
+that you have to addressed.
+
+Software developers have created version control systems precisely for this
+kind of activity. Each significant moment in the project's history is given
+a ``version''. So you can be sure that your work is reproducible and track
+the progress and history, see @ref{Version controlled source}. With version
+control, you can easily experiment a new method and revert back if it fails
+and many other things. One important feature is that you stamp the research
+result (FITS image, table, report or paper) with the version number of your
+research processing pipeline@footnote{For example see the NoiseChisel
+paper's @url{https://gitlab.com/makhlaghi/NoiseChisel-paper, reproduction
+pipeline}.}. This will enable you to exactly reproduce that same result
+later, even if you have made changes/progress.
+
+If the running directory contains non-committed work, then the commit
+description stored in this keyword will have a `@command{-dirty}'
+suffix. This can be very helpful to let you know that the data is not ready
+to be shared with collaborators or journal. You should only share results
+that are produced after all your work is committed (safely stored in the
+version controlled history).
+
+@item CFITSIO
+The version of CFITSIO used (see @ref{CFITSIO}).
+
+@item WCSLIB
+The version of WCSLIB used (see @ref{WCSLIB}). Note that older versions of
+WCSLIB do not report the version internally. So this is only available if
+you are using more recent WCSLIB versions.
+
+@item GNUASTRO
+The version of Gnuastro used (see @ref{Version numbering}).
+@end table
+
+Here is one example of the last few lines of an example output.
 
 @example
-              / ImageCrop (GNU Astronomy Utilities 0.1) 0.1:
-DATE    = ' ... '              / file creation date ( ... )
-CFITSIO = '3.37    '           / CFITSIO version.
-WCSLIB  = '5.5     '           / WCSLIB version.
-GNUASTRO= '0.1     '           / GNU Astronomy Utilities version.
-COMMENT GNU Astronomy Utilities 0.1
-COMMENT http://www.gnu.org/software/gnuastro/
+              / Versions and date
+DATE    = '...'                / file creation date
+COMMIT  = 'v0-8-g547f6eb'      / Commit description in running dir.
+CFITSIO = '3.39    '           / CFITSIO version.
+WCSLIB  = '5.15    '           / WCSLIB version.
+GNUASTRO= '0.3'                / GNU Astronomy Utilities version.
 END
 @end example
+
+
 
 
 
@@ -14955,6 +15018,7 @@ problems. It will stabilize with the removal of this notice. Check the
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS datat.
+* Git wrappers::                Wrappers for functions in libgit2.
 * Linked lists::                Various types of linked lists.
 * Mesh grid for an image::      Breaking an image into a grid.
 * Polygons::                    Working with the vertices of a polygon.
@@ -14996,7 +15060,16 @@ char *gnuastro_version=GAL_GNUASTRO_VERSION;
 @end deffn
 
 
-@deffn Macro GAL_GNUASTRO_PTHREAD_BARRIER
+@deffn Macro GAL_GNUASTRO_HAVE_LIBGIT2
+Libgit2 is an optional dependency of Gnuastro (see @ref{Optional
+dependencies}). When it is installed and detected at configure time, this
+macro will have a value of @code{1}. Otherwise, it will have a value of
+@code{0}. Gnuastro also comes with some wrappers to make it easier to use
+libgit2 (see @ref{Git wrappers}).
+@end deffn
+
+
+@deffn Macro GAL_GNUASTRO_HAVE_PTHREAD_BARRIER
 The POSIX threads standard define barriers as an optional
 requirement. Therefore, some operating systems choose to not include
 it. While installing Gnuastro, we check if your system has this construct
@@ -15216,7 +15289,7 @@ last pixels of the overlap will be put in @code{fpixel_o} and
 @code{lpixel_o}.
 @end deftypefun
 
-@node FITS files, Linked lists, Bounding box, Gnuastro library
+@node FITS files, Git wrappers, Bounding box, Gnuastro library
 @subsection FITS files (@file{fits.h})
 
 @cindex FITS
@@ -15701,7 +15774,41 @@ error notice.
 @c@end deftypefun
 
 
-@node Linked lists, Mesh grid for an image, FITS files, Gnuastro library
+@node Git wrappers, Linked lists, FITS files, Gnuastro library
+@subsection Git wrappers (@file{git.h})
+
+@cindex Git
+@cindex libgit2
+Git is one of the most commont tools for version control and it can often
+be useful during development, for example see @code{COMMIT} keyword in
+@ref{Output headers}. The functions introduced here are described in the
+@file{gnuastro/git.h} header. At installation time, Gnuastro will also
+check for the existance of libgit2 and store the value in the
+@code{GAL_GNUASTRO_HAVE_LIBGIT2}, see @ref{Installation
+information}. @file{gnuastro/git.h} includes @file{gnuastro/gnuastro.h}
+internally, so won't have to include both for this macro.
+
+@deftypefun {char *} gal_git_describe ( )
+When libgit2 is present and the program is called within a directory that
+is version controlled, then this function will return a string containing
+the commit description (similar to Gnuastro's unofficial version number,
+see @ref{Version numbering}). If there are uncommitted changes in the
+running directory, it will add a `@code{-dirty}' prefix to the
+description. When there is no tagged point in the previous commit, this
+function will return a uniquely abbreviated commit object as
+fallback. Similar to running the following command:
+
+@example
+$ git describe --dirty --always
+@end example
+
+Space for the output string is allocated within this function, so after
+using the value you have to @code{free} the output string. If libgit2 is
+not installed or the program calling this function is not within a version
+controlled directory, then the output will be the @code{NULL} pointer.
+@end deftypefun
+
+@node Linked lists, Mesh grid for an image, Git wrappers, Gnuastro library
 @subsection Linked lists (@file{linkedlist.h})
 
 @cindex Array

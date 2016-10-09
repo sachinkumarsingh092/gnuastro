@@ -201,6 +201,18 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 
 
 
+# Check libgit2:
+AC_SEARCH_LIBS([git_libgit2_init], [git2],
+               [has_libgit2=1], [has_libgit2=0])
+AC_DEFINE_UNQUOTED([GAL_GNUASTRO_HAVE_LIBGIT2], [$has_libgit2],
+                   [libgit2 is installed on the system])
+AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
+AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])
+
+
+
+
+
 # Check Ghostscript: "-dPDFFitPage" option to Ghostscript, used by
 # ConvertType to convert from EPS to PDF, has been introduced in
 # Ghostscript 9.10.  Make sure we have at least that version.
@@ -496,7 +508,14 @@ AS_IF([test x$enable_guide_message = xyes],
         AS_IF([test "x$has_libjpeg" = "xno"],
               [AS_ECHO(["  - libjpeg, could not be linked with in your library search path."])
                AS_ECHO(["    If JPEG outputs are desired from ConvertType, it will warn"])
-               AS_ECHO(["    you and abort with an error."])])
+               AS_ECHO(["    you and abort with an error."])
+               AS_ECHO([]) ])
+        AS_IF([test "x$has_libgit2" = "x0"],
+              [AS_ECHO(["  - libgit2, could not be linked with in your library search path."])
+               AS_ECHO(["    When present, Git's describe output will be stored in the"])
+               AS_ECHO(["    output files if Gnuastro's programs were called within a Git"])
+               AS_ECHO(["    version controlled directory to help in reproducibility."])
+               AS_ECHO([]) ])
         AS_IF([test "x$has_ghostscript" = "xno"],
               [AS_ECHO(["  - GPL GhostScript version 9.10 or later, with the executable"])
                AS_ECHO(["    name \`gs', was not found in your PATH environment variable."])

@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/git.h>
 #include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/txtarray.h>
@@ -448,6 +449,11 @@ makeoutput(struct mkcatalogparams *p)
       sprintf(comment, "# %s %s catalog.\n", SPACK_STRING, p->name);
       sprintf(p->line, "# %s started on %s", SPACK_NAME, ctime(&p->rawtime));
       strcat(comment, p->line);
+      if(gal_git_describe())
+        {
+          sprintf(p->line, "# From commit %s\n", gal_git_describe());
+          strcat(comment, p->line);
+        }
 
 
       /* Write the input files: */
