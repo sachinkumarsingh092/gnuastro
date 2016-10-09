@@ -77,7 +77,7 @@ builtqueue_addempty(struct builtqueue **bq)
   errno=0;
   tbq=malloc(sizeof *tbq);
   if(tbq==NULL)
-    error(EXIT_FAILURE, 0, "%lu byte element in builtqueue_addempty",
+    error(EXIT_FAILURE, 0, "%zu byte element in builtqueue_addempty",
           sizeof *tbq);
 
   /* Initialize some of the values. */
@@ -130,8 +130,8 @@ saveindividual(struct mkonthread *mkp)
   len=strlen(outdir)+NUMBERNAMESTRLEN+strlen(p->mergedimgname);
   outname=malloc(len*sizeof *outname);
   if(outname==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for name of object in "
-          "row %lu of %s", len*sizeof *outname, ibq->id,
+    error(EXIT_FAILURE, errno, "%zu bytes for name of object in "
+          "row %zu of %s", len*sizeof *outname, ibq->id,
           p->up.catname);
 
   /* Save the correct CRPIX values: */
@@ -139,7 +139,7 @@ saveindividual(struct mkonthread *mkp)
   crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
 
   /* Write the name and remove a similarly named file. */
-  sprintf(outname, "%s%lu_%s", outdir, ibq->id, p->basename);
+  sprintf(outname, "%s%zu_%s", outdir, ibq->id, p->basename);
   gal_checkset_check_remove_file(outname, p->cp.dontdelete);
 
   /* Write the array to file (A separately built PSF doesn't need WCS
@@ -429,7 +429,7 @@ write(struct mkprofparams *p)
       errno=0;
       out=calloc(p->naxes[0]*p->naxes[1], sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, 0, "%lu bytes for output image",
+        error(EXIT_FAILURE, 0, "%zu bytes for output image",
               p->naxes[0]*p->naxes[1]*sizeof *out);
     }
 
@@ -527,7 +527,7 @@ write(struct mkprofparams *p)
           jobname=malloc(100*sizeof *jobname);
           if(jobname==NULL)
             error(EXIT_FAILURE, errno, "jobname in mkprof.c");
-          sprintf(jobname, "row %lu complete, %lu left to go",
+          sprintf(jobname, "row %zu complete, %zu left to go",
                   ibq->id, cs0-complete);
           gal_timing_report(NULL, jobname, 2);
           free(jobname);
@@ -625,7 +625,7 @@ mkprof(struct mkprofparams *p)
   mkp=malloc(nt*sizeof *mkp);
   if(mkp==NULL)
     error(EXIT_FAILURE, errno,
-          "%lu bytes in mkprof (mkprof.c) for mkp", (nt-1)*sizeof *mkp);
+          "%zu bytes in mkprof (mkprof.c) for mkp", (nt-1)*sizeof *mkp);
 
   /* Distribute the different profiles for different threads. Note
      that one thread is left out for writing, while nt-1 are left
@@ -672,7 +672,7 @@ mkprof(struct mkprofparams *p)
             mkp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, build, &mkp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
     }
 

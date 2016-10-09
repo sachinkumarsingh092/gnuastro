@@ -60,11 +60,11 @@ reportcrop(struct imgcroplog *log)
 
   /* Define the output string based on the length of the output file. */
   if ( outnamelen > FILENAME_BUFFER_IN_VERB )
-    sprintf(msg, "...%s %lu %d",
+    sprintf(msg, "...%s %zu %d",
             &log->name[ outnamelen - FILENAME_BUFFER_IN_VERB + 3 ],
             log->numimg, log->centerfilled);
   else
-    sprintf(msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %lu %d",
+    sprintf(msg, "%-" MACROSTR(FILENAME_BUFFER_IN_VERB) "s %zu %d",
             log->name, log->numimg, log->centerfilled);
   gal_timing_report(NULL, msg, 2);
 }
@@ -292,7 +292,7 @@ imgcrop(struct imgcropparams *p)
   crp=malloc(nt*sizeof *crp);
   if(crp==NULL)
     error(EXIT_FAILURE, errno,
-          "%lu bytes in imgcrop (imgcrop.c) for crp", nt*sizeof *crp);
+          "%zu bytes in imgcrop (imgcrop.c) for crp", nt*sizeof *crp);
 
 
   /* Get the length of the output, no reasonable integer can have more
@@ -336,7 +336,7 @@ imgcrop(struct imgcropparams *p)
             crp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, modefunction, &crp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

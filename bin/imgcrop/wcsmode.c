@@ -286,7 +286,7 @@ fillcrpipolygon(struct cropparams *crp)
   errno=0;
   crp->ipolygon=malloc(2*p->nvertices*sizeof *crp->ipolygon);
   if(crp->ipolygon==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for crpp->ipolygon in "
+    error(EXIT_FAILURE, errno, "%zu bytes for crpp->ipolygon in "
           "onecrop (crop.c)",
           2*p->nvertices*sizeof *crp->ipolygon);
 

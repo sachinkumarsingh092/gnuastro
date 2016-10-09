@@ -116,7 +116,7 @@ gal_array_uchar_copy(unsigned char *in, size_t size, unsigned char **out)
   errno=0;
   o=*out=malloc(size*sizeof *out);
   if(*out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for copying", size);
+    error(EXIT_FAILURE, errno, "%zu bytes for copying", size);
   do *o++=*in; while(++in<fp);
 }
 
@@ -132,7 +132,7 @@ gal_array_float_copy(float *in, size_t size, float **out)
   errno=0;
   o=*out=malloc(size*sizeof *out);
   if(*out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for copying", size);
+    error(EXIT_FAILURE, errno, "%zu bytes for copying", size);
   do *o++=*in; while(++in<fp);
 }
 
@@ -327,7 +327,7 @@ gal_array_fsum_arrays(float *in1, float *in2, size_t size)
   errno=0;
   o=out=malloc(size*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out in gal_array_fsum_arrays"
+    error(EXIT_FAILURE, errno, "%zu bytes for out in gal_array_fsum_arrays"
           " (array.c)", size*sizeof *out);
 
   op=o+size;

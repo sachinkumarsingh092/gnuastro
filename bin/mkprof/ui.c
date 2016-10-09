@@ -91,7 +91,7 @@ readconfig(char *filename, struct mkprofparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -390,13 +390,13 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
   if(up->naxis1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis1", p->naxes[0]);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "naxis1", p->naxes[0]);
   if(up->naxis2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "naxis2", p->naxes[1]);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "naxis2", p->naxes[1]);
   if(up->inputascanvasset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "inputascanvas", up->inputascanvas);
   if(up->oversampleset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "oversample", p->oversample);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "oversample", p->oversample);
   if(up->replaceset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "replace", p->replace);
   if(up->typeset)
@@ -406,7 +406,7 @@ printvalues(FILE *fp, struct mkprofparams *p)
   if(up->tunitinpset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "tunitinp", p->tunitinp);
   if(up->numrandomset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numrandom", p->numrandom);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "numrandom", p->numrandom);
   if(up->toleranceset)
     fprintf(fp, CONF_SHOWFMT"%.2f\n", "tolerance", p->tolerance);
   if(up->zeropointset)
@@ -418,27 +418,27 @@ printvalues(FILE *fp, struct mkprofparams *p)
 
   fprintf(fp, "\n# Catalog:\n");
   if(up->xcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "xcol", p->xcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "xcol", p->xcol);
   if(up->ycolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "ycol", p->ycol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "ycol", p->ycol);
   if(up->racolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "racol", p->racol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "racol", p->racol);
   if(up->deccolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "deccol", p->deccol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "deccol", p->deccol);
   if(up->fcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "fcol", p->fcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "fcol", p->fcol);
   if(up->rcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "rcol", p->rcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "rcol", p->rcol);
   if(up->ncolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "ncol", p->ncol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "ncol", p->ncol);
   if(up->pcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "pcol", p->pcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "pcol", p->pcol);
   if(up->qcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "qcol", p->qcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "qcol", p->qcol);
   if(up->mcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "mcol", p->mcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "mcol", p->mcol);
   if(up->tcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "tcol", p->tcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "tcol", p->tcol);
   if(up->mforflatpixset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "mforflatpix", p->mforflatpix);
 
@@ -621,7 +621,7 @@ sanitycheck(struct mkprofparams *p)
     for(j=0;j<9;++j)
       if(i!=j && columns[i]==columns[j])
         error(EXIT_FAILURE, 0, "at least two of the specified columns "
-              "are set to %lu! By adding the `-P` or `--printparams` "
+              "are set to %zu! By adding the `-P` or `--printparams` "
               "option you can check the final column numbers. They "
               "all have to be different", columns[i]);
 
@@ -653,7 +653,7 @@ sanitycheck(struct mkprofparams *p)
   /* Check if all the profile codes are within the desired range: */
   for(i=0;i<p->cs0;++i)
     if(cat[i*cs1+p->fcol]<0 || cat[i*cs1+p->fcol]>MAXIMUMCODE)
-      error(EXIT_FAILURE, 0, "%s: In row %lu, the function code should"
+      error(EXIT_FAILURE, 0, "%s: In row %zu, the function code should"
             "be positive and smaller or equal to %d",
             p->up.catname, i+1, MAXIMUMCODE);
 
@@ -730,7 +730,7 @@ sanitycheck(struct mkprofparams *p)
       errno=0;
       p->outdir=malloc((strlen(p->cp.output)+1)*sizeof *p->outdir);
       if(p->outdir==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for p->outdir in ui.c",
+        error(EXIT_FAILURE, errno, "%zu bytes for p->outdir in ui.c",
               (strlen(p->cp.output)+1)*sizeof *p->outdir);
       strcpy(p->outdir, p->cp.output);
       gal_checkset_check_dir_write_add_slash(&p->outdir);
@@ -776,7 +776,7 @@ preparewcs(struct mkprofparams *p)
   errno=0;
   wcs=p->wcs=malloc(sizeof *wcs);
   if(wcs==NULL)
-    error(EXIT_FAILURE, errno, "%lu for wcs in preparewcs", sizeof *wcs);
+    error(EXIT_FAILURE, errno, "%zu for wcs in preparewcs", sizeof *wcs);
 
   /* Initialize the structure (allocate all the arrays). */
   wcs->flag=-1;
@@ -836,7 +836,7 @@ preparearrays(struct mkprofparams *p)
   /* Allocate space for the log file: */
   p->log=malloc(p->cs0*LOGNUMCOLS*sizeof *p->log);
   if(p->log==NULL)
-    error(EXIT_FAILURE, 0, "Allocating %lu bytes for log file",
+    error(EXIT_FAILURE, 0, "Allocating %zu bytes for log file",
           p->cs0*LOGNUMCOLS*sizeof *p->log);
 
 
@@ -897,7 +897,7 @@ preparearrays(struct mkprofparams *p)
       errno=0;
       wcstoimg=malloc(4*p->cs0*sizeof *wcstoimg);
       if(wcstoimg==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for wcstoimg",
+        error(EXIT_FAILURE, errno, "%zu bytes for wcstoimg",
               4*p->cs0*sizeof *wcstoimg);
 
 
@@ -1021,7 +1021,7 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
       jobname=malloc(strlen(p->up.catname)+100*sizeof *jobname);
       if(jobname==NULL)
         error(EXIT_FAILURE, errno, "jobname in ui.c");
-      sprintf(jobname, "%lu profile%sread from %s", p->cs0,
+      sprintf(jobname, "%zu profile%sread from %s", p->cs0,
               p->cs0>1?"s ":" ", p->up.catname);
       gal_timing_report(&t1, jobname, 1);
       free(jobname);
@@ -1031,12 +1031,12 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
       gal_timing_report(NULL, message, 1);
       if(p->envseed)
         {
-          sprintf(message, "RNG seed for all profiles: %lu",
+          sprintf(message, "RNG seed for all profiles: %zu",
                   gsl_rng_default_seed);
           gal_timing_report(NULL, message, 1);
         }
 
-      sprintf(message, "Using %lu threads.", cp->numthreads);
+      sprintf(message, "Using %zu threads.", cp->numthreads);
       gal_timing_report(NULL, message, 1);
     }
 }

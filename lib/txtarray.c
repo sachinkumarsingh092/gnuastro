@@ -65,7 +65,7 @@ txttablesize(char *filename, size_t *outs0, size_t *outs1)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Open the file: */
@@ -119,7 +119,7 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
           size_t s1, char *token)
 {
   if(*log)                        /* The file is already open. */
-    fprintf(*log, "%-10lu%-10lu%-10lu%s\n", lineno, s0, s1, token);
+    fprintf(*log, "%-10zu%-10zu%-10zu%s\n", lineno, s0, s1, token);
   else                            /* Not yet created.          */
     {
       errno=0;
@@ -136,7 +136,7 @@ savetolog(FILE **log, char *filename, size_t lineno, size_t s0,
               "# 3: The string that could not be converted to a number.\n"
               "# Note that counting starts from zero.\n",
               filename);
-      fprintf(*log, "%-10lu%-10lu%-10lu%s\n", lineno-1, s0, s1, token);
+      fprintf(*log, "%-10zu%-10zu%-10zu%s\n", lineno-1, s0, s1, token);
     }
 }
 
@@ -188,7 +188,7 @@ filltable(char *filename, double *array, size_t s0, size_t s1)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   ts0=0;
@@ -263,7 +263,7 @@ gal_txtarray_txt_to_array(char *filename, double **array,
   txttablesize(filename, s0, s1);
   if( (*array=malloc(*s0 * *s1 * sizeof **array)) == NULL)
     error(EXIT_FAILURE, errno, "gal_txtarray_txt_to_array: space for "
-          "array with %lu elements", *s0 * *s1);
+          "array with %zu elements", *s0 * *s1);
 
   /* Fill in the table with the contents of the text file: */
   filltable(filename, *array, *s0, *s1);
@@ -382,12 +382,12 @@ gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1,
   for(i=0;int_cols[i]>0;++i)
     if(int_cols[i]>=s1)
       error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In int_cols[], "
-            "%d is larger than the number of columns: %lu", int_cols[i],
+            "%d is larger than the number of columns: %zu", int_cols[i],
             s1);
   for(i=0;accu_cols[i]>0;++i)
     if(accu_cols[i]>=s1)
       error(EXIT_FAILURE, 0, "gal_txtarray_array_to_txt: In accu_cols[], "
-            "%d is larger than the number of columns: %lu", accu_cols[i],
+            "%d is larger than the number of columns: %zu", accu_cols[i],
             s1);
   for(i=0;i<3;++i)
     if(space[i]<=0)
@@ -403,7 +403,7 @@ gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1,
   fmt=malloc(s1 * sizeof(char *));
   if(fmt==NULL)
     error(EXIT_FAILURE, errno, "txtarray, formatting of each "
-          "column with %lu elements", s1);
+          "column with %zu elements", s1);
 
   /* Prepare the formatting for each column */
   gal_txtarray_printf_format(s1, fmt, int_cols, accu_cols,

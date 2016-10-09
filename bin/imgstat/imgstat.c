@@ -289,7 +289,7 @@ imgstat(struct imgstatparams *p)
                                            &med, &std, 1);
       if(r==0)
         printf("   #### Could not converge\n");
-      printf("   - %.2f sigma-clipping %lu times:\n",
+      printf("   - %.2f sigma-clipping %zu times:\n",
              p->sigclipmultip, p->sigclipnum);
       gal_statistics_sigma_clip_certain_num(p->sorted, 1, p->size,
                                             p->sigclipmultip, p->sigclipnum,

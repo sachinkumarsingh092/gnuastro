@@ -215,7 +215,7 @@ clumppass(struct mkcatalogparams *p)
      order to give the row number in the clumps information table. */
   errno=0; ofcrow=malloc((p->numobjects+1)*sizeof *ofcrow);
   if(ofcrow==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for ofcrow in seconpass "
+    error(EXIT_FAILURE, errno, "%zu bytes for ofcrow in seconpass "
           "(mkcatalog.c)", (p->numobjects+1)*sizeof *ofcrow);
 
 
@@ -436,11 +436,11 @@ makeoutput(struct mkcatalogparams *p)
       /* Allocate the integer and accuracy arrays: */
       errno=0; p->intcols=malloc(p->numcols*sizeof *p->intcols);
       if(p->intcols==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for intcols in makeoutput "
+        error(EXIT_FAILURE, errno, "%zu bytes for intcols in makeoutput "
               "(mkcatalog.c)", p->numcols*sizeof *p->intcols);
       errno=0; p->accucols=malloc(p->numcols*sizeof *p->accucols);
       if(p->accucols==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for accucols in makeoutput "
+        error(EXIT_FAILURE, errno, "%zu bytes for accucols in makeoutput "
               "(mkcatalog.c)", p->numcols*sizeof *p->accucols);
 
 
@@ -541,10 +541,10 @@ makeoutput(struct mkcatalogparams *p)
       /* If an upper limit was output then report its parameters: */
       if(p->obj0clump1==0 && p->up.upperlimitmagset)
         {
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%lu\n", "Number of upper "
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%zu\n", "Number of upper "
                   "limit magnitude samples", p->upnum);
           strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%lu\n", "Number of threads "
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%zu\n", "Number of threads "
                   "used for upper limit magnitude",
                   p->cp.numthreads);
           strcat(comment, p->line);
@@ -552,7 +552,7 @@ makeoutput(struct mkcatalogparams *p)
                   "generator type for upper limit magnitude",
                   gsl_rng_default->name);
           strcat(comment, p->line);
-          sprintf(p->line, "# "CATDESCRIPTLENGTH"%lu\n", "Random number "
+          sprintf(p->line, "# "CATDESCRIPTLENGTH"%zu\n", "Random number "
                   "generator seed for upper limit magnitude",
                   gsl_rng_default_seed);
           strcat(comment, p->line);
@@ -736,7 +736,7 @@ makeoutput(struct mkcatalogparams *p)
 
             default:
               error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                    "can fix the problem. The value to cols[%lu] (%lu), is "
+                    "can fix the problem. The value to cols[%zu] (%zu), is "
                     "not recognized in makeoutput (mkcatalog.c)",
                     PACKAGE_BUGREPORT, p->curcol, cols[p->curcol]);
             }

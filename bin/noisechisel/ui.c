@@ -90,7 +90,7 @@ readconfig(char *filename, struct noisechiselparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -431,7 +431,7 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   if(up->minbfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "minbfrac", p->minbfrac);
   if(up->minnumfalseset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "minnumfalse", p->minnumfalse);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "minnumfalse", p->minnumfalse);
 
 
   fprintf(fp, "\n# Output:\n");
@@ -443,13 +443,13 @@ printvalues(FILE *fp, struct noisechiselparams *p)
 
   fprintf(fp, "\n# Mesh grid:\n");
   if(up->smeshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "smeshsize", smp->meshsize);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "smeshsize", smp->meshsize);
   if(up->lmeshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "lmeshsize", lmp->meshsize);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "lmeshsize", lmp->meshsize);
   if(up->nch1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch1", smp->nch1);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch1", smp->nch1);
   if(up->nch2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", smp->nch2);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch2", smp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", smp->lastmeshfrac);
   if(up->mirrordistset)
@@ -457,9 +457,9 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   if(up->minmodeqset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", smp->minmodeq);
   if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", smp->numnearest);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "numnearest", smp->numnearest);
   if(up->smoothwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", smp->smoothwidth);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "smoothwidth", smp->smoothwidth);
   if(up->fullconvolutionset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "fullconvolution",
             smp->fullconvolution);
@@ -474,13 +474,13 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   if(up->qthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "qthresh", p->qthresh);
   if(up->erodeset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "erode", p->erode);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "erode", p->erode);
   if(up->erodengbset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "erodengb", p->erodengb);
   if(up->noerodequantset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "noerodequant", p->noerodequant);
   if(up->openingset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "opening", p->opening);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "opening", p->opening);
   if(up->openingngbset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "openingngb", p->openingngb);
   if(up->sigclipmultipset)
@@ -491,28 +491,28 @@ printvalues(FILE *fp, struct noisechiselparams *p)
   if(up->dthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "dthresh", p->dthresh);
   if(up->detsnminareaset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnminarea", p->detsnminarea);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "detsnminarea", p->detsnminarea);
   if(up->detsnhistnbinsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "detsnhistnbins", p->detsnhistnbins);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "detsnhistnbins", p->detsnhistnbins);
   if(up->detquantset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "detquant", p->detquant);
   if(up->dilateset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "dilate", p->dilate);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "dilate", p->dilate);
 
 
   fprintf(fp, "\n# Segmentation:\n");
   if(up->segsnminareaset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "segsnminarea", p->segsnminarea);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "segsnminarea", p->segsnminarea);
   if(up->keepmaxnearriverset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "keepmaxnearriver", p->keepmaxnearriver);
   if(up->segquantset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "segquant", p->segquant);
   if(up->clumpsnhistnbinsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "clumpsnhistnbins", p->clumpsnhistnbins);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "clumpsnhistnbins", p->clumpsnhistnbins);
   if(up->gthreshset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "gthresh", p->gthresh);
   if(up->minriverlengthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "minriverlength", p->minriverlength);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "minriverlength", p->minriverlength);
   if(up->objbordersnset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "objbordersn", p->objbordersn);
 
@@ -752,7 +752,7 @@ sanitycheck(struct noisechiselparams *p)
   /* Other checks: */
   if(smp->numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
     error(EXIT_FAILURE, 0, "the smallest possible number for `--numnearest' "
-          "(`-n') is %d. You have asked for: %lu",
+          "(`-n') is %d. You have asked for: %zu",
           GAL_MESH_MIN_ACCEPTABLE_NEAREST, smp->numnearest);
 }
 
@@ -855,8 +855,8 @@ preparearrays(struct noisechiselparams *p)
 
   /* make sure the channel sizes fit the channel sizes. */
   if( s0%smp->nch2 || s1%smp->nch1 )
-    error(EXIT_FAILURE, 0, "the input image size (%lu x %lu) is not an "
-          "exact multiple of the number of the given channels (%lu, %lu) "
+    error(EXIT_FAILURE, 0, "the input image size (%zu x %zu) is not an "
+          "exact multiple of the number of the given channels (%zu, %zu) "
           "in the respective axis", s1, s0, smp->nch1, smp->nch2);
 
   /* p->imgss (image-sky-subtracted) is the sky subtracted input
@@ -880,7 +880,7 @@ preparearrays(struct noisechiselparams *p)
      doesn't have to be allocated and de-allocated on every step.  */
   errno=0; p->imgss=malloc(s0*s1*sizeof *p->imgss);
   if(p->imgss==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->imgss in preparearrays "
+    error(EXIT_FAILURE, errno, "%zu bytes for p->imgss in preparearrays "
           "(ui.c)", s0*s1*sizeof *p->imgss);
 
   /* Read the kernel: */
@@ -894,7 +894,7 @@ preparearrays(struct noisechiselparams *p)
       smp->ks1=defaultkernel_s1;
       smp->kernel=malloc(smp->ks0*smp->ks1*sizeof *smp->kernel);
       if(smp->kernel==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for default kernel",
+        error(EXIT_FAILURE, errno, "%zu bytes for default kernel",
               smp->ks0*smp->ks1);
       ff=defaultkernel;
       fp=(f=smp->kernel)+smp->ks0*smp->ks1;
@@ -904,15 +904,15 @@ preparearrays(struct noisechiselparams *p)
   /* Allocate the other necessary arrays: */
   errno=0; p->byt=malloc(s0*s1*sizeof *p->byt);
   if(p->byt==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->byt (ui.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->byt (ui.c)",
           s0*s1*sizeof *p->byt);
   errno=0; p->olab=malloc(s0*s1*sizeof *p->olab);
   if(p->olab==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->olab (ui.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->olab (ui.c)",
           s0*s1*sizeof *p->olab);
   errno=0; p->clab=malloc(s0*s1*sizeof *p->clab);
   if(p->clab==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->clab (ui.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->clab (ui.c)",
           s0*s1*sizeof *p->clab);
 
   /* This ngb array is used to keep the relative indexs of the
@@ -1031,7 +1031,7 @@ setparams(int argc, char *argv[], struct noisechiselparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Using %lu CPU thread%s\n", p->cp.numthreads,
+      printf("  - Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");
       printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)

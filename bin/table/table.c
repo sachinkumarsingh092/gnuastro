@@ -56,51 +56,51 @@ setformatstring(struct tableparams *p, size_t outcolid)
 
     case TBYTE:
       type="u";
-      sprintf(width, "%lu", up->sintwidth);
+      sprintf(width, "%zu", up->sintwidth);
       accu[0]='\0';
       break;
 
     case TLOGICAL: case TSBYTE:
       type="d";
-      sprintf(width, "%lu", up->sintwidth);
+      sprintf(width, "%zu", up->sintwidth);
       accu[0]='\0';
       break;
 
     case TSTRING:
       type="s";
-      if(up->sintwidth) sprintf(width, "%lu", up->sintwidth);
+      if(up->sintwidth) sprintf(width, "%zu", up->sintwidth);
       else width[0]='\0';
       accu[0]='\0';
       break;
 
     case TSHORT:
       type="d";
-      sprintf(width, "%lu", up->sintwidth);
+      sprintf(width, "%zu", up->sintwidth);
       accu[0]='\0';
       break;
 
     case TLONG:
       type="ld";
-      sprintf(width, "%lu", up->lintwidth);
+      sprintf(width, "%zu", up->lintwidth);
       accu[0]='\0';
       break;
 
     case TLONGLONG:
       type="ld";
-      sprintf(width, "%lu", up->lintwidth);
+      sprintf(width, "%zu", up->lintwidth);
       accu[0]='\0';
       break;
 
     case TFLOAT:
       type = up->feg=='f' ? "f" : ( up->feg=='e' ? "e" : "g");
-      sprintf(width, "%lu", up->floatwidth);
-      sprintf(accu, ".%lu", up->floatprecision);
+      sprintf(width, "%zu", up->floatwidth);
+      sprintf(accu, ".%zu", up->floatprecision);
       break;
 
     case TDOUBLE:
       type = up->feg=='f' ? "f" : ( up->feg=='e' ? "e" : "g");
-      sprintf(width, "%lu", up->doublewidth);
-      sprintf(accu, ".%lu", up->doubleprecision);
+      sprintf(width, "%zu", up->doublewidth);
+      sprintf(accu, ".%zu", up->doubleprecision);
       break;
 
     case TCOMPLEX:
@@ -117,25 +117,25 @@ setformatstring(struct tableparams *p, size_t outcolid)
 
     case TINT:
       type="d";
-      sprintf(width, "%lu", up->sintwidth);
+      sprintf(width, "%zu", up->sintwidth);
       accu[0]='\0';
       break;
 
     case TUINT:
       type="u";
-      sprintf(width, "%lu", up->sintwidth);
+      sprintf(width, "%zu", up->sintwidth);
       accu[0]='\0';
       break;
 
     case TUSHORT:
       type="u";
-      sprintf(width, "%lu", up->sintwidth);
+      sprintf(width, "%zu", up->sintwidth);
       accu[0]='\0';
       break;
 
     case TULONG:
       type="lu";
-      sprintf(width, "%lu", up->lintwidth);
+      sprintf(width, "%zu", up->lintwidth);
       accu[0]='\0';
       break;
 
@@ -197,7 +197,7 @@ readinputcols(struct tableparams *p)
           colfromtxt=col->data=malloc(nrows * sizeof *col->data);
 
           if(col->data==NULL)
-            error(EXIT_FAILURE, errno, "%lu bytes for col->data",
+            error(EXIT_FAILURE, errno, "%zu bytes for col->data",
                   nrows * sizeof *col->data);
           for(j=0;j<nrows;++j)
             colfromtxt[j]=p->up.txtarray[ j * incols + col->inindex ];
@@ -247,17 +247,17 @@ saveouttofits(struct tableparams *p)
   errno=0;
   ttype=malloc(p->nocols*sizeof *ttype);
   if(ttype==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for ttype",
+    error(EXIT_FAILURE, errno, "%zu bytes for ttype",
           p->nocols*sizeof *ttype);
   errno=0;
   tform=malloc(p->nocols*sizeof *tform);
   if(tform==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tform",
+    error(EXIT_FAILURE, errno, "%zu bytes for tform",
           p->nocols*sizeof *tform);
   errno=0;
   tunit=malloc(p->nocols*sizeof *tunit);
   if(tunit==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tunit",
+    error(EXIT_FAILURE, errno, "%zu bytes for tunit",
           p->nocols*sizeof *tunit);
 
   /* Fill in the information arrays: */

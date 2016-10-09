@@ -164,7 +164,7 @@ fillseginfo(struct upperlimitparams *p, long *seg)
   errno=0;
   p->box=malloc(p->numlabs * 4 * sizeof *p->box);
   if(p->box==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->box",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->box",
           p->numlabs * 4 * sizeof *p->box);
 
   /* Initialize the information array*/
@@ -191,7 +191,7 @@ fillseginfo(struct upperlimitparams *p, long *seg)
      start from 1, not zero.
   {
     i=0;
-    printf("%lu: (%lu, %lu) --> (%lu, %lu)\n", i+p->minlab,
+    printf("%zu: (%zu, %zu) --> (%zu, %zu)\n", i+p->minlab,
 	   p->box[i*4+YMINCOL]+1, p->box[i*4+XMINCOL]+1,
 	   p->box[i*4+YMAXCOL]+1, p->box[i*4+XMAXCOL]+1);
   }
@@ -204,7 +204,7 @@ fillseginfo(struct upperlimitparams *p, long *seg)
   errno=0;
   p->pix=malloc(p->numlabs * sizeof *p->pix);
   if(p->pix==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->pix",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->pix",
           p->numlabs * sizeof *p->pix);
   for(i=0; i<p->numlabs; ++i)
     {
@@ -217,7 +217,7 @@ fillseginfo(struct upperlimitparams *p, long *seg)
       asize = p->box[i*4+XWIDCOL] * p->box[i*4+YWIDCOL] * sizeof **p->pix;
       p->pix[i] = malloc(asize);
       if(p->pix[i]==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for p->pix[i] (i=%lu)",
+        error(EXIT_FAILURE, errno, "%zu bytes for p->pix[i] (i=%zu)",
               asize, i);
 
       /* Set the array values. Any pixel that is equal to the object's
@@ -251,7 +251,7 @@ fillseginfo(struct upperlimitparams *p, long *seg)
      full list of IDs, not just those in the image. */
   p->std = malloc( (maxlab+1) * sizeof *p->std );
   if(p->std==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->std (upperlimit.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->std (upperlimit.c)",
           (maxlab+1) * sizeof *p->std);
   ff=(f=p->std)+(maxlab+1); do *f++=NAN; while(f<ff);
 }
@@ -279,7 +279,7 @@ prepareimg(struct upperlimitparams *p, float *img, float *sky, long *seg,
   errno=0;
   p->img=malloc(size * sizeof *p->img);
   if(p->img==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->img (upperlimit.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->img (upperlimit.c)",
           size * sizeof *p->img);
 
   /* Set the values. */
@@ -350,7 +350,7 @@ upperlimit_on_thread(void *inparam)
   errno=0;
   sum=malloc(p->upnum*sizeof *sum);
   if(sum==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for sum (upperlimit.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for sum (upperlimit.c)",
           p->upnum*sizeof *sum);
 
   /* Allocate the random number generator for this thread. Note that when
@@ -396,7 +396,7 @@ upperlimit_on_thread(void *inparam)
 	    }
 
 	  /* Only use this sum if it is not a NaN. */
-          /*printf("%lu: %f\n", c, sum[c]);*/
+          /*printf("%zu: %f\n", c, sum[c]);*/
 	  if(!isnan(sum[c])) ++c;
 	}
 
@@ -452,7 +452,7 @@ upperlimit_manager(struct upperlimitparams *p)
   errno=0;
   tp = malloc(p->numthreads*sizeof *tp);
   if( tp==NULL )
-    error(EXIT_FAILURE, errno, "%lu bytes for tp (upperlimit.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for tp (upperlimit.c)",
           p->numthreads*sizeof *tp);
 
   /* Distribute the actions into the threads: */
@@ -492,7 +492,7 @@ upperlimit_manager(struct upperlimitparams *p)
             err=pthread_create(&t, &attr, upperlimit_on_thread, &tp[i]);
             if(err)
               {
-                fprintf(stderr, "can't create thread %lu", i);
+                fprintf(stderr, "can't create thread %zu", i);
                 exit(EXIT_FAILURE);
               }
           }
@@ -558,7 +558,7 @@ upperlimit(float *img, float *sky, long *seg, long *mask, size_t s0,
 
   /* For a check:
   for(i=1;i<p.minlab+p.numlabs;++i)
-    printf("i=%lu: %-10.5f\n", i, p.std[i]);
+    printf("i=%zu: %-10.5f\n", i, p.std[i]);
   exit(0);
   */
 

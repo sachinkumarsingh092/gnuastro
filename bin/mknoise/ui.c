@@ -88,7 +88,7 @@ readconfig(char *filename, struct mknoiseparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -382,7 +382,7 @@ setparams(int argc, char *argv[], struct mknoiseparams *p)
       gal_timing_report(NULL, message, 1);
       if(p->envseed)
         {
-          sprintf(message, "Random number generator seed: %lu",
+          sprintf(message, "Random number generator seed: %zu",
                   gsl_rng_default_seed);
           gal_timing_report(NULL, message, 1);
         }

@@ -48,7 +48,7 @@ gal_linkedlist_print_fll_array(struct gal_linkedlist_fll **afll, size_t num)
   struct gal_linkedlist_fll *tmp;
   for(i=0;i<num;++i)
     {
-      printf(" %lu:\n", i);
+      printf(" %zu:\n", i);
       for(tmp=afll[i];tmp!=NULL;tmp=tmp->next)
         printf("%f, ", tmp->v);
       printf("\n");
@@ -124,7 +124,7 @@ gal_linkedlist_fll_to_array(struct gal_linkedlist_fll *list,
   *f=malloc(*num*sizeof(float));
   if(*f==NULL)
     error(EXIT_FAILURE, errno, "linkedlist: array of gal_linkedlist_fll "
-          "with %lu elements", *num);
+          "with %zu elements", *num);
   tf=*f;
 
   /* Fill in the array: */
@@ -254,7 +254,7 @@ gal_linkedlist_tdll_to_array_inv(struct gal_linkedlist_tdll *list,
   td=*d=malloc(2 * *num * sizeof(double));
   if(*d==NULL)
     error(EXIT_FAILURE, errno, "linkedlist: array of gal_linkedlist_tdll "
-          "with %lu elements", *num);
+          "with %zu elements", *num);
 
   /* Fill in the array in reverse order */
   i = 2 * *num - 2;
@@ -457,7 +457,7 @@ gal_linkedlist_sll_to_array(struct gal_linkedlist_sll *list,
   *s=malloc(*num*sizeof(size_t));
   if(*s==NULL)
     error(EXIT_FAILURE, errno, "linkedlist: array of gal_linkedlist_sll "
-          "with %lu elements", *num);
+          "with %zu elements", *num);
   ts=*s;
 
   i = inverse ? *num-1: 0;
@@ -479,7 +479,7 @@ gal_linkedlist_print_sll(struct gal_linkedlist_sll *list)
   struct gal_linkedlist_sll *tmp;
   printf("\n\n");
   for(tmp=list;tmp!=NULL;tmp=tmp->next)
-    printf("%lu, ", tmp->v);
+    printf("%zu, ", tmp->v);
   printf("\b\b.\n\n");
   return;
 }
@@ -643,10 +643,10 @@ gal_linkedlist_print_tosll(struct gal_linkedlist_tosll *largest,
   size_t counter=1;   /* We are not counting array elements :-D ! */
   while(largest!=NULL)
     {
-      printf("\t%-5lu (%lu, %.4f) \n", counter++,
+      printf("\t%-5zu (%zu, %.4f) \n", counter++,
              largest->v, largest->s);
       largest=largest->next;
-      printf("\t\t\t\t(%lu, %.4f)\n", smallest->v, smallest->s);
+      printf("\t\t\t\t(%zu, %.4f)\n", smallest->v, smallest->s);
       smallest=smallest->prev;
     }
   printf("\n");
@@ -730,7 +730,7 @@ gal_linkedlist_pop_from_tosll_start(struct gal_linkedlist_tosll **largest,
   else
     *largest=NULL;
 
-  /*printf("Popped v: %lu, s: %f\n", *value, *tosort);*/
+  /*printf("Popped v: %zu, s: %f\n", *value, *tosort);*/
 }
 
 

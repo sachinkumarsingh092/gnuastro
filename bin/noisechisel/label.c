@@ -70,7 +70,7 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
   if(connectivity!=4 && connectivity!=8)
     error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "the problem. For some reason, the value to connectivity in "
-          "BF_concmp (label.c) is %lu which is not recognized",
+          "BF_concmp (label.c) is %zu which is not recognized",
           PACKAGE_BUGREPORT, connectivity);
 
 
@@ -227,7 +227,7 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
   errno=0;
   newlabs=calloc(numside, sizeof *newlabs);
   if(newlabs==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for newlabs in "
+    error(EXIT_FAILURE, errno, "%zu bytes for newlabs in "
           "BF_concomp_AdjMatrix (label.c)", numside*sizeof *newlabs);
 
   for(i=1;i<numside;++i)
@@ -250,7 +250,7 @@ BF_concomp_AdjMatrix(int *adj, size_t numside, long **outnewlabs)
 
   /* For a check:
   for(i=1;i<numside;++i)
-    printf("%lu: %ld\n", i, newlabs[i]);
+    printf("%zu: %ld\n", i, newlabs[i]);
   */
 
   *outnewlabs=newlabs;
@@ -292,7 +292,7 @@ labareas(long *lab, size_t size, size_t numlabs, size_t **outareas)
   errno=0;
   areas=*outareas=calloc(numlabs, sizeof *areas);
   if(areas==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for areas in labareas (label.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for areas in labareas (label.c)",
           numlabs*sizeof *areas);
 
   /* Find the area of each label. */
@@ -300,7 +300,7 @@ labareas(long *lab, size_t size, size_t numlabs, size_t **outareas)
 
   /* For a check:
   for(i=0;i<numlabs;++i)
-    printf("%lu: %ld\n", i, a[i]);
+    printf("%zu: %ld\n", i, a[i]);
   printf("\n\n\n\n\n");
   */
 }
@@ -319,7 +319,7 @@ removesmallarea_relabel(long *in, unsigned char *byt, size_t size,
   /* Allocate the space to keep the new labels. */
   errno=0; newlabs=calloc(*numlabs, sizeof *newlabs);
   if(newlabs==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for newlabs in "
+    error(EXIT_FAILURE, errno, "%zu bytes for newlabs in "
           "removesmallarea_relabel (label.c)", *numlabs*sizeof *newlabs);
 
   /* Find the areas: */
@@ -369,7 +369,7 @@ labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
   errno=0;
   labinds=*outlabinds=malloc(numlabs*sizeof *labinds);
   if(labinds==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for labinds in labindexs "
+    error(EXIT_FAILURE, errno, "%zu bytes for labinds in labindexs "
           "(label.c)", numlabs*sizeof *labinds);
   labinds[0]=NULL;
 
@@ -383,7 +383,7 @@ labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
   errno=0;
   counters=calloc(numlabs, sizeof *counters);
   if(counters==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for counters in labindexs "
+    error(EXIT_FAILURE, errno, "%zu bytes for counters in labindexs "
           "(label.c)", numlabs*sizeof *counters);
 
   /* Allocate space for each label's indexs: */
@@ -392,7 +392,7 @@ labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
       errno=0;
       labinds[i]=malloc(areas[i]*sizeof **labinds);
       if(labinds[i]==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for labinds[%lu] in "
+        error(EXIT_FAILURE, errno, "%zu bytes for labinds[%zu] in "
               "labindexs (label.c)", areas[i]*sizeof **labinds, i);
     }
 
@@ -409,9 +409,9 @@ labindexs(long *inlab, size_t size, size_t numlabs, size_t **outareas,
     size_t j;
     for(i=1;i<numlabs;++i)
       {
-        printf("Lab: %lu\n", i);
+        printf("Lab: %zu\n", i);
         for(j=0;j<areas[i];++j)
-          printf("  %lu\n", labinds[i][j]);
+          printf("  %zu\n", labinds[i][j]);
       }
     exit(0);
   }

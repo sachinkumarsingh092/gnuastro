@@ -146,8 +146,8 @@ pop_operand(struct imgarithparams *p, double *number, double **array,
       else
         {
           if(p->s0!=s0 || p->s1!=s1)
-            error(EXIT_FAILURE, 0, "%s (hdu=%s): has size of %lu x %lu. "
-                  "However, previous images had a size of %lu x %lu. All "
+            error(EXIT_FAILURE, 0, "%s (hdu=%s): has size of %zu x %zu. "
+                  "However, previous images had a size of %zu x %zu. All "
                   "the images must be the same size in order for "
                   "ImageArithmetic to work", filename, hdu, s0, s1,
                   p->s0, p->s1);
@@ -477,12 +477,12 @@ alloppixs(struct imgarithparams *p, char *operator)
   errno=0;
   allarrays=malloc(numop*sizeof *allarrays);
   if(allarrays==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for allarrays in alloppixs",
+    error(EXIT_FAILURE, errno, "%zu bytes for allarrays in alloppixs",
           numop*sizeof *allarrays);
   errno=0;
   allpixels=malloc(numop*sizeof *allpixels);
   if(allpixels==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for allpixels in alloppixs",
+    error(EXIT_FAILURE, errno, "%zu bytes for allpixels in alloppixs",
           numop*sizeof *allpixels);
 
 

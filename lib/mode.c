@@ -85,7 +85,7 @@ makemirrored(float *in, size_t mi, float **outmirror, size_t *outsize)
   errno=0;
   mirror=malloc(size*sizeof *mirror);
   if(mirror==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for mirror array in "
+    error(EXIT_FAILURE, errno, "%zu bytes for mirror array in "
           "makemirrored (mode.c)", size*sizeof *mirror);
 
   for(i=0;i<=mi;++i)
@@ -165,7 +165,7 @@ mirrormaxdiff(float *a, size_t size, size_t m,
 
   /*
   printf("###############\n###############\n");
-  printf("### Mirror pixel: %lu\n", m);
+  printf("### Mirror pixel: %zu\n", m);
   printf("###############\n###############\n");
   */
   /* Go over the mirrored points. */
@@ -189,7 +189,7 @@ mirrormaxdiff(float *a, size_t size, size_t m,
               }
           }
       /*
-      printf("i:%-5lu j:%-5lu diff:%-5d maxdiff: %lu\n",
+      printf("i:%-5zu j:%-5zu diff:%-5d maxdiff: %zu\n",
              i, j, (int)j-(int)i, maxdiff);
       */
       /* The index of the actual CDF corresponding the the mirrored
@@ -269,7 +269,7 @@ modegoldenselection(struct gal_statistics_mode_params *mp)
   system(command);
   -------------------------------------------------------------------*/
   /*
-  printf("%-5lu\t%-5lu(%d)\t%-5lu ----> dq: %-5lu di: %d\n",
+  printf("%-5zu\t%-5zu(%d)\t%-5zu ----> dq: %-5zu di: %d\n",
          mp->lowi, mp->midi, (int)mp->midd, mp->highi,
          di, (int)dd);
   */

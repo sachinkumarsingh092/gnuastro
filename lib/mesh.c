@@ -104,7 +104,7 @@ gal_mesh_ch_based_id_from_gid(struct gal_mesh_params *mp, size_t gid)
       size_t inchannelid = (f0%mp->gs0) * mp->gs1 + f1%mp->gs1;
 
       /* For a check:
-      printf("%lu:\n\t(f0, f1): (%lu, %lu)\t chid: %lu\tinchannelid: %lu\n",
+      printf("%zu:\n\t(f0, f1): (%zu, %zu)\t chid: %zu\tinchannelid: %zu\n",
              gid, f0, f1, chid, inchannelid);
       */
 
@@ -140,9 +140,9 @@ gal_mesh_gid_from_ch_based_id(struct gal_mesh_params *mp, size_t chbasedid)
       size_t my=(chbasedid%mp->nmeshc)%mp->gs1;
 
       /* For a check:
-      printf("%lu:\n\t(chx, chy): (%lu, %lu)"
-             "\n\t(mx, my): (%lu, %lu)"
-             "\n\t%lu\n\n",
+      printf("%zu:\n\t(chx, chy): (%zu, %zu)"
+             "\n\t(mx, my): (%zu, %zu)"
+             "\n\t%zu\n\n",
              chbasedid, chx, chy, mx, my,
              (chx*mp->gs0+mx) * mp->nch1 + (chy*mp->gs1+my));
       */
@@ -269,7 +269,7 @@ gal_mesh_full_garray(struct gal_mesh_params *mp, int reverse)
       /* Allocate the fgarrays */
       errno=0; mp->fgarray1=malloc(mp->nmeshi*sizeof *mp->fgarray1);
       if(mp->fgarray1==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for mp->fgarray1 (mesh.c)",
+        error(EXIT_FAILURE, errno, "%zu bytes for mp->fgarray1 (mesh.c)",
               mp->nmeshi*sizeof *mp->fgarray1);
     }
   if(mp->ngarrays==2 && mp->fgarray2==NULL)
@@ -277,7 +277,7 @@ gal_mesh_full_garray(struct gal_mesh_params *mp, int reverse)
       errno=0;
       mp->fgarray2=malloc(mp->nmeshi*sizeof *mp->fgarray2);
       if(mp->fgarray2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for mp->fgarray2 (mesh.c)",
+        error(EXIT_FAILURE, errno, "%zu bytes for mp->fgarray2 (mesh.c)",
               mp->nmeshi*sizeof *mp->fgarray2);
     }
   fgarray1=mp->fgarray1;
@@ -398,14 +398,14 @@ gal_mesh_check_garray(struct gal_mesh_params *mp, float **out1,
   errno=0; *out1=malloc(mp->s0*mp->s1*sizeof **out1);
   if(*out1==NULL)
     error(EXIT_FAILURE, errno,
-          "%lu bytes for out1 in gal_mesh_check_garray (mesh.c)",
+          "%zu bytes for out1 in gal_mesh_check_garray (mesh.c)",
           mp->s0*mp->s1*sizeof **out1);
   if(ngarrays==2)
     {
       errno=0; *out2=malloc(mp->s0*mp->s1*sizeof **out2);
       if(*out2==NULL)
         error(EXIT_FAILURE, errno,
-              "%lu bytes for out2 in gal_mesh_check_garray (mesh.c)",
+              "%zu bytes for out2 in gal_mesh_check_garray (mesh.c)",
               mp->s0*mp->s1*sizeof **out2);
     }
 
@@ -859,7 +859,7 @@ gal_mesh_operate_on_mesh(struct gal_mesh_params *mp,
      thread. */
   errno=0; mtp=malloc(numthreads*sizeof *mtp);
   if(mtp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
+    error(EXIT_FAILURE, errno, "%zu bytes in fillmesh (mesh.c) for mtp",
           numthreads*sizeof *mtp);
 
   /* Set the number of garrays to operate on: */
@@ -906,7 +906,7 @@ gal_mesh_operate_on_mesh(struct gal_mesh_params *mp,
       errno=0;
       mp->oneforall=malloc(numthreads*mp->maxs0*mp->maxs1*oneforallsize);
       if(mp->oneforall==NULL)
-        error(EXIT_FAILURE, errno, "unable to allocate %lu bytes for"
+        error(EXIT_FAILURE, errno, "unable to allocate %zu bytes for"
               "mtp->oneforall in fillmesh of mesh.c",
               numthreads*mp->maxs0*mp->maxs1*oneforallsize);
     }
@@ -935,7 +935,7 @@ gal_mesh_operate_on_mesh(struct gal_mesh_params *mp,
             mtp[i].id=i;
             mtp[i].mp=mp;
             err=pthread_create(&t, &attr, meshfunc, &mtp[i]);
-            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -1007,13 +1007,13 @@ preparemeshinterparrays(struct gal_mesh_params *mp)
      garrays. */
   errno=0; mp->outgarray1=malloc(mp->nmeshi*sizeof *mp->outgarray1);
   if(mp->outgarray1==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for outgarray1 (mesh.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for outgarray1 (mesh.c)",
           mp->nmeshi*sizeof *mp->outgarray1);
   if(mp->ngarrays==2)
     {
       errno=0; mp->outgarray2=malloc(mp->nmeshi*sizeof *mp->outgarray2);
       if(mp->outgarray2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for outgarray2 (mesh.c)",
+        error(EXIT_FAILURE, errno, "%zu bytes for outgarray2 (mesh.c)",
               mp->nmeshi*sizeof *mp->outgarray2);
     }
 
@@ -1026,7 +1026,7 @@ preparemeshinterparrays(struct gal_mesh_params *mp)
   errno=0;
   mp->nearest1=malloc(numthreads*mp->numnearest*sizeof *mp->nearest1);
   if(mp->nearest1==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
+    error(EXIT_FAILURE, errno, "%zu bytes for the array to keep the "
           "nearest1 values for interpolation (mesh.c)",
           numthreads*mp->numnearest*sizeof *mp->nearest1);
   if(mp->ngarrays==2)
@@ -1034,7 +1034,7 @@ preparemeshinterparrays(struct gal_mesh_params *mp)
       errno=0;
       mp->nearest2=malloc(numthreads*mp->numnearest*sizeof *mp->nearest2);
       if(mp->nearest2==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for the array to keep the "
+        error(EXIT_FAILURE, errno, "%zu bytes for the array to keep the "
               "nearest2 values for interpolation (mesh.c)",
               numthreads*mp->numnearest*sizeof *mp->nearest2);
     }
@@ -1045,7 +1045,7 @@ preparemeshinterparrays(struct gal_mesh_params *mp)
      array. */
   errno=0; mp->byt=malloc(numthreads*bs0*bs1*sizeof *mp->byt);
   if(mp->byt==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for mp->byt array in "
+    error(EXIT_FAILURE, errno, "%zu bytes for mp->byt array in "
           "mesh.c", numthreads*bs0*bs1*sizeof *mp->byt);
 }
 
@@ -1172,12 +1172,12 @@ meshinterponthread(void *inparams)
              interpolation. Normally, this loop should only be exited
              through the `currentnum>=numnearest' check above. */
           if(sQ==NULL)
-            error(EXIT_FAILURE, 0, "%s: only %lu mesh(s) are filled for "
-                  "interpolation in channel %lu. Either set less "
+            error(EXIT_FAILURE, 0, "%s: only %zu mesh(s) are filled for "
+                  "interpolation in channel %zu. Either set less "
                   "restrictive requirements to get more interpolation "
                   "points or decrease the number of nearest points to "
                   "use for interpolation. Problem encountered on thread "
-                  "%lu, for pixel %lu. When running on multiple threads, "
+                  "%zu, for pixel %zu. When running on multiple threads, "
                   "This message might be repeated for different threads",
                   mp->errstart, currentnum, thisind/mp->nmeshc, mtp->id,
                   thisind);
@@ -1232,7 +1232,7 @@ gal_mesh_interpolate(struct gal_mesh_params *mp, char *errstart)
      thread. */
   errno=0; mtp=malloc(numthreads*sizeof *mtp);
   if(mtp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
+    error(EXIT_FAILURE, errno, "%zu bytes in fillmesh (mesh.c) for mtp",
           numthreads*sizeof *mtp);
 
   /* Spin off the threads: */
@@ -1259,7 +1259,7 @@ gal_mesh_interpolate(struct gal_mesh_params *mp, char *errstart)
             mtp[i].id=i;
             mtp[i].mp=mp;
             err=pthread_create(&t, &attr, meshinterponthread, &mtp[i]);
-            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -1333,7 +1333,7 @@ gal_mesh_smooth(struct gal_mesh_params *mp)
   errno=0;
   kernel=malloc(smoothwidth*smoothwidth*sizeof *kernel);
   if(kernel==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for kernel in mesh.c",
+    error(EXIT_FAILURE, errno, "%zu bytes for kernel in mesh.c",
           mp->smoothwidth*sizeof *kernel);
   fp=(f=kernel)+smoothwidth*smoothwidth; do *f++=1; while(f<fp);
 
@@ -1546,14 +1546,14 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
      thread. */
   errno=0; mtp=malloc(numthreads*sizeof *mtp);
   if(mtp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in fillmesh (mesh.c) for mtp",
+    error(EXIT_FAILURE, errno, "%zu bytes in fillmesh (mesh.c) for mtp",
           numthreads*sizeof *mtp);
 
 
   /* Allocate space for the convolved array. */
   errno=0; *conv=malloc(mp->s0*mp->s1* sizeof **conv);
   if(*conv==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for convolution on mesh output",
+    error(EXIT_FAILURE, errno, "%zu bytes for convolution on mesh output",
           mp->s0*mp->s1* sizeof **conv);
 
 
@@ -1568,7 +1568,7 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
   */
   errno=0; chbrd=malloc(mp->nch*4*sizeof *chbrd);
   if(chbrd==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for chbrd in "
+    error(EXIT_FAILURE, errno, "%zu bytes for chbrd in "
           "gal_mesh_spatial_convolve_on_mesh", mp->nch*4*sizeof *chbrd);
   for(i=0;i<mp->nch;++i)
     {
@@ -1616,7 +1616,7 @@ gal_mesh_spatial_convolve_on_mesh(struct gal_mesh_params *mp, float **conv)
             mtp[i].conv=*conv;
             mtp[i].chbrd=chbrd;
             err=pthread_create(&t, &attr, meshspatialconvonthreads, &mtp[i]);
-            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */
@@ -1687,7 +1687,7 @@ corrconvindexs(struct gal_mesh_params *mp, size_t **indexs,
       ahigh = i*npch0+hk0>s0 ? s0 : i*npch0+hk0;
 
       /* For a check
-      printf("1: alow: %-4lu ahigh: %-4lu.\t(0 -- %lu)\n",
+      printf("1: alow: %-4zu ahigh: %-4zu.\t(0 -- %zu)\n",
              alow, ahigh, s1);
       */
       for(a=alow; a<ahigh; ++a)
@@ -1716,8 +1716,8 @@ corrconvindexs(struct gal_mesh_params *mp, size_t **indexs,
               ahigh = i*npch0<hk0    ? 0  : i*npch0-hk0;
 
               /* For a check:
-              printf("2: alow: %-4lu ahigh: %-4lu. b: %-10lu "
-                     "(%lu -- %lu)\n", alow, ahigh, b, blow, bhigh);
+              printf("2: alow: %-4zu ahigh: %-4zu. b: %-10zu "
+                     "(%zu -- %zu)\n", alow, ahigh, b, blow, bhigh);
               */
               for(a=alow;a<ahigh;++a)
                 {
@@ -1736,7 +1736,7 @@ corrconvindexs(struct gal_mesh_params *mp, size_t **indexs,
           ahigh=s0;
 
           /* For a check:
-          printf("3: alow: %-4lu ahigh: %-4lu. b: %-10lu (%lu -- %lu)\n",
+          printf("3: alow: %-4zu ahigh: %-4zu. b: %-10zu (%zu -- %zu)\n",
                  alow, ahigh, b, blow, bhigh);
           */
           for(a=alow;a<ahigh;++a)
@@ -1795,7 +1795,7 @@ gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
   scp=malloc(mp->numthreads*sizeof *scp);
   if(scp==NULL)
     error(EXIT_FAILURE, errno,
-          "%lu bytes for scp in gal_mesh_change_to_full_convolution "
+          "%zu bytes for scp in gal_mesh_change_to_full_convolution "
           "(mesh.c)", mp->numthreads*sizeof *scp);
 
 
@@ -1832,7 +1832,7 @@ gal_mesh_change_to_full_convolution(struct gal_mesh_params *mp, float *conv)
             err=pthread_create(&t, &attr, gal_spatialconvolve_thread,
                                &scp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

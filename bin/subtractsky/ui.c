@@ -90,7 +90,7 @@ readconfig(char *filename, struct subtractskyparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -294,11 +294,11 @@ printvalues(FILE *fp, struct subtractskyparams *p)
 
   fprintf(fp, "\n# Mesh grid:\n");
   if(up->meshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "meshsize", mp->meshsize);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "meshsize", mp->meshsize);
   if(up->nch1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch1", mp->nch1);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch1", mp->nch1);
   if(up->nch2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch2", mp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
   if(up->mirrordistset)
@@ -306,9 +306,9 @@ printvalues(FILE *fp, struct subtractskyparams *p)
   if(up->minmodeqset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "minmodeq", mp->minmodeq);
   if(up->numnearestset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "numnearest", mp->numnearest);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "numnearest", mp->numnearest);
   if(up->smoothwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "smoothwidth", mp->smoothwidth);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "smoothwidth", mp->smoothwidth);
   if(up->fullconvolutionset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "fullconvolution",
             mp->fullconvolution);
@@ -456,7 +456,7 @@ sanitycheck(struct subtractskyparams *p)
   /* Other checks: */
   if(p->mp.numnearest<GAL_MESH_MIN_ACCEPTABLE_NEAREST)
     error(EXIT_FAILURE, 0, "the smallest possible number for "
-          "`--numnearest' (`-n') is %d. You have asked for: %lu",
+          "`--numnearest' (`-n') is %d. You have asked for: %zu",
           GAL_MESH_MIN_ACCEPTABLE_NEAREST, p->mp.numnearest);
 
   /* Set the constants in the gal_mesh_params structure. */
@@ -504,8 +504,8 @@ preparearrays(struct subtractskyparams *p)
   /* Check if the input sizes and channel sizes are exact
      multiples. */
   if( mp->s0%mp->nch2 || mp->s1%mp->nch1 )
-    error(EXIT_FAILURE, 0, "the input image size (%lu x %lu) is not an "
-          "exact multiple of the number of the given channels (%lu, %lu) "
+    error(EXIT_FAILURE, 0, "the input image size (%zu x %zu) is not an "
+          "exact multiple of the number of the given channels (%zu, %zu) "
           "in the respective axis", mp->s1, mp->s0, mp->nch1, mp->nch2);
 }
 
@@ -567,7 +567,7 @@ setparams(int argc, char *argv[], struct subtractskyparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Using %lu CPU threads.\n", p->cp.numthreads);
+      printf("  - Using %zu CPU threads.\n", p->cp.numthreads);
       printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)
         printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);

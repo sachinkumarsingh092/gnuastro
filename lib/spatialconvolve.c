@@ -178,7 +178,7 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
   errno=0;
   scp=malloc(numthreads*sizeof *scp);
   if(scp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in gal_spatialconvolve_convolve "
+    error(EXIT_FAILURE, errno, "%zu bytes in gal_spatialconvolve_convolve "
           "(spatialconvolve.c) for scp", numthreads*sizeof *scp);
 
 
@@ -186,7 +186,7 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
   errno=0;
   *out=malloc(is0*is1*sizeof **out);
   if(*out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for convolution output",
+    error(EXIT_FAILURE, errno, "%zu bytes for convolution output",
           is0*is1*sizeof **out);
 
 
@@ -222,7 +222,7 @@ gal_spatialconvolve_convolve(float *input, size_t is0, size_t is1,
             err=pthread_create(&t, &attr, gal_spatialconvolve_thread,
                                &scp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

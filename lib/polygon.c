@@ -135,7 +135,7 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
   /* For a check:
   printf("\n\nBefore sorting:\n");
   for(i=0;i<n;++i)
-    printf("%lu: %.3f, %.3f\n", i, in[i*2], in[i*2+1]);
+    printf("%zu: %.3f, %.3f\n", i, in[i*2], in[i*2+1]);
   printf("\n");
   */
 
@@ -160,7 +160,7 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
                      in[ ordinds[i+1]*2 ]   - in[ ordinds[0]*2   ] );
   /* For a check:
   for(i=0;i<n-1;++i)
-    printf("%lu: %.3f degrees\n", ordinds[i+1], angles[i]*180/M_PI);
+    printf("%zu: %.3f degrees\n", ordinds[i+1], angles[i]*180/M_PI);
   printf("\n");
   */
 
@@ -174,7 +174,7 @@ gal_polygon_ordered_corners(double *in, size_t n, size_t *ordinds)
   /* For a check:
   printf("\nAfter sorting:\n");
   for(i=0;i<n;++i)
-    printf("%lu: %.3f, %.3f\n", ordinds[i], in[ordinds[i]*2],
+    printf("%zu: %.3f, %.3f\n", ordinds[i], in[ordinds[i]*2],
            in[ordinds[i]*2+1]);
   printf("\n");
   */
@@ -385,8 +385,8 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
   /*
   if(n>GAL_POLYGON_MAX_CORNERS || m>GAL_POLYGON_MAX_CORNERS)
     error(EXIT_FAILURE, 0, "the two polygons given to the function "
-          "gal_polygon_clip in polygon.c have %lu and %lu vertices. They cannot"
-          " have any values larger than %lu", n, m, GAL_POLYGON_MAX_CORNERS);
+          "gal_polygon_clip in polygon.c have %zu and %zu vertices. They cannot"
+          " have any values larger than %zu", n, m, GAL_POLYGON_MAX_CORNERS);
   */
 
   /* 2*outnum because for each vertice, there are two elements. */
@@ -395,7 +395,7 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
   while(i<m)                    /* clipEdge: c[ii*2] -- c[i*2]. */
     {
       /*
-      printf("#################\nclipEdge %lu\n", i);
+      printf("#################\nclipEdge %zu\n", i);
       printf("(%.3f, %.3f) -- (%.3f, %.3f)\n----------------\n",
              c[ii*2], c[ii*2+1], c[i*2], c[i*2+1]);
       */
@@ -422,7 +422,7 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
           /*
           {
             size_t k;
-            printf("(%.3f, %.3f) -- (%.3f, %.3f): %lu\n",
+            printf("(%.3f, %.3f) -- (%.3f, %.3f): %zu\n",
                    S[0], S[1], E[0], E[1], outnum);
             for(k=0;k<outnum;++k)
               printf("\t (%.3f, %.3f)\n", o[k*2], o[k*2+1]);
@@ -433,7 +433,7 @@ gal_polygon_clip(double *s, size_t n, double *c, size_t m,
         }
       ii=i++;
       /*
-      printf("outnum: %lu\n\n\n\n", outnum);
+      printf("outnum: %zu\n\n\n\n", outnum);
       */
     }
   *numcrn=outnum;

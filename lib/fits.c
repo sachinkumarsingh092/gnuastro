@@ -267,7 +267,7 @@ gal_fits_datatype_blank(int datatype)
     case TBYTE:
       b=malloc(sizeof *b);
       if(b==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TBYTE",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TBYTE",
               sizeof *b);
       *b=GAL_FITS_BYTE_BLANK;
       return b;
@@ -278,7 +278,7 @@ gal_fits_datatype_blank(int datatype)
     case TLOGICAL: case TSBYTE:
       c=malloc(sizeof *c);
       if(c==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TLOGICAL, or TSBYTE",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TLOGICAL, or TSBYTE",
               sizeof *c);
       *c=GAL_FITS_LOGICAL_BLANK;
       return c;
@@ -286,7 +286,7 @@ gal_fits_datatype_blank(int datatype)
     case TSTRING:
       str=malloc(sizeof *str);
       if(str==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TSTRING",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TSTRING",
               sizeof *s);
       *str=GAL_FITS_STRING_BLANK;
       return str;
@@ -294,7 +294,7 @@ gal_fits_datatype_blank(int datatype)
     case TSHORT:
       s=malloc(sizeof *s);
       if(s==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TSHORT",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TSHORT",
               sizeof *s);
       *s=GAL_FITS_SHORT_BLANK;
       return s;
@@ -302,7 +302,7 @@ gal_fits_datatype_blank(int datatype)
     case TLONG:
       l=malloc(sizeof *l);
       if(l==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TLONG",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TLONG",
               sizeof *l);
       *l=GAL_FITS_LONG_BLANK;
       return l;
@@ -310,7 +310,7 @@ gal_fits_datatype_blank(int datatype)
     case TLONGLONG:
       L=malloc(sizeof *L);
       if(L==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TLONGLONG",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TLONGLONG",
               sizeof *L);
       *L=GAL_FITS_LLONG_BLANK;
       return L;
@@ -318,7 +318,7 @@ gal_fits_datatype_blank(int datatype)
     case TFLOAT:
       f=malloc(sizeof *f);
       if(f==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TFLOAT",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TFLOAT",
               sizeof *f);
       *f=GAL_FITS_FLOAT_BLANK;
       return f;
@@ -326,7 +326,7 @@ gal_fits_datatype_blank(int datatype)
     case TDOUBLE:
       d=malloc(sizeof *d);
       if(d==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TDOUBLE",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TDOUBLE",
               sizeof *d);
       *d=GAL_FITS_DOUBLE_BLANK;
       return d;
@@ -334,7 +334,7 @@ gal_fits_datatype_blank(int datatype)
     case TCOMPLEX:
       cx=malloc(sizeof *cx);
       if(cx==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TCOMPLEX",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TCOMPLEX",
               sizeof *cx);
       GSL_SET_COMPLEX(cx,GAL_FITS_FLOAT_BLANK,GAL_FITS_FLOAT_BLANK);
       return cx;
@@ -342,7 +342,7 @@ gal_fits_datatype_blank(int datatype)
     case TDBLCOMPLEX:
       dcx=malloc(sizeof *dcx);
       if(dcx==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TDBLCOMPLEX",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TDBLCOMPLEX",
               sizeof *dcx);
       GSL_SET_COMPLEX(dcx,GAL_FITS_DOUBLE_BLANK,GAL_FITS_DOUBLE_BLANK);
       return dcx;
@@ -350,7 +350,7 @@ gal_fits_datatype_blank(int datatype)
     case TINT:
       i=malloc(sizeof *i);
       if(i==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TINT",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TINT",
               sizeof *i);
       *i=GAL_FITS_INT_BLANK;
       return i;
@@ -358,7 +358,7 @@ gal_fits_datatype_blank(int datatype)
     case TUINT:
       ui=malloc(sizeof *ui);
       if(ui==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TUINT",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TUINT",
               sizeof *ui);
       *ui=GAL_FITS_UINT_BLANK;
       return ui;
@@ -366,7 +366,7 @@ gal_fits_datatype_blank(int datatype)
     case TUSHORT:
       us=malloc(sizeof *us);
       if(us==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TUSHORT",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TUSHORT",
               sizeof *us);
       *us=GAL_FITS_USHORT_BLANK;
       return us;
@@ -374,7 +374,7 @@ gal_fits_datatype_blank(int datatype)
     case TULONG:
       ul=malloc(sizeof *ul);
       if(ul==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for blank TULONG",
+        error(EXIT_FAILURE, errno, "%zu bytes for blank TULONG",
               sizeof *ul);
       *ul=GAL_FITS_ULONG_BLANK;
       return ul;
@@ -493,7 +493,7 @@ gal_fits_datatype_alloc(size_t size, int datatype)
   array=malloc(size);
   if(array==NULL)
     error(EXIT_FAILURE, errno,
-          "array of %lu bytes in gal_fits_datatype_alloc", size);
+          "array of %zu bytes in gal_fits_datatype_alloc", size);
 
   return array;
 }
@@ -1047,7 +1047,7 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
   len=strlen(filename)+strlen(hdu)+4;
   ffname=malloc(len*sizeof *ffname);
   if(ffname==NULL)
-    error(EXIT_FAILURE, errno, "%lu characters", len);
+    error(EXIT_FAILURE, errno, "%zu characters", len);
   sprintf(ffname, "%s[%s#]", filename, hdu);
 
   /* Open the FITS file: */
@@ -1112,7 +1112,7 @@ gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
   len=strlen(filename)+strlen(hdu)+4;
   ffname=malloc(len*sizeof *ffname);
   if(ffname==NULL)
-    error(EXIT_FAILURE, errno, "%lu characters", len);
+    error(EXIT_FAILURE, errno, "%zu characters", len);
   sprintf(ffname, "%s[%s#]", filename, hdu);
 
   /* Open the FITS file: */
@@ -1150,7 +1150,7 @@ gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
           valueptr=&keys[i].d;
           break;
         default:
-          error(EXIT_FAILURE, 0, "the value of keys[%lu].datatype (=%d) "
+          error(EXIT_FAILURE, 0, "the value of keys[%zu].datatype (=%d) "
                 "is not recognized", i, keys[i].datatype);
         }
 
@@ -1301,14 +1301,14 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
       keyname=malloc(FLEN_KEYWORD);
       if(keyname==NULL)
         error(EXIT_FAILURE, errno, "%d bytes", FLEN_KEYWORD);
-      sprintf(keyname, "%s_%lu", keynamebase, numkey++);
+      sprintf(keyname, "%s_%zu", keynamebase, numkey++);
 
       /* Set the keyword value: */
       errno=0;
       thislen=strlen(&filename[i]);
       value=malloc(maxlength);
       if(value==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes", thislen);
+        error(EXIT_FAILURE, errno, "%zu bytes", thislen);
       strncpy(value, &filename[i], maxlength);
 
       /* If the FROM string (=&filename[i]) in strncpy is shorter than
@@ -1334,7 +1334,7 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
               }
           if(j==0)
             error(EXIT_FAILURE, 0, "the filename `%sP has at least one "
-                  "span of %lu characters without a `/`. It cannot be "
+                  "span of %zu characters without a `/`. It cannot be "
                   "written to the header of the output fits file",
                   filename, maxlength);
 
@@ -2014,7 +2014,7 @@ gal_fits_file_to_float(char *inputname, char *maskname, char *inhdu,
 
       if(s0!=*ins0 || s1!=*ins1)
         error(EXIT_FAILURE, 0, "the input image %s (hdu: %s) has size: "
-              "%lu x %lu. The mask image %s (hdu: %s) has size %lu x %lu. "
+              "%zu x %zu. The mask image %s (hdu: %s) has size %zu x %zu. "
               "The two images have to have the same size", inputname,
               inhdu, *ins1, *ins0, maskname, mhdu, s1, s0);
 
@@ -2079,7 +2079,7 @@ gal_fits_file_to_double(char *inputname, char *maskname, char *inhdu,
 
       if(s0!=*ins0 || s1!=*ins1)
         error(EXIT_FAILURE, 0, "the input image %s (hdu: %s) has size: "
-              "%lu x %lu. The mask image %s (hdu: %s) has size %lu x %lu. "
+              "%zu x %zu. The mask image %s (hdu: %s) has size %zu x %zu. "
               "The two images have to have the same size", inputname,
               inhdu, *ins1, *ins0, maskname, mhdu, s1, s0);
 
@@ -2147,7 +2147,7 @@ gal_fits_prep_float_kernel(char *inputname, char *inhdu, float **outkernel,
   if(*ins0%2==0 || *ins1%2==0)
     error(EXIT_FAILURE, 0, "the kernel image has to have an odd number "
           "of pixels on both sides (there has to be on pixel in the "
-          "center). %s (hdu: %s) is %lu by %lu", inputname, inhdu,
+          "center). %s (hdu: %s) is %zu by %zu", inputname, inhdu,
           *ins1, *ins0);
 
   /* If there are any NaN pixels, set them to zero and normalize it.*/

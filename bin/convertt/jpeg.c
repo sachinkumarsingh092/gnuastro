@@ -148,7 +148,7 @@ makejsample(JSAMPLE **a, size_t size)
   errno=0;
   jsarr=malloc(size*sizeof *jsarr);
   if(jsarr==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for jsarr", size*sizeof *jsarr);
+    error(EXIT_FAILURE, errno, "%zu bytes for jsarr", size*sizeof *jsarr);
 
   *a=jsarr;
 }
@@ -203,13 +203,13 @@ readjpg(char *inname, size_t *outs0, size_t *outs1, size_t *numcolors)
   errno=0;
   all=malloc(nc*sizeof *all);
   if(all==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for all", nc*sizeof *all);
+    error(EXIT_FAILURE, errno, "%zu bytes for all", nc*sizeof *all);
   for(i=0;i<nc;++i)
     {
       errno=0;
       all[i]=malloc(s0*s1*sizeof *all[i]);
       if(all[i]==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for all[%lu]",
+        error(EXIT_FAILURE, errno, "%zu bytes for all[%zu]",
               s0*s1*sizeof *all[i], i);
     }
 
@@ -333,7 +333,7 @@ writejpeg(JSAMPLE *jsr, struct converttparams *p)
       break;
     default:
       error(EXIT_FAILURE, 0, "a bug! The number of channels in writejpeg "
-            "is not 1, 3 or 4, but %lu. This should not happen. Please "
+            "is not 1, 3 or 4, but %zu. This should not happen. Please "
             "contact us so we can fix the problem", p->numch);
     }
 
@@ -375,7 +375,7 @@ savejpeg(struct converttparams *p)
   errno=0;
   jsr=malloc(size*sizeof *jsr);
   if(jsr==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for jsr", size*sizeof *jsr);
+    error(EXIT_FAILURE, errno, "%zu bytes for jsr", size*sizeof *jsr);
 
   /* Write the different colors into jsr. */
   size=p->s0[0]*p->s1[0];
@@ -384,7 +384,7 @@ savejpeg(struct converttparams *p)
       {
         jsr[pixel*numch+color]=ech[color][pixel];
         /*
-        printf("color: %lu, pixel: %lu, jsr: %d\n", color, pixel,
+        printf("color: %zu, pixel: %zu, jsr: %d\n", color, pixel,
                (int)jsr[pixel*numch+color]);
         */
       }

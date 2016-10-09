@@ -58,7 +58,7 @@ complextoreal(double *c, size_t size, int action, double **output)
   errno=0;
   *output=out=malloc(size*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out in complextoreal",
+    error(EXIT_FAILURE, errno, "%zu bytes for out in complextoreal",
           size*sizeof *out);
 
   of=(o=out)+size;
@@ -205,7 +205,7 @@ makepaddedcomplex(struct convolveparams *p)
   errno=0;
   pimg=p->pimg=malloc(2*ps0*ps1*sizeof *pimg);
   if(pimg==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for pimg",
+    error(EXIT_FAILURE, errno, "%zu bytes for pimg",
           2*ps0*ps1*sizeof *pimg);
   for(i=0;i<ps0;++i)
     {
@@ -223,7 +223,7 @@ makepaddedcomplex(struct convolveparams *p)
   errno=0;
   pker=p->pker=malloc(2*ps0*ps1*sizeof *pker);
   if(pker==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for pker",
+    error(EXIT_FAILURE, errno, "%zu bytes for pker",
           2*ps0*ps1*sizeof *pker);
   for(i=0;i<ps0;++i)
     {
@@ -310,7 +310,7 @@ fftinitializer(struct convolveparams *p, struct fftonthreadparams **outfp)
   errno=0;
   *outfp=fp=malloc(p->cp.numthreads*sizeof *fp);
   if(fp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in forward2dfft for fp",
+    error(EXIT_FAILURE, errno, "%zu bytes in forward2dfft for fp",
           p->cp.numthreads*sizeof *fp);
 
   /* Initialize the gsl_fft_wavetable structures (these are thread
@@ -375,7 +375,7 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
   errno=0;
   n=malloc(ps0*ps1*sizeof *n);
   if(n==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for n in correctdeconvolve "
+    error(EXIT_FAILURE, errno, "%zu bytes for n in correctdeconvolve "
           "(convolve.c). ", ps0*ps1*sizeof *n);
 
 
@@ -406,7 +406,7 @@ correctdeconvolve(struct convolveparams *p, double **spatial)
           r=sqrt( (ii-ci)*(ii-ci) + (jj-cj)*(jj-cj) );
           sum += n[ii*ps1+jj] = r < p->makekernel ? s[i*ps1+j] : 0;
 
-          /*printf("(%lu, %lu) --> (%lu, %lu)\n", i, j, ii, jj);*/
+          /*printf("(%zu, %zu) --> (%zu, %zu)\n", i, j, ii, jj);*/
         }
     }
 
@@ -570,7 +570,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             fp[i].forward1backwardn1=forward1backwardn1;
             err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %lu for rows",
+              error(EXIT_FAILURE, 0, "can't create thread %zu for rows",
                     i);
           }
 
@@ -610,7 +610,7 @@ twodimensionfft(struct convolveparams *p, struct fftonthreadparams *fp,
             err=pthread_create(&t, &attr, onedimensionfft, &fp[i]);
             if(err)
               error(EXIT_FAILURE, 0,
-                    "can't create thread %lu for columns", i);
+                    "can't create thread %zu for columns", i);
           }
       pthread_barrier_wait(&b);
       pthread_attr_destroy(&attr);

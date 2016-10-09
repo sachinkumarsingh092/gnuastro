@@ -257,7 +257,7 @@ makepixbypix(struct mkonthread *mkp)
   errno=0;
   byt=calloc(is0*is1, sizeof *byt);
   if(byt==NULL)
-    error(EXIT_FAILURE, 0, "%lu bytes for map of object in row %lu of "
+    error(EXIT_FAILURE, 0, "%zu bytes for map of object in row %zu of "
           "data in %s", is0*is1*sizeof *byt, ibq->id,
           mkp->p->up.catname);
 
@@ -294,7 +294,7 @@ makepixbypix(struct mkonthread *mkp)
           mkp->yl=mkp->y-hp;
           mkp->yh=mkp->y+hp;
           /*
-            printf("Center (%lu, %lu). r: %.4f. x: [%.4f--%.4f], "
+            printf("Center (%zu, %zu). r: %.4f. x: [%.4f--%.4f], "
                    "y: [%.4f, %.4f]\n", p%is1+1, p/is1+1, mkp->r, mkp->xl,
                    mkp->xh, mkp->yl, mkp->yh);
           */
@@ -598,7 +598,7 @@ makeoneprofile(struct mkonthread *mkp)
   size=mkp->width[0]*mkp->width[1];
   mkp->ibq->img=calloc(size, sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
-    error(EXIT_FAILURE, 0, "%lu bytes for object in row %lu of data in %s",
+    error(EXIT_FAILURE, 0, "%zu bytes for object in row %zu of data in %s",
           size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
 
 

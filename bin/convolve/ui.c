@@ -86,7 +86,7 @@ readconfig(char *filename, struct convolveparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -253,11 +253,11 @@ printvalues(FILE *fp, struct convolveparams *p)
 
   fprintf(fp, "\n# Mesh grid:\n");
   if(up->meshsizeset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "meshsize", mp->meshsize);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "meshsize", mp->meshsize);
   if(up->nch1set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch1", mp->nch1);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch1", mp->nch1);
   if(up->nch2set)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "nch2", mp->nch2);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "nch2", mp->nch2);
   if(up->lastmeshfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "lastmeshfrac", mp->lastmeshfrac);
   if(up->fullconvolutionset)
@@ -459,9 +459,9 @@ preparearrays(struct convolveparams *p)
         error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
               "the input image and the image specified with the kernel "
               "option should have the same size. The lower resolution "
-              "input image (%s) has %lux%lu pixels while the higher "
+              "input image (%s) has %zux%zu pixels while the higher "
               "resolution image (%s) specified with the kernel option has "
-              "%lux%lu pixels", up->inputname, p->is1, p->is0,
+              "%zux%zu pixels", up->inputname, p->is1, p->is0,
               up->kernelname, p->ks1, p->ks0);
 
       /* Divide both images by their sum so their lowest frequency
@@ -492,7 +492,7 @@ preparearrays(struct convolveparams *p)
           if(p->ks0%2==0 || p->ks1%2==0)
             error(EXIT_FAILURE, 0, "the kernel image has to have an odd "
                   "number of pixels on both sides (there has to be on pixel "
-                  "in the center). %s (hdu: %s) is %lu by %lu",
+                  "in the center). %s (hdu: %s) is %zu by %zu",
                   p->up.kernelname, p->up.khdu, p->ks1, p->ks0);
 
           /* Convert all the NaN pixels to zero if the kernel contains
@@ -586,7 +586,7 @@ setparams(int argc, char *argv[], struct convolveparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf("  - Using %lu CPU threads.\n", p->cp.numthreads);
+      printf("  - Using %zu CPU threads.\n", p->cp.numthreads);
       printf("  - Input: %s (hdu: %s)\n", p->up.inputname, p->cp.hdu);
       if(p->up.maskname)
         printf("  - Mask: %s (hdu: %s)\n", p->up.maskname, p->up.mhdu);

@@ -503,14 +503,14 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
   if(x1-x0<=1 || y1-y0<=1)
     error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can find "
           "and fix the problem in clumpinfo (clumps.c). For some reason, "
-          "the specified input region is %lu by %lu wide",
+          "the specified input region is %zu by %zu wide",
           PACKAGE_BUGREPORT, y1-y0, x1-x0);
 
   /* Allocate the clump information array. */
   errno=0;
   clumpinfo=calloc(ctp->numclumps*INFOTABCOLS, sizeof *clumpinfo);
   if(clumpinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for clumpinfo in getclumpinfo "
+    error(EXIT_FAILURE, errno, "%zu bytes for clumpinfo in getclumpinfo "
           "(clumps.c)", ctp->numclumps*INFOTABCOLS*sizeof *clumpinfo);
   *outclumpinfo=clumpinfo;
 
@@ -529,7 +529,7 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
     {
       errno=0; xys=calloc(3*ctp->numclumps, sizeof *xys);
       if(xys==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for xys (clumps.c)",
+        error(EXIT_FAILURE, errno, "%zu bytes for xys (clumps.c)",
               3*ctp->numclumps*sizeof *xys);
     }
   else xys=NULL; /* To check if it is needed below. */
@@ -634,7 +634,7 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
                                                           xys[3*lab+2])];
 
                   /* For a check:
-                  printf("%lu: (%lu, %lu) --> %f\n", lab,
+                  printf("%zu: (%zu, %zu) --> %f\n", lab,
                          (size_t)(xys[3*lab+2] / clumpinfo[row]) +1,
                          (size_t)(xys[3*lab+1] / clumpinfo[row]) +1,
                          clumpinfo[row+4]);
@@ -654,7 +654,7 @@ getclumpinfo(struct clumpsthreadparams *ctp, double **outclumpinfo)
      (p->b0f1==0). set ctp->thislabel to the desired label.
   if(p->b0f1==1 && ctp->thislabel==1)
     for(i=1;i<ctp->numclumps;++i)
-      printf("%lu: %-10.3f %-5.0f %-10.3f %-5.0f %-10.3f\n", i,
+      printf("%zu: %-10.3f %-5.0f %-10.3f %-5.0f %-10.3f\n", i,
              clumpinfo[i*INFOTABCOLS], clumpinfo[i*INFOTABCOLS+1],
              clumpinfo[i*INFOTABCOLS+2], clumpinfo[i*INFOTABCOLS+3],
              clumpinfo[i*INFOTABCOLS+4]);
@@ -688,7 +688,7 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
   errno=0;
   sntab = *sntable = malloc( ctp->numclumps * sizeof *sntab );
   if(sntab==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for sntab (clumps.c)",
+    error(EXIT_FAILURE, errno, "%zu bytes for sntab (clumps.c)",
           ctp->numclumps*sizeof *sntab);
 
 
@@ -740,7 +740,7 @@ clumpsntable(struct clumpsthreadparams *ctp, float **sntable)
   if(p->b0f1==1 && ctp->thislabel==151)
     {
       for(i=1;i<ctp->numclumps;++i)
-        printf("%lu: %-10.3g %-5.0f %-10.3g(%-5.0f) --> %-10.3g\n", i,
+        printf("%zu: %-10.3g %-5.0f %-10.3g(%-5.0f) --> %-10.3g\n", i,
                clumpinfo[i*INFOTABCOLS], clumpinfo[i*INFOTABCOLS+1],
                clumpinfo[i*INFOTABCOLS+2], clumpinfo[i*INFOTABCOLS+3],
                sntab[i]);
@@ -883,11 +883,11 @@ findclumpsn(struct noisechiselparams *p)
      in each mesh. */
   errno=0; p->numclumpsarr=malloc(nmeshi*sizeof*p->numclumpsarr);
   if(p->numclumpsarr==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->numclumpsarr in "
+    error(EXIT_FAILURE, errno, "%zu bytes for p->numclumpsarr in "
           "findclumpsn (clumps.c)", nmeshi*sizeof*p->numclumpsarr);
   errno=0; p->sntablearr=malloc(nmeshi*sizeof*p->sntablearr);
   if(p->sntablearr==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->sntablearr in "
+    error(EXIT_FAILURE, errno, "%zu bytes for p->sntablearr in "
           "findclumpsn (clumps.c)", nmeshi*sizeof*p->sntablearr);
 
 
@@ -900,7 +900,7 @@ findclumpsn(struct noisechiselparams *p)
   for(i=0;i<nmeshi;++i) numclumps+=p->numclumpsarr[i];
   errno=0; sntable=malloc(numclumps*sizeof*sntable);
   if(sntable==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for sntable in "
+    error(EXIT_FAILURE, errno, "%zu bytes for sntable in "
           "findclumpsn (clumps.c)", numclumps*sizeof*sntable);
 
 
@@ -961,7 +961,7 @@ removefalseclumps(struct clumpsthreadparams *ctp, float *sntable)
   /* Allocate space for the new labels array. */
   errno=0; newlabs=malloc(ctp->numclumps*sizeof *newlabs);
   if(newlabs==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for newlabs in "
+    error(EXIT_FAILURE, errno, "%zu bytes for newlabs in "
           "removefalsedetections (clumps.c)",
           ctp->numclumps*sizeof *newlabs);
 

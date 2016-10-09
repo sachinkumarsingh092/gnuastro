@@ -275,10 +275,10 @@ flxwhtimg(struct mkcatalogparams *p, size_t col)
       geoxy(p, gc);
 
       /* For a check, uncomment these two lines:
-      printf("\n\nInfocol: %lu (%s, %lu)\n", col,
+      printf("\n\nInfocol: %zu (%s, %zu)\n", col,
              p->info==p->oinfo?"Objects":"Clumps", p->num);
       Then add these two lines before and after row[col] in the loop*/
-      /*printf("%lu: %f --> ", (row-p->info)/p->icols, row[col]);*/
+      /*printf("%zu: %f --> ", (row-p->info)/p->icols, row[col]);*/
       /*printf("%f\n", row[col]);*/
 
       /* Go over all the rows and correct this column. */
@@ -354,7 +354,7 @@ setsecondmoment(struct mkcatalogparams *p, size_t col)
           default:
             error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in setsecondmoment's "
-                  "--CLUMP-- information table (%lu) was not recognized for "
+                  "--CLUMP-- information table (%zu) was not recognized for "
                   "correcting the second moment", PACKAGE_BUGREPORT, col);
           }
       else
@@ -408,7 +408,7 @@ setsecondmoment(struct mkcatalogparams *p, size_t col)
           default:
             error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
                   "can fix this. The given column in setsecondmoment's "
-                  "--OBJECT-- information table (%lu) was not recognized for "
+                  "--OBJECT-- information table (%zu) was not recognized for "
                   "correcting the second moment", PACKAGE_BUGREPORT, col);
           }
 
@@ -581,7 +581,7 @@ idcol(struct mkcatalogparams *p)
   size_t i;
 
   p->unitp=CATUNITCOUNTER;
-  sprintf(p->description, "%lu: Overall %s ID",
+  sprintf(p->description, "%zu: Overall %s ID",
           p->curcol, p->name);
 
   for(i=0;i<p->num;++i)
@@ -609,7 +609,7 @@ hostobj(struct mkcatalogparams *p, int o1c0)
   p->unitp=CATUNITCOUNTER;
   des = ( o1c0 ? "ID of object hosting this clump"
           : "ID of clump in host object" );
-  sprintf(p->description, "%lu: %s.",
+  sprintf(p->description, "%zu: %s.",
           p->curcol, des);
 
   for(i=1;i<=p->numobjects;++i)
@@ -634,7 +634,7 @@ numclumps(struct mkcatalogparams *p)
   size_t i;
 
   p->unitp=CATUNITCOUNTER;
-  sprintf(p->description, "%lu: Number of clumps in this object.",
+  sprintf(p->description, "%zu: Number of clumps in this object.",
           p->curcol);
 
   for(i=0;i<p->numobjects;++i)
@@ -685,7 +685,7 @@ area(struct mkcatalogparams *p, int cinobj, int isriver)
 
   /* Set the unit and print the header. */
   p->unitp = isriver ? CATUNITCOUNTER : CATUNITPIXAREA;
-  sprintf(p->description, "%lu: %s.", p->curcol, type);
+  sprintf(p->description, "%zu: %s.", p->curcol, type);
 
   /* Fill in the output array. */
   for(i=0;i<p->num;++i)
@@ -707,7 +707,7 @@ position(struct mkcatalogparams *p, size_t col, char *target,
   int wcsax = ( !strcmp(axis, MKCATRA) || !strcmp(axis, MKCATDEC) ) ? 1 : 0;
 
   /* Set the header information. */
-  sprintf(p->description, "%lu: %s %s (%s).", p->curcol, target, type, axis);
+  sprintf(p->description, "%zu: %s %s (%s).", p->curcol, target, type, axis);
 
   /* Prepare the respective column, set the units and also the
      printing accuracy if we are in RA/Dec mode (wcsax==1). */
@@ -773,7 +773,7 @@ secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target)
     /* Output column not recognized */
     default:
       error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-            "solve this problem. The value to `ocol' (%lu) is not "
+            "solve this problem. The value to `ocol' (%zu) is not "
             "recognized in secondordermoment (first)", PACKAGE_BUGREPORT,
             ocol);
     }
@@ -821,13 +821,13 @@ secondordermoment(struct mkcatalogparams *p, size_t ocol, char *target)
       break;
     default:
       error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
-            "solve this problem. The value to `ocol' (%lu) is not "
+            "solve this problem. The value to `ocol' (%zu) is not "
             "recognized in secondordermoment (second)", PACKAGE_BUGREPORT,
             ocol);
     }
 
   /* Set the header value */
-  sprintf(p->description, "%lu: %s %s %s.", p->curcol, target, type, name);
+  sprintf(p->description, "%zu: %s %s %s.", p->curcol, target, type, name);
 }
 
 
@@ -882,7 +882,7 @@ brightnessmag(struct mkcatalogparams *p, size_t col, char *target,
 
   /* Set the header information: */
   add = (col==CNoRiverBrightness) ? " sky (not river) subtracted " : " ";
-  sprintf(p->description, "%lu: %s%s%s.", p->curcol, target, add, scale);
+  sprintf(p->description, "%zu: %s%s%s.", p->curcol, target, add, scale);
 }
 
 
@@ -898,7 +898,7 @@ upperlimitcol(struct mkcatalogparams *p)
 
   /* For the comments: */
   p->unitp = CATUNITMAG;
-  sprintf(p->description, "%lu: Upper limit magnitude for this %s.",
+  sprintf(p->description, "%zu: Upper limit magnitude for this %s.",
           p->curcol, p->name);
 
 
@@ -932,7 +932,7 @@ skystd(struct mkcatalogparams *p, size_t col)
 
   /* For the comments: */
   p->unitp = CATUNITAVE;
-  sprintf(p->description, "%lu: Average %s under this %s.",
+  sprintf(p->description, "%zu: Average %s under this %s.",
           p->curcol, ( (col==OSKY || col==CSKY)
                        ? "sky" : "sky standard deviation" ),
           p->name);
@@ -977,10 +977,10 @@ sncol(struct mkcatalogparams *p, int sn0_magerr1, char *target)
   /* For the comments: */
   p->unitp = sn0_magerr1 ? CATUNITMAG : CATUNITRATIO;
   if(sn0_magerr1)
-    sprintf(p->description, "%lu: %s Magnitude error.", p->curcol,
+    sprintf(p->description, "%zu: %s Magnitude error.", p->curcol,
             target);
   else
-    sprintf(p->description, "%lu: %s signal to noise ratio.", p->curcol,
+    sprintf(p->description, "%zu: %s signal to noise ratio.", p->curcol,
             target);
 
   /* Calculate the signal to noise ratio. Recall that for the objects,

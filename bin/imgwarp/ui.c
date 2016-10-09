@@ -89,7 +89,7 @@ readconfig(char *filename, struct imgwarpparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -193,9 +193,9 @@ printvalues(FILE *fp, struct imgwarpparams *p)
   if(cp->hduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("hdu", cp->hdu);
   if(up->hstartwcsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "hstartwcs", p->hstartwcs);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "hstartwcs", p->hstartwcs);
   if(up->hendwcsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "hendwcs", p->hendwcs);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "hendwcs", p->hendwcs);
 
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
@@ -275,7 +275,7 @@ readmatrixoption(struct imgwarpparams *p)
   errno=0;
   p->matrix=malloc(9*sizeof *p->matrix);
   if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for temporary array to keep "
+    error(EXIT_FAILURE, errno, "%zu bytes for temporary array to keep "
           "the matrix option", 9*sizeof *p->matrix);
 
   /* Go over the string and set the values. */
@@ -296,7 +296,7 @@ readmatrixoption(struct imgwarpparams *p)
                   "could not be read as a number", t);
           t=tailptr;
           if(counter>9)       /* Note that it was ++'d! */
-            error(EXIT_FAILURE, 0, "there are %lu elements in `%s', there "
+            error(EXIT_FAILURE, 0, "there are %zu elements in `%s', there "
                   "should be 4 or 9", counter, p->up.matrixstring);
           /*printf("%f, %s\n", p->matrix[counter-1], t);*/
         }
@@ -308,7 +308,7 @@ readmatrixoption(struct imgwarpparams *p)
   else if (counter==9)
     p->ms1=p->ms0=3;
   else
-    error(EXIT_FAILURE, 0, "there are %lu numbers in the string `%s'! "
+    error(EXIT_FAILURE, 0, "there are %zu numbers in the string `%s'! "
           "It should contain 4 or 9 numbers (for a 2 by 2 or 3 by 3 "
           "matrix)", counter, p->up.matrixstring);
 }
@@ -353,7 +353,7 @@ makealignmatrix(struct imgwarpparams *p)
   errno=0;
   p->matrix=malloc(4*sizeof *p->matrix);
   if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->matrix in makealignmatrix",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->matrix in makealignmatrix",
           4*sizeof *p->matrix);
   p->ms0=p->ms1=2;
 
@@ -428,7 +428,7 @@ makebasicmatrix(struct imgwarpparams *p)
   errno=0;
   p->matrix=malloc(4*sizeof *p->matrix);
   if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->matrix in makerotationmatrix",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->matrix in makerotationmatrix",
           4*sizeof *p->matrix);
   p->ms0=p->ms1=2;
 
@@ -503,7 +503,7 @@ preparematrix(struct imgwarpparams *p)
       errno=0;
       tmp=malloc(9*sizeof *tmp);
       if(tmp==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for 3 by 3 matrix",
+        error(EXIT_FAILURE, errno, "%zu bytes for 3 by 3 matrix",
               9*sizeof *tmp);
 
       /* Put the four identical elements in place. */
@@ -542,7 +542,7 @@ preparematrix(struct imgwarpparams *p)
     }
   else if (p->ms0!=3 || p->ms1!=3)
     error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
-          "address the problem. For some reason p->ms0=%lu and p->ms1=%lu! "
+          "address the problem. For some reason p->ms0=%zu and p->ms1=%zu! "
           "They should both have a value of 3.", PACKAGE_BUGREPORT,
           p->ms0, p->ms1);
 }
@@ -590,8 +590,8 @@ sanitycheck(struct imgwarpparams *p)
      the wrong numbers when it is read from a file. */
   if(p->up.matrixname)
      if( (p->ms0 != 2 && p->ms0 != 3) || p->ms0 != p->ms1 )
-       error(EXIT_FAILURE, 0, "the given matrix in %s has %lu rows and "
-             "%lu columns. Its size must be either 2x2 or 3x3",
+       error(EXIT_FAILURE, 0, "the given matrix in %s has %zu rows and "
+             "%zu columns. Its size must be either 2x2 or 3x3",
              p->up.matrixname, p->ms0, p->ms1);
 
   /* Check if there are any non-normal numbers in the matrix: */
@@ -661,7 +661,7 @@ preparearrays(struct imgwarpparams *p)
   errno=0;
   p->inverse=inv=malloc(9*sizeof *inv);
   if(inv==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for the inverse array",
+    error(EXIT_FAILURE, errno, "%zu bytes for the inverse array",
           9*sizeof *inv);
   inv[0]=m[4]*m[8]-m[5]*m[7];
   inv[1]=m[2]*m[7]-m[1]*m[8];
@@ -745,7 +745,7 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   if(cp->verb)
     {
       printf(SPACK_NAME" started on %s", ctime(&p->rawtime));
-      printf(" Using %lu CPU thread%s\n", p->cp.numthreads,
+      printf(" Using %zu CPU thread%s\n", p->cp.numthreads,
              p->cp.numthreads==1 ? "." : "s.");
       printf(" Input image: %s\n", p->up.inputname);
       printf(" matrix:"

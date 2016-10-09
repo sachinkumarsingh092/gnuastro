@@ -214,7 +214,7 @@ polygonparser(struct imgcropparams *p)
           read[dim]=strtod(pt, &tailptr);
 
           /* Check if there actually was a number.
-          printf("\n\n------\n%lu: %f (%s)\n", dim, read[dim], tailptr);
+          printf("\n\n------\n%zu: %f (%s)\n", dim, read[dim], tailptr);
           */
 
           /* Make sure if a number was read at all? */
@@ -305,11 +305,11 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
      anti-clickwise manner.) */
   errno=0; ipolygon=malloc(2*nvertices*sizeof *ipolygon);
   if(ipolygon==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for ipolygon in polygonmask "
+    error(EXIT_FAILURE, errno, "%zu bytes for ipolygon in polygonmask "
           "(crop.c)", 2*nvertices*sizeof *ipolygon);
   errno=0; ordinds=malloc(nvertices*sizeof *ordinds);
   if(ordinds==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for ordinds in polygonmask "
+    error(EXIT_FAILURE, errno, "%zu bytes for ordinds in polygonmask "
           "(crop.c)", nvertices*sizeof *ordinds);
 
 
@@ -470,9 +470,9 @@ cropname(struct cropparams *crp)
       errno=0;
       log->name=malloc(crp->outlen);
       if(log->name==NULL)
-        error(EXIT_FAILURE, errno, "imgmode.c, %lu bytes on "
+        error(EXIT_FAILURE, errno, "imgmode.c, %zu bytes on "
               "imgcroponthreads", crp->outlen);
-      sprintf(log->name, "%s%lu%s", cp->output, crp->outindex+1,
+      sprintf(log->name, "%s%zu%s", cp->output, crp->outindex+1,
               p->suffix);
       gal_checkset_check_remove_file(log->name, cp->dontdelete);
     }
@@ -752,7 +752,7 @@ onecrop(struct cropparams *crp)
       /* A section has been added to the cropped image from this input
          image, so increment crp->imgcount and save the information of
          this image. */
-      sprintf(basename, "ICF%lu", ++p->log[crp->outindex].numimg);
+      sprintf(basename, "ICF%zu", ++p->log[crp->outindex].numimg);
       gal_fits_file_name_in_keywords(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
       sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
@@ -954,25 +954,25 @@ printlog(struct imgcropparams *p)
               "# Column numbers below start from zero.\n"
               "# 0: Output file name.\n"
               "# 1: Number of images used in this cropped image.\n"
-              "# 2: Are the central %lu pixels filled? (1: yes, 0: no)\n",
+              "# 2: Are the central %zu pixels filled? (1: yes, 0: no)\n",
               p->checkcenter);
 
       /* Then print each output's information. */
       for(i=0;log[i].name;++i)
-        fprintf(logfile, "%s     %-8lu%-2d\n", log[i].name,
+        fprintf(logfile, "%s     %-8zu%-2d\n", log[i].name,
                 log[i].numimg, log[i].centerfilled);
 
       /* Report Summary: */
       if(p->cp.verb && p->up.catset)
         {
-          sprintf(msg, "%lu images created.", numfiles);
+          sprintf(msg, "%zu images created.", numfiles);
           gal_timing_report(NULL, msg, 1);
-          sprintf(msg, "%lu filled in the center.",
+          sprintf(msg, "%zu filled in the center.",
                   numcentfilled);
           gal_timing_report(NULL, msg, 1);
           if(numstitched)
             {
-              sprintf(msg, "%lu used more than one input.",
+              sprintf(msg, "%zu used more than one input.",
                       numstitched);
               gal_timing_report(NULL, msg, 1);
             }

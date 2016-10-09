@@ -200,9 +200,9 @@ gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
     {
       size_t j;
       printf("\n\n############################\n");
-      printf("THREAD %lu: \n", i);
+      printf("THREAD %zu: \n", i);
       for(j=0;thrds[i*thrdcols+j]!=GAL_THREADS_NON_THRD_INDEX;j++)
-        printf("%lu, ", thrds[i*thrdcols+j]);
+        printf("%zu, ", thrds[i*thrdcols+j]);
       printf("\b\b.\n");
     }
   exit(0);

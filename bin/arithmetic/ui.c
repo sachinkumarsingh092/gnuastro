@@ -89,7 +89,7 @@ readconfig(char *filename, struct imgarithparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -213,7 +213,7 @@ checkifset(struct imgarithparams *p)
      then re-run arithmetic. The best way is to simply ignore them. */
   if(numhdus<p->numfits)
     {
-      sprintf(comment, "hdu (%lu FITS file(s), %lu HDUs)",
+      sprintf(comment, "hdu (%zu FITS file(s), %zu HDUs)",
               p->numfits, numhdus);
       GAL_CONFIGFILES_REPORT_NOTSET(comment);
     }

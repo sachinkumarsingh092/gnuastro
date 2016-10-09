@@ -92,7 +92,7 @@ readconfig(char *filename, struct imgstatparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -277,7 +277,7 @@ printvalues(FILE *fp, struct imgstatparams *p)
   /* Histogram: */
   fprintf(fp, "\n# Histogram:\n");
   if(up->histnumbinsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "histnumbins", p->histnumbins);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "histnumbins", p->histnumbins);
   if(up->histminset)
     fprintf(fp, CONF_SHOWFMT"%.5f\n", "histmin", p->histmin);
   if(up->histmaxset)
@@ -288,7 +288,7 @@ printvalues(FILE *fp, struct imgstatparams *p)
   /* Cumulative frequency plot: */
   fprintf(fp, "\n# Cumulative frequency plot:\n");
   if(up->cfpnumset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "cfpnum", p->cfpnum);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "cfpnum", p->cfpnum);
   if(up->cfpminset)
     fprintf(fp, CONF_SHOWFMT"%.5f\n", "cfpmin", p->cfpmin);
   if(up->cfpmaxset)
@@ -303,7 +303,7 @@ printvalues(FILE *fp, struct imgstatparams *p)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "sigcliptolerance",
             p->sigcliptolerance);
   if(up->sigclipnumset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "sigclipnum", p->sigclipnum);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "sigclipnum", p->sigclipnum);
 
 
   /* For the operating mode, first put the macro to print the common

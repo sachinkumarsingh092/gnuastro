@@ -163,7 +163,7 @@ imgwarponthread(void *inparam)
       /* For a check:
       if(ind==9999)
         {
-          printf("\n\n\nind: %lu: (%lu, %lu):\n",
+          printf("\n\n\nind: %zu: (%zu, %zu):\n",
                  ind, ind%os1+1, ind/os1+1);
           for(j=0;j<4;++j)
             printf("(%.3f, %.3f) --> (%.3f, %.3f)\n",
@@ -216,7 +216,7 @@ imgwarponthread(void *inparam)
               /* For a polygon check:
               if(ind==9999)
                 {
-                  printf("%lu -- (%ld, %ld):\n", ind, x, y);
+                  printf("%zu -- (%zd, %zd):\n", ind, x, y);
                   printf("icrn:\n");
                   for(j=0;j<4;++j)
                     printf("\t%.3f, %.3f\n", icrn[j*2], icrn[j*2+1]);
@@ -226,7 +226,7 @@ imgwarponthread(void *inparam)
                   printf("ccrn:\n");
                   for(j=0;j<numcrn;++j)
                     printf("\t%.3f, %.3f\n", ccrn[j*2], ccrn[j*2+1]);
-                  printf("[%lu]: %.3f of [%ld, %ld]: %f\n", ind,
+                  printf("[%zu]: %.3f of [%ld, %ld]: %f\n", ind,
                          gal_polygon_area(ccrn, numcrn), x, y,
                          input[(y-1)*is1+x-1]);
                 }
@@ -234,7 +234,7 @@ imgwarponthread(void *inparam)
 
               /* For a simple pixel value check:
               if(ind==97387)
-                printf("%f --> (%lu) %f\n",
+                printf("%f --> (%zu) %f\n",
                        v*gal_polygon_area(ccrn, numcrn),
                        numinput, output[ind]);
               */
@@ -248,7 +248,7 @@ imgwarponthread(void *inparam)
       if(numinput && nanarea!=0.0f)
         {
           /* For a check:
-          printf("%lu: %f/%f --> %f\n", ind, nanarea, p->opixarea,
+          printf("%zu: %f/%f --> %f\n", ind, nanarea, p->opixarea,
                  nanarea/p->opixarea);
           */
 
@@ -350,7 +350,7 @@ imgwarppreparations(struct imgwarpparams *p)
   p->outfpixval[1]=nearestint_halfhigher(ymin);
   /* For a check:
   printf("Wrapped:\n");
-  printf("onaxes: (%lu, %lu)\n", p->onaxes[0], p->onaxes[1]);
+  printf("onaxes: (%zu, %zu)\n", p->onaxes[0], p->onaxes[1]);
   printf("outfpixval=(%.4f, %.4f)\n", p->outfpixval[0], p->outfpixval[1]);
   */
 
@@ -361,7 +361,7 @@ imgwarppreparations(struct imgwarpparams *p)
   size=p->onaxes[0]*p->onaxes[1];
   p->output=malloc(size*sizeof *p->output);
   if(p->output==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for the output array",
+    error(EXIT_FAILURE, errno, "%zu bytes for the output array",
           size*sizeof *p->output);
 
 
@@ -471,7 +471,7 @@ correctwcssaveoutput(struct imgwarpparams *p)
   gal_fits_file_name_in_keywords("INF", p->up.inputname, &headers);
   for(i=0;i<9;++i)
     {
-      sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%lu_%lu", i/3+1, i%3+1);
+      sprintf(&keyword[i*FLEN_KEYWORD], "WMTX%zu_%zu", i/3+1, i%3+1);
       gal_fits_add_to_key_ll_end(&headers, TDOUBLE,
                                  &keyword[i*FLEN_KEYWORD], 0,
                                  &p->matrix[i], 0, "Warp matrix "
@@ -539,7 +539,7 @@ imgwarp(struct imgwarpparams *p)
   errno=0;
   iwp=malloc(nt*sizeof *iwp);
   if(iwp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in imgwarp "
+    error(EXIT_FAILURE, errno, "%zu bytes in imgwarp "
           "(imgwarp.c) for iwp", nt*sizeof *iwp);
 
 
@@ -578,7 +578,7 @@ imgwarp(struct imgwarpparams *p)
             iwp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, imgwarponthread, &iwp[i]);
             if(err)
-              error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+              error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

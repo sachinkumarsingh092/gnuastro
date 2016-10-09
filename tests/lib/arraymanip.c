@@ -35,7 +35,7 @@ main(void)
   array=malloc(size * sizeof *array);
   if(array==NULL)
     {
-      fprintf(stderr, "%lu bytes for d.\n", size);
+      fprintf(stderr, "%zu bytes for d.\n", size);
       exit(EXIT_FAILURE);
     }
 

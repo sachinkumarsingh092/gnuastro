@@ -222,7 +222,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* Write common options: */
 #define GAL_CONFIGFILES_PRINT_COMMONOPTIONS {                           \
     if(cp->numthreadsset)                                               \
-      fprintf(fp, CONF_SHOWFMT"%lu\n", "numthreads", p->cp.numthreads); \
+      fprintf(fp, CONF_SHOWFMT"%zu\n", "numthreads", p->cp.numthreads); \
     if(cp->nologset)                                                    \
       fprintf(fp, CONF_SHOWFMT"%d\n", "nolog", p->cp.nolog);            \
     if(cp->onlyversionset)                                              \

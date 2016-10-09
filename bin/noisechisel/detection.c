@@ -104,7 +104,7 @@ initialdetection(struct noisechiselparams *p)
                            SPACK_STRING);
   if(verb)
     {
-      sprintf(report, "Eroded %lu times (%s connectivity).",
+      sprintf(report, "Eroded %zu times (%s connectivity).",
               p->erode, p->erodengb==4 ? "4" : "8");
       gal_timing_report(NULL, report, 2);
     }
@@ -120,7 +120,7 @@ initialdetection(struct noisechiselparams *p)
                            SPACK_STRING);
   if(verb)
     {
-      sprintf(report, "Opened (depth: %lu, %s connectivity).",
+      sprintf(report, "Opened (depth: %zu, %s connectivity).",
               p->opening, p->openingngb==4 ? "4" : "8");
       gal_timing_report(NULL, report, 2);
     }
@@ -178,25 +178,25 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
   /* Allocate the necessary arrays to keep the label information: */
   errno=0; sntable=*outsntable=calloc(*numlabs, sizeof *sntable);
   if(sntable==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for sntable in detlabelsn "
+    error(EXIT_FAILURE, errno, "%zu bytes for sntable in detlabelsn "
           "(detection.c)", *numlabs*sizeof *sntable);
   errno=0; brightnesses=calloc(*numlabs, sizeof *brightnesses);
   if(brightnesses==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for brightnesses in detlabelsn "
+    error(EXIT_FAILURE, errno, "%zu bytes for brightnesses in detlabelsn "
           "(detection.c)", *numlabs*sizeof *brightnesses);
   errno=0; xys=calloc(*numlabs*xyscol, sizeof *xys);
   if(xys==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for xys in detlabelsn "
+    error(EXIT_FAILURE, errno, "%zu bytes for xys in detlabelsn "
           "(detection.c)", *numlabs*sizeof *xys);
   errno=0; areas=calloc(*numlabs, sizeof *areas);
   if(areas==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for areas in detlabelsn "
+    error(EXIT_FAILURE, errno, "%zu bytes for areas in detlabelsn "
           "(detection.c)", *numlabs*sizeof *areas);
   if(b0f1==0)
     {
       errno=0; coversdet=calloc(*numlabs, sizeof *coversdet);
       if(coversdet==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for coversdet in detlabelsn "
+        error(EXIT_FAILURE, errno, "%zu bytes for coversdet in detlabelsn "
               "(detection.c)", *numlabs*sizeof *coversdet);
     }
 
@@ -302,7 +302,7 @@ detlabelsn(struct noisechiselparams *p, size_t *numlabs, float **outsntable)
   if(b0f1)
     {
       for(i=0;i<*numlabs;++i)
-        printf("%lu: %-10ld %-10.3f %-10.3f\n",
+        printf("%zu: %-10ld %-10.3f %-10.3f\n",
                i, areas[i], brightnesses[i], sntable[i]);
     }
   */
@@ -329,7 +329,7 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
 
   errno=0; newlabs=calloc(numpseudo, sizeof *newlabs);
   if(newlabs==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for numlabs in "
+    error(EXIT_FAILURE, errno, "%zu bytes for numlabs in "
           "removefalsedetections (detections.c)",
           numpseudo*sizeof *newlabs);
 
@@ -621,7 +621,7 @@ dbytolaboverlap(struct noisechiselparams *p)
   /* Allocate array to keep the overlapping labels. */
   errno=0; tokeep=calloc(numobjects, sizeof*tokeep);
   if(tokeep==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tokeep in dbytolaboverlap "
+    error(EXIT_FAILURE, errno, "%zu bytes for tokeep in dbytolaboverlap "
           "(detection.c)", numobjects*sizeof*tokeep);
 
 
@@ -755,7 +755,7 @@ onlytruedetections(struct noisechiselparams *p)
                            p->wcs, NULL, SPACK_STRING);
   if(verb)
     {            /* p->numobjects changed in dbytlaboverlap. */
-      sprintf(report, "%lu false detections removed.",
+      sprintf(report, "%zu false detections removed.",
               numobjects-p->numobjects);
       gal_timing_report(NULL, report, 2);
     }

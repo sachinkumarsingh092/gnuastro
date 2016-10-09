@@ -583,7 +583,7 @@ gal_checkset_malloc_cat(char *inname, char *toappend)
   out=malloc(inl+apl+1);
   if(out==NULL)
     error(EXIT_FAILURE, errno,
-          "allocating %lu bytes in gal_checkset_malloc_cat", inl+apl+1);
+          "allocating %zu bytes in gal_checkset_malloc_cat", inl+apl+1);
 
   strcpy(out, inname);
   strcat(out, toappend);
@@ -602,7 +602,7 @@ gal_checkset_allocate_copy(char *arg, char **copy)
   errno=0;
   *copy=malloc(strlen(arg)+1);
   if(*copy==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes to copy %s",
+    error(EXIT_FAILURE, errno, "%zu bytes to copy %s",
           strlen(arg)+1, arg);
   strcpy(*copy, arg);
 }
@@ -624,7 +624,7 @@ gal_checkset_allocate_copy_set(char *arg, char **copy, int *set)
   errno=0;
   *copy=malloc(strlen(arg)+1);
   if(*copy==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes to copy %s",
+    error(EXIT_FAILURE, errno, "%zu bytes to copy %s",
           strlen(arg)+1, arg);
   strcpy(*copy, arg);
   *set=1;
@@ -892,7 +892,7 @@ gal_checkset_dir_part(char *input)
       errno=0;
       out=malloc(3*sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for current directory "
+        error(EXIT_FAILURE, errno, "%zu bytes for current directory "
               "gal_checkset_dir_part", 3*sizeof *out);
       strcpy(out, "./");
     }
@@ -901,7 +901,7 @@ gal_checkset_dir_part(char *input)
       errno=0;
       out=malloc((l+1)*sizeof *out);
       if(out==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for gal_checkset_dir_part",
+        error(EXIT_FAILURE, errno, "%zu bytes for gal_checkset_dir_part",
               (l+1)*sizeof *out);
       strcpy(out, input);
       out[i+1]='\0';
@@ -934,7 +934,7 @@ gal_checkset_not_dir_part(char *input)
   errno=0;
   out=malloc((l+1)*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for notdir", (l+1)*sizeof *out);
+    error(EXIT_FAILURE, errno, "%zu bytes for notdir", (l+1)*sizeof *out);
 
   strcpy(out, tmp);
   return out;

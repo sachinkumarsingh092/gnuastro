@@ -55,8 +55,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* Check if the column number is within the boundaries of a catalog. */
 #define GAL_CHECKSET_CHECK_COL_NUM_IN_CAT(INCOL,NAME) {                 \
     if( (INCOL) >= p->cs1 )                                             \
-      error(EXIT_FAILURE, 0, "%s only has %lu columns while you "       \
-            "have requested column %lu (counting from zero) for "       \
+      error(EXIT_FAILURE, 0, "%s only has %zu columns while you "       \
+            "have requested column %zu (counting from zero) for "       \
             "`--%s`", p->up.catname, p->cs1, (INCOL), (NAME));          \
   }
 
@@ -70,13 +70,13 @@ __BEGIN_C_DECLS  /* From C++ preparations */
     size_t i;                                                           \
                                                                         \
     if( (INCOL) >= p->cs1 )                                             \
-      error(EXIT_FAILURE, 0, "%s only has %lu columns while you "       \
-            "have requested column %lu (counting from zero) for "       \
+      error(EXIT_FAILURE, 0, "%s only has %zu columns while you "       \
+            "have requested column %zu (counting from zero) for "       \
             "`--%s`", p->up.catname, p->cs1, (INCOL), (NAME));          \
                                                                         \
     for(i=0;i<p->cs0;++i)                                               \
       if( !isfinite(p->cat[i*p->cs1+(INCOL)]) )                         \
-        error(EXIT_FAILURE, 0, "%s: column %lu (--%s) in row %lu "      \
+        error(EXIT_FAILURE, 0, "%s: column %zu (--%s) in row %zu "      \
               "could not be read as a number. See %s. Note that "       \
               "counting starts from zero",                              \
               p->up.catname, (INCOL), (NAME), i, GAL_TXTARRAY_LOG);     \

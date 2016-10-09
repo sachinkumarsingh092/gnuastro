@@ -91,7 +91,7 @@ readconfig(char *filename, struct imgcropparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -255,7 +255,7 @@ printvalues(FILE *fp, struct imgcropparams *p)
 
   fprintf(fp, "\n# Output parameters:\n");
   if(up->checkcenterset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "checkcenter", p->checkcenter);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "checkcenter", p->checkcenter);
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
   if(up->suffixset)
@@ -264,21 +264,21 @@ printvalues(FILE *fp, struct imgcropparams *p)
 
   fprintf(fp, "\n# Crop parameters:\n");
   if(up->xcolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "xcol", p->xcol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "xcol", p->xcol);
   if(up->ycolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "ycol", p->ycol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "ycol", p->ycol);
   if(up->iwidthset)
     fprintf(fp, CONF_SHOWFMT"%ld\n", "iwidth", p->iwidth[0]);
   if(up->racolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "racol", p->racol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "racol", p->racol);
   if(up->deccolset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "deccol", p->deccol);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "deccol", p->deccol);
   if(up->wwidthset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "wwidth", p->wwidth);
   if(up->hstartwcsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "hstartwcs", p->hstartwcs);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "hstartwcs", p->hstartwcs);
   if(up->hendwcsset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "hendwcs", p->hendwcs);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "hendwcs", p->hendwcs);
 
 
   /* For the operating mode, first put the macro to print the common
@@ -524,10 +524,10 @@ sanitycheck(struct imgcropparams *p)
       polygonparser(p);
       if(p->nvertices<3)
         error(EXIT_FAILURE, 0, "a polygon has to have 3 or more vertices, "
-              "you have only given %lu (%s)", p->nvertices, p->up.polygon);
+              "you have only given %zu (%s)", p->nvertices, p->up.polygon);
       if(p->outpolygon && p->numimg>1)
         error(EXIT_FAILURE, 0, "currently in WCS mode, outpolygon can only "
-              "be set to zero when there is one image, you have given %lu "
+              "be set to zero when there is one image, you have given %zu "
               "images. For multiple images the region will be very large. "
               "It is best if you first crop out the larger region you want "
               "into one image, then mask the polygon", p->numimg);
@@ -544,7 +544,7 @@ sanitycheck(struct imgcropparams *p)
   if(cp->numthreads>1 && fits_is_reentrant()==0)
     error(EXIT_FAILURE, 0, "CFITSIO was not configured with the "
           "`--enable-reentrant` option but you have asked to operate "
-          "on %lu threads. Please configure, make and install CFITSIO "
+          "on %zu threads. Please configure, make and install CFITSIO "
           "again with this flag to use multiple threads, run `info %s "
           "CFITSIO` for more information. Alternatively you can set "
           "the number of threads to 1 by adding the `--numthreads=1` "
@@ -600,7 +600,7 @@ preparearrays(struct imgcropparams *p)
   size=p->numimg*sizeof *p->imgs;
   p->imgs=malloc(size);
   if(p->imgs==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes for p->imgs", size);
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes for p->imgs", size);
 
   for(i=p->numimg-1;i>=0;--i)
     {
@@ -659,13 +659,13 @@ preparearrays(struct imgcropparams *p)
   errno=0;
   p->log=calloc(num+1, sizeof *p->log);
   if(p->log==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes for p->log",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes for p->log",
           num+1 * sizeof *p->log);
 
   /* Report timing: */
   if(p->cp.verb)
     {
-      sprintf(msg, "Read metadata of %lu images.", p->numimg);
+      sprintf(msg, "Read metadata of %zu images.", p->numimg);
       gal_timing_report(&t1, msg, 1);
     }
 }

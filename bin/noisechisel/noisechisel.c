@@ -173,7 +173,7 @@ noisechisel(struct noisechiselparams *p)
   initialdetection(p);
   if(verb)
     {
-      sprintf(report, "%lu initial detections found.", p->numobjects-1);
+      sprintf(report, "%zu initial detections found.", p->numobjects-1);
       gal_timing_report(&t1, report, 1);
     }
 
@@ -189,7 +189,7 @@ noisechisel(struct noisechiselparams *p)
   onlytruedetections(p);
   if(verb)
     {
-      sprintf(report, "%lu true detections identified.", p->numobjects-1);
+      sprintf(report, "%zu true detections identified.", p->numobjects-1);
       gal_timing_report(&t1, report, 1);
     }
 
@@ -210,7 +210,7 @@ noisechisel(struct noisechiselparams *p)
       p->numobjects=BF_concmp(p->byt, p->olab, s0, s1, p->anyblank, 8);
       if(verb)
         {
-          sprintf(report, "%lu detections after %lu dilation%s",
+          sprintf(report, "%zu detections after %zu dilation%s",
                   p->numobjects-1, p->dilate, p->dilate>1 ? "s." : ".");
           gal_timing_report(&t1, report, 1);
         }
@@ -280,7 +280,7 @@ noisechisel(struct noisechiselparams *p)
       segmentation(p);
       if(verb)
         {
-          sprintf(report, "%lu object%s""containing %lu clump%sfound.",
+          sprintf(report, "%zu object%s""containing %zu clump%sfound.",
                   p->numobjects-1, p->numobjects==2 ? " " : "s ",
                   p->numclumps-1,  p->numclumps ==2 ? " " : "s ");
           gal_timing_report(&t1, report, 1);
@@ -296,7 +296,7 @@ noisechisel(struct noisechiselparams *p)
     {
       errno=0; oreport=malloc(strlen(p->cp.output)+100*sizeof *oreport);
       if(oreport==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for oreport in noisechisel "
+        error(EXIT_FAILURE, errno, "%zu bytes for oreport in noisechisel "
               "(noisechisel.c)", strlen(p->cp.output)+100*sizeof *oreport);
       sprintf(oreport, "Output written to %s.", p->cp.output);
       gal_timing_report(&t1, oreport, 1);

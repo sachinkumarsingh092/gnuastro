@@ -259,7 +259,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
   /* Allocate the array to keep the threshold value: */
   errno=0; dbyt=p->dbyt=malloc(is0*is1*sizeof *p->dbyt);
   if(dbyt==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for dbyt in "
+    error(EXIT_FAILURE, errno, "%zu bytes for dbyt in "
           "applydetectionthreshold (detection.c)", is0*is1*sizeof *dbyt);
 
 
@@ -342,9 +342,9 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
 
   /* Check if the number is acceptable to the user. */
   if(size<p->minnumfalse)
-    error(EXIT_FAILURE, 0, "there are only %lu %s in the sky region of "
+    error(EXIT_FAILURE, 0, "there are only %zu %s in the sky region of "
           "the image. This is smaller than the minimum number you "
-          "specified: %lu. You can decrease this minimum with the "
+          "specified: %zu. You can decrease this minimum with the "
           "`--minnumfalse' (`-F') option or you can decrease the other "
           "parameters that determine the %s. See the GNU Astronomy "
           "Utilities manual (section on NoiseChisel) or Akhlaghi and "
@@ -369,7 +369,7 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
   sn=sntable[gal_statistics_index_from_quantile(size, quant)];
   if(p->cp.verb)
     {
-      sprintf(report, "%s S/N: %.3f (%.3f quantile of %lu %s).",
+      sprintf(report, "%s S/N: %.3f (%.3f quantile of %zu %s).",
               job, sn, quant, size, name);
       gal_timing_report(NULL, report, 2);
     }
@@ -392,7 +392,7 @@ snthresh(struct noisechiselparams *p, float *sntable, size_t size,
          safey free it. */
       sprintf(cline, "# %s\n# %s started on %s"
               "# Input: %s (hdu: %s)\n"
-              "# S/N distribution histogram of %lu sky %s.\n"
+              "# S/N distribution histogram of %zu sky %s.\n"
               "# The %.3f quantile has an S/N of %.4f.",
               SPACK_STRING, SPACK_NAME, ctime(&p->rawtime),
               p->up.inputname, p->cp.hdu, size, name, quant, sn);

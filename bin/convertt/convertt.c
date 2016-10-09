@@ -61,7 +61,7 @@ changevalue(struct converttparams *p)
   to=malloc(numchange*sizeof *to);
   from=malloc(numchange*sizeof *from);
   if(to==NULL || from==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for `to` or `from` in convert",
+    error(EXIT_FAILURE, errno, "%zu bytes for `to` or `from` in convert",
           numchange*sizeof *from);
   i=1;
   tmp=p->change;
@@ -188,7 +188,7 @@ savetxt(struct converttparams *p)
 
 
   /* Find the input file name and  */
-  sprintf(comments, "# Pixel values of %s (%lu x %lu pixels).\n"
+  sprintf(comments, "# Pixel values of %s (%zu x %zu pixels).\n"
           "# Created on %s# %s", p->names[0], p->s0[0], p->s1[0],
           ctime(&p->rawtime), SPACK_STRING);
 
@@ -224,7 +224,7 @@ savefits(struct converttparams *p)
         array=p->ch[i];
 
       /* Write array to a FITS file.*/
-      sprintf(hdu, "Channel%lu", i+1);
+      sprintf(hdu, "Channel%zu", i+1);
       gal_fits_array_to_file(p->cp.output, hdu, p->bitpixs[i], array,
                              p->s0[i], p->s1[i], 0, NULL, NULL,
                              SPACK_STRING);
@@ -271,7 +271,7 @@ doubleto8bit(struct converttparams *p)
       errno=0;
       ech[i]=malloc(size*sizeof *ech[i]);
       if(ech[i]==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for ech[%lu]",
+        error(EXIT_FAILURE, errno, "%zu bytes for ech[%zu]",
               size*sizeof *ech[i], i);
     }
 

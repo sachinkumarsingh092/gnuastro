@@ -85,7 +85,7 @@ readconfig(char *filename, struct converttparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -298,7 +298,7 @@ makechangestruct(char *arg)
       while(*p==' ') {++p; continue;} /* Skip all space characters. */
       errno=0;
       c=malloc(sizeof *c);
-      if(c==NULL) error(EXIT_FAILURE, 0, "%lu bytes for struct change",
+      if(c==NULL) error(EXIT_FAILURE, 0, "%zu bytes for struct change",
                         sizeof *c);
       c->from=strtof(p, &p);
       while(*p==' ') {++p; continue;}
@@ -379,7 +379,7 @@ adddotautomaticoutput(struct converttparams *p)
       errno=0;
       tmp=malloc(strlen(cp->output)+10*sizeof *tmp);
       if(tmp==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for suffix name",
+        error(EXIT_FAILURE, errno, "%zu bytes for suffix name",
               strlen(cp->output)+10*sizeof *tmp);
       sprintf(tmp, ".%s", cp->output);
       free(cp->output);
@@ -413,7 +413,7 @@ sanitycheck(struct converttparams *p)
   if(p->numch!=1 && p->numch!=3 && p->numch!=4)
     error(EXIT_FAILURE, 0, "the number of input color channels has to be "
           "1 (for non image data, grayscale or only K channel in CMYK), "
-          "3 (for RGB) and 4 (for CMYK). You have given %lu color channels. "
+          "3 (for RGB) and 4 (for CMYK). You have given %zu color channels. "
           "Note that some file formats (for example JPEG) can contain more "
           "than one color channel", p->numch);
 
@@ -440,7 +440,7 @@ sanitycheck(struct converttparams *p)
       if(i!=p->numch)
         {
           for(i=0;i<p->numch;++i)
-            fprintf(stderr, "Channel %lu is %lu x %lu pixels.\n", i,
+            fprintf(stderr, "Channel %zu is %zu x %zu pixels.\n", i,
                     p->s1[i], p->s0[i]);
           error(EXIT_FAILURE, 0, "the input color channels have different "
                 "sizes");
@@ -454,8 +454,8 @@ sanitycheck(struct converttparams *p)
         errno=0;
         p->ch[i]=calloc(p->s0[0]*p->s1[0], sizeof *p->ch[i]);
         if(p->ch[i]==NULL)
-          error(EXIT_FAILURE, errno, "allocating %lu bytes for the blank "
-                "channel %lu", p->s0[0]*p->s1[0]*sizeof *p->ch[i], i);
+          error(EXIT_FAILURE, errno, "allocating %zu bytes for the blank "
+                "channel %zu", p->s0[0]*p->s1[0]*sizeof *p->ch[i], i);
       }
 
   /* The output file name. First find the first non-blank file name: */
@@ -511,7 +511,7 @@ sanitycheck(struct converttparams *p)
           if(p->numch>1)
             error(EXIT_FAILURE, 0, "text output (`--output=%s`) can only be "
                   "completed with one input color channel. You have given "
-                  "%lu. Note that some formats (for example JPEG) can have "
+                  "%zu. Note that some formats (for example JPEG) can have "
                   "more than one color channel in each file. You can first "
                   "convert the file to FITS, then convert the desired "
                   "channel to text by specifying the HDU",

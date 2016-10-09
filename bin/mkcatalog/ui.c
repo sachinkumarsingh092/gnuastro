@@ -90,7 +90,7 @@ readconfig(char *filename, struct mkcatalogparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -702,7 +702,7 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
   if(up->upmaskhduset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "upmaskhdu", up->upmaskhdu);
   if(up->upnumset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "upnum", p->upnum);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "upnum", p->upnum);
   if(up->envseedset)
     fprintf(fp, CONF_SHOWFMT"%d\n", "envseed", p->envseed);
   if(up->upsclipmultipset)
@@ -843,7 +843,7 @@ printvalues(FILE *fp, struct mkcatalogparams *p)
       default:
         error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
               "fix the problem. For some reason p->allcols[%d] is given "
-              "the value %lu which is not recognized in printvalues "
+              "the value %zu which is not recognized in printvalues "
               "(ui.c)", PACKAGE_BUGREPORT, i, p->allcols[i]);
       }
 
@@ -1049,8 +1049,8 @@ checksetlong(struct mkcatalogparams *p, char *filename, char *hdu,
 
   /* Make sure it is the same size as the input image. */
   if(s0!=p->s0 || s1!=p->s1)
-    error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
-          "%s (hdu: %s) is %lu x %lu. The images should have the same "
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) is %zu x %zu pixels while the "
+          "%s (hdu: %s) is %zu x %zu. The images should have the same "
           "size", filename, hdu, s1, s0, p->up.inputname,
           p->cp.hdu, p->s1, p->s0);
 }
@@ -1079,8 +1079,8 @@ checksetfloat(struct mkcatalogparams *p, char *filename, char *hdu,
 
   /* Make sure it has the same size as the image. */
   if(s0!=p->s0 || s1!=p->s1)
-    error(EXIT_FAILURE, 0, "%s (hdu: %s) is %lu x %lu pixels while the "
-          "%s (hdu: %s) is %lu x %lu. The images should have the same "
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) is %zu x %zu pixels while the "
+          "%s (hdu: %s) is %zu x %zu. The images should have the same "
           "size", filename, hdu, s1, s0, p->up.inputname,
           p->cp.hdu, p->s1, p->s0);
 }
@@ -1190,11 +1190,11 @@ preparearrays(struct mkcatalogparams *p)
     error(EXIT_FAILURE, 0, "no columns specified for output");
   errno=0; p->objcols=malloc(p->allncols*sizeof *p->objcols);
   if(p->objcols==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->objcols in "
+    error(EXIT_FAILURE, errno, "%zu bytes for p->objcols in "
           "preprarearrays (ui.c)", p->allncols*sizeof *p->objcols);
   errno=0; p->clumpcols=malloc(p->allncols*sizeof *p->clumpcols);
   if(p->clumpcols==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->clumpcols in "
+    error(EXIT_FAILURE, errno, "%zu bytes for p->clumpcols in "
           "preprarearrays (ui.c)", p->allncols*sizeof *p->clumpcols);
 
 
@@ -1349,8 +1349,8 @@ preparearrays(struct mkcatalogparams *p)
           break;
         default:
           error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we "
-                "can fix the problem. For some reason p->allcols[%lu] "
-                "is given the value %lu which is not recognized in "
+                "can fix the problem. For some reason p->allcols[%zu] "
+                "is given the value %zu which is not recognized in "
                 "preparearrays (ui.c)", PACKAGE_BUGREPORT, i,
                 p->allcols[i]);
         }
@@ -1392,7 +1392,7 @@ preparearrays(struct mkcatalogparams *p)
           errno=0;
           p->objcat=malloc(p->objncols*p->numobjects*sizeof *p->objcat);
           if(p->objcat==NULL)
-            error(EXIT_FAILURE, errno, "%lu bytes for p->objcat in "
+            error(EXIT_FAILURE, errno, "%zu bytes for p->objcat in "
                   "preprarearrays (ui.c)",
                   p->objncols*p->numobjects*sizeof *p->objcat);
         }
@@ -1403,7 +1403,7 @@ preparearrays(struct mkcatalogparams *p)
           p->clumpcat=malloc(p->clumpncols*p->numclumps
                              * sizeof *p->clumpcat);
           if(p->clumpcat==NULL)
-            error(EXIT_FAILURE, errno, "%lu bytes for p->clumpcat in "
+            error(EXIT_FAILURE, errno, "%zu bytes for p->clumpcat in "
                   "preprarearrays (ui.c)",
                   p->clumpncols*p->numclumps*sizeof *p->clumpcat);
         }
@@ -1418,11 +1418,11 @@ preparearrays(struct mkcatalogparams *p)
      zero.*/
   errno=0; p->oinfo=calloc(OCOLUMNS*(p->numobjects+1), sizeof *p->oinfo);
   if(p->oinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->oinfo in mkcatalog "
+    error(EXIT_FAILURE, errno, "%zu bytes for p->oinfo in mkcatalog "
           "(mkcatalog.c)", OCOLUMNS*(p->numobjects+1)*sizeof *p->oinfo);
   errno=0; p->cinfo=calloc(CCOLUMNS*(p->numclumps+1), sizeof *p->cinfo);
   if(p->cinfo==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->cinfo in mkcatalog "
+    error(EXIT_FAILURE, errno, "%zu bytes for p->cinfo in mkcatalog "
           "(mkcatalog.c)", CCOLUMNS*(p->numclumps+1)*sizeof *p->cinfo);
 
   /* Set the shift values to NAN for all the objects and clumps: */

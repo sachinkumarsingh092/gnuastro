@@ -830,7 +830,7 @@ gal_statistics_set_bins(float *sorted, size_t size, size_t numbins,
   errno=0;
   bins=*obins=calloc((numbins+1)*2, sizeof *bins);
   if(bins==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for bins in gal_statistics_set_bins "
+    error(EXIT_FAILURE, errno, "%zu bytes for bins in gal_statistics_set_bins "
           "(statistics.c)", (numbins+1)*2*sizeof *bins);
 
   /* If the range is not defined, find it and set the bin width. */
@@ -869,7 +869,7 @@ gal_statistics_set_bins(float *sorted, size_t size, size_t numbins,
 
   /* For a check
   for(i=0;i<numbins;++i)
-    printf("%lu: %.4f\n", i+1, bins[i*2]);
+    printf("%zu: %.4f\n", i+1, bins[i*2]);
   */
 }
 
@@ -893,7 +893,7 @@ gal_statistics_histogram(float *sorted, size_t size, float *bins,
   for(i=0;i<size;++i)
     {
       /* For a check:
-      printf("%f:\n  histrow: %lu, numbins: %lu\n",
+      printf("%f:\n  histrow: %zu, numbins: %zu\n",
              sorted[i], histrow, numbins);
       */
       /* Data has not reached bins yet: */
@@ -913,7 +913,7 @@ gal_statistics_histogram(float *sorted, size_t size, float *bins,
           if(++histrow==numbins-1) break;
 
       /* For a check:
-      printf("  histrow: %lu\n", histrow);
+      printf("  histrow: %zu\n", histrow);
       */
       ++bins[histrow*2+1];
     }
@@ -935,7 +935,7 @@ gal_statistics_histogram(float *sorted, size_t size, float *bins,
 
   /* In case you want to see the histogram:
   for(i=0;i<numbins;++i)
-    printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+    printf("%zu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
   */
 }
 
@@ -1013,7 +1013,7 @@ gal_statistics_cumulative_fp(float *sorted, size_t size, float *bins,
 
   /* In case you want to see the CFP:
   for(i=0;i<numbins;++i)
-    printf("%lu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
+    printf("%zu: %.4f %.4F\n", i+1, bins[i*2], bins[i*2+1]);
   */
 }
 
@@ -1047,7 +1047,7 @@ gal_statistics_save_hist(float *sorted, size_t size, size_t numbins,
   if(fp==NULL)
     error(EXIT_FAILURE, errno, "couldn't open file %s", filename);
   fprintf(fp, "%s\n", comment);
-  fprintf(fp, "# The input %lu points binned in %lu bins\n#\n",
+  fprintf(fp, "# The input %zu points binned in %zu bins\n#\n",
           size, numbins);
   fprintf(fp, "# Column 0: Value in the middle of this bin.\n");
   fprintf(fp, "# Column 1: Number of points in this bin.\n");
@@ -1094,7 +1094,7 @@ gal_statistics_index_from_quantile(size_t size, float quant)
   floatindex=(float)size*quant;
 
   /*
-  printf("quant: %f, size: %lu, findex: %f\n", quant, size, floatindex);
+  printf("quant: %f, size: %zu, findex: %f\n", quant, size, floatindex);
   */
   /* Note that in the conversion from float to size_t, the floor
      integer value of the float will be used. */
@@ -1159,7 +1159,7 @@ gal_statistics_sigma_clip_converge(float *array, int o1_n0, size_t num_elem,
       gal_statistics_f_ave_std(start, num_elem, &ave, &std, NULL);
 
       if(print)
-        printf("      %lu: %f  %f  %f  %lu\n",
+        printf("      %zu: %f  %f  %f  %zu\n",
                counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are NaN. If so, stop the
@@ -1233,7 +1233,7 @@ gal_statistics_sigma_clip_certain_num(float *array, int o1_n0, size_t num_elem,
       gal_statistics_f_ave_std(start, num_elem, &ave, &std, NULL);
 
       if(print)
-        printf("      %lu: %f  %f  %f  %lu\n",
+        printf("      %zu: %f  %f  %f  %zu\n",
                counter+1, med, ave, std, num_elem);
 
       /* It might happen that ave and std are nan. If so, stop the
@@ -1302,7 +1302,7 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
      you want to think about slopes. */
   errno=0; slopes=malloc(size*sizeof *slopes);
   if(slopes==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for slopes in "
+    error(EXIT_FAILURE, errno, "%zu bytes for slopes in "
           "gal_statistics_remove_outliers_flat_cdf (statistics.c)",
           size*sizeof *slopes);
 
@@ -1338,8 +1338,8 @@ gal_statistics_remove_outliers_flat_cdf(float *sorted, size_t *outsize)
 
   /*
   for(i=0;i<size;++i)
-    printf("%lu\t%.3f\t%.3f\n", i, arr[i], slopes[i]);
-  printf("\n\nPlace to cut off for outliers is: %lu\n\n", *outsize);
+    printf("%zu\t%.3f\t%.3f\n", i, arr[i], slopes[i]);
+  printf("\n\nPlace to cut off for outliers is: %zu\n\n", *outsize);
   */
 
   free(slopes);
@@ -1406,7 +1406,7 @@ gal_statistics_mode_mirror_plots(float *sorted, size_t size, size_t mirrorindex,
   errno=0;
   out=malloc(numbins*3*sizeof *out);
   if(out==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for out in "
+    error(EXIT_FAILURE, errno, "%zu bytes for out in "
           "gal_mode_make_mirror_plots (mode.c)", numbins*3*sizeof *out);
 
 

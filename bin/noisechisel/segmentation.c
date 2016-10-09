@@ -106,7 +106,7 @@ prepfirstgrowth(struct clumpsthreadparams *ctp)
   errno=0;
   ctp->blankinds=malloc(ctp->area*sizeof *ctp->blankinds);
   if(ctp->blankinds==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for ctp->blankpixels in "
+    error(EXIT_FAILURE, errno, "%zu bytes for ctp->blankpixels in "
           "prepfirstgrowth (clumps.c)", ctp->area*sizeof *ctp->blankinds);
   ctp->numblanks=0;
   indf=(ind=ctp->inds)+ctp->area;
@@ -261,10 +261,10 @@ adjacencymatrixs(struct clumpsthreadparams *ctp,
   if(ctp->thislabel==104)
     for(i=1;i<numclumps;++i)
       {
-        printf("%lu: \n", i);
+        printf("%zu: \n", i);
         for(j=1;j<numclumps;++j)
           if(nums[ i * numclumps + j])
-            printf("   %lu: %-4d %-10.2f %-10.3f\n", j,
+            printf("   %zu: %-4d %-10.2f %-10.3f\n", j,
                    nums[i*numclumps+j],
                    sums[i*numclumps+j]/nums[i*numclumps+j],
                    sns[i*numclumps+j]);
@@ -299,15 +299,15 @@ grownclumpstoobjects(struct clumpsthreadparams *ctp)
   /* Allocate the necessary arrays: */
   errno=0; nums=calloc(numclumps*numclumps, sizeof *nums);
   if(nums==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for nums in grownclumpstoobjects "
+    error(EXIT_FAILURE, errno, "%zu bytes for nums in grownclumpstoobjects "
           "(segmentation.c)", numclumps*numclumps*sizeof *nums);
   errno=0; sums=calloc(numclumps*numclumps, sizeof *sums);
   if(sums==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for sums in grownclumpstoobjects "
+    error(EXIT_FAILURE, errno, "%zu bytes for sums in grownclumpstoobjects "
           "(segmentation.c)", numclumps*numclumps*sizeof *sums);
   errno=0; sns=calloc(numclumps*numclumps, sizeof *sns);
   if(sns==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for sns in grownclumpstoobjects "
+    error(EXIT_FAILURE, errno, "%zu bytes for sns in grownclumpstoobjects "
           "(segmentation.c)", numclumps*numclumps*sizeof *sns);
 
 
@@ -369,9 +369,9 @@ newclumplabels(struct clumpsthreadparams *ctp)
   if(ctp->numclumps<=2 || ctp->numobjects<=2)
     error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can fix "
           "it. For some reason, the newclumplabels function (in "
-          "segmentation.c) was called for the %lu detected region, even "
-          "though this region has ctp->numclumps=%lu and "
-          "ctp->numobjects=%lu! This function should only be used when "
+          "segmentation.c) was called for the %zu detected region, even "
+          "though this region has ctp->numclumps=%zu and "
+          "ctp->numobjects=%zu! This function should only be used when "
           "there is more than one object and clump over a detected region",
           PACKAGE_BUGREPORT, ctp->thislabel, ctp->numclumps,
           ctp->numobjects);
@@ -382,7 +382,7 @@ newclumplabels(struct clumpsthreadparams *ctp)
   errno=0;
   numclumpsinobj=calloc(ctp->numobjects, sizeof *numclumpsinobj);
   if(numclumpsinobj==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for numclumpsinobj in "
+    error(EXIT_FAILURE, errno, "%zu bytes for numclumpsinobj in "
           "newclumplabels (segmentation.c)",
           ctp->numobjects*sizeof *numclumpsinobj);
 
@@ -391,7 +391,7 @@ newclumplabels(struct clumpsthreadparams *ctp)
   errno=0;
   newclumplabs=calloc(ctp->numclumps, sizeof *newclumplabs);
   if(newclumplabs==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for newclumplabs in "
+    error(EXIT_FAILURE, errno, "%zu bytes for newclumplabs in "
           "newclumplabels (segmentation.c)",
           ctp->numclumps*sizeof *newclumplabs);
 
@@ -499,7 +499,7 @@ segmentonthread(void *inparam)
            space equal to the number of pixels*/
         errno=0; ctp->topinds=malloc(ctp->area*sizeof *ctp->topinds);
         if(ctp->topinds==NULL)
-          error(EXIT_FAILURE, errno, "%lu bytes for ctp->topinds in "
+          error(EXIT_FAILURE, errno, "%zu bytes for ctp->topinds in "
                 "segmentonthread (segmentation.c)",
                 ctp->area*sizeof *ctp->topinds);
 
@@ -643,7 +643,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
      thread. */
   errno=0; ctp=malloc(numthreads*sizeof *ctp);
   if(ctp==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes in segmentdetections "
+    error(EXIT_FAILURE, errno, "%zu bytes in segmentdetections "
           "(segmentation.c) for ctp", numthreads*sizeof *ctp);
 
 
@@ -687,7 +687,7 @@ segmentdetections(struct noisechiselparams *p, size_t numobjsinit,
             ctp[i].totalnummtx=&totalnummtx;
             ctp[i].indexs=&indexs[i*thrdcols];
             err=pthread_create(&t, &attr, segmentonthread, &ctp[i]);
-            if(err) error(EXIT_FAILURE, 0, "can't create thread %lu", i);
+            if(err) error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
 
       /* Wait for all threads to finish and free the spaces. */

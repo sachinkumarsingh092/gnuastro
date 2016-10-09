@@ -60,7 +60,7 @@ worker(void *inparam)
       /* The indexes of the actions will make it possible to point to
          whatever data structure or input you want. So in this test, we
          will just print the thread ID and action id. */
-      printf("thread %lu: %lu\n", prm->id, prm->indexs[i]);
+      printf("thread %zu: %zu\n", prm->id, prm->indexs[i]);
     }
 
   /* Wait until all other threads finish. When there was only one thread,
@@ -96,7 +96,7 @@ main(void)
   prm=malloc(numthreads*sizeof *prm);
   if(prm==NULL)
     {
-      fprintf(stderr, "%lu bytes could not be allocated for prm.",
+      fprintf(stderr, "%zu bytes could not be allocated for prm.",
               numthreads*sizeof *prm);
       exit(EXIT_FAILURE);
     }
@@ -135,7 +135,7 @@ main(void)
             err=pthread_create(&t, &attr, worker, &prm[i]);
             if(err)
               {
-                fprintf(stderr, "can't create thread %lu", i);
+                fprintf(stderr, "can't create thread %zu", i);
                 exit(EXIT_FAILURE);
               }
           }

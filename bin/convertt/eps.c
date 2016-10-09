@@ -182,7 +182,7 @@ blackandwhite(struct converttparams *p)
   errno=0;
   bits=calloc(bytesinimg, sizeof *bits);
   if(bits==NULL)
-    error(EXIT_FAILURE, errno, "allocating %lu bytes in blackandwhite",
+    error(EXIT_FAILURE, errno, "allocating %zu bytes in blackandwhite",
           bytesinimg);
 
   for(i=0;i<s0;++i)
@@ -223,7 +223,7 @@ channelsinhex(struct converttparams *p, FILE *fp, size_t size)
   for(i=0;i<p->numch;++i)
     {
       if(p->isblank[i])
-        fprintf(fp, "{<00>} %% Channel %lu is blank\n", i);
+        fprintf(fp, "{<00>} %% Channel %zu is blank\n", i);
       else
         {
           ech=p->ech[i];
@@ -252,7 +252,7 @@ channelsinascii85(struct converttparams *p, FILE *fp, size_t size)
   for(i=0;i<p->numch;++i)
     {
       if(p->isblank[i])
-        fprintf(fp, "{<00>} %% Channel %lu is blank\n", i);
+        fprintf(fp, "{<00>} %% Channel %zu is blank\n", i);
       else
         {
           ech=p->ech[i];
@@ -323,9 +323,9 @@ writeepsimage(struct converttparams *p, FILE *fp)
           "and fix it");
   fprintf(fp, "<<\n");
   fprintf(fp, "  /ImageType 1\n");
-  fprintf(fp, "  /Width %lu\n", p->s1[0]);
-  fprintf(fp, "  /Height %lu\n", p->s0[0]);
-  fprintf(fp, "  /ImageMatrix [ %lu 0 0 %lu 0 0 ]\n", p->s1[0], p->s0[0]);
+  fprintf(fp, "  /Width %zu\n", p->s1[0]);
+  fprintf(fp, "  /Height %zu\n", p->s0[0]);
+  fprintf(fp, "  /ImageMatrix [ %zu 0 0 %zu 0 0 ]\n", p->s1[0], p->s0[0]);
   fprintf(fp, "  /MultipleDataSources true\n");
   fprintf(fp, "  /BitsPerComponent %d\n", bpc);
   fprintf(fp, "  /Decode[");
@@ -382,7 +382,7 @@ saveepsorpdf(struct converttparams *p)
   if(fp==NULL)
     error(EXIT_FAILURE, errno, "%s", p->cp.output);
   fprintf(fp, "%%!PS-Adobe-3.0 EPSF-3.0\n");
-  fprintf(fp, "%%%%BoundingBox: 0 0 %lu %lu\n", winpt+2*p->borderwidth,
+  fprintf(fp, "%%%%BoundingBox: 0 0 %zu %zu\n", winpt+2*p->borderwidth,
           hinpt+2*p->borderwidth);
   fprintf(fp, "%%%%Creator: %s\n", SPACK_STRING);
   fprintf(fp, "%%%%CreationDate: %s", ctime(&p->rawtime));
@@ -400,9 +400,9 @@ saveepsorpdf(struct converttparams *p)
       fprintf(fp, "0 setgray\n");
       fprintf(fp, "%d setlinewidth\n", p->borderwidth);
       fprintf(fp, "%.1f %.1f moveto\n", hbw, hbw);
-      fprintf(fp, "0 %lu rlineto\n", hinpt+p->borderwidth);
-      fprintf(fp, "%lu 0 rlineto\n", winpt+p->borderwidth);
-      fprintf(fp, "0 -%lu rlineto\n", hinpt+p->borderwidth);
+      fprintf(fp, "0 %zu rlineto\n", hinpt+p->borderwidth);
+      fprintf(fp, "%zu 0 rlineto\n", winpt+p->borderwidth);
+      fprintf(fp, "0 -%zu rlineto\n", hinpt+p->borderwidth);
       fprintf(fp, "closepath\n");
       fprintf(fp, "stroke\n\n");
     }
@@ -412,7 +412,7 @@ saveepsorpdf(struct converttparams *p)
   /* Write the image: */
   fprintf(fp, "%% Draw the image:\n");
   fprintf(fp, "%d %d translate\n", p->borderwidth, p->borderwidth);
-  fprintf(fp, "%lu %lu scale\n", winpt, hinpt);
+  fprintf(fp, "%zu %zu scale\n", winpt, hinpt);
   writeepsimage(p, fp);
 
 
@@ -429,8 +429,8 @@ saveepsorpdf(struct converttparams *p)
 
   if(p->outputtype==PDFFORMAT)
     {
-      sprintf(command, "gs -q -o %s -sDEVICE=pdfwrite -dDEVICEWIDTHPOINTS=%lu"
-              " -dDEVICEHEIGHTPOINTS=%lu -dPDFFitPage %s", p->cp.output,
+      sprintf(command, "gs -q -o %s -sDEVICE=pdfwrite -dDEVICEWIDTHPOINTS=%zu"
+              " -dDEVICEHEIGHTPOINTS=%zu -dPDFFitPage %s", p->cp.output,
               winpt+2*p->borderwidth, hinpt+2*p->borderwidth, epsfilename);
       if(system(command))
         error(EXIT_FAILURE, 0, "the command to convert a PostScript file to "

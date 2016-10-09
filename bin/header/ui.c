@@ -88,7 +88,7 @@ readconfig(char *filename, struct headerparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -352,7 +352,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
           errno=0;
           fvalue=lp=malloc(sizeof *lp);
           if(lp==NULL)
-            error(EXIT_FAILURE, errno, "%lu bytes for long integer",
+            error(EXIT_FAILURE, errno, "%zu bytes for long integer",
                   sizeof *lp);
           *lp=l;
         }
@@ -367,7 +367,7 @@ fillfitsheaderll(struct gal_linkedlist_stll *input,
               errno=0;
               fvalue=dp=malloc(sizeof *dp);
               if(dp==NULL)
-                error(EXIT_FAILURE, errno, "%lu bytes for double",
+                error(EXIT_FAILURE, errno, "%zu bytes for double",
                       sizeof *dp);
               *dp=d;
             }
@@ -398,7 +398,7 @@ preparearrays(struct headerparams *p)
   len=strlen(p->up.inputname)+strlen(p->cp.hdu)+4;
   ffname=malloc(len*sizeof *ffname);
   if(ffname==NULL)
-    error(EXIT_FAILURE, errno, "%lu characters", len);
+    error(EXIT_FAILURE, errno, "%zu characters", len);
   sprintf(ffname, "%s[%s#]", p->up.inputname, p->cp.hdu);
 
   /* Open the FITS file: */

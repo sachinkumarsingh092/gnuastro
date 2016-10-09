@@ -137,7 +137,7 @@ readconfig(char *filename, struct tableparams *p)
   errno=0;
   line=malloc(len*sizeof *line);
   if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %lu bytes in readdefaults",
+    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
           len * sizeof *line);
 
   /* Read the tokens in the file:  */
@@ -295,19 +295,19 @@ printvalues(FILE *fp, struct tableparams *p)
   if(up->fegset)
     fprintf(fp, CONF_SHOWFMT"%c\n", "feg", up->feg);
   if(up->sintwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "sintwidth", up->sintwidth);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "sintwidth", up->sintwidth);
   if(up->lintwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "lintwidth", up->lintwidth);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "lintwidth", up->lintwidth);
   if(up->floatwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "floatwidth", up->floatwidth);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "floatwidth", up->floatwidth);
   if(up->doublewidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "doublewidth", up->doublewidth);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "doublewidth", up->doublewidth);
   if(up->strwidthset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "strwidth", up->strwidth);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "strwidth", up->strwidth);
   if(up->floatprecisionset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "floatprecision", up->floatprecision);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "floatprecision", up->floatprecision);
   if(up->doubleprecisionset)
-    fprintf(fp, CONF_SHOWFMT"%lu\n", "doubleprecision", up->doubleprecision);
+    fprintf(fp, CONF_SHOWFMT"%zu\n", "doubleprecision", up->doubleprecision);
   if(up->fitstabletypeset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "fitstabletype",
             p->fitstabletype==ASCII_TBL ? "ascii" : "binary");
@@ -405,14 +405,14 @@ allocinputcolinfo(struct tableparams *p)
   errno=0;
   up->datatype=malloc(ncols * sizeof *up->datatype);
   if(up->datatype==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for up->datatype",
+    error(EXIT_FAILURE, errno, "%zu bytes for up->datatype",
           ncols * sizeof *up->datatype);
 
   /* up->ttstr keeps the actual string used to specify the datatype. */
   errno=0;
   up->ttstr=malloc(ncols * sizeof *up->ttstr);
   if(up->ttstr==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for ttstr",
+    error(EXIT_FAILURE, errno, "%zu bytes for ttstr",
           ncols * sizeof *up->ttstr);
   fc=(c=up->ttstr)+ncols; do *c++=NULL; while(c<fc);
 
@@ -420,7 +420,7 @@ allocinputcolinfo(struct tableparams *p)
   errno=0;
   up->tname=malloc(ncols * sizeof *up->tname);
   if(up->tname==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tname",
+    error(EXIT_FAILURE, errno, "%zu bytes for tname",
           ncols * sizeof *up->tname);
   fc=(c=up->tname)+ncols; do *c++=NULL; while(c<fc);
 
@@ -428,7 +428,7 @@ allocinputcolinfo(struct tableparams *p)
   errno=0;
   up->tunit=malloc(ncols * sizeof *up->tunit);
   if(up->tunit==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for tunit",
+    error(EXIT_FAILURE, errno, "%zu bytes for tunit",
           ncols * sizeof *up->tunit);
   fc=(c=up->tunit)+ncols; do *c++=NULL; while(c<fc);
 }
@@ -623,18 +623,18 @@ printinfo(struct tableparams *p)
           typestring="unsigned short";
           break;
         default:
-          error(EXIT_FAILURE, 0, "%d (from TFORM%lu='%c') is not a "
+          error(EXIT_FAILURE, 0, "%d (from TFORM%zu='%c') is not a "
                 "recognized CFITSIO datatype.", up->datatype[i],
                 i, up->ttstr[i][0]);
         }
-      printf("%-5lu%-25s%-15s%s\n", i+1, up->tname[i] ? up->tname[i] : "---",
+      printf("%-5zu%-25s%-15s%s\n", i+1, up->tname[i] ? up->tname[i] : "---",
              up->tunit[i] ? up->tunit[i] : "---", typestring);
     }
 
 
   /* Print the number of rows: */
   printf("---------------------------------------------------------\n");
-  printf("Number of rows: %lu\n", p->nrows);
+  printf("Number of rows: %zu\n", p->nrows);
 }
 
 
@@ -750,7 +750,7 @@ regexerrorexit(int errcode, regex_t *compiled, char *input)
   errno=0;
   regexerrbuf=malloc(length);
   if(regexerrbuf==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for regexerrbuf", length);
+    error(EXIT_FAILURE, errno, "%zu bytes for regexerrbuf", length);
   (void) regerror(errcode, compiled, regexerrbuf, length);
 
   error(EXIT_FAILURE, 0, "Regular expression error: %s in value to "
@@ -801,8 +801,8 @@ outputcolumns(struct tableparams *p)
           /* Check if the given value is not larger than the number of
              columns in the input catalog. */
           if(tlong>up->ncols)
-            error(EXIT_FAILURE, 0, "%s (hdu: %s) has %lu columns, but "
-                  "you have asked for column number %lu", p->up.fitsname,
+            error(EXIT_FAILURE, 0, "%s (hdu: %s) has %zu columns, but "
+                  "you have asked for column number %zu", p->up.fitsname,
                   p->cp.hdu, up->ncols, tlong);
 
           /* Everything seems to be fine, put this column number in the
@@ -815,7 +815,7 @@ outputcolumns(struct tableparams *p)
           /* Allocate the regex_t structure: */
           errno=0; regex=malloc(sizeof *regex);
           if(regex==NULL)
-            error(EXIT_FAILURE, errno, "%lu bytes for regex", sizeof *regex);
+            error(EXIT_FAILURE, errno, "%zu bytes for regex", sizeof *regex);
 
           /* Go through all the columns names and see if this matches
              them. But first we have to "compile" the string into the
@@ -860,7 +860,7 @@ outputcolumns(struct tableparams *p)
   errno=0;
   p->ocols=malloc(p->nocols*sizeof *p->ocols);
   if(p->ocols==NULL)
-    error(EXIT_FAILURE, errno, "%lu bytes for p->ocols",
+    error(EXIT_FAILURE, errno, "%zu bytes for p->ocols",
           p->nocols*sizeof *p->ocols);
 
   /* Fill in the output column with the needed input table
@@ -901,7 +901,7 @@ preparearrays(struct tableparams *p)
       errno=0;
       p->ocols=malloc(p->nocols * sizeof *p->ocols);
       if(p->ocols==NULL)
-        error(EXIT_FAILURE, errno, "%lu bytes for p->ocols",
+        error(EXIT_FAILURE, errno, "%zu bytes for p->ocols",
               p->nocols * sizeof *p->ocols);
       for(i=0;i<p->nocols;++i)
         {
