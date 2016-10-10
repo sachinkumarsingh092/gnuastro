@@ -5263,40 +5263,53 @@ The creation time of the FITS file. This date is written directly by
 CFITSIO and is in UT format.
 
 @item COMMIT
-The commit description (output of `@command{$ git describe}') from the
-directory where you called any of Gnuastro's programs. If the directory is
-not version controlled or you don't have @file{libgit2} installed (see
-@ref{Optional dependencies}) then this key will not be present.
+Git's commit description from the running directory of Gnuastro's
+programs. If the running directory is not version controlled or
+@file{libgit2} isn't installed (see @ref{Optional dependencies}) then this
+keyword will not be present. The printed value is equivalent to the output
+of the following command:
+
+@example
+git describe --dirty --always
+@end example
+
+If the running directory contains non-committed work, then the stored value
+will have a `@command{-dirty}' suffix. This can be very helpful to let you
+know that the data is not ready to be shared with collaborators or
+submitted to a journal. You should only share results that are produced
+after all your work is committed (safely stored in the version controlled
+history and thus reproducible).
 
 At first sight, version control appears to be mainly a tool for software
-developers. However, a research's progress is almost identical to software
-development: first you have a rough idea that starts with handful of
-steps. But as the first results appear to be promising, you will have to
-extend it to make it more robust and work in all the situations your
-research covers, not just your first test samples. Slowly you will find
-wrong assumptions or bad implementations that need to be fixed (`bugs' in
-software development parlance). Finally, when you submit the research to
-your collaborators or a journal, many comments and suggestions will come in
-that you have to addressed.
+developers. However progress in a scientific research is almost identical
+to progress in software development: first you have a rough idea that
+starts with handful of easy steps. But as the first results appear to be
+promising, you will have to extend, or generalize, it to make it more
+robust and work in all the situations your research covers, not just your
+first test samples. Slowly you will find wrong assumptions or bad
+implementations that need to be fixed (`bugs' in software development
+parlance). Finally, when you submit the research to your collaborators or a
+journal, many comments and suggestions will come in that you have to
+addressed.
 
 Software developers have created version control systems precisely for this
-kind of activity. Each significant moment in the project's history is given
-a ``version''. So you can be sure that your work is reproducible and track
-the progress and history, see @ref{Version controlled source}. With version
-control, you can easily experiment a new method and revert back if it fails
-and many other things. One important feature is that you stamp the research
-result (FITS image, table, report or paper) with the version number of your
-research processing pipeline@footnote{For example see the NoiseChisel
-paper's @url{https://gitlab.com/makhlaghi/NoiseChisel-paper, reproduction
-pipeline}.}. This will enable you to exactly reproduce that same result
-later, even if you have made changes/progress.
+kind of activity. Each significant moment in the project's history is
+called a ``commit'', see @ref{Version controlled source}. A snapshot of the
+project in each ``commit'' is safely stored away, so you can revert back to
+it at a later time, or check changes/progress. This way, you can be sure
+that your work is reproducible and track the progress and history. With
+version control, experimentation in the project's analysis is greatly
+facilitated, since you can easily revert back if a brainstorm test
+procedure fails.
 
-If the running directory contains non-committed work, then the commit
-description stored in this keyword will have a `@command{-dirty}'
-suffix. This can be very helpful to let you know that the data is not ready
-to be shared with collaborators or journal. You should only share results
-that are produced after all your work is committed (safely stored in the
-version controlled history).
+One important feature of version control is that the research result (FITS
+image, table, report or paper) can be stamped with the unique commit
+information that produced it. This information will enable you to exactly
+reproduce that same result later, even if you have made
+changes/progress. For one example of a research paper's reproduction
+pipeline, please see the
+@url{https://gitlab.com/makhlaghi/NoiseChisel-paper, reproduction pipeline}
+of @ref{NoiseChisel}.
 
 @item CFITSIO
 The version of CFITSIO used (see @ref{CFITSIO}).
@@ -15810,8 +15823,10 @@ the commit description (similar to Gnuastro's unofficial version number,
 see @ref{Version numbering}). If there are uncommitted changes in the
 running directory, it will add a `@code{-dirty}' prefix to the
 description. When there is no tagged point in the previous commit, this
-function will return a uniquely abbreviated commit object as
-fallback. Similar to running the following command:
+function will return a uniquely abbreviated commit object as fallback. This
+function is used for generating the value of the @code{COMMIT} keyword in
+@ref{Output headers}. The output string is similar to the output of the
+following command:
 
 @example
 $ git describe --dirty --always
