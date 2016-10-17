@@ -18831,7 +18831,7 @@ to PSF-match two images. Convolve (blur or smooth) data with a given
 kernel.
 
 @item CosmicCalculator
-(@file{astconvolve}, see @ref{CosmicCalculator}) Do cosmological
+(@file{astcosmiccal}, see @ref{CosmicCalculator}) Do cosmological
 calculations, for example the luminosity distance, distance modulus,
 comoving volume and many more.
 
