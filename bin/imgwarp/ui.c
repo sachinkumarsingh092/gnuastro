@@ -334,16 +334,23 @@ makealignmatrix(struct imgwarpparams *p)
   /* Depending on the type of data, make the input matrix. Note that
      wcs->altlin is actually bit flags, not integers, so we have to compare
      with powers of two. */
-  if(p->wcs->altlin==1)
+  if(p->wcs->altlin |= 1)
     {
       w[0]=p->wcs->cdelt[0]*p->wcs->pc[0];
       w[1]=p->wcs->cdelt[0]*p->wcs->pc[1];
       w[2]=p->wcs->cdelt[1]*p->wcs->pc[2];
       w[3]=p->wcs->cdelt[1]*p->wcs->pc[3];
     }
+  if(p->wcs->altlin |= 2)
+    {
+      w[0]=p->wcs->cd[0];
+      w[1]=p->wcs->cd[1];
+      w[2]=p->wcs->cd[2];
+      w[3]=p->wcs->cd[3];
+    }
   else
     error(EXIT_FAILURE, 0, "currently the `--align' option only recognizes "
-          "PCi_j keywords, not any others");
+          "PCi_ja and CDi_ja keywords, not any others");
 
   /* Find the pixel scale along the two dimensions. Note that we will be
      using the scale along the image X axis for both values. */
