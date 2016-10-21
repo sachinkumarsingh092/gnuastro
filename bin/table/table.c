@@ -141,7 +141,7 @@ setformatstring(struct tableparams *p, size_t outcolid)
 
     default:
       error(EXIT_FAILURE, 0, "datatype value of %d not recognized in "
-            "gal_fits_datatype_alloc", ocol->datatype);
+            "setformatstring (table.c)", ocol->datatype);
     }
 
   /* Put the type, width and accu into the format string for this
@@ -194,11 +194,11 @@ readinputcols(struct tableparams *p)
              data. So we allocate an array to only put this column's values
              in.*/
           errno=0;
-          colfromtxt=col->data=malloc(nrows * sizeof *col->data);
-
+          colfromtxt=col->data=malloc(nrows * col->esize);
           if(col->data==NULL)
             error(EXIT_FAILURE, errno, "%zu bytes for col->data",
-                  nrows * sizeof *col->data);
+                  nrows * col->esize);
+
           for(j=0;j<nrows;++j)
             colfromtxt[j]=p->up.txtarray[ j * incols + col->inindex ];
         }

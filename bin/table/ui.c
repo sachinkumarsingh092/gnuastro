@@ -872,10 +872,13 @@ outputcolumns(struct tableparams *p)
   while(colsll)
     {
       gal_linkedlist_pop_from_sll(&colsll, &inindex);
-      p->ocols[i].datatype=up->datatype[inindex];
       p->ocols[i].inindex=inindex;
+      p->ocols[i].datatype=up->datatype[inindex];
+      p->ocols[i].esize=gal_fits_datatype_size(up->datatype[inindex]);
+      printf("\n%zu\n", p->ocols[i].esize);
       --i;
     }
+  exit(1);
 }
 
 
@@ -905,8 +908,9 @@ preparearrays(struct tableparams *p)
               p->nocols * sizeof *p->ocols);
       for(i=0;i<p->nocols;++i)
         {
-          p->ocols[i].datatype=up->datatype[i];
           p->ocols[i].inindex=i;
+          p->ocols[i].datatype=up->datatype[i];
+          p->ocols[i].esize=gal_fits_datatype_size(p->ocols[i].datatype);
         }
     }
 }
@@ -1006,6 +1010,7 @@ freeandreport(struct tableparams *p)
 
   /* Free the allocated arrays: */
   free(p->cp.hdu);
+  free(up->txtarray);
   free(up->datatype);
   free(p->cp.output);
 

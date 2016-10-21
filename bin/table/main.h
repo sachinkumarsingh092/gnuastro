@@ -44,6 +44,7 @@ struct outcolumn
   int     anynul;               /* If there is any blank characters.    */
   void   *nulval;               /* The blank value for this column.     */
   void     *data;               /* Array keeping the column data.       */
+  size_t   esize;               /* Size of each element in this column. */
   char fmt[MAX_COL_FORMAT_LENGTH];  /* format to use in printf.         */
 };
 
