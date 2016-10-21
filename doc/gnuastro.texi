@@ -9283,12 +9283,12 @@ equivalent to @option{--flip=0,20} since it only matters if it is
 non-zero).
 
 @item -e
-@itemx --sheer
-(@option{=FLT[,FLT]}) Apply a sheer to the image along the image axises. If
-only one value is given, then both image axises will be sheered with the
-given value. When two values are given, the first will be used to sheer the
+@itemx --shear
+(@option{=FLT[,FLT]}) Apply a shear to the image along the image axises. If
+only one value is given, then both image axises will be sheared with the
+given value. When two values are given, the first will be used to shear the
 first axis and the second will be used for the second axis. If you only
-need to sheer one axis, use @option{0} for the axis you don't need.
+need to shear one axis, use @option{0} for the axis you don't need.
 
 @item -t
 @itemx --translate

@@ -163,8 +163,8 @@ readconfig(char *filename, struct imgwarpparams *p)
       else if(strcmp(name, "flip")==0)
         add_to_optionwapsll(&p->up.owll, FLIP_WARP, value);
 
-      else if(strcmp(name, "sheer")==0)
-        add_to_optionwapsll(&p->up.owll, SHEER_WARP, value);
+      else if(strcmp(name, "shear")==0)
+        add_to_optionwapsll(&p->up.owll, SHEAR_WARP, value);
 
       else if(strcmp(name, "translate")==0)
         add_to_optionwapsll(&p->up.owll, TRANSLATE_WARP, value);
@@ -786,7 +786,7 @@ prepare_modular_matrix(struct imgwarpparams *p)
           tmatrix[6]=0.0f;       tmatrix[7]=0.0f;     tmatrix[8]=1.0f;
           break;
 
-        case SHEER_WARP:
+        case SHEAR_WARP:
           if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
           tmatrix[0]=1.0f;     tmatrix[1]=tmp->v1;    tmatrix[2]=0.0f;
           tmatrix[3]=tmp->v2;  tmatrix[4]=1.0f;       tmatrix[5]=0.0f;

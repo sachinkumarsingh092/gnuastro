@@ -31,7 +31,7 @@ enum standard_warps
     ROTATE_WARP,
     SCALE_WARP,
     FLIP_WARP,
-    SHEER_WARP,
+    SHEAR_WARP,
     TRANSLATE_WARP,
     PROJECT_WARP,
   };

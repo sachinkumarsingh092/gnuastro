@@ -203,11 +203,11 @@ static struct argp_option options[] =
       3
     },
     {
-      "sheer",
+      "shear",
       'e',
       "FLT[,FLT]",
       0,
-      "Sheer along the given axis(es).",
+      "Shear along the given axis(es).",
       3
     },
     {
@@ -323,7 +323,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_to_optionwapsll(&p->up.owll, FLIP_WARP, arg);
       break;
     case 'e':
-      add_to_optionwapsll(&p->up.owll, SHEER_WARP, arg);
+      add_to_optionwapsll(&p->up.owll, SHEAR_WARP, arg);
       break;
     case 't':
       add_to_optionwapsll(&p->up.owll, TRANSLATE_WARP, arg);
