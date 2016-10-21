@@ -20,8 +20,29 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef IMCROPUI_H
-#define IMCROPUI_H
+#ifndef UI_H
+#define UI_H
+
+
+/* Macros for various types of standard transformation.*/
+enum standard_warps
+  {
+    ALIGN_WARP,
+    ROTATE_WARP,
+    SCALE_WARP,
+    FLIP_WARP,
+    SHEER_WARP,
+    TRANSLATE_WARP,
+    PROJECT_WARP,
+  };
+
+
+/* Functions */
+void
+add_to_optionwapsll(struct optionwarpsll **list, int type, char *value);
+
+void
+parse_two_values(char *str, double *v1, double *v2);
 
 void
 setparams(int argc, char *argv[], struct imgwarpparams *p);

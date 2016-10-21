@@ -138,28 +138,39 @@ readconfig(char *filename, struct imgwarpparams *p)
                                      SPACK, filename, lineno);
           up->maxblankfracset=1;
         }
-      else if(strcmp(name, "align")==0)
+      else if(strcmp(name, "nofitscorrect")==0)
         {
-          if(up->alignset) continue;
-          gal_checkset_int_zero_or_one(value, &up->align, name, key,
-                                       SPACK, filename, lineno);
-          up->alignset=1;
-        }
-      else if(strcmp(name, "rotate")==0)
-        {
-          if(up->rotateset) continue;
-          gal_checkset_any_float(value, &up->rotate, name, key, SPACK,
-                                 filename, lineno);
-          up->rotateset=1;
-        }
-      else if(strcmp(name, "scale")==0)
-        {
-          if(up->scaleset) continue;
-          gal_checkset_any_float(value, &up->scale, name, key, SPACK,
-                                 filename, lineno);
-          up->scaleset=1;
+          if(up->nofitscorrectset) continue;
+          gal_checkset_int_zero_or_one(value, &up->nofitscorrect, name,
+                                       key, SPACK, filename, lineno);
+          up->nofitscorrectset=1;
         }
 
+
+
+
+
+      /* Modular warpings */
+      else if(strcmp(name, "align")==0)
+        add_to_optionwapsll(&p->up.owll, ALIGN_WARP, NULL);
+
+      else if(strcmp(name, "rotate")==0)
+        add_to_optionwapsll(&p->up.owll, ROTATE_WARP, value);
+
+      else if(strcmp(name, "scale")==0)
+        add_to_optionwapsll(&p->up.owll, SCALE_WARP, value);
+
+      else if(strcmp(name, "flip")==0)
+        add_to_optionwapsll(&p->up.owll, FLIP_WARP, value);
+
+      else if(strcmp(name, "sheer")==0)
+        add_to_optionwapsll(&p->up.owll, SHEER_WARP, value);
+
+      else if(strcmp(name, "translate")==0)
+        add_to_optionwapsll(&p->up.owll, TRANSLATE_WARP, value);
+
+      else if(strcmp(name, "project")==0)
+        add_to_optionwapsll(&p->up.owll, PROJECT_WARP, value);
 
 
 
@@ -200,18 +211,19 @@ printvalues(FILE *fp, struct imgwarpparams *p)
   fprintf(fp, "\n# Output parameters:\n");
   if(up->matrixstringset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("matrix", up->matrixstring);
-  if(up->alignset)
-    fprintf(fp, CONF_SHOWFMT"%d\n", "align", up->align);
-  if(up->rotateset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "rotate", up->rotate);
-  if(up->scaleset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "scale", up->scale);
 
   if(cp->outputset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("output", cp->output);
 
   if(up->maxblankfracset)
     fprintf(fp, CONF_SHOWFMT"%.3f\n", "maxblankfrac", p->maxblankfrac);
+
+
+
+  fprintf(fp, "\n# Modular transformations:\n");
+  if(up->nofitscorrectset)
+    fprintf(fp, CONF_SHOWFMT"%d\n", "nofitscorrect", up->nofitscorrect);
+
 
 
   /* For the operating mode, first put the macro to print the common
@@ -261,52 +273,259 @@ checkifset(struct imgwarpparams *p)
 
 
 
-
 /**************************************************************/
-/***************       Prepare Matrix       *******************/
+/**********      Modular matrix linked list       *************/
 /**************************************************************/
 void
-readmatrixoption(struct imgwarpparams *p)
+add_to_optionwapsll(struct optionwarpsll **list, int type, char *value)
 {
-  size_t counter=0;
-  char *t, *tailptr;
+  double v1=NAN, v2=NAN;
+  char *tailptr, *secondstr;
+  struct optionwarpsll *newnode;
 
   /* Allocate the necessary space. */
   errno=0;
-  p->matrix=malloc(9*sizeof *p->matrix);
-  if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for temporary array to keep "
-          "the matrix option", 9*sizeof *p->matrix);
+  newnode=malloc(sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for newnode in "
+          "add_to_optionwarpsll", sizeof *newnode);
 
-  /* Go over the string and set the values. */
-  t=p->up.matrixstring;
-  while(*t!='\0')
+  /* Read the numbers when necessary. */
+  if(value)
     {
-      switch(*t)
+      /* Parse the first number */
+      v1=strtod(value, &tailptr);
+      if(tailptr==value)
+        error(EXIT_FAILURE, 0, "The start of the string `%s' could not be "
+              "read as a number", value);
+
+      /* If there is any white space characters, ignore them and make sure
+         that the first character is a coma (`,'). */
+      secondstr=tailptr;
+      while(isspace(*secondstr)) ++secondstr;
+      if(*secondstr==',')
         {
-        case ' ': case '\t': case ',':
-          ++t;
-          break;
-        default:
-          errno=0;
-          p->matrix[counter++]=strtod(t, &tailptr);
-          if(errno) error(EXIT_FAILURE, errno, "In reading `%s`", t);
-          if(tailptr==t)
-            error(EXIT_FAILURE, 0, "the provided string `%s' for matrix "
-                  "could not be read as a number", t);
-          t=tailptr;
-          if(counter>9)       /* Note that it was ++'d! */
-            error(EXIT_FAILURE, 0, "there are %zu elements in `%s', there "
-                  "should be 4 or 9", counter, p->up.matrixstring);
-          /*printf("%f, %s\n", p->matrix[counter-1], t);*/
+          /* If the type is rotate, then print an error since rotate only
+             needs one input, not two. */
+          if(type==ROTATE_WARP)
+            error(EXIT_FAILURE, 0, "The `--rotate' (`-r') option only needs "
+                  "one input number, not more. It was given `%s'", value);
+
+          /* Ignore the coma. */
+          ++secondstr;
+
+          /* Read the second number: */
+          v2=strtod(secondstr, &tailptr);
+          if(tailptr==secondstr)
+            error(EXIT_FAILURE, 0, "The second part (after the coma) of "
+                  "`%s' (`%s') could not be read as a number", value,
+                  secondstr);
+        }
+
+      /* If there was only one number given, secondstr will be '\0' when
+         control reaches here. */
+      else if(*secondstr!='\0')
+        error(EXIT_FAILURE, 0, "the character between the two numbers (`%s') "
+              "must be a coma (`,')\n", value);
+    }
+
+  /* Put in the values. Note that both v1 and v2 were initialized to NaN,
+     so if v2 is not given, it will be NaN and the later function can
+     decide what it wants to replace it with.*/
+  newnode->v1=v1;
+  newnode->v2=v2;
+  newnode->type=type;
+  newnode->next=*list;
+
+  /* Set list to point to the new node. */
+  *list=newnode;
+}
+
+
+
+
+
+/* Allocate space for a new node: */
+struct optionwarpsll *
+alloc_owll_node(void)
+{
+  struct optionwarpsll *newnode;
+
+  errno=0;
+  newnode=malloc(sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for newnode in "
+          "add_to_optionwarpsll", sizeof *newnode);
+
+  return newnode;
+}
+
+
+
+
+
+/* The input list of warpings are recorded in a last-in-first-out order. So
+   we reverse the order and also add the transformations necessary for the
+   FITS definition (where the center of the pixel has a value of 1, not its
+   corner. */
+void
+prepare_optionwapsll(struct imgwarpparams *p)
+{
+  struct optionwarpsll *tmp, *next, *newnode, *prepared=NULL;
+
+  /* Add the FITS correction for the first warp (before everything else).
+
+     IMPORTANT: This is the last transform that will be done, so we have to
+     translate the image by -0.5.*/
+  if(!p->up.nofitscorrect)
+    {
+      newnode = alloc_owll_node();
+      newnode->v1 = newnode->v2 = -0.5f;
+      newnode->type = TRANSLATE_WARP;
+      newnode->next = prepared;
+      prepared = newnode;
+    }
+
+  /* Put in the rest of the warpings */
+  tmp=p->up.owll;
+  while(tmp!=NULL)
+    {
+      /* Allocate space for the new element, and put the values in. */
+      newnode = alloc_owll_node();
+      newnode->v1 = tmp->v1;
+      newnode->v2 = tmp->v2;
+      newnode->type = tmp->type;
+      newnode->next = prepared;
+
+      /* Now that previous nodes have been linked to next, set the
+         reversed to the new node. */
+      prepared = newnode;
+
+      /* Now keep the next element and free the old allocated space. */
+      next = tmp->next;
+      free(tmp);
+      tmp = next;
+    }
+
+  /* Add the FITS correction for the last warp (after everything else).
+
+     IMPORTANT: This is the first transform that will be done, so we have
+     to translate the image by +0.5.*/
+  if(!p->up.nofitscorrect)
+    {
+      newnode = alloc_owll_node();
+      newnode->v1 = newnode->v2 = 0.5f;
+      newnode->type = TRANSLATE_WARP;
+      newnode->next = prepared;
+      prepared = newnode;
+    }
+
+  /* Put the pointer in the output */
+  p->up.owll=prepared;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*************      Fill temporary matrix     *****************/
+/**************************************************************/
+void
+read_matrix(struct imgwarpparams *p)
+{
+  char *t, *tailptr;
+  size_t i, counter=0, m0, m1;
+  double *matrix=p->matrix, rmatrix[9], *fmatrix;
+
+  /* Read the matrix either as a file or from the command-line. */
+  if(p->up.matrixname)
+    {
+      gal_txtarray_txt_to_array(p->up.matrixname, &fmatrix, &m0, &m1);
+      counter=m0*m1;
+      for(i=0;i<(counter<9 ? counter : 9);++i)
+        rmatrix[i]=fmatrix[i];
+      free(fmatrix);
+    }
+  else
+    {
+      t=p->up.matrixstring;
+      while(*t!='\0')
+        {
+          switch(*t)
+            {
+            case ' ': case '\t': case ',':
+              ++t;
+              break;
+            default:
+              errno=0;
+              rmatrix[counter++]=strtod(t, &tailptr);
+              if(errno) error(EXIT_FAILURE, errno, "reading `%s`", t);
+              if(tailptr==t)
+                error(EXIT_FAILURE, 0, "the provided string `%s' for "
+                      "matrix could not be read as a number", t);
+              t=tailptr;
+              if(counter>9)       /* Note that it was incremented! */
+                error(EXIT_FAILURE, 0, "there are %zu elements in `%s', "
+                      "there should be 4 or 9", counter, p->up.matrixstring);
+              /*printf("%f, %s\n", p->matrix[counter-1], t);*/
+            }
         }
     }
 
-  /* Add the other necessary information: */
+  /* If there was 4 elements (a 2 by 2 matrix), put them into a 3 by 3
+     matrix. */
   if(counter==4)
-    p->ms1=p->ms0=2;
+    {
+      /* Fill in the easy 3 by 3 matrix: */
+      matrix[0]=rmatrix[0];   matrix[1]=rmatrix[1];
+      matrix[3]=rmatrix[2];   matrix[4]=rmatrix[3];
+      matrix[6]=0.0f;         matrix[7]=0.0f;         matrix[8]=1.0f;
+
+      /* If we need to correct for the FITS standard, then correc the last
+         two elements. Recall that the coordinates of the center of the
+         first pixel in the FITS standard are 1. We want 0 to be the
+         coordinates of the bottom corner of the image.
+
+         1  0  0.5      a  b  0      a  b  0.5
+         0  1  0.5   *  c  d  0   =  c  d  0.5
+         0  0   1       0  0  1      0  0   1
+
+         and
+
+         a  b  0.5     1  0  -0.5     a  b  (a*-0.5)+(b*-0.5)+0.5
+         c  d  0.5  *  0  1  -0.5  =  c  d  (c*-0.5)+(d*-0.5)+0.5
+         0  0   1      0  0   1       0  0           1
+      */
+      if(p->up.nofitscorrect)
+        matrix[2] = matrix[5] = 0.0f;
+      else
+        {
+          matrix[2] = ((rmatrix[0] + rmatrix[1]) * -0.5f) + 0.5f;
+          matrix[5] = ((rmatrix[2] + rmatrix[3]) * -0.5f) + 0.5f;
+        }
+    }
   else if (counter==9)
-    p->ms1=p->ms0=3;
+    {
+      matrix[0]=rmatrix[0];   matrix[1]=rmatrix[1];   matrix[2]=rmatrix[2];
+      matrix[3]=rmatrix[3];   matrix[4]=rmatrix[4];   matrix[5]=rmatrix[5];
+      matrix[6]=rmatrix[6];   matrix[7]=rmatrix[7];   matrix[8]=rmatrix[8];
+    }
   else
     error(EXIT_FAILURE, 0, "there are %zu numbers in the string `%s'! "
           "It should contain 4 or 9 numbers (for a 2 by 2 or 3 by 3 "
@@ -320,9 +539,10 @@ readmatrixoption(struct imgwarpparams *p)
 /* Set the matrix so the image is aligned with the axises. Note that
    WCSLIB automatically fills the CRPI */
 void
-makealignmatrix(struct imgwarpparams *p)
+makealignmatrix(struct imgwarpparams *p, double *tmatrix)
 {
   double A, dx, dy;
+  double amatrix[4];
   double w[4]={0,0,0,0};
 
   /* Check if there is only two WCS axises: */
@@ -355,14 +575,6 @@ makealignmatrix(struct imgwarpparams *p)
   /* Find the pixel scale along the two dimensions. Note that we will be
      using the scale along the image X axis for both values. */
   gal_wcs_pixel_scale_deg(p->wcs, &dx, &dy);
-
-  /* Allocate space for the matrix: */
-  errno=0;
-  p->matrix=malloc(4*sizeof *p->matrix);
-  if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->matrix in makealignmatrix",
-          4*sizeof *p->matrix);
-  p->ms0=p->ms1=2;
 
   /* Lets call the given WCS orientation `W', the rotation matrix we want
      to find as `X' and the final (aligned matrix) to have just one useful
@@ -403,12 +615,23 @@ makealignmatrix(struct imgwarpparams *p)
        --> x3 = a / w1 / A
        --> x2 = -1 * x3 * w2 / w0
 
+    Note that when the image is already aligned, a unity matrix should be
+    output.
    */
-  A = (w[3]/w[1]) - (w[2]/w[0]);
-  p->matrix[1] = dx / w[0] / A;
-  p->matrix[3] = dx / w[1] / A;
-  p->matrix[0] = -1 * p->matrix[1] * w[3] / w[1];
-  p->matrix[2] = -1 * p->matrix[3] * w[2] / w[0];
+  if( w[1]==0.0f && w[2]==0.0f )
+    {
+      amatrix[0]=1.0f;   amatrix[1]=0.0f;
+      amatrix[2]=0.0f;   amatrix[3]=1.0f;
+    }
+  else
+    {
+      A = (w[3]/w[1]) - (w[2]/w[0]);
+      amatrix[1] = dx / w[0] / A;
+      amatrix[3] = dx / w[1] / A;
+      amatrix[0] = -1 * amatrix[1] * w[3] / w[1];
+      amatrix[2] = -1 * amatrix[3] * w[2] / w[0];
+    }
+
 
   /* For a check:
   printf("dx: %e\n", dx);
@@ -416,41 +639,73 @@ makealignmatrix(struct imgwarpparams *p)
   printf("  %.8e    %.8e\n", w[0], w[1]);
   printf("  %.8e    %.8e\n", w[2], w[3]);
   printf("x:\n");
-  printf("  %.8e    %.8e\n", p->matrix[0], p->matrix[1]);
-  printf("  %.8e    %.8e\n", p->matrix[2], p->matrix[3]);
+  printf("  %.8e    %.8e\n", amatrix[0], amatrix[1]);
+  printf("  %.8e    %.8e\n", amatrix[2], amatrix[3]);
   */
+
+
+  /* Put the matrix elements into the ouput array: */
+  tmatrix[0]=amatrix[0];  tmatrix[1]=amatrix[1]; tmatrix[2]=0.0f;
+  tmatrix[3]=amatrix[2];  tmatrix[4]=amatrix[3]; tmatrix[5]=0.0f;
+  tmatrix[6]=0.0f;        tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
 }
 
 
 
 
 
-/* Create rotation matrix */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/***************       Prepare Matrix       *******************/
+/**************************************************************/
+/* This function is mainly for easy checking/debugging. */
 void
-makebasicmatrix(struct imgwarpparams *p)
+printmatrix(double *matrix)
 {
-  struct uiparams *up=&p->up;
+  printf("%-10.3f%-10.3f%-10.3f\n", matrix[0], matrix[1], matrix[2]);
+  printf("%-10.3f%-10.3f%-10.3f\n", matrix[3], matrix[4], matrix[5]);
+  printf("%-10.3f%-10.3f%-10.3f\n", matrix[6], matrix[7], matrix[8]);
+}
 
-  /* Allocate space for the matrix: */
-  errno=0;
-  p->matrix=malloc(4*sizeof *p->matrix);
-  if(p->matrix==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for p->matrix in makerotationmatrix",
-          4*sizeof *p->matrix);
-  p->ms0=p->ms1=2;
 
-  /* Put in the elements */
-  if(up->rotateset)
-    {
-      p->matrix[1] = sin( up->rotate*M_PI/180 );
-      p->matrix[2] = p->matrix[1] * -1.0f;
-      p->matrix[3] = p->matrix[0] = cos( up->rotate*M_PI/180 );
-    }
-  else if (up->scaleset)
-    {
-      p->matrix[1] = p->matrix[2] = 0.0f;
-      p->matrix[0] = p->matrix[3] = up->scale;
-    }
+
+
+
+void
+inplace_matrix_multiply(double *in, double *with)
+{
+  /* `tin' will keep the values of the input array because we want to
+     write the multiplication result in the input array. */
+  double tin[9]={in[0],in[1],in[2],in[3],in[4],in[5],in[6],in[7],in[8]};
+
+  /* For easy checking, here are the matrix/memory layouts:
+          tin[0] tin[1] tin[2]     with[0] with[1] with[2]
+          tin[3] tin[4] tin[5]  *  with[3] with[4] with[5]
+          tin[6] tin[7] tin[8]     with[6] with[7] with[8]   */
+  in[0] = tin[0]*with[0] + tin[1]*with[3] + tin[2]*with[6];
+  in[1] = tin[0]*with[1] + tin[1]*with[4] + tin[2]*with[7];
+  in[2] = tin[0]*with[2] + tin[1]*with[5] + tin[2]*with[8];
+
+  in[3] = tin[3]*with[0] + tin[4]*with[3] + tin[5]*with[6];
+  in[4] = tin[3]*with[1] + tin[4]*with[4] + tin[5]*with[7];
+  in[5] = tin[3]*with[2] + tin[4]*with[5] + tin[5]*with[8];
+
+  in[6] = tin[6]*with[0] + tin[7]*with[3] + tin[8]*with[6];
+  in[7] = tin[6]*with[1] + tin[7]*with[4] + tin[8]*with[7];
+  in[8] = tin[6]*with[2] + tin[7]*with[5] + tin[8]*with[8];
 }
 
 
@@ -459,99 +714,122 @@ makebasicmatrix(struct imgwarpparams *p)
 
 /* Fill in the warping matrix elements based on the options/arguments */
 void
-preparematrix(struct imgwarpparams *p)
+prepare_modular_matrix(struct imgwarpparams *p)
 {
-  double *tmp;
-  int mcheck=0;
+  int f1, f2;                   /* For flipping. */
+  double s, c, tmatrix[9];
   struct uiparams *up=&p->up;
-
-  /* Make sure that none of the matrix creation options/arguments are given
-     together. Note that a matrix string is optional (will only be used if
-     there is no matrix file). */
-  mcheck = ( up->alignset + up->rotateset + up->scaleset +
-             (up->matrixname!=NULL) );
-  if( mcheck > 1 )
-    error(EXIT_FAILURE, 0, "More than one method to define the warping "
-          "matrix has been given. Please only specify one.");
+  struct optionwarpsll *tmp, *next;
 
 
-  /* Read the input image WCS structure. We are doing this here because
-     some of the matrix operations might need it. */
-  gal_fits_read_wcs(up->inputname, p->cp.hdu, p->hstartwcs,
-                    p->hendwcs, &p->nwcs, &p->wcs);
+  /* Allocate space for the matrix, then initialize it. */
+  p->matrix[0]=1.0f;     p->matrix[1]=0.0f;     p->matrix[2]=0.0f;
+  p->matrix[3]=0.0f;     p->matrix[4]=1.0f;     p->matrix[5]=0.0f;
+  p->matrix[6]=0.0f;     p->matrix[7]=0.0f;     p->matrix[8]=1.0f;
 
 
-  /* Depending on the given situation make the matrix. */
-  if(up->alignset)
-    makealignmatrix(p);
-  else if( up->rotateset || up->scaleset)
-    makebasicmatrix(p);
-  else
+  /* The linked list is last-in-first-out, so we need to reverse it to
+     easily apply the changes in the same order that was read in. */
+  prepare_optionwapsll(p);
+
+
+  /* Do all the operations */
+  tmp=up->owll;
+  while(tmp!=NULL)
     {
-      if(up->matrixname)
-        gal_txtarray_txt_to_array(up->matrixname, &p->matrix,
-                                  &p->ms0, &p->ms1);
-      else
+      /* Fill `tmatrix' depending on the type of the warp. */
+      switch(tmp->type)
         {
-          /* Check if a matrix string is actually present. */
-          if(up->matrixstringset==0)
-            error(EXIT_FAILURE, 0, "no warping matrix string has been and "
-                  "no other means of making the warping matrix (a file or "
-                  "other options have been specified");
-          readmatrixoption(p);
+        case ALIGN_WARP:
+          makealignmatrix(p, tmatrix);
+          break;
+
+        case ROTATE_WARP:
+          s = sin( tmp->v1*M_PI/180 );
+          c = cos( tmp->v1*M_PI/180 );
+          tmatrix[0]=c;        tmatrix[1]=s;     tmatrix[2]=0.0f;
+          tmatrix[3]=-1.0f*s;  tmatrix[4]=c;     tmatrix[5]=0.0f;
+          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;  tmatrix[8]=1.0f;
+          break;
+
+        case SCALE_WARP:
+          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
+          tmatrix[0]=tmp->v1;  tmatrix[1]=0.0f;     tmatrix[2]=0.0f;
+          tmatrix[3]=0.0f;     tmatrix[4]=tmp->v2;  tmatrix[5]=0.0f;
+          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;     tmatrix[8]=1.0f;
+          break;
+
+        case FLIP_WARP:
+          /* For the flip, the values dont really matter! As long as the
+             value is non-zero, the flip in the respective axis will be
+             made. Note that the second axis is optional (can be NaN), but
+             the first axis is required.*/
+          f1 = tmp->v1==0.0f ? 0 : 1;
+          f2 = isnan(tmp->v2) ? 0 : ( tmp->v2==0.0f ? 0 : 1);
+          if( f1 && !f2  )
+            {
+              tmatrix[0]=1.0f;   tmatrix[1]=0.0f;
+              tmatrix[3]=0.0f;   tmatrix[4]=-1.0f;
+            }
+          else if ( !f1 && f2 )
+            {
+              tmatrix[0]=-1.0f;  tmatrix[1]=0.0f;
+              tmatrix[3]=0.0f;   tmatrix[4]=1.0f;
+            }
+          else
+            {
+              tmatrix[0]=-1.0f;  tmatrix[1]=0.0f;
+              tmatrix[3]=0.0f;   tmatrix[4]=-1.0f;
+            }
+                                                      tmatrix[2]=0.0f;
+                                                      tmatrix[5]=0.0f;
+          tmatrix[6]=0.0f;       tmatrix[7]=0.0f;     tmatrix[8]=1.0f;
+          break;
+
+        case SHEER_WARP:
+          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
+          tmatrix[0]=1.0f;     tmatrix[1]=tmp->v1;    tmatrix[2]=0.0f;
+          tmatrix[3]=tmp->v2;  tmatrix[4]=1.0f;       tmatrix[5]=0.0f;
+          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
+          break;
+
+        case TRANSLATE_WARP:
+          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
+          tmatrix[0]=1.0f;     tmatrix[1]=0.0f;       tmatrix[2]=tmp->v1;
+          tmatrix[3]=0.0f;     tmatrix[4]=1.0f;       tmatrix[5]=tmp->v2;
+          tmatrix[6]=0.0f;     tmatrix[7]=0.0f;       tmatrix[8]=1.0f;
+          break;
+
+        case PROJECT_WARP:
+          if( isnan(tmp->v2) ) tmp->v2=tmp->v1;
+          tmatrix[0]=1.0f;     tmatrix[1]=0.0f;       tmatrix[2]=0.0f;
+          tmatrix[3]=0.0f;     tmatrix[4]=1.0f;       tmatrix[5]=0.0f;
+          tmatrix[6]=tmp->v1;  tmatrix[7]=tmp->v2;    tmatrix[8]=1.0f;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can "
+                "address the problem. For some reason the value of tmp->type "
+                "in `prepare_modular_matrix' of ui.c is not recognized. "
+                "This is an internal, not a user issue. So please let us "
+                "know.", PACKAGE_BUGREPORT);
         }
-  }
 
+      /* Multiply this matrix with the main matrix in-place. */
+      inplace_matrix_multiply(p->matrix, tmatrix);
 
-  /* Convert a 2 by 2 matrix into a 3 by 3 matrix and also correct it for
-     the FITS definition. */
-  if(p->ms0==2 && p->ms1==2)
-    {
-      errno=0;
-      tmp=malloc(9*sizeof *tmp);
-      if(tmp==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for 3 by 3 matrix",
-              9*sizeof *tmp);
+      /* Keep the next element and free the node's allocated space. */
+      next = tmp->next;
+      free(tmp);
+      tmp = next;
 
-      /* Put the four identical elements in place. */
-      tmp[0]=p->matrix[0];
-      tmp[1]=p->matrix[1];
-      tmp[3]=p->matrix[2];
-      tmp[4]=p->matrix[3];
-
-      /* Add the other elements. Note that we need to correct for the FITS
-         standard that defines the coordinates of the center of the first
-         pixel in the image to be 1. We want 0 to be the coordinates of the
-         bottom corner of the image.
-
-         1  0  0.5     a  b  0     a  b  0.5
-         0  1  0.5  *  c  d  0  =  c  d  0.5
-         0  0   1      0  0  1     0  0   1
-
-         and
-
-         a  b  0.5     1  0  -0.5     a  b  (a*-0.5)+(b*-0.5)+0.5
-         c  d  0.5  *  0  1  -0.5  =  c  d  (c*-0.5)+(d*-0.5)+0.5
-         0  0   1      0  0   1       0  0           1
+      /* For a check:
+      printf("tmatrix:\n");
+      printmatrix(tmatrix);
+      printf("out:\n");
+      printmatrix(p->matrix);
       */
-      tmp[8] = 1.0f;
-      tmp[6] = tmp[7] = 0.0f;
-      tmp[2] = ((p->matrix[0] + p->matrix[1]) * -0.5f) + 0.5f;
-      tmp[5] = ((p->matrix[2] + p->matrix[3]) * -0.5f) + 0.5f;
-
-      /* Free the previously allocated 2D matrix and put the put the newly
-         allocated array with correct values in it. */
-      free(p->matrix);
-      p->matrix=tmp;
-
-      /* Set the new sizes */
-      p->ms0=p->ms1==3;
     }
-  else if (p->ms0!=3 || p->ms1!=3)
-    error(EXIT_FAILURE, 0, "a bug! please contact us at %s so we can "
-          "address the problem. For some reason p->ms0=%zu and p->ms1=%zu! "
-          "They should both have a value of 3.", PACKAGE_BUGREPORT,
-          p->ms0, p->ms1);
 }
 
 
@@ -592,30 +870,37 @@ sanitycheck(struct imgwarpparams *p)
                                   p->cp.removedirinfo, p->cp.dontdelete,
                                   &p->cp.output);
 
+  /* If an actual matrix is given, then it will be used and all modular
+     warpings will be ignored. */
+  if(p->up.matrixstring || p->up.matrixname)
+    read_matrix(p);
+  else if (p->up.owll)
+    prepare_modular_matrix(p);
+  else
+    error(EXIT_FAILURE, 0, "No input matrix specified.\n\nPlease either "
+          "use the modular warp options like `--rotate' or `--scale', "
+          "or directly specify the matrix on the command-line, or in the "
+          "configuration files.\n\nRun with `--help' for the full list of "
+          "modular warpings (among other options), or see the manual's "
+          "`Warping basics' section for more on the matrix.");
 
-  /* Check the size of the input matrix, note that it might only have
-     the wrong numbers when it is read from a file. */
-  if(p->up.matrixname)
-     if( (p->ms0 != 2 && p->ms0 != 3) || p->ms0 != p->ms1 )
-       error(EXIT_FAILURE, 0, "the given matrix in %s has %zu rows and "
-             "%zu columns. Its size must be either 2x2 or 3x3",
-             p->up.matrixname, p->ms0, p->ms1);
 
   /* Check if there are any non-normal numbers in the matrix: */
-  df=(d=m)+p->ms0*p->ms1;
+  df=(d=p->matrix)+9;
   do
     if(!isfinite(*d++))
-      error(EXIT_FAILURE, 0, "%f is not a `normal' number", *(d-1));
+      {
+        printmatrix(p->matrix);
+        error(EXIT_FAILURE, 0, "%f is not a `normal' number in the "
+              "input matrix shown above", *(d-1));
+      }
   while(d<df);
 
   /* Check if the determinant is not zero: */
-  if( ( p->ms0==2 && (m[0]*m[3] - m[1]*m[2] == 0) )
-      ||
-      ( p->ms0==3 &&
-        (m[0]*m[4]*m[8] + m[1]*m[5]*m[6] + m[2]*m[3]*m[7]
-         - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7] == 0) ) )
-      error(EXIT_FAILURE, 0, "the determinant of the given matrix "
-            "is zero");
+  if( m[0]*m[4]*m[8] + m[1]*m[5]*m[6] + m[2]*m[3]*m[7]
+      - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7] == 0 )
+    error(EXIT_FAILURE, 0, "the determinant of the given matrix "
+          "is zero");
 
   /* Check if the transformation is spatially invariant */
 }
@@ -724,7 +1009,9 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   cp->verb          = 1;
   cp->numthreads    = num_processors(NPROC_CURRENT);
   cp->removedirinfo = 1;
+
   p->correctwcs     = 1;
+  p->up.owll        = NULL;
 
   /* Read the arguments. */
   errno=0;
@@ -741,8 +1028,10 @@ setparams(int argc, char *argv[], struct imgwarpparams *p)
   if(cp->printparams)
     GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
 
-  /* Read the input matrix */
-  preparematrix(p);
+  /* Read the input image WCS structure. We are doing this here because
+     some of the matrix operations might need it. */
+  gal_fits_read_wcs(p->up.inputname, p->cp.hdu, p->hstartwcs,
+                    p->hendwcs, &p->nwcs, &p->wcs);
 
   /* Do a sanity check. */
   sanitycheck(p);
@@ -795,7 +1084,6 @@ freeandreport(struct imgwarpparams *p, struct timeval *t1)
 {
   /* Free the allocated arrays: */
   free(p->input);
-  free(p->matrix);
   free(p->cp.hdu);
   free(p->inverse);
   free(p->cp.output);
