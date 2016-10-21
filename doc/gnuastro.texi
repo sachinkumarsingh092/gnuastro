@@ -1481,11 +1481,11 @@ management of its version controlled source server there.
 @c `and' before the last name to a comma (','), then add " and Firstname
 @c Familyname'' after the last name.
 We would also like to gratefully thank Mohammad-reza Khellat, Alan Lefor,
-and Yahya Sefidbakht for their useful and constructive comments and
-suggestions. Finally we should thank all the (sometimes anonymous)
-developers in various online forums which patiently answered all our small
-(but important) technical questions. All work on Gnuastro has been
-voluntary, but we are most grateful to the following institutions (in
+Yahya Sefidbakht, and Francesco Montanari for their useful and constructive
+comments and suggestions. Finally we should thank all the (sometimes
+anonymous) developers in various online forums which patiently answered all
+our small (but important) technical questions. All work on Gnuastro has
+been voluntary, but we are most grateful to the following institutions (in
 chronological order) for hosting us in our research:
 
 @quotation
@@ -18827,8 +18827,7 @@ for example TXT, JPEG, EPS or PDF.
 (@file{astconvolve}, see @ref{Convolve}) Convolve (blur or smooth) data
 with a given kernel in spatial and frequency domain on multiple
 threads. Convolve can also do de-convolution to find the appropriate kernel
-to PSF-match two images. Convolve (blur or smooth) data with a given
-kernel.
+to PSF-match two images.
 
 @item CosmicCalculator
 (@file{astcosmiccal}, see @ref{CosmicCalculator}) Do cosmological
