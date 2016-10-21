@@ -15655,6 +15655,11 @@ Allocate an array of @code{size} elements of type @code{datatype}. See
 @ref{CFITSIO datatype}.
 @end deftypefun
 
+@deftypefun size_t gal_fits_datatype_size (int @code{datatype})
+Return the size (in bytes) of the type specified by @code{datatype}, see
+@ref{CFITSIO datatype}.
+@end deftypefun
+
 @deftypefun void gal_fits_blank_to_value (void @code{*array}, int @code{datatype}, size_t @code{size}, void @code{*value})
 Convert the blank values in @code{array} (with @code{size} elements) into
 the value pointed by @code{value}.

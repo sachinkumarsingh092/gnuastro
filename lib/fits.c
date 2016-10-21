@@ -392,7 +392,7 @@ gal_fits_datatype_blank(int datatype)
 
 
 
-/* Allocate an array based on the value of bitpix. Note that the argument
+/* Allocate an array based on the value of datatype. Note that the argument
    `size' is the number of elements, necessary in the array, the number of
    bytes each element needs will be determined internaly by this function
    using the datatype argument, so you don't have to worry about it. */
@@ -496,6 +496,89 @@ gal_fits_datatype_alloc(size_t size, int datatype)
           "array of %zu bytes in gal_fits_datatype_alloc", size);
 
   return array;
+}
+
+
+
+
+
+size_t
+gal_fits_datatype_size(int datatype)
+{
+  switch(datatype)
+    {
+    case TBIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
+            "datatype, please get in touch with us to implement it.");
+
+      /* The parenthesis after sizeof is not a function, it is actually a
+         type cast, so we have put a space between size of and the
+         parenthesis to highlight this. In C, `sizeof' is an operator, not
+         a function.*/
+    case TBYTE:
+      return sizeof (unsigned char);
+
+    case TLOGICAL: case TSBYTE:
+      return sizeof (char);
+
+    case TSTRING:
+      return sizeof (char *);
+
+    case TSHORT:
+      return sizeof (short);
+
+    case TLONG:
+      return sizeof (long);
+
+    case TLONGLONG:
+      return sizeof (LONGLONG);
+
+    case TFLOAT:
+      if( sizeof (float) != 4 )
+        error(EXIT_FAILURE, 0,
+              "`float` is not 32bits on this machine. The FITS standard "
+              "Requires this size");
+      return sizeof (float);
+
+    case TDOUBLE:
+      if( sizeof (double) != 8 )
+        error(EXIT_FAILURE, 0,
+              "`double` is not 64bits on this machine. The FITS standard "
+              "requires this size");
+      return sizeof (double);
+
+    case TCOMPLEX:
+      if( sizeof (float) != 4 )
+        error(EXIT_FAILURE, 0,
+              "`float` is not 32bits on this machine. The FITS standard "
+              "Requires this size");
+      return sizeof (gsl_complex_float);
+
+    case TDBLCOMPLEX:
+      if( sizeof (double) != 8 )
+        error(EXIT_FAILURE, 0,
+              "`double` is not 64bits on this machine. The FITS standard "
+              "requires this size");
+      return sizeof (gsl_complex);
+
+    case TINT:
+      return sizeof (int);
+
+    case TUINT:
+      return sizeof (unsigned int);
+
+    case TUSHORT:
+      return sizeof (unsigned short);
+
+    case TULONG:
+      return sizeof (unsigned long);
+
+    default:
+      error(EXIT_FAILURE, 0, "datatype value of %d not recognized in "
+            "gal_fits_datatype_size", datatype);
+    }
+
+  return 0;
 }
 
 
