@@ -71,10 +71,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   c e f g i j k l p t u v w x y
+   c g i j k l u v w x y
    A B C E F G H I J L M O Q R T U W X Y Z
 
-   Number keys used: <=502
+   Number keys used: <=503
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -110,6 +110,15 @@ static struct argp_option options[] =
       "Header keyword number to stop reading WCS.",
       1
     },
+    {
+      "nofitscorrect",
+      503,
+      0,
+      0,
+      "Do not shift to correct for FITS positioning.",
+      1
+    },
+
 
 
 
@@ -119,30 +128,6 @@ static struct argp_option options[] =
       0, 0, 0, 0,
       "Output:",
       2
-    },
-    {
-      "align",
-      'a',
-      0,
-      0,
-      "Align the image and celestial axes.",
-      1
-    },
-    {
-      "rotate",
-      'r',
-      "FLT",
-      0,
-      "Rotate by the given angle in degrees.",
-      1
-    },
-    {
-      "scale",
-      's',
-      "FLT",
-      0,
-      "Scale the image by the given factor.",
-      1
     },
     {
       "nowcscorrection",
@@ -176,6 +161,72 @@ static struct argp_option options[] =
       "Maximum fraction of area covered by blank.",
       2
     },
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Modular warpings:",
+      3
+    },
+    {
+      "align",
+      'a',
+      0,
+      0,
+      "Align the image and celestial axes.",
+      3
+    },
+    {
+      "rotate",
+      'r',
+      "FLT",
+      0,
+      "Rotate by the given angle in degrees.",
+      3
+    },
+    {
+      "scale",
+      's',
+      "FLT[,FLT]",
+      0,
+      "Scale along the given axis(es).",
+      3
+    },
+    {
+      "flip",
+      'f',
+      "FLT[,FLT]",
+      0,
+      "Flip along the given axis(es).",
+      3
+    },
+    {
+      "sheer",
+      'e',
+      "FLT[,FLT]",
+      0,
+      "Sheer along the given axis(es).",
+      3
+    },
+    {
+      "translate",
+      't',
+      "FLT[,FLT]",
+      0,
+      "Translate along the given axis(es).",
+      3
+    },
+    {
+      "project",
+      'p',
+      "FLT[,FLT]",
+      0,
+      "Project along the given axis(es).",
+      3
+    },
+
 
 
 
@@ -252,17 +303,33 @@ parse_opt(int key, char *arg, struct argp_state *state)
                                  SPACK, NULL, 0);
       p->up.maxblankfracset=1;
       break;
+    case 503:
+      p->up.nofitscorrect=1;
+      p->up.nofitscorrectset=1;
+      break;
+
+
+    /* Modular warpings */
     case 'a':
-      p->up.align=1;
-      p->up.alignset=1;
+      add_to_optionwapsll(&p->up.owll, ALIGN_WARP, NULL);
       break;
     case 'r':
-      gal_checkset_any_float(arg, &p->up.rotate, "rotate", key, SPACK, NULL, 0);
-      p->up.rotateset=1;
+      add_to_optionwapsll(&p->up.owll, ROTATE_WARP, arg);
       break;
     case 's':
-      gal_checkset_any_float(arg, &p->up.scale, "scale", key, SPACK, NULL, 0);
-      p->up.scaleset=1;
+      add_to_optionwapsll(&p->up.owll, SCALE_WARP, arg);
+      break;
+    case 'f':
+      add_to_optionwapsll(&p->up.owll, FLIP_WARP, arg);
+      break;
+    case 'e':
+      add_to_optionwapsll(&p->up.owll, SHEER_WARP, arg);
+      break;
+    case 't':
+      add_to_optionwapsll(&p->up.owll, TRANSLATE_WARP, arg);
+      break;
+    case 'p':
+      add_to_optionwapsll(&p->up.owll, PROJECT_WARP, arg);
       break;
 
 

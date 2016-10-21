@@ -9178,35 +9178,18 @@ One line examples:
 @example
 $ astimgwarp matrix.txt image.fits
 $ astimgwarp --align rawimage.fits
-$ astimgwarp --scale 1.82 image.fits
-$ astimgwarp --rotate=37.92 image.fits
+$ astimgwarp --scale 1.82 --translate 2.1 image.fits
+$ astimgwarp --rotate=37.92 --scale=0.8 image.fits
 $ astimgwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
 $ astimgwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
 @end example
 
 ImageWarp can accept two arguments, one (an image) is mandatory if any
 processing is to be done. An optional argument is a plain text file, which
-must contain the warp/transform matrix, see @ref{Warping basics}. There is
-also the @option{--matrix} option from which the matrix can be literally
-specified on the command-line. If both are present when calling ImageWarp,
-the contents of the plain text file have higher precedence. You can also
-specify standard transformations without an explicit matrix as discussed
-below. If multiple transformations are specified, then ImageWarp will
-inform you and abort. The general options to all Gnuastro programs can be
-seen in @ref{Common options}.
-
-@cindex WCSLIB
-@cindex World Coordinate System
-By default the WCS (World Coordinate System) information of the input
-image is going to be corrected in the output image. WCSLIB will save
-the input WCS information in the @code{PC} matrix@footnote{Greisen
-E.W., Calabretta M.R. (2002) Representation of world coordinates in
-FITS. Astronomy and Astrophysics, 395, 1061-1075.}. To correct the
-WCS, ImageWarp multiplies the @code{PC} matrix with the inverse of the
-specified transformation matrix. Also the @code{CRPIX} point is going
-to be changed to its correct place in the output image
-coordinates. This behavior can be disabled with the
-@option{--nowcscorrection} option.
+must contain the warp/transform matrix, see @ref{Warping basics}. When this
+text file is specified, then all options related to the matrix will be
+ignored (see below for the options). The general options to all Gnuastro
+programs (including ImageWarp) can be seen in @ref{Common options}.
 
 To be the most accurate the input image will be converted to double
 precision floating points and all the processing will be done in this
@@ -9219,23 +9202,116 @@ data. This behavior can be disabled with the @option{--doubletype}
 option. The input file and input warping matrix elements are stored in
 the output's header.
 
-@cartouche
-@noindent
-@strong{Coordinates of pixel center}: Based on the FITS standard,
-integer values are assigned to the center of a pixel and the
-coordinate [1.0, 1.0] is the center of the bottom left (first) image
-pixel. So the point [0.0, 0.0] is half a pixel away (in each axis)
-from the bottom left vertice of the first pixel@footnote{So if you
-want to warp the image relative to the bottom left vertice of the
-bottom left pixel, you have to shift the warping center by [0.5, 0.5],
-apply your transform then shift back by [-0.5, -0.5]. Similar to the
-example in see @ref{Merging multiple warpings}. For example see the
-one line example above which scales the image by one fifth
-(0.2). Without this correction (if it was
-@code{0.2,0,0,0,0.2,0,0,0,1}), the image would not be correctly
-scaled.}.
-@end cartouche
+When using options, warps can be specified in a modular form, with options
+to specify each transformation (for example @option{--rotate}, or
+@option{--scale}), or directly as a matrix (with @option{--matrix}). If
+specified together, the latter (direct matrix) will take precedence and all
+the modular warpings will be ignored. Any number of modular warpings can be
+specified on the command-line and configuration files. If more than one
+modular warping is given, all will be merged to create one warping
+matrix. As described in @ref{Merging multiple warpings}, matrix
+multiplication is not commutative, so the order of specifing the modular
+warpings on the command-line, and/or configuration files makes a difference
+(see @ref{Configuration file precedence}). Below, the modular warpings are
+first listed (see @ref{Warping basics} for the definition of each type of
+warping), then the other ImageWarp options.
 
+@cindex FITS standard
+Based on the FITS standard, integer values are assigned to the center of a
+pixel and the coordinate [1.0, 1.0] is the center of the bottom left
+(first) image pixel. So the point [0.0, 0.0] is half a pixel away (in each
+axis) from the bottom left vertice of the first pixel. The resampling that
+is done in ImageWarp (see @ref{Resampling}) is dependent on this
+coordinate. So correction is done internally. With this resampling, the
+image must be warped relative to the bottom left vertice of the bottom left
+pixel and that point should lie at [0.0, 0.0]. So for a correct sampling,
+the warping center must first be translated by [0.5, 0.5], then the warp
+should be done and finally, a [-0.5, -0.5] translation should be
+specified. This correction is done internally in the following cases and
+can be disabled with the @option{--nofitscorrect} option.
+
+@itemize
+@item
+A 2D matrix is given in a file (as an argument).
+@item
+A 2D matrix is specified with the @option{--matrix} option.
+@item
+When modular warpings are used.
+@end itemize
+
+
+@table @option
+
+@item -a
+@itemx --align
+Align the image and celestial (WCS) axes, such that the vertical image
+direction (when viewed in SAO ds9) corresponds to the declination and the
+horizontal axis is the inverse of the Right Ascension (RA). The inverse of
+the RA is chosen so the image can correspond to what you would actually see
+on the sky and is common in most survey images. Align is internally treated
+just like a rotation (@option{--rotation}), but uses the input image's WCS
+to find the rotation angle.
+
+@item -r
+@itemx --rotate
+(@option{=FLT}) Rotate the input image by the given angle in degrees. Note
+that commonly, the WCS structure of the image is set such that the RA is
+the inverse of the image horizontal axis which increases towards the right
+in the FITS standard and as viewed by SAO ds9. So the default center for
+rotation is on the right of the image. If you want to rotate about other
+points, you have to translate the warping center first (with
+@option{--translate}) then apply your rotation and then return the center
+back to the original position (with another call to @option{--translate},z
+see @ref{Merging multiple warpings}.
+
+@item -s
+@itemx --scale
+(@option{=FLT[,FLT]}) Scale the input image by the given factor. If only
+one value is given, then both image axises will be scaled with the given
+value. When two values are given, the first will be used to scale the first
+axis and the second will be used for the second axis. If you only need to
+scale one axis, use @option{1} for the axis you don't need to scale.
+
+@item -f
+@itemx --flip
+(@option{=FLT[,FLT]}) Flip the image around the first, second or both
+axises. The first value specifies a flip on the first axis and the second
+on the second axis. The values of the option only matter if they are
+non-zero. If any of the values are zero, that axis is not flipped. So if
+you want to flip by the second axis only, use @option{--flip=0,1} (which is
+equivalent to @option{--flip=0,20} since it only matters if it is
+non-zero).
+
+@item -e
+@itemx --sheer
+(@option{=FLT[,FLT]}) Apply a sheer to the image along the image axises. If
+only one value is given, then both image axises will be sheered with the
+given value. When two values are given, the first will be used to sheer the
+first axis and the second will be used for the second axis. If you only
+need to sheer one axis, use @option{0} for the axis you don't need.
+
+@item -t
+@itemx --translate
+(@option{=FLT[,FLT]}) Apply a translation to the image along the image
+axises. If only one value is given, then both image axises will be
+translated with the given value. When two values are given, the first will
+be used to translate along the first axis and the second will be used for
+the second axis. If you only need to translate one axis, use @option{0} for
+the axis you don't need.
+
+@item -p
+@itemx --project
+(@option{=FLT[,FLT]}) Apply a projection to the image along the image
+axises. If only one value is given, then the projection will be applied on
+both image axises with the given value. When two values are given, the
+first will be used for the first axis and the second will be used for the
+second axis. If you only need projection along one axis, use @option{0} for
+the axis you don't need.
+
+@end table
+
+
+ImageWarp also provides the following options:
 @table @option
 
 @item -m
@@ -9261,28 +9337,9 @@ elements of the matrix have to be written row by row. So for the
 general homography matrix of @ref{Warping basics}, it should be called
 with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
-@item -a
-@itemx --align
-Align the image and celestial (WCS) axes, such that the vertical image
-direction (when viewed in SAO ds9) corresponds to the declination and the
-horizontal axis is the inverse of the Right Ascension (RA). The inverse of
-the RA is chosen so the image can correspond to what you would actually see
-on the sky and is common in most survey images.
-
-@item -r
-@itemx --rotate
-(@option{=FLT}) Rotate the input image by the given angle in degrees. Note
-that commonly, the WCS structure of the image is set such that the RA is
-the inverse of the image horizontal axis which increases towards the right
-in the FITS standard and as viewed by SAO ds9. So the default center for
-rotation is on the right of the image. If you want to rotate about other
-points, you have to define your own transformation matrix by first shifting
-the central point, then applying your rotation and then returning the
-center back to the original position, see @ref{Merging multiple warpings}.
-
-@item -s
-@itemx --scale
-(@option{=FLT}) Scale the input image by the given factor.
+@item nofitscorrect
+Do not correct for the FITS definition of the pixel center as described in
+the @option{--matrix} option.
 
 @item --hstartwcs
 (@option{=INT}) Specify the first header keyword number (line) that
@@ -9296,8 +9353,19 @@ should be used to read the WCS information, see the full explanation in
 
 @item -n
 @itemx --nowcscorrection
-Do not correct the WCS information of the input image and save it
-untouched to the output image.
+@cindex WCSLIB
+@cindex World Coordinate System
+Do not correct the WCS information of the input image and save it untouched
+to the output image. By default the WCS (World Coordinate System)
+information of the input image is going to be corrected in the output
+image. WCSLIB will save the input WCS information in the @code{PC}
+matrix@footnote{Greisen E.W., Calabretta M.R. (2002) Representation of
+world coordinates in FITS. Astronomy and Astrophysics, 395, 1061-1075.}. To
+correct the WCS, ImageWarp multiplies the @code{PC} matrix with the inverse
+of the specified transformation matrix. Also the @code{CRPIX} point is
+going to be changed to its correct place in the output image
+coordinates. This behavior can be disabled with the
+@option{--nowcscorrection} option.
 
 @cindex Blank pixel
 @cindex Pixel, blank

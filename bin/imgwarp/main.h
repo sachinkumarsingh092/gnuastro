@@ -41,6 +41,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+struct optionwarpsll
+{
+  int                   type;
+  double                  v1;
+  double                  v2;
+  struct optionwarpsll *next;
+};
+
+
+
 
 
 struct uiparams
@@ -49,12 +59,9 @@ struct uiparams
   char       *matrixname;  /* Name of transform file.                  */
   char     *matrixstring;  /* String containing transform elements.    */
 
-  int              align;  /* ==1: Align the image.                    */
-  float           rotate;  /* Rotation degrees in degrees.             */
-  float            scale;  /* Scaling factor.                          */
-  int           alignset;
-  int          rotateset;
-  int           scaleset;
+  struct optionwarpsll *owll;    /* List of 2D rotations.              */
+  int      nofitscorrect;  /* No corr the 0.5 pixel necessary in FITS. */
+  int   nofitscorrectset;
 
   int    matrixstringset;
   int    maxblankfracset;
@@ -69,16 +76,14 @@ struct uiparams
 struct imgwarpparams
 {
   /* Other structures: */
-  struct uiparams      up;  /* User interface parameters.                 */
+  struct uiparams      up;  /* User interface parameters.                */
   struct gal_commonparams cp; /* Common parameters.                      */
 
   /* Input: */
   double           *input;  /* Name of input FITS file.                  */
-  double          *matrix;  /* Warp/Transformation matrix.               */
+  double        matrix[9];  /* Warp/Transformation matrix.               */
   size_t              is0;  /* Number of rows in input image.            */
   size_t              is1;  /* Number of columns in input image.         */
-  size_t              ms0;  /* Matrix number of rows.                    */
-  size_t              ms1;  /* Matrix number of columns.                 */
   int         inputbitpix;  /* The type of the input array.              */
   int                nwcs;  /* Number of WCS structures.                 */
   struct wcsprm      *wcs;  /* Pointer to WCS structures.                */
