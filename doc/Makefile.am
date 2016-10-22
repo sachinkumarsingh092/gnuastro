@@ -77,10 +77,10 @@ dist_infognuastro_DATA = $(top_srcdir)/doc/gnuastro-figures/*
 
 
 ## Man pages: to keep things managable, sort the utilities alphabetically.
-dist_man_MANS = man/astarithmetic.1 man/astconvertt.1 man/astconvolve.1	\
-man/astcosmiccal.1 man/astheader.1 man/astimgcrop.1 man/astimgstat.1	\
-man/astimgwarp.1 man/astmkcatalog.1 man/astmknoise.1 man/astmkprof.1	\
-man/astnoisechisel.1 man/astsubtractsky.1
+dist_man_MANS = man/astarithmetic.1 man/astconvertt.1 man/astconvolve.1 \
+man/astcosmiccal.1 man/astheader.1 man/astimgcrop.1 man/astimgstat.1    \
+man/astimgwarp.1 man/astmkcatalog.1 man/astmknoise.1 man/astmkprof.1    \
+man/astnoisechisel.1 man/astsubtractsky.1 man/asttable.1
 
 
 ## See if help2man is present or not. When help2man doesn't exist, we don't
@@ -124,3 +124,7 @@ man/astnoisechisel.1: $(top_srcdir)/bin/noisechisel/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) $(toputildir)/noisechisel/astnoisechisel
 man/astsubtractsky.1: $(top_srcdir)/bin/subtractsky/args.h  $(ALLMANSDEP)
 	$(MAYBE_HELP2MAN) $(toputildir)/subtractsky/astsubtractsky
+man/asttable.1: $(top_srcdir)/bin/table/args.h  $(ALLMANSDEP)
+	$(MAYBE_HELP2MAN) $(toputildir)/table/asttable
+#man/astTEMPLATE.1: $(top_srcdir)/bin/TABLE/args.h  $(ALLMANSDEP)
+#	$(MAYBE_HELP2MAN) $(toputildir)/TEMPLATE/astTEMPLATE
