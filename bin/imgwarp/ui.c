@@ -644,7 +644,7 @@ makealignmatrix(struct imgwarpparams *p, double *tmatrix)
   */
 
 
-  /* Put the matrix elements into the ouput array: */
+  /* Put the matrix elements into the output array: */
   tmatrix[0]=amatrix[0];  tmatrix[1]=amatrix[1]; tmatrix[2]=0.0f;
   tmatrix[3]=amatrix[2];  tmatrix[4]=amatrix[3]; tmatrix[5]=0.0f;
   tmatrix[6]=0.0f;        tmatrix[7]=0.0f;       tmatrix[8]=1.0f;

@@ -210,7 +210,7 @@ BF_concmp(unsigned char *byt, long *lab, size_t s0, size_t s1,
 
 
 /* This function applied the same principles of the above function but
-   on an adjacency matrix. Its ouput is an array the size of one side
+   on an adjacency matrix. Its output is an array the size of one side
    of the adjacency matrix that will have the label each object should
    have.
 

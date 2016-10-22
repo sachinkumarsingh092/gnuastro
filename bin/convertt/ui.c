@@ -519,7 +519,7 @@ sanitycheck(struct converttparams *p)
         }
     }
   else
-    error(EXIT_FAILURE, 0, "no ouput file name or extension is specified, "
+    error(EXIT_FAILURE, 0, "no output file name or extension is specified, "
           "Please run "SPACK" again with the `--output' or `-o' option.\n\n"
           "The value to this option doesn't have to be a file name, you "
           "can also only give an extension (in which case your input file"
