@@ -14326,8 +14326,8 @@ $ astcosmiccal [OPTION...] ...
 One line examples:
 
 @example
-$ astcosmiccal --onlyvolume -z=0.8
-$ astcosmiccal -l=0.6964 -m=0.3036 -z=2.1
+$ astcosmiccal --onlyvolume -z 0.8
+$ astcosmiccal -l0.6964 -m0.3036 -z2.1
 $ astcosmiccal --olambda=0.6964 --omatter=0.3036 --redshift=2.1
 @end example
 

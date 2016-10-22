@@ -195,11 +195,11 @@ printvalues(FILE *fp, struct cosmiccalparams *p)
 
   fprintf(fp, "\n# Current densities per current critical density:\n");
   if(up->olambdaset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "olambda", p->olambda);
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "olambda", p->olambda);
   if(up->omatterset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "omatter", p->omatter);
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "omatter", p->omatter);
   if(up->oradiationset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "oradiation", p->oradiation);
+    fprintf(fp, CONF_SHOWFMT"%.5f\n", "oradiation", p->oradiation);
 
 
   /* For the operating mode, first put the macro to print the common
