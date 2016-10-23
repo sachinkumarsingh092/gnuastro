@@ -3855,17 +3855,18 @@ Live@footnote{@url{https://www.tug.org/texlive/}}.
 
 @item
 @cindex GNU Libtool
-After @code{make check}: not copy the programs' executables to the
-installation directory manually (using @command{cp} for example). In
-default configuration@footnote{If you configure Gnuastro with the
-@option{--disable-shared} option, then the libraries will be statically
-linked to the programs and this problem won't exist, see @ref{Linking}.},
-the program binaries need to link with Gnuastro's shared library which is
-also installed with the programs. Therefore, to run successfully before and
-after installation, linking modifications need to be made by GNU Libtool at
-installation time. @command{make install} does this internally, but a
-simple copy might give linking errors when you run it. If you need to copy
-the executables, you can do so after installation.
+After @code{make check}: do not copy the programs' executables to another
+(for example, the installation) directory manually (using @command{cp}, or
+@command{mv} for example). In the default configuration@footnote{If you
+configure Gnuastro with the @option{--disable-shared} option, then the
+libraries will be statically linked to the programs and this problem won't
+exist, see @ref{Linking}.}, the program binaries need to link with
+Gnuastro's shared library which is also built and installed with the
+programs. Therefore, to run successfully before and after installation,
+linking modifications need to be made by GNU Libtool at installation
+time. @command{make install} does this internally, but a simple copy might
+give linking errors when you run it. If you need to copy the executables,
+you can do so after installation.
 
 @end itemize
 
