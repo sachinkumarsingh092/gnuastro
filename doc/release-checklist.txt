@@ -6,9 +6,10 @@ set of operations to do for making each release. This should be done after
 all the commits needed for this release have been completed.
 
 
- - Only in a stable release: update the library version (the values
-   starting with `GAL_' in `configure.ac'). See the `Updating library
-   version information' section of the GNU Libtool manual as a guide.
+ - Only in an alpha release (In the next main release they will remain
+   unchanged): update the library version (the values starting with `GAL_'
+   in `configure.ac'). See the `Updating library version information'
+   section of the GNU Libtool manual as a guide.
 
 
  - Update the NEWS file (use `git log --reverse gnuastro_vA.B..HEAD').
