@@ -658,7 +658,7 @@ $ sudo make install
 
 @noindent
 
-See @ref{Known issues} if you confront any complications.  For each program
+See @ref{Known issues} if you confront any complications. For each program
 there is an `Invoke ProgramName' sub-section in this book which explains
 how the programs should be run on the command-line. You can read it on the
 command-line by running the command @command{$ info astprogname}, see
@@ -3852,6 +3852,20 @@ PDF book, you need to have the GNU Texinfo program (like any
 program, the more recent the better). A working @TeX{} program is also
 necessary, which you can get from Tex
 Live@footnote{@url{https://www.tug.org/texlive/}}.
+
+@item
+@cindex GNU Libtool
+After @code{make check}: not copy the programs' executables to the
+installation directory manually (using @command{cp} for example). In
+default configuration@footnote{If you configure Gnuastro with the
+@option{--disable-shared} option, then the libraries will be statically
+linked to the programs and this problem won't exist, see @ref{Linking}.},
+the program binaries need to link with Gnuastro's shared library which is
+also installed with the programs. Therefore, to run successfully before and
+after installation, linking modifications need to be made by GNU Libtool at
+installation time. @command{make install} does this internally, but a
+simple copy might give linking errors when you run it. If you need to copy
+the executables, you can do so after installation.
 
 @end itemize
 
