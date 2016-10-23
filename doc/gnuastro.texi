@@ -2006,23 +2006,25 @@ $ls
 @end example
 
 @noindent
-When convolution finished, Sufi opened the @file{cat_convolved.fits}
-file and showed the effect of convolution to his student and explained
-to him how a PSF with a larger FWHM would make the points even
-wider. With the convolved image ready, they were ready to re-sample it
-to the original pixel scale Sufi had planned. Sufi explained the basic
-concepts of warping the image to his student and also the fact that
-since the center of a pixel is assumed to take integer values in the
-FITS standard, the transformation matrix would not be a simple scaling
-but would also need translating, see @ref{Merging multiple
-warpings}. Then he ran ImageWarp with the following command:
+When convolution finished, Sufi opened the @file{cat_convolved.fits} file
+and showed the effect of convolution to his student and explained to him
+how a PSF with a larger FWHM would make the points even wider. With the
+convolved image ready, they were ready to re-sample it to the original
+pixel scale Sufi had planned. Sufi explained the basic concepts of warping
+the image to his student and ran ImageWarp with the following command:
 
 @example
-$ astimgwarp cat_convolved.fits --matrix="0.2,0,0.4  0,0.2,0.4  0,0,1"
+$ astimgwarp cat_convolved.fits --scale=0.2
 ImageWarp started on Mon Apr  6 16:51:59 953
+ Using 8 CPU threads.
+ Input image: cat_convolved.fits
+ matrix:
+        0.2000   0.0000   0.4000
+        0.0000   0.2000   0.4000
+        0.0000   0.0000   1.0000
 ImageWarp finished in:  0.481421 (seconds)
 $ ls
-0_cat.fits        cat_convolved.fits         cat.fits
+0_cat.fits     cat_convolved.fits         cat.fits
 astmkprof.log  cat_convolved_warped.fits  cat.txt
 @end example
 
@@ -2107,7 +2109,7 @@ rm out.fits
 astmkprof --prepforconv --naxis1=500 --naxis2=500            \
           --zeropoint=18.0 "$base".txt
 astconvolve --kernel=0.fits "$base".fits
-astimgwarp "$base"_convolved.fits --matrix="0.2,0,0.4  0,0.2,0.4  0,0,1"
+astimgwarp "$base"_convolved.fits --scale=0.2
 astimgcrop "$base"_convolved_warped.fits                     \
            --section=$edge:*-$edge,$edge:*-$edge
 astmknoise --zeropoint=18 --background=7 --output=out.fits   \
@@ -5324,7 +5326,8 @@ reproduce that same result later, even if you have made
 changes/progress. For one example of a research paper's reproduction
 pipeline, please see the
 @url{https://gitlab.com/makhlaghi/NoiseChisel-paper, reproduction pipeline}
-of @ref{NoiseChisel}.
+of the @url{https://arxiv.org/abs/1505.01664, paper} introducing
+@ref{NoiseChisel}.
 
 @item CFITSIO
 The version of CFITSIO used (see @ref{CFITSIO}).
@@ -9323,12 +9326,6 @@ first will be used for the first axis and the second will be used for the
 second axis. If you only need projection along one axis, use @option{0} for
 the axis you don't need.
 
-@end table
-
-
-ImageWarp also provides the following options:
-@table @option
-
 @item -m
 @itemx --matrix
 (@option{=STR}) The warp/transformation matrix. All the elements in this
@@ -9343,7 +9340,7 @@ The transformation matrix can be either 2 by 2 or 3 by 3 array. In the
 former case (if a 2 by 2 matrix is given), then it is converted to a 3 by 3
 matrix with two translation terms added to correct for the FITS definition
 of position (see @ref{Warping basics}, @ref{Merging multiple warpings}, and
-the box above for more).
+the explanations above for more).
 
 @cindex NaN
 The determinant of the matrix has to be non-zero and it must not
@@ -9352,9 +9349,9 @@ elements of the matrix have to be written row by row. So for the
 general homography matrix of @ref{Warping basics}, it should be called
 with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 
-@item nofitscorrect
+@item --nofitscorrect
 Do not correct for the FITS definition of the pixel center as described in
-the @option{--matrix} option.
+the descriptions above.
 
 @item --hstartwcs
 (@option{=INT}) Specify the first header keyword number (line) that

@@ -1,6 +1,6 @@
 GNU Astronomy Utilities NEWS                          -*- outline -*-
 
-* Noteworthy changes in release 0.2-28 (library 1.0.0) (2016-10-23) [alpha]
+* Noteworthy changes in release 0.2.28 (library 1.0.0) (2016-10-23) [alpha]
 
 ** Bug fixes
 
@@ -42,7 +42,6 @@ GNU Astronomy Utilities NEWS                          -*- outline -*-
 
   `GAL_GNUASTRO_HAVE_LIBGIT2'
     Has a value of 1 if the host system has the Git library (`libgit2').
-
 
 ** Removed programs, functions, macros
 
