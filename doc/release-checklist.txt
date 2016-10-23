@@ -44,7 +44,7 @@ all the commits needed for this release have been completed.
      $ make distcheck -j8
 
 
- - After the `make distcheck' is safely finished, tag the release:
+ - [STABLE]: After the `make distcheck' is safely finished, tag the release:
 
      $ git tag -a gnuastro_vX.X
 
@@ -58,7 +58,6 @@ all the commits needed for this release have been completed.
      $ cd build
      $ make distcheck -j8
      $ make dist-lzip
-
 
  - Upload the tarball with the command below: Note that `gnupload'
    uses `ncftpput' which comes with the `ncftp' package. The replaces
@@ -76,17 +75,19 @@ all the commits needed for this release have been completed.
                --replace --symlink-regex                                   \
                gnuastro-X.X.tar.gz gnuastro-X.X.tar.lz
 
-
  - Prepare the announcement, this command will calculate the checksums and
    also make the links ready. You just have to add a starting and ending
-   similar to previous announcements in a text editor.
+   similar to previous announcements in a text editor. In the `XXXX', put
+   `ftp' for a stable, and `alpha' for an alpha release.
 
      $ /path/to/gnulib/build-aux/announce-gen --release-type=stable        \
               --package-name=gnuastro --previous-version=0.1               \
               --current-version=0.2 --gpg-key-id=16A8A4B2AEC42AFF          \
-              --url-directory=http://ftp.gnu.org/gnu/gnuastro              \
+              --url-directory=http://XXXX.gnu.org/gnu/gnuastro             \
               --archive-suffix=tar.lz > announcement.txt
 
+ - [ALPHA]: Now that you have the release number, update the link on the
+   main HTML.
 
  - Build the manual in all the formats and upload everything. Note that you
    will need to configure Gnuastro in the main source directory to build
