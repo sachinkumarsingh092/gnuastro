@@ -99,32 +99,61 @@ endif
 toputildir=$(top_builddir)/bin
 ALLMANSDEP = $(top_srcdir)/lib/commonargs.h
 man/astarithmetic.1: $(top_srcdir)/bin/arithmetic/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/arithmetic/astarithmetic
+	$(MAYBE_HELP2MAN) -n "arithmetic operations on images and numbers" \
+	                  --libtool $(toputildir)/arithmetic/astarithmetic
+
 man/astconvertt.1: $(top_srcdir)/bin/convertt/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/convertt/astconvertt
+	$(MAYBE_HELP2MAN) -n "convert known data types to each other"      \
+	                  --libtool $(toputildir)/convertt/astconvertt
+
 man/astconvolve.1: $(top_srcdir)/bin/convolve/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/convolve/astconvolve
+	$(MAYBE_HELP2MAN) -n "convolve an image with a given kernel"       \
+	                  --libtool $(toputildir)/convolve/astconvolve
+
 man/astcosmiccal.1: $(top_srcdir)/bin/cosmiccal/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/cosmiccal/astcosmiccal
+	$(MAYBE_HELP2MAN) -n "estimate cosmological values"                \
+	                  --libtool $(toputildir)/cosmiccal/astcosmiccal
+
 man/astheader.1: $(top_srcdir)/bin/header/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/header/astheader
+	$(MAYBE_HELP2MAN) -n "view and manipulate FITS headers"            \
+	                  --libtool $(toputildir)/header/astheader
+
 man/astimgcrop.1: $(top_srcdir)/bin/imgcrop/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/imgcrop/astimgcrop
+	$(MAYBE_HELP2MAN) -n "crop regions of an image"                    \
+	                  --libtool $(toputildir)/imgcrop/astimgcrop
+
 man/astimgstat.1: $(top_srcdir)/bin/imgstat/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/imgstat/astimgstat
+	$(MAYBE_HELP2MAN) -n "get image statistics"                        \
+	                  --libtool $(toputildir)/imgstat/astimgstat
+
 man/astimgwarp.1: $(top_srcdir)/bin/imgwarp/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/imgwarp/astimgwarp
+	$(MAYBE_HELP2MAN) -n "warp (transform) input image"                \
+	                  --libtool $(toputildir)/imgwarp/astimgwarp
+
 man/astmkcatalog.1: $(top_srcdir)/bin/mkcatalog/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/mkcatalog/astmkcatalog
+	$(MAYBE_HELP2MAN) -n "Make a catalog from labeled input images"    \
+	                  --libtool $(toputildir)/mkcatalog/astmkcatalog
+
 man/astmknoise.1: $(top_srcdir)/bin/mknoise/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/mknoise/astmknoise
+	$(MAYBE_HELP2MAN) -n "add noise to an image"                       \
+	                  --libtool $(toputildir)/mknoise/astmknoise
+
 man/astmkprof.1: $(top_srcdir)/bin/mkprof/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/mkprof/astmkprof
+	$(MAYBE_HELP2MAN) -n "make standard 2D profiles on an image"       \
+	                  --libtool $(toputildir)/mkprof/astmkprof
+
 man/astnoisechisel.1: $(top_srcdir)/bin/noisechisel/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/noisechisel/astnoisechisel
+	$(MAYBE_HELP2MAN) -n "detect signal in a noisy image"              \
+	                  --libtool $(toputildir)/noisechisel/astnoisechisel
+
 man/astsubtractsky.1: $(top_srcdir)/bin/subtractsky/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/subtractsky/astsubtractsky
+	$(MAYBE_HELP2MAN) -n "subtract the sky value in an image"          \
+	                  --libtool $(toputildir)/subtractsky/astsubtractsky
+
 man/asttable.1: $(top_srcdir)/bin/table/args.h  $(ALLMANSDEP)
-	$(MAYBE_HELP2MAN) $(toputildir)/table/asttable
+	$(MAYBE_HELP2MAN) -n "read and write ASCII and FITS tables"        \
+	                  --libtool $(toputildir)/table/asttable
+
 #man/astTEMPLATE.1: $(top_srcdir)/bin/TABLE/args.h  $(ALLMANSDEP)
-#	$(MAYBE_HELP2MAN) $(toputildir)/TEMPLATE/astTEMPLATE
+#	$(MAYBE_HELP2MAN) -n "put a short description here"                \
+	                  $(toputildir)/TEMPLATE/astTEMPLATE
