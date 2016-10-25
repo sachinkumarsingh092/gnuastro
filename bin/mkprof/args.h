@@ -233,7 +233,7 @@ static struct argp_option options[] =
       'R',
       0,
       0,
-      "Replace overlaping profile pixels, don't add.",
+      "Replace overlapping profile pixels, don't add.",
       3
     },
     {

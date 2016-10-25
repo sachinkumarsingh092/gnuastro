@@ -32,12 +32,12 @@ astronomical data manipulation and analysis.
 Copyright @copyright{} 2015-2016 Free Software Foundation, Inc.
 
 @quotation
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant
+Sections, no Front-Cover Texts, and no Back-Cover Texts.  A copy of the
+license is included in the section entitled ``GNU Free Documentation
+License''.
 @end quotation
 @end copying
 
@@ -511,7 +511,7 @@ Gnuastro library
 * Installation information::    General information about the installation.
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
-* FITS files::                  Working with FITS datat.
+* FITS files::                  Working with FITS data.
 * Git wrappers::                Wrappers for functions in libgit2.
 * Linked lists::                Various types of linked lists.
 * Mesh grid for an image::      Breaking an image into a grid.
@@ -1154,11 +1154,11 @@ On the command-line, you can run any series of of actions which can come
 from various CLI capable programs you have decided your self in any
 possible permutation with one command@footnote{By writing a shell script
 and running it, for example see the tutorials in @ref{Tutorials}.}. This
-allows for much more creativity and exact reproducability that is not
+allows for much more creativity and exact reproducibility that is not
 possible to a GUI user. For technical and scientific operations, where the
 same operation (using various programs) has to be done on a large set of
 data files, this is crucially important. It also allows exact
-reproducability which is a foundation principle for scientific results. The
+reproducibility which is a foundation principle for scientific results. The
 most common CLI (which is also known as a shell) in GNU/Linux is GNU Bash,
 we strongly encourage you to put aside several hours and go through this
 beautifully explained web page:
@@ -1380,7 +1380,7 @@ our best, please don't not expect that your suggested feature be
 immediately included (with the next release of Gnuastro).
 
 The best person to apply the exciting new feature you have in mind is
-you, since you have the motivation and need. Infact Gnuastro is
+you, since you have the motivation and need. In fact Gnuastro is
 designed for making it as easy as possible for you to hack into it
 (add new features, change existing ones and so on), see @ref{Science
 and its tools}. Please have a look at the chapter devoted to
@@ -1481,12 +1481,12 @@ management of its version controlled source server there.
 @c `and' before the last name to a comma (','), then add " and Firstname
 @c Familyname'' after the last name.
 We would also like to gratefully thank Mohammad-reza Khellat, Alan Lefor,
-Yahya Sefidbakht, and Francesco Montanari for their useful and constructive
-comments and suggestions. Finally we should thank all the (sometimes
-anonymous) developers in various online forums which patiently answered all
-our small (but important) technical questions. All work on Gnuastro has
-been voluntary, but we are most grateful to the following institutions (in
-chronological order) for hosting us in our research:
+Yahya Sefidbakht, Francesco Montanari, and Ole Streicher for their useful
+and constructive comments and suggestions. Finally we should thank all the
+(sometimes anonymous) developers in various online forums which patiently
+answered all our small (but important) technical questions. All work on
+Gnuastro has been voluntary, but we are most grateful to the following
+institutions (in chronological order) for hosting us in our research:
 
 @quotation
 Ministry of education, culture, sports, science and technology (MEXT), Japan.@*
@@ -1659,7 +1659,7 @@ not necessarily created in the same input order. He is content with
 the default width of the outputs (which he inspected by running
 @code{$ astimgcrop -P}). If he wanted a different width for the
 cropped images, he could do that with the @option{--wwidth} option
-which accepts a value in arcseconds.  When he lists the contents of
+which accepts a value in arc-seconds.  When he lists the contents of
 the directory again he finds his 200 objects as separate FITS images.
 
 @example
@@ -1830,7 +1830,7 @@ by the atmosphere or other sources outside the atmosphere (for example
 gravitational lenses) prior to being sampled on an image. Since that
 transformation occurs on a continuous grid, to best approximate it, he
 should do all the work on a finer pixel grid. In the end he can
-resample the result to the initially desired grid size.
+re-sample the result to the initially desired grid size.
 
 @item
 Convolve the image with a PSF image that is oversampled to the same
@@ -1842,7 +1842,7 @@ build the image to be larger by at least half the width of the PSF
 convolution kernel on each edge.
 
 @item
-With all the transformations complete, the image should be resampled
+With all the transformations complete, the image should be re-sampled
 to the same size of the pixels in his detector.
 
 @item
@@ -1986,7 +1986,7 @@ image was also surprising for the student, instead of 500 by 500, it
 was 2630 by 2630 pixels. So Sufi had to explain why oversampling is
 very important for parts of the image where the flux change is
 significant over a pixel. Sufi then explained to him that after
-convolving we will resample the image to get our originally desired
+convolving we will re-sample the image to get our originally desired
 size. To convolve the image, Sufi ran the following command:
 
 @example
@@ -2617,7 +2617,7 @@ GNU help2man is used to convert the output of the @option{--help} option
 Some of the figures in this book are built by @LaTeX{} (using the PGF/TikZ
 package). The @LaTeX{} source for those figures is version controlled for
 easy maintenance not the actual figures. So the @file{./boostrap} script
-will run @LaTeX{} to build the figtures. The best way to install @LaTeX{}
+will run @LaTeX{} to build the figures. The best way to install @LaTeX{}
 and all the necessary packages is through
 @url{https://www.tug.org/texlive/, @TeX{} live} which is a package manager
 for @TeX{} related tools that is independent of any operating system. It is
@@ -3456,7 +3456,7 @@ and you don't have administrator or root access to update it. With e above
 order @file{LD_LIBRARY_PATH}, the system will first find the CFITSIO you
 installed for yourself and will never reach the system-wide
 installation. However there are important security problems: because all
-imporatant system-wide programs and libraries can be replaced by non-secure
+important system-wide programs and libraries can be replaced by non-secure
 versions if they also exist in @file{./.local/}. So if you choose this
 order, be sure to keep it clean from executables or libraries with the same
 names as important system programs or libraries.
@@ -3585,7 +3585,7 @@ SSDs (decreasing the lifetime).
 Having the built files mixed with the source files can greatly affect
 backing up (synchronization) of source files (since it involves the
 management of a large number of small files that are regularly
-changed. Backup software can ofcourse be configured to ignore the built
+changed. Backup software can of course be configured to ignore the built
 files and directories. However, since the built files are mixed with the
 source files and can have a large variety, this will require a high level
 of customization.
@@ -3599,7 +3599,7 @@ tmpfs is actually stored in the RAM (and possibly SAWP), not on HDDs or
 SSDs. The RAM is built for extensive and fast I/O. Therefore the large
 number of file I/Os associated with configuring and building will not harm
 the HDDs or SSDs. Due to the volatile nature of RAM, files in the tmpfs
-filesystem will be permanently lost after a power-off. Since all configured
+file-system will be permanently lost after a power-off. Since all configured
 and built files are derivative files (not files that have been directly
 written by hand) there is no problem in this and this feature can be
 considered as an automatic cleanup.
@@ -3712,7 +3712,7 @@ this line:
 @end example
 
 @noindent
-In Texinfo, a line is commented with @code{@@c}. Therefore, uncomment
+In Texinfo, a line is commented with @code{@@c}. Therefore, un-comment
 this line by deleting the first two characters such that it changes
 to:
 
@@ -5306,8 +5306,8 @@ robust and work in all the situations your research covers, not just your
 first test samples. Slowly you will find wrong assumptions or bad
 implementations that need to be fixed (`bugs' in software development
 parlance). Finally, when you submit the research to your collaborators or a
-journal, many comments and suggestions will come in that you have to
-addressed.
+journal, many comments and suggestions will come in, and you have to
+address them.
 
 Software developers have created version control systems precisely for this
 kind of activity. Each significant moment in the project's history is
@@ -5326,7 +5326,7 @@ reproduce that same result later, even if you have made
 changes/progress. For one example of a research paper's reproduction
 pipeline, please see the
 @url{https://gitlab.com/makhlaghi/NoiseChisel-paper, reproduction pipeline}
-of the @url{https://arxiv.org/abs/1505.01664, paper} introducing
+of the @url{https://arxiv.org/abs/1505.01664, paper} describing
 @ref{NoiseChisel}.
 
 @item CFITSIO
@@ -6168,14 +6168,14 @@ within a FITS file.
 @cindex GNU AWK
 However, this comes at a cost: binary tables are not easily readable by
 human eyes. There is no standard on how the zero and ones should be
-interpretted. The Unix-like operating systems have flurished because of a
+interpretted. The Unix-like operating systems have flourished because of a
 simple fact: communication between the various tools is based on human
-readible characters@footnote{In ``The art of Unix programming'', Eric
+readable characters@footnote{In ``The art of Unix programming'', Eric
 Raymond makes this suggestion to programmers: ``When you feel the urge to
 design a complex binary file format, or a complex binary application
 protocol, it is generally wise to lie down until the feeling
 passes.''. This is a great book and strongly recommended, give it a look if
-you want to truely enjoy your work/life in this environment.}. So while the
+you want to truly enjoy your work/life in this environment.}. So while the
 FITS table standards are very beneficial for the tools that recognize them,
 they are hard to use in the vast majority of available software. This
 creates limitations for their generic use.
@@ -6311,8 +6311,8 @@ to be signed and unsigned characters, short integers, integers.
 
 @item --lintwidth
 (@option{=INT}) The minimum width (number of characters) for printing
-columns of longer datatypes. The longer datatypes are considered to be long
-and longlong types.
+columns of longer datatypes. The longer datatypes are considered to be
+@code{long} and @code{longlong} types.
 
 @item --floatwidth
 (@option{=INT}) The minimum width (number of characters) for printing
@@ -7174,12 +7174,12 @@ returning 1 when the second popped operand is larger or equal to the first.
 
 @item eq
 Equality: similar to @code{lt} (`less than' operator), but returning 1 when
-the two popped operands are equal (to double precison floating point
+the two popped operands are equal (to double precision floating point
 accuracy).
 
 @item neq
 Non-Equality: similar to @code{lt} (`less than' operator), but returning 1
-when the two popped operands are @emph{not} equal (to double precison
+when the two popped operands are @emph{not} equal (to double precision
 floating point accuracy).
 
 @cindex Blank pixel
@@ -7535,7 +7535,7 @@ only if the kernel is flipped the process is known
 
 To be a weighted average, the sum of the weights (the pixels in the
 kernel) have to be unity. This will have the consequence that the
-convolved image of an object and unconvolved object will have the same
+convolved image of an object and un-convolved object will have the same
 brightness (see @ref{Flux Brightness and magnitude}), which is
 natural, because convolution should not eat up the object photons, it
 only disperses them.
@@ -7747,7 +7747,7 @@ imaginary surface. Seeing the animation in Wikipedia will really help
 in understanding this important concept. At each point in time, we
 take the vertical coordinate of the point and use it to find the value
 of the function at that point in time. @ref{iandtime} shows this
-relation with the axises marked.
+relation with the axes marked.
 
 Leonhard Euler@footnote{Other forms of this equation were known before
 Euler. For example in 1707 A.D. (the year of Euler's birth) Abraham de
@@ -7785,7 +7785,7 @@ number (a function of @mymath{v}):
 For @mymath{v=\pi}, a nice geometric animation of going to the limit can be
 seen @url{https://commons.wikimedia.org/wiki/File:ExpIPi.gif, on
 Wikipedia}. We see that @mymath{\lim_{m\rightarrow\infty}a(\pi)=-1}, while
-@mymath{\lim_{m\rightarrow\infty}b(\pi)=0}, which gives the famus
+@mymath{\lim_{m\rightarrow\infty}b(\pi)=0}, which gives the famous
 @mymath{e^{i\pi}=-1} equation. The final value is the real number
 @mymath{-1}, however the distance of the polygon points traversed as
 @mymath{m\rightarrow\infty} is half the circumference of a circle or
@@ -7823,7 +7823,7 @@ visualizing the rotation of the imaginary circle and the advance along the
 @float Figure,iandtime
 @image{gnuastro-figures/iandtime, 15.2cm, , } @caption{Relation
 between the real (signal), imaginary (@mymath{i\equiv\sqrt{-1}}) and
-time axises at two snapshots of time.}
+time axes at two snapshots of time.}
 @end float
 
 
@@ -8402,7 +8402,7 @@ the frequency domain is the inverse of the spatial domain.
 
 Once all the relations in the previous sections have been clearly
 understood in one dimension, it is very easy to generalize them to two
-or even more dimentions since each dimension is by definition
+or even more dimensions since each dimension is by definition
 independent. Previously we defined @mymath{l} as the continuous
 variable in 1D and the inverse of the period in its direction to be
 @mymath{\omega}. Let's show the second spatial direction with
@@ -8420,7 +8420,7 @@ The 2D Dirac @mymath{\delta(l,m)} is non-zero only when
 @mymath{l=m=0}.  The 2D Dirac comb (or Dirac brush! See @ref{Dirac
 delta and comb}) can be written in units of the 2D Dirac
 @mymath{\delta}. For most image detectors, the sides of a pixel are
-equal in both dimentions. So @mymath{P} remains unchanged, if a
+equal in both dimensions. So @mymath{P} remains unchanged, if a
 specific device is used which has non-square pixels, then for each
 dimension a different value should be used.
 
@@ -8504,7 +8504,7 @@ So as long as we are dealing with convolution in the frequency domain,
 there is nothing we can do about the image edges. The least we can do
 is to eliminate the ghosts of the other side of the image. So, we add
 zero valued pixels to both the input image and the kernel in both
-dimentions so the image that will be convolved has the a size equal to
+dimensions so the image that will be convolved has the a size equal to
 the sum of both images in each dimension. Of course, the effect of this
 zero-padding is that the sides of the output convolved image will
 become dark. To put it another way, the edges are going to drain the
@@ -8580,7 +8580,7 @@ file so you can feed it into any of the programs.
 ConvertType: You can write your own desired kernel into a text file
 table and convert it to a FITS file with ConvertType, see
 @ref{ConvertType}. Just be careful that the kernel has to have an odd
-number of pixels along its two axises, see @ref{Convolution
+number of pixels along its two axes, see @ref{Convolution
 process}. All the programs that do convolution will normalize the
 kernel internally, so if you choose this option, you don't have to
 worry about normalizing the kernel. Only within Convolve, there is an
@@ -9096,13 +9096,13 @@ multiplication below:
 @cindex Mixing pixel values
 A digital image is composed of discrete `picture elements' or
 `pixels'. When a real image is created from a camera or detector, each
-pixel's area is used to store the number of photoelectrons that were
+pixel's area is used to store the number of photo-electrons that were
 created when incident photons collided with that pixel's surface
 area. This process is called the `sampling' of a continuous or analog
 data into digital data. When we change the pixel grid of an image or
 warp it as we defined in @ref{Warping basics}, we have to `guess' the
 flux value of each pixel on the new grid based on the old grid, or
-resample it. Because of the `guessing', any form of warping on the
+re-sample it. Because of the `guessing', any form of warping on the
 data is going to degrade the image and mix the original pixel values
 with each other. So if an analysis can be done on an un-warped data
 image, it is best to leave the image untouched and pursue the
@@ -9228,7 +9228,7 @@ the modular warpings will be ignored. Any number of modular warpings can be
 specified on the command-line and configuration files. If more than one
 modular warping is given, all will be merged to create one warping
 matrix. As described in @ref{Merging multiple warpings}, matrix
-multiplication is not commutative, so the order of specifing the modular
+multiplication is not commutative, so the order of specifying the modular
 warpings on the command-line, and/or configuration files makes a difference
 (see @ref{Configuration file precedence}). Below, the modular warpings are
 first listed (see @ref{Warping basics} for the definition of each type of
@@ -9285,7 +9285,7 @@ see @ref{Merging multiple warpings}.
 @item -s
 @itemx --scale
 (@option{=FLT[,FLT]}) Scale the input image by the given factor. If only
-one value is given, then both image axises will be scaled with the given
+one value is given, then both image axes will be scaled with the given
 value. When two values are given, the first will be used to scale the first
 axis and the second will be used for the second axis. If you only need to
 scale one axis, use @option{1} for the axis you don't need to scale.
@@ -9293,7 +9293,7 @@ scale one axis, use @option{1} for the axis you don't need to scale.
 @item -f
 @itemx --flip
 (@option{=FLT[,FLT]}) Flip the image around the first, second or both
-axises. The first value specifies a flip on the first axis and the second
+axes. The first value specifies a flip on the first axis and the second
 on the second axis. The values of the option only matter if they are
 non-zero. If any of the values are zero, that axis is not flipped. So if
 you want to flip by the second axis only, use @option{--flip=0,1} (which is
@@ -9302,8 +9302,8 @@ non-zero).
 
 @item -e
 @itemx --shear
-(@option{=FLT[,FLT]}) Apply a shear to the image along the image axises. If
-only one value is given, then both image axises will be sheared with the
+(@option{=FLT[,FLT]}) Apply a shear to the image along the image axes. If
+only one value is given, then both image axes will be sheared with the
 given value. When two values are given, the first will be used to shear the
 first axis and the second will be used for the second axis. If you only
 need to shear one axis, use @option{0} for the axis you don't need.
@@ -9311,7 +9311,7 @@ need to shear one axis, use @option{0} for the axis you don't need.
 @item -t
 @itemx --translate
 (@option{=FLT[,FLT]}) Apply a translation to the image along the image
-axises. If only one value is given, then both image axises will be
+axes. If only one value is given, then both image axes will be
 translated with the given value. When two values are given, the first will
 be used to translate along the first axis and the second will be used for
 the second axis. If you only need to translate one axis, use @option{0} for
@@ -9320,8 +9320,8 @@ the axis you don't need.
 @item -p
 @itemx --project
 (@option{=FLT[,FLT]}) Apply a projection to the image along the image
-axises. If only one value is given, then the projection will be applied on
-both image axises with the given value. When two values are given, the
+axes. If only one value is given, then the projection will be applied on
+both image axes with the given value. When two values are given, the
 first will be used for the first axis and the second will be used for the
 second axis. If you only need projection along one axis, use @option{0} for
 the axis you don't need.
@@ -9711,7 +9711,7 @@ configuration files, see @ref{Configuration files}. The area of each
 channel will then be tiled by meshes of the given size and subsequent
 processing will be done on those meshes. If the image is processed or
 the detector only has one amplifier, you can set the number of
-channels in both axises to 1.
+channels in both axes to 1.
 
 Unlike the channel size, that has to be an exact multiple of the image
 size, the mesh size can be any number. If it is not an exact multiple of
@@ -10105,7 +10105,7 @@ file or the HDU.
 The programs that accept a mask image, all share the options
 below. Any masked pixels will receive a NaN value (or a blank pixel,
 see @ref{Blank pixels}) in the final output of those programs.
-Infact, another way to notify any of the Gnuastro programs to not use
+In fact, another way to notify any of the Gnuastro programs to not use
 a certain set of pixels in a data set is to set those pixels equal to
 appropriate blank pixel value for the type of the image, @ref{Blank
 pixels}.
@@ -10798,7 +10798,7 @@ Once raw data have gone through the initial reduction process (through the
 programs in @ref{Image manipulation}). We are ready to derive scientific
 results out of them. Unfortunately in most cases, the scientifically
 interesting targets are deeply drowned in a sea of noise. NoiseChisel is
-Gnuastro's tool to detect signal in noise. Infact, NoiseChisel was the
+Gnuastro's tool to detect signal in noise. In fact, NoiseChisel was the
 motivation behind creating Gnuastro and has a journal article devoted to
 its techniques: @url{http://arxiv.org/abs/1505.01664, arXiv:1505.01664},
 published in 2015 by the Astrophysical Journal Supplement Series
@@ -11342,7 +11342,7 @@ same line of sight and be detected as clumps on one detection. On the
 other hand, the connection (through a spiral arm or tidal tail for
 example) between two parts of one galaxy might have such a low surface
 brightness that they are broken up into multiple detections or
-objects. Infact if you have noticed, exactly for this purpose, this is
+objects. In fact if you have noticed, exactly for this purpose, this is
 the only Signal to noise ratio that the user gives into
 NoiseChisel. The `true' detections and clumps can be objectively
 identified from the noise characteristics of the image, so you don't
@@ -11560,7 +11560,7 @@ On different instruments pixels have different physical sizes (for example
 in micro-meters, or spatial angle over the sky), nevertheless, a pixel is
 our unit of data collection. In other words, while quantifying the noise,
 the physical or projected size of the pixels is irrelevant. We thus define
-the @emph{depth} of each dataset (or image) as the magnitude of
+the @emph{depth} of each data-set (or image) as the magnitude of
 @mymath{\sigma_m}.
 
 @cindex XDF
@@ -11588,12 +11588,12 @@ image/filter to generate a catalog for measuring colors.
 
 The object might not be visible in the filter used for the latter image, or
 the image @emph{depth} (see above) might be much shallower. So you will get
-unreasonbly faint magnitudes. For example when the depth of the image is 32
+unreasonably faint magnitudes. For example when the depth of the image is 32
 magnitudes, a measurement that gives a magnitude of 36 for a
 @mymath{\sim100} pixel object is clearly unreliable. In another similar
 depth image, we might measure a magnitude of 30 for it, and yet another
 might give 33. Furthermore, due to the noise scatter so close to the depth
-of the dataset, the total brightness might actually get measured as a
+of the data-set, the total brightness might actually get measured as a
 negative value, so no magnitude can be defined (recall that a magnitude is
 a base-10 logarithm).
 
@@ -11602,7 +11602,7 @@ a base-10 logarithm).
 Using such unreliable measurements will directly affect our analysis, so we
 must not use them. However, all is not lost! Given our limited depth, there
 is one thing we can deduce about the object's magnitude: we can say that if
-something actually exists here (possibly burried deep under the noise), it
+something actually exists here (possibly buried deep under the noise), it
 must have a magnitude that is fainter than an @emph{upper limit
 magnitude}. To find this upper limit magnitude, we place the object's
 footprint (segmentation map) over random parts of the image where there are
@@ -11613,7 +11613,7 @@ of that distribution can be used to quantify the upper limit magnitude.
 
 @cindex Correlated noise
 Traditionally, faint/small object photometry was done using fixed circular
-apertures (for example with a diameter of @mymath{N} arcseconds). In this
+apertures (for example with a diameter of @mymath{N} arc-seconds). In this
 way, the upper limit was like the depth discussed above: one value for the
 whole image. But with the much more advanced hardware and software of
 today, we can make customized segmentation maps for each object. The number
@@ -11630,7 +11630,7 @@ them will also decrease. An important statistic is thus the fraction of
 objects of similar morphology and brightness that will be identified with
 our detection algorithm/parameters in the given image. This fraction is
 known as completeness. For brighter objects, completeness is 1: all bright
-objects that might exist over the imagde will be detected. However, as we
+objects that might exist over the image will be detected. However, as we
 go to lower surface brightness objects, we fail to detect some and
 gradually we are not able to detect anything any more. For a given profile,
 the magnitude where the completeness drops below a certain level usually
@@ -11644,7 +11644,7 @@ fraction of true detections to all true detections. In effect purity is the
 measure of contamination by false detections: the higher the purity, the
 lower the contamination. Completeness and purity are anti-correlated: if we
 can allow a large number of false detections (that we might be able to
-remove by other means), we can significantly increase theh completeness
+remove by other means), we can significantly increase the completeness
 limit.
 
 One traditional way to measure the completeness and purity of a given
@@ -13948,7 +13948,7 @@ types with small ranges are used (for example images with a
 @code{BITPIX} of @code{8} which can only keep 256 values). This can be
 disabled with the @option{doubletype} option.  The header of the
 output FITS file keeps all the parameters that were influential in
-making it. This is done for future reproducability.
+making it. This is done for future reproducibility.
 
 @table @option
 
@@ -14096,11 +14096,11 @@ To start, let's assume a static (not expanding or shrinking), flat 2D
 surface similar to @ref{flatplane} and that our 2D friend is observing
 its universe from point @mymath{A}. One of the most basic ways to
 parametrize this space is through the Cartesian coordinates
-(@mymath{x}, @mymath{y}). In @ref{flatplane}, the basic axises of
+(@mymath{x}, @mymath{y}). In @ref{flatplane}, the basic axes of
 these two coordinates are plotted. An infinitesimal change in the
 direction of each axis is written as @mymath{dx} and @mymath{dy}. For
 each point, the infinitesimal changes are parallel with the respective
-axises and are not shown for clarity. Another very useful way of
+axes and are not shown for clarity. Another very useful way of
 parametrizing this space is through polar coordinates. For each point,
 we define a radius (@mymath{r}) and angle (@mymath{\phi}) from a fixed
 (but arbitrary) reference axis. In @ref{flatplane} the infinitesimal
@@ -14459,7 +14459,7 @@ boost your creativity.
 This chapter starts with a basic introduction to libraries and how you can
 use them in @ref{Review of library fundamentals}. The separate functions in
 the Gnuastro library are then introduced (classified by context) in
-@ref{Gnuastro library}. If you end up rutinely using a fixed set of library
+@ref{Gnuastro library}. If you end up routinely using a fixed set of library
 functions, with a well-defined input and output, it will be much more
 beneficial if you define a program for the job. Therefore, in its
 @ref{Version controlled source}, Gnuastro comes with the @ref{The TEMPLATE
@@ -14491,7 +14491,7 @@ In theory, a full operating system (or any software) can be written as one
 function. Such a software would not need any headers or linking (that are
 discussed in the subsections below). However, writing that single function
 and maintaining it (adding new features, fixing bugs, documentation and
-etc) would be a programmer or scientist's worst nightmare! Futhermore, all
+etc) would be a programmer or scientist's worst nightmare! Furthermore, all
 the hard work that went into creating it cannot be reused in other
 software: every other programmer or scientist would have to re-invent the
 wheel. The ultimate purpose behind libraries (which come with headers and
@@ -14517,7 +14517,7 @@ C source code is read from top to bottom in the source file, therefore
 program components (for example variables, data structures and functions)
 should all be @emph{defined} or @emph{declared} closer to the top of the
 source file: before they are used. @emph{Defining} something in C or C++ is
-jargon for providing its full details. @emph{Declaraing} it, on the
+jargon for providing its full details. @emph{Declaring} it, on the
 other-hand, is jargon for only providing the minimum information needed for
 the compiler to pass it temporarily and fill in the detailed definition
 later.
@@ -14643,7 +14643,7 @@ On most systems the basic C header files (like @file{stdio.h} and
 from the pre-processor's @code{#include} directive, which is also the
 motivation behind the `I' in the @option{-I} option to the
 pre-processor.}. Your compiler is configured to automatically search that
-directory (and possibly others), so you don't have to explictly mention
+directory (and possibly others), so you don't have to explicitly mention
 these directories. Go ahead, look into the @file{/usr/include} directory
 and find @file{stdio.h} for example. When the necessary header files are
 not in those specific libraries, the pre-processor can also search in
@@ -14665,7 +14665,7 @@ is optional and commonly not used.
 @end table
 
 If the pre-processor can't find the included files, it will abort with an
-error. Infact a common error when building programs that depend on a
+error. In fact a common error when building programs that depend on a
 library is that the compiler doesn't not know where a library's header is
 (see @ref{Known issues}). So you have to manually tell the compiler where
 to look for the library's headers with the @option{-I} option. For a small
@@ -14691,18 +14691,18 @@ issues} for an example of how to set this variable at configure time.
 As described in @ref{Installation directory}, you can select the top
 installation directory of a software using the GNU build system, when you
 @command{./configure} it. All the separate components will be put in their
-separate subdirectory under that, for example the programs, compiled
+separate sub-directory under that, for example the programs, compiled
 libraries and library headers will go into @file{$prefix/bin} (replace
 @file{$prefix} with a directory), @file{$prefix/lib}, and
 @file{$prefix/include} respectively. For enhanced modularity, libraries
 that contain diverse collections of functions (like GSL, WCSLIB, and
-Gnuastro), put their header files in a subdirectory unique to
+Gnuastro), put their header files in a sub-directory unique to
 themselves. For example all Gnuastro's header files are installed in
 @file{$prefix/include/gnuastro}. In your source code, you need to keep the
-library's subdirectory when including the headers from such libraries, for
+library's sub-directory when including the headers from such libraries, for
 example @code{#include <gnuastro/fits.h>}@footnote{the top
 @file{$prefix/include} directory is usually known to the compiler}. Not all
-libraries need to follow this convension, for example CFITSIO only has one
+libraries need to follow this convention, for example CFITSIO only has one
 header (@file{fitsio.h}) which is directly installed in
 @file{$prefix/include}.
 
@@ -14782,8 +14782,8 @@ $ nm /usr/local/bin/astarithmetic | grep gal_
 @cindex Dynamic linking
 @cindex Linking: dynamic
 These undefined symbols (functions) will be linked to the executable
-everytime you run arithmetic. Therefore they are known as dynamically
-@emph{linked} libraries @footnote{Do not confuse dynamicly @emph{linked}
+every time you run arithmetic. Therefore they are known as dynamically
+@emph{linked} libraries @footnote{Do not confuse dynamically @emph{linked}
 libraries with dynamically @emph{loaded} libraries. The former (that is
 discussed here) are only loaded once at the program startup. However, the
 latter can be loaded anytime during the program's execution, they are also
@@ -14792,7 +14792,7 @@ linked, the library is known as a shared library. As we saw above, static
 linking is done when the executable is being built. However, when a library
 is linked dynamically, its symbols are only checked with the available
 libraries at build time: they are not actually copied into the
-executable. Everytime you run the program, the linker will be activated and
+executable. Every time you run the program, the linker will be activated and
 will try to link the program to the installed library before it starts. If
 you want all the libraries to be statically linked to the executables, you
 have to tell Libtool (which Gnuastro uses for the linking) to disable
@@ -14871,7 +14871,7 @@ three numbers in the prefix are the version of the shared library. Shared
 library versions are defined to allow multiple versions of a shared library
 simultaneously on a system and to help detect possible updates in the
 library and programs that depend on it by the linker. It is very important
-to mention that this version number is differnent from from the software
+to mention that this version number is different from from the software
 version number (see @ref{Version numbering}), so do not confuse the
 two. See the ``Library interface versions'' chapter of GNU Libtool for
 more.
@@ -14938,7 +14938,7 @@ the linker will complain and abort.
 After the mostly abstract discussions of @ref{Headers} and @ref{Linking},
 we'll give a small tutorial here. But before that, let's recall the general
 steps of how your source code is prepared, compiled and linked to the
-librays it depends on so you can run it:
+libraries it depends on so you can run it:
 
 @enumerate
 @item
@@ -14998,7 +14998,7 @@ $ gcc -I$prefix/include -L$prefix/lib arraymanip.c -lgnuastro -lm     \
 @end example
 
 @noindent
-This single command has done all the preprocessor, compilation and linker
+This single command has done all the pre-processor, compilation and linker
 operations. Therefore no intermediate files (object files in particular)
 were created, only a single output executable was created. You are now
 ready to run the program with:
@@ -15111,7 +15111,7 @@ your exciting science.
 initially created to be a collection of command-line programs. However, as
 the programs and their the shared functions grew, internal (not installed)
 libraries were added. With the 0.2 release, the libraries are
-installable. Because of this history in these early phases, the libraries
+install able. Because of this history in these early phases, the libraries
 are not fully programmer friendly yet: they abort the program on an error,
 their naming and arguments are not fully uniform, or modular, and most of
 the interesting functions (that are currently only used within one program)
@@ -15125,7 +15125,7 @@ problems. It will stabilize with the removal of this notice. Check the
 * Installation information::    General information about the installation.
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
-* FITS files::                  Working with FITS datat.
+* FITS files::                  Working with FITS data.
 * Git wrappers::                Wrappers for functions in libgit2.
 * Linked lists::                Various types of linked lists.
 * Mesh grid for an image::      Breaking an image into a grid.
@@ -15252,7 +15252,7 @@ to the value @code{to}.
 
 @deftypefun void gal_array_no_nans (float @code{*in}, size_t @code{*size})
 Move all the non-NaN elements in the array @code{in} to the start of the
-array so that the non-NaN alements are contiguous. This is useful for cases
+array so that the non-NaN elements are contiguous. This is useful for cases
 where you want to sort the data. Note that before this function,
 @code{size} must point to the initial size of the array. After this
 function returns, size will point to the new size of the array, with only
@@ -15368,7 +15368,7 @@ Replace each element of the input array with its absolute value.
 @node Bounding box, FITS files, Array manipulation, Gnuastro library
 @subsection Bounding box (@file{box.h})
 
-Functions related to reporing a the bouding box of certain inputs are
+Functions related to reporting a the bounding box of certain inputs are
 declared in @file{gnuastro/box.h}. All coordinates in this header are in
 the FITS format (first axis is the horizontal and the second axis is
 vertical).
@@ -15612,7 +15612,7 @@ Gnuastro provides the following functions to deal with FITS data related
 operations. FITS data can have a variety of types, see @ref{CFITSIO
 datatype} for a discussion on this, in particular the integer variables
 named @code{datatype}, @code{bitpix}, and @code{tform}. See @ref{FITS
-macros and data structures} for the strure and macro definitions.
+macros and data structures} for the structure and macro definitions.
 
 @deftypefun void gal_fits_io_error (int @code{status}, char @code{*message})
 Report the input or output error as a string and print it along with a
@@ -15651,8 +15651,8 @@ column. Note that in the FITS standard, @code{TFORM} values are characters.
 @deftypefun void gal_fits_img_bitpix_size (fitsfile @code{*fptr}, int @code{*bitpix}, long @code{*naxes})
 Return the datatype (in FITS @code{BITPIX} format) and image size of a FITS
 HDU specified with the @code{fitsfile} pointer (defined in CFITSIO). So the
-HDU must have been already opened. If the number of dimentions is not 2,
-this function will retun an error and abort.
+HDU must have been already opened. If the number of dimensions is not 2,
+this function will return an error and abort.
 @end deftypefun
 
 @deftypefun {void *} gal_fits_datatype_blank (int @code{datatype})
@@ -15741,7 +15741,7 @@ with a @code{_N} (N>0) and used as the keyword name.
 Add the WCS information into the header of the HDU pointed to by
 @code{fptr}. The WCS information must already be converted into a long
 string with the FITS conventions. To help in identifying the WCS
-information, a few blank lines and a title will be added ontop.
+information, a few blank lines and a title will be added on top.
 @end deftypefun
 
 @deftypefun void gal_fits_update_keys (fitsfile @code{*fptr}, struct gal_fits_key_ll @code{**keylist})
@@ -15754,7 +15754,7 @@ will write, or update, all the keywords given in @code{keylist}. See
 @deftypefun void gal_fits_write_keys_version (fitsfile @code{*fptr}, struct gal_fits_key_ll @code{*headers}, char @code{*spack_string})
 Write or update (all the) keyword(s) in @code{headers} into the FITS
 pointer, but also the date, name of your program (@code{spack_string}),
-along with the verisons of Gnuastro, CFITSIO, WCSLIB (when available) into
+along with the versions of Gnuastro, CFITSIO, WCSLIB (when available) into
 the header, see @ref{Output headers}.  Since the data processing depends on
 the versions of the libraries you have used, it is strongly recommended to
 include this information in every FITS output. See @ref{FITS macros and
@@ -15892,11 +15892,11 @@ error notice.
 
 @cindex Git
 @cindex libgit2
-Git is one of the most commont tools for version control and it can often
+Git is one of the most common tools for version control and it can often
 be useful during development, for example see @code{COMMIT} keyword in
 @ref{Output headers}. The functions introduced here are described in the
 @file{gnuastro/git.h} header. At installation time, Gnuastro will also
-check for the existance of libgit2 and store the value in the
+check for the existence of libgit2 and store the value in the
 @code{GAL_GNUASTRO_HAVE_LIBGIT2}, see @ref{Installation
 information}. @file{gnuastro/git.h} includes @file{gnuastro/gnuastro.h}
 internally, so won't have to include both for this macro.
@@ -15991,7 +15991,7 @@ please have a look at that article.
 
 In this section we will review the functions and structures that are
 available in Gnuastro for working on linked lists. For each linked-list
-node sturcture, we will first introduce the structure, then the functions
+node structure, we will first introduce the structure, then the functions
 for working on the structure. All these structures and functions are
 defined and declared in @file{gnuastro/linkedlist.h}.
 
@@ -16347,7 +16347,7 @@ generically applicable mesh grid system.
 
 
 @deftp Structure gal_mesh_params
-This structure keeps all the necessary paramters for a particular mesh and
+This structure keeps all the necessary parameters for a particular mesh and
 channel grid over an image. This structure only keeps the information about
 the mesh and channel grid structure. It doesn't keep a copy of the
 different parts of the image. So when working on several images of the same
@@ -16362,7 +16362,7 @@ on the mesh grid, where one value is to be assigned for each mesh. It has
 one element for each mesh in the image. However, due to the (possible)
 existence of channels (see @ref{Tiling an image}), each channel needs its
 own contiguous part (group of meshes) in the full @code{garray}. Each
-channel has @code{gs0*gs1} (dimentions of meshes in each channel)
+channel has @code{gs0*gs1} (dimensions of meshes in each channel)
 elements. There are @code{nch} parts (or channels) in total.  In short, the
 meshs in each channel have to be contiguous to facilitate the neighbor
 analysis in interpolation and other channel specific jobs. So, the over-all
@@ -16374,7 +16374,7 @@ interpolation).
 
 @deftypefun size_t gal_mesh_ch_based_id_from_gid (struct gal_mesh_params @code{*mp}, size_t @code{gid})
 As discussed in the description of @code{gal_mesh_params}, there are two
-interal ways to refer to a mesh (with an ID):
+internal ways to refer to a mesh (with an ID):
 
 @itemize
 @item
@@ -16403,7 +16403,7 @@ the two kinds above. So we have the following two functions
 @code{gal_mesh_gid_from_ch_based_id} for changing between these IDs.
 
 The former (this function) is used when you are going over the elements in
-garray (and you are completley ignorant to which one of cgarrays or
+garray (and you are completely ignorant to which one of cgarrays or
 fgarrays garray points to) and you need the channel based IDs to get basic
 mesh information like the mesh type and size.
 @end deftypefun
@@ -16416,7 +16416,7 @@ channel-based IDs, but you need to know what ID to use for @code{garray}.
 
 @deftypefun size_t gal_mesh_img_xy_to_mesh_id (struct gal_mesh_params @code{*mp}, size_t @code{x}, size_t @code{y})
 You have a pixel's position as @code{x} and @code{y} in the final image (in
-C-based dimentions) and want to know the id to be used in the
+C-based dimensions) and want to know the id to be used in the
 @code{garray}s to get a value for this pixel in the mesh-grid. This
 function will return that ID. As an example, you can get the mesh value at
 a specific position in the image with:
@@ -16448,8 +16448,8 @@ Save the mesh grid values into the @file{filename} FITS file with
 @code{garrays}), a WCS structure may also optionally be given and
 @code{spack_string} is the name of your program to be written in the
 header. The output FITS file will have one pixel for each mesh, so its
-dimentions will be significantly smaller than the input image. If you want
-the mesh values in the same dimention as the input image, use
+dimensions will be significantly smaller than the input image. If you want
+the mesh values in the same dimension as the input image, use
 @code{gal_mesh_check_garray}.
 @end deftypefun
 
@@ -16465,7 +16465,7 @@ vice-versa when @code{reverse==1}.
 Make the mesh structure using the basic information that must already be
 present within it. The complete list of necessary parameters are as
 follows, but note that some might not be necessary for your desired
-funcionality. @code{s0}, @code{s1}, @code{ks0}, @code{ks1}, @code{nch1},
+functionality. @code{s0}, @code{s1}, @code{ks0}, @code{ks1}, @code{nch1},
 @code{nch2}, @code{kernel}, @code{img}, @code{params}, @code{minmodeq},
 @code{mirrordist}, @code{fullsmooth}, @code{numnearest},
 @code{smoothwidth}, @code{lastmeshfrac}, @code{meshbasedcheck},
@@ -16519,8 +16519,8 @@ Smooth the mesh values arrays based on the parameters in
 
 @deftypefun void gal_mesh_spatial_convolve_on_mesh (struct gal_mesh_params @code{*mp}, float @code{**conv})
 Do spatial convolution (see @ref{Spatial domain convolution}) on each
-channel of the mesh grid indendently, therefore two adjacent pixels within
-the image that are not in the same channel will not affect eachother during
+channel of the mesh grid independently, therefore two adjacent pixels within
+the image that are not in the same channel will not affect each other during
 the convolution.
 @end deftypefun
 
@@ -16611,7 +16611,7 @@ overlap between a quadrilateral and the pixel grid or the quadrilaterral
 its self.
 
 The @code{GAL_POLYGON_MAX_CORNERS} macro is defined so there will be no
-need to allocate these temporary arrays seprately. Since we are dealing
+need to allocate these temporary arrays separately. Since we are dealing
 with pixels, the polygon can't really have too many vertices.
 
 @end deftypefun
@@ -16694,7 +16694,7 @@ floating point array in increasing order.
 @deftypefun int gal_qsort_index_float_decreasing (const void @code{*a}, const void @code{*b})
 When passed to @code{qsort}, this function will sort a @code{size_t} array
 based on decreasing values in the @code{gal_qsort_index_arr} single
-precision floating poiny array. The floating point array will not be
+precision floating point array. The floating point array will not be
 changed, it is only read. For example, if we have the following source
 code:
 
@@ -16749,7 +16749,7 @@ Initialize @code{gal_spatialconvolve_params} with the given arguments.
 
 @deftypefun {void *} gal_spatialconvolve_thread (void @code{*inparam})
 This function should be passed onto @code{pthread_create} to create a new
-thread for convolutionn on a region of the image.
+thread for convolution on a region of the image.
 @end deftypefun
 
 @deftypefun void gal_spatialconvolve_convolve (float @code{*input}, size_t @code{is0}, size_t @code{is1}, float @code{*kernel}, size_t @code{ks0}, size_t @code{ks1}, size_t @code{numthreads}, int @code{edgecorrection}, float @code{**out})
@@ -16774,9 +16774,9 @@ functions here for easier and more general usage in future
 releases. Ideally, they should be completely removed and the GNU Scientific
 Library's functions should be used. Since these functions are used in
 various parts of Gnuastro for multiple purposes, in this first library
-release (Gnuastro 0.2), there might be parallels, or non-homogenous
+release (Gnuastro 0.2), there might be parallels, or non-homogeneous
 arguments. Such situations arise here because of the history of Gnuastro:
-the libraries gew out of the programs, so it will take a little while to
+the libraries grew out of the programs, so it will take a little while to
 correct.
 
 @deffn Structure GAL_STATISTICS_MAX_SIG_CLIP_CONVERGE
@@ -16788,7 +16788,7 @@ The maximum number of times to try for @mymath{\sigma}-clipping (see
 Find the the minimum (non-blank) value in the @code{in} array (with
 @code{size} elements). The long type doesn't have a NaN value like the
 float types, see @ref{Blank pixels}. So as blank pixels, a value in the
-range of acceptable values (@code{blank} must be given so it is explictly
+range of acceptable values (@code{blank} must be given so it is explicitly
 ignored. You can use @code{GAL_FITS_LONG_BLANK} in @file{gnuastro/fits.h}.
 @end deftypefun
 
@@ -16813,7 +16813,7 @@ floating point types.
 @end deftypefun
 
 @deftypefun double gal_statistics_double_min_return (double @code{*in}, size_t @code{size})
-Similar to @code{gal_statistics_double_min} but minmium will be returned,
+Similar to @code{gal_statistics_double_min} but minimum will be returned,
 not put in a pointer.
 @end deftypefun
 
@@ -16839,7 +16839,7 @@ Find the second smallest value in the array.
 
 @deftypefun void gal_statistics_f_min_max (float @code{*in}, size_t @code{size}, float @code{*min}, float @code{*max})
 Find the minimum and maximum simultaneously for single precision floating
-poitn types.
+point types.
 @end deftypefun
 
 @deftypefun void gal_statistics_d_min_max (double @code{*in}, size_t @code{size}, double @code{*min}, double @code{*max})
@@ -17074,7 +17074,7 @@ ApJS 220, 1. arXiv:1505.01664).
 In modern times, newer CPU generations don't have significantly higher
 frequencies any more. However, CPUs are being manufactured with more cores,
 enabling more than one operation (thread) at each instant. This can be very
-useful to speed up many apsects of processing and in particular image
+useful to speed up many aspects of processing and in particular image
 processing.
 
 Most of the programs in Gnuastro utilize multi-threaded programming for the
@@ -17166,7 +17166,7 @@ other functions are also finished.
 
 @deftypefun int pthread_barrier_destroy (pthread_barrier_t @code{*b})
 Destroy all the information in the barrier structure. This should be called
-by the function that spinned off the threads after all the threads have
+by the function that spinned-off the threads after all the threads have
 finished.
 
 @cartouche
@@ -17190,7 +17190,7 @@ facilitate programming in with POSIX threads. We have created a simple C
 program for testing these functions in @file{tests/lib/multithread.c}. This
 small program was compiled and run on your system when you ran
 @command{make check}. You can use it as a template to easily create small
-multithreaded programs and efficiently use your powerful CPU.
+multi-threaded programs and efficiently use your powerful CPU.
 
 @deffn Macro GAL_THREADS_NON_THRD_INDEX
 This value will be used in the output of @code{gal_threads_dist_in_threads}
@@ -17285,7 +17285,7 @@ columns. The ending of the column indexes in @code{int_cols} and
 @code{accu_cols} is defined by a negative number. @code{space} is a three
 element array which will keep the number of characters that must be used
 for the integer, normal-accuracy and extra-accuracy columns. @code{prec} is
-a two element array which contains the number of decimas to print for the
+a two element array which contains the number of decimals to print for the
 normal and extra accuracy columns. @code{forg} (read as `f-or-g') is the
 @code{printf} type for the floating point numbers: either @code{f} (as in
 @code{%f}, which will only print decimals) and @code{g} (as in @code{%g},
@@ -17860,7 +17860,7 @@ group, sort them by length, see above.
 
 @item
 All function names, variables, etc should be in lower case.  Macros and
-preprocessor variables should be in upper case.
+pre-processor variables should be in upper case.
 
 @item
 Regarding naming of exported header files, functions, variables, macros,
@@ -17868,7 +17868,7 @@ and library functions, we adopted similar conventions to those used by the
 GNU Scientific Library
 (GSL)@footnote{@url{https://www.gnu.org/software/gsl/design/gsl-design.html#SEC15}}.
 In particular, in order to avoid clashes with the names of functions and
-variables coming from other libraries the namespace `@code{gal_}' is
+variables coming from other libraries the name-space `@code{gal_}' is
 prefixed to them. GAL stands for @emph{G}NU @emph{A}stronomy
 @emph{L}ibrary. Ideally `@code{gnuastro_}' should have been used, but that
 is very long.
@@ -18197,7 +18197,7 @@ programs with @option{--cite}, see @ref{Operating modes}.
 @subsection The TEMPLATE program
 
 In the @code{Version controlled source}, the @file{bin/} directory contains
-the source code for each program in a separate subdirectory. The
+the source code for each program in a separate sub-directory. The
 @file{bin/TEMPLATE} directory contains the bare-minimum files to create a
 new program. It can be used to understand the conventions described in
 @ref{Program source}, or to easily create a new program.
@@ -18225,7 +18225,7 @@ $ cp -R bin/TEMPLATE bin/myprog
 @item
 Open @file{configure.ac} in the top Gnuastro source. This file manages the
 operations that are done when a user runs @file{./configure}. Going down
-the file, you will notice repetative parts for each program. Copy one of
+the file, you will notice repetitive parts for each program. Copy one of
 those and correct the names of the copied program to your new program
 name. We follow alphabetic ordering here, so please place it
 correctly. There are multiple places where this has to be done, so be
@@ -18235,7 +18235,7 @@ ordering depends on the length of the name.
 
 @item
 Open @file{Makefile.am} in the top Gnuastro source. Similar to the previous
-step, add your new program similar to all the other utilites.
+step, add your new program similar to all the other programs.
 
 @item
 Change @code{TEMPLATE} to @code{myprog} in the file names and contents of
@@ -18362,7 +18362,7 @@ and build in RAM}. During development, you would commonly run this command
 only once (at the start of your work). The latter is designed to be run
 each time you make a change and want to test your work (with some possible
 input and output). The script itself is heavily commented and thoroughly
-discribes the best way to use it, so we won't repeat it here. As a summary:
+describes the best way to use it, so we won't repeat it here. As a summary:
 you specify the build directory, an output directory (for the built program
 to be run in and also contains the inputs), the program's short name and
 the arguments and options that it should be run with. This script will then
@@ -18387,13 +18387,13 @@ $ ./configure --disable-shared CFLAGS="-g -O0"
 
 @noindent
 These options to configure are already included in
-@file{tmpfs-config-make}, you just have to uncomment them.
+@file{tmpfs-config-make}, you just have to un-comment them.
 
 In order to understand the building process, you can go through the
 Autoconf, Automake and Libtool manuals, like all GNU manuals they provide
 both a great tutorial and technical documentation. The ``A small Hello
 World'' section in Automake's manual (in chapter 2) can be a good starting
-guide after you have read the seperate introductions.
+guide after you have read the separate introductions.
 
 
 
@@ -18558,7 +18558,7 @@ authors of a copyrighted work, successful enforcement depends on
 having the cooperation of all authors.
 
 In order to make sure that all of our copyrights can meet the
-recordkeeping and other requirements of registration, and in order to
+record keeping and other requirements of registration, and in order to
 be able to enforce the GPL most effectively, FSF requires that each
 author of code incorporated in FSF projects provide a copyright
 assignment, and, where appropriate, a disclaimer of any work-for-hire
@@ -18814,8 +18814,8 @@ the commands below, you make a branch, checkout to it, correct the bug,
 check if it is indeed fixed, add it to the staging area, commit it to the
 new branch and push it to your hosting service. But before all of them,
 make sure that you are on the @file{master} branch and that your
-@file{master} branch is up to date with the main Gnuastro repo with the
-first two commands.
+@file{master} branch is up to date with the main Gnuastro repository with
+the first two commands.
 
 @example
 $ git checkout master
@@ -18835,9 +18835,9 @@ ready. They will pull your work, test it themselves and if it is ready to
 be merged into the main Gnuastro history, they will merge it into the
 @file{master} branch. After that is done, you can simply checkout your
 local @file{master} branch and pull all the changes from the main
-repo. After the pull you can run `@command{git log}' as shown below, to see
-how @file{bug-median-stats} is merged with master. So you can push all the
-changes to your hosted repository and delete the branches:
+repository. After the pull you can run `@command{git log}' as shown below,
+to see how @file{bug-median-stats} is merged with master. So you can push
+all the changes to your hosted repository and delete the branches:
 
 @example
 $ git checkout master
@@ -18939,7 +18939,7 @@ projective transformation or Homography can be applied to the input images.
 @item MakeCatalog
 (@file{astmkcatalog}, see @ref{MakeCatalog}) Make catalog of labeled image
 (output of NoiseChisel). The catalogs are highly customizable and adding
-new calculations/columns is very streightforward.
+new calculations/columns is very straightforward.
 
 @item MakeNoise
 (@file{astmknoise}, see @ref{MakeNoise}) Make (add) noise to an image, with
