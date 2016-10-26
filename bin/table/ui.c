@@ -875,10 +875,8 @@ outputcolumns(struct tableparams *p)
       p->ocols[i].inindex=inindex;
       p->ocols[i].datatype=up->datatype[inindex];
       p->ocols[i].esize=gal_fits_datatype_size(up->datatype[inindex]);
-      printf("\n%zu\n", p->ocols[i].esize);
       --i;
     }
-  exit(1);
 }
 
 
