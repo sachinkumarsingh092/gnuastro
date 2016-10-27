@@ -236,6 +236,7 @@ install-exec-local:
 	 echo;                                                                       \
 	 echo "Environment variables to check: ";                                    \
 	 echo "  - '$(prefix)/bin' in PATH.";                                        \
+	 echo "  - '$(prefix)/lib' in LD_LIBRARY_PATH.";                             \
 	 echo "(for an intro, run 'info gnuastro \"Installation directory\"')";      \
 	 echo;                                                                       \
 	 echo;                                                                       \
