@@ -124,6 +124,13 @@ CC="$PTHREAD_CC"
 
 
 
+
+# Check if `malloc(0)' returns valid pointer
+AC_FUNC_MALLOC
+
+
+
+
 # Search for necessary libraries. After each library is found,
 # AC_SEARCH_LIBS adds the -lLIBRARY flag to the LIBS variable which is then
 # given to all the Makefiles. Each new flag is added to the left of the old
