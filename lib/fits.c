@@ -1409,7 +1409,7 @@ gal_fits_file_name_in_keywords(char *keynamebase, char *filename,
           /* Find the last place in the copied array that contains a
              '/' and put j on the next character (so it can be turned
              into a null character.*/
-          for(j=maxlength-1;j>0;--j)
+          for(j=maxlength-2;j>0;--j)
             if(value[j]=='/')
               {
                 value[j+1]='\0';
