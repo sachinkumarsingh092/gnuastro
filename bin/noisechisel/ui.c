@@ -716,7 +716,7 @@ sanitycheck(struct noisechiselparams *p)
   if(p->detsnhistnbins)
     {
       p->detectionsnhist=NULL;
-      gal_checkset_automatic_output(p->cp.output, "_detsn.fits",
+      gal_checkset_automatic_output(p->cp.output, "_detsn.txt",
                                     p->cp.removedirinfo, p->cp.dontdelete,
                                     &p->detectionsnhist);
     }
