@@ -4629,31 +4629,30 @@ self.
 @cindex CPU threads
 @cindex GNU Coreutils
 @cindex Using CPU threads
-@cindex POSIX threads library
 @cindex CPU, using all threads
 @cindex Multi-threaded programs
 @cindex Using multiple CPU cores
-Some of the programs benefit significantly when you use all the
-threads your computer's CPU has to offer to your operating system.
-GNU Astronomy Utilities uses the POSIX threads library (pthreads) for
-spinning off threads when the user asks for it. The number of threads
-available to your operating system is usually double the number of
-physical (hardware) cores in your CPU. On a GNU/Linux system, the
-number of threads available can be found with the command @command{$
-nproc} command (part of GNU Coreutils).
+@cindex Simultaneous multithreading
+Some of the programs benefit significantly when you use all the threads
+your computer's CPU has to offer to your operating system. The number of
+threads available can be larger than the number of physical (hardware)
+cores in the CPU (also known as Simultaneous multithreading). For example,
+in Intel's CPUs (those that implement its Hyper-threading technology) the
+number of threads is usually double the number of physical cores in your
+CPU. On a GNU/Linux system, the number of threads available can be found
+with the command @command{$ nproc} command (part of GNU Coreutils).
 
 @vindex --numthreads
 @cindex Number of threads available
 @cindex Available number of threads
 @cindex Internally stored option value
-Gnuastro can find the number of threads available to your system at
-run-time (when you execute the program). However, if a value is given
-provided for the @option{--numthreads} option, the given value will be
-used, not the value automatically read from your system, see
-@ref{Operating modes} and @ref{Configuration files} for ways to set a
-different value. Thus @option{--numthreads} is the only option with a
-value that doesn't have to be specified anywhere on the command-line
-or in the options.
+Gnuastro's programs can find the number of threads available to your system
+internally at run-time (when you execute the program). However, if a value
+is given to the @option{--numthreads} option, the given number will be
+used, see @ref{Operating modes} and @ref{Configuration files} for ways to
+use this option. Thus @option{--numthreads} is the only common option in
+Gnuastro's programs with a value that doesn't have to be specified anywhere
+on the command-line or in the configuration files.
 
 @menu
 * A note on threads::           Caution and suggestion on using threads.
@@ -4666,30 +4665,29 @@ or in the options.
 @cindex Using multiple threads
 @cindex Best use of CPU threads
 @cindex Efficient use of CPU threads
-Spinning off threads internally is not necessarily always the most
-efficient way to run an application. Creating a new thread isn't a
-cheap operation for the operating system. It is most useful when the
-input data are fixed and you want the same operation to be done on
-parts of it. For example one input image to ImageCrop and multiple
-crops from various parts of it. In this fashion, the image is loaded
-into memory once, all the crops are divided between the number of
-threads internally and each thread cuts out those parts which are
-assigned to it from the same image. On the other hand, if you have
-multiple images and you want to crop the same region out of all of
-them, it is much more efficient to set @option{--numthreads=1} (so no
+Spinning off threads is not necessarily the most efficient way to run an
+application. Creating a new thread isn't a cheap operation for the
+operating system. It is most useful when the input data are fixed and you
+want the same operation to be done on parts of it. For example one input
+image to ImageCrop and multiple crops from various parts of it. In this
+fashion, the image is loaded into memory once, all the crops are divided
+between the number of threads internally and each thread cuts out those
+parts which are assigned to it from the same image. On the other hand, if
+you have multiple images and you want to crop the same region(s) out of all
+of them, it is much more efficient to set @option{--numthreads=1} (so no
 threads spin off) and run ImageCrop multiple times simultaneously, see
 @ref{How to run simultaneous operations}.
 
 @cindex Wall-clock time
-You can check the boost in speed by first running a program on one of
-the data sets with the maximum number of threads and another time
-(with everything else the same) and only using one thread. You will
-notice that the wall-clock time (reported by most programs at their
-end) in the former is longer than the latter divided by number of
-physical CPU cores available to your operating system. Asymptotically
-these two can be equal (most of the time they aren't). So limiting the
-programs to use only one thread and running them independently on the
-number of available threads will be more efficient.
+You can check the boost in speed by first running a program on one of the
+data sets with the maximum number of threads and another time (with
+everything else the same) and only using one thread. You will notice that
+the wall-clock time (reported by most programs at their end) in the former
+is longer than the latter divided by number of physical CPU cores (not
+threads) available to your operating system. Asymptotically these two times
+can be equal (most of the time they aren't). So limiting the programs to
+use only one thread and running them independently on the number of
+available threads will be more efficient.
 
 @cindex System Cache
 @cindex Cache, system
@@ -4714,9 +4712,9 @@ yes, the more threads you use (with a maximum of the number of threads
 available to your OS) the faster you will get your results.
 
 @item
-If you want to run the same operation on @strong{multiple} data sets,
-it is best to set the number of threads to 1 and use GNU Parallel as
-explained above.
+If you want to run the same operation on @strong{multiple} data sets, it is
+best to set the number of threads to 1 and use Make, or GNU Parallel, as
+explained in @ref{How to run simultaneous operations}.
 @end itemize
 @end cartouche
 
@@ -4727,13 +4725,18 @@ explained above.
 @node How to run simultaneous operations,  , A note on threads, Threads in Gnuastro
 @subsection How to run simultaneous operations
 
-There are two approaches to simultaneously execute a program: using
-GNU Parallel or Make (GNU Make is the most common implementation). The
-first is very useful when you only want to do one job multiple times
-and want to get back to your work without actually keeping the command
-you ran. The second is usually for (very) complicated processes, with
-lots of dependencies between the different products (for example a
-data-production pipeline).
+There are two@footnote{A third way would be to open multiple terminal
+emulator windows in your GUI, type the commands separately on each and
+press @key{Enter} once on each terminal, but this is far too frustrating,
+tedious and prone to errors. It's therefore not a realistic solution when
+tens, hundreds or thousands of operations (your research targets,
+multiplied by the operations you do on each) are to be done.} approaches to
+simultaneously execute a program: using GNU Parallel or Make (GNU Make is
+the most common implementation). The first is very useful when you only
+want to do one job multiple times and want to get back to your work without
+actually keeping the command you ran. The second is usually for more
+important operations, with lots of dependencies between the different
+products (for example a full scientific research).
 
 @table @asis
 
@@ -4767,26 +4770,45 @@ nicely in the page. If you type the whole command in one line, you
 should remove it.
 
 @item Make
-Make is a program built for specifying ``targets'', ``prerequisites'' and
-``recipes''. It allows you to define very complicated dependency structures
-for complicated processes that commonly start off with a large list of
-inputs and builds them based on the dependencies you define. GNU
-Make@footnote{@url{https://www.gnu.org/software/make/}} is the most common
-implementation which (like nearly all GNU programs comes with a wonderful
+@cindex Make
+@cindex GNU Make
+Make is a program for building ``targets'' (e.g., files) using ``recipes''
+(a set of operations) when their known ``prerequisites'' (other files) have
+been updated. It elegantly allows you to define dependency structures for
+building your final output and updating it efficiently when the inputs
+change. It is most commonly used to build programs, but it is also very
+useful for scientific research, for example see
+@url{https://gitlab.com/makhlaghi/NoiseChisel-paper, the reproduction
+pipeline} of the paper introducing @ref{NoiseChisel} (one of Gnuastro's
+programs). GNU Make@footnote{@url{https://www.gnu.org/software/make/}} is
+the most common implementation which (like nearly all GNU programs comes
+with a wonderful
 manual@footnote{@url{https://www.gnu.org/software/make/manual/}}). It is
-very basic and short (the most important part is about 100 pages).
+very basic and short (the most important parts are in the first roughly 100
+pages).
 
-Make has the @option{--jobs} (@option{-j}) which allows you to specify
-the maximum number of jobs that can be done simultaneously. For
-example a common 4 physical core CPU usually has 8 processing
-threads. So you can run:
+Make comes with a @option{--jobs} (@option{-j}) option which allows you to
+specify the maximum number of jobs that can be done simultaneously. For
+example if you have 8 threads available to your operating system. You can
+run:
 
 @example
 $ make -j8
 @end example
 
-Once the dependency tree for your processes is built, Make will run
-the independent targets simultaneously.
+With this command, Make will process your @file{Makefile} and create all
+the targets (can be thousands of FITS images for example) simultaneously on
+8 threads, while fully respecting their dependencies (only building a
+file/target when its prerequisites are successfully built). Make is thus
+strongly recommended for managing scientific research where reproducibility
+and speed@footnote{Besides its multi-threaded capabilities, Make will only
+re-build those targets that depend on a change you have made, not the whole
+work. For example, if you have set the prerequisites properly, you can
+easily test the changing of a parameter on your paper's results without
+having to re-do everything (which is much faster). This allows you to be
+much more productive in easily checking various ideas/assumptions of the
+different stages of your research and thus produce a more robust result for
+your exciting science.} are very important.
 
 @end table
 
