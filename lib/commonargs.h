@@ -213,9 +213,11 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
 
   switch(key)
     {
+
     /* Operating modes: */
     case 'q':
       cp->verb=0;
+      cp->quietset=1;
       break;
     case 'P':
       cp->printparams=1;
@@ -236,6 +238,7 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 1001:
       cp->onlydirconf=1;
+      cp->onlydirconfset=1;
       break;
     case 1002:
       cp->onlyversion=arg;
@@ -255,9 +258,11 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'D':
       cp->dontdelete=1;
+      cp->dontdeleteset=1;
       break;
     case 'K':
       cp->removedirinfo=0;
+      cp->removedirinfoset=1;
       break;
 
 

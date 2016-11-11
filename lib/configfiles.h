@@ -190,12 +190,35 @@ __BEGIN_C_DECLS  /* From C++ preparations */
    configuration file. Since these two checks are within an if-else
    structure, they should not be placed within an `{' and `}'. */
 #define GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF                    \
+    else if(strcmp(name, "quiet")==0)                                   \
+      {                                                                 \
+        int tint;                                                       \
+        if(cp->quietset) continue;                                      \
+        gal_checkset_int_zero_or_one(value, &tint, name, key, SPACK,    \
+                                     filename, lineno);                 \
+        cp->verb=!tint;                                                 \
+        cp->quietset=1;                                                 \
+      }                                                                 \
     else if(strcmp(name, "numthreads")==0)                              \
       {                                                                 \
         if(cp->numthreadsset) continue;                                 \
         gal_checkset_sizet_l_zero(value, &cp->numthreads, name, key,    \
                                   SPACK, filename, lineno);             \
         cp->numthreadsset=1;                                            \
+      }                                                                 \
+    else if(strcmp(name, "onlydirconf")==0)                             \
+      {                                                                 \
+        if(cp->onlydirconfset) continue;                                \
+        gal_checkset_int_zero_or_one(value, &cp->onlydirconf, name,     \
+                                     key, SPACK, filename, lineno);     \
+        cp->onlydirconfset=1;                                           \
+      }                                                                 \
+    else if(strcmp(name, "onlyversion")==0)                             \
+      {                                                                 \
+        if(cp->onlyversionset) continue;                                \
+        gal_checkset_allocate_copy_set(value, &cp->onlyversion,         \
+                                       &cp->onlyversionset);            \
+        cp->onlyversionset=1;                                           \
       }                                                                 \
     else if(strcmp(name, "nolog")==0)                                   \
       {                                                                 \
@@ -204,15 +227,24 @@ __BEGIN_C_DECLS  /* From C++ preparations */
                                      SPACK, filename, lineno);          \
         cp->nologset=1;                                                 \
       }                                                                 \
-    else if(strcmp(name, "onlydirconf")==0)                             \
+                                                                        \
+                                                                        \
+    else if(strcmp(name, "dontdelete")==0)                              \
       {                                                                 \
-        if(cp->onlydirconf==0)                                          \
-          gal_checkset_int_zero_or_one(value, &cp->onlydirconf, name,   \
-                                       key, SPACK, filename, lineno);   \
+        if(cp->dontdeleteset) continue;                                 \
+        gal_checkset_int_zero_or_one(value, &cp->dontdelete, name, key, \
+                                     SPACK, filename, lineno);          \
+        cp->dontdeleteset=1;                                            \
       }                                                                 \
-    else if(strcmp(name, "onlyversion")==0)                             \
-      gal_checkset_allocate_copy_set(value, &cp->onlyversion,           \
-                                     &cp->onlyversionset);              \
+    else if(strcmp(name, "keepinputdir")==0)                            \
+      {                                                                 \
+        int tint;                                                       \
+        if(cp->removedirinfoset) continue;                              \
+        gal_checkset_int_zero_or_one(value, &tint, name, key,           \
+                                     SPACK, filename, lineno);          \
+        cp->removedirinfo=!tint;                                        \
+        cp->removedirinfoset=1;                                         \
+      }                                                                 \
 
 
 
@@ -221,13 +253,21 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Write common options: */
 #define GAL_CONFIGFILES_PRINT_COMMONOPTIONS {                           \
+    if(cp->quietset)                                                    \
+      fprintf(fp, CONF_SHOWFMT"%d\n", "quiet", !p->cp.verb);            \
     if(cp->numthreadsset)                                               \
       fprintf(fp, CONF_SHOWFMT"%zu\n", "numthreads", p->cp.numthreads); \
-    if(cp->nologset)                                                    \
-      fprintf(fp, CONF_SHOWFMT"%d\n", "nolog", p->cp.nolog);            \
+    if(cp->onlydirconfset)                                              \
+      fprintf(fp, CONF_SHOWFMT"%d\n", "onlydirconf", p->cp.onlydirconf);\
     if(cp->onlyversionset)                                              \
       GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("onlyversion",         \
                                                  cp->onlyversion);      \
+    if(cp->nologset)                                                    \
+      fprintf(fp, CONF_SHOWFMT"%d\n", "nolog", p->cp.nolog);            \
+    if(cp->dontdeleteset)                                               \
+      fprintf(fp, CONF_SHOWFMT"%d\n", "dontdelete", p->cp.dontdelete);  \
+    if(cp->removedirinfoset)                                            \
+      fprintf(fp, CONF_SHOWFMT"%d\n", "keepinputdir", !p->cp.removedirinfo); \
   }
 
 

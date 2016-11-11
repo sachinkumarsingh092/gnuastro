@@ -50,11 +50,15 @@ struct gal_commonparams
   int          nolog;  /* ==1: do not make a log file.              */
 
   /* Check: */
+  int       quietset;  /* If the verbose flag is called.            */
   int  numthreadsset;  /* If the number of threads are set.         */
   int onlyversionset;  /* If the only version option is set.        */
+  int onlydirconfset;  /* If --onlydirconf was set before this.     */
   int         hduset;  /* If the input image extension is set.      */
   int      outputset;  /* If the output is set.                     */
   int       nologset;  /* If nolog is set.                          */
+  int  dontdeleteset;  /* If the --dontdelete option was called.    */
+  int removedirinfoset;  /* If --keepinputdir was called.           */
 };
 
 #endif
