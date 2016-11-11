@@ -1081,8 +1081,8 @@ meshinterponthread(void *inparams)
   size_t is1=mp->fullinterpolation ? mp->gs1*mp->nch1 : mp->gs1;
 
   /* Variables for this function: */
-  struct gal_linkedlist_tosll *lQ, *sQ;
   int ngarrays=mp->ngarrays;
+  struct gal_linkedlist_tosll *lQ, *sQ;
   size_t xc, yc, *n, *nf, currentnum, thisind;
   unsigned char *byt=&mp->byt[mtp->id*is0*is1];
   float *nearest1=&mp->nearest1[mtp->id*numnearest];
@@ -1091,7 +1091,6 @@ meshinterponthread(void *inparams)
   size_t fmeshid, position, *ind=&position, numngb, ngb[4];
   float *outgarray1=mp->outgarray1, *outgarray2=mp->outgarray2;
   float *nearest2 = ngarrays==2 ? &mp->nearest2[mtp->id*numnearest] : NULL;
-
 
   /* Go over all the meshes for this thread. */
   for(i=0;indexs[i]!=GAL_THREADS_NON_THRD_INDEX;++i)
@@ -1156,16 +1155,23 @@ meshinterponthread(void *inparams)
           /* Check the four neighbors and if they have not already
              been checked, put them into the queue. */
           GAL_NEIGHBORS_FILL_4_ALLIMG;
-          nf=(n=ngb)+numngb;
-          do
-            if(byt[*n]==0)
-              {
-                byt[*n]=1;
-                gal_linkedlist_add_to_tosll_end(&lQ, &sQ, *n,
-                                                manhattandistance(*n, xc,
-                                                                  yc, is1));
-              }
-          while(++n<nf);
+
+          /* It might happen that there are no neighbors (e.g., that there
+             is only one mesh). In that case, we shouldn't look into the
+             neighbors.*/
+          n=ngb;
+          nf = numngb ? n+numngb : n;
+          while(n<nf)
+            {
+              if(byt[*n]==0)
+                {
+                  byt[*n]=1;
+                  gal_linkedlist_add_to_tosll_end(&lQ, &sQ, *n,
+                                                  manhattandistance(*n, xc,
+                                                                    yc, is1));
+                }
+              ++n;
+            }
 
           /* If there are no more meshes to add to the queue, then
              this shows, there were not enough points for
