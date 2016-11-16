@@ -835,7 +835,14 @@ gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
                 out[i+1]='\0';
               break;
             }
-          else if(out[i]=='.')
+
+          /* The input file names can be compressed names (for example
+             `.fits.gz'). Currently the only compressed formats
+             (decompressed within CFITSIO) are listed in
+             `gal_fits_name_is_fits' and `gal_fits_suffix_is_fits'.*/
+          else if(out[i]=='.' && !( ( out[i+1]=='g' && out[i+2]=='z' )
+                                    || (out[i+1]=='f' && out[i+2]=='z' )
+                                    || out[i+1]=='Z' ) )
             {
               out[i]='\0';
               strcat(out, suffix);
