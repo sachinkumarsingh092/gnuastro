@@ -859,7 +859,7 @@ old models which are not questioned) cannot lead us out of the old
 ideas. However many data we record and analyze, we may just keep
 repeating the same old errors, missing the same crucially important
 things that the experiment was competent to find.
-@author E. T. Jaynes, Probability theory, the logic of science. 2003.
+@author Jaynes, Probability theory, the logic of science. Cambridge U. Press (2003).
 @end quotation
 
 
@@ -17511,11 +17511,11 @@ used) will be written in C.
 
 The portability of C is best demonstrated by the fact that both C++ and
 Python are part of the C-family of programming languages which also include
-Java, Perl, and many other languages. C libraries can be immediately
-included in C++ and with it is easily possible to write wrappers for C
-libraries in programs in all C-family programming languages. This will
-allow other scientists to benefit from C libraries with any of those
-languages. With version 0.2, Gnuastro's C library is installed along with
+Julia, Java, Perl, and many other languages. C libraries can be immediately
+included in C++, and it is easy to write wrappers for them in all C-family
+programming languages. This will allow other scientists to benefit from C
+libraries using any C-family language that they prefer. With version 0.2,
+Gnuastro's C library (see @ref{Gnuastro library}) is installed along with
 the programs and task
 13786@footnote{@url{http://savannah.gnu.org/task/?13786}} has been defined
 to add wrappers for higher level languages.
