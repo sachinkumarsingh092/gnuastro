@@ -176,7 +176,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 #define GAL_CONFIGFILES_REPORT_PARAMETERS_SET {                         \
     fprintf(stdout, "# "SPACK_STRING"\n");                              \
-    fprintf(stdout, "# Configured on "CONFIGDATE" at "CONFIGTIME"\n");  \
     fprintf(stdout, "# Written on %s", ctime(&p->rawtime));             \
     printvalues(stdout, p);                                             \
     exit(EXIT_SUCCESS);                                                 \

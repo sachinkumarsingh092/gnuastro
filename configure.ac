@@ -182,18 +182,6 @@ AM_CONDITIONAL([COND_HASHELP2MAN], [test "x$has_help2man" = "xyes"])
 
 
 
-# Read the configuration date.
-AC_MSG_CHECKING([for date of compilation])
-AC_DEFINE_UNQUOTED([CONFIGDATE], ["`date +"%d %B %Y"`"],
-                   [Date of compilation])
-AC_DEFINE_UNQUOTED([CONFIGTIME], ["`date +"%H:%M"`"],
-                   [Time of compilation])
-AC_MSG_RESULT([done])
-
-
-
-
-
 
 
 # Check libjpeg:
