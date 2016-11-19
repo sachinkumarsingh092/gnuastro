@@ -23,7 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include "gnuastro/array.h"
-#include "gnuastro/gnuastro.h"
+#include "gnuastro/config.h"
 
 int
 main(void)
@@ -40,7 +40,7 @@ main(void)
     }
 
   /* Print the version of Gnuastro being used: */
-  printf("Test of Gnuastro %s\n", GAL_GNUASTRO_VERSION);
+  printf("Test of Gnuastro %s\n", GAL_CONFIG_VERSION);
 
   /* Fill in the test array and report its contents at the same time. */
   printf("Input array: ");

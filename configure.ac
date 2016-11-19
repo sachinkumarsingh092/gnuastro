@@ -83,8 +83,8 @@ LT_INIT
 # build system, not on the user's system. While we are building Gnuastro,
 # we have the important installation information in `config.h'. But in the
 # user's own programs, this information is defined in
-# `gnuastro/gnuastro.h'. With this macro, the installed headers can decide
-# if the latter should be included or not. Note that `gnuastro/gnuastro.h'
+# `gnuastro/config.h'. With this macro, the installed headers can decide
+# if the latter should be included or not. Note that `gnuastro/config.h'
 # is only built at installation time and doesn't exist when building
 # Gnuastro. Therefore, this macro must not be defined in a user's program.
 AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
@@ -157,7 +157,7 @@ AC_CHECK_LIB([wcs], [wcslib_version],
              [], [-lcfitsio -lm])
 AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
              [has_pthread_barrier=0])
-AC_DEFINE_UNQUOTED([GAL_GNUASTRO_HAVE_PTHREAD_BARRIER], [$has_pthread_barrier],
+AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_PTHREAD_BARRIER], [$has_pthread_barrier],
                    [System has pthread_barrier])
 AC_SUBST(HAVE_PTHREAD_BARRIER, [$has_pthread_barrier])
 
@@ -199,7 +199,7 @@ AM_CONDITIONAL([COND_HASLIBJPEG], [test "x$has_libjpeg" = "xyes"])
 # Check libgit2:
 AC_SEARCH_LIBS([git_libgit2_init], [git2],
                [has_libgit2=1], [has_libgit2=0])
-AC_DEFINE_UNQUOTED([GAL_GNUASTRO_HAVE_LIBGIT2], [$has_libgit2],
+AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_LIBGIT2], [$has_libgit2],
                    [libgit2 is installed on the system])
 AS_IF([test "x$has_libgit2" = "x1"], [], [anywarnings=yes])
 AC_SUBST(HAVE_LIBGIT2, [$has_libgit2])

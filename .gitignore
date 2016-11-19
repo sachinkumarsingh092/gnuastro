@@ -92,6 +92,7 @@ astconvertt
 astconvolve
 test-driver
 config.h.in
+lib/config.h
 astcosmiccal
 astmkcatalog
 gnuastro.t2p
@@ -105,11 +106,10 @@ astarithmetic
 astnoisechisel
 astsubtractsky
 autom4te.cache
-lib/gnuastro.h
 lib/gnuastro.pc
 doc/gnuastro.cps
 doc/gnuastro.vrs
-lib/gnuastro/gnuastro.h
+lib/gnuastro/config.h
 
 
 

@@ -24,7 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define __GAL_GIT_H__
 
 
-#if GAL_GNUASTRO_HAVE_LIBGIT2 == 1
+#if GAL_CONFIG_HAVE_LIBGIT2 == 1
 #include <git2.h>
 #endif
 

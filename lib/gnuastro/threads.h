@@ -29,14 +29,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* When this header is included within Gnuastro's building process,
    `IN_GNUASTRO_BUILD' is defined. In the build process, installation
-   information (in particular `GAL_GNUASTRO_HAVE_PTHREAD_BARRIER' that we
+   information (in particular `GAL_CONFIG_HAVE_PTHREAD_BARRIER' that we
    need below) is kept in `config.h'. When building a user's programs, this
-   information is kept in `gnuastro/gnuastro.h'. Note that all `.c' files
+   information is kept in `gnuastro/config.h'. Note that all `.c' files
    must start with the inclusion of `config.h' and that
-   `gnuastro/gnuastro.h' is only created at installation time (not present
+   `gnuastro/config.h' is only created at installation time (not present
    during the building of Gnuastro).*/
 #ifndef IN_GNUASTRO_BUILD
-#include <gnuastro/gnuastro.h>
+#include <gnuastro/config.h>
 #endif
 
 /* C++ Preparations */
@@ -66,7 +66,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /*****************************************************************/
 /*********    Implementation of pthread_barrier    ***************/
 /*****************************************************************/
-#if GAL_GNUASTRO_HAVE_PTHREAD_BARRIER == 0
+#if GAL_CONFIG_HAVE_PTHREAD_BARRIER == 0
 
 /* Integer number of nano-seconds that `pthread_barrier_destroy' should
    wait for a check to see if all barriers have been reached. */
@@ -93,7 +93,7 @@ pthread_barrier_wait(pthread_barrier_t *b);
 int
 pthread_barrier_destroy(pthread_barrier_t *b);
 
-#endif  /* GAL_GNUASTRO_HAVE_PTHREAD_BARRIER == 0 */
+#endif  /* GAL_CONFIG_HAVE_PTHREAD_BARRIER == 0 */
 
 
 

@@ -508,7 +508,7 @@ Review of library fundamentals
 
 Gnuastro library
 
-* Installation information::    General information about the installation.
+* Configuration information::   General information about library config.
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
@@ -15128,7 +15128,7 @@ problems. It will stabilize with the removal of this notice. Check the
 @end cartouche
 
 @menu
-* Installation information::    General information about the installation.
+* Configuration information::   General information about library config.
 * Array manipulation::          Functions for manipulating arrays.
 * Bounding box::                Finding the bounding box.
 * FITS files::                  Working with FITS data.
@@ -15144,10 +15144,10 @@ problems. It will stabilize with the removal of this notice. Check the
 * World Coordinate System::     Dealing with the world coordinate system.
 @end menu
 
-@node Installation information, Array manipulation, Gnuastro library, Gnuastro library
-@subsection Installation information (@file{gnuastro.h})
+@node Configuration information, Array manipulation, Gnuastro library, Gnuastro library
+@subsection Configuration information (@file{config.h})
 
-The @file{gnuastro/gnuastro.h} header contains information about the full
+The @file{gnuastro/config.h} header contains information about the full
 Gnuastro installation on your system. Gnuastro developers should note that
 this is the only header that is not available within Gnuastro, it is only
 available to a Gnuastro library user @emph{after} installation. Within
@@ -15155,26 +15155,26 @@ Gnuastro, @file{config.h} (which is included in every Gnuastro @file{.c}
 file, see @ref{Coding conventions}) should have more than enough
 information about the overall Gnuastro installation.
 
-@deffn Macro GAL_GNUASTRO_VERSION
+@deffn Macro GAL_CONFIG_VERSION
 This macro can be used as a string
 literal@footnote{@url{https://en.wikipedia.org/wiki/String_literal}}
 containing the version of Gnuastro that is being used. See @ref{Version
 numbering} for the version formats. For example:
 
 @example
-printf("Gnuastro version: %s\n", GAL_GNUASTRO_VERSION);
+printf("Gnuastro version: %s\n", GAL_CONFIG_VERSION);
 @end example
 
 @noindent
 or
 
 @example
-char *gnuastro_version=GAL_GNUASTRO_VERSION;
+char *gnuastro_version=GAL_CONFIG_VERSION;
 @end example
 @end deffn
 
 
-@deffn Macro GAL_GNUASTRO_HAVE_LIBGIT2
+@deffn Macro GAL_CONFIG_HAVE_LIBGIT2
 Libgit2 is an optional dependency of Gnuastro (see @ref{Optional
 dependencies}). When it is installed and detected at configure time, this
 macro will have a value of @code{1}. Otherwise, it will have a value of
@@ -15183,7 +15183,7 @@ libgit2 (see @ref{Git wrappers}).
 @end deffn
 
 
-@deffn Macro GAL_GNUASTRO_HAVE_PTHREAD_BARRIER
+@deffn Macro GAL_CONFIG_HAVE_PTHREAD_BARRIER
 The POSIX threads standard define barriers as an optional
 requirement. Therefore, some operating systems choose to not include
 it. While installing Gnuastro, we check if your system has this construct
@@ -15192,7 +15192,7 @@ value of @code{0}. see @ref{Implementation of pthread_barrier} for more.
 @end deffn
 
 
-@node Array manipulation, Bounding box, Installation information, Gnuastro library
+@node Array manipulation, Bounding box, Configuration information, Gnuastro library
 @subsection Array manipulation (@file{array.h})
 
 When working on arrays, certain operations are commonly necessary. It is
@@ -15898,13 +15898,13 @@ error notice.
 
 @cindex Git
 @cindex libgit2
-Git is one of the most common tools for version control and it can often
-be useful during development, for example see @code{COMMIT} keyword in
+Git is one of the most common tools for version control and it can often be
+useful during development, for example see @code{COMMIT} keyword in
 @ref{Output headers}. The functions introduced here are described in the
 @file{gnuastro/git.h} header. At installation time, Gnuastro will also
 check for the existence of libgit2 and store the value in the
-@code{GAL_GNUASTRO_HAVE_LIBGIT2}, see @ref{Installation
-information}. @file{gnuastro/git.h} includes @file{gnuastro/gnuastro.h}
+@code{GAL_CONFIG_HAVE_LIBGIT2}, see @ref{Configuration
+information}. @file{gnuastro/git.h} includes @file{gnuastro/config.h}
 internally, so won't have to include both for this macro.
 
 @deftypefun {char *} gal_git_describe ( )

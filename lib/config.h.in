@@ -19,19 +19,18 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_GNUASTRO_H__
-#define __GAL_GNUASTRO_H__
+#ifndef __GAL_CONFIG_H__
+#define __GAL_CONFIG_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 
 
 
-/* Macros. In gnuastro.h.in, the values in `@' --- `@'', will be replaced
-   with installation specific values. */
-#define GAL_GNUASTRO_VERSION "@VERSION@"
-#define GAL_GNUASTRO_HAVE_LIBGIT2 @HAVE_LIBGIT2@
-#define GAL_GNUASTRO_HAVE_PTHREAD_BARRIER @HAVE_PTHREAD_BARRIER@
+/* Macros. */
+#define GAL_CONFIG_VERSION "@VERSION@"
+#define GAL_CONFIG_HAVE_LIBGIT2 @HAVE_LIBGIT2@
+#define GAL_CONFIG_HAVE_PTHREAD_BARRIER @HAVE_PTHREAD_BARRIER@
 
 
 
@@ -59,4 +58,4 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_GNUASTRO_H__ */
+#endif           /* __GAL_CONFIG_H__ */

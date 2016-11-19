@@ -36,7 +36,7 @@ gal_git_describe(void)
   char *describe_return=NULL;
 
 /* Only actually work on Git if the library is present. */
-#if GAL_GNUASTRO_HAVE_LIBGIT2 == 1
+#if GAL_CONFIG_HAVE_LIBGIT2 == 1
   git_buf buf={0};
   git_repository *repo;
   git_describe_result *describe_result;

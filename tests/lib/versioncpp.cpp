@@ -23,11 +23,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include <iostream>
 
-#include <gnuastro/gnuastro.h>
+#include <gnuastro/config.h>
 
 int
 main(void)
 {
-  std::cout << "Gnuastro version is: " << GAL_GNUASTRO_VERSION << ".\n";
+  std::cout << "Gnuastro version is: " << GAL_CONFIG_VERSION << ".\n";
   return EXIT_SUCCESS;
 }
