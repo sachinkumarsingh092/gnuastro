@@ -39,12 +39,13 @@ libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c  \
 # Installed headers, note that we are not blindly including all `.h' files
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
-pkginclude_HEADERS = gnuastro/config.h $(headersdir)/array.h              \
-  $(headersdir)/box.h $(headersdir)/fits.h $(headersdir)/git.h            \
-  $(headersdir)/linkedlist.h $(headersdir)/mesh.h $(headersdir)/polygon.h \
-  $(headersdir)/qsort.h $(headersdir)/spatialconvolve.h                   \
-  $(headersdir)/statistics.h $(headersdir)/threads.h $(headersdir)/wcs.h  \
-  $(headersdir)/txtarray.h
+headersdir=$(top_srcdir)/lib/gnuastro
+pkginclude_HEADERS = gnuastro/config.h $(headersdir)/array.h            \
+  $(headersdir)/box.h $(headersdir)/data.h $(headersdir)/fits.h         \
+  $(headersdir)/git.h $(headersdir)/linkedlist.h $(headersdir)/mesh.h   \
+  $(headersdir)/polygon.h $(headersdir)/qsort.h                         \
+  $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h            \
+  $(headersdir)/threads.h $(headersdir)/wcs.h $(headersdir)/txtarray.h
 
 
 # Files to distribute in the tarball. These are internal headers and don't
@@ -52,7 +53,6 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/array.h              \
 # and if they are not explicitly mentioned somewhere in the Makefile, they
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
-headersdir=$(top_srcdir)/lib/gnuastro
 EXTRA_DIST = gnuastro.pc.in config.h.in checkset.h commonargs.h         \
   commonparams.h configfiles.h fixedstringmacros.h mode.h neighbors.h   \
   timing.h $(headersdir)/README

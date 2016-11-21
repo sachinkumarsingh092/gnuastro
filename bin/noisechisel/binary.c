@@ -51,7 +51,7 @@ setbytblank(float *img, unsigned char *byt, size_t size)
   do
     {
       if(isnan(*img++))
-        *byt=GAL_FITS_BYTE_BLANK;
+        *byt=GAL_DATA_BLANK_UCHAR;
       ++byt;
     }
   while(img<end);
@@ -98,7 +98,7 @@ count_f_b_onregion(unsigned char *byt, size_t startind, size_t s0,
     {
       fb = ( b = byt + startind + is1*row++ ) + s1;
       do
-        *b ? (*b==GAL_FITS_BYTE_BLANK ? *anyblank=1: ++nf) : ++nb;
+        *b ? (*b==GAL_DATA_BLANK_UCHAR ? *anyblank=1: ++nf) : ++nb;
       while(++b<fb);
     }
   while(row<s0);
@@ -535,8 +535,8 @@ fh_makeinv(unsigned char *byt, size_t s0, size_t s1,
       tp=tinv+start+row*idy;
       bf = ( bp = byt + row++ * s1 ) + s1;
       if(anyblank)
-        do *tp++ = *bp==GAL_FITS_BYTE_BLANK
-             ? GAL_FITS_BYTE_BLANK : !*bp; while(++bp<bf);
+        do *tp++ = *bp==GAL_DATA_BLANK_UCHAR
+             ? GAL_DATA_BLANK_UCHAR : !*bp; while(++bp<bf);
       else
         do *tp++ = !*bp; while(++bp<bf);
     }

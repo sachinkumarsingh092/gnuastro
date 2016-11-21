@@ -1140,7 +1140,7 @@ readkeywords(struct mkcatalogparams *p)
   if(keys[1].status)
     {
       gal_statistics_long_non_blank_max(p->objects, size, &numobjects,
-                                        GAL_FITS_LONG_BLANK);
+                                        GAL_DATA_BLANK_LONG);
       p->numobjects=numobjects;
     }
   else

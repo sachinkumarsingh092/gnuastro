@@ -27,6 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
+#include <gnuastro/data.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/mesh.h>
 #include <gnuastro/array.h>
@@ -342,7 +343,7 @@ applydetsn(struct noisechiselparams *p, float *sntable, size_t numpseudo)
   lf= (lab=clab) + p->smp.s0*p->smp.s1;
   do
     {
-      if(*lab!=GAL_FITS_LONG_BLANK)
+      if(*lab!=GAL_DATA_BLANK_LONG)
         *b = newlabs[*lab] > 0;
       ++b;
     }
@@ -397,8 +398,8 @@ bytpartfromlarge(struct noisechiselparams *p, unsigned char *out,
       bf = ( b = p->byt + start + r++ * is1 ) + s1;
       do
         {
-          *out++ = *b==b0f1 ? *d : (*b==GAL_FITS_BYTE_BLANK
-                                    ? GAL_FITS_BYTE_BLANK : 0);
+          *out++ = *b==b0f1 ? *d : (*b==GAL_DATA_BLANK_UCHAR
+                                    ? GAL_DATA_BLANK_UCHAR : 0);
           ++d;
         }
       while(++b<bf);
@@ -474,7 +475,7 @@ detectpseudos(void *inparams)
       if(p->anyblank)
         {
           bf=(b=thisbyt)+s0*s1;
-          do if(*b++==GAL_FITS_BYTE_BLANK) { anyblank=1; break; }
+          do if(*b++==GAL_DATA_BLANK_UCHAR) { anyblank=1; break; }
           while(b<bf);
         }
 
@@ -666,7 +667,7 @@ dbytolaboverlap(struct noisechiselparams *p)
   if(p->dilate)
     do
       {
-        if(*lab!=GAL_FITS_LONG_BLANK)
+        if(*lab!=GAL_DATA_BLANK_LONG)
           *byt=tokeep[*lab]>0;
         ++byt;
       }
@@ -674,7 +675,7 @@ dbytolaboverlap(struct noisechiselparams *p)
   else
     do
       {
-        if(*lab!=GAL_FITS_LONG_BLANK)
+        if(*lab!=GAL_DATA_BLANK_LONG)
           *byt = ( *lab = tokeep[*lab] ) > 0;
         ++byt;
       }

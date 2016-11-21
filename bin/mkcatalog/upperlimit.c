@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <sys/time.h>
 
 #include <gsl/gsl_rng.h>
+#include <gnuastro/data.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/threads.h>
 #include <gnuastro/txtarray.h>
@@ -134,7 +135,7 @@ fillseginfo(struct upperlimitparams *p, long *seg)
   do
     /* We don't want to look at pixels with value zero or blank pixels, so
        ignore them.  */
-    if( *l!=0 && *l!=GAL_FITS_LONG_BLANK )
+    if( *l!=0 && *l!=GAL_DATA_BLANK_LONG )
       {
         if(*l>maxlab)    maxlab=*l;
         if(*l<p->minlab) p->minlab=*l;

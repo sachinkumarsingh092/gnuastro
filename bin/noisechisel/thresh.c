@@ -296,7 +296,7 @@ applydetectionthresholdskysub(struct noisechiselparams *p)
                  image, they will be checked. */
               *b = ( (*f++=*in-sky) > dthresh*std
                      ? 1
-                     : isnan(*in) ? GAL_FITS_BYTE_BLANK : 0 );
+                     : isnan(*in) ? GAL_DATA_BLANK_UCHAR : 0 );
               ++in;
             }
           while(++b<bf);

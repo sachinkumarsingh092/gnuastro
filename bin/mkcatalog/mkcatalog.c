@@ -32,6 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/git.h>
 #include <gnuastro/wcs.h>
+#include <gnuastro/data.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/txtarray.h>
 
@@ -53,12 +54,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Macro to see if the label is indexable (belongs to an object or
    not). See the explanation in bin/noisechisel/label.h. */
-#if GAL_FITS_LONG_BLANK<0
+#if GAL_DATA_BLANK_LONG<0
 #define ISINDEXABLEOBJLABEL (objects[i]>0)
 #define ISINDEXABLECLPLABEL (clumps[i]>0)
 #else
-#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=GAL_FITS_LONG_BLANK)
-#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=GAL_FITS_LONG_BLANK)
+#define ISINDEXABLEOBJLABEL (objects[i] && objects[i]!=GAL_DATA_BLANK_LONG)
+#define ISINDEXABLECLPLABEL (clumps[i] && clumps[i]!=GAL_DATA_BLANK_LONG)
 #endif
 
 
@@ -303,7 +304,7 @@ clumppass(struct mkcatalogparams *p)
       /* We are on a detected region but not a clump (with a negative
          label). This region can be used to find properties like the
          river fluxs in the vicinity of clumps. */
-      else if (clumps[i]!=GAL_FITS_LONG_BLANK)
+      else if (clumps[i]!=GAL_DATA_BLANK_LONG)
 
         /* We want to check the river pixels in each detection that
            has a clump. Recall that each detection can host more than

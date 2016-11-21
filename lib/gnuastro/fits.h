@@ -35,7 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcsfix.h>
 #include <gsl/gsl_complex.h>
 
-
+#include <gnuastro/data.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -53,26 +53,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Actual header contants (the above were for the Pre-processor). */
 __BEGIN_C_DECLS  /* From C++ preparations */
-
-
-
-/* Order is based on the CFITSIO manual. Note that for the unsigned types
-   or small types (like char), the maximum value is considered as a blank
-   value, since the minimum value of an unsigned type is zero and zero is
-   often meaningful in contexts were unsigned values are used. */
-#define GAL_FITS_STRING_BLANK     NULL
-#define GAL_FITS_BYTE_BLANK       UCHAR_MAX
-#define GAL_FITS_LOGICAL_BLANK    SCHAR_MAX
-#define GAL_FITS_SHORT_BLANK      INT16_MIN
-#define GAL_FITS_LONG_BLANK       INT32_MIN
-#define GAL_FITS_LLONG_BLANK      INT64_MIN
-#define GAL_FITS_FLOAT_BLANK      NAN
-#define GAL_FITS_DOUBLE_BLANK     NAN
-#define GAL_FITS_INT_BLANK        INT_MIN
-#define GAL_FITS_SBYTE_BLANK      SCHAR_MAX
-#define GAL_FITS_UINT_BLANK       UINT_MAX
-#define GAL_FITS_USHORT_BLANK     USHRT_MAX
-#define GAL_FITS_ULONG_BLANK      ULONG_MAX
 
 
 

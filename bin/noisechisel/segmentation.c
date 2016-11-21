@@ -736,7 +736,7 @@ clabwithnoseg(long *olab, long *clab, size_t size, int anyblank)
 
   if(anyblank)
     do
-      *clab++ = ( *olab==GAL_FITS_LONG_BLANK ? GAL_FITS_LONG_BLANK
+      *clab++ = ( *olab==GAL_DATA_BLANK_LONG ? GAL_DATA_BLANK_LONG
                   : ( *olab>0 ? SEGMENTINIT : 0 ) );
     while(++olab<end);
   else
@@ -794,7 +794,7 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       b=p->byt;lf=(l=p->clab)+s0*s1;
-      do *l = *b++==GAL_FITS_BYTE_BLANK ? GAL_FITS_LONG_BLANK
+      do *l = *b++==GAL_DATA_BLANK_UCHAR ? GAL_DATA_BLANK_LONG
            : 0; while(++l<lf);
     }
   else
@@ -819,7 +819,7 @@ segmentation(struct noisechiselparams *p)
   if(p->anyblank)
     {
       lf=(l=p->clab)+s0*s1;
-      do *l = *l==GAL_FITS_LONG_BLANK ? GAL_FITS_LONG_BLANK
+      do *l = *l==GAL_DATA_BLANK_LONG ? GAL_DATA_BLANK_LONG
            : 0; while(++l<lf);
     }
   else memset(p->clab, 0, s0*s1*sizeof *p->clab);
@@ -845,7 +845,7 @@ segmentation(struct noisechiselparams *p)
           if(p->anyblank)
             {
               lf=(l=p->clab)+s0*s1;
-              do *l = *l==GAL_FITS_LONG_BLANK ? GAL_FITS_LONG_BLANK
+              do *l = *l==GAL_DATA_BLANK_LONG ? GAL_DATA_BLANK_LONG
                    : 0; while(++l<lf);
             }
           else memset(p->clab, 0, s0*s1*sizeof *p->clab);

@@ -41,7 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #if GAL_FITS_LONG_BLANK<0
 #define ISINDEXABLELABEL (*lab>0)
 #else
-#define ISINDEXABLELABEL (*lab && *lab!=GAL_FITS_LONG_BLANK)
+#define ISINDEXABLELABEL (*lab && *lab!=GAL_DATA_BLANK_LONG)
 #endif
 
 

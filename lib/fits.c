@@ -278,7 +278,7 @@ gal_fits_datatype_blank(int datatype)
       if(b==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TBYTE",
               sizeof *b);
-      *b=GAL_FITS_BYTE_BLANK;
+      *b=GAL_DATA_BLANK_UCHAR;
       return b;
 
       /* CFITSIO says "int for keywords, char for table columns". Here we
@@ -289,7 +289,7 @@ gal_fits_datatype_blank(int datatype)
       if(c==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TLOGICAL, or TSBYTE",
               sizeof *c);
-      *c=GAL_FITS_LOGICAL_BLANK;
+      *c=GAL_DATA_BLANK_LOGICAL;
       return c;
 
     case TSTRING:
@@ -297,7 +297,7 @@ gal_fits_datatype_blank(int datatype)
       if(str==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TSTRING",
               sizeof *s);
-      *str=GAL_FITS_STRING_BLANK;
+      *str=GAL_DATA_BLANK_STRING;
       return str;
 
     case TSHORT:
@@ -305,7 +305,7 @@ gal_fits_datatype_blank(int datatype)
       if(s==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TSHORT",
               sizeof *s);
-      *s=GAL_FITS_SHORT_BLANK;
+      *s=GAL_DATA_BLANK_SHORT;
       return s;
 
     case TLONG:
@@ -313,7 +313,7 @@ gal_fits_datatype_blank(int datatype)
       if(l==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TLONG",
               sizeof *l);
-      *l=GAL_FITS_LONG_BLANK;
+      *l=GAL_DATA_BLANK_LONG;
       return l;
 
     case TLONGLONG:
@@ -321,7 +321,7 @@ gal_fits_datatype_blank(int datatype)
       if(L==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TLONGLONG",
               sizeof *L);
-      *L=GAL_FITS_LLONG_BLANK;
+      *L=GAL_DATA_BLANK_LONGLONG;
       return L;
 
     case TFLOAT:
@@ -329,7 +329,7 @@ gal_fits_datatype_blank(int datatype)
       if(f==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TFLOAT",
               sizeof *f);
-      *f=GAL_FITS_FLOAT_BLANK;
+      *f=GAL_DATA_BLANK_FLOAT;
       return f;
 
     case TDOUBLE:
@@ -337,7 +337,7 @@ gal_fits_datatype_blank(int datatype)
       if(d==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TDOUBLE",
               sizeof *d);
-      *d=GAL_FITS_DOUBLE_BLANK;
+      *d=GAL_DATA_BLANK_DOUBLE;
       return d;
 
     case TCOMPLEX:
@@ -345,7 +345,7 @@ gal_fits_datatype_blank(int datatype)
       if(cx==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TCOMPLEX",
               sizeof *cx);
-      GSL_SET_COMPLEX(cx,GAL_FITS_FLOAT_BLANK,GAL_FITS_FLOAT_BLANK);
+      GSL_SET_COMPLEX(cx,GAL_DATA_BLANK_FLOAT,GAL_DATA_BLANK_FLOAT);
       return cx;
 
     case TDBLCOMPLEX:
@@ -353,7 +353,7 @@ gal_fits_datatype_blank(int datatype)
       if(dcx==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TDBLCOMPLEX",
               sizeof *dcx);
-      GSL_SET_COMPLEX(dcx,GAL_FITS_DOUBLE_BLANK,GAL_FITS_DOUBLE_BLANK);
+      GSL_SET_COMPLEX(dcx,GAL_DATA_BLANK_DOUBLE,GAL_DATA_BLANK_DOUBLE);
       return dcx;
 
     case TINT:
@@ -361,7 +361,7 @@ gal_fits_datatype_blank(int datatype)
       if(i==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TINT",
               sizeof *i);
-      *i=GAL_FITS_INT_BLANK;
+      *i=GAL_DATA_BLANK_INT;
       return i;
 
     case TUINT:
@@ -369,7 +369,7 @@ gal_fits_datatype_blank(int datatype)
       if(ui==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TUINT",
               sizeof *ui);
-      *ui=GAL_FITS_UINT_BLANK;
+      *ui=GAL_DATA_BLANK_UINT;
       return ui;
 
     case TUSHORT:
@@ -377,7 +377,7 @@ gal_fits_datatype_blank(int datatype)
       if(us==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TUSHORT",
               sizeof *us);
-      *us=GAL_FITS_USHORT_BLANK;
+      *us=GAL_DATA_BLANK_USHORT;
       return us;
 
     case TULONG:
@@ -385,7 +385,7 @@ gal_fits_datatype_blank(int datatype)
       if(ul==NULL)
         error(EXIT_FAILURE, errno, "%zu bytes for blank TULONG",
               sizeof *ul);
-      *ul=GAL_FITS_ULONG_BLANK;
+      *ul=GAL_DATA_BLANK_ULONG;
       return ul;
 
 
@@ -623,37 +623,37 @@ gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
 
     case TBYTE:
       bf=(b=array)+size;
-      do if(*b==GAL_FITS_BYTE_BLANK) *b++=bv; while(b<bf);
+      do if(*b==GAL_DATA_BLANK_UCHAR) *b++=bv; while(b<bf);
       break;
 
 
     case TLOGICAL: case TSBYTE:
       cf=(c=array)+size;
-      do if(*c==GAL_FITS_LOGICAL_BLANK) *c++=cv; while(c<cf);
+      do if(*c==GAL_DATA_BLANK_LOGICAL) *c++=cv; while(c<cf);
       break;
 
 
     case TSTRING:
       strf=(str=array)+size;
-      do if(*str==GAL_FITS_STRING_BLANK) *str++=strv; while(str<strf);
+      do if(*str==GAL_DATA_BLANK_STRING) *str++=strv; while(str<strf);
       break;
 
 
     case TSHORT:
       sf=(s=array)+size;
-      do if(*s==GAL_FITS_SHORT_BLANK) *s++=sv; while(s<sf);
+      do if(*s==GAL_DATA_BLANK_SHORT) *s++=sv; while(s<sf);
       break;
 
 
     case TLONG:
       lf=(l=array)+size;
-      do if(*l==GAL_FITS_LONG_BLANK) *l++=lv; while(l<lf);
+      do if(*l==GAL_DATA_BLANK_LONG) *l++=lv; while(l<lf);
       break;
 
 
     case TLONGLONG:
       Lf=(L=array)+size;
-      do if(*L==GAL_FITS_LLONG_BLANK) *L++=Lv; while(L<Lf);
+      do if(*L==GAL_DATA_BLANK_LONGLONG) *L++=Lv; while(L<Lf);
       break;
 
 
@@ -663,25 +663,25 @@ gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
          both float and double types.*/
     case TFLOAT:
       ff=(f=array)+size;
-      if(isnan(GAL_FITS_FLOAT_BLANK))
+      if(isnan(GAL_DATA_BLANK_FLOAT))
         do if(isnan(*f)) *f++=fv; while(f<ff);
       else
-        do if(*f==GAL_FITS_FLOAT_BLANK) *f++=fv; while(f<ff);
+        do if(*f==GAL_DATA_BLANK_FLOAT) *f++=fv; while(f<ff);
       break;
 
 
     case TDOUBLE:
       df=(d=array)+size;
-      if(isnan(GAL_FITS_DOUBLE_BLANK))
+      if(isnan(GAL_DATA_BLANK_DOUBLE))
         do if(isnan(*d)) *d++=dv; while(d<df);
       else
-        do if(*d==GAL_FITS_FLOAT_BLANK) *d++=dv; while(d<df);
+        do if(*d==GAL_DATA_BLANK_FLOAT) *d++=dv; while(d<df);
       break;
 
 
     case TCOMPLEX:
       cxf=(cx=array)+size;
-      if(isnan(GAL_FITS_FLOAT_BLANK))
+      if(isnan(GAL_DATA_BLANK_FLOAT))
           do
             if(isnan(GSL_COMPLEX_P_REAL(cx))
                && isnan(GSL_COMPLEX_P_IMAG(cx)) )
@@ -690,8 +690,8 @@ gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
           while(++cx<cxf);
       else
         do
-          if( GSL_COMPLEX_P_REAL(cx) == GAL_FITS_FLOAT_BLANK
-              && GSL_COMPLEX_P_IMAG(cx) == GAL_FITS_FLOAT_BLANK)
+          if( GSL_COMPLEX_P_REAL(cx) == GAL_DATA_BLANK_FLOAT
+              && GSL_COMPLEX_P_IMAG(cx) == GAL_DATA_BLANK_FLOAT)
             GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
                             GSL_COMPLEX_P_IMAG(&cxv));
         while(++cx<cxf);
@@ -700,7 +700,7 @@ gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
 
     case TDBLCOMPLEX:
       dcxf=(dcx=array)+size;
-      if(isnan(GAL_FITS_DOUBLE_BLANK))
+      if(isnan(GAL_DATA_BLANK_DOUBLE))
           do
             if(isnan(GSL_COMPLEX_P_REAL(dcx))
                && isnan(GSL_COMPLEX_P_IMAG(dcx)) )
@@ -709,8 +709,8 @@ gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
           while(++dcx<dcxf);
       else
         do
-          if( GSL_COMPLEX_P_REAL(dcx) == GAL_FITS_FLOAT_BLANK
-              && GSL_COMPLEX_P_IMAG(dcx) == GAL_FITS_FLOAT_BLANK)
+          if( GSL_COMPLEX_P_REAL(dcx) == GAL_DATA_BLANK_FLOAT
+              && GSL_COMPLEX_P_IMAG(dcx) == GAL_DATA_BLANK_FLOAT)
             GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
                             GSL_COMPLEX_P_IMAG(&dcxv));
         while(++dcx<dcxf);
@@ -719,25 +719,25 @@ gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
 
     case TINT:
       inf=(in=array)+size;
-      do if(*in==GAL_FITS_INT_BLANK) *in++=inv; while(in<inf);
+      do if(*in==GAL_DATA_BLANK_INT) *in++=inv; while(in<inf);
       break;
 
 
     case TUINT:
       uif=(ui=array)+size;
-      do if(*ui==GAL_FITS_UINT_BLANK) *ui++=uiv; while(ui<uif);
+      do if(*ui==GAL_DATA_BLANK_UINT) *ui++=uiv; while(ui<uif);
       break;
 
 
     case TUSHORT:
       usf=(us=array)+size;
-      do if(*us==GAL_FITS_USHORT_BLANK) *us++=usv; while(us<usf);
+      do if(*us==GAL_DATA_BLANK_USHORT) *us++=usv; while(us<usf);
       break;
 
 
     case TULONG:
       ulf=(ul=array)+size;
-      do if(*ul==GAL_FITS_ULONG_BLANK) *ul++=ulv; while(ul<ulf);
+      do if(*ul==GAL_DATA_BLANK_ULONG) *ul++=ulv; while(ul<ulf);
       break;
 
     default:
@@ -776,34 +776,34 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case SHORT_IMG:
           bf=(b=*out)+size; do *b=*is++; while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=(iis[i]==GAL_FITS_SHORT_BLANK)
-                         ?GAL_FITS_BYTE_BLANK:b[i];}
+            {b=*out; do {b[i]=(iis[i]==GAL_DATA_BLANK_SHORT)
+                         ?GAL_DATA_BLANK_UCHAR:b[i];}
               while(++i!=size);}
           return;
         case LONG_IMG:
           bf=(b=*out)+size; do *b=*il++; while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=(iil[i]==GAL_FITS_LONG_BLANK)
-                         ?GAL_FITS_BYTE_BLANK:b[i];}
+            {b=*out; do {b[i]=(iil[i]==GAL_DATA_BLANK_LONG)
+                         ?GAL_DATA_BLANK_UCHAR:b[i];}
               while(++i!=size);}
           return;
         case LONGLONG_IMG:
           bf=(b=*out)+size; do *b=*iL++; while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=(iiL[i]==GAL_FITS_LLONG_BLANK)
-                         ?GAL_FITS_BYTE_BLANK:b[i];}
+            {b=*out; do {b[i]=(iiL[i]==GAL_DATA_BLANK_LONGLONG)
+                         ?GAL_DATA_BLANK_UCHAR:b[i];}
               while(++i!=size);}
           return;
         case FLOAT_IMG:
           bf=(b=*out)+size; do *b=roundf(*iif++); while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=isnan(iiif[i])?GAL_FITS_BYTE_BLANK:b[i];}
+            {b=*out; do {b[i]=isnan(iiif[i])?GAL_DATA_BLANK_UCHAR:b[i];}
               while(++i!=size);}
           return;
         case DOUBLE_IMG:
           bf=(b=*out)+size; do *b=round(*id++); while(++b<bf);
           if(anyblank)
-            {b=*out; do {b[i]=isnan(iid[i])?GAL_FITS_BYTE_BLANK:b[i];}
+            {b=*out; do {b[i]=isnan(iid[i])?GAL_DATA_BLANK_UCHAR:b[i];}
               while(++i!=size);}
           return;
         default:
@@ -819,8 +819,8 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case BYTE_IMG:
           sf=(s=*out)+size; do *s=*ib++; while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=(iib[i]==GAL_FITS_BYTE_BLANK)
-                         ?GAL_FITS_SHORT_BLANK:s[i];}
+            {s=*out; do {s[i]=(iib[i]==GAL_DATA_BLANK_UCHAR)
+                         ?GAL_DATA_BLANK_SHORT:s[i];}
               while(++i!=size);}
           return;
         case SHORT_IMG:
@@ -828,27 +828,27 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case LONG_IMG:
           sf=(s=*out)+size; do *s=*il++; while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=(iil[i]==GAL_FITS_LONG_BLANK)
-                         ?GAL_FITS_SHORT_BLANK:s[i];}
+            {s=*out; do {s[i]=(iil[i]==GAL_DATA_BLANK_LONG)
+                         ?GAL_DATA_BLANK_SHORT:s[i];}
               while(++i!=size);}
           return;
         case LONGLONG_IMG:
           sf=(s=*out)+size; do *s=*iL++; while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=(iiL[i]==GAL_FITS_LLONG_BLANK)
-                         ?GAL_FITS_SHORT_BLANK:s[i];}
+            {s=*out; do {s[i]=(iiL[i]==GAL_DATA_BLANK_LONGLONG)
+                         ?GAL_DATA_BLANK_SHORT:s[i];}
               while(++i!=size);}
           return;
         case FLOAT_IMG:
           sf=(s=*out)+size; do *s=roundf(*iif++); while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=isnan(iiif[i])?GAL_FITS_SHORT_BLANK:s[i];}
+            {s=*out; do {s[i]=isnan(iiif[i])?GAL_DATA_BLANK_SHORT:s[i];}
               while(++i!=size);}
           return;
         case DOUBLE_IMG:
           sf=(s=*out)+size; do *s=round(*id++); while(++s<sf);
           if(anyblank)
-            {s=*out; do {s[i]=isnan(iid[i])?GAL_FITS_SHORT_BLANK:s[i];}
+            {s=*out; do {s[i]=isnan(iid[i])?GAL_DATA_BLANK_SHORT:s[i];}
               while(++i!=size);}
           return;
         default:
@@ -864,15 +864,15 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case BYTE_IMG:
           lf=(l=*out)+size; do *l=*ib++; while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=(iib[i]==GAL_FITS_BYTE_BLANK)
-                         ?GAL_FITS_LONG_BLANK:l[i];}
+            {l=*out; do {l[i]=(iib[i]==GAL_DATA_BLANK_UCHAR)
+                         ?GAL_DATA_BLANK_LONG:l[i];}
               while(++i!=size);}
           return;
         case SHORT_IMG:
           lf=(l=*out)+size; do *l=*is++; while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=(iis[i]==GAL_FITS_SHORT_BLANK)
-                         ?GAL_FITS_LONG_BLANK:l[i];}
+            {l=*out; do {l[i]=(iis[i]==GAL_DATA_BLANK_SHORT)
+                         ?GAL_DATA_BLANK_LONG:l[i];}
               while(++i!=size);}
           return;
         case LONG_IMG:
@@ -880,20 +880,20 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case LONGLONG_IMG:
           lf=(l=*out)+size; do *l=*iL++; while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=(iiL[i]==GAL_FITS_LLONG_BLANK)
-                         ?GAL_FITS_LONG_BLANK:l[i];}
+            {l=*out; do {l[i]=(iiL[i]==GAL_DATA_BLANK_LONGLONG)
+                         ?GAL_DATA_BLANK_LONG:l[i];}
               while(++i!=size);}
           return;
         case FLOAT_IMG:
           lf=(l=*out)+size; do *l=roundf(*iif++); while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=isnan(iiif[i])?GAL_FITS_LONG_BLANK:l[i];}
+            {l=*out; do {l[i]=isnan(iiif[i])?GAL_DATA_BLANK_LONG:l[i];}
               while(++i!=size);}
           return;
         case DOUBLE_IMG:
           lf=(l=*out)+size; do *l=round(*id++); while(++l<lf);
           if(anyblank)
-            {l=*out; do {l[i]=isnan(iid[i])?GAL_FITS_LONG_BLANK:l[i];}
+            {l=*out; do {l[i]=isnan(iid[i])?GAL_DATA_BLANK_LONG:l[i];}
               while(++i!=size);}
           return;
         default:
@@ -909,22 +909,22 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case BYTE_IMG:
           Lf=(L=*out)+size; do *L=*ib++; while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=(iib[i]==GAL_FITS_BYTE_BLANK)
-                         ?GAL_FITS_LLONG_BLANK:L[i];}
+            {L=*out; do {L[i]=(iib[i]==GAL_DATA_BLANK_UCHAR)
+                         ?GAL_DATA_BLANK_LONGLONG:L[i];}
               while(++i!=size);}
           return;
         case SHORT_IMG:
           Lf=(L=*out)+size; do *L=*is++; while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=(iis[i]==GAL_FITS_SHORT_BLANK)
-                         ?GAL_FITS_LLONG_BLANK:L[i];}
+            {L=*out; do {L[i]=(iis[i]==GAL_DATA_BLANK_SHORT)
+                         ?GAL_DATA_BLANK_LONGLONG:L[i];}
               while(++i!=size);}
           return;
         case LONG_IMG:
           Lf=(L=*out)+size; do *L=*il++; while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=(iil[i]==GAL_FITS_LONG_BLANK)
-                         ?GAL_FITS_LLONG_BLANK:L[i];}
+            {L=*out; do {L[i]=(iil[i]==GAL_DATA_BLANK_LONG)
+                         ?GAL_DATA_BLANK_LONGLONG:L[i];}
               while(++i!=size);}
           return;
         case LONGLONG_IMG:
@@ -932,13 +932,13 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case FLOAT_IMG:
           Lf=(L=*out)+size; do *L=roundf(*iif++); while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=isnan(iiif[i])?GAL_FITS_LLONG_BLANK:L[i];}
+            {L=*out; do {L[i]=isnan(iiif[i])?GAL_DATA_BLANK_LONGLONG:L[i];}
               while(++i!=size);}
           return;
         case DOUBLE_IMG:
           Lf=(L=*out)+size; do *L=round(*id++); while(++L<Lf);
           if(anyblank)
-            {L=*out; do {L[i]=isnan(iid[i])?GAL_FITS_LLONG_BLANK:L[i];}
+            {L=*out; do {L[i]=isnan(iid[i])?GAL_DATA_BLANK_LONGLONG:L[i];}
               while(++i!=size);}
           return;
         default:
@@ -954,29 +954,29 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case BYTE_IMG:
           ff=(f=*out)+size; do *f=*ib++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iib[i]==GAL_FITS_BYTE_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:f[i];}
+            {f=*out; do {f[i]=iib[i]==GAL_DATA_BLANK_UCHAR
+                         ?GAL_DATA_BLANK_FLOAT:f[i];}
               while(++i!=size);}
           return;
         case SHORT_IMG:
           ff=(f=*out)+size; do *f=*is++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iis[i]==GAL_FITS_SHORT_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:f[i];}
+            {f=*out; do {f[i]=iis[i]==GAL_DATA_BLANK_SHORT
+                         ?GAL_DATA_BLANK_FLOAT:f[i];}
               while(++i!=size);}
           return;
         case LONG_IMG:
           ff=(f=*out)+size; do *f=*il++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iil[i]==GAL_FITS_LONG_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:f[i];}
+            {f=*out; do {f[i]=iil[i]==GAL_DATA_BLANK_LONG
+                         ?GAL_DATA_BLANK_FLOAT:f[i];}
               while(++i!=size);}
           return;
         case LONGLONG_IMG:
           ff=(f=*out)+size; do *f=*iL++; while(++f<ff);
           if(anyblank)
-            {f=*out; do {f[i]=iiL[i]==GAL_FITS_LLONG_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:f[i];}
+            {f=*out; do {f[i]=iiL[i]==GAL_DATA_BLANK_LONGLONG
+                         ?GAL_DATA_BLANK_FLOAT:f[i];}
               while(++i!=size);}
           return;
         case FLOAT_IMG:
@@ -996,29 +996,29 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
         case BYTE_IMG:
           df=(d=*out)+size; do *d=*ib++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iib[i]==GAL_FITS_BYTE_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:d[i];}
+            {d=*out; do {d[i]=iib[i]==GAL_DATA_BLANK_UCHAR
+                         ?GAL_DATA_BLANK_FLOAT:d[i];}
               while(++i!=size);}
           return;
         case SHORT_IMG:
           df=(d=*out)+size; do *d=*is++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iis[i]==GAL_FITS_SHORT_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:d[i];}
+            {d=*out; do {d[i]=iis[i]==GAL_DATA_BLANK_SHORT
+                         ?GAL_DATA_BLANK_FLOAT:d[i];}
               while(++i!=size);}
           return;
         case LONG_IMG:
           df=(d=*out)+size; do *d=*il++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iil[i]==GAL_FITS_LONG_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:d[i];}
+            {d=*out; do {d[i]=iil[i]==GAL_DATA_BLANK_LONG
+                         ?GAL_DATA_BLANK_FLOAT:d[i];}
               while(++i!=size);}
           return;
         case LONGLONG_IMG:
           df=(d=*out)+size; do *d=*iL++; while(++d<df);
           if(anyblank)
-            {d=*out; do {d[i]=iiL[i]==GAL_FITS_LLONG_BLANK
-                         ?GAL_FITS_FLOAT_BLANK:d[i];}
+            {d=*out; do {d[i]=iiL[i]==GAL_DATA_BLANK_LONGLONG
+                         ?GAL_DATA_BLANK_FLOAT:d[i];}
               while(++i!=size);}
           return;
         case FLOAT_IMG:
