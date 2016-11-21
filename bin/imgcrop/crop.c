@@ -295,9 +295,10 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
   float *fb, *fa=array;
   LONGLONG *Lb, *La=array;
   unsigned char *bb, *ba=array;
+  int outpolygon=crp->p->outpolygon;
   double *db, *ipolygon, point[2], *da=array;
+  int type=gal_fits_datatype_to_type(crp->p->datatype);
   size_t i, *ordinds, size=s0*s1, nvertices=crp->p->nvertices;
-  int outpolygon=crp->p->outpolygon, datatype=crp->p->datatype;
 
 
   /* First of all, allocate enough space to put a copy of the input
@@ -326,10 +327,10 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
 
   /* Go over all the pixels in the image and if they are within the
      polygon keep them if the user has asked for it.*/
-  switch(datatype)
+  switch(type)
     {
-    case TBYTE:
-      bb=gal_fits_datatype_blank(datatype);
+    case GAL_DATA_TYPE_UCHAR:
+      bb=gal_data_alloc_blank(type);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -338,8 +339,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(bb);
       break;
-    case TSHORT:
-      sb=gal_fits_datatype_blank(datatype);
+    case GAL_DATA_TYPE_SHORT:
+      sb=gal_data_alloc_blank(type);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -348,8 +349,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(sb);
       break;
-    case TLONG:
-      lb=gal_fits_datatype_blank(datatype);
+    case GAL_DATA_TYPE_LONG:
+      lb=gal_data_alloc_blank(type);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -358,8 +359,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(lb);
       break;
-    case TLONGLONG:
-      Lb=gal_fits_datatype_blank(datatype);
+    case GAL_DATA_TYPE_LONGLONG:
+      Lb=gal_data_alloc_blank(type);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -368,8 +369,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(Lb);
       break;
-    case TFLOAT:
-      fb=gal_fits_datatype_blank(datatype);
+    case GAL_DATA_TYPE_FLOAT:
+      fb=gal_data_alloc_blank(type);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -378,8 +379,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
         }
       free(fb);
       break;
-    case TDOUBLE:
-      db=gal_fits_datatype_blank(datatype);
+    case GAL_DATA_TYPE_DOUBLE:
+      db=gal_data_alloc_blank(type);
       for(i=0;i<size;++i)
         {
           point[0]=i%s1+1; point[1]=i/s1+1;
@@ -391,8 +392,8 @@ polygonmask(struct cropparams *crp, void *array, long *fpixel_i,
     default:
       error(EXIT_FAILURE, 0, "a bug! Please contact us at %s, so we "
             "can fix the problem. For some reason, an unrecognized "
-            "datatype value (%d) has been seen in polygonmask (crop.c)",
-            PACKAGE_BUGREPORT, datatype);
+            "type value (%d) has been seen in polygonmask (crop.c)",
+            PACKAGE_BUGREPORT, type);
     }
 
   /* Clean up: */
@@ -714,7 +715,7 @@ onecrop(struct cropparams *crp)
       /* Read the desired part of the image, then write it into this
          array. */
       cropsize=(lpixel_i[0]-fpixel_i[0]+1)*(lpixel_i[1]-fpixel_i[1]+1);
-      array=gal_fits_datatype_alloc(cropsize, p->datatype);
+      array=gal_data_alloc(gal_fits_datatype_to_type(p->datatype), cropsize);
       status=0;
       if(fits_read_subset(ifp, p->datatype, fpixel_i, lpixel_i, inc,
                           p->bitnul, array, &anynul, &status))
@@ -829,7 +830,7 @@ iscenterfilled(struct cropparams *crp)
 
   /* Allocate the array and read in the pixels. */
   size=checkcenter*checkcenter;
-  array=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_datatype(bitpix) );
+  array=gal_data_alloc(gal_fits_bitpix_to_type(bitpix), size);
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
                        p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);

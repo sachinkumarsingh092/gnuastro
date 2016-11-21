@@ -159,7 +159,7 @@ readinputcols(struct tableparams *p)
 {
   double *colfromtxt;
   struct outcolumn *col;
-  int datatype, status=0;
+  int type, status=0;
   size_t i, j, nrows=p->nrows, incols=p->up.ncols;
 
   /* Get the contents of each table column: */
@@ -168,20 +168,20 @@ readinputcols(struct tableparams *p)
       /* Variables for simple reading */
       col=&p->ocols[i];
 
-      datatype=col->datatype;
+      type=gal_fits_datatype_to_type(col->datatype);
 
       /* Allocate the blank value for this column. Note that we will also
          need the blankvalue for a text file when outputing to a FITS. */
-      col->nulval=gal_fits_datatype_blank(datatype);
+      col->nulval=gal_data_alloc_blank(type);
 
       /* Read the input column. */
       if(p->fitsptr)
         {
           /* Allocate space for the data in this column */
-          col->data=gal_fits_datatype_alloc(nrows, datatype);
+          col->data=gal_data_alloc(type, nrows);
 
           /* Call CFITSIO to read the column information. */
-          fits_read_col(p->fitsptr, datatype, col->inindex+1, 1, 1,
+          fits_read_col(p->fitsptr, col->datatype, col->inindex+1, 1, 1,
                         nrows, col->nulval, col->data, &col->anynul,
                         &status);
         }

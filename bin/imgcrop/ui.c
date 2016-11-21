@@ -582,7 +582,7 @@ preparearrays(struct imgcropparams *p)
   fitsfile *tmpfits;
   struct timeval t1;
   struct inputimgs *img;
-  int i, status, firstbitpix=0;
+  int i, type, status, firstbitpix=0;
   char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
 
   if(p->cp.verb) gettimeofday(&t1, NULL);
@@ -634,8 +634,9 @@ preparearrays(struct imgcropparams *p)
       if(firstbitpix==0)
         {
           firstbitpix=p->bitpix;
-          p->datatype=gal_fits_bitpix_to_datatype(p->bitpix);
-          p->bitnul=gal_fits_datatype_blank(p->datatype);
+          type=gal_fits_bitpix_to_type(p->bitpix);
+          p->bitnul = gal_data_alloc_blank(type);
+          p->datatype = gal_fits_type_to_datatype(type);
         }
       else if(firstbitpix!=p->bitpix)
         error(EXIT_FAILURE, 0, "%s: BITPIX=%d. Previous images had a "

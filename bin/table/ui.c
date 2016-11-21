@@ -447,7 +447,7 @@ void
 allfitscolinfo(struct tableparams *p)
 {
   char *tailptr;
-  int i, status=0;
+  int i, status=0, type;
   struct uiparams *up=&p->up;
   size_t index, ncols=p->up.ncols;
   char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
@@ -486,8 +486,9 @@ allfitscolinfo(struct tableparams *p)
           index=strtoul(&keyname[5], &tailptr, 10)-1;
           if(index<ncols)
             {
+              type=gal_fits_tform_to_type(value[1]);
+              up->datatype[index]=gal_fits_type_to_datatype(type);
               gal_checkset_allocate_copy(&value[1], &up->ttstr[index] );
-              up->datatype[index]=gal_fits_tform_to_datatype(value[1]);
             }
         }
       else if(strncmp(keyname, "TTYPE", 5)==0)
@@ -871,10 +872,12 @@ outputcolumns(struct tableparams *p)
   i=p->nocols-1;
   while(colsll)
     {
+      int type;
       gal_linkedlist_pop_from_sll(&colsll, &inindex);
       p->ocols[i].inindex=inindex;
       p->ocols[i].datatype=up->datatype[inindex];
-      p->ocols[i].esize=gal_fits_datatype_size(up->datatype[inindex]);
+      type=gal_fits_datatype_to_type(p->ocols[i].datatype);
+      p->ocols[i].esize=gal_data_sizeof(type);
       --i;
     }
 }
@@ -906,9 +909,11 @@ preparearrays(struct tableparams *p)
               p->nocols * sizeof *p->ocols);
       for(i=0;i<p->nocols;++i)
         {
+          int type;
           p->ocols[i].inindex=i;
           p->ocols[i].datatype=up->datatype[i];
-          p->ocols[i].esize=gal_fits_datatype_size(p->ocols[i].datatype);
+          type=gal_fits_datatype_to_type(p->ocols[i].datatype);
+          p->ocols[i].esize=gal_data_sizeof(type);
         }
     }
 }

@@ -25,9 +25,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
+#include <math.h>
 #include <limits.h>
-#include <wcslib/wcs.h>
+#include <stdint.h>
 
+#include <wcslib/wcs.h>
+#include <gsl/gsl_complex.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -63,10 +66,10 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_DATA_BLANK_CHAR       SCHAR_MAX
 #define GAL_DATA_BLANK_LOGICAL    SCHAR_MAX
 #define GAL_DATA_BLANK_STRING     NULL
-#define GAL_DATA_BLANK_UINT       UINT_MAX
-#define GAL_DATA_BLANK_INT        INT_MIN
 #define GAL_DATA_BLANK_USHORT     USHRT_MAX
 #define GAL_DATA_BLANK_SHORT      INT16_MIN
+#define GAL_DATA_BLANK_UINT       UINT_MAX
+#define GAL_DATA_BLANK_INT        INT_MIN
 #define GAL_DATA_BLANK_ULONG      ULONG_MAX
 #define GAL_DATA_BLANK_LONG       INT32_MIN
 #define GAL_DATA_BLANK_LONGLONG   INT64_MIN
@@ -81,21 +84,22 @@ __BEGIN_C_DECLS  /* From C++ preparations */
    parenthesis is the equivalent macro in CFITSIO. */
 enum gal_data_alltypes
 {
-  GAL_DATA_BIT,        /* Bit              (TBIT).      */
-  GAL_DATA_UCHAR,      /* Unsigned char    (TBYTE).     */
-  GAL_DATA_CHAR,       /* char             (TSBYTE).    */
-  GAL_DATA_STRING,     /* string           (TSTRING).   */
-  GAL_DATA_UINT,       /* unsigned int     (TUINT).     */
-  GAL_DATA_INT,        /* int              (TINT).      */
-  GAL_DATA_USHORT,     /* unsigned short   (TUSHORT).   */
-  GAL_DATA_SHORT,      /* short            (TSHORT).    */
-  GAL_DATA_ULONG,      /* unsigned long    (TLONG).     */
-  GAL_DATA_LONG,       /* long             (TLONG).     */
-  GAL_DATA_LONGLONG,   /* long long        (TLONGLONG). */
-  GAL_DATA_FLOAT,      /* float            (TFLOAT).    */
-  GAL_DATA_DOUBLE,     /* double           (TDOUBLE).   */
-  GAL_DATA_COMPLEX,    /* Complex float    (TCOMPLEX).  */
-  GAL_DATA_DCOMPLEX,   /* Complex double   (TDCOMPLEX). */
+  GAL_DATA_TYPE_BIT,       /* Bit              (TBIT).        */
+  GAL_DATA_TYPE_UCHAR,     /* Unsigned char    (TBYTE).       */
+  GAL_DATA_TYPE_CHAR,      /* char             (TSBYTE).      */
+  GAL_DATA_TYPE_LOGICAL,   /* char             (TLOGICAL).    */
+  GAL_DATA_TYPE_STRING,    /* string           (TSTRING).     */
+  GAL_DATA_TYPE_USHORT,    /* unsigned short   (TUSHORT).     */
+  GAL_DATA_TYPE_SHORT,     /* short            (TSHORT).      */
+  GAL_DATA_TYPE_UINT,      /* unsigned int     (TUINT).       */
+  GAL_DATA_TYPE_INT,       /* int              (TINT).        */
+  GAL_DATA_TYPE_ULONG,     /* unsigned long    (TLONG).       */
+  GAL_DATA_TYPE_LONG,      /* long             (TLONG).       */
+  GAL_DATA_TYPE_LONGLONG,  /* long long        (TLONGLONG).   */
+  GAL_DATA_TYPE_FLOAT,     /* float            (TFLOAT).      */
+  GAL_DATA_TYPE_DOUBLE,    /* double           (TDOUBLE).     */
+  GAL_DATA_TYPE_COMPLEX,   /* Complex float    (TCOMPLEX).    */
+  GAL_DATA_TYPE_DCOMPLEX,  /* Complex double   (TDBLCOMPLEX). */
 };
 
 
@@ -117,6 +121,22 @@ typedef struct
   int   anyblank;      /* ==1: has blank values.                   */
   struct wcsprm *wcs;  /* WCS information for this dataset.        */
 } gal_data;
+
+
+
+
+
+/* Functions */
+size_t
+gal_data_sizeof(int type);
+
+void *
+gal_data_alloc(int type, size_t size);
+
+void *
+gal_data_alloc_blank(int type);
+
+
 
 __END_C_DECLS    /* From C++ preparations */
 

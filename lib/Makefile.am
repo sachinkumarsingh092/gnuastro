@@ -31,9 +31,9 @@ libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c fits.c  \
-  git.c linkedlist.c mesh.c mode.c polygon.c qsort.c spatialconvolve.c  \
-  statistics.c threads.c timing.c txtarray.c wcs.c
+libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c data.c  \
+  fits.c git.c linkedlist.c mesh.c mode.c polygon.c qsort.c             \
+  spatialconvolve.c statistics.c threads.c timing.c txtarray.c wcs.c
 
 
 # Installed headers, note that we are not blindly including all `.h' files

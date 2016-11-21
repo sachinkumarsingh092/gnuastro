@@ -27,13 +27,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <math.h>
 #include <float.h>
-#include <stdint.h>
-#include <limits.h>
+
 #include <fitsio.h>
 #include <wcslib/wcs.h>
 #include <wcslib/wcshdr.h>
 #include <wcslib/wcsfix.h>
-#include <gsl/gsl_complex.h>
 
 #include <gnuastro/data.h>
 
@@ -146,19 +144,32 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
 
 
 /*************************************************************
+ **************           Type codes           ***************
+ *************************************************************/
+int
+gal_fits_bitpix_to_type(int bitpix);
+
+int
+gal_fits_tform_to_type(char tform);
+
+int
+gal_fits_type_to_datatype(int type);
+
+int
+gal_fits_datatype_to_type(int type);
+
+
+
+
+
+/*************************************************************
  ******************        Read/Write        *****************
  *************************************************************/
-void *
-gal_fits_datatype_blank(int datatype);
-
 void
 gal_fits_convert_blank(void *array, int bitpix, size_t size, void *value);
 
 void
 gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value);
-
-int
-gal_fits_bitpix_to_datatype(int bitpix);
 
 void
 gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxis);
@@ -166,12 +177,6 @@ gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxis);
 void
 gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
                   fitsfile **outfptr);
-
-void *
-gal_fits_datatype_alloc(size_t size, int datatype);
-
-size_t
-gal_fits_datatype_size(int datatype);
 
 void
 gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
@@ -212,9 +217,6 @@ gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
 /**************************************************************/
 /**********                  Table                 ************/
 /**************************************************************/
-int
-gal_fits_tform_to_datatype(char tform);
-
 void
 gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
 
