@@ -250,7 +250,7 @@ makepixbypix(struct mkonthread *mkp)
   p=x*mkp->width[0]+y;
 
   /* If this is a point source, just fill that one pixel and go. */
-  if(mkp->type==POINTCODE)
+  if(mkp->func==POINTCODE)
     { img[p]=1; return; }
 
   /* Allocate the byt array to not repeat completed pixels. */
@@ -266,8 +266,8 @@ makepixbypix(struct mkonthread *mkp)
   gal_linkedlist_add_to_tosll_end( &lQ, &sQ, p, r_circle(p, mkp) );
 
   /* If random points are necessary, then do it: */
-  if(mkp->type==SERSICCODE || mkp->type==MOFFATCODE
-     || mkp->type==GAUSSIANCODE)
+  if(mkp->func==SERSICCODE || mkp->func==MOFFATCODE
+     || mkp->func==GAUSSIANCODE)
     {
       while(sQ)
         {
@@ -353,7 +353,7 @@ makepixbypix(struct mkonthread *mkp)
           /* For the circumference, if the profile is too elongated
              and circumwidth is too small, then some parts of the
              circumference will not be shown without this condition. */
-          if(mkp->type==CIRCUMFERENCECODE) img[p]=profile(mkp);
+          if(mkp->func==CIRCUMFERENCECODE) img[p]=profile(mkp);
           continue;
         }
 
@@ -435,11 +435,11 @@ setprofparams(struct mkonthread *mkp)
   mkp->q          = cat[p->qcol];
   mkp->brightness = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
   mkp->ibq->ispsf = ispsf(cat[p->fcol]);
-  mkp->type       = mkp->ibq->type=cat[p->fcol];
+  mkp->func       = mkp->ibq->func=cat[p->fcol];
 
 
   /* Fill the profile dependent parameters. */
-  switch (mkp->type)
+  switch (mkp->func)
     {
     case SERSICCODE:
       mkp->correction       = 1;

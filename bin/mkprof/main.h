@@ -71,7 +71,7 @@ struct builtqueue
   long        fpixel_i[2];    /* First pixel in output image.        */
   long        lpixel_i[2];    /* Last pixel in output image.         */
   long        fpixel_o[2];    /* First pixel in this array.          */
-  int                type;    /* The type of the profile.            */
+  int                func;    /* Profile's radial function.          */
 
   int        indivcreated;    /* ==1: an individual file is created. */
   size_t          numaccu;    /* Number of accurate pixels.          */
