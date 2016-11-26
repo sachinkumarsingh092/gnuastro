@@ -181,7 +181,7 @@ gal_checkset_any_double(char *optarg, double *var, char *lo, char so,
 /**********          Check fixed strings           ************/
 /**************************************************************/
 void
-gal_checkset_known_types(char *optarg, int *bitpix, char *filename,
+gal_checkset_known_types(char *optarg, int *type, char *filename,
                          size_t lineno);
 
 
@@ -232,6 +232,9 @@ gal_checkset_not_dir_part(char *input);
 
 void
 gal_checkset_check_dir_write_add_slash(char **dirname);
+
+void
+gal_checkset_mkdir(char *dirname);
 
 
 

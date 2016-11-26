@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageArithmetic - Do arithmetic operations on images.
-ImageArithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
+Arithmetic - Do arithmetic operations on images.
+Arithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -125,7 +125,7 @@ readconfig(char *filename, struct imgarithparams *p)
       else if(strcmp(name, "type")==0)
         {
           if(p->up.typeset) continue;
-          gal_checkset_known_types(value, &p->type, filename, lineno);
+          gal_checkset_known_types(value, &p->outtype, filename, lineno);
           p->up.typeset=1;
         }
 
@@ -174,7 +174,7 @@ printvalues(FILE *fp, struct imgarithparams *p)
   if(cp->outputset)
     fprintf(fp, CONF_SHOWFMT"%s\n", "output", cp->output);
   if(up->typeset)
-    gal_configfiles_print_type(fp, p->type);
+    gal_configfiles_print_type(fp, p->outtype);
 
 
   /* For the operating mode, first put the macro to print the common
@@ -393,4 +393,41 @@ setparams(int argc, char *argv[], struct imgarithparams *p)
 
   /* Do a sanity check. */
   sanitycheck(p);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/************      Free allocated, report         *************/
+/**************************************************************/
+void
+freeandreport(struct imgarithparams *p, struct timeval *t1)
+{
+  free(p->cp.output);
+
+  /* If there are any remaining HDUs in the hdus linked list, then
+     free them. */
+  if(p->hdus)
+    gal_linkedlist_free_stll(p->hdus, 1);
+
+  /* Report the duration of the job */
+  if(p->cp.verb)
+    gal_timing_report(t1, SPACK_NAME" finished in", 0);
 }

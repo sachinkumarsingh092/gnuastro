@@ -37,6 +37,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "fixedstringmacros.h"
 
 
+
+
+
+
+
+
+
+
 /*************************************************************
  **************        Reporting errors:       ***************
  *************************************************************/
@@ -74,7 +82,7 @@ gal_fits_io_error(int status, char *message)
 
 
 /*************************************************************
- **************      Acceptable FITS names     ***************
+ **************           FITS names           ***************
  *************************************************************/
 
 /* IMPORTANT NOTE: if other compression suffixes are add to this function,
@@ -121,6 +129,49 @@ gal_fits_suffix_is_fits(char *suffix)
 
 
 
+/* We have the name of the input file. But in most cases, the files
+   that should be used (for example a mask image) are other extensions
+   in the same file. So the user only has to give the HDU. The job of
+   this function is to determine which is the case and set othername
+   to the appropriate value. */
+void
+gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
+                          char **othername, char *ohdu, int ohduset,
+                          char *type)
+{
+  if(othernameset)
+    {
+      /* In some cases, for example a mask image, both the name and
+         HDU are optional. So just to be safe, we will check this all
+         the time. */
+      if(ohduset==0)
+        error(EXIT_FAILURE, 0, "a %s image was specified (%s). However, "
+              "no HDU is given for it. Please add a HDU. If you regularly "
+              "use the same HDU as %s, you may consider adding it to "
+              "the configuration file. For more information, please see "
+              "the `Configuration files' section of the %s manual by "
+              "running ` info gnuastro ' on the command-line", type,
+              *othername, type, PACKAGE_NAME);
+      if(strcmp(inputname, *othername)==0)
+        {
+          if(strcmp(ohdu, inhdu)==0)
+            error(EXIT_FAILURE, 0, "the specified %s name and "
+                  "input image name (%s) are the same while the input "
+                  "image hdu name and mask hdu are also identical (%s)",
+                  type, inputname, inhdu);
+        }
+    }
+    else if(ohduset && strcmp(ohdu, inhdu))
+      *othername=inputname;
+    else
+      *othername=NULL;
+}
+
+
+
+
+
+
 
 
 
@@ -162,8 +213,42 @@ gal_fits_bitpix_to_type(int bitpix)
     case DOUBLE_IMG:
       return GAL_DATA_TYPE_DOUBLE;
     default:
-      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized",
-            bitpix);
+      error(EXIT_FAILURE, 0, "bitpix value of %d not recognized in "
+            "gal_fits_bitpix_to_type", bitpix);
+    }
+  return 0;
+}
+
+
+
+
+
+int
+gal_fits_type_to_bitpix(int type)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      return BYTE_IMG;
+    case GAL_DATA_TYPE_CHAR:
+      return SBYTE_IMG;
+    case GAL_DATA_TYPE_USHORT:
+      return USHORT_IMG;
+    case GAL_DATA_TYPE_SHORT:
+      return SHORT_IMG;
+    case GAL_DATA_TYPE_ULONG:
+      return ULONG_IMG;
+    case GAL_DATA_TYPE_LONG:
+      return LONG_IMG;
+    case GAL_DATA_TYPE_LONGLONG:
+      return LONGLONG_IMG;
+    case GAL_DATA_TYPE_FLOAT:
+      return FLOAT_IMG;
+    case GAL_DATA_TYPE_DOUBLE:
+      return DOUBLE_IMG;
+    default:
+      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
+            "gal_fits_type_to_bitpix", type);
     }
   return 0;
 }
@@ -352,474 +437,6 @@ gal_fits_datatype_to_type(int datatype)
 
 
 
-void
-gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxes)
-{
-  int status=0, maxdim=10, naxis;
-
-  if( fits_get_img_param(fptr, maxdim, bitpix, &naxis, naxes, &status) )
-    gal_fits_io_error(status, NULL);
-
-  if(naxis!=2)
-    error(EXIT_FAILURE, 0, "currently only a 2 dimensional image array "
-          "is supported. Your array is %d dimension(s). %s", naxis,
-          naxis ? "Please contact us to add this feature." : "This might "
-          "Be due to the fact that the data in images with multiple "
-          "extensions are sometimes put on the second extension. If this "
-          "is the case, try changing the hdu (maybe to --hdu=1)");
-}
-
-
-
-
-
-void
-gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value)
-{
-  /* 'value' will only be read from one of these based on the
-     datatype. Which the caller assigned. If there is any problem, it is
-     their responsability, not this function's.*/
-  unsigned char *b, *bf,        bv = *(uint8_t *) value;
-  char *c, *cf,                 cv = *(char *) value;
-  char **str, **strf,        *strv = *(char **) value;
-  short *s, *sf,                sv = *(int16_t *) value;
-  long *l, *lf,                 lv = *(int32_t *) value;
-  LONGLONG *L, *Lf,             Lv = *(int64_t *) value;
-  float   *f, *ff,              fv = *(float *) value;
-  double  *d, *df,              dv = *(double *) value;
-  gsl_complex_float *cx, *cxf, cxv = *(gsl_complex_float *) value;
-  gsl_complex *dcx, *dcxf,    dcxv = *(gsl_complex *) value;
-  int *in, *inf,               inv = *(int *) value;
-  unsigned int *ui, *uif,      uiv = *(unsigned int *) value;
-  unsigned short *us, *usf,    usv = *(unsigned short *) value;
-  unsigned long *ul, *ulf,     ulv = *(unsigned long *) value;
-
-  switch(datatype)
-    {
-    case TBIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support TBIT "
-            "datatype, please get in touch with us to implement it.");
-
-    case TBYTE:
-      bf=(b=array)+size;
-      do if(*b==GAL_DATA_BLANK_UCHAR) *b++=bv; while(b<bf);
-      break;
-
-
-    case TLOGICAL: case TSBYTE:
-      cf=(c=array)+size;
-      do if(*c==GAL_DATA_BLANK_LOGICAL) *c++=cv; while(c<cf);
-      break;
-
-
-    case TSTRING:
-      strf=(str=array)+size;
-      do if(*str==GAL_DATA_BLANK_STRING) *str++=strv; while(str<strf);
-      break;
-
-
-    case TSHORT:
-      sf=(s=array)+size;
-      do if(*s==GAL_DATA_BLANK_SHORT) *s++=sv; while(s<sf);
-      break;
-
-
-    case TLONG:
-      lf=(l=array)+size;
-      do if(*l==GAL_DATA_BLANK_LONG) *l++=lv; while(l<lf);
-      break;
-
-
-    case TLONGLONG:
-      Lf=(L=array)+size;
-      do if(*L==GAL_DATA_BLANK_LONGLONG) *L++=Lv; while(L<Lf);
-      break;
-
-
-      /* Note that a NaN value is not equal to another NaN value, so we
-         can't use the easy check for cases were the blank value is
-         NaN. Also note that `isnan' is actually a macro, so it works for
-         both float and double types.*/
-    case TFLOAT:
-      ff=(f=array)+size;
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-        do if(isnan(*f)) *f++=fv; while(f<ff);
-      else
-        do if(*f==GAL_DATA_BLANK_FLOAT) *f++=fv; while(f<ff);
-      break;
-
-
-    case TDOUBLE:
-      df=(d=array)+size;
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-        do if(isnan(*d)) *d++=dv; while(d<df);
-      else
-        do if(*d==GAL_DATA_BLANK_FLOAT) *d++=dv; while(d<df);
-      break;
-
-
-    case TCOMPLEX:
-      cxf=(cx=array)+size;
-      if(isnan(GAL_DATA_BLANK_FLOAT))
-          do
-            if(isnan(GSL_COMPLEX_P_REAL(cx))
-               && isnan(GSL_COMPLEX_P_IMAG(cx)) )
-              GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
-                              GSL_COMPLEX_P_IMAG(&cxv));
-          while(++cx<cxf);
-      else
-        do
-          if( GSL_COMPLEX_P_REAL(cx) == GAL_DATA_BLANK_FLOAT
-              && GSL_COMPLEX_P_IMAG(cx) == GAL_DATA_BLANK_FLOAT)
-            GSL_SET_COMPLEX(cx, GSL_COMPLEX_P_REAL(&cxv),
-                            GSL_COMPLEX_P_IMAG(&cxv));
-        while(++cx<cxf);
-      break;
-
-
-    case TDBLCOMPLEX:
-      dcxf=(dcx=array)+size;
-      if(isnan(GAL_DATA_BLANK_DOUBLE))
-          do
-            if(isnan(GSL_COMPLEX_P_REAL(dcx))
-               && isnan(GSL_COMPLEX_P_IMAG(dcx)) )
-              GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
-                              GSL_COMPLEX_P_IMAG(&dcxv));
-          while(++dcx<dcxf);
-      else
-        do
-          if( GSL_COMPLEX_P_REAL(dcx) == GAL_DATA_BLANK_FLOAT
-              && GSL_COMPLEX_P_IMAG(dcx) == GAL_DATA_BLANK_FLOAT)
-            GSL_SET_COMPLEX(dcx, GSL_COMPLEX_P_REAL(&dcxv),
-                            GSL_COMPLEX_P_IMAG(&dcxv));
-        while(++dcx<dcxf);
-      break;
-
-
-    case TINT:
-      inf=(in=array)+size;
-      do if(*in==GAL_DATA_BLANK_INT) *in++=inv; while(in<inf);
-      break;
-
-
-    case TUINT:
-      uif=(ui=array)+size;
-      do if(*ui==GAL_DATA_BLANK_UINT) *ui++=uiv; while(ui<uif);
-      break;
-
-
-    case TUSHORT:
-      usf=(us=array)+size;
-      do if(*us==GAL_DATA_BLANK_USHORT) *us++=usv; while(us<usf);
-      break;
-
-
-    case TULONG:
-      ulf=(ul=array)+size;
-      do if(*ul==GAL_DATA_BLANK_ULONG) *ul++=ulv; while(ul<ulf);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "a bug! datatype value of %d not recognized. "
-            "This should not happen here (blanktovalue in fitsarrayvv.c). "
-            "Please contact us at %s to see how this happened", datatype,
-            PACKAGE_BUGREPORT);
-    }
-}
-
-
-
-
-
-void
-gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
-                     void **out, int outbitpix)
-{
-  size_t i=0;
-  unsigned char *b, *bf,  *ib=in,  *iib=in;
-  short         *s, *sf,  *is=in,  *iis=in;
-  long          *l, *lf,  *il=in,  *iil=in;
-  LONGLONG      *L, *Lf,  *iL=in,  *iiL=in;
-  float         *f, *ff, *iif=in, *iiif=in;
-  double        *d, *df,  *id=in,  *iid=in;
-
-  /* Allocate space for the output and start filling it. */
-  *out=gal_data_alloc(gal_fits_bitpix_to_type(outbitpix), size);
-  switch(outbitpix)
-    {
-    case BYTE_IMG:
-      switch(inbitpix)
-        {
-        case BYTE_IMG:
-          bf=(b=*out)+size; do *b=*ib++; while(++b<bf); return;
-        case SHORT_IMG:
-          bf=(b=*out)+size; do *b=*is++; while(++b<bf);
-          if(anyblank)
-            {b=*out; do {b[i]=(iis[i]==GAL_DATA_BLANK_SHORT)
-                         ?GAL_DATA_BLANK_UCHAR:b[i];}
-              while(++i!=size);}
-          return;
-        case LONG_IMG:
-          bf=(b=*out)+size; do *b=*il++; while(++b<bf);
-          if(anyblank)
-            {b=*out; do {b[i]=(iil[i]==GAL_DATA_BLANK_LONG)
-                         ?GAL_DATA_BLANK_UCHAR:b[i];}
-              while(++i!=size);}
-          return;
-        case LONGLONG_IMG:
-          bf=(b=*out)+size; do *b=*iL++; while(++b<bf);
-          if(anyblank)
-            {b=*out; do {b[i]=(iiL[i]==GAL_DATA_BLANK_LONGLONG)
-                         ?GAL_DATA_BLANK_UCHAR:b[i];}
-              while(++i!=size);}
-          return;
-        case FLOAT_IMG:
-          bf=(b=*out)+size; do *b=roundf(*iif++); while(++b<bf);
-          if(anyblank)
-            {b=*out; do {b[i]=isnan(iiif[i])?GAL_DATA_BLANK_UCHAR:b[i];}
-              while(++i!=size);}
-          return;
-        case DOUBLE_IMG:
-          bf=(b=*out)+size; do *b=round(*id++); while(++b<bf);
-          if(anyblank)
-            {b=*out; do {b[i]=isnan(iid[i])?GAL_DATA_BLANK_UCHAR:b[i];}
-              while(++i!=size);}
-          return;
-        default:
-          error(EXIT_FAILURE, 0, "a bug!  In gal_fits_change_type "
-                "(fitsarrayvv.c). BITPIX=%d of input not recognized. "
-                "Please contact us so we can fix it", inbitpix);
-        }
-      break;
-
-    case SHORT_IMG:
-      switch(inbitpix)
-        {
-        case BYTE_IMG:
-          sf=(s=*out)+size; do *s=*ib++; while(++s<sf);
-          if(anyblank)
-            {s=*out; do {s[i]=(iib[i]==GAL_DATA_BLANK_UCHAR)
-                         ?GAL_DATA_BLANK_SHORT:s[i];}
-              while(++i!=size);}
-          return;
-        case SHORT_IMG:
-          sf=(s=*out)+size; do *s=*is++; while(++s<sf); return;
-        case LONG_IMG:
-          sf=(s=*out)+size; do *s=*il++; while(++s<sf);
-          if(anyblank)
-            {s=*out; do {s[i]=(iil[i]==GAL_DATA_BLANK_LONG)
-                         ?GAL_DATA_BLANK_SHORT:s[i];}
-              while(++i!=size);}
-          return;
-        case LONGLONG_IMG:
-          sf=(s=*out)+size; do *s=*iL++; while(++s<sf);
-          if(anyblank)
-            {s=*out; do {s[i]=(iiL[i]==GAL_DATA_BLANK_LONGLONG)
-                         ?GAL_DATA_BLANK_SHORT:s[i];}
-              while(++i!=size);}
-          return;
-        case FLOAT_IMG:
-          sf=(s=*out)+size; do *s=roundf(*iif++); while(++s<sf);
-          if(anyblank)
-            {s=*out; do {s[i]=isnan(iiif[i])?GAL_DATA_BLANK_SHORT:s[i];}
-              while(++i!=size);}
-          return;
-        case DOUBLE_IMG:
-          sf=(s=*out)+size; do *s=round(*id++); while(++s<sf);
-          if(anyblank)
-            {s=*out; do {s[i]=isnan(iid[i])?GAL_DATA_BLANK_SHORT:s[i];}
-              while(++i!=size);}
-          return;
-        default:
-          error(EXIT_FAILURE, 0, "a bug!  In gal_fits_change_type "
-                "(fitsarrayvv.c).  BITPIX=%d of input not recognized. "
-                "Please contact us so we can fix it", inbitpix);
-        }
-      break;
-
-    case LONG_IMG:
-      switch(inbitpix)
-        {
-        case BYTE_IMG:
-          lf=(l=*out)+size; do *l=*ib++; while(++l<lf);
-          if(anyblank)
-            {l=*out; do {l[i]=(iib[i]==GAL_DATA_BLANK_UCHAR)
-                         ?GAL_DATA_BLANK_LONG:l[i];}
-              while(++i!=size);}
-          return;
-        case SHORT_IMG:
-          lf=(l=*out)+size; do *l=*is++; while(++l<lf);
-          if(anyblank)
-            {l=*out; do {l[i]=(iis[i]==GAL_DATA_BLANK_SHORT)
-                         ?GAL_DATA_BLANK_LONG:l[i];}
-              while(++i!=size);}
-          return;
-        case LONG_IMG:
-          lf=(l=*out)+size; do *l=*il++; while(++l<lf); return;
-        case LONGLONG_IMG:
-          lf=(l=*out)+size; do *l=*iL++; while(++l<lf);
-          if(anyblank)
-            {l=*out; do {l[i]=(iiL[i]==GAL_DATA_BLANK_LONGLONG)
-                         ?GAL_DATA_BLANK_LONG:l[i];}
-              while(++i!=size);}
-          return;
-        case FLOAT_IMG:
-          lf=(l=*out)+size; do *l=roundf(*iif++); while(++l<lf);
-          if(anyblank)
-            {l=*out; do {l[i]=isnan(iiif[i])?GAL_DATA_BLANK_LONG:l[i];}
-              while(++i!=size);}
-          return;
-        case DOUBLE_IMG:
-          lf=(l=*out)+size; do *l=round(*id++); while(++l<lf);
-          if(anyblank)
-            {l=*out; do {l[i]=isnan(iid[i])?GAL_DATA_BLANK_LONG:l[i];}
-              while(++i!=size);}
-          return;
-        default:
-          error(EXIT_FAILURE, 0, "a bug!  In gal_fits_change_type "
-                "(fitsarrayvv.c).  BITPIX=%d of input not recognized. "
-                "Please contact us so we can fix it", inbitpix);
-        }
-      break;
-
-    case LONGLONG_IMG:
-      switch(inbitpix)
-        {
-        case BYTE_IMG:
-          Lf=(L=*out)+size; do *L=*ib++; while(++L<Lf);
-          if(anyblank)
-            {L=*out; do {L[i]=(iib[i]==GAL_DATA_BLANK_UCHAR)
-                         ?GAL_DATA_BLANK_LONGLONG:L[i];}
-              while(++i!=size);}
-          return;
-        case SHORT_IMG:
-          Lf=(L=*out)+size; do *L=*is++; while(++L<Lf);
-          if(anyblank)
-            {L=*out; do {L[i]=(iis[i]==GAL_DATA_BLANK_SHORT)
-                         ?GAL_DATA_BLANK_LONGLONG:L[i];}
-              while(++i!=size);}
-          return;
-        case LONG_IMG:
-          Lf=(L=*out)+size; do *L=*il++; while(++L<Lf);
-          if(anyblank)
-            {L=*out; do {L[i]=(iil[i]==GAL_DATA_BLANK_LONG)
-                         ?GAL_DATA_BLANK_LONGLONG:L[i];}
-              while(++i!=size);}
-          return;
-        case LONGLONG_IMG:
-          Lf=(L=*out)+size; do *L=*iL++; while(++L<Lf); return;
-        case FLOAT_IMG:
-          Lf=(L=*out)+size; do *L=roundf(*iif++); while(++L<Lf);
-          if(anyblank)
-            {L=*out; do {L[i]=isnan(iiif[i])?GAL_DATA_BLANK_LONGLONG:L[i];}
-              while(++i!=size);}
-          return;
-        case DOUBLE_IMG:
-          Lf=(L=*out)+size; do *L=round(*id++); while(++L<Lf);
-          if(anyblank)
-            {L=*out; do {L[i]=isnan(iid[i])?GAL_DATA_BLANK_LONGLONG:L[i];}
-              while(++i!=size);}
-          return;
-        default:
-          error(EXIT_FAILURE, 0, "a bug!  In gal_fits_change_type "
-                "(fitsarrayvv.c).  BITPIX=%d of input not recognized. "
-                "Please contact us so we can fix it", inbitpix);
-        }
-      break;
-
-    case FLOAT_IMG:
-      switch(inbitpix)
-        {
-        case BYTE_IMG:
-          ff=(f=*out)+size; do *f=*ib++; while(++f<ff);
-          if(anyblank)
-            {f=*out; do {f[i]=iib[i]==GAL_DATA_BLANK_UCHAR
-                         ?GAL_DATA_BLANK_FLOAT:f[i];}
-              while(++i!=size);}
-          return;
-        case SHORT_IMG:
-          ff=(f=*out)+size; do *f=*is++; while(++f<ff);
-          if(anyblank)
-            {f=*out; do {f[i]=iis[i]==GAL_DATA_BLANK_SHORT
-                         ?GAL_DATA_BLANK_FLOAT:f[i];}
-              while(++i!=size);}
-          return;
-        case LONG_IMG:
-          ff=(f=*out)+size; do *f=*il++; while(++f<ff);
-          if(anyblank)
-            {f=*out; do {f[i]=iil[i]==GAL_DATA_BLANK_LONG
-                         ?GAL_DATA_BLANK_FLOAT:f[i];}
-              while(++i!=size);}
-          return;
-        case LONGLONG_IMG:
-          ff=(f=*out)+size; do *f=*iL++; while(++f<ff);
-          if(anyblank)
-            {f=*out; do {f[i]=iiL[i]==GAL_DATA_BLANK_LONGLONG
-                         ?GAL_DATA_BLANK_FLOAT:f[i];}
-              while(++i!=size);}
-          return;
-        case FLOAT_IMG:
-          ff=(f=*out)+size; do *f=*iif++; while(++f<ff); return;
-        case DOUBLE_IMG:
-          ff=(f=*out)+size; do *f=*id++; while(++f<ff); return;
-        default:
-          error(EXIT_FAILURE, 0, "a bug!  In gal_fits_change_type "
-                "(fitsarrayvv.c).  BITPIX=%d of input not recognized. "
-                "Please contact us so we can fix it", inbitpix);
-        }
-      break;
-
-    case DOUBLE_IMG:
-      switch(inbitpix)
-        {
-        case BYTE_IMG:
-          df=(d=*out)+size; do *d=*ib++; while(++d<df);
-          if(anyblank)
-            {d=*out; do {d[i]=iib[i]==GAL_DATA_BLANK_UCHAR
-                         ?GAL_DATA_BLANK_FLOAT:d[i];}
-              while(++i!=size);}
-          return;
-        case SHORT_IMG:
-          df=(d=*out)+size; do *d=*is++; while(++d<df);
-          if(anyblank)
-            {d=*out; do {d[i]=iis[i]==GAL_DATA_BLANK_SHORT
-                         ?GAL_DATA_BLANK_FLOAT:d[i];}
-              while(++i!=size);}
-          return;
-        case LONG_IMG:
-          df=(d=*out)+size; do *d=*il++; while(++d<df);
-          if(anyblank)
-            {d=*out; do {d[i]=iil[i]==GAL_DATA_BLANK_LONG
-                         ?GAL_DATA_BLANK_FLOAT:d[i];}
-              while(++i!=size);}
-          return;
-        case LONGLONG_IMG:
-          df=(d=*out)+size; do *d=*iL++; while(++d<df);
-          if(anyblank)
-            {d=*out; do {d[i]=iiL[i]==GAL_DATA_BLANK_LONGLONG
-                         ?GAL_DATA_BLANK_FLOAT:d[i];}
-              while(++i!=size);}
-          return;
-        case FLOAT_IMG:
-          df=(d=*out)+size; do *d=*iif++; while(++d<df); return;
-        case DOUBLE_IMG:
-          df=(d=*out)+size; do *d=*id++; while(++d<df); return;
-        default:
-          error(EXIT_FAILURE, 0, "a bug!  In gal_fits_change_type "
-                "(fitsarrayvv.c).  BITPIX=%d of input not recognized. "
-                "Please contact us so we can fix it", inbitpix);
-        }
-      break;
-
-
-    default:
-      error(EXIT_FAILURE, 0, "a bug! Output Bitpix value of %d is not "
-            "recognized. This should not happen here "
-            "(gal_fits_change_type in fitsarrayvv.c). Please "
-            "contact us to see how this happened", outbitpix);
-    }
-}
-
 
 
 
@@ -836,7 +453,7 @@ gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
 
 
 /*************************************************************
- **************      Number of extensions:     ***************
+ **************        Get information         ***************
  *************************************************************/
 void
 gal_fits_num_hdus(char *filename, int *numhdu)
@@ -861,6 +478,40 @@ gal_fits_num_hdus(char *filename, int *numhdu)
 
 
 
+/* Note that the FITS standard defines any array as an `image',
+   irrespective of how many dimensions it has. */
+void
+gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, long **dsize)
+{
+  size_t i;
+  int bitpix, status=0, naxis;
+  long naxes[GAL_DATA_MAXDIM];
+
+  /* Get the BITPIX, number of dimensions and size of each dimension. */
+  if( fits_get_img_param(fptr, GAL_DATA_MAXDIM, &bitpix, &naxis,
+                         naxes, &status) )
+    gal_fits_io_error(status, NULL);
+  *ndim=naxis;
+
+  /* Convert bitpix to Gnuastro's known types. */
+  *type=gal_fits_bitpix_to_type(bitpix);
+
+  /* Allocate space for the size along each dimension. */
+  errno=0;
+  *dsize=malloc( *ndim * sizeof **dsize );
+  if(*dsize==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for dsize in gal_fits_img_info",
+          *ndim * sizeof **dsize);
+
+  /* Put the size of each dimention into the output array. */
+  for(i=0;i<*ndim;++i)
+    (*dsize)[i]=naxes[i];
+}
+
+
+
+
+
 
 
 
@@ -877,7 +528,7 @@ gal_fits_num_hdus(char *filename, int *numhdu)
 
 
 /**************************************************************/
-/**********       Check FITS image HDUs:      ************/
+/**********                  HDU                   ************/
 /**************************************************************/
 static char *
 hdutypestring(int hdutype)
@@ -926,10 +577,9 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
     gal_fits_io_error(status, "reading this FITS file");
   fptr=*outfptr;
 
-  /* Check the Type of the given HDU: */
+  /* Check the type of the given HDU: */
   if (fits_get_hdu_type(fptr, &hdutype, &status) )
     gal_fits_io_error(status, NULL);
-
 
   /* Check if the type of the HDU is the expected type. We could have
      written these as && conditions, but this is easier to read, it makes
@@ -955,6 +605,24 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/**********            Header keywords             ************/
+/**************************************************************/
 /* Read keywords from a FITS file. The gal_fits_key pointer is an array of
    gal_fits_key structures, which keep the basic information for each
    keyword that is to be read and also stores the value in the appropriate
@@ -966,8 +634,7 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
    `gal_fits_key' structure (to be `FLEN_VALUE' characters, `FLEN_VALUE' is
    defined by CFITSIO). So if the value is necessary where `gal_fits_key'
    is no longer available, then you have to allocate space dynamically and
-   copy the string there.
-*/
+   copy the string there. */
 void
 gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
                        size_t num)
@@ -997,37 +664,37 @@ gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
       keys[i].status=0;
 
       /* Set the value-pointer based on the required type. */
-      switch(keys[i].datatype)
+      switch(keys[i].type)
         {
-        case TSTRING:
-          valueptr=keys[i].str;
-          break;
-        case TBYTE:
+        case GAL_DATA_TYPE_UCHAR:
           valueptr=&keys[i].u;
           break;
-        case TSHORT:
+        case GAL_DATA_TYPE_STRING:
+          valueptr=keys[i].str;
+          break;
+        case GAL_DATA_TYPE_SHORT:
           valueptr=&keys[i].s;
           break;
-        case TLONG:
+        case GAL_DATA_TYPE_LONG:
           valueptr=&keys[i].l;
           break;
-        case TLONGLONG:
+        case GAL_DATA_TYPE_LONGLONG:
           valueptr=&keys[i].L;
           break;
-        case TFLOAT:
+        case GAL_DATA_TYPE_FLOAT:
           valueptr=&keys[i].f;
           break;
-        case TDOUBLE:
+        case GAL_DATA_TYPE_DOUBLE:
           valueptr=&keys[i].d;
           break;
         default:
           error(EXIT_FAILURE, 0, "the value of keys[%zu].datatype (=%d) "
-                "is not recognized", i, keys[i].datatype);
+                "is not recognized", i, keys[i].type);
         }
 
       /* Read the keyword and place its value in the poitner. */
-      fits_read_key(fptr, keys[i].datatype, keys[i].keyname,
-                    valueptr, NULL, &keys[i].status);
+      fits_read_key(fptr, gal_fits_type_to_datatype(keys[i].type),
+                    keys[i].keyname, valueptr, NULL, &keys[i].status);
 
 
       /* In some cases, the caller might be fine with some kinds of errors,
@@ -1058,30 +725,12 @@ gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************************************************************
- ******************         Header          ******************
- *************************************************************/
 /* Add on keyword to the list of header keywords that need to be added
    to a FITS file. In the end, the keywords will have to be freed, so
    it is important to know before hand if they were allocated or
    not. If not, they don't need to be freed. */
 void
-gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,
+gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int type,
                        char *keyname, int kfree, void *value, int vfree,
                        char *comment, int cfree, char *unit)
 {
@@ -1093,7 +742,7 @@ gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
           "linkedlist: new element in gal_fits_key_ll");
-  newnode->datatype=datatype;
+  newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
   newnode->comment=comment;
@@ -1111,7 +760,7 @@ gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,
 
 
 void
-gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int datatype,
+gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int type,
                            char *keyname, int kfree, void *value, int vfree,
                            char *comment, int cfree, char *unit)
 {
@@ -1123,7 +772,7 @@ gal_fits_add_to_key_ll_end(struct gal_fits_key_ll **list, int datatype,
   if(newnode==NULL)
     error(EXIT_FAILURE, errno,
           "linkedlist: new element in gal_fits_key_ll");
-  newnode->datatype=datatype;
+  newnode->type=type;
   newnode->keyname=keyname;
   newnode->value=value;
   newnode->comment=comment;
@@ -1271,14 +920,14 @@ gal_fits_update_keys(fitsfile *fptr, struct gal_fits_key_ll **keylist)
       /* Write the information: */
       if(tmp->value)
         {
-          if( fits_update_key(fptr, tmp->datatype, tmp->keyname,
-                              tmp->value, tmp->comment, &status) )
+          if( fits_update_key(fptr, gal_fits_type_to_datatype(tmp->type),
+                              tmp->keyname, tmp->value, tmp->comment,
+                              &status) )
             gal_fits_io_error(status, NULL);
         }
       else
         {
-          if(fits_update_key_null(fptr, tmp->keyname, tmp->comment,
-                                  &status))
+          if(fits_update_key_null(fptr, tmp->keyname, tmp->comment, &status))
             gal_fits_io_error(status, NULL);
         }
       if(tmp->unit && fits_write_key_unit(fptr, tmp->keyname,
@@ -1318,7 +967,7 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
      defined. Sometime in the future were everyone has moved to more
      recent versions of WCSLIB, we can remove this macro and its check
      in configure.ac.*/
-#ifdef HAVE_WCSLIB_VERSION
+#ifdef GAL_CONFIG_HAVE_WCSLIB_VERSION
   int wcslibvers[3];
   char wcslibversion[20];
   const char *wcslibversion_const;
@@ -1359,7 +1008,7 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
                   "CFITSIO version.", &status);
 
   /* Write the WCSLIB version */
-#ifdef HAVE_WCSLIB_VERSION
+#ifdef GAL_CONFIG_HAVE_WCSLIB_VERSION
   wcslibversion_const=wcslib_version(wcslibvers);
   strcpy(wcslibversion, wcslibversion_const);
   fits_update_key(fptr, TSTRING, "WCSLIB", wcslibversion,
@@ -1400,8 +1049,11 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
 
 
 
+
+
+
 /*************************************************************
- ***********         FITS to array functions:      ***********
+ ***********       Read WCS from FITS pointer      ***********
  *************************************************************/
 /* Read the WCS information from the header. Unfortunately, WCS lib is
    not thread safe, so it needs a mutex. In case you are not using
@@ -1524,56 +1176,6 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
 
 
 
-/* Read a FITS image into an array corresponding to fitstype and also
-   save the size of the array.
-
-   If the image has any null pixels, their number is returned by this
-   function. The value that is placed for those pixels is defined by
-   the macros in fitsarrayvv.h and depends on the type of the data.*/
-int
-gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
-                      void **array, size_t *s0, size_t *s1)
-{
-  void *bitblank;
-  fitsfile *fptr;
-  long naxes[2], fpixel[]={1,1};
-  int status=0, anyblank=0, type;
-
-  /* Check HDU for realistic conditions: */
-  gal_fits_read_hdu(filename, hdu, 0, &fptr);
-
-  /* Get the bitpix and size of the image: */
-  gal_fits_img_bitpix_size(fptr, bitpix, naxes);
-  *s0=naxes[1];
-  *s1=naxes[0];
-
-  /* Allocate space for the array. */
-  type=gal_fits_bitpix_to_type(*bitpix);
-  bitblank=gal_data_alloc_blank(type);
-  *array=gal_data_alloc(type, *s0 * *s1);
-
-  /* Read the image into the allocated array: */
-  fits_read_pix(fptr, gal_fits_type_to_datatype(type), fpixel,
-                *s0 * *s1, bitblank, *array, &anyblank, &status);
-  if(status) gal_fits_io_error(status, NULL);
-  free(bitblank);
-
-  /* Close the FITS file: */
-  fits_close_file(fptr, &status);
-  gal_fits_io_error(status, NULL);
-
-  /* Return the number of blank pixels: */
-  return anyblank;
-}
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1586,58 +1188,256 @@ gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
 
 
 /*************************************************************
- ******************      Array to FITS      ******************
+ ***********            Array functions            ***********
  *************************************************************/
-void
-gal_fits_array_to_file(char *filename, char *extname, int bitpix, void *array,
-                       size_t s0, size_t s1, int anyblank, struct wcsprm *wcs,
-                       struct gal_fits_key_ll *headers, char *spack_string)
+
+/* Read a FITS image into an array corresponding to fitstype and also
+   save the size of the array.
+
+   If the image has any null pixels, their number is returned by this
+   function. The value that is placed for those pixels is defined by
+   the macros in fitsarrayvv.h and depends on the type of the data.*/
+gal_data_t *
+gal_fits_read_img_hdu(char *filename, char *hdu)
 {
-  int nkeyrec;
   void *blank;
+  size_t i, ndim;
+  fitsfile *fptr;
+  gal_data_t *data;
+  int status=0, type;
+  long *fpixel, *dsize;
+
+
+  /* Check HDU for realistic conditions: */
+  gal_fits_read_hdu(filename, hdu, 0, &fptr);
+
+
+  /* Get the info and allocate the data structure. */
+  gal_fits_img_info(fptr, &type, &ndim, &dsize);
+
+
+  /* Check if there is any dimensions (the first header can sometimes have
+     no images). */
+  if(ndim==0)
+    error(EXIT_FAILURE, 0, "%s (hdu: %s) has 0 dimensions! The most common "
+          "cause for this is a wrongly specified HDU: in some FITS images, "
+          "the first HDU doesn't have any data. So probably reading the "
+          "second HDU (with `--hdu=1' or `-h1') will solve the problem. Note "
+          "that currently HDU counting starts from 0." , filename, hdu);
+
+
+  /* Set the fpixel array (first pixel in all dimensions): */
+  errno=0;
+  fpixel=malloc(ndim*sizeof *fpixel);
+  if(fpixel==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for fpixel in gal_fits_read_img_hdu",
+          ndim*sizeof *fpixel);
+  for(i=0;i<ndim;++i) fpixel[i]=1;
+
+
+  /* Allocate the space for the array and for the blank values. */
+  printf("alloc for %s\n", filename);
+  data=gal_data_alloc(type, (long)ndim, dsize, 0, 1);
+  blank=gal_data_alloc_blank(type);
+  free(dsize);
+
+
+  /* Read the image into the allocated array: */
+  fits_read_pix(fptr, gal_fits_type_to_datatype(type), fpixel,
+                data->size, blank, data->array, &data->anyblank, &status);
+  if(status) gal_fits_io_error(status, NULL);
+  free(fpixel);
+  free(blank);
+
+
+  /* Close the FITS file, and return the data pointer */
+  fits_close_file(fptr, &status);
+  gal_fits_io_error(status, NULL);
+  return data;
+}
+
+
+
+
+
+/* The user has specified an input file and a mask file. In the
+   processing, all masked pixels will be converted to NaN pixels in
+   the input image so we only have to deal with one array. Also since
+   all processing is done on floating point arrays, the input is
+   converted to floating point, irrespective of its input type. The
+   original input bitpix will be stored so if you want to, you can
+   return it back to the input type if you please. */
+gal_data_t *
+gal_fits_read_to_type(char *inputname, char *maskname, char *inhdu,
+                      char *mhdu, int type)
+{
+  gal_data_t *in, *mask, *converted;
+
+  /* Read the specified input image HDU. */
+  in=gal_fits_read_img_hdu(inputname, inhdu);
+
+  /* If the input had another type, convert it to float. */
+  if(in->type!=type)
+    {
+      converted=gal_data_copy_to_new_type(in, type);
+      gal_data_free(in);
+      in=converted;
+    }
+
+  /* If a mask was specified, read it as a float image, then set all
+     the corresponding pixels of the input image to NaN. */
+  if(maskname)
+    {
+      /* Read the mask HDU. */
+      mask=gal_fits_read_img_hdu(maskname, mhdu);
+
+      /* Apply the mask on the input. */
+      gal_data_apply_mask(in, mask);
+
+      /* Free the mask space */
+      gal_data_free(mask);
+    }
+
+  return in;
+}
+
+
+
+
+
+gal_data_t *
+gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,
+                           size_t *ins0, size_t *ins1)
+{
+  size_t i;
+  int check=0;
+  double sum=0;
+  gal_data_t *kernel;
+  float *f, *fp, tmp;
+
+  /* Read the image as a float */
+  kernel=gal_fits_read_to_type(inputname, NULL, inhdu, NULL,
+                                GAL_DATA_TYPE_FLOAT);
+
+  /* Check if the size along each dimension of the kernel is an odd
+     number. If they are all an odd number, then the for each dimension,
+     check will be incremented once. */
+  for(i=0;i<kernel->ndim;++i)
+    check=kernel->dsize[i]%2;
+  if(check!=kernel->ndim)
+    error(EXIT_FAILURE, 0, "the kernel image has to have an odd number "
+          "of pixels in all dimensions (there has to be one element/pixel "
+          "in the center). At least one of the dimensions of %s (hdu: %s) "
+          "doesn't have an odd number of pixels", inputname, inhdu);
+
+  /* If there are any NaN pixels, set them to zero and normalize it. There
+     are no blank pixels any more.*/
+  fp=(f=kernel->array)+kernel->size;
+  do
+    {
+      if(isnan(*f)) *f=0.0f;
+      else          sum+=*f;
+    }
+  while(++f<fp);
+  kernel->anyblank=0;
+  f=kernel->array; do *f++ *= 1/sum; while(f<fp);
+
+  /* Flip the kernel about the center (necessary for non-symmetric
+     kernels). */
+  f=kernel->array;
+  for(i=0;i<kernel->size/2;++i)
+    {
+      tmp=f[i];
+      f[i]=f[ kernel->size - i - 1 ];
+      f[ kernel->size - i - 1 ]=tmp;
+    }
+
+  /* Return the kernel*/
+  return kernel;
+}
+
+
+
+
+
+/* This function will write all the data array information (including its
+   WCS information) into a FITS file, but will not close it. Instead it
+   will pass along the FITS pointer for further modification. */
+fitsfile *
+gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname)
+{
+  void *blank;
+  long fpixel=1;
   fitsfile *fptr;
   char *wcsheader;
-  int status=0, type, datatype;
-  long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
+  int nkeyrec, status=0, datatype=gal_fits_type_to_datatype(data->type);
 
-  type=gal_fits_bitpix_to_type(bitpix);
-  datatype=gal_fits_type_to_datatype(type);
-  nelements=naxes[0]*naxes[1];
-
+  /* Check if the file already exists. If it does, we want to add the array
+     as a new extension. */
   if(access(filename,F_OK) != -1 )
     fits_open_file(&fptr,filename, READWRITE, &status);
   else
     fits_create_file(&fptr, filename, &status);
 
-  fits_create_img(fptr, bitpix, naxis, naxes, &status);
-  fits_write_img(fptr, datatype, fpixel, nelements, array, &status);
+  /* Create the FITS file and put the image into it. */
+  fits_create_img(fptr, gal_fits_type_to_bitpix(data->type),
+                  data->ndim, data->dsize, &status);
+  fits_write_img(fptr, datatype, fpixel, data->size, data->array, &status);
 
-  if(anyblank)
-    if(bitpix==BYTE_IMG || bitpix==SHORT_IMG
-       || bitpix==LONG_IMG || bitpix==LONGLONG_IMG)
+  /* If we have blank pixels, we need to define a BLANK keyword when we are
+     dealing with integer types. */
+  if(data->anyblank)
+    if( data->type==GAL_DATA_TYPE_UCHAR || data->type==GAL_DATA_TYPE_CHAR
+        || data->type==GAL_DATA_TYPE_USHORT || data->type==GAL_DATA_TYPE_SHORT
+        || data->type==GAL_DATA_TYPE_UINT || data->type==GAL_DATA_TYPE_INT
+        || data->type==GAL_DATA_TYPE_ULONG || data->type==GAL_DATA_TYPE_LONG
+        || data->type==GAL_DATA_TYPE_LONGLONG)
       {
-        blank=gal_data_alloc_blank(type);
+        blank=gal_data_alloc_blank(data->type);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )
           gal_fits_io_error(status, "adding the BLANK keyword");
         free(blank);
       }
 
+  /* Write the extension name to the header. */
   fits_write_key(fptr, TSTRING, "EXTNAME", extname, "", &status);
   gal_fits_io_error(status, NULL);
 
-  if(wcs)
+  /* If a WCS structure is present, write it in */
+  if(data->wcs)
     {
       /* Convert the WCS information to text. */
-      status=wcshdo(WCSHDO_safe, wcs, &nkeyrec, &wcsheader);
+      status=wcshdo(WCSHDO_safe, data->wcs, &nkeyrec, &wcsheader);
       if(status)
         error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s", status,
               wcs_errmsg[status]);
       gal_fits_add_wcs_to_header(fptr, wcsheader, nkeyrec);
     }
 
+  /* Report any errors if we had any */
+  gal_fits_io_error(status, NULL);
+  return fptr;
+}
+
+
+
+
+
+void
+gal_fits_write_img(gal_data_t *data, char *filename, char *extname,
+                   struct gal_fits_key_ll *headers, char *spack_string)
+{
+  int status=0;
+  fitsfile *fptr;
+
+  /* Write the data array into a FITS file and keep it open: */
+  fptr=gal_fits_write_img_fitsptr(data, filename, extname);
+
+  /* Write all the headers and the version information. */
   gal_fits_write_keys_version(fptr, headers, spack_string);
 
+  /* Close the FITS file. */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
 }
@@ -1646,52 +1446,35 @@ gal_fits_array_to_file(char *filename, char *extname, int bitpix, void *array,
 
 
 
-/* `atof' stands for "array to file". This is essentially the same as
-   `gal_fits_array_to_file' except that the WCS structure's CRPIX values
-   have changed. */
 void
-gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix, void *array,
-                          size_t s0, size_t s1, char *wcsheader, int wcsnkeyrec,
-                          double *crpix, char *spack_string)
+gal_fits_write_img_update_crpix(gal_data_t *data, char *filename,
+                                char *extname,
+                                struct gal_fits_key_ll *headers,
+                                double *crpix, char *spack_string)
 {
+  int status=0;
   fitsfile *fptr;
-  int status=0, type, datatype;
-  long fpixel=1, naxis=2, nelements, naxes[]={s1,s0};
 
-  type=gal_fits_bitpix_to_type(bitpix);
-  datatype=gal_fits_type_to_datatype(type);
-  nelements=naxes[0]*naxes[1];
+  /* Write the data array into a FITS file and keep it open: */
+  fptr=gal_fits_write_img_fitsptr(data, filename, extname);
 
-  if(access(filename,F_OK) != -1 )
-    fits_open_file(&fptr,filename, READWRITE, &status);
-  else
-    fits_create_file(&fptr, filename, &status);
-
-  fits_create_img(fptr, bitpix, naxis, naxes, &status);
-  fits_write_img(fptr, datatype, fpixel, nelements, array, &status);
-
-  fits_write_key(fptr, TSTRING, "EXTNAME", hdu, "", &status);
-  gal_fits_io_error(status, NULL);
-
-  fits_delete_key(fptr, "COMMENT", &status);
-  fits_delete_key(fptr, "COMMENT", &status);
-  gal_fits_io_error(status, NULL);
-
-  if(wcsheader)
+  /* Update the CRPIX keywords. Note that we don't want to change the
+     values in the WCS information of gal_data_t. Because, it often happens
+     that things are done in parallel, so we don't want to touch the
+     original version, we just want to change the copied version. */
+  if(crpix)
     {
-      gal_fits_add_wcs_to_header(fptr, wcsheader, wcsnkeyrec);
-      if(crpix)
-        {
-          fits_update_key(fptr, TDOUBLE, "CRPIX1", &crpix[0],
-                          NULL, &status);
-          fits_update_key(fptr, TDOUBLE, "CRPIX2", &crpix[1],
-                          NULL, &status);
-          gal_fits_io_error(status, NULL);
-        }
+      fits_update_key(fptr, TDOUBLE, "CRPIX1", &crpix[0],
+                      NULL, &status);
+      fits_update_key(fptr, TDOUBLE, "CRPIX2", &crpix[1],
+                      NULL, &status);
+      gal_fits_io_error(status, NULL);
     }
 
+  /* Write all the headers and the version information. */
   gal_fits_write_keys_version(fptr, NULL, spack_string);
 
+  /* Close the file and return. */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
 }
@@ -1773,271 +1556,4 @@ gal_fits_table_type(fitsfile *fptr)
         "for some reason, the control of `gal_fits_table_type' has reached "
         "the end of the function! This must not happen", PACKAGE_BUGREPORT);
   return -1;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/**********          Check prepare file            ************/
-/**************************************************************/
-/* We have the name of the input file. But in most cases, the files
-   that should be used (for example a mask image) are other extensions
-   in the same file. So the user only has to give the HDU. The job of
-   this function is to determine which is the case and set othername
-   to the appropriate value. */
-void
-gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
-                          char **othername, char *ohdu, int ohduset,
-                          char *type)
-{
-  if(othernameset)
-    {
-      /* In some cases, for example a mask image, both the name and
-         HDU are optional. So just to be safe, we will check this all
-         the time. */
-      if(ohduset==0)
-        error(EXIT_FAILURE, 0, "a %s image was specified (%s). However, "
-              "no HDU is given for it. Please add a HDU. If you regularly "
-              "use the same HDU as %s, you may consider adding it to "
-              "the configuration file. For more information, please see "
-              "the `Configuration files' section of the %s manual by "
-              "running ` info gnuastro ' on the command-line", type,
-              *othername, type, PACKAGE_NAME);
-      if(strcmp(inputname, *othername)==0)
-        {
-          if(strcmp(ohdu, inhdu)==0)
-            error(EXIT_FAILURE, 0, "the specified %s name and "
-                  "input image name (%s) are the same while the input "
-                  "image hdu name and mask hdu are also identical (%s)",
-                  type, inputname, inhdu);
-        }
-    }
-    else if(ohduset && strcmp(ohdu, inhdu))
-      *othername=inputname;
-    else
-      *othername=NULL;
-}
-
-
-
-
-
-/* The user has specified an input file and a mask file. In the
-   processing, all masked pixels will be converted to NaN pixels in
-   the input image so we only have to deal with one array. Also since
-   all processing is done on floating point arrays, the input is
-   converted to floating point, irrespective of its input type. The
-   original input bitpix will be stored so if you want to, you can
-   return it back to the input type if you please. */
-void
-gal_fits_file_to_float(char *inputname, char *maskname, char *inhdu,
-                       char *mhdu, float **img, int *inbitpix,
-                       int *anyblank, size_t *ins0, size_t *ins1)
-{
-  void *array;
-  int maskbitpix;
-  float *mask, *f, *ff, *fp;
-  size_t maskanyblank, s0, s1;
-
-  /* Read the input array and convert it to float. */
-  *anyblank=gal_fits_hdu_to_array(inputname, inhdu, inbitpix,
-                                  &array, ins0, ins1);
-  if(*inbitpix==FLOAT_IMG)
-    *img=array;
-  else
-    {
-      gal_fits_change_type(array, *inbitpix, *ins0 * *ins1, *anyblank,
-                                (void **)img, FLOAT_IMG);
-      free(array);
-    }
-
-  /* If a mask was specified, read it as a float image, then set all
-     the corresponding pixels of the input image to NaN. */
-  if(maskname)
-    {
-      maskanyblank=gal_fits_hdu_to_array(maskname, mhdu, &maskbitpix,
-                                         &array, &s0, &s1);
-
-      if(maskbitpix==FLOAT_IMG || maskbitpix==DOUBLE_IMG)
-        fprintf(stderr, "WARNING: the mask image (%s, hdu: %s) has a %s "
-                "precision floating point data type (BITPIX=%d). The mask "
-                "image is usually an integer type. Therefore this might "
-                "be due to a mistake in the inputs and the results might "
-                "not be what you intended. However, the program will not "
-                "abort and continue working only with zero valued pixels "
-                "in the given masked image.", maskname, mhdu,
-                maskbitpix==FLOAT_IMG ? "single" : "double", maskbitpix);
-
-      if(s0!=*ins0 || s1!=*ins1)
-        error(EXIT_FAILURE, 0, "the input image %s (hdu: %s) has size: "
-              "%zu x %zu. The mask image %s (hdu: %s) has size %zu x %zu. "
-              "The two images have to have the same size", inputname,
-              inhdu, *ins1, *ins0, maskname, mhdu, s1, s0);
-
-      if(maskbitpix==FLOAT_IMG)
-        mask=array;
-      else
-        {
-          gal_fits_change_type(array, maskbitpix, *ins0 * *ins1,
-                               maskanyblank, (void **)(&mask), FLOAT_IMG);
-          free(array);
-        }
-
-      ff=mask;
-      fp=(f=*img)+s0*s1;
-      do if(*ff++!=0.0f) {*f=NAN; ++(*anyblank);} while(++f<fp);
-      free(mask);
-    }
-}
-
-
-
-
-/* Similar to filetofloat, but for double type */
-void
-gal_fits_file_to_double(char *inputname, char *maskname, char *inhdu,
-                        char *mhdu, double **img, int *inbitpix,
-                        int *anyblank, size_t *ins0, size_t *ins1)
-{
-  void *array;
-  int maskbitpix;
-  double *mask, *f, *ff, *fp;
-  size_t maskanyblank, s0, s1;
-
-  /* Read the input array and convert it to double. */
-  *anyblank=gal_fits_hdu_to_array(inputname, inhdu, inbitpix,
-                                  &array, ins0, ins1);
-  if(*inbitpix==DOUBLE_IMG)
-    *img=array;
-  else
-    {
-      gal_fits_change_type(array, *inbitpix, *ins0 * *ins1, *anyblank,
-                                (void **)img, DOUBLE_IMG);
-      free(array);
-    }
-
-  /* If a mask was specified, read it as a double image, then set all
-     the corresponding pixels of the input image to NaN. */
-  if(maskname)
-    {
-      maskanyblank=gal_fits_hdu_to_array(maskname, mhdu, &maskbitpix,
-                                         &array, &s0, &s1);
-
-      if(maskbitpix==FLOAT_IMG || maskbitpix==DOUBLE_IMG)
-        fprintf(stderr, "WARNING: the mask image (%s, hdu: %s) has a %s "
-                "precision floating point data type (BITPIX=%d). The mask "
-                "image is usually an integer type. Therefore this might "
-                "be due to a mistake in the inputs and the results might "
-                "not be what you intended. However, the program will not "
-                "abort and continue working only with zero valued pixels in "
-                "the given masked image.", maskname, mhdu,
-                maskbitpix==FLOAT_IMG ? "single" : "double", maskbitpix);
-
-      if(s0!=*ins0 || s1!=*ins1)
-        error(EXIT_FAILURE, 0, "the input image %s (hdu: %s) has size: "
-              "%zu x %zu. The mask image %s (hdu: %s) has size %zu x %zu. "
-              "The two images have to have the same size", inputname,
-              inhdu, *ins1, *ins0, maskname, mhdu, s1, s0);
-
-      if(maskbitpix==DOUBLE_IMG)
-        mask=array;
-      else
-        {
-          gal_fits_change_type(array, maskbitpix, *ins0 * *ins1,
-                                    maskanyblank, (void **)(&mask),
-                                    DOUBLE_IMG);
-          free(array);
-        }
-
-      ff=mask;
-      fp=(f=*img)+s0*s1;
-      do if(*ff++!=0.0f) {*f=NAN; ++(*anyblank);} while(++f<fp);
-      free(mask);
-    }
-}
-
-
-
-
-
-void
-gal_fits_file_to_long(char *inputname, char *inhdu, long **img,
-                      int *inbitpix, int *anyblank, size_t *ins0,
-                      size_t *ins1)
-{
-  void *array;
-
-  /* Read the input array and convert it to float. */
-  *anyblank=gal_fits_hdu_to_array(inputname, inhdu, inbitpix,
-                                  &array, ins0, ins1);
-  if(*inbitpix==LONG_IMG)
-    *img=array;
-  else
-    {
-      gal_fits_change_type(array, *inbitpix, *ins0 * *ins1, *anyblank,
-                                (void **)img, LONG_IMG);
-      free(array);
-    }
-}
-
-
-
-
-
-void
-gal_fits_prep_float_kernel(char *inputname, char *inhdu, float **outkernel,
-                           size_t *ins0, size_t *ins1)
-{
-  size_t i, size;
-  double sum=0.0f;
-  int bitpix, anyblank;
-  float *f, *fp, *kernel, tmp;
-
-  /* Read the kernel as a float array: */
-  gal_fits_file_to_float(inputname, NULL, inhdu, NULL, outkernel, &bitpix,
-                              &anyblank, ins0, ins1);
-  size = *ins0 * *ins1;
-  kernel=*outkernel;
-
-  /* Simple sanity check: */
-  if(*ins0%2==0 || *ins1%2==0)
-    error(EXIT_FAILURE, 0, "the kernel image has to have an odd number "
-          "of pixels on both sides (there has to be on pixel in the "
-          "center). %s (hdu: %s) is %zu by %zu", inputname, inhdu,
-          *ins1, *ins0);
-
-  /* If there are any NaN pixels, set them to zero and normalize it.*/
-  fp=(f=kernel)+size;
-  do
-    {
-      if(isnan(*f)) *f=0.0f;
-      else          sum+=*f;
-    }
-  while(++f<fp);
-  f=kernel; do *f++ *= 1/sum; while(f<fp);
-
-  /* Flip the kernel: */
-  for(i=0;i<size/2;++i)
-    {
-      tmp=kernel[i];
-      kernel[i]=kernel[size-i-1];
-      kernel[size-i-1]=tmp;
-    }
 }

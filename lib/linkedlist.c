@@ -381,6 +381,24 @@ gal_linkedlist_num_in_stll(struct gal_linkedlist_stll *list)
 
 
 
+void
+gal_linkedlist_free_stll(struct gal_linkedlist_stll *list, int freevalue)
+{
+  struct gal_linkedlist_stll *tmp;
+  while(list!=NULL)
+    {
+      tmp=list->next;
+      if(freevalue)
+        free(list->v);
+      free(list);
+      list=tmp;
+    }
+}
+
+
+
+
+
 
 
 

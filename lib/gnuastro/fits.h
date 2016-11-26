@@ -23,6 +23,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_FITS_H__
 #define __GAL_FITS_H__
 
+/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+   defined. In the build process, installation information (in particular
+   `GAL_CONFIG_HAVE_WCSLIB_VERION' that we need in `fits.c') is kept in
+   `config.h'. When building a user's programs, this information is kept in
+   `gnuastro/config.h'. Note that all `.c' files must start with the
+   inclusion of `config.h' and that `gnuastro/config.h' is only created at
+   installation time (not present during the building of Gnuastro).*/
+#ifndef IN_GNUASTRO_BUILD
+#include <gnuastro/config.h>
+#endif
+
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 #include <math.h>
@@ -56,32 +67,13 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/*************************************************************
- ******************         Basic          *******************
- *************************************************************/
-void
-gal_fits_io_error(int status, char *message);
-
-int
-gal_fits_name_is_fits(char *name);
-
-int
-gal_fits_suffix_is_fits(char *suffix);
-
-
-
-
-
-/*************************************************************
- ******************         Header          ******************
- *************************************************************/
 /* To create a linked list of headers. */
 struct gal_fits_key_ll
 {
   int                    kfree;   /* ==1, free keyword name.   */
   int                    vfree;   /* ==1, free keyword value.  */
   int                    cfree;   /* ==1, free comment.        */
-  int                 datatype;   /* Keyword value datatype.   */
+  int                     type;   /* Keyword value type.       */
   char                *keyname;   /* Keyword Name.             */
   void                  *value;   /* Keyword value.            */
   char                *comment;   /* Keyword comment.          */
@@ -97,7 +89,7 @@ struct gal_fits_key
 {
   int            status;        /* CFITSIO status.        */
   char         *keyname;        /* Name of keyword.       */
-  int          datatype;        /* Type of keyword value. */
+  int              type;        /* Type of keyword value. */
   char  str[FLEN_VALUE];        /* String value.          */
   unsigned char       u;        /* Byte value.            */
   short               s;        /* Short integer value.   */
@@ -109,8 +101,82 @@ struct gal_fits_key
 
 
 
+/*************************************************************
+ **************        Reporting errors:       ***************
+ *************************************************************/
+void
+gal_fits_io_error(int status, char *message);
 
 
+
+
+
+/*************************************************************
+ **************           FITS names           ***************
+ *************************************************************/
+int
+gal_fits_name_is_fits(char *name);
+
+int
+gal_fits_suffix_is_fits(char *suffix);
+
+void
+gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
+                          char **othername, char *ohdu, int ohduset,
+                          char *type);
+
+
+
+/*************************************************************
+ **************           Type codes           ***************
+ *************************************************************/
+int
+gal_fits_bitpix_to_type(int bitpix);
+
+int
+gal_fits_type_to_bitpix(int type);
+
+int
+gal_fits_tform_to_type(char tform);
+
+int
+gal_fits_type_to_datatype(int type);
+
+int
+gal_fits_datatype_to_type(int type);
+
+
+
+
+
+/*************************************************************
+ **************        Get information         ***************
+ *************************************************************/
+void
+gal_fits_num_hdus(char *filename, int *numhdu);
+
+void
+gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, long **dsize);
+
+
+
+
+
+/**************************************************************/
+/**********                  HDU                   ************/
+/**************************************************************/
+
+void
+gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
+                  fitsfile **outfptr);
+
+
+
+
+
+/**************************************************************/
+/**********            Header keywords             ************/
+/**************************************************************/
 void
 gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *out,
                        size_t num);
@@ -144,71 +210,46 @@ gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
 
 
 /*************************************************************
- **************           Type codes           ***************
+ ***********       Read WCS from FITS pointer      ***********
  *************************************************************/
-int
-gal_fits_bitpix_to_type(int bitpix);
+void
+gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs, struct wcsprm **wcs,
+                               size_t hstartwcs, size_t hendwcs);
 
-int
-gal_fits_tform_to_type(char tform);
-
-int
-gal_fits_type_to_datatype(int type);
-
-int
-gal_fits_datatype_to_type(int type);
+void
+gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
+                  size_t hendwcs, int *nwcs, struct wcsprm **wcs);
 
 
 
 
 
 /*************************************************************
- ******************        Read/Write        *****************
+ ******************     Array functions      *****************
  *************************************************************/
-void
-gal_fits_convert_blank(void *array, int bitpix, size_t size, void *value);
+gal_data_t *
+gal_fits_read_img_hdu(char *filename, char *hdu);
+
+gal_data_t *
+gal_fits_read_to_type(char *inputname, char *maskname, char *inhdu,
+                      char *mhdu, int type);
+
+gal_data_t *
+gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,
+                           size_t *ins0, size_t *ins1);
+
+fitsfile *
+gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname);
 
 void
-gal_fits_blank_to_value(void *array, int datatype, size_t size, void *value);
+gal_fits_write_img(gal_data_t *data, char *filename, char *extname,
+                   struct gal_fits_key_ll *headers, char *spack_string);
 
 void
-gal_fits_img_bitpix_size(fitsfile *fptr, int *bitpix, long *naxis);
-
-void
-gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
-                  fitsfile **outfptr);
-
-void
-gal_fits_change_type(void *in, int inbitpix, size_t size, int anyblank,
-                     void **out, int outbitpix);
-
-void
-gal_fits_num_hdus(char *filename, int *numhdu);
-
-void
-gal_fits_read_wcs_from_pointer(fitsfile *fptr, int *nwcs,
-                               struct wcsprm **wcs,
-                               size_t hstart, size_t hend);
-
-void
-gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
-                  size_t hendwcs, int *nwcs, struct wcsprm **wcs);
-
-int
-gal_fits_hdu_to_array(char *filename, char *hdu, int *bitpix,
-                      void **array, size_t *s0, size_t *s1);
-
-void
-gal_fits_array_to_file(char *filename, char *hdu, int bitpix,
-                       void *array, size_t s0, size_t s1, int anyblank,
-                       struct wcsprm *wcs, struct gal_fits_key_ll *headers,
-                       char *spack_string);
-
-void
-gal_fits_atof_correct_wcs(char *filename, char *hdu, int bitpix,
-                          void *array, size_t s0, size_t s1,
-                          char *wcsheader, int wcsnkeyrec,
-                          double *crpix, char *spack_string);
+gal_fits_write_img_update_crpix(gal_data_t *data, char *filename,
+                                char *extname,
+                                struct gal_fits_key_ll *headers,
+                                double *crpix, char *spack_string);
 
 
 
@@ -223,40 +264,6 @@ gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
 int
 gal_fits_table_type(fitsfile *fptr);
 
-
-
-
-
-/**************************************************************/
-/**********          Check prepare file            ************/
-/**************************************************************/
-void
-gal_fits_file_or_ext_name(char *inputname, char *inhdu, int othernameset,
-                          char **othername, char *ohdu, int ohduset,
-                          char *type);
-
-void
-gal_fits_set_mask_name(char *inputname, char **maskname, char *inhdu,
-                       char *mhdu);
-
-void
-gal_fits_file_to_double(char *inputname, char *maskname, char *inhdu,
-                        char *mhdu, double **img, int *inbitpix,
-                        int *anyblank, size_t *ins0, size_t *ins1);
-
-void
-gal_fits_file_to_float(char *inputname, char *maskname, char *inhdu,
-                       char *mhdu, float **img, int *inbitpix,
-                       int *anyblank, size_t *ins0, size_t *ins1);
-
-void
-gal_fits_file_to_long(char *inputname, char *inhdu, long **img,
-                      int *inbitpix, int *anyblank, size_t *ins0,
-                      size_t *ins1);
-
-void
-gal_fits_prep_float_kernel(char *inputname, char *inhdu, float **kernel,
-                           size_t *ins0, size_t *ins1);
 
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageArithmetic - Do arithmetic operations on images.
-ImageArithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
+Arithmetic - Do arithmetic operations on images.
+Arithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -25,5 +25,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 void
 setparams(int argc, char *argv[], struct imgarithparams *p);
+
+void
+freeandreport(struct imgarithparams *p, struct timeval *t1);
 
 #endif

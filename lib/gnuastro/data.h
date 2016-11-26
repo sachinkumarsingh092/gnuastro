@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <limits.h>
 #include <stdint.h>
 
+#include <fitsio.h>             /* Only for the LONGLONG type */
 #include <wcslib/wcs.h>
 #include <gsl/gsl_complex.h>
 
@@ -56,7 +57,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* Macros: */
 
 /* The maximum dimensionality of datasets. */
-#define GAL_DATA_MAXDIM    30
+#define GAL_DATA_MAXDIM    999
 
 /* Blank values: Note that for the unsigned types or small types (like
    char), the maximum value is considered as a blank value, since the
@@ -108,33 +109,79 @@ enum gal_data_alltypes
 
 /* Main data structure
 
-   If mmaped==0, it is assumed that the data is allocated (using malloc).
+   If mmaped==0, it is assumed that the data is allocated (using
+   malloc). The `dsize' array is in the `long' type because CFITSIO uses
+   the long type and this will make it easier to call CFITSIO functions.
  */
 typedef struct
 {
   void    *array;      /* Array keeping data elements.             */
   int       type;      /* Type of data (from `gal_data_alltypes'). */
   size_t    ndim;      /* Number of dimensions in the array.       */
-  size_t size[GAL_DATA_MAXDIM]; /* Length along each dimension.    */
+  long    *dsize;      /* Size of array along each dimension.      */
+  size_t    size;      /* Total number of data-elements.           */
   int    mmapped;      /* ==1: not in physical RAM, it is mmap'd.  */
   char *mmapname;      /* File name of the mmap.                   */
   int   anyblank;      /* ==1: has blank values.                   */
+  int       nwcs;      /* for WCSLIB: no. coord. representations.  */
   struct wcsprm *wcs;  /* WCS information for this dataset.        */
-} gal_data;
+} gal_data_t;
 
 
 
 
 
-/* Functions */
+/*********************************************************************/
+/*************         Size and allocation         *******************/
+/*********************************************************************/
+int
+gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second);
+
 size_t
 gal_data_sizeof(int type);
 
 void *
-gal_data_alloc(int type, size_t size);
+gal_data_malloc_array(int type, size_t size);
 
 void *
+gal_data_calloc_array(int type, size_t size);
+
+gal_data_t *
+gal_data_alloc(int type, size_t ndim, long *dsize, int clear, int map);
+
+void
+gal_data_free(gal_data_t *data);
+
+
+
+
+
+
+/*************************************************************
+ **************          Blank data            ***************
+ *************************************************************/
+void *
 gal_data_alloc_blank(int type);
+
+void
+gal_data_apply_mask(gal_data_t *in, gal_data_t *mask);
+
+void
+gal_data_blank_to_value(gal_data_t *data, void *value);
+
+
+
+
+
+/*************************************************************
+ **************         Convert types          ***************
+ *************************************************************/
+int
+gal_data_out_type(gal_data_t *first, gal_data_t *second);
+
+gal_data_t *
+gal_data_copy_to_new_type(gal_data_t *in, int newtype);
+
 
 
 

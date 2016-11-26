@@ -29,7 +29,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 bin_PROGRAMS = astarithmetic
 
 astarithmetic_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-arithmetic.c arithmetic.h
+arithmetic.c arithmetic.h operands.c operands.h operators.c operators.h
 
 astarithmetic_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
 -lgnuastro

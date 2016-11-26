@@ -76,11 +76,61 @@ dist_infognuastro_DATA = $(top_srcdir)/doc/gnuastro-figures/*
 
 
 
-## Man pages: to keep things managable, sort the utilities alphabetically.
-dist_man_MANS = man/astarithmetic.1 man/astconvertt.1 man/astconvolve.1 \
-man/astcosmiccal.1 man/astheader.1 man/astimgcrop.1 man/astimgstat.1    \
-man/astimgwarp.1 man/astmkcatalog.1 man/astmknoise.1 man/astmkprof.1    \
-man/astnoisechisel.1 man/astsubtractsky.1 man/asttable.1
+## Man pages to build
+## ==================
+##
+## Installing all the programs is not mandatory in Gnuastro. If a program
+## is not built, we shouldn't build its man-page either.
+if COND_ARITHMETIC
+  MAYBE_ARITHMETIC_MAN = man/astarithmetic.1
+endif
+if COND_CONVERTT
+  MAYBE_CONVERTT_MAN = man/astconvertt.1
+endif
+if COND_CONVOLVE
+  MAYBE_CONVOLVE_MAN = man/astconvolve.1
+endif
+if COND_COSMICCAL
+  MAYBE_COSMICCAL_MAN = man/astcosmiccal.1
+endif
+if COND_HEADER
+  MAYBE_HEADER_MAN = man/astheader.1
+endif
+if COND_IMGCROP
+  MAYBE_IMGCROP_MAN = man/astimgcrop.1
+endif
+if COND_IMGSTAT
+  MAYBE_IMGSTAT_MAN = man/astimgstat.1
+endif
+if COND_IMGWARP
+  MAYBE_IMGWARP_MAN = man/astimgwarp.1
+endif
+if COND_MKCATALOG
+  MAYBE_MKCATALOG_MAN = man/astmkcatalog.1
+endif
+if COND_MKNOISE
+  MAYBE_MKNOISE_MAN = man/astmknoise.1
+endif
+if COND_MKPROF
+  MAYBE_MKPROF_MAN = man/astmkprof.1
+endif
+if COND_NOISECHISEL
+  MAYBE_NOISECHISEL_MAN = man/astnoisechisel.1
+endif
+if COND_SUBTRACTSKY
+  MAYBE_SUBTRACTSKY_MAN = man/astsubtractsky.1
+endif
+if COND_TABLE
+  MAYBE_TABLE_MAN = man/asttable.1
+endif
+#if COND_TEMPLATE
+#  MAYBE_TEMPLATE_MAN = man/astTEMPLATE.1
+#endif
+dist_man_MANS = $(MAYBE_ARITHMETIC_MAN) $(MAYBE_CONVERTT_MAN)           \
+  $(MAYBE_CONVOLVE_MAN) $(MAYBE_COSMICCAL_MAN) $(MAYBE_HEADER_MAN)      \
+  $(MAYBE_IMGCROP_MAN) $(MAYBE_IMGSTAT_MAN) $(MAYBE_IMGWARP_MAN)        \
+  $(MAYBE_MKCATALOG_MAN) $(MAYBE_MKNOISE_MAN) $(MAYBE_MKPROF_MAN)       \
+  $(MAYBE_NOISECHISEL_MAN) $(MAYBE_SUBTRACTSKY_MAN) $(MAYBE_TABLE_MAN)
 
 
 ## See if help2man is present or not. When help2man doesn't exist, we don't

@@ -151,7 +151,7 @@ static struct argp_option options[] =
       'T',
       "STR",
       0,
-      "byte, short, long, longlong, float, double.",
+      "uchar, short, long, longlong, float, double.",
       2
     },
 

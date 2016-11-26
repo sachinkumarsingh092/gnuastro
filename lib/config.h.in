@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Macros. */
 #define GAL_CONFIG_VERSION "@VERSION@"
 #define GAL_CONFIG_HAVE_LIBGIT2 @HAVE_LIBGIT2@
+#define GAL_CONFIG_HAVE_WCSLIB_VERSION @HAVE_WCSLIB_VERSION@
 #define GAL_CONFIG_HAVE_PTHREAD_BARRIER @HAVE_PTHREAD_BARRIER@
 
 

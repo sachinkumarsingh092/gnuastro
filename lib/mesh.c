@@ -453,7 +453,17 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
                     char *extname1, char *extname2, struct wcsprm *wcs,
                     char *spack_string)
 {
+  long dsize[2];
+  gal_data_t data;
   float *tmp1=NULL, *tmp2=NULL;
+
+  /* Set the basic shared properties of the dataset. Note that the float
+     image is written as a float FITS file, so anyblank is irrelevant, so
+     is `size'.*/
+  data.ndim=2;
+  data.anyblank=0;
+  data.dsize=dsize;
+  data.type=GAL_DATA_TYPE_FLOAT;
 
   if(mp->meshbasedcheck)
     {
@@ -463,29 +473,32 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
          used for this job. In cgarray the meshs are ordered
          differently. */
       if(mp->garray1==mp->cgarray1) gal_mesh_full_garray(mp, 0);
-      gal_fits_array_to_file(filename, extname1, FLOAT_IMG,
-                             mp->fgarray1, mp->gs0*mp->nch2,
-                             mp->gs1*mp->nch1, 0, wcs, NULL,
-                             spack_string);
+      data.wcs=NULL; /* This is not the original image size to have same WCS */
+      data.array=mp->fgarray1;
+      data.dsize[0]=mp->gs0*mp->nch2;
+      data.dsize[1]=mp->gs1*mp->nch1;
+      gal_fits_write_img(&data, filename, extname1, NULL, spack_string);
       if(mp->ngarrays==2)
-        /* Note that gal_mesh_full_garray will correct both the meshs if
-           there are two.*/
-        gal_fits_array_to_file(filename, extname2, FLOAT_IMG,
-                               mp->fgarray2, mp->gs0*mp->nch2,
-                               mp->gs1*mp->nch1, 0, wcs, NULL,
-                               spack_string);
-
+        {
+          /* Note that gal_mesh_full_garray will correct both the meshs if
+             there are two.*/
+          data.array=mp->fgarray2;
+          gal_fits_write_img(&data, filename, extname2, NULL, spack_string);
+        }
     }
   else
     {
       gal_mesh_check_garray(mp, &tmp1, &tmp2);
-      gal_fits_array_to_file(filename, extname1, FLOAT_IMG, tmp1,
-                             mp->s0, mp->s1, 0, wcs, NULL,
-                             spack_string);
+      data.wcs=wcs;
+      data.array=tmp1;
+      data.dsize[0]=mp->s0;
+      data.dsize[1]=mp->s1;
+      gal_fits_write_img(&data, filename, extname1, NULL, spack_string);
       if(mp->ngarrays==2)
-        gal_fits_array_to_file(filename, extname2, FLOAT_IMG, tmp2,
-                               mp->s0, mp->s1, 0, wcs, NULL,
-                               spack_string);
+        {
+          data.array=tmp2;
+          gal_fits_write_img(&data, filename, extname2, NULL, spack_string);
+        }
       free(tmp1);
       free(tmp2);
     }

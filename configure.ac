@@ -152,9 +152,12 @@ AC_SEARCH_LIBS([wcspih], [wcs], [],
 # These are secondary tests for more fine-grained control in libraries that
 # have already been checked. We don't need to add them to the LIBS
 # variable, so we are using AC_CHECK_LIB for these tests.
-AC_CHECK_LIB([wcs], [wcslib_version],
-             [AC_DEFINE([HAVE_WCSLIB_VERSION], [1], [Has wcslib_version])],
-             [], [-lcfitsio -lm])
+AC_CHECK_LIB([wcs], [wcslib_version], [has_wcslib_version=1],
+             [has_wcslib_version=0], [-lcfitsio -lm])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_WCSLIB_VERSION], [$has_wcslib_version],
+                   [WCSLIB comes with wcslib_version])
+AC_SUBST(HAVE_WCSLIB_VERSION, [$has_wcslib_version])
+
 AC_CHECK_LIB([pthread], [pthread_barrier_wait], [has_pthread_barrier=1],
              [has_pthread_barrier=0])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_HAVE_PTHREAD_BARRIER], [$has_pthread_barrier],

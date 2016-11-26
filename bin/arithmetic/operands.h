@@ -20,10 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef IMGARITH_H
-#define IMGARITH_H
+#ifndef OPERANDS_H
+#define OPERANDS_H
+
+size_t
+num_operands(struct imgarithparams *p);
 
 void
-imgarith(struct imgarithparams *p);
+add_operand(struct imgarithparams *p, char *filename, double number,
+            gal_data_t *data);
+
+void
+pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
+            char *operator);
+
 
 #endif

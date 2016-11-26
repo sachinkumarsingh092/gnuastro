@@ -1,6 +1,6 @@
 /*********************************************************************
-ImageArithmetic - Do arithmetic operations on images.
-ImageArithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
+Arithmetic - Do arithmetic operations on images.
+Arithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
@@ -137,7 +137,7 @@ static struct argp_option options[] =
       'T',
       "STR",
       0,
-      "byte, short, long, longlong, float, double.",
+      "uchar, short, long, longlong, float, double.",
       2
     },
 
@@ -207,7 +207,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output */
     case 'T':
-      gal_checkset_known_types(arg, &p->type, NULL, 0);
+      gal_checkset_known_types(arg, &p->outtype, NULL, 0);
       p->up.typeset=1;
       break;
 

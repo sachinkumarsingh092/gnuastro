@@ -138,6 +138,9 @@ gal_linkedlist_print_stll(struct gal_linkedlist_stll *list);
 size_t
 gal_linkedlist_num_in_stll(struct gal_linkedlist_stll *list);
 
+void
+gal_linkedlist_free_stll(struct gal_linkedlist_stll *list, int freevalue);
+
 
 
 /******************* size_t: */
