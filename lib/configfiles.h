@@ -226,6 +226,13 @@ __BEGIN_C_DECLS  /* From C++ preparations */
                                      SPACK, filename, lineno);          \
         cp->nologset=1;                                                 \
       }                                                                 \
+    else if(strcmp(name, "minmapsize")==0)                              \
+      {                                                                 \
+        if(cp->minmapsizeset) continue;                                 \
+        gal_checkset_sizet_l_zero(value, &cp->minmapsize, name, key,    \
+                                  SPACK, filename, lineno);             \
+        cp->minmapsizeset=1;                                            \
+      }                                                                 \
                                                                         \
                                                                         \
     else if(strcmp(name, "dontdelete")==0)                              \
@@ -244,6 +251,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
         cp->removedirinfo=!tint;                                        \
         cp->removedirinfoset=1;                                         \
       }                                                                 \
+
 
 
 

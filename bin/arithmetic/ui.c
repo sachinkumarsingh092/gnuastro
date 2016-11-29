@@ -199,6 +199,10 @@ checkifset(struct imgarithparams *p)
   char comment[100];
   size_t numhdus=gal_linkedlist_num_in_stll(p->hdus);
 
+  /* Operating modes: */
+  if(p->cp.minmapsizeset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("minmapsize");
+
   /* Output parameters: */
   if(p->up.typeset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("type");

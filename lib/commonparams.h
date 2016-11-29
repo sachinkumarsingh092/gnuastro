@@ -47,6 +47,7 @@ struct gal_commonparams
   size_t  numthreads;  /* Number of threads to use.                 */
   int    onlydirconf;  /* Only check current directory conf. file.  */
   char  *onlyversion;  /* The string of the requested version.      */
+  size_t  minmapsize;  /* The minimum bytes necessary to use mmap.  */
   int          nolog;  /* ==1: do not make a log file.              */
 
   /* Check: */
@@ -57,6 +58,7 @@ struct gal_commonparams
   int         hduset;  /* If the input image extension is set.      */
   int      outputset;  /* If the output is set.                     */
   int       nologset;  /* If nolog is set.                          */
+  int  minmapsizeset;  /* If minmapsize is set.                     */
   int  dontdeleteset;  /* If the --dontdelete option was called.    */
   int removedirinfoset;  /* If --keepinputdir was called.           */
 };

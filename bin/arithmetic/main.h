@@ -39,43 +39,44 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define NOTCOMMONHDU   1
 
 
+
+
+
 /* Constants: */
 #define NEGDASHREPLACE 11  /* A vertical tab (ASCII=11) for negative dash */
-#define NOOPTDATA      NULL
-#define NOOPTNUMBER    NAN
-#define NOOPTFILENAME  ""
 
 
-/* The operands can be in three ways:
 
-      1. A file name which is not read yet. When inactive, NOOPTFILENAME.
-      2. A number which is not used yet. When inactive, NOOPTNUMBER.
-      3. A dataset (operator output). When inactive, NOOPTDATA.
 
-   In every node of the operand linked list, only one of these should be
-   active. The other two should be inactive. Otherwise it will be a bug and
-   will cause problems. All the operands operate on this premise.
-*/
+
+/* In every node of the operand linked list, only one of the `filename' or
+   `data' should be non-NULL. Otherwise it will be a bug and will cause
+   problems. All the operands operate on this premise. */
 struct operand
 {
-  char       *filename;         /* !=NULL if the operand is a filename. */
-  char            *hdu;         /* !=NULL if the operand is a filename. */
-  double        number;         /* Value used if not a dataset.         */
-  gal_data_t     *data;         /* !=NULL if the operand is a dataset.  */
-  struct operand *next;         /* Pointer to next operand.             */
+  char       *filename;    /* !=NULL if the operand is a filename. */
+  char            *hdu;    /* !=NULL if the operand is a filename. */
+  gal_data_t     *data;    /* !=NULL if the operand is a dataset.  */
+  struct operand *next;    /* Pointer to next operand.             */
 };
+
+
+
 
 
 struct uiparams
 {
-  char        *maskname;  /* Name of mask image.                        */
-  char            *mhdu;  /* Mask image HDU.                            */
+  char        *maskname;   /* Name of mask image.                   */
+  char            *mhdu;   /* Mask image HDU.                       */
 
   int           typeset;
   int       masknameset;
   int masknameallocated;
   int           mhduset;
 };
+
+
+
 
 
 struct imgarithparams
@@ -101,5 +102,9 @@ struct imgarithparams
   struct operand *operands;  /* The operands linked list.               */
   time_t           rawtime;  /* Starting time of the program.           */
 };
+
+
+
+
 
 #endif

@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/data.h>
 
-#include <changetype.h>
+#include <data-changetype.h>
 
 
 

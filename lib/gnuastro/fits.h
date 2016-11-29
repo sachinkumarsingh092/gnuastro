@@ -228,11 +228,12 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
  ******************     Array functions      *****************
  *************************************************************/
 gal_data_t *
-gal_fits_read_img_hdu(char *filename, char *hdu);
+gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
+                      char *mhdu, size_t minmapsize);
 
 gal_data_t *
-gal_fits_read_to_type(char *inputname, char *maskname, char *inhdu,
-                      char *mhdu, int type);
+gal_fits_read_to_type(char *inputname, char *inhdu, char *maskname,
+                      char *mhdu, int type, size_t minmapsize);
 
 gal_data_t *
 gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,

@@ -1198,14 +1198,15 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
    function. The value that is placed for those pixels is defined by
    the macros in fitsarrayvv.h and depends on the type of the data.*/
 gal_data_t *
-gal_fits_read_img_hdu(char *filename, char *hdu)
+gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
+                      char *mhdu, size_t minmapsize)
 {
   void *blank;
   size_t i, ndim;
   fitsfile *fptr;
-  gal_data_t *data;
   int status=0, type;
   long *fpixel, *dsize;
+  gal_data_t *img, *mask;
 
 
   /* Check HDU for realistic conditions: */
@@ -1236,15 +1237,14 @@ gal_fits_read_img_hdu(char *filename, char *hdu)
 
 
   /* Allocate the space for the array and for the blank values. */
-  printf("alloc for %s\n", filename);
-  data=gal_data_alloc(type, (long)ndim, dsize, 0, 1);
+  img=gal_data_alloc(NULL, type, (long)ndim, dsize, 0, minmapsize);
   blank=gal_data_alloc_blank(type);
   free(dsize);
 
 
   /* Read the image into the allocated array: */
   fits_read_pix(fptr, gal_fits_type_to_datatype(type), fpixel,
-                data->size, blank, data->array, &data->anyblank, &status);
+                img->size, blank, img->array, &img->anyblank, &status);
   if(status) gal_fits_io_error(status, NULL);
   free(fpixel);
   free(blank);
@@ -1253,7 +1253,23 @@ gal_fits_read_img_hdu(char *filename, char *hdu)
   /* Close the FITS file, and return the data pointer */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
-  return data;
+
+
+  /* If a mask was specified, read it into the mask data structure, then
+     set all the corresponding pixels of the input image to NaN. */
+  if(maskname)
+    {
+      /* Read the mask HDU. */
+      mask=gal_fits_read_img_hdu(maskname, mhdu, NULL, NULL, minmapsize);
+
+      /* Apply the mask on the input. */
+      gal_data_apply_mask(img, mask);
+
+      /* Free the mask space. */
+      gal_data_free(mask);
+    }
+
+  return img;
 }
 
 
@@ -1268,13 +1284,13 @@ gal_fits_read_img_hdu(char *filename, char *hdu)
    original input bitpix will be stored so if you want to, you can
    return it back to the input type if you please. */
 gal_data_t *
-gal_fits_read_to_type(char *inputname, char *maskname, char *inhdu,
-                      char *mhdu, int type)
+gal_fits_read_to_type(char *inputname, char *inhdu, char *maskname,
+                      char *mhdu, int type, size_t minmapsize)
 {
-  gal_data_t *in, *mask, *converted;
+  gal_data_t *in, *converted;
 
   /* Read the specified input image HDU. */
-  in=gal_fits_read_img_hdu(inputname, inhdu);
+  in=gal_fits_read_img_hdu(inputname, inhdu, maskname, mhdu, minmapsize);
 
   /* If the input had another type, convert it to float. */
   if(in->type!=type)
@@ -1284,20 +1300,7 @@ gal_fits_read_to_type(char *inputname, char *maskname, char *inhdu,
       in=converted;
     }
 
-  /* If a mask was specified, read it as a float image, then set all
-     the corresponding pixels of the input image to NaN. */
-  if(maskname)
-    {
-      /* Read the mask HDU. */
-      mask=gal_fits_read_img_hdu(maskname, mhdu);
-
-      /* Apply the mask on the input. */
-      gal_data_apply_mask(in, mask);
-
-      /* Free the mask space */
-      gal_data_free(mask);
-    }
-
+  /* Return the final structure. */
   return in;
 }
 
@@ -1316,8 +1319,8 @@ gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,
   float *f, *fp, tmp;
 
   /* Read the image as a float */
-  kernel=gal_fits_read_to_type(inputname, NULL, inhdu, NULL,
-                                GAL_DATA_TYPE_FLOAT);
+  kernel=gal_fits_read_to_type(inputname, inhdu, NULL, NULL,
+                               GAL_DATA_TYPE_FLOAT, -1);
 
   /* Check if the size along each dimension of the kernel is an odd
      number. If they are all an odd number, then the for each dimension,

@@ -25,6 +25,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <fcntl.h>
+#include <float.h>
+#include <ctype.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +37,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/data.h>
 
 #include <checkset.h>
-#include <changetype.h>
+#include <data-changetype.h>
+#include <data-arithmetic.h>
 
 
 
@@ -187,6 +191,103 @@ gal_data_calloc_array(int type, size_t size)
 
 
 
+/* Allocate space for one blank value of the given type and put the value
+   in it. */
+void *
+gal_data_alloc_number(int type, void *number)
+{
+  /* Define the pointers. */
+  void *allocated;
+
+  /* Allocate the space for the blank value: */
+  allocated=gal_data_malloc_array(type, 1);
+
+  /* Put the blank value into it. */
+  errno=0;
+  switch(type)
+    {
+    case GAL_DATA_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support blank "
+            "values for `GAL_DATA_TYPE_BIT', please get in touch with "
+            "us to see how we can implement it.");
+
+    case GAL_DATA_TYPE_UCHAR:
+      *(unsigned char *)allocated=*(unsigned char *)number;
+      break;
+
+      /* CFITSIO says "int for keywords, char for table columns". Here we
+         are only assuming table columns. So in practice this also applies
+         to TSBYTE.*/
+    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
+      *(char *)allocated=*(char *)number;
+      break;
+
+    case GAL_DATA_TYPE_STRING:
+      *(unsigned char **)allocated=*(unsigned char **)number;
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      *(unsigned short *)allocated=*(unsigned short *)number;
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      *(short *)allocated=*(short *)number;
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      *(unsigned int *)allocated=*(unsigned int *)number;
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      *(int *)allocated=*(int *)number;
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      *(unsigned long *)allocated=*(unsigned long *)number;
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      *(long *)allocated=*(long *)number;
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      *(LONGLONG *)allocated=*(LONGLONG *)number;
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      *(float *)allocated=*(float *)number;
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      *(double *)allocated=*(double *)number;
+      break;
+
+    case GAL_DATA_TYPE_COMPLEX:
+      GSL_COMPLEX_P_REAL(((gsl_complex_float *)allocated)) =
+        GSL_COMPLEX_P_REAL(((gsl_complex_float *)number));
+      GSL_COMPLEX_P_IMAG(((gsl_complex_float *)allocated)) =
+        GSL_COMPLEX_P_IMAG(((gsl_complex_float *)number));
+      break;
+
+    case GAL_DATA_TYPE_DCOMPLEX:
+      GSL_COMPLEX_P_REAL(((gsl_complex *)allocated)) =
+        GSL_COMPLEX_P_REAL(((gsl_complex *)number));
+      GSL_COMPLEX_P_IMAG(((gsl_complex *)allocated)) =
+        GSL_COMPLEX_P_IMAG(((gsl_complex *)number));
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
+            "`gal_data_alloc_number'", type);
+    }
+
+  return allocated;
+}
+
+
+
+
+
 void
 gal_data_mmap(gal_data_t *data)
 {
@@ -240,11 +341,16 @@ gal_data_mmap(gal_data_t *data)
 
 
 
+/* Allocate a data structure based on the given parameters. If you want to
+   force the array into the hdd/ssd (mmap it), then set minmapsize=-1
+   (largest possible size_t value), in this way, no file will be larger. */
 gal_data_t *
-gal_data_alloc(int type, size_t ndim, long *dsize, int clear, int map)
+gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
+               int clear, size_t minmapsize)
 {
   size_t i;
   gal_data_t *out;
+
 
   /* Allocate the space for the actual structure. */
   errno=0;
@@ -258,6 +364,7 @@ gal_data_alloc(int type, size_t ndim, long *dsize, int clear, int map)
   out->ndim=ndim;
   out->type=type;
 
+
   /* Initialize the other values */
   out->anyblank=0;
   out->wcs=NULL;
@@ -269,6 +376,7 @@ gal_data_alloc(int type, size_t ndim, long *dsize, int clear, int map)
   if(out==NULL)
     error(EXIT_FAILURE, errno, "%zu bytes for dsize in gal_data_alloc",
           ndim*sizeof *out->dsize);
+
 
 
   /* Fill in the dsize values: */
@@ -285,21 +393,28 @@ gal_data_alloc(int type, size_t ndim, long *dsize, int clear, int map)
       out->size *= ( out->dsize[i] = dsize[i] );
     }
 
+
   /* Allocate space for the array, clear it if necessary: */
-  if(map)
-    gal_data_mmap(out);
+  if(array)
+    out->array=array;
   else
     {
-      /* Allocate the space for the array. */
-      if(clear)
-        out->array = gal_data_calloc_array(out->type, out->size);
+      if( gal_data_sizeof(type)*out->size  > minmapsize )
+        gal_data_mmap(out);
       else
-        out->array = gal_data_malloc_array(out->type, out->size);
+        {
+          /* Allocate the space for the array. */
+          if(clear)
+            out->array = gal_data_calloc_array(out->type, out->size);
+          else
+            out->array = gal_data_malloc_array(out->type, out->size);
 
-      /* Set the values. */
-      out->mmapped=0;
-      out->mmapname=NULL;
+          /* Set the values. */
+          out->mmapped=0;
+          out->mmapname=NULL;
+        }
     }
+
 
   /* Return the final structure. */
   return out;
@@ -356,34 +471,26 @@ gal_data_free(gal_data_t *data)
 /*************************************************************
  **************          Blank data            ***************
  *************************************************************/
-
-/* Allocate space for one blank value of the given type and put the value
-   in it. */
 void *
 gal_data_alloc_blank(int type)
 {
   /* Define the pointers. */
-  void *allocated;
-  unsigned char *b;
-  char *c;
-  char **str;
-  unsigned short *us;
-  short *s;
-  unsigned int *ui;
-  int *i;
-  unsigned long *ul;
-  long *l;
-  LONGLONG *L;
-  float *f;
-  double *d;
-  gsl_complex_float *cx;
-  gsl_complex *dcx;
-
-  /* Allocate the space for the blank value: */
-  allocated=gal_data_malloc_array(type, 1);
+  unsigned char     uc = GAL_DATA_BLANK_UCHAR;
+  char               c = GAL_DATA_BLANK_CHAR;
+  char            *str = GAL_DATA_BLANK_STRING;
+  unsigned short    us = GAL_DATA_BLANK_USHORT;
+  short              s = GAL_DATA_BLANK_SHORT;
+  unsigned int      ui = GAL_DATA_BLANK_UINT;
+  int                i = GAL_DATA_BLANK_INT;
+  unsigned long     ul = GAL_DATA_BLANK_ULONG;
+  long               l = GAL_DATA_BLANK_LONG;
+  LONGLONG           L = GAL_DATA_BLANK_LONGLONG;
+  float              f = GAL_DATA_BLANK_FLOAT;
+  double             d = GAL_DATA_BLANK_DOUBLE;
+  gsl_complex_float cx;
+  gsl_complex      dcx;
 
   /* Put the blank value into it. */
-  errno=0;
   switch(type)
     {
     case GAL_DATA_TYPE_BIT:
@@ -392,77 +499,51 @@ gal_data_alloc_blank(int type)
             "us to see how we can implement it.");
 
     case GAL_DATA_TYPE_UCHAR:
-      b=allocated;
-      *b=GAL_DATA_BLANK_UCHAR;
-      return b;
+      return gal_data_alloc_number(type, &uc);
 
       /* CFITSIO says "int for keywords, char for table columns". Here we
          are only assuming table columns. So in practice this also applies
          to TSBYTE.*/
     case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      c=allocated;
-      *c=GAL_DATA_BLANK_CHAR;
-      return c;
+      return gal_data_alloc_number(type, &c);
 
     case GAL_DATA_TYPE_STRING:
-      str=allocated;
-      *str=GAL_DATA_BLANK_STRING;
-      return str;
+      return gal_data_alloc_number(type, &str);
 
     case GAL_DATA_TYPE_USHORT:
-      us=allocated;
-      *us=GAL_DATA_BLANK_USHORT;
-      return us;
+      return gal_data_alloc_number(type, &us);
 
     case GAL_DATA_TYPE_SHORT:
-      s=allocated;
-      *s=GAL_DATA_BLANK_SHORT;
-      return s;
+      return gal_data_alloc_number(type, &s);
 
     case GAL_DATA_TYPE_UINT:
-      ui=allocated;
-      *ui=GAL_DATA_BLANK_UINT;
-      return ui;
+      return gal_data_alloc_number(type, &ui);
 
     case GAL_DATA_TYPE_INT:
-      i=allocated;
-      *i=GAL_DATA_BLANK_INT;
-      return i;
+      return gal_data_alloc_number(type, &i);
 
     case GAL_DATA_TYPE_ULONG:
-      ul=allocated;
-      *ul=GAL_DATA_BLANK_ULONG;
-      return ul;
+      return gal_data_alloc_number(type, &ul);
 
     case GAL_DATA_TYPE_LONG:
-      l=allocated;
-      *l=GAL_DATA_BLANK_LONG;
-      return l;
+      return gal_data_alloc_number(type, &l);
 
     case GAL_DATA_TYPE_LONGLONG:
-      L=allocated;
-      *L=GAL_DATA_BLANK_LONGLONG;
-      return L;
+      return gal_data_alloc_number(type, &L);
 
     case GAL_DATA_TYPE_FLOAT:
-      f=allocated;
-      *f=GAL_DATA_BLANK_FLOAT;
-      return f;
+      return gal_data_alloc_number(type, &f);
 
     case GAL_DATA_TYPE_DOUBLE:
-      d=allocated;
-      *d=GAL_DATA_BLANK_DOUBLE;
-      return d;
+      return gal_data_alloc_number(type, &d);
 
     case GAL_DATA_TYPE_COMPLEX:
-      cx=allocated;
-      GSL_SET_COMPLEX(cx, GAL_DATA_BLANK_FLOAT, GAL_DATA_BLANK_FLOAT);
-      return cx;
+      GSL_SET_COMPLEX(&cx, GAL_DATA_BLANK_FLOAT, GAL_DATA_BLANK_FLOAT);
+      return gal_data_alloc_number(type, &cx);
 
     case GAL_DATA_TYPE_DCOMPLEX:
-      dcx=allocated;
-      GSL_SET_COMPLEX(dcx, GAL_DATA_BLANK_DOUBLE, GAL_DATA_BLANK_DOUBLE);
-      return dcx;
+      GSL_SET_COMPLEX(&dcx, GAL_DATA_BLANK_DOUBLE, GAL_DATA_BLANK_DOUBLE);
+      return gal_data_alloc_number(type, &dcx);
 
     default:
       error(EXIT_FAILURE, 0, "type value of %d not recognized in "
@@ -790,12 +871,12 @@ gal_data_blank_to_value(gal_data_t *data, void *value)
 
 
 /*************************************************************
- **************          Change type           ***************
+ **************             Copy           ***************
  *************************************************************/
-int
-gal_data_out_type(gal_data_t *first, gal_data_t *second)
+gal_data_t *
+gal_data_copy(gal_data_t *in)
 {
-  return first->type > second->type ? first->type : second->type;
+  return gal_data_copy_to_new_type(in, in->type);
 }
 
 
@@ -808,7 +889,19 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
   gal_data_t *out;
 
   /* Allocate space for the output type */
-  out=gal_data_alloc(newtype, in->ndim, in->dsize, 0, in->mmapped);
+  out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, 0, in->mmapped);
+
+  /* Copy the WCS structure, we need to have a blank WCS structure
+     allocated outside of WCSLIB, then copy the contents. */
+  if(in->wcs)
+    {
+      errno=0;
+      out->wcs=malloc(sizeof *out->wcs);
+      if(out->wcs==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes for out->wcs in "
+              "gal_data_copy_to_new_type", sizeof *out->wcs);
+      wcscopy(1, in->wcs, out->wcs);
+    }
 
   /* Fill in the output data array while doing the conversion */
   switch(newtype)
@@ -864,4 +957,235 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
 
   /* Return the created array */
   return out;
+}
+
+
+
+
+
+int
+gal_data_out_type(gal_data_t *first, gal_data_t *second)
+{
+  return first->type > second->type ? first->type : second->type;
+}
+
+
+
+
+
+/* The two input `f' and `s' datasets can be any type. But `of' and `os'
+   will have type `type', if freeinputs is non-zero, then the input arrays
+   will be freed if they needed to be changed to a new type. */
+void
+gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
+                      gal_data_t **of, gal_data_t **os,
+                      int type, int freeinputs)
+{
+  /* Change first dataset into the new type if necessary. */
+  if( f->type != type )
+    {
+      *of=gal_data_copy_to_new_type(f, type);
+      if(freeinputs)
+        gal_data_free(f);
+    }
+  else
+    *of=f;
+
+  /* Change second dataset into the new type if necessary. */
+  if( s->type != type )
+    {
+      *os=gal_data_copy_to_new_type(s, type);
+      if(freeinputs)
+        gal_data_free(s);
+    }
+  else
+    *os=s;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ **************              Read              ***************
+ *************************************************************/
+/* If the data structure was correctly created (the string was a number),
+   then return its pointer. Otherwise, return NULL. */
+gal_data_t *
+gal_data_string_to_number(char *string)
+{
+  int type;
+  long dsize[1]={1};
+  int fnz=-1, lnz=0;     /* `F'irst (or `L'ast) `N'on-`Z'ero. */
+  void *ptr, *numarr;
+  char *tailptr, *cp;
+
+  /* Define the pointers. */
+  unsigned char     uc;
+  char               c;
+  unsigned short    us;
+  short              s;
+  unsigned int      ui;
+  int                i;
+  unsigned long     ul;
+  long               l;
+  LONGLONG           L;
+  float              f;
+  double             d;
+
+  /* First see if the number is a double. */
+  errno=0;
+  d=strtod(string, &tailptr);
+  if(*tailptr!='\0')
+    return NULL;
+
+  /* See if the number is actually an integer: */
+  if( ceil(d) == d )
+    {
+      /* If the number is negative, put it in the signed types (based on
+         its value). If its zero or positive, then put it in the unsigned
+         types. */
+      if( d < 0 )
+        {
+          if     (d>CHAR_MIN)   {c=d; ptr=&c; type=GAL_DATA_TYPE_CHAR;}
+          else if(d>SHRT_MIN)   {s=d; ptr=&s; type=GAL_DATA_TYPE_SHORT;}
+          else if(d>INT_MIN)    {i=d; ptr=&i; type=GAL_DATA_TYPE_INT;}
+          else if(d>LONG_MIN)   {l=d; ptr=&l; type=GAL_DATA_TYPE_LONG;}
+          else                  {L=d; ptr=&L; type=GAL_DATA_TYPE_LONGLONG;}
+        }
+      else
+        {
+          if     (d<=UCHAR_MAX) {uc=d; ptr=&uc; type=GAL_DATA_TYPE_UCHAR;}
+          else if(d<=USHRT_MAX) {us=d; ptr=&us; type=GAL_DATA_TYPE_USHORT;}
+          else if(d<=UINT_MAX)  {ui=d; ptr=&ui; type=GAL_DATA_TYPE_UINT;}
+          else if(d<=ULONG_MAX) {ul=d; ptr=&ul; type=GAL_DATA_TYPE_ULONG;}
+          else                  {L=d;  ptr=&L;  type=GAL_DATA_TYPE_LONGLONG;}
+        }
+    }
+  else
+    {
+      /* The maximum number of decimal digits to store in float or double
+         precision floating point are:
+
+         float:  23 mantissa bits + 1 hidden bit: log(224)÷log(10) = 7.22
+         double: 52 mantissa bits + 1 hidden bit: log(253)÷log(10) = 15.95
+
+         FLT_DIG (at least 6 in ISO C) keeps the number of digits (not zero
+         before or after) that can be represented by a single precision
+         floating point number. If there are more digits, then we should
+         store the value as a double precision.
+
+         Note that the number can have non-digit characters that we don't
+         want, like: `.', `e', `E', `,'. */
+      for(cp=string;*cp!='\0';++cp)
+        if(isdigit(*cp) && *cp!='0' && fnz==-1)
+          fnz=cp-string;
+
+      /* In the previous loop, we went to the end of the string, so `cp'
+         now points to its `\0'. We just have to iterate backwards! */
+      for(;cp!=string;--cp)
+        if(isdigit(*cp) && *cp!='0')
+          {
+            lnz=cp-string;
+            break;
+          }
+
+      /* Calculate the number of decimal digits and decide if it the number
+         should be a float or a double. */
+      if( lnz-fnz < FLT_DIG || ( d<FLT_MAX && d>FLT_MIN ) )
+        { f=d; ptr=&f; type=GAL_DATA_TYPE_FLOAT; }
+      else
+        {      ptr=&d; type=GAL_DATA_TYPE_DOUBLE; }
+    }
+
+  /* Return the pointer to the data structure. */
+  numarr=gal_data_alloc_number(type, ptr);
+  return gal_data_alloc(numarr, type, 1, dsize, 0, 0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ **************           Arithmetic           ***************
+ *************************************************************/
+gal_data_t *
+gal_data_arithmetic(char *operator, unsigned char flags, ...)
+{
+  int type;
+  va_list va;
+  gal_data_t *o=NULL;
+
+  /* Prepare the variable arguments (starting after the flags argument). */
+  va_start(va, flags);
+
+  /* Depending on the operator do the job: */
+  if      (!strcmp(operator, "+"))   { BINARY_INTERNAL(+, 0); }
+  else if (!strcmp(operator, "-"))   { BINARY_INTERNAL(-, 0); }
+  else if (!strcmp(operator, "*"))   { BINARY_INTERNAL(*, 0); }
+  else if (!strcmp(operator, "/"))   { BINARY_INTERNAL(/, 0); }
+
+#if 0
+  else if(!strcmp(operator, "abs"))       takeabs(p);
+  else if(!strcmp(operator, "pow"))       topower(p, NULL);
+  else if(!strcmp(operator, "sqrt"))      takesqrt(p);
+  else if(!strcmp(operator, "log"))       takelog(p);
+  else if(!strcmp(operator, "log10"))     takelog10(p);
+  else if(!strcmp(operator, "minvalue"))  findmin(p);
+  else if(!strcmp(operator, "maxvalue"))  findmax(p);
+  else if(!strcmp(operator, "min")
+          || !strcmp(operator, "max")
+          || !strcmp(operator, "average")
+          || !strcmp(operator, "median")) alloppixs(p, operator);
+  else if(!strcmp(operator, "lt")
+          || !strcmp(operator, "le")
+          || !strcmp(operator, "gt")
+          || !strcmp(operator, "ge")
+          || !strcmp(operator, "eq")
+          || !strcmp(operator, "neq"))    conditionals(p, operator);
+  else if(!strcmp(operator, "and")
+          || !strcmp(operator, "or"))     andor(p, operator);
+  else if(!strcmp(operator, "not"))       notfunc(p);
+  else if(!strcmp(operator, "isblank"))   opisblank(p);
+  else if(!strcmp(operator, "where"))     where(p);
+#endif
+
+  else
+    error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
+          "interpretted as an operator", operator);
+
+  /* End the variable argument structure and return. */
+  va_end(va);
+  return o;
 }

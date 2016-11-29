@@ -1,11 +1,11 @@
 /*********************************************************************
-Arithmetic - Do arithmetic operations on images.
-Arithmetic is part of GNU Astronomy Utilities (Gnuastro) package.
+Arithmetic operations on data structures.
+This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2015, Free Software Foundation, Inc.
+Copyright (C) 2016, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,17 +20,9 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef OPERANDS_H
-#define OPERANDS_H
+#include <config.h>
 
-size_t
-num_operands(struct imgarithparams *p);
+#include <errno.h>
+#include <error.h>
 
-void
-add_operand(struct imgarithparams *p, char *filename, gal_data_t *data);
-
-gal_data_t *
-pop_operand(struct imgarithparams *p, char *operator);
-
-
-#endif
+#include <gnuastro/data.h>

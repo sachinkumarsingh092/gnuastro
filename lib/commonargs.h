@@ -51,7 +51,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 
-   Used numbers <= 1003
+   Used numbers <= 1004
 
    You can use this above list to set short options for the different
    utilities.
@@ -129,6 +129,14 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "No log file for programs which make one.",
+      -1
+    },
+    {
+      "minmapsize",
+      1004,
+      0,
+      0,
+      "Minimum no. bytes to map arrays to hdd/ssd.",
       -1
     },
 
@@ -247,6 +255,11 @@ gal_checkset_commonargs_cparse_opt(int key, char *arg, struct argp_state *state)
     case 1003:
       cp->nolog=1;
       cp->nologset=1;
+      break;
+    case 1004:
+      gal_checkset_sizet_l_zero(arg, &cp->minmapsize, "minmapsize", key,
+                                cp->spack, NULL, 0);
+      cp->minmapsizeset=1;
       break;
 
     /* Input/output: */

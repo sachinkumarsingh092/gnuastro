@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
+#include <gnuastro/data.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
 #include <gnuastro/statistics.h>
@@ -67,30 +68,48 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 reversepolish(struct imgarithparams *p)
 {
-  double number;
-  gal_data_t *ddata;
   struct gal_linkedlist_stll *token;
+  gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
+  unsigned char flags = ( GAL_DATA_ARITH_INPLACE | GAL_DATA_ARITH_FREE
+                          | GAL_DATA_ARITH_NUMOK );
+
 
   /* Prepare the processing: */
   p->operands=NULL;
   p->addcounter=p->popcounter=0;
 
+
   /* Go over each input token and do the work. */
   for(token=p->tokens;token!=NULL;token=token->next)
     {
-      /* If we have a name or number, then add it to the operands
-         linked list. Otherwise, pull out two members and do the
-         specified operation on them. */
+      /* If we have a name or number, then add it to the operands linked
+         list. Otherwise, pull out two members and do the specified
+         operation on them. */
       if(gal_fits_name_is_fits(token->v))
-        add_operand(p, token->v, NOOPTNUMBER, NOOPTDATA);
-      else if(gal_checkset_str_is_double(token->v, &number))
-        add_operand(p, NOOPTFILENAME, number, NOOPTDATA);
+        add_operand(p, token->v, NULL);
+      else if( (d1=gal_data_string_to_number(token->v)) )
+        add_operand(p, NULL, d1);
       else
         {
-          if     (!strcmp(token->v, "+"))         sum(p);
-          else if(!strcmp(token->v, "-"))         subtract(p);
-          else if(!strcmp(token->v, "*"))         multiply(p);
-          else if(!strcmp(token->v, "/"))         divide(p);
+          /* Note that the first popped operand is the right/second given
+             operand on the command-line. */
+          if( !strcmp(token->v, "+") || !strcmp(token->v, "-")
+              || !strcmp(token->v, "*") || !strcmp(token->v, "/") )
+            {
+              d2=pop_operand(p, token->v);
+              d1=pop_operand(p, token->v);
+            }
+          else
+            error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
+                  "interpretted as a FITS file, number, or operator",
+                  token->v);
+          add_operand(p, NULL,
+                      gal_data_arithmetic(token->v, flags, d1, d2, d3));
+        }
+    }
+
+#if 0
+
           else if(!strcmp(token->v, "abs"))       takeabs(p);
           else if(!strcmp(token->v, "pow"))       topower(p, NULL);
           else if(!strcmp(token->v, "sqrt"))      takesqrt(p);
@@ -113,46 +132,36 @@ reversepolish(struct imgarithparams *p)
           else if(!strcmp(token->v, "not"))       notfunc(p);
           else if(!strcmp(token->v, "isblank"))   opisblank(p);
           else if(!strcmp(token->v, "where"))     where(p);
-          else
-            error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
-                  "interpretted as an operator", token->v);
-        }
-    }
+#endif
+
 
   /* If there is more than one node in the operands stack then the user has
      given too many operands which is an error. */
   if(p->operands->next!=NULL)
     error(EXIT_FAILURE, 0, "too many operands");
 
-  /* If the remaining operand is an array then save the array as a
-     FITS image, if not, simply print the floating point number. */
-  if(p->operands->data)
-    {
-      /* Internally, all arrays were double type. But the user could set
-         the the output type using the type option. So if the user has
-         asked for anything other than a double, we will have to convert
-         the arrays.*/
-      if(p->outtype==GAL_DATA_TYPE_DOUBLE)
-        ddata=p->operands->data;
-      else
-        {
-          ddata=gal_data_copy_to_new_type(p->operands->data, p->outtype);
-          gal_data_free(p->operands->data);
-        }
 
-      /* Copy the WCS structure into the final dataset and write it into
-         the output file. */
-      ddata->wcs=p->refdata.wcs;
-      gal_fits_write_img(ddata, p->cp.output, "Arithmetic", NULL,
-                         SPACK_STRING);
+  /* Copy the WCS structure into the final dataset. */
+  p->operands->data->wcs=p->refdata.wcs;
 
-      /* Clean up: */
-      gal_data_free(ddata);
-      free(p->refdata.dsize);
-      wcsfree(p->refdata.wcs);
-    }
+
+  /* Set the output type. */
+  if(p->outtype==p->operands->data->type)
+    d1=p->operands->data;
   else
-    printf("%g\n", p->operands->number);
+    {
+      d1=gal_data_copy_to_new_type(p->operands->data, p->outtype);
+      gal_data_free(p->operands->data);
+    }
+  gal_fits_write_img(p->operands->data, p->cp.output, "Arithmetic", NULL,
+                     SPACK_STRING);
+
+
+  /* Clean up: */
+  gal_data_free(d1);
+  free(p->refdata.dsize);
+  wcsfree(p->refdata.wcs);
+
 
   /* Clean up. Note that the tokens were taken from the command-line
      arguments, so the string within each token linked list must not be

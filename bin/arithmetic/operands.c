@@ -56,8 +56,7 @@ num_operands(struct imgarithparams *p)
 
 
 void
-add_operand(struct imgarithparams *p, char *filename, double number,
-            gal_data_t *data)
+add_operand(struct imgarithparams *p, char *filename, gal_data_t *data)
 {
   struct operand *newnode;
 
@@ -69,7 +68,6 @@ add_operand(struct imgarithparams *p, char *filename, double number,
 
   /* Fill in the values. */
   newnode->data=data;
-  newnode->number=number;
   newnode->filename=filename;
 
   if(filename != NULL && gal_fits_name_is_fits(filename))
@@ -90,11 +88,11 @@ add_operand(struct imgarithparams *p, char *filename, double number,
 
 
 
-void
-pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
-            char *operator)
+gal_data_t *
+pop_operand(struct imgarithparams *p, char *operator)
 {
   size_t i;
+  gal_data_t *data;
   struct uiparams *up=&p->up;
   struct operand *operands=p->operands;
   char *maskname, *mhdu, *filename, *hdu;
@@ -102,13 +100,13 @@ pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
   /* If the operand linked list has finished, then give an error and
      exit. */
   if(operands==NULL)
-    error(EXIT_FAILURE, 0, "not enough operands for the \"%s\" operator",
-          operator);
+    error(EXIT_FAILURE, 0, "not enough operands for the \"%s\" "
+          "operator", operator);
 
 
   /* Set the dataset. If filename is present then read the file
      and fill in the array, if not then just set the array. */
-  if(strlen(operands->filename))
+  if(operands->filename)
     {
       hdu=operands->hdu;
       filename=operands->filename;
@@ -124,8 +122,8 @@ pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
                           &p->refdata.wcs);
 
       /* Read the input image as a double type array. */
-      *data=gal_fits_read_to_type(filename, maskname, hdu, mhdu,
-                                  GAL_DATA_TYPE_DOUBLE);
+      data=gal_fits_read_img_hdu(filename, hdu, maskname, mhdu,
+                                 p->cp.minmapsize);
 
       /* When the reference data structure's dimensionality is non-zero, it
          means that this is not the first image read. So, write its basic
@@ -133,7 +131,7 @@ pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
          checks. */
       if(p->refdata.ndim)
         {
-          if(gal_data_dsize_is_different(&p->refdata, *data))
+          if(gal_data_dsize_is_different(&p->refdata, data))
             error(EXIT_FAILURE, 0, "%s (hdu=%s): has a different size "
                   "compared to previous images. All the images must be "
                   "the same size in order for Arithmetic to work",
@@ -142,7 +140,7 @@ pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
       else
         {
           /* Set the dimensionality. */
-          p->refdata.ndim=(*data)->ndim;
+          p->refdata.ndim=(data)->ndim;
 
           /* Allocate the dsize array. */
           errno=0;
@@ -153,7 +151,7 @@ pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
 
           /* Write the values into it. */
           for(i=0;i<p->refdata.ndim;++i)
-            p->refdata.dsize[i]=(*data)->dsize[i];
+            p->refdata.dsize[i]=data->dsize[i];
         }
 
       /* Free the HDU string: */
@@ -166,12 +164,10 @@ pop_operand(struct imgarithparams *p, double *number, gal_data_t **data,
       if(p->cp.verb) printf("%s is read.\n", filename);
     }
   else
-    *data=operands->data;
+    data=operands->data;
 
-  /* Set the number: */
-  *number=operands->number;
-
-  /* Remove this node from the queue. */
+  /* Remove this node from the queue, return the data structure. */
   p->operands=operands->next;
   free(operands);
+  return data;
 }

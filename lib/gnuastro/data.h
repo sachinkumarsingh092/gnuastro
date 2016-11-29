@@ -59,6 +59,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* The maximum dimensionality of datasets. */
 #define GAL_DATA_MAXDIM    999
 
+/* Arithmetic macros (powers of 2). */
+#define GAL_DATA_ARITH_INPLACE  1
+#define GAL_DATA_ARITH_FREE     2
+#define GAL_DATA_ARITH_NUMOK    4
+
 /* Blank values: Note that for the unsigned types or small types (like
    char), the maximum value is considered as a blank value, since the
    minimum value of an unsigned type is zero and zero is often meaningful
@@ -147,7 +152,8 @@ void *
 gal_data_calloc_array(int type, size_t size);
 
 gal_data_t *
-gal_data_alloc(int type, size_t ndim, long *dsize, int clear, int map);
+gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
+               int clear, size_t minmapsize);
 
 void
 gal_data_free(gal_data_t *data);
@@ -174,13 +180,42 @@ gal_data_blank_to_value(gal_data_t *data, void *value);
 
 
 /*************************************************************
- **************         Convert types          ***************
+ **************             Copy               ***************
  *************************************************************/
-int
-gal_data_out_type(gal_data_t *first, gal_data_t *second);
+gal_data_t *
+gal_data_copy(gal_data_t *in);
 
 gal_data_t *
 gal_data_copy_to_new_type(gal_data_t *in, int newtype);
+
+int
+gal_data_out_type(gal_data_t *first, gal_data_t *second);
+
+void
+gal_data_to_same_type(gal_data_t *f, gal_data_t *s,
+                      gal_data_t **of, gal_data_t **os,
+                      int type, int freeinputs);
+
+
+
+
+
+/*************************************************************
+ **************              Read              ***************
+ *************************************************************/
+gal_data_t *
+gal_data_string_to_number(char *string);
+
+
+
+
+
+/*************************************************************
+ **************           Arithmetic           ***************
+ *************************************************************/
+gal_data_t *
+gal_data_arithmetic(char *operator, unsigned char flags, ...);
+
 
 
 
