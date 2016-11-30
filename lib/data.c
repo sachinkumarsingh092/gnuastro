@@ -1155,6 +1155,14 @@ gal_data_arithmetic(char *operator, unsigned char flags, ...)
   else if (!strcmp(operator, "-"))   { BINARY_INTERNAL(-, 0); }
   else if (!strcmp(operator, "*"))   { BINARY_INTERNAL(*, 0); }
   else if (!strcmp(operator, "/"))   { BINARY_INTERNAL(/, 0); }
+  else if (!strcmp(operator, "lt"))  { BINARY_INTERNAL(<, 0); }
+  else if (!strcmp(operator, "le"))  { BINARY_INTERNAL(<=, 0); }
+  else if (!strcmp(operator, "gt"))  { BINARY_INTERNAL(>, 0); }
+  else if (!strcmp(operator, "ge"))  { BINARY_INTERNAL(>=, 0); }
+  else if (!strcmp(operator, "eq"))  { BINARY_INTERNAL(==, 0); }
+  else if (!strcmp(operator, "neq")) { BINARY_INTERNAL(!=, 0); }
+  else if (!strcmp(operator, "and")) { BINARY_INTERNAL(&&, 0); }
+  else if (!strcmp(operator, "or"))  { BINARY_INTERNAL(||, 0); }
 
 #if 0
   else if(!strcmp(operator, "abs"))       takeabs(p);
@@ -1168,14 +1176,6 @@ gal_data_arithmetic(char *operator, unsigned char flags, ...)
           || !strcmp(operator, "max")
           || !strcmp(operator, "average")
           || !strcmp(operator, "median")) alloppixs(p, operator);
-  else if(!strcmp(operator, "lt")
-          || !strcmp(operator, "le")
-          || !strcmp(operator, "gt")
-          || !strcmp(operator, "ge")
-          || !strcmp(operator, "eq")
-          || !strcmp(operator, "neq"))    conditionals(p, operator);
-  else if(!strcmp(operator, "and")
-          || !strcmp(operator, "or"))     andor(p, operator);
   else if(!strcmp(operator, "not"))       notfunc(p);
   else if(!strcmp(operator, "isblank"))   opisblank(p);
   else if(!strcmp(operator, "where"))     where(p);

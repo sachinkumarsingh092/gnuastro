@@ -26,30 +26,271 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-#define BINARY_DEFINITIONS                                                \
-  unsigned char  *luc = l->array, *ruc = r->array, *ouc = o->array, *ucf; \
-  char           *lc  = l->array, *rc  = r->array, *oc  = o->array,  *cf; \
-  unsigned short *lus = l->array, *rus = r->array, *ous = o->array, *usf; \
-  short          *ls  = l->array, *rs  = r->array, *os  = o->array,  *sf; \
-  unsigned int   *lui = l->array, *rui = r->array, *oui = o->array, *uif; \
-  int            *li  = l->array, *ri  = r->array, *oi  = o->array, *iif; \
-  unsigned long  *lul = l->array, *rul = r->array, *oul = o->array, *ulf; \
-  long           *ll  = l->array, *rl  = r->array, *ol  = o->array,  *lf; \
-  LONGLONG       *lL  = l->array, *rL  = r->array, *oL  = o->array,  *Lf; \
-  float          *lff = l->array, *rf  = r->array, *of  = o->array,  *ff; \
-  double         *ld  = l->array, *rd  = r->array, *od  = o->array,  *df;
+#define BINARY_OPERATOR_FOR_TYPE(LT, RT, OT, OP){                       \
+    LT *la=l->array;                                                    \
+    RT *ra=r->array;                                                    \
+    OT *oa=o->array, *of=oa + o->size;                                  \
+    if(l->size==r->size) do *oa = *la++ OP *ra++; while(++oa<of);       \
+    else if(l->size==1)  do *oa = *la   OP *ra++; while(++oa<of);       \
+    else                 do *oa = *la++ OP *ra;   while(++oa<of);       \
+  }
 
 
 
 
-#define OP_FUNC(OP,L, R)
-#define BINARY_OPERATOR_FOR_TYPE(Tf, oT, lT, rT, OP)                    \
-  Tf = oT + o->size;                                                    \
-  if(l->size==r->size) do *oT = *lT++ OP *rT++; while(++oT<Tf);         \
-  else if(l->size==1)  do *oT = *lT   OP *rT++; while(++oT<Tf);         \
-  else                 do *oT = *lT++ OP *rT;   while(++oT<Tf);         \
-  break;
+#if GAL_CONFIG_ARITH_CHAR == 1
+#define BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                         \
+  case GAL_DATA_TYPE_CHAR:                                              \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, char, OP);                         \
+    break;
+#define BINARY_LEFT_DONE_CHAR(LT, OP)                                   \
+    case GAL_DATA_TYPE_CHAR:                                            \
+      BINARY_LEFT_RIGHT_DONE(LT, char, OP);                             \
+      break;
+#define BINARY_MULTISWITCH_CHAR(OP)                                     \
+    case GAL_DATA_TYPE_CHAR:                                            \
+      BINARY_LEFT_DONE(char, OP);                                       \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)
+#define BINARY_LEFT_DONE_CHAR(LT, OP)
+#define BINARY_MULTISWITCH_CHAR(OP)
+#endif
+
+
+
+#if GAL_CONFIG_ARITH_USHORT == 1
+#define BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                         \
+  case GAL_DATA_TYPE_USHORT:                                              \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned short, OP);                 \
+    break;
+#define BINARY_LEFT_DONE_USHORT(LT, OP)                                   \
+    case GAL_DATA_TYPE_USHORT:                                            \
+      BINARY_LEFT_RIGHT_DONE(LT, unsigned short, OP);                     \
+      break;
+#define BINARY_MULTISWITCH_USHORT(OP)                                     \
+    case GAL_DATA_TYPE_USHORT:                                            \
+      BINARY_LEFT_DONE(unsigned short, OP);                               \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)
+#define BINARY_LEFT_DONE_USHORT(LT, OP)
+#define BINARY_MULTISWITCH_USHORT(OP)
+#endif
+
+
+
+#if GAL_CONFIG_ARITH_SHORT == 1
+#define BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                         \
+  case GAL_DATA_TYPE_SHORT:                                              \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, short, OP);                         \
+    break;
+#define BINARY_LEFT_DONE_SHORT(LT, OP)                                   \
+    case GAL_DATA_TYPE_SHORT:                                            \
+      BINARY_LEFT_RIGHT_DONE(LT, short, OP);                             \
+      break;
+#define BINARY_MULTISWITCH_SHORT(OP)                                     \
+    case GAL_DATA_TYPE_SHORT:                                            \
+      BINARY_LEFT_DONE(short, OP);                                       \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)
+#define BINARY_LEFT_DONE_SHORT(LT, OP)
+#define BINARY_MULTISWITCH_SHORT(OP)
+#endif
+
+
+
+#if GAL_CONFIG_ARITH_UINT == 1
+#define BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                         \
+  case GAL_DATA_TYPE_UINT:                                              \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned int, OP);                 \
+    break;
+#define BINARY_LEFT_DONE_UINT(LT, OP)                                   \
+    case GAL_DATA_TYPE_UINT:                                            \
+      BINARY_LEFT_RIGHT_DONE(LT, unsigned int, OP);                     \
+      break;
+#define BINARY_MULTISWITCH_UINT(OP)                                     \
+    case GAL_DATA_TYPE_UINT:                                            \
+      BINARY_LEFT_DONE(unsigned int, OP);                               \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)
+#define BINARY_LEFT_DONE_UINT(LT, OP)
+#define BINARY_MULTISWITCH_UINT(OP)
+#endif
+
+
+
+#if GAL_CONFIG_ARITH_INT == 1
+#define BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)                         \
+  case GAL_DATA_TYPE_INT:                                              \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, int, OP);                         \
+    break;
+#define BINARY_LEFT_DONE_INT(LT, OP)                                   \
+    case GAL_DATA_TYPE_INT:                                            \
+      BINARY_LEFT_RIGHT_DONE(LT, int, OP);                             \
+      break;
+#define BINARY_MULTISWITCH_INT(OP)                                     \
+    case GAL_DATA_TYPE_INT:                                            \
+      BINARY_LEFT_DONE(int, OP);                                       \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)
+#define BINARY_LEFT_DONE_INT(LT, OP)
+#define BINARY_MULTISWITCH_INT(OP)
+#endif
+
+
+
+#if GAL_CONFIG_ARITH_ULONG == 1
+#define BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                        \
+    case GAL_DATA_TYPE_ULONG:                                           \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned long, OP);              \
+      break;
+#define BINARY_LEFT_DONE_ULONG(LT, OP)                                  \
+    case GAL_DATA_TYPE_ULONG:                                           \
+      BINARY_LEFT_RIGHT_DONE(LT, unsigned long, OP);                    \
+      break;
+#define BINARY_MULTISWITCH_ULONG(OP)                                    \
+    case GAL_DATA_TYPE_ULONG:                                           \
+      BINARY_LEFT_DONE(unsigned long, OP);                              \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)
+#define BINARY_LEFT_DONE_ULONG(LT, OP)
+#define BINARY_MULTISWITCH_ULONG(OP)
+#endif
+
+
+
+#if GAL_CONFIG_ARITH_LONGLONG == 1
+#define BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                     \
+    case GAL_DATA_TYPE_LONGLONG:                                        \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, LONGLONG, OP);                   \
+      break;
+#define BINARY_LEFT_DONE_LONGLONG(LT, OP)                               \
+    case GAL_DATA_TYPE_LONGLONG:                                        \
+      BINARY_LEFT_RIGHT_DONE(LT, long long, OP);                        \
+      break;
+#define BINARY_MULTISWITCH_LONGLONG(OP)                                 \
+    case GAL_DATA_TYPE_LONGLONG:                                        \
+      BINARY_LEFT_DONE(LONGLONG, OP);                                   \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)
+#define BINARY_LEFT_DONE_LONGLONG(LT, OP)
+#define BINARY_MULTISWITCH_LONGLONG(OP)
+#endif
+
+
+
+
+
+#define BINARY_LEFT_RIGHT_DONE(LT, RT, OP)                              \
+  switch(o->type)                                                       \
+    {                                                                   \
+                                                                        \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned char, OP);              \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_LONG:                                            \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, long, OP);                       \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, float, OP);                      \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_DOUBLE:                                          \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, double, OP);                     \
+      break;                                                            \
+                                                                        \
+    BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                             \
+    BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                            \
+    BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                           \
+    BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)                              \
+    BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                             \
+    BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                            \
+    BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                         \
+                                                                        \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
+            "for o->type in BINARY_LEFT_RIGHT_DONE", type);             \
+    }
+
+
+
+
+
+#define BINARY_LEFT_DONE(LT, OP)                                        \
+  switch(r->type)                                                       \
+    {                                                                   \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      BINARY_LEFT_RIGHT_DONE(LT, unsigned char, OP);                    \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_LONG:                                            \
+      BINARY_LEFT_RIGHT_DONE(LT, long, OP);                             \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      BINARY_LEFT_RIGHT_DONE(LT, float, OP);                            \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_DOUBLE:                                          \
+      BINARY_LEFT_RIGHT_DONE(LT, double, OP);                           \
+      break;                                                            \
+                                                                        \
+    BINARY_LEFT_DONE_CHAR(LT, OP)                                       \
+    BINARY_LEFT_DONE_USHORT(LT, OP)                                     \
+    BINARY_LEFT_DONE_SHORT(LT, OP)                                      \
+    BINARY_LEFT_DONE_UINT(LT, OP)                                       \
+    BINARY_LEFT_DONE_INT(LT, OP)                                        \
+    BINARY_LEFT_DONE_ULONG(LT, OP)                                      \
+    BINARY_LEFT_DONE_LONGLONG(LT, OP)                                   \
+                                                                        \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
+            "for r->type in BINARY_LEFT_DONE", type);                   \
+    }
+
+
+
+
+
+#define BINARY_MULTISWITCH(OP)                                          \
+  switch(l->type)                                                       \
+    {                                                                   \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      BINARY_LEFT_DONE(unsigned char, OP);                              \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_LONG:                                            \
+      BINARY_LEFT_DONE(long, OP);                                       \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      BINARY_LEFT_DONE(float, OP);                                      \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_DOUBLE:                                          \
+      BINARY_LEFT_DONE(double, OP);                                     \
+      break;                                                            \
+                                                                        \
+    BINARY_MULTISWITCH_CHAR(OP)                                         \
+    BINARY_MULTISWITCH_USHORT(OP)                                       \
+    BINARY_MULTISWITCH_SHORT(OP)                                        \
+    BINARY_MULTISWITCH_UINT(OP)                                         \
+    BINARY_MULTISWITCH_INT(OP)                                          \
+    BINARY_MULTISWITCH_ULONG(OP)                                        \
+    BINARY_MULTISWITCH_LONGLONG(OP)                                     \
+                                                                        \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
+            "for l->type in BINARY_MULTISWITCH", type);                 \
+    }
 
 
 
@@ -61,26 +302,24 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    `l' and `s' pointers. */
 #define BINARY_INTERNAL(OP, OUT_TYPE)                                   \
                                                                         \
-  gal_data_t *l, *r, *left, *right;                                     \
+  gal_data_t *l, *r;                                                    \
                                                                         \
                                                                         \
   /* Read the variable arguments. */                                    \
-  left = va_arg(va, gal_data_t *);                                      \
-  right = va_arg(va, gal_data_t *);                                     \
+  l = va_arg(va, gal_data_t *);                                         \
+  r = va_arg(va, gal_data_t *);                                         \
                                                                         \
                                                                         \
-  /* Simple sanity check, then choose the common type. */               \
-  if( (flags & GAL_DATA_ARITH_NUMOK) && (left->size==1 || right->size==1 ) ) \
+  /* Simple sanity check on the input sizes */                          \
+  if( (flags & GAL_DATA_ARITH_NUMOK) && (l->size==1 || r->size==1 ) )   \
     type=0;      /* Everything is ok, just a place-holder. */           \
-  else if (gal_data_dsize_is_different(left, right))                    \
+  else if (gal_data_dsize_is_different(l, r))                           \
     error(EXIT_FAILURE, 0, "The datasets don't have the same "          \
           "dimension/size");                                            \
                                                                         \
                                                                         \
-  /* Set the two datasets to the same type if they were different. */   \
-  type=gal_data_out_type(left, right);                                  \
-  gal_data_to_same_type(left, right, &l, &r, type,                      \
-                        flags & GAL_DATA_ARITH_FREE );                  \
+  /* Find the best output type. */                                      \
+  type=gal_data_out_type(l, r);                                         \
                                                                         \
                                                                         \
   /* Output can point to any one of the two arrays. */                  \
@@ -94,51 +333,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                                                                         \
                                                                         \
   /* In block to allow definitions. */                                  \
-  {                                                                     \
-    BINARY_DEFINITIONS;                                                 \
-    switch(l->type)                                                     \
-      {                                                                 \
-      case GAL_DATA_TYPE_UCHAR:                                         \
-        BINARY_OPERATOR_FOR_TYPE(ucf, ouc, luc, ruc, OP);               \
+  BINARY_MULTISWITCH(OP);                                               \
                                                                         \
-      case GAL_DATA_TYPE_CHAR:                                          \
-        BINARY_OPERATOR_FOR_TYPE(cf,  oc,  lc,  rc,  OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_USHORT:                                        \
-        BINARY_OPERATOR_FOR_TYPE(usf, ous, lus, rus, OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_SHORT:                                         \
-        BINARY_OPERATOR_FOR_TYPE(sf,  os,  ls,  rs,  OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_UINT:                                          \
-        BINARY_OPERATOR_FOR_TYPE(uif, oui, lui, rui, OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_INT:                                           \
-        BINARY_OPERATOR_FOR_TYPE(iif, oi,  li,  ri,  OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_ULONG:                                         \
-        BINARY_OPERATOR_FOR_TYPE(ulf, oul, lul, rul, OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_LONG:                                          \
-        BINARY_OPERATOR_FOR_TYPE(lf,  ol,  ll,  rl,  OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_LONGLONG:                                      \
-        BINARY_OPERATOR_FOR_TYPE(Lf,  oL,  lL,  rL,  OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_FLOAT:                                         \
-        BINARY_OPERATOR_FOR_TYPE(ff, of,  lff,  rf,  OP);               \
-                                                                        \
-      case GAL_DATA_TYPE_DOUBLE:                                        \
-        BINARY_OPERATOR_FOR_TYPE(df,  od,  ld,  rd,  OP);               \
-                                                                        \
-      default:                                                          \
-        error(EXIT_FAILURE, 0, "type %d not recognized in "             \
-              "data-arithmetic", type);                                 \
-      }                                                                 \
-  }                                                                     \
-                                                                        \
-    /* Clean up. */                                                     \
-    if(flags & GAL_DATA_ARITH_FREE)                                     \
+  /* Clean up. */                                                       \
+  if(flags & GAL_DATA_ARITH_FREE)                                       \
     {                                                                   \
       if(o==l) gal_data_free(r);                                        \
       else if(o==r) gal_data_free(l);                                   \
