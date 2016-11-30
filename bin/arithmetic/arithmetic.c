@@ -39,7 +39,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "operands.h"
-#include "operators.h"
 #include "arithmetic.h"
 
 
