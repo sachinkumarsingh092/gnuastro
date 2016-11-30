@@ -67,6 +67,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 reversepolish(struct imgarithparams *p)
 {
+  int op=0, nop=0;
   struct gal_linkedlist_stll *token;
   gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
   unsigned char flags = ( GAL_DATA_ARITH_INPLACE | GAL_DATA_ARITH_FREE
@@ -90,20 +91,96 @@ reversepolish(struct imgarithparams *p)
         add_operand(p, NULL, d1);
       else
         {
-          /* Note that the first popped operand is the right/second given
-             operand on the command-line. */
-          if( !strcmp(token->v, "+") || !strcmp(token->v, "-")
-              || !strcmp(token->v, "*") || !strcmp(token->v, "/") )
-            {
-              d2=pop_operand(p, token->v);
-              d1=pop_operand(p, token->v);
-            }
+          if      (!strcmp(token->v, "+" ))
+            { op=GAL_DATA_OPERATOR_PLUS;          nop=2;  }
+          else if (!strcmp(token->v, "-" ))
+            { op=GAL_DATA_OPERATOR_MINUS;         nop=2;  }
+          else if (!strcmp(token->v, "*" ))
+            { op=GAL_DATA_OPERATOR_MULTIPLY;      nop=2;  }
+          else if (!strcmp(token->v, "/" ))
+            { op=GAL_DATA_OPERATOR_DIVIDE;        nop=2;  }
+
+          else if (!strcmp(token->v, "lt" ))
+            { op=GAL_DATA_OPERATOR_LT;            nop=2;  }
+          else if (!strcmp(token->v, "le"))
+            { op=GAL_DATA_OPERATOR_LE;            nop=2;  }
+          else if (!strcmp(token->v, "gt" ))
+            { op=GAL_DATA_OPERATOR_GT;            nop=2;  }
+          else if (!strcmp(token->v, "ge"))
+            { op=GAL_DATA_OPERATOR_LE;            nop=2;  }
+          else if (!strcmp(token->v, "eq"))
+            { op=GAL_DATA_OPERATOR_EQ;            nop=2;  }
+          else if (!strcmp(token->v, "ne"))
+            { op=GAL_DATA_OPERATOR_NE;            nop=2;  }
+          else if (!strcmp(token->v, "and"))
+            { op=GAL_DATA_OPERATOR_AND;           nop=2;  }
+          else if (!strcmp(token->v, "or"))
+            { op=GAL_DATA_OPERATOR_OR;            nop=2;  }
+          else if (!strcmp(token->v, "bitand"))
+            { op=GAL_DATA_OPERATOR_BITAND;        nop=2;  }
+          else if (!strcmp(token->v, "bitor"))
+            { op=GAL_DATA_OPERATOR_BITOR;         nop=2;  }
+
+          else if (!strcmp(token->v, "not"))
+            { op=GAL_DATA_OPERATOR_NOT;           nop=1;  }
+          else if (!strcmp(token->v, "isblank"))
+            { op=GAL_DATA_OPERATOR_ISBLANK;       nop=1;  }
+          else if (!strcmp(token->v, "where"))
+            { op=GAL_DATA_OPERATOR_WHERE;         nop=3;  }
+
+          else if (!strcmp(token->v, "abs"))
+            { op=GAL_DATA_OPERATOR_ABS;           nop=1;  }
+          else if (!strcmp(token->v, "pow"))
+            { op=GAL_DATA_OPERATOR_POW;           nop=2;  }
+          else if (!strcmp(token->v, "sqrt"))
+            { op=GAL_DATA_OPERATOR_SQRT;          nop=1;  }
+          else if (!strcmp(token->v, "log"))
+            { op=GAL_DATA_OPERATOR_LOG;           nop=1;  }
+          else if (!strcmp(token->v, "log10"))
+            { op=GAL_DATA_OPERATOR_LOG10;         nop=1;  }
+
+          else if (!strcmp(token->v, "minval"))
+            { op=GAL_DATA_OPERATOR_MINVAL;        nop=1;  }
+          else if (!strcmp(token->v, "maxval"))
+            { op=GAL_DATA_OPERATOR_MAXVAL;        nop=1;  }
+          else if (!strcmp(token->v, "min"))
+            { op=GAL_DATA_OPERATOR_MIN;           nop=-1; }
+          else if (!strcmp(token->v, "max"))
+            { op=GAL_DATA_OPERATOR_MAX;           nop=-1; }
+          else if (!strcmp(token->v, "average"))
+            { op=GAL_DATA_OPERATOR_AVERAGE;       nop=-1; }
+          else if (!strcmp(token->v, "median"))
+            { op=GAL_DATA_OPERATOR_MEDIAN;        nop=-1; }
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as a FITS file, number, or operator",
                   token->v);
-          add_operand(p, NULL,
-                      gal_data_arithmetic(token->v, flags, d1, d2, d3));
+
+          /* Pop the necessary number of operators. */
+          if(nop==1)
+            d1=pop_operand(p, token->v);
+          else if(nop==2)
+          {
+            d2=pop_operand(p, token->v);
+            d1=pop_operand(p, token->v);
+          }
+          else if(nop==3)
+          {
+            d3=pop_operand(p, token->v);
+            d2=pop_operand(p, token->v);
+            d1=pop_operand(p, token->v);
+          }
+          else if(nop==-1)
+            /* It might be possible to add a `next' pointer to the data
+               structure so it can act like a linked list too. In that
+               case, t */
+            error(EXIT_FAILURE, 0, "Operators with an unknown number of "
+                  "operands are not yet implemented.");
+          else
+            error(EXIT_FAILURE, 0, "No operators need %d operands", nop);
+
+          /* Do the arithemtic operation. */
+          add_operand(p, NULL, gal_data_arithmetic(op, flags, d1, d2, d3));
         }
     }
 

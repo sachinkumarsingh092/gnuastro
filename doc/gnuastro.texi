@@ -7183,7 +7183,7 @@ Equality: similar to @code{lt} (`less than' operator), but returning 1 when
 the two popped operands are equal (to double precision floating point
 accuracy).
 
-@item neq
+@item ne
 Non-Equality: similar to @code{lt} (`less than' operator), but returning 1
 when the two popped operands are @emph{not} equal (to double precision
 floating point accuracy).

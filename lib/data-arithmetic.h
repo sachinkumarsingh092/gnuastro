@@ -217,7 +217,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for o->type in BINARY_LEFT_RIGHT_DONE", type);             \
+            "for o->type in BINARY_LEFT_RIGHT_DONE", o->type);          \
     }
 
 
@@ -253,14 +253,52 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for r->type in BINARY_LEFT_DONE", type);                   \
+            "for r->type in BINARY_LEFT_DONE", r->type);                \
     }
 
 
 
 
 
-#define BINARY_MULTISWITCH(OP)                                          \
+/* Prepare the inputs and output for binary operations and do the job.*/
+#define BINARY_INTERNAL(OP, OUT_TYPE) {                                 \
+                                                                        \
+  /* Read the variable arguments. */                                    \
+  gal_data_t *l, *r;                                                    \
+  l = va_arg(va, gal_data_t *);                                         \
+  r = va_arg(va, gal_data_t *);                                         \
+                                                                        \
+                                                                        \
+  /* Simple sanity check on the input sizes */                          \
+  if( !( (flags & GAL_DATA_ARITH_NUMOK) && (l->size==1 || r->size==1))  \
+      && gal_data_dsize_is_different(l, r) )                            \
+    error(EXIT_FAILURE, 0, "The datasets don't have the same "          \
+          "dimension/size");                                            \
+                                                                        \
+                                                                        \
+  /* Set the output type and size. */                                   \
+  out_type = OUT_TYPE ? OUT_TYPE : gal_data_out_type(l, r);             \
+  out_size = l->size > r->size ? l->size : r->size;                     \
+                                                                        \
+                                                                        \
+  /* If we want inplace output, set the output pointer to one input. */ \
+  /* Note that the output type can be different from both inputs.    */ \
+  if(flags & GAL_DATA_ARITH_INPLACE)                                    \
+    {                                                                   \
+      if(l->type==out_type && out_size==l->size)        o = l;          \
+      else if(r->type==out_type && out_size==r->size)   o = r;          \
+    }                                                                   \
+                                                                        \
+                                                                        \
+  /* If the output pointer was not set for any reason, allocate it. */  \
+  if(o==NULL)                                                           \
+    o = gal_data_alloc(NULL, out_type,                                  \
+                       l->size>1 ? l->ndim  : r->ndim,                  \
+                       l->size>1 ? l->dsize : r->dsize,                 \
+                       0, l->mmapped || r->mmapped);                    \
+                                                                        \
+                                                                        \
+  /* Do the operations based on the different types. */                 \
   switch(l->type)                                                       \
     {                                                                   \
     case GAL_DATA_TYPE_UCHAR:                                           \
@@ -289,51 +327,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for l->type in BINARY_MULTISWITCH", type);                 \
-    }
-
-
-
-
-
-/* Preparations for binary operators.
-
-   Note that after `gal_data_to_same_type', we are only concerned with the
-   `l' and `s' pointers. */
-#define BINARY_INTERNAL(OP, OUT_TYPE)                                   \
-                                                                        \
-  gal_data_t *l, *r;                                                    \
-                                                                        \
-                                                                        \
-  /* Read the variable arguments. */                                    \
-  l = va_arg(va, gal_data_t *);                                         \
-  r = va_arg(va, gal_data_t *);                                         \
-                                                                        \
-                                                                        \
-  /* Simple sanity check on the input sizes */                          \
-  if( (flags & GAL_DATA_ARITH_NUMOK) && (l->size==1 || r->size==1 ) )   \
-    type=0;      /* Everything is ok, just a place-holder. */           \
-  else if (gal_data_dsize_is_different(l, r))                           \
-    error(EXIT_FAILURE, 0, "The datasets don't have the same "          \
-          "dimension/size");                                            \
-                                                                        \
-                                                                        \
-  /* Find the best output type. */                                      \
-  type=gal_data_out_type(l, r);                                         \
-                                                                        \
-                                                                        \
-  /* Output can point to any one of the two arrays. */                  \
-  if(flags & GAL_DATA_ARITH_INPLACE)                                    \
-    o = l->size>1 ? l : r;                                              \
-  else                                                                  \
-    o = gal_data_alloc(NULL, type,                                      \
-                       l->size>1 ? l->ndim  : r->ndim,                  \
-                       l->size>1 ? l->dsize : r->dsize,                 \
-                       0, l->mmapped || r->mmapped);                    \
-                                                                        \
-                                                                        \
-  /* In block to allow definitions. */                                  \
-  BINARY_MULTISWITCH(OP);                                               \
+            "for l->type in BINARY_MULTISWITCH", l->type);              \
+    }                                                                   \
                                                                         \
   /* Clean up. */                                                       \
   if(flags & GAL_DATA_ARITH_FREE)                                       \
@@ -341,7 +336,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
       if(o==l) gal_data_free(r);                                        \
       else if(o==r) gal_data_free(l);                                   \
       else {gal_data_free(l); gal_data_free(r);}                        \
-    }
+    }                                                                   \
+}
 
 
 

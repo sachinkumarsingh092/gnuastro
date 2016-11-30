@@ -103,7 +103,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 enum gal_data_alltypes
 {
   GAL_DATA_TYPE_BIT,       /* Bit              (TBIT).        */
-  GAL_DATA_TYPE_UCHAR,     /* Unsigned char    (TBYTE).       */
+  GAL_DATA_TYPE_UCHAR,     /* unsigned char    (TBYTE).       */
   GAL_DATA_TYPE_CHAR,      /* char             (TSBYTE).      */
   GAL_DATA_TYPE_LOGICAL,   /* char             (TLOGICAL).    */
   GAL_DATA_TYPE_STRING,    /* string           (TSTRING).     */
@@ -118,6 +118,46 @@ enum gal_data_alltypes
   GAL_DATA_TYPE_DOUBLE,    /* double           (TDOUBLE).     */
   GAL_DATA_TYPE_COMPLEX,   /* Complex float    (TCOMPLEX).    */
   GAL_DATA_TYPE_DCOMPLEX,  /* Complex double   (TDBLCOMPLEX). */
+};
+
+
+
+
+
+enum gal_data_operators
+{
+  GAL_DATA_OPERATOR_PLUS,      /*   +    */
+  GAL_DATA_OPERATOR_MINUS,     /*   -    */
+  GAL_DATA_OPERATOR_MULTIPLY,  /*   *    */
+  GAL_DATA_OPERATOR_DIVIDE,    /*   /    */
+
+  GAL_DATA_OPERATOR_LT,        /*   <    */
+  GAL_DATA_OPERATOR_LE,        /*   <=   */
+  GAL_DATA_OPERATOR_GT,        /*   >    */
+  GAL_DATA_OPERATOR_GE,        /*   >=   */
+  GAL_DATA_OPERATOR_EQ,        /*   ==   */
+  GAL_DATA_OPERATOR_NE,        /*   !=   */
+  GAL_DATA_OPERATOR_AND,       /*   &&   */
+  GAL_DATA_OPERATOR_OR,        /*   ||   */
+  GAL_DATA_OPERATOR_BITAND,    /*   &    */
+  GAL_DATA_OPERATOR_BITOR,     /*   |    */
+
+  GAL_DATA_OPERATOR_NOT,       /*   !    */
+  GAL_DATA_OPERATOR_ISBLANK,   /* Similar to isnan() for floats. */
+  GAL_DATA_OPERATOR_WHERE,     /*   ?:   */
+
+  GAL_DATA_OPERATOR_ABS,       /* abs()  */
+  GAL_DATA_OPERATOR_POW,       /* pow()  */
+  GAL_DATA_OPERATOR_SQRT,      /* sqrt() */
+  GAL_DATA_OPERATOR_LOG,       /* log()  */
+  GAL_DATA_OPERATOR_LOG10,     /* log()  */
+
+  GAL_DATA_OPERATOR_MINVAL,    /* Minimum value of array.                */
+  GAL_DATA_OPERATOR_MAXVAL,    /* Maximum value of array.                */
+  GAL_DATA_OPERATOR_MIN,       /* Minimum per pixel of multiple arrays.  */
+  GAL_DATA_OPERATOR_MAX,       /* Maximum per pixel of multiple arrays.  */
+  GAL_DATA_OPERATOR_AVERAGE,   /* Average per pixel of multiple arrays.  */
+  GAL_DATA_OPERATOR_MEDIAN,    /* Median per pixel of multiple arrays.   */
 };
 
 
@@ -226,7 +266,7 @@ gal_data_string_to_number(char *string);
  **************           Arithmetic           ***************
  *************************************************************/
 gal_data_t *
-gal_data_arithmetic(char *operator, unsigned char flags, ...);
+gal_data_arithmetic(int operator, unsigned char flags, ...);
 
 
 

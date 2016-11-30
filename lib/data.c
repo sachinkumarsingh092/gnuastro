@@ -1141,28 +1141,32 @@ gal_data_string_to_number(char *string)
  **************           Arithmetic           ***************
  *************************************************************/
 gal_data_t *
-gal_data_arithmetic(char *operator, unsigned char flags, ...)
+gal_data_arithmetic(int operator, unsigned char flags, ...)
 {
-  int type;
   va_list va;
+  int out_type;
+  size_t out_size;
   gal_data_t *o=NULL;
 
   /* Prepare the variable arguments (starting after the flags argument). */
   va_start(va, flags);
 
   /* Depending on the operator do the job: */
-  if      (!strcmp(operator, "+"))   { BINARY_INTERNAL(+, 0); }
-  else if (!strcmp(operator, "-"))   { BINARY_INTERNAL(-, 0); }
-  else if (!strcmp(operator, "*"))   { BINARY_INTERNAL(*, 0); }
-  else if (!strcmp(operator, "/"))   { BINARY_INTERNAL(/, 0); }
-  else if (!strcmp(operator, "lt"))  { BINARY_INTERNAL(<, 0); }
-  else if (!strcmp(operator, "le"))  { BINARY_INTERNAL(<=, 0); }
-  else if (!strcmp(operator, "gt"))  { BINARY_INTERNAL(>, 0); }
-  else if (!strcmp(operator, "ge"))  { BINARY_INTERNAL(>=, 0); }
-  else if (!strcmp(operator, "eq"))  { BINARY_INTERNAL(==, 0); }
-  else if (!strcmp(operator, "neq")) { BINARY_INTERNAL(!=, 0); }
-  else if (!strcmp(operator, "and")) { BINARY_INTERNAL(&&, 0); }
-  else if (!strcmp(operator, "or"))  { BINARY_INTERNAL(||, 0); }
+  switch(operator)
+    {
+    case GAL_DATA_OPERATOR_PLUS:     BINARY_INTERNAL(+, 0); break;
+    case GAL_DATA_OPERATOR_MINUS:    BINARY_INTERNAL(-,  0); break;
+    case GAL_DATA_OPERATOR_MULTIPLY: BINARY_INTERNAL(*,  0); break;
+    case GAL_DATA_OPERATOR_DIVIDE:   BINARY_INTERNAL(/,  0); break;
+
+    case GAL_DATA_OPERATOR_LT:  BINARY_INTERNAL(<,  GAL_DATA_TYPE_UCHAR); break;
+    case GAL_DATA_OPERATOR_LE:  BINARY_INTERNAL(<=, GAL_DATA_TYPE_UCHAR); break;
+    case GAL_DATA_OPERATOR_GT:  BINARY_INTERNAL(>,  GAL_DATA_TYPE_UCHAR); break;
+    case GAL_DATA_OPERATOR_GE:  BINARY_INTERNAL(>=, GAL_DATA_TYPE_UCHAR); break;
+    case GAL_DATA_OPERATOR_EQ:  BINARY_INTERNAL(==, GAL_DATA_TYPE_UCHAR); break;
+    case GAL_DATA_OPERATOR_NE:  BINARY_INTERNAL(!=, GAL_DATA_TYPE_UCHAR); break;
+    case GAL_DATA_OPERATOR_AND: BINARY_INTERNAL(&&, GAL_DATA_TYPE_UCHAR); break;
+    case GAL_DATA_OPERATOR_OR:  BINARY_INTERNAL(||, GAL_DATA_TYPE_UCHAR); break;
 
 #if 0
   else if(!strcmp(operator, "abs"))       takeabs(p);
@@ -1181,9 +1185,10 @@ gal_data_arithmetic(char *operator, unsigned char flags, ...)
   else if(!strcmp(operator, "where"))     where(p);
 #endif
 
-  else
-    error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
-          "interpretted as an operator", operator);
+    default:
+      error(EXIT_FAILURE, 0, "the argument \"%d\" could not be "
+            "interpretted as an operator", operator);
+    }
 
   /* End the variable argument structure and return. */
   va_end(va);
