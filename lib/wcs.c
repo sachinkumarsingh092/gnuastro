@@ -57,7 +57,7 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
 {
   size_t i;
   double imgcrd[2], phi, theta;
-  int stat, status=0, ncoord=1, nelem=2;
+  int status=0, ncoord=1, nelem=2;
 
   for(i=0;i<number;++i)
     {
@@ -65,8 +65,8 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
         radec[i*stride]=radec[i*stride+1]=NAN;
       else
         {
-          status=wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
-                        &theta, radec+i*stride, &stat);
+          wcsp2s(wcs, ncoord, nelem, xy+i*stride, imgcrd, &phi,
+                 &theta, radec+i*stride, &status);
           if(status)
             error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
                   wcs_errmsg[status]);
@@ -91,7 +91,7 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
 {
   size_t i;
   double imgcrd[2], phi, theta;
-  int stat, status=0, ncoord=1, nelem=2;
+  int status=0, ncoord=1, nelem=2;
 
   for(i=0;i<number;++i)
     {
@@ -99,8 +99,8 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
         radec[i*stride]=radec[i*stride+1]=NAN;
       else
         {
-          status=wcss2p(wcs, ncoord, nelem, radec+i*stride, &phi, &theta,
-                        imgcrd, xy+i*stride, &stat);
+          wcss2p(wcs, ncoord, nelem, radec+i*stride, &phi, &theta,
+                 imgcrd, xy+i*stride, &status);
           if(status)
             error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
                   wcs_errmsg[status]);

@@ -500,8 +500,8 @@ cropname(struct cropparams *crp)
 void
 cropflpixel(struct cropparams *crp)
 {
-  int ncoord=1, nelem=2, status;
   struct imgcropparams *p=crp->p;
+  int ncoord=1, nelem=2, status[2]={0,0};
   long *naxes=p->imgs[crp->imgindex].naxes;
   double pixcrd[2], imgcrd[2], phi[1], theta[1];
   long *fpixel=crp->fpixel, *lpixel=crp->lpixel;
@@ -539,11 +539,12 @@ cropflpixel(struct cropparams *crp)
         }
       else
         {
-          status=0;
           if(wcss2p(p->imgs[crp->imgindex].wcs, ncoord, nelem, crp->world,
-                    phi, theta, imgcrd, pixcrd, &status) )
-            error(EXIT_FAILURE, 0, "wcss2p error %d: %s", status,
-                  wcs_errmsg[status]);
+                    phi, theta, imgcrd, pixcrd, status) )
+            if(status[0] || status[1])
+              error(EXIT_FAILURE, 0, "wcss2p error %d: %s",
+                    status[0] ? status[0] : status[1],
+                    wcs_errmsg[status[0] ? status[0] : status[1]]);
           gal_box_border_from_center(pixcrd[0], pixcrd[1], p->iwidth, fpixel,
                                      lpixel);
           /*

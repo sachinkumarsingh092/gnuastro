@@ -52,7 +52,7 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 {
   double twidth;
   struct wcsprm *wcs=img->wcs;
-  int status, ncoord=4, nelem=2;
+  int i, status[4]={0,0,0,0}, ncoord=4, nelem=2;
   double imgcrd[8], phi[4], theta[4], pixcrd[8];
 
 
@@ -123,10 +123,13 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
   pixcrd[4]=1;               pixcrd[5]=img->naxes[1];
   pixcrd[6]=img->naxes[0];   pixcrd[7]=img->naxes[1];
   wcsp2s(wcs, ncoord, nelem, pixcrd, imgcrd, phi, theta,
-         img->corners, &status);
-  if(status)
-    error(EXIT_FAILURE, 0, "wcsp2s ERROR %d: %s", status,
-          wcs_errmsg[status]);
+         img->corners, status);
+
+  /* Check if there was no error in the conversion. */
+  for(i=0;i<4;++i)
+    if(status[i])
+      error(EXIT_FAILURE, 0, "wcsp2s ERROR %d in row %d of pixcrd: %s",
+            i, status[i], wcs_errmsg[status[i]]);
 
 
   /* Fill in the size of the image in celestial degrees from the first
