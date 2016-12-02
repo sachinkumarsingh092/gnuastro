@@ -3441,7 +3441,7 @@ all the variables discussed above. In the examples above, the new directory
 was added after the system specified directories. So if the program,
 library or manuals are found in the system wide directories, the user
 directory is no longer searched. If you want to search your local
-installation first, put the new directory before the already existing list
+installation first, put the new directory before the already existing list,
 like the example below.
 
 @example
@@ -3452,14 +3452,16 @@ export LD_LIBRARY_PATH=/home/name/.local/lib:$LD_LIBRARY_PATH
 This is good when a library, for example CFITSIO, is already present on the
 system, but the system-wide install wasn't configured with the correct
 configuration flags (see @ref{CFITSIO}), or you want to use a newer version
-and you don't have administrator or root access to update it. With e above
-order @file{LD_LIBRARY_PATH}, the system will first find the CFITSIO you
-installed for yourself and will never reach the system-wide
-installation. However there are important security problems: because all
-important system-wide programs and libraries can be replaced by non-secure
-versions if they also exist in @file{./.local/}. So if you choose this
-order, be sure to keep it clean from executables or libraries with the same
-names as important system programs or libraries.
+and you don't have administrator or root access to update it. If you update
+@file{LD_LIBRARY_PATH} with the order shown above, the linker will first
+find the CFITSIO you installed for yourself and use it, it will never reach
+the system-wide installation. However there are important security problems
+with this order: all important system-wide programs and libraries can be
+replaced by non-secure versions with the same file names and put in the
+customized directory (@file{./.local/} in this example). So if you choose
+to search in your customized directory first, be sure to keep it clean from
+executables or libraries with the same names as important system programs
+or libraries.
 
 
 

@@ -291,11 +291,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
                                                                         \
                                                                         \
   /* If the output pointer was not set for any reason, allocate it. */  \
+  /* For `mmapsize', note that since its `size_t', it will always be */ \
+  /* Positive. The `-1' that is recommended to give when you want the */\
+  /* value in RAM is actually the largest possible memory location. */  \
+  /* So we just have to choose the smaller minmapsize of the two to */  \
+  /* decide if the output array should be in RAM or not. */             \
   if(o==NULL)                                                           \
     o = gal_data_alloc(NULL, out_type,                                  \
                        l->size>1 ? l->ndim  : r->ndim,                  \
                        l->size>1 ? l->dsize : r->dsize,                 \
-                       0, l->mmapped || r->mmapped);                    \
+                       0, ( l->minmapsize<r->minmapsize                 \
+                            ? l->minmapsize : r->minmapsize) );         \
                                                                         \
                                                                         \
   /* Do the operations based on the different types. */                 \

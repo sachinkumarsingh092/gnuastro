@@ -156,7 +156,11 @@ reversepolish(struct imgarithparams *p)
                   "interpretted as a FITS file, number, or operator",
                   token->v);
 
-          /* Pop the necessary number of operators. */
+          /* Pop the necessary number of operators. Note that the operators
+             are poped from a linked list (which is last-in-first-out). So
+             for the operators which need a specific order, the first poped
+             operand is actally the last (right most, in in-fix notation)
+             input operand.*/
           if(nop==1)
             d1=pop_operand(p, token->v);
           else if(nop==2)

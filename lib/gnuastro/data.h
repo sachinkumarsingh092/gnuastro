@@ -164,24 +164,36 @@ enum gal_data_operators
 
 
 
-/* Main data structure
+/* Main data structure.
 
-   If mmaped==0, it is assumed that the data is allocated (using
-   malloc). The `dsize' array is in the `long' type because CFITSIO uses
-   the long type and this will make it easier to call CFITSIO functions.
- */
+   Notes
+   -----
+
+    - If mmapname==NULL, then the array is allocated (using malloc, in the
+      RAM), otherwise its is mmap'd (is actually a file on the ssd/hdd).
+
+    - minmapsize is stored in the data structure to allow any derivative
+      data structures to follow the same number and decide if they should
+      be mmap'd or allocated.
+
+      - `minmapsize' ==0:  array is definitely mmap'd.
+
+      - `minmapsize' ==-1: array is definitely in RAM.
+
+    - The `dsize' array is in the `long' type because CFITSIO uses the long
+      type and this will make it easier to call CFITSIO functions.*/
 typedef struct
 {
-  void    *array;      /* Array keeping data elements.             */
-  int       type;      /* Type of data (from `gal_data_alltypes'). */
-  size_t    ndim;      /* Number of dimensions in the array.       */
-  long    *dsize;      /* Size of array along each dimension.      */
-  size_t    size;      /* Total number of data-elements.           */
-  int    mmapped;      /* ==1: not in physical RAM, it is mmap'd.  */
-  char *mmapname;      /* File name of the mmap.                   */
-  int   anyblank;      /* ==1: has blank values.                   */
-  int       nwcs;      /* for WCSLIB: no. coord. representations.  */
-  struct wcsprm *wcs;  /* WCS information for this dataset.        */
+  void        *array;  /* Array keeping data elements.               */
+  int           type;  /* Type of data (from `gal_data_alltypes').   */
+  size_t        ndim;  /* Number of dimensions in the array.         */
+  long        *dsize;  /* Size of array along each dimension.        */
+  size_t        size;  /* Total number of data-elements.             */
+  char     *mmapname;  /* File name of the mmap.                     */
+  size_t  minmapsize;  /* Minimum number of bytes to mmap the array. */
+  int       anyblank;  /* ==1: has blank values.                     */
+  int           nwcs;  /* for WCSLIB: no. coord. representations.    */
+  struct wcsprm *wcs;  /* WCS information for this dataset.          */
 } gal_data_t;
 
 

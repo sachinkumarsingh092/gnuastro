@@ -333,7 +333,6 @@ gal_data_mmap(gal_data_t *data)
     error(EXIT_FAILURE, errno, "%s couldn't be closed", filename);
 
   /* Set the mmaped flag to 1 and keep the filename. */
-  data->mmapped=1;
   data->mmapname=filename;
 }
 
@@ -363,6 +362,7 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
   /* Set the basic information we know so far */
   out->ndim=ndim;
   out->type=type;
+  out->minmapsize=minmapsize;
 
 
   /* Initialize the other values */
@@ -410,7 +410,6 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
             out->array = gal_data_malloc_array(out->type, out->size);
 
           /* Set the values. */
-          out->mmapped=0;
           out->mmapname=NULL;
         }
     }
@@ -434,7 +433,7 @@ gal_data_free(gal_data_t *data)
   /* Free all the allocated space and finally the data structure itself. */
   free(data->dsize);
 
-  if(data->mmapped)
+  if(data->mmapname)
     {
       /* Delete the file keeping the array. */
       remove(data->mmapname);
@@ -442,8 +441,9 @@ gal_data_free(gal_data_t *data)
       /* If there is nothing else in the .gnuastro directory, then delete
          the .gnuastro directory too. */
 
-      /* Free the file name space */
+      /* Free the file name space, and set it to NULL. */
       free(data->mmapname);
+      data->mmapname=NULL;
     }
   else
     free(data->array);
@@ -889,7 +889,7 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
   gal_data_t *out;
 
   /* Allocate space for the output type */
-  out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, 0, in->mmapped);
+  out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, 0, in->minmapsize);
 
   /* Copy the WCS structure, we need to have a blank WCS structure
      allocated outside of WCSLIB, then copy the contents. */
@@ -1115,7 +1115,7 @@ gal_data_string_to_number(char *string)
 
   /* Return the pointer to the data structure. */
   numarr=gal_data_alloc_number(type, ptr);
-  return gal_data_alloc(numarr, type, 1, dsize, 0, 0);
+  return gal_data_alloc(numarr, type, 1, dsize, 0, -1);
 }
 
 
