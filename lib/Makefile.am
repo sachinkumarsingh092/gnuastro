@@ -19,10 +19,16 @@
 ## along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
+
+
+
 ## Necessary flags. NOTE: $(top_srcdir)/bootstrapped/lib is only necessary
 ## for internally compiled utilities and libraries. It must not be included
 ## during the tests since the bootstrapped libraries are not installed.
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
+
+
+
 
 
 # Define the main compiled library file and its Libtool version.
@@ -30,11 +36,17 @@ lib_LTLIBRARIES = libgnuastro.la
 libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 
 
+
+
+
 # Specify the library .c files
-libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c data.c	\
-  data-arithmetic.c data-changetype.c fits.c git.c linkedlist.c mesh.c	\
-  mode.c polygon.c qsort.c spatialconvolve.c statistics.c threads.c	\
-  timing.c txtarray.c wcs.c
+libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c data.c  \
+  data-arithmetic.c data-copy.c fits.c git.c linkedlist.c mesh.c mode.c \
+  polygon.c qsort.c spatialconvolve.c statistics.c threads.c timing.c   \
+  txtarray.c wcs.c
+
+
+
 
 
 # Installed headers, note that we are not blindly including all `.h' files
@@ -49,14 +61,21 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/array.h            \
   $(headersdir)/threads.h $(headersdir)/wcs.h $(headersdir)/txtarray.h
 
 
+
+
+
 # Files to distribute in the tarball. These are internal headers and don't
 # need to be installed. Headers are only mentioned within the source files,
 # and if they are not explicitly mentioned somewhere in the Makefile, they
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
-EXTRA_DIST = gnuastro.pc.in data-arithmetic.h data-changetype.h         \
-  config.h.in checkset.h commonargs.h commonparams.h configfiles.h      \
-  fixedstringmacros.h mode.h neighbors.h timing.h $(headersdir)/README
+EXTRA_DIST = gnuastro.pc.in data-arithmetic.h data-arithmetic-binary.h  \
+  data-copy.h config.h.in checkset.h commonargs.h commonparams.h        \
+  configfiles.h fixedstringmacros.h mode.h neighbors.h timing.h         \
+  $(headersdir)/README
+
+
+
 
 
 # Definitions for Gnuastro's the pkg-config file (inspired from GSL's
@@ -64,6 +83,9 @@ EXTRA_DIST = gnuastro.pc.in data-arithmetic.h data-changetype.h         \
 pkgconfig_DATA = gnuastro.pc
 pkgconfigdir = $(libdir)/pkgconfig
 CLEANFILES = gnuastro.pc gnuastro/config.h
+
+
+
 
 
 # Build Gnuastro's pkg-config file and `config.h' based on the
@@ -85,6 +107,10 @@ gnuastro/config.h: Makefile config.h.in
                $(srcdir)/config.h.in >> $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
+
+
+
+
 
 gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 	rm -f $@ $@.tmp

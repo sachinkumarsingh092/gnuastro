@@ -221,26 +221,28 @@ reversepolish(struct imgarithparams *p)
     error(EXIT_FAILURE, 0, "too many operands");
 
 
-  /* Copy the WCS structure into the final dataset. */
-  p->operands->data->wcs=p->refdata.wcs;
-
-
   /* Set the output type. */
-  if(p->outtype==p->operands->data->type)
-    d1=p->operands->data;
-  else
+  if(p->up.typeset && p->outtype!=p->operands->data->type)
     {
       d1=gal_data_copy_to_new_type(p->operands->data, p->outtype);
       gal_data_free(p->operands->data);
     }
-  gal_fits_write_img(p->operands->data, p->cp.output, "Arithmetic", NULL,
-                     SPACK_STRING);
+  else
+    d1=p->operands->data;
+
+
+  /* Put a copy of the WCS structure from the reference image, it will be
+     freed while freeing d1. */
+  d1->wcs=p->refdata.wcs;
+
+
+  /* Write the data structure to a FITS image. */
+  gal_fits_write_img(d1, p->cp.output, "Arithmetic", NULL, SPACK_STRING);
 
 
   /* Clean up: */
   gal_data_free(d1);
   free(p->refdata.dsize);
-  wcsfree(p->refdata.wcs);
 
 
   /* Clean up. Note that the tokens were taken from the command-line

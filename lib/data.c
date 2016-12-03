@@ -27,7 +27,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include <float.h>
 #include <ctype.h>
-#include <stdarg.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +36,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/data.h>
 
 #include <checkset.h>
-#include <data-changetype.h>
+#include <data-copy.h>
 #include <data-arithmetic.h>
 
 
@@ -345,7 +344,7 @@ gal_data_mmap(gal_data_t *data)
    (largest possible size_t value), in this way, no file will be larger. */
 gal_data_t *
 gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
-               int clear, size_t minmapsize)
+               struct wcsprm *wcs, int clear, size_t minmapsize)
 {
   size_t i;
   gal_data_t *out;
@@ -359,15 +358,24 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
           sizeof *out);
 
 
-  /* Set the basic information we know so far */
+  /* Set the basic information we know so far. Note that we need a blank
+     WCS structure allocated outside of WCSLIB, then WCSLIB will copy the
+     contents. */
   out->ndim=ndim;
   out->type=type;
-  out->minmapsize=minmapsize;
-
-
-  /* Initialize the other values */
   out->anyblank=0;
-  out->wcs=NULL;
+  out->minmapsize=minmapsize;
+  if(wcs)
+    {
+      errno=0;
+      out->wcs=malloc(sizeof *out->wcs);
+      if(out->wcs==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes for out->wcs in "
+              "gal_data_alloc", sizeof *out->wcs);
+      wcscopy(1, wcs, out->wcs);
+    }
+  else
+    out->wcs=NULL;
 
 
   /* Allocate space for the dsize array: */
@@ -378,8 +386,7 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
           ndim*sizeof *out->dsize);
 
 
-
-  /* Fill in the dsize values: */
+  /* Fill in the `dsize' array and in the meantime set `size': */
   out->size=1;
   for(i=0;i<ndim;++i)
     {
@@ -883,86 +890,6 @@ gal_data_copy(gal_data_t *in)
 
 
 
-gal_data_t *
-gal_data_copy_to_new_type(gal_data_t *in, int newtype)
-{
-  gal_data_t *out;
-
-  /* Allocate space for the output type */
-  out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, 0, in->minmapsize);
-
-  /* Copy the WCS structure, we need to have a blank WCS structure
-     allocated outside of WCSLIB, then copy the contents. */
-  if(in->wcs)
-    {
-      errno=0;
-      out->wcs=malloc(sizeof *out->wcs);
-      if(out->wcs==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for out->wcs in "
-              "gal_data_copy_to_new_type", sizeof *out->wcs);
-      wcscopy(1, in->wcs, out->wcs);
-    }
-
-  /* Fill in the output data array while doing the conversion */
-  switch(newtype)
-    {
-    case GAL_DATA_TYPE_UCHAR:
-      gal_changetype_out_is_uchar(in, out);
-      break;
-
-    case GAL_DATA_TYPE_CHAR:
-      gal_changetype_out_is_char(in, out);
-      break;
-
-    case GAL_DATA_TYPE_USHORT:
-      gal_changetype_out_is_ushort(in, out);
-      break;
-
-    case GAL_DATA_TYPE_SHORT:
-      gal_changetype_out_is_short(in, out);
-      break;
-
-    case GAL_DATA_TYPE_UINT:
-      gal_changetype_out_is_uint(in, out);
-      break;
-
-    case GAL_DATA_TYPE_INT:
-      gal_changetype_out_is_int(in, out);
-      break;
-
-    case GAL_DATA_TYPE_ULONG:
-      gal_changetype_out_is_ulong(in, out);
-      break;
-
-    case GAL_DATA_TYPE_LONG:
-      gal_changetype_out_is_long(in, out);
-      break;
-
-    case GAL_DATA_TYPE_LONGLONG:
-      gal_changetype_out_is_longlong(in, out);
-      break;
-
-    case GAL_DATA_TYPE_FLOAT:
-      gal_changetype_out_is_float(in, out);
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      gal_changetype_out_is_double(in, out);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type %d not recognized in "
-            "gal_data_copy_to_new_type", newtype);
-    }
-
-  /* Return the created array */
-  return out;
-}
-
-
-
-
-
 int
 gal_data_out_type(gal_data_t *first, gal_data_t *second)
 {
@@ -1115,82 +1042,5 @@ gal_data_string_to_number(char *string)
 
   /* Return the pointer to the data structure. */
   numarr=gal_data_alloc_number(type, ptr);
-  return gal_data_alloc(numarr, type, 1, dsize, 0, -1);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************************************************************
- **************           Arithmetic           ***************
- *************************************************************/
-gal_data_t *
-gal_data_arithmetic(int operator, unsigned char flags, ...)
-{
-  va_list va;
-  int out_type;
-  size_t out_size;
-  gal_data_t *o=NULL;
-
-  /* Prepare the variable arguments (starting after the flags argument). */
-  va_start(va, flags);
-
-  /* Depending on the operator do the job: */
-  switch(operator)
-    {
-    case GAL_DATA_OPERATOR_PLUS:     BINARY_INTERNAL(+, 0); break;
-    case GAL_DATA_OPERATOR_MINUS:    BINARY_INTERNAL(-,  0); break;
-    case GAL_DATA_OPERATOR_MULTIPLY: BINARY_INTERNAL(*,  0); break;
-    case GAL_DATA_OPERATOR_DIVIDE:   BINARY_INTERNAL(/,  0); break;
-
-    case GAL_DATA_OPERATOR_LT:  BINARY_INTERNAL(<,  GAL_DATA_TYPE_UCHAR); break;
-    case GAL_DATA_OPERATOR_LE:  BINARY_INTERNAL(<=, GAL_DATA_TYPE_UCHAR); break;
-    case GAL_DATA_OPERATOR_GT:  BINARY_INTERNAL(>,  GAL_DATA_TYPE_UCHAR); break;
-    case GAL_DATA_OPERATOR_GE:  BINARY_INTERNAL(>=, GAL_DATA_TYPE_UCHAR); break;
-    case GAL_DATA_OPERATOR_EQ:  BINARY_INTERNAL(==, GAL_DATA_TYPE_UCHAR); break;
-    case GAL_DATA_OPERATOR_NE:  BINARY_INTERNAL(!=, GAL_DATA_TYPE_UCHAR); break;
-    case GAL_DATA_OPERATOR_AND: BINARY_INTERNAL(&&, GAL_DATA_TYPE_UCHAR); break;
-    case GAL_DATA_OPERATOR_OR:  BINARY_INTERNAL(||, GAL_DATA_TYPE_UCHAR); break;
-
-#if 0
-  else if(!strcmp(operator, "abs"))       takeabs(p);
-  else if(!strcmp(operator, "pow"))       topower(p, NULL);
-  else if(!strcmp(operator, "sqrt"))      takesqrt(p);
-  else if(!strcmp(operator, "log"))       takelog(p);
-  else if(!strcmp(operator, "log10"))     takelog10(p);
-  else if(!strcmp(operator, "minvalue"))  findmin(p);
-  else if(!strcmp(operator, "maxvalue"))  findmax(p);
-  else if(!strcmp(operator, "min")
-          || !strcmp(operator, "max")
-          || !strcmp(operator, "average")
-          || !strcmp(operator, "median")) alloppixs(p, operator);
-  else if(!strcmp(operator, "not"))       notfunc(p);
-  else if(!strcmp(operator, "isblank"))   opisblank(p);
-  else if(!strcmp(operator, "where"))     where(p);
-#endif
-
-    default:
-      error(EXIT_FAILURE, 0, "the argument \"%d\" could not be "
-            "interpretted as an operator", operator);
-    }
-
-  /* End the variable argument structure and return. */
-  va_end(va);
-  return o;
+  return gal_data_alloc(numarr, type, 1, dsize, NULL, 0, -1);
 }

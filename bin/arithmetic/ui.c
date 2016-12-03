@@ -203,10 +203,6 @@ checkifset(struct imgarithparams *p)
   if(p->cp.minmapsizeset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("minmapsize");
 
-  /* Output parameters: */
-  if(p->up.typeset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("type");
-
   /* Make sure the number of HDUs is not less than the total number of
      FITS images. If there are more HDUs than there are FITS images,
      there is no problem (since they can come from the configuration

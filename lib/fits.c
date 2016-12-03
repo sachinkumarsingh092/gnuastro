@@ -1237,7 +1237,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
 
 
   /* Allocate the space for the array and for the blank values. */
-  img=gal_data_alloc(NULL, type, (long)ndim, dsize, 0, minmapsize);
+  img=gal_data_alloc(NULL, type, (long)ndim, dsize, NULL, 0, minmapsize);
   blank=gal_data_alloc_blank(type);
   free(dsize);
 

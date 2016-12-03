@@ -68,6 +68,12 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Macros: */
 
+/* If this macro is 1, the only native type for arithmetic will be
+   float. Having the four different types set as native can greatly
+   lengthen the compilation time and slow-down the
+   debugging/developement. */
+#define GAL_DATA_ARITH_ONLY_FLOAT_FOR_FAST_DEBUG 0
+
 /* The maximum dimensionality of datasets. */
 #define GAL_DATA_MAXDIM    999
 
@@ -217,7 +223,7 @@ gal_data_calloc_array(int type, size_t size);
 
 gal_data_t *
 gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
-               int clear, size_t minmapsize);
+               struct wcsprm *wcs, int clear, size_t minmapsize);
 
 void
 gal_data_free(gal_data_t *data);
