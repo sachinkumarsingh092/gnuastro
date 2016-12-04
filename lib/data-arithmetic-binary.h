@@ -31,7 +31,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 /*************      Possibly set binary types to convert    *************/
 /************************************************************************/
-#if GAL_CONFIG_ARITH_CHAR == 1
+#if GAL_CONFIG_BIN_OP_UCHAR == 1
+#define BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)                        \
+  case GAL_DATA_TYPE_UCHAR:                                             \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned char, OP);                \
+    break;
+#define BINARY_LEFT_DONE_UCHAR(LT, OP)                                  \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      BINARY_LEFT_RIGHT_DONE(LT, unsigned char, OP);                    \
+      break;
+#define BINARY_MULTISWITCH_UCHAR(OP)                                    \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      BINARY_LEFT_DONE(unsigned char, OP);                              \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)
+#define BINARY_LEFT_DONE_UCHAR(LT, OP)
+#define BINARY_MULTISWITCH_UCHAR(OP)
+#endif
+
+
+
+
+
+#if GAL_CONFIG_BIN_OP_CHAR == 1
 #define BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                         \
   case GAL_DATA_TYPE_CHAR:                                              \
     BINARY_OPERATOR_FOR_TYPE(LT, RT, char, OP);                         \
@@ -54,18 +77,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#if GAL_CONFIG_ARITH_USHORT == 1
-#define BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                         \
-  case GAL_DATA_TYPE_USHORT:                                              \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned short, OP);                 \
+#if GAL_CONFIG_BIN_OP_USHORT == 1
+#define BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                       \
+  case GAL_DATA_TYPE_USHORT:                                            \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned short, OP);               \
     break;
-#define BINARY_LEFT_DONE_USHORT(LT, OP)                                   \
-    case GAL_DATA_TYPE_USHORT:                                            \
-      BINARY_LEFT_RIGHT_DONE(LT, unsigned short, OP);                     \
+#define BINARY_LEFT_DONE_USHORT(LT, OP)                                 \
+    case GAL_DATA_TYPE_USHORT:                                          \
+      BINARY_LEFT_RIGHT_DONE(LT, unsigned short, OP);                   \
       break;
-#define BINARY_MULTISWITCH_USHORT(OP)                                     \
-    case GAL_DATA_TYPE_USHORT:                                            \
-      BINARY_LEFT_DONE(unsigned short, OP);                               \
+#define BINARY_MULTISWITCH_USHORT(OP)                                   \
+    case GAL_DATA_TYPE_USHORT:                                          \
+      BINARY_LEFT_DONE(unsigned short, OP);                             \
       break;
 #else
 #define BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)
@@ -77,18 +100,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#if GAL_CONFIG_ARITH_SHORT == 1
-#define BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                         \
-  case GAL_DATA_TYPE_SHORT:                                              \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, short, OP);                         \
+#if GAL_CONFIG_BIN_OP_SHORT == 1
+#define BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                        \
+  case GAL_DATA_TYPE_SHORT:                                             \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, short, OP);                        \
     break;
-#define BINARY_LEFT_DONE_SHORT(LT, OP)                                   \
-    case GAL_DATA_TYPE_SHORT:                                            \
-      BINARY_LEFT_RIGHT_DONE(LT, short, OP);                             \
+#define BINARY_LEFT_DONE_SHORT(LT, OP)                                  \
+    case GAL_DATA_TYPE_SHORT:                                           \
+      BINARY_LEFT_RIGHT_DONE(LT, short, OP);                            \
       break;
-#define BINARY_MULTISWITCH_SHORT(OP)                                     \
-    case GAL_DATA_TYPE_SHORT:                                            \
-      BINARY_LEFT_DONE(short, OP);                                       \
+#define BINARY_MULTISWITCH_SHORT(OP)                                    \
+    case GAL_DATA_TYPE_SHORT:                                           \
+      BINARY_LEFT_DONE(short, OP);                                      \
       break;
 #else
 #define BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)
@@ -100,7 +123,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#if GAL_CONFIG_ARITH_UINT == 1
+#if GAL_CONFIG_BIN_OP_UINT == 1
 #define BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                         \
   case GAL_DATA_TYPE_UINT:                                              \
     BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned int, OP);                 \
@@ -123,18 +146,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#if GAL_CONFIG_ARITH_INT == 1
-#define BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)                         \
-  case GAL_DATA_TYPE_INT:                                              \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, int, OP);                         \
+#if GAL_CONFIG_BIN_OP_INT == 1
+#define BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)                          \
+  case GAL_DATA_TYPE_INT:                                               \
+    BINARY_OPERATOR_FOR_TYPE(LT, RT, int, OP);                          \
     break;
-#define BINARY_LEFT_DONE_INT(LT, OP)                                   \
-    case GAL_DATA_TYPE_INT:                                            \
-      BINARY_LEFT_RIGHT_DONE(LT, int, OP);                             \
+#define BINARY_LEFT_DONE_INT(LT, OP)                                    \
+    case GAL_DATA_TYPE_INT:                                             \
+      BINARY_LEFT_RIGHT_DONE(LT, int, OP);                              \
       break;
-#define BINARY_MULTISWITCH_INT(OP)                                     \
-    case GAL_DATA_TYPE_INT:                                            \
-      BINARY_LEFT_DONE(int, OP);                                       \
+#define BINARY_MULTISWITCH_INT(OP)                                      \
+    case GAL_DATA_TYPE_INT:                                             \
+      BINARY_LEFT_DONE(int, OP);                                        \
       break;
 #else
 #define BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)
@@ -146,7 +169,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#if GAL_CONFIG_ARITH_ULONG == 1
+#if GAL_CONFIG_BIN_OP_ULONG == 1
 #define BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                        \
     case GAL_DATA_TYPE_ULONG:                                           \
       BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned long, OP);              \
@@ -169,7 +192,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#if GAL_CONFIG_ARITH_LONGLONG == 1
+#if GAL_CONFIG_BIN_OP_LONG == 1
+#define BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                         \
+    case GAL_DATA_TYPE_LONG:                                            \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, long, OP);                       \
+      break;
+#define BINARY_LEFT_DONE_LONG(LT, OP)                                   \
+    case GAL_DATA_TYPE_LONG:                                            \
+      BINARY_LEFT_RIGHT_DONE(LT, long, OP);                             \
+      break;
+#define BINARY_MULTISWITCH_LONG(OP)                                     \
+    case GAL_DATA_TYPE_LONG:                                            \
+      BINARY_LEFT_DONE(long, OP);                                       \
+      break;
+#else
+#define BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)
+#define BINARY_LEFT_DONE_LONG(LT, OP)
+#define BINARY_MULTISWITCH_LONG(OP)
+#endif
+
+
+
+
+
+#if GAL_CONFIG_BIN_OP_LONGLONG == 1
 #define BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                     \
     case GAL_DATA_TYPE_LONGLONG:                                        \
       BINARY_OPERATOR_FOR_TYPE(LT, RT, LONGLONG, OP);                   \
@@ -192,48 +238,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-#if GAL_ONLY_FLOAT_FOR_FAST_DEBUG == 1
-
-#define BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)
-#define BINARY_LEFT_DONE_UCHAR(LT, OP)
-#define BINARY_MULTISWITCH_UCHAR(OP)
-
-#define BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)
-#define BINARY_LEFT_DONE_LONG(LT, OP)
-#define BINARY_MULTISWITCH_LONG(OP)
-
-#define BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)
-#define BINARY_LEFT_DONE_DOUBLE(LT, OP)
-#define BINARY_MULTISWITCH_DOUBLE(OP)
-
+#if GAL_CONFIG_BIN_OP_FLOAT == 1
+#define BINARY_LEFT_RIGHT_DONE_FLOAT(LT, RT, OP)                        \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      BINARY_OPERATOR_FOR_TYPE(LT, RT, float, OP);                      \
+      break;
+#define BINARY_LEFT_DONE_FLOAT(LT, OP)                                  \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      BINARY_LEFT_RIGHT_DONE(LT, float, OP);                            \
+      break;
+#define BINARY_MULTISWITCH_FLOAT(OP)                                    \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      BINARY_LEFT_DONE(float, OP);                                      \
+      break;
 #else
+#define BINARY_LEFT_RIGHT_DONE_FLOAT(LT, RT, OP)
+#define BINARY_LEFT_DONE_FLOAT(LT, OP)
+#define BINARY_MULTISWITCH_FLOAT(OP)
+#endif
 
-#define BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)                        \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned char, OP);              \
-      break;
-#define BINARY_LEFT_DONE_UCHAR(LT, OP)                                  \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      BINARY_LEFT_RIGHT_DONE(LT, unsigned char, OP);                    \
-      break;
-#define BINARY_MULTISWITCH_UCHAR(OP)                                    \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      BINARY_LEFT_DONE(unsigned char, OP);                              \
-      break;
 
-#define BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                         \
-    case GAL_DATA_TYPE_LONG:                                            \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, long, OP);                       \
-      break;
-#define BINARY_LEFT_DONE_LONG(LT, OP)                                   \
-    case GAL_DATA_TYPE_LONG:                                            \
-      BINARY_LEFT_RIGHT_DONE(LT, long, OP);                             \
-      break;
-#define BINARY_MULTISWITCH_LONG(OP)                                     \
-    case GAL_DATA_TYPE_LONG:                                            \
-      BINARY_LEFT_DONE(long, OP);                                       \
-      break;
 
+
+
+#if GAL_CONFIG_BIN_OP_DOUBLE == 1
 #define BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)                       \
     case GAL_DATA_TYPE_DOUBLE:                                          \
       BINARY_OPERATOR_FOR_TYPE(LT, RT, double, OP);                     \
@@ -246,8 +274,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
     case GAL_DATA_TYPE_DOUBLE:                                          \
       BINARY_LEFT_DONE(double, OP);                                     \
       break;
-
+#else
+#define BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)
+#define BINARY_LEFT_DONE_DOUBLE(LT, OP)
+#define BINARY_MULTISWITCH_DOUBLE(OP)
 #endif
+
+
+
+
 
 
 
@@ -288,21 +323,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   switch(o->type)                                                       \
     {                                                                   \
                                                                         \
-    case GAL_DATA_TYPE_FLOAT:                                           \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, float, OP);                      \
-      break;                                                            \
-                                                                        \
     BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)                            \
-    BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                             \
-    BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)                           \
-                                                                        \
     BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                             \
     BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                            \
     BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                           \
     BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)                              \
     BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                             \
     BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                            \
+    BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                             \
     BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                         \
+    BINARY_LEFT_RIGHT_DONE_FLOAT(LT, RT, OP)                            \
+    BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)                           \
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type %d not recognized in "               \
@@ -317,22 +348,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   switch(r->type)                                                       \
     {                                                                   \
                                                                         \
-    case GAL_DATA_TYPE_FLOAT:                                           \
-      BINARY_LEFT_RIGHT_DONE(LT, float, OP);                            \
-      break;                                                            \
-                                                                        \
     BINARY_LEFT_DONE_UCHAR(LT, OP)                                      \
-    BINARY_LEFT_DONE_LONG(LT, OP)                                       \
-    BINARY_LEFT_DONE_DOUBLE(LT, OP)                                     \
-                                                                        \
-                                                                        \
     BINARY_LEFT_DONE_CHAR(LT, OP)                                       \
     BINARY_LEFT_DONE_USHORT(LT, OP)                                     \
     BINARY_LEFT_DONE_SHORT(LT, OP)                                      \
     BINARY_LEFT_DONE_UINT(LT, OP)                                       \
     BINARY_LEFT_DONE_INT(LT, OP)                                        \
     BINARY_LEFT_DONE_ULONG(LT, OP)                                      \
+    BINARY_LEFT_DONE_LONG(LT, OP)                                       \
     BINARY_LEFT_DONE_LONGLONG(LT, OP)                                   \
+    BINARY_LEFT_DONE_FLOAT(LT, OP)                                      \
+    BINARY_LEFT_DONE_DOUBLE(LT, OP)                                     \
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type %d not recognized in "               \
@@ -390,21 +416,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   /* Do the operations based on the different types. */                 \
   switch(l->type)                                                       \
     {                                                                   \
-    case GAL_DATA_TYPE_FLOAT:                                           \
-      BINARY_LEFT_DONE(float, OP);                                      \
-      break;                                                            \
                                                                         \
     BINARY_MULTISWITCH_UCHAR(OP)                                        \
-    BINARY_MULTISWITCH_LONG(OP)                                         \
-    BINARY_MULTISWITCH_DOUBLE(OP)                                       \
-                                                                        \
     BINARY_MULTISWITCH_CHAR(OP)                                         \
     BINARY_MULTISWITCH_USHORT(OP)                                       \
     BINARY_MULTISWITCH_SHORT(OP)                                        \
     BINARY_MULTISWITCH_UINT(OP)                                         \
     BINARY_MULTISWITCH_INT(OP)                                          \
     BINARY_MULTISWITCH_ULONG(OP)                                        \
+    BINARY_MULTISWITCH_LONG(OP)                                         \
     BINARY_MULTISWITCH_LONGLONG(OP)                                     \
+    BINARY_MULTISWITCH_FLOAT(OP)                                        \
+    BINARY_MULTISWITCH_DOUBLE(OP)                                       \
                                                                         \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type %d not recognized in "               \
@@ -414,9 +437,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   /* Clean up. */                                                       \
   if(flags & GAL_DATA_ARITH_FREE)                                       \
     {                                                                   \
-      if     (o==l)            gal_data_free(r);                        \
-      else if(o==r)            gal_data_free(l);                        \
-      else                   { gal_data_free(l); gal_data_free(r); }    \
+      if     (o==l)       gal_data_free(r);                             \
+      else if(o==r)       gal_data_free(l);                             \
+      else              { gal_data_free(l); gal_data_free(r); }         \
     }                                                                   \
 }
 

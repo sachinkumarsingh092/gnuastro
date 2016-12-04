@@ -259,76 +259,184 @@ AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
 
 
 
-# Enable the types
-AC_ARG_ENABLE([arith-char],
-              [AS_HELP_STRING([--enable-arith-char],
-                    [Enable direct arithmetic on char.])],
-	      [AS_IF([test "x$enable_arith_char" != xno],
-                     [enable_arith_char=1], [enable_arith_char=0])],
-              [enable_arith_char=0])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_ARITH_CHAR], [$enable_arith_char],
-                   [Direct arithmetic on char data.])
-AC_SUBST(HAVE_ARITH_CHAR, [$enable_arith_char])
 
-AC_ARG_ENABLE([arith-ushort],
-              [AS_HELP_STRING([--enable-arith-ushort],
-                    [Enable direct arithmetic on ushort.])],
-	      [AS_IF([test "x$enable_arith_ushort" != xno],
-                     [enable_arith_ushort=1], [enable_arith_ushort=0])],
-              [enable_arith_ushort=0])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_ARITH_USHORT], [$enable_arith_ushort],
-                   [Direct arithmetic on unsigned short data.])
-AC_SUBST(HAVE_ARITH_USHORT, [$enable_arith_ushort])
 
-AC_ARG_ENABLE([arith-short],
-              [AS_HELP_STRING([--enable-arith-short],
-                    [Enable direct arithmetic on short.])],
-	      [AS_IF([test "x$enable_arith_short" != xno],
-                     [enable_arith_short=1], [enable_arith_short=0])],
-              [enable_arith_short=0])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_ARITH_SHORT], [$enable_arith_short],
-                   [Direct arithmetic on short data.])
-AC_SUBST(HAVE_ARITH_SHORT, [$enable_arith_short])
 
-AC_ARG_ENABLE([arith-uint],
-              [AS_HELP_STRING([--enable-arith-uint],
-                    [Enable direct arithmetic on uint.])],
-	      [AS_IF([test "x$enable_arith_uint" != xno],
-                     [enable_arith_uint=1], [enable_arith_uint=0])],
-              [enable_arith_uint=0])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_ARITH_UINT], [$enable_arith_uint],
-                   [Direct arithmetic on unsigned int data.])
-AC_SUBST(HAVE_ARITH_UINT, [$enable_arith_uint])
 
-AC_ARG_ENABLE([arith-int],
-              [AS_HELP_STRING([--enable-arith-int],
-                    [Enable direct arithmetic on int.])],
-	      [AS_IF([test "x$enable_arith_int" != xno],
-                     [enable_arith_int=1], [enable_arith_int=0])],
-              [enable_arith_int=0])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_ARITH_INT], [$enable_arith_int],
-                   [Direct arithmetic on int data.])
-AC_SUBST(HAVE_ARITH_INT, [$enable_arith_int])
 
-AC_ARG_ENABLE([arith-ulong],
-              [AS_HELP_STRING([--enable-arith-ulong],
-                    [Enable direct arithmetic on unsigned long.])],
-	      [AS_IF([test "x$enable_arith_ulong" != xno],
-                     [enable_arith_ulong=1], [enable_arith_ulong=0])],
-              [enable_arith_ulong=0])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_ARITH_ULONG], [$enable_arith_ulong],
-                   [Direct arithmetic on unsigned long data.])
-AC_SUBST(HAVE_ARITH_ULONG, [$enable_arith_ulong])
 
-AC_ARG_ENABLE([arith-longlong],
-              [AS_HELP_STRING([--enable-arith-longlong],
-                    [Enable direct arithmetic on long long.])],
-	      [AS_IF([test "x$enable_arith_longlong" != xno],
-                     [enable_arith_longlong=1], [enable_arith_longlong=0])],
-              [enable_arith_longlong=0])
-AC_DEFINE_UNQUOTED([GAL_CONFIG_ARITH_LONGLONG], [$enable_arith_longlong],
-                   [Direct arithmetic on long long data.])
-AC_SUBST(HAVE_ARITH_LONGLONG, [$enable_arith_longlong])
+
+
+
+
+
+
+
+
+
+# Choose the types for arithmetic operations. The initial list of values
+# given here specify the default list of types. If they have a value of 1,
+# they will be used unless the user configures with
+# `--disable-bin-op-TYPENAME', or `--enable-bin-op-TYPENAME=no'.
+binop_uchar=1
+binop_char=0
+binop_ushort=0
+binop_short=0
+binop_uint=0
+binop_int=0
+binop_ulong=0
+binop_long=1
+binop_longlong=0
+binop_float=1
+binop_double=1
+
+AC_MSG_CHECKING(whether to compile unsigned char binary data operators)
+AC_ARG_ENABLE([bin-op-uchar],
+              [AS_HELP_STRING([--enable-bin-op-uchar],
+                    [Native binary operators on unsigned char data.])],
+	      [AS_IF([test "x$enable_bin_op_uchar" != xno],
+                     [binop_uchar=1], [binop_uchar=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_UCHAR], [$binop_uchar],
+                   [Native binary operations on unsigned char data.])
+AC_SUBST(HAVE_BIN_OP_UCHAR, [$binop_uchar])
+AS_IF([test "x$binop_uchar" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile char binary data operators)
+AC_ARG_ENABLE([bin-op-char],
+              [AS_HELP_STRING([--enable-bin-op-char],
+                    [Native binary operations on char data.])],
+	      [AS_IF([test "x$enable_bin_op_char" != xno],
+                     [binop_char=1], [binop_char=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_CHAR], [$binop_char],
+                   [Native binary operations on char data.])
+AC_SUBST(HAVE_BIN_OP_CHAR, [$binop_char])
+AS_IF([test "x$binop_char" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile unsigned short binary data operators)
+AC_ARG_ENABLE([bin-op-ushort],
+              [AS_HELP_STRING([--enable-bin-op-ushort],
+                    [Native binary operators on unsigned short data.])],
+	      [AS_IF([test "x$enable_bin_op_ushort" != xno],
+                     [binop_ushort=1], [binop_ushort=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_USHORT], [$binop_ushort],
+                   [Native binary operations on unsigned short data.])
+AC_SUBST(HAVE_BIN_OP_USHORT, [$binop_ushort])
+AS_IF([test "x$binop_ushort" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile short binary data operators)
+AC_ARG_ENABLE([bin-op-short],
+              [AS_HELP_STRING([--enable-bin-op-short],
+                    [Native binary operations on short data.])],
+	      [AS_IF([test "x$enable_bin_op_short" != xno],
+                     [binop_short=1], [binop_short=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_SHORT], [$binop_short],
+                   [Native binary operations on short data.])
+AC_SUBST(HAVE_BIN_OP_SHORT, [$binop_short])
+AS_IF([test "x$binop_short" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile unsigned int binary data operators)
+AC_ARG_ENABLE([bin-op-uint],
+              [AS_HELP_STRING([--enable-bin-op-uint],
+                    [Native binary operators on unsigned int data.])],
+	      [AS_IF([test "x$enable_bin_op_uint" != xno],
+                     [binop_uint=1], [binop_uint=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_UINT], [$binop_uint],
+                   [Native binary operations on unsigned int data.])
+AC_SUBST(HAVE_BIN_OP_UINT, [$binop_uint])
+AS_IF([test "x$binop_uint" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile int binary data operators)
+AC_ARG_ENABLE([bin-op-int],
+              [AS_HELP_STRING([--enable-bin-op-int],
+                    [Native binary operations on int data.])],
+	      [AS_IF([test "x$enable_bin_op_int" != xno],
+                     [binop_int=1], [binop_int=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_INT], [$binop_int],
+                   [Native binary operations on int data.])
+AC_SUBST(HAVE_BIN_OP_INT, [$binop_int])
+AS_IF([test "x$binop_int" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile unsigned long binary data operators)
+AC_ARG_ENABLE([bin-op-ulong],
+              [AS_HELP_STRING([--enable-bin-op-ulong],
+                    [Native binary operators on unsigned long data.])],
+	      [AS_IF([test "x$enable_bin_op_ulong" != xno],
+                     [binop_ulong=1], [binop_ulong=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_ULONG], [$binop_ulong],
+                   [Native binary operations on unsigned long data.])
+AC_SUBST(HAVE_BIN_OP_ULONG, [$binop_ulong])
+AS_IF([test "x$binop_ulong" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile long native binary data operators)
+AC_ARG_ENABLE([bin-op-long],
+              [AS_HELP_STRING([--enable-bin-op-long],
+                    [Native binary operations on long data.])],
+	      [AS_IF([test "x$enable_bin_op_long" != xno],
+                     [binop_long=1], [binop_long=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_LONG], [$binop_long],
+                   [Native binary operations on long data.])
+AC_SUBST(HAVE_BIN_OP_LONG, [$binop_long])
+AS_IF([test "x$binop_long" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile LONGLONG native binary data operators)
+AC_ARG_ENABLE([bin-op-longlong],
+              [AS_HELP_STRING([--enable-bin-op-longlong],
+                    [Native binary operations on LONGLONG data.])],
+	      [AS_IF([test "x$enable_bin_op_longlong" != xno],
+                     [binop_longlong=1], [binop_longlong=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_LONGLONG], [$binop_longlong],
+                   [Native binary operations on LONGLONG data.])
+AC_SUBST(HAVE_BIN_OP_LONG, [$binop_longlong])
+AS_IF([test "x$binop_longlong" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile float native binary data operators)
+AC_ARG_ENABLE([bin-op-float],
+              [AS_HELP_STRING([--enable-bin-op-float],
+                    [Native binary operations on float data.])],
+	      [AS_IF([test "x$enable_bin_op_float" != xno],
+                     [binop_float=1], [binop_float=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_FLOAT], [$binop_float],
+                   [Native binary operations on float data.])
+AC_SUBST(HAVE_BIN_OP_FLOAT, [$binop_float])
+AS_IF([test "x$binop_float" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+AC_MSG_CHECKING(whether to compile double native binary data operators)
+AC_ARG_ENABLE([bin-op-double],
+              [AS_HELP_STRING([--enable-bin-op-double],
+                    [Native binary operations on double data.])],
+	      [AS_IF([test "x$enable_bin_op_double" != xno],
+                     [binop_double=1], [binop_double=0])], [])
+AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_DOUBLE], [$binop_double],
+                   [Native binary operations on double data.])
+AC_SUBST(HAVE_BIN_OP_DOUBLE, [$binop_double])
+AS_IF([test "x$binop_double" != x0], [binoptprint=yes], [binoptprint=no])
+AC_MSG_RESULT($binoptprint)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -340,91 +448,91 @@ AC_SUBST(HAVE_ARITH_LONGLONG, [$enable_arith_longlong])
 ayes=false
 AC_ARG_ENABLE([convertt],
               [AS_HELP_STRING([--enable-convertt],
-  	            [Install ConvertType and other enabled packages only.])],
+                    [Install ConvertType and other enabled packages.])],
 	      [AS_IF([test "x$enable_convertt" != xno],
                      [enable_convertt=yes; ayes=true])],
               [enable_convertt=notset])
 AC_ARG_ENABLE([convolve],
               [AS_HELP_STRING([--enable-convolve],
-  	            [Install Convolve and other enabled packages only.])],
+                    [Install Convolve and other enabled packages.])],
 	      [AS_IF([test "x$enable_convolve" != xno],
                      [enable_cognvolve=yes; ayes=true])],
               [enable_convolve=notset])
 AC_ARG_ENABLE([cosmiccal],
               [AS_HELP_STRING([--enable-cosmiccal],
-  	            [Install CosmicCalculator and other enabled packages only.])],
+                    [Install CosmicCalculator and other enabled packages.])],
 	      [AS_IF([test "x$enable_cosmiccal" != xno],
                      [enable_cosmiccal=yes; ayes=true])],
               [enable_cosmiccal=notset])
 AC_ARG_ENABLE([header],
               [AS_HELP_STRING([--enable-header],
-  	            [Install Header and other enabled packages only.])],
+                    [Install Header and other enabled packages.])],
 	      [AS_IF([test "x$enable_header" != xno],
                      [enable_header=yes; ayes=true])],
               [enable_header=notset])
 AC_ARG_ENABLE([arithmetic],
               [AS_HELP_STRING([--enable-arithmetic],
-  	            [Install ImageArithmetic and other enabled packages only.])],
+                    [Install ImageArithmetic and other enabled packages.])],
 	      [AS_IF([test "x$enable_arithmetic" != xno],
                      [enable_arithmetic=yes; ayes=true])],
               [enable_arithmetic=notset])
 AC_ARG_ENABLE([imgcrop],
               [AS_HELP_STRING([--enable-imgcrop],
-  	            [Install ImageCrop and other enabled packages only.])],
+                    [Install ImageCrop and other enabled packages.])],
 	      [AS_IF([test "x$enable_imgcrop" != xno],
                      [enable_imgcrop=yes; ayes=true])],
               [enable_imgcrop=notset])
 AC_ARG_ENABLE([imgstat],
               [AS_HELP_STRING([--enable-imgstat],
-  	            [Install ImageStatistics and other enabled packages only.])],
+                    [Install ImageStatistics and other enabled packages.])],
 	      [AS_IF([test "x$enable_imgstat" != xno],
                      [enable_imgstat=yes; ayes=true])],
               [enable_imgstat=notset])
 AC_ARG_ENABLE([imgwarp],
               [AS_HELP_STRING([--enable-imgwarp],
-  	            [Install ImageWarp and other enabled packages only.])],
+                    [Install ImageWarp and other enabled packages.])],
 	      [AS_IF([test "x$enable_imgwarp" != xno],
                      [enable_imgwarp=yes; ayes=true])],
               [enable_imgwarp=notset])
 AC_ARG_ENABLE([mkcatalog],
               [AS_HELP_STRING([--enable-mkcatalog],
-  	            [Install MakeCatalog and other enabled packages only.])],
+                    [Install MakeCatalog and other enabled packages.])],
 	      [AS_IF([test "x$enable_mkcatalog" != xno],
                      [enable_mkcatalog=yes; ayes=true])],
               [enable_mkcatalog=notset])
 AC_ARG_ENABLE([mknoise],
               [AS_HELP_STRING([--enable-mknoise],
-  	            [Install MakeNoise and other enabled packages only.])],
+                    [Install MakeNoise and other enabled packages.])],
 	      [AS_IF([test "x$enable_mknoise" != xno],
                      [enable_mknoise=yes; ayes=true])],
               [enable_mknoise=notset])
 AC_ARG_ENABLE([mkprof],
               [AS_HELP_STRING([--enable-mkprof],
-  	            [Install MakeProfile and other enabled packages only.])],
+                    [Install MakeProfile and other enabled packages.])],
 	      [AS_IF([test "x$enable_mkprof" != xno],
                      [enable_mkprof=yes; ayes=true])],
               [enable_mkprof=notset])
 AC_ARG_ENABLE([noisechisel],
               [AS_HELP_STRING([--enable-noisechisel],
-  	            [Install NoiseChisel and other enabled packages only.])],
+                    [Install NoiseChisel and other enabled packages.])],
 	      [AS_IF([test "x$enable_noisechisel" != xno],
                      [enable_noisechisel=yes; ayes=true])],
               [enable_noisechisel=notset])
 AC_ARG_ENABLE([subtractsky],
               [AS_HELP_STRING([--enable-subtractsky],
-                    [Install SubtractSky and other enabled packages only.])],
+                    [Install SubtractSky and other enabled packages.])],
 	      [AS_IF([test "x$enable_subtractsky" != xno],
                      [enable_subtractsky=yes; ayes=true])],
               [enable_subtractsky=notset])
 AC_ARG_ENABLE([table],
               [AS_HELP_STRING([--enable-table],
-                    [Install Table and other enabled packages only.])],
+                    [Install Table and other enabled packages.])],
 	      [AS_IF([test "x$enable_table" != xno],
                      [enable_table=yes; ayes=true])],
               [enable_table=notset])
 #AC_ARG_ENABLE([TEMPLATE],
 #              [AS_HELP_STRING([--enable-TEMPLATE],
-#  	            [Install TEMPLATE and other enabled packages only.])],
+#                    [Install TEMPLATE and other enabled packages.])],
 #	      [AS_IF([test "x$enable_TEMPLATE" != xno],
 #                     [enable_TEMPLATE=yes; ayes=true])],
 #              [enable_TEMPLATE=notset])
