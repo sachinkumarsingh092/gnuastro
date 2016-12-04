@@ -3142,19 +3142,21 @@ Enable the binary data-structure operators to work natively on the
 respective type of data (@option{u} stands for unsigned types). Some types
 are compiled by default, to disable them (or disable any other type),
 either run @option{enable-bin-op-TYPE=no}, or run
-@option{--disable-bin-op-TYPE}. You can tell which types are acceptable by
-default by inspecting the messages of @command{./configure}.
+@option{--disable-bin-op-TYPE}. You can tell which types are configured by
+default by inspecting the messages of @command{./configure} without any of
+these options.
 
-Binary operators are some of the most common operators to the
-@ref{Arithmetic} program or the @code{gal_data_arithmetic} function in
-@ref{Gnuastro library}. To operate most efficiently (as fast as possible
-without using too much of the system resources like memory or CPU), it is
-best to rely on the native types of the input data. For example, if you
-want to add an integer array with a floating point array, using the native
-types, means using the C language's internal type conversion. If we don't
-use the native conversion, then the integer array has to be converted to
-the same type as the floating point array to do the conversion. This will
-consume memory and CPU resources and ultimately slow down the running.
+Binary operators, for example @code{+} or @code{>} (greater than), are some
+of the most common operators to the @ref{Arithmetic} program or the
+@code{gal_data_arithmetic} function in @ref{Gnuastro library}. To operate
+most efficiently (as fast as possible without using extra memory or CPU
+resources), it is best to rely on the native types of the input data. For
+example, if you want to add an integer array with a floating point array,
+using the native types, means relying the system's internal type conversion
+for each array element. If we don't use the native conversion, then the
+integer array has to be converted to the same type as the floating point
+array to do the conversion. This will consume memory and CPU resources and
+ultimately slow down the running.
 
 There are many binary operators and in order to have them operate natively
 on of each of the above types, the compiler has to prepare for many
@@ -3163,16 +3165,20 @@ compilation@footnote{It can also greatly increase the file size of the
 library, from a few hundred kilobytes to a few megabytes} (when you run
 @command{make}). For example, with only one type, compilation will take
 less than a minute, but if you enable all types, it can take upto an hour
-or more depending on your computer. However, this time that is invested
-once at compilation time will result in great profits each time you run
-Gnuastro programs or libraries, because no internal type conversion will be
-necessary.
+or more depending on your computer. However, the profits of significant
+investment at compilation time (only once) will be directly felt each time
+you run Gnuastro programs or libraries, because no internal type conversion
+will be necessary.
 
-Therefore, if you commonly work with very specific data-types, you can add
-them (and remove the default ones you don't need them) with these options
-to speed up your work. Alternatively, GNU/Linux distribution package
-managers who compile once (for all the users who just download the compiled
-programs and executables), can enable all types to help their users.
+If you commonly work with very specific data-types, you can add them (and
+remove the default ones you don't need) with these options to speed up your
+work. Alternatively, GNU/Linux distribution package managers who compile
+once (for a large audience of users who just download the compiled programs
+and executables), can enable all types to help their users. Since the
+outputs of comparison operators are @code{unsigned char} type and most
+astronomical datasets are in @code{float}, the recommended minimum enabled
+types are @code{unsigned char} and @code{float}.
+
 
 
 

@@ -296,10 +296,10 @@ AC_ARG_ENABLE([bin-op-uchar],
                     [Native binary operators on unsigned char data.])],
 	      [AS_IF([test "x$enable_bin_op_uchar" != xno],
                      [binop_uchar=1], [binop_uchar=0])], [])
+AS_IF([test "x$binop_uchar" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_UCHAR], [$binop_uchar],
                    [Native binary operations on unsigned char data.])
 AC_SUBST(HAVE_BIN_OP_UCHAR, [$binop_uchar])
-AS_IF([test "x$binop_uchar" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile char binary data operators)
@@ -308,10 +308,10 @@ AC_ARG_ENABLE([bin-op-char],
                     [Native binary operations on char data.])],
 	      [AS_IF([test "x$enable_bin_op_char" != xno],
                      [binop_char=1], [binop_char=0])], [])
+AS_IF([test "x$binop_char" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_CHAR], [$binop_char],
                    [Native binary operations on char data.])
 AC_SUBST(HAVE_BIN_OP_CHAR, [$binop_char])
-AS_IF([test "x$binop_char" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile unsigned short binary data operators)
@@ -320,10 +320,10 @@ AC_ARG_ENABLE([bin-op-ushort],
                     [Native binary operators on unsigned short data.])],
 	      [AS_IF([test "x$enable_bin_op_ushort" != xno],
                      [binop_ushort=1], [binop_ushort=0])], [])
+AS_IF([test "x$binop_ushort" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_USHORT], [$binop_ushort],
                    [Native binary operations on unsigned short data.])
 AC_SUBST(HAVE_BIN_OP_USHORT, [$binop_ushort])
-AS_IF([test "x$binop_ushort" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile short binary data operators)
@@ -332,10 +332,10 @@ AC_ARG_ENABLE([bin-op-short],
                     [Native binary operations on short data.])],
 	      [AS_IF([test "x$enable_bin_op_short" != xno],
                      [binop_short=1], [binop_short=0])], [])
+AS_IF([test "x$binop_short" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_SHORT], [$binop_short],
                    [Native binary operations on short data.])
 AC_SUBST(HAVE_BIN_OP_SHORT, [$binop_short])
-AS_IF([test "x$binop_short" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile unsigned int binary data operators)
@@ -344,10 +344,10 @@ AC_ARG_ENABLE([bin-op-uint],
                     [Native binary operators on unsigned int data.])],
 	      [AS_IF([test "x$enable_bin_op_uint" != xno],
                      [binop_uint=1], [binop_uint=0])], [])
+AS_IF([test "x$binop_uint" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_UINT], [$binop_uint],
                    [Native binary operations on unsigned int data.])
 AC_SUBST(HAVE_BIN_OP_UINT, [$binop_uint])
-AS_IF([test "x$binop_uint" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile int binary data operators)
@@ -356,10 +356,10 @@ AC_ARG_ENABLE([bin-op-int],
                     [Native binary operations on int data.])],
 	      [AS_IF([test "x$enable_bin_op_int" != xno],
                      [binop_int=1], [binop_int=0])], [])
+AS_IF([test "x$binop_int" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_INT], [$binop_int],
                    [Native binary operations on int data.])
 AC_SUBST(HAVE_BIN_OP_INT, [$binop_int])
-AS_IF([test "x$binop_int" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile unsigned long binary data operators)
@@ -368,10 +368,10 @@ AC_ARG_ENABLE([bin-op-ulong],
                     [Native binary operators on unsigned long data.])],
 	      [AS_IF([test "x$enable_bin_op_ulong" != xno],
                      [binop_ulong=1], [binop_ulong=0])], [])
+AS_IF([test "x$binop_ulong" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_ULONG], [$binop_ulong],
                    [Native binary operations on unsigned long data.])
 AC_SUBST(HAVE_BIN_OP_ULONG, [$binop_ulong])
-AS_IF([test "x$binop_ulong" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile long native binary data operators)
@@ -380,10 +380,10 @@ AC_ARG_ENABLE([bin-op-long],
                     [Native binary operations on long data.])],
 	      [AS_IF([test "x$enable_bin_op_long" != xno],
                      [binop_long=1], [binop_long=0])], [])
+AS_IF([test "x$binop_long" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_LONG], [$binop_long],
                    [Native binary operations on long data.])
 AC_SUBST(HAVE_BIN_OP_LONG, [$binop_long])
-AS_IF([test "x$binop_long" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile LONGLONG native binary data operators)
@@ -392,10 +392,10 @@ AC_ARG_ENABLE([bin-op-longlong],
                     [Native binary operations on LONGLONG data.])],
 	      [AS_IF([test "x$enable_bin_op_longlong" != xno],
                      [binop_longlong=1], [binop_longlong=0])], [])
+AS_IF([test "x$binop_longlong" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_LONGLONG], [$binop_longlong],
                    [Native binary operations on LONGLONG data.])
 AC_SUBST(HAVE_BIN_OP_LONG, [$binop_longlong])
-AS_IF([test "x$binop_longlong" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile float native binary data operators)
@@ -404,10 +404,10 @@ AC_ARG_ENABLE([bin-op-float],
                     [Native binary operations on float data.])],
 	      [AS_IF([test "x$enable_bin_op_float" != xno],
                      [binop_float=1], [binop_float=0])], [])
+AS_IF([test "x$binop_float" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_FLOAT], [$binop_float],
                    [Native binary operations on float data.])
 AC_SUBST(HAVE_BIN_OP_FLOAT, [$binop_float])
-AS_IF([test "x$binop_float" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile double native binary data operators)
@@ -416,10 +416,10 @@ AC_ARG_ENABLE([bin-op-double],
                     [Native binary operations on double data.])],
 	      [AS_IF([test "x$enable_bin_op_double" != xno],
                      [binop_double=1], [binop_double=0])], [])
+AS_IF([test "x$binop_double" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_DOUBLE], [$binop_double],
                    [Native binary operations on double data.])
 AC_SUBST(HAVE_BIN_OP_DOUBLE, [$binop_double])
-AS_IF([test "x$binop_double" != x0], [binoptprint=yes], [binoptprint=no])
 AC_MSG_RESULT($binoptprint)
 
 

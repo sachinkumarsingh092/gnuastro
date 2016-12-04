@@ -45,7 +45,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
 /*********************************************************************/
 /*************          Size and allocation        *******************/
 /*********************************************************************/
@@ -878,8 +877,79 @@ gal_data_blank_to_value(gal_data_t *data, void *value)
 
 
 /*************************************************************
- **************             Copy           ***************
+ **************       Types and copying       ***************
  *************************************************************/
+char *
+gal_data_type_string(int type)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_BIT:
+      return "bit";
+
+    case GAL_DATA_TYPE_UCHAR:
+      return "unsigned char";
+
+      /* CFITSIO says "int for keywords, char for table columns". Here we
+         are only assuming table columns. So in practice this also applies
+         to TSBYTE.*/
+    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
+      return "char";
+
+    case GAL_DATA_TYPE_STRING:
+      return "string";
+
+    case GAL_DATA_TYPE_USHORT:
+      return "unsigned short";
+
+    case GAL_DATA_TYPE_SHORT:
+      return "short";
+
+    case GAL_DATA_TYPE_UINT:
+      return "unsigned int";
+
+    case GAL_DATA_TYPE_INT:
+      return "int";
+
+    case GAL_DATA_TYPE_ULONG:
+      return "unsigned long";
+
+    case GAL_DATA_TYPE_LONG:
+      return "long";
+
+    case GAL_DATA_TYPE_LONGLONG:
+      return "LONGLONG";
+
+    case GAL_DATA_TYPE_FLOAT:
+      return "float";
+
+    case GAL_DATA_TYPE_DOUBLE:
+      return "double";
+
+    case GAL_DATA_TYPE_COMPLEX:
+      return "complex float";
+
+    case GAL_DATA_TYPE_DCOMPLEX:
+      return "complex double";
+
+    default:
+      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
+            "`gal_data_type_string'", type);
+    }
+
+  /* Any of the cases above should return this function, so if control
+     reaches here, there is a bug. */
+  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
+        "the problem. For some reason control has reached the end of "
+        "the `gal_data_type_string' function. This must not happen",
+        PACKAGE_BUGREPORT);
+  return NULL;
+}
+
+
+
+
+
 gal_data_t *
 gal_data_copy(gal_data_t *in)
 {

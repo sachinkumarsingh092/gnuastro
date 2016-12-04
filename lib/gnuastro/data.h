@@ -250,8 +250,11 @@ gal_data_blank_to_value(gal_data_t *data, void *value);
 
 
 /*************************************************************
- **************             Copy               ***************
+ **************       Types and copying        ***************
  *************************************************************/
+char *
+gal_data_type_string(int type);
+
 gal_data_t *
 gal_data_copy(gal_data_t *in);
 

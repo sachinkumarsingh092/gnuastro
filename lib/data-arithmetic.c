@@ -39,8 +39,6 @@ gal_data_t *
 gal_data_arithmetic(int operator, unsigned char flags, ...)
 {
   va_list va;
-  int out_type;
-  size_t out_size;
   gal_data_t *o=NULL;
 
   /* Prepare the variable arguments (starting after the flags argument). */
@@ -50,9 +48,9 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
   switch(operator)
     {
     case GAL_DATA_OPERATOR_PLUS:     BINARY_INTERNAL(+, 0); break;
-    case GAL_DATA_OPERATOR_MINUS:    BINARY_INTERNAL(-,  0); break;
-    case GAL_DATA_OPERATOR_MULTIPLY: BINARY_INTERNAL(*,  0); break;
-    case GAL_DATA_OPERATOR_DIVIDE:   BINARY_INTERNAL(/,  0); break;
+    case GAL_DATA_OPERATOR_MINUS:    BINARY_INTERNAL(-, 0); break;
+    case GAL_DATA_OPERATOR_MULTIPLY: BINARY_INTERNAL(*, 0); break;
+    case GAL_DATA_OPERATOR_DIVIDE:   BINARY_INTERNAL(/, 0); break;
 
     case GAL_DATA_OPERATOR_LT:  BINARY_INTERNAL(<,  GAL_DATA_TYPE_UCHAR); break;
     case GAL_DATA_OPERATOR_LE:  BINARY_INTERNAL(<=, GAL_DATA_TYPE_UCHAR); break;
