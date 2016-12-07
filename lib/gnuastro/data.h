@@ -145,6 +145,7 @@ enum gal_data_operators
   GAL_DATA_OPERATOR_NE,        /*   !=   */
   GAL_DATA_OPERATOR_AND,       /*   &&   */
   GAL_DATA_OPERATOR_OR,        /*   ||   */
+
   GAL_DATA_OPERATOR_BITAND,    /*   &    */
   GAL_DATA_OPERATOR_BITOR,     /*   |    */
 
