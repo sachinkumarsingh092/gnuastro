@@ -7146,8 +7146,8 @@ the multiplication sign (for example @command{"*"}).
 Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
 
 @item %
-Remainder, so ``@command{3 2 %}'' is equivalent to @mymath{1}. Note that
-the remainder operator only works on integer types.
+Modulo (remainder), so ``@command{3 2 %}'' is equivalent to
+@mymath{1}. Note that the modulo operator only works on integer types.
 
 @item abs
 Absolute value of first operand, so ``@command{4 abs}'' is

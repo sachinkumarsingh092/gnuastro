@@ -102,7 +102,7 @@ reversepolish(struct imgarithparams *p)
           else if (!strcmp(token->v, "/" ))
             { op=GAL_DATA_OPERATOR_DIVIDE;        nop=2;  }
           else if (!strcmp(token->v, "%" ))
-            { op=GAL_DATA_OPERATOR_REMAINDER;     nop=2;  }
+            { op=GAL_DATA_OPERATOR_MODULO;        nop=2;  }
 
           /* Mathematical Operators. */
           else if (!strcmp(token->v, "abs"))
