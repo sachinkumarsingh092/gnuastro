@@ -32,6 +32,54 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
+
+
+
+
+/* Change input data structure type. */
+gal_data_t *
+data_arithmetic_change_type(gal_data_t *data, int operator,
+                            unsigned char flags)
+{
+  int type=0;
+  gal_data_t *out;
+
+  /* Set the output type. */
+  switch(operator)
+    {
+    case GAL_DATA_OPERATOR_TO_UCHAR:    type=GAL_DATA_TYPE_UCHAR;    break;
+    case GAL_DATA_OPERATOR_TO_CHAR:     type=GAL_DATA_TYPE_UCHAR;    break;
+    case GAL_DATA_OPERATOR_TO_USHORT:   type=GAL_DATA_TYPE_USHORT;   break;
+    case GAL_DATA_OPERATOR_TO_SHORT:    type=GAL_DATA_TYPE_SHORT;    break;
+    case GAL_DATA_OPERATOR_TO_UINT:     type=GAL_DATA_TYPE_UINT;     break;
+    case GAL_DATA_OPERATOR_TO_INT:      type=GAL_DATA_TYPE_INT;      break;
+    case GAL_DATA_OPERATOR_TO_ULONG:    type=GAL_DATA_TYPE_ULONG;    break;
+    case GAL_DATA_OPERATOR_TO_LONG:     type=GAL_DATA_TYPE_LONG;     break;
+    case GAL_DATA_OPERATOR_TO_LONGLONG: type=GAL_DATA_TYPE_LONGLONG; break;
+    case GAL_DATA_OPERATOR_TO_FLOAT:    type=GAL_DATA_TYPE_FLOAT;    break;
+    case GAL_DATA_OPERATOR_TO_DOUBLE:   type=GAL_DATA_TYPE_DOUBLE;   break;
+
+    default:
+      error(EXIT_FAILURE, 0, "operator value of %d not recognized in "
+            "`data_arithmetic_change_type'", operator);
+    }
+
+  /* Copy to the new type. */
+  out=gal_data_copy_to_new_type(data, type);
+
+  /* Delete the input structure if the user asked for it. */
+  if(flags & GAL_DATA_ARITH_FREE)
+    gal_data_free(data);
+
+  /* Return */
+  return out;
+}
+
+
+
+
+
 /* Return an array of value 1 for any zero valued element and zero for any
    non-zero valued element. */
 #define TYPE_CASE_FOR_NOT(TYPE, IN, IN_FINISH) {                        \
@@ -41,26 +89,24 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
   }
 
 gal_data_t *
-data_arithmetic_not(gal_data_t *data)
+data_arithmetic_not(gal_data_t *data, unsigned char flags)
 {
   gal_data_t *out;
 
   /* 'value' will only be read from one of these based on the
      datatype. Which the caller assigned. If there is any problem, it is
      their responsability, not this function's.*/
-  void *A=data->array;
-  size_t S=data->size;
-  unsigned char     *uc = A,   *ucf = A+S, *o;
-  char               *c = A,    *cf = A+S;
-  unsigned short    *us = A,   *usf = A+S;
-  short              *s = A,    *sf = A+S;
-  unsigned int      *ui = A,   *uif = A+S;
-  int               *in = A,   *inf = A+S;
-  unsigned long     *ul = A,   *ulf = A+S;
-  long               *l = A,    *lf = A+S;
-  LONGLONG           *L = A,    *Lf = A+S;
-  float              *f = A,    *ff = A+S;
-  double             *d = A,    *df = A+S;
+  unsigned char     *uc = data->array,   *ucf = data->array + data->size, *o;
+  char               *c = data->array,    *cf = data->array + data->size;
+  unsigned short    *us = data->array,   *usf = data->array + data->size;
+  short              *s = data->array,    *sf = data->array + data->size;
+  unsigned int      *ui = data->array,   *uif = data->array + data->size;
+  int               *in = data->array,   *inf = data->array + data->size;
+  unsigned long     *ul = data->array,   *ulf = data->array + data->size;
+  long               *l = data->array,    *lf = data->array + data->size;
+  LONGLONG           *L = data->array,    *Lf = data->array + data->size;
+  float              *f = data->array,    *ff = data->array + data->size;
+  double             *d = data->array,    *df = data->array + data->size;
 
 
   /* Allocate the output array. */
@@ -94,6 +140,10 @@ data_arithmetic_not(gal_data_t *data)
       error(EXIT_FAILURE, 0, "type value (%d) not recognized "
             "in `data_arithmetic_not'", data->type);
     }
+
+  /* Delete the input structure if the user asked for it. */
+  if(flags & GAL_DATA_ARITH_FREE)
+    gal_data_free(data);
 
   /* Return */
   return out;

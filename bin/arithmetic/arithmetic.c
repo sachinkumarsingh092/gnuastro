@@ -91,6 +91,7 @@ reversepolish(struct imgarithparams *p)
         add_operand(p, NULL, d1);
       else
         {
+
           /* Order is the same as in the manual. */
           /* Simple arithmetic operators. */
           if      (!strcmp(token->v, "+" ))
@@ -166,10 +167,34 @@ reversepolish(struct imgarithparams *p)
           else if (!strcmp(token->v, "rshift"))
             { op=GAL_DATA_OPERATOR_BITRSH;        nop=2;  }
 
+          /* Type conversion. */
+          else if (!strcmp(token->v, "uchar"))
+            { op=GAL_DATA_OPERATOR_TO_UCHAR;      nop=1;  }
+          else if (!strcmp(token->v, "char"))
+            { op=GAL_DATA_OPERATOR_TO_CHAR;       nop=1;  }
+          else if (!strcmp(token->v, "ushort"))
+            { op=GAL_DATA_OPERATOR_TO_USHORT;     nop=1;  }
+          else if (!strcmp(token->v, "short"))
+            { op=GAL_DATA_OPERATOR_TO_SHORT;      nop=1;  }
+          else if (!strcmp(token->v, "ulong"))
+            { op=GAL_DATA_OPERATOR_TO_ULONG;      nop=1;  }
+          else if (!strcmp(token->v, "long"))
+            { op=GAL_DATA_OPERATOR_TO_LONG;       nop=1;  }
+          else if (!strcmp(token->v, "longlong"))
+            { op=GAL_DATA_OPERATOR_TO_LONGLONG;   nop=1;  }
+          else if (!strcmp(token->v, "float"))
+            { op=GAL_DATA_OPERATOR_TO_FLOAT;      nop=1;  }
+          else if (!strcmp(token->v, "double"))
+            { op=GAL_DATA_OPERATOR_TO_DOUBLE;     nop=1;  }
+
+
+          /* Finished checks with known operators */
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as a FITS file, number, or operator",
                   token->v);
+
+
 
           /* Pop the necessary number of operators. Note that the operators
              are poped from a linked list (which is last-in-first-out). So
@@ -202,6 +227,9 @@ reversepolish(struct imgarithparams *p)
           add_operand(p, NULL, gal_data_arithmetic(op, flags, d1, d2, d3));
         }
     }
+
+
+
 
 #if 0
 

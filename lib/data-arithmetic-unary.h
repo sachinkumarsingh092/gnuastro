@@ -23,9 +23,12 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_ARITHMETIC_UNARY_H__
 #define __GAL_ARITHMETIC_UNARY_H__
 
+gal_data_t *
+data_arithmetic_change_type(gal_data_t *data, int operator,
+                            unsigned char flags);
 
 gal_data_t *
-data_arithmetic_not(gal_data_t *data);
+data_arithmetic_not(gal_data_t *data, unsigned char flags);
 
 
 #endif

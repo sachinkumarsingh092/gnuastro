@@ -152,6 +152,27 @@ gal_data_sizeof(int type)
 
 
 
+/* Copy the WCS structure from the input to the output structure. */
+void
+gal_data_copy_wcs(gal_data_t *in, gal_data_t *out)
+{
+  if(in->wcs)
+    {
+      errno=0;
+      out->wcs=malloc(sizeof *out->wcs);
+      if(out->wcs==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes for out->wcs in "
+              "gal_data_copy_wcs", sizeof *out->wcs);
+      wcscopy(1, in->wcs, out->wcs);
+    }
+  else
+    out->wcs=NULL;
+}
+
+
+
+
+
 /* Allocate an array based on the value of type. Note that the argument
    `size' is the number of elements, necessary in the array, the number of
    bytes each element needs will be determined internaly by this function
@@ -349,7 +370,7 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize)
 {
   size_t i;
-  gal_data_t *out;
+  gal_data_t in, *out;
 
 
   /* Allocate the space for the actual structure. */
@@ -367,17 +388,12 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
   out->type=type;
   out->anyblank=0;
   out->minmapsize=minmapsize;
-  if(wcs)
-    {
-      errno=0;
-      out->wcs=malloc(sizeof *out->wcs);
-      if(out->wcs==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for out->wcs in "
-              "gal_data_alloc", sizeof *out->wcs);
-      wcscopy(1, wcs, out->wcs);
-    }
-  else
-    out->wcs=NULL;
+
+
+  /* Copy the WCS structure. Note that the `in' data structure was just
+     defined to keep this pointer to call `gal_data_copy_wcs'. */
+  in.wcs=wcs;
+  gal_data_copy_wcs(&in, out);
 
 
   /* Allocate space for the dsize array: */
@@ -1474,8 +1490,14 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
 
     case GAL_DATA_OPERATOR_NOT:
       d1 = va_arg(va, gal_data_t *);
-      out=data_arithmetic_not(d1);
+      out=data_arithmetic_not(d1, flags);
       break;
+
+    case GAL_DATA_OPERATOR_ISBLANK:
+      d1 = va_arg(va, gal_data_t *);
+      out = gal_data_flag_blank(d1);
+      if(flags & GAL_DATA_ARITH_FREE)
+        gal_data_free(d1);
 
     /* Binary operators that only work on integer types. */
     case GAL_DATA_OPERATOR_BITAND:
@@ -1490,12 +1512,22 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
 
     /* Ones component (bitwise) operator.*/
 
-    case GAL_DATA_OPERATOR_ISBLANK:
-      d1 = va_arg(va, gal_data_t *);
-      out = gal_data_flag_blank(d1);
-      if(flags & GAL_DATA_ARITH_FREE)
-        gal_data_free(d1);
 
+    /* Conversion operators. */
+    case GAL_DATA_OPERATOR_TO_UCHAR:
+    case GAL_DATA_OPERATOR_TO_CHAR:
+    case GAL_DATA_OPERATOR_TO_USHORT:
+    case GAL_DATA_OPERATOR_TO_SHORT:
+    case GAL_DATA_OPERATOR_TO_UINT:
+    case GAL_DATA_OPERATOR_TO_INT:
+    case GAL_DATA_OPERATOR_TO_ULONG:
+    case GAL_DATA_OPERATOR_TO_LONG:
+    case GAL_DATA_OPERATOR_TO_LONGLONG:
+    case GAL_DATA_OPERATOR_TO_FLOAT:
+    case GAL_DATA_OPERATOR_TO_DOUBLE:
+      d1 = va_arg(va, gal_data_t *);
+      data_arithmetic_change_type(d1, operator, flags);
+      break;
 
 
 #if 0

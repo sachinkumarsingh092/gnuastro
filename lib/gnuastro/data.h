@@ -132,44 +132,55 @@ enum gal_data_alltypes
 
 enum gal_data_operators
 {
-  GAL_DATA_OPERATOR_PLUS,      /*   +    */
-  GAL_DATA_OPERATOR_MINUS,     /*   -    */
-  GAL_DATA_OPERATOR_MULTIPLY,  /*   *    */
-  GAL_DATA_OPERATOR_DIVIDE,    /*   /    */
-  GAL_DATA_OPERATOR_MODULO,    /*   %    */
+  GAL_DATA_OPERATOR_PLUS,         /*   +    */
+  GAL_DATA_OPERATOR_MINUS,        /*   -    */
+  GAL_DATA_OPERATOR_MULTIPLY,     /*   *    */
+  GAL_DATA_OPERATOR_DIVIDE,       /*   /    */
+  GAL_DATA_OPERATOR_MODULO,       /*   %    */
 
-  GAL_DATA_OPERATOR_LT,        /*   <    */
-  GAL_DATA_OPERATOR_LE,        /*   <=   */
-  GAL_DATA_OPERATOR_GT,        /*   >    */
-  GAL_DATA_OPERATOR_GE,        /*   >=   */
-  GAL_DATA_OPERATOR_EQ,        /*   ==   */
-  GAL_DATA_OPERATOR_NE,        /*   !=   */
-  GAL_DATA_OPERATOR_AND,       /*   &&   */
-  GAL_DATA_OPERATOR_OR,        /*   ||   */
+  GAL_DATA_OPERATOR_LT,           /*   <    */
+  GAL_DATA_OPERATOR_LE,           /*   <=   */
+  GAL_DATA_OPERATOR_GT,           /*   >    */
+  GAL_DATA_OPERATOR_GE,           /*   >=   */
+  GAL_DATA_OPERATOR_EQ,           /*   ==   */
+  GAL_DATA_OPERATOR_NE,           /*   !=   */
+  GAL_DATA_OPERATOR_AND,          /*   &&   */
+  GAL_DATA_OPERATOR_OR,           /*   ||   */
+  GAL_DATA_OPERATOR_NOT,          /*   !    */
+  GAL_DATA_OPERATOR_ISBLANK,      /* Similar to isnan() for floats. */
+  GAL_DATA_OPERATOR_WHERE,        /*   ?:   */
 
-  GAL_DATA_OPERATOR_BITAND,    /*   &    */
-  GAL_DATA_OPERATOR_BITOR,     /*   |    */
-  GAL_DATA_OPERATOR_BITXOR,    /*   ^    */
-  GAL_DATA_OPERATOR_BITLSH,    /*   <<   */
-  GAL_DATA_OPERATOR_BITRSH,    /*   >>   */
-  GAL_DATA_OPERATOR_BITOCM,    /*   ~    */
+  GAL_DATA_OPERATOR_BITAND,       /*   &    */
+  GAL_DATA_OPERATOR_BITOR,        /*   |    */
+  GAL_DATA_OPERATOR_BITXOR,       /*   ^    */
+  GAL_DATA_OPERATOR_BITLSH,       /*   <<   */
+  GAL_DATA_OPERATOR_BITRSH,       /*   >>   */
+  GAL_DATA_OPERATOR_BITOCM,       /*   ~    */
 
-  GAL_DATA_OPERATOR_NOT,       /*   !    */
-  GAL_DATA_OPERATOR_ISBLANK,   /* Similar to isnan() for floats. */
-  GAL_DATA_OPERATOR_WHERE,     /*   ?:   */
+  GAL_DATA_OPERATOR_ABS,          /* abs()  */
+  GAL_DATA_OPERATOR_POW,          /* pow()  */
+  GAL_DATA_OPERATOR_SQRT,         /* sqrt() */
+  GAL_DATA_OPERATOR_LOG,          /* log()  */
+  GAL_DATA_OPERATOR_LOG10,        /* log()  */
 
-  GAL_DATA_OPERATOR_ABS,       /* abs()  */
-  GAL_DATA_OPERATOR_POW,       /* pow()  */
-  GAL_DATA_OPERATOR_SQRT,      /* sqrt() */
-  GAL_DATA_OPERATOR_LOG,       /* log()  */
-  GAL_DATA_OPERATOR_LOG10,     /* log()  */
+  GAL_DATA_OPERATOR_MINVAL,       /* Minimum value of array.               */
+  GAL_DATA_OPERATOR_MAXVAL,       /* Maximum value of array.               */
+  GAL_DATA_OPERATOR_MIN,          /* Minimum per pixel of multiple arrays. */
+  GAL_DATA_OPERATOR_MAX,          /* Maximum per pixel of multiple arrays. */
+  GAL_DATA_OPERATOR_AVERAGE,      /* Average per pixel of multiple arrays. */
+  GAL_DATA_OPERATOR_MEDIAN,       /* Median per pixel of multiple arrays.  */
 
-  GAL_DATA_OPERATOR_MINVAL,    /* Minimum value of array.                */
-  GAL_DATA_OPERATOR_MAXVAL,    /* Maximum value of array.                */
-  GAL_DATA_OPERATOR_MIN,       /* Minimum per pixel of multiple arrays.  */
-  GAL_DATA_OPERATOR_MAX,       /* Maximum per pixel of multiple arrays.  */
-  GAL_DATA_OPERATOR_AVERAGE,   /* Average per pixel of multiple arrays.  */
-  GAL_DATA_OPERATOR_MEDIAN,    /* Median per pixel of multiple arrays.   */
+  GAL_DATA_OPERATOR_TO_UCHAR,     /* Convert to unsigned char.             */
+  GAL_DATA_OPERATOR_TO_CHAR,      /* Convert to char.                      */
+  GAL_DATA_OPERATOR_TO_USHORT,    /* Convert to unsigned short.            */
+  GAL_DATA_OPERATOR_TO_SHORT,     /* Convert to short.                     */
+  GAL_DATA_OPERATOR_TO_UINT,      /* Convert to unsigned int.              */
+  GAL_DATA_OPERATOR_TO_INT,       /* Convert to int.                       */
+  GAL_DATA_OPERATOR_TO_ULONG,     /* Convert to unsigned long.             */
+  GAL_DATA_OPERATOR_TO_LONG,      /* Convert to long.                      */
+  GAL_DATA_OPERATOR_TO_LONGLONG,  /* Convert to LONGLONG.                  */
+  GAL_DATA_OPERATOR_TO_FLOAT,     /* Convert to float.                     */
+  GAL_DATA_OPERATOR_TO_DOUBLE,    /* Convert to double.                    */
 };
 
 
@@ -215,6 +226,9 @@ typedef struct
 /*********************************************************************/
 /*************         Size and allocation         *******************/
 /*********************************************************************/
+void
+gal_data_copy_wcs(gal_data_t *in, gal_data_t *out);
+
 int
 gal_data_dsize_is_different(gal_data_t *first, gal_data_t *second);
 
@@ -307,4 +321,4 @@ gal_data_arithmetic(int operator, unsigned char flags, ...);
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_BOX_H__ */
+#endif           /* __GAL_DATA_H__ */

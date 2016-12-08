@@ -7337,6 +7337,85 @@ the right by a number of times given by the second operand. For example
 @code{00101000 2 rshift} will give @code{00001010}. Note that the bitwise
 operators only work on integer type datasets.
 
+@item uchar
+Convert the type of the popped operand to @code{unsigned char}. Different
+types of storange have a different number of bytes (and thus limits), they
+can also represent different standards of reading the bits.
+
+The most basic standard for reading the bits is integer numbers. Since we
+use CFITSIO, we define the @code{char}, @code{short}, or @code{long}
+integer types. These types can store an integer number (@mymath{..., -2,
+-1, 0, 1, 2, ...}), with an increasing number of bytes/bits and thus a
+limits. The range of integers each can represent is: @mymath{(-2^7, ...,
+2^7-1)}, @mymath{(-2^{15}, ..., 2^{15}-1}), and @mymath{(-2^{32}, ...,
+2^{31}-1)} respectively. One bit in the above types is dedicated to the
+number's sign (positive or negative). So, there is also an @code{unsigned}
+version where all the bits are counted in calculating the number. The
+@code{unsigned} types thus have larger positive limits, but no negative
+value with ranges @mymath{(0, ..., 2^8-1)}, @mymath{(0, ..., 2^{16}-1}),
+and @mymath{(0, ..., 2^{32}-1)} respectively. When the context of your work
+doesn't involve integer numbers (for example labeled images, where pixels
+can only have positive integers), it is best to use the @code{unsigned}
+types.
+
+The second standard of converting a given number of bits to numbers is the
+floating point standard, this standard can approximately store any real
+number with a given precision. There are two floating point types in
+CFITSIO: @code{float} and @code{double}, for single and double precision
+floating point numbers. The former is sufficient for data with less than 8
+significant decimal digits (most astronomical data), while the latter is
+good for less than 16 significant decimal digits. The representation of
+real numbers as bits is much more complex than integers, so we won't
+explain any further, if you are interested have a look in the
+@url{https://en.wikipedia.org/wiki/Floating_point, Wikipedia}.
+
+With the conversion operators in Gnuastro's Arithmetic, you can change the
+types of data to each other, which is necessary in some contexts. For
+example your program/library only accepts integer values for some
+operation, but you have a floating point image. Another example can be that
+you know that your data only has values that fit within @code{char} or
+@code{short} types, however the current image format is
+@code{long}. Operations involving floating point or larger integer types
+are significantly slower than integer or smaller types respectively. In the
+latter case, it also requires more space to keep. So when you confront such
+situations and want to store/archive/process the data, it is best to use
+Arithmetic to convert them to the most efficient type.
+
+@item char
+Convert the type of the popped operand to @code{char}. See explanations
+under the @command{unsigned char} operator for more.
+
+@item ushort
+Convert the type of the popped operand to @code{unsigned short}. See
+explanations under the @command{unsigned char} operator for more.
+
+@item short
+Convert the type of the popped operand to @code{short}. See explanations
+under the @command{unsigned char} operator for more.
+
+@item ulong
+Convert the type of the popped operand to @code{unsigned long}. See
+explanations under the @command{unsigned char} operator for more.
+
+@item long
+Convert the type of the popped operand to @code{long}. See explanations
+under the @command{unsigned char} operator for more.
+
+@item longlong
+Convert the type of the popped operand to @code{long long} (64-bit
+integer). See explanations under the @command{unsigned char} operator for
+more.
+
+@item float
+Convert the type of the popped operand to @code{float} (single precision
+floating point). See explanations under the @command{unsigned char}
+operator for more.
+
+@item double
+Convert the type of the popped operand to @code{double} (double precision
+floating point). See explanations under the @command{unsigned char}
+operator for more.
+
 @end table
 
 @cartouche
