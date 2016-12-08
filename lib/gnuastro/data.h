@@ -136,6 +136,7 @@ enum gal_data_operators
   GAL_DATA_OPERATOR_MINUS,     /*   -    */
   GAL_DATA_OPERATOR_MULTIPLY,  /*   *    */
   GAL_DATA_OPERATOR_DIVIDE,    /*   /    */
+  GAL_DATA_OPERATOR_MODULO,    /*   %    */
 
   GAL_DATA_OPERATOR_LT,        /*   <    */
   GAL_DATA_OPERATOR_LE,        /*   <=   */
@@ -148,6 +149,10 @@ enum gal_data_operators
 
   GAL_DATA_OPERATOR_BITAND,    /*   &    */
   GAL_DATA_OPERATOR_BITOR,     /*   |    */
+  GAL_DATA_OPERATOR_BITXOR,    /*   ^    */
+  GAL_DATA_OPERATOR_BITLSH,    /*   <<   */
+  GAL_DATA_OPERATOR_BITRSH,    /*   >>   */
+  GAL_DATA_OPERATOR_BITOCM,    /*   ~    */
 
   GAL_DATA_OPERATOR_NOT,       /*   !    */
   GAL_DATA_OPERATOR_ISBLANK,   /* Similar to isnan() for floats. */
@@ -245,6 +250,12 @@ gal_data_apply_mask(gal_data_t *in, gal_data_t *mask);
 
 void
 gal_data_blank_to_value(gal_data_t *data, void *value);
+
+int
+gal_data_has_blank(gal_data_t *data);
+
+gal_data_t *
+gal_data_flag_blank(gal_data_t *data);
 
 
 

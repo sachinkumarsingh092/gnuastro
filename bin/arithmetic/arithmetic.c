@@ -91,6 +91,8 @@ reversepolish(struct imgarithparams *p)
         add_operand(p, NULL, d1);
       else
         {
+          /* Order is the same as in the manual. */
+          /* Simple arithmetic operators. */
           if      (!strcmp(token->v, "+" ))
             { op=GAL_DATA_OPERATOR_PLUS;          nop=2;  }
           else if (!strcmp(token->v, "-" ))
@@ -99,7 +101,36 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_DATA_OPERATOR_MULTIPLY;      nop=2;  }
           else if (!strcmp(token->v, "/" ))
             { op=GAL_DATA_OPERATOR_DIVIDE;        nop=2;  }
+          else if (!strcmp(token->v, "%" ))
+            { op=GAL_DATA_OPERATOR_REMAINDER;     nop=2;  }
 
+          /* Mathematical Operators. */
+          else if (!strcmp(token->v, "abs"))
+            { op=GAL_DATA_OPERATOR_ABS;           nop=1;  }
+          else if (!strcmp(token->v, "pow"))
+            { op=GAL_DATA_OPERATOR_POW;           nop=2;  }
+          else if (!strcmp(token->v, "sqrt"))
+            { op=GAL_DATA_OPERATOR_SQRT;          nop=1;  }
+          else if (!strcmp(token->v, "log"))
+            { op=GAL_DATA_OPERATOR_LOG;           nop=1;  }
+          else if (!strcmp(token->v, "log10"))
+            { op=GAL_DATA_OPERATOR_LOG10;         nop=1;  }
+
+          /* Statistical operators. */
+          else if (!strcmp(token->v, "minval"))
+            { op=GAL_DATA_OPERATOR_MINVAL;        nop=1;  }
+          else if (!strcmp(token->v, "maxval"))
+            { op=GAL_DATA_OPERATOR_MAXVAL;        nop=1;  }
+          else if (!strcmp(token->v, "min"))
+            { op=GAL_DATA_OPERATOR_MIN;           nop=-1; }
+          else if (!strcmp(token->v, "max"))
+            { op=GAL_DATA_OPERATOR_MAX;           nop=-1; }
+          else if (!strcmp(token->v, "average"))
+            { op=GAL_DATA_OPERATOR_AVERAGE;       nop=-1; }
+          else if (!strcmp(token->v, "median"))
+            { op=GAL_DATA_OPERATOR_MEDIAN;        nop=-1; }
+
+          /* Conditional operators. */
           else if (!strcmp(token->v, "lt" ))
             { op=GAL_DATA_OPERATOR_LT;            nop=2;  }
           else if (!strcmp(token->v, "le"))
@@ -116,11 +147,6 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_DATA_OPERATOR_AND;           nop=2;  }
           else if (!strcmp(token->v, "or"))
             { op=GAL_DATA_OPERATOR_OR;            nop=2;  }
-          else if (!strcmp(token->v, "bitand"))
-            { op=GAL_DATA_OPERATOR_BITAND;        nop=2;  }
-          else if (!strcmp(token->v, "bitor"))
-            { op=GAL_DATA_OPERATOR_BITOR;         nop=2;  }
-
           else if (!strcmp(token->v, "not"))
             { op=GAL_DATA_OPERATOR_NOT;           nop=1;  }
           else if (!strcmp(token->v, "isblank"))
@@ -128,29 +154,18 @@ reversepolish(struct imgarithparams *p)
           else if (!strcmp(token->v, "where"))
             { op=GAL_DATA_OPERATOR_WHERE;         nop=3;  }
 
-          else if (!strcmp(token->v, "abs"))
-            { op=GAL_DATA_OPERATOR_ABS;           nop=1;  }
-          else if (!strcmp(token->v, "pow"))
-            { op=GAL_DATA_OPERATOR_POW;           nop=2;  }
-          else if (!strcmp(token->v, "sqrt"))
-            { op=GAL_DATA_OPERATOR_SQRT;          nop=1;  }
-          else if (!strcmp(token->v, "log"))
-            { op=GAL_DATA_OPERATOR_LOG;           nop=1;  }
-          else if (!strcmp(token->v, "log10"))
-            { op=GAL_DATA_OPERATOR_LOG10;         nop=1;  }
+          /* Bitwise operators. */
+          else if (!strcmp(token->v, "bitand"))
+            { op=GAL_DATA_OPERATOR_BITAND;        nop=2;  }
+          else if (!strcmp(token->v, "bitor"))
+            { op=GAL_DATA_OPERATOR_BITOR;         nop=2;  }
+          else if (!strcmp(token->v, "bitxor"))
+            { op=GAL_DATA_OPERATOR_BITXOR;        nop=2;  }
+          else if (!strcmp(token->v, "lshift"))
+            { op=GAL_DATA_OPERATOR_BITLSH;        nop=2;  }
+          else if (!strcmp(token->v, "rshift"))
+            { op=GAL_DATA_OPERATOR_BITRSH;        nop=2;  }
 
-          else if (!strcmp(token->v, "minval"))
-            { op=GAL_DATA_OPERATOR_MINVAL;        nop=1;  }
-          else if (!strcmp(token->v, "maxval"))
-            { op=GAL_DATA_OPERATOR_MAXVAL;        nop=1;  }
-          else if (!strcmp(token->v, "min"))
-            { op=GAL_DATA_OPERATOR_MIN;           nop=-1; }
-          else if (!strcmp(token->v, "max"))
-            { op=GAL_DATA_OPERATOR_MAX;           nop=-1; }
-          else if (!strcmp(token->v, "average"))
-            { op=GAL_DATA_OPERATOR_AVERAGE;       nop=-1; }
-          else if (!strcmp(token->v, "median"))
-            { op=GAL_DATA_OPERATOR_MEDIAN;        nop=-1; }
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
                   "interpretted as a FITS file, number, or operator",

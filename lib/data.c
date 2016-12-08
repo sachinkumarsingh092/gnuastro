@@ -38,7 +38,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <checkset.h>
 #include <data-copy.h>
+#include <data-arithmetic-unary.h>
 #include <data-arithmetic-binary.h>
+#include <data-arithmetic-onlyint.h>
 
 
 
@@ -861,6 +863,307 @@ gal_data_blank_to_value(gal_data_t *data, void *value)
 
 
 
+/* Return 1 if the dataset has a blank value and zero if it doesn't. */
+int
+gal_data_has_blank(gal_data_t *data)
+{
+  /* 'value' will only be read from one of these based on the
+     datatype. Which the caller assigned. If there is any problem, it is
+     their responsability, not this function's.*/
+  void *A=data->array;
+  size_t S=data->size;
+  unsigned char     *uc = A,   *ucf = A+S;
+  char               *c = A,    *cf = A+S;
+  char            **str = A, **strf = A+S;
+  unsigned short    *us = A,   *usf = A+S;
+  short              *s = A,    *sf = A+S;
+  unsigned int      *ui = A,   *uif = A+S;
+  int               *in = A,   *inf = A+S;
+  unsigned long     *ul = A,   *ulf = A+S;
+  long               *l = A,    *lf = A+S;
+  LONGLONG           *L = A,    *Lf = A+S;
+  float              *f = A,    *ff = A+S;
+  double             *d = A,    *df = A+S;
+  gsl_complex_float *cx = A,   *cxf = A+S;
+  gsl_complex      *dcx = A,  *dcxf = A+S;
+
+
+  /* Go over the pixels and check: */
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
+            "datatype, please get in touch with us to implement it.");
+
+    case GAL_DATA_TYPE_UCHAR:
+      do if(*uc==GAL_DATA_BLANK_UCHAR) return 1; while(uc<ucf);
+      break;
+
+
+    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
+      do if(*c++==GAL_DATA_BLANK_CHAR) return 1; while(c<cf);
+      break;
+
+
+    case GAL_DATA_TYPE_STRING:
+      do if(*str++==GAL_DATA_BLANK_STRING) return 1; while(str<strf);
+      break;
+
+
+    case GAL_DATA_TYPE_USHORT:
+      do if(*us++==GAL_DATA_BLANK_USHORT) return 1; while(us<usf);
+      break;
+
+
+    case GAL_DATA_TYPE_SHORT:
+      do if(*s++==GAL_DATA_BLANK_SHORT) return 1; while(s<sf);
+      break;
+
+
+    case GAL_DATA_TYPE_UINT:
+      do if(*ui++==GAL_DATA_BLANK_UINT) return 1; while(ui<uif);
+      break;
+
+
+    case GAL_DATA_TYPE_INT:
+      do if(*in++==GAL_DATA_BLANK_INT) return 1; while(in<inf);
+      break;
+
+
+    case GAL_DATA_TYPE_ULONG:
+      do if(*ul++==GAL_DATA_BLANK_ULONG) return 1; while(ul<ulf);
+      break;
+
+
+    case GAL_DATA_TYPE_LONG:
+      do if(*l++==GAL_DATA_BLANK_LONG) return 1; while(l<lf);
+      break;
+
+
+    case GAL_DATA_TYPE_LONGLONG:
+      do if(*L++==GAL_DATA_BLANK_LONGLONG) return 1; while(L<Lf);
+      break;
+
+
+      /* Note that a NaN value is not equal to another NaN value, so we
+         can't use the easy check for cases were the blank value is
+         NaN. Also note that `isnan' is actually a macro, so it works for
+         both float and double types.*/
+    case GAL_DATA_TYPE_FLOAT:
+      if(isnan(GAL_DATA_BLANK_FLOAT))
+        do if(isnan(*f++)) return 1; while(f<ff);
+      else
+        do if(*f++==GAL_DATA_BLANK_FLOAT) return 1; while(f<ff);
+      break;
+
+
+    case GAL_DATA_TYPE_DOUBLE:
+      if(isnan(GAL_DATA_BLANK_DOUBLE))
+        do if(isnan(*d++)) return 1; while(d<df);
+      else
+        do if(*d++==GAL_DATA_BLANK_FLOAT) return 1; while(d<df);
+      break;
+
+
+    case GAL_DATA_TYPE_COMPLEX:
+      if(isnan(GAL_DATA_BLANK_FLOAT))
+          do
+            if(isnan(GSL_COMPLEX_P_REAL(cx))
+               && isnan(GSL_COMPLEX_P_IMAG(cx)) )
+              return 1;
+          while(++cx<cxf);
+      else
+        do
+          if( GSL_COMPLEX_P_REAL(cx) == GAL_DATA_BLANK_FLOAT
+              && GSL_COMPLEX_P_IMAG(cx) == GAL_DATA_BLANK_FLOAT)
+            return 1;
+        while(++cx<cxf);
+      break;
+
+
+    case GAL_DATA_TYPE_DCOMPLEX:
+      if(isnan(GAL_DATA_BLANK_DOUBLE))
+          do
+            if(isnan(GSL_COMPLEX_P_REAL(dcx))
+               && isnan(GSL_COMPLEX_P_IMAG(dcx)) )
+              return 1;
+          while(++dcx<dcxf);
+      else
+        do
+          if( GSL_COMPLEX_P_REAL(dcx) == GAL_DATA_BLANK_FLOAT
+              && GSL_COMPLEX_P_IMAG(dcx) == GAL_DATA_BLANK_FLOAT)
+            return 1;
+        while(++dcx<dcxf);
+      break;
+
+
+    default:
+      error(EXIT_FAILURE, 0, "a bug! type value (%d) not recognized "
+            "in `gal_data_blank_to_value'", data->type);
+    }
+
+  /* If there was a blank value, then the function would have returned with
+     a value of 1. So if it reaches here, then we can be sure that there
+     was no blank values, hence, return 0. */
+  return 0;
+}
+
+
+
+
+
+/* Output a data-set of the the same size as the input, but with an
+   unsigned character type that has a value of 1 for data that are blank
+   and 0 for those that aren't. */
+gal_data_t *
+gal_data_flag_blank(gal_data_t *data)
+{
+  gal_data_t *out;
+
+  /* 'value' will only be read from one of these based on the
+     datatype. Which the caller assigned. If there is any problem, it is
+     their responsability, not this function's.*/
+  void *A=data->array;
+  size_t S=data->size;
+  unsigned char     *uc = A,   *ucf = A+S, *o;
+  char               *c = A,    *cf = A+S;
+  char            **str = A, **strf = A+S;
+  unsigned short    *us = A,   *usf = A+S;
+  short              *s = A,    *sf = A+S;
+  unsigned int      *ui = A,   *uif = A+S;
+  int               *in = A,   *inf = A+S;
+  unsigned long     *ul = A,   *ulf = A+S;
+  long               *l = A,    *lf = A+S;
+  LONGLONG           *L = A,    *Lf = A+S;
+  float              *f = A,    *ff = A+S;
+  double             *d = A,    *df = A+S;
+  gsl_complex_float *cx = A,   *cxf = A+S;
+  gsl_complex      *dcx = A,  *dcxf = A+S;
+
+
+  /* Allocate the output array. */
+  out=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, data->ndim, data->dsize,
+                     data->wcs, 0, data->minmapsize);
+  o=out->array;
+
+
+  /* Go over the pixels and set the output values. */
+  switch(data->type)
+    {
+    case GAL_DATA_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support bit "
+            "datatype, please get in touch with us to implement it.");
+
+    case GAL_DATA_TYPE_UCHAR:
+      do *o++ = *uc==GAL_DATA_BLANK_UCHAR; while(++uc<ucf);
+      break;
+
+
+    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
+      do *o++ = *c==GAL_DATA_BLANK_CHAR; while(++c<cf);
+      break;
+
+
+    case GAL_DATA_TYPE_STRING:
+      do *o++ = *str==GAL_DATA_BLANK_STRING; while(++str<strf);
+      break;
+
+
+    case GAL_DATA_TYPE_USHORT:
+      do *o++ = *us==GAL_DATA_BLANK_USHORT; while(++us<usf);
+      break;
+
+
+    case GAL_DATA_TYPE_SHORT:
+      do *o++ = *s==GAL_DATA_BLANK_SHORT; while(++s<sf);
+      break;
+
+
+    case GAL_DATA_TYPE_UINT:
+      do *o++ = *ui==GAL_DATA_BLANK_UINT; while(++ui<uif);
+      break;
+
+
+    case GAL_DATA_TYPE_INT:
+      do *o++ = *in==GAL_DATA_BLANK_INT; while(++in<inf);
+      break;
+
+
+    case GAL_DATA_TYPE_ULONG:
+      do *o++ = *ul==GAL_DATA_BLANK_ULONG; while(++ul<ulf);
+      break;
+
+
+    case GAL_DATA_TYPE_LONG:
+      do *o++ = *l==GAL_DATA_BLANK_LONG; while(++l<lf);
+      break;
+
+
+    case GAL_DATA_TYPE_LONGLONG:
+      do *o++ = *L==GAL_DATA_BLANK_LONGLONG; while(++L<Lf);
+      break;
+
+
+      /* Note that a NaN value is not equal to another NaN value, so we
+         can't use the easy check for cases were the blank value is
+         NaN. Also note that `isnan' is actually a macro, so it works for
+         both float and double types.*/
+    case GAL_DATA_TYPE_FLOAT:
+      if(isnan(GAL_DATA_BLANK_FLOAT))
+        do *o++ = isnan(*f); while(++f<ff);
+      else
+        do *o++ = *f==GAL_DATA_BLANK_FLOAT; while(++f<ff);
+      break;
+
+
+    case GAL_DATA_TYPE_DOUBLE:
+      if(isnan(GAL_DATA_BLANK_DOUBLE))
+        do *o++ = isnan(*d); while(++d<df);
+      else
+        do *o++ = *d==GAL_DATA_BLANK_DOUBLE; while(++d<df);
+      break;
+
+
+    case GAL_DATA_TYPE_COMPLEX:
+      if(isnan(GAL_DATA_BLANK_FLOAT))
+          do
+            *o++ = ( isnan(GSL_COMPLEX_P_REAL(cx))
+                     && isnan(GSL_COMPLEX_P_IMAG(cx)) );
+          while(++cx<cxf);
+      else
+        do
+          *o++ = ( GSL_COMPLEX_P_REAL(cx) == GAL_DATA_BLANK_FLOAT
+                   && GSL_COMPLEX_P_IMAG(cx) == GAL_DATA_BLANK_FLOAT );
+        while(++cx<cxf);
+      break;
+
+
+    case GAL_DATA_TYPE_DCOMPLEX:
+      if(isnan(GAL_DATA_BLANK_DOUBLE))
+          do
+            *o++ = ( isnan(GSL_COMPLEX_P_REAL(dcx))
+                     && isnan(GSL_COMPLEX_P_IMAG(dcx)) );
+          while(++dcx<dcxf);
+      else
+        do
+          *o++ = ( GSL_COMPLEX_P_REAL(dcx) == GAL_DATA_BLANK_FLOAT
+                   && GSL_COMPLEX_P_IMAG(dcx) == GAL_DATA_BLANK_FLOAT );
+        while(++dcx<dcxf);
+      break;
+
+
+    default:
+      error(EXIT_FAILURE, 0, "type value (%d) not recognized "
+            "in `gal_data_flag_blank'", data->type);
+    }
+
+  /* Return */
+  return out;
+}
+
+
+
+
 
 
 
@@ -1150,11 +1453,12 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
   /* Depending on the operator do the job: */
   switch(operator)
     {
-    /* If we have an ordinary (not bitwise) binary operator: */
+    /* Binary operators with any data type. */
     case GAL_DATA_OPERATOR_PLUS:
     case GAL_DATA_OPERATOR_MINUS:
     case GAL_DATA_OPERATOR_MULTIPLY:
     case GAL_DATA_OPERATOR_DIVIDE:
+    case GAL_DATA_OPERATOR_MODULO:
     case GAL_DATA_OPERATOR_LT:
     case GAL_DATA_OPERATOR_LE:
     case GAL_DATA_OPERATOR_GT:
@@ -1163,11 +1467,35 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
     case GAL_DATA_OPERATOR_NE:
     case GAL_DATA_OPERATOR_AND:
     case GAL_DATA_OPERATOR_OR:
-      /* Prepare original data structures from the input arguments. */
       d1 = va_arg(va, gal_data_t *);
       d2 = va_arg(va, gal_data_t *);
       out=data_arithmetic_binary(operator, flags, d1, d2);
       break;
+
+    case GAL_DATA_OPERATOR_NOT:
+      d1 = va_arg(va, gal_data_t *);
+      out=data_arithmetic_not(d1);
+      break;
+
+    /* Binary operators that only work on integer types. */
+    case GAL_DATA_OPERATOR_BITAND:
+    case GAL_DATA_OPERATOR_BITOR:
+    case GAL_DATA_OPERATOR_BITXOR:
+    case GAL_DATA_OPERATOR_BITLSH:
+    case GAL_DATA_OPERATOR_BITRSH:
+      d1 = va_arg(va, gal_data_t *);
+      d2 = va_arg(va, gal_data_t *);
+      out=data_arithmetic_onlyint_binary(operator, flags, d1, d2);
+      break;
+
+    /* Ones component (bitwise) operator.*/
+
+    case GAL_DATA_OPERATOR_ISBLANK:
+      d1 = va_arg(va, gal_data_t *);
+      out = gal_data_flag_blank(d1);
+      if(flags & GAL_DATA_ARITH_FREE)
+        gal_data_free(d1);
+
 
 
 #if 0
@@ -1183,7 +1511,6 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
           || !strcmp(operator, "average")
           || !strcmp(operator, "median")) alloppixs(p, operator);
   else if(!strcmp(operator, "not"))       notfunc(p);
-  else if(!strcmp(operator, "isblank"))   opisblank(p);
   else if(!strcmp(operator, "where"))     where(p);
 #endif
 

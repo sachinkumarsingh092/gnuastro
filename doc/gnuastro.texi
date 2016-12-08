@@ -7145,6 +7145,10 @@ the multiplication sign (for example @command{"*"}).
 @item /
 Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
 
+@item %
+Remainder, so ``@command{3 2 %}'' is equivalent to @mymath{1}. Note that
+the remainder operator only works on integer types.
+
 @item abs
 Absolute value of first operand, so ``@command{4 abs}'' is
 equivalent to @mymath{|4|}.
@@ -7245,16 +7249,6 @@ Non-Equality: similar to @code{lt} (`less than' operator), but returning 1
 when the two popped operands are @emph{not} equal (to double precision
 floating point accuracy).
 
-@cindex Blank pixel
-@item isblank
-Test for a blank value (see @ref{Blank pixels}). In essence, this is very
-similar to the conditional operators: the output is either 1 or 0 (see the
-`less than' operator above). The difference is that it only needs one
-operand. Because of the definition of a blank pixel, a blank value is not
-even equal to itself, so you cannot use the equal operator above to select
-blank pixels. See the ``Blank pixels'' box below for more on Blank pixels
-in Arithmetic.
-
 @item and
 Logical AND: returns 1 if both operands have a non-zero value and 0 if both
 are zero. Both operands have to be the same kind: either both images or
@@ -7269,6 +7263,16 @@ either both images or both numbers.
 Logical NOT: returns 1 when the operand is zero and 0 when the operand is
 non-zero. The operand can be an image or number, for an image, it is
 applied to each pixel separately.
+
+@cindex Blank pixel
+@item isblank
+Test for a blank value (see @ref{Blank pixels}). In essence, this is very
+similar to the conditional operators: the output is either 1 or 0 (see the
+`less than' operator above). The difference is that it only needs one
+operand. Because of the definition of a blank pixel, a blank value is not
+even equal to itself, so you cannot use the equal operator above to select
+blank pixels. See the ``Blank pixels'' box below for more on Blank pixels
+in Arithmetic.
 
 @item where
 Change the input (pixel) value `where' a certain condition holds. The
@@ -7297,6 +7301,41 @@ internally. For example the case below:
 $ astarithmetic in.fits reference.fits 100 gt new.fits where
 @end example
 
+@item bitand
+Bitwise AND operator: only bits with values of 1 will get the value of 1,
+the rest will be set to 0. For example (assuming numbers can be written as
+bit strings on the command-line): @code{00101000 00100010 bitand} will give
+@code{00100000}. Note that the bitwise operators only work on integer type
+datasets.
+
+@item bitor
+Bitwise inclusive OR operator: The bit will stay 1 if atleast one of the
+two inputs has a 1 value on that bit. For example (assuming numbers can be
+written as bit strings on the command-line): @code{00101000 00100010
+bitand} will give @code{00101010}. Note that the bitwise operators only
+work on integer type datasets.
+
+@item bitxor
+Bitwise exclusive OR operator: A bit will be 1 if it differs between the
+two inputs. For example (assuming numbers can be written as bit strings on
+the command-line): @code{00101000 00100010 bitand} will give
+@code{00001010}. Note that the bitwise operators only work on integer type
+datasets.
+
+@item lshift
+Bitwise left shift operator: shift all the bits of the first operand to the
+left by a number of times given by the second operand. For example
+(assuming numbers can be written as bit strings on the command-line):
+@code{00101000 2 lshift} will give @code{10100000}. This is equivalent to
+multiplication by 4.  Note that the bitwise operators only work on integer
+type datasets.
+
+@item rshift
+Bitwise right shift operator: shift all the bits of the first operand to
+the right by a number of times given by the second operand. For example
+(assuming numbers can be written as bit strings on the command-line):
+@code{00101000 2 rshift} will give @code{00001010}. Note that the bitwise
+operators only work on integer type datasets.
 
 @end table
 
