@@ -166,7 +166,7 @@ enum gal_data_operators
   GAL_DATA_OPERATOR_BITXOR,       /*   ^     */
   GAL_DATA_OPERATOR_BITLSH,       /*   <<    */
   GAL_DATA_OPERATOR_BITRSH,       /*   >>    */
-  GAL_DATA_OPERATOR_BITOCM,       /*   ~     */
+  GAL_DATA_OPERATOR_BITNOT,       /*   ~     */
 
   GAL_DATA_OPERATOR_ABS,          /* abs()   */
   GAL_DATA_OPERATOR_POW,          /* pow()   */
@@ -216,17 +216,18 @@ enum gal_data_operators
 
     - The `dsize' array is in the `long' type because CFITSIO uses the long
       type and this will make it easier to call CFITSIO functions.*/
-typedef struct
+typedef struct gal_data_t
 {
-  void        *array;  /* Array keeping data elements.               */
-  int           type;  /* Type of data (from `gal_data_alltypes').   */
-  size_t        ndim;  /* Number of dimensions in the array.         */
-  long        *dsize;  /* Size of array along each dimension.        */
-  size_t        size;  /* Total number of data-elements.             */
-  char     *mmapname;  /* File name of the mmap.                     */
-  size_t  minmapsize;  /* Minimum number of bytes to mmap the array. */
-  int           nwcs;  /* for WCSLIB: no. coord. representations.    */
-  struct wcsprm *wcs;  /* WCS information for this dataset.          */
+  void             *array;  /* Array keeping data elements.               */
+  int                type;  /* Type of data (from `gal_data_alltypes').   */
+  size_t             ndim;  /* Number of dimensions in the array.         */
+  long             *dsize;  /* Size of array along each dimension.        */
+  size_t             size;  /* Total number of data-elements.             */
+  char          *mmapname;  /* File name of the mmap.                     */
+  size_t       minmapsize;  /* Minimum number of bytes to mmap the array. */
+  int                nwcs;  /* for WCSLIB: no. coord. representations.    */
+  struct wcsprm      *wcs;  /* WCS information for this dataset.          */
+  struct gal_data_t *next;  /* To use it as a linked list if necessary.   */
 } gal_data_t;
 
 

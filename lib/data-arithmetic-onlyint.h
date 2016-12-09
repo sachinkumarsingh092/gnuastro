@@ -28,5 +28,7 @@ gal_data_t *
 data_arithmetic_onlyint_binary(int operator, unsigned char flags,
                                gal_data_t *lo, gal_data_t *ro);
 
-
+gal_data_t *
+data_arithmetic_bitwise_not(int operator, unsigned char flags,
+                            gal_data_t *in);
 #endif

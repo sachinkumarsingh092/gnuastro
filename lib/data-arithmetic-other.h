@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_ARITHMETIC_UNARY_H__
-#define __GAL_ARITHMETIC_UNARY_H__
+#ifndef __GAL_ARITHMETIC_OTHER_H__
+#define __GAL_ARITHMETIC_OTHER_H__
 
 gal_data_t *
 data_arithmetic_change_type(gal_data_t *data, int operator,

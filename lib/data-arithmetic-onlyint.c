@@ -661,3 +661,72 @@ data_arithmetic_onlyint_binary(int operator, unsigned char flags,
   /* Return */
   return o;
 }
+
+
+
+
+
+gal_data_t *
+data_arithmetic_bitwise_not(int operator, unsigned char flags,
+                            gal_data_t *in)
+{
+  gal_data_t *o;
+  unsigned char    *iuc=in->array, *iucf=in->array+in->size, *ouc;
+  char              *ic=in->array,  *icf=in->array+in->size,  *oc;
+  unsigned short   *ius=in->array, *iusf=in->array+in->size, *ous;
+  short             *is=in->array,  *isf=in->array+in->size,  *os;
+  unsigned int     *iui=in->array, *iuif=in->array+in->size, *oui;
+  int               *ii=in->array,  *iif=in->array+in->size,  *oi;
+  unsigned long    *iul=in->array, *iulf=in->array+in->size, *oul;
+  long              *il=in->array,  *ilf=in->array+in->size,  *ol;
+  LONGLONG          *iL=in->array,  *iLf=in->array+in->size,  *oL;
+
+  /* If we want inplace output, set the output pointer to the input
+     pointer, for every pixel, the operation will be independent. */
+  if(flags & GAL_DATA_ARITH_INPLACE)
+    o = in;
+  else
+    o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
+                       0, in->minmapsize);
+
+  /* Start setting the operator and operands. */
+  switch(in->type)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      ouc=o->array;   do *ouc++ = ~(*iuc++);  while(iuc<iucf);
+    case GAL_DATA_TYPE_CHAR:
+      oc=o->array;    do  *oc++ = ~(*ic++);   while(ic<icf);
+    case GAL_DATA_TYPE_USHORT:
+      ous=o->array;   do *ous++ = ~(*ius++);  while(ius<iusf);
+    case GAL_DATA_TYPE_SHORT:
+      os=o->array;    do  *os++ = ~(*is++);   while(is<isf);
+    case GAL_DATA_TYPE_UINT:
+      oui=o->array;   do *oui++ = ~(*iui++);  while(iui<iuif);
+    case GAL_DATA_TYPE_INT:
+      oi=o->array;    do  *oi++ = ~(*ii++);   while(ii<iif);
+    case GAL_DATA_TYPE_ULONG:
+      oul=o->array;   do *oul++ = ~(*iul++);  while(iul<iulf);
+    case GAL_DATA_TYPE_LONG:
+      ol=o->array;    do  *ol++ = ~(*il++);   while(il<ilf);
+    case GAL_DATA_TYPE_LONGLONG:
+      oL=o->array;    do  *oL++ = ~(*iL++);   while(iL<iLf);
+    default:
+      error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
+            "data_arithmetic_binary_function", operator);
+    }
+
+
+  /* Clean up. Note that if the input arrays can be freed, and any of right
+     or left arrays needed conversion, `UNIFUNC_CONVERT_TO_COMPILED_TYPE'
+     has already freed the input arrays, and we only have `r' and `l'
+     allocated in any case. Alternatively, when the inputs shouldn't be
+     freed, the only allocated spaces are the `r' and `l' arrays if their
+     types weren't compiled for binary operations, we can tell this from
+     the pointers: if they are different from the original pointers, they
+     were allocated. */
+  if( (flags & GAL_DATA_ARITH_FREE) && o!=in)
+    gal_data_free(in);
+
+  /* Return */
+  return o;
+}

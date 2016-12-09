@@ -166,6 +166,8 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_DATA_OPERATOR_BITLSH;        nop=2;  }
           else if (!strcmp(token->v, "rshift"))
             { op=GAL_DATA_OPERATOR_BITRSH;        nop=2;  }
+          else if (!strcmp(token->v, "bitnot"))
+            { op=GAL_DATA_OPERATOR_BITNOT;        nop=1;  }
 
           /* Type conversion. */
           else if (!strcmp(token->v, "uchar"))

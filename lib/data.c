@@ -384,6 +384,7 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
   /* Set the basic information we know so far. Note that we need a blank
      WCS structure allocated outside of WCSLIB, then WCSLIB will copy the
      contents. */
+  out->next=NULL;
   out->ndim=ndim;
   out->type=type;
   out->minmapsize=minmapsize;
@@ -1482,7 +1483,7 @@ gal_data_operator_string(int operator)
     case GAL_DATA_OPERATOR_BITXOR:       return "bitxor";
     case GAL_DATA_OPERATOR_BITLSH:       return "lshift";
     case GAL_DATA_OPERATOR_BITRSH:       return "rshift";
-    case GAL_DATA_OPERATOR_BITOCM:       return "bitocm";
+    case GAL_DATA_OPERATOR_BITNOT:       return "bitnot";
 
     case GAL_DATA_OPERATOR_ABS:          return "abs";
     case GAL_DATA_OPERATOR_POW:          return "pow";

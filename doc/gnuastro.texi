@@ -360,6 +360,7 @@ Invoking ImageCrop
 Arithmetic
 
 * Reverse polish notation::     The current notation style for Arithmetic
+* Data types::                  How bits are read as numbers
 * Arithmetic operators::        List of operators known to Arithmetic
 * Invoking astarithmetic::      How to run Arithmetic: options and output
 
@@ -7057,11 +7058,12 @@ more information on how to run Arithmetic, please see
 
 @menu
 * Reverse polish notation::     The current notation style for Arithmetic
+* Data types::                  How bits are read as numbers
 * Arithmetic operators::        List of operators known to Arithmetic
 * Invoking astarithmetic::      How to run Arithmetic: options and output
 @end menu
 
-@node Reverse polish notation, Arithmetic operators, Arithmetic, Arithmetic
+@node Reverse polish notation, Data types, Arithmetic, Arithmetic
 @subsection Reverse polish notation
 
 @cindex Postfix notation
@@ -7118,7 +7120,69 @@ language@footnote{See the EPS and PDF part of @ref{Recognized file types}
 for a little more on the Postscript language.} (the programming language in
 Postscript and compiled into PDF files) uses this notation.
 
-@node Arithmetic operators, Invoking astarithmetic, Reverse polish notation, Arithmetic
+
+
+
+
+@node Data types, Arithmetic operators, Reverse polish notation, Arithmetic
+@subsection Data types
+
+@cindex Bit
+@cindex Type
+At the lowest level, the computer stores everything in terms of @code{1} or
+@code{0}. For example, each program in Gnuastro, or each astronomical image
+you take with the telescope is actually a string of millions of these zeros
+and ones. The space required to keep either of these two values is the
+smallest unit of storage, and is known as a @emph{bit}. Understanding and
+manipulating this string of bits is extremely hard for most people,
+therefore, we define packages with a certain number of these bits along
+with a standard on how to interpret these bits as @emph{type}s.
+
+The most basic standard for reading the bits is integer numbers. Since we
+use CFITSIO, we define the @code{char}, @code{short}, or @code{long}
+integer types. These types can store an integer number (@mymath{..., -2,
+-1, 0, 1, 2, ...}), with an increasing number of bytes/bits (and thus
+larger limits). The range of integers each can represent is: @mymath{(-2^7,
+..., 2^7-1)}, @mymath{(-2^{15}, ..., 2^{15}-1}), and @mymath{(-2^{32}, ...,
+2^{31}-1)} respectively. One bit in the above types is dedicated to the
+number's sign (positive or negative). So, there is also an @code{unsigned}
+version where all the bits are counted in calculating the number. The
+@code{unsigned} types thus have larger positive limits, but no negative
+value with ranges @mymath{(0, ..., 2^8-1)}, @mymath{(0, ..., 2^{16}-1}),
+and @mymath{(0, ..., 2^{32}-1)} respectively. When the context of your work
+doesn't involve negative numbers (for example labeled images, where pixels
+can only have zero or positive integer values), it is best to use the
+@code{unsigned} types.
+
+The second standard of converting a given number of bits to numbers is the
+floating point standard, this standard can approximately store any real
+number with a given precision. There are two floating point types in
+CFITSIO: @code{float} and @code{double}, for single and double precision
+floating point numbers respectively. The former is sufficient for data with
+less than 8 significant decimal digits (most astronomical data), while the
+latter is good for less than 16 significant decimal digits. The
+representation of real numbers as bits is much more complex than integers,
+so we won't explain any further, if you are interested have a look in the
+@url{https://en.wikipedia.org/wiki/Floating_point, Wikipedia article}.
+
+With the conversion operators in Gnuastro's Arithmetic, you can change the
+types of data to each other, which is necessary in some contexts. For
+example the program/library, that you intend to feed the data into, only
+accepts floating point values, but you have an integer image. Another
+example can be that you know that your data only has values that fit within
+@code{char} or @code{short} types, however it is currently formatted in the
+@code{long} type. Operations involving floating point or larger integer
+types are significantly slower than integer or smaller types
+respectively. In the latter case, it also requires much more (by 8 or 4
+times in the example above) storage space. So when you confront such
+situations and want to store/archive/transfter/process the data, it is best
+convert them to the most efficient type.
+
+
+
+
+
+@node Arithmetic operators, Invoking astarithmetic, Data types, Arithmetic
 @subsection Arithmetic operators
 
 The recognized operators in Arithmetic are listed below. See @ref{Reverse
@@ -7141,6 +7205,16 @@ Subtraction, so ``@command{4 5 -}'' is equivalent to @mymath{4-5}.
 Multiplication, so ``@command{4 5 "*"}'' is equivalent to
 @mymath{4\times5}. On the command-line or in scripts, be sure to quote
 the multiplication sign (for example @command{"*"}).
+
+@cartouche
+@noindent
+@strong{Important reminder for multiplication:} please quote the
+@command{*} sign (for example, @command{"*"} or
+@command{'*'}). Without quotation, the shell will replace @command{*}
+with a list of all the files in your working directory which can
+produce unpredictable outputs. In any case, the input images are not
+affected, they are only read.
+@end cartouche
 
 @item /
 Division, so ``@command{4 5 /}'' is equivalent to @mymath{4/5}.
@@ -7302,23 +7376,23 @@ $ astarithmetic in.fits reference.fits 100 gt new.fits where
 @end example
 
 @item bitand
-Bitwise AND operator: only bits with values of 1 will get the value of 1,
-the rest will be set to 0. For example (assuming numbers can be written as
-bit strings on the command-line): @code{00101000 00100010 bitand} will give
-@code{00100000}. Note that the bitwise operators only work on integer type
-datasets.
+Bitwise AND operator: only bits with values of 1 in both popped operands
+will get the value of 1, the rest will be set to 0. For example (assuming
+numbers can be written as bit strings on the command-line): @code{00101000
+00100010 bitand} will give @code{00100000}. Note that the bitwise operators
+only work on integer type datasets.
 
 @item bitor
-Bitwise inclusive OR operator: The bit will stay 1 if atleast one of the
-two inputs has a 1 value on that bit. For example (assuming numbers can be
-written as bit strings on the command-line): @code{00101000 00100010
-bitand} will give @code{00101010}. Note that the bitwise operators only
-work on integer type datasets.
+Bitwise inclusive OR operator: The bits where atleast one of the two popped
+operands has a 1 value get a value of 1, the others 0. For example
+(assuming numbers can be written as bit strings on the command-line):
+@code{00101000 00100010 bitand} will give @code{00101010}. Note that the
+bitwise operators only work on integer type datasets.
 
 @item bitxor
 Bitwise exclusive OR operator: A bit will be 1 if it differs between the
-two inputs. For example (assuming numbers can be written as bit strings on
-the command-line): @code{00101000 00100010 bitand} will give
+two popped operands. For example (assuming numbers can be written as bit
+strings on the command-line): @code{00101000 00100010 bitand} will give
 @code{00001010}. Note that the bitwise operators only work on integer type
 datasets.
 
@@ -7337,96 +7411,55 @@ the right by a number of times given by the second operand. For example
 @code{00101000 2 rshift} will give @code{00001010}. Note that the bitwise
 operators only work on integer type datasets.
 
+@item bitnot
+Bitwise not (more formally known as one's complement) operator: flip all
+the bits of the popped operand (note that this is the only unary, or single
+operand, bitwise operator). In other words, any bit with a value of
+@code{0} is changed to @code{1} and vice-versa. For example (assuming
+numbers can be written as bit strings on the command-line): @code{00101000
+bitnot} will give @code{11010111}. Note that the bitwise operators only
+work on integer type datasets/numbers.
+
 @item uchar
-Convert the type of the popped operand to @code{unsigned char}. Different
-types of storange have a different number of bytes (and thus limits), they
-can also represent different standards of reading the bits.
-
-The most basic standard for reading the bits is integer numbers. Since we
-use CFITSIO, we define the @code{char}, @code{short}, or @code{long}
-integer types. These types can store an integer number (@mymath{..., -2,
--1, 0, 1, 2, ...}), with an increasing number of bytes/bits and thus a
-limits. The range of integers each can represent is: @mymath{(-2^7, ...,
-2^7-1)}, @mymath{(-2^{15}, ..., 2^{15}-1}), and @mymath{(-2^{32}, ...,
-2^{31}-1)} respectively. One bit in the above types is dedicated to the
-number's sign (positive or negative). So, there is also an @code{unsigned}
-version where all the bits are counted in calculating the number. The
-@code{unsigned} types thus have larger positive limits, but no negative
-value with ranges @mymath{(0, ..., 2^8-1)}, @mymath{(0, ..., 2^{16}-1}),
-and @mymath{(0, ..., 2^{32}-1)} respectively. When the context of your work
-doesn't involve integer numbers (for example labeled images, where pixels
-can only have positive integers), it is best to use the @code{unsigned}
-types.
-
-The second standard of converting a given number of bits to numbers is the
-floating point standard, this standard can approximately store any real
-number with a given precision. There are two floating point types in
-CFITSIO: @code{float} and @code{double}, for single and double precision
-floating point numbers. The former is sufficient for data with less than 8
-significant decimal digits (most astronomical data), while the latter is
-good for less than 16 significant decimal digits. The representation of
-real numbers as bits is much more complex than integers, so we won't
-explain any further, if you are interested have a look in the
-@url{https://en.wikipedia.org/wiki/Floating_point, Wikipedia}.
-
-With the conversion operators in Gnuastro's Arithmetic, you can change the
-types of data to each other, which is necessary in some contexts. For
-example your program/library only accepts integer values for some
-operation, but you have a floating point image. Another example can be that
-you know that your data only has values that fit within @code{char} or
-@code{short} types, however the current image format is
-@code{long}. Operations involving floating point or larger integer types
-are significantly slower than integer or smaller types respectively. In the
-latter case, it also requires more space to keep. So when you confront such
-situations and want to store/archive/process the data, it is best to use
-Arithmetic to convert them to the most efficient type.
+Convert the type of the popped operand to @code{unsigned char}. See
+@ref{Data types} for a short review of the different data types.
 
 @item char
-Convert the type of the popped operand to @code{char}. See explanations
-under the @command{unsigned char} operator for more.
+Convert the type of the popped operand to @code{char}. See @ref{Data types}
+for a short review of the different data types.
 
 @item ushort
 Convert the type of the popped operand to @code{unsigned short}. See
-explanations under the @command{unsigned char} operator for more.
+@ref{Data types} for a short review of the different data types.
 
 @item short
-Convert the type of the popped operand to @code{short}. See explanations
-under the @command{unsigned char} operator for more.
+Convert the type of the popped operand to @code{short}. See @ref{Data
+types} for a short review of the different data types.
 
 @item ulong
 Convert the type of the popped operand to @code{unsigned long}. See
-explanations under the @command{unsigned char} operator for more.
+@ref{Data types} for a short review of the different data types.
 
 @item long
-Convert the type of the popped operand to @code{long}. See explanations
-under the @command{unsigned char} operator for more.
+Convert the type of the popped operand to @code{long}. See @ref{Data types}
+for a short review of the different data types.
 
 @item longlong
 Convert the type of the popped operand to @code{long long} (64-bit
-integer). See explanations under the @command{unsigned char} operator for
-more.
+integer). See @ref{Data types} for a short review of the different data
+types.
 
 @item float
 Convert the type of the popped operand to @code{float} (single precision
-floating point). See explanations under the @command{unsigned char}
-operator for more.
+floating point). See @ref{Data types} for a short review of the different
+data types.
 
 @item double
 Convert the type of the popped operand to @code{double} (double precision
-floating point). See explanations under the @command{unsigned char}
-operator for more.
+floating point). See @ref{Data types} for a short review of the different
+data types.
 
 @end table
-
-@cartouche
-@noindent
-@strong{Important reminder for multiplication:} please quote the
-@command{*} sign (for example, @command{"*"} or
-@command{'*'}). Without quotation, the shell will replace @command{*}
-with a list of all the files in your working directory which can
-produce unpredictable outputs. In any case, the input images are not
-affected, they are only read.
-@end cartouche
 
 @cartouche
 @noindent
@@ -7474,11 +7507,30 @@ $ astarithmetic 1 image.fits / --out=inverse.fits
 $ astarithmetic image.fits -1 "*" --out=negative.fits
 $ astarithmetic image.fits image.fits - --out=skysub.fits           \
                 --hdu=0 --hdu=3
-$ astarithmetic image1.fits image2.fits + 2 / --out=average.fits
+$ astarithmetic image1.fits image2.fits + 2f / --out=average.fits
 $ astarithmetic image1.fits image2.fits average --out=average.fits
 $ astarithmetic img1.fits img2.fits img3.fits median                \
                 -h0 -h1 -h2 --out=median.fits
 @end example
+
+Arithmetic accepts two kinds of input: images and numbers. Images are
+considered to be any of the inputs that is a file name of a recognized type
+(see @ref{Arguments}). Numbers will be read into the smallest type that can
+store them, so @command{-2} will be read as a @code{char} type (which is
+signed on most systems and can thus keep negative values), @command{2500}
+will be read as an @code{unsigned short} (all positive numbers will be read
+as unsigned), while @code{3.14159265358979323846} will be read as a
+@code{double} and @code{3.14} will be read as a @code{float}.
+
+All the operators will work on the native type of their operands, so the C
+programming language's internal type conversion will be used if the operand
+types of of multi-operand operators are different. Some operators can only
+work on integral types (for example bitwise operators) while others only
+work on floating point types, (for example @command{log}, or
+@command{sqrt}). In such cases if the operand type is different an error
+will be printed. Arithmetic also comes with internal type conversion
+operators which you can use to convert the data into the appropriate
+format, see @ref{Arithmetic operators}.
 
 If the output is an image, and the @option{--output} option is not
 given, automatic output will use the name of the first FITS image
@@ -7489,24 +7541,12 @@ will be printed in the standard output. See @ref{Reverse polish
 notation} for the notation used to mix operands and operators on the
 command-line.
 
-@cindex NaN
 @cindex Mask image
-Currently Arithmetic will convert the input image into double
-precision floating point arrays for the operations. But there are
-plans to allow it to also operate on integer (labeled or masked)
-images with bit-wise operators so mask layers can also be
-manipulated@footnote{@url{https://savannah.gnu.org/task/?13869}}. Unless
-otherwise stated for each operator, blank pixels in the input image
-will automatically be set as blank in the output. To ignore certain
-pixels (see @ref{Blank pixels}), you can specify a mask image, see
-@ref{Mask image}. In that case, when reading the first FITS image, all
-the masked pixels will be changed to a NaN value. Therefore in any
-further operations with other images, the output for those pixels will
-always be a NaN (blank pixel value for floating point data
-type). Currently all the operations in Arithmetic are done in double
-precision floating point type. However, if none of the input images
-have this type, the output will be stored as a single precision
-floating point type.
+All the operators will work on the native types of the input data. Unless
+otherwise stated for each operator. To ignore certain pixels (see
+@ref{Blank pixels}), you can specify a mask image, see @ref{Mask image}. In
+that case, when reading the first FITS image, all the masked pixels will be
+set to a blank value depending on the type of the image.
 
 @cindex Options
 The hyphen (@command{-}) can be used both to specify options (see
