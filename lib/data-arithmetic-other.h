@@ -30,5 +30,13 @@ data_arithmetic_change_type(gal_data_t *data, int operator,
 gal_data_t *
 data_arithmetic_not(gal_data_t *data, unsigned char flags);
 
+gal_data_t *
+data_arithmetic_unary_function_f(int operator, unsigned char flags,
+                                 gal_data_t *in);
+
+gal_data_t *
+data_arithmetic_binary_function_f(int operator, unsigned char flags,
+                                  gal_data_t *l, gal_data_t *r);
+
 
 #endif

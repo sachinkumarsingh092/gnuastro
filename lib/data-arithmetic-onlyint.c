@@ -36,17 +36,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*************      Possibly set onlyint types to convert    *************/
 /************************************************************************/
 #if GAL_CONFIG_BIN_OP_UCHAR == 1
-#define ONLYINT_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)                        \
+#define ONLYINT_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)                       \
     case GAL_DATA_TYPE_UCHAR:                                           \
-      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned char, OP);              \
+      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned char, OP);             \
       break;
-#define ONLYINT_LEFT_DONE_UCHAR(LT, OP)                                  \
+#define ONLYINT_LEFT_DONE_UCHAR(LT, OP)                                 \
     case GAL_DATA_TYPE_UCHAR:                                           \
-      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned char, OP);                    \
+      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned char, OP);                   \
       break;
-#define ONLYINT_MULTISWITCH_UCHAR(OP)                                    \
+#define ONLYINT_MULTISWITCH_UCHAR(OP)                                   \
     case GAL_DATA_TYPE_UCHAR:                                           \
-      ONLYINT_LEFT_DONE(unsigned char, OP);                              \
+      ONLYINT_LEFT_DONE(unsigned char, OP);                             \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)
@@ -59,17 +59,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_CHAR == 1
-#define ONLYINT_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                         \
+#define ONLYINT_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                        \
   case GAL_DATA_TYPE_CHAR:                                              \
-    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, char, OP);                         \
+    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, char, OP);                        \
     break;
-#define ONLYINT_LEFT_DONE_CHAR(LT, OP)                                   \
+#define ONLYINT_LEFT_DONE_CHAR(LT, OP)                                  \
     case GAL_DATA_TYPE_CHAR:                                            \
-      ONLYINT_LEFT_RIGHT_DONE(LT, char, OP);                             \
+      ONLYINT_LEFT_RIGHT_DONE(LT, char, OP);                            \
       break;
-#define ONLYINT_MULTISWITCH_CHAR(OP)                                     \
+#define ONLYINT_MULTISWITCH_CHAR(OP)                                    \
     case GAL_DATA_TYPE_CHAR:                                            \
-      ONLYINT_LEFT_DONE(char, OP);                                       \
+      ONLYINT_LEFT_DONE(char, OP);                                      \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)
@@ -82,17 +82,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_USHORT == 1
-#define ONLYINT_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                       \
+#define ONLYINT_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                      \
   case GAL_DATA_TYPE_USHORT:                                            \
-    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned short, OP);               \
+    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned short, OP);              \
     break;
-#define ONLYINT_LEFT_DONE_USHORT(LT, OP)                                 \
+#define ONLYINT_LEFT_DONE_USHORT(LT, OP)                                \
     case GAL_DATA_TYPE_USHORT:                                          \
-      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned short, OP);                   \
+      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned short, OP);                  \
       break;
-#define ONLYINT_MULTISWITCH_USHORT(OP)                                   \
+#define ONLYINT_MULTISWITCH_USHORT(OP)                                  \
     case GAL_DATA_TYPE_USHORT:                                          \
-      ONLYINT_LEFT_DONE(unsigned short, OP);                             \
+      ONLYINT_LEFT_DONE(unsigned short, OP);                            \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)
@@ -105,17 +105,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_SHORT == 1
-#define ONLYINT_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                        \
+#define ONLYINT_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                       \
   case GAL_DATA_TYPE_SHORT:                                             \
-    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, short, OP);                        \
+    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, short, OP);                       \
     break;
-#define ONLYINT_LEFT_DONE_SHORT(LT, OP)                                  \
+#define ONLYINT_LEFT_DONE_SHORT(LT, OP)                                 \
     case GAL_DATA_TYPE_SHORT:                                           \
-      ONLYINT_LEFT_RIGHT_DONE(LT, short, OP);                            \
+      ONLYINT_LEFT_RIGHT_DONE(LT, short, OP);                           \
       break;
-#define ONLYINT_MULTISWITCH_SHORT(OP)                                    \
+#define ONLYINT_MULTISWITCH_SHORT(OP)                                   \
     case GAL_DATA_TYPE_SHORT:                                           \
-      ONLYINT_LEFT_DONE(short, OP);                                      \
+      ONLYINT_LEFT_DONE(short, OP);                                     \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)
@@ -128,17 +128,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_UINT == 1
-#define ONLYINT_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                         \
+#define ONLYINT_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                        \
   case GAL_DATA_TYPE_UINT:                                              \
-    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned int, OP);                 \
+    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned int, OP);                \
     break;
-#define ONLYINT_LEFT_DONE_UINT(LT, OP)                                   \
+#define ONLYINT_LEFT_DONE_UINT(LT, OP)                                  \
     case GAL_DATA_TYPE_UINT:                                            \
-      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned int, OP);                     \
+      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned int, OP);                    \
       break;
-#define ONLYINT_MULTISWITCH_UINT(OP)                                     \
+#define ONLYINT_MULTISWITCH_UINT(OP)                                    \
     case GAL_DATA_TYPE_UINT:                                            \
-      ONLYINT_LEFT_DONE(unsigned int, OP);                               \
+      ONLYINT_LEFT_DONE(unsigned int, OP);                              \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_UINT(LT, RT, OP)
@@ -151,17 +151,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_INT == 1
-#define ONLYINT_LEFT_RIGHT_DONE_INT(LT, RT, OP)                          \
+#define ONLYINT_LEFT_RIGHT_DONE_INT(LT, RT, OP)                         \
   case GAL_DATA_TYPE_INT:                                               \
-    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, int, OP);                          \
+    ONLYINT_OPERATOR_FOR_TYPE(LT, RT, int, OP);                         \
     break;
-#define ONLYINT_LEFT_DONE_INT(LT, OP)                                    \
+#define ONLYINT_LEFT_DONE_INT(LT, OP)                                   \
     case GAL_DATA_TYPE_INT:                                             \
-      ONLYINT_LEFT_RIGHT_DONE(LT, int, OP);                              \
+      ONLYINT_LEFT_RIGHT_DONE(LT, int, OP);                             \
       break;
-#define ONLYINT_MULTISWITCH_INT(OP)                                      \
+#define ONLYINT_MULTISWITCH_INT(OP)                                     \
     case GAL_DATA_TYPE_INT:                                             \
-      ONLYINT_LEFT_DONE(int, OP);                                        \
+      ONLYINT_LEFT_DONE(int, OP);                                       \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_INT(LT, RT, OP)
@@ -174,17 +174,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_ULONG == 1
-#define ONLYINT_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                        \
+#define ONLYINT_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                       \
     case GAL_DATA_TYPE_ULONG:                                           \
-      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned long, OP);              \
+      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, unsigned long, OP);             \
       break;
-#define ONLYINT_LEFT_DONE_ULONG(LT, OP)                                  \
+#define ONLYINT_LEFT_DONE_ULONG(LT, OP)                                 \
     case GAL_DATA_TYPE_ULONG:                                           \
-      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned long, OP);                    \
+      ONLYINT_LEFT_RIGHT_DONE(LT, unsigned long, OP);                   \
       break;
-#define ONLYINT_MULTISWITCH_ULONG(OP)                                    \
+#define ONLYINT_MULTISWITCH_ULONG(OP)                                   \
     case GAL_DATA_TYPE_ULONG:                                           \
-      ONLYINT_LEFT_DONE(unsigned long, OP);                              \
+      ONLYINT_LEFT_DONE(unsigned long, OP);                             \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)
@@ -197,17 +197,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_LONG == 1
-#define ONLYINT_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                         \
+#define ONLYINT_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                        \
     case GAL_DATA_TYPE_LONG:                                            \
-      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, long, OP);                       \
+      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, long, OP);                      \
       break;
-#define ONLYINT_LEFT_DONE_LONG(LT, OP)                                   \
+#define ONLYINT_LEFT_DONE_LONG(LT, OP)                                  \
     case GAL_DATA_TYPE_LONG:                                            \
-      ONLYINT_LEFT_RIGHT_DONE(LT, long, OP);                             \
+      ONLYINT_LEFT_RIGHT_DONE(LT, long, OP);                            \
       break;
-#define ONLYINT_MULTISWITCH_LONG(OP)                                     \
+#define ONLYINT_MULTISWITCH_LONG(OP)                                    \
     case GAL_DATA_TYPE_LONG:                                            \
-      ONLYINT_LEFT_DONE(long, OP);                                       \
+      ONLYINT_LEFT_DONE(long, OP);                                      \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_LONG(LT, RT, OP)
@@ -220,17 +220,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_LONGLONG == 1
-#define ONLYINT_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                     \
+#define ONLYINT_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                    \
     case GAL_DATA_TYPE_LONGLONG:                                        \
-      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, LONGLONG, OP);                   \
+      ONLYINT_OPERATOR_FOR_TYPE(LT, RT, LONGLONG, OP);                  \
       break;
-#define ONLYINT_LEFT_DONE_LONGLONG(LT, OP)                               \
+#define ONLYINT_LEFT_DONE_LONGLONG(LT, OP)                              \
     case GAL_DATA_TYPE_LONGLONG:                                        \
-      ONLYINT_LEFT_RIGHT_DONE(LT, long long, OP);                        \
+      ONLYINT_LEFT_RIGHT_DONE(LT, long long, OP);                       \
       break;
-#define ONLYINT_MULTISWITCH_LONGLONG(OP)                                 \
+#define ONLYINT_MULTISWITCH_LONGLONG(OP)                                \
     case GAL_DATA_TYPE_LONGLONG:                                        \
-      ONLYINT_LEFT_DONE(LONGLONG, OP);                                   \
+      ONLYINT_LEFT_DONE(LONGLONG, OP);                                  \
       break;
 #else
 #define ONLYINT_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)

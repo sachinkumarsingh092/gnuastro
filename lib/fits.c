@@ -1202,6 +1202,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
                       char *mhdu, size_t minmapsize)
 {
   void *blank;
+  int anyblank;
   size_t i, ndim;
   fitsfile *fptr;
   int status=0, type;
@@ -1242,9 +1243,13 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
   free(dsize);
 
 
+  /* See if there is any blank pixels in the image (necessary for CFITSIO). */
+  anyblank=gal_data_has_blank(img);
+
+
   /* Read the image into the allocated array: */
   fits_read_pix(fptr, gal_fits_type_to_datatype(type), fpixel,
-                img->size, blank, img->array, &img->anyblank, &status);
+                img->size, blank, img->array, &anyblank, &status);
   if(status) gal_fits_io_error(status, NULL);
   free(fpixel);
   free(blank);
@@ -1342,7 +1347,6 @@ gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,
       else          sum+=*f;
     }
   while(++f<fp);
-  kernel->anyblank=0;
   f=kernel->array; do *f++ *= 1/sum; while(f<fp);
 
   /* Flip the kernel about the center (necessary for non-symmetric
@@ -1389,13 +1393,16 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname)
 
   /* If we have blank pixels, we need to define a BLANK keyword when we are
      dealing with integer types. */
-  if(data->anyblank)
-    if( data->type==GAL_DATA_TYPE_UCHAR || data->type==GAL_DATA_TYPE_CHAR
-        || data->type==GAL_DATA_TYPE_USHORT || data->type==GAL_DATA_TYPE_SHORT
-        || data->type==GAL_DATA_TYPE_UINT || data->type==GAL_DATA_TYPE_INT
-        || data->type==GAL_DATA_TYPE_ULONG || data->type==GAL_DATA_TYPE_LONG
-        || data->type==GAL_DATA_TYPE_LONGLONG)
+  if(gal_data_has_blank(data))
+    switch(data->type)
       {
+      case GAL_DATA_TYPE_FLOAT:
+      case GAL_DATA_TYPE_DOUBLE:
+        /* Do nothing! Since there are much fewer floating point types
+           (that don't need any BLANK keyword), we are checking them.*/
+        break;
+
+      default:
         blank=gal_data_alloc_blank(data->type);
         if(fits_write_key(fptr, datatype, "BLANK", blank,
                           "Pixels with no data.", &status) )

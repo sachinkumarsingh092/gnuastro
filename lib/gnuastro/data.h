@@ -129,39 +129,50 @@ enum gal_data_alltypes
 
 
 
+/* Operators not yet implemented in `gal_data_arithmetic':
 
+     GAL_DATA_OPERATOR_WHERE
+     GAL_DATA_OPERATOR_BITOCM
+     GAL_DATA_OPERATOR_ABS
+     GAL_DATA_OPERATOR_MINVAL
+     GAL_DATA_OPERATOR_MAXVAL
+     GAL_DATA_OPERATOR_MIN
+     GAL_DATA_OPERATOR_MAX
+     GAL_DATA_OPERATOR_AVERAGE
+     GAL_DATA_OPERATOR_MEDIAN
+*/
 enum gal_data_operators
 {
-  GAL_DATA_OPERATOR_PLUS,         /*   +    */
-  GAL_DATA_OPERATOR_MINUS,        /*   -    */
-  GAL_DATA_OPERATOR_MULTIPLY,     /*   *    */
-  GAL_DATA_OPERATOR_DIVIDE,       /*   /    */
-  GAL_DATA_OPERATOR_MODULO,       /*   %    */
+  GAL_DATA_OPERATOR_PLUS,         /*   +     */
+  GAL_DATA_OPERATOR_MINUS,        /*   -     */
+  GAL_DATA_OPERATOR_MULTIPLY,     /*   *     */
+  GAL_DATA_OPERATOR_DIVIDE,       /*   /     */
+  GAL_DATA_OPERATOR_MODULO,       /*   %     */
 
-  GAL_DATA_OPERATOR_LT,           /*   <    */
-  GAL_DATA_OPERATOR_LE,           /*   <=   */
-  GAL_DATA_OPERATOR_GT,           /*   >    */
-  GAL_DATA_OPERATOR_GE,           /*   >=   */
-  GAL_DATA_OPERATOR_EQ,           /*   ==   */
-  GAL_DATA_OPERATOR_NE,           /*   !=   */
-  GAL_DATA_OPERATOR_AND,          /*   &&   */
-  GAL_DATA_OPERATOR_OR,           /*   ||   */
-  GAL_DATA_OPERATOR_NOT,          /*   !    */
+  GAL_DATA_OPERATOR_LT,           /*   <     */
+  GAL_DATA_OPERATOR_LE,           /*   <=    */
+  GAL_DATA_OPERATOR_GT,           /*   >     */
+  GAL_DATA_OPERATOR_GE,           /*   >=    */
+  GAL_DATA_OPERATOR_EQ,           /*   ==    */
+  GAL_DATA_OPERATOR_NE,           /*   !=    */
+  GAL_DATA_OPERATOR_AND,          /*   &&    */
+  GAL_DATA_OPERATOR_OR,           /*   ||    */
+  GAL_DATA_OPERATOR_NOT,          /*   !     */
   GAL_DATA_OPERATOR_ISBLANK,      /* Similar to isnan() for floats. */
-  GAL_DATA_OPERATOR_WHERE,        /*   ?:   */
+  GAL_DATA_OPERATOR_WHERE,        /*   ?:    */
 
-  GAL_DATA_OPERATOR_BITAND,       /*   &    */
-  GAL_DATA_OPERATOR_BITOR,        /*   |    */
-  GAL_DATA_OPERATOR_BITXOR,       /*   ^    */
-  GAL_DATA_OPERATOR_BITLSH,       /*   <<   */
-  GAL_DATA_OPERATOR_BITRSH,       /*   >>   */
-  GAL_DATA_OPERATOR_BITOCM,       /*   ~    */
+  GAL_DATA_OPERATOR_BITAND,       /*   &     */
+  GAL_DATA_OPERATOR_BITOR,        /*   |     */
+  GAL_DATA_OPERATOR_BITXOR,       /*   ^     */
+  GAL_DATA_OPERATOR_BITLSH,       /*   <<    */
+  GAL_DATA_OPERATOR_BITRSH,       /*   >>    */
+  GAL_DATA_OPERATOR_BITOCM,       /*   ~     */
 
-  GAL_DATA_OPERATOR_ABS,          /* abs()  */
-  GAL_DATA_OPERATOR_POW,          /* pow()  */
-  GAL_DATA_OPERATOR_SQRT,         /* sqrt() */
-  GAL_DATA_OPERATOR_LOG,          /* log()  */
-  GAL_DATA_OPERATOR_LOG10,        /* log()  */
+  GAL_DATA_OPERATOR_ABS,          /* abs()   */
+  GAL_DATA_OPERATOR_POW,          /* pow()   */
+  GAL_DATA_OPERATOR_SQRT,         /* sqrt()  */
+  GAL_DATA_OPERATOR_LOG,          /* log()   */
+  GAL_DATA_OPERATOR_LOG10,        /* log10() */
 
   GAL_DATA_OPERATOR_MINVAL,       /* Minimum value of array.               */
   GAL_DATA_OPERATOR_MAXVAL,       /* Maximum value of array.               */
@@ -214,7 +225,6 @@ typedef struct
   size_t        size;  /* Total number of data-elements.             */
   char     *mmapname;  /* File name of the mmap.                     */
   size_t  minmapsize;  /* Minimum number of bytes to mmap the array. */
-  int       anyblank;  /* ==1: has blank values.                     */
   int           nwcs;  /* for WCSLIB: no. coord. representations.    */
   struct wcsprm *wcs;  /* WCS information for this dataset.          */
 } gal_data_t;
@@ -312,6 +322,9 @@ gal_data_string_to_number(char *string);
 /*************************************************************
  **************           Arithmetic           ***************
  *************************************************************/
+char *
+gal_data_operator_string(int operator);
+
 gal_data_t *
 gal_data_arithmetic(int operator, unsigned char flags, ...);
 

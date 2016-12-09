@@ -461,7 +461,6 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
      image is written as a float FITS file, so anyblank is irrelevant, so
      is `size'.*/
   data.ndim=2;
-  data.anyblank=0;
   data.dsize=dsize;
   data.type=GAL_DATA_TYPE_FLOAT;
 
@@ -473,7 +472,7 @@ gal_mesh_value_file(struct gal_mesh_params *mp, char *filename,
          used for this job. In cgarray the meshs are ordered
          differently. */
       if(mp->garray1==mp->cgarray1) gal_mesh_full_garray(mp, 0);
-      data.wcs=NULL; /* This is not the original image size to have same WCS */
+      data.wcs=NULL; /* Not the original image size, to have same WCS */
       data.array=mp->fgarray1;
       data.dsize[0]=mp->gs0*mp->nch2;
       data.dsize[1]=mp->gs1*mp->nch1;

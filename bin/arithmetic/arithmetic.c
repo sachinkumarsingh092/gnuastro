@@ -228,36 +228,6 @@ reversepolish(struct imgarithparams *p)
         }
     }
 
-
-
-
-#if 0
-
-          else if(!strcmp(token->v, "abs"))       takeabs(p);
-          else if(!strcmp(token->v, "pow"))       topower(p, NULL);
-          else if(!strcmp(token->v, "sqrt"))      takesqrt(p);
-          else if(!strcmp(token->v, "log"))       takelog(p);
-          else if(!strcmp(token->v, "log10"))     takelog10(p);
-          else if(!strcmp(token->v, "minvalue"))  findmin(p);
-          else if(!strcmp(token->v, "maxvalue"))  findmax(p);
-          else if(!strcmp(token->v, "min")
-                  || !strcmp(token->v, "max")
-                  || !strcmp(token->v, "average")
-                  || !strcmp(token->v, "median")) alloppixs(p, token->v);
-          else if(!strcmp(token->v, "lt")
-                  || !strcmp(token->v, "le")
-                  || !strcmp(token->v, "gt")
-                  || !strcmp(token->v, "ge")
-                  || !strcmp(token->v, "eq")
-                  || !strcmp(token->v, "neq"))    conditionals(p, token->v);
-          else if(!strcmp(token->v, "and")
-                  || !strcmp(token->v, "or"))     andor(p, token->v);
-          else if(!strcmp(token->v, "not"))       notfunc(p);
-          else if(!strcmp(token->v, "isblank"))   opisblank(p);
-          else if(!strcmp(token->v, "where"))     where(p);
-#endif
-
-
   /* If there is more than one node in the operands stack then the user has
      given too many operands which is an error. */
   if(p->operands->next!=NULL)
