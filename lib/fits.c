@@ -1243,10 +1243,6 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
   free(dsize);
 
 
-  /* See if there is any blank pixels in the image (necessary for CFITSIO). */
-  anyblank=gal_data_has_blank(img);
-
-
   /* Read the image into the allocated array: */
   fits_read_pix(fptr, gal_fits_type_to_datatype(type), fpixel,
                 img->size, blank, img->array, &anyblank, &status);

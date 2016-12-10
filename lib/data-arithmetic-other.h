@@ -34,11 +34,11 @@ gal_data_t *
 data_arithmetic_abs(unsigned char flags, gal_data_t *in);
 
 gal_data_t *
-data_arithmetic_unary_function_f(int operator, unsigned char flags,
-                                 gal_data_t *in);
+data_arithmetic_unary_function(int operator, unsigned char flags,
+                               gal_data_t *in);
 
 gal_data_t *
-data_arithmetic_binary_function_f(int operator, unsigned char flags,
+data_arithmetic_binary_function_flt(int operator, unsigned char flags,
                                   gal_data_t *l, gal_data_t *r);
 
 void

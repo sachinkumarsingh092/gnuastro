@@ -218,7 +218,6 @@ gal_data_calloc_array(int type, size_t size)
 void *
 gal_data_alloc_number(int type, void *number)
 {
-  /* Define the pointers. */
   void *allocated;
 
   /* Allocate the space for the blank value: */
@@ -381,9 +380,7 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
           sizeof *out);
 
 
-  /* Set the basic information we know so far. Note that we need a blank
-     WCS structure allocated outside of WCSLIB, then WCSLIB will copy the
-     contents. */
+  /* Set the basic information we know so far. */
   out->next=NULL;
   out->ndim=ndim;
   out->type=type;
@@ -885,22 +882,20 @@ gal_data_has_blank(gal_data_t *data)
   /* 'value' will only be read from one of these based on the
      datatype. Which the caller assigned. If there is any problem, it is
      their responsability, not this function's.*/
-  void *A=data->array;
-  size_t S=data->size;
-  unsigned char     *uc = A,   *ucf = A+S;
-  char               *c = A,    *cf = A+S;
-  char            **str = A, **strf = A+S;
-  unsigned short    *us = A,   *usf = A+S;
-  short              *s = A,    *sf = A+S;
-  unsigned int      *ui = A,   *uif = A+S;
-  int               *in = A,   *inf = A+S;
-  unsigned long     *ul = A,   *ulf = A+S;
-  long               *l = A,    *lf = A+S;
-  LONGLONG           *L = A,    *Lf = A+S;
-  float              *f = A,    *ff = A+S;
-  double             *d = A,    *df = A+S;
-  gsl_complex_float *cx = A,   *cxf = A+S;
-  gsl_complex      *dcx = A,  *dcxf = A+S;
+  unsigned char     *uc = data->array,   *ucf = data->array + data->size;
+  char               *c = data->array,    *cf = data->array + data->size;
+  char            **str = data->array, **strf = data->array + data->size;
+  unsigned short    *us = data->array,   *usf = data->array + data->size;
+  short              *s = data->array,    *sf = data->array + data->size;
+  unsigned int      *ui = data->array,   *uif = data->array + data->size;
+  int               *in = data->array,   *inf = data->array + data->size;
+  unsigned long     *ul = data->array,   *ulf = data->array + data->size;
+  long               *l = data->array,    *lf = data->array + data->size;
+  LONGLONG           *L = data->array,    *Lf = data->array + data->size;
+  float              *f = data->array,    *ff = data->array + data->size;
+  double             *d = data->array,    *df = data->array + data->size;
+  gsl_complex_float *cx = data->array,   *cxf = data->array + data->size;
+  gsl_complex      *dcx = data->array,  *dcxf = data->array + data->size;
 
 
   /* Go over the pixels and check: */
@@ -1451,6 +1446,75 @@ gal_data_string_to_number(char *string)
 
 
 
+/*************************************************************
+ **************    Type minimum and maximums   ***************
+ *************************************************************/
+void
+gal_data_type_min(int type, void *in)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = 0;            break;
+    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MIN;     break;
+    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = 0;            break;
+    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MIN;     break;
+    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = 0;            break;
+    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MIN;      break;
+    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = 0;            break;
+    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MIN;     break;
+    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MIN; break;
+    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = -FLT_MAX;     break;
+    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = -DBL_MAX;     break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_type_min'", type);
+    }
+}
+
+
+
+
+
+void
+gal_data_type_max(int type, void *in)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = UCHAR_MAX;    break;
+    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MAX;     break;
+    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = USHRT_MAX;    break;
+    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MAX;     break;
+    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = UINT_MAX;     break;
+    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MAX;      break;
+    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = ULONG_MAX;    break;
+    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MAX;     break;
+    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MAX; break;
+    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = FLT_MAX;      break;
+    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = DBL_MAX;      break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_type_min'", type);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*************************************************************
  **************      Arithmetic operations     ***************
@@ -1491,8 +1555,8 @@ gal_data_operator_string(int operator)
     case GAL_DATA_OPERATOR_LOG:          return "log";
     case GAL_DATA_OPERATOR_LOG10:        return "log10";
 
-    case GAL_DATA_OPERATOR_MINVAL:       return "minval";
-    case GAL_DATA_OPERATOR_MAXVAL:       return "maxval";
+    case GAL_DATA_OPERATOR_MINVAL:       return "minvalue";
+    case GAL_DATA_OPERATOR_MAXVAL:       return "maxvalue";
     case GAL_DATA_OPERATOR_MIN:          return "min";
     case GAL_DATA_OPERATOR_MAX:          return "max";
     case GAL_DATA_OPERATOR_AVERAGE:      return "average";
@@ -1537,6 +1601,7 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
   /* Depending on the operator do the job: */
   switch(operator)
     {
+
     /* Binary operators with any data type. */
     case GAL_DATA_OPERATOR_PLUS:
     case GAL_DATA_OPERATOR_MINUS:
@@ -1574,12 +1639,15 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
       out=d1;
       break;
 
+
     /* Unary function operators. */
     case GAL_DATA_OPERATOR_SQRT:
     case GAL_DATA_OPERATOR_LOG:
     case GAL_DATA_OPERATOR_LOG10:
+    case GAL_DATA_OPERATOR_MINVAL:
+    case GAL_DATA_OPERATOR_MAXVAL:
       d1 = va_arg(va, gal_data_t *);
-      out=data_arithmetic_unary_function_f(operator, flags, d1);
+      out=data_arithmetic_unary_function(operator, flags, d1);
       break;
 
     case GAL_DATA_OPERATOR_ABS:
@@ -1587,12 +1655,14 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
       out=data_arithmetic_abs(flags, d1);
       break;
 
+
     /* Binary function operators. */
     case GAL_DATA_OPERATOR_POW:
       d1 = va_arg(va, gal_data_t *);
       d2 = va_arg(va, gal_data_t *);
-      out=data_arithmetic_binary_function_f(operator, flags, d1, d2);
+      out=data_arithmetic_binary_function_flt(operator, flags, d1, d2);
       break;
+
 
     /* Binary operators that only work on integer types. */
     case GAL_DATA_OPERATOR_BITAND:
@@ -1604,6 +1674,11 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
       d1 = va_arg(va, gal_data_t *);
       d2 = va_arg(va, gal_data_t *);
       out=data_arithmetic_onlyint_binary(operator, flags, d1, d2);
+      break;
+
+    case GAL_DATA_OPERATOR_BITNOT:
+      d1 = va_arg(va, gal_data_t *);
+      out=data_arithmetic_bitwise_not(flags, d1);
       break;
 
 
@@ -1624,15 +1699,7 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
       break;
 
 
-#if 0
-  else if(!strcmp(operator, "minvalue"))  findmin(p);
-  else if(!strcmp(operator, "maxvalue"))  findmax(p);
-  else if(!strcmp(operator, "min")
-          || !strcmp(operator, "max")
-          || !strcmp(operator, "average")
-          || !strcmp(operator, "median")) alloppixs(p, operator);
-#endif
-
+    /* When operator is not recognized. */
     default:
       error(EXIT_FAILURE, 0, "the argument \"%d\" could not be "
             "interpretted as an operator", operator);

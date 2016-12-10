@@ -129,14 +129,7 @@ enum gal_data_alltypes
 
 
 
-/* Operators not yet implemented in `gal_data_arithmetic':
-     GAL_DATA_OPERATOR_MINVAL
-     GAL_DATA_OPERATOR_MAXVAL
-     GAL_DATA_OPERATOR_MIN
-     GAL_DATA_OPERATOR_MAX
-     GAL_DATA_OPERATOR_AVERAGE
-     GAL_DATA_OPERATOR_MEDIAN
-*/
+
 enum gal_data_operators
 {
   GAL_DATA_OPERATOR_PLUS,         /*   +     */
@@ -311,6 +304,19 @@ gal_data_to_same_type(gal_data_t *f, gal_data_t *s,
  *************************************************************/
 gal_data_t *
 gal_data_string_to_number(char *string);
+
+
+
+
+
+/*************************************************************
+ **************    Type minimum and maximums   ***************
+ *************************************************************/
+void
+gal_data_type_min(int type, void *in);
+
+void
+gal_data_type_max(int type, void *in);
 
 
 

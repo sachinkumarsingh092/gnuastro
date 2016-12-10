@@ -667,8 +667,7 @@ data_arithmetic_onlyint_binary(int operator, unsigned char flags,
 
 
 gal_data_t *
-data_arithmetic_bitwise_not(int operator, unsigned char flags,
-                            gal_data_t *in)
+data_arithmetic_bitwise_not(unsigned char flags, gal_data_t *in)
 {
   gal_data_t *o;
   unsigned char    *iuc=in->array, *iucf=in->array+in->size, *ouc;
@@ -681,6 +680,15 @@ data_arithmetic_bitwise_not(int operator, unsigned char flags,
   long              *il=in->array,  *ilf=in->array+in->size,  *ol;
   LONGLONG          *iL=in->array,  *iLf=in->array+in->size,  *oL;
 
+  /* Check the type */
+  switch(in->type)
+    {
+    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_DOUBLE:
+      error(EXIT_FAILURE, 0, "the bitwise not (one's complement) "
+            "operator can only work on integer types");
+    }
+
   /* If we want inplace output, set the output pointer to the input
      pointer, for every pixel, the operation will be independent. */
   if(flags & GAL_DATA_ARITH_INPLACE)
@@ -689,7 +697,7 @@ data_arithmetic_bitwise_not(int operator, unsigned char flags,
     o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
                        0, in->minmapsize);
 
-  /* Start setting the operator and operands. */
+  /* Start setting the types. */
   switch(in->type)
     {
     case GAL_DATA_TYPE_UCHAR:
@@ -711,8 +719,8 @@ data_arithmetic_bitwise_not(int operator, unsigned char flags,
     case GAL_DATA_TYPE_LONGLONG:
       oL=o->array;    do  *oL++ = ~(*iL++);   while(iL<iLf);
     default:
-      error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
-            "data_arithmetic_binary_function", operator);
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "data_arithmetic_bitwise_not", in->type);
     }
 
 

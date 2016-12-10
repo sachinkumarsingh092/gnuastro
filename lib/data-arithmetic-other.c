@@ -249,6 +249,10 @@ data_arithmetic_abs(unsigned char flags, gal_data_t *in)
 
 
 
+
+
+
+
 /***********************************************************************/
 /***************          Checking functions              **************/
 /***********************************************************************/
@@ -302,28 +306,137 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
 /***************             Unary functions              **************/
 /***********************************************************************/
 
+#define UNIFUNC_MINVALUE(ISINT) {                                       \
+    int hasblank= (ISINT && gal_data_has_blank(in)) ? 1 : 0;            \
+    if(hasblank)                                                        \
+      do if(*ia!=*b) *oa = *ia < *oa ? *ia : *oa; while(++ia<iaf);      \
+    else                                                                \
+      do *oa = *ia < *oa ? *ia : *oa; while(++ia<iaf);                  \
+  }
 
-#define UNIFUNC_RUN_FUNCTION(IT, OP){                                   \
-    IT *ia=in->array, *oa=o->array, *of=oa + o->size;                   \
-    do *oa++ = OP(*ia++); while(oa<of);                                 \
+#define UNIFUNC_MAXVALUE(ISINT) {                                       \
+    int hasblank= (ISINT && gal_data_has_blank(in)) ? 1 : 0;            \
+    if(hasblank)                                                        \
+      do if(*ia!=*b) *oa = *ia > *oa ? *ia : *oa; while(++ia<iaf);      \
+    else                                                                \
+      do *oa = *ia > *oa ? *ia : *oa; while(++ia<iaf);                  \
   }
 
 
 
 
 
-#define UNIFUNC_F_OPERATOR_DONE(OP)                                     \
+#define UNIFUNC_RUN_FUNCTION_ON_ELEMENT(IT, OP){                        \
+    IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
+    do *oa++ = OP(*ia++); while(ia<iaf);                                \
+  }
+
+#define UNIFUNC_RUN_FUNCTION_ON_ARRAY(IT, ISINT){                       \
+    IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
+    IT *b = ISINT ? gal_data_alloc_blank(in->type) : NULL;              \
+    switch(operator)                                                    \
+      {                                                                 \
+      case GAL_DATA_OPERATOR_MINVAL:                                    \
+        UNIFUNC_MINVALUE(ISINT);                                        \
+        break;                                                          \
+      case GAL_DATA_OPERATOR_MAXVAL:                                    \
+        UNIFUNC_MAXVALUE(ISINT);                                        \
+        break;                                                          \
+      default:                                                          \
+        error(EXIT_FAILURE, 0, "the operator code %d is not "           \
+              "recognized in UNIFUNC_RUN_FUNCTION_ON_ARRAY", operator); \
+      }                                                                 \
+    if(ISINT) free(b);                                                  \
+  }
+
+
+
+
+
+#define UNIARY_FUNCTION_ON_ELEMENT(OP)                                  \
   switch(in->type)                                                      \
     {                                                                   \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned char, OP)                \
+      break;                                                            \
+    case GAL_DATA_TYPE_CHAR:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(char, OP)                         \
+      break;                                                            \
+    case GAL_DATA_TYPE_USHORT:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned short, OP)               \
+      break;                                                            \
+    case GAL_DATA_TYPE_SHORT:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(short, OP)                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_UINT:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned int, OP)                 \
+      break;                                                            \
+    case GAL_DATA_TYPE_INT:                                             \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(int, OP)                          \
+      break;                                                            \
+    case GAL_DATA_TYPE_ULONG:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(unsigned long, OP)                \
+      break;                                                            \
+    case GAL_DATA_TYPE_LONG:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(long, OP)                         \
+      break;                                                            \
+    case GAL_DATA_TYPE_LONGLONG:                                        \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(LONGLONG, OP)                     \
+      break;                                                            \
     case GAL_DATA_TYPE_FLOAT:                                           \
-      UNIFUNC_RUN_FUNCTION(float, OP);                                  \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(float, OP)                        \
       break;                                                            \
     case GAL_DATA_TYPE_DOUBLE:                                          \
-      UNIFUNC_RUN_FUNCTION(double, OP);                                 \
+      UNIFUNC_RUN_FUNCTION_ON_ELEMENT(double, OP)                       \
       break;                                                            \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for l->type in UNIFUNC_F_OPERATOR_DONE", in->type);        \
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "          \
+            "`UNIFUNC_PER_ELEMENT'", in->type);                         \
+    }
+
+
+
+
+
+#define UNIARY_FUNCTION_ON_ARRAY                                        \
+  switch(in->type)                                                      \
+    {                                                                   \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned char, 1)                   \
+      break;                                                            \
+    case GAL_DATA_TYPE_CHAR:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(char, 1)                            \
+      break;                                                            \
+    case GAL_DATA_TYPE_USHORT:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned short, 1)                  \
+      break;                                                            \
+    case GAL_DATA_TYPE_SHORT:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(short, 1)                           \
+        break;                                                          \
+    case GAL_DATA_TYPE_UINT:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned int, 1)                    \
+        break;                                                          \
+    case GAL_DATA_TYPE_INT:                                             \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int, 1)                             \
+        break;                                                          \
+    case GAL_DATA_TYPE_ULONG:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned long, 1)                   \
+        break;                                                          \
+    case GAL_DATA_TYPE_LONG:                                            \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(long, 1)                            \
+        break;                                                          \
+    case GAL_DATA_TYPE_LONGLONG:                                        \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(LONGLONG, 1)                        \
+      break;                                                            \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(float, 0)                           \
+      break;                                                            \
+    case GAL_DATA_TYPE_DOUBLE:                                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(double, 0)                          \
+        break;                                                          \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "          \
+            "`UNIFUNC_PER_ELEMENT'", in->type);                         \
     }
 
 
@@ -331,31 +444,59 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
 
 
 gal_data_t *
-data_arithmetic_unary_function_f(int operator, unsigned char flags,
-                                 gal_data_t *in)
+data_arithmetic_unary_function(int operator, unsigned char flags,
+                               gal_data_t *in)
 {
+  long dsize=1;
   gal_data_t *o;
-
-  /* Check the input type. */
-  check_float_input(in, operator, "first");
 
   /* If we want inplace output, set the output pointer to the input
      pointer, for every pixel, the operation will be independent. */
-  if(flags & GAL_DATA_ARITH_INPLACE)
-    o = in;
-  else
-    o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
-                       0, in->minmapsize);
+  switch(operator)
+    {
+
+    /* Operators with only one value as output. */
+    case GAL_DATA_OPERATOR_MINVAL:
+      o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1);
+      gal_data_type_max(o->type, o->array);
+      break;
+    case GAL_DATA_OPERATOR_MAXVAL:
+      o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1);
+      gal_data_type_min(o->type, o->array);
+      break;
+
+    /* The other operators  */
+    default:
+      if(flags & GAL_DATA_ARITH_INPLACE)
+        o = in;
+      else
+        o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
+                           0, in->minmapsize);
+    }
 
   /* Start setting the operator and operands. */
   switch(operator)
     {
-    case GAL_DATA_OPERATOR_SQRT:   UNIFUNC_F_OPERATOR_DONE( sqrt  ); break;
-    case GAL_DATA_OPERATOR_LOG:    UNIFUNC_F_OPERATOR_DONE( log   ); break;
-    case GAL_DATA_OPERATOR_LOG10:  UNIFUNC_F_OPERATOR_DONE( log10 ); break;
+    case GAL_DATA_OPERATOR_SQRT:
+      UNIARY_FUNCTION_ON_ELEMENT( sqrt );
+      break;
+
+    case GAL_DATA_OPERATOR_LOG:
+      UNIARY_FUNCTION_ON_ELEMENT( log );
+      break;
+
+    case GAL_DATA_OPERATOR_LOG10:
+      UNIARY_FUNCTION_ON_ELEMENT( log10 );
+      break;
+
+    case GAL_DATA_OPERATOR_MINVAL:
+    case GAL_DATA_OPERATOR_MAXVAL:
+      UNIARY_FUNCTION_ON_ARRAY;
+      break;
+
     default:
-      error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
-            "data_arithmetic_binary_function", operator);
+      error(EXIT_FAILURE, 0, "operator code %d not recognized in "
+            "data_arithmetic_unary_function", operator);
     }
 
 
@@ -467,8 +608,8 @@ data_arithmetic_unary_function_f(int operator, unsigned char flags,
 
 
 gal_data_t *
-data_arithmetic_binary_function_f(int operator, unsigned char flags,
-                                  gal_data_t *l, gal_data_t *r)
+data_arithmetic_binary_function_flt(int operator, unsigned char flags,
+                                    gal_data_t *l, gal_data_t *r)
 {
   int final_otype;
   gal_data_t *o=NULL;

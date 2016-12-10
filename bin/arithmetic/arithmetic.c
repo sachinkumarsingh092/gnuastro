@@ -118,9 +118,9 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_DATA_OPERATOR_LOG10;         nop=1;  }
 
           /* Statistical operators. */
-          else if (!strcmp(token->v, "minval"))
+          else if (!strcmp(token->v, "minvalue"))
             { op=GAL_DATA_OPERATOR_MINVAL;        nop=1;  }
-          else if (!strcmp(token->v, "maxval"))
+          else if (!strcmp(token->v, "maxvalue"))
             { op=GAL_DATA_OPERATOR_MAXVAL;        nop=1;  }
           else if (!strcmp(token->v, "min"))
             { op=GAL_DATA_OPERATOR_MIN;           nop=-1; }
@@ -246,16 +246,28 @@ reversepolish(struct imgarithparams *p)
     d1=p->operands->data;
 
 
-  /* Put a copy of the WCS structure from the reference image, it will be
-     freed while freeing d1. */
-  d1->wcs=p->refdata.wcs;
+  /* If the final data structure has more than one element, write it as a
+     FITS file. Otherwise, print it in the standard output. */
+  if(d1->size==1)
+    {
+      /* To simplify the printing process, we will first change it to
+         double, then use printf's `%g' to print it, so integers will be
+         printed as an integer.  */
+      d2=gal_data_copy_to_new_type(d1, GAL_DATA_TYPE_DOUBLE);
+      printf("%g\n", *(double *)d2->array);
+      gal_data_free(d2);
+    }
+  else
+    {
+      /* Put a copy of the WCS structure from the reference image, it
+         will be freed while freeing d1. */
+      d1->wcs=p->refdata.wcs;
+      gal_fits_write_img(d1, p->cp.output, "Arithmetic", NULL, SPACK_STRING);
+    }
 
 
-  /* Write the data structure to a FITS image. */
-  gal_fits_write_img(d1, p->cp.output, "Arithmetic", NULL, SPACK_STRING);
-
-
-  /* Clean up: */
+  /* Clean up, note that above, we copied the pointer to `refdata->wcs'
+     into `d1', so it is freed when freeing d1. */
   gal_data_free(d1);
   free(p->refdata.dsize);
 
