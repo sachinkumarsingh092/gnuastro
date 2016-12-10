@@ -130,7 +130,6 @@ enum gal_data_alltypes
 
 
 /* Operators not yet implemented in `gal_data_arithmetic':
-     GAL_DATA_OPERATOR_ABS
      GAL_DATA_OPERATOR_MINVAL
      GAL_DATA_OPERATOR_MAXVAL
      GAL_DATA_OPERATOR_MIN

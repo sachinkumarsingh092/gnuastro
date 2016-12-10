@@ -1570,7 +1570,7 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
       d1 = va_arg(va, gal_data_t *);    /* Output value/array.        */
       d2 = va_arg(va, gal_data_t *);    /* Condition (unsigned char). */
       d3 = va_arg(va, gal_data_t *);    /* If true value/array.       */
-      data_arithmetic_where(operator, flags, d1, d2, d3);
+      data_arithmetic_where(flags, d1, d2, d3);
       out=d1;
       break;
 
@@ -1580,6 +1580,11 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
     case GAL_DATA_OPERATOR_LOG10:
       d1 = va_arg(va, gal_data_t *);
       out=data_arithmetic_unary_function_f(operator, flags, d1);
+      break;
+
+    case GAL_DATA_OPERATOR_ABS:
+      d1 = va_arg(va, gal_data_t *);
+      out=data_arithmetic_abs(flags, d1);
       break;
 
     /* Binary function operators. */
@@ -1620,7 +1625,6 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
 
 
 #if 0
-  else if(!strcmp(operator, "abs"))       takeabs(p);
   else if(!strcmp(operator, "minvalue"))  findmin(p);
   else if(!strcmp(operator, "maxvalue"))  findmax(p);
   else if(!strcmp(operator, "min")

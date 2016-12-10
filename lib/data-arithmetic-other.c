@@ -157,6 +157,87 @@ data_arithmetic_not(gal_data_t *data, unsigned char flags)
 
 
 
+/* We don't want to use the standard function for unary functions in the
+   case of the absolute operator. This is because there are multiple
+   versions of this function in the C library for different types, which
+   can greatly improve speed. */
+gal_data_t *
+data_arithmetic_abs(unsigned char flags, gal_data_t *in)
+{
+  gal_data_t *out;
+
+  unsigned char  *ouc,  *uc = in->array,   *ucf = in->array + in->size;
+  char            *oc,   *c = in->array,    *cf = in->array + in->size;
+  unsigned short *ous,  *us = in->array,   *usf = in->array + in->size;
+  short           *os,   *s = in->array,    *sf = in->array + in->size;
+  unsigned int   *oui,  *ui = in->array,   *uif = in->array + in->size;
+  int             *oi,  *ii = in->array,   *iif = in->array + in->size;
+  unsigned long  *oul,  *ul = in->array,   *ulf = in->array + in->size;
+  long            *ol,   *l = in->array,    *lf = in->array + in->size;
+  LONGLONG        *oL,   *L = in->array,    *Lf = in->array + in->size;
+  float           *of,   *f = in->array,    *ff = in->array + in->size;
+  double          *od,   *d = in->array,    *df = in->array + in->size;
+
+  /* Set the output array. */
+  if(flags & GAL_DATA_ARITH_INPLACE)
+    out=in;
+  else
+    out = gal_data_alloc(NULL, in->type, in->ndim, in->dsize,
+                         in->wcs, 0, in->minmapsize);
+
+  /* Put the absolute value depending on the type. Note that the unsigned
+     types are already positive, so if the input is not to be freed (the
+     output must be a separate array), just copy the values.*/
+  switch(in->type)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      if(out!=in) { ouc=out->array; do *ouc++ = *uc++; while(uc<ucf); }
+      break;
+    case GAL_DATA_TYPE_CHAR:
+      oc=out->array; do *oc++ = abs(*c++); while(c<cf);
+      break;
+    case GAL_DATA_TYPE_USHORT:
+      if(out!=in) { ous=out->array; do *ous++ = *us++; while(us<usf); }
+      break;
+    case GAL_DATA_TYPE_SHORT:
+      os=out->array; do *os++ = abs(*s++); while(s<sf);
+      break;
+    case GAL_DATA_TYPE_UINT:
+      if(out!=in) { oui=out->array; do *oui++ = *ui++; while(ui<uif); }
+      break;
+    case GAL_DATA_TYPE_INT:
+      oi=out->array; do *oi++ = abs(*ii++); while(ii<iif);
+      break;
+    case GAL_DATA_TYPE_ULONG:
+      if(out!=in) { oul=out->array; do *oul++ = *ul++; while(ul<ulf); }
+      break;
+    case GAL_DATA_TYPE_LONG:
+      ol=out->array; do *ol++ = labs(*l++); while(l<lf);
+      break;
+    case GAL_DATA_TYPE_LONGLONG:
+      oL=out->array; do *oL++ = llabs(*L++); while(L<Lf);
+      break;
+    case GAL_DATA_TYPE_FLOAT:
+      of=out->array; do *of++ = fabsf(*f++); while(f<ff);
+      break;
+    case GAL_DATA_TYPE_DOUBLE:
+      od=out->array; do *od++ = fabs(*d++); while(d<df);
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`data_arithmetic_abs'", in->type);
+    }
+
+  /* Clean up and return */
+  if( (flags & GAL_DATA_ARITH_FREE) && out!=in)
+    gal_data_free(in);
+  return out;
+}
+
+
+
+
+
 
 
 
@@ -545,7 +626,7 @@ data_arithmetic_binary_function_f(int operator, unsigned char flags,
 
 
 void
-data_arithmetic_where(int operator, unsigned char flags, gal_data_t *out,
+data_arithmetic_where(unsigned char flags, gal_data_t *out,
                       gal_data_t *cond, gal_data_t *iftrue)
 {
   unsigned char *c=cond->array;

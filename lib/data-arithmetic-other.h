@@ -31,6 +31,9 @@ gal_data_t *
 data_arithmetic_not(gal_data_t *data, unsigned char flags);
 
 gal_data_t *
+data_arithmetic_abs(unsigned char flags, gal_data_t *in);
+
+gal_data_t *
 data_arithmetic_unary_function_f(int operator, unsigned char flags,
                                  gal_data_t *in);
 
@@ -39,7 +42,7 @@ data_arithmetic_binary_function_f(int operator, unsigned char flags,
                                   gal_data_t *l, gal_data_t *r);
 
 void
-data_arithmetic_where(int operator, unsigned char flags, gal_data_t *out,
+data_arithmetic_where(unsigned char flags, gal_data_t *out,
                       gal_data_t *cond, gal_data_t *iftrue);
 
 #endif
