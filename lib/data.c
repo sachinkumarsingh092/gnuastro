@@ -1529,7 +1529,7 @@ gal_data_t *
 gal_data_arithmetic(int operator, unsigned char flags, ...)
 {
   va_list va;
-  gal_data_t *d1, *d2, *out=NULL;
+  gal_data_t *d1, *d2, *d3, *out=NULL;
 
   /* Prepare the variable arguments (starting after the flags argument). */
   va_start(va, flags);
@@ -1564,6 +1564,14 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
       d1 = va_arg(va, gal_data_t *);
       out = gal_data_flag_blank(d1);
       if(flags & GAL_DATA_ARITH_FREE) gal_data_free(d1);
+      break;
+
+    case GAL_DATA_OPERATOR_WHERE:
+      d1 = va_arg(va, gal_data_t *);    /* Output value/array.        */
+      d2 = va_arg(va, gal_data_t *);    /* Condition (unsigned char). */
+      d3 = va_arg(va, gal_data_t *);    /* If true value/array.       */
+      data_arithmetic_where(operator, flags, d1, d2, d3);
+      out=d1;
       break;
 
     /* Unary function operators. */
@@ -1619,8 +1627,6 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
           || !strcmp(operator, "max")
           || !strcmp(operator, "average")
           || !strcmp(operator, "median")) alloppixs(p, operator);
-  else if(!strcmp(operator, "not"))       notfunc(p);
-  else if(!strcmp(operator, "where"))     where(p);
 #endif
 
     default:

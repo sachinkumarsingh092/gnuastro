@@ -38,5 +38,8 @@ gal_data_t *
 data_arithmetic_binary_function_f(int operator, unsigned char flags,
                                   gal_data_t *l, gal_data_t *r);
 
+void
+data_arithmetic_where(int operator, unsigned char flags, gal_data_t *out,
+                      gal_data_t *cond, gal_data_t *iftrue);
 
 #endif

@@ -463,3 +463,151 @@ data_arithmetic_binary_function_f(int operator, unsigned char flags,
   /* Return */
   return o;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
+/***************                  Where                   **************/
+/***********************************************************************/
+#define DO_WHERE_OPERATION(ITT, OT) {                                \
+    ITT *it=iftrue->array;                                           \
+    OT *o=out->array, *of=out->array+out->size;                      \
+    if(iftrue->size==1)                                              \
+      do   *o = *c++ ? *it : *o;         while(++o<of);              \
+    else                                                             \
+      do { *o = *c++ ? *it : *o; ++it; } while(++o<of);              \
+}
+
+
+
+
+
+#define WHERE_OUT_SET(OT)                                            \
+  switch(iftrue->type)                                               \
+    {                                                                \
+    case GAL_DATA_TYPE_UCHAR:                                        \
+      DO_WHERE_OPERATION(unsigned char, OT);                         \
+      break;                                                         \
+    case GAL_DATA_TYPE_CHAR:                                         \
+      DO_WHERE_OPERATION(char, OT);                                  \
+      break;                                                         \
+    case GAL_DATA_TYPE_USHORT:                                       \
+      DO_WHERE_OPERATION(unsigned short, OT);                        \
+      break;                                                         \
+    case GAL_DATA_TYPE_SHORT:                                        \
+      DO_WHERE_OPERATION(short, OT);                                 \
+      break;                                                         \
+    case GAL_DATA_TYPE_UINT:                                         \
+      DO_WHERE_OPERATION(unsigned int, OT);                          \
+      break;                                                         \
+    case GAL_DATA_TYPE_INT:                                          \
+      DO_WHERE_OPERATION(int, OT);                                   \
+      break;                                                         \
+    case GAL_DATA_TYPE_ULONG:                                        \
+      DO_WHERE_OPERATION(unsigned long, OT);                         \
+      break;                                                         \
+    case GAL_DATA_TYPE_LONG:                                         \
+      DO_WHERE_OPERATION(long, OT);                                  \
+      break;                                                         \
+    case GAL_DATA_TYPE_LONGLONG:                                     \
+      DO_WHERE_OPERATION(LONGLONG, OT);                              \
+      break;                                                         \
+    case GAL_DATA_TYPE_FLOAT:                                        \
+      DO_WHERE_OPERATION(float, OT);                                 \
+      break;                                                         \
+    case GAL_DATA_TYPE_DOUBLE:                                       \
+      DO_WHERE_OPERATION(double, OT);                                \
+      break;                                                         \
+    default:                                                         \
+      error(EXIT_FAILURE, 0, "type code %d not recognized for the "  \
+            "`iftrue' dataset of `WHERE_OUT_SET'", iftrue->type);    \
+    }
+
+
+
+
+
+void
+data_arithmetic_where(int operator, unsigned char flags, gal_data_t *out,
+                      gal_data_t *cond, gal_data_t *iftrue)
+{
+  unsigned char *c=cond->array;
+
+  /* The condition operator has to be unsigned char. */
+  if(cond->type!=GAL_DATA_TYPE_UCHAR)
+    error(EXIT_FAILURE, 0, "the condition operand to "
+          "`data_arithmetic_where' must be an `unsigned char' type, but "
+          "the given condition operator has a `%s' type",
+          gal_data_type_string(cond->type));
+
+  /* The dimension and sizes of the out and condition data sets must be the
+     same. */
+  if(gal_data_dsize_is_different(out, cond))
+    error(EXIT_FAILURE, 0, "the output and condition data sets of the "
+          "`where' operator must be the same size");
+
+  /* Do the operation. */
+  switch(out->type)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      WHERE_OUT_SET(unsigned char);
+      break;
+    case GAL_DATA_TYPE_CHAR:
+      WHERE_OUT_SET(char);
+      break;
+    case GAL_DATA_TYPE_USHORT:
+      WHERE_OUT_SET(unsigned short);
+      break;
+    case GAL_DATA_TYPE_SHORT:
+      WHERE_OUT_SET(short);
+      break;
+    case GAL_DATA_TYPE_UINT:
+      WHERE_OUT_SET(unsigned int);
+      break;
+    case GAL_DATA_TYPE_INT:
+      WHERE_OUT_SET(int);
+      break;
+    case GAL_DATA_TYPE_ULONG:
+      WHERE_OUT_SET(unsigned long);
+      break;
+    case GAL_DATA_TYPE_LONG:
+      WHERE_OUT_SET(long);
+      break;
+    case GAL_DATA_TYPE_LONGLONG:
+      WHERE_OUT_SET(LONGLONG);
+      break;
+    case GAL_DATA_TYPE_FLOAT:
+      WHERE_OUT_SET(float);
+      break;
+    case GAL_DATA_TYPE_DOUBLE:
+      WHERE_OUT_SET(double);
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized for the `out' "
+            "dataset of `data_arithmetic_where'", out->type);
+    }
+
+  /* Clean up if necessary. */
+  if(flags & GAL_DATA_ARITH_FREE)
+    {
+      gal_data_free(cond);
+      gal_data_free(iftrue);
+    }
+}

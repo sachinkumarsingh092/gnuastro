@@ -8721,11 +8721,11 @@ one edge of the image, its blurred wings will be present on the other
 side of the convolved image. This is often termed as circular
 convolution or cyclic convolution.
 
-So as long as we are dealing with convolution in the frequency domain,
+So, as long as we are dealing with convolution in the frequency domain,
 there is nothing we can do about the image edges. The least we can do
 is to eliminate the ghosts of the other side of the image. So, we add
 zero valued pixels to both the input image and the kernel in both
-dimensions so the image that will be convolved has the a size equal to
+dimensions so the image that will be convolved has a size equal to
 the sum of both images in each dimension. Of course, the effect of this
 zero-padding is that the sides of the output convolved image will
 become dark. To put it another way, the edges are going to drain the
