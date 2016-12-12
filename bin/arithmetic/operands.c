@@ -60,28 +60,36 @@ add_operand(struct imgarithparams *p, char *filename, gal_data_t *data)
 {
   struct operand *newnode;
 
-  /* Allocate space for the new operand. */
-  errno=0;
-  newnode=malloc(sizeof *newnode);
-  if(newnode==NULL)
-    error(EXIT_FAILURE, errno, "imgarith.c: Making new element in operand");
-
-  /* Fill in the values. */
-  newnode->data=data;
-  newnode->filename=filename;
-
-  if(filename != NULL && gal_fits_name_is_fits(filename))
+  /* Some operators might not actually return any dataset (for example the
+     multi-operand datasets when the number of operands is 0, which can
+     happen in a script), in such cases, we shouldn't add anything to the
+     stack. */
+  if(data)
     {
-      /* Set the HDU for this filename. */
-      gal_linkedlist_pop_from_stll(&p->hdus, &newnode->hdu);
+      /* Allocate space for the new operand. */
+      errno=0;
+      newnode=malloc(sizeof *newnode);
+      if(newnode==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes for newnode in"
+              "add_operand", sizeof *newnode);
 
-      /* Increment the FITS counter. */
-      ++p->addcounter;
+      /* Fill in the values. */
+      newnode->data=data;
+      newnode->filename=filename;
+
+      if(filename != NULL && gal_fits_name_is_fits(filename))
+        {
+          /* Set the HDU for this filename. */
+          gal_linkedlist_pop_from_stll(&p->hdus, &newnode->hdu);
+
+          /* Increment the FITS counter. */
+          ++p->addcounter;
+        }
+
+      /* Make the link to the previous list. */
+      newnode->next=p->operands;
+      p->operands=newnode;
     }
-
-  /* Make the link to the previous list. */
-  newnode->next=p->operands;
-  p->operands=newnode;
 }
 
 

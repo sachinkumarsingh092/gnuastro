@@ -490,6 +490,111 @@ gal_data_free(gal_data_t *data)
 
 
 
+
+
+/*********************************************************************/
+/*************    Data structure as a linked list   ******************/
+/*********************************************************************/
+/* Add a new data structure to the top of an existing linked list of data
+   structures. Note that if the new node is its self a list, all its nodes
+   will be added to the list. */
+void
+gal_data_add_to_ll(gal_data_t **list, gal_data_t *newnode)
+{
+  gal_data_t *tmp=newnode, *toadd;
+
+  /* Check if newnode is itself a list or not. */
+  if(newnode->next)
+    {
+      /* Go onto the last node in newnode's existing list. */
+      while(tmp->next) tmp=tmp->next;
+
+      /* Set the last node as the node to add to the list. */
+      toadd=tmp;
+    }
+  else
+    /* Its not a list, so just set it to `toadd'. */
+    toadd=newnode;
+
+
+  /* Set the next element of toadd and update what list points to.*/
+  toadd->next=*list;
+  *list=toadd;
+}
+
+
+
+
+
+gal_data_t *
+gal_data_pop_from_ll(gal_data_t **list)
+{
+  struct gal_data_t *out;
+  out=*list;
+  *list=out->next;
+  return out;
+}
+
+
+
+
+
+size_t
+gal_data_num_in_ll(gal_data_t *list)
+{
+  size_t num=0;
+  while(list!=NULL)
+    {
+      ++num;
+      list=list->next;
+    }
+  return num;
+}
+
+
+
+
+
+gal_data_t **
+gal_data_ll_to_array_of_ptrs(gal_data_t *list, size_t *num)
+{
+  size_t i=0;
+  gal_data_t **out;
+
+  /* Find the number of nodes in the list. */
+  *num=gal_data_num_in_ll(list);
+
+  /* Allocate space for the array. */
+  errno=0;
+  out=malloc(*num * sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, 0, "%zu bytes for the output pointer in "
+          "`gal_data_ll_to_array_of_ptrs'", *num * sizeof *out);
+
+  /* Fill in the array with pointers to each data-structure. Note that we
+     don't need the list pointer any more, so we can just increment it.*/
+  while(list!=NULL) { out[i++]=list; list=list->next; }
+
+  /* Return the allocated array. */
+  return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*************************************************************
  **************          Blank data            ***************
  *************************************************************/
@@ -1449,6 +1554,9 @@ gal_data_string_to_number(char *string)
 /*************************************************************
  **************    Type minimum and maximums   ***************
  *************************************************************/
+/* Put the minimum (or maximum for the `gal_data_type_max') value for the
+   type in the space (that must already be allocated before the call to
+   this function) pointed to by in.  */
 void
 gal_data_type_min(int type, void *in)
 {
@@ -1653,6 +1761,15 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
     case GAL_DATA_OPERATOR_ABS:
       d1 = va_arg(va, gal_data_t *);
       out=data_arithmetic_abs(flags, d1);
+      break;
+
+    case GAL_DATA_OPERATOR_MIN:
+    case GAL_DATA_OPERATOR_MAX:
+    case GAL_DATA_OPERATOR_SUM:
+    case GAL_DATA_OPERATOR_AVERAGE:
+    case GAL_DATA_OPERATOR_MEDIAN:
+      d1 = va_arg(va, gal_data_t *);
+      out=data_arithmetic_multioperand(operator, flags, d1);
       break;
 
 

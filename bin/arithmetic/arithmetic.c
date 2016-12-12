@@ -54,6 +54,98 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/***************************************************************/
+/*************          Internal functions         *************/
+/***************************************************************/
+size_t
+set_number_of_operands(struct imgarithparams *p, gal_data_t *data,
+                       char *token_string)
+{
+  unsigned char  *uc;
+  char            *c;
+  unsigned short *us;
+  short           *s;
+  unsigned int   *ui;
+  int             *i;
+  unsigned long  *ul;
+  long            *l;
+  LONGLONG        *L;
+
+  /* Check if its a number. */
+  if(data->size>1)
+    error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" "
+          "operator must be a number, not an array", token_string);
+
+  /* Check its type and return the value. */
+  switch(data->type)
+    {
+
+    /* For the integer types, if they are unsigned, then just pass their
+       value, if they are signed, you have to make sure they are zero or
+       positive. */
+    case GAL_DATA_TYPE_UCHAR:
+      uc=data->array; if(*uc>0) return *uc;
+      break;
+    case GAL_DATA_TYPE_CHAR:
+      c=data->array; if(*c>0) return *c;
+      break;
+    case GAL_DATA_TYPE_USHORT:
+      us=data->array; if(*us>0) return *us;
+      break;
+    case GAL_DATA_TYPE_SHORT:
+      s=data->array; if(*s>0) return *s;
+      break;
+    case GAL_DATA_TYPE_UINT:
+      ui=data->array; if(*ui>0) return *ui;
+      break;
+    case GAL_DATA_TYPE_INT:
+      i=data->array; if(*i>0) return *i;
+      break;
+    case GAL_DATA_TYPE_ULONG:
+      ul=data->array; if(*ul>0) return *ul;
+      break;
+    case GAL_DATA_TYPE_LONG:
+      l=data->array; if(*l>0) return *l;
+      break;
+    case GAL_DATA_TYPE_LONGLONG:
+      L=data->array; if(*L>0) return *L;
+      break;
+
+    /* Floating point numbers are not acceptable in this context. */
+    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_DOUBLE:
+      error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" "
+            "operator must be an integer type", token_string);
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`set_number_of_operands", data->type);
+    }
+
+  /* If control reaches here, then the number must have been a negative
+     value, so print an error. */
+  error(EXIT_FAILURE, 0, "the first popped operand to the \"%s\" operator "
+        "cannot be zero or a negative number", token_string);
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /***************************************************************/
@@ -68,6 +160,7 @@ void
 reversepolish(struct imgarithparams *p)
 {
   int op=0, nop=0;
+  unsigned int numop, i;
   struct gal_linkedlist_stll *token;
   gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
   unsigned char flags = ( GAL_DATA_ARITH_INPLACE | GAL_DATA_ARITH_FREE
@@ -117,7 +210,7 @@ reversepolish(struct imgarithparams *p)
           else if (!strcmp(token->v, "log10"))
             { op=GAL_DATA_OPERATOR_LOG10;         nop=1;  }
 
-          /* Statistical operators. */
+          /* Statistical/higher-level operators. */
           else if (!strcmp(token->v, "minvalue"))
             { op=GAL_DATA_OPERATOR_MINVAL;        nop=1;  }
           else if (!strcmp(token->v, "maxvalue"))
@@ -126,6 +219,8 @@ reversepolish(struct imgarithparams *p)
             { op=GAL_DATA_OPERATOR_MIN;           nop=-1; }
           else if (!strcmp(token->v, "max"))
             { op=GAL_DATA_OPERATOR_MAX;           nop=-1; }
+          else if (!strcmp(token->v, "sum"))
+            { op=GAL_DATA_OPERATOR_SUM;           nop=-1; }
           else if (!strcmp(token->v, "average"))
             { op=GAL_DATA_OPERATOR_AVERAGE;       nop=-1; }
           else if (!strcmp(token->v, "median"))
@@ -197,35 +292,50 @@ reversepolish(struct imgarithparams *p)
                   token->v);
 
 
-
           /* Pop the necessary number of operators. Note that the operators
              are poped from a linked list (which is last-in-first-out). So
              for the operators which need a specific order, the first poped
              operand is actally the last (right most, in in-fix notation)
              input operand.*/
-          if(nop==1)
-            d1=pop_operand(p, token->v);
-          else if(nop==2)
-          {
-            d2=pop_operand(p, token->v);
-            d1=pop_operand(p, token->v);
-          }
-          else if(nop==3)
-          {
-            d3=pop_operand(p, token->v);
-            d2=pop_operand(p, token->v);
-            d1=pop_operand(p, token->v);
-          }
-          else if(nop==-1)
-            /* It might be possible to add a `next' pointer to the data
-               structure so it can act like a linked list too. In that
-               case, t */
-            error(EXIT_FAILURE, 0, "Operators with an unknown number of "
-                  "operands are not yet implemented.");
-          else
-            error(EXIT_FAILURE, 0, "No operators need %d operands", nop);
+          switch(nop)
+            {
+            case 1:
+              d1=pop_operand(p, token->v);
+              break;
 
-          /* Do the arithemtic operation. */
+            case 2:
+              d2=pop_operand(p, token->v);
+              d1=pop_operand(p, token->v);
+              break;
+
+            case 3:
+              d3=pop_operand(p, token->v);
+              d2=pop_operand(p, token->v);
+              d1=pop_operand(p, token->v);
+              break;
+
+            case -1:
+              /* This case is when the number of operands is itself an
+                 operand. So the first popped operand must be an integer
+                 number, we will use that to construct a linked list of any
+                 number of operands within the single `d1' pointer. */
+              d1=NULL;
+              numop=set_number_of_operands(p, pop_operand(p, token->v),
+                                           token->v);
+              for(i=0;i<numop;++i)
+                gal_data_add_to_ll(&d1, pop_operand(p, token->v));
+              break;
+
+            default:
+              error(EXIT_FAILURE, 0, "No operators need %d operands", nop);
+            }
+
+
+          /* Run the arithmetic operation. Note that `gal_data_arithmetic'
+             is a variable argument function (like printf). So the number
+             of arguments it uses depend on the operator. So when the
+             operator doesn't need three operands, the extra arguments will
+             be ignored. */
           add_operand(p, NULL, gal_data_arithmetic(op, flags, d1, d2, d3));
         }
     }

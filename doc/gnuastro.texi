@@ -7044,16 +7044,18 @@ verbose mode on the command-line for each row.
 @node Arithmetic, Convolve, ImageCrop, Image manipulation
 @section Arithmetic
 
-It is commonly necessary to do arithmetic operations on the
-astronomical data. For example in the reduction of raw data it is
-necessary to subtract the Sky value (@ref{Sky value}) from each image
-image. Later (once the images as warped into a single grid using
-ImageWarp for example, see @ref{ImageWarp}), the images can be co-added
-or the output pixel grid is the average of the pixels of the
-individual input images. Arithmetic currently uses the reverse
-polish or postfix notation, see @ref{Reverse polish notation}, for
-more information on how to run Arithmetic, please see
-@ref{Invoking astarithmetic}.
+It is commonly necessary to do operations on some or all of the elements of
+a dataset independently (pixels in an image). For example, in the reduction
+of raw data it is necessary to subtract the Sky value (@ref{Sky value})
+from each image image. Later (once the images as warped into a single grid
+using ImageWarp for example, see @ref{ImageWarp}), the images are co-added
+(the output pixel grid is the average of the pixels of the individual input
+images). Arithmetic is Gnuastro's program for such operations on your
+datasets directly from the command-line. It currently uses the reverse
+polish or postfix notation, see @ref{Reverse polish notation} and will work
+on the native data types of the input images/data to reduce CPU and RAM
+resources, see @ref{Data types}. For more information on how to run
+Arithmetic, please see @ref{Invoking astarithmetic}.
 
 
 @menu
@@ -7068,19 +7070,19 @@ more information on how to run Arithmetic, please see
 
 @cindex Postfix notation
 @cindex Reverse Polish Notation
-The most common notation for arithmetic operations is the infix
-notation@footnote{@url{https://en.wikipedia.org/wiki/Infix_notation}}
-where the operator goes between the two operands, for example
-@mymath{4+5}. While the infix notation is the preferred way in most
-programming languages, currently Arithmetic does not use it since it
-will require parenthesis which can complicate the implementation of
-the code. In the near future we do plan to adopt this
-notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}},
-but for the time being (due to time constraints on the developers),
-Arithmetic uses the postfix or reverse polish
-notation@footnote{@url{https://en.wikipedia.org/wiki/Reverse_Polish_notation}}. The
-referenced Wikipedia article provides some excellent explanation on
-this notation but here we will give a short summary for
+The most common notation for arithmetic operations is the
+@url{https://en.wikipedia.org/wiki/Infix_notation, infix notation} where
+the operator goes between the two operands, for example @mymath{4+5}. While
+the infix notation is the preferred way in most programming languages,
+currently Arithmetic does not use it since it will require parenthesis
+which can complicate the implementation of the code. In the near future we
+do plan to adopt this
+notation@footnote{@url{https://savannah.gnu.org/task/index.php?13867}}, but
+for the time being (due to time constraints on the developers), Arithmetic
+uses the postfix or
+@url{https://en.wikipedia.org/wiki/Reverse_Polish_notation, reverse polish
+notation}. The Wikipedia article provides some excellent explanation on
+this notation but here we will give a short summary here for
 self-sufficiency.
 
 In the postfix notation, the operator is placed after the operands, as we
@@ -7100,10 +7102,9 @@ operations that are done are:
 @item
 @command{6} is an operand, so it is pushed to the top of the stack.
 @item
-@command{+} is a binary operator, so pull the top two elements of the
-stack and perform addition on them (the order is @command{5+6} in the
-example above). The result is @command{11}, push it on top of the
-stack.
+@command{+} is a binary operator, so pull the top two elements of the stack
+and perform addition on them (the order is @mymath{5+6} in the example
+above). The result is @command{11}, push it on top of the stack.
 @item
 @command{2} is an operand so push it onto the top of the stack.
 @item
@@ -7112,12 +7113,13 @@ the stack (top-most is @command{2}, then @command{11}) and divide the
 second one by the first.
 @end enumerate
 
-In Gnuastro's Arithmetic, the operands can be FITS images or numbers. As
+In the Arithmetic program, the operands can be FITS images or numbers. As
 you can see, very complicated procedures can be created without the need
-for parenthesis. Even functions which take an arbitrary number of arguments
-can be defined in this notation. For example the Postscript
-language@footnote{See the EPS and PDF part of @ref{Recognized file types}
-for a little more on the Postscript language.} (the programming language in
+for parenthesis or worrying about precedence. Even functions which take an
+arbitrary number of arguments can be defined in this notation. This is a
+very powerfull notation and is used in languages like Postscript
+@footnote{See the EPS and PDF part of @ref{Recognized file types} for a
+little more on the Postscript language.}  (the programming language in
 Postscript and compiled into PDF files) uses this notation.
 
 
@@ -7132,11 +7134,11 @@ Postscript and compiled into PDF files) uses this notation.
 At the lowest level, the computer stores everything in terms of @code{1} or
 @code{0}. For example, each program in Gnuastro, or each astronomical image
 you take with the telescope is actually a string of millions of these zeros
-and ones. The space required to keep either of these two values is the
-smallest unit of storage, and is known as a @emph{bit}. Understanding and
-manipulating this string of bits is extremely hard for most people,
-therefore, we define packages with a certain number of these bits along
-with a standard on how to interpret these bits as @emph{type}s.
+and ones. The space required to keep a zero or one is the smallest unit of
+storage, and is known as a @emph{bit}. Understanding and manipulating this
+string of bits is extremely hard for most people, therefore, we define
+packages of these bits along with a standard on how to interpret the bits
+in each package as @emph{type}s.
 
 The most basic standard for reading the bits is integer numbers. Since we
 use CFITSIO, we define the @code{char}, @code{short}, or @code{long}
@@ -7154,7 +7156,7 @@ doesn't involve negative numbers (for example labeled images, where pixels
 can only have zero or positive integer values), it is best to use the
 @code{unsigned} types.
 
-The second standard of converting a given number of bits to numbers is the
+Another standard of converting a given number of bits to numbers is the
 floating point standard, this standard can approximately store any real
 number with a given precision. There are two floating point types in
 CFITSIO: @code{float} and @code{double}, for single and double precision
@@ -7191,7 +7193,8 @@ ordered on the command-line. The operands to all operators can be a data
 array (for example a FITS image) or a number, the output will be an array
 or number according to the inputs. For example a number multiplied by an
 array will produce an array. The conditional operators will return pixel,
-or numerical values of 0 (false) or 1 (true).
+or numerical values of 0 (false) or 1 (true) and stored in an
+@code{unsigned char} data type (see @ref{Data types}).
 
 @table @command
 
@@ -7228,60 +7231,84 @@ Absolute value of first operand, so ``@command{4 abs}'' is
 equivalent to @mymath{|4|}.
 
 @item pow
-First operand to the power of the second, so ``@command{4 5
-pow}'' is equivalent to @mymath{4^5}.
+First operand to the power of the second, so ``@command{4.3 5f pow}'' is
+equivalent to @mymath{4.3^{5}}. Currently @code{pow} will only work on
+single or double precision floating point numbers or images. To be sure
+that a number is read as a floating point (even if it doesn't have any
+non-zero decimals) put an @code{f} after it.
 
 @item sqrt
-The square root of the first operand, so ``@command{4 sqrt}'' is
-equivalent to @mymath{\sqrt{4}}.
+The square root of the first operand, so ``@command{5 sqrt}'' is equivalent
+to @mymath{\sqrt{5}}. The output type is determined from the input, so the
+output of this example will be @command{2} (since @command{5} doesn't have
+any non-zero decimal digits). If you want @command{2.23607}, run
+@command{5f sqrt} instead, the @command{f} will ensure that a number will
+be read as a floating point number, even if it doesn't have decimal
+digits. If the input image has an integer type, you should explicitly
+convert the image to floating point, for example @command{a.fits float
+sqrt}, see the type conversion operators below.
 
 @item log
-Natural logarithm of first operand, so ``@command{4 log}'' is
-equivalent to @mymath{\ln(4)}.
+Natural logarithm of first operand, so ``@command{4 log}'' is equivalent to
+@mymath{\ln(4)}. The output type is determined from the input, see the
+explanation under @command{sqrt} for more.
 
 @item log10
-Base-10 logarithm of first operand, so ``@command{4 log10}'' is
-equivalent to @mymath{\log(4)}.
+Base-10 logarithm of first operand, so ``@command{4 log10}'' is equivalent
+to @mymath{\log(4)}. The output type is determined from the input, see the
+explanation under @command{sqrt} for more.
 
 @item minvalue
 Minimum value in the top operand on the stack, so ``@command{a.fits
-min}'' will push the the minimum pixel value in this image onto the
-stack. Therefore this operator is mainly intended for data (for
-example images), if the top operand is a number, this operator just
-returns it without any change. So note that when this operator acts on
-a single image, the output will no longer be an image, but a number.
+minvalue}'' will push the the minimum pixel value in this image onto the
+stack. Therefore this operator is mainly intended for data (for example
+images), if the top operand is a number, this operator just returns it
+without any change. So note that when this operator acts on a single image,
+the output will no longer be an image, but a number.
 
 @item maxvalue
 Maximum value of first operand, similar to @command{minvalue}.
 
 @cindex NaN
 @item min
-If there are several operands (images), each pixel of the output of
-this operator will be set to the minimum value of all the operands
-(images) in that pixel. If the operands are all numbers, then their
-minimum value will be put in the stack. So ``@command{a.fits b.fits
-c.fits min}'' will produce an image with the same size as the inputs
-but each output pixel is set to the minimum respective pixel value of
-the three input images. Important notes:
-@itemize
+The first popped operand to this operator must be a positive integer number
+which specifies how many further operands should be popped from the
+stack. The given number of operands must have the same type and size. Each
+pixel of the output of this operator will be set to the minimum value of
+the given number of operands (images) in that pixel.
 
-@item
-All the operands must be either images or numbers, they cannot be
-mixed.
+For example the following command will produce an image with the same size
+and type as the inputs but each output pixel is set to the minimum
+respective pixel value of the three input images.
+
+@example
+$ astarithmetic a.fits b.fits c.fits 3 min
+@end example
+
+Important notes:
+@itemize
 
 @item
 NaN/blank pixels will be ignored, see @ref{Blank
 pixels}.
 
 @item
-All available operands on the stack will be pulled for this operator
-to generate its output. So after calling this operator, there will
-only be one operand on the stack, see @ref{Reverse polish notation}.
+The output will have the same type as the inputs. This is natural for the
+@command{min} and @command{max} operators, but for other similar operators
+(for example @command{sum}, or @command{average}) the per-pixel operations
+will be done in double precision floating point and then stored back in the
+input type. Therefore, if the input was an integer, C's internal type
+conversion will be used.
+
 @end itemize
 
 @item max
 Similar to @command{min}, but the pixels of the output will contain
 the maximum of the respective pixels in all operands in the stack.
+
+@item sum
+Similar to @command{min}, but the pixels of the output will contain the sum
+of the respective pixels in all input operands.
 
 @item average
 Similar to @command{min}, but the pixels of the output will contain
@@ -7299,7 +7326,8 @@ return a value of 0. If both operands are images, then all the pixels will
 be compared with their counterparts in the other image. If only one operand
 is an image, then all the pixels will be compared with the the single value
 (number) of the other operand. Finally if both are numbers, then the output
-is also just one number (0 or 1).
+is also just one number (0 or 1). When the output is not a single number,
+it will be stored as an @code{unsigned char} type.
 
 @item le
 Less or equal: similar to @code{lt} (`less than' operator), but returning 1
@@ -7349,31 +7377,37 @@ blank pixels. See the ``Blank pixels'' box below for more on Blank pixels
 in Arithmetic.
 
 @item where
-Change the input (pixel) value `where' a certain condition holds. The
-conditional operators above can be used to define the condition. Three
-operands are required for @command{where}. The input format is demonstrated
-in this simplified example:
+Change the input (pixel) value @emph{where}/if a certain condition
+holds. The conditional operators above can be used to define the
+condition. Three operands are required for @command{where}. The input
+format is demonstrated in this simplified example:
 
 @example
-$ astarithmetic in.fits condition.fits new.fits where
+$ astarithmetic modify.fits cond.fits if-true.fits where
 @end example
 
-The third and second popped operands (@file{in.fits} and
-@file{condition.fits} above, see @ref{Reverse polish notation}) have to be
+The third and second popped operands (@file{modify.fits} and
+@file{cond.fits} above, see @ref{Reverse polish notation}) have to be
 images or all three operands have to be numbers. In the former case (when
-the first two are images), the third operand can be an image or a
-number. The value of any pixel in @file{in.fits} that corresponds to a
-non-zero pixel of @file{condition.fits} will be changed to the value of the
-same pixel in @file{new.fits} (or a fixed number if the first popped
-operand is a number). Commonly you won't be dealing with an actual FITS
-file of a conditional image. You will probably define the condition in the
-same run based on some other reference image and use the conditional and
-logical operators above to make a true/false (or one/zero) image for you
-internally. For example the case below:
+the first two are images), the third popped operand can be an image or a
+number. The value of any pixel in @file{out.fits} that corresponds to a
+non-zero pixel of @file{cond.fits} will be changed to the value of the same
+pixel in @file{if-true.fits} (or a fixed number). Note than the
+@file{cond.fits} has to have @code{unsigned char} type.
+
+Commonly you won't be dealing with an actual FITS file of a conditional
+image. You will probably define the condition in the same run based on some
+other reference image and use the conditional and logical operators above
+to make a true/false (or one/zero) image for you internally. For example
+the case below:
 
 @example
 $ astarithmetic in.fits reference.fits 100 gt new.fits where
 @end example
+
+In the example above, any of the @file{in.fits} pixels that has a value in
+@file{reference.fits} greater than @command{100}, will be replaced with the
+corresponding pixel in @file{new.fits}.
 
 @item bitand
 Bitwise AND operator: only bits with values of 1 in both popped operands
@@ -7463,13 +7497,13 @@ data types.
 
 @cartouche
 @noindent
-@strong{Blank pixels in Arithmetic:} Currently all Arithmetic operations
-are internally done in double precision floating points. So all blank
-pixels in the image (see @ref{Blank pixels}) will be stored as IEEE NaN
-values. One particular aspect of NaN values is that by definition they will
-fail on @emph{any} comparison. Hence both equal and not-equal operators
-will fail when both their operands are NaN! The only way to select blank
-pixels is through the @command{isblank} operator explained above.
+@strong{Blank pixels in Arithmetic:} Blank pixels in the image (see
+@ref{Blank pixels}) will be stored based on the data type. When the input
+is floating point type, blank values are NaN. One aspect of NaN values is
+that by definition they will fail on @emph{any} comparison. Hence both
+equal and not-equal operators will fail when both their operands are NaN!
+The only way to guarantee that select blank pixels is through the
+@command{isblank} operator explained above.
 
 One way you can exploit this property of the NaN value to your advantage is
 when you want a fully zero-valued image (even over the blank pixels) based
@@ -7490,9 +7524,10 @@ floating point number in Gnuastro isn't case-sensitive.
 @node Invoking astarithmetic,  , Arithmetic operators, Arithmetic
 @subsection Invoking Arithmetic
 
-Arithmetic will do pixel to pixel arithmetic operations on the
-individual pixels of input data and/or numbers. All input data files
-must have the same dimensions. The general template is:
+Arithmetic will do pixel to pixel arithmetic operations on the individual
+pixels of input data and/or numbers. Any single element input (number or
+single pixel FITS image file) will be read as a number, the rest of the
+inputs must have the same dimensions. The general template is:
 
 @example
 $ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
@@ -7515,35 +7550,61 @@ $ astarithmetic img1.fits img2.fits img3.fits median                \
 
 Arithmetic accepts two kinds of input: images and numbers. Images are
 considered to be any of the inputs that is a file name of a recognized type
-(see @ref{Arguments}). Numbers will be read into the smallest type that can
-store them, so @command{-2} will be read as a @code{char} type (which is
-signed on most systems and can thus keep negative values), @command{2500}
-will be read as an @code{unsigned short} (all positive numbers will be read
-as unsigned), while @code{3.14159265358979323846} will be read as a
-@code{double} and @code{3.14} will be read as a @code{float}.
+(see @ref{Arguments}) and has more than one element. Numbers will be read
+into the smallest type that can store them, so @command{-2} will be read as
+a @code{char} type (which is signed on most systems and can thus keep
+negative values), @command{2500} will be read as an @code{unsigned short}
+(all positive numbers will be read as unsigned), while
+@code{3.14159265358979323846} will be read as a @code{double} and
+@code{3.14} will be read as a @code{float}. To force a number to be read as
+float, add a @code{f} after it, so @command{5f} will be added to the stack
+as @code{float} (see @ref{Reverse polish notation}).
 
-All the operators will work on the native type of their operands, so the C
-programming language's internal type conversion will be used if the operand
-types of of multi-operand operators are different. Some operators can only
-work on integral types (for example bitwise operators) while others only
-work on floating point types, (for example @command{log}, or
-@command{sqrt}). In such cases if the operand type is different an error
-will be printed. Arithmetic also comes with internal type conversion
-operators which you can use to convert the data into the appropriate
-format, see @ref{Arithmetic operators}.
+Unless otherwise stated (in @ref{Arithmetic operators}), the operators can
+deal with multiple datatypes. For example in ``@command{a.fits b.fits +}'',
+the image types can be @code{long} and @code{float}. In such cases, C's
+internal type conversion will be used, and the output will have the larger
+type of the two inputs. Unsigned integer types have smaller ranking than
+their signed counterparts and floating points types have higher ranking
+than the integer types. So the internal C type conversions done in the
+example above are equivalent to this piece of C:
 
-If the output is an image, and the @option{--output} option is not
-given, automatic output will use the name of the first FITS image
-encountered to generate an output file name, see @ref{Automatic
-output}. Also, output WCS information will be taken from the first
-input image encountered. If the output is a single number, that number
-will be printed in the standard output. See @ref{Reverse polish
-notation} for the notation used to mix operands and operators on the
-command-line.
+@example
+size_t i;
+long a[100];
+float b[100], out;
+for(i=0;i<100;++i) out[i]=a[i]+b[i];
+@end example
 
-@cindex Mask image
-All the operators will work on the native types of the input data. Unless
-otherwise stated for each operator. To ignore certain pixels (see
+@noindent
+Relying on the default C type conversion significantly speeds up the
+processing and also requires less RAM (when using very large
+images). However this great advantage comes at the cost of preparing for
+all the combinations of types while building/compiling Gnuastro, see the
+list of @option{--enable-bin-op-XXXX} options in @ref{Gnuastro configure
+options}. With the full list of types, compilation can take up to an hour
+or more. When a type isn't enabled for binary operators, the input data
+will be internally converted to the smallest larger type that was
+enabled. This can slow down your processing and consume more RAM, so if you
+often deal with data of a specific types, it is much better to make the
+one-time investment at compilation time and reap the benefits each time you
+run Gnuastro.
+
+Some operators can only work on integer types (of any length, for example
+bitwise operators) while others only work on floating point types,
+(currently only the @code{pow} operator). In such cases, if the operand
+type(s) are different an error will be printed and internal conversion
+won't occur. Arithmetic also comes with internal type conversion operators
+which you can use to convert the data into the appropriate format, see
+@ref{Arithmetic operators}.
+
+If the output is an image, and the @option{--output} option is not given,
+automatic output will use the name of the first FITS image encountered to
+generate an output file name, see @ref{Automatic output}. Also, output WCS
+information will be taken from the first input image encountered. If the
+output is a single number, that number will be printed in the standard
+output. See @ref{Reverse polish notation} for the notation used to mix
+operands and operators on the command-line. To ignore certain pixels (see
 @ref{Blank pixels}), you can specify a mask image, see @ref{Mask image}. In
 that case, when reading the first FITS image, all the masked pixels will be
 set to a blank value depending on the type of the image.

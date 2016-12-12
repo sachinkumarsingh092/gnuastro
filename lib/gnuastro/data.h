@@ -167,6 +167,7 @@ enum gal_data_operators
   GAL_DATA_OPERATOR_MAXVAL,       /* Maximum value of array.               */
   GAL_DATA_OPERATOR_MIN,          /* Minimum per pixel of multiple arrays. */
   GAL_DATA_OPERATOR_MAX,          /* Maximum per pixel of multiple arrays. */
+  GAL_DATA_OPERATOR_SUM,          /* Sum per pixel of multiple arrays.     */
   GAL_DATA_OPERATOR_AVERAGE,      /* Average per pixel of multiple arrays. */
   GAL_DATA_OPERATOR_MEDIAN,       /* Median per pixel of multiple arrays.  */
 
@@ -241,12 +242,34 @@ gal_data_malloc_array(int type, size_t size);
 void *
 gal_data_calloc_array(int type, size_t size);
 
+void *
+gal_data_alloc_number(int type, void *number);
+
 gal_data_t *
 gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize);
 
 void
 gal_data_free(gal_data_t *data);
+
+
+
+
+
+/*********************************************************************/
+/*************    Data structure as a linked list   ******************/
+/*********************************************************************/
+void
+gal_data_add_to_ll(gal_data_t **list, gal_data_t *newnode);
+
+gal_data_t *
+gal_data_pop_from_ll(struct gal_data_t **list);
+
+size_t
+gal_data_num_in_ll(struct gal_data_t *list);
+
+gal_data_t **
+gal_data_ll_to_array_of_ptrs(gal_data_t *list, size_t *num);
 
 
 

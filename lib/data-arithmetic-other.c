@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/qsort.h>
 
 
 
@@ -306,17 +307,21 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
 /***************             Unary functions              **************/
 /***********************************************************************/
 
-#define UNIFUNC_MINVALUE(ISINT) {                                       \
-    int hasblank= (ISINT && gal_data_has_blank(in)) ? 1 : 0;            \
-    if(hasblank)                                                        \
+/* Note that for floating point types *b!=*b (by definition of NaN). And in
+   such cases, even if there are blank values, the smaller and larger
+   condition checked will fail, therefore the final result will be what we
+   want (to ignore the blank values). */
+#define UNIFUNC_MINVALUE {                                              \
+    int blankeq = (*b==*b && gal_data_has_blank(in)) ? 1 : 0;           \
+    if(blankeq)                                                         \
       do if(*ia!=*b) *oa = *ia < *oa ? *ia : *oa; while(++ia<iaf);      \
     else                                                                \
       do *oa = *ia < *oa ? *ia : *oa; while(++ia<iaf);                  \
   }
 
-#define UNIFUNC_MAXVALUE(ISINT) {                                       \
-    int hasblank= (ISINT && gal_data_has_blank(in)) ? 1 : 0;            \
-    if(hasblank)                                                        \
+#define UNIFUNC_MAXVALUE {                                              \
+    int blankeq = (*b==*b && gal_data_has_blank(in)) ? 1 : 0;           \
+    if(blankeq)                                                         \
       do if(*ia!=*b) *oa = *ia > *oa ? *ia : *oa; while(++ia<iaf);      \
     else                                                                \
       do *oa = *ia > *oa ? *ia : *oa; while(++ia<iaf);                  \
@@ -331,22 +336,22 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
     do *oa++ = OP(*ia++); while(ia<iaf);                                \
   }
 
-#define UNIFUNC_RUN_FUNCTION_ON_ARRAY(IT, ISINT){                       \
+#define UNIFUNC_RUN_FUNCTION_ON_ARRAY(IT){                              \
+    IT *b = gal_data_alloc_blank(in->type);                             \
     IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
-    IT *b = ISINT ? gal_data_alloc_blank(in->type) : NULL;              \
     switch(operator)                                                    \
       {                                                                 \
       case GAL_DATA_OPERATOR_MINVAL:                                    \
-        UNIFUNC_MINVALUE(ISINT);                                        \
+        UNIFUNC_MINVALUE;                                               \
         break;                                                          \
       case GAL_DATA_OPERATOR_MAXVAL:                                    \
-        UNIFUNC_MAXVALUE(ISINT);                                        \
+        UNIFUNC_MAXVALUE;                                               \
         break;                                                          \
       default:                                                          \
         error(EXIT_FAILURE, 0, "the operator code %d is not "           \
               "recognized in UNIFUNC_RUN_FUNCTION_ON_ARRAY", operator); \
       }                                                                 \
-    if(ISINT) free(b);                                                  \
+    free(b);                                                            \
   }
 
 
@@ -402,37 +407,37 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
   switch(in->type)                                                      \
     {                                                                   \
     case GAL_DATA_TYPE_UCHAR:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned char, 1)                   \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned char)                      \
       break;                                                            \
     case GAL_DATA_TYPE_CHAR:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(char, 1)                            \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(char)                               \
       break;                                                            \
     case GAL_DATA_TYPE_USHORT:                                          \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned short, 1)                  \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned short)                     \
       break;                                                            \
     case GAL_DATA_TYPE_SHORT:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(short, 1)                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(short)                              \
         break;                                                          \
     case GAL_DATA_TYPE_UINT:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned int, 1)                    \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned int)                       \
         break;                                                          \
     case GAL_DATA_TYPE_INT:                                             \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int, 1)                             \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(int)                                \
         break;                                                          \
     case GAL_DATA_TYPE_ULONG:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned long, 1)                   \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(unsigned long)                      \
         break;                                                          \
     case GAL_DATA_TYPE_LONG:                                            \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(long, 1)                            \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(long)                               \
         break;                                                          \
     case GAL_DATA_TYPE_LONGLONG:                                        \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(LONGLONG, 1)                        \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(LONGLONG)                           \
       break;                                                            \
     case GAL_DATA_TYPE_FLOAT:                                           \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(float, 0)                           \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(float)                              \
       break;                                                            \
     case GAL_DATA_TYPE_DOUBLE:                                          \
-      UNIFUNC_RUN_FUNCTION_ON_ARRAY(double, 0)                          \
+      UNIFUNC_RUN_FUNCTION_ON_ARRAY(double)                             \
         break;                                                          \
     default:                                                            \
       error(EXIT_FAILURE, 0, "type code %d not recognized in "          \
@@ -832,4 +837,329 @@ data_arithmetic_where(unsigned char flags, gal_data_t *out,
       gal_data_free(cond);
       gal_data_free(iftrue);
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************/
+/***************        Multiple operand operators        **************/
+/***********************************************************************/
+#define MULTIOPERAND_MIN(TYPE) {                                        \
+    TYPE p, max;                                                        \
+    gal_data_type_max(list->type, &max);                                \
+    do    /* Loop over each pixel */                                    \
+      {                                                                 \
+        p=max;                                                          \
+        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+          {  /* Only for integer types, does *b==*b. */                 \
+            if(hasblank[i] && *b==*b)                                   \
+              { if( *a[i] != *b ) p = *a[i] < p ? *a[i] : p;            \
+                else              p = *a[i] < p ? *a[i] : p; }          \
+            ++a[i];                                                     \
+          }                                                             \
+        *o++=p;                                                         \
+      }                                                                 \
+    while(o<of);                                                        \
+  }
+
+
+
+
+
+#define MULTIOPERAND_MAX(TYPE) {                                        \
+    TYPE p, min;                                                        \
+    gal_data_type_min(list->type, &min);                                \
+    do    /* Loop over each pixel */                                    \
+      {                                                                 \
+        p=min;                                                          \
+        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+          {  /* Only for integer types, does *b==*b. */                 \
+            if(hasblank[i] && *b==*b)                                   \
+              { if( *a[i] != *b ) p = *a[i] > p ? *a[i] : p;            \
+                else              p = *a[i] > p ? *a[i] : p; }          \
+            ++a[i];                                                     \
+          }                                                             \
+        *o++=p;                                                         \
+      }                                                                 \
+    while(o<of);                                                        \
+  }
+
+
+
+
+
+#define MULTIOPERAND_SUM {                                              \
+    double sum;                                                         \
+    int n, use;                                                         \
+    do    /* Loop over each pixel */                                    \
+      {                                                                 \
+        n=0;                                                            \
+        use=1;                                                          \
+        sum=0.0f;                                                       \
+        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+          {                                                             \
+            /* Only integers and non-NaN floats: v==v is 1. */          \
+            if(hasblank[i])                                             \
+              use = ( *b==*b                                            \
+                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
+                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+                                                                        \
+            /* a[i] must be incremented to next pixel in any case. */   \
+            if(use) { sum += *a[i]++; ++n; } else ++a[i];               \
+          }                                                             \
+        *o++ = n ? sum : *b;                                            \
+      }                                                                 \
+    while(o<of);                                                        \
+  }
+
+
+
+
+
+#define MULTIOPERAND_AVERAGE {                                          \
+    double sum;                                                         \
+    int n, use;                                                         \
+    do    /* Loop over each pixel */                                    \
+      {                                                                 \
+        n=0;                                                            \
+        use=1;                                                          \
+        sum=0.0f;                                                       \
+        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+          {                                                             \
+            /* Only integers and non-NaN floats: v==v is 1. */          \
+            if(hasblank[i])                                             \
+              use = ( *b==*b                                            \
+                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
+                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+                                                                        \
+            /* a[i] must be incremented to next pixel in any case. */   \
+            if(use) { sum += *a[i]++; ++n; } else ++a[i];               \
+          }                                                             \
+        *o++ = n ? sum/n : *b;                                          \
+      }                                                                 \
+    while(o<of);                                                        \
+  }
+
+
+
+
+
+#define MULTIOPERAND_MEDIAN(TYPE, QSORT_F) {                            \
+    TYPE *pixs;                                                         \
+    int n, use;                                                         \
+                                                                        \
+    errno=0;                                                            \
+    pixs=malloc(dnum*sizeof *pixs);                                     \
+    if(pixs==NULL)                                                      \
+      error(EXIT_FAILURE, 0, "%zu bytes in MULTIOPERAND_MEDIAN",        \
+            dnum*sizeof *pixs);                                         \
+                                                                        \
+    do    /* Loop over each pixel */                                    \
+      {                                                                 \
+        n=0;                                                            \
+        use=1;                                                          \
+        for(i=0;i<dnum;++i)  /* Loop over each array. */                \
+          {                                                             \
+            /* Only integers and non-NaN floats: v==v is 1. */          \
+            if(hasblank[i])                                             \
+              use = ( *b==*b                                            \
+                      ? ( *a[i]!=*b    ? 1 : 0 )          /* Integer */ \
+                      : ( *a[i]==*a[i] ? 1 : 0 ) );       /* Float   */ \
+                                                                        \
+            /* a[i] must be incremented to next pixel in any case. */   \
+            if(use) pixs[n++]=*a[i]++; else ++a[i];                     \
+          }                                                             \
+                                                                        \
+        /* Sort all the values for this pixel and return the median. */ \
+        if(n)                                                           \
+          {                                                             \
+            qsort(pixs, n, sizeof *pixs, QSORT_F);                      \
+            *o++ = n%2 ? pixs[n/2] : (pixs[n/2] + pixs[n/2-1])/2 ;      \
+          }                                                             \
+        else                                                            \
+          *o++=*b;                                                      \
+      }                                                                 \
+    while(o<of);                                                        \
+  }
+
+
+
+
+
+#define MULTIOPERAND_TYPE_SET(TYPE, QSORT_F) {                          \
+    TYPE *o=out->array, *of=out->array+out->size;                       \
+    TYPE **a, *b=gal_data_alloc_blank(list->type);                      \
+                                                                        \
+    /* Allocate space to keep the pointers to the arrays of each. */    \
+    /* Input data structure. The operators will increment these */      \
+    /* pointers while parsing them. */                                  \
+    errno=0;                                                            \
+    a=malloc(dnum*sizeof *a);                                           \
+    if(a==NULL)                                                         \
+      error(EXIT_FAILURE, 0, "%zu bytes for `arrays' in "               \
+            "MULTIOPERAND_TYPE_SET", dnum*sizeof *a);                   \
+                                                                        \
+    /* Fill in the array pointers. */                                   \
+    for(tmp=list;tmp!=NULL;tmp=tmp->next)                               \
+      a[i++]=tmp->array;                                                \
+                                                                        \
+    /* Do the operation. */                                             \
+    switch(operator)                                                    \
+      {                                                                 \
+      case GAL_DATA_OPERATOR_MIN:                                       \
+        MULTIOPERAND_MIN(TYPE);                                         \
+        break;                                                          \
+                                                                        \
+      case GAL_DATA_OPERATOR_MAX:                                       \
+        MULTIOPERAND_MAX(TYPE);                                         \
+        break;                                                          \
+                                                                        \
+      case GAL_DATA_OPERATOR_SUM:                                       \
+        MULTIOPERAND_SUM;                                               \
+        break;                                                          \
+                                                                        \
+      case GAL_DATA_OPERATOR_AVERAGE:                                   \
+        MULTIOPERAND_AVERAGE;                                           \
+        break;                                                          \
+                                                                        \
+      case GAL_DATA_OPERATOR_MEDIAN:                                    \
+        MULTIOPERAND_MEDIAN(TYPE, QSORT_F);                             \
+        break;                                                          \
+                                                                        \
+      default:                                                          \
+        error(EXIT_FAILURE, 0, "the operator code %d not recognized "   \
+              "in MULTIOPERAND_TYPE_SET", operator);                    \
+      }                                                                 \
+                                                                        \
+    /* Clean up. */                                                     \
+    free(b);                                                            \
+    free(a);                                                            \
+  }
+
+
+
+
+
+/* The single operator in this function is assumed to be a linked list. The
+   number of operators is determined from the fact that the last node in
+   the linked list must have a NULL pointer as its `next' element.*/
+gal_data_t *
+data_arithmetic_multioperand(int operator, unsigned char flags,
+                             gal_data_t *list)
+{
+  int *hasblank;
+  size_t i=0, dnum=1;
+  gal_data_t *out, *tmp, *ttmp;
+
+
+  /* For generality, `list' can be a NULL pointer, in that case, this
+     function will return a NULL pointer and avoid further processing. */
+  if(list==NULL) return NULL;
+
+
+  /* Do a simple sanity check, comparing the operand on top of the list to
+     the rest of the operands within the list. */
+  for(tmp=list->next;tmp!=NULL;tmp=tmp->next)
+    {
+      /* Increment the number of structures. */
+      ++dnum;
+
+      /* Check the types. */
+      if(tmp->type!=list->type)
+        error(EXIT_FAILURE, 0, "the types of all operands to the %s "
+              "operator must be same",
+              gal_data_operator_string(operator));
+
+      /* Check the sizes. */
+      if( gal_data_dsize_is_different(list, tmp) )
+        error(EXIT_FAILURE, 0, "the sizes of all operands to the %s "
+              "operator must be same",
+              gal_data_operator_string(operator));
+    }
+
+
+  /* Set the output data structure. */
+  if(flags & GAL_DATA_ARITH_INPLACE)
+    out = list;                 /* The top element in the list. */
+  else
+    out = gal_data_alloc(NULL, list->type, list->ndim, list->dsize,
+                         list->wcs, 0, list->minmapsize);
+
+
+  /* hasblank is used to see if a blank value should be checked or not. */
+  errno=0;
+  hasblank=malloc(dnum*sizeof *hasblank);
+  if(hasblank==NULL)
+    error(EXIT_FAILURE, 0, "%zu bytes for hasblank in "
+          "`data_arithmetic_multioperand", dnum*sizeof *hasblank);
+
+
+  /* Fill in the hasblank array. */
+  for(tmp=list;tmp!=NULL;tmp=tmp->next)
+    hasblank[i++]=gal_data_has_blank(tmp);
+
+
+  /* Start the operation. */
+  switch(list->type)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      MULTIOPERAND_TYPE_SET(unsigned char,  gal_qsort_uchar_increasing);
+    case GAL_DATA_TYPE_CHAR:
+      MULTIOPERAND_TYPE_SET(char,           gal_qsort_char_increasing);
+    case GAL_DATA_TYPE_USHORT:
+      MULTIOPERAND_TYPE_SET(unsigned short, gal_qsort_ushort_increasing);
+    case GAL_DATA_TYPE_SHORT:
+      MULTIOPERAND_TYPE_SET(short,          gal_qsort_short_increasing);
+    case GAL_DATA_TYPE_UINT:
+      MULTIOPERAND_TYPE_SET(unsigned int,   gal_qsort_uint_increasing);
+    case GAL_DATA_TYPE_INT:
+      MULTIOPERAND_TYPE_SET(int,            gal_qsort_int_increasing);
+    case GAL_DATA_TYPE_ULONG:
+      MULTIOPERAND_TYPE_SET(unsigned long,  gal_qsort_ulong_increasing);
+    case GAL_DATA_TYPE_LONG:
+      MULTIOPERAND_TYPE_SET(long,           gal_qsort_long_increasing);
+    case GAL_DATA_TYPE_LONGLONG:
+      MULTIOPERAND_TYPE_SET(LONGLONG,       gal_qsort_longlong_increasing);
+    case GAL_DATA_TYPE_FLOAT:
+      MULTIOPERAND_TYPE_SET(float,          gal_qsort_float_increasing);
+    case GAL_DATA_TYPE_DOUBLE:
+      MULTIOPERAND_TYPE_SET(double,         gal_qsort_double_increasing);
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`data_arithmetic_multioperand'", list->type);
+    }
+
+
+  /* Clean up and return. Note that the operation might have been done in
+     place. In that case, the top most list element was used. So we need to
+     check before freeing each data structure. */
+  if(flags & GAL_DATA_ARITH_FREE)
+    {
+      tmp=list;
+      while(tmp!=NULL)
+        {
+          ttmp=tmp->next;
+          if(tmp!=out) gal_data_free(tmp);
+          tmp=ttmp;
+        }
+    }
+  free(hasblank);
+  return out;
 }

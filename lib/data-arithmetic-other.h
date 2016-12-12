@@ -45,4 +45,8 @@ void
 data_arithmetic_where(unsigned char flags, gal_data_t *out,
                       gal_data_t *cond, gal_data_t *iftrue);
 
+gal_data_t *
+data_arithmetic_multioperand(int operator, unsigned char flags,
+                             gal_data_t *list);
+
 #endif
