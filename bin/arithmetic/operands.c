@@ -60,11 +60,10 @@ add_operand(struct imgarithparams *p, char *filename, gal_data_t *data)
 {
   struct operand *newnode;
 
-  /* Some operators might not actually return any dataset (for example the
-     multi-operand datasets when the number of operands is 0, which can
-     happen in a script), in such cases, we shouldn't add anything to the
-     stack. */
-  if(data)
+  /* Some operators might not actually return any dataset (data=NULL), in
+     such cases filename will also be NULL (since the operand was not added
+     from the command-line). So, we shouldn't add anything to the stack. */
+  if(data || filename)
     {
       /* Allocate space for the new operand. */
       errno=0;

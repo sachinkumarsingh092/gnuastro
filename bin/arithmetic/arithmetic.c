@@ -284,7 +284,6 @@ reversepolish(struct imgarithparams *p)
           else if (!strcmp(token->v, "double"))
             { op=GAL_DATA_OPERATOR_TO_DOUBLE;     nop=1;  }
 
-
           /* Finished checks with known operators */
           else
             error(EXIT_FAILURE, 0, "the argument \"%s\" could not be "
@@ -380,7 +379,6 @@ reversepolish(struct imgarithparams *p)
      into `d1', so it is freed when freeing d1. */
   gal_data_free(d1);
   free(p->refdata.dsize);
-
 
   /* Clean up. Note that the tokens were taken from the command-line
      arguments, so the string within each token linked list must not be

@@ -1011,7 +1011,7 @@ gal_data_has_blank(gal_data_t *data)
             "datatype, please get in touch with us to implement it.");
 
     case GAL_DATA_TYPE_UCHAR:
-      do if(*uc==GAL_DATA_BLANK_UCHAR) return 1; while(uc<ucf);
+      do if(*uc++==GAL_DATA_BLANK_UCHAR) return 1; while(uc<ucf);
       break;
 
 
@@ -2003,7 +2003,7 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
     case GAL_DATA_OPERATOR_TO_FLOAT:
     case GAL_DATA_OPERATOR_TO_DOUBLE:
       d1 = va_arg(va, gal_data_t *);
-      data_arithmetic_change_type(d1, operator, flags);
+      out=data_arithmetic_change_type(d1, operator, flags);
       break;
 
 

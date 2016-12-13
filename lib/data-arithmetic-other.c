@@ -47,7 +47,7 @@ gal_data_t *
 data_arithmetic_change_type(gal_data_t *data, int operator,
                             unsigned char flags)
 {
-  int type=0;
+  int type=-1;
   gal_data_t *out;
 
   /* Set the output type. */
@@ -64,7 +64,6 @@ data_arithmetic_change_type(gal_data_t *data, int operator,
     case GAL_DATA_OPERATOR_TO_LONGLONG: type=GAL_DATA_TYPE_LONGLONG; break;
     case GAL_DATA_OPERATOR_TO_FLOAT:    type=GAL_DATA_TYPE_FLOAT;    break;
     case GAL_DATA_OPERATOR_TO_DOUBLE:   type=GAL_DATA_TYPE_DOUBLE;   break;
-
     default:
       error(EXIT_FAILURE, 0, "operator value of %d not recognized in "
             "`data_arithmetic_change_type'", operator);
