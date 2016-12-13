@@ -28,30 +28,27 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 
 #include <gnuastro/data.h>
-#include <data-arithmetic-binary.h>
+
+
+
 
 
 
 /************************************************************************/
-/*************      Possibly set binary types to convert    *************/
+/*************            Native type macros            *****************/
 /************************************************************************/
 #if GAL_CONFIG_BIN_OP_UCHAR == 1
-#define BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)                        \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned char, OP);              \
-      break;
-#define BINARY_LEFT_DONE_UCHAR(LT, OP)                                  \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      BINARY_LEFT_RIGHT_DONE(LT, unsigned char, OP);                    \
-      break;
-#define BINARY_MULTISWITCH_UCHAR(OP)                                    \
-    case GAL_DATA_TYPE_UCHAR:                                           \
-      BINARY_LEFT_DONE(unsigned char, OP);                              \
-      break;
+#define BINARY_LT_IS_UCHAR                                         \
+  case GAL_DATA_TYPE_UCHAR:                                        \
+    BINARY_LT_SET(unsigned char);                                  \
+    break;
+#define BINARY_LT_SET_RT_IS_UCHAR(LT)                              \
+  case GAL_DATA_TYPE_UCHAR:                                        \
+    BINARY_RT_LT_SET(unsigned char, LT);                           \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)
-#define BINARY_LEFT_DONE_UCHAR(LT, OP)
-#define BINARY_MULTISWITCH_UCHAR(OP)
+#define BINARY_LT_IS_UCHAR
+#define BINARY_LT_SET_RT_IS_UCHAR(LT)
 #endif
 
 
@@ -59,22 +56,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_CHAR == 1
-#define BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                         \
-  case GAL_DATA_TYPE_CHAR:                                              \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, char, OP);                         \
+#define BINARY_LT_IS_CHAR                                          \
+  case GAL_DATA_TYPE_CHAR:                                         \
+    BINARY_LT_SET(char);                                           \
     break;
-#define BINARY_LEFT_DONE_CHAR(LT, OP)                                   \
-    case GAL_DATA_TYPE_CHAR:                                            \
-      BINARY_LEFT_RIGHT_DONE(LT, char, OP);                             \
-      break;
-#define BINARY_MULTISWITCH_CHAR(OP)                                     \
-    case GAL_DATA_TYPE_CHAR:                                            \
-      BINARY_LEFT_DONE(char, OP);                                       \
-      break;
+#define BINARY_LT_SET_RT_IS_CHAR(LT)                               \
+  case GAL_DATA_TYPE_CHAR:                                         \
+    BINARY_RT_LT_SET(char, LT);                                    \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)
-#define BINARY_LEFT_DONE_CHAR(LT, OP)
-#define BINARY_MULTISWITCH_CHAR(OP)
+#define BINARY_LT_IS_CHAR
+#define BINARY_LT_SET_RT_IS_CHAR(LT)
 #endif
 
 
@@ -82,22 +74,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_USHORT == 1
-#define BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                       \
-  case GAL_DATA_TYPE_USHORT:                                            \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned short, OP);               \
+#define BINARY_LT_IS_USHORT                                        \
+  case GAL_DATA_TYPE_USHORT:                                       \
+    BINARY_LT_SET(unsigned short);                                 \
     break;
-#define BINARY_LEFT_DONE_USHORT(LT, OP)                                 \
-    case GAL_DATA_TYPE_USHORT:                                          \
-      BINARY_LEFT_RIGHT_DONE(LT, unsigned short, OP);                   \
-      break;
-#define BINARY_MULTISWITCH_USHORT(OP)                                   \
-    case GAL_DATA_TYPE_USHORT:                                          \
-      BINARY_LEFT_DONE(unsigned short, OP);                             \
-      break;
+#define BINARY_LT_SET_RT_IS_USHORT(LT)                             \
+  case GAL_DATA_TYPE_USHORT:                                       \
+    BINARY_RT_LT_SET(unsigned short, LT);                          \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)
-#define BINARY_LEFT_DONE_USHORT(LT, OP)
-#define BINARY_MULTISWITCH_USHORT(OP)
+#define BINARY_LT_IS_USHORT
+#define BINARY_LT_SET_RT_IS_USHORT(LT)
 #endif
 
 
@@ -105,22 +92,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_SHORT == 1
-#define BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                        \
-  case GAL_DATA_TYPE_SHORT:                                             \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, short, OP);                        \
+#define BINARY_LT_IS_SHORT                                         \
+  case GAL_DATA_TYPE_SHORT:                                        \
+    BINARY_LT_SET(short);                                          \
     break;
-#define BINARY_LEFT_DONE_SHORT(LT, OP)                                  \
-    case GAL_DATA_TYPE_SHORT:                                           \
-      BINARY_LEFT_RIGHT_DONE(LT, short, OP);                            \
-      break;
-#define BINARY_MULTISWITCH_SHORT(OP)                                    \
-    case GAL_DATA_TYPE_SHORT:                                           \
-      BINARY_LEFT_DONE(short, OP);                                      \
-      break;
+#define BINARY_LT_SET_RT_IS_SHORT(LT)                              \
+  case GAL_DATA_TYPE_SHORT:                                        \
+    BINARY_RT_LT_SET(short, LT);                                   \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)
-#define BINARY_LEFT_DONE_SHORT(LT, OP)
-#define BINARY_MULTISWITCH_SHORT(OP)
+#define BINARY_LT_IS_SHORT
+#define BINARY_LT_SET_RT_IS_SHORT(LT)
 #endif
 
 
@@ -128,22 +110,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_UINT == 1
-#define BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                         \
-  case GAL_DATA_TYPE_UINT:                                              \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned int, OP);                 \
+#define BINARY_LT_IS_UINT                                          \
+  case GAL_DATA_TYPE_UINT:                                         \
+    BINARY_LT_SET(unsigned int);                                   \
     break;
-#define BINARY_LEFT_DONE_UINT(LT, OP)                                   \
-    case GAL_DATA_TYPE_UINT:                                            \
-      BINARY_LEFT_RIGHT_DONE(LT, unsigned int, OP);                     \
-      break;
-#define BINARY_MULTISWITCH_UINT(OP)                                     \
-    case GAL_DATA_TYPE_UINT:                                            \
-      BINARY_LEFT_DONE(unsigned int, OP);                               \
-      break;
+#define BINARY_LT_SET_RT_IS_UINT(LT)                               \
+  case GAL_DATA_TYPE_UINT:                                         \
+    BINARY_RT_LT_SET(unsigned int, LT);                            \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)
-#define BINARY_LEFT_DONE_UINT(LT, OP)
-#define BINARY_MULTISWITCH_UINT(OP)
+#define BINARY_LT_IS_UINT
+#define BINARY_LT_SET_RT_IS_UINT(LT)
 #endif
 
 
@@ -151,22 +128,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_INT == 1
-#define BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)                          \
-  case GAL_DATA_TYPE_INT:                                               \
-    BINARY_OPERATOR_FOR_TYPE(LT, RT, int, OP);                          \
+#define BINARY_LT_IS_INT                                           \
+  case GAL_DATA_TYPE_INT:                                          \
+    BINARY_LT_SET(int);                                            \
     break;
-#define BINARY_LEFT_DONE_INT(LT, OP)                                    \
-    case GAL_DATA_TYPE_INT:                                             \
-      BINARY_LEFT_RIGHT_DONE(LT, int, OP);                              \
-      break;
-#define BINARY_MULTISWITCH_INT(OP)                                      \
-    case GAL_DATA_TYPE_INT:                                             \
-      BINARY_LEFT_DONE(int, OP);                                        \
-      break;
+#define BINARY_LT_SET_RT_IS_INT(LT)                                \
+  case GAL_DATA_TYPE_INT:                                          \
+    BINARY_RT_LT_SET(int, LT);                                     \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)
-#define BINARY_LEFT_DONE_INT(LT, OP)
-#define BINARY_MULTISWITCH_INT(OP)
+#define BINARY_LT_IS_INT
+#define BINARY_LT_SET_RT_IS_INT(LT)
 #endif
 
 
@@ -174,22 +146,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_ULONG == 1
-#define BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                        \
-    case GAL_DATA_TYPE_ULONG:                                           \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, unsigned long, OP);              \
-      break;
-#define BINARY_LEFT_DONE_ULONG(LT, OP)                                  \
-    case GAL_DATA_TYPE_ULONG:                                           \
-      BINARY_LEFT_RIGHT_DONE(LT, unsigned long, OP);                    \
-      break;
-#define BINARY_MULTISWITCH_ULONG(OP)                                    \
-    case GAL_DATA_TYPE_ULONG:                                           \
-      BINARY_LEFT_DONE(unsigned long, OP);                              \
-      break;
+#define BINARY_LT_IS_ULONG                                         \
+  case GAL_DATA_TYPE_ULONG:                                        \
+    BINARY_LT_SET(unsigned long);                                  \
+    break;
+#define BINARY_LT_SET_RT_IS_ULONG(LT)                              \
+  case GAL_DATA_TYPE_ULONG:                                        \
+    BINARY_RT_LT_SET(unsigned long, LT);                           \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)
-#define BINARY_LEFT_DONE_ULONG(LT, OP)
-#define BINARY_MULTISWITCH_ULONG(OP)
+#define BINARY_LT_IS_ULONG
+#define BINARY_LT_SET_RT_IS_ULONG(LT)
 #endif
 
 
@@ -197,22 +164,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_LONG == 1
-#define BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                         \
-    case GAL_DATA_TYPE_LONG:                                            \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, long, OP);                       \
-      break;
-#define BINARY_LEFT_DONE_LONG(LT, OP)                                   \
-    case GAL_DATA_TYPE_LONG:                                            \
-      BINARY_LEFT_RIGHT_DONE(LT, long, OP);                             \
-      break;
-#define BINARY_MULTISWITCH_LONG(OP)                                     \
-    case GAL_DATA_TYPE_LONG:                                            \
-      BINARY_LEFT_DONE(long, OP);                                       \
-      break;
+#define BINARY_LT_IS_LONG                                          \
+  case GAL_DATA_TYPE_LONG:                                         \
+    BINARY_LT_SET(long);                                           \
+    break;
+#define BINARY_LT_SET_RT_IS_LONG(LT)                               \
+  case GAL_DATA_TYPE_LONG:                                         \
+    BINARY_RT_LT_SET(long, LT);                                    \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)
-#define BINARY_LEFT_DONE_LONG(LT, OP)
-#define BINARY_MULTISWITCH_LONG(OP)
+#define BINARY_LT_IS_LONG
+#define BINARY_LT_SET_RT_IS_LONG(LT)
 #endif
 
 
@@ -220,22 +182,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_LONGLONG == 1
-#define BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                     \
-    case GAL_DATA_TYPE_LONGLONG:                                        \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, LONGLONG, OP);                   \
-      break;
-#define BINARY_LEFT_DONE_LONGLONG(LT, OP)                               \
-    case GAL_DATA_TYPE_LONGLONG:                                        \
-      BINARY_LEFT_RIGHT_DONE(LT, long long, OP);                        \
-      break;
-#define BINARY_MULTISWITCH_LONGLONG(OP)                                 \
-    case GAL_DATA_TYPE_LONGLONG:                                        \
-      BINARY_LEFT_DONE(LONGLONG, OP);                                   \
-      break;
+#define BINARY_LT_IS_LONGLONG                                      \
+  case GAL_DATA_TYPE_LONGLONG:                                     \
+    BINARY_LT_SET(LONGLONG);                                       \
+    break;
+#define BINARY_LT_SET_RT_IS_LONGLONG(LT)                           \
+  case GAL_DATA_TYPE_LONGLONG:                                     \
+    BINARY_RT_LT_SET(LONGLONG, LT);                                \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)
-#define BINARY_LEFT_DONE_LONGLONG(LT, OP)
-#define BINARY_MULTISWITCH_LONGLONG(OP)
+#define BINARY_LT_IS_LONGLONG
+#define BINARY_LT_SET_RT_IS_LONGLONG(LT)
 #endif
 
 
@@ -243,22 +200,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_FLOAT == 1
-#define BINARY_LEFT_RIGHT_DONE_FLOAT(LT, RT, OP)                        \
-    case GAL_DATA_TYPE_FLOAT:                                           \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, float, OP);                      \
-      break;
-#define BINARY_LEFT_DONE_FLOAT(LT, OP)                                  \
-    case GAL_DATA_TYPE_FLOAT:                                           \
-      BINARY_LEFT_RIGHT_DONE(LT, float, OP);                            \
-      break;
-#define BINARY_MULTISWITCH_FLOAT(OP)                                    \
-    case GAL_DATA_TYPE_FLOAT:                                           \
-      BINARY_LEFT_DONE(float, OP);                                      \
-      break;
+#define BINARY_LT_IS_FLOAT                                         \
+  case GAL_DATA_TYPE_FLOAT:                                        \
+    BINARY_LT_SET(float);                                          \
+    break;
+#define BINARY_LT_SET_RT_IS_FLOAT(LT)                              \
+  case GAL_DATA_TYPE_FLOAT:                                        \
+    BINARY_RT_LT_SET(float, LT);                                   \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_FLOAT(LT, RT, OP)
-#define BINARY_LEFT_DONE_FLOAT(LT, OP)
-#define BINARY_MULTISWITCH_FLOAT(OP)
+#define BINARY_LT_IS_FLOAT
+#define BINARY_LT_SET_RT_IS_FLOAT(LT)
 #endif
 
 
@@ -266,22 +218,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #if GAL_CONFIG_BIN_OP_DOUBLE == 1
-#define BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)                       \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
-      BINARY_OPERATOR_FOR_TYPE(LT, RT, double, OP);                     \
-      break;
-#define BINARY_LEFT_DONE_DOUBLE(LT, OP)                                 \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
-      BINARY_LEFT_RIGHT_DONE(LT, double, OP);                           \
-      break;
-#define BINARY_MULTISWITCH_DOUBLE(OP)                                   \
-    case GAL_DATA_TYPE_DOUBLE:                                          \
-      BINARY_LEFT_DONE(double, OP);                                     \
-      break;
+#define BINARY_LT_IS_DOUBLE                                        \
+  case GAL_DATA_TYPE_DOUBLE:                                       \
+    BINARY_LT_SET(double);                                         \
+    break;
+#define BINARY_LT_SET_RT_IS_DOUBLE(LT)                             \
+  case GAL_DATA_TYPE_DOUBLE:                                       \
+    BINARY_RT_LT_SET(double, LT);                                  \
+    break;
 #else
-#define BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)
-#define BINARY_LEFT_DONE_DOUBLE(LT, OP)
-#define BINARY_MULTISWITCH_DOUBLE(OP)
+#define BINARY_LT_IS_DOUBLE
+#define BINARY_LT_SET_RT_IS_DOUBLE(LT)
 #endif
 
 
@@ -302,97 +249,77 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-
-
-
-
 /************************************************************************/
-/*************       Macros for specifying the type     *****************/
+/*************              High level macros           *****************/
 /************************************************************************/
-
-#define BINARY_OPERATOR_FOR_TYPE(LT, RT, OT, OP){                       \
-    LT *la=l->array;                                                    \
-    RT *ra=r->array;                                                    \
-    OT *oa=o->array, *of=oa + o->size;                                  \
-    if(l->size==r->size) do *oa = *la++ OP *ra++; while(++oa<of);       \
-    else if(l->size==1)  do *oa = *la   OP *ra++; while(++oa<of);       \
-    else                 do *oa = *la++ OP *ra;   while(++oa<of);       \
+/* Final step to be used by all operators and all types. */
+#define BINARY_OP_OT_RT_LT_SET(OP, OT, RT, LT) {                   \
+    LT *la=l->array;                                               \
+    RT *ra=r->array;                                               \
+    OT *oa=o->array, *of=oa + o->size;                             \
+    if(l->size==r->size) do *oa = *la++ OP *ra++; while(++oa<of);  \
+    else if(l->size==1)  do *oa = *la   OP *ra++; while(++oa<of);  \
+    else                 do *oa = *la++ OP *ra;   while(++oa<of);  \
   }
 
 
 
 
 
-#define BINARY_LEFT_RIGHT_DONE(LT, RT, OP)                              \
-  switch(o->type)                                                       \
-    {                                                                   \
-                                                                        \
-    BINARY_LEFT_RIGHT_DONE_UCHAR(LT, RT, OP)                            \
-    BINARY_LEFT_RIGHT_DONE_CHAR(LT, RT, OP)                             \
-    BINARY_LEFT_RIGHT_DONE_SHORT(LT, RT, OP)                            \
-    BINARY_LEFT_RIGHT_DONE_USHORT(LT, RT, OP)                           \
-    BINARY_LEFT_RIGHT_DONE_INT(LT, RT, OP)                              \
-    BINARY_LEFT_RIGHT_DONE_UINT(LT, RT, OP)                             \
-    BINARY_LEFT_RIGHT_DONE_ULONG(LT, RT, OP)                            \
-    BINARY_LEFT_RIGHT_DONE_LONG(LT, RT, OP)                             \
-    BINARY_LEFT_RIGHT_DONE_LONGLONG(LT, RT, OP)                         \
-    BINARY_LEFT_RIGHT_DONE_FLOAT(LT, RT, OP)                            \
-    BINARY_LEFT_RIGHT_DONE_DOUBLE(LT, RT, OP)                           \
-                                                                        \
-    default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for o->type in BINARY_LEFT_RIGHT_DONE", o->type);          \
-    }
+/* For operators whose type may be any of the given inputs. */
+#define BINARY_OP_RT_LT_SET(OP, RT, LT)                            \
+  if(o->type==l->type)                                             \
+    BINARY_OP_OT_RT_LT_SET(OP, LT, RT, LT)                         \
+  else                                                             \
+    BINARY_OP_OT_RT_LT_SET(OP, RT, RT, LT)
 
 
 
 
 
-#define BINARY_LEFT_DONE(LT, OP)                                        \
-  switch(r->type)                                                       \
-    {                                                                   \
-                                                                        \
-    BINARY_LEFT_DONE_UCHAR(LT, OP)                                      \
-    BINARY_LEFT_DONE_CHAR(LT, OP)                                       \
-    BINARY_LEFT_DONE_USHORT(LT, OP)                                     \
-    BINARY_LEFT_DONE_SHORT(LT, OP)                                      \
-    BINARY_LEFT_DONE_UINT(LT, OP)                                       \
-    BINARY_LEFT_DONE_INT(LT, OP)                                        \
-    BINARY_LEFT_DONE_ULONG(LT, OP)                                      \
-    BINARY_LEFT_DONE_LONG(LT, OP)                                       \
-    BINARY_LEFT_DONE_LONGLONG(LT, OP)                                   \
-    BINARY_LEFT_DONE_FLOAT(LT, OP)                                      \
-    BINARY_LEFT_DONE_DOUBLE(LT, OP)                                     \
-                                                                        \
-    default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for r->type in BINARY_LEFT_DONE", r->type);                \
-    }
-
-
-
-
-
-#define BINARY_OPERATOR_DONE(OP)                                        \
-  switch(l->type)                                                       \
-    {                                                                   \
-                                                                        \
-      BINARY_MULTISWITCH_UCHAR(OP);                                     \
-      BINARY_MULTISWITCH_CHAR(OP);                                      \
-      BINARY_MULTISWITCH_USHORT(OP);                                    \
-      BINARY_MULTISWITCH_SHORT(OP);                                     \
-      BINARY_MULTISWITCH_UINT(OP);                                      \
-      BINARY_MULTISWITCH_INT(OP);                                       \
-      BINARY_MULTISWITCH_ULONG(OP);                                     \
-      BINARY_MULTISWITCH_LONG(OP);                                      \
-      BINARY_MULTISWITCH_LONGLONG(OP);                                  \
-      BINARY_MULTISWITCH_FLOAT(OP);                                     \
-      BINARY_MULTISWITCH_DOUBLE(OP);                                    \
-                                                                        \
-    default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized in "               \
-            "for l->type in data_arithmetic_binary", l->type);          \
+/* Left and right types set, choose what to do based on operator. */
+#define BINARY_RT_LT_SET(RT, LT)                                   \
+  switch(operator)                                                 \
+    {                                                              \
+    case GAL_DATA_OPERATOR_PLUS:                                   \
+      BINARY_OP_RT_LT_SET(+, RT, LT);                              \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_MINUS:                                  \
+      BINARY_OP_RT_LT_SET(-, RT, LT);                              \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_MULTIPLY:                               \
+      BINARY_OP_RT_LT_SET(*, RT, LT);                              \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_DIVIDE:                                 \
+      BINARY_OP_RT_LT_SET(/, RT, LT);                              \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_LT:                                     \
+      BINARY_OP_OT_RT_LT_SET(<, unsigned char, RT, LT);            \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_LE:                                     \
+      BINARY_OP_OT_RT_LT_SET(<=, unsigned char, RT, LT);           \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_GT:                                     \
+      BINARY_OP_OT_RT_LT_SET(>, unsigned char, RT, LT);            \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_GE:                                     \
+      BINARY_OP_OT_RT_LT_SET(>=, unsigned char, RT, LT);           \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_EQ:                                     \
+      BINARY_OP_OT_RT_LT_SET(==, unsigned char, RT, LT);           \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_NE:                                     \
+      BINARY_OP_OT_RT_LT_SET(!=, unsigned char, RT, LT);           \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_AND:                                    \
+      BINARY_OP_OT_RT_LT_SET(&&, unsigned char, RT, LT);           \
+      break;                                                       \
+    case GAL_DATA_OPERATOR_OR:                                     \
+      BINARY_OP_OT_RT_LT_SET(||, unsigned char, RT, LT);           \
+      break;                                                       \
+    default:                                                       \
+      error(EXIT_FAILURE, 0, "operator code %d not recognized in " \
+            "`BINARY_RT_LT_SET", operator);                        \
     }
 
 
@@ -400,209 +327,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/********************************************************************/
-/****************        Intermediate functions       ***************/
-/********************************************************************/
-static int
-binary_type_for_convert_to_compiled_type(int intype)
-{
-  switch(intype)
-    {
-    case GAL_DATA_TYPE_UCHAR:
-      if(GAL_CONFIG_BIN_OP_UCHAR) return GAL_DATA_TYPE_UCHAR;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_USHORT)   return GAL_DATA_TYPE_USHORT;
-          else if(GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
-          else if(GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
-          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_CHAR:
-      if(GAL_CONFIG_BIN_OP_CHAR) return GAL_DATA_TYPE_CHAR;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
-          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_USHORT:
-      if(GAL_CONFIG_BIN_OP_USHORT) return GAL_DATA_TYPE_USHORT;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
-          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_SHORT:
-      if(GAL_CONFIG_BIN_OP_SHORT) return GAL_DATA_TYPE_SHORT;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_UINT:
-      if(GAL_CONFIG_BIN_OP_UINT) return GAL_DATA_TYPE_UINT;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
-          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_INT:
-      if(GAL_CONFIG_BIN_OP_INT) return GAL_DATA_TYPE_INT;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
-          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_ULONG:
-      if(GAL_CONFIG_BIN_OP_ULONG) return GAL_DATA_TYPE_ULONG;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_LONG:
-      if(GAL_CONFIG_BIN_OP_LONG) return GAL_DATA_TYPE_LONG;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_LONGLONG:
-      if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
-          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_FLOAT:
-      if(GAL_CONFIG_BIN_OP_FLOAT) return GAL_DATA_TYPE_FLOAT;
-      else
-        {
-          if     (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-        }
-      break;
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if         (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "type %d not recognized in "
-            "BINARY_CONVERT_TO_COMPILED_TYPE", intype);
+/* Left operand type set, see what the right operand type is. */
+#define BINARY_LT_SET(LT)                                          \
+  switch(r->type)                                                  \
+    {                                                              \
+      BINARY_LT_SET_RT_IS_UCHAR(LT);                               \
+      BINARY_LT_SET_RT_IS_CHAR(LT);                                \
+      BINARY_LT_SET_RT_IS_USHORT(LT);                              \
+      BINARY_LT_SET_RT_IS_SHORT(LT);                               \
+      BINARY_LT_SET_RT_IS_UINT(LT);                                \
+      BINARY_LT_SET_RT_IS_INT(LT);                                 \
+      BINARY_LT_SET_RT_IS_ULONG(LT);                               \
+      BINARY_LT_SET_RT_IS_LONG(LT);                                \
+      BINARY_LT_SET_RT_IS_LONGLONG(LT);                            \
+      BINARY_LT_SET_RT_IS_FLOAT(LT);                               \
+      BINARY_LT_SET_RT_IS_DOUBLE(LT);                              \
+    default:                                                       \
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "     \
+            "`BINARY_LT_SET'", r->type);                           \
     }
 
-  return 0;
-}
-
-
-
-
-
-/* Note that for signed types, we won't be considering the unsigned types
-   of the larger types. */
-gal_data_t *
-binary_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
-{
-  int ntype;
-  char *typestring;
-  gal_data_t *out=NULL;
-
-  /* Set the best compiled type. */
-  ntype=binary_type_for_convert_to_compiled_type(in->type);
-
-  /* If type is not compiled, then convert the dataset to the first
-     compiled larger type. */
-  if(in->type==ntype)
-    out=in;
-  else
-    {
-      if(ntype)
-        {
-          out=gal_data_copy_to_new_type(in, ntype);
-          if(flags & GAL_DATA_ARITH_FREE)
-            { gal_data_free(in); in=NULL; }
-        }
-      else
-        {
-          typestring=gal_data_type_string(in->type);
-          error(EXIT_FAILURE, 0, "The given %s type data given to "
-                "binary operators is not compiled for native operation "
-                "and no larger types are compiled either.\n\nThe "
-                "largest type (which can act as a fallback for any "
-                "input type is double, so configure Gnuastro again "
-                "with `--enable-bin-op-double' to not get this error "
-                "any more. However, if you commonly deal with %s type "
-                "data, also enable %s with a similar option at "
-                "configure time to greatly increase running time and "
-                "avoid unnecessary RAM and CPU resources. Run"
-                "`./configure --help' in Gnuastro's top source "
-                "directory (after unpacking the tarball) for the full "
-                "list of options", typestring, typestring, typestring);
-        }
-    }
-
-  /* Return the output data structure */
-  if(out==NULL)
-    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, so we can fix "
-          "the problem. For some reason, the `out' array in "
-          "`binary_convert_to_compiled_type' is not set", PACKAGE_BUGREPORT);
-  return out;
-}
 
 
 
@@ -632,51 +376,49 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure
      time). */
+  int otype;
   size_t out_size, minmapsize;
   gal_data_t *l, *r, *o=NULL, *tmp_o;
-  int out_type=0, otype, final_otype;
 
 
   /* Simple sanity check on the input sizes */
   if( !( (flags & GAL_DATA_ARITH_NUMOK) && (lo->size==1 || ro->size==1))
       && gal_data_dsize_is_different(lo, ro) )
-    error(EXIT_FAILURE, 0, "ini BINARY_INTERNAL, the input datasets "
-          "don't have the same dimension/size");
+    error(EXIT_FAILURE, 0, "the non-number inputs to %s don't have the "
+          "same dimension/size", gal_data_operator_string(operator));
 
 
-  /* Make sure the input arrays have one of the compiled types. */
-  l=binary_convert_to_compiled_type(lo, flags);
-  r=binary_convert_to_compiled_type(ro, flags);
+  /* Make sure the input arrays have one of the compiled types. From this
+     point on, until the cleaning up section of this function, we won't be
+     using the `lo' and `ro' pointers. */
+  l=data_arithmetic_convert_to_compiled_type(lo, flags);
+  r=data_arithmetic_convert_to_compiled_type(ro, flags);
 
 
-  /* Set the output type. By default, `out_type' is initialized to zero,
-     this means that the type of the output data structure will be
-     determined based on the inputs. However, for the comparison operators,
-     the output type is either 0 or 1, so we will set the output to
-     unsigned character to save space and memory. Note that since this
-     switch check, is only relevant for certain operators, we don't need a
-     `default' statement.*/
+  /* Set the output type. For the comparison operators, the output type is
+     either 0 or 1, so we will set the output type to `unsigned char' for
+     efficient memory and CPU usage. Since the number of operators without
+     a fixed output type (like the conditionals) is less, by `default' we
+     will set the output type to `unsigned char', and if any of the other
+     operatrs are given, it will be chosen based on the input types.*/
   switch(operator)
     {
-    case GAL_DATA_OPERATOR_LT:
-    case GAL_DATA_OPERATOR_LE:
-    case GAL_DATA_OPERATOR_GT:
-    case GAL_DATA_OPERATOR_GE:
-    case GAL_DATA_OPERATOR_EQ:
-    case GAL_DATA_OPERATOR_NE:
-    case GAL_DATA_OPERATOR_AND:
-    case GAL_DATA_OPERATOR_OR:
-      out_type=GAL_DATA_TYPE_UCHAR;
+    case GAL_DATA_OPERATOR_PLUS:
+    case GAL_DATA_OPERATOR_MINUS:
+    case GAL_DATA_OPERATOR_MULTIPLY:
+    case GAL_DATA_OPERATOR_DIVIDE:
+      otype=gal_data_out_type(l, r);
       break;
+
+    default:
+      otype=GAL_DATA_TYPE_UCHAR;
     }
-  final_otype = out_type ? out_type : gal_data_out_type(lo, ro);
-  otype=binary_type_for_convert_to_compiled_type(final_otype);
 
 
   /* Set the output sizes. */
-  minmapsize = ( lo->minmapsize < ro->minmapsize
-                 ? lo->minmapsize : ro->minmapsize );
-  out_size = lo->size > ro->size ? lo->size : ro->size;
+  minmapsize = ( l->minmapsize < r->minmapsize
+                 ? l->minmapsize : r->minmapsize );
+  out_size = l->size > r->size ? l->size : r->size;
 
 
   /* If we want inplace output, set the output pointer to one input. Note
@@ -698,39 +440,37 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
     o = gal_data_alloc(NULL, otype,
                        l->size>1 ? l->ndim  : r->ndim,
                        l->size>1 ? l->dsize : r->dsize,
-                       l->size>1 ? l->wcs : r->wcs, 0, minmapsize );
+                       l->size>1 ? l->wcs   : r->wcs,
+                       0, minmapsize );
 
 
   /* Start setting the operator and operands. */
-  switch(operator)
+  switch(l->type)
     {
-    case GAL_DATA_OPERATOR_PLUS:       BINARY_OPERATOR_DONE( +  ); break;
-    case GAL_DATA_OPERATOR_MINUS:      BINARY_OPERATOR_DONE( -  ); break;
-    case GAL_DATA_OPERATOR_MULTIPLY:   BINARY_OPERATOR_DONE( *  ); break;
-    case GAL_DATA_OPERATOR_DIVIDE:     BINARY_OPERATOR_DONE( /  ); break;
-    case GAL_DATA_OPERATOR_LT:         BINARY_OPERATOR_DONE( <  ); break;
-    case GAL_DATA_OPERATOR_LE:         BINARY_OPERATOR_DONE( <= ); break;
-    case GAL_DATA_OPERATOR_GT:         BINARY_OPERATOR_DONE( >  ); break;
-    case GAL_DATA_OPERATOR_GE:         BINARY_OPERATOR_DONE( >= ); break;
-    case GAL_DATA_OPERATOR_EQ:         BINARY_OPERATOR_DONE( == ); break;
-    case GAL_DATA_OPERATOR_NE:         BINARY_OPERATOR_DONE( != ); break;
-    case GAL_DATA_OPERATOR_AND:        BINARY_OPERATOR_DONE( && ); break;
-    case GAL_DATA_OPERATOR_OR:         BINARY_OPERATOR_DONE( || ); break;
+      BINARY_LT_IS_UCHAR;
+      BINARY_LT_IS_CHAR;
+      BINARY_LT_IS_USHORT;
+      BINARY_LT_IS_SHORT;
+      BINARY_LT_IS_UINT;
+      BINARY_LT_IS_INT;
+      BINARY_LT_IS_ULONG;
+      BINARY_LT_IS_LONG;
+      BINARY_LT_IS_LONGLONG;
+      BINARY_LT_IS_FLOAT;
+      BINARY_LT_IS_DOUBLE;
     default:
-      error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
-            "data_arithmetic_binary when preparing for the operation",
-            operator);
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`data_arithmetic_binary'", l->type);
     }
 
 
   /* Clean up. Note that if the input arrays can be freed, and any of right
      or left arrays needed conversion, `BINARY_CONVERT_TO_COMPILED_TYPE'
-     has already freed the input arrays, and we only have `r' and `l'
-     allocated in any case. Alternatively, when the inputs shouldn't be
-     freed, the only allocated spaces are the `r' and `l' arrays if their
-     types weren't compiled for binary operations, we can tell this from
-     the pointers: if they are different from the original pointers, they
-     were allocated. */
+     has already freed the input arrays, so only `r' and `l' need
+     freeing. Alternatively, when the inputs shouldn't be freed, the only
+     allocated spaces are the `r' and `l' arrays if their types weren't
+     compiled for binary operations, we can tell this from the pointers: if
+     they are different from the original pointers, they were allocated. */
   if(flags & GAL_DATA_ARITH_FREE)
     {
       if     (o==l)       gal_data_free(r);
@@ -743,11 +483,15 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
       if(r!=ro)           gal_data_free(r);
     }
 
-  /* In case otype and final_otype aren't equal, we need to convert the
-     output data structure to the proper type. */
-  if(otype!=final_otype)
+  /* The type of the output dataset (`o->type') was chosen from `l' and `r'
+     (copies of the orignal operands but in a compiled type, not
+     necessarily the original `lo' and `ro' data structures). So we need to
+     to get the final type based on the original operands and check if the
+     final output needs changing. */
+  otype=gal_data_out_type(lo, ro);
+  if( o->type != otype )
     {
-      tmp_o=gal_data_copy_to_new_type(o, final_otype);
+      tmp_o=gal_data_copy_to_new_type(o, otype);
       gal_data_free(o);
       o=tmp_o;
     }

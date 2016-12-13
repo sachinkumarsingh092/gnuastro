@@ -352,6 +352,11 @@ char *
 gal_data_operator_string(int operator);
 
 gal_data_t *
+data_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags);
+
+
+
+gal_data_t *
 gal_data_arithmetic(int operator, unsigned char flags, ...);
 
 

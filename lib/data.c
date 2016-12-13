@@ -1697,6 +1697,197 @@ gal_data_operator_string(int operator)
 
 
 
+static int
+data_arithmetic_nearest_compiled_type(int intype)
+{
+  switch(intype)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      if(GAL_CONFIG_BIN_OP_UCHAR) return GAL_DATA_TYPE_UCHAR;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_USHORT)   return GAL_DATA_TYPE_USHORT;
+          else if(GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
+          else if(GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
+          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      if(GAL_CONFIG_BIN_OP_CHAR) return GAL_DATA_TYPE_CHAR;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
+          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      if(GAL_CONFIG_BIN_OP_USHORT) return GAL_DATA_TYPE_USHORT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
+          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      if(GAL_CONFIG_BIN_OP_SHORT) return GAL_DATA_TYPE_SHORT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      if(GAL_CONFIG_BIN_OP_UINT) return GAL_DATA_TYPE_UINT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      if(GAL_CONFIG_BIN_OP_INT) return GAL_DATA_TYPE_INT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      if(GAL_CONFIG_BIN_OP_ULONG) return GAL_DATA_TYPE_ULONG;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      if(GAL_CONFIG_BIN_OP_LONG) return GAL_DATA_TYPE_LONG;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      if(GAL_CONFIG_BIN_OP_FLOAT) return GAL_DATA_TYPE_FLOAT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      if         (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type %d not recognized in "
+            "binary_type_for_convert_to_compiled_type", intype);
+    }
+
+  return 0;
+}
+
+
+
+
+
+/* Note that for signed types, we won't be considering the unsigned types
+   of the larger types. */
+gal_data_t *
+data_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
+{
+  int ntype;
+  char *typestring;
+  gal_data_t *out=NULL;
+
+  /* Set the best compiled type. */
+  ntype=data_arithmetic_nearest_compiled_type(in->type);
+
+  /* If type is not compiled, then convert the dataset to the first
+     compiled larger type. */
+  if(in->type==ntype)
+    out=in;
+  else
+    {
+      if(ntype)
+        {
+          out=gal_data_copy_to_new_type(in, ntype);
+          if(flags & GAL_DATA_ARITH_FREE)
+            { gal_data_free(in); in=NULL; }
+        }
+      else
+        {
+          typestring=gal_data_type_string(in->type);
+          error(EXIT_FAILURE, 0, "The given %s type data given to "
+                "binary operators is not compiled for native operation "
+                "and no larger types are compiled either.\n\nThe "
+                "largest type (which can act as a fallback for any "
+                "input type is double, so configure Gnuastro again "
+                "with `--enable-bin-op-double' to not get this error "
+                "any more. However, if you commonly deal with %s type "
+                "data, also enable %s with a similar option at "
+                "configure time to greatly decrease running time and "
+                "avoid unnecessary RAM and CPU resources. Run"
+                "`./configure --help' in Gnuastro's top source "
+                "directory (after unpacking the tarball) for the full "
+                "list of options", typestring, typestring, typestring);
+        }
+    }
+
+  /* Return the output data structure */
+  if(out==NULL)
+    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, so we can fix "
+          "the problem. For some reason, the `out' array in "
+          "`binary_convert_to_compiled_type' is not set", PACKAGE_BUGREPORT);
+  return out;
+}
+
+
+
+
+
 gal_data_t *
 gal_data_arithmetic(int operator, unsigned char flags, ...)
 {

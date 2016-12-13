@@ -3140,12 +3140,12 @@ install all the other programs except this one.
 @itemx --enable-bin-op-float
 @itemx --enable-bin-op-double
 Enable the binary data-structure operators to work natively on the
-respective type of data (@option{u} stands for unsigned types). Some types
-are compiled by default, to disable them (or disable any other type),
-either run @option{enable-bin-op-TYPE=no}, or run
-@option{--disable-bin-op-TYPE}. You can tell which types are configured by
-default by inspecting the messages of @command{./configure} without any of
-these options.
+respective type of data (@option{u} stands for unsigned types, see
+@ref{Data types}). Some are compiled by default, to disable them (or
+disable any other type), either run @option{enable-bin-op-TYPE=no}, or run
+@option{--disable-bin-op-TYPE}. The final list of enabled/disabled types
+can be inspected in the outputs of @command{./configure} (close to the
+end).
 
 Binary operators, for example @code{+} or @code{>} (greater than), are some
 of the most common operators to the @ref{Arithmetic} program or the
@@ -3154,31 +3154,34 @@ most efficiently (as fast as possible without using extra memory or CPU
 resources), it is best to rely on the native types of the input data. For
 example, if you want to add an integer array with a floating point array,
 using the native types, means relying the system's internal type conversion
-for each array element. If we don't use the native conversion, then the
-integer array has to be converted to the same type as the floating point
-array to do the conversion. This will consume memory and CPU resources and
-ultimately slow down the running.
+for each array element, see @ref{Invoking astarithmetic}. If we don't use
+the native conversion, then the integer array has to be converted to the
+same type as the floating point array to do the conversion. This will
+consume memory (to copy the integer array into a new float array) and CPU
+(integer types need much less processing) resources and ultimately slow
+down the running.
 
 There are many binary operators and in order to have them operate natively
-on of each of the above types, the compiler has to prepare for many
-different conditions. This can greatly slow down the
+on of each of the above types, the compiler has to prepare for all the
+different combinations of these types. This can greatly slow down the
 compilation@footnote{It can also greatly increase the file size of the
-library, from a few hundred kilobytes to a few megabytes} (when you run
-@command{make}). For example, with only one type, compilation will take
-less than a minute, but if you enable all types, it can take upto an hour
-or more depending on your computer. However, the profits of significant
-investment at compilation time (only once) will be directly felt each time
-you run Gnuastro programs or libraries, because no internal type conversion
-will be necessary.
+library, from a few hundred kilobytes to a few megabytes.} (when you run
+@command{make}). For example, with only one type, @command{make} will
+finish in less than a minute, but if you enable all types, it can take
+roughly half an hour. However, the profits of this one-time investment at
+compilation time will be directly felt (more significantly on large
+images/datasets) each time you run Gnuastro programs or libraries, because
+no internal type conversion will be necessary.
 
-If you commonly work with very specific data-types, you can add them (and
-remove the default ones you don't need) with these options to speed up your
-work. Alternatively, GNU/Linux distribution package managers who compile
-once (for a large audience of users who just download the compiled programs
-and executables), can enable all types to help their users. Since the
-outputs of comparison operators are @code{unsigned char} type and most
-astronomical datasets are in @code{float}, the recommended minimum enabled
-types are @code{unsigned char} and @code{float}.
+If build time is important for you and you commonly work with very specific
+data-types, you can add them (and remove the default ones you don't need)
+with these configuration options to speed up your work. Alternatively,
+GNU/Linux distribution package managers who compile once (for a large
+audience of users who just download the compiled programs and executables),
+can enable all types to help their users. Since the outputs of comparison
+operators are @code{unsigned char} type and most astronomical datasets are
+in @code{float}, the recommended minimum enabled types are @code{unsigned
+char} and @code{float}.
 
 
 
@@ -7407,7 +7410,9 @@ $ astarithmetic in.fits reference.fits 100 gt new.fits where
 
 In the example above, any of the @file{in.fits} pixels that has a value in
 @file{reference.fits} greater than @command{100}, will be replaced with the
-corresponding pixel in @file{new.fits}.
+corresponding pixel in @file{new.fits}. Finally, the input operands are
+read and used independently, so you can use the same file more than once as
+any of the operands.
 
 @item bitand
 Bitwise AND operator: only bits with values of 1 in both popped operands
@@ -7502,8 +7507,8 @@ data types.
 is floating point type, blank values are NaN. One aspect of NaN values is
 that by definition they will fail on @emph{any} comparison. Hence both
 equal and not-equal operators will fail when both their operands are NaN!
-The only way to guarantee that select blank pixels is through the
-@command{isblank} operator explained above.
+Therefore, the only way to guarantee selection of blank pixels is through
+the @command{isblank} operator explained above.
 
 One way you can exploit this property of the NaN value to your advantage is
 when you want a fully zero-valued image (even over the blank pixels) based
@@ -7525,9 +7530,10 @@ floating point number in Gnuastro isn't case-sensitive.
 @subsection Invoking Arithmetic
 
 Arithmetic will do pixel to pixel arithmetic operations on the individual
-pixels of input data and/or numbers. Any single element input (number or
-single pixel FITS image file) will be read as a number, the rest of the
-inputs must have the same dimensions. The general template is:
+pixels of input data and/or numbers. Any operand that only has a single
+element (number, or single pixel FITS image file) will be read as a number,
+the rest of the inputs must have the same dimensions. The general template
+is:
 
 @example
 $ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
@@ -7548,26 +7554,38 @@ $ astarithmetic img1.fits img2.fits img3.fits median                \
                 -h0 -h1 -h2 --out=median.fits
 @end example
 
+If the output is an image, and the @option{--output} option is not given,
+automatic output will use the name of the first FITS image encountered to
+generate an output file name, see @ref{Automatic output}. Also, output WCS
+information will be taken from the first input image encountered. If the
+output is a single number, that number will be printed in the standard
+output. See @ref{Reverse polish notation} for the notation used to mix
+operands and operators on the command-line. To ignore certain pixels (see
+@ref{Blank pixels}), you can specify a mask image, see @ref{Mask image}. In
+that case, when reading the first FITS image, all the masked pixels will be
+set to a blank value depending on the type of the image.
+
 Arithmetic accepts two kinds of input: images and numbers. Images are
 considered to be any of the inputs that is a file name of a recognized type
-(see @ref{Arguments}) and has more than one element. Numbers will be read
-into the smallest type that can store them, so @command{-2} will be read as
-a @code{char} type (which is signed on most systems and can thus keep
-negative values), @command{2500} will be read as an @code{unsigned short}
-(all positive numbers will be read as unsigned), while
-@code{3.14159265358979323846} will be read as a @code{double} and
-@code{3.14} will be read as a @code{float}. To force a number to be read as
-float, add a @code{f} after it, so @command{5f} will be added to the stack
-as @code{float} (see @ref{Reverse polish notation}).
+(see @ref{Arguments}) and has more than one element/pixel. Numbers on the
+command-line will be read into the smallest type (see @ref{Data types})
+that can store them, so @command{-2} will be read as a @code{char} type
+(which is signed on most systems and can thus keep negative values),
+@command{2500} will be read as an @code{unsigned short} (all positive
+numbers will be read as unsigned), while @code{3.1415926535897} will be
+read as a @code{double} and @code{3.14} will be read as a @code{float}. To
+force a number to be read as float, add a @code{f} after it, so
+@command{5f} will be added to the stack as @code{float} (see @ref{Reverse
+polish notation}).
 
 Unless otherwise stated (in @ref{Arithmetic operators}), the operators can
 deal with multiple datatypes. For example in ``@command{a.fits b.fits +}'',
 the image types can be @code{long} and @code{float}. In such cases, C's
-internal type conversion will be used, and the output will have the larger
-type of the two inputs. Unsigned integer types have smaller ranking than
-their signed counterparts and floating points types have higher ranking
-than the integer types. So the internal C type conversions done in the
-example above are equivalent to this piece of C:
+internal type conversion will be used. The output type will be set to the
+higher-ranking type of the two inputs. Unsigned integer types have smaller
+ranking than their signed counterparts and floating point types have higher
+ranking than the integer types. So the internal C type conversions done in
+the example above are equivalent to this piece of C:
 
 @example
 size_t i;
@@ -7580,63 +7598,59 @@ for(i=0;i<100;++i) out[i]=a[i]+b[i];
 Relying on the default C type conversion significantly speeds up the
 processing and also requires less RAM (when using very large
 images). However this great advantage comes at the cost of preparing for
-all the combinations of types while building/compiling Gnuastro, see the
-list of @option{--enable-bin-op-XXXX} options in @ref{Gnuastro configure
-options}. With the full list of types, compilation can take up to an hour
-or more. When a type isn't enabled for binary operators, the input data
-will be internally converted to the smallest larger type that was
-enabled. This can slow down your processing and consume more RAM, so if you
-often deal with data of a specific types, it is much better to make the
-one-time investment at compilation time and reap the benefits each time you
-run Gnuastro.
+all the combinations of types while building/compiling Gnuastro. With the
+full list of CFITSIO types, compilation can take roughly half an
+hour. However, some types are not too common, therfore Gnuastro comes with
+a set of configure time options letting you enable certain types for native
+compilation. You can see the full list of @option{--enable-bin-op-XXXX}
+options in @ref{Gnuastro configure options}.
+
+When a type isn't enabled for native binary operations, the input data will
+be internally converted to the smallest, larger type that was enabled. This
+can slow down your processing (which is faster for smaller/integer types)
+and consume more RAM (to copy the new type), so if you often deal with data
+of a specific types, it is much better to make the one-time investment at
+compilation time and reap the benefits each time you run
+Gnuastro/Arithmetic. Note all arithmetic operations are done by
+@code{gal_data_arithmetic} function in @ref{Gnuastro library}, so the
+choice of native binary operator types will affect any program (within
+Gnuastro or outside of it) that uses this function (including Arithmetic).
 
 Some operators can only work on integer types (of any length, for example
 bitwise operators) while others only work on floating point types,
 (currently only the @code{pow} operator). In such cases, if the operand
 type(s) are different an error will be printed and internal conversion
 won't occur. Arithmetic also comes with internal type conversion operators
-which you can use to convert the data into the appropriate format, see
+which you can use to convert the data into the appropriate type, see
 @ref{Arithmetic operators}.
-
-If the output is an image, and the @option{--output} option is not given,
-automatic output will use the name of the first FITS image encountered to
-generate an output file name, see @ref{Automatic output}. Also, output WCS
-information will be taken from the first input image encountered. If the
-output is a single number, that number will be printed in the standard
-output. See @ref{Reverse polish notation} for the notation used to mix
-operands and operators on the command-line. To ignore certain pixels (see
-@ref{Blank pixels}), you can specify a mask image, see @ref{Mask image}. In
-that case, when reading the first FITS image, all the masked pixels will be
-set to a blank value depending on the type of the image.
 
 @cindex Options
 The hyphen (@command{-}) can be used both to specify options (see
 @ref{Options}) and also to specify a negative number which might be
-necessary in your arithmetic. In order to enable you to do this,
-Arithmetic will first parse all the input strings and if the first
-character after a hyphen is a digit, then that hyphen is temporarily
-replaced by the vertical tab character which is not commonly used. The
-arguments are then parsed and these strings will not be specified as
-an option. Then the given arguments are parsed and any vertical tabs
-are replaced back with a hyphen so they can be read as negative
-numbers. So as long as the names of the files you want to work on do
-not start with a vertical tab followed by a digit, there is no
-problem. An important consequence of this implementation is that you
-should not write negative fractions like this: @command{-.3}, instead
-write them as @command{-0.3}.
+necessary in your arithmetic. In order to enable you to do this, Arithmetic
+will first parse all the input strings and if the first character after a
+hyphen is a digit, then that hyphen is temporarily replaced by the vertical
+tab character which is not commonly used. The arguments are then parsed and
+these strings will not be specified as an option. Then the given arguments
+are parsed and any vertical tabs are replaced back with a hyphen so they
+can be read as negative numbers. Therefore, as long as the names of the
+files you want to work on, don't start with a vertical tab followed by a
+digit, there is no problem. An important consequence of this implementation
+is that you should not write negative fractions like this: @command{-.3},
+instead write them as @command{-0.3}.
 
 @cindex AWK
 @cindex GNU AWK
-Without any images, Arithmetic will act like a simple calculator and
-print the resulting output number on the standard output like the
-first example above. If you really want such calculator operations on
-the command-line, AWK (GNU AWK is the most common implementation) is
-much faster, easier and much more powerful. For example, the numerical
-one-line example above can be done with the following command. In
-general AWK is a fantastic tool and GNU AWK has a wonderful manual
-(@url{https://www.gnu.org/software/gawk/manual/}). So if you confront
-situations like this a lot or have to work with large text
-tables/catalogs, be sure to checkout AWK and simplify your life.
+Without any images, Arithmetic will act like a simple calculator and print
+the resulting output number on the standard output like the first example
+above. If you really want such calculator operations on the command-line,
+AWK (GNU AWK is the most common implementation) is much faster, easier and
+much more powerful. For example, the numerical one-line example above can
+be done with the following command. In general AWK is a fantastic tool and
+GNU AWK has a wonderful manual
+(@url{https://www.gnu.org/software/gawk/manual/}). So if you often confront
+situations like this, or have to work with large text tables/catalogs, be
+sure to checkout AWK and simplify your life.
 
 @example
 $ echo "" | awk '@{print (10.32-3.84)^2.7@}'
