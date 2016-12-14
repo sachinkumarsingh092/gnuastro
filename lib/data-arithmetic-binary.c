@@ -441,7 +441,7 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
                        l->size>1 ? l->ndim  : r->ndim,
                        l->size>1 ? l->dsize : r->dsize,
                        l->size>1 ? l->wcs   : r->wcs,
-                       0, minmapsize );
+                       0, minmapsize, NULL, NULL, NULL );
 
 
   /* Start setting the operator and operands. */
@@ -473,14 +473,14 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
      they are different from the original pointers, they were allocated. */
   if(flags & GAL_DATA_ARITH_FREE)
     {
-      if     (o==l)       gal_data_free(r);
-      else if(o==r)       gal_data_free(l);
-      else              { gal_data_free(l); gal_data_free(r); }
+      if     (o==l)       gal_data_free(r, 0);
+      else if(o==r)       gal_data_free(l, 0);
+      else              { gal_data_free(l, 0); gal_data_free(r, 0); }
     }
   else
     {
-      if(l!=lo)           gal_data_free(l);
-      if(r!=ro)           gal_data_free(r);
+      if(l!=lo)           gal_data_free(l, 0);
+      if(r!=ro)           gal_data_free(r, 0);
     }
 
   /* The type of the output dataset (`o->type') was chosen from `l' and `r'
@@ -492,7 +492,7 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
   if( o->type != otype )
     {
       tmp_o=gal_data_copy_to_new_type(o, otype);
-      gal_data_free(o);
+      gal_data_free(o, 0);
       o=tmp_o;
     }
 

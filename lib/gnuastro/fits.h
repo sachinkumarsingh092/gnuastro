@@ -85,22 +85,6 @@ struct gal_fits_key_ll
 
 
 
-struct gal_fits_key
-{
-  int            status;        /* CFITSIO status.        */
-  char         *keyname;        /* Name of keyword.       */
-  int              type;        /* Type of keyword value. */
-  char  str[FLEN_VALUE];        /* String value.          */
-  unsigned char       u;        /* Byte value.            */
-  short               s;        /* Short integer value.   */
-  long                l;        /* Long integer value.    */
-  LONGLONG            L;        /* Long Long value.       */
-  float               f;        /* Float value.           */
-  double              d;        /* Double value.          */
-};
-
-
-
 /*************************************************************
  **************        Reporting errors:       ***************
  *************************************************************/
@@ -178,8 +162,12 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
 /**********            Header keywords             ************/
 /**************************************************************/
 void
-gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *out,
-                       size_t num);
+gal_fits_read_keywords_fptr(fitsfile *fptr, gal_data_t *keys, size_t num,
+                            int readcomment, int readunit);
+
+void
+gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keys,
+                       size_t num, int readcomment, int readunit);
 
 void
 gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,

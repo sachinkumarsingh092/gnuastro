@@ -74,7 +74,7 @@ data_arithmetic_change_type(gal_data_t *data, int operator,
 
   /* Delete the input structure if the user asked for it. */
   if(flags & GAL_DATA_ARITH_FREE)
-    gal_data_free(data);
+    gal_data_free(data, 0);
 
   /* Return */
   return out;
@@ -115,7 +115,8 @@ data_arithmetic_not(gal_data_t *data, unsigned char flags)
 
   /* Allocate the output array. */
   out=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, data->ndim, data->dsize,
-                     data->wcs, 0, data->minmapsize);
+                     data->wcs, 0, data->minmapsize, data->name, data->unit,
+                     data->comment);
   o=out->array;
 
 
@@ -147,7 +148,7 @@ data_arithmetic_not(gal_data_t *data, unsigned char flags)
 
   /* Delete the input structure if the user asked for it. */
   if(flags & GAL_DATA_ARITH_FREE)
-    gal_data_free(data);
+    gal_data_free(data, 0);
 
   /* Return */
   return out;
@@ -183,7 +184,8 @@ data_arithmetic_abs(unsigned char flags, gal_data_t *in)
     out=in;
   else
     out = gal_data_alloc(NULL, in->type, in->ndim, in->dsize,
-                         in->wcs, 0, in->minmapsize);
+                         in->wcs, 0, in->minmapsize, in->name, in->unit,
+                         in->comment);
 
   /* Put the absolute value depending on the type. Note that the unsigned
      types are already positive, so if the input is not to be freed (the
@@ -230,7 +232,7 @@ data_arithmetic_abs(unsigned char flags, gal_data_t *in)
 
   /* Clean up and return */
   if( (flags & GAL_DATA_ARITH_FREE) && out!=in)
-    gal_data_free(in);
+    gal_data_free(in, 0);
   return out;
 }
 
@@ -461,11 +463,13 @@ data_arithmetic_unary_function(int operator, unsigned char flags,
 
     /* Operators with only one value as output. */
     case GAL_DATA_OPERATOR_MINVAL:
-      o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1);
+      o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1,
+                         NULL, NULL, NULL);
       gal_data_type_max(o->type, o->array);
       break;
     case GAL_DATA_OPERATOR_MAXVAL:
-      o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1);
+      o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1,
+                         NULL, NULL, NULL);
       gal_data_type_min(o->type, o->array);
       break;
 
@@ -475,7 +479,7 @@ data_arithmetic_unary_function(int operator, unsigned char flags,
         o = in;
       else
         o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
-                           0, in->minmapsize);
+                           0, in->minmapsize, NULL, NULL, NULL);
     }
 
   /* Start setting the operator and operands. */
@@ -513,7 +517,7 @@ data_arithmetic_unary_function(int operator, unsigned char flags,
      the pointers: if they are different from the original pointers, they
      were allocated. */
   if( (flags & GAL_DATA_ARITH_FREE) && o!=in)
-    gal_data_free(in);
+    gal_data_free(in, 0);
 
   /* Return */
   return o;
@@ -658,7 +662,8 @@ data_arithmetic_binary_function_flt(int operator, unsigned char flags,
     o = gal_data_alloc(NULL, final_otype,
                        l->size>1 ? l->ndim  : r->ndim,
                        l->size>1 ? l->dsize : r->dsize,
-                       l->size>1 ? l->wcs : r->wcs, 0, minmapsize );
+                       l->size>1 ? l->wcs : r->wcs, 0, minmapsize,
+                       NULL, NULL, NULL);
 
 
   /* Start setting the operator and operands. */
@@ -681,9 +686,9 @@ data_arithmetic_binary_function_flt(int operator, unsigned char flags,
      were allocated. */
   if(flags & GAL_DATA_ARITH_FREE)
     {
-      if     (o==l)       gal_data_free(r);
-      else if(o==r)       gal_data_free(l);
-      else              { gal_data_free(l); gal_data_free(r); }
+      if     (o==l)       gal_data_free(r, 0);
+      else if(o==r)       gal_data_free(l, 0);
+      else              { gal_data_free(l, 0); gal_data_free(r, 0); }
     }
 
   /* Return */
@@ -833,8 +838,8 @@ data_arithmetic_where(unsigned char flags, gal_data_t *out,
   /* Clean up if necessary. */
   if(flags & GAL_DATA_ARITH_FREE)
     {
-      gal_data_free(cond);
-      gal_data_free(iftrue);
+      gal_data_free(cond, 0);
+      gal_data_free(iftrue, 0);
     }
 }
 
@@ -1099,7 +1104,7 @@ data_arithmetic_multioperand(int operator, unsigned char flags,
     out = list;                 /* The top element in the list. */
   else
     out = gal_data_alloc(NULL, list->type, list->ndim, list->dsize,
-                         list->wcs, 0, list->minmapsize);
+                         list->wcs, 0, list->minmapsize, NULL, NULL, NULL);
 
 
   /* hasblank is used to see if a blank value should be checked or not. */
@@ -1155,7 +1160,7 @@ data_arithmetic_multioperand(int operator, unsigned char flags,
       while(tmp!=NULL)
         {
           ttmp=tmp->next;
-          if(tmp!=out) gal_data_free(tmp);
+          if(tmp!=out) gal_data_free(tmp, 0);
           tmp=ttmp;
         }
     }

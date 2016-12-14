@@ -1,5 +1,5 @@
 /*********************************************************************
-txtarray -- Convert a text file table to a C array.
+data -- Structure and functions to represent/work with data
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -20,13 +20,25 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_TXTARRAY_H__
-#define __GAL_TXTARRAY_H__
+#ifndef __GAL_TXT_H__
+#define __GAL_TXT_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
-#include <float.h>
 
+#include <gnuastro/data.h>
+
+/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+   defined. In the build process, installation information (in particular
+   `GAL_CONFIG_ARITH_CHAR' and the rest of the types that we needed in the
+   arithmetic function) is kept in `config.h'. When building a user's
+   programs, this information is kept in `gnuastro/config.h'. Note that all
+   `.c' files must start with the inclusion of `config.h' and that
+   `gnuastro/config.h' is only created at installation time (not present
+   during the building of Gnuastro).*/
+#ifndef IN_GNUASTRO_BUILD
+#include <gnuastro/config.h>
+#endif
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -47,33 +59,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Simple macros: */
-#define GAL_TXTARRAY_LOG "txtarray.log"
+gal_data_t *
+gal_txt_read_cols(char *filename, size_t *cols);
 
-
-
-
-
-/* Read a text table file into a double C array. Some tables might
-   have non-number elements, if so, they are put into
-   replacements. Replacements is an array of strings (pointers to
-   characters) similar to argv, since we need to allocate it inside
-   this function you have to give its pointer, hence three
-   dereferences. */
-void
-gal_txtarray_txt_to_array(char *filename, double **array,
-                          size_t *s0, size_t *s1);
-
-void
-gal_txtarray_printf_format(int numcols, char **fmt, int *int_cols,
-                           int *accu_cols, int *space, int *prec, char forg);
-
-void
-gal_txtarray_array_to_txt(double *array, size_t s0, size_t s1, char *comments,
-                          int *int_cols, int *accu_cols, int *space, int *prec,
-                          char forg, const char *filename);
 
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_TXTARRAY_H__ */
+#endif           /* __GAL_TXT_H__ */

@@ -98,7 +98,7 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
 
   /* Allocate space for the output type */
   out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
-                     0, in->minmapsize);
+                     0, in->minmapsize, in->name, in->unit, in->comment);
 
   /* Fill in the output array: */
   switch(newtype)

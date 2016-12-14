@@ -361,15 +361,106 @@ gal_data_mmap(gal_data_t *data)
 
 
 
+/* Initialize the data structure.
+
+   Some notes:
+
+   - The `status' value is the only element that cannot be set by this
+     function, it is initialized to zero.
+
+   - If no `array' is given, a blank array of the given size will be
+     allocated. If it is given the array pointer will be directly put here,
+     so do not free it independently any more. If you want a separate copy
+     of a dataset, you should use `gal_data_copy', not this function.
+
+   - Space for the `name', `unit', and `comment' strings within the data
+     structure are allocated here. So you can safely use literal strings,
+     or statically allocated ones, or simply the strings from other data
+     structures (and not have to worry about which one to free later).
+*/
+void
+gal_data_initialize(gal_data_t *data, void *array, int type,
+                    size_t ndim, long *dsize, struct wcsprm *wcs,
+                    int clear, size_t minmapsize, char *name,
+                    char *unit, char *comment)
+{
+  size_t i;
+  gal_data_t in;
+
+  /* Do the simple copying  cases. */
+  data->status=0;
+  data->next=NULL;
+  data->ndim=ndim;
+  data->type=type;
+  data->minmapsize=minmapsize;
+  gal_checkset_allocate_copy(unit, &data->unit);
+  gal_checkset_allocate_copy(name, &data->name);
+  gal_checkset_allocate_copy(comment, &data->comment);
+
+
+  /* Copy the WCS structure. Note that the `in' data structure was just
+     defined to keep this pointer to call `gal_data_copy_wcs'. */
+  in.wcs=wcs;
+  gal_data_copy_wcs(&in, data);
+
+
+  /* Allocate space for the dsize array: */
+  errno=0;
+  data->dsize=malloc(ndim*sizeof *data->dsize);
+  if(data->dsize==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for data->dsize in "
+          "`gal_data_alloc'", ndim*sizeof *data->dsize);
+
+
+  /* Fill in the `dsize' array and in the meantime set `size': */
+  data->size=1;
+  for(i=0;i<ndim;++i)
+    {
+      /* Do a small sanity check. */
+      if(dsize[i]==0)
+        error(EXIT_FAILURE, 0, "the size of a dimension cannot be zero. "
+              "dsize[%zu] in `gal_data_alloc' has a value of 0", i);
+
+      /* Write this dimension's size, also correct the total number of
+         elements. */
+      data->size *= ( data->dsize[i] = dsize[i] );
+    }
+
+
+  /* Allocate space for the array, clear it if necessary: */
+  if(array)
+    data->array=array;
+  else
+    {
+      if( gal_data_sizeof(type)*data->size  > minmapsize )
+        gal_data_mmap(data);
+      else
+        {
+          /* Allocate the space for the array. */
+          if(clear)
+            data->array = gal_data_calloc_array(data->type, data->size);
+          else
+            data->array = gal_data_malloc_array(data->type, data->size);
+
+          /* Set the values. */
+          data->mmapname=NULL;
+        }
+    }
+}
+
+
+
+
+
 /* Allocate a data structure based on the given parameters. If you want to
    force the array into the hdd/ssd (mmap it), then set minmapsize=-1
    (largest possible size_t value), in this way, no file will be larger. */
 gal_data_t *
 gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
-               struct wcsprm *wcs, int clear, size_t minmapsize)
+               struct wcsprm *wcs, int clear, size_t minmapsize,
+               char *title, char *unit, char *comment)
 {
-  size_t i;
-  gal_data_t in, *out;
+  gal_data_t *out;
 
 
   /* Allocate the space for the actual structure. */
@@ -380,61 +471,9 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
           sizeof *out);
 
 
-  /* Set the basic information we know so far. */
-  out->next=NULL;
-  out->ndim=ndim;
-  out->type=type;
-  out->minmapsize=minmapsize;
-
-
-  /* Copy the WCS structure. Note that the `in' data structure was just
-     defined to keep this pointer to call `gal_data_copy_wcs'. */
-  in.wcs=wcs;
-  gal_data_copy_wcs(&in, out);
-
-
-  /* Allocate space for the dsize array: */
-  errno=0;
-  out->dsize=malloc(ndim*sizeof *out->dsize);
-  if(out==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for dsize in gal_data_alloc",
-          ndim*sizeof *out->dsize);
-
-
-  /* Fill in the `dsize' array and in the meantime set `size': */
-  out->size=1;
-  for(i=0;i<ndim;++i)
-    {
-      /* Do a small sanity check. */
-      if(dsize[i]==0)
-        error(EXIT_FAILURE, 0, "the size of a dimension cannot be zero. "
-              "dsize[%zu] in `gal_data_alloc' has a value of 0", i);
-
-      /* Write this dimension's size, also correct the total number of
-         elements. */
-      out->size *= ( out->dsize[i] = dsize[i] );
-    }
-
-
-  /* Allocate space for the array, clear it if necessary: */
-  if(array)
-    out->array=array;
-  else
-    {
-      if( gal_data_sizeof(type)*out->size  > minmapsize )
-        gal_data_mmap(out);
-      else
-        {
-          /* Allocate the space for the array. */
-          if(clear)
-            out->array = gal_data_calloc_array(out->type, out->size);
-          else
-            out->array = gal_data_malloc_array(out->type, out->size);
-
-          /* Set the values. */
-          out->mmapname=NULL;
-        }
-    }
+  /* Initialize the allocated array. */
+  gal_data_initialize(out, array, type, ndim, dsize, wcs, clear, minmapsize,
+                      title, unit, comment);
 
 
   /* Return the final structure. */
@@ -445,32 +484,54 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
 
 
 
+/* Free the allocated contents of a data structure and possibly also the
+   data structure its self. When `only_contents' is zero, the actual data
+   structure will also be freed, see bellow.
+
+   The reason for the `only_contents' argument is that the data structure
+   might be allocated as an array (statically like `gal_data_t da[20]', or
+   dynamically like `gal_data_t *da; da=malloc(20*sizeof *da);'). In both
+   cases, a loop will be necessary to delete the allocated contents of each
+   element of the data structure array, but not the structure its
+   self. After that loop, if the array of data structures was statically
+   allocated, you don't have to do anything. If it was dynamically
+   allocated, we just have to run `free(da)'.*/
 void
-gal_data_free(gal_data_t *data)
+gal_data_free(gal_data_t *data, int only_contents)
 {
-  /* If there is a WCS structure, then free it. */
-  if(data->wcs)
-    wcsfree(data->wcs);
+  char **strarray=data->array;
+  char *str=strarray[0], *strf=str+data->size;
 
-  /* Free all the allocated space and finally the data structure itself. */
+  /* Free all the possible allocations. */
   free(data->dsize);
+  if(data->name) free(data->name);
+  if(data->unit) free(data->unit);
+  if(data->wcs) wcsfree(data->wcs);
+  if(data->comment) free(data->comment);
 
+  /* If the data type is string, then each element in the array is actually
+     a pointer to the array of characters, so free them before freeing the
+     actual array. */
+  if(data->type==GAL_DATA_TYPE_STRING)
+    do if(str) free(str); while(++str<strf);
+
+  /* Free the array. Note that if the array is mmap'd, then we need to
+     delete the file that kept it. */
   if(data->mmapname)
     {
       /* Delete the file keeping the array. */
       remove(data->mmapname);
 
-      /* If there is nothing else in the .gnuastro directory, then delete
-         the .gnuastro directory too. */
-
-      /* Free the file name space, and set it to NULL. */
+      /* Free the file name space. */
       free(data->mmapname);
-      data->mmapname=NULL;
     }
   else
     free(data->array);
 
-  free(data);
+
+  /* Finally, free the actual data structure. */
+  if(only_contents==0)
+    free(data);
 }
 
 
@@ -1158,7 +1219,8 @@ gal_data_flag_blank(gal_data_t *data)
 
   /* Allocate the output array. */
   out=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, data->ndim, data->dsize,
-                     data->wcs, 0, data->minmapsize);
+                     data->wcs, 0, data->minmapsize, data->name, data->unit,
+                     data->comment);
   o=out->array;
 
 
@@ -1402,7 +1464,7 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
     {
       *of=gal_data_copy_to_new_type(f, type);
       if(freeinputs)
-        gal_data_free(f);
+        gal_data_free(f, 0);
     }
   else
     *of=f;
@@ -1412,7 +1474,7 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
     {
       *os=gal_data_copy_to_new_type(s, type);
       if(freeinputs)
-        gal_data_free(s);
+        gal_data_free(s, 0);
     }
   else
     *os=s;
@@ -1530,7 +1592,8 @@ gal_data_string_to_number(char *string)
 
   /* Return the pointer to the data structure. */
   numarr=gal_data_alloc_number(type, ptr);
-  return gal_data_alloc(numarr, type, 1, dsize, NULL, 0, -1);
+  return gal_data_alloc(numarr, type, 1, dsize, NULL, 0, -1,
+                        NULL, NULL, NULL);
 }
 
 
@@ -1855,7 +1918,7 @@ data_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
         {
           out=gal_data_copy_to_new_type(in, ntype);
           if(flags & GAL_DATA_ARITH_FREE)
-            { gal_data_free(in); in=NULL; }
+            { gal_data_free(in, 0); in=NULL; }
         }
       else
         {
@@ -1927,7 +1990,7 @@ gal_data_arithmetic(int operator, unsigned char flags, ...)
     case GAL_DATA_OPERATOR_ISBLANK:
       d1 = va_arg(va, gal_data_t *);
       out = gal_data_flag_blank(d1);
-      if(flags & GAL_DATA_ARITH_FREE) gal_data_free(d1);
+      if(flags & GAL_DATA_ARITH_FREE) gal_data_free(d1, 0);
       break;
 
     case GAL_DATA_OPERATOR_WHERE:

@@ -601,13 +601,17 @@ gal_checkset_malloc_cat(char *inname, char *toappend)
 void
 gal_checkset_allocate_copy(char *arg, char **copy)
 {
-  /* Allocate the necessary space: */
-  errno=0;
-  *copy=malloc(strlen(arg)+1);
-  if(*copy==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes to copy %s",
-          strlen(arg)+1, arg);
-  strcpy(*copy, arg);
+  if(arg)
+    {
+      errno=0;
+      *copy=malloc(strlen(arg)+1);
+      if(*copy==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes to copy %s",
+              strlen(arg)+1, arg);
+      strcpy(*copy, arg);
+    }
+  else
+    *copy=NULL;
 }
 
 

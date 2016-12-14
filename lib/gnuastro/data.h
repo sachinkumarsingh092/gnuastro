@@ -208,16 +208,27 @@ enum gal_data_operators
       type and this will make it easier to call CFITSIO functions.*/
 typedef struct gal_data_t
 {
-  void             *array;  /* Array keeping data elements.               */
-  int                type;  /* Type of data (from `gal_data_alltypes').   */
-  size_t             ndim;  /* Number of dimensions in the array.         */
-  long             *dsize;  /* Size of array along each dimension.        */
-  size_t             size;  /* Total number of data-elements.             */
-  char          *mmapname;  /* File name of the mmap.                     */
-  size_t       minmapsize;  /* Minimum number of bytes to mmap the array. */
-  int                nwcs;  /* for WCSLIB: no. coord. representations.    */
-  struct wcsprm      *wcs;  /* WCS information for this dataset.          */
-  struct gal_data_t *next;  /* To use it as a linked list if necessary.   */
+  /* Basic information on array of data. */
+  void             *array;  /* Array keeping data elements.                */
+  int                type;  /* Type of data (from `gal_data_alltypes').    */
+  size_t             ndim;  /* Number of dimensions in the array.          */
+  long             *dsize;  /* Size of array along each dimension.         */
+  size_t             size;  /* Total number of data-elements.              */
+  char          *mmapname;  /* File name of the mmap.                      */
+  size_t       minmapsize;  /* Minimum number of bytes to mmap the array.  */
+
+  /* WCS information. */
+  int                nwcs;  /* for WCSLIB: no. coord. representations.     */
+  struct wcsprm      *wcs;  /* WCS information for this dataset.           */
+
+  /* Content descriptions. */
+  int              status;  /* Any context-specific status value.          */
+  char              *name;  /* e.g., EXTNAME, or column, or keyword.       */
+  char              *unit;  /* Units of the data.                          */
+  char           *comment;  /* A more detailed description of the data.    */
+
+  /* As linked list. */
+  struct gal_data_t *next;  /* To use it as a linked list if necessary.    */
 } gal_data_t;
 
 
@@ -245,13 +256,19 @@ gal_data_calloc_array(int type, size_t size);
 void *
 gal_data_alloc_number(int type, void *number);
 
+void
+gal_data_initialize(gal_data_t *data, void *array, int type,
+                    size_t ndim, long *dsize, struct wcsprm *wcs,
+                    int clear, size_t minmapsize, char *name,
+                    char *unit, char *comment);
+
 gal_data_t *
 gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
-               struct wcsprm *wcs, int clear, size_t minmapsize);
+               struct wcsprm *wcs, int clear, size_t minmapsize,
+               char *title, char *unit, char *comment);
 
 void
-gal_data_free(gal_data_t *data);
-
+gal_data_free(gal_data_t *data, int only_contents);
 
 
 

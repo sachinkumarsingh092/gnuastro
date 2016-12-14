@@ -623,27 +623,134 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
 /**************************************************************/
 /**********            Header keywords             ************/
 /**************************************************************/
-/* Read keywords from a FITS file. The gal_fits_key pointer is an array of
-   gal_fits_key structures, which keep the basic information for each
-   keyword that is to be read and also stores the value in the appropriate
-   type.
+
+/* Each keyword name, value, comment, type is kept within a Gnuastro data
+   structure. The input should be an array of such data structures,
+   either statically allocated like:
+
+        gal_data_t keys[2];
+
+   or dynamically allocated like:
+
+        gal_data_t *keys;
+        keys=malloc(2*sizeof *keys);
+
+   Before calling this function, you just have to set the `title' and
+   `type' values of the data structure. The given title value will be
+   directly passed to CFITSIO to read the desired keyword.
+
+   CFITSIO will start searching for the keywords from the last place in the
+   header that it searched for a keyword. So it is much more efficient if
+   the order that you ask for keywords is based on the order they are
+   stored in the header.
 
    ABOUT THE STRING VALUES:
 
-   The space for a string value is statically allocated within the
+   The space for a string value is dynamically allocated within the
    `gal_fits_key' structure (to be `FLEN_VALUE' characters, `FLEN_VALUE' is
-   defined by CFITSIO). So if the value is necessary where `gal_fits_key'
-   is no longer available, then you have to allocate space dynamically and
-   copy the string there. */
+   defined by CFITSIO and is the largest possible number of characters).
+
+   This function will not abort if CFITSIO is unable to read the keyword
+   due to any reason. You can check the successful reading of the keyword
+   from the `status' value in each keyword's data structure. If its zero,
+   then the keyword was found and read as expected. Otherwise, this a
+   CFITSIO status, so you use its error reporting tools or
+   `gal_fits_io_error' for reporting the reason. If you have an alternative
+   to the keyword, or its not mandatory, and the keyword doesn't exist,
+   then the status value will be KEY_NO_EXIST (from CFITSIO).
+ */
 void
-gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
-                       size_t num)
+gal_fits_read_keywords_fptr(fitsfile *fptr, gal_data_t *keys, size_t num,
+                            int readcomment, int readunit)
 {
+  size_t i;
+  void *valueptr;
+  char **strarray;
+
+  /* Get the desired keywords. */
+  for(i=0;i<num;++i)
+    {
+      /* Initialize the status: */
+      keys[i].status=0;
+
+      /* Allocate space for the desired type. */
+      keys[i].array=strarray=gal_data_malloc_array(keys[i].type, 1);
+
+      /* When the type is a string, `keys[i].array' will be keeping
+         pointers to a separately allocated piece of memory. So we have to
+         allocate that space here. If its not a string, then the
+         allocated space above is enough to keep the value.*/
+      switch(keys[i].type)
+        {
+        case GAL_DATA_TYPE_STRING:
+          errno=0;
+          valueptr=strarray[0]=malloc(FLEN_VALUE * sizeof *strarray[0]);
+          if(strarray[0]==NULL)
+            error(EXIT_FAILURE, errno, "%zu bytes for strarray[0] in "
+                  "`gal_fits_read_keywords_fprt'",
+                  FLEN_VALUE * sizeof *strarray[0]);
+          break;
+
+        default:
+          valueptr=keys[i].array;
+        }
+
+      /* Allocate space for the keyword comment if necessary.*/
+      if(readcomment)
+        {
+          errno=0;
+          keys[i].comment=malloc(FLEN_COMMENT * sizeof *keys[i].comment);
+          if(keys[i].comment==NULL)
+            error(EXIT_FAILURE, errno, "%zu bytes for keys[i].comment in "
+                  "`gal_fits_read_keywords_fprt'",
+                  FLEN_COMMENT * sizeof *keys[i].comment);
+        }
+      else
+        keys[i].comment=NULL;
+
+      /* Allocate space for the keyword unit if necessary. Note that since
+         there is no precise CFITSIO length for units, we will use the
+         `FLEN_COMMENT' length for units too (theoretically, the unit might
+         take the full remaining area in the keyword). Also note that the
+         unit is only optional, so it needs a separate CFITSIO function
+         call which is done here.*/
+      if(readunit)
+        {
+          errno=0;
+          keys[i].unit=malloc(FLEN_COMMENT * sizeof *keys[i].unit);
+          if(keys[i].unit==NULL)
+            error(EXIT_FAILURE, errno, "%zu bytes for keys[i].unit in "
+                  "`gal_fits_read_keywords_fprt'",
+                  FLEN_COMMENT * sizeof *keys[i].unit);
+          fits_read_key_unit(fptr, keys[i].name, keys[i].unit,
+                             &keys[i].status);
+        }
+      else
+        keys[i].unit=NULL;
+
+      /* Initialize the valueptr to NULL, then Read the keyword and place
+         its value in the poitner. */
+      valueptr=NULL;
+      fits_read_key(fptr, gal_fits_type_to_datatype(keys[i].type),
+                    keys[i].name, valueptr, keys[i].comment,
+                    &keys[i].status);
+    }
+}
+
+
+
+
+
+/* Same as `gal_fits_read_keywords_fptr', but accepts the filename and HDU
+   as input instead of an already opened CFITSIO `fitsfile' pointer. */
+void
+gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keys,
+                       size_t num, int readcomment, int readunit)
+{
+  size_t len;
   int status=0;
   char *ffname;
-  size_t i, len;
   fitsfile *fptr;
-  void *valueptr=NULL;
 
   /* Add hdu to filename: */
   errno=0;
@@ -657,61 +764,8 @@ gal_fits_read_keywords(char *filename, char *hdu, struct gal_fits_key *keys,
   if( fits_open_file(&fptr, ffname, READONLY, &status) )
     gal_fits_io_error(status, "reading this FITS file");
 
-  /* Get the desired keywords. */
-  for(i=0;i<num;++i)
-    {
-      /* Initialize the status: */
-      keys[i].status=0;
-
-      /* Set the value-pointer based on the required type. */
-      switch(keys[i].type)
-        {
-        case GAL_DATA_TYPE_UCHAR:
-          valueptr=&keys[i].u;
-          break;
-        case GAL_DATA_TYPE_STRING:
-          valueptr=keys[i].str;
-          break;
-        case GAL_DATA_TYPE_SHORT:
-          valueptr=&keys[i].s;
-          break;
-        case GAL_DATA_TYPE_LONG:
-          valueptr=&keys[i].l;
-          break;
-        case GAL_DATA_TYPE_LONGLONG:
-          valueptr=&keys[i].L;
-          break;
-        case GAL_DATA_TYPE_FLOAT:
-          valueptr=&keys[i].f;
-          break;
-        case GAL_DATA_TYPE_DOUBLE:
-          valueptr=&keys[i].d;
-          break;
-        default:
-          error(EXIT_FAILURE, 0, "the value of keys[%zu].datatype (=%d) "
-                "is not recognized", i, keys[i].type);
-        }
-
-      /* Read the keyword and place its value in the poitner. */
-      fits_read_key(fptr, gal_fits_type_to_datatype(keys[i].type),
-                    keys[i].keyname, valueptr, NULL, &keys[i].status);
-
-
-      /* In some cases, the caller might be fine with some kinds of errors,
-         so we will only report an error here is the situation is not
-         expected. For example, the caller might have alternatives for a
-         keyword if it doesn't exist, or the non-existence of a keyword
-         might itself be meaningful. So when the key doesn't exist, this
-         function will not abort, it will just keep the status.
-
-         The reason only non-existance is acceptable is this: if the
-         keyword does exist, but CFITSIO cannot read it due to some
-         technical difficulty, then the user probably wanted to give the
-         value. But is not aware of the technical problem.
-       */
-      if(keys[i].status!=0 && keys[i].status!=KEY_NO_EXIST)
-        gal_fits_io_error(keys[i].status, "reading the keyword");
-    }
+  /* Read the keywords. */
+  gal_fits_read_keywords_fptr(fptr, keys, num, readcomment, readunit);
 
   /* Close the FITS file. */
   fits_close_file(fptr, &status);
@@ -1207,7 +1261,8 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
   fitsfile *fptr;
   int status=0, type;
   long *fpixel, *dsize;
-  gal_data_t *img, *mask;
+  char **str, *tmp, *name, *unit;
+  gal_data_t *img, *mask, keys[2];
 
 
   /* Check HDU for realistic conditions: */
@@ -1232,13 +1287,33 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
   errno=0;
   fpixel=malloc(ndim*sizeof *fpixel);
   if(fpixel==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for fpixel in gal_fits_read_img_hdu",
-          ndim*sizeof *fpixel);
+    error(EXIT_FAILURE, errno, "%zu bytes for fpixel in "
+          "`gal_fits_read_img_hdu'", ndim*sizeof *fpixel);
   for(i=0;i<ndim;++i) fpixel[i]=1;
 
 
+  /* Read the possibly existing useful keywords. Note that the values are
+     in allocated strings in the keys[i] data structures. We don't want to
+     allocated them again, so we will just copy the pointers within the
+     `img' data structure and set the pointer in the keys[i] structure to
+     NULL. */
+  keys[0].name = "EXTNAME";
+  keys[1].name = "BUNIT";
+  keys[0].type=keys[1].type=GAL_DATA_TYPE_STRING;
+  gal_fits_read_keywords_fptr(fptr, keys, 2, 0, 0);
+  for(i=0;i<2;++i)
+    {
+      if(keys[0].status==0)
+        { str=keys[i].array; tmp=str[0]; str[0]=NULL; }
+      else tmp=NULL;
+      if(i==0) name=tmp; else unit=tmp;
+      gal_data_free(&keys[i], 1);
+    }
+
+
   /* Allocate the space for the array and for the blank values. */
-  img=gal_data_alloc(NULL, type, (long)ndim, dsize, NULL, 0, minmapsize);
+  img=gal_data_alloc(NULL, type, (long)ndim, dsize, NULL, 0, minmapsize,
+                     name, unit, NULL);
   blank=gal_data_alloc_blank(type);
   free(dsize);
 
@@ -1267,9 +1342,10 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
       gal_data_apply_mask(img, mask);
 
       /* Free the mask space. */
-      gal_data_free(mask);
+      gal_data_free(mask, 0);
     }
 
+  /* Return the filled data structure */
   return img;
 }
 
@@ -1297,7 +1373,7 @@ gal_fits_read_to_type(char *inputname, char *inhdu, char *maskname,
   if(in->type!=type)
     {
       converted=gal_data_copy_to_new_type(in, type);
-      gal_data_free(in);
+      gal_data_free(in, 0);
       in=converted;
     }
 

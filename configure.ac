@@ -12,7 +12,7 @@
 # Original author:
 #     Mohammad Akhlaghi <akhlaghi@gnu.org>
 # Contributing author(s):
-# Copyright (C) 2015, Free Software Foundation, Inc.
+# Copyright (C) 2015 - 2016, Free Software Foundation, Inc.
 #
 # Gnuastro is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -274,10 +274,11 @@ AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
 
 
 
-# Choose the types for arithmetic operations. The initial list of values
-# given here specify the default list of types. If they have a value of 1,
-# they will be used unless the user configures with
-# `--disable-bin-op-TYPENAME', or `--enable-bin-op-TYPENAME=no'.
+# The native types for binary arithmetic operations, see the manual for a
+# detailed discussion. The initial list of values given here specify the
+# default list of types. If they have a value of 1, they will be
+# compiled. unless the user configures with `--disable-bin-op-TYPENAME', or
+# `--enable-bin-op-TYPENAME=no'.
 binop_uchar=1
 binop_char=0
 binop_ushort=0

@@ -349,7 +349,7 @@ reversepolish(struct imgarithparams *p)
   if(p->up.typeset && p->outtype!=p->operands->data->type)
     {
       d1=gal_data_copy_to_new_type(p->operands->data, p->outtype);
-      gal_data_free(p->operands->data);
+      gal_data_free(p->operands->data, 0);
     }
   else
     d1=p->operands->data;
@@ -364,7 +364,7 @@ reversepolish(struct imgarithparams *p)
          printed as an integer.  */
       d2=gal_data_copy_to_new_type(d1, GAL_DATA_TYPE_DOUBLE);
       printf("%g\n", *(double *)d2->array);
-      gal_data_free(d2);
+      gal_data_free(d2, 0);
     }
   else
     {
@@ -377,7 +377,7 @@ reversepolish(struct imgarithparams *p)
 
   /* Clean up, note that above, we copied the pointer to `refdata->wcs'
      into `d1', so it is freed when freeing d1. */
-  gal_data_free(d1);
+  gal_data_free(d1, 0);
   free(p->refdata.dsize);
 
   /* Clean up. Note that the tokens were taken from the command-line
