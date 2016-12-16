@@ -63,12 +63,11 @@ struct tableparams
   struct gal_commonparams  cp;  /* Common parameters.                   */
 
   /* Input */
-  struct gal_linkedlist_stll *columns; /* List of given columns. */
+  struct gal_linkedlist_stll *columns; /* List of given columns.        */
 
   /* Output: */
-  size_t                nrows;  /* Number of rows in table.             */
-  size_t               nocols;  /* Number of output columns.            */
-  int                 outtype;  /* Type of output table.                */
+  int            outtabletype;  /* Type of output table (FITS, txt).    */
+  gal_data_t           *table;  /* Linked list of output table columns. */
 
   /* Operating modes */
   int             information;  /* ==1, only print FITS information.    */

@@ -54,6 +54,13 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Macros: */
+
+#define GAL_TABLE_DEF_INT_PRECISION 0
+#define GAL_TABLE_DEF_FLT_PRECISION 8
+
+
+
 /* Types of table storage for input or output. */
 enum gal_table_types
 {
@@ -80,6 +87,24 @@ enum gal_table_where_to_search
 
 
 
+/* Particular display formats for different types: Integers or floating
+   point numbers can be printed in various display formats. The values here
+   are stored in `gal_data_t' when necessary to help in printing of the
+   data.*/
+enum gal_table_diplay_formats
+{
+  GAL_TABLE_DISPLAY_FMT_DECIMAL,        /* Integers: decimal.          */
+  GAL_TABLE_DISPLAY_FMT_OCTAL,          /* Integers: octal.            */
+  GAL_TABLE_DISPLAY_FMT_HEX,            /* Integers: hexadecimal.      */
+  GAL_TABLE_DISPLAY_FMT_FLOAT,          /* Floats: with decimal point. */
+  GAL_TABLE_DISPLAY_FMT_EXP,            /* Floats: as exponential.     */
+  GAL_TABLE_DISPLAY_FMT_GENERAL,        /* Floats: general (%g in C).  */
+};
+
+
+
+
+
 /* Functions */
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols, int *tabletype);
@@ -90,7 +115,7 @@ gal_table_searchin_from_str(char *searchin_str);
 gal_data_t *
 gal_table_read_cols(char *filename, char *hdu,
                     struct gal_linkedlist_stll *cols, int searchin,
-                    int ignorecase);
+                    int ignorecase, int minmapsize);
 
 
 __END_C_DECLS    /* From C++ preparations */

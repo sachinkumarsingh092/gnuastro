@@ -266,9 +266,9 @@ sanitycheck(struct tableparams *p)
   if(gal_fits_name_is_fits(up->filename))
     {
       if( !strcmp(up->fitstabletype, "ascii") )
-        p->outtype=GAL_TABLE_TYPE_AFITS;
+        p->outtabletype=GAL_TABLE_TYPE_AFITS;
       else if( !strcmp(up->fitstabletype, "binary") )
-        p->outtype=GAL_TABLE_TYPE_BFITS;
+        p->outtabletype=GAL_TABLE_TYPE_BFITS;
       else
         error(EXIT_FAILURE, 0, "the value to the `--fitstabletype' "
               "option on the command line or `fitstabletype' variable in "
@@ -276,7 +276,7 @@ sanitycheck(struct tableparams *p)
               "`binary'. You have given `%s'", up->fitstabletype);
     }
   else
-    p->outtype=GAL_TABLE_TYPE_TXT;
+    p->outtabletype=GAL_TABLE_TYPE_TXT;
 
   /* Set the searchin integer value. */
   p->searchin=gal_table_searchin_from_str(p->up.searchin);
@@ -370,12 +370,13 @@ print_information_exit(struct tableparams *p)
 void
 preparearrays(struct tableparams *p)
 {
-  /* Pull out the columns that we are looking for. */
+  /* Reverse the list of column search criteria that we are looking for
+     (since this is a last-in-first-out linked list, the order that
+     elements were added to the list is the reverse of the order that they
+     will be popped). */
   gal_linkedlist_reverse_stll(&p->columns);
-  gal_table_read_cols(p->up.filename, p->cp.hdu, p->columns,
-                      p->searchin, p->ignorecase);
-
-
+  p->table=gal_table_read_cols(p->up.filename, p->cp.hdu, p->columns,
+                               p->searchin, p->ignorecase, p->cp.minmapsize);
 }
 
 

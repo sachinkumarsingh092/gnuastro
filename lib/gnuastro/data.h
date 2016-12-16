@@ -200,9 +200,9 @@ enum gal_data_operators
       data structures to follow the same number and decide if they should
       be mmap'd or allocated.
 
-      - `minmapsize' ==0:  array is definitely mmap'd.
+      - `minmapsize' ==  0:  array is definitely mmap'd.
 
-      - `minmapsize' ==-1: array is definitely in RAM.
+      - `minmapsize' == -1: array is definitely in RAM.
 
     - The `dsize' array is in the `long' type because CFITSIO uses the long
       type and this will make it easier to call CFITSIO functions.*/
@@ -226,6 +226,11 @@ typedef struct gal_data_t
   char              *name;  /* e.g., EXTNAME, or column, or keyword.       */
   char              *unit;  /* Units of the data.                          */
   char           *comment;  /* A more detailed description of the data.    */
+
+  /* For printing */
+  int            disp_fmt;  /* See `gal_table_diplay_formats'.             */
+  int          disp_width;  /* Width of space to print in ASCII.           */
+  int      disp_precision;  /* Precision to print in ASCII.                */
 
   /* As linked list. */
   struct gal_data_t *next;  /* To use it as a linked list if necessary.    */
@@ -265,7 +270,7 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
 gal_data_t *
 gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
-               char *title, char *unit, char *comment);
+               char *name, char *unit, char *comment);
 
 void
 gal_data_free(gal_data_t *data, int only_contents);

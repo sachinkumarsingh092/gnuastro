@@ -1305,7 +1305,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
   free(blank);
 
 
-  /* Close the FITS file, and return the data pointer */
+  /* Close the input FITS file. */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
 
@@ -1640,17 +1640,105 @@ remove_trailing_space(char *str)
 
 
 
+/* The general format of the TDISPn keywords in FITS is like this: `Tw.p',
+   where `T' specifies the general format, `w' is the width to be given to
+   this column and `p' is the precision. For integer types, percision is
+   actually the minimum number of integers, for floats, it is the number of
+   decimal digits beyond the decimal point.
+
+ */
+static void
+set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
+                   char *keyname)
+{
+  int isanint;
+  char *tailptr;
+
+  /* First, set the general display format */
+  switch(tdisp[0])
+    {
+    case 'I':
+      isanint=1;
+      data->disp_fmt=GAL_TABLE_DISPLAY_FMT_DECIMAL;
+      break;
+
+    case 'O':
+      isanint=1;
+      data->disp_fmt=GAL_TABLE_DISPLAY_FMT_OCTAL;
+      break;
+
+    case 'Z':
+      isanint=1;
+      data->disp_fmt=GAL_TABLE_DISPLAY_FMT_HEX;
+      break;
+
+    case 'F':
+      isanint=0;
+      data->disp_fmt=GAL_TABLE_DISPLAY_FMT_FLOAT;
+      break;
+
+    case 'E':
+    case 'D':
+      isanint=0;
+      data->disp_fmt=GAL_TABLE_DISPLAY_FMT_EXP;
+      break;
+
+    case 'G':
+      isanint=0;
+      data->disp_fmt=GAL_TABLE_DISPLAY_FMT_GENERAL;
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s (hdu: %s): Format character `%c' in the "
+            "value (%s) of the keywork %s not recognized", filename, hdu,
+            tdisp[0], tdisp, keyname);
+    }
+
+  /* Parse the rest of the string to see if a width and precision are given
+     or not. */
+  data->disp_width=strtol(&tdisp[1], &tailptr, 0);
+  switch(*tailptr)
+    {
+    case '.':      /* Width is set, go onto finding the precision. */
+      data->disp_precision = strtol(&tailptr[1], &tailptr, 0);
+      if(*tailptr!='\0')
+        error(EXIT_FAILURE, 0, "%s (hdu: %s): The value `%s' of the "
+              "`%s' keyword could not recognized (it doesn't finish after "
+              "the precision)", filename, hdu, tdisp, keyname);
+      break;
+
+    case '\0':     /* No precision given, use a default value.     */
+      data->disp_precision = ( isanint
+                               ? GAL_TABLE_DEF_FLT_PRECISION
+                               : GAL_TABLE_DEF_FLT_PRECISION );
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "%s (hdu: %s): The value `%s' of the "
+            "`%s' keyword could not recognized (it doesn't have a `.', or "
+            "finish, after the width)", filename, hdu, tdisp,
+            keyname);
+    }
+
+
+}
+
+
+
+
+
 /* See the descriptions of `gal_table_info'. */
 gal_data_t *
 gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                     int *tabletype)
 {
+  long repeat;
   int tfields;        /* The maximum number of fields in FITS is 999 */
-  int status=0;
   size_t index;
   fitsfile *fptr;
   size_t i, numrows;
   gal_data_t *cols=NULL;
+  int status=0, datatype;
   char *tailptr, keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
 
 
@@ -1668,6 +1756,11 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   if(cols==NULL)
     error(EXIT_FAILURE, errno, "%zu bytes for cols in `gal_fits_table_info'",
           tfields*sizeof *cols);
+
+
+  /* Save the number of rows as the data structure size and also length
+     along the first (and only) dimension. */
+  for(i=0;i<*numcols;++i) cols[i].size=numrows;
 
 
   /* Read all the keywords one by one and if they match, then put them in
@@ -1689,20 +1782,25 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
          value[0] is a single quote.*/
       if(strncmp(keyname, "TFORM", 5)==0)
         {
-          /* Small sanity check. */
-          if(isdigit(value[1] && value[1]!='1'))
-             error(EXIT_FAILURE, 0, "The repeat value of %s is "
-                   "%c, currently Table can only use columns with a repeat "
-                   "of 1.", keyname, value[1]);
+          /* Remove the ending trailing space and quotation sign. */
+          remove_trailing_space(value);
+          if(*tabletype==GAL_TABLE_TYPE_AFITS)
+            fits_ascii_tform(&value[1], &datatype, NULL, NULL, &status);
+          else
+            fits_binary_tform(&value[1], &datatype, &repeat, NULL, &status);
 
-          /* If they don't start with a `1', the values to TFORM are only a
-             single character. so start the pointer to copy at 1 and put
-             the string terminator at 3. */
-          if(value[1]=='1') value[1]=value[2];
-          value[2]='\0';
+          /* Small sanity check. */
+          if(repeat>1)
+             error(EXIT_FAILURE, 0, "The repeat value of %s is %ld, "
+                   "currently we can only use columns with a repeat "
+                   "of 1. Please get in touch with us at %s to add this "
+                   "feature", keyname, repeat, PACKAGE_BUGREPORT);
+
+          /* See which column this information was for and add it. In the
+             meantime, also do a sanity check. */
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)     /* Counting from zero was corrected above. */
-            cols[index].type=gal_fits_tform_to_type(value[1]);
+            cols[index].type=gal_fits_datatype_to_type(datatype);
         }
 
       /* COLUMN NAME. All strings in CFITSIO start and finish with single
@@ -1737,11 +1835,74 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           if(index<tfields)
             gal_checkset_allocate_copy(&value[1], &cols[index].comment);
         }
-    }
 
+      /* COLUMN DISPLAY FORMAT */
+      else if(strncmp(keyname, "TDISP", 5)==0)
+        {
+          /* similar to tname, see above.*/
+          remove_trailing_space(value);
+          index = strtoul(&keyname[5], &tailptr, 10) - 1;
+          if(index<tfields)
+            set_display_format(&value[1], &cols[index], filename, hdu,
+                               keyname);
+        }
+    }
 
   /* Close the FITS file and report an error if we had any. */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
   return cols;
+}
+
+
+
+
+
+/* Read the column indexs given in the `indexll' linked list from a FITS
+   table into a linked list of data structures, note that this is a
+   low-level function, so the output data linked list is the inverse of the
+   input indexs linked list. You can use */
+gal_data_t *
+gal_fits_read_cols(char *filename, char *hdu, gal_data_t *colinfo,
+                   struct gal_linkedlist_sll *indexll, int minmapsize)
+{
+  size_t ind;
+  void *blank;
+  long dsize[1];
+  fitsfile *fptr;
+  int status=0, anynul;
+  gal_data_t *out=NULL, *col;
+
+  /* Open the FITS file */
+  fptr=gal_fits_read_hdu(filename, hdu, 1);
+
+  /* Pop each index and read/store the array. */
+  while(indexll!=NULL)
+    {
+      /* Pop the index. */
+      gal_linkedlist_pop_from_sll(&indexll, &ind);
+
+      /* Allocate the necessary data structure (including the array) for
+         this column. */
+      dsize[0]=colinfo[ind].size;
+      col=gal_data_alloc(NULL, colinfo[ind].type, 1, dsize, NULL, 0,
+                         minmapsize, colinfo[ind].name, colinfo[ind].unit,
+                         colinfo[ind].comment);
+
+      /* Allocate a blank value for the give type and read/store the
+         column using CFITSIO. Afterwards, free the blank value. */
+      blank=gal_data_alloc_blank(col->type);
+      fits_read_col(fptr, gal_fits_type_to_datatype(col->type), ind+1, 1, 1,
+                    col->size, blank, col->array, &anynul, &status);
+      free(blank);
+
+      /* Add the column to the final list of data structures. */
+      col->next=out;
+      out=col;
+    }
+
+  /* Close the FITS file */
+  fits_close_file(fptr, &status);
+  gal_fits_io_error(status, NULL);
+  return out;
 }

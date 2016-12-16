@@ -38,13 +38,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 /* Store the information of each column in a table (either as a text file
    or as a FITS table) into an array of data structures with `numcols'
-   structures (one data structure for each column). Note that the arrays in
-   the data structures will be empty.
+   structures (one data structure for each column). The number of rows is
+   stored as the `size' element of each data structure. The type of the
+   table (e.g., ascii text file, or FITS binary or ASCII table) will be put
+   in `tabletype' (macros defined in `gnuastro/table.h'.
 
-   The array of data structures will be returned, the number of columns
-   will be put in the `numcols' argument and the type of the table (e.g.,
-   ascii text file, or FITS binary or ASCII table) will be put in
-   `tabletype' (macros defined in `gnuastro/table.h'. */
+   Note that other than the character strings (column name, units and
+   comments), nothing in the data structure(s) will be allocated by this
+   function for the actual data (e.g., the `array' or `dsize' elements). */
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols, int *tabletype)
 {
@@ -298,10 +299,10 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
 gal_data_t *
 gal_table_read_cols(char *filename, char *hdu,
                     struct gal_linkedlist_stll *cols, int searchin,
-                    int ignorecase)
+                    int ignorecase, int minmapsize)
 {
   int tabletype;
-  size_t numcols;
+  size_t i, numcols;
   gal_data_t *allcols, *out=NULL;
   struct gal_linkedlist_sll *indexll;
 
@@ -312,16 +313,42 @@ gal_table_read_cols(char *filename, char *hdu,
   indexll=make_list_of_indexs(cols, allcols, numcols, searchin,
                               ignorecase, filename, hdu);
 
-  gal_linkedlist_print_sll(indexll);
-
-  /* Reverse the list of indexs so the data structure linked list will be
-     in the same order as the input list of columns.
-  while(indexll!=NULL)
+  /* Depending on the table type, read the columns into the output
+     structure. Note that the functions here pop each index, read/store the
+     desired column and pop the next, so after these functions, the output
+     linked list will have the opposite order of its input `indexll'
+     list. So before calling any of them, we will first reverse the
+     `indexll' list, so the output data structure list will have the same
+     order as the input list of desired columns. Also note that after these
+     functions, the `indexll' will be all freed (each popped element is
+     actually freed).*/
+  gal_linkedlist_reverse_sll(&indexll);
+  switch(tabletype)
     {
+    case GAL_TABLE_TYPE_TXT:
+      error(EXIT_FAILURE, 0, "reading columns not yet implemented for "
+            "plain text files");
+      break;
 
+    case GAL_TABLE_TYPE_AFITS:
+    case GAL_TABLE_TYPE_BFITS:
+      out=gal_fits_read_cols(filename, hdu, allcols, indexll, minmapsize);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "table type code %d not recognized for "
+            "`tabletype' in `gal_table_read_cols'", tabletype);
     }
-  */
-  printf("\n\n-----\ntmp stop.\n\n");
-  exit(0);
+
+  /* Clean up. */
+  for(i=0;i<numcols;++i)
+    {
+      allcols[i].wcs=NULL;
+      allcols[i].dsize=NULL;
+      gal_data_free(&allcols[i], 1);
+    }
+  free(allcols);
+
+  /* Return the final linked list. */
   return out;
 }

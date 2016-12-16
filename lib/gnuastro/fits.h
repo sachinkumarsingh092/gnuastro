@@ -257,6 +257,10 @@ gal_data_t *
 gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                     int *tabletype);
 
+gal_data_t *
+gal_fits_read_cols(char *filename, char *hdu, gal_data_t *colinfo,
+                   struct gal_linkedlist_sll *indexll, int minmapsize);
+
 
 
 

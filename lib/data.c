@@ -458,7 +458,7 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
 gal_data_t *
 gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
-               char *title, char *unit, char *comment)
+               char *name, char *unit, char *comment)
 {
   gal_data_t *out;
 
@@ -473,7 +473,7 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
 
   /* Initialize the allocated array. */
   gal_data_initialize(out, array, type, ndim, dsize, wcs, clear, minmapsize,
-                      title, unit, comment);
+                      name, unit, comment);
 
 
   /* Return the final structure. */
@@ -499,21 +499,22 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
 void
 gal_data_free(gal_data_t *data, int only_contents)
 {
-  char **strarray=data->array;
-  char *str=strarray[0], *strf=str+data->size;
-
   /* Free all the possible allocations. */
-  free(data->dsize);
-  if(data->name) free(data->name);
-  if(data->unit) free(data->unit);
-  if(data->wcs) wcsfree(data->wcs);
+  if(data->dsize)   free(data->dsize);
+  if(data->name)    free(data->name);
+  if(data->unit)    free(data->unit);
+  if(data->wcs)     wcsfree(data->wcs);
   if(data->comment) free(data->comment);
 
   /* If the data type is string, then each element in the array is actually
      a pointer to the array of characters, so free them before freeing the
      actual array. */
-  if(data->type==GAL_DATA_TYPE_STRING)
-    do if(str) free(str); while(++str<strf);
+  if(data->type==GAL_DATA_TYPE_STRING && data->array)
+    {
+      char **strarray=data->array;
+      char *str=strarray[0], *strf=str+data->size;
+      do if(str) free(str); while(++str<strf);
+    }
 
   /* Free the array. */
   if(data->mmapname)
