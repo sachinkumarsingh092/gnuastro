@@ -6234,12 +6234,12 @@ within a FITS file.
 @cindex AWK
 @cindex GNU AWK
 However, this comes at a cost: binary tables are not easily readable by
-human eyes. There is no standard on how the zero and ones should be
-interpretted. The Unix-like operating systems have flourished because of a
-simple fact: communication between the various tools is based on human
-readable characters@footnote{In ``The art of Unix programming'', Eric
-Raymond makes this suggestion to programmers: ``When you feel the urge to
-design a complex binary file format, or a complex binary application
+human eyes. There is no fixed/unified standard on how the zero and ones
+should be interpretted. The Unix-like operating systems have flourished
+because of a simple fact: communication between the various tools is based
+on human readable characters@footnote{In ``The art of Unix programming'',
+Eric Raymond makes this suggestion to programmers: ``When you feel the urge
+to design a complex binary file format, or a complex binary application
 protocol, it is generally wise to lie down until the feeling
 passes.''. This is a great book and strongly recommended, give it a look if
 you want to truly enjoy your work/life in this environment.}. So while the
@@ -6282,7 +6282,7 @@ One line examples:
 $ asttable bintab.fits --information
 
 ## Only print those columns which have a name starting with "MAG_"
-$ asttable bintab.fits --columns=^MAG_
+$ asttable bintab.fits --columns=/^MAG_/
 
 ## Only print the 2nd column, and the third column multiplied by 5
 $ asttable bintab.fits | awk '@{print $2, 5*$3@}'
@@ -6325,25 +6325,52 @@ present), units (if present) and datatype will printed. Note that the FITS
 standard does not require a name or units for columns, only the datatype is
 mandatory.
 
+@cindex AWK
+@cindex GNU AWK
 @item -c
 @itemx --column
 (@option{=STR} or @option{=INT}) Specify the columns to output for this
-table. If an integer number is given, the column number will be used
-(counting from 1). Otherwise the value (a string) will be passed to an
-internal regular expression processor which will try to match all the
-columns in the table with the given regular expression. Currently only FITS
-tables might have column names (it is an optional feature in the FITS
-standard). There is currently no particular standard to name plain text
+table. If the value to this option is an integer number, the column number
+will be used (counting from 1, Table will abort with an error if negative
+values are given). When the value isn't a number, the value's string of
+characters will be used to match one of the pieces of information for the
+columns. See the @option{--searchin} option description for more on where
+the matching/searching will take place. The matching will be done following
+this convention (similar to AWK):
+
+@itemize
+@item
+If the value is enclosed in two slashes (for example @command{-c/MAG_/}, or
+@option{--column=/MAG_/}), then it is assumed to be a regular expression
+with the same convention as GNU AWK. GNU AWK has a
+@url{https://wwww.gnu.org/s/gawk/manual/html_node/Regexp.html,complete
+chapter} describing regular expressions, so we we will not continue
+discussing it here. Regular expressions are a very powerful tool in
+matching text and since FITS binary tables usually have a large number of
+columns, this feature can greatly simply the selection of the output
 columns.
 
-This option can be called any number of times with one run of Table. The
-order of the output columns will be determined by the input order. This
-option is also not mandatory. If not given, all the input table columns are
-output.
+@item
+Only columns that exactly match the given string (the case can be ignored
+with the @option{--ignorecase} option) in the given piece of column in
+formation will be selected.
+@end itemize
 
-Regular expressions are a very powerful tool in matching text and since
-FITS binary tables usually have a large number of columns, this feature can
-greatly simply the selection of the output columns.
+Note that in both cases, it is possible to select multiple columns with one
+call to this function. The order of the selected columns (with one call to
+this option) will be the same order as they appear in the table.
+
+To select several output columns, this option can also be called any number
+times in one call to Table. The order of the output columns will be the
+same call order on the command-line. This option is not mandatory, if no
+specific columns are requested, all the input table columns are
+output. When this option is called multiple times, it is possible to output
+one column more than once.
+
+@item -s
+@itemx --searchin
+Where to match/search for columns (if the value to @option{--column} wasn't
+a number).
 
 @item -I
 @itemx --ignorescase

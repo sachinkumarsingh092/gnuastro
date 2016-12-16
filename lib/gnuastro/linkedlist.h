@@ -158,6 +158,9 @@ void
 gal_linkedlist_pop_from_sll(struct gal_linkedlist_sll **list,
                             size_t *value);
 
+void
+gal_linkedlist_reverse_sll(struct gal_linkedlist_sll **list);
+
 size_t
 gal_linkedlist_num_in_sll(struct gal_linkedlist_sll *list);
 

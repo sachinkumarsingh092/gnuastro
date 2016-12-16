@@ -45,6 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcsfix.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/table.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -150,9 +151,8 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, long **dsize);
 /**********                  HDU                   ************/
 /**************************************************************/
 
-void
-gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
-                  fitsfile **outfptr);
+fitsfile *
+gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1);
 
 
 
@@ -252,6 +252,10 @@ gal_fits_table_size(fitsfile *fitsptr, size_t *nrows, size_t *ncols);
 
 int
 gal_fits_table_type(fitsfile *fptr);
+
+gal_data_t *
+gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
+                    int *tabletype);
 
 
 

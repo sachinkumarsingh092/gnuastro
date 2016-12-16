@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -260,7 +261,9 @@ gal_fits_type_to_bitpix(int type)
 /* The values to the TFORM header keyword are single letter capital
    letters, but that is useless in identifying the data type of the
    column. So this function will do the conversion based on the CFITSIO
-   manual.*/
+   manual.
+
+   Note that the characters are the same for ASCII or binary tables.*/
 int
 gal_fits_tform_to_type(char tform)
 {
@@ -530,34 +533,10 @@ gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, long **dsize)
 /**************************************************************/
 /**********                  HDU                   ************/
 /**************************************************************/
-static char *
-hdutypestring(int hdutype)
-{
-  switch(hdutype)
-    {
-    case IMAGE_HDU:
-      return "an Image";
-    case ASCII_TBL:
-      return "an ASCII table";
-    case BINARY_TBL:
-      return "a binary table";
-      break;
-    default:
-      error(EXIT_FAILURE, 0, "HDU code %d in CFITSIO not recognized",
-            hdutype);
-    }
-  return NULL;
-}
-
-
-
-
-
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
-void
-gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
-                  fitsfile **outfptr)
+fitsfile *
+gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1)
 {
   size_t len;
   char *ffname;
@@ -573,9 +552,8 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
   sprintf(ffname, "%s[%s#]", filename, hdu);
 
   /* Open the FITS file: */
-  if( fits_open_file(outfptr, ffname, READONLY, &status) )
+  if( fits_open_file(&fptr, ffname, READONLY, &status) )
     gal_fits_io_error(status, "reading this FITS file");
-  fptr=*outfptr;
 
   /* Check the type of the given HDU: */
   if (fits_get_hdu_type(fptr, &hdutype, &status) )
@@ -587,18 +565,19 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1,
   if(img0_tab1)
     {
       if(hdutype==IMAGE_HDU)
-        error(EXIT_FAILURE, 0, "%s: HDU %s is an image, not a table",
+        error(EXIT_FAILURE, 0, "%s (hdu: %s): is not a table",
               filename, hdu);
     }
   else
     {
       if(hdutype!=IMAGE_HDU)
-        error(EXIT_FAILURE, 0, "%s: HDU %s is %s, not an image",
-              filename, hdu, hdutypestring(hdutype));
+        error(EXIT_FAILURE, 0, "%s (hdu: %s): not an image",
+              filename, hdu);
     }
 
-  /* Clean up. */
+  /* Clean up and return. */
   free(ffname);
+  return fptr;
 }
 
 
@@ -1215,7 +1194,7 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
   fitsfile *fptr;
 
   /* Check HDU for realistic conditions: */
-  gal_fits_read_hdu(filename, hdu, 0, &fptr);
+  fptr=gal_fits_read_hdu(filename, hdu, 0);
 
   /* Read the WCS information: */
   gal_fits_read_wcs_from_pointer(fptr, nwcs, wcs, hstartwcs, hendwcs);
@@ -1266,7 +1245,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
 
 
   /* Check HDU for realistic conditions: */
-  gal_fits_read_hdu(filename, hdu, 0, &fptr);
+  fptr=gal_fits_read_hdu(filename, hdu, 0);
 
 
   /* Get the info and allocate the data structure. */
@@ -1616,9 +1595,9 @@ gal_fits_table_type(fitsfile *fptr)
   if(status==0)
     {
       if(!strcmp(value, "TABLE   "))
-        return ASCII_TBL;
+        return GAL_TABLE_TYPE_AFITS;
       else if(!strcmp(value, "BINTABLE"))
-        return BINARY_TBL;
+        return GAL_TABLE_TYPE_BFITS;
       else
         error(EXIT_FAILURE, 0, "The `XTENSION' keyword of this FITS file "
               "doesn't have a standard value (`%s')", value);
@@ -1627,9 +1606,7 @@ gal_fits_table_type(fitsfile *fptr)
     {
       if(status==KEY_NO_EXIST)
         error(EXIT_FAILURE, 0, "the `gal_fits_table_type' function was "
-              "called on a FITS extension which is not a table. As part "
-              "of a utility, this is bug, so please contact us at %s so "
-              "we can fix it.", PACKAGE_BUGREPORT);
+              "called on a FITS extension which is not a table.");
       else
         gal_fits_io_error(status, NULL);
     }
@@ -1638,4 +1615,133 @@ gal_fits_table_type(fitsfile *fptr)
         "for some reason, the control of `gal_fits_table_type' has reached "
         "the end of the function! This must not happen", PACKAGE_BUGREPORT);
   return -1;
+}
+
+
+
+
+static void
+remove_trailing_space(char *str)
+{
+  size_t i;
+
+  /* Start from the second last character (the last is a single quote) and
+     go down until you hit a non-space character. */
+  for(i=strlen(str)-2;i>0;--i)
+    if(str[i]!=' ')
+      break;
+
+  /* If the string is empty, it will stop at the first character that is a
+     single quote. So no need to check further. */
+  str[i+1]='\0';
+}
+
+
+
+
+
+/* See the descriptions of `gal_table_info'. */
+gal_data_t *
+gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
+                    int *tabletype)
+{
+  int tfields;        /* The maximum number of fields in FITS is 999 */
+  int status=0;
+  size_t index;
+  fitsfile *fptr;
+  size_t i, numrows;
+  gal_data_t *cols=NULL;
+  char *tailptr, keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
+
+
+  /* Open the FITS file and get the basic information. */
+  fptr=gal_fits_read_hdu(filename, hdu, 1);
+  *tabletype=gal_fits_table_type(fptr);
+  gal_fits_table_size(fptr, &numrows, numcols);
+
+
+  /* Read the total number of fields, then allocate space for the data
+     structure and store the information within it. */
+  fits_read_key(fptr, TINT, "TFIELDS", &tfields, NULL, &status);
+  errno=0;
+  cols=malloc(tfields*sizeof *cols);
+  if(cols==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for cols in `gal_fits_table_info'",
+          tfields*sizeof *cols);
+
+
+  /* Read all the keywords one by one and if they match, then put them in
+     the correct value. Note that we are starting from keyword 9 because
+     according to the FITS standard, the first 8 keys in a FITS table are
+     reserved. */
+  for(i=9; strcmp(keyname, "END"); ++i)
+    {
+      /* Read the next keyword. */
+      fits_read_keyn(fptr, i, keyname, value, NULL, &status);
+
+      /* COLUMN DATA TYPE. According the the FITS standard, the value of
+         TFORM is most generally in this format: `rTa'. `T' is actually a
+         code of the datatype. `r' is the `repeat' counter and `a' is
+         depreciated. Currently we can only read repeat==1 cases. When no
+         number exists before the defined capital letter, it defaults to 1,
+         but if a number exists (for example `5D'), then the repeat is 5
+         (there are actually five values in each column). Note that
+         value[0] is a single quote.*/
+      if(strncmp(keyname, "TFORM", 5)==0)
+        {
+          /* Small sanity check. */
+          if(isdigit(value[1] && value[1]!='1'))
+             error(EXIT_FAILURE, 0, "The repeat value of %s is "
+                   "%c, currently Table can only use columns with a repeat "
+                   "of 1.", keyname, value[1]);
+
+          /* If they don't start with a `1', the values to TFORM are only a
+             single character. so start the pointer to copy at 1 and put
+             the string terminator at 3. */
+          if(value[1]=='1') value[1]=value[2];
+          value[2]='\0';
+          index = strtoul(&keyname[5], &tailptr, 10) - 1;
+          if(index<tfields)     /* Counting from zero was corrected above. */
+            cols[index].type=gal_fits_tform_to_type(value[1]);
+        }
+
+      /* COLUMN NAME. All strings in CFITSIO start and finish with single
+         quotation marks, CFITSIO puts them in itsself, so if we don't
+         remove them here, we might have duplicates later, its easier to
+         just remove them to have a simple string that might be used else
+         where too (without the single quotes).*/
+      else if(strncmp(keyname, "TTYPE", 5)==0)
+        {
+          remove_trailing_space(value);
+          index = strtoul(&keyname[5], &tailptr, 10) - 1;
+          if(index<tfields)
+            gal_checkset_allocate_copy(&value[1], &cols[index].name);
+        }
+
+      /* COLUMN UNITS. */
+      else if(strncmp(keyname, "TUNIT", 5)==0)
+        {
+          /* similar to tname, see above.*/
+          remove_trailing_space(value);
+          index = strtoul(&keyname[5], &tailptr, 10) - 1;
+          if(index<tfields)
+            gal_checkset_allocate_copy(&value[1], &cols[index].unit);
+        }
+
+      /* COLUMN COMMENTS */
+      else if(strncmp(keyname, "TCOMM", 5)==0)
+        {
+          /* similar to tname, see above.*/
+          remove_trailing_space(value);
+          index = strtoul(&keyname[5], &tailptr, 10) - 1;
+          if(index<tfields)
+            gal_checkset_allocate_copy(&value[1], &cols[index].comment);
+        }
+    }
+
+
+  /* Close the FITS file and report an error if we had any. */
+  fits_close_file(fptr, &status);
+  gal_fits_io_error(status, NULL);
+  return cols;
 }

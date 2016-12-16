@@ -32,22 +32,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define SPACK_NAME      "Table"    /* Subpackage full name.       */
 #define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
 
-#define MAX_COL_FORMAT_LENGTH 20
-
-
-
-/* Structure to keep the information for each output column */
-struct outcolumn
-{
-  size_t inindex;               /* Row index (from 0) in input array.   */
-  int   datatype;               /* Type of data (from CFITSIO macros).  */
-  int     anynul;               /* If there is any blank characters.    */
-  void   *nulval;               /* The blank value for this column.     */
-  void     *data;               /* Array keeping the column data.       */
-  size_t   esize;               /* Size of each element in this column. */
-  char fmt[MAX_COL_FORMAT_LENGTH];  /* format to use in printf.         */
-};
-
 
 
 
@@ -55,46 +39,16 @@ struct outcolumn
 /* User interface structure. */
 struct uiparams
 {
-  int             information;  /* ==1, only print FITS information.    */
-  char              *fitsname;  /* Name of input FITS file.             */
-  char               *txtname;  /* Name of input text file.             */
-  int              ignorecase;  /* Ignore case matching column names.   */
-
-  /* Input table parameters. */
-  size_t                ncols;  /* Number of columns in table.          */
-  int               *datatype;  /* Type of data in column.              */
-  char                **ttstr;  /* TFORM (another format for type).     */
-  char                **tname;  /* Column name (one word).              */
-  char                **tunit;  /* Unit of values in column.            */
-  double            *txtarray;  /* Array keeping text file values.      */
-  int         infitstabletype;  /* Input table is ASCII or binary.      */
-
-  /* Print parameters: */
-  int                     feg;  /* format of floating points.           */
-  size_t            sintwidth;  /* Full width for short integers.       */
-  size_t            lintwidth;  /* Full width for short integers.       */
-  size_t           floatwidth;  /* Full width for all floats.           */
-  size_t          doublewidth;  /* Full width for all doubles.          */
-  size_t             strwidth;  /* Full width for all floats.           */
-  size_t       floatprecision;  /* Number of decimals for floats.       */
-  size_t      doubleprecision;  /* Number of decimals for doubles.      */
+  char              *filename;
+  char         *fitstabletype;
+  gal_data_t      *allcolinfo;
+  char              *searchin;
 
   /* If values are set: */
-  int                inputset;
   int          informationset;
   int           ignorecaseset;
-  int                  fegset;
-  int            sintwidthset;
-  int            lintwidthset;
-  int           floatwidthset;
-  int          doublewidthset;
-  int             strwidthset;
-  int       floatprecisionset;
-  int      doubleprecisionset;
   int        fitstabletypeset;
-
-
-  struct gal_linkedlist_stll *columns;
+  int             searchinset;
 };
 
 
@@ -108,17 +62,18 @@ struct tableparams
   struct uiparams          up;  /* User interface parameters.           */
   struct gal_commonparams  cp;  /* Common parameters.                   */
 
-  /* Input: */
-  fitsfile           *fitsptr;  /* FITS pointer (input or output).      */
+  /* Input */
+  struct gal_linkedlist_stll *columns; /* List of given columns. */
 
   /* Output: */
   size_t                nrows;  /* Number of rows in table.             */
   size_t               nocols;  /* Number of output columns.            */
-  struct outcolumn     *ocols;  /* Array of output column informatio.   */
-  int            outputtofits;  /* ==1: output is a FITS file.          */
-  int             outputtotxt;  /* ==1: output is a text file.          */
-  int          outputtostdout;  /* ==1: output is the standard output.  */
-  int           fitstabletype;  /* ASCII, or binary table CFITSIO macro.*/
+  int                 outtype;  /* Type of output table.                */
+
+  /* Operating modes */
+  int             information;  /* ==1, only print FITS information.    */
+  int              ignorecase;  /* Ignore case matching column names.   */
+  int                searchin;  /* Where to search in column info.      */
 
   /* Internal: */
   int                onlyview;

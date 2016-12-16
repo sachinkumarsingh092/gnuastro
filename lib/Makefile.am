@@ -43,8 +43,8 @@ libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c data.c  \
   data-arithmetic-binary.c data-arithmetic-onlyint.c                    \
   data-arithmetic-other.c data-copy.c fits.c git.c linkedlist.c mesh.c  \
-  mode.c polygon.c qsort.c spatialconvolve.c statistics.c threads.c     \
-  timing.c txt.c wcs.c
+  mode.c polygon.c qsort.c spatialconvolve.c statistics.c table.c       \
+  threads.c timing.c txt.c wcs.c
 
 
 
@@ -59,7 +59,8 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/array.h            \
   $(headersdir)/git.h $(headersdir)/linkedlist.h $(headersdir)/mesh.h   \
   $(headersdir)/polygon.h $(headersdir)/qsort.h                         \
   $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h            \
-  $(headersdir)/threads.h $(headersdir)/wcs.h $(headersdir)/txt.h
+  $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/wcs.h     \
+  $(headersdir)/txt.h
 
 
 

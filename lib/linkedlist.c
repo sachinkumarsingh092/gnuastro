@@ -448,6 +448,24 @@ gal_linkedlist_pop_from_sll(struct gal_linkedlist_sll **list, size_t *value)
 
 
 
+void
+gal_linkedlist_reverse_sll(struct gal_linkedlist_sll **list)
+{
+  size_t thisnum;
+  struct gal_linkedlist_sll *correctorder=NULL;
+
+  while(*list!=NULL)
+    {
+      gal_linkedlist_pop_from_sll(list, &thisnum);
+      gal_linkedlist_add_to_sll(&correctorder, thisnum);
+    }
+  *list=correctorder;
+}
+
+
+
+
+
 size_t
 gal_linkedlist_num_in_sll(struct gal_linkedlist_sll *list)
 {

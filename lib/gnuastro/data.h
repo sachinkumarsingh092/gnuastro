@@ -106,7 +106,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Macros to identify the type of data. The macros in the comment
    parenthesis is the equivalent macro in CFITSIO. */
-enum gal_data_alltypes
+enum gal_data_types
 {
   GAL_DATA_TYPE_BIT,       /* Bit              (TBIT).        */
   GAL_DATA_TYPE_UCHAR,     /* unsigned char    (TBYTE).       */

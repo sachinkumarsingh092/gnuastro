@@ -1,5 +1,5 @@
 /*********************************************************************
-txt -- functions to deal with plain text files.
+table -- functions for table input and output.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -20,14 +20,14 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_TXT_H__
-#define __GAL_TXT_H__
+#ifndef __GAL_TABLE_H__
+#define __GAL_TABLE_H__
 
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 
 #include <gnuastro/fits.h> /* Includes `gnuastro/data.h' and `fitsio.h' */
-
+#include <gnuastro/linkedlist.h>
 
 
 
@@ -54,12 +54,45 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Types of table storage for input or output. */
+enum gal_table_types
+{
+  GAL_TABLE_TYPE_TXT,                     /* Plain text table.  */
+  GAL_TABLE_TYPE_AFITS,                   /* FITS ASCII table.  */
+  GAL_TABLE_TYPE_BFITS,                   /* FITS binary table. */
+};
+
+
+
+
+
+/* When the desired column is not a number, should the string match or
+   regular expression search be in the name, units or comments of the
+   columns? */
+enum gal_table_where_to_search
+{
+  GAL_TABLE_SEARCH_NAME,                   /* Match/search in names.    */
+  GAL_TABLE_SEARCH_UNIT,                   /* Match/search in units.    */
+  GAL_TABLE_SEARCH_COMMENT,                /* Match/search in comments. */
+};
+
+
+
+
+
+/* Functions */
 gal_data_t *
-gal_txt_table_info(char *filename, size_t *numcols);
+gal_table_info(char *filename, char *hdu, size_t *numcols, int *tabletype);
 
+int
+gal_table_searchin_from_str(char *searchin_str);
 
+gal_data_t *
+gal_table_read_cols(char *filename, char *hdu,
+                    struct gal_linkedlist_stll *cols, int searchin,
+                    int ignorecase);
 
 
 __END_C_DECLS    /* From C++ preparations */
 
-#endif           /* __GAL_TXT_H__ */
+#endif           /* __GAL_TABLE_H__ */

@@ -74,10 +74,10 @@ const char doc[] =
 
 /* Available letters for short options:
 
-   a b d e f g j k l m n p r s u v w x y z
+   a b d e f g j k l m n p r u v w x y z
    A B C E F G H J L M O Q R T U W X Y Z
 
-   Number keys used: 1008
+   Number keys used (larger than 1000): 1000
 
    Options with keys (second structure element) larger than 500 do not
    have a short version.
@@ -94,7 +94,15 @@ static struct argp_option options[] =
       'c',
       "STR",
       0,
-      "Input column name, number or regular expression.",
+      "Column number (counting from 1) or search string.",
+      1
+    },
+    {
+      "searchin",
+      's',
+      "STR",
+      0,
+      "Search for columns in `name', `units', `comments'.",
       1
     },
     {
@@ -112,70 +120,6 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
-      2
-    },
-    {
-      "feg",
-      1001,
-      "STR",
-      0,
-      "`f': only decimals, `e': scientific, `g': either.",
-      2
-    },
-    {
-      "sintwidth",
-      1002,
-      "INT",
-      0,
-      "Shorter integer column(s) width (num charachers).",
-      2
-    },
-    {
-      "lintwidth",
-      1003,
-      "INT",
-      0,
-      "Longer integer column(s) width (num charachers).",
-      2
-    },
-    {
-      "floatwidth",
-      1004,
-      "INT",
-      0,
-      "`float' column(s) width (num charachers).",
-      2
-    },
-    {
-      "doublewidth",
-      1005,
-      "INT",
-      0,
-      "`double' column(s) width (num charachers).",
-      2
-    },
-    {
-      "strwidth",
-      1006,
-      "INT",
-      0,
-      "String column(s) width (num charachers).",
-      2
-    },
-    {
-      "floatprecision",
-      1007,
-      "INT",
-      0,
-      "`float' column(s) precision.",
-      2
-    },
-    {
-      "doubleprecision",
-      1008,
-      "INT",
-      0,
-      "`double' column(s) precision.",
       2
     },
     {
@@ -243,92 +187,40 @@ parse_opt(int key, char *arg, struct argp_state *state)
     /* Input: */
     case 'c':
       gal_checkset_allocate_copy(arg, &tstring);
-      gal_linkedlist_add_to_stll(&p->up.columns, tstring);
+      gal_linkedlist_add_to_stll(&p->columns, tstring);
+      break;
+
+    case 's':
+      gal_checkset_allocate_copy(arg, &p->up.searchin);
+      p->up.searchinset=1;
       break;
 
     case 'I':
-      p->up.ignorecase=1;
+      p->ignorecase=1;
       p->up.ignorecaseset=1;
       break;
 
 
     /* Output: */
-    case 1001:
-      checksetfge(arg, &p->up.feg, NULL, 0);
-      p->up.fegset=1;
-      break;
-
-    case 1002:
-      gal_checkset_sizet_el_zero(arg, &p->up.sintwidth, "sintwidth", key,
-                                 SPACK, NULL, 0);
-      p->up.sintwidthset=1;
-      break;
-
-    case 1003:
-      gal_checkset_sizet_el_zero(arg, &p->up.lintwidth, "lintwidth", key,
-                                 SPACK, NULL, 0);
-      p->up.lintwidthset=1;
-      break;
-
-    case 1004:
-      gal_checkset_sizet_el_zero(arg, &p->up.floatwidth, "floatwidth", key,
-                                 SPACK, NULL, 0);
-      p->up.floatwidthset=1;
-      break;
-
-    case 1005:
-      gal_checkset_sizet_el_zero(arg, &p->up.doublewidth, "doublewidth", key,
-                                 SPACK, NULL, 0);
-      p->up.doublewidthset=1;
-      break;
-
-    case 1006:
-      gal_checkset_sizet_el_zero(arg, &p->up.strwidth, "strwidth", key,
-                                 SPACK, NULL, 0);
-      p->up.strwidthset=1;
-      break;
-
-    case 1007:
-      gal_checkset_sizet_el_zero(arg, &p->up.floatprecision,
-                                 "floatprecision", key, SPACK, NULL, 0);
-      p->up.floatprecisionset=1;
-      break;
-
-    case 1008:
-      gal_checkset_sizet_el_zero(arg, &p->up.doubleprecision,
-                                 "doubleprecision", key, SPACK, NULL, 0);
-      p->up.doubleprecisionset=1;
-      break;
-
     case 't':
-      checksetfitstabletype(arg, &p->up.feg, NULL, 0);
+      gal_checkset_allocate_copy(arg, &p->up.fitstabletype);
       p->up.fitstabletypeset=1;
       break;
 
 
     /* Operating modes: */
     case 'i':
-      p->up.information=1;
+      p->information=1;
       p->up.informationset=1;
       break;
 
 
-    /* Read the non-option arguments: */
+    /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
-
-      /* Table gets only one input argument. */
-      if(p->up.inputset)
-        argp_error(state, "only one input file should be given");
-
-      /* This is the first (and must be only) argument. */
-      p->up.inputset=1;
-
-      /* See what type of input this is, and save the value. */
-      if( gal_fits_name_is_fits(arg) )
-        p->up.fitsname=arg;
+      if(p->up.filename)
+        argp_error(state, "only one argument (input file) should be given");
       else
-        p->up.txtname=arg;
-
+        p->up.filename=arg;
       break;
 
 

@@ -515,8 +515,7 @@ gal_data_free(gal_data_t *data, int only_contents)
   if(data->type==GAL_DATA_TYPE_STRING)
     do if(str) free(str); while(++str<strf);
 
-  /* Free the array. Note that if the array is mmap'd, then we need to
-     delete the file that kept it. */
+  /* Free the array. */
   if(data->mmapname)
     {
       /* Delete the file keeping the array. */
@@ -526,7 +525,7 @@ gal_data_free(gal_data_t *data, int only_contents)
       free(data->mmapname);
     }
   else
-    free(data->array);
+    if(data->array) free(data->array);
 
 
   /* Finally, free the actual data structure. */
