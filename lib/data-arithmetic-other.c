@@ -281,7 +281,7 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
             "after it so it is directly read into the proper precision "
             "floating point number (based on the number of non-zero "
             "decimals it has)", gal_data_operator_string(operator), numstr,
-            gal_data_type_string(in->type));
+            gal_data_type_string(in->type, 1));
     }
 }
 
@@ -786,7 +786,7 @@ data_arithmetic_where(unsigned char flags, gal_data_t *out,
     error(EXIT_FAILURE, 0, "the condition operand to "
           "`data_arithmetic_where' must be an `unsigned char' type, but "
           "the given condition operator has a `%s' type",
-          gal_data_type_string(cond->type));
+          gal_data_type_string(cond->type, 1));
 
   /* The dimension and sizes of the out and condition data sets must be the
      same. */

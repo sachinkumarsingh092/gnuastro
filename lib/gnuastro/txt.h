@@ -26,7 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Include other headers if necessary here. Note that other header files
    must be included before the C++ preparations below */
 
-#include <gnuastro/fits.h> /* Includes `gnuastro/data.h' and `fitsio.h' */
+#include <gnuastro/data.h>
 
 
 
@@ -53,9 +53,18 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Macros */
+#define GAL_TXT_MAX_FMT_LENGTH 20
 
+
+/* Functions */
 gal_data_t *
 gal_txt_table_info(char *filename, size_t *numcols);
+
+void
+gal_txt_write(gal_data_t *cols, char *comment, char *filename,
+              int dontdelete);
+
 
 
 

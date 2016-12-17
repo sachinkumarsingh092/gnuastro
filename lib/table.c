@@ -33,6 +33,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 
 
+
+
+
+
+
+
+
+
 /************************************************************************/
 /***************         Information about a table        ***************/
 /************************************************************************/
@@ -283,23 +291,21 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
    linked list of data structures. If the file is FITS, then `hdu' will
    also be used, otherwise, `hdu' is ignored. The information to search for
    columns should be specified by the `cols' linked list as string values
-   in each node of the list. The `tosearch' value comes from the
+   in each node of the list, the strings in each node can be a number, an
+   exact match to a column name, or a regular expression (in GNU AWK
+   format) enclosed in `/ /'. The `tosearch' value comes from the
    `gal_table_where_to_search' enumerator and has to be one of its given
    types. If `cols' is NULL, then this function will read the full table.
 
    The output is a linked list with the same order of the cols linked
-   list. If all the columns are to be read, the output will be the in the
-   order of the table, so the first column is the first popped data
-   structure and so on.
-
-   Recall that linked lists are last-in-first-out, so the last element you
-   add to the list is the first one that this function will pop. If you
-   want to reverse this order, you can call the
-   `gal_linkedlist_reverse_stll' function in `linkedlist.h'.*/
+   list. Note that one column node in the `cols' list might give multiple
+   columns, in this case, the order of output columns that correspond to
+   that one input, are in order of the table (which column was read first).
+   So the first requested column is the first popped data structure and so
+   on. */
 gal_data_t *
-gal_table_read_cols(char *filename, char *hdu,
-                    struct gal_linkedlist_stll *cols, int searchin,
-                    int ignorecase, int minmapsize)
+gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
+               int searchin, int ignorecase, int minmapsize)
 {
   int tabletype;
   size_t i, numcols;
@@ -332,7 +338,7 @@ gal_table_read_cols(char *filename, char *hdu,
 
     case GAL_TABLE_TYPE_AFITS:
     case GAL_TABLE_TYPE_BFITS:
-      out=gal_fits_read_cols(filename, hdu, allcols, indexll, minmapsize);
+      out=gal_fits_table_read(filename, hdu, allcols, indexll, minmapsize);
       break;
 
     default:
@@ -351,4 +357,49 @@ gal_table_read_cols(char *filename, char *hdu,
 
   /* Return the final linked list. */
   return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/***************              Write a table               ***************/
+/************************************************************************/
+void
+gal_table_write(gal_data_t *cols, char *comments, int tabletype,
+                char *filename, int dontdelete)
+{
+  /* If a filename was given, then the tabletype is relevant and must be
+     used. When the filename is empty, a text table must be printed on the
+     standard output (on the command-line). */
+  if(filename)
+    switch(tabletype)
+      {
+      case GAL_TABLE_TYPE_TXT:
+        gal_txt_write(cols, comments, filename, dontdelete);
+        break;
+
+      case GAL_TABLE_TYPE_AFITS:
+      case GAL_TABLE_TYPE_BFITS:
+        gal_fits_table_write(cols, comments, tabletype, filename, dontdelete);
+        break;
+      }
+  else
+    gal_txt_write(cols, comments, filename, dontdelete);
 }

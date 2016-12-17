@@ -35,6 +35,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <sys/mman.h>
 
 #include <gnuastro/data.h>
+#include <gnuastro/table.h>
 
 #include <checkset.h>
 #include <data-copy.h>
@@ -387,7 +388,9 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
   size_t i;
   gal_data_t in;
 
-  /* Do the simple copying  cases. */
+  /* Do the simple copying cases. For the display elements, set them all to
+     impossible (negative) values so if not explicitly set by later steps,
+     the default values are used if/when printing.*/
   data->status=0;
   data->next=NULL;
   data->ndim=ndim;
@@ -396,6 +399,7 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
   gal_checkset_allocate_copy(unit, &data->unit);
   gal_checkset_allocate_copy(name, &data->name);
   gal_checkset_allocate_copy(comment, &data->comment);
+  data->disp_fmt=data->disp_width=data->disp_precision=-1;
 
 
   /* Copy the WCS structure. Note that the `in' data structure was just
@@ -1361,57 +1365,57 @@ gal_data_flag_blank(gal_data_t *data)
  **************       Types and copying       ***************
  *************************************************************/
 char *
-gal_data_type_string(int type)
+gal_data_type_string(int type, int long_name)
 {
   switch(type)
     {
     case GAL_DATA_TYPE_BIT:
-      return "bit";
+      if(long_name) return "bit";             else return "b";
 
     case GAL_DATA_TYPE_UCHAR:
-      return "unsigned char";
+      if(long_name) return "unsigned char";   else return "uc";
 
       /* CFITSIO says "int for keywords, char for table columns". Here we
          are only assuming table columns. So in practice this also applies
          to TSBYTE.*/
     case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      return "char";
+      if(long_name) return "char";            else return "c";
 
     case GAL_DATA_TYPE_STRING:
-      return "string";
+      if(long_name) return "string";          else return "str";
 
     case GAL_DATA_TYPE_USHORT:
-      return "unsigned short";
+      if(long_name) return "unsigned short";  else return "us";
 
     case GAL_DATA_TYPE_SHORT:
-      return "short";
+      if(long_name) return "short";           else return "s";
 
     case GAL_DATA_TYPE_UINT:
-      return "unsigned int";
+      if(long_name) return "unsigned int";    else return "ui";
 
     case GAL_DATA_TYPE_INT:
-      return "int";
+      if(long_name) return "int";             else return "i";
 
     case GAL_DATA_TYPE_ULONG:
-      return "unsigned long";
+      if(long_name) return "unsigned long";   else return "ul";
 
     case GAL_DATA_TYPE_LONG:
-      return "long";
+      if(long_name) return "long";            else return "l";
 
     case GAL_DATA_TYPE_LONGLONG:
-      return "LONGLONG";
+      if(long_name) return "LONGLONG";        else return "L";
 
     case GAL_DATA_TYPE_FLOAT:
-      return "float";
+      if(long_name) return "float";           else return "f";
 
     case GAL_DATA_TYPE_DOUBLE:
-      return "double";
+      if(long_name) return "double";          else return "d";
 
     case GAL_DATA_TYPE_COMPLEX:
-      return "complex float";
+      if(long_name) return "complex float";   else return "cf";
 
     case GAL_DATA_TYPE_DCOMPLEX:
-      return "complex double";
+      if(long_name) return "complex double";  else return "cd";
 
     default:
       error(EXIT_FAILURE, 0, "type value of %d not recognized in "
@@ -1922,7 +1926,7 @@ data_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
         }
       else
         {
-          typestring=gal_data_type_string(in->type);
+          typestring=gal_data_type_string(in->type, 1);
           error(EXIT_FAILURE, 0, "The given %s type data given to "
                 "binary operators is not compiled for native operation "
                 "and no larger types are compiled either.\n\nThe "

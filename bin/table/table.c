@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 
 #include <gnuastro/fits.h>
+#include <gnuastro/table.h>
 
 #include "main.h"
 
@@ -43,5 +44,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 table(struct tableparams *p)
 {
-
+  gal_table_write(p->table, NULL, p->outtabletype, p->cp.output,
+                  p->cp.dontdelete);
 }

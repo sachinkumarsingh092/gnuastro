@@ -133,11 +133,11 @@ readconfig(char *filename, struct tableparams *p)
       else if(strcmp(name, "output")==0)
         gal_checkset_allocate_copy_set(value, &cp->output, &cp->outputset);
 
-      else if (strcmp(name, "fitstabletype")==0)
+      else if (strcmp(name, "outtabletype")==0)
         {
-          if(p->up.fitstabletypeset) continue;
-          gal_checkset_allocate_copy_set(value, &p->up.fitstabletype,
-                                         &p->up.fitstabletypeset);
+          if(p->up.outtabletypeset) continue;
+          gal_checkset_allocate_copy_set(value, &p->up.outtabletype,
+                                         &p->up.outtabletypeset);
         }
 
 
@@ -192,8 +192,8 @@ printvalues(FILE *fp, struct tableparams *p)
 
 
   fprintf(fp, "\n# Output:\n");
-  if(up->fitstabletypeset)
-    fprintf(fp, CONF_SHOWFMT"%s\n", "fitstabletype", p->up.fitstabletype);
+  if(up->outtabletypeset)
+    fprintf(fp, CONF_SHOWFMT"%s\n", "outtabletype", p->up.outtabletype);
 
 
   /* For the operating mode, first put the macro to print the common
@@ -224,8 +224,6 @@ checkifset(struct tableparams *p)
   if(cp->hduset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("hdu");
 
-  if(up->fitstabletypeset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("fitstabletype");
   if(up->searchinset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("searchin");
 
@@ -257,29 +255,78 @@ checkifset(struct tableparams *p)
 void
 sanitycheck(struct tableparams *p)
 {
+  char *suffix=NULL;
   struct uiparams *up=&p->up;
 
-  /* If we had a FITS filename, the output table type is automatically set
-     with the `--fitstabletype' option. However, when the file is a text
-     file, that option should be ignored and outtype should be set to
-     the text file macro.*/
-  if(gal_fits_name_is_fits(up->filename))
-    {
-      if( !strcmp(up->fitstabletype, "ascii") )
-        p->outtabletype=GAL_TABLE_TYPE_AFITS;
-      else if( !strcmp(up->fitstabletype, "binary") )
-        p->outtabletype=GAL_TABLE_TYPE_BFITS;
-      else
-        error(EXIT_FAILURE, 0, "the value to the `--fitstabletype' "
-              "option on the command line or `fitstabletype' variable in "
-              "any of the configuration files must be either `ascii', or "
-              "`binary'. You have given `%s'", up->fitstabletype);
-    }
-  else
-    p->outtabletype=GAL_TABLE_TYPE_TXT;
 
   /* Set the searchin integer value. */
   p->searchin=gal_table_searchin_from_str(p->up.searchin);
+
+
+  /* If the outtabletype option was given, then convert it to an easiy
+     usable integer. Note we cannot do this in the output filename check
+     below, since it is also necessary when there is an output file.*/
+  if(up->outtabletypeset)
+    {
+      if( !strcmp(up->outtabletype, "txt") )
+        p->outtabletype=GAL_TABLE_TYPE_TXT;
+      else if( !strcmp(up->outtabletype, "fits-ascii") )
+        p->outtabletype=GAL_TABLE_TYPE_AFITS;
+      else if( !strcmp(up->outtabletype, "fits-binary") )
+        p->outtabletype=GAL_TABLE_TYPE_BFITS;
+      else
+        error(EXIT_FAILURE, 0, "the value to the `--outtabletype' "
+              "option on the command line or `fitstabletype' variable in "
+              "any of the configuration files must be either `txt', "
+              "`fits-ascii' or `fits-binary'. You have given `%s'",
+              up->outtabletype);
+    }
+
+
+  /* Set the output name if it wasn't given. */
+  if(p->cp.output==NULL)
+    {
+      /* Only set the output filename automatically if the output type is
+         given. A `NULL' output filename will indicate that the table
+         should be printed in STDOUT.*/
+      if(up->outtabletypeset)
+        {
+          /* Set the filename based on the type of table desired. For the
+             time being, there is only txt and FITS table formats, but we
+             might add other formats in the future, so the structure below
+             is defined to account for those future types.
+
+             Note that `p->outtabletype' is set above internally, so we
+             don't need a `default' case here.*/
+          switch(p->outtabletype)
+            {
+            case GAL_TABLE_TYPE_TXT:
+              suffix="_table.txt";
+              break;
+
+            case GAL_TABLE_TYPE_AFITS:
+            case GAL_TABLE_TYPE_BFITS:
+              suffix="_table.fits";
+              break;
+            }
+
+          /* Set the output name */
+          if(suffix)
+            gal_checkset_automatic_output(p->up.filename, suffix,
+                                          p->cp.removedirinfo,
+                                          p->cp.dontdelete, &p->cp.output);
+        }
+    }
+  /* If the output name was set and is a FITS file, make sure that the type
+     of the table is not a `txt'. */
+  else
+    {
+      if( gal_fits_name_is_fits(p->cp.output)
+          && p->outtabletype==GAL_TABLE_TYPE_TXT)
+        error(EXIT_FAILURE, 0, "desired output table is a FITS file, but "
+              "`outtabletype' is not a FITS table type. Please set it to "
+              "`fits-ascii', or `fits-binary'");
+    }
 }
 
 
@@ -332,7 +379,7 @@ print_information_exit(struct tableparams *p)
       printf("%-8zu%-25s%-20s%-18s%s\n", i+1,
              name ? name : "N/A" ,
              unit ? unit : "N/A" ,
-             gal_data_type_string(allcols[i].type),
+             gal_data_type_string(allcols[i].type, 1),
              comment ? comment : "N/A");
       if(name)    free(name);
       if(unit)    free(unit);
@@ -375,8 +422,8 @@ preparearrays(struct tableparams *p)
      elements were added to the list is the reverse of the order that they
      will be popped). */
   gal_linkedlist_reverse_stll(&p->columns);
-  p->table=gal_table_read_cols(p->up.filename, p->cp.hdu, p->columns,
-                               p->searchin, p->ignorecase, p->cp.minmapsize);
+  p->table=gal_table_read(p->up.filename, p->cp.hdu, p->columns,
+                          p->searchin, p->ignorecase, p->cp.minmapsize);
 }
 
 

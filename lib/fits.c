@@ -1651,12 +1651,16 @@ static void
 set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
                    char *keyname)
 {
-  int isanint;
+  int isanint=0;
   char *tailptr;
 
   /* First, set the general display format */
   switch(tdisp[0])
     {
+    case 'A':
+      data->disp_fmt=GAL_TABLE_DISPLAY_FMT_STRING;
+      break;
+
     case 'I':
       isanint=1;
       data->disp_fmt=GAL_TABLE_DISPLAY_FMT_DECIMAL;
@@ -1673,18 +1677,15 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
       break;
 
     case 'F':
-      isanint=0;
       data->disp_fmt=GAL_TABLE_DISPLAY_FMT_FLOAT;
       break;
 
     case 'E':
     case 'D':
-      isanint=0;
       data->disp_fmt=GAL_TABLE_DISPLAY_FMT_EXP;
       break;
 
     case 'G':
-      isanint=0;
       data->disp_fmt=GAL_TABLE_DISPLAY_FMT_GENERAL;
       break;
 
@@ -1709,7 +1710,7 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
 
     case '\0':     /* No precision given, use a default value.     */
       data->disp_precision = ( isanint
-                               ? GAL_TABLE_DEF_FLT_PRECISION
+                               ? GAL_TABLE_DEF_INT_PRECISION
                                : GAL_TABLE_DEF_FLT_PRECISION );
       break;
 
@@ -1863,8 +1864,8 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
    low-level function, so the output data linked list is the inverse of the
    input indexs linked list. You can use */
 gal_data_t *
-gal_fits_read_cols(char *filename, char *hdu, gal_data_t *colinfo,
-                   struct gal_linkedlist_sll *indexll, int minmapsize)
+gal_fits_table_read(char *filename, char *hdu, gal_data_t *colinfo,
+                    struct gal_linkedlist_sll *indexll, int minmapsize)
 {
   size_t ind;
   void *blank;
@@ -1905,4 +1906,17 @@ gal_fits_read_cols(char *filename, char *hdu, gal_data_t *colinfo,
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
   return out;
+}
+
+
+
+
+
+/* Write the given columns (a linked list of `gal_data_t') into a FITS
+   table.*/
+void
+gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
+                     char *filename, int dontdelete)
+{
+
 }

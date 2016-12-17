@@ -55,9 +55,18 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Macros: */
+#define GAL_TABLE_DEF_STR_WIDTH       10
+#define GAL_TABLE_DEF_INT_WIDTH       6
+#define GAL_TABLE_DEF_LINT_WIDTH      10
+#define GAL_TABLE_DEF_FLT_WIDTH       10
+#define GAL_TABLE_DEF_DBL_WIDTH       15
 
-#define GAL_TABLE_DEF_INT_PRECISION 0
-#define GAL_TABLE_DEF_FLT_PRECISION 8
+#define GAL_TABLE_DEF_STR_PRECISION   0
+#define GAL_TABLE_DEF_INT_PRECISION   0
+#define GAL_TABLE_DEF_FLT_PRECISION   6
+#define GAL_TABLE_DEF_DBL_PRECISION   14
+
+
 
 
 
@@ -93,7 +102,9 @@ enum gal_table_where_to_search
    data.*/
 enum gal_table_diplay_formats
 {
-  GAL_TABLE_DISPLAY_FMT_DECIMAL,        /* Integers: decimal.          */
+  GAL_TABLE_DISPLAY_FMT_STRING,         /* String/Character.           */
+  GAL_TABLE_DISPLAY_FMT_DECIMAL,        /* Integers: signed decimal.   */
+  GAL_TABLE_DISPLAY_FMT_UDECIMAL,       /* Integers: unsigned decimal. */
   GAL_TABLE_DISPLAY_FMT_OCTAL,          /* Integers: octal.            */
   GAL_TABLE_DISPLAY_FMT_HEX,            /* Integers: hexadecimal.      */
   GAL_TABLE_DISPLAY_FMT_FLOAT,          /* Floats: with decimal point. */
@@ -106,6 +117,7 @@ enum gal_table_diplay_formats
 
 
 /* Functions */
+
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols, int *tabletype);
 
@@ -113,9 +125,15 @@ int
 gal_table_searchin_from_str(char *searchin_str);
 
 gal_data_t *
-gal_table_read_cols(char *filename, char *hdu,
-                    struct gal_linkedlist_stll *cols, int searchin,
-                    int ignorecase, int minmapsize);
+gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
+               int searchin, int ignorecase, int minmapsize);
+
+void
+gal_table_write(gal_data_t *cols, char *comments, int tabletype,
+                char *filename, int dontdelete);
+
+
+
 
 
 __END_C_DECLS    /* From C++ preparations */

@@ -46,6 +46,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
+#include <gnuastro/linkedlist.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -258,9 +259,12 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                     int *tabletype);
 
 gal_data_t *
-gal_fits_read_cols(char *filename, char *hdu, gal_data_t *colinfo,
-                   struct gal_linkedlist_sll *indexll, int minmapsize);
+gal_fits_table_read(char *filename, char *hdu, gal_data_t *colinfo,
+                    struct gal_linkedlist_sll *indexll, int minmapsize);
 
+void
+gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
+                     char *filename, int dontdelete);
 
 
 

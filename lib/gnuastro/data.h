@@ -103,7 +103,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-
 /* Macros to identify the type of data. The macros in the comment
    parenthesis is the equivalent macro in CFITSIO. */
 enum gal_data_types
@@ -324,7 +323,7 @@ gal_data_flag_blank(gal_data_t *data);
  **************       Types and copying        ***************
  *************************************************************/
 char *
-gal_data_type_string(int type);
+gal_data_type_string(int type, int long_name);
 
 gal_data_t *
 gal_data_copy(gal_data_t *in);

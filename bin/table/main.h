@@ -40,14 +40,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct uiparams
 {
   char              *filename;
-  char         *fitstabletype;
+  char          *outtabletype;
   gal_data_t      *allcolinfo;
   char              *searchin;
 
   /* If values are set: */
   int          informationset;
   int           ignorecaseset;
-  int        fitstabletypeset;
+  int         outtabletypeset;
   int             searchinset;
 };
 
