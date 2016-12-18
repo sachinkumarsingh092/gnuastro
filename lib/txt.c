@@ -35,13 +35,103 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <checkset.h>
 
 
-/************************************************************************/
-/***************     Information about a txt table        ***************/
-/************************************************************************/
+
+
+
+/* Status of a line: */
+enum txt_line_stat
+{
+  TXT_LINESTAT_BLANK,
+  TXT_LINESTAT_ISCOMMENT,
+  TXT_LINESTAT_NOTCOMMENT,
+};
+
+
+
+
+
+/* Return one of the `txt_line_stat' constant values. */
+int
+get_line_stat(char *line)
+{
+  while(*line!='\n')
+    {
+      switch(*line)
+        {
+          /* Characters to ignore. */
+        case ' ': case ',': case '\t':
+          break;
+        case '#':
+          return TXT_LINESTAT_ISCOMMENT;
+        default:
+          return TXT_LINESTAT_NOTCOMMENT;
+        }
+      ++line;
+    }
+  return TXT_LINESTAT_BLANK;
+}
+
+
+
+
+
+/* Return the information about a text file table. */
 gal_data_t *
 gal_txt_table_info(char *filename, size_t *numcols)
 {
+  FILE *fp;
+  char *line;
+  size_t linelen=10;  /* This will be increased later by `getline'. */
 
+  /* Open the file. */
+  errno=0;
+  fp=fopen(filename, "r");
+  if(fp==NULL)
+    error(EXIT_FAILURE, errno, "%s: could't open to read as a text table",
+          filename);
+
+  /* Get the maximum line length and allocate the space necessary to keep
+     copies of all lines as we parse them. Note that `getline' is going to
+     put the string NULL character also, so we need one more character. */
+  errno=0;
+  line=malloc(linelen*sizeof *line);
+  if(line==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for line in `gal_txt_table_info'",
+          linelen*sizeof *line);
+
+  /* Read the comments of the line for possible information about the
+     lines, but also confirm the info by trying to read the first
+     uncommented line. */
+  while( getline(&line, &linelen, fp) != -1 )
+    switch(get_line_stat(line))
+      {
+      case TXT_LINESTAT_BLANK:
+        printf("blank\n");
+        break;
+
+      case TXT_LINESTAT_ISCOMMENT:
+        printf("comment\n");
+        break;
+
+      case TXT_LINESTAT_NOTCOMMENT:
+        printf("not comment\n");
+        break;
+
+      default:
+        error(EXIT_FAILURE, 0, "linestatus code %d not recognized in "
+              "`gal_txt_table_info'",
+              linestat);
+      }
+
+  /* Clean up, close the file and return. */
+  free(line);
+  errno=0;
+  if(fclose(fp))
+    error(EXIT_FAILURE, errno, "%s: couldn't close file after reading ASCII "
+          "table information", filename);
+
+  printf("\n----end of tableinfo----\n");
+  exit(0);
   return NULL;
 }
 

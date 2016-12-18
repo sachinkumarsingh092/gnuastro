@@ -322,10 +322,12 @@ sanitycheck(struct tableparams *p)
   else
     {
       if( gal_fits_name_is_fits(p->cp.output)
-          && p->outtabletype==GAL_TABLE_TYPE_TXT)
+          && ( p->outtabletype !=GAL_TABLE_TYPE_AFITS
+               && p->outtabletype !=GAL_TABLE_TYPE_BFITS ) )
         error(EXIT_FAILURE, 0, "desired output table is a FITS file, but "
-              "`outtabletype' is not a FITS table type. Please set it to "
-              "`fits-ascii', or `fits-binary'");
+              "`outtabletype' is not %s. Please set it to "
+              "`fits-ascii', or `fits-binary'",
+              up->outtabletypeset ? "a FITS table type" : "set");
     }
 }
 
