@@ -395,9 +395,10 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
   data->next=NULL;
   data->ndim=ndim;
   data->type=type;
+  data->mmapname=NULL;
   data->minmapsize=minmapsize;
-  gal_checkset_allocate_copy(unit, &data->unit);
   gal_checkset_allocate_copy(name, &data->name);
+  gal_checkset_allocate_copy(unit, &data->unit);
   gal_checkset_allocate_copy(comment, &data->comment);
   data->disp_fmt=data->disp_width=data->disp_precision=-1;
 
@@ -445,9 +446,6 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
             data->array = gal_data_calloc_array(data->type, data->size);
           else
             data->array = gal_data_malloc_array(data->type, data->size);
-
-          /* Set the values. */
-          data->mmapname=NULL;
         }
     }
 }
@@ -510,6 +508,7 @@ gal_data_free(gal_data_t *data, int only_contents)
   if(data->wcs)     wcsfree(data->wcs);
   if(data->comment) free(data->comment);
 
+
   /* If the data type is string, then each element in the array is actually
      a pointer to the array of characters, so free them before freeing the
      actual array. */
@@ -564,7 +563,7 @@ gal_data_free(gal_data_t *data, int only_contents)
    structures. Note that if the new node is its self a list, all its nodes
    will be added to the list. */
 void
-gal_data_add_to_ll(gal_data_t **list, gal_data_t *newnode)
+gal_data_add_existing_to_ll(gal_data_t **list, gal_data_t *newnode)
 {
   gal_data_t *tmp=newnode, *toadd;
 
@@ -585,6 +584,25 @@ gal_data_add_to_ll(gal_data_t **list, gal_data_t *newnode)
   /* Set the next element of toadd and update what list points to.*/
   toadd->next=*list;
   *list=toadd;
+}
+
+
+
+
+
+void
+gal_data_add_to_ll(gal_data_t **list, void *array, int type, size_t ndim,
+                   long *dsize, struct wcsprm *wcs, int clear,
+                   size_t minmapsize, char *name, char *unit, char *comment)
+{
+  gal_data_t *newnode;
+
+  /* Put all the input information into a new data structure node. */
+  newnode=gal_data_alloc(array, type, ndim, dsize, wcs, clear,
+                         minmapsize, name, unit, comment);
+
+  /* Add the new node to the list. */
+  gal_data_add_existing_to_ll(list, newnode);
 }
 
 
@@ -642,6 +660,22 @@ gal_data_ll_to_array_of_ptrs(gal_data_t *list, size_t *num)
 
   /* Return the allocated array. */
   return out;
+}
+
+
+
+
+
+void
+gal_data_free_ll(gal_data_t *list)
+{
+  struct gal_data_t *tmp;
+  while(list!=NULL)
+    {
+      tmp=list->next;
+      gal_data_free(list, 0);
+      list=tmp;
+    }
 }
 
 

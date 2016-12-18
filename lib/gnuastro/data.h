@@ -281,7 +281,12 @@ gal_data_free(gal_data_t *data, int only_contents);
 /*************    Data structure as a linked list   ******************/
 /*********************************************************************/
 void
-gal_data_add_to_ll(gal_data_t **list, gal_data_t *newnode);
+gal_data_add_existing_to_ll(gal_data_t **list, gal_data_t *newnode);
+
+void
+gal_data_add_to_ll(gal_data_t **list, void *array, int type, size_t ndim,
+                   long *dsize, struct wcsprm *wcs, int clear,
+                   size_t minmapsize, char *name, char *unit, char *comment);
 
 gal_data_t *
 gal_data_pop_from_ll(struct gal_data_t **list);
@@ -292,7 +297,8 @@ gal_data_num_in_ll(struct gal_data_t *list);
 gal_data_t **
 gal_data_ll_to_array_of_ptrs(gal_data_t *list, size_t *num);
 
-
+void
+gal_data_free_ll(gal_data_t *list);
 
 
 

@@ -119,8 +119,7 @@ gal_txt_table_info(char *filename, size_t *numcols)
 
       default:
         error(EXIT_FAILURE, 0, "linestatus code %d not recognized in "
-              "`gal_txt_table_info'",
-              linestat);
+              "`gal_txt_table_info'", get_line_stat(line));
       }
 
   /* Clean up, close the file and return. */

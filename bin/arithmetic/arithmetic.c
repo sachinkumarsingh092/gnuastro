@@ -322,7 +322,7 @@ reversepolish(struct imgarithparams *p)
               numop=set_number_of_operands(p, pop_operand(p, token->v),
                                            token->v);
               for(i=0;i<numop;++i)
-                gal_data_add_to_ll(&d1, pop_operand(p, token->v));
+                gal_data_add_existing_to_ll(&d1, pop_operand(p, token->v));
               break;
 
             default:

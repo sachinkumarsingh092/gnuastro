@@ -163,12 +163,12 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1);
 /**********            Header keywords             ************/
 /**************************************************************/
 void
-gal_fits_read_keywords_fptr(fitsfile *fptr, gal_data_t *keys, size_t num,
+gal_fits_read_keywords_fptr(fitsfile *fptr, gal_data_t *keysll,
                             int readcomment, int readunit);
 
 void
-gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keys,
-                       size_t num, int readcomment, int readunit);
+gal_fits_read_keywords(char *filename, char *hdu, gal_data_t *keysll,
+                       int readcomment, int readunit);
 
 void
 gal_fits_add_to_key_ll(struct gal_fits_key_ll **list, int datatype,

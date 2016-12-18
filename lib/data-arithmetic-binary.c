@@ -369,6 +369,27 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 /*************              Top level function          *****************/
 /************************************************************************/
+static int
+set_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
+{
+  switch(operator)
+    {
+    case GAL_DATA_OPERATOR_PLUS:
+    case GAL_DATA_OPERATOR_MINUS:
+    case GAL_DATA_OPERATOR_MULTIPLY:
+    case GAL_DATA_OPERATOR_DIVIDE:
+      return gal_data_out_type(l, r);
+
+    default:
+      return GAL_DATA_TYPE_UCHAR;
+    }
+  return -1;
+}
+
+
+
+
+
 gal_data_t *
 data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
                        gal_data_t *ro)
@@ -401,18 +422,7 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
      a fixed output type (like the conditionals) is less, by `default' we
      will set the output type to `unsigned char', and if any of the other
      operatrs are given, it will be chosen based on the input types.*/
-  switch(operator)
-    {
-    case GAL_DATA_OPERATOR_PLUS:
-    case GAL_DATA_OPERATOR_MINUS:
-    case GAL_DATA_OPERATOR_MULTIPLY:
-    case GAL_DATA_OPERATOR_DIVIDE:
-      otype=gal_data_out_type(l, r);
-      break;
-
-    default:
-      otype=GAL_DATA_TYPE_UCHAR;
-    }
+  otype=set_binary_out_type(operator, l, r);
 
 
   /* Set the output sizes. */
@@ -464,6 +474,20 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
     }
 
 
+  /* The type of the output dataset (`o->type') was chosen from `l' and `r'
+     (copies of the orignal operands but in a compiled type, not
+     necessarily the original `lo' and `ro' data structures). So we need to
+     to get the final type based on the original operands and check if the
+     final output needs changing. */
+  otype=set_binary_out_type(operator, lo, ro);
+  if( o->type != otype )
+    {
+      tmp_o=gal_data_copy_to_new_type(o, otype);
+      gal_data_free(o, 0);
+      o=tmp_o;
+    }
+
+
   /* Clean up. Note that if the input arrays can be freed, and any of right
      or left arrays needed conversion, `BINARY_CONVERT_TO_COMPILED_TYPE'
      has already freed the input arrays, so only `r' and `l' need
@@ -481,19 +505,6 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
     {
       if(l!=lo)           gal_data_free(l, 0);
       if(r!=ro)           gal_data_free(r, 0);
-    }
-
-  /* The type of the output dataset (`o->type') was chosen from `l' and `r'
-     (copies of the orignal operands but in a compiled type, not
-     necessarily the original `lo' and `ro' data structures). So we need to
-     to get the final type based on the original operands and check if the
-     final output needs changing. */
-  otype=gal_data_out_type(lo, ro);
-  if( o->type != otype )
-    {
-      tmp_o=gal_data_copy_to_new_type(o, otype);
-      gal_data_free(o, 0);
-      o=tmp_o;
     }
 
   /* Return */
