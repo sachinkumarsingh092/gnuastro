@@ -265,6 +265,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* This is for operators like `&&' and `||', where the right operator is
+   not necessarily read (and thus incremented) incremented. */
+#define BINARY_OP_INCR_OT_RT_LT_SET(OP, OT, RT, LT) {                   \
+    LT *la=l->array;                                                    \
+    RT *ra=r->array;                                                    \
+    OT *oa=o->array, *of=oa + o->size;                                  \
+    if(l->size==r->size) do {*oa = *la++ OP *ra; ++ra;} while(++oa<of); \
+    else if(l->size==1)  do {*oa = *la   OP *ra; ++ra;} while(++oa<of); \
+    else                 do  *oa = *la++ OP *ra;        while(++oa<of); \
+  }
+
+
+
+
 
 /* For operators whose type may be any of the given inputs. */
 #define BINARY_OP_RT_LT_SET(OP, RT, LT)                            \
@@ -312,10 +326,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
       BINARY_OP_OT_RT_LT_SET(!=, unsigned char, RT, LT);           \
       break;                                                       \
     case GAL_DATA_OPERATOR_AND:                                    \
-      BINARY_OP_OT_RT_LT_SET(&&, unsigned char, RT, LT);           \
+      BINARY_OP_INCR_OT_RT_LT_SET(&&, unsigned char, RT, LT);      \
       break;                                                       \
     case GAL_DATA_OPERATOR_OR:                                     \
-      BINARY_OP_OT_RT_LT_SET(||, unsigned char, RT, LT);           \
+      BINARY_OP_INCR_OT_RT_LT_SET(||, unsigned char, RT, LT);      \
       break;                                                       \
     default:                                                       \
       error(EXIT_FAILURE, 0, "operator code %d not recognized in " \

@@ -1275,23 +1275,24 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
 
 
   /* Read the possibly existing useful keywords. Note that the values are
-     in allocated strings in the keys[i] data structures. We don't want to
-     allocated them again, so we will just copy the pointers within the
-     `img' data structure and set the original value to NULL so it isn't
-     freed. */
+     in allocated strings in the keys[i] data structures. Note that we need
+     the linked list of keys to keep the `name' and `unit' pointers. We can
+     free the linked list after `gal_data_alloc' has read/copied the
+     values.*/
   gal_data_add_to_ll(&keysll, NULL, GAL_DATA_TYPE_STRING, 1, &dsize_key,
                         NULL, 0, -1, "EXTNAME", NULL, NULL);
   gal_data_add_to_ll(&keysll, NULL, GAL_DATA_TYPE_STRING, 1, &dsize_key,
                         NULL, 0, -1, "BUNIT", NULL, NULL);
   gal_fits_read_keywords_fptr(fptr, keysll, 0, 0);
-  if(keysll->status==0)       {str=keysll->array;       unit=*str; *str=NULL;}
-  if(keysll->next->status==0) {str=keysll->next->array; name=*str; *str=NULL;}
-  gal_data_free_ll(keysll);
+  if(keysll->status==0)       {str=keysll->array;       unit=*str; }
+  if(keysll->next->status==0) {str=keysll->next->array; name=*str; }
+
 
   /* Allocate the space for the array and for the blank values. */
   img=gal_data_alloc(NULL, type, (long)ndim, dsize, NULL, 0, minmapsize,
                      name, unit, NULL);
   blank=gal_data_alloc_blank(type);
+  gal_data_free_ll(keysll);
   free(dsize);
 
 
