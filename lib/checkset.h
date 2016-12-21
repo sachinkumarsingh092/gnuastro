@@ -163,6 +163,10 @@ gal_checkset_double_l_0(char *optarg, double *var, char *lo, char so,
                         char *spack, char *filename, size_t lineno);
 
 void
+gal_checkset_double_l_0_s_1(char *optarg, double *var, char *lo, char so,
+                            char *spack, char *filename, size_t lineno);
+
+void
 gal_checkset_double_el_0(char *optarg, double *var, char *lo, char so,
                          char* spack, char *filename, size_t lineno);
 

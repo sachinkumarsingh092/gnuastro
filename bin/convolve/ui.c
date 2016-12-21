@@ -110,7 +110,13 @@ readconfig(char *filename, struct convolveparams *p)
                                        &up->kernelnameset);
       else if (strcmp(name, "khdu")==0)
         gal_checkset_allocate_copy_set(value, &up->khdu, &up->khduset);
-
+      else if(strcmp(name, "minsharpspec")==0)
+        {
+          if(up->minsharpspecset) continue;
+          gal_checkset_double_l_0_s_1(value, &p->minsharpspec, "minsharpspec",
+                                     key, SPACK, filename, lineno);
+          up->minsharpspecset=1;
+        }
 
 
       /* Outputs: */
@@ -243,6 +249,8 @@ printvalues(FILE *fp, struct convolveparams *p)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("kernel", up->kernelname);
   if(up->khduset)
     GAL_CHECKSET_PRINT_STRING_MAYBE_WITH_SPACE("khdu", up->khdu);
+  if(up->minsharpspecset)
+    fprintf(fp, CONF_SHOWFMT"%f\n", "minsharpspec", p->minsharpspec);
 
 
 
@@ -298,6 +306,8 @@ checkifset(struct convolveparams *p)
     GAL_CONFIGFILES_REPORT_NOTSET("kernel");
   if(up->khduset==0)
     GAL_CONFIGFILES_REPORT_NOTSET("khdu");
+  if(p->makekernel && up->minsharpspecset==0)
+    GAL_CONFIGFILES_REPORT_NOTSET("minsharpspec");
 
 
   /* Mesh grid: */
@@ -447,14 +457,15 @@ preparearrays(struct convolveparams *p)
             "pixels' section of the Gnuastro manual for more information.");
 
 
-  /* Read the file specified by --kernel. If makekernel is specified,
-     then this is actually the low resolution image. */
+  /* Read the file specified by --kernel. If makekernel is specified, then
+     this is actually the sharper image and the input image (given as an
+     argument) is the blurry image. */
   if(p->makekernel)
     {
       /* Read in the kernel array: */
       gal_fits_file_to_float(up->kernelname, NULL, up->khdu, NULL,
-                                  &p->kernel, &bitpix, &anyblank,
-                                  &p->ks0, &p->ks1);
+                             &p->kernel, &bitpix, &anyblank,
+                             &p->ks0, &p->ks1);
       if(p->ks0!=p->is0 || p->ks1!=p->is1)
         error(EXIT_FAILURE, 0, "with the `--makekernel' (`-m') option, "
               "the input image and the image specified with the kernel "

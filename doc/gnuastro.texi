@@ -8659,7 +8659,7 @@ One line examples:
 
 @example
 $ astconvolve --kernel=psf.fits mockimg.fits
-$ astconvolve --kernel=sharperimage.fits --makekernel\
+$ astconvolve --kernel=sharperimage.fits --makekernel=10 \
               blurryimage.fits
 @end example
 
@@ -8764,21 +8764,21 @@ of the image), we also remove any pixel with a value less than
 
 @item -m
 @itemx --makekernel
-(@option{=INT}) If this option is called, Convolve will do
-de-convolution (see @ref{Convolution theorem}). The image specified by
-the @option{--kernel} option is assumed to be the sharper (less
-blurry) image and the input image is assumed to be the more blurry
-image. The two images have to be the same size. Some notes to take
-into account for a good result:
+(@option{=INT}) If this option is called, Convolve will do de-convolution
+(see @ref{Convolution theorem}). The image specified by the
+@option{--kernel} option is assumed to be the sharper (less blurry) image
+and the input image is assumed to be the more blurry image. The value given
+to this option will be used as the maximum radius of the kernel. Any pixel
+in the final kernel that is larger than this distance from the center will
+be set to zero. The two images must have the same size.
 
-Noise has large frequencies which can make the result less reliable
-for the higher frequencies of the kernel. So all the frequencies which
-have a spectrum smaller than 0.005 in the frequency domain are set to
-zero and not divided. This will cause the wings of the final kernel to
-be flatter than they would ideally be which will make the convolved
-image result unreliable. The value given to this option will be used
-as the maximum radius of the kernel. Any pixel in the final kernel
-that is larger than this distance from the center will be set to zero.
+Noise has large frequencies which can make the result less reliable for the
+higher frequencies of the final result. So all the frequencies which have a
+spectrum smaller than the value given to the @option{minsharpspec} option
+in the sharper input image are set to zero and not divided. This will cause
+the wings of the final kernel to be flatter than they would ideally be
+which will make the convolved image result unreliable if it is too
+high. Some notes to take into account for a good result:
 @itemize
 
 @item
@@ -8798,8 +8798,13 @@ pixels is one) and then take their average to decrease this effect.
 The shifting might move the center of the star by one pixel in any
 direction, so crop the central pixel of the warped image to have a
 clean image for the de-convolution.
-
 @end itemize
+
+@item -c
+@itemx --minsharpspec
+(@option{=FLT}) The minimum frequency spectrum (or coefficient, or pixel
+value in the frequency domain image) to use in deconvolution, see the
+explanations under the @option{--makekernel} option for more information.
 @end table
 
 
