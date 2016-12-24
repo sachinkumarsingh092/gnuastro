@@ -86,7 +86,7 @@ you cloned 'gnuastro' directory.
 The recommended way is to clone Gnulib and the Autoconf archives separately
 (see above), then tell the script where to look for them. You will not need
 an internet connection every time you decide to bootstrap, your 'gnuastro'
-directory will be much more cleaner, and if your other packages or projects
+directory will be much cleaner, and if your other packages or projects
 need these tools, you won't need to have multiple copies. Note that during
 development, sometimes it can be convenient to remove all non-version
 controlled files.

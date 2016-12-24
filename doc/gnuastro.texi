@@ -2868,7 +2868,7 @@ of your projects also needs Gnulib, and you insist on running bootstrap
 like this, you will have two copies. In case you regularly backup your
 important files, Gnulib will also slow down the backup process. Therefore
 while the simple invocation above can be used with no problem, it is not
-recommended, see the next paragraph.
+recommended. To do better, see the next paragraph.
 
 The recommended way to get these two packages is thoroughly discussed in
 @ref{Bootstrapping dependencies} (in short: clone them in the separate
@@ -18767,8 +18767,8 @@ else is already working on. In that case, you can get in touch with them
 and help the job go on faster, see @ref{Gnuastro project webpage}. This
 workflow is currently mostly borrowed from the general recommendations of
 Git@footnote{@url{https://github.com/git/git/blob/master/Documentation/SubmittingPatches}}
-and GitHub. But since Gnuastro is under heavy development currently, these
-might change and evolve to better suite our needs.
+and GitHub. But since Gnuastro is currently under heavy development, these
+might change and evolve to better suit our needs.
 
 
 

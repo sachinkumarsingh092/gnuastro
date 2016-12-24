@@ -3,14 +3,14 @@ Imported files to GNU Astronomy Utilities
 
 The contents of this directory (except this README file!) are imported
 to GNU Astronomy Utilities (Gnuastro) from other projects. Therefore
-they are not maintained by Gnuastro developers and separately kept in
-this directory for clarity and easy maintainence.
+they are not maintained by Gnuastro developers and are kept separately
+in this directory for clarity and easy maintenance.
 
 In the version controlled repository this directory only contains this
 single README file. It is populated during the bootstrapping process
 (see ../README-hacking for more on bootstrapping, or the
 "Bootstrapping" section in the manual). In the distribution tar-ball
-this directory is populated with the relevant necessary files.
+this directory is populated with the necessary files.
 
 The projects that were used are:
 
