@@ -6549,19 +6549,19 @@ to be empty, ImageCrop can fill them for you based on the input image
 sizes.
 
 @cindex Define section to crop
-To define a box, you need the coordinates of two points: the first
-pixel in the box at (@code{X1}, @code{Y1}) and the pixel which is
-immediately outside of the box (@code{X2, @code{Y2}}), four
-coordinates in total. The four coordinates can be specified with one
-string in this format: @command{X1:X2,Y1:Y2}. It is given to the
-@option{--section} option. Therefore, the pixels along the first axis
-that are @math{\geq}@command{X1} and <@command{X2} will be included in
-the cropped image. The same goes for the second axis. Note that each
-different term will be read as an integer, not a float (there are no
-sub-pixels in ImageCrop, you can use ImageWarp to shift the matrix
-with any sub-pixel distance, then crop the warped image, see
-@ref{ImageWarp}). Also, following the FITS standard, pixel indexes
-along each axis start from unity(1) not zero(0).
+To define a box, you need the coordinates of two points: the first pixel in
+the box at (@code{X1}, @code{Y1}) and the pixel which is immediately
+outside of the box (@code{X2, @code{Y2}}), four coordinates in total. The
+four coordinates can be specified with one string in this format:
+@command{X1:X2,Y1:Y2}. It is given to the @option{--section}
+option. Therefore, the pixels along the first axis that are
+@math{\geq}@command{X1} and <@command{X2} will be included in the cropped
+image. The same goes for the second axis. Note that each different term
+will be read as an integer, not a float (ImageCrop does not crop below the
+pixel resolution, you can use ImageWarp to shift/warp the image by any
+sub-pixel amount, then crop the warped image, see @ref{ImageWarp}). Also,
+following the FITS standard, pixel indexes along each axis start from
+unity(1) not zero(0).
 
 @cindex Crop section format
 You can omit any of the values and they will be filled automatically.
