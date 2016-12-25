@@ -18736,7 +18736,7 @@ Workflow:
 You can send commit patches by email as fully explained in `Pro Git'. This
 is good for your first few contributions. Just note that raw patches
 (containing only the diff) do not have any meta-data (author name, date and
-etc). Therefore will not allow us to fully acknowledge your contributions
+etc). Therefore they will not allow us to fully acknowledge your contributions
 as an author in Gnuastro: in the @file{AUTHORS} file and at the start of
 the PDF book. These author lists are created automatically from the version
 controlled source.
