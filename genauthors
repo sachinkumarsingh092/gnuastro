@@ -100,4 +100,5 @@ Ordered by number of commits in the Git project history.
 " > $1/AUTHORS
 
 # Generate the aggregate list
-git --git-dir=$1/.git shortlog --summary --email --no-merges >> $1/AUTHORS
+git --git-dir=$1/.git shortlog --summary --email --no-merges \
+    --numbered >> $1/AUTHORS
