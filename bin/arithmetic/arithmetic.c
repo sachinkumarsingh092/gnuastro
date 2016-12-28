@@ -29,10 +29,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdlib.h>
 
-#include <gnuastro/data.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/array.h>
-#include <gnuastro/statistics.h>
+#include <gnuastro/arithmetic.h>
 
 #include <checkset.h>
 
@@ -188,101 +187,101 @@ reversepolish(struct imgarithparams *p)
           /* Order is the same as in the manual. */
           /* Simple arithmetic operators. */
           if      (!strcmp(token->v, "+" ))
-            { op=GAL_DATA_OPERATOR_PLUS;          nop=2;  }
+            { op=GAL_ARITHMETIC_OP_PLUS;          nop=2;  }
           else if (!strcmp(token->v, "-" ))
-            { op=GAL_DATA_OPERATOR_MINUS;         nop=2;  }
+            { op=GAL_ARITHMETIC_OP_MINUS;         nop=2;  }
           else if (!strcmp(token->v, "*" ))
-            { op=GAL_DATA_OPERATOR_MULTIPLY;      nop=2;  }
+            { op=GAL_ARITHMETIC_OP_MULTIPLY;      nop=2;  }
           else if (!strcmp(token->v, "/" ))
-            { op=GAL_DATA_OPERATOR_DIVIDE;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_DIVIDE;        nop=2;  }
           else if (!strcmp(token->v, "%" ))
-            { op=GAL_DATA_OPERATOR_MODULO;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_MODULO;        nop=2;  }
 
           /* Mathematical Operators. */
           else if (!strcmp(token->v, "abs"))
-            { op=GAL_DATA_OPERATOR_ABS;           nop=1;  }
+            { op=GAL_ARITHMETIC_OP_ABS;           nop=1;  }
           else if (!strcmp(token->v, "pow"))
-            { op=GAL_DATA_OPERATOR_POW;           nop=2;  }
+            { op=GAL_ARITHMETIC_OP_POW;           nop=2;  }
           else if (!strcmp(token->v, "sqrt"))
-            { op=GAL_DATA_OPERATOR_SQRT;          nop=1;  }
+            { op=GAL_ARITHMETIC_OP_SQRT;          nop=1;  }
           else if (!strcmp(token->v, "log"))
-            { op=GAL_DATA_OPERATOR_LOG;           nop=1;  }
+            { op=GAL_ARITHMETIC_OP_LOG;           nop=1;  }
           else if (!strcmp(token->v, "log10"))
-            { op=GAL_DATA_OPERATOR_LOG10;         nop=1;  }
+            { op=GAL_ARITHMETIC_OP_LOG10;         nop=1;  }
 
           /* Statistical/higher-level operators. */
           else if (!strcmp(token->v, "minvalue"))
-            { op=GAL_DATA_OPERATOR_MINVAL;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_MINVAL;        nop=1;  }
           else if (!strcmp(token->v, "maxvalue"))
-            { op=GAL_DATA_OPERATOR_MAXVAL;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_MAXVAL;        nop=1;  }
           else if (!strcmp(token->v, "min"))
-            { op=GAL_DATA_OPERATOR_MIN;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_MIN;           nop=-1; }
           else if (!strcmp(token->v, "max"))
-            { op=GAL_DATA_OPERATOR_MAX;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_MAX;           nop=-1; }
           else if (!strcmp(token->v, "sum"))
-            { op=GAL_DATA_OPERATOR_SUM;           nop=-1; }
+            { op=GAL_ARITHMETIC_OP_SUM;           nop=-1; }
           else if (!strcmp(token->v, "average"))
-            { op=GAL_DATA_OPERATOR_AVERAGE;       nop=-1; }
+            { op=GAL_ARITHMETIC_OP_AVERAGE;       nop=-1; }
           else if (!strcmp(token->v, "median"))
-            { op=GAL_DATA_OPERATOR_MEDIAN;        nop=-1; }
+            { op=GAL_ARITHMETIC_OP_MEDIAN;        nop=-1; }
 
           /* Conditional operators. */
           else if (!strcmp(token->v, "lt" ))
-            { op=GAL_DATA_OPERATOR_LT;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_LT;            nop=2;  }
           else if (!strcmp(token->v, "le"))
-            { op=GAL_DATA_OPERATOR_LE;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_LE;            nop=2;  }
           else if (!strcmp(token->v, "gt" ))
-            { op=GAL_DATA_OPERATOR_GT;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_GT;            nop=2;  }
           else if (!strcmp(token->v, "ge"))
-            { op=GAL_DATA_OPERATOR_LE;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_LE;            nop=2;  }
           else if (!strcmp(token->v, "eq"))
-            { op=GAL_DATA_OPERATOR_EQ;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_EQ;            nop=2;  }
           else if (!strcmp(token->v, "ne"))
-            { op=GAL_DATA_OPERATOR_NE;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_NE;            nop=2;  }
           else if (!strcmp(token->v, "and"))
-            { op=GAL_DATA_OPERATOR_AND;           nop=2;  }
+            { op=GAL_ARITHMETIC_OP_AND;           nop=2;  }
           else if (!strcmp(token->v, "or"))
-            { op=GAL_DATA_OPERATOR_OR;            nop=2;  }
+            { op=GAL_ARITHMETIC_OP_OR;            nop=2;  }
           else if (!strcmp(token->v, "not"))
-            { op=GAL_DATA_OPERATOR_NOT;           nop=1;  }
+            { op=GAL_ARITHMETIC_OP_NOT;           nop=1;  }
           else if (!strcmp(token->v, "isblank"))
-            { op=GAL_DATA_OPERATOR_ISBLANK;       nop=1;  }
+            { op=GAL_ARITHMETIC_OP_ISBLANK;       nop=1;  }
           else if (!strcmp(token->v, "where"))
-            { op=GAL_DATA_OPERATOR_WHERE;         nop=3;  }
+            { op=GAL_ARITHMETIC_OP_WHERE;         nop=3;  }
 
           /* Bitwise operators. */
           else if (!strcmp(token->v, "bitand"))
-            { op=GAL_DATA_OPERATOR_BITAND;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITAND;        nop=2;  }
           else if (!strcmp(token->v, "bitor"))
-            { op=GAL_DATA_OPERATOR_BITOR;         nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITOR;         nop=2;  }
           else if (!strcmp(token->v, "bitxor"))
-            { op=GAL_DATA_OPERATOR_BITXOR;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITXOR;        nop=2;  }
           else if (!strcmp(token->v, "lshift"))
-            { op=GAL_DATA_OPERATOR_BITLSH;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITLSH;        nop=2;  }
           else if (!strcmp(token->v, "rshift"))
-            { op=GAL_DATA_OPERATOR_BITRSH;        nop=2;  }
+            { op=GAL_ARITHMETIC_OP_BITRSH;        nop=2;  }
           else if (!strcmp(token->v, "bitnot"))
-            { op=GAL_DATA_OPERATOR_BITNOT;        nop=1;  }
+            { op=GAL_ARITHMETIC_OP_BITNOT;        nop=1;  }
 
           /* Type conversion. */
           else if (!strcmp(token->v, "uchar"))
-            { op=GAL_DATA_OPERATOR_TO_UCHAR;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_UCHAR;      nop=1;  }
           else if (!strcmp(token->v, "char"))
-            { op=GAL_DATA_OPERATOR_TO_CHAR;       nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_CHAR;       nop=1;  }
           else if (!strcmp(token->v, "ushort"))
-            { op=GAL_DATA_OPERATOR_TO_USHORT;     nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_USHORT;     nop=1;  }
           else if (!strcmp(token->v, "short"))
-            { op=GAL_DATA_OPERATOR_TO_SHORT;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_SHORT;      nop=1;  }
           else if (!strcmp(token->v, "ulong"))
-            { op=GAL_DATA_OPERATOR_TO_ULONG;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_ULONG;      nop=1;  }
           else if (!strcmp(token->v, "long"))
-            { op=GAL_DATA_OPERATOR_TO_LONG;       nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_LONG;       nop=1;  }
           else if (!strcmp(token->v, "longlong"))
-            { op=GAL_DATA_OPERATOR_TO_LONGLONG;   nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_LONGLONG;   nop=1;  }
           else if (!strcmp(token->v, "float"))
-            { op=GAL_DATA_OPERATOR_TO_FLOAT;      nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_FLOAT;      nop=1;  }
           else if (!strcmp(token->v, "double"))
-            { op=GAL_DATA_OPERATOR_TO_DOUBLE;     nop=1;  }
+            { op=GAL_ARITHMETIC_OP_TO_DOUBLE;     nop=1;  }
 
           /* Finished checks with known operators */
           else
@@ -330,12 +329,12 @@ reversepolish(struct imgarithparams *p)
             }
 
 
-          /* Run the arithmetic operation. Note that `gal_data_arithmetic'
-             is a variable argument function (like printf). So the number
-             of arguments it uses depend on the operator. So when the
-             operator doesn't need three operands, the extra arguments will
-             be ignored. */
-          add_operand(p, NULL, gal_data_arithmetic(op, flags, d1, d2, d3));
+          /* Run the arithmetic operation. Note that `gal_arithmetic' is a
+             variable argument function (like printf). So the number of
+             arguments it uses depend on the operator. So when the operator
+             doesn't need three operands, the extra arguments will be
+             ignored. */
+          add_operand(p, NULL, gal_arithmetic(op, flags, d1, d2, d3));
         }
     }
 

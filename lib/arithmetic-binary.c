@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
-#include <gnuastro/data.h>
+#include <gnuastro/arithmetic.h>
 
 
 
@@ -295,40 +295,40 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define BINARY_RT_LT_SET(RT, LT)                                   \
   switch(operator)                                                 \
     {                                                              \
-    case GAL_DATA_OPERATOR_PLUS:                                   \
+    case GAL_ARITHMETIC_OP_PLUS:                                   \
       BINARY_OP_RT_LT_SET(+, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_MINUS:                                  \
+    case GAL_ARITHMETIC_OP_MINUS:                                  \
       BINARY_OP_RT_LT_SET(-, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_MULTIPLY:                               \
+    case GAL_ARITHMETIC_OP_MULTIPLY:                               \
       BINARY_OP_RT_LT_SET(*, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_DIVIDE:                                 \
+    case GAL_ARITHMETIC_OP_DIVIDE:                                 \
       BINARY_OP_RT_LT_SET(/, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_LT:                                     \
+    case GAL_ARITHMETIC_OP_LT:                                     \
       BINARY_OP_OT_RT_LT_SET(<, unsigned char, RT, LT);            \
       break;                                                       \
-    case GAL_DATA_OPERATOR_LE:                                     \
+    case GAL_ARITHMETIC_OP_LE:                                     \
       BINARY_OP_OT_RT_LT_SET(<=, unsigned char, RT, LT);           \
       break;                                                       \
-    case GAL_DATA_OPERATOR_GT:                                     \
+    case GAL_ARITHMETIC_OP_GT:                                     \
       BINARY_OP_OT_RT_LT_SET(>, unsigned char, RT, LT);            \
       break;                                                       \
-    case GAL_DATA_OPERATOR_GE:                                     \
+    case GAL_ARITHMETIC_OP_GE:                                     \
       BINARY_OP_OT_RT_LT_SET(>=, unsigned char, RT, LT);           \
       break;                                                       \
-    case GAL_DATA_OPERATOR_EQ:                                     \
+    case GAL_ARITHMETIC_OP_EQ:                                     \
       BINARY_OP_OT_RT_LT_SET(==, unsigned char, RT, LT);           \
       break;                                                       \
-    case GAL_DATA_OPERATOR_NE:                                     \
+    case GAL_ARITHMETIC_OP_NE:                                     \
       BINARY_OP_OT_RT_LT_SET(!=, unsigned char, RT, LT);           \
       break;                                                       \
-    case GAL_DATA_OPERATOR_AND:                                    \
+    case GAL_ARITHMETIC_OP_AND:                                    \
       BINARY_OP_INCR_OT_RT_LT_SET(&&, unsigned char, RT, LT);      \
       break;                                                       \
-    case GAL_DATA_OPERATOR_OR:                                     \
+    case GAL_ARITHMETIC_OP_OR:                                     \
       BINARY_OP_INCR_OT_RT_LT_SET(||, unsigned char, RT, LT);      \
       break;                                                       \
     default:                                                       \
@@ -388,10 +388,10 @@ set_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
 {
   switch(operator)
     {
-    case GAL_DATA_OPERATOR_PLUS:
-    case GAL_DATA_OPERATOR_MINUS:
-    case GAL_DATA_OPERATOR_MULTIPLY:
-    case GAL_DATA_OPERATOR_DIVIDE:
+    case GAL_ARITHMETIC_OP_PLUS:
+    case GAL_ARITHMETIC_OP_MINUS:
+    case GAL_ARITHMETIC_OP_MULTIPLY:
+    case GAL_ARITHMETIC_OP_DIVIDE:
       return gal_data_out_type(l, r);
 
     default:
@@ -405,8 +405,8 @@ set_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
 
 
 gal_data_t *
-data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
-                       gal_data_t *ro)
+arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
+                  gal_data_t *ro)
 {
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure
@@ -420,14 +420,14 @@ data_arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
   if( !( (flags & GAL_DATA_ARITH_NUMOK) && (lo->size==1 || ro->size==1))
       && gal_data_dsize_is_different(lo, ro) )
     error(EXIT_FAILURE, 0, "the non-number inputs to %s don't have the "
-          "same dimension/size", gal_data_operator_string(operator));
+          "same dimension/size", gal_arithmetic_operator_string(operator));
 
 
   /* Make sure the input arrays have one of the compiled types. From this
      point on, until the cleaning up section of this function, we won't be
      using the `lo' and `ro' pointers. */
-  l=data_arithmetic_convert_to_compiled_type(lo, flags);
-  r=data_arithmetic_convert_to_compiled_type(ro, flags);
+  l=gal_arithmetic_convert_to_compiled_type(lo, flags);
+  r=gal_arithmetic_convert_to_compiled_type(ro, flags);
 
 
   /* Set the output type. For the comparison operators, the output type is

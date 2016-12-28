@@ -20,33 +20,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef __GAL_ARITHMETIC_OTHER_H__
-#define __GAL_ARITHMETIC_OTHER_H__
+#ifndef __ARITHMETIC_BINARY_H__
+#define __ARITHMETIC_BINARY_H__
+
 
 gal_data_t *
-data_arithmetic_change_type(gal_data_t *data, int operator,
-                            unsigned char flags);
+arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
+                  gal_data_t *ro);
 
-gal_data_t *
-data_arithmetic_not(gal_data_t *data, unsigned char flags);
-
-gal_data_t *
-data_arithmetic_abs(unsigned char flags, gal_data_t *in);
-
-gal_data_t *
-data_arithmetic_unary_function(int operator, unsigned char flags,
-                               gal_data_t *in);
-
-gal_data_t *
-data_arithmetic_binary_function_flt(int operator, unsigned char flags,
-                                  gal_data_t *l, gal_data_t *r);
-
-void
-data_arithmetic_where(unsigned char flags, gal_data_t *out,
-                      gal_data_t *cond, gal_data_t *iftrue);
-
-gal_data_t *
-data_arithmetic_multioperand(int operator, unsigned char flags,
-                             gal_data_t *list);
 
 #endif

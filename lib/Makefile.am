@@ -40,11 +40,10 @@ libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 
 
 # Specify the library .c files
-libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c data.c  \
-  data-arithmetic-binary.c data-arithmetic-onlyint.c                    \
-  data-arithmetic-other.c data-copy.c fits.c git.c linkedlist.c mesh.c  \
-  mode.c polygon.c qsort.c spatialconvolve.c statistics.c table.c       \
-  threads.c timing.c txt.c wcs.c
+libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
+  arithmetic-onlyint.c array.c box.c checkset.c configfiles.c data.c    \
+  data-copy.c fits.c git.c linkedlist.c mesh.c mode.c polygon.c qsort.c \
+  spatialconvolve.c statistics.c table.c threads.c timing.c txt.c wcs.c
 
 
 
@@ -54,10 +53,10 @@ libgnuastro_la_SOURCES = array.c box.c checkset.c configfiles.c data.c  \
 # in the $(headersdir) directory. Some of the header files don't need to be
 # installed.
 headersdir=$(top_srcdir)/lib/gnuastro
-pkginclude_HEADERS = gnuastro/config.h $(headersdir)/array.h            \
-  $(headersdir)/box.h $(headersdir)/data.h $(headersdir)/fits.h         \
-  $(headersdir)/git.h $(headersdir)/linkedlist.h $(headersdir)/mesh.h   \
-  $(headersdir)/polygon.h $(headersdir)/qsort.h                         \
+pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h       \
+  $(headersdir)/array.h $(headersdir)/box.h $(headersdir)/data.h        \
+  $(headersdir)/fits.h $(headersdir)/git.h $(headersdir)/linkedlist.h   \
+  $(headersdir)/mesh.h $(headersdir)/polygon.h $(headersdir)/qsort.h    \
   $(headersdir)/spatialconvolve.h $(headersdir)/statistics.h            \
   $(headersdir)/table.h $(headersdir)/threads.h $(headersdir)/wcs.h     \
   $(headersdir)/txt.h
@@ -71,10 +70,10 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/array.h            \
 # and if they are not explicitly mentioned somewhere in the Makefile, they
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
-EXTRA_DIST = gnuastro.pc.in data-arithmetic.h data-arithmetic-binary.h	\
-  data-arithmetic-onlyint.h data-arithmetic-other.h data-copy.h         \
-  config.h.in checkset.h commonargs.h commonparams.h configfiles.h      \
-  fixedstringmacros.h mode.h neighbors.h timing.h $(headersdir)/README
+EXTRA_DIST = gnuastro.pc.in arithmetic-binary.h	arithmetic-onlyint.h    \
+  arithmetic-other.h data-copy.h config.h.in checkset.h commonargs.h    \
+  commonparams.h configfiles.h fixedstringmacros.h mode.h neighbors.h   \
+  timing.h $(headersdir)/README
 
 
 
@@ -90,8 +89,8 @@ CLEANFILES = gnuastro.pc gnuastro/config.h
 
 
 
-# Build Gnuastro's pkg-config file and `config.h' based on the
-# information in the Makefile after the Makefile has been built.
+# Build `gnuastro/config.h' based on the information in the Makefile after
+# the Makefile has been built.
 gnuastro/config.h: Makefile config.h.in
 	rm -f $@ $@.tmp
 	$(MKDIR_P) gnuastro
@@ -118,6 +117,7 @@ gnuastro/config.h: Makefile config.h.in
 
 
 
+# Build Gnuastro's pkg-config file similar to `gnuastro/config.h'.
 gnuastro.pc: Makefile $(srcdir)/gnuastro.pc.in
 	rm -f $@ $@.tmp
 	$(SED)                                      \

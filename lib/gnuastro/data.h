@@ -103,6 +103,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+
 /* Macros to identify the type of data. The macros in the comment
    parenthesis is the equivalent macro in CFITSIO. */
 enum gal_data_types
@@ -123,64 +124,6 @@ enum gal_data_types
   GAL_DATA_TYPE_DOUBLE,    /* double           (TDOUBLE).     */
   GAL_DATA_TYPE_COMPLEX,   /* Complex float    (TCOMPLEX).    */
   GAL_DATA_TYPE_DCOMPLEX,  /* Complex double   (TDBLCOMPLEX). */
-};
-
-
-
-
-
-enum gal_data_operators
-{
-  GAL_DATA_OPERATOR_PLUS,         /*   +     */
-  GAL_DATA_OPERATOR_MINUS,        /*   -     */
-  GAL_DATA_OPERATOR_MULTIPLY,     /*   *     */
-  GAL_DATA_OPERATOR_DIVIDE,       /*   /     */
-  GAL_DATA_OPERATOR_MODULO,       /*   %     */
-
-  GAL_DATA_OPERATOR_LT,           /*   <     */
-  GAL_DATA_OPERATOR_LE,           /*   <=    */
-  GAL_DATA_OPERATOR_GT,           /*   >     */
-  GAL_DATA_OPERATOR_GE,           /*   >=    */
-  GAL_DATA_OPERATOR_EQ,           /*   ==    */
-  GAL_DATA_OPERATOR_NE,           /*   !=    */
-  GAL_DATA_OPERATOR_AND,          /*   &&    */
-  GAL_DATA_OPERATOR_OR,           /*   ||    */
-  GAL_DATA_OPERATOR_NOT,          /*   !     */
-  GAL_DATA_OPERATOR_ISBLANK,      /* Similar to isnan() for floats. */
-  GAL_DATA_OPERATOR_WHERE,        /*   ?:    */
-
-  GAL_DATA_OPERATOR_BITAND,       /*   &     */
-  GAL_DATA_OPERATOR_BITOR,        /*   |     */
-  GAL_DATA_OPERATOR_BITXOR,       /*   ^     */
-  GAL_DATA_OPERATOR_BITLSH,       /*   <<    */
-  GAL_DATA_OPERATOR_BITRSH,       /*   >>    */
-  GAL_DATA_OPERATOR_BITNOT,       /*   ~     */
-
-  GAL_DATA_OPERATOR_ABS,          /* abs()   */
-  GAL_DATA_OPERATOR_POW,          /* pow()   */
-  GAL_DATA_OPERATOR_SQRT,         /* sqrt()  */
-  GAL_DATA_OPERATOR_LOG,          /* log()   */
-  GAL_DATA_OPERATOR_LOG10,        /* log10() */
-
-  GAL_DATA_OPERATOR_MINVAL,       /* Minimum value of array.               */
-  GAL_DATA_OPERATOR_MAXVAL,       /* Maximum value of array.               */
-  GAL_DATA_OPERATOR_MIN,          /* Minimum per pixel of multiple arrays. */
-  GAL_DATA_OPERATOR_MAX,          /* Maximum per pixel of multiple arrays. */
-  GAL_DATA_OPERATOR_SUM,          /* Sum per pixel of multiple arrays.     */
-  GAL_DATA_OPERATOR_AVERAGE,      /* Average per pixel of multiple arrays. */
-  GAL_DATA_OPERATOR_MEDIAN,       /* Median per pixel of multiple arrays.  */
-
-  GAL_DATA_OPERATOR_TO_UCHAR,     /* Convert to unsigned char.             */
-  GAL_DATA_OPERATOR_TO_CHAR,      /* Convert to char.                      */
-  GAL_DATA_OPERATOR_TO_USHORT,    /* Convert to unsigned short.            */
-  GAL_DATA_OPERATOR_TO_SHORT,     /* Convert to short.                     */
-  GAL_DATA_OPERATOR_TO_UINT,      /* Convert to unsigned int.              */
-  GAL_DATA_OPERATOR_TO_INT,       /* Convert to int.                       */
-  GAL_DATA_OPERATOR_TO_ULONG,     /* Convert to unsigned long.             */
-  GAL_DATA_OPERATOR_TO_LONG,      /* Convert to long.                      */
-  GAL_DATA_OPERATOR_TO_LONGLONG,  /* Convert to LONGLONG.                  */
-  GAL_DATA_OPERATOR_TO_FLOAT,     /* Convert to float.                     */
-  GAL_DATA_OPERATOR_TO_DOUBLE,    /* Convert to double.                    */
 };
 
 
@@ -367,25 +310,6 @@ gal_data_type_min(int type, void *in);
 
 void
 gal_data_type_max(int type, void *in);
-
-
-
-
-
-/*************************************************************
- **************           Arithmetic           ***************
- *************************************************************/
-char *
-gal_data_operator_string(int operator);
-
-gal_data_t *
-data_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags);
-
-
-
-gal_data_t *
-gal_data_arithmetic(int operator, unsigned char flags, ...);
-
 
 
 

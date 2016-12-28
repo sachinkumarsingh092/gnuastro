@@ -27,8 +27,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <error.h>
 #include <stdlib.h>
 
-#include <gnuastro/data.h>
-#include <data-arithmetic-onlyint.h>
+#include <gnuastro/arithmetic.h>
+
+#include <arithmetic-onlyint.h>
 
 
 
@@ -245,22 +246,22 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define BINOIN_RT_LT_SET(RT, LT)                                   \
   switch(operator)                                                 \
     {                                                              \
-    case GAL_DATA_OPERATOR_MODULO:                                 \
+    case GAL_ARITHMETIC_OP_MODULO:                                 \
       BINOIN_OP_RT_LT_SET(%, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_BITAND:                                 \
+    case GAL_ARITHMETIC_OP_BITAND:                                 \
       BINOIN_OP_RT_LT_SET(&, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_BITOR:                                  \
+    case GAL_ARITHMETIC_OP_BITOR:                                  \
       BINOIN_OP_RT_LT_SET(|, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_BITXOR:                                 \
+    case GAL_ARITHMETIC_OP_BITXOR:                                 \
       BINOIN_OP_RT_LT_SET(^, RT, LT);                              \
       break;                                                       \
-    case GAL_DATA_OPERATOR_BITLSH:                                 \
+    case GAL_ARITHMETIC_OP_BITLSH:                                 \
       BINOIN_OP_RT_LT_SET(<<, RT, LT);                             \
       break;                                                       \
-    case GAL_DATA_OPERATOR_BITRSH:                                 \
+    case GAL_ARITHMETIC_OP_BITRSH:                                 \
       BINOIN_OP_RT_LT_SET(>>, RT, LT);                             \
       break;                                                       \
     default:                                                       \
@@ -314,8 +315,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /*************              Top level function          *****************/
 /************************************************************************/
 gal_data_t *
-data_arithmetic_onlyint_binary(int operator, unsigned char flags,
-                               gal_data_t *lo, gal_data_t *ro)
+arithmetic_onlyint_binary(int operator, unsigned char flags,
+                          gal_data_t *lo, gal_data_t *ro)
 {
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure
@@ -323,7 +324,7 @@ data_arithmetic_onlyint_binary(int operator, unsigned char flags,
   int otype;
   size_t out_size, minmapsize;
   gal_data_t *l, *r, *o=NULL, *tmp_o;
-  char *opstring=gal_data_operator_string(operator);
+  char *opstring=gal_arithmetic_operator_string(operator);
 
 
   /* Simple sanity check on the input sizes and types */
@@ -341,8 +342,8 @@ data_arithmetic_onlyint_binary(int operator, unsigned char flags,
   /* Make sure the input arrays have one of the compiled types. From this
      point on, until the cleaning up section of this function, we won't be
      using the `lo' and `ro' pointers. */
-  l=data_arithmetic_convert_to_compiled_type(lo, flags);
-  r=data_arithmetic_convert_to_compiled_type(ro, flags);
+  l=gal_arithmetic_convert_to_compiled_type(lo, flags);
+  r=gal_arithmetic_convert_to_compiled_type(ro, flags);
 
 
   /* Set the output type. */
@@ -438,7 +439,7 @@ data_arithmetic_onlyint_binary(int operator, unsigned char flags,
 
 
 gal_data_t *
-data_arithmetic_bitwise_not(unsigned char flags, gal_data_t *in)
+arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
 {
   gal_data_t *o;
   unsigned char    *iuc=in->array, *iucf=in->array+in->size, *ouc;

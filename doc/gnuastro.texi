@@ -3149,7 +3149,7 @@ end).
 
 Binary operators, for example @code{+} or @code{>} (greater than), are some
 of the most common operators to the @ref{Arithmetic} program or the
-@code{gal_data_arithmetic} function in @ref{Gnuastro library}. To operate
+@code{data_arithmetic} function in @ref{Gnuastro library}. To operate
 most efficiently (as fast as possible without using extra memory or CPU
 resources), it is best to rely on the native types of the input data. For
 example, if you want to add an integer array with a floating point array,
@@ -3173,15 +3173,18 @@ compilation time will be directly felt (more significantly on large
 images/datasets) each time you run Gnuastro programs or libraries, because
 no internal type conversion will be necessary.
 
-If build time is important for you and you commonly work with very specific
-data-types, you can add them (and remove the default ones you don't need)
-with these configuration options to speed up your work. Alternatively,
-GNU/Linux distribution package managers who compile once (for a large
-audience of users who just download the compiled programs and executables),
-can enable all types to help their users. Since the outputs of comparison
-operators are @code{unsigned char} type and most astronomical datasets are
-in @code{float}, the recommended minimum enabled types are @code{unsigned
+If build time is important for you (mainly developers), disabling shared
+libraries and optimizations (as in @ref{Building and debugging}) is the
+first step to take. If you commonly work with very specific data-types, you
+can enable them (and disable the default types that you don't need) with
+these configuration options. Since the outputs of comparison operators are
+@code{unsigned char} type and most astronomical datasets are in
+@code{float}, the recommended minimum enabled types are @code{unsigned
 char} and @code{float}.
+
+GNU/Linux distribution package managers who compile once, for a large
+audience of users who just download the compiled programs and executables,
+are recommended to enable all types to help their users.
 
 
 

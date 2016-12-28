@@ -1,5 +1,5 @@
 /*********************************************************************
-Arithmetic operations on data structures.
+Arithmetic operations on data structures
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:
@@ -22,17 +22,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
-#include <stdio.h>
 #include <errno.h>
 #include <error.h>
-#include <stdlib.h>
+#include <stdarg.h>
 
-#include <gnuastro/data.h>
 #include <gnuastro/qsort.h>
+#include <gnuastro/arithmetic.h>
 
-
-
+#include <arithmetic-binary.h>
+#include <arithmetic-onlyint.h>
 
 
 
@@ -43,9 +41,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************        Unary functions/operators         **************/
 /***********************************************************************/
 /* Change input data structure type. */
-gal_data_t *
-data_arithmetic_change_type(gal_data_t *data, int operator,
-                            unsigned char flags)
+static gal_data_t *
+arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
 {
   int type=-1;
   gal_data_t *out;
@@ -53,20 +50,20 @@ data_arithmetic_change_type(gal_data_t *data, int operator,
   /* Set the output type. */
   switch(operator)
     {
-    case GAL_DATA_OPERATOR_TO_UCHAR:    type=GAL_DATA_TYPE_UCHAR;    break;
-    case GAL_DATA_OPERATOR_TO_CHAR:     type=GAL_DATA_TYPE_UCHAR;    break;
-    case GAL_DATA_OPERATOR_TO_USHORT:   type=GAL_DATA_TYPE_USHORT;   break;
-    case GAL_DATA_OPERATOR_TO_SHORT:    type=GAL_DATA_TYPE_SHORT;    break;
-    case GAL_DATA_OPERATOR_TO_UINT:     type=GAL_DATA_TYPE_UINT;     break;
-    case GAL_DATA_OPERATOR_TO_INT:      type=GAL_DATA_TYPE_INT;      break;
-    case GAL_DATA_OPERATOR_TO_ULONG:    type=GAL_DATA_TYPE_ULONG;    break;
-    case GAL_DATA_OPERATOR_TO_LONG:     type=GAL_DATA_TYPE_LONG;     break;
-    case GAL_DATA_OPERATOR_TO_LONGLONG: type=GAL_DATA_TYPE_LONGLONG; break;
-    case GAL_DATA_OPERATOR_TO_FLOAT:    type=GAL_DATA_TYPE_FLOAT;    break;
-    case GAL_DATA_OPERATOR_TO_DOUBLE:   type=GAL_DATA_TYPE_DOUBLE;   break;
+    case GAL_ARITHMETIC_OP_TO_UCHAR:    type=GAL_DATA_TYPE_UCHAR;    break;
+    case GAL_ARITHMETIC_OP_TO_CHAR:     type=GAL_DATA_TYPE_UCHAR;    break;
+    case GAL_ARITHMETIC_OP_TO_USHORT:   type=GAL_DATA_TYPE_USHORT;   break;
+    case GAL_ARITHMETIC_OP_TO_SHORT:    type=GAL_DATA_TYPE_SHORT;    break;
+    case GAL_ARITHMETIC_OP_TO_UINT:     type=GAL_DATA_TYPE_UINT;     break;
+    case GAL_ARITHMETIC_OP_TO_INT:      type=GAL_DATA_TYPE_INT;      break;
+    case GAL_ARITHMETIC_OP_TO_ULONG:    type=GAL_DATA_TYPE_ULONG;    break;
+    case GAL_ARITHMETIC_OP_TO_LONG:     type=GAL_DATA_TYPE_LONG;     break;
+    case GAL_ARITHMETIC_OP_TO_LONGLONG: type=GAL_DATA_TYPE_LONGLONG; break;
+    case GAL_ARITHMETIC_OP_TO_FLOAT:    type=GAL_DATA_TYPE_FLOAT;    break;
+    case GAL_ARITHMETIC_OP_TO_DOUBLE:   type=GAL_DATA_TYPE_DOUBLE;   break;
     default:
       error(EXIT_FAILURE, 0, "operator value of %d not recognized in "
-            "`data_arithmetic_change_type'", operator);
+            "`arithmetic_change_type'", operator);
     }
 
   /* Copy to the new type. */
@@ -92,8 +89,8 @@ data_arithmetic_change_type(gal_data_t *data, int operator,
       break;                                                            \
   }
 
-gal_data_t *
-data_arithmetic_not(gal_data_t *data, unsigned char flags)
+static gal_data_t *
+arithmetic_not(gal_data_t *data, unsigned char flags)
 {
   gal_data_t *out;
 
@@ -143,7 +140,7 @@ data_arithmetic_not(gal_data_t *data, unsigned char flags)
 
     default:
       error(EXIT_FAILURE, 0, "type value (%d) not recognized "
-            "in `data_arithmetic_not'", data->type);
+            "in `arithmetic_not'", data->type);
     }
 
   /* Delete the input structure if the user asked for it. */
@@ -162,8 +159,8 @@ data_arithmetic_not(gal_data_t *data, unsigned char flags)
    case of the absolute operator. This is because there are multiple
    versions of this function in the C library for different types, which
    can greatly improve speed. */
-gal_data_t *
-data_arithmetic_abs(unsigned char flags, gal_data_t *in)
+static gal_data_t *
+arithmetic_abs(unsigned char flags, gal_data_t *in)
 {
   gal_data_t *out;
 
@@ -227,7 +224,7 @@ data_arithmetic_abs(unsigned char flags, gal_data_t *in)
       break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`data_arithmetic_abs'", in->type);
+            "`arithmetic_abs'", in->type);
     }
 
   /* Clean up and return */
@@ -258,13 +255,12 @@ data_arithmetic_abs(unsigned char flags, gal_data_t *in)
 /***********************************************************************/
 /***************          Checking functions              **************/
 /***********************************************************************/
-
 /* Some functions are only for a floating point operand, so if the input
    isn't floating point, inform the user to change the type explicitly,
    doing it implicitly/internally puts too much responsability on the
    program. */
 static void
-check_float_input(gal_data_t *in, int operator, char *numstr)
+arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 {
   switch(in->type)
     {
@@ -280,8 +276,8 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
             "originally a typed number (string of characters), add an `f' "
             "after it so it is directly read into the proper precision "
             "floating point number (based on the number of non-zero "
-            "decimals it has)", gal_data_operator_string(operator), numstr,
-            gal_data_type_string(in->type, 1));
+            "decimals it has)", gal_arithmetic_operator_string(operator),
+            numstr, gal_data_type_string(in->type, 1));
     }
 }
 
@@ -342,10 +338,10 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
     IT *ia=in->array, *oa=o->array, *iaf=ia + in->size;                 \
     switch(operator)                                                    \
       {                                                                 \
-      case GAL_DATA_OPERATOR_MINVAL:                                    \
+      case GAL_ARITHMETIC_OP_MINVAL:                                    \
         UNIFUNC_MINVALUE;                                               \
         break;                                                          \
-      case GAL_DATA_OPERATOR_MAXVAL:                                    \
+      case GAL_ARITHMETIC_OP_MAXVAL:                                    \
         UNIFUNC_MAXVALUE;                                               \
         break;                                                          \
       default:                                                          \
@@ -449,9 +445,8 @@ check_float_input(gal_data_t *in, int operator, char *numstr)
 
 
 
-gal_data_t *
-data_arithmetic_unary_function(int operator, unsigned char flags,
-                               gal_data_t *in)
+static gal_data_t *
+arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
 {
   long dsize=1;
   gal_data_t *o;
@@ -462,12 +457,12 @@ data_arithmetic_unary_function(int operator, unsigned char flags,
     {
 
     /* Operators with only one value as output. */
-    case GAL_DATA_OPERATOR_MINVAL:
+    case GAL_ARITHMETIC_OP_MINVAL:
       o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1,
                          NULL, NULL, NULL);
       gal_data_type_max(o->type, o->array);
       break;
-    case GAL_DATA_OPERATOR_MAXVAL:
+    case GAL_ARITHMETIC_OP_MAXVAL:
       o = gal_data_alloc(NULL, in->type, 1, &dsize, NULL, 0, -1,
                          NULL, NULL, NULL);
       gal_data_type_min(o->type, o->array);
@@ -485,26 +480,26 @@ data_arithmetic_unary_function(int operator, unsigned char flags,
   /* Start setting the operator and operands. */
   switch(operator)
     {
-    case GAL_DATA_OPERATOR_SQRT:
+    case GAL_ARITHMETIC_OP_SQRT:
       UNIARY_FUNCTION_ON_ELEMENT( sqrt );
       break;
 
-    case GAL_DATA_OPERATOR_LOG:
+    case GAL_ARITHMETIC_OP_LOG:
       UNIARY_FUNCTION_ON_ELEMENT( log );
       break;
 
-    case GAL_DATA_OPERATOR_LOG10:
+    case GAL_ARITHMETIC_OP_LOG10:
       UNIARY_FUNCTION_ON_ELEMENT( log10 );
       break;
 
-    case GAL_DATA_OPERATOR_MINVAL:
-    case GAL_DATA_OPERATOR_MAXVAL:
+    case GAL_ARITHMETIC_OP_MINVAL:
+    case GAL_ARITHMETIC_OP_MAXVAL:
       UNIARY_FUNCTION_ON_ARRAY;
       break;
 
     default:
       error(EXIT_FAILURE, 0, "operator code %d not recognized in "
-            "data_arithmetic_unary_function", operator);
+            "arithmetic_unary_function", operator);
     }
 
 
@@ -615,9 +610,9 @@ data_arithmetic_unary_function(int operator, unsigned char flags,
 
 
 
-gal_data_t *
-data_arithmetic_binary_function_flt(int operator, unsigned char flags,
-                                    gal_data_t *l, gal_data_t *r)
+static gal_data_t *
+arithmetic_binary_function_flt(int operator, unsigned char flags,
+                               gal_data_t *l, gal_data_t *r)
 {
   int final_otype;
   gal_data_t *o=NULL;
@@ -631,8 +626,8 @@ data_arithmetic_binary_function_flt(int operator, unsigned char flags,
           "dimension/size in data_arithmetic_binary_function");
 
   /* Check for the types of the left and right operands. */
-  check_float_input(l, operator, "first");
-  check_float_input(r, operator, "second");
+  arithmetic_check_float_input(l, operator, "first");
+  arithmetic_check_float_input(r, operator, "second");
 
   /* Set the output type. */
   final_otype = gal_data_out_type(l, r);
@@ -669,7 +664,7 @@ data_arithmetic_binary_function_flt(int operator, unsigned char flags,
   /* Start setting the operator and operands. */
   switch(operator)
     {
-    case GAL_DATA_OPERATOR_POW:  BINFUNC_F_OPERATOR_SET( pow  ); break;
+    case GAL_ARITHMETIC_OP_POW:  BINFUNC_F_OPERATOR_SET( pow  ); break;
     default:
       error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
             "data_arithmetic_binary_function", operator);
@@ -775,18 +770,17 @@ data_arithmetic_binary_function_flt(int operator, unsigned char flags,
 
 
 
-void
-data_arithmetic_where(unsigned char flags, gal_data_t *out,
-                      gal_data_t *cond, gal_data_t *iftrue)
+static void
+arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
+                 gal_data_t *iftrue)
 {
   unsigned char *c=cond->array;
 
   /* The condition operator has to be unsigned char. */
   if(cond->type!=GAL_DATA_TYPE_UCHAR)
-    error(EXIT_FAILURE, 0, "the condition operand to "
-          "`data_arithmetic_where' must be an `unsigned char' type, but "
-          "the given condition operator has a `%s' type",
-          gal_data_type_string(cond->type, 1));
+    error(EXIT_FAILURE, 0, "the condition operand to `arithmetic_where' "
+          "must be an `unsigned char' type, but the given condition "
+          "operator has a `%s' type", gal_data_type_string(cond->type, 1));
 
   /* The dimension and sizes of the out and condition data sets must be the
      same. */
@@ -832,7 +826,7 @@ data_arithmetic_where(unsigned char flags, gal_data_t *out,
       break;
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized for the `out' "
-            "dataset of `data_arithmetic_where'", out->type);
+            "dataset of `arithmetic_where'", out->type);
     }
 
   /* Clean up if necessary. */
@@ -1027,23 +1021,23 @@ data_arithmetic_where(unsigned char flags, gal_data_t *out,
     /* Do the operation. */                                             \
     switch(operator)                                                    \
       {                                                                 \
-      case GAL_DATA_OPERATOR_MIN:                                       \
+      case GAL_ARITHMETIC_OP_MIN:                                       \
         MULTIOPERAND_MIN(TYPE);                                         \
         break;                                                          \
                                                                         \
-      case GAL_DATA_OPERATOR_MAX:                                       \
+      case GAL_ARITHMETIC_OP_MAX:                                       \
         MULTIOPERAND_MAX(TYPE);                                         \
         break;                                                          \
                                                                         \
-      case GAL_DATA_OPERATOR_SUM:                                       \
+      case GAL_ARITHMETIC_OP_SUM:                                       \
         MULTIOPERAND_SUM;                                               \
         break;                                                          \
                                                                         \
-      case GAL_DATA_OPERATOR_AVERAGE:                                   \
+      case GAL_ARITHMETIC_OP_AVERAGE:                                   \
         MULTIOPERAND_AVERAGE;                                           \
         break;                                                          \
                                                                         \
-      case GAL_DATA_OPERATOR_MEDIAN:                                    \
+      case GAL_ARITHMETIC_OP_MEDIAN:                                    \
         MULTIOPERAND_MEDIAN(TYPE, QSORT_F);                             \
         break;                                                          \
                                                                         \
@@ -1064,9 +1058,8 @@ data_arithmetic_where(unsigned char flags, gal_data_t *out,
 /* The single operator in this function is assumed to be a linked list. The
    number of operators is determined from the fact that the last node in
    the linked list must have a NULL pointer as its `next' element.*/
-gal_data_t *
-data_arithmetic_multioperand(int operator, unsigned char flags,
-                             gal_data_t *list)
+static gal_data_t *
+arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
 {
   int *hasblank;
   size_t i=0, dnum=1;
@@ -1089,13 +1082,13 @@ data_arithmetic_multioperand(int operator, unsigned char flags,
       if(tmp->type!=list->type)
         error(EXIT_FAILURE, 0, "the types of all operands to the %s "
               "operator must be same",
-              gal_data_operator_string(operator));
+              gal_arithmetic_operator_string(operator));
 
       /* Check the sizes. */
       if( gal_data_dsize_is_different(list, tmp) )
         error(EXIT_FAILURE, 0, "the sizes of all operands to the %s "
               "operator must be same",
-              gal_data_operator_string(operator));
+              gal_arithmetic_operator_string(operator));
     }
 
 
@@ -1112,7 +1105,7 @@ data_arithmetic_multioperand(int operator, unsigned char flags,
   hasblank=malloc(dnum*sizeof *hasblank);
   if(hasblank==NULL)
     error(EXIT_FAILURE, 0, "%zu bytes for hasblank in "
-          "`data_arithmetic_multioperand", dnum*sizeof *hasblank);
+          "`arithmetic_multioperand", dnum*sizeof *hasblank);
 
 
   /* Fill in the hasblank array. */
@@ -1147,7 +1140,7 @@ data_arithmetic_multioperand(int operator, unsigned char flags,
       MULTIOPERAND_TYPE_SET(double,         gal_qsort_double_increasing);
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`data_arithmetic_multioperand'", list->type);
+            "`arithmetic_multioperand'", list->type);
     }
 
 
@@ -1165,5 +1158,436 @@ data_arithmetic_multioperand(int operator, unsigned char flags,
         }
     }
   free(hasblank);
+  return out;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/****************      Compiled binary op types       *****************/
+/**********************************************************************/
+static int
+data_arithmetic_nearest_compiled_type(int intype)
+{
+  switch(intype)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      if(GAL_CONFIG_BIN_OP_UCHAR) return GAL_DATA_TYPE_UCHAR;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_USHORT)   return GAL_DATA_TYPE_USHORT;
+          else if(GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
+          else if(GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
+          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      if(GAL_CONFIG_BIN_OP_CHAR) return GAL_DATA_TYPE_CHAR;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_SHORT)    return GAL_DATA_TYPE_SHORT;
+          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      if(GAL_CONFIG_BIN_OP_USHORT) return GAL_DATA_TYPE_USHORT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_UINT)     return GAL_DATA_TYPE_UINT;
+          else if(GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      if(GAL_CONFIG_BIN_OP_SHORT) return GAL_DATA_TYPE_SHORT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_INT)      return GAL_DATA_TYPE_INT;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      if(GAL_CONFIG_BIN_OP_UINT) return GAL_DATA_TYPE_UINT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_ULONG)    return GAL_DATA_TYPE_ULONG;
+          else if(GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      if(GAL_CONFIG_BIN_OP_INT) return GAL_DATA_TYPE_INT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_LONG)     return GAL_DATA_TYPE_LONG;
+          else if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      if(GAL_CONFIG_BIN_OP_ULONG) return GAL_DATA_TYPE_ULONG;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      if(GAL_CONFIG_BIN_OP_LONG) return GAL_DATA_TYPE_LONG;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+          else if(GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      if(GAL_CONFIG_BIN_OP_LONGLONG) return GAL_DATA_TYPE_LONGLONG;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_FLOAT)    return GAL_DATA_TYPE_FLOAT;
+          else if(GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      if(GAL_CONFIG_BIN_OP_FLOAT) return GAL_DATA_TYPE_FLOAT;
+      else
+        {
+          if     (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+        }
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      if         (GAL_CONFIG_BIN_OP_DOUBLE)   return GAL_DATA_TYPE_DOUBLE;
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type %d not recognized in "
+            "binary_type_for_convert_to_compiled_type", intype);
+    }
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/****************         High-level functions        *****************/
+/**********************************************************************/
+char *
+gal_arithmetic_operator_string(int operator)
+{
+  switch(operator)
+    {
+    case GAL_ARITHMETIC_OP_PLUS:         return "+";
+    case GAL_ARITHMETIC_OP_MINUS:        return "-";
+    case GAL_ARITHMETIC_OP_MULTIPLY:     return "*";
+    case GAL_ARITHMETIC_OP_DIVIDE:       return "/";
+    case GAL_ARITHMETIC_OP_MODULO:       return "%";
+
+    case GAL_ARITHMETIC_OP_LT:           return "<";
+    case GAL_ARITHMETIC_OP_LE:           return "<=";
+    case GAL_ARITHMETIC_OP_GT:           return ">";
+    case GAL_ARITHMETIC_OP_GE:           return ">=";
+    case GAL_ARITHMETIC_OP_EQ:           return "==";
+    case GAL_ARITHMETIC_OP_NE:           return "!=";
+    case GAL_ARITHMETIC_OP_AND:          return "and";
+    case GAL_ARITHMETIC_OP_OR:           return "or";
+    case GAL_ARITHMETIC_OP_NOT:          return "not";
+    case GAL_ARITHMETIC_OP_ISBLANK:      return "isblank";
+    case GAL_ARITHMETIC_OP_WHERE:        return "where";
+
+    case GAL_ARITHMETIC_OP_BITAND:       return "bitand";
+    case GAL_ARITHMETIC_OP_BITOR:        return "bitor";
+    case GAL_ARITHMETIC_OP_BITXOR:       return "bitxor";
+    case GAL_ARITHMETIC_OP_BITLSH:       return "lshift";
+    case GAL_ARITHMETIC_OP_BITRSH:       return "rshift";
+    case GAL_ARITHMETIC_OP_BITNOT:       return "bitnot";
+
+    case GAL_ARITHMETIC_OP_ABS:          return "abs";
+    case GAL_ARITHMETIC_OP_POW:          return "pow";
+    case GAL_ARITHMETIC_OP_SQRT:         return "sqrt";
+    case GAL_ARITHMETIC_OP_LOG:          return "log";
+    case GAL_ARITHMETIC_OP_LOG10:        return "log10";
+
+    case GAL_ARITHMETIC_OP_MINVAL:       return "minvalue";
+    case GAL_ARITHMETIC_OP_MAXVAL:       return "maxvalue";
+    case GAL_ARITHMETIC_OP_MIN:          return "min";
+    case GAL_ARITHMETIC_OP_MAX:          return "max";
+    case GAL_ARITHMETIC_OP_AVERAGE:      return "average";
+    case GAL_ARITHMETIC_OP_MEDIAN:       return "median";
+
+    case GAL_ARITHMETIC_OP_TO_UCHAR:     return "uchar";
+    case GAL_ARITHMETIC_OP_TO_CHAR:      return "char";
+    case GAL_ARITHMETIC_OP_TO_USHORT:    return "ushort";
+    case GAL_ARITHMETIC_OP_TO_SHORT:     return "short";
+    case GAL_ARITHMETIC_OP_TO_UINT:      return "uint";
+    case GAL_ARITHMETIC_OP_TO_INT:       return "int";
+    case GAL_ARITHMETIC_OP_TO_ULONG:     return "ulong";
+    case GAL_ARITHMETIC_OP_TO_LONG:      return "long";
+    case GAL_ARITHMETIC_OP_TO_LONGLONG:  return "longlong";
+    case GAL_ARITHMETIC_OP_TO_FLOAT:     return "float";
+    case GAL_ARITHMETIC_OP_TO_DOUBLE:    return "double";
+
+    default:
+      error(EXIT_FAILURE, 0, "Operator code %d not recognized in "
+            "gal_data_operator_to_string", operator);
+    }
+
+  error(EXIT_FAILURE, 0, "A bug! Please contact us to fix the problem. "
+        "for some reason, control of the `gal_data_operator_to_string' "
+        "function has reached its end! This should not have happened");
+  return NULL;
+}
+
+
+
+
+
+/* Note that for signed types, we won't be considering the unsigned types
+   of the larger types. */
+gal_data_t *
+gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
+{
+  int ntype;
+  char *typestring;
+  gal_data_t *out=NULL;
+
+  /* Set the best compiled type. */
+  ntype=data_arithmetic_nearest_compiled_type(in->type);
+
+  /* If type is not compiled, then convert the dataset to the first
+     compiled larger type. */
+  if(in->type==ntype)
+    out=in;
+  else
+    {
+      if(ntype)
+        {
+          out=gal_data_copy_to_new_type(in, ntype);
+          if(flags & GAL_DATA_ARITH_FREE)
+            { gal_data_free(in, 0); in=NULL; }
+        }
+      else
+        {
+          typestring=gal_data_type_string(in->type, 1);
+          error(EXIT_FAILURE, 0, "The given %s type data given to "
+                "binary operators is not compiled for native operation "
+                "and no larger types are compiled either.\n\nThe "
+                "largest type (which can act as a fallback for any "
+                "input type is double, so configure Gnuastro again "
+                "with `--enable-bin-op-double' to not get this error "
+                "any more. However, if you commonly deal with %s type "
+                "data, also enable %s with a similar option at "
+                "configure time to greatly decrease running time and "
+                "avoid unnecessary RAM and CPU resources. Run"
+                "`./configure --help' in Gnuastro's top source "
+                "directory (after unpacking the tarball) for the full "
+                "list of options", typestring, typestring, typestring);
+        }
+    }
+
+  /* Return the output data structure */
+  if(out==NULL)
+    error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, so we can fix "
+          "the problem. For some reason, the `out' array in "
+          "`binary_convert_to_compiled_type' is not set", PACKAGE_BUGREPORT);
+  return out;
+}
+
+
+
+
+
+gal_data_t *
+gal_arithmetic(int operator, unsigned char flags, ...)
+{
+  va_list va;
+  gal_data_t *d1, *d2, *d3, *out=NULL;
+
+  /* Prepare the variable arguments (starting after the flags argument). */
+  va_start(va, flags);
+
+  /* Depending on the operator do the job: */
+  switch(operator)
+    {
+
+    /* Binary operators with any data type. */
+    case GAL_ARITHMETIC_OP_PLUS:
+    case GAL_ARITHMETIC_OP_MINUS:
+    case GAL_ARITHMETIC_OP_MULTIPLY:
+    case GAL_ARITHMETIC_OP_DIVIDE:
+    case GAL_ARITHMETIC_OP_LT:
+    case GAL_ARITHMETIC_OP_LE:
+    case GAL_ARITHMETIC_OP_GT:
+    case GAL_ARITHMETIC_OP_GE:
+    case GAL_ARITHMETIC_OP_EQ:
+    case GAL_ARITHMETIC_OP_NE:
+    case GAL_ARITHMETIC_OP_AND:
+    case GAL_ARITHMETIC_OP_OR:
+      d1 = va_arg(va, gal_data_t *);
+      d2 = va_arg(va, gal_data_t *);
+      out=arithmetic_binary(operator, flags, d1, d2);
+      break;
+
+    case GAL_ARITHMETIC_OP_NOT:
+      d1 = va_arg(va, gal_data_t *);
+      out=arithmetic_not(d1, flags);
+      break;
+
+    case GAL_ARITHMETIC_OP_ISBLANK:
+      d1 = va_arg(va, gal_data_t *);
+      out = gal_data_flag_blank(d1);
+      if(flags & GAL_DATA_ARITH_FREE) gal_data_free(d1, 0);
+      break;
+
+    case GAL_ARITHMETIC_OP_WHERE:
+      d1 = va_arg(va, gal_data_t *);    /* Output value/array.        */
+      d2 = va_arg(va, gal_data_t *);    /* Condition (unsigned char). */
+      d3 = va_arg(va, gal_data_t *);    /* If true value/array.       */
+      arithmetic_where(flags, d1, d2, d3);
+      out=d1;
+      break;
+
+
+    /* Unary function operators. */
+    case GAL_ARITHMETIC_OP_SQRT:
+    case GAL_ARITHMETIC_OP_LOG:
+    case GAL_ARITHMETIC_OP_LOG10:
+    case GAL_ARITHMETIC_OP_MINVAL:
+    case GAL_ARITHMETIC_OP_MAXVAL:
+      d1 = va_arg(va, gal_data_t *);
+      out=arithmetic_unary_function(operator, flags, d1);
+      break;
+
+    case GAL_ARITHMETIC_OP_ABS:
+      d1 = va_arg(va, gal_data_t *);
+      out=arithmetic_abs(flags, d1);
+      break;
+
+    case GAL_ARITHMETIC_OP_MIN:
+    case GAL_ARITHMETIC_OP_MAX:
+    case GAL_ARITHMETIC_OP_SUM:
+    case GAL_ARITHMETIC_OP_AVERAGE:
+    case GAL_ARITHMETIC_OP_MEDIAN:
+      d1 = va_arg(va, gal_data_t *);
+      out=arithmetic_multioperand(operator, flags, d1);
+      break;
+
+
+    /* Binary function operators. */
+    case GAL_ARITHMETIC_OP_POW:
+      d1 = va_arg(va, gal_data_t *);
+      d2 = va_arg(va, gal_data_t *);
+      out=arithmetic_binary_function_flt(operator, flags, d1, d2);
+      break;
+
+
+    /* Binary operators that only work on integer types. */
+    case GAL_ARITHMETIC_OP_BITAND:
+    case GAL_ARITHMETIC_OP_BITOR:
+    case GAL_ARITHMETIC_OP_BITXOR:
+    case GAL_ARITHMETIC_OP_BITLSH:
+    case GAL_ARITHMETIC_OP_BITRSH:
+    case GAL_ARITHMETIC_OP_MODULO:
+      d1 = va_arg(va, gal_data_t *);
+      d2 = va_arg(va, gal_data_t *);
+      out=arithmetic_onlyint_binary(operator, flags, d1, d2);
+      break;
+
+    case GAL_ARITHMETIC_OP_BITNOT:
+      d1 = va_arg(va, gal_data_t *);
+      out=arithmetic_onlyint_bitwise_not(flags, d1);
+      break;
+
+
+    /* Conversion operators. */
+    case GAL_ARITHMETIC_OP_TO_UCHAR:
+    case GAL_ARITHMETIC_OP_TO_CHAR:
+    case GAL_ARITHMETIC_OP_TO_USHORT:
+    case GAL_ARITHMETIC_OP_TO_SHORT:
+    case GAL_ARITHMETIC_OP_TO_UINT:
+    case GAL_ARITHMETIC_OP_TO_INT:
+    case GAL_ARITHMETIC_OP_TO_ULONG:
+    case GAL_ARITHMETIC_OP_TO_LONG:
+    case GAL_ARITHMETIC_OP_TO_LONGLONG:
+    case GAL_ARITHMETIC_OP_TO_FLOAT:
+    case GAL_ARITHMETIC_OP_TO_DOUBLE:
+      d1 = va_arg(va, gal_data_t *);
+      out=arithmetic_change_type(d1, operator, flags);
+      break;
+
+
+    /* When operator is not recognized. */
+    default:
+      error(EXIT_FAILURE, 0, "the argument \"%d\" could not be "
+            "interpretted as an operator", operator);
+    }
+
+  /* End the variable argument structure and return. */
+  va_end(va);
   return out;
 }
