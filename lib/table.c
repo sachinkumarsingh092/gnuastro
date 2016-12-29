@@ -174,16 +174,17 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
                     size_t numcols, int searchin, int ignorecase,
                     char *filename, char *hdu)
 {
-  size_t i;
   long tlong;
   int regreturn;
   regex_t *regex;
+  size_t i, numexact;
   char *str, *strcheck, *tailptr;
   struct gal_linkedlist_stll *tmp;
   struct gal_linkedlist_sll *indexll=NULL;
 
   for(tmp=cols; tmp!=NULL; tmp=tmp->next)
     {
+
       /* REGULAR EXPRESSION: When the first and last characters are `/'. */
       if( tmp->v[0]=='/' && tmp->v[strlen(tmp->v)-1]=='/' )
         {
@@ -234,46 +235,76 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
           regfree(regex);
         }
 
-      /* INTEGER: If the string is an integer, then tailptr should point to
-         the null character. If it points to anything else, it shows that
-         we are not dealing with an integer (usable as a column number). So
-         floating point values are also not acceptable. */
-      else if( (tlong=strtol(tmp->v, &tailptr, 0)) && *tailptr=='\0')
-        {
-          /* Make sure we are not dealing with a negative number! */
-          if(tlong<0)
-            error(EXIT_FAILURE, 0, "the column numbers given to the "
-                  "must not be negative, you have asked for `%ld'", tlong);
 
-          /* Check if the given value is not larger than the number of
-             columns in the input catalog (note that the user is counting
-             from 1, not 0!) */
-          if(tlong>numcols)
-            {
-              if(gal_fits_name_is_fits(filename))
-                error(EXIT_FAILURE, 0, "%s (hdu %s): has %zu columns, but "
-                      "you have asked for column number %zu", filename,
-                      hdu, numcols, tlong);
-              else
-                error(EXIT_FAILURE, 0, "%s: has %zu columns, but you have "
-                      "asked for column number %zu", filename,
-                      numcols, tlong);
-            }
-
-          /* Everything seems to be fine, put this column number in the
-             output column numbers linked list. Note that internally, the
-             column numbers start from 0, not 1.*/
-          gal_linkedlist_add_to_sll(&indexll, tlong-1);
-        }
-
-      /* EXACT MATCH: */
+      /* Not regular expression. */
       else
         {
-          for(i=0;i<numcols;++i)
+          tlong=strtol(tmp->v, &tailptr, 0);
+
+          /* INTEGER: If the string is an integer, then tailptr should
+             point to the null character. If it points to anything else, it
+             shows that we are not dealing with an integer (usable as a
+             column number). So floating point values are also not
+             acceptable. Since it is possible for the users to give zero
+             for the column number, we need to read the string as a number
+             first, then check it here. */
+          if(*tailptr=='\0')
             {
-              SET_STRCHECK;
-              if(strcheck && strcmp(tmp->v, strcheck)==0)
-                gal_linkedlist_add_to_sll(&indexll, i);
+              /* Make sure the number is larger than zero! */
+              if(tlong<=0)
+                error(EXIT_FAILURE, 0, "the column numbers given to the "
+                      "must not be zero, or negative. You have asked for "
+                      "column %ld", tlong);
+
+              /* Check if the given value is not larger than the number of
+                 columns in the input catalog (note that the user is
+                 counting from 1, not 0!) */
+              if(tlong>numcols)
+                {
+                  if(gal_fits_name_is_fits(filename))
+                    error(EXIT_FAILURE, 0, "%s (hdu %s): has %zu columns, "
+                          "but you have asked for column number %zu",
+                          filename, hdu, numcols, tlong);
+                  else
+                    error(EXIT_FAILURE, 0, "%s: has %zu columns, but you "
+                          "have asked for column number %zu", filename,
+                          numcols, tlong);
+                }
+
+              /* Everything seems to be fine, put this column number in the
+                 output column numbers linked list. Note that internally,
+                 the column numbers start from 0, not 1.*/
+              gal_linkedlist_add_to_sll(&indexll, tlong-1);
+            }
+
+
+
+          /* EXACT MATCH: */
+          else
+            {
+              /* Go through all the desired column information and add the
+                 column number when there is a match.*/
+              numexact=0;
+              for(i=0;i<numcols;++i)
+                {
+                  SET_STRCHECK;
+                  if(strcheck && strcmp(tmp->v, strcheck)==0 )
+                    {
+                      ++numexact;
+                      gal_linkedlist_add_to_sll(&indexll, i);
+                    }
+                }
+
+              /* If there was no match, then report an error. */
+              if(numexact==0)
+                error(EXIT_FAILURE, 0, "`%s' didn't match exactly with any "
+                      "of the column %s in %s (hdu: %s). To search in the "
+                      "columns, or match multiple of them, enclose your "
+                      "string in slashes (e.g., `/%s/') to use regular "
+                      "expressions", tmp->v,
+                      ( searchin==GAL_TABLE_SEARCH_NAME ? "names"
+                        : ( searchin==GAL_TABLE_SEARCH_UNIT ? "units"
+                            : "comments") ), filename, hdu, tmp->v );
             }
         }
     }

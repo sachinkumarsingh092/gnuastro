@@ -156,15 +156,17 @@ gal_txt_table_info(char *filename, size_t *numcols)
 /************************************************************************/
 /***************          Write a txt table               ***************/
 /************************************************************************/
+/* Make an array of two strings for each column (in practice a two
+   dimensional array with 2 columns and a row for each input column). */
 static char **
 make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
                      size_t *len)
 {
-  size_t i=0;
   char **fmts;
   gal_data_t *tmp;
-  char *fmt=NULL, *lng;
   int width=0, precision=0;
+  size_t i=0, j, maxstrlen=0;
+  char *fmt=NULL, *lng, **strarr;
 
   /* Allocate space for the output. */
   errno=0;
@@ -185,10 +187,11 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
       /* First allocate the necessary space to keep the string. */
       errno=0;
       fmts[i*2]=malloc(GAL_TXT_MAX_FMT_LENGTH*sizeof *fmts[i*2]);
-      if(fmts[i*2]==NULL)
-        error(EXIT_FAILURE, errno, "%zu bytes for fmts[%zu] in "
-              "`make_fmts_for_printf' of txt.c",
-              GAL_TXT_MAX_FMT_LENGTH*sizeof *fmts[i], i);
+      fmts[i*2+1]=malloc(GAL_TXT_MAX_FMT_LENGTH*sizeof *fmts[i*2+1]);
+      if(fmts[i*2]==NULL || fmts[i*2+1]==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes for fmts[%zu] or fmts[%zu] "
+              "in `make_fmts_for_printf' of txt.c",
+              GAL_TXT_MAX_FMT_LENGTH*sizeof *fmts[i], i*2, i*2+1);
 
       /* Write the proper format. */
       switch(tmp->type)
@@ -200,11 +203,21 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
           break;
 
         case GAL_DATA_TYPE_STRING:
+          /* Set the basic information. */
           fmt="s";
           width=( tmp->disp_width<0 ? GAL_TABLE_DEF_STR_WIDTH
                   : tmp->disp_width );
           precision=( tmp->disp_precision<0 ? GAL_TABLE_DEF_STR_PRECISION
                       : tmp->disp_precision );
+
+          /* For strings, we also need the maximum length of all the
+             columns, so go through all the strings in the column and find
+             the maximum length. */
+          strarr=tmp->array;
+          for(j=0;j<tmp->size;++j)
+            maxstrlen = ( strlen(strarr[j]) > maxstrlen
+                          ? strlen(strarr[j])
+                          : maxstrlen );
           break;
 
 
@@ -282,13 +295,21 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
                 "column %zu (counting from 1)", tmp->type, i+1);
         }
 
-      /* Print the result into the allocated string. The space in the end
-         here is to ensure that if the printed string is larger than the
-         expected width, it the columns will not merger and at least one
-         space character will be put between them.*/
+      /* Print the result into the allocated string and add its length to
+         the final length of the overall format statement. The space in the
+         end of `fmts[i*2]' is to ensure that the columns don't merge, even
+         if the printed string is larger than the expected width. */
       *len += 1 + sprintf(fmts[i*2], "%%%s%d.%d%s%s ", leftadjust ? "-" : "",
                           width, precision, lng, fmt);
-      fmts[i*2+1] = gal_data_type_string(tmp->type, 0);
+
+      /* Set the string for the Gnuastro type. For strings, we also need to
+         write the maximum number of characters.*/
+      if(tmp->type==GAL_DATA_TYPE_STRING)
+        sprintf(fmts[i*2+1], "%s%zu", gal_data_type_string(tmp->type, 0),
+                maxstrlen);
+      else
+        strcpy(fmts[i*2+1], gal_data_type_string(tmp->type, 0));
+
 
       /* Increment the column counter. */
       ++i;
@@ -309,21 +330,30 @@ gal_txt_write(gal_data_t *cols, char *comment, char *filename,
   FILE *fp;
   char **fmts;
   gal_data_t *tmp;
+  int iw=0, nw=0, uw=0, tw=0;
   size_t i, j, numcols=0, fmtlen;
-  int iw=0, fw=0, nw=0, uw=0, tw=0;
 
 
   /* Find the number of columns, do a small sanity check, and get the
      maximum width of the name and unit string if they are present. */
   for(tmp=cols;tmp!=NULL;tmp=tmp->next)
     {
+      /* Count. */
       ++numcols;
+
+      /* Make sure the columns are 1 dimensional. */
+      if(cols->ndim!=1)
+        error(EXIT_FAILURE, 0, "columns to print as an ASCII file must have "
+              "only one dimension. column %zu of the given set has %zu "
+              "dimensions", numcols, cols->ndim);
+
+      /* Make sure sizes match. */
       if(cols->size!=tmp->size)
-        error(EXIT_FAILURE, 0, "to print a set of columns, into a file, they "
-              "must all have the same number of elements/rows. The inputs to "
-              "`gal_txt_write' have different sizes: the first column has "
-              "%zu, while column %zu as %zu elements", cols->size, numcols,
-              tmp->size);
+        error(EXIT_FAILURE, 0, "to print a set of columns, as an ASCII "
+              "table, they must currently all have the same number of "
+              "elements/rows. The inputs to `gal_txt_write' have different "
+              "sizes: the first column has %zu, while column %zu as %zu "
+              "elements", cols->size, numcols, tmp->size);
       if( tmp->name && strlen(tmp->name)>nw ) nw=strlen(tmp->name);
       if( tmp->unit && strlen(tmp->unit)>uw ) uw=strlen(tmp->unit);
     }
@@ -348,13 +378,10 @@ gal_txt_write(gal_data_t *cols, char *comment, char *filename,
      for the full list and concatenate all the separate input into it. */
   fmts=make_fmts_for_printf(cols, numcols, 1, &fmtlen);
   for(i=0;i<numcols;++i)
-    {
-      fw = strlen( fmts[ i*2   ] ) > fw ? strlen( fmts[ i*2   ] ) : fw;
-      tw = strlen( fmts[ i*2+1 ] ) > tw ? strlen( fmts[ i*2+1 ] ) : tw;
-    }
+    tw = strlen( fmts[ i*2+1 ] ) > tw ? strlen( fmts[ i*2+1 ] ) : tw;
 
 
-  /* Write the comments if there as any */
+  /* Write the comments if there are any */
   if(comment) fprintf(fp, "%s\n", comment);
 
 
@@ -363,12 +390,11 @@ gal_txt_write(gal_data_t *cols, char *comment, char *filename,
   iw=log10(numcols)+1;
   for(tmp=cols;tmp!=NULL;tmp=tmp->next)
     {
-      fprintf(fp, "# Column %-*zu %-*s [ %-*s , %-*s , %-*s] %s\n",
+      fprintf(fp, "# Column %-*zu: %-*s [%-*s, %-*s] %s\n",
               iw, i+1,
               nw, tmp->name    ? tmp->name    : "",
               uw, tmp->unit    ? tmp->unit    : "",
               tw, fmts[i*2+1],
-              fw, fmts[i*2],
               tmp->comment ? tmp->comment : "");
       ++i;
     }
@@ -432,7 +458,11 @@ gal_txt_write(gal_data_t *cols, char *comment, char *filename,
   /* Clean up, close the input file and return. For the fmts[i*2] elements,
      the reason is that fmts[i*2+1] are literal strings, not allocated. So
      they don't need freeing.*/
-  for(i=0;i<numcols;++i) free(fmts[i*2]);
+  for(i=0;i<numcols;++i)
+    {
+      free(fmts[i*2]);
+      free(fmts[i*2+1]);
+    }
   free(fmts);
   if(filename)
     {

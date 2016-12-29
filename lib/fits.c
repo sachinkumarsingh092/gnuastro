@@ -1917,5 +1917,5 @@ void
 gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
                      char *filename, int dontdelete)
 {
-
+  error(EXIT_FAILURE, 0, "writing FITS tables is not implemented yet!");
 }

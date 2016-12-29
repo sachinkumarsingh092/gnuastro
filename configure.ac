@@ -396,7 +396,7 @@ AC_ARG_ENABLE([bin-op-longlong],
 AS_IF([test "x$binop_longlong" != x0], [binoptprint=yes], [binoptprint=no])
 AC_DEFINE_UNQUOTED([GAL_CONFIG_BIN_OP_LONGLONG], [$binop_longlong],
                    [Native binary operations on LONGLONG data.])
-AC_SUBST(HAVE_BIN_OP_LONG, [$binop_longlong])
+AC_SUBST(HAVE_BIN_OP_LONGLONG, [$binop_longlong])
 AC_MSG_RESULT($binoptprint)
 
 AC_MSG_CHECKING(whether to compile float native binary data operators)
