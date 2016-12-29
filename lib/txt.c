@@ -23,6 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <math.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <errno.h>
 #include <error.h>
@@ -43,7 +44,7 @@ enum txt_line_stat
 {
   TXT_LINESTAT_BLANK,
   TXT_LINESTAT_ISCOMMENT,
-  TXT_LINESTAT_NOTCOMMENT,
+  TXT_LINESTAT_DATAROW,
 };
 
 
@@ -51,7 +52,7 @@ enum txt_line_stat
 
 
 /* Return one of the `txt_line_stat' constant values. */
-int
+static int
 get_line_stat(char *line)
 {
   while(*line!='\n')
@@ -64,11 +65,253 @@ get_line_stat(char *line)
         case '#':
           return TXT_LINESTAT_ISCOMMENT;
         default:
-          return TXT_LINESTAT_NOTCOMMENT;
+          return TXT_LINESTAT_DATAROW;
         }
       ++line;
     }
   return TXT_LINESTAT_BLANK;
+}
+
+
+
+
+
+/* Remove the spaces around the values, and if the final/trimmed string has
+   no length, return NULL. */
+static char *
+txt_no_space_before_after(char *str)
+{
+  char *end;
+
+  /* If str doesn't point to anything, just return the NULL pointer. */
+  if(str==NULL) return NULL;
+
+  /* Remove the spaces before the start of the string. */
+  while(isspace(*str)) ++str;
+
+  /* If there was nothing in the string, then just return the ending `\0'
+     character. */
+  if(*str=='\0') return NULL;
+
+  /* Remove the spaces at the end, and write a possibly new `\0'. */
+  end = str + strlen(str) - 1;
+  while(end>str && isspace(*end)) --end;
+  *(end+1)='\0';
+
+  /* Return the string. */
+  return *str=='\0' ? NULL : str;
+}
+
+
+
+
+
+/* Use the input `blank' string and the input column to put the blank value
+   in the column's array. If no blank string is given, then free the
+   column's array. */
+static void
+txt_read_blank(gal_data_t *col, char *blank)
+{
+  double d;
+  long long L;
+  char **strarr, *tailptr;
+
+  /* If there is nothing to use as blank, then free the array. */
+  if(blank==NULL)
+    {
+      free(col->array);
+      return;
+    }
+
+  /* String type. Copy the string.*/
+  if(col->type==GAL_DATA_TYPE_STRING)
+    {
+      strarr=col->array;
+      gal_checkset_allocate_copy(blank, &strarr[0]);
+    }
+
+  /* Floating point: Read it as a double or long, then put it in the
+     array. When the conversion can't be done (the string isn't a number
+     for example), then just assume no blank value was given. */
+  else if(col->type==GAL_DATA_TYPE_FLOAT || col->type==GAL_DATA_TYPE_DOUBLE)
+    {
+      d=strtod(blank, &tailptr);
+      if(*tailptr!='\0') free(col->array);
+      else
+        {
+          if(col->type==GAL_DATA_TYPE_FLOAT) *(float *) col->array=d;
+          else                              *(double *) col->array=d;
+        }
+    }
+
+  /* Integers. */
+  else
+    {
+      L=strtoll(blank, &tailptr, 0);
+      if(*tailptr!='\0') free(col->array);
+      else
+        switch(col->type)
+          {
+          case GAL_DATA_TYPE_UCHAR:   *(unsigned char *) col->array=L; break;
+          case GAL_DATA_TYPE_CHAR:             *(char *) col->array=L; break;
+          case GAL_DATA_TYPE_USHORT: *(unsigned short *) col->array=L; break;
+          case GAL_DATA_TYPE_SHORT:           *(short *) col->array=L; break;
+          case GAL_DATA_TYPE_UINT:     *(unsigned int *) col->array=L; break;
+          case GAL_DATA_TYPE_INT:               *(int *) col->array=L; break;
+          case GAL_DATA_TYPE_ULONG:   *(unsigned long *) col->array=L; break;
+          case GAL_DATA_TYPE_LONG:             *(long *) col->array=L; break;
+          case GAL_DATA_TYPE_LONGLONG:     *(LONGLONG *) col->array=L; break;
+          default:
+            error(EXIT_FAILURE, 0, "type code %d not recognized in "
+                  "`txt_str_to_blank'", col->type);
+          }
+    }
+}
+
+
+
+
+
+
+/* Each column information comment should have a format like this:
+
+      # Column N: NAME [UNITS, TYPE, BLANK] COMMENT
+
+  TYPE has pre-defined values, and N must be an integer, but the rest can
+  contain any characters (including whitespace characters). The UNITS,
+  TYPE, BLANK tokens are optional, if not given, default values will be
+  set. But if there are comments, then the brackets themselves are required
+  to separate the name from the comments.
+
+  Any white space characters before or after the delimiters (`:', `[', `]',
+  `,') is ignored, but spaces within the values are kept. For example, in
+  the two following lines, NAME will be set to `col name' (even though
+  there are extra spaces in the second line, The column unit will be
+  set to `col unit'.
+
+      # Column 2: col name
+      # Column 2 :  col name     [ col unit, type ] Column comments.
+
+  When the column type is a string, the number of characters in the string
+  is also necessary, for example `str10'. Without an integer attached, the
+  line will be ignored.
+
+  In the case of an error or mis-match, the line will be ignored.
+
+  This function will make a linked list of information about each column
+  that has information in the comments. The information on each column
+  doesn't have to be in order, for example the information of column 10 can
+  be before column 7.
+*/
+static void
+txt_info_from_comment(char *line, gal_data_t **colsll)
+{
+  long dsize=1;
+  char *tailptr;
+  int index, type, strw=0;
+  char *number=NULL, *name=NULL, *comment=NULL;
+  char *inbrackets=NULL, *unit=NULL, *typestr=NULL, *blank=NULL;
+
+  /* Only read this comment if it follows the convention: */
+  if( !strncmp(line, "# Column ", 9) )
+    {
+      /* Set the name, inbrackets, and comments string in the first pass
+         through the line. */
+      number=line+9;
+      while(*line!='\0')
+        {
+          switch(*line)
+            {
+            case ':':
+              if(name==NULL) { *line='\0'; name=line+1; }
+              break;
+
+            case '[':
+              if(name && inbrackets==NULL) { *line='\0'; inbrackets=line+1; }
+              break;
+
+            case ']':
+              if(inbrackets && comment==NULL) { *line='\0'; comment=line+1; }
+              break;
+
+            case '\n':
+              *line='\0';
+              break;
+            }
+          ++line;
+        }
+
+      /* If there were brackets, then break it up. */
+      if(inbrackets)
+        {
+          unit=inbrackets;
+          while(*inbrackets!='\0')
+            {
+              if(*inbrackets==',')
+                {
+                  *inbrackets='\0';
+                  if     (typestr==NULL)  typestr = inbrackets+1;
+                  else if(blank==NULL)    blank   = inbrackets+1;
+                }
+              ++inbrackets;
+            }
+        }
+
+      /* Read the column number as an integer. If it can't be read as an
+         integer, or is zero or negative then just return without adding
+         anything to this line. */
+      index=strtol(number, &tailptr, 0);
+      if(*tailptr!='\0' || index<=0) return;
+
+      /* See if the type is a standard type, if so, then set the type,
+         otherwise, return and ignore this line. Just note that if we are
+         dealing with the string type, we have to pull out the number part
+         first. If there is no number, there will be an error.*/
+      typestr=txt_no_space_before_after(typestr);
+      if( !strncmp(typestr, "str", 3) )
+        {
+          type=GAL_DATA_TYPE_STRING;
+          strw=strtol(typestr+3, &tailptr, 0);
+          if(*tailptr!='\0' || strw<0) return;
+        }
+      else
+        {
+          type=gal_data_string_as_type(typestr);
+          if(type==-1) return;
+        }
+
+      /* Add this column's information into the columns linked list. We
+         will define the array to have one element to keep the blank
+         value. To keep the name, unit, and comment strings, trim the white
+         space before and after each before using them here.  */
+      gal_data_add_to_ll(colsll, NULL, type, 1, &dsize, NULL, 0, -1,
+                         txt_no_space_before_after(name),
+                         txt_no_space_before_after(unit),
+                         txt_no_space_before_after(comment) );
+
+      /* Put the number of this column into the status variable of the data
+         structure. If the type is string, then also copy the width into
+         the structure. */
+      (*colsll)->status=index;
+      if(type==GAL_DATA_TYPE_STRING) (*colsll)->disp_width=strw;
+
+      /* Write the blank value into the array. Note that this is not the
+         final column, we are just collecting information now. */
+      txt_read_blank(*colsll, txt_no_space_before_after(blank));
+    }
+}
+
+
+
+
+
+/* The input ASCII table might not have had information in its comments, or
+   the information might not have been complete. So we need to go through
+   the first row of data.*/
+void
+txt_info_from_row(char *line, gal_data_t **colsll)
+{
+  printf("%s\n", line);
 }
 
 
@@ -81,7 +324,8 @@ gal_txt_table_info(char *filename, size_t *numcols)
 {
   FILE *fp;
   char *line;
-  size_t linelen=10;  /* This will be increased later by `getline'. */
+  gal_data_t *colsll=NULL;
+  size_t linelen=10; /* `linelen' will be increased by `getline'. */
 
   /* Open the file. */
   errno=0;
@@ -103,24 +347,18 @@ gal_txt_table_info(char *filename, size_t *numcols)
      lines, but also confirm the info by trying to read the first
      uncommented line. */
   while( getline(&line, &linelen, fp) != -1 )
-    switch(get_line_stat(line))
-      {
-      case TXT_LINESTAT_BLANK:
-        printf("blank\n");
-        break;
+    {
+      /* Line is a comment, see if it has formatted information. */
+      if( get_line_stat(line) == TXT_LINESTAT_ISCOMMENT )
+        txt_info_from_comment(line, &colsll);
 
-      case TXT_LINESTAT_ISCOMMENT:
-        printf("comment\n");
-        break;
-
-      case TXT_LINESTAT_NOTCOMMENT:
-        printf("not comment\n");
-        break;
-
-      default:
-        error(EXIT_FAILURE, 0, "linestatus code %d not recognized in "
-              "`gal_txt_table_info'", get_line_stat(line));
-      }
+      /* Line is actual data, use it to fill in the gaps.  */
+      if( get_line_stat(line) == TXT_LINESTAT_DATAROW )
+        {
+          txt_info_from_row(line, &colsll);
+          break;
+        }
+    }
 
   /* Clean up, close the file and return. */
   free(line);
@@ -305,10 +543,10 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
       /* Set the string for the Gnuastro type. For strings, we also need to
          write the maximum number of characters.*/
       if(tmp->type==GAL_DATA_TYPE_STRING)
-        sprintf(fmts[i*2+1], "%s%zu", gal_data_type_string(tmp->type, 0),
+        sprintf(fmts[i*2+1], "%s%zu", gal_data_type_as_string(tmp->type, 0),
                 maxstrlen);
       else
-        strcpy(fmts[i*2+1], gal_data_type_string(tmp->type, 0));
+        strcpy(fmts[i*2+1], gal_data_type_as_string(tmp->type, 0));
 
 
       /* Increment the column counter. */

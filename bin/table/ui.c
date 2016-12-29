@@ -381,7 +381,7 @@ print_information_exit(struct tableparams *p)
       printf("%-8zu%-25s%-20s%-18s%s\n", i+1,
              name ? name : "N/A" ,
              unit ? unit : "N/A" ,
-             gal_data_type_string(allcols[i].type, 1),
+             gal_data_type_as_string(allcols[i].type, 1),
              comment ? comment : "N/A");
       if(name)    free(name);
       if(unit)    free(unit);

@@ -54,6 +54,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 /* Macros */
+#define GAL_TXT_DELIMITERS     " ,\t\f\v"
 #define GAL_TXT_MAX_FMT_LENGTH 20
 
 

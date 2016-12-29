@@ -37,7 +37,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 
 #include <checkset.h>
-#include <data-copy.h>
 
 
 
@@ -1392,73 +1391,126 @@ gal_data_flag_blank(gal_data_t *data)
 
 
 /*************************************************************
- **************       Types and copying       ***************
+ **************       Types and copying        ***************
  *************************************************************/
-char *
-gal_data_type_string(int type, int long_name)
-{
-  switch(type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      if(long_name) return "bit";             else return "b";
 
-    case GAL_DATA_TYPE_UCHAR:
-      if(long_name) return "unsigned char";   else return "uc";
+/* gal_data_copy_to_new_type: Macro for all tyeps. */
+#define COPY_OTYPE_ITYPE_SET(otype, itype) {                            \
+    itype *ia=in->array;                                                \
+    otype *oa=out->array, *of=oa+out->size;                             \
+    do *oa=*ia++; while(++oa<of);                                       \
+  }
 
-      /* CFITSIO says "int for keywords, char for table columns". Here we
-         are only assuming table columns. So in practice this also applies
-         to TSBYTE.*/
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      if(long_name) return "char";            else return "c";
 
-    case GAL_DATA_TYPE_STRING:
-      if(long_name) return "string";          else return "str";
 
-    case GAL_DATA_TYPE_USHORT:
-      if(long_name) return "unsigned short";  else return "us";
 
-    case GAL_DATA_TYPE_SHORT:
-      if(long_name) return "short";           else return "s";
 
-    case GAL_DATA_TYPE_UINT:
-      if(long_name) return "unsigned int";    else return "ui";
-
-    case GAL_DATA_TYPE_INT:
-      if(long_name) return "int";             else return "i";
-
-    case GAL_DATA_TYPE_ULONG:
-      if(long_name) return "unsigned long";   else return "ul";
-
-    case GAL_DATA_TYPE_LONG:
-      if(long_name) return "long";            else return "l";
-
-    case GAL_DATA_TYPE_LONGLONG:
-      if(long_name) return "LONGLONG";        else return "L";
-
-    case GAL_DATA_TYPE_FLOAT:
-      if(long_name) return "float";           else return "f";
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if(long_name) return "double";          else return "d";
-
-    case GAL_DATA_TYPE_COMPLEX:
-      if(long_name) return "complex float";   else return "cf";
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      if(long_name) return "complex double";  else return "cd";
-
-    default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "`gal_data_type_string'", type);
+/* gal_data_copy_to_new_type: Output type is set, now choose the input
+   type. */
+#define COPY_OTYPE_SET(otype)                                           \
+  switch(in->type)                                                      \
+    {                                                                   \
+    case GAL_DATA_TYPE_UCHAR:                                           \
+      COPY_OTYPE_ITYPE_SET(otype, unsigned char);                       \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_CHAR:                                            \
+      COPY_OTYPE_ITYPE_SET(otype, char);                                \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_USHORT:                                          \
+      COPY_OTYPE_ITYPE_SET(otype, unsigned short);                      \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_SHORT:                                           \
+      COPY_OTYPE_ITYPE_SET(otype, short);                               \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_ULONG:                                           \
+      COPY_OTYPE_ITYPE_SET(otype, unsigned long);                       \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_LONG:                                            \
+      COPY_OTYPE_ITYPE_SET(otype, long);                                \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_LONGLONG:                                        \
+      COPY_OTYPE_ITYPE_SET(otype, LONGLONG);                            \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_FLOAT:                                           \
+      COPY_OTYPE_ITYPE_SET(otype, float);                               \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_DOUBLE:                                          \
+      COPY_OTYPE_ITYPE_SET(otype, double);                              \
+      break;                                                            \
+                                                                        \
+    default:                                                            \
+      error(EXIT_FAILURE, 0, "type %d not recognized for "              \
+            "for newtype in COPY_OTYPE_SET", in->type);                 \
     }
 
-  /* Any of the cases above should return this function, so if control
-     reaches here, there is a bug. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "the `gal_data_type_string' function. This must not happen",
-        PACKAGE_BUGREPORT);
-  return NULL;
+
+
+
+
+/* Copy a given data structure to a new one (possibly with a new type). */
+gal_data_t *
+gal_data_copy_to_new_type(gal_data_t *in, int newtype)
+{
+  gal_data_t *out;
+
+  /* Allocate space for the output type */
+  out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
+                     0, in->minmapsize, in->name, in->unit, in->comment);
+
+  /* Fill in the output array: */
+  switch(newtype)
+    {
+    case GAL_DATA_TYPE_UCHAR:
+      COPY_OTYPE_SET(unsigned char);
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      COPY_OTYPE_SET(char);
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      COPY_OTYPE_SET(unsigned short);
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      COPY_OTYPE_SET(short);
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      COPY_OTYPE_SET(unsigned long);
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      COPY_OTYPE_SET(long);
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      COPY_OTYPE_SET(LONGLONG);
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      COPY_OTYPE_SET(float);
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      COPY_OTYPE_SET(double);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type %d not recognized for "
+            "for newtype in gal_data_copy_to_new_type", newtype);
+    }
+
+  /* Return the created array */
+  return out;
 }
 
 
@@ -1649,8 +1701,144 @@ gal_data_string_to_number(char *string)
 
 
 /*************************************************************
- **************    Type minimum and maximums   ***************
+ **************            Type info           ***************
  *************************************************************/
+
+char *
+gal_data_type_as_string(int type, int long_name)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_BIT:
+      if(long_name) return "bit";             else return "b";
+
+    case GAL_DATA_TYPE_UCHAR:
+      if(long_name) return "unsigned char";   else return "uc";
+
+      /* CFITSIO says "int for keywords, char for table columns". Here we
+         are only assuming table columns. So in practice this also applies
+         to TSBYTE.*/
+    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
+      if(long_name) return "char";            else return "c";
+
+    case GAL_DATA_TYPE_STRING:
+      if(long_name) return "string";          else return "str";
+
+    case GAL_DATA_TYPE_USHORT:
+      if(long_name) return "unsigned short";  else return "us";
+
+    case GAL_DATA_TYPE_SHORT:
+      if(long_name) return "short";           else return "s";
+
+    case GAL_DATA_TYPE_UINT:
+      if(long_name) return "unsigned int";    else return "ui";
+
+    case GAL_DATA_TYPE_INT:
+      if(long_name) return "int";             else return "i";
+
+    case GAL_DATA_TYPE_ULONG:
+      if(long_name) return "unsigned long";   else return "ul";
+
+    case GAL_DATA_TYPE_LONG:
+      if(long_name) return "long";            else return "l";
+
+    case GAL_DATA_TYPE_LONGLONG:
+      if(long_name) return "LONGLONG";        else return "L";
+
+    case GAL_DATA_TYPE_FLOAT:
+      if(long_name) return "float";           else return "f";
+
+    case GAL_DATA_TYPE_DOUBLE:
+      if(long_name) return "double";          else return "d";
+
+    case GAL_DATA_TYPE_COMPLEX:
+      if(long_name) return "complex float";   else return "cf";
+
+    case GAL_DATA_TYPE_DCOMPLEX:
+      if(long_name) return "complex double";  else return "cd";
+
+    default:
+      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
+            "`gal_data_type_as_string'", type);
+    }
+
+  /* Any of the cases above should return this function, so if control
+     reaches here, there is a bug. */
+  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
+        "the problem. For some reason control has reached the end of "
+        "the `gal_data_type_as_string' function. This must not happen",
+        PACKAGE_BUGREPORT);
+  return NULL;
+}
+
+
+
+
+
+int
+gal_data_string_as_type(char *str)
+{
+  if(      !strcmp(str, "b")   || !strcmp(str, "bit") )
+    return GAL_DATA_TYPE_BIT;
+
+  else if( !strcmp(str, "uc")  || !strcmp(str, "unsigned char") )
+    return GAL_DATA_TYPE_UCHAR;
+
+  else if( !strcmp(str, "c")   || !strcmp(str, "char") )
+    return GAL_DATA_TYPE_CHAR;
+
+  else if( !strcmp(str, "str") || !strcmp(str, "string") )
+    return GAL_DATA_TYPE_STRING;
+
+  else if( !strcmp(str, "us")  || !strcmp(str, "unsigned short") )
+    return GAL_DATA_TYPE_USHORT;
+
+  else if( !strcmp(str, "s")   || !strcmp(str, "short") )
+    return GAL_DATA_TYPE_SHORT;
+
+  else if( !strcmp(str, "ui")  || !strcmp(str, "unsigned int") )
+    return GAL_DATA_TYPE_UINT;
+
+  else if( !strcmp(str, "i")   || !strcmp(str, "int") )
+    return GAL_DATA_TYPE_INT;
+
+  else if( !strcmp(str, "ul")  || !strcmp(str, "unsigned long") )
+    return GAL_DATA_TYPE_ULONG;
+
+  else if( !strcmp(str, "l")   || !strcmp(str, "long") )
+    return GAL_DATA_TYPE_LONG;
+
+  else if( !strcmp(str, "L")   || !strcmp(str, "LONGLONG") )
+    return GAL_DATA_TYPE_LONGLONG;
+
+  else if( !strcmp(str, "f")   || !strcmp(str, "float") )
+    return GAL_DATA_TYPE_FLOAT;
+
+  else if( !strcmp(str, "d")   || !strcmp(str, "double") )
+    return GAL_DATA_TYPE_DOUBLE;
+
+  else if( !strcmp(str, "cf")  || !strcmp(str, "complex float") )
+    return GAL_DATA_TYPE_COMPLEX;
+
+  else if( !strcmp(str, "cd")  || !strcmp(str, "complex double") )
+    return GAL_DATA_TYPE_DCOMPLEX;
+
+  else
+    return -1;
+
+  /* Any of the cases above should return this function, so if control
+     reaches here, there is a bug. */
+  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
+        "the problem. For some reason control has reached the end of "
+        "the `gal_data_string_as_type' function. This must not happen",
+        PACKAGE_BUGREPORT);
+  return 0;
+}
+
+
+
+
+
 /* Put the minimum (or maximum for the `gal_data_type_max') value for the
    type in the space (that must already be allocated before the call to
    this function) pointed to by in.  */

@@ -277,7 +277,7 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
             "after it so it is directly read into the proper precision "
             "floating point number (based on the number of non-zero "
             "decimals it has)", gal_arithmetic_operator_string(operator),
-            numstr, gal_data_type_string(in->type, 1));
+            numstr, gal_data_type_as_string(in->type, 1));
     }
 }
 
@@ -780,7 +780,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
   if(cond->type!=GAL_DATA_TYPE_UCHAR)
     error(EXIT_FAILURE, 0, "the condition operand to `arithmetic_where' "
           "must be an `unsigned char' type, but the given condition "
-          "operator has a `%s' type", gal_data_type_string(cond->type, 1));
+          "operator has a `%s' type", gal_data_type_as_string(cond->type, 1));
 
   /* The dimension and sizes of the out and condition data sets must be the
      same. */
@@ -1433,7 +1433,7 @@ gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
         }
       else
         {
-          typestring=gal_data_type_string(in->type, 1);
+          typestring=gal_data_type_as_string(in->type, 1);
           error(EXIT_FAILURE, 0, "The given %s type data given to "
                 "binary operators is not compiled for native operation "
                 "and no larger types are compiled either.\n\nThe "

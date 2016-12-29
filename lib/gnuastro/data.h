@@ -181,6 +181,24 @@ typedef struct gal_data_t
 
 
 
+/*************************************************************
+ **************        Type information        ***************
+ *************************************************************/
+char *
+gal_data_type_as_string(int type, int long_name);
+
+int
+gal_data_string_as_type(char *str);
+
+void
+gal_data_type_min(int type, void *in);
+
+void
+gal_data_type_max(int type, void *in);
+
+
+
+
 
 /*********************************************************************/
 /*************         Size and allocation         *******************/
@@ -269,16 +287,13 @@ gal_data_flag_blank(gal_data_t *data);
 
 
 /*************************************************************
- **************       Types and copying        ***************
+ **************            Copying             ***************
  *************************************************************/
-char *
-gal_data_type_string(int type, int long_name);
+gal_data_t *
+gal_data_copy_to_new_type(gal_data_t *in, int newtype);
 
 gal_data_t *
 gal_data_copy(gal_data_t *in);
-
-gal_data_t *
-gal_data_copy_to_new_type(gal_data_t *in, int newtype);
 
 int
 gal_data_out_type(gal_data_t *first, gal_data_t *second);
@@ -290,26 +305,12 @@ gal_data_to_same_type(gal_data_t *f, gal_data_t *s,
 
 
 
-
-
 /*************************************************************
  **************              Read              ***************
  *************************************************************/
 gal_data_t *
 gal_data_string_to_number(char *string);
 
-
-
-
-
-/*************************************************************
- **************    Type minimum and maximums   ***************
- *************************************************************/
-void
-gal_data_type_min(int type, void *in);
-
-void
-gal_data_type_max(int type, void *in);
 
 
 

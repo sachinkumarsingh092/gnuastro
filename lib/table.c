@@ -1,5 +1,5 @@
 /*********************************************************************
-txt -- Functions for I/O on text files.
+table -- Functions for I/O on tables.
 This is part of GNU Astronomy Utilities (Gnuastro) package.
 
 Original author:

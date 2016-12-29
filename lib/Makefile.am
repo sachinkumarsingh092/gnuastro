@@ -42,7 +42,7 @@ libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
 # Specify the library .c files
 libgnuastro_la_SOURCES = arithmetic.c arithmetic-binary.c               \
   arithmetic-onlyint.c array.c box.c checkset.c configfiles.c data.c    \
-  data-copy.c fits.c git.c linkedlist.c mesh.c mode.c polygon.c qsort.c \
+  fits.c git.c linkedlist.c mesh.c mode.c polygon.c qsort.c             \
   spatialconvolve.c statistics.c table.c threads.c timing.c txt.c wcs.c
 
 
@@ -71,9 +71,9 @@ pkginclude_HEADERS = gnuastro/config.h $(headersdir)/arithmetic.h       \
 # will not distributed, so we need to explicitly tell Automake to
 # distribute them here.
 EXTRA_DIST = gnuastro.pc.in arithmetic-binary.h	arithmetic-onlyint.h    \
-  arithmetic-other.h data-copy.h config.h.in checkset.h commonargs.h    \
-  commonparams.h configfiles.h fixedstringmacros.h mode.h neighbors.h   \
-  timing.h $(headersdir)/README
+  arithmetic-other.h config.h.in checkset.h commonargs.h commonparams.h \
+  configfiles.h fixedstringmacros.h mode.h neighbors.h timing.h         \
+  $(headersdir)/README
 
 
 
