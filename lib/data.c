@@ -305,8 +305,8 @@ gal_data_alloc_number(int type, void *number)
 
 
 
-void
-gal_data_mmap(gal_data_t *data)
+static void
+gal_data_mmap(gal_data_t *data, int clear)
 {
   int filedes;
   char *filename;
@@ -349,8 +349,11 @@ gal_data_mmap(gal_data_t *data)
   if( close(filedes) == -1 )
     error(EXIT_FAILURE, errno, "%s couldn't be closed", filename);
 
-  /* Set the mmaped flag to 1 and keep the filename. */
+  /* Keep the filename. */
   data->mmapname=filename;
+
+  /* If it was supposed to be cleared, then clear the memory. */
+  if(clear) memset(data->array, 0, bsize);
 }
 
 
@@ -404,36 +407,49 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
   gal_data_copy_wcs(&in, data);
 
 
-  /* Allocate space for the dsize array: */
-  errno=0;
-  data->dsize=malloc(ndim*sizeof *data->dsize);
-  if(data->dsize==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for data->dsize in "
-          "`gal_data_alloc'", ndim*sizeof *data->dsize);
-
-
-  /* Fill in the `dsize' array and in the meantime set `size': */
-  data->size=1;
-  for(i=0;i<ndim;++i)
+  /* Allocate space for the dsize array, only if the data are to have any
+     dimensions. Note that in our convention, a number has a `ndim=1' and
+     `dsize[0]=1', A 1D array also has `ndim=1', but `dsize[0]>1'. */
+  if(ndim)
     {
-      /* Do a small sanity check. */
-      if(dsize[i]==0)
-        error(EXIT_FAILURE, 0, "the size of a dimension cannot be zero. "
-              "dsize[%zu] in `gal_data_alloc' has a value of 0", i);
+      errno=0;
+      data->dsize=malloc(ndim*sizeof *data->dsize);
+      if(data->dsize==NULL)
+        error(EXIT_FAILURE, errno, "%zu bytes for data->dsize in "
+              "`gal_data_alloc'", ndim*sizeof *data->dsize);
 
-      /* Write this dimension's size, also correct the total number of
-         elements. */
-      data->size *= ( data->dsize[i] = dsize[i] );
+
+      /* Fill in the `dsize' array and in the meantime set `size': */
+      data->size=1;
+      for(i=0;i<ndim;++i)
+        {
+          /* Do a small sanity check. */
+          if(dsize[i]==0)
+            error(EXIT_FAILURE, 0, "the size of a dimension cannot be zero. "
+                  "dsize[%zu] in `gal_data_alloc' has a value of 0", i);
+
+          /* Write this dimension's size, also correct the total number of
+             elements. */
+          data->size *= ( data->dsize[i] = dsize[i] );
+        }
+    }
+  else
+    {
+      data->size=0;
+      data->dsize=NULL;
     }
 
 
-  /* Allocate space for the array, clear it if necessary: */
-  if(array)
+  /* Set the array pointer. If an non-NULL array pointer was given, then
+     use it. If `array==NULL', then check if `ndim==0'. If it is, then you
+     can also set `data->array=array' (==NULL). Otherwise, mmap or allocate
+     (and possibly) clean the space. */
+  if(array || ndim==0)
     data->array=array;
   else
     {
       if( gal_data_sizeof(type)*data->size  > minmapsize )
-        gal_data_mmap(data);
+        gal_data_mmap(data, clear);
       else
         {
           /* Allocate the space for the array. */

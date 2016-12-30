@@ -147,23 +147,25 @@ regexerrorexit(int errcode, regex_t *compiled, char *input)
 
 
 /* Macro to set the string to search in */
-#define SET_STRCHECK                                                    \
-  strcheck=NULL;                                                        \
-  switch(searchin)                                                      \
-    {                                                                   \
-    case GAL_TABLE_SEARCH_NAME:                                         \
-      strcheck=allcols[i].name;                                         \
-      break;                                                            \
-    case GAL_TABLE_SEARCH_UNIT:                                         \
-      strcheck=allcols[i].unit;                                         \
-      break;                                                            \
-    case GAL_TABLE_SEARCH_COMMENT:                                      \
-      strcheck=allcols[i].comment;                                      \
-      break;                                                            \
-    default:                                                            \
-      error(EXIT_FAILURE, 0, "the code %d to searchin was not "         \
-            "recognized in gal_table_read_cols", searchin);             \
+static char *
+table_set_strcheck(gal_data_t *col, int searchin)
+{
+  switch(searchin)
+    {
+    case GAL_TABLE_SEARCH_NAME:
+      return col->name;
+
+    case GAL_TABLE_SEARCH_UNIT:
+      return col->unit;
+
+    case GAL_TABLE_SEARCH_COMMENT:
+      return col->comment;
+
+    default:
+      error(EXIT_FAILURE, 0, "the code %d to searchin was not "
+            "recognized in `table_set_strcheck'", searchin);
     }
+}
 
 
 
@@ -226,7 +228,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
              names, if so `p->tname[i]' will be NULL. */
           for(i=0;i<numcols;++i)
             {
-              SET_STRCHECK;
+              strcheck=table_set_strcheck(&allcols[i], searchin);
               if(strcheck && regexec(regex, strcheck, 0, 0, 0)==0)
                 gal_linkedlist_add_to_sll(&indexll, i);
             }
@@ -287,7 +289,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
               numexact=0;
               for(i=0;i<numcols;++i)
                 {
-                  SET_STRCHECK;
+                  strcheck=table_set_strcheck(&allcols[i], searchin);
                   if(strcheck && strcmp(tmp->v, strcheck)==0 )
                     {
                       ++numexact;
@@ -345,6 +347,9 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 
   /* First get the information of all the columns. */
   allcols=gal_table_info(filename, hdu, &numcols, &tabletype);
+
+  printf("\n--- out of gal_table_info ---\n");
+  exit(0);
 
   /* Get the list of indexs in the same order as the input list */
   indexll=make_list_of_indexs(cols, allcols, numcols, searchin,

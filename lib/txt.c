@@ -208,6 +208,7 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
 {
   long dsize=1;
   char *tailptr;
+  gal_data_t *tmp;
   int index, type, strw=0;
   char *number=NULL, *name=NULL, *comment=NULL;
   char *inbrackets=NULL, *unit=NULL, *typestr=NULL, *blank=NULL;
@@ -280,6 +281,11 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
           if(type==-1) return;
         }
 
+      /* If this is a repeated index, ignore it. */
+      for(tmp=*colsll; tmp!=NULL; tmp=tmp->next)
+        if(tmp->status==index)
+          return;
+
       /* Add this column's information into the columns linked list. We
          will define the array to have one element to keep the blank
          value. To keep the name, unit, and comment strings, trim the white
@@ -307,11 +313,127 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
 
 /* The input ASCII table might not have had information in its comments, or
    the information might not have been complete. So we need to go through
-   the first row of data.*/
+   the first row of data also. */
 void
 txt_info_from_row(char *line, gal_data_t **colsll)
 {
-  printf("%s\n", line);
+  size_t i=0;
+  gal_data_t *col;
+  char *token, *end=line+strlen(line);
+
+  /* Remove the new line character from the end of the line. If the last
+     column is a string, and the given length is larger than the
+     available space on the line, we don't want to  */
+  *(end-1)=' ';
+
+  /* Go over the line check/fill the column information. */
+  while(++i)
+    {
+      /* Check if there is information for this column. */
+      for(col=*colsll; col!=NULL; col=col->next) if(col->status==i) break;
+
+      /* If there is information for this column, then check if it is a
+         string, and if so, don't use `strtok_r' (because it might have
+         delimiters). So manually go ahead in the line till you get to the
+         start of the string, then increment the line until the end of the
+         space set for the strings. */
+      if(col)
+        {
+          if( col->type==GAL_DATA_TYPE_STRING )
+            {
+              /* Remove all delimiters before the string starts. */
+              while(isspace(*line) || *line==',') ++line;
+
+              /* Increment line to the end of the string. */
+              line = (token=line) + col->disp_width;
+
+              /* If we haven't reached the end of the line, then set a NULL
+                 character where the string ends, so we can use the
+                 token. VERY IMPORTANT: this should not be `<=end'. If the
+                 given width is larger than line, there is no problem, the
+                 `\0' of the line will also be used to end this last
+                 column.*/
+              if(line<end)
+                {
+                  *line++='\0';
+                  /* printf(" col %zu: -%s-\n", i, token); */
+                }
+              else break;
+            }
+          else
+            {
+              token=strtok_r(i==1?line:NULL, GAL_TXT_DELIMITERS, &line);
+              if(token==NULL) break;
+              /* printf(" col %zu: =%s=\n", i, token); */
+            }
+        }
+      else
+        {
+          /* Make sure a token exists in this undefined column. */
+          token=strtok_r(i==1?line:NULL, GAL_TXT_DELIMITERS, &line);
+          if(token==NULL) break;
+          /* printf(" col %zu: *%s*\n", i, token); */
+
+          /* A token exists, so set this column to the default double type
+             with no information, then set its status value to the column
+             number. */
+          gal_data_add_to_ll(colsll, NULL, GAL_DATA_TYPE_DOUBLE, 0, NULL,
+                             NULL, 0, -1, NULL, NULL, NULL);
+          (*colsll)->status=i;
+        }
+    }
+}
+
+
+
+
+
+/* In the steps above, we read/set the information for each column. But to
+   enforce minimum standard requirements on the user, things were allowed
+   to be read very loosely, for example some columns can be not defined
+   (and will thus be read as a double type), or they don't necessarily have
+   to be given in the same order as the table. So we just pushed each new
+   read/set column into a linked list. Now the job is done, and we want to
+   convert that linked list into an array of data structures for more
+   easier random access during the selection of the columns. */
+static gal_data_t *
+txt_infoll_to_array(gal_data_t *colsll)
+{
+  size_t numcols=0;
+  gal_data_t *col, *allcols;
+
+  /* First find the total number of columns. */
+  for(col=colsll;col!=NULL;col=col->next)
+    numcols = numcols > col->status ? numcols : col->status;
+
+  /* Now, allocate the array and put in the values. */
+  errno=0;
+  allcols=calloc(numcols, sizeof *allcols);
+  if(allcols==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for `allcols' in "
+          "`txt_infoll_to_array'", numcols*sizeof *allcols);
+
+  /* Put each column into its proper place in the array. We are setting all
+     the allocated spaces in the linked list elements to NULL, because we
+     didn't initialize the array of column information in the allocation
+     above and we don't want to re-allocate everything (because freeing the
+     linked list will free them also). */
+  for(col=colsll;col!=NULL;col=col->next)
+    {
+      allcols[col->status].name=col->name;          col->name=NULL;
+      allcols[col->status].unit=col->unit;          col->unit=NULL;
+      allcols[col->status].array=col->array;        col->array=NULL;
+      allcols[col->status].dsize=col->dsize;        col->dsize=NULL;
+      allcols[col->status].comment=col->comment;    col->comment=NULL;
+
+      allcols[col->status].type=col->type;
+      allcols[col->status].ndim=col->ndim;
+      allcols[col->status].size=col->size;
+      allcols[col->status].disp_width=col->disp_width;
+    }
+
+  /* Return the array of all column information. */
+  return allcols;
 }
 
 
@@ -324,8 +446,9 @@ gal_txt_table_info(char *filename, size_t *numcols)
 {
   FILE *fp;
   char *line;
-  gal_data_t *colsll=NULL;
+  gal_data_t *colsll=NULL, *allcols;
   size_t linelen=10; /* `linelen' will be increased by `getline'. */
+
 
   /* Open the file. */
   errno=0;
@@ -333,6 +456,7 @@ gal_txt_table_info(char *filename, size_t *numcols)
   if(fp==NULL)
     error(EXIT_FAILURE, errno, "%s: could't open to read as a text table",
           filename);
+
 
   /* Get the maximum line length and allocate the space necessary to keep
      copies of all lines as we parse them. Note that `getline' is going to
@@ -342,6 +466,7 @@ gal_txt_table_info(char *filename, size_t *numcols)
   if(line==NULL)
     error(EXIT_FAILURE, errno, "%zu bytes for line in `gal_txt_table_info'",
           linelen*sizeof *line);
+
 
   /* Read the comments of the line for possible information about the
      lines, but also confirm the info by trying to read the first
@@ -360,16 +485,23 @@ gal_txt_table_info(char *filename, size_t *numcols)
         }
     }
 
-  /* Clean up, close the file and return. */
-  free(line);
+
+  /* Write the unorganized gathered information (linked list) into an
+     organized array for easy processing by later steps. */
+  allcols=txt_infoll_to_array(colsll);
+
+
+  /* Clean up and close the file. */
   errno=0;
   if(fclose(fp))
     error(EXIT_FAILURE, errno, "%s: couldn't close file after reading ASCII "
           "table information", filename);
+  gal_data_free_ll(colsll);
+  free(line);
 
-  printf("\n----end of tableinfo----\n");
-  exit(0);
-  return NULL;
+
+  /* Return the array of column information. */
+  return allcols;
 }
 
 
