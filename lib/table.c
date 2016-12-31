@@ -424,6 +424,9 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
   gal_data_t *allcols, *out=NULL;
   struct gal_linkedlist_sll *indexll;
 
+  /* If the column string linked list is empty, no need to continue. */
+  if(cols==NULL) return NULL;
+
   /* First get the information of all the columns. */
   allcols=gal_table_info(filename, hdu, &numcols, &numrows, &tabletype);
 
@@ -464,11 +467,7 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 
   /* Clean up. */
   for(i=0;i<numcols;++i)
-    {
-      allcols[i].wcs=NULL;
-      allcols[i].mmapname=NULL;
-      gal_data_free(&allcols[i], 1);
-    }
+    gal_data_free(&allcols[i], 1);
   free(allcols);
   gal_linkedlist_free_sll(indexll);
 

@@ -373,6 +373,32 @@ print_information_exit(struct tableparams *p)
 void
 preparearrays(struct tableparams *p)
 {
+  char *numstr;
+  int tabletype;
+  gal_data_t *allcols;
+  size_t i, numcols, numrows;
+
+  /* If there were no columns specified, we want the full set of
+     columns. */
+  if(p->columns==NULL)
+    {
+      /* Read the table information for the number of columns and rows. */
+      allcols=gal_table_info(p->up.filename, p->cp.hdu, &numcols,
+                             &numrows, &tabletype);
+
+      /* Free the information from all the columns. */
+      for(i=0;i<numcols;++i)
+        gal_data_free(&allcols[i], 1);
+      free(allcols);
+
+      /* Add the number of columns to the list. */
+      for(i=1;i<=numcols;++i)
+        {
+          asprintf(&numstr, "%zu", i);
+          gal_linkedlist_add_to_stll(&p->columns, numstr);
+        }
+    }
+
   /* Reverse the list of column search criteria that we are looking for
      (since this is a last-in-first-out linked list, the order that
      elements were added to the list is the reverse of the order that they

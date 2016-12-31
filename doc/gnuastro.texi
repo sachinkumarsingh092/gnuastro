@@ -6267,11 +6267,11 @@ some very simple examples.
 @node Invoking asttable,  , Table, Table
 @subsection Invoking Table
 
-Table will convert FITS binary and ASCII tables into other such tables, or
-print them on the command-line, or save them in a plain text file. Output
-columns can also be determined by number or regular expression matching of
-column names. The executable name is @file{asttable} with the following
-general template
+Table will read/wwrite, select, convert, or show the information of the
+columns in FITS ASCII table, FITS binary table and plain text table
+files. Output columns can also be determined by number or regular
+expression matching of column names. The executable name is @file{asttable}
+with the following general template
 
 @example
 $ asttable [OPTION...] InputFile
@@ -6285,7 +6285,7 @@ One line examples:
 $ asttable bintab.fits --information
 
 ## Only print those columns which have a name starting with "MAG_"
-$ asttable bintab.fits --columns=/^MAG_/
+$ asttable bintab.fits --column=/^MAG_/
 
 ## Only print the 2nd column, and the third column multiplied by 5
 $ asttable bintab.fits | awk '@{print $2, 5*$3@}'
@@ -6300,14 +6300,12 @@ $ asttable bintab.fits | sort -k3 > output.txt
 $ asttable plaintext.txt --output=inbinary.fits
 @end example
 
-Table can accept plain text files, or binary and ASCII FITS table
-extensions in a FITS file. For the full list of options common to all
-Gnuastro utilities please see @ref{Common options}. Options can also be
-stored in directory, user or system-wide configuration files to avoid
-repeating on the command-line, see @ref{Configuration files}. Currently all
-plain text files are processed (and thus printed, or saved to a binary FITS
-table) as double floating point types. We are still working on this many
-many more features.
+In the absence of an output file, the selected columns will be printed on
+the command-line. In the absence of selected columns, all columns will be
+output. For the full list of options common to all Gnuastro utilities
+please see @ref{Common options}. Options can also be stored in directory,
+user or system-wide configuration files to avoid repeating on the
+command-line, see @ref{Configuration files}.
 
 Table does not follow Automatic output that is common in most Gnuastro, see
 @ref{Automatic output}. If no value is given to the @option{--output}
@@ -6334,12 +6332,13 @@ mandatory.
 @itemx --column
 (@option{=STR} or @option{=INT}) Specify the columns to output for this
 table. If the value to this option is an integer number, the column number
-will be used (counting from 1, Table will abort with an error if negative
-values are given). When the value isn't a number, the value's string of
-characters will be used to match one of the pieces of information for the
-columns. See the @option{--searchin} option description for more on where
-the matching/searching will take place. The matching will be done following
-this convention (similar to AWK):
+will be used (counting from 1, Table will abort with an error if zero or
+negative values are given). When the value can't be interpretted as an a
+integer number, the value's string of characters will be used to match one
+of the pieces of information for the columns. See the @option{--searchin}
+option description for more on where the matching/searching will take
+place. The matching will be done following this convention (similar to
+AWK):
 
 @itemize
 @item
@@ -6369,6 +6368,9 @@ same call order on the command-line. This option is not mandatory, if no
 specific columns are requested, all the input table columns are
 output. When this option is called multiple times, it is possible to output
 one column more than once.
+
+Specifying a column isn't mandatory, if no column is specified all the
+table columns will be chosen.
 
 @item -s
 @itemx --searchin
