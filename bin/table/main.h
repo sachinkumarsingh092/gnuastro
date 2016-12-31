@@ -40,14 +40,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct uiparams
 {
   char              *filename;
-  char          *outtabletype;
+  char             *tabletype;
   gal_data_t      *allcolinfo;
   char              *searchin;
 
   /* If values are set: */
   int          informationset;
   int           ignorecaseset;
-  int         outtabletypeset;
+  int            tabletypeset;
   int             searchinset;
 };
 
@@ -66,7 +66,7 @@ struct tableparams
   struct gal_linkedlist_stll *columns; /* List of given columns.        */
 
   /* Output: */
-  int            outtabletype;  /* Type of output table (FITS, txt).    */
+  int               tabletype;  /* Type of output table (FITS, txt).    */
   gal_data_t           *table;  /* Linked list of output table columns. */
 
   /* Operating modes */

@@ -74,8 +74,8 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
                    struct gal_linkedlist_sll *indexll, int minmapsize);
 
 void
-gal_txt_write(gal_data_t *cols, char *comment, char *filename,
-              int dontdelete);
+gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
+                    int dontdelete);
 
 
 

@@ -117,13 +117,15 @@ enum gal_table_diplay_formats
 
 
 /* Functions */
+int
+gal_table_string_to_type(char *string);
+
+int
+gal_table_string_to_searchin(char *string);
 
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
                  int *tabletype);
-
-int
-gal_table_searchin_from_str(char *searchin_str);
 
 gal_data_t *
 gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,

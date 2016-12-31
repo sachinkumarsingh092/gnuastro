@@ -914,12 +914,12 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
           if(col->type==GAL_DATA_TYPE_ULONG)
             {
               lng="l";
-              width=( col->disp_width<0 ? GAL_TABLE_DEF_LINT_WIDTH
+              width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
                       : col->disp_width );
             }
-          else width=( col->disp_width<0 ? GAL_TABLE_DEF_INT_WIDTH
+          else width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
                        : col->disp_width );
-          precision=( col->disp_precision<0 ? GAL_TABLE_DEF_INT_PRECISION
+          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
                       : col->disp_precision );
           break;
 
@@ -930,9 +930,9 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
         case GAL_DATA_TYPE_SHORT:
         case GAL_DATA_TYPE_INT:
           fmt="d";
-          width=( col->disp_width<0 ? GAL_TABLE_DEF_INT_WIDTH
+          width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
                   : col->disp_width );
-          precision=( col->disp_precision<0 ? GAL_TABLE_DEF_INT_PRECISION
+          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
                       : col->disp_precision );
           break;
 
@@ -942,9 +942,9 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
         case GAL_DATA_TYPE_LONGLONG:
           fmt="d";
           lng = col->type==GAL_DATA_TYPE_LONG ? "l" : "ll";
-          width=( col->disp_width<0 ? GAL_TABLE_DEF_LINT_WIDTH
+          width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
                   : col->disp_width );
-          precision=( col->disp_precision<0 ? GAL_TABLE_DEF_INT_PRECISION
+          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
                       : col->disp_precision );
           break;
 
@@ -964,7 +964,7 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
                       ? GAL_TABLE_DEF_FLT_WIDTH
                       : GAL_TABLE_DEF_DBL_WIDTH )
                   : col->disp_width );
-          precision=( col->disp_precision<0 ? GAL_TABLE_DEF_FLT_PRECISION
+          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_FLT_PRECISION
                       : col->disp_precision );
           break;
 
@@ -1042,7 +1042,7 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
          the final length of the overall format statement. The space in the
          end of `fmts[i*2]' is to ensure that the columns don't merge, even
          if the printed string is larger than the expected width. */
-      if(precision<0)
+      if(precision<=0)
         *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%d.%d%s%s ",
                             leftadjust ? "-" : "", width, precision,
                             lng, fmt);
@@ -1078,8 +1078,8 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
 
 
 void
-gal_txt_write(gal_data_t *cols, char *comment, char *filename,
-              int dontdelete)
+gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
+                    int dontdelete)
 {
   FILE *fp;
   gal_data_t *col;

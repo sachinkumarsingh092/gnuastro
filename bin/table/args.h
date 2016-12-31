@@ -126,11 +126,11 @@ static struct argp_option options[] =
       2
     },
     {
-      "outtabletype",
+      "tabletype",
       't',
       "STR",
       0,
-      "Output type: `txt', `fits-ascii', `fits-binary'.",
+      "Output table type: `fits-ascii', `fits-binary'.",
       2
     },
 
@@ -206,8 +206,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Output: */
     case 't':
-      gal_checkset_allocate_copy(arg, &p->up.outtabletype);
-      p->up.outtabletypeset=1;
+      gal_checkset_allocate_copy(arg, &p->up.tabletype);
+      p->up.tabletypeset=1;
       break;
 
 

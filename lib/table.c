@@ -40,6 +40,84 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/************************************************************************/
+/***************               Table types                ***************/
+/************************************************************************/
+/* Return the type of desired table based on a standard string. */
+int
+gal_table_string_to_type(char *string)
+{
+  if(string)
+    {
+      if( !strcmp(string, "txt") )
+        return GAL_TABLE_TYPE_TXT;
+
+      else if( !strcmp(string, "fits-ascii") )
+        return GAL_TABLE_TYPE_AFITS;
+
+      else if( !strcmp(string, "fits-binary") )
+        return GAL_TABLE_TYPE_BFITS;
+
+      else
+        error(EXIT_FAILURE, 0, "`%s' couldn't be interpretted as a valid "
+              "table type. The known types are `txt', `fits-ascii', and "
+              "`fits-binary'", string);
+    }
+
+  /* If string was not NULL, this function won't reach here. */
+  return -1;
+}
+
+
+
+
+
+/* In programs, the `searchin' variable is much more easier to type in as a
+   description than an integer (which is what `gal_table_read_cols'
+   needs). This function will check the string value and give the
+   corresponding integer value.*/
+int
+gal_table_string_to_searchin(char *string)
+{
+  if(strcmp(string, "name")==0)
+    return GAL_TABLE_SEARCH_NAME;
+
+  else if(strcmp(string, "unit")==0)
+    return GAL_TABLE_SEARCH_UNIT;
+
+  else if(strcmp(string, "comment")==0)
+    return GAL_TABLE_SEARCH_COMMENT;
+
+  else
+    error(EXIT_FAILURE, 0, "`--searchin' only recognizes the values "
+          "`name', `unit', and `comment', you have asked for `%s'",
+          string);
+
+  /* Report an error control reaches here. */
+  error(EXIT_FAILURE, 0, "A bug! please contact us at %s so we can address "
+        "the problem. For some reason control has reached the end of "
+        "`gal_table_searchin_from_str'", PACKAGE_BUGREPORT);
+  return -1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /************************************************************************/
 /***************         Information about a table        ***************/
@@ -96,34 +174,6 @@ gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
 /************************************************************************/
 /***************               Read a table               ***************/
 /************************************************************************/
-/* In programs, the `searchin' variable is much more easier to type in as a
-   description than an integer (which is what `gal_table_read_cols'
-   needs). This function will check the string value and give the
-   corresponding integer value.*/
-int
-gal_table_searchin_from_str(char *searchin_str)
-{
-  if(strcmp(searchin_str, "name")==0)
-    return GAL_TABLE_SEARCH_NAME;
-  else if(strcmp(searchin_str, "unit")==0)
-    return GAL_TABLE_SEARCH_UNIT;
-  else if(strcmp(searchin_str, "comment")==0)
-    return GAL_TABLE_SEARCH_COMMENT;
-  else
-    error(EXIT_FAILURE, 0, "`--searchin' only recognizes the values "
-          "`name', `unit', and `comment', you have asked for `%s'",
-          searchin_str);
-
-  /* Report an error control reaches here. */
-  error(EXIT_FAILURE, 0, "A bug! please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "`gal_table_searchin_from_str'", PACKAGE_BUGREPORT);
-  return -1;
-}
-
-
-
-
 
 /* Function to print regular expression error. This is taken from the GNU C
    library manual, with small modifications to fit out style, */
@@ -456,17 +506,12 @@ gal_table_write(gal_data_t *cols, char *comments, int tabletype,
      used. When the filename is empty, a text table must be printed on the
      standard output (on the command-line). */
   if(filename)
-    switch(tabletype)
-      {
-      case GAL_TABLE_TYPE_TXT:
-        gal_txt_write(cols, comments, filename, dontdelete);
-        break;
-
-      case GAL_TABLE_TYPE_AFITS:
-      case GAL_TABLE_TYPE_BFITS:
+    {
+      if(gal_fits_name_is_fits(filename))
         gal_fits_table_write(cols, comments, tabletype, filename, dontdelete);
-        break;
-      }
+      else
+        gal_txt_table_write(cols, comments, filename, dontdelete);
+    }
   else
-    gal_txt_write(cols, comments, filename, dontdelete);
+    gal_txt_table_write(cols, comments, filename, dontdelete);
 }

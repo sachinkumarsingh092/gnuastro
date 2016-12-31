@@ -6432,16 +6432,28 @@ single precision floating point numbers.
 (@option{=INT}) The number of digits to print after the floating point for
 double precision floating point numbers.
 
-@item --outtabletype
-(@option{=STR}) The output table type (for example plain text, FITS ascii,
-or FITS binary). If this option is not called on the command-line or any of
-the configuration files and no output filename is given with the
-@option{--output} option (see @ref{Common options}), then the columns that
-are read will be printed in the standard output (on the command-line).
-However, if it is called, it can only have one of these values:
-@option{txt}, @option{fits-ascii}, @option{fits-binary} for the current
-types of recognized output table types. If the output is a FITS file, this
-option is necessary because there are two types of FITS tables.
+@item -t
+@itemx --tabletype
+(@option{=STR}) The output file's table type when a filename is given to
+the @option{--output} option (see @ref{Common options}). This is ofcourse
+only relevant when the type of the table cannot be deduced from its
+filename. For example, if a name ending in @file{.fits} was given to
+@option{--output}, then Gnuastro knows you want a FITS table. But there are
+two types of FITS tables: FITS ASCII, and FITS binary. Thus, with this
+option, the program is able to identify which type you want. The currently
+recognized values to this option are:
+
+@table @command
+@item txt
+A plain text table with space characters between the columns. Setting
+@option{--tabletype} to this value is acceptable, but irrelevant. Because a
+plain text table only currently has one format and is the default when the
+output filename wasn't recognized.
+@item fits-ascii
+A FITS ASCII table.
+@item fits-binary
+A FITS binary table.
+@end table
 
 
 @end table

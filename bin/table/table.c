@@ -44,6 +44,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 table(struct tableparams *p)
 {
-  gal_table_write(p->table, NULL, p->outtabletype, p->cp.output,
+  gal_table_write(p->table, NULL, p->tabletype, p->cp.output,
                   p->cp.dontdelete);
 }
