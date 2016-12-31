@@ -1098,21 +1098,20 @@ gal_data_has_blank(gal_data_t *data)
   /* 'value' will only be read from one of these based on the
      datatype. Which the caller assigned. If there is any problem, it is
      their responsability, not this function's.*/
-  unsigned char     *uc = data->array,   *ucf = data->array + data->size;
-  char               *c = data->array,    *cf = data->array + data->size;
-  char            **str = data->array, **strf = data->array + data->size;
-  unsigned short    *us = data->array,   *usf = data->array + data->size;
-  short              *s = data->array,    *sf = data->array + data->size;
-  unsigned int      *ui = data->array,   *uif = data->array + data->size;
-  int               *in = data->array,   *inf = data->array + data->size;
-  unsigned long     *ul = data->array,   *ulf = data->array + data->size;
-  long               *l = data->array,    *lf = data->array + data->size;
-  LONGLONG           *L = data->array,    *Lf = data->array + data->size;
-  float              *f = data->array,    *ff = data->array + data->size;
-  double             *d = data->array,    *df = data->array + data->size;
-  gsl_complex_float *cx = data->array,   *cxf = data->array + data->size;
-  gsl_complex      *dcx = data->array,  *dcxf = data->array + data->size;
-
+  unsigned char     *uc = data->array,   *ucf = uc  + data->size;
+  char               *c = data->array,    *cf = c   + data->size;
+  char            **str = data->array, **strf = str + data->size;
+  unsigned short    *us = data->array,   *usf = us  + data->size;
+  short              *s = data->array,    *sf = s   + data->size;
+  unsigned int      *ui = data->array,   *uif = ui  + data->size;
+  int               *in = data->array,   *inf = in  + data->size;
+  unsigned long     *ul = data->array,   *ulf = ul  + data->size;
+  long               *l = data->array,    *lf = l   + data->size;
+  LONGLONG           *L = data->array,    *Lf = L   + data->size;
+  float              *f = data->array,    *ff = f   + data->size;
+  double             *d = data->array,    *df = d   + data->size;
+  gsl_complex_float *cx = data->array,   *cxf = cx  + data->size;
+  gsl_complex      *dcx = data->array,  *dcxf = dcx + data->size;
 
   /* Go over the pixels and check: */
   switch(data->type)

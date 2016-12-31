@@ -53,8 +53,15 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Macros */
+/* Macros.
+
+ Note on `GAL_TXT_STRING_BLANK': Within Gnuastro, a blank string value is
+ just a NULL pointer, but here, we are dealing with the outside world. In
+ particular we want to write the column to the outside world. So this macro
+ acts as a place holder for the blank string columns ONLY in ASCII
+ tables.*/
 #define GAL_TXT_DELIMITERS     " ,\t\f\v"
+#define GAL_TXT_STRING_BLANK   "blank"
 #define GAL_TXT_MAX_FMT_LENGTH 20
 
 
