@@ -59,10 +59,13 @@ static char args_doc[] = "ASTRdata";
 const char doc[] =
   /* Before the list of options: */
   GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" prints (in a human readable format) a FITS table or its "
-  "information. The output columns can either be selected by number, name "
-  "or using regular expressions. The format of their printing can also "
-  "be set (based on the type of data in the column).\n"
+  SPACK_NAME" can be used to view the information, select columns, or convert "
+  "tables. The inputs and outputs can be plain text (with whitespace or comma "
+  "as delimiters), FITS ascii, or FITS binary tables. The output columns can "
+  "either be selected by number (counting from 1), name or using regular "
+  "expressions. For regular expressions, enclose the value to the `--column' "
+  "(`-c') option in slashes (`\\', as in `-c\\^mag\\'). To print the selected "
+  "columns on the command-line, don't specify an output file.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -102,7 +105,7 @@ static struct argp_option options[] =
       's',
       "STR",
       0,
-      "Search for columns in `name', `units', `comments'.",
+      "Search in column `name', `units', or `comments'.",
       1
     },
     {
@@ -110,7 +113,7 @@ static struct argp_option options[] =
       'I',
       0,
       0,
-      "Ignore case when matching column names.",
+      "Ignore case when matching column information.",
       1
     },
 
@@ -127,7 +130,7 @@ static struct argp_option options[] =
       't',
       "STR",
       0,
-      "Type of output: `txt', `fits-ascii', `fits-binary'.",
+      "Output type: `txt', `fits-ascii', `fits-binary'.",
       2
     },
 

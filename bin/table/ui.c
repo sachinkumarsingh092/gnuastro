@@ -357,16 +357,17 @@ void
 print_information_exit(struct tableparams *p)
 {
   int tabletype;
-  size_t i, numcols;
   gal_data_t *allcols;
+  size_t i, numcols, numrows;
   char *name, *unit, *comment;
 
-  allcols=gal_table_info(p->up.filename, p->cp.hdu, &numcols,
+  allcols=gal_table_info(p->up.filename, p->cp.hdu, &numcols, &numrows,
                          &tabletype);
 
   /* Print the legend */
-  printf("Column information for\n");
+  printf("Information for\n");
   printf("%s (hdu: %s)\n", p->up.filename, p->cp.hdu);
+  printf("Number of rows: %zu\n", numrows);
   printf("%-8s%-25s%-20s%-18s%s\n", "No.", "Name", "Units", "Type",
          "Comment");
   printf("%-8s%-25s%-20s%-18s%s\n", "---", "----", "-----", "----",
@@ -426,6 +427,10 @@ preparearrays(struct tableparams *p)
   gal_linkedlist_reverse_stll(&p->columns);
   p->table=gal_table_read(p->up.filename, p->cp.hdu, p->columns,
                           p->searchin, p->ignorecase, p->cp.minmapsize);
+
+  /* Now that the data columns are ready, we can free the string linked
+     list. */
+  gal_linkedlist_free_stll(p->columns, 1);
 }
 
 
@@ -520,4 +525,6 @@ freeandreport(struct tableparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
+  free(p->up.searchin);
+  gal_data_free_ll(p->table);
 }

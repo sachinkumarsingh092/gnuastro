@@ -55,15 +55,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    comments), nothing in the data structure(s) will be allocated by this
    function for the actual data (e.g., the `array' or `dsize' elements). */
 gal_data_t *
-gal_table_info(char *filename, char *hdu, size_t *numcols, int *tabletype)
+gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
+               int *tabletype)
 {
   /* Get the table type and size (number of columns and rows). */
   if(gal_fits_name_is_fits(filename))
-    return gal_fits_table_info(filename, hdu, numcols, tabletype);
+    return gal_fits_table_info(filename, hdu, numcols, numrows, tabletype);
   else
     {
       *tabletype=GAL_TABLE_TYPE_TXT;
-      return gal_txt_table_info(filename, numcols);
+      return gal_txt_table_info(filename, numcols, numrows);
     }
 
   /* Abort with an error if we get to this point. */
@@ -165,6 +166,11 @@ table_set_strcheck(gal_data_t *col, int searchin)
       error(EXIT_FAILURE, 0, "the code %d to searchin was not "
             "recognized in `table_set_strcheck'", searchin);
     }
+
+  error(EXIT_FAILURE, 0, "A bug! Please contact us at %s, For some reason "
+        "control has reached the end of `table_set_strcheck'. This must "
+        "not have happened", PACKAGE_BUGREPORT);
+  return NULL;
 }
 
 
@@ -179,13 +185,15 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
   long tlong;
   int regreturn;
   regex_t *regex;
-  size_t i, numexact;
-  char *str, *strcheck, *tailptr;
+  size_t i, nummatch;
   struct gal_linkedlist_stll *tmp;
+  char *str, *colts, *strcheck, *tailptr;
   struct gal_linkedlist_sll *indexll=NULL;
 
   for(tmp=cols; tmp!=NULL; tmp=tmp->next)
     {
+      /* Counter for number of columns matched. */
+      nummatch=0;
 
       /* REGULAR EXPRESSION: When the first and last characters are `/'. */
       if( tmp->v[0]=='/' && tmp->v[strlen(tmp->v)-1]=='/' )
@@ -230,7 +238,10 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
             {
               strcheck=table_set_strcheck(&allcols[i], searchin);
               if(strcheck && regexec(regex, strcheck, 0, 0, 0)==0)
-                gal_linkedlist_add_to_sll(&indexll, i);
+                {
+                  ++nummatch;
+                  gal_linkedlist_add_to_sll(&indexll, i);
+                }
             }
 
           /* Free the regex_t structure: */
@@ -277,6 +288,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
                  output column numbers linked list. Note that internally,
                  the column numbers start from 0, not 1.*/
               gal_linkedlist_add_to_sll(&indexll, tlong-1);
+              ++nummatch;
             }
 
 
@@ -285,29 +297,45 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
           else
             {
               /* Go through all the desired column information and add the
-                 column number when there is a match.*/
-              numexact=0;
+                 column number when there is a match. */
               for(i=0;i<numcols;++i)
                 {
+                  /* Check if this column actually has any
+                     information. Then do a case-sensitive or insensitive
+                     comparison of the strings. */
                   strcheck=table_set_strcheck(&allcols[i], searchin);
-                  if(strcheck && strcmp(tmp->v, strcheck)==0 )
+                  if(strcheck && ( ignorecase
+                                   ? !strcasecmp(tmp->v, strcheck)
+                                   : !strcmp(tmp->v, strcheck) ) )
                     {
-                      ++numexact;
+                      ++nummatch;
                       gal_linkedlist_add_to_sll(&indexll, i);
                     }
                 }
-
-              /* If there was no match, then report an error. */
-              if(numexact==0)
-                error(EXIT_FAILURE, 0, "`%s' didn't match exactly with any "
-                      "of the column %s in %s (hdu: %s). To search in the "
-                      "columns, or match multiple of them, enclose your "
-                      "string in slashes (e.g., `/%s/') to use regular "
-                      "expressions", tmp->v,
-                      ( searchin==GAL_TABLE_SEARCH_NAME ? "names"
-                        : ( searchin==GAL_TABLE_SEARCH_UNIT ? "units"
-                            : "comments") ), filename, hdu, tmp->v );
             }
+        }
+
+
+      /* If there was no match, then report an error. This can only happen
+         for string matches, not column numbers, for numbers, the checks
+         are done before the reading.*/
+      if(nummatch==0)
+        {
+          colts = ( searchin==GAL_TABLE_SEARCH_NAME ? "names"
+                    : ( searchin==GAL_TABLE_SEARCH_UNIT ? "units"
+                        : "comments") );
+          error(EXIT_FAILURE, 0, "`%s' didn't match with any of the column "
+                "%s in `%s'%s%s%s. You can check the available column "
+                "information by running `asttable %s%s%s --information'. "
+                "%s", tmp->v, colts, filename,
+                gal_fits_name_is_fits(filename) ? " (hdu: " : "",
+                gal_fits_name_is_fits(filename) ? hdu : "",
+                gal_fits_name_is_fits(filename) ? ")" : "",
+                filename,
+                gal_fits_name_is_fits(filename) ? " --hdu" : "",
+                gal_fits_name_is_fits(filename) ? hdu : "",
+                ignorecase ? "" : "For a case-insensitive match, "
+                "run again with the `--ignorecase' option. " );
         }
     }
 
@@ -341,19 +369,19 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
                int searchin, int ignorecase, int minmapsize)
 {
   int tabletype;
-  size_t i, numcols;
+  size_t i, numcols, numrows;
   gal_data_t *allcols, *out=NULL;
   struct gal_linkedlist_sll *indexll;
 
   /* First get the information of all the columns. */
-  allcols=gal_table_info(filename, hdu, &numcols, &tabletype);
-
-  printf("\n--- out of gal_table_info ---\n");
-  exit(0);
+  allcols=gal_table_info(filename, hdu, &numcols, &numrows, &tabletype);
 
   /* Get the list of indexs in the same order as the input list */
   indexll=make_list_of_indexs(cols, allcols, numcols, searchin,
                               ignorecase, filename, hdu);
+
+  /* If no columns could be selected, just return NULL. */
+  if(indexll==NULL) return NULL;
 
   /* Depending on the table type, read the columns into the output
      structure. Note that the functions here pop each index, read/store the
@@ -368,13 +396,14 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
   switch(tabletype)
     {
     case GAL_TABLE_TYPE_TXT:
-      error(EXIT_FAILURE, 0, "reading columns not yet implemented for "
-            "plain text files");
+      out=gal_txt_table_read(filename, numrows, allcols, indexll,
+                             minmapsize);
       break;
 
     case GAL_TABLE_TYPE_AFITS:
     case GAL_TABLE_TYPE_BFITS:
-      out=gal_fits_table_read(filename, hdu, allcols, indexll, minmapsize);
+      out=gal_fits_table_read(filename, hdu, numrows, allcols, indexll,
+                              minmapsize);
       break;
 
     default:
@@ -386,10 +415,11 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
   for(i=0;i<numcols;++i)
     {
       allcols[i].wcs=NULL;
-      allcols[i].dsize=NULL;
+      allcols[i].mmapname=NULL;
       gal_data_free(&allcols[i], 1);
     }
   free(allcols);
+  gal_linkedlist_free_sll(indexll);
 
   /* Return the final linked list. */
   return out;

@@ -424,9 +424,10 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
       for(i=0;i<ndim;++i)
         {
           /* Do a small sanity check. */
-          if(dsize[i]==0)
-            error(EXIT_FAILURE, 0, "the size of a dimension cannot be zero. "
-                  "dsize[%zu] in `gal_data_alloc' has a value of 0", i);
+          if(dsize[i]<=0)
+            error(EXIT_FAILURE, 0, "the size of a dimension cannot be zero "
+                  "or negative. dsize[%zu] in `gal_data_alloc' has a value "
+                  "of %ld", i, dsize[i]);
 
           /* Write this dimension's size, also correct the total number of
              elements. */
@@ -513,9 +514,9 @@ void
 gal_data_free(gal_data_t *data, int only_contents)
 {
   /* Free all the possible allocations. */
-  if(data->dsize)   free(data->dsize);
   if(data->name)    free(data->name);
   if(data->unit)    free(data->unit);
+  if(data->dsize)   free(data->dsize);
   if(data->wcs)     wcsfree(data->wcs);
   if(data->comment) free(data->comment);
 
@@ -525,9 +526,9 @@ gal_data_free(gal_data_t *data, int only_contents)
      actual array. */
   if(data->type==GAL_DATA_TYPE_STRING && data->array)
     {
-      char **strarray=data->array;
-      char *str=strarray[0], *strf=str+data->size;
-      do if(str) free(str); while(++str<strf);
+      size_t i;
+      char **strarr=data->array;
+      for(i=0;i<data->size;++i) free(strarr[i]);
     }
 
   /* Free the array. */

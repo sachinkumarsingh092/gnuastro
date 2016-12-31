@@ -54,14 +54,14 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Macros: */
-#define GAL_TABLE_DEF_STR_WIDTH       10
+/* `printf' default formattings. Note that the string type shouldn't have
+   any precision and for the width,  */
+#define GAL_TABLE_DEF_STR_WIDTH       6
 #define GAL_TABLE_DEF_INT_WIDTH       6
 #define GAL_TABLE_DEF_LINT_WIDTH      10
 #define GAL_TABLE_DEF_FLT_WIDTH       10
 #define GAL_TABLE_DEF_DBL_WIDTH       15
 
-#define GAL_TABLE_DEF_STR_PRECISION   0
 #define GAL_TABLE_DEF_INT_PRECISION   0
 #define GAL_TABLE_DEF_FLT_PRECISION   6
 #define GAL_TABLE_DEF_DBL_PRECISION   14
@@ -119,7 +119,8 @@ enum gal_table_diplay_formats
 /* Functions */
 
 gal_data_t *
-gal_table_info(char *filename, char *hdu, size_t *numcols, int *tabletype);
+gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
+                 int *tabletype);
 
 int
 gal_table_searchin_from_str(char *searchin_str);

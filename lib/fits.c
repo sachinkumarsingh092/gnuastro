@@ -1730,13 +1730,12 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
 /* See the descriptions of `gal_table_info'. */
 gal_data_t *
 gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
-                    int *tabletype)
+                    size_t *numrows, int *tabletype)
 {
   long repeat;
   int tfields;        /* The maximum number of fields in FITS is 999 */
-  size_t index;
   fitsfile *fptr;
-  size_t i, numrows;
+  size_t i, index;
   gal_data_t *cols=NULL;
   int status=0, datatype;
   char *tailptr, keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
@@ -1745,7 +1744,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   /* Open the FITS file and get the basic information. */
   fptr=gal_fits_read_hdu(filename, hdu, 1);
   *tabletype=gal_fits_table_type(fptr);
-  gal_fits_table_size(fptr, &numrows, numcols);
+  gal_fits_table_size(fptr, numrows, numcols);
 
 
   /* Read the total number of fields, then allocate space for the data
@@ -1756,11 +1755,6 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   if(cols==NULL)
     error(EXIT_FAILURE, errno, "%zu bytes for cols in `gal_fits_table_info'",
           tfields*sizeof *cols);
-
-
-  /* Save the number of rows as the data structure size and also length
-     along the first (and only) dimension. */
-  for(i=0;i<*numcols;++i) cols[i].size=numrows;
 
 
   /* Read all the keywords one by one and if they match, then put them in
@@ -1863,15 +1857,16 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
    low-level function, so the output data linked list is the inverse of the
    input indexs linked list. You can use */
 gal_data_t *
-gal_fits_table_read(char *filename, char *hdu, gal_data_t *colinfo,
-                    struct gal_linkedlist_sll *indexll, int minmapsize)
+gal_fits_table_read(char *filename, char *hdu, size_t numrows,
+                    gal_data_t *colinfo, struct gal_linkedlist_sll *indexll,
+                    int minmapsize)
 {
   size_t ind;
+  long dsize;
   void *blank;
-  long dsize[1];
   fitsfile *fptr;
   int status=0, anynul;
-  gal_data_t *out=NULL, *col;
+  gal_data_t *out=NULL;
 
   /* Open the FITS file */
   fptr=gal_fits_read_hdu(filename, hdu, 1);
@@ -1884,21 +1879,17 @@ gal_fits_table_read(char *filename, char *hdu, gal_data_t *colinfo,
 
       /* Allocate the necessary data structure (including the array) for
          this column. */
-      dsize[0]=colinfo[ind].size;
-      col=gal_data_alloc(NULL, colinfo[ind].type, 1, dsize, NULL, 0,
+      dsize=numrows;
+      gal_data_add_to_ll(&out, NULL, colinfo[ind].type, 1, &dsize, NULL, 0,
                          minmapsize, colinfo[ind].name, colinfo[ind].unit,
                          colinfo[ind].comment);
 
-      /* Allocate a blank value for the give type and read/store the
+      /* Allocate a blank value for the given type and read/store the
          column using CFITSIO. Afterwards, free the blank value. */
-      blank=gal_data_alloc_blank(col->type);
-      fits_read_col(fptr, gal_fits_type_to_datatype(col->type), ind+1, 1, 1,
-                    col->size, blank, col->array, &anynul, &status);
+      blank=gal_data_alloc_blank(out->type);
+      fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind+1, 1, 1,
+                    out->size, blank, out->array, &anynul, &status);
       free(blank);
-
-      /* Add the column to the final list of data structures. */
-      col->next=out;
-      out=col;
     }
 
   /* Close the FITS file */
