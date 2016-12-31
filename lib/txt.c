@@ -418,11 +418,7 @@ txt_infoll_to_array(gal_data_t *colsll, size_t *numcols)
     numc = numc > col->status ? numc : col->status;
 
   /* Now, allocate the array and put in the values. */
-  errno=0;
-  allcols=malloc(numc*sizeof *allcols);
-  if(allcols==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for `allcols' in "
-          "`txt_infoll_to_array'", numc*sizeof *allcols);
+  allcols=gal_data_calloc_dataarray(numc);
 
   /* Put each column into its proper place in the array. After the copy,
      all the (possibly) allocated spaces in the linked list are set to

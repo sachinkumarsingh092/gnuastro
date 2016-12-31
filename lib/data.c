@@ -476,7 +476,6 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
 {
   gal_data_t *out;
 
-
   /* Allocate the space for the actual structure. */
   errno=0;
   out=malloc(sizeof *out);
@@ -484,13 +483,51 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
     error(EXIT_FAILURE, errno, "%zu bytes for gal_data_t in gal_data_alloc",
           sizeof *out);
 
-
   /* Initialize the allocated array. */
   gal_data_initialize(out, array, type, ndim, dsize, wcs, clear, minmapsize,
                       name, unit, comment);
 
-
   /* Return the final structure. */
+  return out;
+}
+
+
+
+
+
+/* Allocate an array of data structures and initialize all the values. */
+gal_data_t *
+gal_data_calloc_dataarray(size_t size)
+{
+  size_t i;
+  gal_data_t *out;
+
+  /* Allocate the array to keep the structures. */
+  errno=0;
+  out=malloc(size*sizeof *out);
+  if(out==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for `out' in "
+          "`gal_data_calloc_dataarray'", size*sizeof *out);
+
+
+  /* Set the pointers to NULL if they didn't exist and the non-pointers to
+     impossible integers (so the caller knows the array is only
+     allocated. `minmapsize' should be set when allocating the array and
+     should be set when you run `gal_data_initialize'. */
+  for(i=0;i<size;++i)
+    {
+      out[i].array      = NULL;
+      out[i].type       = -1;
+      out[i].ndim       = 0;
+      out[i].dsize      = NULL;
+      out[i].nwcs       = 0;
+      out[i].wcs        = NULL;
+      out[i].mmapname   = NULL;
+      out[i].name = out[i].unit = out[i].comment = NULL;
+      out[i].disp_fmt = out[i].disp_width = out[i].disp_precision = -1;
+    }
+
+  /* Return the array pointer. */
   return out;
 }
 

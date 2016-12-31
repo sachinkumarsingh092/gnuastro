@@ -206,7 +206,8 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
           str = tmp->v + 1;
 
           /* Allocate the regex_t structure: */
-          errno=0; regex=malloc(sizeof *regex);
+          errno=0;
+          regex=malloc(sizeof *regex);
           if(regex==NULL)
             error(EXIT_FAILURE, errno, "%zu bytes for regex", sizeof *regex);
 

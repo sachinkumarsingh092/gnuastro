@@ -1736,7 +1736,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   int tfields;        /* The maximum number of fields in FITS is 999 */
   fitsfile *fptr;
   size_t i, index;
-  gal_data_t *cols=NULL;
+  gal_data_t *allcols;
   int status=0, datatype;
   char *tailptr, keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
 
@@ -1748,13 +1748,9 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
 
 
   /* Read the total number of fields, then allocate space for the data
-     structure and store the information within it. */
+     structure array and store the information within it. */
   fits_read_key(fptr, TINT, "TFIELDS", &tfields, NULL, &status);
-  errno=0;
-  cols=malloc(tfields*sizeof *cols);
-  if(cols==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for cols in `gal_fits_table_info'",
-          tfields*sizeof *cols);
+  allcols=gal_data_calloc_dataarray(tfields);
 
 
   /* Read all the keywords one by one and if they match, then put them in
@@ -1794,7 +1790,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
              meantime, also do a sanity check. */
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)     /* Counting from zero was corrected above. */
-            cols[index].type=gal_fits_datatype_to_type(datatype);
+            allcols[index].type=gal_fits_datatype_to_type(datatype);
         }
 
       /* COLUMN NAME. All strings in CFITSIO start and finish with single
@@ -1807,7 +1803,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           remove_trailing_space(value);
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            gal_checkset_allocate_copy(&value[1], &cols[index].name);
+            gal_checkset_allocate_copy(&value[1], &allcols[index].name);
         }
 
       /* COLUMN UNITS. */
@@ -1817,7 +1813,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           remove_trailing_space(value);
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            gal_checkset_allocate_copy(&value[1], &cols[index].unit);
+            gal_checkset_allocate_copy(&value[1], &allcols[index].unit);
         }
 
       /* COLUMN COMMENTS */
@@ -1827,7 +1823,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           remove_trailing_space(value);
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            gal_checkset_allocate_copy(&value[1], &cols[index].comment);
+            gal_checkset_allocate_copy(&value[1], &allcols[index].comment);
         }
 
       /* COLUMN DISPLAY FORMAT */
@@ -1837,7 +1833,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           remove_trailing_space(value);
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            set_display_format(&value[1], &cols[index], filename, hdu,
+            set_display_format(&value[1], &allcols[index], filename, hdu,
                                keyname);
         }
     }
@@ -1845,7 +1841,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   /* Close the FITS file and report an error if we had any. */
   fits_close_file(fptr, &status);
   gal_fits_io_error(status, NULL);
-  return cols;
+  return allcols;
 }
 
 
@@ -1858,37 +1854,34 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
    input indexs linked list. You can use */
 gal_data_t *
 gal_fits_table_read(char *filename, char *hdu, size_t numrows,
-                    gal_data_t *colinfo, struct gal_linkedlist_sll *indexll,
+                    gal_data_t *allcols, struct gal_linkedlist_sll *indexll,
                     int minmapsize)
 {
-  size_t ind;
   long dsize;
   void *blank;
   fitsfile *fptr;
   int status=0, anynul;
   gal_data_t *out=NULL;
+  struct gal_linkedlist_sll *ind;
 
   /* Open the FITS file */
   fptr=gal_fits_read_hdu(filename, hdu, 1);
 
   /* Pop each index and read/store the array. */
-  while(indexll!=NULL)
+  for(ind=indexll; ind!=NULL; ind=ind->next)
     {
-      /* Pop the index. */
-      gal_linkedlist_pop_from_sll(&indexll, &ind);
-
       /* Allocate the necessary data structure (including the array) for
          this column. */
       dsize=numrows;
-      gal_data_add_to_ll(&out, NULL, colinfo[ind].type, 1, &dsize, NULL, 0,
-                         minmapsize, colinfo[ind].name, colinfo[ind].unit,
-                         colinfo[ind].comment);
+      gal_data_add_to_ll(&out, NULL, allcols[ind->v].type, 1, &dsize, NULL, 0,
+                         minmapsize, allcols[ind->v].name,
+                         allcols[ind->v].unit, allcols[ind->v].comment);
 
       /* Allocate a blank value for the given type and read/store the
          column using CFITSIO. Afterwards, free the blank value. */
       blank=gal_data_alloc_blank(out->type);
-      fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind+1, 1, 1,
-                    out->size, blank, out->array, &anynul, &status);
+      fits_read_col(fptr, gal_fits_type_to_datatype(out->type), ind->v+1,
+                    1, 1, out->size, blank, out->array, &anynul, &status);
       free(blank);
     }
 

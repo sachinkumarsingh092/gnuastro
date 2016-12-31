@@ -232,6 +232,9 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
                char *name, char *unit, char *comment);
 
+gal_data_t *
+gal_data_calloc_dataarray(size_t size);
+
 void
 gal_data_free(gal_data_t *data, int only_contents);
 
