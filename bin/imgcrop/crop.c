@@ -222,6 +222,18 @@ polygonparser(struct imgcropparams *p)
             error(EXIT_FAILURE, 0, "%s could not be parsed as a floating "
                   "point number", tailptr);
 
+          /* Check if there are no extra characters in the number, for
+             example we don't have a case like `1.00132.17', or
+             1.01i:2.0. Such errors are not uncommon when typing large
+             numbers, and if ignored, they can lead to unpredictable
+             results, so its best to abort and inform the user. */
+          if( *tailptr!='\0'
+              && !isspace(*tailptr)
+              && strchr(":,", *tailptr)==NULL )
+            error(EXIT_FAILURE, 0, "'%s' is an invalid floating point number "
+                  "sequence in the value to the `--polygon' option, error "
+                  "detected at '%s'", pt, tailptr);
+
           /* If this was the second dimension, then put the values
              into the linked list: */
           if(dim==1)
