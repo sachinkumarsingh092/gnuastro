@@ -318,8 +318,10 @@ print_information_exit(struct tableparams *p)
                          &tabletype);
 
   /* Print the legend */
-  printf("Information for\n");
-  printf("%s (hdu: %s)\n", p->up.filename, p->cp.hdu);
+  if(gal_fits_name_is_fits(p->up.filename))
+    printf("%s (hdu: %s):\n", p->up.filename, p->cp.hdu);
+  else
+    printf("%s:\n", p->up.filename);
   printf("Number of rows: %zu\n", numrows);
   printf("%-8s%-25s%-20s%-18s%s\n", "No.", "Name", "Units", "Type",
          "Comment");
@@ -333,10 +335,10 @@ print_information_exit(struct tableparams *p)
       unit    = allcols[i].unit;       /* readability. The compiiler  */
       comment = allcols[i].comment;    /* optimizer will remove them. */
       printf("%-8zu%-25s%-20s%-18s%s\n", i+1,
-             name ? name : "N/A" ,
-             unit ? unit : "N/A" ,
+             name ? name : GAL_DATA_BLANK_STRING ,
+             unit ? unit : GAL_DATA_BLANK_STRING ,
              gal_data_type_as_string(allcols[i].type, 1),
-             comment ? comment : "N/A");
+             comment ? comment : GAL_DATA_BLANK_STRING);
       if(name)    free(name);
       if(unit)    free(unit);
       if(comment) free(comment);

@@ -884,63 +884,98 @@ gal_data_alloc_blank(int type)
 
 /* Print the blank value as a string. */
 char *
-gal_data_blank_as_string(int type)
+gal_data_blank_as_string(int type, int width)
 {
   char *blank;
   switch(type)
     {
-    case GAL_DATA_TYPE_STRING:
-      error(EXIT_FAILURE, 0, "`gal_data_blank_as_string' can't print the "
-            "blank value for a string, it is for other types.");
-      break;
-
     case GAL_DATA_TYPE_BIT:
       error(EXIT_FAILURE, 0, "bit types are not implemented in "
             "`gal_data_blank_as_string' yet.");
       break;
 
+    case GAL_DATA_TYPE_STRING:
+      if(width)
+        asprintf(&blank, "%*s", width, GAL_DATA_BLANK_STRING);
+      else
+        asprintf(&blank, "%s", GAL_DATA_BLANK_STRING);
+      break;
+
     case GAL_DATA_TYPE_UCHAR:
-      asprintf(&blank, "%u", (unsigned char)GAL_DATA_BLANK_UCHAR);
+      if(width)
+        asprintf(&blank, "%*u", width, (unsigned char)GAL_DATA_BLANK_UCHAR);
+      else
+        asprintf(&blank, "%u",         (unsigned char)GAL_DATA_BLANK_UCHAR);
       break;
 
     case GAL_DATA_TYPE_CHAR:
-      asprintf(&blank, "%d", (char)GAL_DATA_BLANK_CHAR);
+      if(width)
+        asprintf(&blank, "%*d", width, (char)GAL_DATA_BLANK_CHAR);
+      else
+        asprintf(&blank, "%d",         (char)GAL_DATA_BLANK_CHAR);
       break;
 
     case GAL_DATA_TYPE_USHORT:
-      asprintf(&blank, "%u", (unsigned short)GAL_DATA_BLANK_USHORT);
+      if(width)
+        asprintf(&blank, "%*u", width, (unsigned short)GAL_DATA_BLANK_USHORT);
+      else
+        asprintf(&blank, "%u",         (unsigned short)GAL_DATA_BLANK_USHORT);
       break;
 
     case GAL_DATA_TYPE_SHORT:
-      asprintf(&blank, "%d", (short)GAL_DATA_BLANK_SHORT);
+      if(width)
+        asprintf(&blank, "%*d", width, (short)GAL_DATA_BLANK_SHORT);
+      else
+        asprintf(&blank, "%d",         (short)GAL_DATA_BLANK_SHORT);
       break;
 
     case GAL_DATA_TYPE_UINT:
-      asprintf(&blank, "%u", (unsigned int)GAL_DATA_BLANK_UINT);
+      if(width)
+        asprintf(&blank, "%*u", width, (unsigned int)GAL_DATA_BLANK_UINT);
+      else
+        asprintf(&blank, "%u",         (unsigned int)GAL_DATA_BLANK_UINT);
       break;
 
     case GAL_DATA_TYPE_INT:
-      asprintf(&blank, "%d", (int)GAL_DATA_BLANK_INT);
+      if(width)
+        asprintf(&blank, "%*d", width, (int)GAL_DATA_BLANK_INT);
+      else
+        asprintf(&blank, "%d",         (int)GAL_DATA_BLANK_INT);
       break;
 
     case GAL_DATA_TYPE_ULONG:
-      asprintf(&blank, "%lu", (unsigned long)GAL_DATA_BLANK_ULONG);
+      if(width)
+        asprintf(&blank, "%*lu", width, (unsigned long)GAL_DATA_BLANK_ULONG);
+      else
+        asprintf(&blank, "%lu",         (unsigned long)GAL_DATA_BLANK_ULONG);
       break;
 
     case GAL_DATA_TYPE_LONG:
-      asprintf(&blank, "%ld", (long)GAL_DATA_BLANK_LONG);
+      if(width)
+        asprintf(&blank, "%*ld", width, (long)GAL_DATA_BLANK_LONG);
+      else
+        asprintf(&blank, "%ld",         (long)GAL_DATA_BLANK_LONG);
       break;
 
     case GAL_DATA_TYPE_LONGLONG:
-      asprintf(&blank, "%lld", (LONGLONG)GAL_DATA_BLANK_LONGLONG);
+      if(width)
+        asprintf(&blank, "%*lld", width, (LONGLONG)GAL_DATA_BLANK_LONGLONG);
+      else
+        asprintf(&blank, "%lld",         (LONGLONG)GAL_DATA_BLANK_LONGLONG);
       break;
 
     case GAL_DATA_TYPE_FLOAT:
-      asprintf(&blank, "%f", GAL_DATA_BLANK_FLOAT);
+      if(width)
+        asprintf(&blank, "%*f", width, (float)GAL_DATA_BLANK_FLOAT);
+      else
+        asprintf(&blank, "%f",         (float)GAL_DATA_BLANK_FLOAT);
       break;
 
     case GAL_DATA_TYPE_DOUBLE:
-      asprintf(&blank, "%f", GAL_DATA_BLANK_DOUBLE);
+      if(width)
+        asprintf(&blank, "%*f", width, (double)GAL_DATA_BLANK_DOUBLE);
+      else
+        asprintf(&blank, "%f",         (double)GAL_DATA_BLANK_DOUBLE);
       break;
 
     default:

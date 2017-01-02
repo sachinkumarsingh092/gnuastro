@@ -300,7 +300,7 @@ makechangestruct(char *arg)
       c=malloc(sizeof *c);
       if(c==NULL) error(EXIT_FAILURE, 0, "%zu bytes for struct change",
                         sizeof *c);
-      c->from=strtof(p, &p);
+      c->from=strtod(p, &p);
       while(*p==' ') {++p; continue;}
       if(*p==':') ++p;
       else
@@ -310,7 +310,7 @@ makechangestruct(char *arg)
                   "have given a '%c': %s\n", *p, arg);
           exit(EXIT_FAILURE);
         }
-      c->to=strtof(p, &p);
+      c->to=strtod(p, &p);
       while(*p==' ') {++p; continue;}
       if(*p==',') p++;
       else if(*p!='\0')

@@ -347,7 +347,7 @@ gal_checkset_float_l_0(char *optarg, float *var, char *lo, char so,
 {
   float tmp;
   char *tailptr;
-  *var=tmp=strtof(optarg, &tailptr);
+  *var=tmp=strtod(optarg, &tailptr);
 
   CHECKFULLNUMBER;
   if(tmp<=0)
@@ -371,7 +371,7 @@ gal_checkset_float_l_0_s_1(char *optarg, float *var, char *lo, char so,
 {
   float tmp;
   char *tailptr;
-  *var=tmp=strtof(optarg, &tailptr);
+  *var=tmp=strtod(optarg, &tailptr);
 
   CHECKFULLNUMBER;
   if(tmp>1.0f || tmp<0)
@@ -393,7 +393,7 @@ gal_checkset_any_float(char *optarg, float *var, char *lo, char so,
                        char *spack, char *filename, size_t lineno)
 {
   char *tailptr;
-  *var=strtof(optarg, &tailptr);
+  *var=strtod(optarg, &tailptr);
 
   CHECKFULLNUMBER;
 }
@@ -456,7 +456,7 @@ gal_checkset_double_l_value(char *optarg, double *var, char *lo, char so,
 {
   float tmp;
   char *tailptr;
-  *var=tmp=strtof(optarg, &tailptr);
+  *var=tmp=strtod(optarg, &tailptr);
 
   CHECKFULLNUMBER;
   if(tmp<=value)

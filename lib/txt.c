@@ -611,7 +611,7 @@ txt_fill_columns(char *line, char **tokens, size_t maxcolnum,
            compare the values. */
         case GAL_DATA_TYPE_FLOAT:
           f=col->array;
-          f[lineind]=strtof(tokens[col->status], &tailptr);
+          f[lineind]=strtod(tokens[col->status], &tailptr);
           if( (fb=colinfo[col->status-1].array)
               && ( (isnan(*fb) && isnan(f[lineind])) || *fb==f[lineind] ) )
             f[lineind]=GAL_DATA_BLANK_FLOAT;
@@ -755,7 +755,6 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
   char **fmts;
   gal_data_t *col;
   char fmt[2], lng[3];
-  size_t width, precision;
 
 
   /* Allocate space for the output. */
@@ -795,47 +794,41 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
             gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING,
                                        &fmts[i*FMTS_COLS+2]);
           else
-            fmts[i*FMTS_COLS+2]=gal_data_blank_as_string(col->type);
+            fmts[i*FMTS_COLS+2]=gal_data_blank_as_string(col->type, 0);
         }
 
 
       /* Fill in the printing paramters. */
-      gal_table_col_print_info(col, GAL_TABLE_TYPE_TXT, &width,
-                               &precision, fmt, lng);
+      gal_table_col_print_info(col, GAL_TABLE_TYPE_TXT, fmt, lng);
 
 
       /* Adjust the width if a blank string was defined. */
       if(fmts[i*FMTS_COLS+2])
-        width = ( strlen(fmts[i*FMTS_COLS+2])>width
-                  ? strlen(fmts[i*FMTS_COLS+2])
-                  : width );
+        col->disp_width = ( strlen(fmts[i*FMTS_COLS+2]) > col->disp_width
+                            ? strlen(fmts[i*FMTS_COLS+2])
+                            : col->disp_width );
 
 
       /* Print the result into the allocated string and add its length to
          the final length of the overall format statement. The space in the
          end of `fmts[i*2]' is to ensure that the columns don't merge, even
          if the printed string is larger than the expected width. */
-      if(precision<=0)
-        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%zu.%zu%s%s ",
-                            leftadjust ? "-" : "", width, precision,
-                            lng, fmt);
+      if(col->disp_precision > 0)
+        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%d.%d%s%s ",
+                            leftadjust ? "-" : "", col->disp_width,
+                            col->disp_precision, lng, fmt);
       else
-        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%zu%s%s ",
-                            leftadjust ? "-" : "", width, lng, fmt);
+        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%d%s%s ",
+                            leftadjust ? "-" : "", col->disp_width, lng, fmt);
 
 
       /* Set the string for the Gnuastro type. For strings, we also need to
          write the maximum number of characters.*/
       if(col->type==GAL_DATA_TYPE_STRING)
-        sprintf(fmts[i*FMTS_COLS+1], "%s%zu",
-                gal_data_type_as_string(col->type, 0), width);
+        sprintf(fmts[i*FMTS_COLS+1], "%s%d",
+                gal_data_type_as_string(col->type, 0), col->disp_width);
       else
         strcpy(fmts[i*FMTS_COLS+1], gal_data_type_as_string(col->type, 0));
-
-
-      /* Update the column width and precision: */
-      col->disp_width = width;
-      col->disp_precision = precision;
 
 
       /* Increment the column counter. */

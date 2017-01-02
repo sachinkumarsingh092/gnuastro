@@ -122,17 +122,22 @@ gal_table_string_to_searchin(char *string)
 /************************************************************************/
 /***************          Printing information            ***************/
 /************************************************************************/
-/* Fill in the basic information necessary to print a column. This
+/* Fill in/adjust the basic information necessary to print a column. This
    information can be used for printing a plain text file or for FITS ASCII
    tables. The `fmt' and `lng' should point to pre-allocated arrays. The
-   best way is: `char fmt[2], lng[3];' in the same function calling this.*/
+   best way is: `char fmt[2], lng[3];' in the same function calling this.
+
+   The width and precision, which are also necessary for printing, are
+   updated in the data structure's `disp_width' and `disp_precision'
+   elements.
+*/
 void
-gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
-                         size_t *precision, char *fmt, char *lng)
+gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
 {
   size_t j;
-  int maxstrlen;
   char **strarr;
+  int maxstrlen, width, precision;
+
 
   /* First do a sanity check, so we can safly stop checking in the steps
      below. */
@@ -143,7 +148,7 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
       break;
     default:
       error(EXIT_FAILURE, 0, "tabletype code %d not recognized in "
-            "`set_col_print_info'", tabletype);
+            "`gal_table_col_print_info'", tabletype);
     }
 
 
@@ -174,9 +179,9 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
       maxstrlen=0;
       strarr=col->array;
       for(j=0;j<col->size;++j)
-        maxstrlen = ( strlen(strarr[j]) > maxstrlen
-                      ? strlen(strarr[j]) : maxstrlen );
-      *width = col->disp_width>maxstrlen ? col->disp_width : maxstrlen;
+        maxstrlen = ( (int)strlen(strarr[j]) > maxstrlen
+                      ? (int)strlen(strarr[j]) : maxstrlen );
+      width = col->disp_width>maxstrlen ? col->disp_width : maxstrlen;
       break;
 
 
@@ -204,12 +209,12 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
       if(col->type==GAL_DATA_TYPE_ULONG)
         {
           lng[0]='l';
-          *width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
-                   : col->disp_width );
+          width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
+                  : col->disp_width );
         }
-      else *width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
+      else width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
                     : col->disp_width );
-      *precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
+      precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
                   : col->disp_precision );
       break;
 
@@ -221,10 +226,10 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
     case GAL_DATA_TYPE_SHORT:
     case GAL_DATA_TYPE_INT:
       fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'd' : 'I';
-      *width = ( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
-                 : col->disp_width );
-      *precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
-                     : col->disp_precision );
+      width = ( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
+                : col->disp_width );
+      precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
+                    : col->disp_precision );
       break;
 
 
@@ -235,9 +240,9 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
       lng[0] = 'l';
       fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'd' : 'I';
       lng[1] = col->type==GAL_DATA_TYPE_LONGLONG ? 'l' : '\0';
-      *width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
+      width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
               : col->disp_width );
-      *precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
+      precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
                   : col->disp_precision );
       break;
 
@@ -257,13 +262,13 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
         default:
           fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'f' : 'F'; break;
         }
-      *width = ( col->disp_width<=0
-                 ? ( col->type==GAL_DATA_TYPE_FLOAT
-                     ? GAL_TABLE_DEF_FLT_WIDTH
-                     : GAL_TABLE_DEF_DBL_WIDTH )
-                 : col->disp_width );
-      *precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_FLT_PRECISION
-                     : col->disp_precision );
+      width = ( col->disp_width<=0
+                ? ( col->type==GAL_DATA_TYPE_FLOAT
+                    ? GAL_TABLE_DEF_FLT_WIDTH
+                    : GAL_TABLE_DEF_DBL_WIDTH )
+                : col->disp_width );
+      precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_FLT_PRECISION
+                    : col->disp_precision );
       break;
 
 
@@ -272,6 +277,10 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`gal_table_col_print_info'", col->type);
     }
+
+  /* Write the final width and precision into the column's data structure. */
+  col->disp_width=width;
+  col->disp_precision=precision;
 }
 
 

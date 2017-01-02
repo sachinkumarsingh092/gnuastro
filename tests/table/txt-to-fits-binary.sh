@@ -24,7 +24,7 @@
 # file exists (basicchecks.sh is in the source tree).
 prog=table
 execname=../bin/$prog/ast$prog
-table=$topsrc/tests/$prog/asciitobinary.txt
+table=$topsrc/tests/$prog/table.txt
 
 
 
@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $table --output=asciitobinary.fits
+$execname $table --output=binary-table.fits --tabletype=fits-binary

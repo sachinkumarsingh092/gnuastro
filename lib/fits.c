@@ -267,20 +267,29 @@ gal_fits_type_to_bin_tform(int type)
 {
   switch(type)
     {
+    case GAL_DATA_TYPE_STRING:
+      return 'A';
+
     case GAL_DATA_TYPE_BIT:
       return 'X';
     case GAL_DATA_TYPE_UCHAR:
       return 'B';
     case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
       return 'S';
-    case GAL_DATA_TYPE_STRING:
-      return 'A';
-    case GAL_DATA_TYPE_UINT:
-      return 'V';
     case GAL_DATA_TYPE_USHORT:
       return 'U';
     case GAL_DATA_TYPE_SHORT:
       return 'I';
+    case GAL_DATA_TYPE_UINT:
+      return 'V';
+    case GAL_DATA_TYPE_INT:
+      error(EXIT_FAILURE, 0, "CFITSIO doesn't support integer table "
+            "columns");
+      break;
+    case GAL_DATA_TYPE_ULONG:
+      error(EXIT_FAILURE, 0, "CFITSIO doesn't support unsigned long table "
+            "columns");
+      break;
     case GAL_DATA_TYPE_LONG:
       return 'J';
     case GAL_DATA_TYPE_LONGLONG:
@@ -1961,7 +1970,6 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
   size_t i=0;
   gal_data_t *col;
   char fmt[2], lng[3];
-  size_t width, precision;
   char *blank, **tform, **ttype, **tunit;
 
 
@@ -1987,22 +1995,8 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
   for(col=cols; col!=NULL; col=col->next)
     {
       /* Set the `ttype' and `tunit' values: */
-      ttype[i]=col->name;
-      tunit[i]=col->unit;
-
-
-      /* Set the blank value. */
-      if( gal_data_has_blank(col) && ( col->type!=GAL_DATA_TYPE_FLOAT
-                                       || col->type!=GAL_DATA_TYPE_DOUBLE ))
-        {
-          /* Set the blank value. */
-          if(col->type==GAL_DATA_TYPE_STRING)
-            gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &blank);
-          else
-            blank=gal_data_blank_as_string(col->type);
-        }
-      else
-        blank=NULL;
+      asprintf(&ttype[i], "%s", col->name ? col->name : "");
+      asprintf(&tunit[i], "%s", col->unit ? col->unit : "");
 
 
       /* FITS's TFORM depends on the type of FITS table, so work
@@ -2013,12 +2007,23 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
         case GAL_TABLE_TYPE_AFITS:
 
             /* Fill the printing format. */
-            gal_table_col_print_info(col, GAL_TABLE_TYPE_AFITS, &width,
-                                     &precision, fmt, lng);
+            gal_table_col_print_info(col, GAL_TABLE_TYPE_AFITS, fmt, lng);
+
+            /* We need to check if the blank value needs is larger than the
+               expected width or not. Its initial width is set the output
+               of the function above, but if the value is larger,
+               `asprintf' (which is used) will make it wider. */
+            blank = ( gal_data_has_blank(col)
+                      ? gal_data_blank_as_string(col->type, col->disp_width)
+                      : NULL );
 
             /* Adjust the width. */
             if(blank)
-              width = ( strlen(blank)>width ? strlen(blank) : width );
+              {
+                col->disp_width = ( strlen(blank) > col->disp_width
+                                    ? strlen(blank) : col->disp_width );
+                free(blank);
+              }
 
             /* Print the value to be used as TFORMn:  */
             switch(col->type)
@@ -2033,12 +2038,13 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
               case GAL_DATA_TYPE_ULONG:
               case GAL_DATA_TYPE_LONG:
               case GAL_DATA_TYPE_LONGLONG:
-                asprintf(&tform[i], "%c%zu", fmt[0], width);
+                asprintf(&tform[i], "%c%d", fmt[0], col->disp_width);
                 break;
 
               case GAL_DATA_TYPE_FLOAT:
               case GAL_DATA_TYPE_DOUBLE:
-                asprintf(&tform[i], "%c%zu.%zu", fmt[0], width, precision);
+                asprintf(&tform[i], "%c%d.%d", fmt[0], col->disp_width,
+                         col->disp_precision);
                 break;
 
               default:
@@ -2053,10 +2059,10 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
 
           /* If this is a string column, set all the strings to same size,
              then write the value of tform depending on the type. */
-          width=gal_data_string_fixed_alloc_size(col);
+          col->disp_width=gal_data_string_fixed_alloc_size(col);
           fmt[0]=gal_fits_type_to_bin_tform(col->type);
           if( col->type==GAL_DATA_TYPE_STRING )
-            asprintf(&tform[i], "%zu%c", width, fmt[0]);
+            asprintf(&tform[i], "%d%c", col->disp_width, fmt[0]);
           else
             asprintf(&tform[i], "%c", fmt[0]);
           break;
@@ -2067,9 +2073,68 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
         }
 
 
-      /* Clean up and increment the column index. */
-      if(blank) free(blank);
+      /* Increment the column index. */
       ++i;
+    }
+}
+
+
+
+
+
+/* Write the TNULLn keywords into the FITS file. Note that this depends on
+   the type of the table: for an ASCII table, all the columns need it. For
+   a binary table, only the non-floating point ones (even if they don't
+   have NULL values) must have it. */
+static void
+fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
+                        size_t colnum)
+{
+  void *blank;
+  int status=0;
+  char *keyname, *bcomment;
+
+  switch(tabletype)
+    {
+    case GAL_TABLE_TYPE_AFITS:
+      asprintf(&keyname, "TNULL%zu", colnum);
+      blank=gal_data_blank_as_string(col->type, col->disp_width);
+      fits_write_key(fptr, TSTRING, keyname, blank,
+                     "blank value for this column", &status);
+      free(keyname);
+      free(blank);
+      break;
+
+    case GAL_TABLE_TYPE_BFITS:
+      if( col->type!=GAL_DATA_TYPE_FLOAT
+          && col->type!=GAL_DATA_TYPE_DOUBLE )
+        {
+          asprintf(&keyname, "TNULL%zu", colnum);
+          blank=gal_data_alloc_blank(col->type);
+          fits_write_key(fptr, gal_fits_type_to_datatype(col->type),
+                         keyname, blank, "blank value for this column",
+                         &status);
+          gal_fits_io_error(status, NULL);
+          free(keyname);
+          free(blank);
+        }
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "tabletype code %d not recognized in "
+            "`fits_write_tnulls_tcomms'", tabletype);
+    }
+
+  /* Write the comments if there is any. */
+  if(col->comment)
+    {
+      asprintf(&keyname, "TCOMM%zu", colnum);
+      asprintf(&bcomment, "comment for field %zu", colnum);
+      fits_write_key(fptr, TSTRING, keyname, col->comment,
+                     bcomment, &status);
+      gal_fits_io_error(status, NULL);
+      free(keyname);
+      free(bcomment);
     }
 }
 
@@ -2087,7 +2152,6 @@ gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
   fitsfile *fptr;
   gal_data_t *col;
   size_t i, numrows=-1;
-  char *keyname, *bcomment;
   char **ttype, **tform, **tunit;
   int tbltype, numcols=0, status=0;
 
@@ -2125,40 +2189,22 @@ gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
                   "table", &status);
   gal_fits_io_error(status, NULL);
 
+
   /* Write the columns into the file and also write the blank values into
      the header when necessary. */
   i=0;
   for(col=cols; col!=NULL; col=col->next)
     {
-      /* Write the blank value into the header if we are not dealing with a
-         floating point. */
-      if( gal_data_has_blank(col)
-          && ( col->type!=GAL_DATA_TYPE_FLOAT
-               && col->type!=GAL_DATA_TYPE_DOUBLE ) )
-        {
-          /* Write the keyword. */
-          asprintf(&keyname, "TNULL%zu", i+1);
-          blank=gal_data_alloc_blank(col->type);
-          fits_write_key(fptr, gal_fits_type_to_datatype(col->type),
-                         keyname, blank, "blank value for this column",
-                         &status);
-          gal_fits_io_error(status, NULL);
-          free(keyname);
-        }
-      else
-        blank=NULL;
+      /* Write the blank value into the header and return a pointer to
+         it. Otherwise, */
+      fits_write_tnull_tcomm(fptr, col, tabletype, i+1);
 
-      /* Write the comments if there is any. */
-      if(col->comment)
-        {
-          asprintf(&keyname, "TCOMM%zu", i+1);
-          asprintf(&bcomment, "comment for field %zu", i+1);
-          fits_write_key(fptr, TSTRING, keyname, col->comment,
-                         bcomment, &status);
-          gal_fits_io_error(status, NULL);
-          free(keyname);
-          free(bcomment);
-        }
+      /* Set the blank pointer if its necessary, note that strings don't
+         need a blank pointer in a FITS ASCII table.*/
+      blank = ( gal_data_has_blank(col)
+                ? gal_data_alloc_blank(col->type) : NULL );
+      if(tabletype==GAL_TABLE_TYPE_AFITS && col->type==GAL_DATA_TYPE_STRING)
+        blank=NULL;
 
       /* Write the full column into the table. */
       fits_write_colnull(fptr, gal_fits_type_to_datatype(col->type),
@@ -2179,7 +2225,12 @@ gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
      `ttype' and `tunit' arrays just points to the respective string in the
      column data structure, the space for each element of the array wasn't
      allocated.*/
-  for(i=0;i<numcols;++i) if(tform[i]) free(tform[i]);
+  for(i=0;i<numcols;++i)
+    {
+      free(tform[i]);
+      free(ttype[i]);
+      free(tunit[i]);
+    }
   free(tform);
   free(ttype);
   free(tunit);

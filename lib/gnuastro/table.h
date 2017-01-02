@@ -122,8 +122,8 @@ int
 gal_table_string_to_searchin(char *string);
 
 void
-gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
-                         size_t *precision, char *fmt, char *lng);
+gal_table_col_print_info(gal_data_t *col, int tabletype,
+                         char *fmt, char *lng);
 
 void
 gal_table_read_blank(gal_data_t *col, char *blank);

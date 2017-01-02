@@ -277,7 +277,7 @@ void *
 gal_data_alloc_blank(int type);
 
 char *
-gal_data_blank_as_string(int type);
+gal_data_blank_as_string(int type, int width);
 
 void
 gal_data_apply_mask(gal_data_t *in, gal_data_t *mask);
