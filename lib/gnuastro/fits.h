@@ -122,8 +122,8 @@ gal_fits_bitpix_to_type(int bitpix);
 int
 gal_fits_type_to_bitpix(int type);
 
-int
-gal_fits_tform_to_type(char tform);
+char
+gal_fits_type_to_bin_tform(int type);
 
 int
 gal_fits_type_to_datatype(int type);

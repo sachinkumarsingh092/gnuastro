@@ -89,7 +89,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_DATA_BLANK_UCHAR      UCHAR_MAX
 #define GAL_DATA_BLANK_CHAR       SCHAR_MAX
 #define GAL_DATA_BLANK_LOGICAL    SCHAR_MAX
-#define GAL_DATA_BLANK_STRING     NULL
+#define GAL_DATA_BLANK_STRING     "n/a"
 #define GAL_DATA_BLANK_USHORT     USHRT_MAX
 #define GAL_DATA_BLANK_SHORT      INT16_MIN
 #define GAL_DATA_BLANK_UINT       UINT_MAX
@@ -235,6 +235,9 @@ gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
 gal_data_t *
 gal_data_calloc_dataarray(size_t size);
 
+size_t
+gal_data_string_fixed_alloc_size(gal_data_t *data);
+
 void
 gal_data_free(gal_data_t *data, int only_contents);
 
@@ -272,6 +275,9 @@ gal_data_free_ll(gal_data_t *list);
  *************************************************************/
 void *
 gal_data_alloc_blank(int type);
+
+char *
+gal_data_blank_as_string(int type);
 
 void
 gal_data_apply_mask(gal_data_t *in, gal_data_t *mask);

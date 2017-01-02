@@ -60,13 +60,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_TABLE_DEF_INT_WIDTH       6
 #define GAL_TABLE_DEF_LINT_WIDTH      10
 #define GAL_TABLE_DEF_FLT_WIDTH       10
-#define GAL_TABLE_DEF_DBL_WIDTH       15
+#define GAL_TABLE_DEF_DBL_WIDTH       18
 
 #define GAL_TABLE_DEF_INT_PRECISION   0
 #define GAL_TABLE_DEF_FLT_PRECISION   6
 #define GAL_TABLE_DEF_DBL_PRECISION   14
-
-
 
 
 
@@ -123,9 +121,16 @@ gal_table_string_to_type(char *string);
 int
 gal_table_string_to_searchin(char *string);
 
+void
+gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
+                         size_t *precision, char *fmt, char *lng);
+
+void
+gal_table_read_blank(gal_data_t *col, char *blank);
+
 gal_data_t *
-gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
-                 int *tabletype);
+gal_table_info(char *filename, char *hdu, size_t *numcols,
+               size_t *numrows, int *tabletype);
 
 gal_data_t *
 gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,

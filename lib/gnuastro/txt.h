@@ -61,7 +61,6 @@ __BEGIN_C_DECLS  /* From C++ preparations */
  acts as a place holder for the blank string columns ONLY in ASCII
  tables.*/
 #define GAL_TXT_DELIMITERS     " ,\t\f\v"
-#define GAL_TXT_STRING_BLANK   "blank"
 #define GAL_TXT_MAX_FMT_LENGTH 20
 
 

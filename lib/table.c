@@ -32,7 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/txt.h>
 #include <gnuastro/table.h>
 
-
+#include <checkset.h>
 
 
 
@@ -100,6 +100,264 @@ gal_table_string_to_searchin(char *string)
   return -1;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/***************          Printing information            ***************/
+/************************************************************************/
+/* Fill in the basic information necessary to print a column. This
+   information can be used for printing a plain text file or for FITS ASCII
+   tables. The `fmt' and `lng' should point to pre-allocated arrays. The
+   best way is: `char fmt[2], lng[3];' in the same function calling this.*/
+void
+gal_table_col_print_info(gal_data_t *col, int tabletype, size_t *width,
+                         size_t *precision, char *fmt, char *lng)
+{
+  size_t j;
+  int maxstrlen;
+  char **strarr;
+
+  /* First do a sanity check, so we can safly stop checking in the steps
+     below. */
+  switch(tabletype)
+    {
+    case GAL_TABLE_TYPE_TXT:
+    case GAL_TABLE_TYPE_AFITS:
+      break;
+    default:
+      error(EXIT_FAILURE, 0, "tabletype code %d not recognized in "
+            "`set_col_print_info'", tabletype);
+    }
+
+
+
+  /* Set the formats and widths based on the type of the column. Initialize
+     the characters and blank pointer. The long prefix is not necessary for
+     most types, so just initialize it once up here.*/
+  fmt[0]=fmt[1]=lng[0]=lng[1]=lng[2]='\0';
+  switch(col->type)
+    {
+    case GAL_DATA_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "printing of bit types is currently "
+            "not supported");
+      break;
+
+
+
+
+    case GAL_DATA_TYPE_STRING:
+
+      /* Set the basic information. */
+      fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 's' : 'A';
+
+      /* Go through all the strings in the column and find the maximum
+         length to use as printing. If the user asked for a larger width
+         (through the data structure's disp_width element), then set
+         that. */
+      maxstrlen=0;
+      strarr=col->array;
+      for(j=0;j<col->size;++j)
+        maxstrlen = ( strlen(strarr[j]) > maxstrlen
+                      ? strlen(strarr[j]) : maxstrlen );
+      *width = col->disp_width>maxstrlen ? col->disp_width : maxstrlen;
+      break;
+
+
+
+
+    case GAL_DATA_TYPE_UCHAR:
+    case GAL_DATA_TYPE_USHORT:
+    case GAL_DATA_TYPE_UINT:
+    case GAL_DATA_TYPE_ULONG:
+
+      /* For the FITS ASCII table, there is only one format for all
+         integers.  */
+      if(tabletype==GAL_TABLE_TYPE_AFITS)
+        fmt[0]='I';
+      else
+        switch(col->disp_fmt)
+          {
+          case GAL_TABLE_DISPLAY_FMT_UDECIMAL: fmt[0]='u'; break;
+          case GAL_TABLE_DISPLAY_FMT_OCTAL:    fmt[0]='o'; break;
+          case GAL_TABLE_DISPLAY_FMT_HEX:      fmt[0]='X'; break;
+          default:                             fmt[0]='u';
+          }
+
+      /* If we have a long type, then make changes. */
+      if(col->type==GAL_DATA_TYPE_ULONG)
+        {
+          lng[0]='l';
+          *width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
+                   : col->disp_width );
+        }
+      else *width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
+                    : col->disp_width );
+      *precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
+                  : col->disp_precision );
+      break;
+
+
+
+
+    case GAL_DATA_TYPE_CHAR:
+    case GAL_DATA_TYPE_LOGICAL:
+    case GAL_DATA_TYPE_SHORT:
+    case GAL_DATA_TYPE_INT:
+      fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'd' : 'I';
+      *width = ( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
+                 : col->disp_width );
+      *precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
+                     : col->disp_precision );
+      break;
+
+
+
+
+    case GAL_DATA_TYPE_LONG:
+    case GAL_DATA_TYPE_LONGLONG:
+      lng[0] = 'l';
+      fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'd' : 'I';
+      lng[1] = col->type==GAL_DATA_TYPE_LONGLONG ? 'l' : '\0';
+      *width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
+              : col->disp_width );
+      *precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
+                  : col->disp_precision );
+      break;
+
+
+
+    /* We need a default value (because in most cases, it won't be set. */
+    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_DOUBLE:
+      switch(col->disp_fmt)
+        {
+        case GAL_TABLE_DISPLAY_FMT_FLOAT:
+          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'f' : 'F'; break;
+        case GAL_TABLE_DISPLAY_FMT_EXP:
+          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'e' : 'E'; break;
+        case GAL_TABLE_DISPLAY_FMT_GENERAL:
+          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'g' : 'E'; break;
+        default:
+          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'f' : 'F'; break;
+        }
+      *width = ( col->disp_width<=0
+                 ? ( col->type==GAL_DATA_TYPE_FLOAT
+                     ? GAL_TABLE_DEF_FLT_WIDTH
+                     : GAL_TABLE_DEF_DBL_WIDTH )
+                 : col->disp_width );
+      *precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_FLT_PRECISION
+                     : col->disp_precision );
+      break;
+
+
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_table_col_print_info'", col->type);
+    }
+}
+
+
+
+
+
+/* Use the input `blank' string and the input column to put the blank value
+   in the column's array. This function should later be generalized into a
+   function to read a string into a given data type (see
+   `gal_data_string_to_array_elem'). It is only here temporarily. */
+void
+gal_table_read_blank(gal_data_t *col, char *blank)
+{
+  double d;
+  long long L;
+  char *tailptr;
+
+  /* If there is nothing to use as blank, then don't continue, note that
+     the column data structure was initialized to mean that there is no
+     blank value. */
+  if(blank==NULL) return;
+
+  /* Allocate space to keep the blank value and initialize the dimension
+     and size parameters appropriately. */
+  errno=0;
+  col->dsize=malloc(sizeof *col->dsize);
+  if(col->dsize==NULL)
+    error(EXIT_FAILURE, 0, "%zu bytes for `col->dsize' in `txt_read_blank' ",
+          sizeof *col->dsize);
+  col->dsize[0]=col->ndim=col->size=1;
+  col->array=gal_data_malloc_array(col->type, col->size);
+
+  /* Put the blank value in depending on the type.*/
+  switch(col->type)
+    {
+
+    /* String. */
+    case GAL_DATA_TYPE_STRING:
+      gal_checkset_allocate_copy(blank, col->array);
+      break;
+
+    /* Floating point: Read it as a double or long, then put it in the
+       array. When the conversion can't be done (the string isn't a number
+       for example), then just assume no blank value was given. */
+    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_DOUBLE:
+      d=strtod(blank, &tailptr);
+      if(*tailptr!='\0') { free(col->array); col->array=NULL;}
+      else
+        {
+          if(col->type==GAL_DATA_TYPE_FLOAT) *(float *) col->array=d;
+          else                              *(double *) col->array=d;
+        }
+      break;
+
+    /* Integers. */
+    default:
+      L=strtoll(blank, &tailptr, 0);
+      if(*tailptr!='\0') { free(col->array); col->array=NULL; }
+      else
+        switch(col->type)
+          {
+          case GAL_DATA_TYPE_UCHAR:   *(unsigned char *) col->array=L; break;
+          case GAL_DATA_TYPE_CHAR:             *(char *) col->array=L; break;
+          case GAL_DATA_TYPE_USHORT: *(unsigned short *) col->array=L; break;
+          case GAL_DATA_TYPE_SHORT:           *(short *) col->array=L; break;
+          case GAL_DATA_TYPE_UINT:     *(unsigned int *) col->array=L; break;
+          case GAL_DATA_TYPE_INT:               *(int *) col->array=L; break;
+          case GAL_DATA_TYPE_ULONG:   *(unsigned long *) col->array=L; break;
+          case GAL_DATA_TYPE_LONG:             *(long *) col->array=L; break;
+          case GAL_DATA_TYPE_LONGLONG:     *(LONGLONG *) col->array=L; break;
+          default:
+            error(EXIT_FAILURE, 0, "type code %d not recognized in "
+                  "`txt_str_to_blank'", col->type);
+          }
+    }
+
+  /* If the blank value couldn't be read, then set the initialized
+     lengths to zero again. */
+  if(col->array==NULL)
+    {
+      col->ndim=col->size=0;
+      free(col->dsize);
+      col->dsize=NULL;
+    }
+}
 
 
 

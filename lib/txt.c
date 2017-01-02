@@ -114,77 +114,6 @@ txt_trim_space(char *str)
 
 
 
-/* Use the input `blank' string and the input column to put the blank value
-   in the column's array. If no blank string is given, then free the
-   column's array. */
-static void
-txt_read_blank(gal_data_t *col, char *blank)
-{
-  double d;
-  long long L;
-  char *tailptr;
-
-  /* If there is nothing to use as blank, then free the array. */
-  if(blank==NULL) return;
-
-  /* Allocate space to keep the blank value. */
-  col->ndim=col->size=1;
-  col->array=gal_data_malloc_array(col->type, col->size);
-
-  /* Set the dsize variable. */
-  errno=0;
-  col->dsize=malloc(sizeof *col->dsize);
-  if(col->dsize==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for `col->dsize' in `txt_read_blank' ",
-          sizeof *col->dsize);
-
-  /* String type. Copy the string.*/
-  if(col->type==GAL_DATA_TYPE_STRING)
-    gal_checkset_allocate_copy(blank, col->array);
-
-  /* Floating point: Read it as a double or long, then put it in the
-     array. When the conversion can't be done (the string isn't a number
-     for example), then just assume no blank value was given. */
-  else if(col->type==GAL_DATA_TYPE_FLOAT || col->type==GAL_DATA_TYPE_DOUBLE)
-    {
-      d=strtod(blank, &tailptr);
-      if(*tailptr!='\0') free(col->array);
-      else
-        {
-          if(col->type==GAL_DATA_TYPE_FLOAT) *(float *) col->array=d;
-          else                              *(double *) col->array=d;
-        }
-    }
-
-  /* Integers. */
-  else
-    {
-      L=strtoll(blank, &tailptr, 0);
-      if(*tailptr!='\0') free(col->array);
-      else
-        switch(col->type)
-          {
-          case GAL_DATA_TYPE_UCHAR:   *(unsigned char *) col->array=L; break;
-          case GAL_DATA_TYPE_CHAR:             *(char *) col->array=L; break;
-          case GAL_DATA_TYPE_USHORT: *(unsigned short *) col->array=L; break;
-          case GAL_DATA_TYPE_SHORT:           *(short *) col->array=L; break;
-          case GAL_DATA_TYPE_UINT:     *(unsigned int *) col->array=L; break;
-          case GAL_DATA_TYPE_INT:               *(int *) col->array=L; break;
-          case GAL_DATA_TYPE_ULONG:   *(unsigned long *) col->array=L; break;
-          case GAL_DATA_TYPE_LONG:             *(long *) col->array=L; break;
-          case GAL_DATA_TYPE_LONGLONG:     *(LONGLONG *) col->array=L; break;
-          default:
-            error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                  "`txt_str_to_blank'", col->type);
-          }
-    }
-}
-
-
-
-
-
-
 /* Each column information comment should have a format like this:
 
       # Column N: NAME [UNITS, TYPE, BLANK] COMMENT
@@ -313,7 +242,7 @@ txt_info_from_comment(char *line, gal_data_t **colsll)
 
       /* Write the blank value into the array. Note that this is not the
          final column, we are just collecting information now. */
-      txt_read_blank(*colsll, txt_trim_space(blank));
+      gal_table_read_blank(*colsll, txt_trim_space(blank));
     }
 }
 
@@ -608,7 +537,8 @@ txt_fill_columns(char *line, char **tokens, size_t maxcolnum,
               && !strcmp( *strb, str[lineind] ) )
             {
               free(str[lineind]);
-              str[lineind]=GAL_DATA_BLANK_STRING;
+              gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING,
+                                         &str[lineind]);
             }
           break;
 
@@ -821,12 +751,11 @@ static char **
 make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
                      size_t *len)
 {
+  size_t i=0;
   char **fmts;
-  size_t i=0, j;
   gal_data_t *col;
-  char *fmt=NULL, *lng, **strarr;
-  char bfmt[GAL_TXT_MAX_FMT_LENGTH];
-  int width=0, precision=0, maxstrlen;
+  char fmt[2], lng[3];
+  size_t width, precision;
 
 
   /* Allocate space for the output. */
@@ -844,10 +773,6 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
   /* Go over all the columns and make their formats. */
   for(col=cols;col!=NULL;col=col->next)
     {
-      /* Initialize */
-      lng="";
-
-
       /* First allocate the necessary space to keep the string. */
       errno=0;
       fmts[ i*FMTS_COLS   ] = malloc(GAL_TXT_MAX_FMT_LENGTH*sizeof **fmts);
@@ -859,183 +784,31 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
               i*FMTS_COLS, i*FMTS_COLS+1);
 
 
-      /* Write the proper format. */
-      switch(col->type)
+      /* If we have a blank value, get the blank value as a string and
+         adjust the width */
+      if(gal_data_has_blank(col)==0)
+        fmts[i*FMTS_COLS+2]=NULL;
+      else
         {
-
-
-
-        case GAL_DATA_TYPE_BIT:
-          error(EXIT_FAILURE, 0, "printing of bit types is currently "
-                "not supported");
-          break;
-
-
-
-        case GAL_DATA_TYPE_STRING:
-          /* Set the basic information. */
-          fmt="s";
-
-          /* If `disp_width' was not set (is negative), go through all the
-             strings in the column and find the maximum length to use as
-             printing width when no value was given. */
-          if(col->disp_width<=0)
-            {
-              maxstrlen=-1;
-              strarr=col->array;
-              for(j=0;j<col->size;++j)
-                if(strarr[j])
-                  maxstrlen = ( strlen(strarr[j]) > maxstrlen
-                                ? strlen(strarr[j])
-                                : maxstrlen );
-              width = maxstrlen==-1 ? GAL_TABLE_DEF_STR_WIDTH : maxstrlen ;
-            }
+          /* Set the blank value. */
+          if(col->type==GAL_DATA_TYPE_STRING)
+            gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING,
+                                       &fmts[i*FMTS_COLS+2]);
           else
-            width = col->disp_width;
-          break;
-
-
-
-        case GAL_DATA_TYPE_UCHAR:
-        case GAL_DATA_TYPE_USHORT:
-        case GAL_DATA_TYPE_UINT:
-        case GAL_DATA_TYPE_ULONG:
-
-          /* Set the final printing format. */
-          switch(col->disp_fmt)
-            {
-            case GAL_TABLE_DISPLAY_FMT_UDECIMAL: fmt="u"; break;
-            case GAL_TABLE_DISPLAY_FMT_OCTAL:    fmt="o"; break;
-            case GAL_TABLE_DISPLAY_FMT_HEX:      fmt="X"; break;
-            default:                             fmt="u";
-            }
-
-          /* If we have a long type, then make changes. */
-          if(col->type==GAL_DATA_TYPE_ULONG)
-            {
-              lng="l";
-              width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
-                      : col->disp_width );
-            }
-          else width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
-                       : col->disp_width );
-          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
-                      : col->disp_precision );
-          break;
-
-
-
-        case GAL_DATA_TYPE_CHAR:
-        case GAL_DATA_TYPE_LOGICAL:
-        case GAL_DATA_TYPE_SHORT:
-        case GAL_DATA_TYPE_INT:
-          fmt="d";
-          width=( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
-                  : col->disp_width );
-          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
-                      : col->disp_precision );
-          break;
-
-
-
-        case GAL_DATA_TYPE_LONG:
-        case GAL_DATA_TYPE_LONGLONG:
-          fmt="d";
-          lng = col->type==GAL_DATA_TYPE_LONG ? "l" : "ll";
-          width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
-                  : col->disp_width );
-          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
-                      : col->disp_precision );
-          break;
-
-
-
-        case GAL_DATA_TYPE_FLOAT:
-        case GAL_DATA_TYPE_DOUBLE:
-          switch(col->disp_fmt)
-            {
-            case GAL_TABLE_DISPLAY_FMT_FLOAT:    fmt="f"; break;
-            case GAL_TABLE_DISPLAY_FMT_EXP:      fmt="e"; break;
-            case GAL_TABLE_DISPLAY_FMT_GENERAL:  fmt="g"; break;
-            default:                             fmt="f";
-            }
-          width=( col->disp_width<=0
-                  ? ( col->type==GAL_DATA_TYPE_FLOAT
-                      ? GAL_TABLE_DEF_FLT_WIDTH
-                      : GAL_TABLE_DEF_DBL_WIDTH )
-                  : col->disp_width );
-          precision=( col->disp_precision<=0 ? GAL_TABLE_DEF_FLT_PRECISION
-                      : col->disp_precision );
-          break;
-
-
-
-        default:
-          error(EXIT_FAILURE, 0, "type code %d not recognized for output "
-                "column %zu (counting from 1)", col->type, i+1);
+            fmts[i*FMTS_COLS+2]=gal_data_blank_as_string(col->type);
         }
 
 
-      /* Print the blank value if there is any blank values in this
-         column. */
-      if(gal_data_has_blank(col))
-        {
-          sprintf(bfmt, "%%%s%s", lng, fmt);
-          switch(col->type)
-            {
-            case GAL_DATA_TYPE_STRING:
-              gal_checkset_allocate_copy(GAL_TXT_STRING_BLANK,
-                                         &fmts[i*FMTS_COLS+2]);
-              break;
-            case GAL_DATA_TYPE_UCHAR:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (unsigned char)GAL_DATA_BLANK_UCHAR);
-              break;
-            case GAL_DATA_TYPE_CHAR:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (char)GAL_DATA_BLANK_CHAR);
-              break;
-            case GAL_DATA_TYPE_USHORT:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (unsigned short)GAL_DATA_BLANK_USHORT);
-              break;
-            case GAL_DATA_TYPE_SHORT:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (short)GAL_DATA_BLANK_SHORT);
-              break;
-            case GAL_DATA_TYPE_UINT:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (unsigned int)GAL_DATA_BLANK_UINT);
-              break;
-            case GAL_DATA_TYPE_INT:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (int)GAL_DATA_BLANK_INT);
-              break;
-            case GAL_DATA_TYPE_ULONG:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (unsigned long)GAL_DATA_BLANK_ULONG);
-              break;
-            case GAL_DATA_TYPE_LONG:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (long)GAL_DATA_BLANK_LONG);
-              break;
-            case GAL_DATA_TYPE_LONGLONG:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt,
-                       (LONGLONG)GAL_DATA_BLANK_LONGLONG);
-              break;
-            case GAL_DATA_TYPE_FLOAT:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt, GAL_DATA_BLANK_FLOAT);
-              break;
-            case GAL_DATA_TYPE_DOUBLE:
-              asprintf(&fmts[i*FMTS_COLS+2], bfmt, GAL_DATA_BLANK_DOUBLE);
-              break;
-            }
+      /* Fill in the printing paramters. */
+      gal_table_col_print_info(col, GAL_TABLE_TYPE_TXT, &width,
+                               &precision, fmt, lng);
 
-          /* Adjust the width based on the blank value. */
-          width = ( strlen(fmts[i*FMTS_COLS+2]) > width
-                    ? strlen(fmts[i*FMTS_COLS+2]) : width );
-        }
-      else fmts[i*FMTS_COLS+2]=NULL;
+
+      /* Adjust the width if a blank string was defined. */
+      if(fmts[i*FMTS_COLS+2])
+        width = ( strlen(fmts[i*FMTS_COLS+2])>width
+                  ? strlen(fmts[i*FMTS_COLS+2])
+                  : width );
 
 
       /* Print the result into the allocated string and add its length to
@@ -1043,18 +816,18 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
          end of `fmts[i*2]' is to ensure that the columns don't merge, even
          if the printed string is larger than the expected width. */
       if(precision<=0)
-        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%d.%d%s%s ",
+        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%zu.%zu%s%s ",
                             leftadjust ? "-" : "", width, precision,
                             lng, fmt);
       else
-        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%d%s%s ",
+        *len += 1 + sprintf(fmts[i*FMTS_COLS], "%%%s%zu%s%s ",
                             leftadjust ? "-" : "", width, lng, fmt);
 
 
       /* Set the string for the Gnuastro type. For strings, we also need to
          write the maximum number of characters.*/
       if(col->type==GAL_DATA_TYPE_STRING)
-        sprintf(fmts[i*FMTS_COLS+1], "%s%d",
+        sprintf(fmts[i*FMTS_COLS+1], "%s%zu",
                 gal_data_type_as_string(col->type, 0), width);
       else
         strcpy(fmts[i*FMTS_COLS+1], gal_data_type_as_string(col->type, 0));
@@ -1173,10 +946,12 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
               fprintf(fp, fmts[j*FMTS_COLS],
                       ((unsigned char *)col->array)[i]);
               break;
+
             case GAL_DATA_TYPE_CHAR:
             case GAL_DATA_TYPE_LOGICAL:
               fprintf(fp, fmts[j*FMTS_COLS], ((char *)col->array)[i]);
               break;
+
             case GAL_DATA_TYPE_USHORT:
               fprintf(fp, fmts[j*FMTS_COLS],
                       ((unsigned short *)col->array)[i]);
@@ -1184,29 +959,26 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
             case GAL_DATA_TYPE_SHORT:
               fprintf(fp, fmts[j*FMTS_COLS], ((short *)col->array)[i]);
               break;
+
             case GAL_DATA_TYPE_UINT:
               fprintf(fp, fmts[j*FMTS_COLS], ((unsigned int *)col->array)[i]);
               break;
+
             case GAL_DATA_TYPE_INT:
               fprintf(fp, fmts[j*FMTS_COLS], ((int *)col->array)[i]);
               break;
+
             case GAL_DATA_TYPE_ULONG:
               fprintf(fp, fmts[j*FMTS_COLS],
                       ((unsigned long *)col->array)[i]);
               break;
+
             case GAL_DATA_TYPE_LONG:
               fprintf(fp, fmts[j*FMTS_COLS], ((long *)col->array)[i]);
               break;
+
             case GAL_DATA_TYPE_LONGLONG:
               fprintf(fp, fmts[j*FMTS_COLS], ((LONGLONG *)col->array)[i]);
-              break;
-
-            /* Special consideration (string, float, double). */
-            case GAL_DATA_TYPE_STRING:
-              if(((char **)col->array)[i])
-                fprintf(fp, fmts[j*FMTS_COLS], ((char **)col->array)[i]);
-              else
-                fprintf(fp, "%-*s ", col->disp_width, GAL_TXT_STRING_BLANK);
               break;
 
             case GAL_DATA_TYPE_FLOAT:
@@ -1216,6 +988,15 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
             case GAL_DATA_TYPE_DOUBLE:
               fprintf(fp, fmts[j*FMTS_COLS], ((double *)col->array)[i]);
               break;
+
+            /* Special consideration for strings. */
+            case GAL_DATA_TYPE_STRING:
+              if( !strcmp( ((char **)col->array)[i], GAL_DATA_BLANK_STRING ) )
+                fprintf(fp, "%-*s ", col->disp_width, GAL_DATA_BLANK_STRING);
+              else
+                fprintf(fp, fmts[j*FMTS_COLS], ((char **)col->array)[i]);
+              break;
+
             default:
               error(EXIT_FAILURE, 0, "type code %d not recognized for "
                     "col->type in `gal_txt_write'", col->type);

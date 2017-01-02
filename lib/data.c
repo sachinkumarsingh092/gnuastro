@@ -239,10 +239,6 @@ gal_data_alloc_number(int type, void *number)
       *(char *)allocated=*(char *)number;
       break;
 
-    case GAL_DATA_TYPE_STRING:
-      *(unsigned char **)allocated=*(unsigned char **)number;
-      break;
-
     case GAL_DATA_TYPE_USHORT:
       *(unsigned short *)allocated=*(unsigned short *)number;
       break;
@@ -412,6 +408,7 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
      `dsize[0]=1', A 1D array also has `ndim=1', but `dsize[0]>1'. */
   if(ndim)
     {
+      /* Allocate dsize. */
       errno=0;
       data->dsize=malloc(ndim*sizeof *data->dsize);
       if(data->dsize==NULL)
@@ -433,32 +430,30 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
              elements. */
           data->size *= ( data->dsize[i] = dsize[i] );
         }
+
+      /* Set the array pointer. If an non-NULL array pointer was given,
+         then use it. */
+      if(array)
+        data->array=array;
+      else
+        {
+          if( gal_data_sizeof(type)*data->size  > minmapsize )
+            gal_data_mmap(data, clear);
+          else
+            {
+              /* Allocate the space for the array. */
+              if(clear)
+                data->array = gal_data_calloc_array(data->type, data->size);
+              else
+                data->array = gal_data_malloc_array(data->type, data->size);
+            }
+        }
     }
   else
     {
       data->size=0;
+      data->array=NULL;
       data->dsize=NULL;
-    }
-
-
-  /* Set the array pointer. If an non-NULL array pointer was given, then
-     use it. If `array==NULL', then check if `ndim==0'. If it is, then you
-     can also set `data->array=array' (==NULL). Otherwise, mmap or allocate
-     (and possibly) clean the space. */
-  if(array || ndim==0)
-    data->array=array;
-  else
-    {
-      if( gal_data_sizeof(type)*data->size  > minmapsize )
-        gal_data_mmap(data, clear);
-      else
-        {
-          /* Allocate the space for the array. */
-          if(clear)
-            data->array = gal_data_calloc_array(data->type, data->size);
-          else
-            data->array = gal_data_malloc_array(data->type, data->size);
-        }
     }
 }
 
@@ -529,6 +524,60 @@ gal_data_calloc_dataarray(size_t size)
 
   /* Return the array pointer. */
   return out;
+}
+
+
+
+
+
+/* In some contexts, it is necessary for all the strings to have the same
+   allocated space (when the `strlen' is different). This function will
+   allocate new copies for all elements to have the same length as the
+   maximum length and set all trailing elements to `\0' for those that are
+   shorter than the length. The return value is the allocated space. If the
+   dataset is not a string, the returned value will be -1 (largest number
+   of `size_t'). */
+size_t
+gal_data_string_fixed_alloc_size(gal_data_t *data)
+{
+  size_t i, j, maxlen=0;
+  char *tmp, **strarr=data->array;
+
+  /* Return 0 if the dataset is not a string. */
+  if(data->type!=GAL_DATA_TYPE_STRING)
+    return -1;
+
+  /* Get the maximum length. */
+  for(i=0;i<data->size;++i)
+    maxlen = strlen(strarr[i])>maxlen ? strlen(strarr[i]) : maxlen;
+
+  /* For all elements, check the length and if they aren't equal to maxlen,
+     then allocate a maxlen sized array and put the values in. */
+  for(i=0;i<data->size;++i)
+    {
+      /* Allocate (and clear) the space for the new string. We want it to
+         be cleared, so when the strings are smaller, the rest of the space
+         is filled with '\0' (ASCII for 0) values.*/
+      errno=0;
+      tmp=calloc(maxlen+1, sizeof *strarr[i]);
+      if(tmp==NULL)
+        error(EXIT_FAILURE, 0, "%zu bytes for tmp in "
+              "`gal_data_fixed_alloc_size_for_string'",
+              maxlen+1*sizeof *strarr[i]);
+
+      /* Put the old array into the newly allocated space. `tmp' was
+         cleared (all values set to `\0', so we don't need to set the final
+         one explicity after the copy.*/
+      for(j=0;strarr[i][j]!='\0';++j)
+        tmp[j]=strarr[i][j];
+
+      /* Free the old array and put in the new one. */
+      free(strarr[i]);
+      strarr[i]=tmp;
+    }
+
+  /* Return the allocated space. */
+  return maxlen+1;
 }
 
 
@@ -750,9 +799,9 @@ void *
 gal_data_alloc_blank(int type)
 {
   /* Define the pointers. */
+  char            *str;
   unsigned char     uc = GAL_DATA_BLANK_UCHAR;
   char               c = GAL_DATA_BLANK_CHAR;
-  char            *str = GAL_DATA_BLANK_STRING;
   unsigned short    us = GAL_DATA_BLANK_USHORT;
   short              s = GAL_DATA_BLANK_SHORT;
   unsigned int      ui = GAL_DATA_BLANK_UINT;
@@ -768,6 +817,10 @@ gal_data_alloc_blank(int type)
   /* Put the blank value into it. */
   switch(type)
     {
+    case GAL_DATA_TYPE_STRING:
+      gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &str);
+      return str;
+
     case GAL_DATA_TYPE_BIT:
       error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support blank "
             "values for `GAL_DATA_TYPE_BIT', please get in touch with "
@@ -781,9 +834,6 @@ gal_data_alloc_blank(int type)
          to TSBYTE.*/
     case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
       return gal_data_alloc_number(type, &c);
-
-    case GAL_DATA_TYPE_STRING:
-      return gal_data_alloc_number(type, &str);
 
     case GAL_DATA_TYPE_USHORT:
       return gal_data_alloc_number(type, &us);
@@ -826,6 +876,78 @@ gal_data_alloc_blank(int type)
     }
 
   return NULL;
+}
+
+
+
+
+
+/* Print the blank value as a string. */
+char *
+gal_data_blank_as_string(int type)
+{
+  char *blank;
+  switch(type)
+    {
+    case GAL_DATA_TYPE_STRING:
+      error(EXIT_FAILURE, 0, "`gal_data_blank_as_string' can't print the "
+            "blank value for a string, it is for other types.");
+      break;
+
+    case GAL_DATA_TYPE_BIT:
+      error(EXIT_FAILURE, 0, "bit types are not implemented in "
+            "`gal_data_blank_as_string' yet.");
+      break;
+
+    case GAL_DATA_TYPE_UCHAR:
+      asprintf(&blank, "%u", (unsigned char)GAL_DATA_BLANK_UCHAR);
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      asprintf(&blank, "%d", (char)GAL_DATA_BLANK_CHAR);
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      asprintf(&blank, "%u", (unsigned short)GAL_DATA_BLANK_USHORT);
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      asprintf(&blank, "%d", (short)GAL_DATA_BLANK_SHORT);
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      asprintf(&blank, "%u", (unsigned int)GAL_DATA_BLANK_UINT);
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      asprintf(&blank, "%d", (int)GAL_DATA_BLANK_INT);
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      asprintf(&blank, "%lu", (unsigned long)GAL_DATA_BLANK_ULONG);
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      asprintf(&blank, "%ld", (long)GAL_DATA_BLANK_LONG);
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      asprintf(&blank, "%lld", (LONGLONG)GAL_DATA_BLANK_LONGLONG);
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      asprintf(&blank, "%f", GAL_DATA_BLANK_FLOAT);
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      asprintf(&blank, "%f", GAL_DATA_BLANK_DOUBLE);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_blank_as_string'", type);
+    }
+  return blank;
 }
 
 
@@ -1014,52 +1136,55 @@ gal_data_blank_to_value(gal_data_t *data, void *value)
             "datatype, please get in touch with us to implement it.");
 
     case GAL_DATA_TYPE_UCHAR:
-      do if(*uc==GAL_DATA_BLANK_UCHAR) *uc++=ucv; while(uc<ucf);
+      do if(*uc==GAL_DATA_BLANK_UCHAR) *uc=ucv; while(++uc<ucf);
       break;
 
 
     case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      do if(*c==GAL_DATA_BLANK_CHAR) *c++=cv; while(c<cf);
+      do if(*c==GAL_DATA_BLANK_CHAR) *c=cv; while(++c<cf);
       break;
 
 
     case GAL_DATA_TYPE_STRING:
-      do if(*str==GAL_DATA_BLANK_STRING) *str++=strv; while(str<strf);
+      do
+        if(!strcmp(*str, GAL_DATA_BLANK_STRING))
+          gal_checkset_allocate_copy(strv, str);
+      while(++str<strf);
       break;
 
 
     case GAL_DATA_TYPE_USHORT:
-      do if(*us==GAL_DATA_BLANK_USHORT) *us++=usv; while(us<usf);
+      do if(*us==GAL_DATA_BLANK_USHORT) *us=usv; while(++us<usf);
       break;
 
 
     case GAL_DATA_TYPE_SHORT:
-      do if(*s==GAL_DATA_BLANK_SHORT) *s++=sv; while(s<sf);
+      do if(*s==GAL_DATA_BLANK_SHORT) *s=sv; while(++s<sf);
       break;
 
 
     case GAL_DATA_TYPE_UINT:
-      do if(*ui==GAL_DATA_BLANK_UINT) *ui++=uiv; while(ui<uif);
+      do if(*ui==GAL_DATA_BLANK_UINT) *ui=uiv; while(++ui<uif);
       break;
 
 
     case GAL_DATA_TYPE_INT:
-      do if(*in==GAL_DATA_BLANK_INT) *in++=inv; while(in<inf);
+      do if(*in==GAL_DATA_BLANK_INT) *in=inv; while(++in<inf);
       break;
 
 
     case GAL_DATA_TYPE_ULONG:
-      do if(*ul==GAL_DATA_BLANK_ULONG) *ul++=ulv; while(ul<ulf);
+      do if(*ul==GAL_DATA_BLANK_ULONG) *ul=ulv; while(++ul<ulf);
       break;
 
 
     case GAL_DATA_TYPE_LONG:
-      do if(*l==GAL_DATA_BLANK_LONG) *l++=lv; while(l<lf);
+      do if(*l==GAL_DATA_BLANK_LONG) *l=lv; while(++l<lf);
       break;
 
 
     case GAL_DATA_TYPE_LONGLONG:
-      do if(*L==GAL_DATA_BLANK_LONGLONG) *L++=Lv; while(L<Lf);
+      do if(*L==GAL_DATA_BLANK_LONGLONG) *L=Lv; while(++L<Lf);
       break;
 
 
@@ -1168,7 +1293,7 @@ gal_data_has_blank(gal_data_t *data)
 
 
     case GAL_DATA_TYPE_STRING:
-      do if(*str++==GAL_DATA_BLANK_STRING) return 1; while(str<strf);
+      do if(!strcmp(*str++,GAL_DATA_BLANK_STRING)) return 1; while(str<strf);
       break;
 
 
@@ -1328,7 +1453,7 @@ gal_data_flag_blank(gal_data_t *data)
 
 
     case GAL_DATA_TYPE_STRING:
-      do *o++ = *str==GAL_DATA_BLANK_STRING; while(++str<strf);
+      do *o++ = !strcmp(*str,GAL_DATA_BLANK_STRING); while(++str<strf);
       break;
 
 
@@ -1423,6 +1548,7 @@ gal_data_flag_blank(gal_data_t *data)
   /* Return */
   return out;
 }
+
 
 
 
@@ -1734,6 +1860,29 @@ gal_data_string_to_number(char *string)
   return gal_data_alloc(numarr, type, 1, dsize, NULL, 0, -1,
                         NULL, NULL, NULL);
 }
+
+
+
+
+
+/* You have a string and you want to put it into an element of the array of
+   a data structure. The array doesn't necessarily have to be allocated
+   (!=NULL). If it wasn't allocated, it will be allocated here based on the
+   `size' element in the data structure. If size is 0, a one element array
+   will be allocated. If the data structure isn't already allocated or its
+   type is negative, this function will act like
+   `gal_data_string_to_number' where the type will be set based on the
+   value of the number. If the string is blank, this function won't do
+   anything.
+
+   Use `gal_table_read_blank' as a basis for this function, then remove
+   that function. */
+void
+gal_data_string_to_array_elem(gal_data_t **outdata, size_t index,
+                              char *string)
+{
+}
+
 
 
 
