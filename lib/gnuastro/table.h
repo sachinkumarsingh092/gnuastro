@@ -59,7 +59,7 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_TABLE_DEF_STR_WIDTH       6
 #define GAL_TABLE_DEF_INT_WIDTH       6
 #define GAL_TABLE_DEF_LINT_WIDTH      10
-#define GAL_TABLE_DEF_FLT_WIDTH       10
+#define GAL_TABLE_DEF_FLT_WIDTH       12
 #define GAL_TABLE_DEF_DBL_WIDTH       18
 
 #define GAL_TABLE_DEF_INT_PRECISION   0

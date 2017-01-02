@@ -1734,6 +1734,53 @@ set_display_format(char *tdisp, gal_data_t *data, char *filename, char *hdu,
 
 
 
+/* The FITS standard for binary tables (not ASCII tables) does not allow
+   unsigned types for short, int and long types, or signed char! So it has
+   `TSCALn' and `TZEROn' to scale the signed types to an unsigned type. It
+   does this internally, but since we need to define our data type and
+   allocate space for it before actually reading the array, it is necessary
+   to do this setting here.  */
+static void
+fits_correct_bin_table_int_types(gal_data_t *allcols, int tfields,
+                                 int *tscal, long long *tzero)
+{
+  size_t i;
+
+  for(i=0;i<tfields;++i)
+    {
+      /* If TSCALn is not 1, the reason for it isn't to use a different
+         signed/unsigned type, so don't change anything. */
+      if(tscal[i]!=1) continue;
+
+      /* For a check
+      printf("Column %zu initial type: %s (s: %d, z: %lld)\n", i+1,
+             gal_data_type_as_string(allcols[i].type, 1), tscal[i], tzero[i]);
+      */
+
+      /* Correct the type based on the initial read type and the value to
+         tzero. If tzero is any other value, then again, its not a type
+         conversion, so just ignore it. */
+      if(allcols[i].type==GAL_DATA_TYPE_UCHAR && tzero[i]==SCHAR_MIN)
+        allcols[i].type = GAL_DATA_TYPE_CHAR;
+
+      else if ( allcols[i].type==GAL_DATA_TYPE_SHORT
+                && tzero[i] == -(long long)SHRT_MIN )
+        allcols[i].type = GAL_DATA_TYPE_USHORT;
+
+      else if (allcols[i].type==GAL_DATA_TYPE_LONG
+               && tzero[i] ==  -(long long)INT_MIN)
+        allcols[i].type = GAL_DATA_TYPE_UINT;
+
+      /* For a check
+      printf("Column %zu corrected type: %s\n", i+1,
+             gal_data_type_as_string(allcols[i].type, 1));
+      */
+    }
+}
+
+
+
+
 
 /* See the descriptions of `gal_table_info'. */
 gal_data_t *
@@ -1745,8 +1792,9 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   char *tailptr;
   fitsfile *fptr;
   size_t i, index;
+  long long *tzero;
   gal_data_t *allcols;
-  int status=0, datatype;
+  int status=0, datatype, *tscal;
   char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
 
   /* Open the FITS file and get the basic information. */
@@ -1758,6 +1806,20 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
      structure array and store the information within it. */
   fits_read_key(fptr, TINT, "TFIELDS", &tfields, NULL, &status);
   allcols=gal_data_calloc_dataarray(tfields);
+
+
+  /* See comments of `fits_correct_bin_table_int_types'. Here we are
+     allocating the space to keep these values. */
+  errno=0;
+  tscal=calloc(tfields, sizeof *tscal);
+  if(tscal==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for tscal in "
+          "`gal_fits_table_info'", tfields*sizeof *tscal);
+  errno=0;
+  tzero=calloc(tfields, sizeof *tzero);
+  if(tzero==NULL)
+    error(EXIT_FAILURE, errno, "%zu bytes for tzero in "
+          "`gal_fits_table_info'", tfields*sizeof *tzero);
 
 
   /* Read all the keywords one by one and if they match, then put them in
@@ -1805,7 +1867,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                   if(*tabletype==GAL_TABLE_TYPE_AFITS)
                     {
                       repeat=strtol(&value[2], &tailptr, 0);
-                      if(tailptr=='\0')
+                      if(*tailptr!='\0')
                         error(EXIT_FAILURE, 0, "%s (hdu: %s): the value to "
                               "keyword `%s' (`%s') is not in `Aw' format "
                               "(for strings) as required by the FITS "
@@ -1813,6 +1875,34 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                     }
                   allcols[index].disp_width=repeat;
                 }
+            }
+        }
+
+      /* COLUMN SCALE FACTOR. */
+      else if(strncmp(keyname, "TSCAL", 5)==0)
+        {
+          index = strtoul(&keyname[5], &tailptr, 10) - 1;
+          if(index<tfields)
+            {
+              tscal[index]=strtol(value, &tailptr, 0);
+              if(*tailptr!='\0')
+                error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
+                      "(`%s') couldn't be read as a number", filename, hdu,
+                      keyname, value);
+            }
+        }
+
+      /* COLUMN ZERO VALUE (for signed/unsigned types). */
+      else if(strncmp(keyname, "TZERO", 5)==0)
+        {
+          index = strtoul(&keyname[5], &tailptr, 10) - 1;
+          if(index<tfields)
+            {
+              tzero[index]=strtoll(value, &tailptr, 0);
+              if(*tailptr!='\0')
+                error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
+                      "(`%s') couldn't be read as a number", filename, hdu,
+                      keyname, value);
             }
         }
 
@@ -1884,7 +1974,14 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                                  keyname);
             }
         }
+
+      /* Column zero. */
     }
+
+  /* Correct integer types, then free the allocated arrays. */
+  fits_correct_bin_table_int_types(allcols, tfields, tscal, tzero);
+  free(tscal);
+  free(tzero);
 
   /* Close the FITS file and report an error if we had any. */
   fits_close_file(fptr, &status);
@@ -2094,6 +2191,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
   int status=0;
   char *keyname, *bcomment;
 
+  /* Write the NULL value */
   switch(tabletype)
     {
     case GAL_TABLE_TYPE_AFITS:
@@ -2106,11 +2204,15 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
       break;
 
     case GAL_TABLE_TYPE_BFITS:
+      /* FITS binary tables don't accept NULL values for floating point or
+         string columns. For floating point is must be NaN and for strings
+         it is a blank string. */
       if( col->type!=GAL_DATA_TYPE_FLOAT
-          && col->type!=GAL_DATA_TYPE_DOUBLE )
+          && col->type!=GAL_DATA_TYPE_DOUBLE
+          && col->type!=GAL_DATA_TYPE_STRING )
         {
-          asprintf(&keyname, "TNULL%zu", colnum);
           blank=gal_data_alloc_blank(col->type);
+          asprintf(&keyname, "TNULL%zu", colnum);
           fits_write_key(fptr, gal_fits_type_to_datatype(col->type),
                          keyname, blank, "blank value for this column",
                          &status);

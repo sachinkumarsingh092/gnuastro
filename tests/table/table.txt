@@ -9,13 +9,13 @@
 #  - Columns with missing information
 #  - Some blank values different from the internal blank values.
 
-# Column 10: DOUBLE      [no units, d]  Column with double values
+# Column 10: DOUBLE      [no units, d, 255]  Column with double values
 
-# Column 1:  UCHAR_DATA  [no units, uc, 255]  Column with unsigned char values
-# Column 2:              [no-units, c, -5] Column with char values
+# Column 1:  UCHAR_DATA  [no units, uc, 5]  Column with unsigned char values
+# Column 2:  CHAR        [no-units, c] Column with char values
 # Column 3:  STRING data [, str21, no data]          Column with string values
 # Column 4:  USHORT data [,us] Column with unsigned short values
-# Column 5:              [no units, s]  Column with short values
+# Column 5:  SHORT       [no units, s]  Column with short values
 # Column 7:  LONG        [no units, l]  Column with long values
 # Column 8: LONGLONG    [no units, L]  Column with LONGLONG values
 # Column 9: FLOAT       [no units, f,-99]  Column with float values
@@ -23,17 +23,24 @@
 # Column 6:  UINT [,ui]
 
 
+# IMPORTANT NOTE FOR FITS ASCII tables: CFITSIO will give its error
+# 412 (data type conversion overflow) when the number cannot be
+# printed in the provided space (with full precision). So make sure
+# that the full-integer part of the number has less characters than
+# the `width - precision - 1' (when everything is default, you can get
+# these values from `lib/gnuastro/table.h').
 
 
-1    -1    The vertical lines     3455    -3455  1  -1   9     2.3e4   8.39133434352355
-2    -2    are only for easy      3466    -3466  2  -2   10    2300    893.3497e50
-3    -3    identification of the  3467    -3467  3  -3   12    2.4     93487.3473234343
-4    -4    limits of this string  3468    -3468  4  -4   800   894.83  8.2e8
-5    -5    |column. Characters |  3469    -3469  5  -5   8923  99.232  -7.3238473343e4
-6    -6    |beyond this will be|  20821  -20821  6  -6   9823  8874.2  769387424234234
-7    -7    read as a number.      20822  -20822  7  -7   7232  1E10    8.3343e-5
-8    -8    no data                20823  -20823  8  -8   921   -8.4e2  934892734.82
-9    -9    With@Some#!STRANGE@    60983  -25722  9  -9   8127  -99.0   3474924.489252
-10  -10    Characters%^&*()~      62182  -30100 10  -10  8287  7.3e-9  -3467.3432e10
-11  -127   no data                65500  -32700 11  -11  999   8.73e2  897234.34897
-255 -12    -- Last Line :-) --    65501  -32701 12  -12  8282  892.23  89750298.3653
+
+1    -1    The vertical lines     3455  -3455  1  -1   9     1874.103872  8.391334343995    1
+2    -2    are only for easy      3466      -3466  2  -2   10    123.93373    893.3497e5        2
+3    -3    visual identification  3467 -3467  3  -3   12    -0.737648    nan               3
+4    -4    of the limits of this  3468  -3468  4  -4   800   78.983       8.2328438e8       4
+5    -5    |string column.     |  3469       -3469  5  -5   8923  -99       -7.32384e4        5
+6    -6    |characters beyond  |  20821  -20821  6  -6   9823  -99     nan               6
+7    -7    the last one will be   20822  -20822  7  -7   7232  9999   8.3343e-5         7
+8    -8    read as a number.   20823  -20823  8  -8   921   2.3     934892734.82      8
+9    -9    With@Some#!STRANGE@    60983  -25722  9  -9   8127  -99          3474924.489252    9
+10  -10    Characters%^&*()~           62182  -30100 10  -10  8287  7.3e-4       -3467.3432e5      10
+11  -12 no data                65500  -32700 11  -11  999    8.73E2       nan               11
+255 -12             -- Last Line :-) --    65501  -32701 12  -12  8282  892.23       8975.3653      12
