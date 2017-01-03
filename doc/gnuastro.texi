@@ -282,6 +282,7 @@ Common program behavior
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
+* Table formats::               Recognized table formats.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
 
@@ -308,6 +309,10 @@ Threads in Gnuastro
 
 * A note on threads::           Caution and suggestion on using threads.
 * How to run simultaneous operations::  How to run things simultaneously.
+
+Table formats
+
+* Gnuastro text table format::  Reading plain text tables
 
 Getting help
 
@@ -3962,6 +3967,7 @@ the keyboard!) help on the command-line.
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
+* Table formats::               Recognized table formats.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
 @end menu
@@ -4964,7 +4970,7 @@ other configuration file value will be used.
 
 
 
-@node Automatic output, Getting help, Final parameter values, Common program behavior
+@node Automatic output, Table formats, Final parameter values, Common program behavior
 @section Automatic output
 
 @cindex Automatic output file names
@@ -5018,7 +5024,258 @@ ABC01.jpg ABC02.jpg DEF01_labeled.fits
 
 
 
-@node Getting help, Output headers, Automatic output, Common program behavior
+
+@node Table formats, Getting help, Automatic output, Common program behavior
+@section Table formats
+
+``A table is a collection of related data held in a structured format
+within a database. It consists of columns, and rows.'' (from
+Wikipedia). Each column in the table contains the values of one property
+and each row is a collection of properties (columns) for one target
+object. For example, let's assume you have just ran MakeCatalog (see
+@ref{MakeCatalog}) on an image to measure some properties for the labeled
+regions (which might be detected galaxies for example) in the image. For
+each labeled region (detected galaxy), there will be a @emph{row} which
+groups its measured properties as @emph{columns}, one column for each
+property. One such property can be the object's magnitude, which is the sum
+of pixels with that label, or its center can be defined as the
+light-weighted average value of those pixels. Many such properties can be
+derived from the raw pixel values and their position, see @ref{Invoking
+astmkcatalog} for a long list.
+
+As a summary, for each labeled region (or, galaxy) we have one @emph{row}
+and for each measured property we have one @emph{column}. This high-level
+structure is usually the first step for higher-level analysis, for example
+finding the stellar mass or photometric redshift from magnitudes in
+multiple colors. Thus, tables are not just outputs of programs, infact it
+is much more common for tables to be inputs of programs. For example, to
+make a mock galaxy image, you need to feed in the properties of each galaxy
+into @ref{MakeProfiles} for it do the inverse of the process above and make
+a simulated image from a catalog, see @ref{Sufi simulates a detection}. In
+other cases, you can feed a table into @ref{ImageCrop} and it will crop out
+regions centered on the positions within the table, see @ref{Hubble
+visually checks and classifies his catalog}. So to end this relatively long
+introduction, tables play a very important role in astronomy, or generally
+all branches of data analysis. Here, we will give a short review of the
+table formats that Gnuastro's programs and libraries can accept as input
+and output.
+
+@table @asis
+
+@item Plain text table
+This is the most basic and simplest way to create, view, or edit the table
+by hand on a text editor. The other formats described below are less
+eye-friendly and have a more formal structure (for easier computer
+readability). It is fully described in @ref{Gnuastro text table format}.
+
+@cindex FITS Tables
+@cindex Tables FITS
+@cindex ASCII table, FITS
+@item FITS ASCII tables
+The FITS ASCII table extension is fully in ASCII encoding and thus easily
+readable on any text editor (assuming it is the only extension in the FITS
+file). If the FITS file also contains binary extensions (for example an
+image or binary table extensions), then there will be many hard to print
+characters. The FITS ASCII format doesn't have new line characters to
+separate rows. In the FITS ASCII table standard, each row is defined as a
+fixed number of characters (value to the @code{NAXIS1} keyword), so to
+visually inspect it properly, you would have to adjust your text editor's
+width to this value. All columns start at given character positions and
+have a fixed width (number of characters).
+
+Numbers in a FITS ASCII table are printed into ASCII format, they are not
+in binary (that the CPU uses). Hence, they can take a larger space in
+memory, loose their precision, and take longer to read into memory. If you
+are dealing with integer type columns (see @ref{Data types}), another issue
+with FITS ASCII tables is that the type information for the column will be
+lost (there is only one integer type in FITS ASCII tables). One problem
+with the binary format on the other hand is that it isn't portable
+(different CPUs/compilers) have different standards for translating the
+zeros and ones. But since ASCII characters are defined on a byte and are
+well recognized, they are better for portability on those various
+systems. Gnuastro's plain text table format described below is much more
+portable and easier to read/write/interpret by humans manually.
+
+Generally, as the name implies, this format is useful for when your table
+mainly contains ASCII columns (for example file names, or
+descriptions). They can be useful when you need to include columns with
+structured ASCII information along with other extensions in one FITS
+file. In such cases, you can also consider header keywords (see
+@ref{Header}).
+
+@cindex Binary table, FITS
+@item FITS binary tables
+The FITS binary table is the FITS standard's solution to the issues
+discussed with keeping numbers in ASCII format as described under the FITS
+ASCII table title above. Only columns defined as a string type (a string of
+ASCII characters) are readable in a text editor. The protability problem
+with binary formats discussed above is mostly solved thanks to the
+portability of CFITSIO (see @ref{CFITSIO}) and the very long history of the
+FITS format which has been widely used since the 1970s.
+
+In the case of most numbers, storing them in binary format is more memory
+efficient than ASCII format. For example, to store @code{-25.72034} in
+ASCII format, you need 9 bytes/characters. But if you keep this same number
+(to the approximate precision possible) as a 4-byte (32-bit) floating point
+number, you can keep/transmit it with less than half the amount of
+memory. When catalogs contain thousands/millions of rows in tens/hundreds
+of columns, this can lead to significant improvements in memory/band-width
+usage. Moreover, since the CPU does its operations in the binary formats,
+reading the table in and writing it out is also much faster than an ASCII
+table.
+
+When you are dealing with integer numbers, the compression ratio can be
+even better, for example if you know all of the values in a column are
+positive and less than @code{255}, you can use the @code{unsigned char}
+type which only takes one byte! If they are between @code{-128} and
+@code{127}, then you can use the (signed) @code{char} type. So if you are
+thoughtful about the limits of your integer columns, you can greatly reduce
+the size of your file and also the speed at which it is read/written. This
+can be very useful when sharing your results with collaborators or
+publishing them. To decrease the file size even more you can name your
+output as ending in @file{.fits.gz} so it is also compressed after
+creation. Just note that compression/decompressing is CPU intensive and can
+slow down the writing/reading of the file.
+
+Fortunately the FITS Binary table format also accepts ASCII strings as
+column types (along with the various numerical types). So your dataset can
+also contain non-numerical columns.
+
+@end table
+
+@menu
+* Gnuastro text table format::  Reading plain text tables
+@end menu
+
+@node Gnuastro text table format,  , Table formats, Table formats
+@subsection Gnuastro text table format
+
+Plain text files are most generic and portable way to manually create,
+visually inspect, or manually edit a table. In this format, the ending of a
+row is defined by the new-line character (a line on a text editor). So when
+you view it on a text editor, every row will occupy one line. The
+delimiters (or characters separating the columns) are white space
+characters (space, horizontal tab, vertical tab) and a comma (@key{,}). The
+only further requirement is that all rows must have the same number of
+columns.
+
+The columns don't have to be exactly under each other and the rows can be
+arbitrarily long with different lengths. For example the following contents
+in a file would be interpretted as a table with 4 columns and 2 rows, with
+each element interpretted as a @code{double} type (see @ref{Data types}).
+
+@example
+1     2.234948   128   39.8923e8
+2 , 4.454        792     72.98348e7
+@end example
+
+However, the example above has no other information about the columns. For
+example, Gnuastro's programs/libraries, you aren't limited to using the
+column's number/index. If the columns have names, units, or comments you
+can also select your columns based on searches/matches in these fields, for
+example see @ref{Table}. Also, in this manner, you can't guide the program
+reading the table on how to read the numbers. As an example, the first and
+third columns above can be read as integer types: for example, the first
+column can be an ID and the third can be the number of pixels it
+occupies. So there is no need to read it as a @code{double} type (which
+takes more memory, and is also slower).
+
+In this bare-minimum example, you also can't use strings of characters, for
+example the names of filters, or some other identifier that includes
+non-numerical characters. In the absence of any information, only numbers
+can be read. Assuming we read columns with non-numerical characters as
+string, there would still be the problem that the strings might contain
+space (or any delimiter) character for some rows. So, each `word' will be
+interpretted as a column and the program will abort with an error that the
+rows don't have the same number of columns.
+
+To correct for these limitations, Gnuastro defines the following convention
+for guiding the program reading the text table on how to read/interpret
+it. When the first non-white character in a line is @key{#}, or there are
+no non-white characters in it, then the line will be ignored. In the former
+case, the line is interpretted as a @emph{comment}. If the comment line
+starts with @code{# Comment N:}, then it is assumed to contain information
+about column @code{N} (counting from 1). A full readable comment by
+Gnuastro's programs/libraries line is in this format, which was primarily
+defined for ease of reading by eye:
+
+@example
+# Comment N: NAME [UNIT, TYPE, BLANK] COMMENT
+@end example
+
+Any sequence of characters between `@key{:}' and `@key{[}' will be
+interpretted as the column name (so it can contain anything except the
+@code{[} character). Anything between the `@key{]}' and the end of the line
+is defined as a comment. Within the brackets, anything before the first
+`@key{,}' is the units (physical units, for example km/s, or erg/s),
+anything before the second `@key{,}' is the short type identifier (see
+below), and the rest of the characters within the brackets are interpretted
+as the blank value for that column (see @ref{Blank pixels}). The leading
+and ending white space characters will be stripped from all of these
+strings. For example in this line:
+
+@example
+# Comment 5:  column name   [km/s,    f,-99] Redshift as speed
+@end example
+
+The @code{NAME} field will be `@code{column name}', or @code{TYPE} will be
+`@code{f}'. Note how all the white space characters before and after
+strtings are not used, but those in the middle remained. Also, the lack of
+space characters is also acceptable, so in the example above @code{BLANK}
+will be `@code{-99}'.
+
+Except for the column number (@code{N}), the rest of the fields are not
+mandatory and the column information doesn't have to be in order. Also, you
+don't have to specify information for all columns. Those without
+information will be interpretted with the default settings (like the case
+above: all types are double, with no name, units, or comments) So these
+lines are all acceptable:
+
+@example
+# Column 5:
+# Column 1: ID [,i] The Clump ID.
+# Column 3: mag_f160w [AB mag, f] Magnitude from the F160W filter
+@end example
+
+The following type codes are recognized:
+
+@itemize
+@item
+`@code{uc}': for @code{unsigned char}.
+@item
+`@code{c}': for (signed) @code{char}.
+@item
+`@code{us}': for @code{unsigned short}.
+@item
+`@code{s}': for (signed) @code{short}.
+@item
+`@code{i}': for (signed) @code{int}.
+@item
+`@code{l}': for (signed) @code{long}.
+@item
+`@code{L}': for @code{long long}.
+@item
+`@code{f}': for @code{float}.
+@item
+`@code{d}': for @code{double}.
+@item
+`@code{strN}': for strings. The @code{N} value identifies how many
+characters define for the string. The start of the string on each row is
+the first non-delimiter character of the column that has the string
+type. The next @code{N} characters will be interpretted as a string and all
+trailing white space will be removed. So only if strings are present in the
+table you have to be careful that a the next column is not too close. If
+the next column's characters, are closer than @code{N} characters, they
+will be considered part of the string. See @file{tests/table/table.txt} for
+one example.
+
+@end itemize
+
+
+
+
+
+@node Getting help, Output headers, Table formats, Common program behavior
 @section Getting help
 
 @cindex Help
@@ -6209,15 +6466,13 @@ is best to call this option so the image is not inverted.
 @node Table,  , ConvertType, Extensions and Tables
 @section Table
 
-The FITS standard is not just for storing astronomical images, from its
-early days, it also included tables. Tables are the products of processing
-astronomical images and spectra. For example in Gnuastro, MakeCatalog will
-process the defined pixels over an object and produce a catalog (see
-@ref{MakeCatalog}). For each identified object, MakeCatalog can print its
-position on the image or sky, its total brightness and many other
-information that is deducible from the given image. Each one of these
-properties is a column in its output catalog (or table) and for each input
-object, we have a row.
+Tables are the products of processing astronomical images and spectra. For
+example in Gnuastro, MakeCatalog will process the defined pixels over an
+object and produce a catalog (see @ref{MakeCatalog}). For each identified
+object, MakeCatalog can print its position on the image or sky, its total
+brightness and many other information that is deducible from the given
+image. Each one of these properties is a column in its output catalog (or
+table) and for each input object, we have a row.
 
 When there are only a small number of objects (rows) and not too many
 properties (columns), then a simple plain text file is mainly enough to
@@ -6232,23 +6487,24 @@ The FITS standard also defines a standard for ASCII tables, where the data
 are stored in the human readable ASCII format, but within the FITS file
 structure. These are mainly useful for keeping ASCII data along with images
 and possibly binary data as multiple (conceptually related) extensions
-within a FITS file.
+within a FITS file. The acceptable table formats are fully described in
+@ref{Table formats}.
 
 @cindex AWK
 @cindex GNU AWK
-However, this comes at a cost: binary tables are not easily readable by
-human eyes. There is no fixed/unified standard on how the zero and ones
-should be interpretted. The Unix-like operating systems have flourished
-because of a simple fact: communication between the various tools is based
-on human readable characters@footnote{In ``The art of Unix programming'',
-Eric Raymond makes this suggestion to programmers: ``When you feel the urge
-to design a complex binary file format, or a complex binary application
-protocol, it is generally wise to lie down until the feeling
-passes.''. This is a great book and strongly recommended, give it a look if
-you want to truly enjoy your work/life in this environment.}. So while the
-FITS table standards are very beneficial for the tools that recognize them,
-they are hard to use in the vast majority of available software. This
-creates limitations for their generic use.
+Binary tables are not easily readable by human eyes. There is no
+fixed/unified standard on how the zero and ones should be interpretted. The
+Unix-like operating systems have flourished because of a simple fact:
+communication between the various tools is based on human readable
+characters@footnote{In ``The art of Unix programming'', Eric Raymond makes
+this suggestion to programmers: ``When you feel the urge to design a
+complex binary file format, or a complex binary application protocol, it is
+generally wise to lie down until the feeling passes.''. This is a great
+book and strongly recommended, give it a look if you want to truly enjoy
+your work/life in this environment.}. So while the FITS table standards are
+very beneficial for the tools that recognize them, they are hard to use in
+the vast majority of available software. This creates limitations for their
+generic use.
 
 `Table' is Gnuastro's solution to this problem. With Table, FITS tables
 (ASCII or binary) are directly accessible to the Unix-like operating
@@ -6258,7 +6514,7 @@ formats) is only one command away from AWK (or any other tool you want to
 use). Just like a plain text file that you read with the @command{cat}
 command. You can pipe the output of Table into any other tool for
 higher-level processing, see the examples in @ref{Invoking asttable} for
-some very simple examples.
+some simple examples.
 
 @menu
 * Invoking asttable::           Options and arguments to Table.
@@ -6267,11 +6523,11 @@ some very simple examples.
 @node Invoking asttable,  , Table, Table
 @subsection Invoking Table
 
-Table will read/wwrite, select, convert, or show the information of the
-columns in FITS ASCII table, FITS binary table and plain text table
-files. Output columns can also be determined by number or regular
-expression matching of column names. The executable name is @file{asttable}
-with the following general template
+Table will read/write, select, convert, or show the information of the
+columns in FITS ASCII table, FITS binary table and plain text table files,
+see @ref{Table formats}. Output columns can also be determined by number or
+regular expression matching of column names, units or comments. The
+executable name is @file{asttable} with the following general template
 
 @example
 $ asttable [OPTION...] InputFile
@@ -6288,33 +6544,30 @@ $ asttable bintab.fits --information
 $ asttable bintab.fits --column=/^MAG_/
 
 ## Only print the 2nd column, and the third column multiplied by 5
-$ asttable bintab.fits | awk '@{print $2, 5*$3@}'
+$ asttable bintab.fits | awk '!/^#/@{print $2, 5*$3@}'
 
 ## Only print those rows with a value in the 10th column above 100000
-$ asttable bintab.fits | awk '$10>10e5 @{print@}'
+$ asttable bintab.fits | awk '!/^#/$10>10e5 @{print@}'
 
 ## Sort the output columns by the third column, save output
-$ asttable bintab.fits | sort -k3 > output.txt
+$ asttable bintab.fits | awk '!/^#/ | 'sort -k3 > output.txt
 
 ## Convert a plain text table to a binary FITS table
-$ asttable plaintext.txt --output=inbinary.fits
+$ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
 @end example
 
 In the absence of an output file, the selected columns will be printed on
 the command-line. In the absence of selected columns, all columns will be
-output. For the full list of options common to all Gnuastro utilities
-please see @ref{Common options}. Options can also be stored in directory,
-user or system-wide configuration files to avoid repeating on the
-command-line, see @ref{Configuration files}.
+output. For the full list of options common to all Gnuastro programs please
+see @ref{Common options}. Options can also be stored in directory, user or
+system-wide configuration files to avoid repeating on the command-line, see
+@ref{Configuration files}.
 
 Table does not follow Automatic output that is common in most Gnuastro, see
 @ref{Automatic output}. If no value is given to the @option{--output}
 option, the desired columns will be printed to the standard output (on the
 command-line). This feature makes it very useful to directly pipe the
-output as input to other programs as the examples above demonstrate. Note
-that the options below which relate to print formatting are only relevant
-when the output is in human readable format (on the command-line and plain
-text files), they are ignored when the output is a binary FITS table.
+output as input to other programs as the examples above demonstrate.
 
 @table @option
 
@@ -6324,7 +6577,9 @@ Print the information for each column and abort. The information for each
 column will be printed as a row on the command-line. The column name (if
 present), units (if present) and datatype will printed. Note that the FITS
 standard does not require a name or units for columns, only the datatype is
-mandatory.
+mandatory. For plain text files, even types aren't mandatory, and all
+columns with no type will show a @code{double} type (see @ref{Gnuastro text
+table format})
 
 @cindex AWK
 @cindex GNU AWK
@@ -6369,70 +6624,17 @@ specific columns are requested, all the input table columns are
 output. When this option is called multiple times, it is possible to output
 one column more than once.
 
-Specifying a column isn't mandatory, if no column is specified all the
-table columns will be chosen.
-
 @item -s
 @itemx --searchin
 Where to match/search for columns (if the value to @option{--column} wasn't
-a number).
+a number). The acceptable values are @command{name}, @command{units}, or
+@command{comments}.
 
 @item -I
 @itemx --ignorescase
 Ignore case while matching the column names with the value(s) of the
 @option{--column} option. The FITS standard suggests to treat the column
-names as case insensitive, however it is not a requirement.
-
-@item --feg
-(@option{=STR}) Format of printing floating point numbers in non-binary
-outputs. It can only accept one of the three following values (same as C's
-@code{printf}):
-@itemize
-@item
-@key{f}: Print complete floating point value, this is good when the numbers
-aren't too small, for example @mymath{3.286}. But it will print all the
-zeros in @mymath{3.2\times10^{-15}}.
-
-@item
-@key{e}: Only print in exponential format. This is good for very large or
-very small numbers, but can make reading the values of more ordinary
-numbers a little hard.
-
-@item
-@key{g}: Let the system choose which representation is better for the
-number.
-@end itemize
-
-@item --sintwidth
-(@option{=INT}) The minimum width (number of characters) for printing
-columns of shorter integer datatypes. The shorter datatypes are considered
-to be signed and unsigned characters, short integers, integers.
-
-@item --lintwidth
-(@option{=INT}) The minimum width (number of characters) for printing
-columns of longer datatypes. The longer datatypes are considered to be
-@code{long} and @code{longlong} types.
-
-@item --floatwidth
-(@option{=INT}) The minimum width (number of characters) for printing
-columns of single precision floating point datatypes.
-
-@item --doublewidth
-(@option{=INT}) The minimum width (number of characters) for printing
-columns of double precision floating point datatypes.
-
-@item --strwidth
-(@option{=INT}) The minimum width (number of characters) for printing
-columns of strings (given as one column, the FITS standard allows ASCII
-strings as table elements).
-
-@item --floatprecision
-(@option{=INT}) The number of digits to print after the floating point for
-single precision floating point numbers.
-
-@item --doubleprecision
-(@option{=INT}) The number of digits to print after the floating point for
-double precision floating point numbers.
+names as case insensitive, which is recommended but not enforced here.
 
 @item -t
 @itemx --tabletype
@@ -6450,11 +6652,11 @@ recognized values to this option are:
 A plain text table with space characters between the columns. Setting
 @option{--tabletype} to this value is acceptable, but irrelevant. Because a
 plain text table only currently has one format and is the default when the
-output filename wasn't recognized.
+output filename wasn't recognized (see @ref{Gnuastro text table format}).
 @item fits-ascii
-A FITS ASCII table.
+A FITS ASCII table (see @ref{Table formats}).
 @item fits-binary
-A FITS binary table.
+A FITS binary table (see @ref{Table formats}).
 @end table
 
 
