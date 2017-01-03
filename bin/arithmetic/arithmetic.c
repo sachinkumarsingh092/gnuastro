@@ -162,8 +162,8 @@ reversepolish(struct imgarithparams *p)
   unsigned int numop, i;
   struct gal_linkedlist_stll *token;
   gal_data_t *d1=NULL, *d2=NULL, *d3=NULL;
-  unsigned char flags = ( GAL_DATA_ARITH_INPLACE | GAL_DATA_ARITH_FREE
-                          | GAL_DATA_ARITH_NUMOK );
+  unsigned char flags = ( GAL_ARITHMETIC_INPLACE | GAL_ARITHMETIC_FREE
+                          | GAL_ARITHMETIC_NUMOK );
 
 
   /* Prepare the processing: */

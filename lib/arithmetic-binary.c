@@ -383,27 +383,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 /*************              Top level function          *****************/
 /************************************************************************/
-static int
-set_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
-{
-  switch(operator)
-    {
-    case GAL_ARITHMETIC_OP_PLUS:
-    case GAL_ARITHMETIC_OP_MINUS:
-    case GAL_ARITHMETIC_OP_MULTIPLY:
-    case GAL_ARITHMETIC_OP_DIVIDE:
-      return gal_data_out_type(l, r);
-
-    default:
-      return GAL_DATA_TYPE_UCHAR;
-    }
-  return -1;
-}
-
-
-
-
-
 gal_data_t *
 arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
                   gal_data_t *ro)
@@ -411,16 +390,24 @@ arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure
      time). */
-  int otype;
+  int otype, final_otype;
   size_t out_size, minmapsize;
   gal_data_t *l, *r, *o=NULL, *tmp_o;
 
 
   /* Simple sanity check on the input sizes */
-  if( !( (flags & GAL_DATA_ARITH_NUMOK) && (lo->size==1 || ro->size==1))
+  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (lo->size==1 || ro->size==1))
       && gal_data_dsize_is_different(lo, ro) )
     error(EXIT_FAILURE, 0, "the non-number inputs to %s don't have the "
           "same dimension/size", gal_arithmetic_operator_string(operator));
+
+
+  /* Set the final output type (independent of which types are
+     compiled). These needs to be done before the call to
+     `gal_arithmetic_convert_to_compiled_type', because that function can
+     free the space of the original data structures, thus we will loose the
+     original data structure information. */
+  final_otype=gal_arithmetic_binary_out_type(operator, lo, ro);
 
 
   /* Make sure the input arrays have one of the compiled types. From this
@@ -429,15 +416,13 @@ arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
   l=gal_arithmetic_convert_to_compiled_type(lo, flags);
   r=gal_arithmetic_convert_to_compiled_type(ro, flags);
 
-
   /* Set the output type. For the comparison operators, the output type is
      either 0 or 1, so we will set the output type to `unsigned char' for
      efficient memory and CPU usage. Since the number of operators without
      a fixed output type (like the conditionals) is less, by `default' we
      will set the output type to `unsigned char', and if any of the other
      operatrs are given, it will be chosen based on the input types.*/
-  otype=set_binary_out_type(operator, l, r);
-
+  otype=gal_arithmetic_binary_out_type(operator, l, r);
 
   /* Set the output sizes. */
   minmapsize = ( l->minmapsize < r->minmapsize
@@ -447,7 +432,7 @@ arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
 
   /* If we want inplace output, set the output pointer to one input. Note
      that the output type can be different from both inputs.  */
-  if(flags & GAL_DATA_ARITH_INPLACE)
+  if(flags & GAL_ARITHMETIC_INPLACE)
     {
       if     (l->type==otype && out_size==l->size)   o = l;
       else if(r->type==otype && out_size==r->size)   o = r;
@@ -493,10 +478,9 @@ arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
      necessarily the original `lo' and `ro' data structures). So we need to
      to get the final type based on the original operands and check if the
      final output needs changing. */
-  otype=set_binary_out_type(operator, lo, ro);
-  if( o->type != otype )
+  if( o->type != final_otype )
     {
-      tmp_o=gal_data_copy_to_new_type(o, otype);
+      tmp_o=gal_data_copy_to_new_type(o, final_otype);
       gal_data_free(o, 0);
       o=tmp_o;
     }
@@ -509,7 +493,7 @@ arithmetic_binary(int operator, unsigned char flags, gal_data_t *lo,
      allocated spaces are the `r' and `l' arrays if their types weren't
      compiled for binary operations, we can tell this from the pointers: if
      they are different from the original pointers, they were allocated. */
-  if(flags & GAL_DATA_ARITH_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     {
       if     (o==l)       gal_data_free(r, 0);
       else if(o==r)       gal_data_free(l, 0);

@@ -27,6 +27,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <gnuastro/data.h>
 
+
+/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
+   defined. In the build process, installation information (in particular
+   `GAL_CONFIG_ARITH_CHAR' and the rest of the types that we needed in the
+   arithmetic function) is kept in `config.h'. When building a user's
+   programs, this information is kept in `gnuastro/config.h'. Note that all
+   `.c' files must start with the inclusion of `config.h' and that
+   `gnuastro/config.h' is only created at installation time (not present
+   during the building of Gnuastro).*/
+#ifndef IN_GNUASTRO_BUILD
+#include <gnuastro/config.h>
+#endif
+
+
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
 #undef __END_C_DECLS
@@ -46,8 +60,15 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
+/* Arithmetic flags. */
+#define GAL_ARITHMETIC_INPLACE  1
+#define GAL_ARITHMETIC_FREE     2
+#define GAL_ARITHMETIC_NUMOK    4
 
 
+
+
+/* Identifiers for each operator. */
 enum gal_arithmetic_operators
 {
   GAL_ARITHMETIC_OP_PLUS,         /*   +     */
@@ -105,6 +126,8 @@ enum gal_arithmetic_operators
 
 
 
+int
+gal_arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r);
 
 char *
 gal_arithmetic_operator_string(int operator);

@@ -70,7 +70,7 @@ arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
   out=gal_data_copy_to_new_type(data, type);
 
   /* Delete the input structure if the user asked for it. */
-  if(flags & GAL_DATA_ARITH_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     gal_data_free(data, 0);
 
   /* Return */
@@ -144,7 +144,7 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
     }
 
   /* Delete the input structure if the user asked for it. */
-  if(flags & GAL_DATA_ARITH_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     gal_data_free(data, 0);
 
   /* Return */
@@ -177,7 +177,7 @@ arithmetic_abs(unsigned char flags, gal_data_t *in)
   double          *od,   *d = in->array,    *df = in->array + in->size;
 
   /* Set the output array. */
-  if(flags & GAL_DATA_ARITH_INPLACE)
+  if(flags & GAL_ARITHMETIC_INPLACE)
     out=in;
   else
     out = gal_data_alloc(NULL, in->type, in->ndim, in->dsize,
@@ -228,7 +228,7 @@ arithmetic_abs(unsigned char flags, gal_data_t *in)
     }
 
   /* Clean up and return */
-  if( (flags & GAL_DATA_ARITH_FREE) && out!=in)
+  if( (flags & GAL_ARITHMETIC_FREE) && out!=in)
     gal_data_free(in, 0);
   return out;
 }
@@ -470,7 +470,7 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
 
     /* The other operators  */
     default:
-      if(flags & GAL_DATA_ARITH_INPLACE)
+      if(flags & GAL_ARITHMETIC_INPLACE)
         o = in;
       else
         o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
@@ -511,7 +511,7 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
      types weren't compiled for binary operations, we can tell this from
      the pointers: if they are different from the original pointers, they
      were allocated. */
-  if( (flags & GAL_DATA_ARITH_FREE) && o!=in)
+  if( (flags & GAL_ARITHMETIC_FREE) && o!=in)
     gal_data_free(in, 0);
 
   /* Return */
@@ -620,7 +620,7 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
 
 
   /* Simple sanity check on the input sizes */
-  if( !( (flags & GAL_DATA_ARITH_NUMOK) && (l->size==1 || r->size==1))
+  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (l->size==1 || r->size==1))
       && gal_data_dsize_is_different(l, r) )
     error(EXIT_FAILURE, 0, "the input datasets don't have the same "
           "dimension/size in data_arithmetic_binary_function");
@@ -640,7 +640,7 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
 
   /* If we want inplace output, set the output pointer to one input. Note
      that the output type can be different from both inputs.  */
-  if(flags & GAL_DATA_ARITH_INPLACE)
+  if(flags & GAL_ARITHMETIC_INPLACE)
     {
       if     (l->type==final_otype && out_size==l->size)   o = l;
       else if(r->type==final_otype && out_size==r->size)   o = r;
@@ -679,7 +679,7 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
      types weren't compiled for binary operations, we can tell this from
      the pointers: if they are different from the original pointers, they
      were allocated. */
-  if(flags & GAL_DATA_ARITH_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     {
       if     (o==l)       gal_data_free(r, 0);
       else if(o==r)       gal_data_free(l, 0);
@@ -830,7 +830,7 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
     }
 
   /* Clean up if necessary. */
-  if(flags & GAL_DATA_ARITH_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     {
       gal_data_free(cond, 0);
       gal_data_free(iftrue, 0);
@@ -1093,7 +1093,7 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
 
 
   /* Set the output data structure. */
-  if(flags & GAL_DATA_ARITH_INPLACE)
+  if(flags & GAL_ARITHMETIC_INPLACE)
     out = list;                 /* The top element in the list. */
   else
     out = gal_data_alloc(NULL, list->type, list->ndim, list->dsize,
@@ -1147,7 +1147,7 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
   /* Clean up and return. Note that the operation might have been done in
      place. In that case, the top most list element was used. So we need to
      check before freeing each data structure. */
-  if(flags & GAL_DATA_ARITH_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     {
       tmp=list;
       while(tmp!=NULL)
@@ -1183,8 +1183,29 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
 /**********************************************************************/
 /****************      Compiled binary op types       *****************/
 /**********************************************************************/
+int
+gal_arithmetic_binary_out_type(int operator, gal_data_t *l, gal_data_t *r)
+{
+  switch(operator)
+    {
+    case GAL_ARITHMETIC_OP_PLUS:
+    case GAL_ARITHMETIC_OP_MINUS:
+    case GAL_ARITHMETIC_OP_MULTIPLY:
+    case GAL_ARITHMETIC_OP_DIVIDE:
+      return gal_data_out_type(l, r);
+
+    default:
+      return GAL_DATA_TYPE_UCHAR;
+    }
+  return -1;
+}
+
+
+
+
+
 static int
-data_arithmetic_nearest_compiled_type(int intype)
+arithmetic_nearest_compiled_type(int intype)
 {
   switch(intype)
     {
@@ -1417,7 +1438,7 @@ gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
   gal_data_t *out=NULL;
 
   /* Set the best compiled type. */
-  ntype=data_arithmetic_nearest_compiled_type(in->type);
+  ntype=arithmetic_nearest_compiled_type(in->type);
 
   /* If type is not compiled, then convert the dataset to the first
      compiled larger type. */
@@ -1428,7 +1449,7 @@ gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
       if(ntype)
         {
           out=gal_data_copy_to_new_type(in, ntype);
-          if(flags & GAL_DATA_ARITH_FREE)
+          if(flags & GAL_ARITHMETIC_FREE)
             { gal_data_free(in, 0); in=NULL; }
         }
       else
@@ -1501,7 +1522,7 @@ gal_arithmetic(int operator, unsigned char flags, ...)
     case GAL_ARITHMETIC_OP_ISBLANK:
       d1 = va_arg(va, gal_data_t *);
       out = gal_data_flag_blank(d1);
-      if(flags & GAL_DATA_ARITH_FREE) gal_data_free(d1, 0);
+      if(flags & GAL_ARITHMETIC_FREE) gal_data_free(d1, 0);
       break;
 
     case GAL_ARITHMETIC_OP_WHERE:

@@ -321,14 +321,14 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
   /* Read the variable arguments. `lo' and `ro' keep the original data, in
      case their type isn't built (based on configure options are configure
      time). */
-  int otype;
+  int otype, final_otype;
   size_t out_size, minmapsize;
   gal_data_t *l, *r, *o=NULL, *tmp_o;
   char *opstring=gal_arithmetic_operator_string(operator);
 
 
   /* Simple sanity check on the input sizes and types */
-  if( !( (flags & GAL_DATA_ARITH_NUMOK) && (lo->size==1 || ro->size==1))
+  if( !( (flags & GAL_ARITHMETIC_NUMOK) && (lo->size==1 || ro->size==1))
       && gal_data_dsize_is_different(lo, ro) )
     error(EXIT_FAILURE, 0, "the non-number inputs to %s don't have the "
           "same dimension/size", opstring);
@@ -337,6 +337,14 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
       || ro->type==GAL_DATA_TYPE_FLOAT || ro->type==GAL_DATA_TYPE_DOUBLE )
       error(EXIT_FAILURE, 0, "the %s operator can only work on integer "
             "type operands", opstring);
+
+
+  /* Set the final output type (independent of which types are
+     compiled). These needs to be done before the call to
+     `gal_arithmetic_convert_to_compiled_type', because that function can
+     free the space of the original data structures, thus we will loose the
+     original data structure information. */
+  final_otype=gal_arithmetic_binary_out_type(operator, lo, ro);
 
 
   /* Make sure the input arrays have one of the compiled types. From this
@@ -358,7 +366,7 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
 
   /* If we want inplace output, set the output pointer to one input. Note
      that the output type can be different from both inputs.  */
-  if(flags & GAL_DATA_ARITH_INPLACE)
+  if(flags & GAL_ARITHMETIC_INPLACE)
     {
       if     (l->type==otype && out_size==l->size)   o = l;
       else if(r->type==otype && out_size==r->size)   o = r;
@@ -402,10 +410,9 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
      necessarily the original `lo' and `ro' data structures). So we need to
      to get the final type based on the original operands and check if the
      final output needs changing. */
-  otype=gal_data_out_type(lo, ro);
-  if( o->type != otype )
+  if( o->type != final_otype )
     {
-      tmp_o=gal_data_copy_to_new_type(o, otype);
+      tmp_o=gal_data_copy_to_new_type(o, final_otype);
       gal_data_free(o, 0);
       o=tmp_o;
     }
@@ -418,7 +425,7 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
      allocated spaces are the `r' and `l' arrays if their types weren't
      compiled for binary operations, we can tell this from the pointers: if
      they are different from the original pointers, they were allocated. */
-  if(flags & GAL_DATA_ARITH_FREE)
+  if(flags & GAL_ARITHMETIC_FREE)
     {
       if     (o==l)       gal_data_free(r, 0);
       else if(o==r)       gal_data_free(l, 0);
@@ -463,7 +470,7 @@ arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
 
   /* If we want inplace output, set the output pointer to the input
      pointer, for every pixel, the operation will be independent. */
-  if(flags & GAL_DATA_ARITH_INPLACE)
+  if(flags & GAL_ARITHMETIC_INPLACE)
     o = in;
   else
     o = gal_data_alloc(NULL, in->type, in->ndim, in->dsize, in->wcs,
@@ -504,7 +511,7 @@ arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
      types weren't compiled for binary operations, we can tell this from
      the pointers: if they are different from the original pointers, they
      were allocated. */
-  if( (flags & GAL_DATA_ARITH_FREE) && o!=in)
+  if( (flags & GAL_ARITHMETIC_FREE) && o!=in)
     gal_data_free(in, 0);
 
   /* Return */

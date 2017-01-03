@@ -33,17 +33,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcs.h>
 #include <gsl/gsl_complex.h>
 
-/* When we are within Gnuastro's building process, `IN_GNUASTRO_BUILD' is
-   defined. In the build process, installation information (in particular
-   `GAL_CONFIG_ARITH_CHAR' and the rest of the types that we needed in the
-   arithmetic function) is kept in `config.h'. When building a user's
-   programs, this information is kept in `gnuastro/config.h'. Note that all
-   `.c' files must start with the inclusion of `config.h' and that
-   `gnuastro/config.h' is only created at installation time (not present
-   during the building of Gnuastro).*/
-#ifndef IN_GNUASTRO_BUILD
-#include <gnuastro/config.h>
-#endif
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -68,19 +57,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 /* Macros: */
 
-/* If this macro is 1, the only native type for arithmetic will be
-   float. Having the four different types set as native can greatly
-   lengthen the compilation time and slow-down the
-   debugging/developement. */
-#define GAL_DATA_ARITH_ONLY_FLOAT_FOR_FAST_DEBUG 0
-
 /* The maximum dimensionality of datasets. */
 #define GAL_DATA_MAXDIM    999
-
-/* Arithmetic macros (powers of 2). */
-#define GAL_DATA_ARITH_INPLACE  1
-#define GAL_DATA_ARITH_FREE     2
-#define GAL_DATA_ARITH_NUMOK    4
 
 /* Blank values: Note that for the unsigned types or small types (like
    char), the maximum value is considered as a blank value, since the
