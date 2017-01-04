@@ -5228,8 +5228,9 @@ Except for the column number (@code{N}), the rest of the fields are not
 mandatory and the column information doesn't have to be in order. Also, you
 don't have to specify information for all columns. Those without
 information will be interpretted with the default settings (like the case
-above: all types are double, with no name, units, or comments) So these
-lines are all acceptable:
+above: all types are double, with no name, units, or comments). So these
+lines are all acceptable (the first one with nothing but the column number
+is redundant!):
 
 @example
 # Column 5:
@@ -5237,7 +5238,7 @@ lines are all acceptable:
 # Column 3: mag_f160w [AB mag, f] Magnitude from the F160W filter
 @end example
 
-The following type codes are recognized:
+The following type codes are recognized in Gnuastro's plain text tables:
 
 @itemize
 @item
@@ -5249,7 +5250,11 @@ The following type codes are recognized:
 @item
 `@code{s}': for (signed) @code{short}.
 @item
+`@code{ui}': for @code{unsigned int} (see note below).
+@item
 `@code{i}': for (signed) @code{int}.
+@item
+`@code{ul}': for @code{unsigned long} (see note below).
 @item
 `@code{l}': for (signed) @code{long}.
 @item
@@ -5259,18 +5264,49 @@ The following type codes are recognized:
 @item
 `@code{d}': for @code{double}.
 @item
-`@code{strN}': for strings. The @code{N} value identifies how many
-characters define for the string. The start of the string on each row is
+`@code{strN}': for strings. The @code{N} value identifies the length of the
+string (how many characters it has). The start of the string on each row is
 the first non-delimiter character of the column that has the string
 type. The next @code{N} characters will be interpretted as a string and all
-trailing white space will be removed. So only if strings are present in the
-table you have to be careful that a the next column is not too close. If
+trailing white space will be removed. If there is a new-line character (the
+string character is the last column, or we have reached the end of the
+line), then reading of the string will stop, even if the @code{N}
+characters are not complete yet. See @file{tests/table/table.txt} for one
+example.
+
+So the only time you have to pay attention to the positioning of the
+columns is when you have a string column immediately before another one. If
 the next column's characters, are closer than @code{N} characters, they
-will be considered part of the string. See @file{tests/table/table.txt} for
-one example.
+will be considered part of the string.
+
+The only limitation in this format is that trailing and leading white space
+characters will be removed from the columns that are read. So if trailing
+and leading white-spaces are critically important to your analysis, define
+your own starting and ending characters and remove them after the table has
+been read. For example in the sample table below, the two `@key{|}'
+characters (which are arbitrary) will remain in the value of the second
+column and you can remove them manually later. If only one of the leading
+or trailing white spaces is important for your work, you can only use one
+of the `@key{|}'s.
+
+@example
+# Column 1: ID [label, uc]
+# Column 2: Notes [no unit, str50]
+1    leading and trailing white space is ignored here    2.3442e10
+2   |         but they will be preserved here        |   2.3442e10
+@end example
 
 @end itemize
 
+Note that the FITS standard does not define the @code{unsigned int} and
+@code{unsigned long} types for its binary tables, so if you want to convert
+your tables to FITS binary tables, use other types. Also, note that in the
+FITS ASCII table, there is only one integer type (@code{long}). So if you
+convert a Gnuastro plain text table a FITS ASCII table with the @ref{Table}
+program, the type information for integers will be lost. Conversely if
+integer types are important for you, you have to manually set them when
+reading a FITS ASCII table, for example with the Table program into a file,
+or with the @file{gnuastro/table.h} library functions into memory.
 
 
 
