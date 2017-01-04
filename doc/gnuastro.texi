@@ -5150,14 +5150,14 @@ also contain non-numerical columns.
 @node Gnuastro text table format,  , Table formats, Table formats
 @subsection Gnuastro text table format
 
-Plain text files are most generic and portable way to manually create,
-visually inspect, or manually edit a table. In this format, the ending of a
-row is defined by the new-line character (a line on a text editor). So when
-you view it on a text editor, every row will occupy one line. The
-delimiters (or characters separating the columns) are white space
+Plain text files are most generic, portable, and easiest way to (manually)
+create, (visually) inspect, or (manually) edit a table. In this format, the
+ending of a row is defined by the new-line character (a line on a text
+editor). So when you view it on a text editor, every row will occupy one
+line. The delimiters (or characters separating the columns) are white space
 characters (space, horizontal tab, vertical tab) and a comma (@key{,}). The
-only further requirement is that all rows must have the same number of
-columns.
+only further requirement is that all rows/lines must have the same number
+of columns.
 
 The columns don't have to be exactly under each other and the rows can be
 arbitrarily long with different lengths. For example the following contents
@@ -5171,55 +5171,70 @@ each element interpretted as a @code{double} type (see @ref{Data types}).
 
 However, the example above has no other information about the columns. For
 example, Gnuastro's programs/libraries, you aren't limited to using the
-column's number/index. If the columns have names, units, or comments you
-can also select your columns based on searches/matches in these fields, for
-example see @ref{Table}. Also, in this manner, you can't guide the program
-reading the table on how to read the numbers. As an example, the first and
-third columns above can be read as integer types: for example, the first
-column can be an ID and the third can be the number of pixels it
-occupies. So there is no need to read it as a @code{double} type (which
-takes more memory, and is also slower).
+column's number. If the columns have names, units, or comments you can also
+select your columns based on searches/matches in these fields, for example
+see @ref{Table}. It is also bad for sending to a colleague, because they
+will find it hard to remember/use the columns properly. Also, in this
+manner, you can't guide the program reading the table on how to read the
+numbers. As an example, the first and third columns above can be read as
+integer types: the first column might be an ID and the third can be the
+number of pixels it occupies. So there is no need to read it as a
+@code{double} type (which takes more memory, and is slower).
 
 In this bare-minimum example, you also can't use strings of characters, for
 example the names of filters, or some other identifier that includes
 non-numerical characters. In the absence of any information, only numbers
-can be read. Assuming we read columns with non-numerical characters as
-string, there would still be the problem that the strings might contain
-space (or any delimiter) character for some rows. So, each `word' will be
-interpretted as a column and the program will abort with an error that the
-rows don't have the same number of columns.
+can be read robustly. Assuming we read columns with non-numerical
+characters as string, there would still be the problem that the strings
+might contain space (or any delimiter) character for some rows. So, each
+`word' in the string will be interpretted as a column and the program will
+abort with an error that the rows don't have the same number of columns.
 
 To correct for these limitations, Gnuastro defines the following convention
-for guiding the program reading the text table on how to read/interpret
-it. When the first non-white character in a line is @key{#}, or there are
-no non-white characters in it, then the line will be ignored. In the former
-case, the line is interpretted as a @emph{comment}. If the comment line
-starts with @code{# Column N:}, then it is assumed to contain information
-about column @code{N} (counting from 1). Comment lines that don't start
-with this pattern are ignored and you can use them to include any further
-information you want to store with the table in the text file. A column
-information comment is assumed to have the following format (which was
-primarily defined for ease of reading by eye):
+for storing the table meta-data along with the plain text file to guide a
+human, or program, on how to read/interpret it. When the first non-white
+character in a line is @key{#}, or there are no non-white characters in it,
+then the line will be ignored (this is a pretty standard convention in many
+programs, and higher level languages). In the former case, the line is
+interpretted as a @emph{comment}. If the comment line starts with `@code{#
+Column N:}', then it is assumed to contain information about column
+@code{N} (a number, counting from 1). Comment lines that don't start with
+this pattern are ignored and you can use them to include any further
+information you want to store with the table in the text file.
+
+The format is primarily defined for ease of reading/writing by eye/fingers,
+but is also structured enough to be read by a program. A column information
+comment is assumed to have the following format:
 
 @example
 # Column N: NAME [UNIT, TYPE, BLANK] COMMENT
 @end example
 
 @cindex NaN
+@noindent
 Any sequence of characters between `@key{:}' and `@key{[}' will be
 interpretted as the column name (so it can contain anything except the
 `@key{[}' character). Anything between the `@key{]}' and the end of the
 line is defined as a comment. Within the brackets, anything before the
 first `@key{,}' is the units (physical units, for example km/s, or erg/s),
 anything before the second `@key{,}' is the short type identifier (see
-below), finally, any non-white characters after the second `@key{,}' within
-the brackets are interpretted as the blank value for that column (see
-@ref{Blank pixels}). Note that blank values will be stored in the same type
-as the column, not as strings@footnote{For floating point types, the
-@code{nan}, or @code{inf} strings (both not case-sensitive) refer to IEEE
-NaN (not a number) and infinity values respectively and will be stored as a
-floating point, so they are acceptable.}. The leading and ending white
-space characters will be stripped from all of these strings. For example in
+below, and @ref{Data types}). Finally (still within the brackets), any
+non-white characters after the second `@key{,}' are interpretted as the
+blank value for that column (see @ref{Blank pixels}). Note that blank
+values will be stored in the same type as the column, not as a
+string@footnote{For floating point types, the @code{nan}, or @code{inf}
+strings (both not case-sensitive) refer to IEEE NaN (not a number) and
+infinity values respectively and will be stored as a floating point, so
+they are acceptable.}.
+
+When a formatting problem occurs (for example you have specified the wrong
+type code, see below), or the the column was already given meta-data in a
+previous comment, or the column number is larger than the actual number of
+columns in the table (the non-commented or empty lines), then the comment
+information line will be ignored.
+
+When a comment information line can be used, the leading and trailing white
+space characters will be stripped from all of the elements. For example in
 this line:
 
 @example
@@ -5228,17 +5243,19 @@ this line:
 
 The @code{NAME} field will be `@code{column name}', or @code{TYPE} will be
 `@code{f}'. Note how all the white space characters before and after
-strtings are not used, but those in the middle remained. Also, the lack of
-space characters is also acceptable, so in the example above @code{BLANK}
-will be `@code{-99}'.
+strings are not used, but those in the middle remained. Also, white space
+characters aren't mandatory, so in the example above @code{BLANK} will be
+`@code{-99}'.
 
-Except for the column number (@code{N}), the rest of the fields are not
-mandatory and the column information doesn't have to be in order. Also, you
-don't have to specify information for all columns. Those without
-information will be interpretted with the default settings (like the case
-above: all types are double, with no name, units, or comments). So these
-lines are all acceptable (the first one, with nothing but the column number
-is redundant):
+Except for the column number (@code{N}), the rest of the fields are
+optional and the column information comments don't have to be in order. In
+other words, the information for column @mymath{N+m} (@mymath{m>0}) can be
+given before column @mymath{N}. Also, you don't have to specify information
+for all columns. Those columns that don't have this information will be
+interpretted with the default settings (like the case above: values are
+double precision floating point, and the column has no name, unit, or
+comment). So these lines are all acceptable for any table (the first one,
+with nothing but the column number is redundant):
 
 @example
 # Column 5:

@@ -512,7 +512,7 @@ gal_data_calloc_dataarray(size_t size)
   for(i=0;i<size;++i)
     {
       out[i].array      = NULL;
-      out[i].type       = -1;
+      out[i].type       = GAL_DATA_TYPE_INVALID;
       out[i].ndim       = 0;
       out[i].dsize      = NULL;
       out[i].nwcs       = 0;
@@ -2061,7 +2061,7 @@ gal_data_string_as_type(char *str)
     return GAL_DATA_TYPE_DCOMPLEX;
 
   else
-    return -1;
+    return GAL_DATA_TYPE_INVALID;
 
   /* Any of the cases above should return this function, so if control
      reaches here, there is a bug. */

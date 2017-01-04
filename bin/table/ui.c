@@ -388,6 +388,11 @@ preparearrays(struct tableparams *p)
       allcols=gal_table_info(p->up.filename, p->cp.hdu, &numcols,
                              &numrows, &tabletype);
 
+      /* If there was no actual data in the file, then inform the user */
+      if(allcols==NULL)
+        error(EXIT_FAILURE, 0, "%s: no usable data rows (non-commented and "
+              "non-blank lines)", p->up.filename);
+
       /* Free the information from all the columns. */
       for(i=0;i<numcols;++i)
         gal_data_free(&allcols[i], 1);
@@ -408,6 +413,12 @@ preparearrays(struct tableparams *p)
   gal_linkedlist_reverse_stll(&p->columns);
   p->table=gal_table_read(p->up.filename, p->cp.hdu, p->columns,
                           p->searchin, p->ignorecase, p->cp.minmapsize);
+
+  /* If there was no actual data in the file, then inform the user and
+     abort. */
+  if(p->table==NULL)
+    error(EXIT_FAILURE, 0, "%s: no usable data rows (non-commented and "
+          "non-blank lines)", p->up.filename);
 
   /* Now that the data columns are ready, we can free the string linked
      list. */

@@ -303,6 +303,12 @@ gal_table_read_blank(gal_data_t *col, char *blank)
      blank value. */
   if(blank==NULL) return;
 
+  /* Just for a sanity check, the ndim element should be zero. */
+  if(col->ndim)
+    error(EXIT_FAILURE, 0, "A bug! The number of dimensions in the data "
+          "structure passed `to gal_table_read_blank' must be zero, but it "
+          "is %zu", col->ndim);
+
   /* Allocate space to keep the blank value and initialize the dimension
      and size parameters appropriately. */
   errno=0;
@@ -358,8 +364,8 @@ gal_table_read_blank(gal_data_t *col, char *blank)
           }
     }
 
-  /* If the blank value couldn't be read, then set the initialized
-     lengths to zero again. */
+  /* If the blank value couldn't be read, then set the initialized lengths
+     to zero again, as if this function wasn't called at all. */
   if(col->array==NULL)
     {
       col->ndim=col->size=0;
@@ -697,12 +703,12 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
   /* First get the information of all the columns. */
   allcols=gal_table_info(filename, hdu, &numcols, &numrows, &tabletype);
 
+  /* If there was no actual data in the file, then return NULL. */
+  if(allcols==NULL) return NULL;
+
   /* Get the list of indexs in the same order as the input list */
   indexll=make_list_of_indexs(cols, allcols, numcols, searchin,
                               ignorecase, filename, hdu);
-
-  /* If no columns could be selected, just return NULL. */
-  if(indexll==NULL) return NULL;
 
   /* Depending on the table type, read the columns into the output
      structure. Note that the functions here pop each index, read/store the
