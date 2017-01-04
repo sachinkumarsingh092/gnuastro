@@ -5268,14 +5268,14 @@ The following type codes are recognized in Gnuastro's plain text tables:
 string (how many characters it has). The start of the string on each row is
 the first non-delimiter character of the column that has the string
 type. The next @code{N} characters will be interpretted as a string and all
-trailing white space will be removed. If there is a new-line character (the
-string character is the last column, or we have reached the end of the
-line), then reading of the string will stop, even if the @code{N}
-characters are not complete yet. See @file{tests/table/table.txt} for one
-example.
+leading and trailing white space will be removed. If there is a new-line
+character (the string character is the last column, or we have reached the
+end of the line), then reading of the string will stop, even if the
+@code{N} characters are not complete yet. See @file{tests/table/table.txt}
+for one example.
 
 So the only time you have to pay attention to the positioning of the
-columns is when you have a string column immediately before another one. If
+columns is when you have a string column immediately before a column. If
 the next column's characters, are closer than @code{N} characters, they
 will be considered part of the string.
 
@@ -5298,15 +5298,16 @@ of the `@key{|}'s.
 
 @end itemize
 
-Note that the FITS standard does not define the @code{unsigned int} and
-@code{unsigned long} types for its binary tables, so if you want to convert
-your tables to FITS binary tables, use other types. Also, note that in the
-FITS ASCII table, there is only one integer type (@code{long}). So if you
-convert a Gnuastro plain text table a FITS ASCII table with the @ref{Table}
+Note that the FITS binary table standard does not define the @code{unsigned
+int} and @code{unsigned long} types, so if you want to convert your tables
+to FITS binary tables, use other types. Also, note that in the FITS ASCII
+table, there is only one integer type (@code{long}). So if you convert a
+Gnuastro plain text table to a FITS ASCII table with the @ref{Table}
 program, the type information for integers will be lost. Conversely if
 integer types are important for you, you have to manually set them when
-reading a FITS ASCII table, for example with the Table program into a file,
-or with the @file{gnuastro/table.h} library functions into memory.
+reading a FITS ASCII table (for example with the Table program when
+reading/converting into a file, or with the @file{gnuastro/table.h} library
+functions when reading into memory).
 
 
 
