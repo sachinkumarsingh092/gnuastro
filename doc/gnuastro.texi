@@ -5194,28 +5194,36 @@ for guiding the program reading the text table on how to read/interpret
 it. When the first non-white character in a line is @key{#}, or there are
 no non-white characters in it, then the line will be ignored. In the former
 case, the line is interpretted as a @emph{comment}. If the comment line
-starts with @code{# Comment N:}, then it is assumed to contain information
-about column @code{N} (counting from 1). A full readable comment by
-Gnuastro's programs/libraries line is in this format, which was primarily
-defined for ease of reading by eye:
+starts with @code{# Column N:}, then it is assumed to contain information
+about column @code{N} (counting from 1). Comment lines that don't start
+with this pattern are ignored and you can use them to include any further
+information you want to store with the table in the text file. A column
+information comment is assumed to have the following format (which was
+primarily defined for ease of reading by eye):
 
 @example
-# Comment N: NAME [UNIT, TYPE, BLANK] COMMENT
+# Column N: NAME [UNIT, TYPE, BLANK] COMMENT
 @end example
 
+@cindex NaN
 Any sequence of characters between `@key{:}' and `@key{[}' will be
 interpretted as the column name (so it can contain anything except the
-@code{[} character). Anything between the `@key{]}' and the end of the line
-is defined as a comment. Within the brackets, anything before the first
-`@key{,}' is the units (physical units, for example km/s, or erg/s),
+`@key{[}' character). Anything between the `@key{]}' and the end of the
+line is defined as a comment. Within the brackets, anything before the
+first `@key{,}' is the units (physical units, for example km/s, or erg/s),
 anything before the second `@key{,}' is the short type identifier (see
-below), and the rest of the characters within the brackets are interpretted
-as the blank value for that column (see @ref{Blank pixels}). The leading
-and ending white space characters will be stripped from all of these
-strings. For example in this line:
+below), finally, any non-white characters after the second `@key{,}' within
+the brackets are interpretted as the blank value for that column (see
+@ref{Blank pixels}). Note that blank values will be stored in the same type
+as the column, not as strings@footnote{For floating point types, the
+@code{nan}, or @code{inf} strings (both not case-sensitive) refer to IEEE
+NaN (not a number) and infinity values respectively and will be stored as a
+floating point, so they are acceptable.}. The leading and ending white
+space characters will be stripped from all of these strings. For example in
+this line:
 
 @example
-# Comment 5:  column name   [km/s,    f,-99] Redshift as speed
+# Column 5:  column name   [km/s,    f,-99] Redshift as speed
 @end example
 
 The @code{NAME} field will be `@code{column name}', or @code{TYPE} will be
@@ -5229,8 +5237,8 @@ mandatory and the column information doesn't have to be in order. Also, you
 don't have to specify information for all columns. Those without
 information will be interpretted with the default settings (like the case
 above: all types are double, with no name, units, or comments). So these
-lines are all acceptable (the first one with nothing but the column number
-is redundant!):
+lines are all acceptable (the first one, with nothing but the column number
+is redundant):
 
 @example
 # Column 5:
@@ -5274,10 +5282,10 @@ end of the line), then reading of the string will stop, even if the
 @code{N} characters are not complete yet. See @file{tests/table/table.txt}
 for one example.
 
-So the only time you have to pay attention to the positioning of the
-columns is when you have a string column immediately before a column. If
-the next column's characters, are closer than @code{N} characters, they
-will be considered part of the string.
+So the only time you have to pay attention to the positioning of the string
+column is not the last column. If the next column's characters, are closer
+than @code{N} characters to the start of the string column in that
+line/row, they will be considered part of the string column.
 
 The only limitation in this format is that trailing and leading white space
 characters will be removed from the columns that are read. So if trailing
