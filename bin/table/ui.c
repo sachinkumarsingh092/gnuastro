@@ -304,72 +304,6 @@ sanitycheck(struct tableparams *p)
 
 
 /**************************************************************/
-/***************          Information         *****************/
-/**************************************************************/
-void
-print_information_exit(struct tableparams *p)
-{
-  int tabletype;
-  gal_data_t *allcols;
-  size_t i, numcols, numrows;
-  char *name, *unit, *comment;
-
-  allcols=gal_table_info(p->up.filename, p->cp.hdu, &numcols, &numrows,
-                         &tabletype);
-
-  /* Print the legend */
-  if(gal_fits_name_is_fits(p->up.filename))
-    printf("%s (hdu: %s):\n", p->up.filename, p->cp.hdu);
-  else
-    printf("%s:\n", p->up.filename);
-  printf("Number of rows: %zu\n", numrows);
-  printf("%-8s%-25s%-20s%-18s%s\n", "No.", "Name", "Units", "Type",
-         "Comment");
-  printf("%-8s%-25s%-20s%-18s%s\n", "---", "----", "-----", "----",
-         "-------");
-
-  /* For each column, print the information, then free them. */
-  for(i=0;i<numcols;++i)
-    {
-      name    = allcols[i].name;       /* Just defined for easier     */
-      unit    = allcols[i].unit;       /* readability. The compiiler  */
-      comment = allcols[i].comment;    /* optimizer will remove them. */
-      printf("%-8zu%-25s%-20s%-18s%s\n", i+1,
-             name ? name : GAL_DATA_BLANK_STRING ,
-             unit ? unit : GAL_DATA_BLANK_STRING ,
-             gal_data_type_as_string(allcols[i].type, 1),
-             comment ? comment : GAL_DATA_BLANK_STRING);
-      if(name)    free(name);
-      if(unit)    free(unit);
-      if(comment) free(comment);
-    }
-
-  /* Clean everything else up and return successfully. */
-  free(allcols);
-  freeandreport(p);
-  exit(EXIT_SUCCESS);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
 /***************       Preparations         *******************/
 /**************************************************************/
 void
@@ -390,20 +324,41 @@ preparearrays(struct tableparams *p)
 
       /* If there was no actual data in the file, then inform the user */
       if(allcols==NULL)
-        error(EXIT_FAILURE, 0, "%s: no usable data rows (non-commented and "
-              "non-blank lines)", p->up.filename);
+        error(EXIT_FAILURE, 0, "%s: no usable data rows", p->up.filename);
+
+      /* If the user just wanted information, then print it. */
+      if(p->information)
+        {
+          /* Print the file information. */
+          printf("--------\n");
+          printf("%s", p->up.filename);
+          if(gal_fits_name_is_fits(p->up.filename))
+            printf(" (hdu: %s)\n", p->cp.hdu);
+          else
+            printf("\n");
+
+          /* Print each column's information. */
+          gal_table_print_info(allcols, numcols, numrows);
+        }
 
       /* Free the information from all the columns. */
       for(i=0;i<numcols;++i)
         gal_data_free(&allcols[i], 1);
       free(allcols);
 
-      /* Add the number of columns to the list. */
-      for(i=1;i<=numcols;++i)
+      /* Add the number of columns to the list if the user wanted to print
+         the columns (didn't just want their information. */
+      if(p->information)
         {
-          asprintf(&numstr, "%zu", i);
-          gal_linkedlist_add_to_stll(&p->columns, numstr);
+          freeandreport(p);
+          exit(EXIT_SUCCESS);
         }
+      else
+        for(i=1;i<=numcols;++i)
+          {
+            asprintf(&numstr, "%zu", i);
+            gal_linkedlist_add_to_stll(&p->columns, numstr);
+          }
     }
 
   /* Reverse the list of column search criteria that we are looking for
@@ -480,10 +435,6 @@ setparams(int argc, char *argv[], struct tableparams *p)
 
   /* Do a sanity check. */
   sanitycheck(p);
-
-  /* If the user just wanted the information, just print them and exit. */
-  if(p->information)
-    print_information_exit(p);
 
   /* Make the array of input images. */
   preparearrays(p);

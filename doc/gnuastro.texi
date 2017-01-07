@@ -6588,7 +6588,7 @@ some simple examples.
 Table will read/write, select, convert, or show the information of the
 columns in FITS ASCII table, FITS binary table and plain text table files,
 see @ref{Table formats}. Output columns can also be determined by number or
-regular expression matching of column names, units or comments. The
+regular expression matching of column names, units, or comments. The
 executable name is @file{asttable} with the following general template
 
 @example
@@ -6606,48 +6606,56 @@ $ asttable bintab.fits --information
 $ asttable bintab.fits --column=/^MAG_/
 
 ## Only print the 2nd column, and the third column multiplied by 5
-$ asttable bintab.fits | awk '!/^#/@{print $2, 5*$3@}'
+$ asttable bintab.fits | awk '@{print $2, 5*$3@}'
 
 ## Only print those rows with a value in the 10th column above 100000
-$ asttable bintab.fits | awk '!/^#/$10>10e5 @{print@}'
+$ asttable bintab.fits | awk '$10>10e5 @{print@}'
 
 ## Sort the output columns by the third column, save output
-$ asttable bintab.fits | awk '!/^#/ | 'sort -k3 > output.txt
+$ asttable bintab.fits | 'sort -k3 > output.txt
 
 ## Convert a plain text table to a binary FITS table
 $ asttable plaintext.txt --output=table.fits --tabletype=fits-binary
 @end example
 
-In the absence of an output file, the selected columns will be printed on
-the command-line. In the absence of selected columns, all columns will be
-output. For the full list of options common to all Gnuastro programs please
-see @ref{Common options}. Options can also be stored in directory, user or
-system-wide configuration files to avoid repeating on the command-line, see
-@ref{Configuration files}.
+@cindex GNU AWK
+In the absence of selected columns, all the input file's columns will be
+output. If the specified output is a FITS file, the type of FITS table
+(binary or ASCII) will be determined from the @option{--tabletype}
+option. If the output is not a FITS file, it will be printed as a plain
+text table (with space characters between the columns). When the columns
+are accompanied by meta-data (like column name, units, or comments), this
+information will also printed in the plain text file before the table, as
+described in @ref{Gnuastro text table format}.
 
-Table does not follow Automatic output that is common in most Gnuastro, see
-@ref{Automatic output}. If no value is given to the @option{--output}
-option, the desired columns will be printed to the standard output (on the
-command-line). This feature makes it very useful to directly pipe the
-output as input to other programs as the examples above demonstrate.
+For the full list of options common to all Gnuastro programs please see
+@ref{Common options}. Options can also be stored in directory, user or
+system-wide configuration files to avoid repeating on the command-line, see
+@ref{Configuration files}. Table does not follow Automatic output that is
+common in most Gnuastro programs, see @ref{Automatic output}. Thus, in the
+absence of an output file, the selected columns will be printed on the
+command-line with no column information, ready for redirecting to other
+tools like AWK or sort, similar to the examples above.
 
 @table @option
 
 @item -i
 @itemx --information
-Print the information for each column and abort. The information for each
-column will be printed as a row on the command-line. The column name (if
-present), units (if present) and datatype will printed. Note that the FITS
-standard does not require a name or units for columns, only the datatype is
-mandatory. For plain text files, even types aren't mandatory, and all
-columns with no type will show a @code{double} type (see @ref{Gnuastro text
-table format})
+Only print the column information in the specified table on the
+command-line and exit. Each columns information (number, name, units, data
+type, and comments) will be printed as a row on the command-line. Note that
+the FITS standard only requires the data type (see @ref{Data types}) and in
+plain text tables, no meta-data/information is mandatory. Gnuastro has its
+own convention in the comments of a plain text table to store and transfer
+this information as described in @ref{Gnuastro text table format}. Note
+that if columns have been requested with the @option{--column} option
+(below), this option will be ignored if given.
 
 @cindex AWK
 @cindex GNU AWK
 @item -c
 @itemx --column
-(@option{=STR} or @option{=INT}) Specify the columns to output for this
+(@option{=STR}, or @option{=INT}) Specify the columns to output for this
 table. If the value to this option is an integer number, the column number
 will be used (counting from 1, Table will abort with an error if zero or
 negative values are given). When the value can't be interpretted as an a

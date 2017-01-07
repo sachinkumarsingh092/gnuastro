@@ -122,6 +122,9 @@ int
 gal_table_string_to_searchin(char *string);
 
 void
+gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
+
+void
 gal_table_col_print_info(gal_data_t *col, int tabletype,
                          char *fmt, char *lng);
 

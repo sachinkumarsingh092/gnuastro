@@ -933,10 +933,11 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
                     int dontdelete)
 {
   FILE *fp;
+  char *nstr;
   gal_data_t *col;
   char **fmts, *tmp;
   size_t i, j, numcols=0, fmtlen;
-  int iw=0, nw=0, uw=0, tw=0, bw=0;
+  int nlen, nw=0, uw=0, tw=0, bw=0;
 
 
   /* Find the number of columns, do a small sanity check, and get the
@@ -964,21 +965,6 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
     }
 
 
-  /* Set the output FILE pointer: if it isn't NULL, its an actual file,
-     otherwise, its the standard output. */
-  if(filename)
-    {
-      gal_checkset_check_remove_file(filename, dontdelete);
-      errno=0;
-      fp=fopen(filename, "w");
-      if(fp==NULL)
-        error(EXIT_FAILURE, errno, "%s: couldn't be open to write text "
-              "table", filename);
-    }
-  else
-    fp=stdout;
-
-
   /* Prepare the necessary formats for each column, then allocate the space
      for the full list and concatenate all the separate inputs into it. */
   fmts=make_fmts_for_printf(cols, numcols, 1, &fmtlen);
@@ -991,24 +977,68 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
     }
 
 
-  /* Write the comments if there are any */
-  if(comment) fprintf(fp, "%s\n", comment);
-
-
-  /* Write the information for each column */
-  i=0;
-  iw=log10(numcols)+1;
-  for(col=cols;col!=NULL;col=col->next)
+  /* Set the output FILE pointer: if it isn't NULL, its an actual file,
+     otherwise, its the standard output. */
+  if(filename)
     {
-      fprintf(fp, "# Column %-*zu: %-*s [%-*s,%-*s,%-*s] %s\n",
-              iw, i+1,
-              nw, col->name    ? col->name    : "",
-              uw, col->unit    ? col->unit    : "",
-              tw, fmts[i*FMTS_COLS+1] ? fmts[i*FMTS_COLS+1] : "",
-              bw, fmts[i*FMTS_COLS+2] ? fmts[i*FMTS_COLS+2] : "",
-              col->comment ? col->comment : "");
-      ++i;
+      gal_checkset_check_remove_file(filename, dontdelete);
+      errno=0;
+      fp=fopen(filename, "w");
+      if(fp==NULL)
+        error(EXIT_FAILURE, errno, "%s: couldn't be open to write text "
+              "table", filename);
+
+
+      /* Write the comments if there were any. */
+      if(comment) fprintf(fp, "%s\n", comment);
+
+
+      /* Write the column information if the output is a file. When the
+         output is directed to standard output (the command-line), it is
+         most probably intended for piping into another program (for
+         example AWK for further processing, or sort, or anything) so the
+         user already has the column information and is probably going to
+         change them, so they are just a nuisance.
+
+         When there are more than 9 columns, we don't want to have cases
+         like `# Column 1 :' (note the space between `1' and `:', this
+         space won't exist for the 2 digit colum numbers).
+
+         To do this, we are first allocating and printing a string long
+         enough to keep the final column's `N:'. Then, for each column, we
+         print only the number into the allocated space and put the `:' in
+         manually immediately after the number. Note that the initial
+         `asprintf' put a `\0' in the allocated space, so we can safely
+         over-write the one that `sprintf' puts with a `:' for the columns
+         that have the same number of digits as the final column. */
+      i=0;
+      asprintf(&nstr, "%zu:", numcols);
+      nlen=strlen(nstr);
+      for(col=cols; col!=NULL; col=col->next)
+        {
+          /* Print the number into the number string, then add the `:'
+             immediately after the number. */
+          sprintf(nstr, "%zu", i+1);
+          for(j=1;j<nlen;++j)
+            if(!isdigit(nstr[j])) nstr[j] = isdigit(nstr[j-1]) ? ':' : ' ';
+
+          /* Now print the full column information. */
+          fprintf(fp, "# Column %s %-*s [%-*s,%-*s,%-*s] %s\n",
+                  nstr,
+                  nw, col->name    ? col->name    : "",
+                  uw, col->unit    ? col->unit    : "",
+                  tw, fmts[i*FMTS_COLS+1] ? fmts[i*FMTS_COLS+1] : "",
+                  bw, fmts[i*FMTS_COLS+2] ? fmts[i*FMTS_COLS+2] : "",
+                  col->comment ? col->comment : "");
+          ++i;
+        }
+
+
+      /* Clean up */
+      free(nstr);
     }
+  else      /* Output wasn't a file, so set it to standard output */
+    fp=stdout;
 
 
   /* Print the output */
@@ -1019,7 +1049,8 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
         {
           switch(col->type)
             {
-            /* Integer types */
+
+            /* Numerical types. */
             case GAL_DATA_TYPE_UCHAR:
               fprintf(fp, fmts[j*FMTS_COLS],
                       ((unsigned char *)col->array)[i]);
@@ -1085,9 +1116,7 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
     }
 
 
-  /* Clean up, close the input file and return. For the fmts[i*FMTS_COLS]
-     elements, the reason is that fmts[i*FMTS_COLS+1] are literal strings,
-     not allocated. So they don't need freeing.*/
+  /* Clean up. */
   for(i=0;i<numcols;++i)
     {
       free(fmts[i*FMTS_COLS]);
@@ -1095,6 +1124,9 @@ gal_txt_table_write(gal_data_t *cols, char *comment, char *filename,
       free(fmts[i*FMTS_COLS+2]);
     }
   free(fmts);
+
+
+  /* Close the output file. */
   if(filename)
     {
       errno=0;

@@ -122,6 +122,61 @@ gal_table_string_to_searchin(char *string)
 /************************************************************************/
 /***************          Printing information            ***************/
 /************************************************************************/
+void
+gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
+{
+  size_t i;
+  int Nw=3, nw=4, uw=5, tw=4;   /* Initial width from label's width */
+  char *name, *unit, *comment;
+
+  /* Set the widths to print the column information. The width for the
+     column number can easily be identified from the logarithm of the
+     number of columns. */
+  Nw=log10(numcols)+1;
+  for(i=0;i<numcols;++i)
+    {
+      if(allcols[i].name && strlen(allcols[i].name)>nw)
+        nw=strlen(allcols[i].name);
+      if(allcols[i].unit && strlen(allcols[i].unit)>uw)
+        uw=strlen(allcols[i].unit);
+      if(allcols[i].type
+         && strlen(gal_data_type_as_string(allcols[i].type, 1))>tw)
+        tw=strlen(gal_data_type_as_string(allcols[i].type, 1));
+    }
+
+  /* We want one column space between the columns for readability, not the
+     exact length, so increment all the numbers. */
+  Nw+=2; nw+=2; uw+=2; tw+=2;
+
+  /* Print these column names. */
+  printf("%-*s%-*s%-*s%-*s%s\n", Nw, "---", nw, "----", uw,
+         "-----", tw, "----", "-------");
+  printf("%-*s%-*s%-*s%-*s%s\n", Nw, "No.", nw, "Name", uw,
+         "Units", tw, "Type", "Comment");
+  printf("%-*s%-*s%-*s%-*s%s\n", Nw, "---", nw, "----", uw,
+         "-----", tw, "----", "-------");
+
+  /* For each column, print the information, then free them. */
+  for(i=0;i<numcols;++i)
+    {
+      name    = allcols[i].name;       /* Just defined for easier     */
+      unit    = allcols[i].unit;       /* readability. The compiler   */
+      comment = allcols[i].comment;    /* optimizer will remove them. */
+      printf("%-*zu%-*s%-*s%-*s%s\n", Nw, i+1,
+             nw, name ? name : GAL_DATA_BLANK_STRING ,
+             uw, unit ? unit : GAL_DATA_BLANK_STRING ,
+             tw, gal_data_type_as_string(allcols[i].type, 1),
+             comment ? comment : GAL_DATA_BLANK_STRING);
+    }
+
+  /* Print the number of rows. */
+  printf("--------\nNumber of rows: %zu\n--------\n", numrows);
+}
+
+
+
+
+
 /* Fill in/adjust the basic information necessary to print a column. This
    information can be used for printing a plain text file or for FITS ASCII
    tables. The `fmt' and `lng' should point to pre-allocated arrays. The
