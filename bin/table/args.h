@@ -85,7 +85,7 @@ const char doc[] =
    Options with keys (second structure element) larger than 500 do not
    have a short version.
  */
-static struct argp_option options[] =
+struct argp_option options[] =
   {
     {
       0, 0, 0, 0,
@@ -98,7 +98,8 @@ static struct argp_option options[] =
       "STR",
       0,
       "Column number (counting from 1) or search string.",
-      1
+      1,
+      NULL, GAL_DATA_TYPE_STRLL
     },
     {
       "searchin",
@@ -106,7 +107,8 @@ static struct argp_option options[] =
       "STR",
       0,
       "Search in column `name', `units', or `comments'.",
-      1
+      1,
+      NULL, GAL_DATA_TYPE_STRING
     },
     {
       "ignorecase",
@@ -114,7 +116,8 @@ static struct argp_option options[] =
       0,
       0,
       "Ignore case when matching column information.",
-      1
+      1,
+      NULL, GAL_DATA_TYPE_INT
     },
 
 
@@ -131,7 +134,8 @@ static struct argp_option options[] =
       "STR",
       0,
       "Output table type: `fits-ascii', `fits-binary'.",
-      2
+      2,
+      NULL, GAL_DATA_TYPE_STRING
     },
 
 
@@ -148,7 +152,8 @@ static struct argp_option options[] =
       0,
       0,
       "Only print table and columns information.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_INT
     },
 
 

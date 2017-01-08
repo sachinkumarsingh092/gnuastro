@@ -103,6 +103,8 @@ enum gal_data_types
   GAL_DATA_TYPE_DOUBLE,    /* double           (TDOUBLE).     */
   GAL_DATA_TYPE_COMPLEX,   /* Complex float    (TCOMPLEX).    */
   GAL_DATA_TYPE_DCOMPLEX,  /* Complex double   (TDBLCOMPLEX). */
+
+  GAL_DATA_TYPE_STRLL,     /* String linked list.             */
 };
 
 

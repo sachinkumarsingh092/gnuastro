@@ -65,7 +65,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "Only report errors, remain quiet about steps.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "printparams",
@@ -73,7 +74,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "Print parameter values to be used and abort.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "setdirconf",
@@ -81,7 +83,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "Set default values for this directory and abort.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "setusrconf",
@@ -89,7 +92,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "Set default values for this user and abort.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "numthreads",
@@ -97,7 +101,8 @@ static struct argp_option gal_commonargs_options[] =
       "INT",
       0,
       "Number of CPU threads to use.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "cite",
@@ -105,7 +110,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "BibTeX citation for "SPACK_NAME".",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "onlydirconf",
@@ -113,7 +119,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "Only read current directory configuration file.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "onlyversion",
@@ -121,23 +128,26 @@ static struct argp_option gal_commonargs_options[] =
       "STR",
       0,
       "Only run if the program version is this.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
-      "nolog",
+      "log",
       1003,
       0,
       0,
       "No log file for programs which make one.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "minmapsize",
       1004,
-      0,
+      "INT",
       0,
       "Minimum no. bytes to map arrays to hdd/ssd.",
-      -1
+      -1,
+      NULL, GAL_DATA_TYPE_ULONG
     },
 
 
@@ -153,7 +163,8 @@ static struct argp_option gal_commonargs_options[] =
       "STR",
       0,
       "Extension name or number of input data.",
-      1
+      1,
+      NULL, GAL_DATA_TYPE_STRING
     },
 #endif
 
@@ -168,7 +179,8 @@ static struct argp_option gal_commonargs_options[] =
       "STR",
       0,
       "Output file or directory name.",
-      2
+      2,
+      NULL, GAL_DATA_TYPE_STRING
     },
     {
       "dontdelete",
@@ -176,7 +188,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "Don't delete output if it exists.",
-      2
+      2,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
     {
       "keepinputdir",
@@ -184,7 +197,8 @@ static struct argp_option gal_commonargs_options[] =
       0,
       0,
       "Do not remove input's dir info for output.",
-      2
+      2,
+      NULL, GAL_DATA_TYPE_UCHAR
     },
 
 
