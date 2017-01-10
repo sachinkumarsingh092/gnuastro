@@ -23,31 +23,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ARGS_H
 #define ARGS_H
 
-#include <argp.h>
-
-#include <gnuastro/linkedlist.h>
-
-#include <commonargs.h>
-#include <fixedstringmacros.h>
 
 
 
 
-
-
-
-
-
-
-/**************************************************************/
-/**************        argp.h definitions       ***************/
-/**************************************************************/
+/* Include the common options to all Gnuastro programs. If the program has
+   its own HDU parsing procedure, then define the `NOT_COMMON_HDU_PARSER'
+   macro before including the `commonopts.h' header. */
+#include <commonopts.h>
 
 
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=SPACK_STRING"\n"GAL_STRINGS_COPYRIGHT
+const char *argp_program_version=PROG_STRING"\n"GAL_STRINGS_COPYRIGHT
   "\n\nWritten by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata";
@@ -59,13 +48,14 @@ static char args_doc[] = "ASTRdata";
 const char doc[] =
   /* Before the list of options: */
   GAL_STRINGS_TOP_HELP_INFO
-  SPACK_NAME" can be used to view the information, select columns, or convert "
-  "tables. The inputs and outputs can be plain text (with whitespace or comma "
-  "as delimiters), FITS ascii, or FITS binary tables. The output columns can "
-  "either be selected by number (counting from 1), name or using regular "
-  "expressions. For regular expressions, enclose the value to the `--column' "
-  "(`-c') option in slashes (`\\', as in `-c\\^mag\\'). To print the selected "
-  "columns on the command-line, don't specify an output file.\n"
+  PROG_NAME" can be used to view the information, select columns, or "
+  "convert tables. The inputs and outputs can be plain text (with "
+  "whitespace or comma as delimiters), FITS ascii, or FITS binary tables. "
+  "The output columns can either be selected by number (counting from 1), "
+  "name or using regular expressions. For regular expressions, enclose the "
+  "value to the `--column' (`-c') option in slashes (`\\', as in "
+  "`-c\\^mag\\'). To print the selected columns on the command-line, don't "
+  "specify an output file.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -117,7 +107,7 @@ struct argp_option options[] =
       0,
       "Ignore case when matching column information.",
       1,
-      NULL, GAL_DATA_TYPE_INT
+      NULL, GAL_OPTIONS_NO_ARG_TYPE
     },
 
 
@@ -151,9 +141,9 @@ struct argp_option options[] =
       'i',
       0,
       0,
-      "Only print table and columns information.",
+      "Only print table and column information.",
       -1,
-      NULL, GAL_DATA_TYPE_INT
+      NULL, GAL_OPTIONS_NO_ARG_TYPE
     },
 
 
@@ -165,16 +155,10 @@ struct argp_option options[] =
 
 
 /* Parse a single option: */
-static error_t
+error_t
 parse_opt(int key, char *arg, struct argp_state *state)
 {
-  /* Save the arguments structure: */
-  char *tstring;
   struct tableparams *p = state->input;
-
-  /* Set the pointer to the common parameters for all programs
-     here: */
-  state->child_inputs[0]=&p->cp;
 
   /* In case the user incorrectly uses the equal sign (for example
      with a short format or with space in the long format, then `arg`
@@ -188,40 +172,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
                "there should be no space between the option, equal sign "
                "and value");
 
+  /* Set the key to this option. */
   switch(key)
     {
-
-
-    /* Input: */
-    case 'c':
-      gal_checkset_allocate_copy(arg, &tstring);
-      gal_linkedlist_add_to_stll(&p->columns, tstring);
-      break;
-
-    case 's':
-      gal_checkset_allocate_copy(arg, &p->up.searchin);
-      p->up.searchinset=1;
-      break;
-
-    case 'I':
-      p->ignorecase=1;
-      p->up.ignorecaseset=1;
-      break;
-
-
-    /* Output: */
-    case 't':
-      gal_checkset_allocate_copy(arg, &p->up.tabletype);
-      p->up.tabletypeset=1;
-      break;
-
-
-    /* Operating modes: */
-    case 'i':
-      p->information=1;
-      p->up.informationset=1;
-      break;
-
 
     /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
@@ -241,32 +194,27 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
 
 
-
-
-
+    /* This is an option, set its value. */
     default:
-      return ARGP_ERR_UNKNOWN;
+      return gal_options_set_from_key(key, arg, options);
     }
+
   return 0;
 }
 
 
 
+/* Define the child argp structure. */
+static struct argp gal_options_common_child = {gal_commonopts_options,
+                                               gal_options_common_argp_parse,
+                                               NULL, NULL, NULL, NULL, NULL};
 
-
-/* Specify the children parsers: */
-struct argp_child children[]=
+static struct argp_child children[]=
   {
-    {&commonargp, 0, NULL, 0},
+    {&gal_options_common_child, 0, NULL, 0},
     {0, 0, 0, 0}
   };
 
-
-
-
-
-/* Basic structure defining the whole argument reading process. */
 static struct argp thisargp = {options, parse_opt, args_doc,
                                doc, children, NULL, NULL};
-
 #endif

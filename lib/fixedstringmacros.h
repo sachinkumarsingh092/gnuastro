@@ -40,7 +40,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define GAL_STRINGS_TOP_HELP_INFO                                       \
-  "\n"SPACK_NAME" is part of "PACKAGE_STRING".\n"
+  "\n"PROG_NAME" is part of "PACKAGE_STRING".\n"
 
 
 
@@ -48,17 +48,18 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define GAL_STRINGS_MORE_HELP_INFO                                      \
   "\nFor more information, please run any of the "                      \
   "following commands. They will respectively show you the `Invoking "  \
-  SPACK_NAME"' subsection, the complete `"SPACK_NAME"' section, or "    \
-  "the full "PACKAGE_NAME" manual. In particular the first contains "   \
-  "a very complete explanation of each option.\n\n"                     \
-  "     info "SPACK"\n\n"                                               \
-  "     info "SPACK_NAME"\n\n"                                          \
+  PROG_NAME"' subsection, the complete `"PROG_NAME"' section, or the"   \
+  "full "PACKAGE_NAME" manual. In particular the first contains a very "\
+  "comprehensive explanation of "PROG_NAME"'s invocation and all the "  \
+  "options.\n\n"                                                        \
+  "     info "PROG_EXEC"\n\n"                                           \
+  "     info "PROG_NAME"\n\n"                                           \
   "     info "PACKAGE_TARNAME"\n\n"                                     \
   "If you couldn't find your answer in the manual, you can get "        \
   "direct help from experienced Gnuastro users and developers. "        \
   "For more information, please run:\n\n"                               \
   "     info help-gnuastro\n\n"                                         \
-  SPACK_NAME" options:"                                                 \
+  PROG_NAME" options:"                                                  \
 
 
 

@@ -177,7 +177,8 @@ gal_data_type_min(int type, void *in);
 void
 gal_data_type_max(int type, void *in);
 
-
+int
+gal_data_is_linked_list(int type);
 
 
 
@@ -301,7 +302,8 @@ gal_data_to_same_type(gal_data_t *f, gal_data_t *s,
 gal_data_t *
 gal_data_string_to_number(char *string);
 
-
+int
+gal_data_string_to_type(void **out, char *string, int type);
 
 
 

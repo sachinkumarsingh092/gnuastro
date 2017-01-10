@@ -250,7 +250,7 @@ AM_CONDITIONAL([COND_GNULIBCHECK], [test $enable_gnulibcheck = yes])
 AC_DEFINE_UNQUOTED([CONF_POSTFIX], [".conf"], [Configuration file post fix.])
 AC_DEFINE_UNQUOTED([CURDIRCONFIG_DIR], [".AC_PACKAGE_TARNAME/"],
                    [Local data dir.])
-AC_DEFINE_UNQUOTED([USERCONFIG_DIR], ["/.local/etc/"],
+AC_DEFINE_UNQUOTED([USERCONFIG_DIR], [".local/etc/"],
                    [User data dir.])
 AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
                    [Configuration file name format.])

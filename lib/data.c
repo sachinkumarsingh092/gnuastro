@@ -35,8 +35,237 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/data.h>
 #include <gnuastro/table.h>
+#include <gnuastro/linkedlist.h>
 
 #include <checkset.h>
+
+
+
+
+
+
+
+
+
+
+/*************************************************************
+ **************            Type info           ***************
+ *************************************************************/
+
+char *
+gal_data_type_as_string(int type, int long_name)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_BIT:
+      if(long_name) return "bit";             else return "b";
+
+    case GAL_DATA_TYPE_UCHAR:
+      if(long_name) return "unsigned char";   else return "uc";
+
+      /* CFITSIO says "int for keywords, char for table columns". Here we
+         are only assuming table columns. So in practice this also applies
+         to TSBYTE.*/
+    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
+      if(long_name) return "char";            else return "c";
+
+    case GAL_DATA_TYPE_STRING:
+      if(long_name) return "string";          else return "str";
+
+    case GAL_DATA_TYPE_USHORT:
+      if(long_name) return "unsigned short";  else return "us";
+
+    case GAL_DATA_TYPE_SHORT:
+      if(long_name) return "short";           else return "s";
+
+    case GAL_DATA_TYPE_UINT:
+      if(long_name) return "unsigned int";    else return "ui";
+
+    case GAL_DATA_TYPE_INT:
+      if(long_name) return "int";             else return "i";
+
+    case GAL_DATA_TYPE_ULONG:
+      if(long_name) return "unsigned long";   else return "ul";
+
+    case GAL_DATA_TYPE_LONG:
+      if(long_name) return "long";            else return "l";
+
+    case GAL_DATA_TYPE_LONGLONG:
+      if(long_name) return "LONGLONG";        else return "L";
+
+    case GAL_DATA_TYPE_FLOAT:
+      if(long_name) return "float";           else return "f";
+
+    case GAL_DATA_TYPE_DOUBLE:
+      if(long_name) return "double";          else return "d";
+
+    case GAL_DATA_TYPE_COMPLEX:
+      if(long_name) return "complex float";   else return "cf";
+
+    case GAL_DATA_TYPE_DCOMPLEX:
+      if(long_name) return "complex double";  else return "cd";
+
+    case GAL_DATA_TYPE_STRLL:
+      if(long_name) return "string linked list";  else return "strll";
+
+    default:
+      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
+            "`gal_data_type_as_string'", type);
+    }
+
+  /* Any of the cases above should return this function, so if control
+     reaches here, there is a bug. */
+  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
+        "the problem. For some reason control has reached the end of "
+        "the `gal_data_type_as_string' function. This must not happen",
+        PACKAGE_BUGREPORT);
+  return NULL;
+}
+
+
+
+
+
+int
+gal_data_string_as_type(char *str)
+{
+  if(      !strcmp(str, "b")   || !strcmp(str, "bit") )
+    return GAL_DATA_TYPE_BIT;
+
+  else if( !strcmp(str, "uc")  || !strcmp(str, "unsigned char") )
+    return GAL_DATA_TYPE_UCHAR;
+
+  else if( !strcmp(str, "c")   || !strcmp(str, "char") )
+    return GAL_DATA_TYPE_CHAR;
+
+  else if( !strcmp(str, "str") || !strcmp(str, "string") )
+    return GAL_DATA_TYPE_STRING;
+
+  else if( !strcmp(str, "us")  || !strcmp(str, "unsigned short") )
+    return GAL_DATA_TYPE_USHORT;
+
+  else if( !strcmp(str, "s")   || !strcmp(str, "short") )
+    return GAL_DATA_TYPE_SHORT;
+
+  else if( !strcmp(str, "ui")  || !strcmp(str, "unsigned int") )
+    return GAL_DATA_TYPE_UINT;
+
+  else if( !strcmp(str, "i")   || !strcmp(str, "int") )
+    return GAL_DATA_TYPE_INT;
+
+  else if( !strcmp(str, "ul")  || !strcmp(str, "unsigned long") )
+    return GAL_DATA_TYPE_ULONG;
+
+  else if( !strcmp(str, "l")   || !strcmp(str, "long") )
+    return GAL_DATA_TYPE_LONG;
+
+  else if( !strcmp(str, "L")   || !strcmp(str, "LONGLONG") )
+    return GAL_DATA_TYPE_LONGLONG;
+
+  else if( !strcmp(str, "f")   || !strcmp(str, "float") )
+    return GAL_DATA_TYPE_FLOAT;
+
+  else if( !strcmp(str, "d")   || !strcmp(str, "double") )
+    return GAL_DATA_TYPE_DOUBLE;
+
+  else if( !strcmp(str, "cf")  || !strcmp(str, "complex float") )
+    return GAL_DATA_TYPE_COMPLEX;
+
+  else if( !strcmp(str, "cd")  || !strcmp(str, "complex double") )
+    return GAL_DATA_TYPE_DCOMPLEX;
+
+  else
+    return GAL_DATA_TYPE_INVALID;
+
+  /* Any of the cases above should return this function, so if control
+     reaches here, there is a bug. */
+  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
+        "the problem. For some reason control has reached the end of "
+        "the `gal_data_string_as_type' function. This must not happen",
+        PACKAGE_BUGREPORT);
+  return 0;
+}
+
+
+
+
+
+/* Put the minimum (or maximum for the `gal_data_type_max') value for the
+   type in the space (that must already be allocated before the call to
+   this function) pointed to by in.  */
+void
+gal_data_type_min(int type, void *in)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = 0;            break;
+    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MIN;     break;
+    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = 0;            break;
+    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MIN;     break;
+    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = 0;            break;
+    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MIN;      break;
+    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = 0;            break;
+    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MIN;     break;
+    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MIN; break;
+    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = -FLT_MAX;     break;
+    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = -DBL_MAX;     break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_type_min'", type);
+    }
+}
+
+
+
+
+
+void
+gal_data_type_max(int type, void *in)
+{
+  switch(type)
+    {
+    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = UCHAR_MAX;    break;
+    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MAX;     break;
+    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = USHRT_MAX;    break;
+    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MAX;     break;
+    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = UINT_MAX;     break;
+    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MAX;      break;
+    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = ULONG_MAX;    break;
+    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MAX;     break;
+    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MAX; break;
+    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = FLT_MAX;      break;
+    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = DBL_MAX;      break;
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_type_min'", type);
+    }
+}
+
+
+
+
+
+/* Since linked lists need a different process than arrays, for functions
+   that work on both, it is convenient to simiplify the check with this
+   function. */
+int
+gal_data_is_linked_list(int type)
+{
+  return type==GAL_DATA_TYPE_STRLL;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1900,229 +2129,107 @@ gal_data_string_to_number(char *string)
 
 
 
-/* You have a string and you want to put it into an element of the array of
-   a data structure. The array doesn't necessarily have to be allocated
-   (!=NULL). If it wasn't allocated, it will be allocated here based on the
-   `size' element in the data structure. If size is 0, a one element array
-   will be allocated. If the data structure isn't already allocated or its
-   type is negative, this function will act like
-   `gal_data_string_to_number' where the type will be set based on the
-   value of the number. If the string is blank, this function won't do
-   anything.
+/* Read a string as a given data type and return the pointer to it. When
+   `*out!=NULL', then it is assumed to be allocated and the value will be
+   simply put there. If `*out==NULL', then space will be allocated for the
+   given type and the string's value (in the given type) will be sored
+   there.
 
-   Use `gal_table_read_blank' as a basis for this function, then remove
-   that function. */
-void
-gal_data_string_to_array_elem(gal_data_t **outdata, size_t index,
-                              char *string)
-{
-}
+   Note that when we are dealing with a string type, `*out' should be
+   interpretted as `char **' (one element in an array of pointers to
+   different strings).
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************************************************************
- **************            Type info           ***************
- *************************************************************/
-
-char *
-gal_data_type_as_string(int type, int long_name)
-{
-  switch(type)
-    {
-    case GAL_DATA_TYPE_BIT:
-      if(long_name) return "bit";             else return "b";
-
-    case GAL_DATA_TYPE_UCHAR:
-      if(long_name) return "unsigned char";   else return "uc";
-
-      /* CFITSIO says "int for keywords, char for table columns". Here we
-         are only assuming table columns. So in practice this also applies
-         to TSBYTE.*/
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      if(long_name) return "char";            else return "c";
-
-    case GAL_DATA_TYPE_STRING:
-      if(long_name) return "string";          else return "str";
-
-    case GAL_DATA_TYPE_USHORT:
-      if(long_name) return "unsigned short";  else return "us";
-
-    case GAL_DATA_TYPE_SHORT:
-      if(long_name) return "short";           else return "s";
-
-    case GAL_DATA_TYPE_UINT:
-      if(long_name) return "unsigned int";    else return "ui";
-
-    case GAL_DATA_TYPE_INT:
-      if(long_name) return "int";             else return "i";
-
-    case GAL_DATA_TYPE_ULONG:
-      if(long_name) return "unsigned long";   else return "ul";
-
-    case GAL_DATA_TYPE_LONG:
-      if(long_name) return "long";            else return "l";
-
-    case GAL_DATA_TYPE_LONGLONG:
-      if(long_name) return "LONGLONG";        else return "L";
-
-    case GAL_DATA_TYPE_FLOAT:
-      if(long_name) return "float";           else return "f";
-
-    case GAL_DATA_TYPE_DOUBLE:
-      if(long_name) return "double";          else return "d";
-
-    case GAL_DATA_TYPE_COMPLEX:
-      if(long_name) return "complex float";   else return "cf";
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      if(long_name) return "complex double";  else return "cd";
-
-    default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "`gal_data_type_as_string'", type);
-    }
-
-  /* Any of the cases above should return this function, so if control
-     reaches here, there is a bug. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "the `gal_data_type_as_string' function. This must not happen",
-        PACKAGE_BUGREPORT);
-  return NULL;
-}
-
-
-
-
-
+   This function can be used to fill in arrays of numbers from strings (in
+   an already allocated data structure), or add nodes to a linked list. For
+   an array, you have to pass the pointer to the `i'th element where you
+   want the value to be stored, for example &(array[i])*/
 int
-gal_data_string_as_type(char *str)
+gal_data_string_to_type(void **out, char *string, int type)
 {
-  if(      !strcmp(str, "b")   || !strcmp(str, "bit") )
-    return GAL_DATA_TYPE_BIT;
+  double d;
+  LONGLONG L;
+  void *value;
+  char *tailptr;
+  int status=0, allocated=0;
 
-  else if( !strcmp(str, "uc")  || !strcmp(str, "unsigned char") )
-    return GAL_DATA_TYPE_UCHAR;
+  /* If the output is NULL, then allocate the necessary space if we are not
+     dealing with a linked list. In a linked list, a NULL value is
+     meaningful (it is the end of the list). */
+  if(*out==NULL && gal_data_is_linked_list(type)==0)
+    {
+      allocated=1;
+      *out=gal_data_malloc_array(type, 1);
+    }
+  value=*out;
 
-  else if( !strcmp(str, "c")   || !strcmp(str, "char") )
-    return GAL_DATA_TYPE_CHAR;
-
-  else if( !strcmp(str, "str") || !strcmp(str, "string") )
-    return GAL_DATA_TYPE_STRING;
-
-  else if( !strcmp(str, "us")  || !strcmp(str, "unsigned short") )
-    return GAL_DATA_TYPE_USHORT;
-
-  else if( !strcmp(str, "s")   || !strcmp(str, "short") )
-    return GAL_DATA_TYPE_SHORT;
-
-  else if( !strcmp(str, "ui")  || !strcmp(str, "unsigned int") )
-    return GAL_DATA_TYPE_UINT;
-
-  else if( !strcmp(str, "i")   || !strcmp(str, "int") )
-    return GAL_DATA_TYPE_INT;
-
-  else if( !strcmp(str, "ul")  || !strcmp(str, "unsigned long") )
-    return GAL_DATA_TYPE_ULONG;
-
-  else if( !strcmp(str, "l")   || !strcmp(str, "long") )
-    return GAL_DATA_TYPE_LONG;
-
-  else if( !strcmp(str, "L")   || !strcmp(str, "LONGLONG") )
-    return GAL_DATA_TYPE_LONGLONG;
-
-  else if( !strcmp(str, "f")   || !strcmp(str, "float") )
-    return GAL_DATA_TYPE_FLOAT;
-
-  else if( !strcmp(str, "d")   || !strcmp(str, "double") )
-    return GAL_DATA_TYPE_DOUBLE;
-
-  else if( !strcmp(str, "cf")  || !strcmp(str, "complex float") )
-    return GAL_DATA_TYPE_COMPLEX;
-
-  else if( !strcmp(str, "cd")  || !strcmp(str, "complex double") )
-    return GAL_DATA_TYPE_DCOMPLEX;
-
-  else
-    return GAL_DATA_TYPE_INVALID;
-
-  /* Any of the cases above should return this function, so if control
-     reaches here, there is a bug. */
-  error(EXIT_FAILURE, 0, "a bug! Please contact us at %s so we can address "
-        "the problem. For some reason control has reached the end of "
-        "the `gal_data_string_as_type' function. This must not happen",
-        PACKAGE_BUGREPORT);
-  return 0;
-}
-
-
-
-
-
-/* Put the minimum (or maximum for the `gal_data_type_max') value for the
-   type in the space (that must already be allocated before the call to
-   this function) pointed to by in.  */
-void
-gal_data_type_min(int type, void *in)
-{
+  /* Read the string depending on the type. */
   switch(type)
     {
-    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = 0;            break;
-    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MIN;     break;
-    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = 0;            break;
-    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MIN;     break;
-    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = 0;            break;
-    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MIN;      break;
-    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = 0;            break;
-    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MIN;     break;
-    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MIN; break;
-    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = -FLT_MAX;     break;
-    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = -DBL_MAX;     break;
+
+    /* Linked lists, currently only string linked lists. */
+    case GAL_DATA_TYPE_STRLL:
+      gal_linkedlist_add_to_stll( (struct gal_linkedlist_stll **)out, string);
+      break;
+
+    /* String, just allocate and copy the string and keep its pointer in
+       the place `*out' points to (for strings, `*out' is `char **'). */
+    case GAL_DATA_TYPE_STRING:
+      gal_checkset_allocate_copy(string, value);
+      break;
+
+    /* Floating point: Read it as a double or long, then put it in the
+       array. When the conversion can't be done (the string isn't a number
+       for example), then just assume no blank value was given. */
+    case GAL_DATA_TYPE_FLOAT:
+    case GAL_DATA_TYPE_DOUBLE:
+      d=strtod(string, &tailptr);
+      if(*tailptr!='\0')
+        status=1;
+      else
+        {
+          if(type==GAL_DATA_TYPE_FLOAT) *(float *) value=d;
+          else                          *(double *) value=d;
+        }
+      break;
+
+    /* Integers. */
     default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_type_min'", type);
+      L=strtoll(string, &tailptr, 0);
+      if(*tailptr!='\0')
+        status=1;
+      else
+        switch(type)
+          {
+          /* The signed values can easily be put in. */
+          case GAL_DATA_TYPE_CHAR:             *(char *) value = L; break;
+          case GAL_DATA_TYPE_SHORT:           *(short *) value = L; break;
+          case GAL_DATA_TYPE_INT:               *(int *) value = L; break;
+          case GAL_DATA_TYPE_LONG:             *(long *) value = L; break;
+          case GAL_DATA_TYPE_LONGLONG:     *(LONGLONG *) value = L; break;
+
+          /* For the unsigned types, the value has to be positive, so if
+             the input was negative, then just return a status of one and
+             don't store the value. */
+          default:
+            if(L<0)
+              status=1;
+            else
+              switch(type)
+                {
+                case GAL_DATA_TYPE_UCHAR:  *(unsigned char *)  value=L; break;
+                case GAL_DATA_TYPE_USHORT: *(unsigned short *) value=L; break;
+                case GAL_DATA_TYPE_UINT:   *(unsigned int *)   value=L; break;
+                case GAL_DATA_TYPE_ULONG:  *(unsigned long *)  value=L; break;
+                default:
+                  error(EXIT_FAILURE, 0, "type code %d not recognized in "
+                        "`gal_data_string_to_type'", type);
+                }
+          }
     }
-}
 
-
-
-
-
-void
-gal_data_type_max(int type, void *in)
-{
-  switch(type)
-    {
-    case GAL_DATA_TYPE_UCHAR:    *(unsigned char *)in  = UCHAR_MAX;    break;
-    case GAL_DATA_TYPE_CHAR:     *(char *)in           = CHAR_MAX;     break;
-    case GAL_DATA_TYPE_USHORT:   *(unsigned short *)in = USHRT_MAX;    break;
-    case GAL_DATA_TYPE_SHORT:    *(short *)in          = SHRT_MAX;     break;
-    case GAL_DATA_TYPE_UINT:     *(unsigned int *)in   = UINT_MAX;     break;
-    case GAL_DATA_TYPE_INT:      *(int *)in            = INT_MAX;      break;
-    case GAL_DATA_TYPE_ULONG:    *(unsigned long *)in  = ULONG_MAX;    break;
-    case GAL_DATA_TYPE_LONG:     *(long *)in           = LONG_MAX;     break;
-    case GAL_DATA_TYPE_LONGLONG: *(LONGLONG *)in       = LONGLONG_MAX; break;
-    case GAL_DATA_TYPE_FLOAT:    *(float *)in          = FLT_MAX;      break;
-    case GAL_DATA_TYPE_DOUBLE:   *(double *)in         = DBL_MAX;      break;
-    default:
-      error(EXIT_FAILURE, 0, "type code %d not recognized in "
-            "`gal_data_type_min'", type);
-    }
+  /* If reading was unsuccessful, then free the space if it was allocated,
+     then return the status. */
+  if(status && allocated)
+    free(value);
+  return status;
 }

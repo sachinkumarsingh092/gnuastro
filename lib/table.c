@@ -349,83 +349,29 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
 void
 gal_table_read_blank(gal_data_t *col, char *blank)
 {
-  double d;
-  long long L;
-  char *tailptr;
-
   /* If there is nothing to use as blank, then don't continue, note that
      the column data structure was initialized to mean that there is no
      blank value. */
   if(blank==NULL) return;
 
-  /* Just for a sanity check, the ndim element should be zero. */
-  if(col->ndim)
-    error(EXIT_FAILURE, 0, "A bug! The number of dimensions in the data "
-          "structure passed `to gal_table_read_blank' must be zero, but it "
-          "is %zu", col->ndim);
+  /* Just for a sanity check, the ndim and array elements should be zero. */
+  if(col->ndim || col->array)
+    error(EXIT_FAILURE, 0, "A bug! The number of dimensions, and the pointer "
+          "to the array in the data structure passed "
+          "`to gal_table_read_blank' must be zero");
 
-  /* Allocate space to keep the blank value and initialize the dimension
-     and size parameters appropriately. */
-  errno=0;
-  col->dsize=malloc(sizeof *col->dsize);
-  if(col->dsize==NULL)
-    error(EXIT_FAILURE, 0, "%zu bytes for `col->dsize' in `txt_read_blank' ",
-          sizeof *col->dsize);
-  col->dsize[0]=col->ndim=col->size=1;
-  col->array=gal_data_malloc_array(col->type, col->size);
-
-  /* Put the blank value in depending on the type.*/
-  switch(col->type)
+  /* Read the blank value as the given type, If successful, then
+     `gal_data_string_to_type) will return 0. In that case, we need to
+     initialize the necessary paramters to read this data structure
+     correctly. */
+  if(gal_data_string_to_type(&(col->array), blank, col->type)==0)
     {
-
-    /* String. */
-    case GAL_DATA_TYPE_STRING:
-      gal_checkset_allocate_copy(blank, col->array);
-      break;
-
-    /* Floating point: Read it as a double or long, then put it in the
-       array. When the conversion can't be done (the string isn't a number
-       for example), then just assume no blank value was given. */
-    case GAL_DATA_TYPE_FLOAT:
-    case GAL_DATA_TYPE_DOUBLE:
-      d=strtod(blank, &tailptr);
-      if(*tailptr!='\0') { free(col->array); col->array=NULL;}
-      else
-        {
-          if(col->type==GAL_DATA_TYPE_FLOAT) *(float *) col->array=d;
-          else                              *(double *) col->array=d;
-        }
-      break;
-
-    /* Integers. */
-    default:
-      L=strtoll(blank, &tailptr, 0);
-      if(*tailptr!='\0') { free(col->array); col->array=NULL; }
-      else
-        switch(col->type)
-          {
-          case GAL_DATA_TYPE_UCHAR:   *(unsigned char *) col->array=L; break;
-          case GAL_DATA_TYPE_CHAR:             *(char *) col->array=L; break;
-          case GAL_DATA_TYPE_USHORT: *(unsigned short *) col->array=L; break;
-          case GAL_DATA_TYPE_SHORT:           *(short *) col->array=L; break;
-          case GAL_DATA_TYPE_UINT:     *(unsigned int *) col->array=L; break;
-          case GAL_DATA_TYPE_INT:               *(int *) col->array=L; break;
-          case GAL_DATA_TYPE_ULONG:   *(unsigned long *) col->array=L; break;
-          case GAL_DATA_TYPE_LONG:             *(long *) col->array=L; break;
-          case GAL_DATA_TYPE_LONGLONG:     *(LONGLONG *) col->array=L; break;
-          default:
-            error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                  "`txt_str_to_blank'", col->type);
-          }
-    }
-
-  /* If the blank value couldn't be read, then set the initialized lengths
-     to zero again, as if this function wasn't called at all. */
-  if(col->array==NULL)
-    {
-      col->ndim=col->size=0;
-      free(col->dsize);
-      col->dsize=NULL;
+      errno=0;
+      col->dsize=malloc(sizeof *col->dsize);
+      if(col->dsize==NULL)
+        error(EXIT_FAILURE, 0, "%zu bytes for `col->dsize' in "
+              "`txt_read_blank' ", sizeof *col->dsize);
+      col->dsize[0]=col->ndim=col->size=1;
     }
 }
 

@@ -23,14 +23,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <gnuastro/fits.h>
+#include <gnuastro/data.h>
 
-#include <commonparams.h>
+#include <options.h>
 
 /* Progarm name macros: */
-#define SPACK           "asttable" /* Subpackage executable name. */
-#define SPACK_NAME      "Table"    /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+#define PROG_EXEC       "asttable" /* Program executable name. */
+#define PROG_NAME       "Table"    /* Program full name.       */
+#define PROG_STRING     PROG_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
 
 
 
@@ -60,7 +60,7 @@ struct tableparams
 {
   /* Other structures: */
   struct uiparams          up;  /* User interface parameters.           */
-  struct gal_commonparams  cp;  /* Common parameters.                   */
+  struct gal_options_common_params cp; /* Common parameters.            */
 
   /* Input */
   struct gal_linkedlist_stll *columns; /* List of given columns.        */
