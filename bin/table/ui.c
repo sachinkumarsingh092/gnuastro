@@ -67,6 +67,20 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /***************       Sanity Check         *******************/
 /**************************************************************/
 void
+fill_params_from_options(struct tableparams *p)
+{
+
+
+  /* Free all the allocated spaces in the option structures. */
+  gal_options_free(options);
+  gal_options_free(gal_commonopts_options);
+}
+
+
+
+
+
+void
 sanitycheck(struct tableparams *p)
 {
   struct uiparams *up=&p->up;
@@ -165,7 +179,7 @@ preparearrays(struct tableparams *p)
         for(i=1;i<=numcols;++i)
           {
             asprintf(&numstr, "%zu", i);
-            gal_linkedlist_add_to_stll(&p->columns, numstr);
+            gal_linkedlist_add_to_stll(&p->columns, numstr, 0);
           }
     }
 
@@ -229,7 +243,10 @@ setparams(int argc, char *argv[], struct tableparams *p)
     error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Read the configuration files. */
-  gal_options_parse_configs(PROG_NAME, options, gal_commonopts_options);
+  gal_options_config_files(PROG_EXEC, options, gal_commonopts_options);
+
+  /* Fill the parameters from the options. */
+  fill_params_from_options(p);
 
   printf("\n--- back in `ui.c' ---\n");
   exit(0);

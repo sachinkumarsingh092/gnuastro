@@ -47,21 +47,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 /***************           Get table information          ***************/
 /************************************************************************/
-/* Status of a line: */
-enum txt_line_stat
-{
-  TXT_LINESTAT_BLANK,
-  TXT_LINESTAT_ISCOMMENT,
-  TXT_LINESTAT_DATAROW,
-};
-
-
-
-
-
 /* Return one of the `txt_line_stat' constant values. */
-static int
-get_line_stat(char *line)
+int
+gal_txt_line_stat(char *line)
 {
   while(*line!='\n')
     {
@@ -71,13 +59,13 @@ get_line_stat(char *line)
         case ' ': case ',': case '\t':
           break;
         case '#':
-          return TXT_LINESTAT_ISCOMMENT;
+          return GAL_TXT_LINESTAT_COMMENT;
         default:
-          return TXT_LINESTAT_DATAROW;
+          return GAL_TXT_LINESTAT_DATAROW;
         }
       ++line;
     }
-  return TXT_LINESTAT_BLANK;
+  return GAL_TXT_LINESTAT_BLANK;
 }
 
 
@@ -351,7 +339,7 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
       col=*colsll;
       while(col!=NULL)
         {
-          if(col->status > n)   /* Column has no data (was only in comments) */
+          if(col->status > n) /* Column has no data (was only in comments) */
             {
               /* This column has to be removed/freed. But we have to make
                  some corrections before freeing it:
@@ -371,7 +359,7 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
               gal_data_free(col, 0);
               col=tmp;
             }
-          else                  /* Column has data.                          */
+          else                /* Column has data.                          */
             {
               prev=col;
               col=col->next;
@@ -470,22 +458,25 @@ gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows)
      uncommented line. */
   *numrows=0;
   while( getline(&line, &linelen, fp) != -1 )
-    {
-      /* Line is a comment, see if it has formatted information. */
-      if( get_line_stat(line) == TXT_LINESTAT_ISCOMMENT )
+    switch( gal_txt_line_stat(line) )
+      {
+      case GAL_TXT_LINESTAT_COMMENT:
+        /* Line is a comment, see if it has formatted information. */
         txt_info_from_comment(line, &colsll);
+        break;
 
-      /* Line is actual data, use it to fill in the gaps.  */
-      if( get_line_stat(line) == TXT_LINESTAT_DATAROW )
-        {
-          ++(*numrows);
-          if(firstlinedone==0)
-            {
-              firstlinedone=1;
-              txt_info_from_first_row(line, &colsll);
-            }
-        }
-    }
+        /* Line is actual data, use it to fill in the gaps.  */
+      case GAL_TXT_LINESTAT_DATAROW:
+        ++(*numrows);
+        if(firstlinedone==0)
+          {
+            firstlinedone=1;
+            txt_info_from_first_row(line, &colsll);
+          }
+        break;
+
+        /* We also have the case of GAL_TXT_LINESTAT_BLANK */
+      }
 
 
   /* If there were rows in the file, then write the unorganized gathered
@@ -791,7 +782,7 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
   while( getline(&line, &linelen, fp) != -1 )
     {
       ++lineno;
-      if( get_line_stat(line) == TXT_LINESTAT_DATAROW )
+      if( gal_txt_line_stat(line) == GAL_TXT_LINESTAT_DATAROW )
         txt_fill_columns(line, tokens, maxcolnum, colinfo, out, rowind++,
                          lineno, filename);
     }

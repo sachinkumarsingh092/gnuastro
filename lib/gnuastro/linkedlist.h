@@ -122,8 +122,8 @@ struct gal_linkedlist_stll
 };
 
 void
-gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list,
-                           char *value);
+gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value,
+                           int allocate);
 
 void
 gal_linkedlist_pop_from_stll(struct gal_linkedlist_stll **list,

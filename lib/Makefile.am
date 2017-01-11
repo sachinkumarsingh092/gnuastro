@@ -25,7 +25,10 @@
 ## Necessary flags. NOTE: $(top_srcdir)/bootstrapped/lib is only necessary
 ## for internally compiled utilities and libraries. It must not be included
 ## during the tests since the bootstrapped libraries are not installed.
-AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
+##
+## The SYSCONFIG_DIR is necessary in `options.c'
+AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib      \
+	      -DSYSCONFIG_DIR=\"$(sysconfdir)\"
 
 
 

@@ -107,7 +107,7 @@ AC_DEFINE([IN_GNUASTRO_BUILD], [1], [In building, not usage])
 # layers of quotations there.
 CFLAGS="-Wall -O3 $CFLAGS"
 LDFLAGS="-L\$(top_builddir)/lib $LDFLAGS"
-CPPFLAGS="-DSYSCONFIG_DIR=\\\"$sysconfdir\\\" -I\$(top_srcdir)/lib $CPPFLAGS"
+CPPFLAGS="-I\$(top_srcdir)/lib $CPPFLAGS"
 
 
 
@@ -248,10 +248,7 @@ AM_CONDITIONAL([COND_GNULIBCHECK], [test $enable_gnulibcheck = yes])
 
 # Set the one general parameters:
 AC_DEFINE_UNQUOTED([CONF_POSTFIX], [".conf"], [Configuration file post fix.])
-AC_DEFINE_UNQUOTED([CURDIRCONFIG_DIR], [".AC_PACKAGE_TARNAME/"],
-                   [Local data dir.])
-AC_DEFINE_UNQUOTED([USERCONFIG_DIR], [".local/etc/"],
-                   [User data dir.])
+AC_DEFINE_UNQUOTED([USERCONFIG_DIR], [".local/etc"], [User data dir.])
 AC_DEFINE_UNQUOTED([CONF_SHOWFMT], [" %-20s"],
                    [Configuration file name format.])
 

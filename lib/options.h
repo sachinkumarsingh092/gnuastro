@@ -83,6 +83,8 @@ gal_options_is_last(struct argp_option *option);
 int
 gal_options_is_category_title(struct argp_option *option);
 
+void
+gal_options_free(struct argp_option *options);
 
 
 
@@ -104,8 +106,8 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 /************            Configuration files            ***************/
 /**********************************************************************/
 void
-gal_options_parse_configs(char *progname, struct argp_option *progopts,
-                          struct argp_option *commopts);
+gal_options_config_files(char *progname, struct argp_option *poptions,
+                         struct argp_option *coptions);
 
 
 #endif

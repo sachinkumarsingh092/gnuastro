@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/linkedlist.h>
 
-
+#include <checkset.h>
 
 
 
@@ -306,7 +306,8 @@ gal_linkedlist_free_tdll(struct gal_linkedlist_tdll *list)
  *****************           string          ********************
  ****************************************************************/
 void
-gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value)
+gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value,
+                           int allocate)
 {
   struct gal_linkedlist_stll *newnode;
 
@@ -316,7 +317,11 @@ gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value)
     error(EXIT_FAILURE, errno,
           "linkedlist: New element in gal_linkedlist_stll");
 
-  newnode->v=value;
+  if(allocate)
+    gal_checkset_allocate_copy(value, &newnode->v);
+  else
+    newnode->v=value;
+
   newnode->next=*list;
   *list=newnode;
 }
@@ -345,12 +350,16 @@ gal_linkedlist_reverse_stll(struct gal_linkedlist_stll **list)
   char *thisstring;
   struct gal_linkedlist_stll *correctorder=NULL;
 
-  while(*list!=NULL)
+  /* Only do the reversal if there is more than one element. */
+  if( *list && (*list)->next )
     {
-      gal_linkedlist_pop_from_stll(list, &thisstring);
-      gal_linkedlist_add_to_stll(&correctorder, thisstring);
+      while(*list!=NULL)
+        {
+          gal_linkedlist_pop_from_stll(list, &thisstring);
+          gal_linkedlist_add_to_stll(&correctorder, thisstring, 1);
+        }
+      *list=correctorder;
     }
-  *list=correctorder;
 }
 
 
@@ -454,12 +463,15 @@ gal_linkedlist_reverse_sll(struct gal_linkedlist_sll **list)
   size_t thisnum;
   struct gal_linkedlist_sll *correctorder=NULL;
 
-  while(*list!=NULL)
+  if( *list && (*list)->next )
     {
-      gal_linkedlist_pop_from_sll(list, &thisnum);
-      gal_linkedlist_add_to_sll(&correctorder, thisnum);
+      while(*list!=NULL)
+        {
+          gal_linkedlist_pop_from_sll(list, &thisnum);
+          gal_linkedlist_add_to_sll(&correctorder, thisnum);
+        }
+      *list=correctorder;
     }
-  *list=correctorder;
 }
 
 

@@ -2168,7 +2168,8 @@ gal_data_string_to_type(void **out, char *string, int type)
 
     /* Linked lists, currently only string linked lists. */
     case GAL_DATA_TYPE_STRLL:
-      gal_linkedlist_add_to_stll( (struct gal_linkedlist_stll **)out, string);
+      gal_linkedlist_add_to_stll( (struct gal_linkedlist_stll **)out,
+                                  string, 1);
       break;
 
     /* String, just allocate and copy the string and keep its pointer in

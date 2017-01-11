@@ -96,7 +96,7 @@ struct argp_option gal_commonopts_options[] =
       0,
       0,
       "Only report errors, remain quiet about steps.",
-      -1,                       /* Operating mode. */
+      -1,
       NULL, GAL_OPTIONS_NO_ARG_TYPE
     },
     {
@@ -105,7 +105,7 @@ struct argp_option gal_commonopts_options[] =
       "INT",
       0,
       "Number of CPU threads to use.",
-      -1,                       /* Operating mode. */
+      -1,
       NULL, GAL_DATA_TYPE_ULONG
     },
     {
@@ -114,7 +114,7 @@ struct argp_option gal_commonopts_options[] =
       "INT",
       0,
       "Minimum no. bytes to map arrays to hdd/ssd.",
-      -1,                       /* Operating mode. */
+      -1,
       NULL, GAL_DATA_TYPE_ULONG
     },
     {
@@ -123,7 +123,7 @@ struct argp_option gal_commonopts_options[] =
       0,
       0,
       "No log file for programs which make one.",
-      -1,                       /* Operating mode. */
+      -1,
       NULL, GAL_OPTIONS_NO_ARG_TYPE
     },
 
@@ -136,7 +136,7 @@ struct argp_option gal_commonopts_options[] =
       0,
       0,
       "BibTeX citation for this program.",
-      -1,                       /* Operating mode. */
+      -1,
       NULL, GAL_OPTIONS_NO_ARG_TYPE
     },
     {
@@ -147,6 +147,15 @@ struct argp_option gal_commonopts_options[] =
       "Print parameter values to be used and abort.",
       -1,
       NULL, GAL_OPTIONS_NO_ARG_TYPE
+    },
+    {
+      "config",
+      1005,
+      "STR",
+      0,
+      "Read file STR before default configuration files.",
+      -1,
+      NULL, GAL_DATA_TYPE_STRLL
     },
     {
       "setdirconf",
@@ -167,12 +176,12 @@ struct argp_option gal_commonopts_options[] =
       NULL, GAL_OPTIONS_NO_ARG_TYPE
     },
     {
-      "onlydirconf",
+      "lastconfig",
       1001,
       0,
       0,
-      "Only read current directory configuration file.",
-      -1,                       /* Operating mode. */
+      "Do not parse any more configuration files.",
+      -1,
       NULL, GAL_OPTIONS_NO_ARG_TYPE
     },
     {
@@ -180,8 +189,8 @@ struct argp_option gal_commonopts_options[] =
       1002,
       "STR",
       0,
-      "Only run if the program version is this.",
-      -1,                       /* Operating mode. */
+      "Only run if the program version is STR.",
+      -1,
       NULL, GAL_DATA_TYPE_STRING
     },
 

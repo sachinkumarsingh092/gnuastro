@@ -64,7 +64,19 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_TXT_MAX_FMT_LENGTH 20
 
 
+/* Status of a line: */
+enum gal_txt_line_status_enums
+{
+  GAL_TXT_LINESTAT_BLANK,
+  GAL_TXT_LINESTAT_COMMENT,
+  GAL_TXT_LINESTAT_DATAROW,
+};
+
+
 /* Functions */
+int
+gal_txt_line_stat(char *line);
+
 gal_data_t *
 gal_txt_table_info(char *filename, size_t *numcols, size_t *numrows);
 
