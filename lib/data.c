@@ -835,7 +835,6 @@ gal_data_free(gal_data_t *data, int only_contents)
   if(data->wcs)     wcsfree(data->wcs);
   if(data->comment) free(data->comment);
 
-
   /* If the data type is string, then each element in the array is actually
      a pointer to the array of characters, so free them before freeing the
      actual array. */
@@ -857,7 +856,6 @@ gal_data_free(gal_data_t *data, int only_contents)
     }
   else
     if(data->array) free(data->array);
-
 
   /* Finally, free the actual data structure. */
   if(only_contents==0)
@@ -2155,7 +2153,7 @@ gal_data_string_to_type(void **out, char *string, int type)
   /* If the output is NULL, then allocate the necessary space if we are not
      dealing with a linked list. In a linked list, a NULL value is
      meaningful (it is the end of the list). */
-  if(*out==NULL && gal_data_is_linked_list(type)==0)
+  if( *out==NULL && !gal_data_is_linked_list(type) )
     {
       allocated=1;
       *out=gal_data_malloc_array(type, 1);
@@ -2231,6 +2229,9 @@ gal_data_string_to_type(void **out, char *string, int type)
   /* If reading was unsuccessful, then free the space if it was allocated,
      then return the status. */
   if(status && allocated)
-    free(value);
+    {
+      free(*out);
+      *out=NULL;
+    }
   return status;
 }

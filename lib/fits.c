@@ -1633,7 +1633,9 @@ remove_trailing_space(char *str)
   size_t i;
 
   /* Start from the second last character (the last is a single quote) and
-     go down until you hit a non-space character. */
+     go down until you hit a non-space character. This will also work when
+     there is no space characters between the last character of the value
+     and ending single-quote: it will be set to '\0' after this loop. */
   for(i=strlen(str)-2;i>0;--i)
     if(str[i]!=' ')
       break;
@@ -1795,7 +1797,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
   long long *tzero;
   gal_data_t *allcols;
   int status=0, datatype, *tscal;
-  char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE];
+  char keyname[FLEN_KEYWORD]="XXXXXXXXXXXXX", value[FLEN_VALUE], *val;
 
   /* Open the FITS file and get the basic information. */
   fptr=gal_fits_read_hdu(filename, hdu, 1);
@@ -1831,6 +1833,17 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
       /* Read the next keyword. */
       fits_read_keyn(fptr, i, keyname, value, NULL, &status);
 
+      /* For string valued keywords, CFITSIO's function above, keeps the
+         single quotes around the value string, one before and one
+         after. The latter single-quote will be automatically be removed
+         with the `remove_trailign_space' function.*/
+      if(value[0]=='\'')
+        {
+          val=value+1;
+          remove_trailing_space(val);
+        }
+      else val=value;
+
       /* COLUMN DATA TYPE. According the the FITS standard, the value of
          TFORM is most generally in this format: `rTa'. `T' is actually a
          code of the datatype. `r' is the `repeat' counter and `a' is
@@ -1849,29 +1862,28 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)     /* Counting from zero was corrected above. */
             {
-              /* Remove the ending trailing space and quotation sign. */
-              remove_trailing_space(value);
+              /* The FITS standard's value to this option for FITS ASCII
+                 and binary files differ. */
               if(*tabletype==GAL_TABLE_TYPE_AFITS)
-                fits_ascii_tform(&value[1], &datatype, NULL, NULL, &status);
+                fits_ascii_tform(val, &datatype, NULL, NULL, &status);
               else
-                fits_binary_tform(&value[1], &datatype, &repeat, NULL,
-                                  &status);
+                fits_binary_tform(val, &datatype, &repeat, NULL, &status);
 
               /* Write the type into the data structure. */
               allcols[index].type=gal_fits_datatype_to_type(datatype);
 
               /* If we are dealing with a string type, we need to know the
-                 number of bytes in both cases. */
+                 number of bytes in both cases for printing later. */
               if( allcols[index].type==GAL_DATA_TYPE_STRING )
                 {
                   if(*tabletype==GAL_TABLE_TYPE_AFITS)
                     {
-                      repeat=strtol(&value[2], &tailptr, 0);
+                      repeat=strtol(val+1, &tailptr, 0);
                       if(*tailptr!='\0')
                         error(EXIT_FAILURE, 0, "%s (hdu: %s): the value to "
                               "keyword `%s' (`%s') is not in `Aw' format "
                               "(for strings) as required by the FITS "
-                              "standard", filename, hdu, keyname, &value[1]);
+                              "standard", filename, hdu, keyname, val);
                     }
                   allcols[index].disp_width=repeat;
                 }
@@ -1884,11 +1896,11 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
             {
-              tscal[index]=strtol(value, &tailptr, 0);
+              tscal[index]=strtol(val, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
                       "(`%s') couldn't be read as a number", filename, hdu,
-                      keyname, value);
+                      keyname, val);
             }
         }
 
@@ -1898,11 +1910,11 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
             {
-              tzero[index]=strtoll(value, &tailptr, 0);
+              tzero[index]=strtoll(val, &tailptr, 0);
               if(*tailptr!='\0')
                 error(EXIT_FAILURE, 0, "%s (hdu: %s): value to %s keyword "
                       "(`%s') couldn't be read as a number", filename, hdu,
-                      keyname, value);
+                      keyname, val);
             }
         }
 
@@ -1915,19 +1927,15 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
         {
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            {
-              remove_trailing_space(value);
-              gal_checkset_allocate_copy(&value[1], &allcols[index].name);
-            }
+            gal_checkset_allocate_copy(val, &allcols[index].name);
         }
 
       /* COLUMN UNITS. */
       else if(strncmp(keyname, "TUNIT", 5)==0)
         {
-          remove_trailing_space(value);
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            gal_checkset_allocate_copy(&value[1], &allcols[index].unit);
+            gal_checkset_allocate_copy(val, &allcols[index].unit);
         }
 
       /* COLUMN COMMENTS */
@@ -1935,10 +1943,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
         {
           index = strtoul(&keyname[5], &tailptr, 10) - 1;
           if(index<tfields)
-            {
-              remove_trailing_space(value);
-              gal_checkset_allocate_copy(&value[1], &allcols[index].comment);
-            }
+            gal_checkset_allocate_copy(val, &allcols[index].comment);
         }
 
       /* COLUMN BLANK VALUE. Note that to interpret the blank value the
@@ -1956,10 +1961,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                         "blank value cannot be deduced", filename, hdu,
                         keyname, index+1);
               else
-                {
-                  remove_trailing_space(value);
-                  gal_table_read_blank(&allcols[index], value);
-                }
+                gal_table_read_blank(&allcols[index], val);
             }
         }
 

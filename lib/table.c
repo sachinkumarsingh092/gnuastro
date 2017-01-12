@@ -360,11 +360,11 @@ gal_table_read_blank(gal_data_t *col, char *blank)
           "to the array in the data structure passed "
           "`to gal_table_read_blank' must be zero");
 
-  /* Read the blank value as the given type, If successful, then
-     `gal_data_string_to_type) will return 0. In that case, we need to
+  /* Read the blank value as the given type. If successful, then
+     `gal_data_string_to_type' will return 0. In that case, we need to
      initialize the necessary paramters to read this data structure
      correctly. */
-  if(gal_data_string_to_type(&(col->array), blank, col->type)==0)
+  if( !gal_data_string_to_type(&(col->array), blank, col->type) )
     {
       errno=0;
       col->dsize=malloc(sizeof *col->dsize);

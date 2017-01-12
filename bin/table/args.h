@@ -81,10 +81,6 @@ enum option_keys_enum
   /* Only with long version. */
 };
 
-
-
-
-
 /* Array of acceptable options. */
 struct argp_option options[] =
   {

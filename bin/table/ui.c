@@ -77,8 +77,23 @@ ui_option_is_mandatory(char *name)
 
 
 
+/* This function is in charge of reading the option values from the arrays
+   of the `argp_option' structure and put them into each program's own data
+   structure.
+
+   IMPORTANT: DO NOT USE THE SAME POINTERS. When the types are pointers
+   (like stirings or linked lists), do not use the same pointers, allocate
+   and keep a new copy. This is because the printing of options will take
+   place after this sanity check, so users can be sure that the values that
+   are printed and used as configuration files later have no non-sane
+   values. Thus the poitners in `argp_option' will be freed after printing,
+   but the program's pointers must stay to the end.
+
+   After setting all the values, do other forms of sanity checks that
+   involve more than one option.
+*/
 void
-fill_params_from_options(struct tableparams *p)
+ui_read_check_options(struct tableparams *p)
 {
   size_t i;
 
@@ -136,17 +151,20 @@ fill_params_from_options(struct tableparams *p)
           error(EXIT_FAILURE, 0, "option key %d not recognized in "
                 "`fill_params_from_options'", options[i].key);
         }
-}
 
+  /* Make sure an input file name was given and if it was a FITS file, that
+     a HDU is also given. */
+  if(p->up.filename)
+    {
+      if( gal_fits_name_is_fits(p->up.filename) && p->cp.hdu==NULL )
+        error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
+              "file, a HDU must also be specified, you can use the `--hdu' "
+              "(`-h') option and give it the HDU number (starting from "
+              "zero), extension name, or anything acceptable by CFITSIO");
 
-
-
-
-void
-sanitycheck(struct tableparams *p)
-{
-
-
+    }
+  else
+    error(EXIT_FAILURE, 0, "no input file is specified");
 }
 
 
@@ -172,7 +190,7 @@ sanitycheck(struct tableparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 void
-preparearrays(struct tableparams *p)
+ui_preparations(struct tableparams *p)
 {
   char *numstr;
   int tabletype;
@@ -191,6 +209,7 @@ preparearrays(struct tableparams *p)
       if(allcols==NULL)
         error(EXIT_FAILURE, 0, "%s: no usable data rows", p->up.filename);
 
+
       /* If the user just wanted information, then print it. */
       if(p->information)
         {
@@ -206,13 +225,17 @@ preparearrays(struct tableparams *p)
           gal_table_print_info(allcols, numcols, numrows);
         }
 
+
       /* Free the information from all the columns. */
       for(i=0;i<numcols;++i)
         gal_data_free(&allcols[i], 1);
       free(allcols);
 
-      /* Add the number of columns to the list if the user wanted to print
-         the columns (didn't just want their information. */
+
+      /* If the user just wanted information, then free the allocated
+         spaces and exit. Otherwise, add the number of columns to the list
+         if the user wanted to print the columns (didn't just want their
+         information. */
       if(p->information)
         {
           freeandreport(p);
@@ -289,12 +312,8 @@ setparams(int argc, char *argv[], struct tableparams *p)
   gal_options_config_files(PROG_EXEC, PROG_NAME, options,
                            gal_commonopts_options, &p->cp);
 
-  /* Fill the parameters from the options. */
-  fill_params_from_options(p);
-
-
-  /* Do a sanity check. */
-  sanitycheck(p);
+  /* Fill the parameters from the options and check their values. */
+  ui_read_check_options(p);
 
   /* Print the necessary information if asked. Note that this needs to be
      done after the sanity check so un-sane values are not printed in the
@@ -303,7 +322,7 @@ setparams(int argc, char *argv[], struct tableparams *p)
                           gal_commonopts_options);
 
   /* Read/allocate all the necessary starting arrays */
-  preparearrays(p);
+  ui_preparations(p);
 
   /* Free all the allocated spaces in the option structures. */
   gal_options_free(options);
