@@ -306,8 +306,8 @@ gal_linkedlist_free_tdll(struct gal_linkedlist_tdll *list)
  *****************           string          ********************
  ****************************************************************/
 void
-gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value,
-                           int allocate)
+gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list,
+                           char *value, int allocate)
 {
   struct gal_linkedlist_stll *newnode;
 
@@ -324,6 +324,23 @@ gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value,
 
   newnode->next=*list;
   *list=newnode;
+}
+
+
+
+
+
+void
+gal_linked_list_copy_stll(struct gal_linkedlist_stll *from,
+                          struct gal_linkedlist_stll **to)
+{
+  struct gal_linkedlist_stll *tmp, *out=NULL;
+
+  for(tmp=from; tmp!=NULL; tmp=tmp->next)
+    gal_linkedlist_add_to_stll(&out, tmp->v, 1);
+
+  gal_linkedlist_reverse_stll(&out);
+  *to=out;
 }
 
 
@@ -547,6 +564,91 @@ gal_linkedlist_free_sll(struct gal_linkedlist_sll *list)
       free(tmp);
       tmp=ttmp;
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/****************************************************************
+ *****************            int            ********************
+ ****************************************************************/
+void
+gal_linkedlist_add_to_ill(struct gal_linkedlist_ill **list, int value)
+{
+  struct gal_linkedlist_ill *newnode;
+
+  errno=0;
+  newnode=malloc(sizeof *newnode);
+  if(newnode==NULL)
+    error(EXIT_FAILURE, errno,
+          "linkedlist: New element in gal_linkedlist_ill");
+
+  newnode->v=value;
+  newnode->next=*list;
+  *list=newnode;
+}
+
+
+
+
+
+void
+gal_linkedlist_pop_from_ill(struct gal_linkedlist_ill **list, int *value)
+{
+  struct gal_linkedlist_ill *tmp;
+  tmp=*list;
+  *value=tmp->v;
+  *list=tmp->next;
+  free(tmp);
+}
+
+
+
+
+
+void
+gal_linkedlist_reverse_ill(struct gal_linkedlist_ill **list)
+{
+  int thisnum;
+  struct gal_linkedlist_ill *correctorder=NULL;
+
+  if( *list && (*list)->next )
+    {
+      while(*list!=NULL)
+        {
+          gal_linkedlist_pop_from_ill(list, &thisnum);
+          gal_linkedlist_add_to_ill(&correctorder, thisnum);
+        }
+      *list=correctorder;
+    }
+}
+
+
+
+
+
+void
+gal_linkedlist_print_ill(struct gal_linkedlist_ill *list)
+{
+  struct gal_linkedlist_ill *tmp;
+  for(tmp=list; tmp!=NULL; tmp=tmp->next)
+    printf("%d\n", tmp->v);
 }
 
 

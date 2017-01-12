@@ -32,7 +32,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/linkedlist.h>
 
 #include <options.h>
-
+#include <checkset.h>
 
 
 
@@ -104,6 +104,105 @@ gal_options_free(struct argp_option *options)
 
 
 /**********************************************************************/
+/************              Option actions               ***************/
+/**********************************************************************/
+
+static void
+options_check_version(char *version_string)
+{
+  if( strcmp(version_string, PACKAGE_VERSION) )
+    error(EXIT_FAILURE, 0, "version mis-match: you are running GNU "
+          "Astronomy Utilities version %s, but this program was configured "
+          "to run with version %s (value to the `onlyversion' option, "
+          "either in a configuration file or on the command-line). This was "
+          "probably done for reproducibility. Therefore, removing, or "
+          "changing, the option value might produce errors or unexpected "
+          "results. It is hence strongly advised to build GNU Astronomy "
+          "Utilities version %s and re-run this command/script",
+          PACKAGE_VERSION, version_string, version_string);
+}
+
+
+
+
+
+static void
+options_print_citation_exit(char *prog_name, char *prog_bibtex)
+{
+  char *gnuastro_bibtex=
+    "Gnuastro package/infrastructure\n"
+    "-------------------------------\n"
+    "  @ARTICLE{noisechisel-gnuastro,\n"
+    "     author = {{Akhlaghi}, M. and {Ichikawa}, T.},\n"
+    "      title = \"{Noise-based Detection and Segmentation of Nebulous "
+    "Objects}\",\n"
+    "    journal = {\\apjs},\n"
+    "  archivePrefix = \"arXiv\",\n"
+    "     eprint = {1505.01664},\n"
+    "   primaryClass = \"astro-ph.IM\",\n"
+    "   keywords = {galaxies: irregular, galaxies: photometry, "
+    "galaxies: structure, methods: data analysis, "
+    "techniques: image processing, techniques: photometric},\n"
+    "       year = 2015,\n"
+    "      month = sep,\n"
+    "     volume = 220,\n"
+    "        eid = {1},\n"
+    "      pages = {1},\n"
+    "        doi = {10.1088/0067-0049/220/1/1},\n"
+    "     adsurl = {http://adsabs.harvard.edu/abs/2015ApJS..220....1A},\n"
+    "    adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n"
+    "  }";
+
+
+  /* Print the statements. */
+  printf("\nThank you for using %s (%s) %s.\n\n", prog_name, PACKAGE_NAME,
+         PACKAGE_VERSION);
+  printf("Citations are vital for the continued work on Gnuastro.\n\n"
+         "Please cite these BibTeX record(s) in your paper(s).\n\n%s\n\n",
+         gnuastro_bibtex);
+
+  /* Only print the citation for the program if one exists. */
+  if(prog_bibtex[0]!='\0') printf("%s\n\n", prog_bibtex);
+
+
+  printf("                                               ,\n"
+         "                                              {|'--.\n"
+         "                                             {{\\    \\\n"
+         "      Many thanks from all                   |/`'--./=.\n"
+         "      Gnuastro developers!                   `\\.---' `\\\\\n"
+         "                                                  |\\  ||\n"
+         "                                                  | |//\n"
+         "                                                   \\//_/|\n"
+         "                                                   //\\__/\n"
+         "                                                  //\n"
+         "                   (http://www.chris.com/ascii/) |/\n");
+
+
+
+  /* Exit the program. */
+  exit(EXIT_SUCCESS);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
 /************            Command-line options           ***************/
 /**********************************************************************/
 /* Set the value given to the command-line, where we have the integer `key'
@@ -123,6 +222,13 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options)
       /* Check if the key corresponds to this option. */
       if(options[i].key==key)
         {
+          /* If this is the only version option, we need to check and
+             (possibly) abort immediately, because the other options might
+             not exist in later versions and we don't want to confuse the
+             user with an unknown option error. */
+          if( options[i].key == GAL_OPTIONS_ONLYVERSION_KEY )
+              options_check_version(arg);
+
           /* When options are read from keys, they are read from the
              command-line. On the commandline, the last invokation of the
              option is important. Especially in contexts like scripts, this
@@ -269,7 +375,7 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state)
 /* Read the option and the argument from the line and return.*/
 static void
 options_read_name_arg(char *line, char *filename, size_t lineno,
-                        char **name, char **arg)
+                      char **name, char **arg)
 {
   int notyetfinished=1, inword=0, inquote=0;
 
@@ -370,6 +476,14 @@ options_set_from_name(char *name, char *arg, struct argp_option *options,
           if(options[i].value && !gal_data_is_linked_list(options[i].type))
             return 0;
 
+          /* If this is the `onlyversion' option, we need to check and
+             (possibly) abort immediately. The other options might not
+             exist in the running version and we don't want to confuse the
+             user with an unknown option error (while it is present in the
+             proper version). */
+          if( options[i].key == GAL_OPTIONS_ONLYVERSION_KEY )
+              options_check_version(arg);
+
           /* For strings, `gal_data_string_to_type' is going to return an
              allocated pointer to an allocated string (`char **'). In this
              context, we are just dealing with one string, and arrays of
@@ -422,7 +536,7 @@ options_set_from_name(char *name, char *arg, struct argp_option *options,
 
 static void
 options_parse_file(char *filename,  struct argp_option *poptions,
-                   struct argp_option *coptions)
+                   struct argp_option *coptions, int enoent_abort)
 {
   FILE *fp;
   char *line, *name, *arg;
@@ -435,7 +549,7 @@ options_parse_file(char *filename,  struct argp_option *poptions,
   fp=fopen(filename, "r");
   if(fp==NULL)
     {
-      if(errno==ENOENT)
+      if(errno==ENOENT && enoent_abort==0)
         return;
       else
         error(EXIT_FAILURE, errno, "%s: to read as a configuration file",
@@ -515,9 +629,10 @@ static void
 gal_options_parse_config_files(char *progexec, struct argp_option *poptions,
                                struct argp_option *coptions)
 {
+  char *home;
   char *filename;
-  size_t i, last_config_index;
   struct gal_linkedlist_stll *tmp;
+  size_t i, last_config_index=-1, config_index=-1;
 
 
 
@@ -531,98 +646,439 @@ gal_options_parse_config_files(char *progexec, struct argp_option *poptions,
 
 
 
-  /* Set the index of the `lastconfig' option. It is important to check
-     this option after every configuration file. Thus, to avoid having to
-     loop through all the options on every check, we'll find the index and
-     just check it each time.
+  /* Things to do before starting to go into the configuration files.
 
-     Although very unlikely, it might happen that the user calls this on
-     the command-line (to avoid any configuration files). So, also check if
-     we should continue with this function or not. */
-  for(i=0; gal_options_is_last(&coptions[i])==0; ++i)
-    if(!strcmp(coptions[i].name, "lastconfig"))
-      {
-        last_config_index=i;
-        if(OPTIONS_THIS_IS_LASTCONFIG) return;
-        break;
-      }
+     - Get the index of the `lastconfig' option in the array, since it
+       should be checked multiple times during this function.
 
+     - Parse any specific configuration files that the user might have
+       specified before going over the standard ones.  */
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    {
+      if( coptions[i].key == GAL_OPTIONS_LASTCONFIG_KEY )
+        {
+          /* Index of `lastconfig' in the options array for later. */
+          last_config_index=i;
 
+          /* Although very unlikely, it might happen that the user calls
+             this on the command-line (to avoid any configuration
+             files). So, also check if we should continue with this
+             function or not. */
+          if(OPTIONS_THIS_IS_LASTCONFIG) return;
+        }
 
-  /* Before doing anything, see if the user specified any configuration
-     files to parse before the standard ones. */
-  for(i=0; gal_options_is_last(&coptions[i])==0; ++i)
-    if(!strcmp(coptions[i].name, "config"))
-      {
-        /* When more than one configuration file is given, reverse the list
-           so it comes into the same order that the user specified on the
-           command-line. */
-        gal_linkedlist_reverse_stll(
-                (struct gal_linkedlist_stll **)(&coptions[i].value) );
+      else if( coptions[i].key == GAL_OPTIONS_CONFIG_KEY )
+        {
+          /* Index of `config' in the options array for later. */
+          config_index=i;
 
-        /* Go through all the configuration files and fill in the values. */
-        for(tmp=coptions[i].value; tmp!=NULL; tmp=tmp->next)
-          {
-            options_parse_file(tmp->v, poptions, coptions);
-            if( OPTIONS_THIS_IS_LASTCONFIG ) return;
-          }
-        break;
-      }
+          /* Reverse the linked list so the configuration files are in the
+             same order that the user specified on the command-line. */
+          gal_linkedlist_reverse_stll(
+              (struct gal_linkedlist_stll **)(&coptions[i].value) );
 
+          /* Go through the configuration files and fill in the values.
+
+             Note that if there are any other calls to the `config' option
+             they will be ignored. This is because they will be added to
+             the top of the list which is no longer parsed, */
+          for(tmp=coptions[i].value; tmp!=NULL; tmp=tmp->next)
+            {
+              options_parse_file(tmp->v, poptions, coptions, 1);
+              if( OPTIONS_THIS_IS_LASTCONFIG ) return;
+            }
+        }
+    }
+  if( last_config_index == -1 || config_index == -1 )
+    error(EXIT_FAILURE, 0, "a bug! The common options array doesn't "
+          "contain an entry for the `lastconfig' or `config' options. "
+          "Please contact us at %s so we can address the problem",
+          PACKAGE_BUGREPORT);
 
 
   /* The program's current directory configuration file. */
   asprintf(&filename, ".%s/%s.conf", PACKAGE, progexec);
-  options_parse_file(filename, poptions, coptions);
+  options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
 
   /* General Gnuastro configuration file. */
   asprintf(&filename, ".%s/%s.conf", PACKAGE, PACKAGE);
-  printf("%s\n", filename);
-  options_parse_file(filename, poptions, coptions);
+  options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
 
-  /* User level configuration files. */
-  asprintf(&filename, "%s/%s.conf", USERCONFIG_DIR, progexec);
-  printf("%s\n", filename);
-  options_parse_file(filename, poptions, coptions);
+  /* Read the home environment variable. */
+  home=getenv("HOME");
+  if(home==NULL)
+    error(EXIT_FAILURE, 0, "the HOME environment variable "
+          "is not defined");
+
+  /* User wide configuration files. */
+  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, progexec);
+  options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
 
-  /* User level general Gnuastro configuration file. */
-  asprintf(&filename, "%s/%s.conf", USERCONFIG_DIR, PACKAGE);
-  printf("%s\n", filename);
-  options_parse_file(filename, poptions, coptions);
+  /* User wide general Gnuastro configuration file. */
+  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, PACKAGE);
+  options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
 
-  /* User level configuration files. */
+  /* System wide configuration files. */
   asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, progexec);
-  printf("%s\n", filename);
-  options_parse_file(filename, poptions, coptions);
+  options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
 
-  /* User level general Gnuastro configuration file. */
+  /* System wide general Gnuastro configuration file. */
   asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, PACKAGE);
-  printf("%s\n", filename);
-  options_parse_file(filename, poptions, coptions);
+  options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
+
+
+
+  /* Free the config option's (possible) list of file names since it is no
+     longer needed. */
+  gal_linkedlist_free_stll(coptions[last_config_index].value, 1);
 }
 
 
 
 
 
-void
-gal_options_config_files(char *progexec, struct argp_option *poptions,
-                         struct argp_option *coptions)
+static void
+options_reverse_lists(struct argp_option *options)
 {
-  /* Parse all the configuration files. */
-  gal_options_parse_config_files(progexec, poptions, coptions);
+  size_t i;
 
-  /* Do the necessary checks (printing, saving and etc). */
+  for(i=0; !gal_options_is_last(&options[i]); ++i)
+    if(options[i].value && gal_data_is_linked_list(options[i].type) )
+      switch(options[i].type)
+        {
+        case GAL_DATA_TYPE_STRLL:
+          gal_linkedlist_reverse_stll(
+                 (struct gal_linkedlist_stll **)(&options[i].value) );
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "type code %d isn't recognized as a "
+                "linked list in `options_reverse_lists'", options[i].type);
+        }
+}
+
+
+
+
+
+
+void
+gal_options_config_files(char *prog_exec, char *prog_name,
+                         struct argp_option *poptions,
+                         struct argp_option *coptions,
+                         struct gal_options_common_params *cp)
+{
+  size_t i;
+
+  /* Parse all the configuration files. */
+  gal_options_parse_config_files(prog_exec, poptions, coptions);
+
+
+  /* Reverse the order of all linked list type options so the popping order
+     is the same as the user's input order. We need to do this here because
+     when printing those options, their order matters.*/
+  options_reverse_lists(poptions);
+  options_reverse_lists(coptions);
+
+
+  /* Put the common option values into the structure. */
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    if( coptions[i].key && coptions[i].name )
+      switch(coptions[i].key)
+        {
+        case GAL_OPTIONS_HDU_KEY:
+          gal_checkset_allocate_copy(coptions[i].value, &cp->hdu);
+          break;
+
+        case GAL_OPTIONS_OUTPUT_KEY:
+          gal_checkset_allocate_copy(coptions[i].value, &cp->output);
+          break;
+
+        case GAL_OPTIONS_DONTDELETE_KEY:
+          if(coptions[i].value)
+            cp->dontdelete=*(unsigned char *)coptions[i].value;
+          break;
+
+        case GAL_OPTIONS_KEEPINPUTDIR_KEY:
+          if(coptions[i].value)
+            cp->keepinputdir=*(unsigned char *)coptions[i].value;
+          break;
+
+        case GAL_OPTIONS_QUIET_KEY:
+          if(coptions[i].value)
+            cp->quiet=*(unsigned char *)coptions[i].value;
+          break;
+
+        case GAL_OPTIONS_NUMTHREADS_KEY:
+          if(coptions[i].value)
+            cp->numthreads=*(unsigned long *)coptions[i].value;
+          break;
+
+        case GAL_OPTIONS_MINMAPSIZE_KEY:
+          if(coptions[i].value)
+            cp->minmapsize=*(unsigned long *)coptions[i].value;
+          break;
+
+        case GAL_OPTIONS_LOG_KEY:
+          if(coptions[i].value)
+            cp->log=*(unsigned char *)coptions[i].value;
+          break;
+        }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/************            After sanity check            ***************/
+/**********************************************************************/
+static int
+options_max_name_length(struct argp_option *poptions,
+                        struct argp_option *coptions)
+{
+  int i, maxlen=0;
+
+  for(i=0; !gal_options_is_last(&poptions[i]); ++i)
+    if(poptions[i].name && strlen(poptions[i].name)>maxlen)
+      maxlen=strlen(poptions[i].name);
+
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    if(coptions[i].name && strlen(coptions[i].name)>maxlen)
+      maxlen=strlen(coptions[i].name);
+
+  return maxlen;
+}
+
+
+
+
+
+static void
+options_print_any_type(void *ptr, int type)
+{
+  char *c;
+  switch(type)
+    {
+    /* For a string we need to make sure it has no white space characters,
+       if it does, it should be printed it within quotation signs. */
+    case GAL_DATA_TYPE_STRING:
+      c=ptr; while(*c!='\0') if(isspace(*c++)) break;
+      if(*c=='\0') printf("%s\n", (char *)ptr);
+      else         printf("\"%s\"\n", (char *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_UCHAR:
+      printf("%u\n", *(unsigned char *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_CHAR:
+      printf("%d\n", *(char *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_USHORT:
+      printf("%u\n", *(unsigned short *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_SHORT:
+      printf("%d\n", *(short *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      printf("%u\n", *(unsigned int *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      printf("%d\n", *(int *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_ULONG:
+      printf("%lu\n", *(unsigned long *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_LONG:
+      printf("%ld\n", *(long *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_LONGLONG:
+      printf("%lld\n", *(LONGLONG *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_FLOAT:
+      printf("%.6f\n", *(float *)ptr);
+      break;
+
+    case GAL_DATA_TYPE_DOUBLE:
+      printf("%.14f\n", *(double *)ptr);
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`options_print_any_type'", type);
+    }
+}
+
+
+
+
+
+static void
+options_print_all_in_group(struct argp_option *options, int groupint,
+                           int maxlen)
+{
+  size_t i;
+  int namewidth=maxlen+2;
+  struct gal_linkedlist_stll *tmp;
+
+  for(i=0; !gal_options_is_last(&options[i]); ++i)
+    if( options[i].group == groupint && options[i].name && options[i].value )
+      {
+        /* Don't print the values of configuration specific options. */
+        switch(options[i].key)
+          {
+          case GAL_OPTIONS_CITE_KEY:
+          case GAL_OPTIONS_PRINTPARAMS_KEY:
+          case GAL_OPTIONS_CONFIG_KEY:
+          case GAL_OPTIONS_SETDIRCONF_KEY:
+          case GAL_OPTIONS_SETUSRCONF_KEY:
+          case GAL_OPTIONS_LASTCONFIG_KEY:
+            return;
+          }
+
+        /* Print the option name and value */
+        if(gal_data_is_linked_list(options[i].type))
+          {
+            /* A small sanity check. */
+            if(options[i].type!=GAL_DATA_TYPE_STRLL)
+              error(EXIT_FAILURE, 0, "`options_print_all_in_group' "
+                    "currently only supports string linked lists");
+
+            /* Print every element of the list as a separate option. */
+            for(tmp=options[i].value; tmp!=NULL; tmp=tmp->next)
+              {
+                printf(" %-*s ", namewidth, options[i].name);
+                options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING);
+              }
+          }
+        else
+          {
+            printf(" %-*s ", namewidth, options[i].name);
+            options_print_any_type(options[i].value, options[i].type);
+          }
+      }
+}
+
+
+
+
+
+static void
+options_print_all(struct argp_option *poptions,
+                  struct argp_option *coptions, char *filename)
+{
+  size_t i;
+  char *topicstr;
+  int groupint, maxlen;
+  struct gal_linkedlist_ill *group=NULL;
+  struct gal_linkedlist_stll *topic=NULL;
+
+  /* First, parse all the options with a title, note that the title options
+     must only be in the `poptions'. We will only be dealing with the
+     `topics' linked list in this function and the strings in `poption' are
+     statically allocated, so its fine to not waste CPU cycles allocating
+     and freeing.*/
+  for(i=0; !gal_options_is_last(&poptions[i]); ++i)
+    if(poptions[i].name==NULL && poptions[i].key==0 && poptions[i].doc)
+      {
+        /* The `(char *)' is because `.doc' is a constant and this helps
+           remove the compiler warning. */
+        gal_linkedlist_add_to_ill(&group, poptions[i].group);
+        gal_linkedlist_add_to_stll(&topic, (char *)poptions[i].doc, 0);
+      }
+
+  /* Reverse the linked lists to get the same input order. */
+  gal_linkedlist_reverse_stll(&topic);
+  gal_linkedlist_reverse_ill(&group);
+
+  /* Get the maximum width of all the names. */
+  maxlen=options_max_name_length(poptions, coptions);
+
+  /* Go over each topic and print every option that is in this group. */
+  while(topic)
+    {
+      /* Pop the nodes from the linked list. */
+      gal_linkedlist_pop_from_ill(&group, &groupint);
+      gal_linkedlist_pop_from_stll(&topic, &topicstr);
+
+      /* First print the topic, */
+      printf("\n# %s\n", topicstr);
+
+      /* Then, print all the options that are in this group. */
+      options_print_all_in_group(coptions, groupint, maxlen);
+      options_print_all_in_group(poptions, groupint, maxlen);
+    }
+
+  /* Exit the program successfully */
+  exit(EXIT_SUCCESS);
+}
+
+
+
+
+
+#define OPTIONS_UCHARVAL *(unsigned char *)(coptions[i].value)
+void
+gal_options_print_state(char *prog_name, char *prog_bibtex,
+                        struct argp_option *poptions,
+                        struct argp_option *coptions)
+{
+  size_t i;
+
+  /* Do the necessary checks (printing, saving and etc). Note that if they
+     were called (with a value of 1 or 0), they should be checked, so
+     before checking an option's name, check if its `value' pointer isn't
+     NULL.*/
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    if(coptions[i].value)
+      switch(coptions[i].key)
+        {
+        /* Print citation. */
+        case GAL_OPTIONS_CITE_KEY:
+          if(OPTIONS_UCHARVAL)
+            options_print_citation_exit(prog_name, prog_bibtex);
+          break;
+
+        /* Print configuration parameters and abort. */
+        case GAL_OPTIONS_PRINTPARAMS_KEY:
+          if(OPTIONS_UCHARVAL)
+            options_print_all(poptions, coptions, NULL);
+          break;
+    }
 }

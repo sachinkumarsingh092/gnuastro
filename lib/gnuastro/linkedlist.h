@@ -122,8 +122,12 @@ struct gal_linkedlist_stll
 };
 
 void
-gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list, char *value,
-                           int allocate);
+gal_linkedlist_add_to_stll(struct gal_linkedlist_stll **list,
+                           char *value, int allocate);
+
+void
+gal_linked_list_copy_stll(struct gal_linkedlist_stll *from,
+                          struct gal_linkedlist_stll **to);
 
 void
 gal_linkedlist_pop_from_stll(struct gal_linkedlist_stll **list,
@@ -177,6 +181,24 @@ gal_linkedlist_free_sll(struct gal_linkedlist_sll *list);
 
 
 
+/******************* int: */
+struct gal_linkedlist_ill
+{
+    int v;
+    struct gal_linkedlist_ill *next;
+};
+
+void
+gal_linkedlist_add_to_ill(struct gal_linkedlist_ill **list, int value);
+
+void
+gal_linkedlist_pop_from_ill(struct gal_linkedlist_ill **list, int *value);
+
+void
+gal_linkedlist_reverse_ill(struct gal_linkedlist_ill **list);
+
+void
+gal_linkedlist_print_ill(struct gal_linkedlist_ill *list);
 
 
 

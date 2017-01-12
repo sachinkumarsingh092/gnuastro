@@ -32,26 +32,14 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
      libraries, and in particular `options.c'. Because we want each program
      to have its own allocation of the common options structure. If it is
      included in options.c, then it will be shared between all the
-     programs.
-
-
-   Free letters (-V which is used by GNU is also removed):
-
-   a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z
-
-   Used numbers <= 1004
-
-   You can use this above list to set short options for the different
-   utilities.
- */
+     programs. */
 struct argp_option gal_commonopts_options[] =
   {
     /* Input/output. */
 #ifndef NOT_COMMON_HDU_PARSER
     {                           /* Some utilities need to parse `hdu' them-*/
       "hdu",                    /* selves. In this case, they will define  */
-      'h',                      /* `NOT_COMMON_HDU_PARSER' and set their   */
+      GAL_OPTIONS_HDU_KEY,      /* `NOT_COMMON_HDU_PARSER' and set their   */
       "STR",                    /* own `hdu' option structure. */
       0,
       "Extension name or number of input data.",
@@ -61,7 +49,7 @@ struct argp_option gal_commonopts_options[] =
 #endif
     {
       "output",
-      'o',
+      GAL_OPTIONS_OUTPUT_KEY,
       "STR",
       0,
       "Output file or directory name.",
@@ -70,7 +58,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "dontdelete",
-      'D',
+      GAL_OPTIONS_DONTDELETE_KEY,
       0,
       0,
       "Don't delete output if it exists.",
@@ -79,7 +67,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "keepinputdir",
-      'K',
+      GAL_OPTIONS_KEEPINPUTDIR_KEY,
       0,
       0,
       "Keep input directory for automatic output.",
@@ -92,7 +80,7 @@ struct argp_option gal_commonopts_options[] =
     /* Operating mode. */
     {
       "quiet",
-      'q',
+      GAL_OPTIONS_QUIET_KEY,
       0,
       0,
       "Only report errors, remain quiet about steps.",
@@ -101,7 +89,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "numthreads",
-      'N',
+      GAL_OPTIONS_NUMTHREADS_KEY,
       "INT",
       0,
       "Number of CPU threads to use.",
@@ -110,7 +98,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "minmapsize",
-      1004,
+      GAL_OPTIONS_MINMAPSIZE_KEY,
       "INT",
       0,
       "Minimum no. bytes to map arrays to hdd/ssd.",
@@ -119,7 +107,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "log",
-      1003,
+      GAL_OPTIONS_LOG_KEY,
       0,
       0,
       "No log file for programs which make one.",
@@ -132,7 +120,7 @@ struct argp_option gal_commonopts_options[] =
     /* Internal (before control goes back to the program). */
     {
       "cite",
-      1000,
+      GAL_OPTIONS_CITE_KEY,
       0,
       0,
       "BibTeX citation for this program.",
@@ -141,7 +129,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "printparams",
-      'P',
+      GAL_OPTIONS_PRINTPARAMS_KEY,
       0,
       0,
       "Print parameter values to be used and abort.",
@@ -150,7 +138,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "config",
-      1005,
+      GAL_OPTIONS_CONFIG_KEY,
       "STR",
       0,
       "Read file STR before default configuration files.",
@@ -159,7 +147,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "setdirconf",
-      'S',
+      GAL_OPTIONS_SETDIRCONF_KEY,
       0,
       0,
       "Set default values for this directory and abort.",
@@ -168,7 +156,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "setusrconf",
-      'U',
+      GAL_OPTIONS_SETUSRCONF_KEY,
       0,
       0,
       "Set default values for this user and abort.",
@@ -177,7 +165,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "lastconfig",
-      1001,
+      GAL_OPTIONS_LASTCONFIG_KEY,
       0,
       0,
       "Do not parse any more configuration files.",
@@ -186,7 +174,7 @@ struct argp_option gal_commonopts_options[] =
     },
     {
       "onlyversion",
-      1002,
+      GAL_OPTIONS_ONLYVERSION_KEY,
       "STR",
       0,
       "Only run if the program version is STR.",

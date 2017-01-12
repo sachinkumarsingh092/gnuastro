@@ -4413,6 +4413,14 @@ devoted to Gnuastro will be published, see @ref{GNU Astronomy Utilities
 Print the final values used for all the parameters and abort. See
 @ref{Final parameter values} for more details.
 
+@item --config
+(@option{=STR}) Read the file given to this option as a configuration file
+before any of the other configuration files. Multiple instances of this
+option are acceptable, allowing specification of multiple configuration
+files will be parsed before the default ones in the same order that this
+option was called on the command line. This option is only relevant on the
+command-line, within a configuration file, it is ignored.
+
 @item -S
 @itemx --setdirconf
 Update the current directory configuration file from the given command
@@ -4439,33 +4447,68 @@ the program will not run).
 Update the user configuration file from the command-line options and
 quit. See explanation under @option{--setdirconf} for more details.
 
-@item --onlydirconf
-Only read the current (local) directory configuration file and ignore the
-rest of the configuration files, see @ref{Configuration file precedence}
-and @ref{Current directory and User wide}. This can be very useful when you
-want your results to be exactly reproducible. All the configuration files
-can be put in the hidden @file{./.gnuastro/} directory in the current
-directory, or the hidden directory can be a symbolic link to the directory
-containing the configuration files. Then with this option you can ensure
-that no other configuration file is read. So if your local configuration
-file lacks some parameters, which ever Gnuastro program you are using will
-will warn you and abort, enabling you to exactly set all the necessary
-parameters without unknowingly relying on some user or system wide option
-values.
+@item --lastconfig
+This is the last configuration file. When this option is confronted in a
+configuration file (or even on the command-line), no other configuration
+file will be parsed, see @ref{Configuration file precedence} and
+@ref{Current directory and User wide}. On the command-line this option
+doesn't take any values, but in a configuration file, it takes the values
+of @option{0} or @option{1}, see @ref{Configuration file format}. If it is
+present in a configuration file (and has a value of @option{0}), then all
+later occurances of this option will be ignored).
 
-@option{onlydirconf} can also be used in the configuration files (with
-a value of @option{0} or @option{1}), see @ref{Configuration file
-format}. If it is present in the local configuration file, other
-configuration files will not be read. In the other configuration
-files, it is irrelevant.
 
 @item --onlyversion
 (@option{=STR}) Only run the program if its version is equal with the
-string of characters given to this option. Note that it is not
-compared as a number, but as a string of characters, so @option{0}, or
-@option{0.0} and @option{0.00} are different. This is useful if you
-want your results to be exactly reproducible and not mistakenly run
-with an updated or older version of the program.
+string of characters given to this option. Note that it is not compared as
+a number, but as a string of characters, so @option{0}, or @option{0.0} and
+@option{0.00} are different. This option will report an error and abort as
+soon as it is confronted by the command-line or configuration file parser.
+
+This is useful if you want your results to be exactly reproducible and not
+mistakenly run with an updated/newer or older version of the
+program. Besides internal algorithmic/behavior changes in programs, the
+existence of options or their names might change between versions
+(especially in these earlier versions of Gnuastro).
+
+Hence, when using this option (probably in a script or in a configuration
+file), be sure to call it before other options. The benefit is that, when
+the version differs, the other options won't be parsed and you, or your
+collaborators/users, won't get errors saying an option in your
+configuration doesn't exist in the running version of the program.
+
+Here is one example of how this option can be used in conjunction with the
+@option{--lastconfig} option. Let's assume that you were satisfied with the
+results of this command: @command{astnoisechisel image.fits
+--detquant=0.95} (along with various options set in various configuration
+files). You can save the state of NoiseChisel and reproduce that exact
+result on @file{image.fits} later by following these steps (the the extra
+spaces are only for easy readability, if you want to try it out, only one
+space between each token is enough).
+
+@example
+$ echo "onlyversion X.XX"                         > reproducible.conf
+$ echo "lastconfig 1"                            >> reproducible.conf
+$ astnoisechisel image.fits --detquant=0.95 -P   >> reproducible.conf
+@end example
+
+@option{--onlyversion} was available from Gnuastro 0.0, so putting it
+immediately at the start of a configuration file will ensure that later,
+you (or others using different version) won't get a non-recognized option
+error. Through the @option{--lastconfig} option will informing the other
+NoiseChisel to not parse any other configuration files. Finally, in the
+third command with the @option{-P} (short for @option{--printparams})
+option, NoiseChisel will print all the option values visible to it (in all
+the configuration files). Hence, you don't have to worry about remembering
+the (possibly) different options in the different configuration
+files. Afterwards, if you run NoiseChisel as shown below (telling it to
+read this configuration files), you can be sure that there will either be
+an error (for version mis-match) or it will produce exactly the same result
+that you got before.
+
+@example
+$ astnoisechisel --config=reproducible.conf
+@end example
 
 @item --nolog
 For programs which generate Log files, if this option is called, no
@@ -4588,45 +4631,78 @@ more understandable.
 @cindex Configuration file precedence
 @cindex Configuration file directories
 @cindex Precedence, configuration files
-The parameter values in all the programs of Gnuastro will be filled
-in the following order. Such that if a parameter is assigned a value
-in an earlier step, any value for that parameter in a later step will
-be ignored.
+The parameter values in all the programs of Gnuastro will be filled in the
+following order. Such that if a parameter is assigned a value in an earlier
+step, any value for that parameter in a later step will be ignored. Note
+that if the @option{lastconfig} option is specified in any step below, all
+later files will be ignored (see @ref{Operating modes}).
 
 @enumerate
 @item
 Command-line options, for this particular execution.
 
 @item
-Current directory, for all executions in the directory from which any
-of the programs is run (@file{./.gnuastro/}).
+Any file(s) given to the @option{--config} option (in the same order that
+this option was called, see @ref{Operating modes}).
 
 @item
-The user's home directory, for all the executions of a particular
-user: (@file{$HOME/.local/etc/}, see below). It is only read if
-@option{--onlydirconf} is not called, see @ref{Operating modes}.
+Program-specific configuration file in current directory, for example
+@file{.gnuastro/astnoisechisel.conf}, or @file{.gnuastro/astimgcrop.conf}.
 
 @item
-In a system wide directory for any user on that computer
-(@file{prefix/etc/}, see @ref{Installation directory} for the value of
-@file{prefix}). It is only read if @option{--onlydirconf} is not
-called, see @ref{Operating modes}.
+General configuration file in current directory:
+@file{.gnuastro/gnuastro.conf}.
+
+@item
+Program-specific configuration file in your home directory
+(@file{$HOME/.local/etc/}), see below). For example
+@file{$HOME/.local/etc/astnoisechisel.conf}. For any Gnuastro program you
+run as this user.
+
+@item
+General Gnuastro configuration file in your home directory:
+@file{$HOME/.local/etc/gnuastro.conf}, see bellow.
+
+@item
+Program-specific configuration file in a system wide directory for any user
+on that computer (@file{prefix/etc/}, see @ref{Installation directory} for
+the value of @file{prefix}). For example
+@file{prefix/etc/astnoisechisel.conf}.
+
+@item
+General Gnuastro configuration file in a system wide directory:
+@file{prefix/etc/gnuastro.conf}
 @end enumerate
 @noindent
+
+The @file{gnuastro.conf} configuration files should only contain common
+options (see @ref{Common options}), otherwise there will be un-recognized
+option errors and the programs will abort, or give unexpected behavior if
+the option has different behavior in another program. On the other hand,
+there is no problem with program-specific configuration files containing
+common options.
 
 The basic idea behind setting this progressive state of checking for
 parameter values is that separate users of a computer or separate
 folders in a user's file system might need different values for some
-parameters and the same values for others. For example raw telescope
-images usually have their main image extension in the second FITS
-extension, while processed FITS images usually only have one
-extension. If your system wide default input extension is 0 (the
-first), then when you want to work with the former group of data you
-have to explicitly mention it to the programs every time. With this
-progressive state of default values to check, you can set different
-default values for the different directories that you would like to
-run Gnuastro in for your different purposes, so you won't have to
-worry about this issue any more.
+parameters and the same values for others.
+
+For example raw telescope images usually have their main image extension in
+the second FITS extension, while processed FITS images usually only have
+one extension. If your system-wide default input extension is 0 (the
+first), then when you want to work with the former group of data you have
+to explicitly mention it to the programs every time. With this progressive
+state of default values to check, you can set different default values for
+the different directories that you would like to run Gnuastro in for your
+different purposes, so you won't have to worry about this issue any
+more.
+
+The same can be said about the @file{gnuastro.conf} files: by specifying a
+behavior in this single file, all Gnuastro programs in the respective
+directory, user, or system-wide steps will behave similarly. For example to
+keep the input's directory when no specific output is given (see
+@ref{Automatic output}), or to not delete an existing file if it has the
+same name as a given output (see @ref{Input output}).
 
 
 @node Current directory and User wide, System wide, Configuration file precedence, Configuration files
@@ -17847,9 +17923,9 @@ problem. The most efficient way to manage the actions is such that only
 identified for it in series (one after the other). This way your CPU will
 get all the actions done with minimal overhead.
 
-The purpose of this function is to do do what we explained above: each row
-in the @code{outthrds} array contains the indexs of actions which must be
-done by one thread. @code{outthrds} contains @code{outthrdcols} columns. In
+The purpose of this function is to do what we explained above: each row in
+the @code{outthrds} array contains the indexs of actions which must be done
+by one thread. @code{outthrds} contains @code{outthrdcols} columns. In
 using @code{outthrds}, you don't have to know the number of columns. The
 @code{GAL_THREADS_NON_THRD_INDEX} macro has a role very similar to a
 string's @code{\0}: every row finishes with this macro, so can easily stop

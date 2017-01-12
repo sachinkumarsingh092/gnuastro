@@ -23,6 +23,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
+/* Include necessary headers */
 #include <gnuastro/data.h>
 
 #include <options.h>
@@ -40,15 +41,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct uiparams
 {
   char              *filename;
-  char             *tabletype;
   gal_data_t      *allcolinfo;
-  char              *searchin;
-
-  /* If values are set: */
-  int          informationset;
-  int           ignorecaseset;
-  int            tabletypeset;
-  int             searchinset;
 };
 
 

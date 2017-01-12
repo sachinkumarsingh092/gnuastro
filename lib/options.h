@@ -44,6 +44,37 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 extern struct argp_option gal_commonopts_options[];
 
 
+/* Key values for the common options, the free alphabetical keys are listed
+   below. You can use any of the free letters for an option in a
+   program. Note that `-V', which is used by GNU and implemented by Argp,
+   is also removed.
+
+   a b c d e f g i j k l m n p r s t u v w x y z
+   A B C E F G H I J L M O Q R T U W X Y Z
+*/
+enum options_option_keys
+{
+  /* With short-option version */
+  GAL_OPTIONS_HDU_KEY          = 'h',
+  GAL_OPTIONS_OUTPUT_KEY       = 'o',
+  GAL_OPTIONS_DONTDELETE_KEY   = 'D',
+  GAL_OPTIONS_KEEPINPUTDIR_KEY = 'K',
+  GAL_OPTIONS_QUIET_KEY        = 'q',
+  GAL_OPTIONS_NUMTHREADS_KEY   = 'N',
+  GAL_OPTIONS_PRINTPARAMS_KEY  = 'P',
+  GAL_OPTIONS_SETDIRCONF_KEY   = 'S',
+  GAL_OPTIONS_SETUSRCONF_KEY   = 'U',
+
+  /* Only long option (integers for keywords). */
+  GAL_OPTIONS_MINMAPSIZE_KEY   = 500,
+  GAL_OPTIONS_LOG_KEY,
+  GAL_OPTIONS_CITE_KEY,
+  GAL_OPTIONS_CONFIG_KEY,
+  GAL_OPTIONS_LASTCONFIG_KEY,
+  GAL_OPTIONS_ONLYVERSION_KEY,
+};
+
+
 /* The structure keeping all the values of the common options in Gnuastro's
    programs. */
 struct gal_options_common_params
@@ -59,14 +90,6 @@ struct gal_options_common_params
   size_t  numthreads;     /* Number of threads to use.                   */
   size_t  minmapsize;     /* The minimum bytes necessary to use mmap.    */
   int            log;     /* Make a log file.                            */
-
-  /* Internal (before control goes back to the program). */
-  int           cite;     /* BibTeX citation for program and abort.      */
-  int    printparams;     /* Print all option values and abort.          */
-  int     setdirconf;     /* Set default values for this dir and abort.  */
-  int     setusrconf;     /* Set default values for this user and abort. */
-  int    onlydirconf;     /* Only read current directory config file.    */
-  int    onlyversion;     /* Only run program with this version.         */
 };
 
 
@@ -106,8 +129,15 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 /************            Configuration files            ***************/
 /**********************************************************************/
 void
-gal_options_config_files(char *progname, struct argp_option *poptions,
-                         struct argp_option *coptions);
+gal_options_config_files(char *prog_exec, char *prog_name,
+                         struct argp_option *poptions,
+                         struct argp_option *coptions,
+                         struct gal_options_common_params *cp);
+
+void
+gal_options_print_state(char *prog_name, char *prog_bibtex,
+                        struct argp_option *poptions,
+                        struct argp_option *coptions);
 
 
 #endif

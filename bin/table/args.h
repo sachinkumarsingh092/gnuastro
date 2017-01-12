@@ -68,13 +68,24 @@ const char doc[] =
 /* Available letters for short options:
 
    a b d e f g j k l m n p r u v w x y z
-   A B C E F G H J L M O Q R T U W X Y Z
+   A B C E F G H J L M O Q R T U W X Y Z  */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_COLUMN_KEY      = 'c',
+  ARGS_OPTION_SEARCHIN_KEY    = 's',
+  ARGS_OPTION_IGNORECASE_KEY  = 'I',
+  ARGS_OPTION_TABLETYPE_KEY   = 't',
+  ARGS_OPTION_INFORMATION_KEY = 'i',
 
-   Number keys used (larger than 1000): 1000
+  /* Only with long version. */
+};
 
-   Options with keys (second structure element) larger than 500 do not
-   have a short version.
- */
+
+
+
+
+/* Array of acceptable options. */
 struct argp_option options[] =
   {
     {
@@ -84,7 +95,7 @@ struct argp_option options[] =
     },
     {
       "column",
-      'c',
+      ARGS_OPTION_COLUMN_KEY,
       "STR",
       0,
       "Column number (counting from 1) or search string.",
@@ -93,7 +104,7 @@ struct argp_option options[] =
     },
     {
       "searchin",
-      's',
+      ARGS_OPTION_SEARCHIN_KEY,
       "STR",
       0,
       "Search in column `name', `units', or `comments'.",
@@ -102,7 +113,7 @@ struct argp_option options[] =
     },
     {
       "ignorecase",
-      'I',
+      ARGS_OPTION_IGNORECASE_KEY,
       0,
       0,
       "Ignore case when matching column information.",
@@ -120,7 +131,7 @@ struct argp_option options[] =
     },
     {
       "tabletype",
-      't',
+      ARGS_OPTION_TABLETYPE_KEY,
       "STR",
       0,
       "Output table type: `fits-ascii', `fits-binary'.",
@@ -138,7 +149,7 @@ struct argp_option options[] =
     },
     {
       "information",
-      'i',
+      ARGS_OPTION_INFORMATION_KEY,
       0,
       0,
       "Only print table and column information.",
@@ -182,15 +193,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
         argp_error(state, "only one argument (input file) should be given");
       else
         p->up.filename=arg;
-      break;
-
-
-    /* The command line options and arguments are finished. */
-    case ARGP_KEY_END:
-      if(p->cp.setdirconf==0 && p->cp.setusrconf==0
-         && p->cp.printparams==0)
-        if(state->arg_num==0)
-          argp_error(state, "no argument given");
       break;
 
 

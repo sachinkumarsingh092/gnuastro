@@ -43,8 +43,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#include "ui.h"                  /* Needs main.h                   */
-#include "args.h"                /* Needs main.h, includes argp.h. */
+#include "ui.h"
+#include "args.h"
+#include "cite.h"
 
 
 /* Set the file names of the places where the default parameters are
@@ -66,14 +67,75 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+static void
+ui_option_is_mandatory(char *name)
+{
+  error(EXIT_FAILURE, 0, "`%s' option is mandatory", name);
+}
+
+
+
+
+
 void
 fill_params_from_options(struct tableparams *p)
 {
+  size_t i;
+
+  /* Put the program's option values into the structure. */
+  for(i=0; !gal_options_is_last(&options[i]); ++i)
+    if( options[i].key && options[i].name )
+      switch(options[i].key)
+        {
+        /* Inputs */
+        case ARGS_OPTION_COLUMN_KEY:
+          gal_linked_list_copy_stll(options[i].value, &p->columns);
+          break;
+
+        case ARGS_OPTION_SEARCHIN_KEY:
+          if(options[i].value)
+            p->searchin=gal_table_string_to_searchin(options[i].value);
+          else ui_option_is_mandatory((char *)options[i].name);
+          break;
+
+        case ARGS_OPTION_IGNORECASE_KEY:
+          p->ignorecase = *(unsigned char *)options[i].value;
+          break;
 
 
-  /* Free all the allocated spaces in the option structures. */
-  gal_options_free(options);
-  gal_options_free(gal_commonopts_options);
+        /* Output */
+        case ARGS_OPTION_TABLETYPE_KEY:
+
+          /* Set the tabletype parameter. */
+          if(options[i].value)
+            p->tabletype=gal_table_string_to_type(options[i].value);
+          else if( gal_fits_name_is_fits(p->cp.output) )
+            ui_option_is_mandatory((char *)options[i].name);
+
+
+          /* If the output name was set and is a FITS file, make sure that
+             the type of the table is not a `txt'. */
+          if( p->cp.output && gal_fits_name_is_fits(p->cp.output)
+              && ( p->tabletype !=GAL_TABLE_TYPE_AFITS
+                   && p->tabletype !=GAL_TABLE_TYPE_BFITS ) )
+            error(EXIT_FAILURE, 0, "desired output file `%s' is a FITS "
+                  "file, but `tabletype' is not a FITS table type. "
+                  "Please set it to `fits-ascii', or `fits-binary'",
+                  p->cp.output);
+          break;
+
+
+        /* Operating mode */
+        case ARGS_OPTION_INFORMATION_KEY:
+          if(options[i].value)
+            p->information = *(unsigned char *)options[i].value;
+          break;
+
+
+        default:
+          error(EXIT_FAILURE, 0, "option key %d not recognized in "
+                "`fill_params_from_options'", options[i].key);
+        }
 }
 
 
@@ -83,27 +145,8 @@ fill_params_from_options(struct tableparams *p)
 void
 sanitycheck(struct tableparams *p)
 {
-  struct uiparams *up=&p->up;
-
-  /* Set the searchin integer value. */
-  p->searchin=gal_table_string_to_searchin(p->up.searchin);
 
 
-  /* If the outtabletype option was given, then convert it to an easiy
-     usable integer. Note we cannot do this in the output filename check
-     below, since it is also necessary when there is an output file.*/
-  if(up->tabletypeset)
-    p->tabletype=gal_table_string_to_type(up->tabletype);
-
-
-  /* If the output name was set and is a FITS file, make sure that the type
-     of the table is not a `txt'. */
-  if( p->cp.output && gal_fits_name_is_fits(p->cp.output)
-      && ( p->tabletype !=GAL_TABLE_TYPE_AFITS
-           && p->tabletype !=GAL_TABLE_TYPE_BFITS ) )
-        error(EXIT_FAILURE, 0, "desired output file `%s' is a FITS file, "
-              "but `tabletype' is set to `%s'. Please set it to "
-              "`fits-ascii', or `fits-binary'", p->cp.output, up->tabletype);
 }
 
 
@@ -243,19 +286,28 @@ setparams(int argc, char *argv[], struct tableparams *p)
     error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Read the configuration files. */
-  gal_options_config_files(PROG_EXEC, options, gal_commonopts_options);
+  gal_options_config_files(PROG_EXEC, PROG_NAME, options,
+                           gal_commonopts_options, &p->cp);
 
   /* Fill the parameters from the options. */
   fill_params_from_options(p);
 
-  printf("\n--- back in `ui.c' ---\n");
-  exit(0);
 
   /* Do a sanity check. */
   sanitycheck(p);
 
-  /* Make the array of input images. */
+  /* Print the necessary information if asked. Note that this needs to be
+     done after the sanity check so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(PROG_NAME, bibtex, options,
+                          gal_commonopts_options);
+
+  /* Read/allocate all the necessary starting arrays */
   preparearrays(p);
+
+  /* Free all the allocated spaces in the option structures. */
+  gal_options_free(options);
+  gal_options_free(gal_commonopts_options);
 }
 
 
@@ -286,6 +338,5 @@ freeandreport(struct tableparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-  free(p->up.searchin);
   gal_data_free_ll(p->table);
 }
