@@ -32,6 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "ui.h"                 /* needs main.h.                  */
 #include "table.h"              /* needs main.h.                  */
 
+
+/* Main function */
 int
 main (int argc, char *argv[])
 {

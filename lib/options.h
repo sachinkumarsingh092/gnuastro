@@ -41,6 +41,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define GAL_OPTIONS_NO_ARG_TYPE GAL_DATA_TYPE_UCHAR
 
 
+/* External global variables that must be specified by the program using
+   this header. */
+extern char program_name[];     /* Defined in program's `main.h' */
+extern char program_exec[];     /* Defined in program's `main.h' */
+extern char program_bibtex[];   /* Defined in program's `cite.h' */
 extern struct argp_option gal_commonopts_options[];
 
 
@@ -129,15 +134,11 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 /************            Configuration files            ***************/
 /**********************************************************************/
 void
-gal_options_config_files(char *prog_exec, char *prog_name,
-                         struct argp_option *poptions,
-                         struct argp_option *coptions,
+gal_options_config_files(struct argp_option *poptions,
                          struct gal_options_common_params *cp);
 
 void
-gal_options_print_state(char *prog_name, char *prog_bibtex,
-                        struct argp_option *poptions,
-                        struct argp_option *coptions);
+gal_options_print_state(struct argp_option *poptions);
 
 
 #endif

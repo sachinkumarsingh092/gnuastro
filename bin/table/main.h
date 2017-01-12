@@ -28,10 +28,9 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <options.h>
 
-/* Progarm name macros: */
-#define PROG_EXEC       "asttable" /* Program executable name. */
-#define PROG_NAME       "Table"    /* Program full name.       */
-#define PROG_STRING     PROG_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+/* Progarm names.  */
+#define PROGRAM_NAME "Table"         /* Program full name.       */
+#define PROGRAM_EXEC "asttable"      /* Program executable name. */
 
 
 

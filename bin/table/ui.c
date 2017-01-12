@@ -45,15 +45,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include "ui.h"
 #include "args.h"
-#include "cite.h"
-
-
-/* Set the file names of the places where the default parameters are
-   put. */
-#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
-#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
-#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
-
+#include "authors-cite.h"
 
 
 
@@ -92,8 +84,8 @@ ui_option_is_mandatory(char *name)
    After setting all the values, do other forms of sanity checks that
    involve more than one option.
 */
-void
-ui_read_check_options(struct tableparams *p)
+static void
+ui_read_check_only_options(struct tableparams *p)
 {
   size_t i;
 
@@ -151,7 +143,15 @@ ui_read_check_options(struct tableparams *p)
           error(EXIT_FAILURE, 0, "option key %d not recognized in "
                 "`fill_params_from_options'", options[i].key);
         }
+}
 
+
+
+
+
+static void
+ui_check_options_and_arguments(struct tableparams *p)
+{
   /* Make sure an input file name was given and if it was a FITS file, that
      a HDU is also given. */
   if(p->up.filename)
@@ -289,6 +289,19 @@ ui_preparations(struct tableparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
+
+/* These global variables are necessary because the `options.c' library
+   also needs to use these values in various stages, so its cleaner/easier
+   to define them as global variables here (they are declared as `extern'
+   variables in `options.h'). The macros are defined in `main.h'.*/
+char program_name[]=PROGRAM_NAME;
+char program_exec[]=PROGRAM_EXEC;
+
+
+
+
+
+/* Top level function. */
 void
 setparams(int argc, char *argv[], struct tableparams *p)
 {
@@ -309,17 +322,20 @@ setparams(int argc, char *argv[], struct tableparams *p)
     error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Read the configuration files. */
-  gal_options_config_files(PROG_EXEC, PROG_NAME, options,
-                           gal_commonopts_options, &p->cp);
+  gal_options_config_files(options, &p->cp);
 
-  /* Fill the parameters from the options and check their values. */
-  ui_read_check_options(p);
+  /* Read the options into the program's structure, and check them and
+     their relations prior to printing. */
+  ui_read_check_only_options(p);
 
   /* Print the necessary information if asked. Note that this needs to be
      done after the sanity check so un-sane values are not printed in the
      output state. */
-  gal_options_print_state(PROG_NAME, bibtex, options,
-                          gal_commonopts_options);
+  gal_options_print_state(options);
+
+  /* Check that the options and arguments fit well with each other (note
+     that arguments don't go in a configuration file). */
+  ui_check_options_and_arguments(p);
 
   /* Read/allocate all the necessary starting arrays */
   ui_preparations(p);

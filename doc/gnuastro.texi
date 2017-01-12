@@ -18880,10 +18880,11 @@ there is no need for return values. Under more complicated situations
 where a return value might be necessary, @code{void} will be replaced
 with an @code{int} in the examples above.
 
-@item cite.h
+@item authors-cite.h
 @cindex Citation information
-This file keeps the function to be called if the user runs any of the
-programs with @option{--cite}, see @ref{Operating modes}.
+This header file keeps the global variable for the program authors and its
+BibTeX record for citation. They are used in the outputs of the common
+options @option{--version} and @option{--cite}, see @ref{Operating modes}.
 
 @end vtable
 

@@ -127,7 +127,7 @@ options_check_version(char *version_string)
 
 
 static void
-options_print_citation_exit(char *prog_name, char *prog_bibtex)
+options_print_citation_exit()
 {
   char *gnuastro_bibtex=
     "Gnuastro package/infrastructure\n"
@@ -155,16 +155,18 @@ options_print_citation_exit(char *prog_name, char *prog_bibtex)
 
 
   /* Print the statements. */
-  printf("\nThank you for using %s (%s) %s.\n\n", prog_name, PACKAGE_NAME,
+  printf("\nThank you for using %s (%s) %s.\n\n", program_name, PACKAGE_NAME,
          PACKAGE_VERSION);
   printf("Citations are vital for the continued work on Gnuastro.\n\n"
          "Please cite these BibTeX record(s) in your paper(s).\n\n%s\n\n",
          gnuastro_bibtex);
 
+
   /* Only print the citation for the program if one exists. */
-  if(prog_bibtex[0]!='\0') printf("%s\n\n", prog_bibtex);
+  if(program_bibtex[0]!='\0') printf("%s\n\n", program_bibtex);
 
 
+  /* Print a thank you message. */
   printf("                                               ,\n"
          "                                              {|'--.\n"
          "                                             {{\\    \\\n"
@@ -183,6 +185,30 @@ options_print_citation_exit(char *prog_name, char *prog_bibtex)
   exit(EXIT_SUCCESS);
 }
 
+
+
+
+
+/* Some options need immediate attention/action before continuing to read
+   the rest of the options. In these cases we need to (maybe) check and
+   (possibly) abort immediately. */
+void
+options_immediate(int key, char *arg)
+{
+  switch(key)
+    {
+    /* We don't want later options that were set for the given version to
+       cause errors if this option was given. */
+    case GAL_OPTIONS_ONLYVERSION_KEY:
+      options_check_version(arg);
+      break;
+
+    /* This option is completely independent of anything and doesn't need
+       out attention later. */
+    case GAL_OPTIONS_CITE_KEY:
+      options_print_citation_exit();
+    }
+}
 
 
 
@@ -222,12 +248,8 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options)
       /* Check if the key corresponds to this option. */
       if(options[i].key==key)
         {
-          /* If this is the only version option, we need to check and
-             (possibly) abort immediately, because the other options might
-             not exist in later versions and we don't want to confuse the
-             user with an unknown option error. */
-          if( options[i].key == GAL_OPTIONS_ONLYVERSION_KEY )
-              options_check_version(arg);
+          /* For options that need immediate attention. */
+          options_immediate(key, arg);
 
           /* When options are read from keys, they are read from the
              command-line. On the commandline, the last invokation of the
@@ -476,13 +498,8 @@ options_set_from_name(char *name, char *arg, struct argp_option *options,
           if(options[i].value && !gal_data_is_linked_list(options[i].type))
             return 0;
 
-          /* If this is the `onlyversion' option, we need to check and
-             (possibly) abort immediately. The other options might not
-             exist in the running version and we don't want to confuse the
-             user with an unknown option error (while it is present in the
-             proper version). */
-          if( options[i].key == GAL_OPTIONS_ONLYVERSION_KEY )
-              options_check_version(arg);
+          /* For options that need immediate attention. */
+          options_immediate(options[i].key, arg);
 
           /* For strings, `gal_data_string_to_type' is going to return an
              allocated pointer to an allocated string (`char **'). In this
@@ -775,15 +792,14 @@ options_reverse_lists(struct argp_option *options)
 
 
 void
-gal_options_config_files(char *prog_exec, char *prog_name,
-                         struct argp_option *poptions,
-                         struct argp_option *coptions,
+gal_options_config_files(struct argp_option *poptions,
                          struct gal_options_common_params *cp)
 {
   size_t i;
+  struct argp_option *coptions=gal_commonopts_options;
 
   /* Parse all the configuration files. */
-  gal_options_parse_config_files(prog_exec, poptions, coptions);
+  gal_options_parse_config_files(program_exec, poptions, coptions);
 
 
   /* Reverse the order of all linked list type options so the popping order
@@ -1055,11 +1071,10 @@ options_print_all(struct argp_option *poptions,
 
 #define OPTIONS_UCHARVAL *(unsigned char *)(coptions[i].value)
 void
-gal_options_print_state(char *prog_name, char *prog_bibtex,
-                        struct argp_option *poptions,
-                        struct argp_option *coptions)
+gal_options_print_state(struct argp_option *poptions)
 {
   size_t i;
+  struct argp_option *coptions=gal_commonopts_options;
 
   /* Do the necessary checks (printing, saving and etc). Note that if they
      were called (with a value of 1 or 0), they should be checked, so
@@ -1069,16 +1084,10 @@ gal_options_print_state(char *prog_name, char *prog_bibtex,
     if(coptions[i].value)
       switch(coptions[i].key)
         {
-        /* Print citation. */
-        case GAL_OPTIONS_CITE_KEY:
-          if(OPTIONS_UCHARVAL)
-            options_print_citation_exit(prog_name, prog_bibtex);
-          break;
-
         /* Print configuration parameters and abort. */
         case GAL_OPTIONS_PRINTPARAMS_KEY:
           if(OPTIONS_UCHARVAL)
             options_print_all(poptions, coptions, NULL);
           break;
-    }
+        }
 }

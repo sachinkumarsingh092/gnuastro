@@ -36,8 +36,10 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Definition parameters for the argp: */
-const char *argp_program_version=PROG_STRING"\n"GAL_STRINGS_COPYRIGHT
-  "\n\nWritten by Mohammad Akhlaghi";
+const char *argp_program_version =
+  PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION "\n"
+  GAL_STRINGS_COPYRIGHT
+  "\n\nWritten/developed by Mohammad Akhlaghi";
 const char *argp_program_bug_address=PACKAGE_BUGREPORT;
 static char args_doc[] = "ASTRdata";
 
@@ -48,7 +50,7 @@ static char args_doc[] = "ASTRdata";
 const char doc[] =
   /* Before the list of options: */
   GAL_STRINGS_TOP_HELP_INFO
-  PROG_NAME" can be used to view the information, select columns, or "
+  PROGRAM_NAME" can be used to view the information, select columns, or "
   "convert tables. The inputs and outputs can be plain text (with "
   "whitespace or comma as delimiters), FITS ascii, or FITS binary tables. "
   "The output columns can either be selected by number (counting from 1), "

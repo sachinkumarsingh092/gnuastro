@@ -23,8 +23,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef TABLE_H
 #define TABLE_H
 
-
-
 void
 table(struct tableparams *p);
 

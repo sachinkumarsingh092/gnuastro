@@ -20,8 +20,8 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef CITE_H
-#define CITE_H
+#ifndef AUTHORS_CITE_H
+#define AUTHORS_CITS_H
 
 /* When any specific citation is necessary, please add its BibTeX (from ADS
    hopefully) to this variable a long with a title decribing what this
@@ -31,6 +31,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    See the `gnuastro_bibtex' variable in `lib/options' (from the top
    Gnuastro source code directory as an example.*/
 
-char *bibtex="";
+char program_bibtex[]="";
+
+char program_authors[]="Mohammad Akhlaghi";
 
 #endif
