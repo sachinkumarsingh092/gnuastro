@@ -60,8 +60,8 @@ cat > addedoptions.txt <<EOF
 
 
 # Added only for "make check":
- onlydirconf           1
- nolog                 1
+ lastconfig            1
+ log                   0
 EOF
 
 
