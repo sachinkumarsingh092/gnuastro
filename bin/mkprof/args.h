@@ -356,7 +356,7 @@ static struct argp_option options[] =
       'F',
       0,
       0,
-      "mcol is flat pixel value (when f is 4 or 5)",
+      "mcol is flat pixel value (when fcol is 4 or 5)",
       4
     },
 
