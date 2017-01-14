@@ -876,89 +876,173 @@ gal_options_config_files(struct argp_option *poptions,
 /**********************************************************************/
 /************            After sanity check            ***************/
 /**********************************************************************/
+/* We don't want to print the values of configuration specific options and
+   the output option. The output value is assumed to be specific to each
+   input, and the configuration options are for reading the configuration,
+   not writing it. */
 static int
-options_max_name_length(struct argp_option *poptions,
-                        struct argp_option *coptions)
+option_is_printable(struct argp_option *option)
 {
-  int i, maxlen=0;
-
-  for(i=0; !gal_options_is_last(&poptions[i]); ++i)
-    if(poptions[i].name && strlen(poptions[i].name)>maxlen)
-      maxlen=strlen(poptions[i].name);
-
-  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
-    if(coptions[i].name && strlen(coptions[i].name)>maxlen)
-      maxlen=strlen(coptions[i].name);
-
-  return maxlen;
+  switch(option->key)
+    {
+    case GAL_OPTIONS_OUTPUT_KEY:
+    case GAL_OPTIONS_CITE_KEY:
+    case GAL_OPTIONS_PRINTPARAMS_KEY:
+    case GAL_OPTIONS_CONFIG_KEY:
+    case GAL_OPTIONS_SETDIRCONF_KEY:
+    case GAL_OPTIONS_SETUSRCONF_KEY:
+    case GAL_OPTIONS_LASTCONFIG_KEY:
+      return 0;
+    }
+  return 1;
 }
 
 
 
 
 
-static void
-options_print_any_type(void *ptr, int type)
+/* For a given type, print the value in `ptr' in a space of `width'
+   elements. If `width==0', then return the width necessary to print the
+   value. */
+static int
+options_print_any_type(void *ptr, int type, int width)
 {
-  char *c;
+  char *c, *str;
   switch(type)
     {
     /* For a string we need to make sure it has no white space characters,
        if it does, it should be printed it within quotation signs. */
     case GAL_DATA_TYPE_STRING:
       c=ptr; while(*c!='\0') if(isspace(*c++)) break;
-      if(*c=='\0') printf("%s\n", (char *)ptr);
-      else         printf("\"%s\"\n", (char *)ptr);
+      if(*c=='\0') asprintf(&str, "%s",      (char *)ptr);
+      else         asprintf(&str, "\"%s\" ", (char *)ptr);
       break;
 
     case GAL_DATA_TYPE_UCHAR:
-      printf("%u\n", *(unsigned char *)ptr);
+      asprintf(&str, "%u", *(unsigned char *)ptr);
       break;
 
     case GAL_DATA_TYPE_CHAR:
-      printf("%d\n", *(char *)ptr);
+      asprintf(&str, "%d", *(char *)ptr);
       break;
 
     case GAL_DATA_TYPE_USHORT:
-      printf("%u\n", *(unsigned short *)ptr);
+      asprintf(&str, "%u", *(unsigned short *)ptr);
       break;
 
     case GAL_DATA_TYPE_SHORT:
-      printf("%d\n", *(short *)ptr);
+      asprintf(&str, "%d", *(short *)ptr);
       break;
 
     case GAL_DATA_TYPE_UINT:
-      printf("%u\n", *(unsigned int *)ptr);
+      asprintf(&str, "%u", *(unsigned int *)ptr);
       break;
 
     case GAL_DATA_TYPE_INT:
-      printf("%d\n", *(int *)ptr);
+      asprintf(&str, "%d", *(int *)ptr);
       break;
 
     case GAL_DATA_TYPE_ULONG:
-      printf("%lu\n", *(unsigned long *)ptr);
+      asprintf(&str, "%lu", *(unsigned long *)ptr);
       break;
 
     case GAL_DATA_TYPE_LONG:
-      printf("%ld\n", *(long *)ptr);
+      asprintf(&str, "%ld", *(long *)ptr);
       break;
 
     case GAL_DATA_TYPE_LONGLONG:
-      printf("%lld\n", *(LONGLONG *)ptr);
+      asprintf(&str, "%lld", *(LONGLONG *)ptr);
       break;
 
     case GAL_DATA_TYPE_FLOAT:
-      printf("%.6f\n", *(float *)ptr);
+      asprintf(&str, "%.6f", *(float *)ptr);
       break;
 
     case GAL_DATA_TYPE_DOUBLE:
-      printf("%.14f\n", *(double *)ptr);
+      asprintf(&str, "%.14f", *(double *)ptr);
       break;
 
     default:
       error(EXIT_FAILURE, 0, "type code %d not recognized in "
             "`options_print_any_type'", type);
     }
+
+  /* If only the width was desired, don't actually print the string, just
+     return its length. Otherwise, print it. */
+  if(width)
+    printf("%-*s ", width, str);
+  else
+    width=strlen(str);
+
+  /* Free the allocated space and return. */
+  free(str);
+  return width;
+}
+
+
+
+
+
+/* To print the options nicely, we need the maximum lengths of the options
+   and their values. */
+static void
+options_set_lengths(struct argp_option *poptions,
+                    struct argp_option *coptions, int *namelen, int *valuelen)
+{
+  int i, nlen=0, vlen=0, tvlen;
+  struct gal_linkedlist_stll *tmp;
+
+  /* For program specific options. */
+  for(i=0; !gal_options_is_last(&poptions[i]); ++i)
+    if(poptions[i].name && poptions[i].value)
+      {
+        /* Get the length of the value and save its length length if its
+           larger than the widest value. */
+        if(gal_data_is_linked_list(poptions[i].type))
+          for(tmp=poptions[i].value; tmp!=NULL; tmp=tmp->next)
+            {
+              /* A small sanity check. */
+              if(poptions[i].type!=GAL_DATA_TYPE_STRLL)
+                error(EXIT_FAILURE, 0, "currently only string linked lists "
+                      "are acceptable for printing");
+
+              /* Get the maximum lengths of each node: */
+              tvlen=options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING, 0);
+              if( tvlen>vlen )
+                vlen=tvlen;
+            }
+        else
+          {
+            tvlen=options_print_any_type(poptions[i].value, poptions[i].type,
+                                         0);
+            if( tvlen>vlen )
+              vlen=tvlen;
+          }
+
+        /* If the name of this option is larger than all existing, set its
+           length as the largest name length. */
+        if( strlen(poptions[i].name)>nlen )
+          nlen=strlen(poptions[i].name);
+      }
+
+  /* For common options. Note that the options that will not be printed are
+     in this category, so we also need to check them. The detailed steps
+     are the same as before. */
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    if( coptions[i].name && coptions[i].value
+        && option_is_printable(&coptions[i]) )
+      {
+        tvlen=options_print_any_type(coptions[i].value, coptions[i].type, 0);
+        if( tvlen>vlen )
+          vlen=tvlen;
+
+        if(strlen(coptions[i].name)>nlen)
+          nlen=strlen(coptions[i].name);
+      }
+
+  /* Save the final values in the output pointers. */
+  *namelen=nlen;
+  *valuelen=vlen;
 }
 
 
@@ -967,46 +1051,35 @@ options_print_any_type(void *ptr, int type)
 
 static void
 options_print_all_in_group(struct argp_option *options, int groupint,
-                           int maxlen)
+                           int namelen, int valuelen)
 {
   size_t i;
-  int namewidth=maxlen+2;
   struct gal_linkedlist_stll *tmp;
+  int namewidth=namelen+1, valuewidth=valuelen+1;
 
+  /* Go over all the options. */
   for(i=0; !gal_options_is_last(&options[i]); ++i)
-    if( options[i].group == groupint && options[i].name && options[i].value )
+    if( options[i].group == groupint          /* Is in this group.        */
+        && options[i].value                   /* Has been given a value.  */
+        && option_is_printable(&options[i]) ) /* Is relevant for printing.*/
       {
-        /* Don't print the values of configuration specific options. */
-        switch(options[i].key)
-          {
-          case GAL_OPTIONS_CITE_KEY:
-          case GAL_OPTIONS_PRINTPARAMS_KEY:
-          case GAL_OPTIONS_CONFIG_KEY:
-          case GAL_OPTIONS_SETDIRCONF_KEY:
-          case GAL_OPTIONS_SETUSRCONF_KEY:
-          case GAL_OPTIONS_LASTCONFIG_KEY:
-            return;
-          }
-
-        /* Print the option name and value */
+        /* Linked lists */
         if(gal_data_is_linked_list(options[i].type))
-          {
-            /* A small sanity check. */
-            if(options[i].type!=GAL_DATA_TYPE_STRLL)
-              error(EXIT_FAILURE, 0, "`options_print_all_in_group' "
-                    "currently only supports string linked lists");
-
-            /* Print every element of the list as a separate option. */
-            for(tmp=options[i].value; tmp!=NULL; tmp=tmp->next)
-              {
+          for(tmp=options[i].value; tmp!=NULL; tmp=tmp->next)
+            {
                 printf(" %-*s ", namewidth, options[i].name);
-                options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING);
+                options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING,
+                                       valuewidth);
+                printf("# %s\n", options[i].doc);
               }
-          }
+
+        /* Normal types. */
         else
           {
             printf(" %-*s ", namewidth, options[i].name);
-            options_print_any_type(options[i].value, options[i].type);
+            options_print_any_type(options[i].value, options[i].type,
+                                   valuewidth);
+            printf("# %s\n", options[i].doc);
           }
       }
 }
@@ -1021,7 +1094,7 @@ options_print_all(struct argp_option *poptions,
 {
   size_t i;
   char *topicstr;
-  int groupint, maxlen;
+  int groupint, namelen, valuelen;
   struct gal_linkedlist_ill *group=NULL;
   struct gal_linkedlist_stll *topic=NULL;
 
@@ -1043,8 +1116,8 @@ options_print_all(struct argp_option *poptions,
   gal_linkedlist_reverse_stll(&topic);
   gal_linkedlist_reverse_ill(&group);
 
-  /* Get the maximum width of all the names. */
-  maxlen=options_max_name_length(poptions, coptions);
+  /* Get the maximum width of names and values. */
+  options_set_lengths(poptions, coptions, &namelen, &valuelen);
 
   /* Go over each topic and print every option that is in this group. */
   while(topic)
@@ -1057,8 +1130,8 @@ options_print_all(struct argp_option *poptions,
       printf("\n# %s\n", topicstr);
 
       /* Then, print all the options that are in this group. */
-      options_print_all_in_group(coptions, groupint, maxlen);
-      options_print_all_in_group(poptions, groupint, maxlen);
+      options_print_all_in_group(coptions, groupint, namelen, valuelen);
+      options_print_all_in_group(poptions, groupint, namelen, valuelen);
     }
 
   /* Exit the program successfully */
@@ -1074,7 +1147,25 @@ void
 gal_options_print_state(struct argp_option *poptions)
 {
   size_t i;
+  unsigned char sum=0;
   struct argp_option *coptions=gal_commonopts_options;
+
+
+  /* A sanity check is necessary first. We just want to make sure that the
+     user hasn't called more than one of these options. */
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    if(coptions[i].value)
+      switch(coptions[i].key)
+        {
+        case GAL_OPTIONS_PRINTPARAMS_KEY:
+        case GAL_OPTIONS_SETDIRCONF_KEY:
+        case GAL_OPTIONS_SETUSRCONF_KEY:
+          sum += OPTIONS_UCHARVAL;
+        }
+  if(sum>1)
+    error(EXIT_FAILURE, 0, "only one of the `printparams', `setdirconf' "
+          "and `setusrconf' options can be called in each run");
+
 
   /* Do the necessary checks (printing, saving and etc). Note that if they
      were called (with a value of 1 or 0), they should be checked, so
