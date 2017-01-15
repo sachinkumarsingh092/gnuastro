@@ -21,6 +21,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
+#include <time.h>
 #include <argp.h>
 #include <errno.h>
 #include <error.h>
@@ -83,6 +84,22 @@ gal_options_free(struct argp_option *options)
         options[i].value=NULL;
       }
 }
+
+
+
+
+
+static char *
+options_get_home()
+{
+  char *home;
+  home=getenv("HOME");
+  if(home==NULL)
+    error(EXIT_FAILURE, 0, "the HOME environment variable "
+          "is not defined");
+  return home;
+}
+
 
 
 
@@ -643,7 +660,7 @@ options_parse_file(char *filename,  struct argp_option *poptions,
 
     - `CURDIRCONFIG_DIR' is defined in `config.h'. */
 static void
-gal_options_parse_config_files(char *progexec, struct argp_option *poptions,
+gal_options_parse_config_files(struct argp_option *poptions,
                                struct argp_option *coptions)
 {
   char *home;
@@ -714,7 +731,7 @@ gal_options_parse_config_files(char *progexec, struct argp_option *poptions,
 
 
   /* The program's current directory configuration file. */
-  asprintf(&filename, ".%s/%s.conf", PACKAGE, progexec);
+  asprintf(&filename, ".%s/%s.conf", PACKAGE, program_exec);
   options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
@@ -726,13 +743,10 @@ gal_options_parse_config_files(char *progexec, struct argp_option *poptions,
   free(filename);
 
   /* Read the home environment variable. */
-  home=getenv("HOME");
-  if(home==NULL)
-    error(EXIT_FAILURE, 0, "the HOME environment variable "
-          "is not defined");
+  home=options_get_home();
 
   /* User wide configuration files. */
-  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, progexec);
+  asprintf(&filename, "%s/%s/%s.conf", home, USERCONFIG_DIR, program_exec);
   options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
@@ -744,7 +758,7 @@ gal_options_parse_config_files(char *progexec, struct argp_option *poptions,
   free(filename);
 
   /* System wide configuration files. */
-  asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, progexec);
+  asprintf(&filename, "%s/%s.conf", SYSCONFIG_DIR, program_exec);
   options_parse_file(filename, poptions, coptions, 0);
   if( OPTIONS_THIS_IS_LASTCONFIG ) return;
   free(filename);
@@ -799,15 +813,13 @@ gal_options_config_files(struct argp_option *poptions,
   struct argp_option *coptions=gal_commonopts_options;
 
   /* Parse all the configuration files. */
-  gal_options_parse_config_files(program_exec, poptions, coptions);
-
+  gal_options_parse_config_files(poptions, coptions);
 
   /* Reverse the order of all linked list type options so the popping order
      is the same as the user's input order. We need to do this here because
      when printing those options, their order matters.*/
   options_reverse_lists(poptions);
   options_reverse_lists(coptions);
-
 
   /* Put the common option values into the structure. */
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
@@ -905,7 +917,7 @@ option_is_printable(struct argp_option *option)
    elements. If `width==0', then return the width necessary to print the
    value. */
 static int
-options_print_any_type(void *ptr, int type, int width)
+options_print_any_type(void *ptr, int type, int width, FILE *fp)
 {
   char *c, *str;
   switch(type)
@@ -970,7 +982,7 @@ options_print_any_type(void *ptr, int type, int width)
   /* If only the width was desired, don't actually print the string, just
      return its length. Otherwise, print it. */
   if(width)
-    printf("%-*s ", width, str);
+    fprintf(fp, "%-*s ", width, str);
   else
     width=strlen(str);
 
@@ -1007,14 +1019,15 @@ options_set_lengths(struct argp_option *poptions,
                       "are acceptable for printing");
 
               /* Get the maximum lengths of each node: */
-              tvlen=options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING, 0);
+              tvlen=options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING,
+                                           0, NULL);
               if( tvlen>vlen )
                 vlen=tvlen;
             }
         else
           {
             tvlen=options_print_any_type(poptions[i].value, poptions[i].type,
-                                         0);
+                                         0, NULL);
             if( tvlen>vlen )
               vlen=tvlen;
           }
@@ -1032,7 +1045,8 @@ options_set_lengths(struct argp_option *poptions,
     if( coptions[i].name && coptions[i].value
         && option_is_printable(&coptions[i]) )
       {
-        tvlen=options_print_any_type(coptions[i].value, coptions[i].type, 0);
+        tvlen=options_print_any_type(coptions[i].value, coptions[i].type,
+                                     0, NULL);
         if( tvlen>vlen )
           vlen=tvlen;
 
@@ -1051,7 +1065,7 @@ options_set_lengths(struct argp_option *poptions,
 
 static void
 options_print_all_in_group(struct argp_option *options, int groupint,
-                           int namelen, int valuelen)
+                           int namelen, int valuelen, FILE *fp)
 {
   size_t i;
   struct gal_linkedlist_stll *tmp;
@@ -1067,19 +1081,19 @@ options_print_all_in_group(struct argp_option *options, int groupint,
         if(gal_data_is_linked_list(options[i].type))
           for(tmp=options[i].value; tmp!=NULL; tmp=tmp->next)
             {
-                printf(" %-*s ", namewidth, options[i].name);
+              fprintf(fp, " %-*s ", namewidth, options[i].name);
                 options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING,
-                                       valuewidth);
-                printf("# %s\n", options[i].doc);
+                                       valuewidth, fp);
+                fprintf(fp, "# %s\n", options[i].doc);
               }
 
         /* Normal types. */
         else
           {
-            printf(" %-*s ", namewidth, options[i].name);
+            fprintf(fp, " %-*s ", namewidth, options[i].name);
             options_print_any_type(options[i].value, options[i].type,
-                                   valuewidth);
-            printf("# %s\n", options[i].doc);
+                                   valuewidth, fp);
+            fprintf(fp, "# %s\n", options[i].doc);
           }
       }
 }
@@ -1090,15 +1104,57 @@ options_print_all_in_group(struct argp_option *options, int groupint,
 
 static void
 options_print_all(struct argp_option *poptions,
-                  struct argp_option *coptions, char *filename)
+                  struct argp_option *coptions, char *dirname,
+                  const char *optionname)
 {
   size_t i;
-  char *topicstr;
+  FILE *fp;
+  time_t rawtime;
+  char *topicstr, *filename;
   int groupint, namelen, valuelen;
   struct gal_linkedlist_ill *group=NULL;
   struct gal_linkedlist_stll *topic=NULL;
 
-  /* First, parse all the options with a title, note that the title options
+  /* If the configurations are to be written to a file, then do the
+     preparations. */
+  if(dirname)
+    {
+      /* Make the host directory if it doesn't already exist. */
+      gal_checkset_mkdir(dirname);
+
+      /* Prepare the full filename: */
+      asprintf(&filename, "%s/%s.conf", dirname, program_exec);
+
+      /* Remove the file if it already exists. */
+      gal_checkset_check_remove_file(filename, 0);
+
+      /* Open the file for writing */
+      errno=0;
+      fp=fopen(filename, "w");
+      if(fp==NULL)
+        error(EXIT_FAILURE, errno, "%s: could't open to write "
+              "configuration file", dirname);
+
+      /* Print the basic information as comments in the file first. */
+      time(&rawtime);
+      fprintf(fp, "# Configuration file produced by for %s (%s) %s.\n"
+              "# Written at %s#\n"
+              "#  - Empty lines are ignored.\n"
+              "#  - Lines starting with `#` are ignored.\n"
+              "#  - The long option name is followed by a value.\n"
+              "#  - The name and value should be separated by atleast\n"
+              "#    one white space character (for example space or tab).\n"
+              "#  - If the value has space, enclose the whole value in\n"
+              "#    double quotation (\") signs.\n"
+              "#  - After the value, the rest of the line is ignored.\n"
+              "#\n# Run `info %s' for a more elaborate description of each "
+              "option.\n",
+              program_name, PACKAGE_NAME, PACKAGE_VERSION, ctime(&rawtime),
+              program_exec);
+    }
+  else fp=stdout;
+
+  /* Parse all the options with a title, note that the title options
      must only be in the `poptions'. We will only be dealing with the
      `topics' linked list in this function and the strings in `poption' are
      statically allocated, so its fine to not waste CPU cycles allocating
@@ -1127,12 +1183,19 @@ options_print_all(struct argp_option *poptions,
       gal_linkedlist_pop_from_stll(&topic, &topicstr);
 
       /* First print the topic, */
-      printf("\n# %s\n", topicstr);
+      fprintf(fp, "\n# %s\n", topicstr);
 
       /* Then, print all the options that are in this group. */
-      options_print_all_in_group(coptions, groupint, namelen, valuelen);
-      options_print_all_in_group(poptions, groupint, namelen, valuelen);
+      options_print_all_in_group(coptions, groupint, namelen, valuelen, fp);
+      options_print_all_in_group(poptions, groupint, namelen, valuelen, fp);
     }
+
+  /* Let the user know. */
+  printf("\n%s: new/updated configuration file.\n\n"
+         "You may inspect it with `cat %s'.\n"
+         "You may use your favorite text editor to modify it later.\n"
+         "Or, run %s again with new values for the options and `--%s'.\n",
+         filename, filename, program_name, optionname);
 
   /* Exit the program successfully */
   exit(EXIT_SUCCESS);
@@ -1148,11 +1211,12 @@ gal_options_print_state(struct argp_option *poptions)
 {
   size_t i;
   unsigned char sum=0;
+  char *home, *dirname;
   struct argp_option *coptions=gal_commonopts_options;
 
 
-  /* A sanity check is necessary first. We just want to make sure that the
-     user hasn't called more than one of these options. */
+  /* A sanity check is necessary first. We want to make sure that the user
+     hasn't called more than one of these options. */
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
     if(coptions[i].value)
       switch(coptions[i].key)
@@ -1167,18 +1231,30 @@ gal_options_print_state(struct argp_option *poptions)
           "and `setusrconf' options can be called in each run");
 
 
-  /* Do the necessary checks (printing, saving and etc). Note that if they
-     were called (with a value of 1 or 0), they should be checked, so
-     before checking an option's name, check if its `value' pointer isn't
-     NULL.*/
+  /* Print the required configuration files. Note that simply having a
+     non-NULL value is not enough. They can have a value of 1 or 0, and the
+     respective file should only be created if we have a value of 1. */
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
-    if(coptions[i].value)
+    if(coptions[i].value && OPTIONS_UCHARVAL)
       switch(coptions[i].key)
         {
-        /* Print configuration parameters and abort. */
         case GAL_OPTIONS_PRINTPARAMS_KEY:
-          if(OPTIONS_UCHARVAL)
-            options_print_all(poptions, coptions, NULL);
+          options_print_all(poptions, coptions, NULL, NULL);
+          break;
+
+        case GAL_OPTIONS_SETDIRCONF_KEY:
+          asprintf(&dirname, ".%s", PACKAGE);
+          options_print_all(poptions, coptions, dirname,
+                            coptions[i].name);
+          free(dirname);
+          break;
+
+        case GAL_OPTIONS_SETUSRCONF_KEY:
+          home=options_get_home();
+          asprintf(&dirname, "%s/%s", home, USERCONFIG_DIR);
+          options_print_all(poptions, coptions, dirname,
+                            coptions[i].name);
+          free(dirname);
           break;
         }
 }

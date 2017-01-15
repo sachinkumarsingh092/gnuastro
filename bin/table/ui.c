@@ -328,16 +328,17 @@ setparams(int argc, char *argv[], struct tableparams *p)
      their relations prior to printing. */
   ui_read_check_only_options(p);
 
-  /* Print the necessary information if asked. Note that this needs to be
-     done after the sanity check so un-sane values are not printed in the
-     output state. */
+  /* Print the option values if asked. Note that this needs to be done
+     after the sanity check so un-sane values are not printed in the output
+     state. */
   gal_options_print_state(options);
 
-  /* Check that the options and arguments fit well with each other (note
-     that arguments don't go in a configuration file). */
+  /* Check that the options and arguments fit well with each other. Note
+     that arguments don't go in a configuration file. So this test should
+     be done after (possibly) printing the option values. */
   ui_check_options_and_arguments(p);
 
-  /* Read/allocate all the necessary starting arrays */
+  /* Read/allocate all the necessary starting arrays. */
   ui_preparations(p);
 
   /* Free all the allocated spaces in the option structures. */
