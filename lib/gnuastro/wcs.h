@@ -47,6 +47,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 __BEGIN_C_DECLS  /* From C++ preparations */
 
 
+double *
+gal_wcs_array_from_wcsprm(struct wcsprm *wcs);
 
 void
 gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
@@ -59,8 +61,8 @@ gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
 double
 gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2);
 
-void
-gal_wcs_pixel_scale_deg(struct wcsprm *wcs, double *dx, double *dy);
+double *
+gal_wcs_pixel_scale_deg(struct wcsprm *wcs);
 
 double
 gal_wcs_pixel_area_arcsec2(struct wcsprm *wcs);
