@@ -65,6 +65,63 @@ gal_options_is_category_title(struct argp_option *option)
 
 
 
+
+void
+gal_options_add_to_not_given(struct argp_option *option,
+                             struct gal_linkedlist_stll **namell,
+                             struct gal_linkedlist_stll **docll)
+{
+  gal_linkedlist_add_to_stll(docll, (char *)option->doc, 0);
+  gal_linkedlist_add_to_stll(namell, (char *)option->name, 0);
+}
+
+
+
+
+
+void
+gal_options_mandatory_error(struct gal_linkedlist_stll *namell,
+                            struct gal_linkedlist_stll *docll)
+{
+  int namewidth=0;
+  char info[2000], *name, *doc;
+  struct gal_linkedlist_stll *tmp;
+
+  /* Get the maximum width of the given names: */
+  for(tmp=namell; tmp!=NULL; tmp=tmp->next)
+    if( strlen(tmp->v) > namewidth ) namewidth=strlen(tmp->v);
+
+  /* Print the introductory information. */
+  sprintf(info, "to continue, the following options need a value:\n");
+  sprintf(info+strlen(info), "(parenthesis after option name contain its "
+          "description)\n\n");
+
+  /* Print the list of options along with their description. */
+  while(namell!=NULL)
+    {
+      gal_linkedlist_pop_from_stll(&namell, &name);
+      gal_linkedlist_pop_from_stll(&docll, &doc);
+      sprintf(info+strlen(info), "  %-*s (%s\b)\n", namewidth+4, name, doc);
+    }
+  sprintf(info+strlen(info), "\n");
+
+  /* Print suggestions, way to solve it. */
+  sprintf(info+strlen(info), "Use the command-line or a configuration file "
+          "to set value(s).\n\nFor a complete description of command-line "
+          "options and configuration files, please see the \"Options\" and "
+          "\"Configuration files\" section of the Gnuastro book "
+          "respectively. You can read them on the command-line by running "
+          "the following commands (type `SPACE' to flip through pages, type "
+          "`Q' to return to the command-line):\n\n"
+          "  info gnuastro Options\n"
+          "  info gnuastro \"Configuration files\"\n");
+
+  error(EXIT_FAILURE, 0, "%s", info);
+}
+
+
+
+
 /* The modified `argp_option' structure contains a void pointer, depending
    on the type of value inside it, you need to the pointer differently. */
 void
@@ -1034,10 +1091,10 @@ options_print_all_in_group(struct argp_option *options, int groupint,
           for(tmp=options[i].value; tmp!=NULL; tmp=tmp->next)
             {
               fprintf(fp, " %-*s ", namewidth, options[i].name);
-                options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING,
-                                       valuewidth, fp);
-                fprintf(fp, "# %s\n", options[i].doc);
-              }
+              options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING,
+                                     valuewidth, fp);
+              fprintf(fp, "(%s\b)\n", options[i].doc);
+            }
 
         /* Normal types. */
         else
@@ -1045,7 +1102,7 @@ options_print_all_in_group(struct argp_option *options, int groupint,
             fprintf(fp, " %-*s ", namewidth, options[i].name);
             options_print_any_type(options[i].value, options[i].type,
                                    valuewidth, fp);
-            fprintf(fp, "# %s\n", options[i].doc);
+            fprintf(fp, "(%s\b)\n", options[i].doc);
           }
       }
 }

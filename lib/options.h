@@ -114,6 +114,15 @@ int
 gal_options_is_category_title(struct argp_option *option);
 
 void
+gal_options_add_to_not_given(struct argp_option *option,
+                             struct gal_linkedlist_stll **namell,
+                             struct gal_linkedlist_stll **docll);
+
+void
+gal_options_mandatory_error(struct gal_linkedlist_stll *namell,
+                            struct gal_linkedlist_stll *docll);
+
+void
 gal_options_free(struct argp_option *options);
 
 

@@ -59,15 +59,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-static void
-ui_option_is_mandatory(char *name)
-{
-  error(EXIT_FAILURE, 0, "`%s' option is mandatory", name);
-}
-
-
-
-
 
 /* This function is in charge of reading the option values from the arrays
    of the `argp_option' structure and put them into each program's own data
@@ -88,6 +79,7 @@ static void
 ui_read_check_only_options(struct tableparams *p)
 {
   size_t i;
+  struct gal_linkedlist_stll *namell=NULL, *docll=NULL;
 
   /* Put the program's option values into the structure. */
   for(i=0; !gal_options_is_last(&options[i]); ++i)
@@ -99,37 +91,47 @@ ui_read_check_only_options(struct tableparams *p)
           gal_linked_list_copy_stll(options[i].value, &p->columns);
           break;
 
+
         case ARGS_OPTION_SEARCHIN_KEY:
           if(options[i].value)
             p->searchin=gal_table_string_to_searchin(options[i].value);
-          else ui_option_is_mandatory((char *)options[i].name);
+          else
+            gal_options_add_to_not_given(&options[i], &namell, &docll);
           break;
+
 
         case ARGS_OPTION_IGNORECASE_KEY:
           p->ignorecase = *(unsigned char *)options[i].value;
           break;
 
 
+
         /* Output */
         case ARGS_OPTION_TABLETYPE_KEY:
 
-          /* Set the tabletype parameter. */
+          /* If `tabletype' has a value, put it in. */
           if(options[i].value)
-            p->tabletype=gal_table_string_to_type(options[i].value);
+            {
+              /* Set the value into the structure. */
+              p->tabletype=gal_table_string_to_type(options[i].value);
+
+              /* If the output name was set and is a FITS file, make sure
+                 that the type of the table is not a `txt'. */
+              if( p->cp.output && gal_fits_name_is_fits(p->cp.output)
+                  && ( p->tabletype !=GAL_TABLE_TYPE_AFITS
+                       && p->tabletype !=GAL_TABLE_TYPE_BFITS ) )
+                error(EXIT_FAILURE, 0, "desired output file `%s' is a FITS "
+                      "file, but `tabletype' is not a FITS table type. "
+                      "Please set it to `fits-ascii', or `fits-binary'",
+                      p->cp.output);
+            }
+
+          /* In Table, `tabletype' is only mandatory when the output is a
+             FITS file, A text table output only has one possible type. */
           else if( gal_fits_name_is_fits(p->cp.output) )
-            ui_option_is_mandatory((char *)options[i].name);
-
-
-          /* If the output name was set and is a FITS file, make sure that
-             the type of the table is not a `txt'. */
-          if( p->cp.output && gal_fits_name_is_fits(p->cp.output)
-              && ( p->tabletype !=GAL_TABLE_TYPE_AFITS
-                   && p->tabletype !=GAL_TABLE_TYPE_BFITS ) )
-            error(EXIT_FAILURE, 0, "desired output file `%s' is a FITS "
-                  "file, but `tabletype' is not a FITS table type. "
-                  "Please set it to `fits-ascii', or `fits-binary'",
-                  p->cp.output);
+            gal_options_add_to_not_given(&options[i], &namell, &docll);
           break;
+
 
 
         /* Operating mode */
@@ -143,6 +145,11 @@ ui_read_check_only_options(struct tableparams *p)
           error(EXIT_FAILURE, 0, "option key %d not recognized in "
                 "`fill_params_from_options'", options[i].key);
         }
+
+  /* If any of the mandatory options were not given, then print an error
+     listing them and abort. */
+  if(namell)
+    gal_options_mandatory_error(namell, docll);
 }
 
 

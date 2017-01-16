@@ -33,6 +33,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <wcslib/wcs.h>
 #include <gsl/gsl_complex.h>
 
+#include <gnuastro/linkedlist.h>
+
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
