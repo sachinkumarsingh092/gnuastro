@@ -775,39 +775,35 @@ code and this book are thus intimately linked, and when considered as
 a single entity can be thought of as a real (an actual software
 accompanying the algorithms) ``Numerical Recipes'' for astronomy.
 
-The other major and arguably more important difference is that
-``Numerical Recipes'' does not allow you to distribute any code that
-you have learned from it and the book is not freely available. So while
-it empowers the privileged individual who has access to it, it
-exacerbates social ignorance. For example it does not allow you to
-release your software's source code if you have used their codes, you
-can only publicly release binaries (a black box) to the
-community. Exactly at the opposite end of the spectrum, Gnuastro's
-source code is released under the GNU general public license (GPL) and
-this book is released under the GNU free documentation license. You
-are therefore free to distribute any software you create using parts
-of Gnuastro's source code or text, or figures from this book, see
-@ref{Your rights}. While developing the source code and this book
-together, the developers of Gnuastro aim to impose the minimum
-requirements on you (in computer science, engineering and even the
-mathematics behind the tools) to understand and modify any step of
-Gnuastro if you feel the need to do so, see @ref{Why C} and
-@ref{Program design philosophy}.
+The other major and arguably more important difference is that ``Numerical
+Recipes'' does not allow you to distribute any code that you have learned
+from it. So while it empowers the privileged individual who has access to
+it, it exacerbates social ignorance. For example it does not allow you to
+release your software's source code if you have used their codes, you can
+only publicly release binaries (a black box) to the community. Exactly at
+the opposite end of the spectrum, Gnuastro's source code is released under
+the GNU general public license (GPL) and this book is released under the
+GNU free documentation license. You are therefore free to distribute any
+software you create using parts of Gnuastro's source code or text, or
+figures from this book, see @ref{Your rights}. While developing the source
+code and this book together, the developers of Gnuastro aim to impose the
+minimum requirements on you (in computer science, engineering and even the
+mathematics behind the tools) to understand and modify any step of Gnuastro
+if you feel the need to do so, see @ref{Why C} and @ref{Program design
+philosophy}.
 
 @cindex Galileo, G.
 Imagine if Galileo did not have the technical knowledge to build a
-telescope. Astronomical objects could not be seen with the Dutch
-military design of the telescope. In the beginning of his ``The
-Sidereal Messenger'' (1610) he cautions the readers on this issue and
-instructs them on how to build a suitable instrument: without a
-detailed description of ``how'' he made his observations, no one would
-believe him. The same is true today, science cannot progress with a
-black box. Before he actually saw the moons of Jupiter, the mountains
-on the Moon or the crescent of Venus, he was an anti-Copernican and
-was “evasive” to Kepler@footnote{Galileo G. (Translated by Maurice
-A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing
-company, first edition, 2008.}. Science is not independent of its
-tools.
+telescope. Astronomical objects could not be seen with the Dutch military
+design of the telescope. In the beginning of his ``The Sidereal Messenger''
+(1610) he cautions the readers on this issue and instructs them on how to
+build a suitable instrument: without a detailed description of ``how'' he
+made his observations, no one would believe him. The same is true today,
+science cannot progress with a black box. Before he actually saw the moons
+of Jupiter, the mountains on the Moon or the crescent of Venus, he was
+“evasive” to Kepler@footnote{Galileo G. (Translated by Maurice
+A. Finocchiaro). @emph{The essential Galileo}. Hackett publishing company,
+first edition, 2008.}. Science is not independent of its tools.
 
 @cindex Ken Thomson
 @cindex Stroustrup, Bjarne
@@ -6826,30 +6822,29 @@ crops between multiple threads to significantly reduce the run time.
 @cindex COSMOS survey
 @cindex Imaging surveys
 @cindex Hubble Space Telescope
-Astronomical surveys are usually extremely large. So large in fact,
-that the whole survey will not fit into a reasonably sized
-file. Because of this surveys usually cut the final image into
-separate tiles and store each tile in a file. For example the COSMOS
-survey's Hubble space telescope, ACS F814W image consists of 81
-separate FITS images, with each one having a volume of 1.7 Giga bytes.
+Astronomical surveys are usually extremely large. So large in fact, that
+the whole survey will not fit into a reasonably sized file. Because of
+this, surveys usually cut the final image into separate tiles and store
+each tile in a file. For example the COSMOS survey's Hubble space
+telescope, ACS F814W image consists of 81 separate FITS images, with each
+one having a volume of 1.7 Giga bytes.
 
 @cindex Stitch multiple images
 Even though the tile sizes are chosen to be large enough that too many
-galaxies don't fall on the edges of the tiles, inevitably some do and
-if you simply crop the image of the galaxy from that one tile, you
+galaxies/targets don't fall on the edges of the tiles, inevitably some
+do. So when you simply crop the image of such targets from one tile, you
 will miss a large area of the surrounding sky (which is essential in
-estimating the noise). Therefore in its WCS mode, ImageCrop will
-stitch parts of the tiles that are relevant for a target (with the
-given width) from all the input images that cover that region into the
-output. Of course, the tiles have to be present in the list of input
-files.
+estimating the noise). Therefore in its WCS mode, ImageCrop will stitch
+parts of the tiles that are relevant for a target (with the given width)
+from all the input images that cover that region into the output. Of
+course, the tiles have to be present in the list of input files.
 
-ImageCrop also has facilities to crop arbitrary polygons from a set of
-tiles by stitching the relevant parts of different tiles within the
-polygon, see @option{--polygon} in @ref{Invoking
-astimgcrop}. Alternatively, it can crop out rectangular regions from
-one image which can come in handy when removing the bias pixels in raw
-image processing, see @ref{Crop section syntax}.
+Besides cropping postage stamps around certain coordinates, ImageCrop can
+also crop arbitrary polygons from an image (or a set of tiles by stitching
+the relevant parts of different tiles within the polygon), see
+@option{--polygon} in @ref{Invoking astimgcrop}. Alternatively, it can crop
+out rectangular regions through the @option{--section} option from one
+image, see @ref{Crop section syntax}.
 
 @menu
 * ImageCrop modes::             Basic ImageCrop modes.
@@ -6861,7 +6856,7 @@ image processing, see @ref{Crop section syntax}.
 @node ImageCrop modes, Crop section syntax, ImageCrop, ImageCrop
 @subsection ImageCrop modes
 In order to be as comprehensive as possible, ImageCrop has two major
-modes of operation listed below.
+@emph{image} and @emph{WCS} modes as described below.
 
 @table @asis
 @item Image
@@ -7106,6 +7101,15 @@ The options can be classified into the following contexts: Input,
 Output and operating mode options. Options that are common to all
 Gnuastro program are listed in @ref{Common options} and will not be
 repeated here.
+
+When you are specifying the crop vertices your self (through
+@option{--section}, or @option{--polygon}) on relatively small regions
+(depending on the resolution of your images) the outputs from image and WCS
+mode can be approximately equivalent. However, as the crop sizes get large,
+the curved nature of the WCS coordinates have to be considered. For
+example, when using @option{--section}, the right ascension of the bottom
+left and top left corners will not be equal. If you only want regions
+within a given right ascension, use @option{--polygon} in WCS mode.
 
 @cartouche
 @noindent
