@@ -141,9 +141,9 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_CONFIG_KEY,
       "STR",
       0,
-      "Read file STR before default configuration files.",
+      "Read file STR before continuing.",
       -1,
-      NULL, GAL_DATA_TYPE_STRLL
+      NULL, GAL_DATA_TYPE_STRING
     },
     {
       "setdirconf",

@@ -29,7 +29,7 @@ This book documents version @value{VERSION} of the GNU Astronomy Utilities
 (Gnuastro). Gnuastro provides various programs and libraries for
 astronomical data manipulation and analysis.
 
-Copyright @copyright{} 2015-2016 Free Software Foundation, Inc.
+Copyright @copyright{} 2015-2017 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document under
@@ -280,7 +280,6 @@ Common program behavior
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
-* Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Table formats::               Recognized table formats.
 * Getting help::                Getting more information on the go.
@@ -289,14 +288,17 @@ Common program behavior
 Command-line
 
 * Arguments and options::       Basics of options and arguments.
-* Arguments::                   Treatment of arguments.
-* Options::                     How to use GNU style options.
 * Common options::              Common options to all Gnuastro programs.
+
+Arguments and options
+
+* Arguments::
+* Options::
 
 Common options
 
 * Input output::                Common input/output options.
-* Operating modes::             Common operating mode options.
+* Operating mode options::      Common operating mode options.
 
 Configuration files
 
@@ -638,19 +640,20 @@ founding basis of the Gnuastro.
 @cindex GNU Tar
 @cindex Uncompress source
 @cindex Source, uncompress
-Gnuastro has three mandatory dependencies and two optional ones for added
-functionality, see @ref{Dependencies}. The latest official release tarball
-is always available as
+Gnuastro has three mandatory dependencies and three optional dependencies
+for extra functionality, see @ref{Dependencies}. The latest official
+release tarball is always available as
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.gz,
 @file{gnuastro-latest.tar.gz}}. For better compression (faster download),
-we also provide an Lzip compressed tarball at
+and robust archival features, an @url{http://www.nongnu.org/lzip/lzip.html,
+Lzip} compressed tarball is also available at
 @url{http://ftp.gnu.org/gnu/gnuastro/gnuastro-latest.tar.lz,
 @file{gnuastro-latest.tar.lz}}, see @ref{Release tarball} for more details
 on the tarball release. If you have downloaded the tarball in the
 @file{TOPGNUASTRO} directory and the dependencies are installed, you can
 unpack, compile, check and install Gnuastro with the following commands. If
 you use GNU Tar, the same command (@command{$ tar xf}) can also be used to
-unpack @file{.tar.lz} tarballs.
+unpack @file{.tar.lz} tarballs (the Lzip must already be installed).
 
 @example
 $ cd TOPGNUASTRO
@@ -1292,16 +1295,16 @@ us in managing and resolving them sooner.
 
 @cindex Reproducible bug reports
 @item Reproducible bug reports
-If we cannot exactly reproduce your bug, then it is very hard to
-resolve it. So please send us a Minimal working
+If we cannot exactly reproduce your bug, then it is very hard to resolve
+it. So please send us a Minimal working
 example@footnote{@url{http://en.wikipedia.org/wiki/Minimal_Working_Example}}
-along with the description. For example in running a program, please
-send us the full command-line text and the output with the @option{-P}
-option, see @ref{Final parameter values}. If it is caused only for a
-certain input, also send us that input file. In case the input FITS is
-large, please use ImageCrop to only crop the problematic section and
-make it as small as possible so it can easily be uploaded and
-downloaded and not waste the archive's storage, see @ref{ImageCrop}.
+along with the description. For example in running a program, please send
+us the full command-line text and the output with the @option{-P} option,
+see @ref{Operating mode options}. If it is caused only for a certain input,
+also send us that input file. In case the input FITS is large, please use
+ImageCrop to only crop the problematic section and make it as small as
+possible so it can easily be uploaded and downloaded and not waste the
+archive's storage, see @ref{ImageCrop}.
 @end table
 
 @noindent
@@ -2482,10 +2485,11 @@ take effect.
 @cindex libgit2
 @cindex Version control systems
 Git is one of the most common version control systems (see @ref{Version
-controlled source}). When @file{libgit2} is present, all Gnuastro's outputs
-will contain the version number of the working directory's repository for
-future reproducibility. See the @command{COMMIT} keyword header in
-@ref{Output headers} for a discussion.
+controlled source}). When @file{libgit2} is present, and Gnuastro's
+programs are run within a version controlled directory, outputs will
+contain the version number of the working directory's repository for future
+reproducibility. See the @command{COMMIT} keyword header in @ref{Output
+headers} for a discussion.
 
 @item libjpeg
 @pindex libjpeg
@@ -3950,22 +3954,25 @@ If your problem was not listed above, please file a bug report
 @node Common program behavior, Extensions and Tables, Installation, Top
 @chapter Common program behavior
 
-There are some facts that are common to all the programs in Gnuastro
-which are mainly to do with user interaction. In this chapter these
-aspects are discussed. The most basic are the command-line options
-which are common in all the programs for a unified user
-experience. All Gnuastro programs can use configuration files so you
-don't have to specify all the parameters on the command-line each time
-you run a program. The manner of setting, checking and using the these
-files at various levels are also explained. Finally we discuss how you
-can get immediate and distraction-free (without taking your hands off
-the keyboard!) help on the command-line.
+All the programs in Gnuastro share a set of common behavior mainly to do
+with user interaction to facilitate their usage. The most basic is how you
+can configure each program to do what you want: define the input, change
+parameter/option values, or identify the output. All Gnuastro programs can
+also read your desired configuration from pre-defined or user-specified
+files so you don't have to specify all the (sometimes numerous) parameters
+on the command-line each time you run a program. These files define the
+``default'' program behavior in each directory, for each user, or on each
+system. In other cases, some programs can greatly benefit from the many
+threads available in modern CPUs, so here we'll also discuss how you can
+get the most out of your hardware. Among some other issues, we will also
+discuss how you can get immediate and distraction-free (without taking your
+hands off the keyboard!) help, or access to this whole book, on the
+command-line.
 
 @menu
 * Command-line::                How to use the command-line.
 * Configuration files::         Values for unspecified variables.
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
-* Final parameter values::      The final set of used parameters.
 * Automatic output::            About automatic output names.
 * Table formats::               Recognized table formats.
 * Getting help::                Getting more information on the go.
@@ -3976,100 +3983,124 @@ the keyboard!) help on the command-line.
 @section Command-line
 
 All the programs in Gnuastro are customized through the standard GNU style
-command-line options. First a general outline of how to make best use of
-these options is discussed and finally the options that are common to all
-the programs in Gnuastro are listed.
+command-line options. Thus, we'll start by defining this general style that
+is very common in many command-line tools on unix-like operating
+systems. Finally, the options that are common to all the programs in
+Gnuastro are discussed.
 
 @cindex Metacharacters
 @cindex Token separation
 @cindex Command-line token separation
 @cindex Separating tokens on the command-line
-Your full command-line text is passed onto the shell as a string of
-characters. That string is then broken up into separate `words' by any
-`metacharacters' (like space, tab, @command{|}, @command{>} or @command{;})
-that might exist in the text. See the GNU Bash manual, for the complete
-list of meta-characters and other Bash definitions. Its ``Shell Operation''
-section has a short summary of the steps the shell takes before passing the
-commands to the program you called.
+The command-line text that you type is passed onto the shell (or program
+managing the command-line) as a string of characters. See the ``Invoking
+ProgramName'' sections in this manual for some examples of commands with
+each program, for example @ref{Invoking asttable}. That string is then
+broken up into separate @emph{tokens} or @emph{words} by any
+@emph{metacharacters} (like space, tab, @command{|}, @command{>} or
+@command{;}) that might exist in the text. To learn more, please see the
+GNU Bash manual, for the complete list of meta-characters and other GNU
+Bash definitions (GNU Bash is the most common shell program). Its ``Shell
+Operation'' section has a short summary of the steps the shell takes before
+passing the commands to the program you called.
 
 @menu
 * Arguments and options::       Basics of options and arguments.
-* Arguments::                   Treatment of arguments.
-* Options::                     How to use GNU style options.
 * Common options::              Common options to all Gnuastro programs.
 @end menu
 
-@node Arguments and options, Arguments, Command-line, Command-line
+@node Arguments and options, Common options, Command-line, Command-line
 @subsection Arguments and options
 
 @cindex Options to programs
 @cindex Command-line options
 @cindex Arguments to programs
 @cindex Command-line arguments
-On the command-line, the first thing you enter is the name of the
-program you want to run. After that you can specify two types of
-input: @emph{arguments} and @emph{options}.  Arguments are those
-tokens that are not preceded by any hyphens (@command{-}), the program
-is suppose to understand what they are without any help from the
-user.
+On the command-line, the first thing you usually enter is the name of the
+program you want to run. After that, you can specify two types of input:
+@emph{arguments} and @emph{options}. In the GNU-style, arguments are those
+tokens that are not preceded by any hyphens (@command{-}, see
+@ref{Arguments}). Here is one example:
+
+@example
+$ astimgcrop --ra=53.162551 --dec=-27.789676 -w10  hubble-udf.fits
+@end example
+
+In this example, the argument is @file{hubble-udf.fits}. Arguments are most
+commonly the input file names containing your data. Options start with one
+or two hyphens, followed by an identifier for the option (the option's
+name) and its value (see @ref{Options}). Through options you tell the
+program how to interpret the data. In this example, we are running
+@ref{ImageCrop} to crop a region of width 10 arcseconds centered at the
+given RA and Dec from the input Hubble Ultra-Deep Field (UDF) FITS
+image. So options come with an identifier (the option name which is
+separate from their value).
 
 @vindex --help
 @vindex --usage
 @cindex Mandatory arguments
-Arguments can be both mandatory and optional and since there is no
-help from you, their order might also matter (for example in
-@command{cp} which is used for copying). The outputs of
-@option{--usage} and @option{--help} shows which arguments are
-optional and which are mandatory, see @ref{--usage}. As their name
-suggests, @emph{options} are only optional and most of the time you
-don't have to worry about what order you specify them in.
+Arguments can be both mandatory and optional and unlike options they don't
+have any identifiers (or help from you). Hence, their order might also
+matter (for example in @command{cp} which is used for copying one file to
+another location). The outputs of @option{--usage} and @option{--help}
+shows which arguments are optional and which are mandatory, see
+@ref{--usage}. As their name suggests, @emph{options} on the command-line
+can be considered to be optional and most of the time, you don't have to
+worry about what order you specify them in. When the order does matter, or
+the option can be invoked multiple times, it is explicitly mentioned in the
+``Invoking ProgramName'' section of each program.
 
 @cindex Metacharacters on the command-line
 In case your arguments or option values contain any of the shell's
 meta-characters, you have to quote them. If there is only one such
-character, you can use a backslash (@command{\}) before it. If there
-are multiple, it might be easier to simply put your whole argument or
-option value inside of double quotes (@command{"}). In such cases,
-everything inside the double quotes will be seen as one `word'.
+character, you can use a backslash (@command{\}) before it. If there are
+multiple, it might be easier to simply put your whole argument or option
+value inside of double quotes (@command{"}). In such cases, everything
+inside the double quotes will be seen as one token or word.
 
 @cindex HDU
 @cindex Header data unit
-For example let's say you want to specify the Header data unit (HDU) of
-your FITS file using a complex expression like @command{3;
-images(exposure > 100)}. If you simply add these after the
-@option{--hdu} (@option{-h}) option, the programs in Gnuastro will
-read the value to the HDU option as @command{3} and run. Then, Bash
-will attempt to run a separate command @command{images(exposure >
-100)} and complain about a syntax error. This is because the semicolon
-(@command{;}) is an `end of command' character in Bash. To solve
-this problem you can simply put double quotes around the whole string
-you want to pass as seen below:
+For example, let's say you want to specify the header data unit (HDU) of
+your FITS file using a complex expression like `@command{3; images(exposure
+> 100)}'. If you simply add these after the @option{--hdu} (@option{-h})
+option, the programs in Gnuastro will read the value to the HDU option as
+`@command{3}' and run. Then, Bash will attempt to run a separate command
+`@command{images(exposure > 100)}' and complain about a syntax error. This
+is because the semicolon (@command{;}) is an `end of command' character in
+the shell. To solve this problem you can simply put double quotes around
+the whole string you want to pass to @option{--hdu} as seen below:
 @example
 $ astimgcrop --hdu="3; images(exposure > 100)" FITSimage.fits
 @end example
-Alternatively you can put a @command{\} before every metacharacter in
-this string, but probably you will agree with us that the double
-quotes are much more easier, elegant and readable.
+Alternatively you can put a `@command{\}' before every metacharacter in
+this string, but try doing that, and probably you will agree that the
+double quotes are much more easier, elegant and readable.
 
 
 
 
-@node Arguments, Options, Arguments and options, Command-line
-@subsection Arguments
-In Gnuastro, the names of the input data files and ASCII tables are mostly
-specified as arguments, you can generally specify them in any order unless
-otherwise stated for a particular program. Everything particular about how
-a program treats arguments, is explained under the ``Invoking ProgramName''
-section for that program.
+@menu
+* Arguments::
+* Options::
+@end menu
+
+@node Arguments, Options, Arguments and options, Arguments and options
+@subsubsection Arguments
+In Gnuastro, arguments are almost exclusively used as the input data file
+names. Please consult the first few paragraph of the ``Invoking
+ProgramName'' section for each program for a description of what it expects
+as input, how many arguments, or input data, it accepts, or in what
+order. Everything particular about how a program treats arguments, is
+explained under the ``Invoking ProgramName'' section for that program.
 
 Generally, if there is a standard file name extension for a particular
 format, that filename extension is used to separate the kinds of
-arguments. The list below shows what astronomical data formats are
-recognized based on their file name endings. If the program doesn't
-accept any other data format, any other argument that doesn't end with
-the specified extensions below is considered to be a text file
-(usually catalogs). For example @ref{ConvertType} accepts other data
-formats.
+arguments. The list below shows the data formats that are recognized in
+Gnuastro's programs based on their file name endings. Any argument that
+doesn't end with the specified extensions below is considered to be a text
+file (usually catalogs, see @ref{Table formats}). In some cases, a program
+can accept specific formats, for example @ref{ConvertType} also accepts
+@file{.jpg} images.
 
 @cindex Astronomical data suffixes
 @cindex Suffixes, astronomical data
@@ -4107,49 +4138,46 @@ final error by Gnuastro.
 
 
 
-@node Options, Common options, Arguments, Command-line
-@subsection Options
+@node Options,  , Arguments, Arguments and options
+@subsubsection Options
 
 @cindex GNU style options
 @cindex Options, GNU style
 @cindex Options, short (@option{-}) and long (@option{--})
-Command-line options allow configuring the behavior of a program in
-all GNU/Linux applications for each particular execution. Most options
-can be called in two ways: @emph{short} or @emph{long} a small number
-of options in some programs only have the latter type. In the list of
-options provided in @ref{Common options} or those for each program,
-both formats are shown for those which support both. First the short
-is shown then the long. Short options are only one character and only
-have one hyphen (for example @option{-h}) while long options have two
-hyphens an can have many characters (for example @option{--hdu}).
+Command-line options allow configuring the behavior of a program in all
+GNU/Linux applications for each particular execution on a particular input
+data. A single option can be called in two ways: @emph{long} or
+@emph{short}. All options in Gnuastro accept the long format which has two
+hyphens an can have many characters (for example @option{--hdu}). Short
+options only have one hyphen (@key{-}) followed by one character (for
+example @option{-h}). You can see some examples in the list of options in
+@ref{Common options} or those for each program's ``Invoking ProgramName''
+section. Both formats are shown for those which support both. First the
+short is shown then the long.
 
-Usually, the short options are for when you are writing on the command
-line and want to save keystrokes and time. The long options are good
-for shell scripts, where you don't usually have a rush and they
-provide a level of documentation, since they are less cryptic. Usually
+Usually, the short options are for when you are writing on the command-line
+and want to save keystrokes and time. The long options are good for shell
+scripts, where you aren't usually rushing. Long options provide a level of
+documentation, since they are more descriptive and less cryptic. Usually
 after a few months of not running a program, the short options will be
 forgotten and reading your previously written script will not be easy.
 
 @cindex On/Off options
 @cindex Options, on/off
 Some options need to be given a value if they are called and some
-don't. You can think of the latter type of options as on/off
-options. These two types of options can be distinguished using the
-output of the @option{--help} and @option{--usage} options, which are
-common to all GNU software, see @ref{Getting help}. The following
-convention is used for the formats of the values in Gnuastro:
+don't. You can think of the latter type of options as on/off options. These
+two types of options can be distinguished using the output of the
+@option{--help} and @option{--usage} options, which are common to all GNU
+software, see @ref{Getting help}. In Gnuastro we use the following strings
+to specify when the option needs a value and what format that value should
+be in. More specific tests will be done in the program and if the values
+are out of range (for example negative when the program only wants a
+positive value), an error will be reported.
 
 @vtable @option
 
 @item INT
-The value is read as an integer. If a float or a string is provided
-the program will warn you and abort. In most cases, integers are used
-for counting variables, so if they are negative the program will also
-abort.
-
-@item 4or8
-Either the value 4 or 8, any other integer will give a
-warning and abort.
+The value is read as an integer.
 
 @item FLT
 The value is read as a float. There are generally two types, depending
@@ -4201,32 +4229,36 @@ these two dashes will be parsed.
 
 @cindex Repeated options
 @cindex Options, repeated
-If an option with a value is repeated or called more than once, the
-value of the last time it was called will be assigned to it. This very
-useful in complicated situations, for example in scripts. Let's say you
-want to make a small modification to one option value. You can simply
-type the option with a new value in the end of the command and see how
-the script works. If you are satisfied with the change, you can remove
-the original option. If the change wasn't satisfactory, you can remove
-the one you just added and not worry about saving the original
-value. Without this capability, you would have to memorize or save the
-original value somewhere else, run the command and then change the
-value again which is not at all convenient and is potentially cause
-lots of bugs.
+Gnuastro has two types of options with values, those that only take a
+single value are the most common type. If these options are repeated or
+called more than once on the command-line, the value of the last time it
+was called will be assigned to it. This is very useful when you are
+testing/experimenting. Let's say you want to make a small modification to
+one option value. You can simply type the option with a new value in the
+end of the command and see how the script works. If you are satisfied with
+the change, you can remove the original option for human readability. If
+the change wasn't satisfactory, you can remove the one you just added and
+not worry about forgetting the original value. Without this capability, you
+would have to memorize or save the original value somewhere else, run the
+command and then change the value again which is not at all convenient and
+is potentially cause lots of bugs.
+
+On the other hand, some options can be called multiple times in one run of
+a program and can thus take multiple values (for example see the
+@option{--column} option in @ref{Invoking asttable}. In these cases, the
+order of stored values is the same order that you specified on the
+command-line.
 
 @cindex Configuration files
 @cindex Default option values
-When you don't call an option that requires a value, all the programs
-in Gnuastro will check configuration files to find a value for that
-parameter. To learn more about how folder, user and system wide
-configuration files can be set, please see @ref{Configuration
-files}. Another factor that is particular to Gnuastro is that it will
-check the value you have given for each option to see if it is
-reasonable. For example you might mistakenly give a negative, float or
-string value for a FITS image extension or column number. As another
-example, you might give a value larger than unity for an option that
-only accepts fractions (which are always less than unity and
-positive).
+Gnuastro's programs don't keep any internal default values, so some options
+are mandatory and if they don't have a value, the program will complain and
+abort. Most programs have many such options and typing them by hand on
+every call is impractical. To facilitate the user experience, after parsing
+the command-line, Gnuastro's programs read special configuration files to
+get the necessary values for the options you haven't identified on the
+command-line. These configuration files are fully described in
+@ref{Configuration files}.
 
 @cartouche
 @noindent
@@ -4248,38 +4280,30 @@ option or argument as the value which can cause undefined behavior.
 @cartouche
 @noindent
 @cindex Counting from zero.
-@strong{NOTE:} All counting in Gnuastro starts from 0 not 1. So for
-example the first FITS image extension or column in a table are noted
-by 0, not 1. This is the standard in C and all languages that are
-based on it (for example C++, Java and Python).
+@strong{NOTE:} In some contexts Gnuastro's counting starts from 0 and in
+others 1. You can assume by default that counting starts from 1, if it
+starts from 0 for a special option, it will be explicitly mentioned.
 @end cartouche
 
-@node Common options,  , Options, Command-line
+@node Common options,  , Arguments and options, Command-line
 @subsection Common options
 
 @cindex Options common to all programs
 @cindex Gnuastro common options
 To facilitate the job of the users and developers, all the programs in
-Gnuastro share some basic command-line options for the same
-operations where they are relevant. The list of options is provided
-below. It is noteworthy that these similar options are hard-wired into
-the programming of all of Gnuastro programs using GNU C library's
-argument parser merging ability.
-
-@cindex Irrelevant options
-@cindex Options, irrelevant
-For some programs, some of the options, might be irrelevant for
-example MakeProfiles creates FITS images based on a given
-catalog. Therefore no input images (and thus HDUs) are necessary for
-it. In such cases, the option is still listed and if a value is given
-for it, it is completely ignored.
+Gnuastro share some basic command-line options for the options that are
+common to many of the programs. The full list is classified as @ref{Input
+output}, and @ref{Operating mode options}. In some programs, some of the options
+are irrelevant, but still recognized (you won't get an unrecognized option
+error, but the value isn't used). Unless otherwise mentioned, these options
+are identical between all programs.
 
 @menu
 * Input output::                Common input/output options.
-* Operating modes::             Common operating mode options.
+* Operating mode options::      Common operating mode options.
 @end menu
 
-@node Input output, Operating modes, Common options, Common options
+@node Input output, Operating mode options, Common options, Common options
 @subsubsection Input/Output options
 
 These options are to do with the input and outputs of the various
@@ -4289,108 +4313,104 @@ programs.
 
 @cindex HDU
 @cindex Header data unit
-@item -h
-@itemx --hdu
-(@option{=STR}) The number or name of the desired Header Data Unit or
-HDU in the input FITS image or images. A FITS file can store multiple
-HDUs or extensions, each with either an image or a table or nothing at
-all (only a header). Note that counting of the extensions starts from
-0(zero), not 1(one). When specifying the name, case is not important
+@item -h STR/INT
+@itemx --hdu=STR/INT
+The name or number of the desired Header Data Unit, or HDU, in the FITS
+image. A FITS file can store multiple HDUs or extensions, each with either
+an image or a table or nothing at all (only a header). Note that counting
+of the extensions starts from 0(zero), not 1(one). Counting from 0 is
+forced on us by CFITSIO which directly reads the value you give with this
+option (see @ref{CFITSIO}). When specifying the name, case is not important
 so @command{IMAGE}, @command{image} or @command{ImAgE} are equivalent.
 
-A @code{#} is appended to the string you specify for the
+CFITSIO has many capabilities to help you find the extension you want, far
+beyond the simple extension number and name. See CFITSIO manual's ``HDU
+Location Specification'' section for a very complete explanation with
+several examples. A @code{#} is appended to the string you specify for the
 HDU@footnote{With the @code{#} character, CFITSIO will only read the
-desired HDU into your memory, not all the existing HDUs in the fits
-file.} and the result is put in square brackets and appended to the
-FITS file name before calling CFITSIO to read the contents of the HDU
-for all the programs in Gnuastro. CFITSIO has many capabilities to
-help you find the extension you want, far beyond the simple extension
-number and name. See CFITSIO manual's ``HDU Location Specification''
-section for a very complete explanation with several examples.
+desired HDU into your memory, not all the existing HDUs in the fits file.}
+and the result is put in square brackets and appended to the FITS file name
+before calling CFITSIO to read the contents of the HDU for all the programs
+in Gnuastro.
 
-Note that in some programs, the behavior of @option{--hdu} might be
-different, for example see @ref{Invoking astarithmetic}, were it can
-be called multiple times and the value of each all will be stored.
 
-@item -o
-@itemx --output
-(@option{=STR}) The name of the output file or directory. With this
-option the automatic output names explained in @ref{Automatic output}
-are ignored.
+@item -o STR
+@itemx --output=STR
+The name of the output file or directory. With this option the automatic
+output names explained in @ref{Automatic output} are ignored.
 
 @item -D
 @itemx --dontdelete
-By default, if the output file already exists, it will be silently
-replaced with the output of this run of all Gnuastro programs. By
-calling this option, if the output file already exists, the programs
-will warn you and abort.
+By default, if the output file already exists, Gnuastro's programs will
+silently delete it and put their own outputs in its place. When this option
+is activated, if the output file already exists, the programs will not
+delete it, will warn you, and will abort.
 
 @item -K
 @itemx --keepinputdir
-In automatic output names, don't remove the directory information of
-the input file names. As explained in @ref{Automatic output}, if no
-output name is specified, then the output name will be made in the
-existing directory based on your input. If you call this option, the
-directory information of the input will be kept and the output will be
-in the same directory as the input. Note that his is only relevant if
-you are running the program from another directory!
+In automatic output names, don't remove the directory information of the
+input file names. As explained in @ref{Automatic output}, if no output name
+is specified (with @option{--output}), then the output name will be made in
+the existing directory based on your input's file name (ignoring the
+directory of the input). If you call this option, the directory information
+of the input will be kept and the automatically generated output name will
+be in the same directory as the input (usually with a suffix added). Note
+that his is only relevant if you are running the program in a different
+directory than the input data.
 
 @end vtable
 
-@node Operating modes,  , Input output, Common options
-@subsubsection Operating modes
+@node Operating mode options,  , Input output, Common options
+@subsubsection Operating mode options
 
-Another group of options that are common to all the programs in
-Gnuastro are those to do with the general operation of the
-programs. The explanation for those that are not only limited to
-Gnuastro but can be called in all GNU programs start with (GNU
-option).
+Another group of options that are common to all the programs in Gnuastro
+are those to do with the general operation of the programs. The explanation
+for those that are not only limited to Gnuastro but are common to all GNU
+programs start with (GNU option).
 
 @vtable @option
 
 @item --
-(GNU option) Stop parsing the command-line. This option can be useful
-in scripts or when using the shell history. Suppose you have a long
-list of options, and want to see if removing some of them (and using
-the default values) can give a better result. If the ones you want to
-remove are the last ones on the command-line, you don't have to delete
-them, you can just add @option{--} before them and if you don't get
-what you want, you can remove the @option{--} and get the same initial
-result.
+(GNU option) Stop parsing the command-line. This option can be useful in
+scripts or when using the shell history. Suppose you have a long list of
+options, and want to see if removing some of them (to read from
+configuration files, see @ref{Configuration files}) can give a better
+result. If the ones you want to remove are the last ones on the
+command-line, you don't have to delete them, you can just add @option{--}
+before them and if you don't get what you want, you can remove the
+@option{--} and get the same initial result.
 
 @item --usage
-(GNU option) Only print the options and arguments. This is very useful
-for when you know the what the options do, you have just forgot their
-names. See @ref{--usage}.
+(GNU option) Only print the options and arguments and abort. This is very
+useful for when you know the what the options do, and have just forgot
+their long/short identifiers, see @ref{--usage}.
 
 @item -?
 @itemx --help
-(GNU option) Print all options and an explanation. Adding this option
-will print all the options in their short and long formats, also
-displaying which ones need a value if they are called (with an
-@option{=} after the long format). A short explanation is also given
-for what the option is for. The program will quit immediately after
-the message is printed and will not do any form of processing. See
-@ref{--help}.
+(GNU option) Print all options with an explanation and abort. Adding this
+option will print all the options in their short and long formats, also
+displaying which ones need a value if they are called (with an @option{=}
+after the long format followed by a string specifying the format, see
+@ref{Options}). A short explanation is also given for what the option is
+for. The program will quit immediately after the message is printed and
+will not do any form of processing, see @ref{--help}.
 
 @item -V
 @itemx --version
 (GNU option) Print a short message, showing the full name, version,
-copyright information and program authors. On the first line it will
-print the official name (not executable name) and version number of
-the program. It will also print the version of the Gnuastro that the
-program was built with. Following this is a blank line and a copyright
+copyright information and program authors and abort. On the first line, it
+will print the official name (not executable name) and version number of
+the program. Following this is a blank line and a copyright
 information. The program will not run.
 
 @item -q
 @itemx --quiet
-Don't report steps. All the programs in Gnuastro that have multiple
-major steps will report their steps for you to follow while they are
+Don't report steps. All the programs in Gnuastro that have multiple major
+steps will report their steps for you to follow while they are
 operating. If you do not want to see these reports, you can call this
-option and only error messages will be printed if the program is
-aborted. If the steps are done very fast (depending on the properties
-of your input) disabling these reports will also decrease running
-time.
+option and only error/warning messages will be printed. If the steps are
+done very fast (depending on the properties of your input) disabling these
+reports will also decrease running time.
 
 @item --cite
 Print the Bib@TeX{} entry for Gnuastro and the particular program (if
@@ -4410,33 +4430,57 @@ devoted to Gnuastro will be published, see @ref{GNU Astronomy Utilities
 
 @item -P
 @itemx --printparams
-Print the final values used for all the parameters and abort. See
-@ref{Final parameter values} for more details.
+With this option, Gnuastro's programs will read your command-line options
+and all the configuration files. If there is no problem (like a missing
+parameter or a value in the wrong format or range) and immediately before
+actually running, the programs will print the full list of option names,
+values and descriptions, sorted and grouped by context and abort. They will
+also report the version number, the date they were configured on your
+system and the time they were reported.
 
-@item --config
-(@option{=STR}) Read the file given to this option as a configuration file
-before any of the other configuration files. Multiple instances of this
-option are acceptable, allowing specification of multiple configuration
-files will be parsed before the default ones in the same order that this
-option was called on the command line. This option is only relevant on the
-command-line, within a configuration file, it is ignored.
+As an example, you can give your full command-line options and even the
+input and output file names and finally just add @option{-P} to check if
+all the parameters are finely set. If everything is ok, you can just run
+the same command (easily retrieved from the shell history, with the top
+arrow key) and simply remove the last two characters that showed this
+option.
+
+Since no program will actually start its processing when this option
+is called, the otherwise mandatory arguments for each program (for
+example input image or catalog files) are no longer required when you
+call this option.
+
+@item --config=STR
+Parse @option{STR} as a configuration file immediately when this option is
+confronted (see @ref{Configuration files}). The @option{--config} option
+can be called multiple times in one run of any Gnuastro program on the
+command-line or in the configuration files. In any case, it will be
+immediately read (before parsing the rest of the options on the
+command-line, or lines in a configuration file).
+
+Note that by definition, later options on the command-line still take
+precedence over those in these in any configuration file, including the
+file(s) given to this option. Also see @option{--lastconfig} and
+@option{--onlyversion} on how this option can be used for reproducible
+results.
 
 @item -S
 @itemx --setdirconf
-Update the current directory configuration file from the given command
-line options and quit, see @ref{Configuration files}. The values of
-your options are added to the configuration file in the current
-directory. If the configuration file or folder doesn't exist, it will
-be created. If it exists but has different values for those options,
-they will be given the new values. In any case, the program will not
-run, but the contents of its updated configuration file are printed
-for you to inspect.
+Update the current directory configuration file for the Gnuastro program
+and quit. The full set of command-line and configuration file options will
+be parsed and options with a value will be written in the current directory
+configuration file for this program (see @ref{Configuration files}). If the
+configuration file or its directory doesn't exist, it will be created. If a
+configuration file exists it will be replaced (after it, and all other
+configuration files have been read). In any case, the program will not run.
 
-This is the recommended method to fill the configuration file for all
-future calls to one of the Gnuastro programs in a folder. It will
-internally check if your values are in the correct range and type and
-save them according to the configuration file format, see
-@ref{Configuration file format}.
+This is the recommended method@footnote{Alternatively, you can use your
+favorite text editor.} to edit/set the configuration file for all future
+calls to Gnuastro's programs. It will internally check if your values are
+in the correct range and type and save them according to the configuration
+file format, see @ref{Configuration file format}. So if there are
+unreasonable values to some options, the program will notify you and abort
+before writing the final configuration file.
 
 When this option is called, the otherwise mandatory arguments, for
 example input image or catalog file(s), are no longer mandatory (since
@@ -4444,26 +4488,30 @@ the program will not run).
 
 @item -U
 @itemx --setusrconf
-Update the user configuration file from the command-line options and
-quit. See explanation under @option{--setdirconf} for more details.
+Update the user configuration file and quit (see @ref{Configuration
+files}). See explanation under @option{--setdirconf} for more details.
 
 @item --lastconfig
-This is the last configuration file. When this option is confronted in a
-configuration file (or even on the command-line), no other configuration
-file will be parsed, see @ref{Configuration file precedence} and
-@ref{Current directory and User wide}. On the command-line this option
-doesn't take any values, but in a configuration file, it takes the values
-of @option{0} or @option{1}, see @ref{Configuration file format}. If it is
-present in a configuration file (and has a value of @option{0}), then all
-later occurances of this option will be ignored).
+This is the last configuration file that must be read. When this option is
+confronted in any stage of reading the options (on the command-line or in a
+configuration file), no other configuration file will be parsed, see
+@ref{Configuration file precedence} and @ref{Current directory and User
+wide}. Like all on/off options, on the command-line, this option doesn't
+take any values. But in a configuration file, it takes the values of
+@option{0} or @option{1}, see @ref{Configuration file format}. If it is
+present in a configuration file with a value of @option{0}, then all later
+occurances of this option will be ignored.
 
 
-@item --onlyversion
-(@option{=STR}) Only run the program if its version is equal with the
-string of characters given to this option. Note that it is not compared as
-a number, but as a string of characters, so @option{0}, or @option{0.0} and
-@option{0.00} are different. This option will report an error and abort as
-soon as it is confronted by the command-line or configuration file parser.
+@item --onlyversion=STR
+Only run the program if Gnuastro's version is exactly equal to @option{STR}
+(see @ref{Version numbering}). Note that it is not compared as a number,
+but as a string of characters, so @option{0}, or @option{0.0} and
+@option{0.00} are different. If the running Gnuastro version is different,
+then thiss option will report an error and abort as soon as it is
+confronted on the command-line or in a configuration file. If the running
+Gnuastro version is the same as @option{STR}, then the program will run as
+if this option was not called.
 
 This is useful if you want your results to be exactly reproducible and not
 mistakenly run with an updated/newer or older version of the
@@ -4483,43 +4531,53 @@ results of this command: @command{astnoisechisel image.fits
 --detquant=0.95} (along with various options set in various configuration
 files). You can save the state of NoiseChisel and reproduce that exact
 result on @file{image.fits} later by following these steps (the the extra
-spaces are only for easy readability, if you want to try it out, only one
-space between each token is enough).
+spaces, and @key{\}, are only for easy readability, if you want to try it
+out, only one space between each token is enough).
 
 @example
-$ echo "onlyversion X.XX"                         > reproducible.conf
-$ echo "lastconfig 1"                            >> reproducible.conf
-$ astnoisechisel image.fits --detquant=0.95 -P   >> reproducible.conf
+$ echo "onlyversion X.XX"             > reproducible.conf
+$ echo "lastconfig 1"                >> reproducible.conf
+$ astnoisechisel image.fits --detquant=0.95 -P       \
+                                     >> reproducible.conf
 @end example
 
 @option{--onlyversion} was available from Gnuastro 0.0, so putting it
 immediately at the start of a configuration file will ensure that later,
 you (or others using different version) won't get a non-recognized option
-error. Through the @option{--lastconfig} option will informing the other
-NoiseChisel to not parse any other configuration files. Finally, in the
-third command with the @option{-P} (short for @option{--printparams})
-option, NoiseChisel will print all the option values visible to it (in all
-the configuration files). Hence, you don't have to worry about remembering
-the (possibly) different options in the different configuration
-files. Afterwards, if you run NoiseChisel as shown below (telling it to
-read this configuration files), you can be sure that there will either be
-an error (for version mis-match) or it will produce exactly the same result
-that you got before.
+error in case an option was added/removed. @option{--lastconfig} will
+inform the installed NoiseChisel to not parse any other configuration
+files. This is done because we don't want the user's user-wide or system
+wide option values affecting our results. Finally, with the third command,
+which has a @option{-P} (short for @option{--printparams}), NoiseChisel
+will print all the option values visible to it (in all the configuration
+files) and the shell will append them to @file{reproduce.conf}. Hence, you
+don't have to worry about remembering the (possibly) different options in
+the different configuration files.
+
+Afterwards, if you run NoiseChisel as shown below (telling it to read this
+configuration file with the @file{--config} option). You can be sure that
+there will either be an error (for version mis-match) or it will produce
+exactly the same result that you got before.
 
 @example
 $ astnoisechisel --config=reproducible.conf
 @end example
 
-@item --nolog
-For programs which generate Log files, if this option is called, no
-Log file will be generated.
+@item --log
+Some programs can generate extra information about their outputs in a log
+file. When this option is called in those programs, the log file will also
+be printed. If the program doesn't generate a log file, this option is
+ignored.
 
 @cindex CPU threads, set number
 @cindex Number of CPU threads to use
-@item -N
-@itemx --numthreads
-(@option{=INT}) Set the number of CPU threads to use. See @ref{Threads in
-Gnuastro}.
+@item -N INT
+@itemx --numthreads=INT
+Use @option{INT} CPU threads when running a Gnuastro program (see
+@ref{Threads in Gnuastro}). Note that multi-threaded programming is only
+relevant to some programs. In others, this option will be ignored. If this
+option is not specified on the command-line or any configuration file, the
+number of threads will be determined by the programs at configuration time.
 
 @end vtable
 
@@ -4555,19 +4613,19 @@ The thing to have in mind is that none of the programs in Gnuastro keep any
 internal default value. All the values must either be stored in one of the
 configuration files or explicitly called in the command-line. In case the
 necessary parameters are not given through any of these methods, the
-program will list the missing necessary parameters and abort. The only
-exception to this is @option{--numthreads}, whose default value is
-determined at run-time using the number of threads available to your
-system, see @ref{Threads in Gnuastro}. Of course, you can
-still provide a default value for the number of threads at any of the
-levels below, but if you don't, the program will not abort. Also note that
-through automatic output name generation, the value to the @option{--output}
-option is also not mandatory on the command-line or in the configuration
-files for all programs which don't rely on that value as an
-input@footnote{One example of a program which uses the value given to
-@option{--output} as an input is ConvertType, this value specifies the type
-of the output through the value to @option{--output}, see @ref{Invoking
-astconvertt}.}, see @ref{Automatic output}.
+program will print a missing option error and abort. The only exception to
+this is @option{--numthreads}, whose default value is determined at
+run-time using the number of threads available to your system, see
+@ref{Threads in Gnuastro}. Of course, you can still provide a default value
+for the number of threads at any of the levels below, but if you don't, the
+program will not abort. Also note that through automatic output name
+generation, the value to the @option{--output} option is also not mandatory
+on the command-line or in the configuration files for all programs which
+don't rely on that value as an input@footnote{One example of a program
+which uses the value given to @option{--output} as an input is ConvertType,
+this value specifies the type of the output through the value to
+@option{--output}, see @ref{Invoking astconvertt}.}, see @ref{Automatic
+output}.
 
 
 
@@ -4583,46 +4641,44 @@ astconvertt}.}, see @ref{Automatic output}.
 
 @cindex Configuration file suffix
 The configuration files for each program have the standard program
-executable name with a @file{.conf} suffix. When you download the
-source code, you can find them in the same directory as the source
-code of each program, see @ref{Program source}.
+executable name with a `@file{.conf}' suffix. When you download the source
+code, you can find them in the same directory as the source code of each
+program, see @ref{Program source}.
 
 @cindex White space character
 @cindex Configuration file format
-Any line in the configuration file whose first non-white character is
-a @key{#} is considered to be a comment and is ignored. The same goes
-for an empty line. The name of the parameter is the same as the long
-format of the command-line option for that parameter. The parameter
-name and parameter value have to be separated by any number of
-`white-space' characters: space, tab or vertical tab. By default
-several space characters are used. If the value of an option has space
-characters (most commonly for the @option{hdu} option), then double
-quotes can be used to specify the full value.
+Any line in the configuration file whose first non-white character is a
+@key{#} is considered to be a comment and is ignored. An empty line is also
+similarly ignored. The long name of the option should be used as an
+identifier. The parameter name and parameter value have to be separated by
+any number of `white-space' characters: space, tab or vertical tab. By
+default several space characters are used. If the value of an option has
+space characters (most commonly for the @option{hdu} option), then the full
+value can be enclosed in double quotation signs (@key{"}, similar to the
+example in @ref{Arguments and options}). If it is an option without a value
+in the @option{--help} output (on/off option, see @ref{Options}), then the
+value should be @option{1} if it is to be `on' and @option{0} otherwise.
 
 In each non-commented and non-blank line, any text after the first two
-words (given the conditions above) is ignored. If it is an option
-without a value in the @option{--help} output (on/off option, see
-@ref{Options}), then the value should be @option{1} if it is to be
-`on' and @option{0} otherwise. If an option is not recognized in the
-configuration file, the name of the file and unrecognized option will
-be reported and the program will abort.  If a parameter is repeated
-more more than once in the configuration files and it is not set on
-the command-line, then only the first value will be used, the rest
-will be ignored.
+words (option identifier and value) is ignored. If an option identifier is
+not recognized in the configuration file, the name of the file, the line
+number of the unrecognized option, and the unrecognized identifier name
+will be reported and the program will abort. If a parameter is repeated
+more more than once in the configuration files, accepts only one value, and
+is not set on the command-line, then only the first value will be used, the
+rest will be ignored.
 
 @cindex Writing configuration files
 @cindex Automatic configuration file writing
 @cindex Configuration files, writing
-You can build or edit any of the directories and the configuration
-files yourself using any text editor.  However, it is recommended to
-use the @option{--setdirconf} and @option{--setusrconf} options to set
-default values for the current directory or this user, see
-@ref{Operating modes}. With these options, the values you give will be
-checked as explained in @ref{Options} before writing in the
-current directory's configuration file. They will also print a set of
-commented lines guiding the reader and will also classify the options
-based on their context and write them in their logical order to be
-more understandable.
+You can build or edit any of the directories and the configuration files
+yourself using any text editor.  However, it is recommended to use the
+@option{--setdirconf} and @option{--setusrconf} options to set default
+values for the current directory or this user, see @ref{Operating mode
+options}. With these options, the values you give will be checked before
+writing in the configuration file. They will also print a set of commented
+lines guiding the reader and will also classify the options based on their
+context and write them in their logical order to be more understandable.
 
 
 @node Configuration file precedence, Current directory and User wide, Configuration file format, Configuration files
@@ -4631,71 +4687,75 @@ more understandable.
 @cindex Configuration file precedence
 @cindex Configuration file directories
 @cindex Precedence, configuration files
-The parameter values in all the programs of Gnuastro will be filled in the
-following order. Such that if a parameter is assigned a value in an earlier
-step, any value for that parameter in a later step will be ignored. Note
-that if the @option{lastconfig} option is specified in any step below, all
-later files will be ignored (see @ref{Operating modes}).
+The option values in all the programs of Gnuastro will be filled in the
+following order. If an option only takes one value which is given in an
+earlier step, any value for that option in a later step will be
+ignored. Note that if the @option{lastconfig} option is specified in any
+step below, all later files will be ignored (see @ref{Operating mode
+options}). The basic idea behind setting this progressive state of checking
+for parameter values is that separate users of a computer or separate
+folders in a user's file system might need different values for some
+parameters.
+
+In each step, there can also be a configuration file containing the common
+options in all the programs: @file{gnuastro.conf} (see @ref{Common
+options}). If options specific to one program are specified in this file,
+there will be un-recognized option errors, or unexpected behavior if the
+option has different behavior in another program. On the other hand, there
+is no problem with @file{astprogname.conf} containing common
+options@footnote{As an example, the @option{--setdirconf} and
+@option{--setusrconf} options will also write the common options they have
+read in their produced @file{astprogname.conf}.}.
+
+Note that through the @option{--config} and @option{--lastconfig} options
+you can define other files to parse for option values, or stop the reading
+of subsequent configuration files in the list below (see @ref{Operating
+mode options}). Recall that the file given to @option{--config} is parsed
+immediately when this option is confronted (on the command-line or in a
+configuration file).
 
 @enumerate
 @item
-Command-line options, for this particular execution.
+Command-line options, for a particular run of ProgramName.
 
 @item
-Any file(s) given to the @option{--config} option (in the same order that
-this option was called, see @ref{Operating modes}).
+@file{.gnuastro/gnuastro.conf} is parsed by all Gnuastro programs in the
+current directory.
 
 @item
-Program-specific configuration file in current directory, for example
-@file{.gnuastro/astnoisechisel.conf}, or @file{.gnuastro/astimgcrop.conf}.
+@file{.gnuastro/astprogname.conf} is parsed by ProgramName in the current
+directory.
 
 @item
-General configuration file in current directory:
-@file{.gnuastro/gnuastro.conf}.
+@file{$HOME/.local/etc/gnuastro.conf} is parsed by all Gnuastro programs in
+the user's home directory (see @ref{Current directory and User wide}).
 
 @item
-Program-specific configuration file in your home directory
-(@file{$HOME/.local/etc/}), see below). For example
-@file{$HOME/.local/etc/astnoisechisel.conf}. For any Gnuastro program you
-run as this user.
+@file{$HOME/.local/etc/astprogname.conf} is parsed by ProgramName in the
+user's home directory (see @ref{Current directory and User wide}).
 
 @item
-General Gnuastro configuration file in your home directory:
-@file{$HOME/.local/etc/gnuastro.conf}, see bellow.
+@file{prefix/etc/gnuastro.conf} is parsed by all Gnuastro programs in the
+system-wide installation directory (see @ref{System wide} for
+@file{prefix}).
 
 @item
-Program-specific configuration file in a system wide directory for any user
-on that computer (@file{prefix/etc/}, see @ref{Installation directory} for
-the value of @file{prefix}). For example
-@file{prefix/etc/astnoisechisel.conf}.
+@file{prefix/etc/astprogname.conf} is parsed by ProgramName in the
+system-wide installation directory (see @ref{System wide} for
+@file{prefix}).
 
-@item
-General Gnuastro configuration file in a system wide directory:
-@file{prefix/etc/gnuastro.conf}
 @end enumerate
 @noindent
 
-The @file{gnuastro.conf} configuration files should only contain common
-options (see @ref{Common options}), otherwise there will be un-recognized
-option errors and the programs will abort, or give unexpected behavior if
-the option has different behavior in another program. On the other hand,
-there is no problem with program-specific configuration files containing
-common options.
-
-The basic idea behind setting this progressive state of checking for
-parameter values is that separate users of a computer or separate
-folders in a user's file system might need different values for some
-parameters and the same values for others.
-
-For example raw telescope images usually have their main image extension in
-the second FITS extension, while processed FITS images usually only have
-one extension. If your system-wide default input extension is 0 (the
-first), then when you want to work with the former group of data you have
-to explicitly mention it to the programs every time. With this progressive
-state of default values to check, you can set different default values for
-the different directories that you would like to run Gnuastro in for your
-different purposes, so you won't have to worry about this issue any
-more.
+One example of benefiting from these configuration files can be this: raw
+telescope images usually have their main image extension in the second FITS
+extension, while processed FITS images usually only have one extension. If
+your system-wide default input extension is 0 (the first), then when you
+want to work with the former group of data you have to explicitly mention
+it to the programs every time. With this progressive state of default
+values to check, you can set different default values for the different
+directories that you would like to run Gnuastro in for your different
+purposes, so you won't have to worry about this issue any more.
 
 The same can be said about the @file{gnuastro.conf} files: by specifying a
 behavior in this single file, all Gnuastro programs in the respective
@@ -4708,29 +4768,27 @@ same name as a given output (see @ref{Input output}).
 @node Current directory and User wide, System wide, Configuration file precedence, Configuration files
 @subsection Current directory and User wide
 
-@cindex @file{HOME}
+@cindex @file{$HOME}
 @cindex @file{./.gnuastro/}
-@cindex @file{HOME/.local/etc/}
-For the current (local) and user-wide directories, the configuration
-files are stored in the hidden sub-directories named
-@file{./.gnuastro/} and @file{HOME/.local/etc/} respectively. Unless
-you have changed it, the @file{HOME} environment variable should point
-to your home directory. You can check it by running @command{$ echo
-$HOME}. Each time you run any of the programs in Gnuastro, this
-environment variable is read and placed in the above address. So if
-you suddenly see that your home configuration files are not being
-read, probably you (or some other program) has changed the value of
-this environment variable.
+@cindex @file{$HOME/.local/etc/}
+For the current (local) and user-wide directories, the configuration files
+are stored in the hidden sub-directories named @file{.gnuastro/} and
+@file{$HOME/.local/etc/} respectively. Unless you have changed it, the
+@file{$HOME} environment variable should point to your home directory. You
+can check it by running @command{$ echo $HOME}. Each time you run any of
+the programs in Gnuastro, this environment variable is read and placed in
+the above address. So if you suddenly see that your home configuration
+files are not being read, probably you (or some other program) has changed
+the value of this environment variable.
 
 @vindex --setdirconf
 @vindex --setusrconf
 Although it might cause confusions like above, this dependence on the
-@file{HOME} environment variable enables you to temporarily use a
-different directory as your home directory. This can come in handy in
-complicated situations. To set the user or current directory
-configuration files based on your command-line input, you can use the
-@option{--setdirconf} or @option{--setusrconf}, see @ref{Operating
-modes}
+@file{HOME} environment variable enables you to temporarily use a different
+directory as your home directory. This can come in handy in complicated
+situations. To set the user or current directory configuration files based
+on your command-line input, you can use the @option{--setdirconf} or
+@option{--setusrconf}, see @ref{Operating mode options}.
 
 
 
@@ -4740,34 +4798,34 @@ modes}
 @cindex @file{prefix/etc/}
 @cindex System wide configuration files
 @cindex Configuration files, system wide
-When Gnuastro is installed, the configuration files that are shipped
-with the distribution are copied into the (possibly system wide)
-@file{prefix/etc/} directory. See @ref{Configuring} for more details
-on @file{prefix} (by default it is: @file{/usr/local}). This directory
-is the final place (with the lowest priority) that the programs in
-Gnuastro will check to retrieve parameter values.
+When Gnuastro is installed, the configuration files that are shipped with
+the distribution are copied into the (possibly system wide)
+@file{prefix/etc/} directory. For more details on @file{prefix}, see
+@ref{Installation directory} (by default it is: @file{/usr/local}). This
+directory is the final place (with the lowest priority) that the programs
+in Gnuastro will check to retrieve parameter values.
 
-If you remove a parameter and its value from the files in this system
-wide directory, you either have to specify it in more immediate
-configuration files or set it each time in the command-line. Recall
-that none of the programs in Gnuastro keep any internal default
-values and will abort if they don't find a value for the necessary
-parameters (except the number of threads). So even though you might
-never use a parameter, it still has to be at least available in this
-system-wide configuration file.
+If you remove an option and its value from the system wide configuration
+files, you either have to specify it in more immediate configuration files
+or set it each time in the command-line. Recall that none of the programs
+in Gnuastro keep any internal default values and will abort if they don't
+find a value for the necessary parameters (except the number of threads and
+output file name). So even though you might never expect to use an optional
+option, it safe to have it available in this system-wide configuration file
+even if you don't intend to use it frequently.
 
-In case you install Gnuastro from your distribution's repositories,
-@file{prefix} will either be set to @file{/} (the root directory) or
-@file{/usr}, so you can find the system wide configuration variables
-in @file{/etc/} or @file{/usr/etc/}. The prefix of @file{/usr/local/}
-is conventionally used for programs you install from source by your
-self.
-
-
+Note that in case you install Gnuastro from your distribution's
+repositories, @file{prefix} will either be set to @file{/} (the root
+directory) or @file{/usr}, so you can find the system wide configuration
+variables in @file{/etc/} or @file{/usr/etc/}. The prefix of
+@file{/usr/local/} is conventionally used for programs you install from
+source by your self as in @ref{Quick start}.
 
 
 
-@node Threads in Gnuastro, Final parameter values, Configuration files, Common program behavior
+
+
+@node Threads in Gnuastro, Automatic output, Configuration files, Common program behavior
 @section Threads in Gnuastro
 
 @pindex nproc
@@ -4795,7 +4853,7 @@ with the command @command{$ nproc} command (part of GNU Coreutils).
 Gnuastro's programs can find the number of threads available to your system
 internally at run-time (when you execute the program). However, if a value
 is given to the @option{--numthreads} option, the given number will be
-used, see @ref{Operating modes} and @ref{Configuration files} for ways to
+used, see @ref{Operating mode options} and @ref{Configuration files} for ways to
 use this option. Thus @option{--numthreads} is the only common option in
 Gnuastro's programs with a value that doesn't have to be specified anywhere
 on the command-line or in the configuration files.
@@ -4962,91 +5020,7 @@ your exciting science.} are very important.
 
 
 
-@node Final parameter values, Automatic output, Threads in Gnuastro, Common program behavior
-@section Final parameter values, reproduce previous results
-
-@vindex -P
-@vindex --printparams
-@cindex Final parameter value checking
-@cindex Checking final parameter values
-The input parameters can be specified in many places, either on the
-command-line or in at least one of several configuration files, see
-@ref{Configuration files}. Therefore, it often happens that before
-running a program on a certain data set, you want to see the values
-for the parameters that the program will use after it has read your
-command-line options and all the configuration files in their correct
-order. You might also want to save the list with the output so you can
-reproduce the same results at a later time, this is very important
-when you want to use your results in a report or paper.
-
-If you call the @option{--printparams} option, all Gnuastro programs
-will read your command-line parameters and all the configuration
-files. If there is no problem (like a missing parameter or a value in
-the wrong format) and immediately before actually running, the
-programs will print the full list of parameter names and values sorted
-and grouped by context and quit. They will also report their version
-number, the date they were configured on your system and the time they
-were reported.
-
-As an example, you can give your full command-line options and even
-the input and output file names and finally just add @option{-P} to
-check if all the parameters are finely set. If everything is ok, you
-can just run the same command (easily retrieved from the bash history,
-with the top arrow key) and simply remove the last two characters that
-showed this option.
-
-Since no program will actually start its processing when this option
-is called, the otherwise mandatory arguments for each program (for
-example input image or catalog files) are no longer required when you
-call this option.
-
-@cindex Bash history
-@cindex Shell redirection
-@cindex Redirection of output
-In case you want to store the list of parameters for later
-reproduction of the same results, you can do so with the GNU Bash
-re-direction tool. For example after you have produced the results you
-want to store, you can save all the parameters that were used in a
-file named @file{parameters.txt} in the following manner. Using shell
-history you can retrieve the last command you entered and simply add
-@command{-P > parameters.txt} to it, for example:
-
-@example
-$ astimgcrop --racol=2 --deccol=3 IN.fits cat.txt -P > parameters.txt
-@end example
-
-@cindex Reproducible results
-@noindent
-All the parameters along with the extra data explained before will be
-stored in the plain text @file{parameters.txt} file through the
-shell's redirection mechanism (@command{>}). The output of
-@option{--printparams} conforms with the configuration file
-formats@footnote{They are both written by the same function.}. By
-taking the following steps, you can use this file as a configuration
-file to reproduce your results at a later time.
-
-@enumerate
-@item
-Set the file name based on the standard configuration file names, see
-@ref{Configuration file format}.
-
-@item
-Later on (when ever you want to re-produce your results), copy the
-file in the @file{./.gnuastro/} directory of your current
-directory.
-@end enumerate
-
-@noindent
-In this manner, this file will be read as a current directory
-configuration file and since all the parameters are defined in it, no
-other configuration file value will be used.
-
-
-
-
-
-
-@node Automatic output, Table formats, Final parameter values, Common program behavior
+@node Automatic output, Table formats, Threads in Gnuastro, Common program behavior
 @section Automatic output
 
 @cindex Automatic output file names
@@ -5516,7 +5490,7 @@ two contexts are always options to do with the input and output
 respectively. For example input image extensions or supplementary
 input files for the inputs. The last class of options is also fixed in
 all of Gnuastro, it shows operating mode options. Most of these
-options are already explained in @ref{Operating modes}.
+options are already explained in @ref{Operating mode options}.
 
 @cindex Long outputs
 @cindex Redirection of output
@@ -5981,17 +5955,16 @@ options} for a list of the options that are common to all Gnuastro
 programs, they are not repeated here.
 @table @option
 
-@item -a
-@itemx --asis
-(@option{=STR}) Write the string within this argument exactly into the
-FITS file header with no modifications. If it does not conform to the
-FITS standards, then it might cause trouble, so please be very careful
-with this option. If you want to define the keyword from scratch, it
-is best to use the @option{--write} option (see below) and let CFITSIO
-worry about the standards. The best way to use this option is when you
-want to add a keyword from one FITS file to another unchanged and
-untouched. Below is an example of such a case that can be very useful
-sometimes:
+@item -a STR
+@itemx --asis=STR
+Write @option{STR} exactly into the FITS file header with no
+modifications. If it does not conform to the FITS standards, then it might
+cause trouble, so please be very careful with this option. If you want to
+define the keyword from scratch, it is best to use the @option{--write}
+option (see below) and let CFITSIO worry about the standards. The best way
+to use this option is when you want to add a keyword from one FITS file to
+another unchanged and untouched. Below is an example of such a case that
+can be very useful sometimes:
 
 @example
 $ key=$(astheader firstimage.fits | grep KEYWORD)
@@ -6009,31 +5982,31 @@ work on the file afterwords. See the ``Quoting'' section of the GNU
 Bash manual for more information if your keyword has the special
 characters @key{$}, @key{`}, or @key{\}.
 
-@item -d
-@itemx --delete
-(@option{=STR}) Delete one instance of the desired keyword. Multiple
-instances of @option{--delete} can be given (possibly even for the
-same keyword). All keywords given will be removed from the headers in
-the opposite order (last given keyword will be deleted first). If the
+@item -d STR
+@itemx --delete=STR
+Delete one instance of the @option{STR} keyword from the FITS
+header. Multiple instances of @option{--delete} can be given (possibly even
+for the same keyword). All keywords given will be removed from the headers
+in the opposite order (last given keyword will be deleted first). If the
 keyword doesn't exist, Header will give a warning and return with a
 non-zero value, but will not stop.
 
-@item -r
-@itemx --rename
-(@option{=STR}) Rename a keyword to a new value. The old name and the
-new name should be separated by either a comma (@key{,}) or a space
-character. Note that if you use a space character, you have to put the
-value to this option within double quotation marks (@key{"}) so the
+@item -r STR
+@itemx --rename=STR
+Rename a keyword to a new value. @option{STR} contains both the existing
+and new names, which should be separated by either a comma (@key{,}) or a
+space character. Note that if you use a space character, you have to put
+the value to this option within double quotation marks (@key{"}) so the
 space character is not interpreted as an option separator. Multiple
-instances of @option{--rename} can be given in one command. The
-keywords will be renamed in the specified order.
+instances of @option{--rename} can be given in one command. The keywords
+will be renamed in the specified order.
 
-@item -u
-@itemx --update
-(@option{=STR}) Update a keyword, its value, its comments and its
-units all defined separately. If there are multiple instances of the
-keyword in the header, they will be changed from top to bottom (with
-multiple @option{--update} options).
+@item -u STR
+@itemx --update=STR
+Update a keyword, its value, its comments and its units in the format
+described below. If there are multiple instances of the keyword in the
+header, they will be changed from top to bottom (with multiple
+@option{--update} options).
 
 @noindent
 The format of the values to this option can best be specified with an
@@ -6066,24 +6039,22 @@ around each individual token that needs it. Note that without double
 quotation marks, space characters will be seen as option separators and can
 lead to undefined behavior.
 
-@item -w
-@itemx --write
-(@option{=STR}) Write a keyword to the header. For the possible value input
-formats, comments and units for the keyword, see the @option{--update}
-option above.
+@item -w STR
+@itemx --write=STR
+Write a keyword to the header. For the possible value input formats,
+comments and units for the keyword, see the @option{--update} option above.
 
-@item -H
-@itemx --history
-(@option{=STR}) Add a @code{HISTORY} keyword to the header. The string
-given to this keyword will be separated into multiple keyword cards if
-it is longer than 70 characters. With each run only one value for the
-@option{--history} option will be read. If there are multiple, it is
-the last one.
+@item -H STR
+@itemx --history STR
+Add a @code{HISTORY} keyword to the header. The string given to this
+keyword will be separated into multiple keyword cards if it is longer than
+70 characters. With each run only one value for the @option{--history}
+option will be read. If there are multiple, it is the last one.
 
-@item -c
-@itemx --comment
-(@option{=STR}) Add a @code{COMMENT} keyword to the header. Similar to
-the explanation for @option{--history} above.
+@item -c STR
+@itemx --comment STR
+Add a @code{COMMENT} keyword to the header. Similar to the explanation for
+@option{--history} above.
 
 @item -t
 @itemx --date
@@ -6439,25 +6410,23 @@ The HDU of the fourth input FITS file.
 Output:
 @table @option
 
-@item -w
-@itemx --widthincm
-(@option{=FLT}) The width of the output in centimeters. This is only
-relevant for those formats that accept such a width (not plain text
-for example). For most digital purposes, the number of pixels is far
-more important than the value to this parameter because you can adjust
-the absolute width (in inches or centimeters) in your document
-preparation program.
+@item -w FLT
+@itemx --widthincm=FLT
+The width of the output in centimeters. This is only relevant for those
+formats that accept such a width (not plain text for example). For most
+digital purposes, the number of pixels is far more important than the value
+to this parameter because you can adjust the absolute width (in inches or
+centimeters) in your document preparation program.
 
-@item -b
-@itemx --borderwidth
+@item -b INT
+@itemx --borderwidth=INT
 @cindex Border on an image
-(@option{=INT}) The width of the border to be put around the EPS and
-PDF outputs in units of PostScript points. There are 72 or 28.35
-PostScript points in an inch or centimeter respectively. In other
-words, there are roughly 3 PostScript points in every millimeter. If
-you are planning on adding a border, its significance is highly
-correlated with the value you give to the @option{--widthincm}
-parameter.
+The width of the border to be put around the EPS and PDF outputs in units
+of PostScript points. There are 72 or 28.35 PostScript points in an inch or
+centimeter respectively. In other words, there are roughly 3 PostScript
+points in every millimeter. If you are planning on adding a border, its
+significance is highly correlated with the value you give to the
+@option{--widthincm} parameter.
 
 Unfortunately in the document structuring convention of the PostScript
 language, the ``bounding box'' has to be in units of PostScript points
@@ -6487,18 +6456,17 @@ might become important if you have large images or lots of small
 ones. By default ASCII85 encoding is used which offers a much better
 compression ratio (nearly 40 percent) compared to Hexadecimal encoding.
 
-@item -u
-@itemx --quality
+@item -u INT
+@itemx --quality=INT
 @cindex JPEG compression quality
 @cindex Compression quality in JPEG
 @cindex Quality of compression in JPEG
-(@option{=INT}) The quality (compression) of the output JPEG file with
-values from 0 to 100 (inclusive). For other formats the value to this
-option is ignored. Note that only in grayscale (when one input color
-channel is given) will this actually be the exact quality (each pixel
-will correspond to one input value). If it is in color mode, some
-degradation will occur. While the JPEG standard does support loss-less
-graphics, it is not commonly supported.
+The quality (compression) of the output JPEG file with values from 0 to 100
+(inclusive). For other formats the value to this option is ignored. Note
+that only in grayscale (when one input color channel is given) will this
+actually be the exact quality (each pixel will correspond to one input
+value). If it is in color mode, some degradation will occur. While the JPEG
+standard does support loss-less graphics, it is not commonly supported.
 
 @end table
 
@@ -6507,8 +6475,8 @@ Flux range:
 
 @table @option
 
-@item -c
-@itemx --change
+@item -c STR
+@itemx --chang=STR
 @cindex Change converted pixel values
 (@option{=STR}) Change pixel values with the following format
 @option{"from1:to1, from2:to2,..."}. This option is very useful in
@@ -6544,42 +6512,39 @@ quotes you can use as many spaces as you like for better readability.
 Change pixel values (with @option{--change}) after truncation of the
 flux values, by default it is the opposite.
 
-@item -L
-@itemx --fluxlow
-(@option{=FLT}) The minimum flux (pixel value) to display in the
-output image, any pixel value below this value will be set to this
-value in the output. If the value to this option is the same as
-@option{--fluxmax}, then no flux truncation will be applied. Note that
-when multiple channels are given, this value is used for all the color
-channels.
+@item -L FLT
+@itemx --fluxlow=FLT
+The minimum flux (pixel value) to display in the output image, any pixel
+value below this value will be set to this value in the output. If the
+value to this option is the same as @option{--fluxmax}, then no flux
+truncation will be applied. Note that when multiple channels are given,
+this value is used for all the color channels.
 
-@item -H
-@itemx --fluxhigh
-(@option{=FLT}) The maximum flux (pixel value) to display in the
-output image, see @option{--fluxlow}.
+@item -H FLT
+@itemx --fluxhigh=FLT
+The maximum flux (pixel value) to display in the output image, see
+@option{--fluxlow}.
 
-@item -m
-@itemx --maxbyte
-(@option{=INT}) This is only used for the JPEG and EPS output formats
-which have an 8-bit space for each channel of each pixel. The maximum
-value in each pixel can therefore be @mymath{2^8-1=255}. With this
-option you can change (decrease) the maximum value. By doing so you
-will decrease the dynamic range. It can be useful if you plan to use
-those values for other purposes.
+@item -m INT
+@itemx --maxbyte=INT
+This is only used for the JPEG and EPS output formats which have an 8-bit
+space for each channel of each pixel. The maximum value in each pixel can
+therefore be @mymath{2^8-1=255}. With this option you can change (decrease)
+the maximum value. By doing so you will decrease the dynamic range. It can
+be useful if you plan to use those values for other purposes.
 
-@item -i
-@itemx --flminbyte
-(@option{=INT}) If the lowest pixel value in the input channels is
-larger than the value to @option{--fluxlow}, then that input value
-will be redundant. In some situations it might be necessary to set the
-minimum byte value (0) to correspond to that flux even if the data do
-not reach that value. With this option you can do this. Note that if
-the minimum pixel value is smaller than @option{--fluxlow}, then this
-option is redundant.
+@item -i INT
+@itemx --flminbyte=INT
+If the lowest pixel value in the input channels is larger than the value to
+@option{--fluxlow}, then that input value will be redundant. In some
+situations it might be necessary to set the minimum byte value (0) to
+correspond to that flux even if the data do not reach that value. With this
+option you can do this. Note that if the minimum pixel value is smaller
+than @option{--fluxlow}, then this option is redundant.
 
-@item -a
-@itemx --fhmaxbyte
-(@option{=INT}) See @option{--flminbyte}.
+@item -a INT
+@itemx --fhmaxbyte=INT
+See @option{--flminbyte}.
 
 @item -l
 @itemx --log
@@ -6729,17 +6694,16 @@ that if columns have been requested with the @option{--column} option
 
 @cindex AWK
 @cindex GNU AWK
-@item -c
-@itemx --column
-(@option{=STR}, or @option{=INT}) Specify the columns to output for this
-table. If the value to this option is an integer number, the column number
-will be used (counting from 1, Table will abort with an error if zero or
-negative values are given). When the value can't be interpretted as an a
-integer number, the value's string of characters will be used to match one
-of the pieces of information for the columns. See the @option{--searchin}
-option description for more on where the matching/searching will take
-place. The matching will be done following this convention (similar to
-AWK):
+@item -c STR/INT
+@itemx --column=STR/INT
+Specify the columns to output for this table. If the value to this option
+is an integer number, the column number will be used (counting from 1,
+Table will abort with an error if zero or negative values are given). When
+the value can't be interpretted as an a integer number, the value's string
+of characters will be used to match one of the pieces of information for
+the columns. See the @option{--searchin} option description for more on
+where the matching/searching will take place. The matching will be done
+following this convention (similar to AWK):
 
 @itemize
 @item
@@ -6782,11 +6746,11 @@ Ignore case while matching the column names with the value(s) of the
 @option{--column} option. The FITS standard suggests to treat the column
 names as case insensitive, which is recommended but not enforced here.
 
-@item -t
-@itemx --tabletype
-(@option{=STR}) The output file's table type when a filename is given to
-the @option{--output} option (see @ref{Common options}). This is ofcourse
-only relevant when the type of the table cannot be deduced from its
+@item -t STR
+@itemx --tabletype=STR
+The output file's table type when a filename is given to the
+@option{--output} option (see @ref{Common options}). This is ofcourse only
+relevant when the type of the table cannot be deduced from its
 filename. For example, if a name ending in @file{.fits} was given to
 @option{--output}, then Gnuastro knows you want a FITS table. But there are
 two types of FITS tables: FITS ASCII, and FITS binary. Thus, with this
@@ -7155,15 +7119,14 @@ is the vertical. Also in the FITS standard, counting begins from 1
 Input image parameters:
 @table @option
 
-@item --hstartwcs
-(@option{=INT}) Specify the first keyword card (line number) to start
-finding the input image world coordinate system
-information. Distortions were only recently included in WCSLIB (from
-version 5). Therefore until now, different telescope would apply their
-own specific set of WCS keywords and put them into the image header
-along with those that WCSLIB does recognize. So now that WCSLIB
-recognizes most of the standard distortion parameters, they will get
-confused with the old ones and give completely wrong results. For
+@item --hstartwcs=INT
+Specify the first keyword card (line number) to start finding the input
+image world coordinate system information. Distortions were only recently
+included in WCSLIB (from version 5). Therefore until now, different
+telescope would apply their own specific set of WCS keywords and put them
+into the image header along with those that WCSLIB does recognize. So now
+that WCSLIB recognizes most of the standard distortion parameters, they
+will get confused with the old ones and give completely wrong results. For
 example in the CANDELS-GOODS South
 images@footnote{@url{https://archive.stsci.edu/pub/hlsp/candels/goods-s/gs-tot/v1.0/}}.
 
@@ -7177,10 +7140,9 @@ of @option{--hstartwcs}. So if they are equal or @option{--hstartwcs}
 is larger than @option{--hendwcs}, then all the input keywords will be
 parsed to get the WCS information of the image.
 
-@item --hendwcs
-(@option{=INT}) Specify the last keyword card to read for specifying
-the image world coordinate system on the input images. See
-@option{--hstartwcs}
+@item --hendwcs=INT
+Specify the last keyword card to read for specifying the image world
+coordinate system on the input images. See @option{--hstartwcs}
 
 @end table
 
@@ -7188,31 +7150,30 @@ the image world coordinate system on the input images. See
 Crop box parameters:
 @table @option
 
-@item -x
-@itemx --xc
-(@option{=FLT}) The first FITS axis value of central position of the
-crop box in single image mode.
+@item -x FLT
+@itemx --xc=FLT
+The first FITS axis value of central position of the crop box in single
+image mode.
 
-@item -y
-@itemx --yc
-(@option{=FLT}) The second FITS axis value of the central position of
-the crop box in single image mode.
+@item -y FLT
+@itemx --yc=FLT
+The second FITS axis value of the central position of the crop box in
+single image mode.
 
-@item -s
-@itemx --section
-(@option{=STR}) Section of the input image which you want to be
-cropped. See @ref{Crop section syntax} for a complete explanation on
-the syntax required for this input.
+@item -s STR
+@itemx --section=STR
+Section of the input image which you want to be cropped. See @ref{Crop
+section syntax} for a complete explanation on the syntax required for this
+input.
 
-@item -l
-@itemx --polygon
-(@option{=STR}) String of crop polygon vertices. Note that currently
-only convex polygons should be used. In the future we will make it
-work for all kinds of polygons. Convex polygons are polygons that do
-not have an internal angle more than 180 degrees. This option can be
-used both in the image and WCS modes. The rectangular region that
-completely encompasses the polygon will be kept and all the pixels
-that are outside of it will be removed.
+@item -l STR
+@itemx --polygon=STR
+String of crop polygon vertices. Note that currently only convex polygons
+should be used. In the future we will make it work for all kinds of
+polygons. Convex polygons are polygons that do not have an internal angle
+more than 180 degrees. This option can be used both in the image and WCS
+modes. The rectangular region that completely encompasses the polygon will
+be kept and all the pixels that are outside of it will be removed.
 
 The syntax for the polygon vertices is similar to and simpler than
 that for @option{--section}. In short, the dimensions of each
@@ -7260,52 +7221,47 @@ large area if large surveys like COSMOS are used. So ImageCrop will
 abort and notify you. In such cases, it is best to crop out the larger
 region you want, then mask the smaller region with this option.
 
-@item -r
-@itemx --ra
-(@option{=FLT}) The first FITS axis value of central position of the
-crop box in single image mode.
+@item -r FLT
+@itemx --ra=FLT
+The first FITS axis value of central position of the crop box in single
+image mode.
 
-@item -d
-@itemx --dec
-(@option{=FLT}) The second FITS axis value of the central position of
-the crop box in single image mode.
+@item -d FLT
+@itemx --dec=flt
+The second FITS axis value of the central position of the crop box in
+single image mode.
 
-@item -i
-@itemx --xcol
-(@option{=INT}) Column number of the first FITS axis position of the
-box center, starting from zero. In SAO ds9, the first FITS axis is the
-horizontal axis.
+@item -i INT
+@itemx --xcol=INT
+Column number of the first FITS axis position of the box center, starting
+from zero. In SAO ds9, the first FITS axis is the horizontal axis.
 
-@item -j
-@itemx --ycol
-(@option{=INT}) Column number of the second FITS axis position of the
-box center, starting from zero. In SAO ds9, the second FITS axis is
-the vertical axis.
+@item -j INT
+@itemx --ycol=INT
+Column number of the second FITS axis position of the box center, starting
+from zero. In SAO ds9, the second FITS axis is the vertical axis.
 
-@item -a
-@itemx --iwidth
-(@option{=INT}) Width the square box to crop in image mode in units of
-pixels. In order for the chosen central pixel to be in the center of
-the cropped image, the final width has to be an odd number, therefore
-if the value to this option is an even number, the final crop width
-will be one pixel larger in each dimension. If you want an even sided
-crop box, use the @option{--section} option to specify the boundaries
-of the box, see @ref{Crop section syntax}.
+@item -a INT
+@itemx --iwidth=INT
+Width the square box to crop in image mode in units of pixels. In order for
+the chosen central pixel to be in the center of the cropped image, the
+final width has to be an odd number, therefore if the value to this option
+is an even number, the final crop width will be one pixel larger in each
+dimension. If you want an even sided crop box, use the @option{--section}
+option to specify the boundaries of the box, see @ref{Crop section syntax}.
 
-@item -f
-@itemx --racol
-(@option{=INT}) Column number of Right Ascension (RA) in the input
-catalog, starting from zero.
+@item -f INT
+@itemx --racol=INT
+Column number of Right Ascension (RA) in the input catalog, starting from
+zero.
 
-@item -g
-@itemx --deccol
-(@option{=INT}) Column number of declination in the input catalog,
-starting from zero.
+@item -g INT
+@itemx --deccol=INT
+Column number of declination in the input catalog, starting from zero.
 
-@item -w
-@itemx --wwidth
-(@option{=FLT}) The width of the crop box in WCS mode in units of
-arc-seconds.
+@item -w FLT
+@itemx --wwidth=FLT
+The width of the crop box in WCS mode in units of arc-seconds.
 
 @end table
 
@@ -7313,14 +7269,14 @@ arc-seconds.
 Output options:
 @table @option
 
-@item -c
-@itemx --checkcenter
+@item -c INT
+@itemx --checkcenter=INT
 @cindex Check center of crop
-(@option{=INT}) Box size of region in the center of the image to check
-in units of pixels. This is only used in WCS mode. Because surveys
-don't often have a clean square or rectangle shape, some of the pixels
-on the sides of the surveys don't have any data and are commonly
-filled with zero valued pixels.
+Box size of region in the center of the image to check in units of
+pixels. This is only used in WCS mode. Because surveys don't often have a
+clean square or rectangle shape, some of the pixels on the sides of the
+surveys don't have any data and are commonly filled with zero valued
+pixels.
 
 If the RA and Dec of any of the targets specified in the catalog fall
 in such regions, that cropped image will be useless! Therefore with
@@ -7329,16 +7285,15 @@ good enough) around the central pixel of the cropped image. If all the
 pixels in this small box have the value of zero, no cropped image will
 be created and this object will be flagged in the final log file.
 
-@item -p
-@itemx --suffix
-(@option{=STR}) The suffix (or post-fix) of the output files for when
-you want all the cropped images to have a special ending. One case
-where this might be helpful is when besides the science images, you
-want the weight images (or exposure maps, which are also distributed
-with survey images) of the cropped regions too. So in one run, you can
-set the input images to the science images and
-@option{--suffix=_s.fits}. In the next run you can set the weight
-images as input and @option{--suffix=_w.fits}.
+@item -p STR
+@itemx --suffix=STR
+The suffix (or post-fix) of the output files for when you want all the
+cropped images to have a special ending. One case where this might be
+helpful is when besides the science images, you want the weight images (or
+exposure maps, which are also distributed with survey images) of the
+cropped regions too. So in one run, you can set the input images to the
+science images and @option{--suffix=_s.fits}. In the next run you can set
+the weight images as input and @option{--suffix=_w.fits}.
 
 @item -b
 @itemx --noblank
@@ -8063,13 +8018,12 @@ option as explained below:
 
 @table @option
 
-@item -h
-@itemx --hdu
-(@option{=INT}) Unlike most options in Gnuastro (which will ultimately
-only have one value for this option), Arithmetic allows @option{--hdu}
-to be called multiple times and the value of each invocation will be
-stored separately (for the unlimited number of input images you would
-like to use).
+@item -h INT/STR
+@itemx --hdu INT/STR
+Unlike most options in Gnuastro (which will ultimately only have one value
+for this option), Arithmetic allows @option{--hdu} to be called multiple
+times and the value of each invocation will be stored separately (for the
+unlimited number of input images you would like to use).
 
 The order of the values to @option{--hdu} is very important (if they
 don't have the same value!). The order is determined by the order that
@@ -9287,12 +9241,12 @@ The two options to specify a kernel file name and its extension are
 shown below. These are common between all the programs that will do
 convolution.
 @table @option
-@item -k
-@itemx --kernel
-(@option{=STR}) The convolution kernel file name. The @code{BITPIX}
-(data type) value of this file can be any standard type and it does
-not necessarily have to be normalized. Several operations will be done
-on the kernel image prior to the program's processing:
+@item -k STR
+@itemx --kernel=STR
+The convolution kernel file name. The @code{BITPIX} (data type) value of
+this file can be any standard type and it does not necessarily have to be
+normalized. Several operations will be done on the kernel image prior to
+the program's processing:
 
 @itemize
 
@@ -9311,14 +9265,14 @@ orientation. This is only relevant if the kernel is not circular. See
 @ref{Convolution process}.
 @end itemize
 
-@item -U
-@itemx --khdu
-(@option{=STR}) The convolution kernel HDU. Although the kernel file
-name is optional, before running any of the programs, they need to
-have a value for @option{--khdu} even if the default kernel is to be
-used. So be sure to keep its value in at least one of the
-configuration files (see @ref{Configuration files}). By default, the
-system configuration file has a value.
+@item -U STR
+@itemx --khdu=STR
+The convolution kernel HDU. Although the kernel file name is optional,
+before running any of the programs, they need to have a value for
+@option{--khdu} even if the default kernel is to be used. So be sure to
+keep its value in at least one of the configuration files (see
+@ref{Configuration files}). By default, the system configuration file has a
+value.
 
 @item --fullconvolution
 Ignore the (possible) channels in the mesh grid when doing spatial
@@ -9450,14 +9404,13 @@ of the image), we also remove any pixel with a value less than
 
 @end enumerate
 
-@item -m
-@itemx --makekernel
-(@option{=INT}) If this option is called, Convolve will do
-de-convolution (see @ref{Convolution theorem}). The image specified by
-the @option{--kernel} option is assumed to be the sharper (less
-blurry) image and the input image is assumed to be the more blurry
-image. The two images have to be the same size. Some notes to take
-into account for a good result:
+@item -m=INT
+@itemx --makekernel=INT
+If this option is called, Convolve will do de-convolution (see
+@ref{Convolution theorem}). The image specified by the @option{--kernel}
+option is assumed to be the sharper (less blurry) image and the input image
+is assumed to be the more blurry image. The two images have to be the same
+size. Some notes to take into account for a good result:
 
 Noise has large frequencies which can make the result less reliable
 for the higher frequencies of the kernel. So all the frequencies which
@@ -9964,71 +9917,67 @@ on the sky and is common in most survey images. Align is internally treated
 just like a rotation (@option{--rotation}), but uses the input image's WCS
 to find the rotation angle.
 
-@item -r
-@itemx --rotate
-(@option{=FLT}) Rotate the input image by the given angle in degrees. Note
-that commonly, the WCS structure of the image is set such that the RA is
-the inverse of the image horizontal axis which increases towards the right
-in the FITS standard and as viewed by SAO ds9. So the default center for
-rotation is on the right of the image. If you want to rotate about other
-points, you have to translate the warping center first (with
-@option{--translate}) then apply your rotation and then return the center
-back to the original position (with another call to @option{--translate},z
-see @ref{Merging multiple warpings}.
+@item -r FLT
+@itemx --rotate=FLT
+Rotate the input image by the given angle in degrees. Note that commonly,
+the WCS structure of the image is set such that the RA is the inverse of
+the image horizontal axis which increases towards the right in the FITS
+standard and as viewed by SAO ds9. So the default center for rotation is on
+the right of the image. If you want to rotate about other points, you have
+to translate the warping center first (with @option{--translate}) then
+apply your rotation and then return the center back to the original
+position (with another call to @option{--translate},z see @ref{Merging
+multiple warpings}.
 
-@item -s
-@itemx --scale
-(@option{=FLT[,FLT]}) Scale the input image by the given factor. If only
-one value is given, then both image axes will be scaled with the given
-value. When two values are given, the first will be used to scale the first
+@item -s FLT[,FLT]
+@itemx --scale=FLT[,FLT]
+Scale the input image by the given factor. If only one value is given, then
+both image axes will be scaled with the given value. When two values are
+given, the first will be used to scale the first axis and the second will
+be used for the second axis. If you only need to scale one axis, use
+@option{1} for the axis you don't need to scale.
+
+@item -f FLT[,FLT]
+@itemx --flip=FLT[,FLT]
+Flip the image around the first, second or both axes. The first value
+specifies a flip on the first axis and the second on the second axis. The
+values of the option only matter if they are non-zero. If any of the values
+are zero, that axis is not flipped. So if you want to flip by the second
+axis only, use @option{--flip=0,1} (which is equivalent to
+@option{--flip=0,20} since it only matters if it is non-zero).
+
+@item -e FLT[,FLT]
+@itemx --shear=FLT[,FLT]
+Apply a shear to the image along the image axes. If only one value is
+given, then both image axes will be sheared with the given value. When two
+values are given, the first will be used to shear the first axis and the
+second will be used for the second axis. If you only need to shear one
+axis, use @option{0} for the axis you don't need.
+
+@item -t FLT[,FLT]
+@itemx --translate=FLT[,FLT]
+Apply a translation to the image along the image axes. If only one value is
+given, then both image axes will be translated with the given value. When
+two values are given, the first will be used to translate along the first
 axis and the second will be used for the second axis. If you only need to
-scale one axis, use @option{1} for the axis you don't need to scale.
+translate one axis, use @option{0} for the axis you don't need.
 
-@item -f
-@itemx --flip
-(@option{=FLT[,FLT]}) Flip the image around the first, second or both
-axes. The first value specifies a flip on the first axis and the second
-on the second axis. The values of the option only matter if they are
-non-zero. If any of the values are zero, that axis is not flipped. So if
-you want to flip by the second axis only, use @option{--flip=0,1} (which is
-equivalent to @option{--flip=0,20} since it only matters if it is
-non-zero).
-
-@item -e
-@itemx --shear
-(@option{=FLT[,FLT]}) Apply a shear to the image along the image axes. If
-only one value is given, then both image axes will be sheared with the
-given value. When two values are given, the first will be used to shear the
+@item -p FLT[,FLT]
+@itemx --project=FLT[,FLT]
+Apply a projection to the image along the image axes. If only one value is
+given, then the projection will be applied on both image axes with the
+given value. When two values are given, the first will be used for the
 first axis and the second will be used for the second axis. If you only
-need to shear one axis, use @option{0} for the axis you don't need.
+need projection along one axis, use @option{0} for the axis you don't need.
 
-@item -t
-@itemx --translate
-(@option{=FLT[,FLT]}) Apply a translation to the image along the image
-axes. If only one value is given, then both image axes will be
-translated with the given value. When two values are given, the first will
-be used to translate along the first axis and the second will be used for
-the second axis. If you only need to translate one axis, use @option{0} for
-the axis you don't need.
-
-@item -p
-@itemx --project
-(@option{=FLT[,FLT]}) Apply a projection to the image along the image
-axes. If only one value is given, then the projection will be applied on
-both image axes with the given value. When two values are given, the
-first will be used for the first axis and the second will be used for the
-second axis. If you only need projection along one axis, use @option{0} for
-the axis you don't need.
-
-@item -m
-@itemx --matrix
-(@option{=STR}) The warp/transformation matrix. All the elements in this
-matrix must be separated by any number of space, tab or comma (@key{,})
-characters. If you want to use the first two, then be sure to wrap the
-matrix within double quotation marks (@key{"}) so they are not confused
-with other arguments on the command-line, see @ref{Options}. This also
-applies to values in the configuration files, see @ref{Configuration file
-format}.
+@item -m STR
+@itemx --matrix=STR
+The warp/transformation matrix. All the elements in this matrix must be
+separated by any number of space, tab or comma (@key{,}) characters. If you
+want to use the first two, then be sure to wrap the matrix within double
+quotation marks (@key{"}) so they are not confused with other arguments on
+the command-line, see @ref{Options}. This also applies to values in the
+configuration files, see @ref{Configuration file format}.
 
 The transformation matrix can be either 2 by 2 or 3 by 3 array. In the
 former case (if a 2 by 2 matrix is given), then it is converted to a 3 by 3
@@ -10047,15 +9996,13 @@ with @command{--matrix=a,b,c,d,e,f,g,h,1}.
 Do not correct for the FITS definition of the pixel center as described in
 the descriptions above.
 
-@item --hstartwcs
-(@option{=INT}) Specify the first header keyword number (line) that
-should be used to read the WCS information, see the full explanation in
-@ref{Invoking astimgcrop}.
+@item --hstartwcs=INT
+Specify the first header keyword number (line) that should be used to read
+the WCS information, see the full explanation in @ref{Invoking astimgcrop}.
 
-@item --hendwcs
-(@option{=INT}) Specify the last header keyword number (line) that
-should be used to read the WCS information, see the full explanation in
-@ref{Invoking astimgcrop}.
+@item --hendwcs=INT
+Specify the last header keyword number (line) that should be used to read
+the WCS information, see the full explanation in @ref{Invoking astimgcrop}.
 
 @item -n
 @itemx --nowcscorrection
@@ -10080,8 +10027,8 @@ coordinates. This behavior can be disabled with the
 Set output pixels which do not correspond to any input to zero. By
 default they are set to blank pixel values, see @ref{Blank pixels}.
 
-@item -b
-@itemx --maxblankfrac
+@item -b FLT
+@itemx --maxblankfrac=FLT
 (@option{=FLT}) The maximum fractional area of blank pixels over the
 output pixel. If an output pixel is covered by blank pixels (see
 @ref{Blank pixels}) for a larger fraction than the value to this
@@ -10669,32 +10616,30 @@ the `Invoking ProgramName' section within the list of options.
 
 @table @option
 
-@item -s
-@itemx --meshsize
-(@option{=INT}) The size of each mesh, see @ref{Tiling an image}. If
-the width of all channels are not an exact multiple of the specified
-size, then the last mesh on each axis will have a different size to
-cover the full channel.
+@item -s INT
+@itemx --meshsize=INT
+The size of each mesh, see @ref{Tiling an image}. If the width of all
+channels are not an exact multiple of the specified size, then the last
+mesh on each axis will have a different size to cover the full channel.
 
-@item -a
-@itemx --nch1
-(@option{=INT}) The number of channels along the first FITS axis
-(horizontal when viewed in SAO ds9). If the length of the image is not
-an exact multiple of this number, then the program will stop. You can
-use ImageCrop (@ref{ImageCrop}) to trim off or add some pixels (blank
-pixels if added, see @ref{Blank pixels}) to the image if it is not an
-exact multiple.
+@item -a INT
+@itemx --nch1=INT
+The number of channels along the first FITS axis (horizontal when viewed in
+SAO ds9). If the length of the image is not an exact multiple of this
+number, then the program will stop. You can use ImageCrop (@ref{ImageCrop})
+to trim off or add some pixels (blank pixels if added, see @ref{Blank
+pixels}) to the image if it is not an exact multiple.
 
-@item -b
-@itemx --nch2
-(@option{=INT}) The number of channels along the second FITS axis,
-(vertical when viewed in SAO ds9). Similar to @option{--nch1}.
+@item -b INT
+@itemx --nch2=INT
+The number of channels along the second FITS axis, (vertical when viewed in
+SAO ds9). Similar to @option{--nch1}.
 
-@item -L
-@itemx --lastmeshfrac
-(@option{=FLT}) Fraction of extra area on the last (rightest on the
-first FITS axis and highest/top on the second) mesh, to define a new
-(smaller) one. See @ref{Tiling an image}.
+@item -L FLT
+@itemx --lastmeshfrac=FLT
+Fraction of extra area on the last (rightest on the first FITS axis and
+highest/top on the second) mesh, to define a new (smaller) one. See
+@ref{Tiling an image}.
 
 @item --checkmesh
 An image with suffix @file{_mesh.fits} will be created for you to
@@ -10705,47 +10650,43 @@ to. If the program uses multiple mesh grids, the output will have more
 than two extensions. By flipping through the extensions, you can check
 the positioning and size of the meshs.
 
-@item -d
-@itemx --mirrordist
-(@option{=FLT}) The distance beyond the mirror point (in units of the
-error in the mirror point) to check for finding the mode in each
-mesh. This is part of the process to quantify the presence of signal
-in a mesh, see @ref{Quantifying signal in a mesh}. See appendix C in
-Akhlaghi and Ichikawa (2015) for a complete explanation of the
-mode-finding algorithm. The value to this option is shown as
-@mymath{\alpha} in that appendix.
+@item -d FLT
+@itemx --mirrordist=FLT
+The distance beyond the mirror point (in units of the error in the mirror
+point) to check for finding the mode in each mesh. This is part of the
+process to quantify the presence of signal in a mesh, see @ref{Quantifying
+signal in a mesh}. See appendix C in Akhlaghi and Ichikawa (2015) for a
+complete explanation of the mode-finding algorithm. The value to this
+option is shown as @mymath{\alpha} in that appendix.
 
-@item -Q
-@itemx --minmodeq
-(@option{=FLT}) The minimum acceptable quantile for the mode of each
-mesh. The median is on the 0.5 quantile of the image and as long as we
-have positive signal (all astronomically relevant observations), the
-mode will be less than the median. The sky value is only found on
-meshes where the median and mode are approximately the same, see
-@ref{Sky value}.
+@item -Q FLT
+@itemx --minmodeq=FLT
+The minimum acceptable quantile for the mode of each mesh. The median is on
+the 0.5 quantile of the image and as long as we have positive signal (all
+astronomically relevant observations), the mode will be less than the
+median. The sky value is only found on meshes where the median and mode are
+approximately the same, see @ref{Sky value}.
 
 @item --interponlyblank
 Only interpolate the blank pixels. By default, interpolation will
 happen on all the mesh grids, not just the blank ones. See @ref{Grid
 interpolation and smoothing}.
 
-@item -n
-@itemx --numnearest
-(@option{=INT}) The number of nearest grid elements with a successful
-sky value to use for interpolating over blank mesh elements (those
-that had a significant contribution of signal), see @ref{Grid
-interpolation and smoothing}.
+@item -n INT
+@itemx --numnearest=INT
+The number of nearest grid elements with a successful sky value to use for
+interpolating over blank mesh elements (those that had a significant
+contribution of signal), see @ref{Grid interpolation and smoothing}.
 
 @item --fullinterpolation
 Do interpolation irrespective of the channels in the image, see
 @ref{Grid interpolation and smoothing}.
 
-@item -T
-@itemx --smoothwidth
-(@option{=INT}) The width of the average filter kernel used to smooth
-the interpolated image in units of pixels. See @ref{Grid interpolation
-and smoothing}. If this option is given a value of 1 (one), then no
-smoothing will be done.
+@item -T INT
+@itemx --smoothwidth=INT
+The width of the average filter kernel used to smooth the interpolated
+image in units of pixels. See @ref{Grid interpolation and smoothing}. If
+this option is given a value of 1 (one), then no smoothing will be done.
 
 @item --fullsmoothing
 Do smoothing irrespective of the channels in the image, see @ref{Grid
@@ -10806,24 +10747,22 @@ pixels}.
 
 @table @option
 
-@item -M
-@itemx --mask
-(@option{=STR}) Mask image file name. If this option is not given and
-the @option{--mhdu} option has a different value from @option{--hdu},
-then the input image name will be used. If a name is specified on the
-command-line or in any of the configuration files, it will be used. If
-the program doesn't get any mask file name, it will use all the
-non-blank (see @ref{Blank pixels}) pixels in the image. Therefore,
-specifying a mask file name in any of the configuration files is not
-mandatory.
+@item -M STR
+@itemx --mask=STR
+Mask image file name. If this option is not given and the @option{--mhdu}
+option has a different value from @option{--hdu}, then the input image name
+will be used. If a name is specified on the command-line or in any of the
+configuration files, it will be used. If the program doesn't get any mask
+file name, it will use all the non-blank (see @ref{Blank pixels}) pixels in
+the image. Therefore, specifying a mask file name in any of the
+configuration files is not mandatory.
 
-@item -H
-@itemx --mhdu
-(@option{=STR}) The mask image header name or number. Similar to the
-@option{--hdu} option, see @ref{Common options}. Like @option{--mask},
-this option does not have to be included in the configuration file or
-the command-line. However, if it is present on either of them, it will
-be used.
+@item -H STR
+@itemx --mhdu=STR
+The mask image header name or number. Similar to the @option{--hdu} option,
+see @ref{Common options}. Like @option{--mask}, this option does not have
+to be included in the configuration file or the command-line. However, if
+it is present on either of them, it will be used.
 
 @end table
 
@@ -10875,19 +10814,18 @@ of the book they are fully explained in.
 
 @table @option
 
-@item -u
-@itemx --sigclipmultip
-(@option{=FLT}) The multiple of the standard deviation to clip from the
-distribution in @mymath{\sigma}-clipping. This is necessary to remove
-the effect of cosmic rays, see @ref{Sky value} and @ref{Sigma
-clipping}.
+@item -u FLT
+@itemx --sigclipmultip=FLT
+The multiple of the standard deviation to clip from the distribution in
+@mymath{\sigma}-clipping. This is necessary to remove the effect of cosmic
+rays, see @ref{Sky value} and @ref{Sigma clipping}.
 
-@item -t
-@itemx --sigcliptolerance
-(@option{=FLT}) The tolerance of sigma clipping. If the fractional
-change in the standard deviation before and after
-@mymath{\sigma}-clipping is less than the value given to this option,
-@mymath{\sigma}-clipping will stop, see @ref{Sigma clipping}.
+@item -t FLT
+@itemx --sigcliptolerance=FLT
+The tolerance of sigma clipping. If the fractional change in the standard
+deviation before and after @mymath{\sigma}-clipping is less than the value
+given to this option, @mymath{\sigma}-clipping will stop, see @ref{Sigma
+clipping}.
 
 @item --checksky
 A two extension FITS image ending with @file{_smooth.fits} will be
@@ -11278,16 +11216,15 @@ ImageStatistics finished in:  0.006964 (seconds)
 
 @table @option
 
-@item -M
-@itemx --mask
-(@option{=STR}) The file name of a mask image. If this option is not
-given on the command-line or in the configuration files and
-@option{--mhdu} is not given or is identical to @option{--hdu}, then
-no mask image will be used.
+@item -M STR
+@itemx --mask=STR
+The file name of a mask image. If this option is not given on the
+command-line or in the configuration files and @option{--mhdu} is not given
+or is identical to @option{--hdu}, then no mask image will be used.
 
-@item -H
-@itemx --mhdu
-(@option{=STR}) The header name of the mask extension.
+@item -H STR
+@itemx --mhdu=STR
+The header name of the mask extension.
 
 @item -r
 @itemx --ignoremin
@@ -11301,15 +11238,15 @@ Set the first column of the histogram and cumulative frequency plots
 to the lower interval boundary. By default (without calling this
 option), the central interval value is used.
 
-@item --onebinvalue
-(@option{=FLT}) Make sure that one bin starts with the value to this
-option. In practice, this will shift the bins used to find the
-histogram and cumulative frequency plot such that one bin's lower
-interval becomes this value. For example when the histogram range
-includes negative values, but the data doesn't. If zero is somewhere
-between one bin, then the viewers of the plot(s) will think negative
-data is also present. By setting @option{--onebinvalue=0}, you can
-make sure that the viewers of the histogram will not be confused.
+@item --onebinvalue=FLT
+Make sure that one bin starts with the value to this option. In practice,
+this will shift the bins used to find the histogram and cumulative
+frequency plot such that one bin's lower interval becomes this value. For
+example when the histogram range includes negative values, but the data
+doesn't. If zero is somewhere between one bin, then the viewers of the
+plot(s) will think negative data is also present. By setting
+@option{--onebinvalue=0}, you can make sure that the viewers of the
+histogram will not be confused.
 
 @cindex NaN
 Note that by default, the first row of the histogram and cumulative
@@ -11325,11 +11262,10 @@ within the specified bin range, it will be ignored.
 @item --noasciihist
 Do not show an ASCII plot on the command-line.
 
-@item --mirrorquant
-(@option{=FLT}) quantile to put the mirror. A value between 0 and
-1. See @ref{Mirror distribution} for a complete explanation. Outputs
-two files with suffixes @file{_mirrorhist.txt} and
-@file{_mirrorcfp.txt}.
+@item --mirrorquant=FLT
+Quantile to put the mirror. A value between 0 and 1. See @ref{Mirror
+distribution} for a complete explanation. Outputs two files with suffixes
+@file{_mirrorhist.txt} and @file{_mirrorcfp.txt}.
 
 @item --checkmode
 The mode of the data is found by comparing the input data distribution
@@ -11373,31 +11309,29 @@ the histogram numbers are important in showing along with the
 cumulative frequency plot, you can use @option{--maxcfpeqmaxhist}, see
 below.
 
-@item -n
-@itemx --histnumbins
-(@option{=INT}) The number of bins in the histogram. Note that in
-practice, this is also equivalent to the number of rows in the output
-text file.
+@item -n INT
+@itemx --histnumbins=INT
+The number of bins in the histogram. Note that in practice, this is also
+equivalent to the number of rows in the output text file.
 
-@item -i
-@itemx --histmin
-(@option{=FLT}) The minimum value to use in the histogram. If
-@option{--histquant} is given, then any value given @option{--histmin}
-or @option{--histmax} is ignored.
+@item -i FLT
+@itemx --histmin=FLT
+The minimum value to use in the histogram. If @option{--histquant} is
+given, then any value given @option{--histmin} or @option{--histmax} is
+ignored.
 
-@item -x
-@itemx --histmax
-(@option{=FLT}) The maximum value to use in the histogram. Similar to
-@option{--histmin}.
+@item -x FLT
+@itemx --histmax=FLT
+The maximum value to use in the histogram. Similar to @option{--histmin}.
 
-@item -Q
-@itemx --histquant
-(@option{=FLT}) Set the range of the histogram based on the image
-quantile. So @option{--histquant=0.05} is given, all the data from the
-0.05 quantile to 0.95 quantile will be used in the histogram. This is
-useful when there is a small number of outliers in the image. Note
-that if this option is given, any (possible) value given to
-@option{--histmin} or @option{--histmax} are ignored.
+@item -Q FLT
+@itemx --histquant=FLT
+Set the range of the histogram based on the image quantile. So
+@option{--histquant=0.05} is given, all the data from the 0.05 quantile to
+0.95 quantile will be used in the histogram. This is useful when there is a
+small number of outliers in the image. Note that if this option is given,
+any (possible) value given to @option{--histmin} or @option{--histmax} are
+ignored.
 
 @end table
 
@@ -11428,27 +11362,25 @@ points to store to the same range as the histogram. If the two are to
 be plotted together, this is very useful, since the first axis
 (column) of the two will become identical.
 
-@item -p
-@itemx --cfpnum
-(@option{=INT}) The number of points to store the cumulative frequency
-plot. They will be evenly distributed between the range of pixel
-values.
+@item -p INT
+@itemx --cfpnum=INT
+The number of points to store the cumulative frequency plot. They will be
+evenly distributed between the range of pixel values.
 
-@item -a
-@itemx --cfpmin
-(@option{=FLT}) The minimum value to use for the cumulative pixel
-value range. If @option{--cfpquant} is given, then any value given
-@option{--cfpmin} or @option{--cfpmax} is ignored.
+@item -a FLT
+@itemx --cfpmin=FLT
+The minimum value to use for the cumulative pixel value range. If
+@option{--cfpquant} is given, then any value given @option{--cfpmin} or
+@option{--cfpmax} is ignored.
 
-@item -n
-@itemx --cfpmax
-(@option{=FLT}) The maximum value to use for the cumulative pixel
-value range. Similar to @option{--cfpmin}.
+@item -n FLT
+@itemx --cfpmax=FLT
+The maximum value to use for the cumulative pixel value range. Similar to
+@option{--cfpmin}.
 
-@item -U
-@itemx --cfpquant
-(@option{=FLT}) Similar to @option{--histquant} but for the cumulative
-frequency plot.
+@item -U FLT
+@itemx --cfpquant=FLT
+Similar to @option{--histquant} but for the cumulative frequency plot.
 
 @end table
 
@@ -11463,23 +11395,21 @@ the standard deviation.
 @item --nosigclip
 If this option is called, no @mymath{\sigma}-clipping will take place.
 
-@item -u
-@itemx --sigclipmultip
-(@option{=FLT}) The multiple of the standard deviation above which to
-clip. This value is demonstrated by @mymath{\alpha} in @ref{Sigma
+@item -u FLT
+@itemx --sigclipmultip=FLT
+The multiple of the standard deviation above which to clip. This value is
+demonstrated by @mymath{\alpha} in @ref{Sigma clipping}.
+
+@item -t FLT
+@itemx --sigcliptolerance=FLT
+If the fractional difference of the standard deviation becomes less than
+this value, then @mymath{\sigma}-clipping will halt, see @ref{Sigma
 clipping}.
 
-@item -t
-@itemx --sigcliptolerance
-(@option{=FLT}) If the fractional difference of the standard deviation
-becomes less than this value, then @mymath{\sigma}-clipping will halt,
-see @ref{Sigma clipping}.
-
-@item -g
-@itemx --sigclipnum
-(@option{=INT}) The number of iterations for the case where the
-@mymath{\sigma}-clipping iteration stops after a certain number of
-runs.
+@item -g INT
+@itemx --sigclipnum=INT
+The number of iterations for the case where the @mymath{\sigma}-clipping
+iteration stops after a certain number of runs.
 
 @end table
 
@@ -11636,11 +11566,10 @@ measuring that sky value when it was subtracted by any other
 program. See Section 3.3 in Akhlaghi and Ichikawa (2015) for a
 complete explanation.
 
-@item -B
-@itemx --minbfrac
-(@option{=FLT}) Minimum fraction (value between 0 and 1) of blank
-(undetected) area in a mesh for it to be considered in measuring the
-following properties.
+@item -B FLT
+@itemx --minbfrac=FLT
+Minimum fraction (value between 0 and 1) of blank (undetected) area in a
+mesh for it to be considered in measuring the following properties.
 
 @itemize
 
@@ -11666,13 +11595,12 @@ the undetected regions. Therefore, to get an accurate measurement of
 the above parameters over the full mesh grid, meshs that harbor too
 many detected regions should be excluded.
 
-@item -F
-@itemx --minnumfalse
-(@option{=INT}) The minimum number of `psudo-detections' (in
-identifying false detections) or clumps (in identifying false clumps)
-in each large mesh grid. If their number is less than this value, this
-mesh will be left blank and filled during mesh interpolation, see
-@ref{Grid interpolation and smoothing}.
+@item -F INT
+@itemx --minnumfalse=INT
+The minimum number of `psudo-detections' (in identifying false detections)
+or clumps (in identifying false clumps) in each large mesh grid. If their
+number is less than this value, this mesh will be left blank and filled
+during mesh interpolation, see @ref{Grid interpolation and smoothing}.
 
 The Signal to noise ratio of false detections and clumps in each mesh
 is found using the quantile of the Signal to noise ratio distribution
@@ -11691,14 +11619,13 @@ two groups: 1) Signal and 2) Noise. Through the parameters below, you
 can customize the detection process in NoiseChisel.
 @table @option
 
-@item -t
-@itemx --qthresh
-(@option{=FLT}) The quantile threshold to apply to the convolved
-image. The detection process begins with applying a quantile threshold
-to each of the small mesh grid elements, see @ref{Tiling an
-image}. The quantile is only calculated for those meshs that don't have
-any significant signal within them, see @ref{Quantifying signal in a
-mesh}.
+@item -t FLT
+@itemx --qthresh=FLT
+The quantile threshold to apply to the convolved image. The detection
+process begins with applying a quantile threshold to each of the small mesh
+grid elements, see @ref{Tiling an image}. The quantile is only calculated
+for those meshs that don't have any significant signal within them, see
+@ref{Quantifying signal in a mesh}.
 
 @cindex Quantile
 @cindex Binary image
@@ -11720,16 +11647,15 @@ Check the quantile threshold values on the mesh grid. A file suffixed
 with @file{_thresh.fits} will be created, see @ref{Checking grid
 values}.
 
-@item -e
-@itemx --erode
+@item -e INT
+@itemx --erode=INT
 @cindex Erosion
-(@option{=INT}) The number of erosions to apply to the binary
-thresholded image. Erosion is simply the process of flipping (from 1
-to 0) any of the foreground pixels that neighbor a background
-pixel. In a 2D image, there are two kinds of neighbors, 4-connected
-and 8-connected neighbors. You can specify which type of neighbors
-should be used for erosion with the @option{--erodengb} option, see
-below.
+The number of erosions to apply to the binary thresholded image. Erosion is
+simply the process of flipping (from 1 to 0) any of the foreground pixels
+that neighbor a background pixel. In a 2D image, there are two kinds of
+neighbors, 4-connected and 8-connected neighbors. You can specify which
+type of neighbors should be used for erosion with the @option{--erodengb}
+option, see below.
 
 Erosion has the effect of shrinking the foreground pixels. To put it
 another way, it expands the holes. This is a founding principle in
@@ -11738,15 +11664,15 @@ holes in the very low surface brightness regions of an image will be
 smaller than regions that have no signal. Therefore by expanding those
 holes, we are able to separate the regions harboring signal.
 
-@item --erodengb
-(@option{=4or8}) The type of neighborhood (structuring element) used
-in erosion, see @option{--erode} for an explanation on erosion. In
-4-connectivity, the neighbors of a pixel are defined as the four
-pixels on the top, bottom, right and left of a pixel that share an
-edge with it. The 8-connected neighbors on the other hand include the
-4-connected neighbors along with the other 4 pixels that share a
-corner with this pixel. See Figure 6 (a) and (b) in Akhlaghi and
-Ichikawa (2015) for a demonstration.
+@item --erodengb=INT
+The type of neighborhood (structuring element) used in erosion, see
+@option{--erode} for an explanation on erosion. Only two integer values are
+acceptable: 4 or 8. In 4-connectivity, the neighbors of a pixel are defined
+as the four pixels on the top, bottom, right and left of a pixel that share
+an edge with it. The 8-connected neighbors on the other hand include the
+4-connected neighbors along with the other 4 pixels that share a corner
+with this pixel. See Figure 6 (a) and (b) in Akhlaghi and Ichikawa (2015)
+for a demonstration.
 
 @item --noerodequant
 Pure erosion is going to carve off sharp and small objects completely out
@@ -11763,34 +11689,32 @@ reminder, in the normal distribution, @mymath{1\sigma}, @mymath{1.5\sigma},
 and @mymath{2\sigma} are approximately on the 0.84, 0.93, and 0.98
 quantiles.
 
-@item -p
-@itemx --opening
-(@option{=INT}) Depth of opening to be applied to the eroded binary
-image. Opening is a composite operation. When opening a binary image
-with a depth of @mymath{n}, @mymath{n} erosions (explained in
-@option{--erode}) are followed by @mymath{n} dilations. Simply put,
-dilation is the inverse of erosion. When dilating an image any
-background pixel is flipped (from 0 to 1) to become a foreground
-pixel. Dilation has the effect of fattening the foreground. Note that
-in NoiseChisel, the erosion which is part of opening is independent of
-the initial erosion that is done on the thresholded image (explained
-in @option{--erode}). The structuring element for the opening can be
-specified with the @option{--openingngb} option. Opening has the
-effect of removing the thin foreground connections (mostly noise)
-between separate foreground `islands' (detections) thereby completely
-isolating them. Once opening is complete, we have @emph{initial}
-detections.
+@item -p INT
+@itemx --opening=INT
+Depth of opening to be applied to the eroded binary image. Opening is a
+composite operation. When opening a binary image with a depth of
+@mymath{n}, @mymath{n} erosions (explained in @option{--erode}) are
+followed by @mymath{n} dilations. Simply put, dilation is the inverse of
+erosion. When dilating an image any background pixel is flipped (from 0 to
+1) to become a foreground pixel. Dilation has the effect of fattening the
+foreground. Note that in NoiseChisel, the erosion which is part of opening
+is independent of the initial erosion that is done on the thresholded image
+(explained in @option{--erode}). The structuring element for the opening
+can be specified with the @option{--openingngb} option. Opening has the
+effect of removing the thin foreground connections (mostly noise) between
+separate foreground `islands' (detections) thereby completely isolating
+them. Once opening is complete, we have @emph{initial} detections.
 
-@item --openingngb
-(@option{=4or8}) The structuring element used for opening, see
-@option{--erodengb} for more information about a structuring element.
+@item --openingngb=INT
+The structuring element used for opening, see @option{--erodengb} for more
+information about a structuring element.
 
-@item -u
-@itemx --sigclumpmultip
-(@option{=FLT}) The multiple of the standard deviation during
+@item -u FLT
+@itemx --sigclumpmultip=FLT
+The multiple of the standard deviation during
 @mymath{\sigma}-clipping. NoiseChisel uses @mymath{\sigma}-clipping to
-remove the effect of cosmic rays when calculating the average and
-standard deviation of the undetected regions.
+remove the effect of cosmic rays when calculating the average and standard
+deviation of the undetected regions.
 
 Since cosmic rays have sharp boundaries and are usually small, the
 erosion and opening might put them within the undetected
@@ -11802,15 +11726,14 @@ clipping}. NoiseChisel uses the convergence of the value of the
 standard deviation as the criteria to stop the
 @mymath{\sigma}-clipping iteration.
 
-@item -r
-@itemx --sigcliptolerance
-(@option{=FLT}) The tolerance level to stop
-@mymath{\sigma}-clipping. The iteration is stopped when
-@mymath{(\sigma_{old}-\sigma_{new})/\sigma_{new}} becomes smaller than
-the value given to this option. Note that @mymath{\sigma_{old}} will
-always be larger than @mymath{\sigma_{new}}. Only statistical scatter
-(error) can cause it to be smaller, in which case they can be
-considered to be approximately equal.
+@item -r FLT
+@itemx --sigcliptolerance=FLT
+The tolerance level to stop @mymath{\sigma}-clipping. The iteration is
+stopped when @mymath{(\sigma_{old}-\sigma_{new})/\sigma_{new}} becomes
+smaller than the value given to this option. Note that
+@mymath{\sigma_{old}} will always be larger than
+@mymath{\sigma_{new}}. Only statistical scatter (error) can cause it to be
+smaller, in which case they can be considered to be approximately equal.
 
 @item --checkdetectionsky
 Check the initial approximation of the sky value and its standard
@@ -11821,35 +11744,34 @@ be the the binary image with initial detections labeled one and
 background labeled zero. The mesh values will be in the subsequent
 extensions.
 
-@item -R
-@itemx --dthresh
-(@option{=FLT}) The detection threshold: a multiple of the initial sky
-standard deviation added with the initial sky approximation. This flux
-threshold is applied to the initially undetected regions on the
-unconvolved image. The background pixels that are completely engulfed
-in a 4-connected foreground region are converted to background (holes
-are filled) and one opening (depth of 1) is applied over both the
-initially detected and undetected regions. The Signal to noise ratio
-of the resulting `psudo-detections' are used to identify true
-vs. false detections. See Section 3.1.5 and Figure 7 in Akhlaghi and
+@item -R FLT
+@itemx --dthresh=FLT
+The detection threshold: a multiple of the initial sky standard deviation
+added with the initial sky approximation. This flux threshold is applied to
+the initially undetected regions on the unconvolved image. The background
+pixels that are completely engulfed in a 4-connected foreground region are
+converted to background (holes are filled) and one opening (depth of 1) is
+applied over both the initially detected and undetected regions. The Signal
+to noise ratio of the resulting `psudo-detections' are used to identify
+true vs. false detections. See Section 3.1.5 and Figure 7 in Akhlaghi and
 Ichikawa (2015) for a very complete explanation.
 
-@item -i
-@itemx --detsnminarea
-(@option{=INT}) The minimum area to calculate the Signal to noise
-ratio on the psudo-detections of both the initially detected and
-undetected regions. When the area in a psudo-detection is too small,
-the Signal to noise ratio measurements will not be accurate and their
-distribution will be heavily skewed to the positive. So it is best to
-ignore any psudo-detection that is smaller than this area. Use
+@item -i INT
+@itemx --detsnminarea=INT
+The minimum area to calculate the Signal to noise ratio on the
+psudo-detections of both the initially detected and undetected
+regions. When the area in a psudo-detection is too small, the Signal to
+noise ratio measurements will not be accurate and their distribution will
+be heavily skewed to the positive. So it is best to ignore any
+psudo-detection that is smaller than this area. Use
 @option{--detsnhistnbins} to check if this value is reasonable or not.
 
-@item --detsnhistnbins
-(@option{=INT}) If not equal to zero, a histogram of the Signal to
-noise ratios of the psudo-detections will be stored in a text file
-ending with @file{_detsn.txt}. The number of bins in this histogram is
-specified by the value given to this option. This is good for
-inspecting the best possible value to @option{--detsnminarea}.
+@item --detsnhistnbins=INT
+If not equal to zero, a histogram of the Signal to noise ratios of the
+psudo-detections will be stored in a text file ending with
+@file{_detsn.txt}. The number of bins in this histogram is specified by the
+value given to this option. This is good for inspecting the best possible
+value to @option{--detsnminarea}.
 
 An empirical way to estimate the best @option{--detsnminarea} value
 for your data set is that the histogram have a sharp drop towards the
@@ -11861,24 +11783,22 @@ bins will not be to sharp with the very high S/N bins having a large
 number of objects and the peak being less significant. A good minimum
 area will result in the last bins having very few pseudo-detections.
 
-@item -c
-@itemx --detquant
-(@option{=FLT}) The quantile of the Signal to noise ratio distribution
-of the psudo-detections in each mesh to use for filling the large mesh
-grid. Note that this is only calculated for the large mesh grids that
-satisfy the minimum fraction of undetected pixels (value of
-@option{--minbfrac}) and minimum number of psudo-detections (value of
-@option{--minnumfalse}).
+@item -c FLT
+@itemx --detquant=FLT
+The quantile of the Signal to noise ratio distribution of the
+psudo-detections in each mesh to use for filling the large mesh grid. Note
+that this is only calculated for the large mesh grids that satisfy the
+minimum fraction of undetected pixels (value of @option{--minbfrac}) and
+minimum number of psudo-detections (value of @option{--minnumfalse}).
 
-@item -I
-@itemx --dilate
-(@option{=INT}) Number of times to dilate the final true
-detections. See the explanations in @option{--opening} for more
-information on dilation. The structuring element for this final
-dilation is fixed to an 8-connected neighborhood. This is because
-astronomical objects, except cosmic rays, never have a clear cutoff,
-so all the 8-pixels connected to the border pixels of a detection
-might harbor data.
+@item -I INT
+@itemx --dilate=INT
+Number of times to dilate the final true detections. See the explanations
+in @option{--opening} for more information on dilation. The structuring
+element for this final dilation is fixed to an 8-connected
+neighborhood. This is because astronomical objects, except cosmic rays,
+never have a clear cutoff, so all the 8-pixels connected to the border
+pixels of a detection might harbor data.
 
 @item --checkdetection
 Every step of the detection process will be added as an extension to a
@@ -11958,29 +11878,26 @@ catalog). You can then run MakeCatalog on A normally, see
 and clump labels images to those that NoiseChisel produced for A, see
 @ref{Invoking astmkcatalog}.
 
-@item -m
-@itemx --segsnminarea
-(@option{=INT}) The minimum area which a clump in the undetected
-regions should have in order to be considered in the clump Signal to
-noise ratio measurement. If this size is set to a small value, the
-Signal to noise ratio of false clumps will not be accurately
-found. Note that this has to be larger than the value to
-@option{--detsnminarea}. Because the clumps are found on the convolved
-(smoothed) image while the psudo-detections are found on the input
-image. Use @option{--clumpsnhistnbins} to check if this value is
+@item -m INT
+@itemx --segsnminarea=INT
+The minimum area which a clump in the undetected regions should have in
+order to be considered in the clump Signal to noise ratio measurement. If
+this size is set to a small value, the Signal to noise ratio of false
+clumps will not be accurately found. Note that this has to be larger than
+the value to @option{--detsnminarea}. Because the clumps are found on the
+convolved (smoothed) image while the psudo-detections are found on the
+input image. Use @option{--clumpsnhistnbins} to check if this value is
 reasonable or not.
 
-@item --clumpsnhistnbins
-(@option{=INT}) Similar to @option{--detsnhistnbins} (see there for
-more explanations), but for the distribution of the S/N of clumps over
-the undetected regions. The relevant parameter to check here is be
-@option{--segsnminarea}.
+@item --clumpsnhistnbins=INT
+Similar to @option{--detsnhistnbins} (see there for more explanations), but
+for the distribution of the S/N of clumps over the undetected regions. The
+relevant parameter to check here is be @option{--segsnminarea}.
 
-@item -g
-@itemx --segquant
-(@option{=FLT}) The quantile of the noise clump Signal to noise ratio
-distribution. This value is used to identify true clumps over the
-detected regions.
+@item -g FLT
+@itemx --segquant=FLT
+The quantile of the noise clump Signal to noise ratio distribution. This
+value is used to identify true clumps over the detected regions.
 
 @item -v
 @itemx --keepmaxnearriver
@@ -11993,12 +11910,12 @@ noise) to become a very large and with a very high Signal to noise
 ratio. In such cases, the pixel with the maximum flux in the clump
 will be immediately touching a river pixel.
 
-@item -G
-@itemx --gthresh
-(@option{=FLT}) Threshold (multiple of the sky standard deviation
-added with the sky) to stop growing true clumps. Once true clumps are
-found, they are set as the basis to segment the detected region. They
-are grown until the threshold specified by this option.
+@item -G FLT
+@itemx --gthresh=FLT
+Threshold (multiple of the sky standard deviation added with the sky) to
+stop growing true clumps. Once true clumps are found, they are set as the
+basis to segment the detected region. They are grown until the threshold
+specified by this option.
 
 @item --grownclumps
 In the output (see @ref{NoiseChisel output}) store the grown clumps
@@ -12007,28 +11924,27 @@ detection). By default the original clumps are stored as the third
 extension of the output, if this option is called, it is replaced with
 the grown clump labels.
 
-@item -y
-@itemx --minriverlength
-(@option{=INT}) The minimum length of a river between two grown clumps
-for it to be considered in Signal to noise ratio estimations. Similar
-to @option{--segsnminarea} and @option{--detsnminarea}, if the length
-of the river is too short, the Signal to noise ratio can be noisy and
-unreliable. Any existing rivers shorter than this length will be
-considered as non-existent, independent of their Signal to noise
-ratio. Since the clumps are grown on the input image, this value
-should best be similar to the value of @option{--detsnminarea}. Recall
-that the clumps were defined on the convolved image so
-@option{--segsnminarea} was larger than @option{--detsnminarea}.
+@item -y INT
+@itemx --minriverlength=INT
+The minimum length of a river between two grown clumps for it to be
+considered in Signal to noise ratio estimations. Similar to
+@option{--segsnminarea} and @option{--detsnminarea}, if the length of the
+river is too short, the Signal to noise ratio can be noisy and
+unreliable. Any existing rivers shorter than this length will be considered
+as non-existent, independent of their Signal to noise ratio. Since the
+clumps are grown on the input image, this value should best be similar to
+the value of @option{--detsnminarea}. Recall that the clumps were defined
+on the convolved image so @option{--segsnminarea} was larger than
+@option{--detsnminarea}.
 
-@item -O
-@itemx --objbordersn
-(@option{=FLT}) The maximum Signal to noise ratio of the rivers
-between two grown clumps in order to consider them as separate
-`objects'. If the Signal to noise ratio of the river between two grown
-clumps is larger than this value, they are defined to be part of one
-`object'. Note that the physical reality of these `objects' can never
-be established with one image, or even multiple images from one
-broad-band filter. Any method we devise to define `object's over a
+@item -O FLT
+@itemx --objbordersn=FLT
+The maximum Signal to noise ratio of the rivers between two grown clumps in
+order to consider them as separate `objects'. If the Signal to noise ratio
+of the river between two grown clumps is larger than this value, they are
+defined to be part of one `object'. Note that the physical reality of these
+`objects' can never be established with one image, or even multiple images
+from one broad-band filter. Any method we devise to define `object's over a
 detected region is ultimately subjective.
 
 Two very distant galaxies or satellites in one halo might lie in the
@@ -12601,48 +12517,43 @@ segmentation maps should not be of a floating point type
 
 @table @option
 
-@item -O
-@itemx --objlabs
-(@option{=STR}) The file name of the object labels, if in the same
-file as input, it is not mandatory.
+@item -O STR
+@itemx --objlabs=STR
+The file name of the object labels, if in the same file as input, it is not
+mandatory.
 
-@item --objhdu
-(@option{=STR}) The HDU of the object labels image, the header keyword
-@code{NOBJS} must be present in this extension. The value to this
-keyword is used as the final number of objects and the number of rows
-in the output objects catalog. Only pixels with values above zero will
-be considered.
+@item --objhdu=STR
+The HDU of the object labels image, the header keyword @code{NOBJS} must be
+present in this extension. The value to this keyword is used as the final
+number of objects and the number of rows in the output objects
+catalog. Only pixels with values above zero will be considered.
 
-@item -c
-@itemx --clumplabs
-(@option{=STR}) Similar to @option{--objlabs} but for the labels of
-the clumps.
+@item -c STR
+@itemx --clumplabs=STR
+Similar to @option{--objlabs} but for the labels of the clumps.
 
-@item --clumphdu
-(@option{=STR}) Similar to @option{--objhdu}, but for the clumps. The
-@code{NCLUMPS} keyword in this header specifies the number of
-recognized clumps.
+@item --clumphdu=STR
+Similar to @option{--objhdu}, but for the clumps. The @code{NCLUMPS}
+keyword in this header specifies the number of recognized clumps.
 
-@item -s
-@itemx --skyfilename
-(@option{=STR}) File name of an image keeping the Sky value for each
-pixel.
+@item -s STR
+@itemx --skyfilename=STR
+File name of an image keeping the Sky value for each pixel.
 
-@item --skyhdu
-(@option{=STR}) The HDU of the Sky value image.
+@item --skyhdu=STR
+The HDU of the Sky value image.
 
-@item -t
-@itemx --stdfilename
-(@option{=STR}) File name of image keeping the Sky value standard
-deviation for each pixel.
+@item -t STR
+@itemx --stdfilename=STR
+File name of image keeping the Sky value standard deviation for each pixel.
 
-@item --stdhdu
-(@option{=STR}) The HDU of the Sky value standard deviation image.
+@item --stdhdu=STR
+The HDU of the Sky value standard deviation image.
 
-@item -z
-@itemx --zeropoint
-(@option{=FLT}) The zero point magnitude for the input image, see
-@ref{Flux Brightness and magnitude}.
+@item -z FLT
+@itemx --zeropoint=FLT
+The zero point magnitude for the input image, see @ref{Flux Brightness and
+magnitude}.
 
 @item -E
 @itemx --skysubtracted
@@ -12650,13 +12561,13 @@ If the image has already been sky subtracted by another program, then
 you need to notify MakeCatalog through this option. Note that this is
 only relevant when the Signal to noise ratio is to be calculated.
 
-@item -T
-@itemx --threshold
-(@option{=FLT}) For all the columns, only consider pixels that are above a
-given relative threshold. Symbolizing the value of this option as
-@mymath{T}, the Sky for a pixel at @mymath{(i,j)} with @mymath{\mu_{ij}}
-and its Standard deviation with @mymath{\sigma_{ij}}, that pixel will only
-be used if its value (@mymath{B_{ij}}) satisfies this condition:
+@item -T FLT
+@itemx --threshold=FLT
+For all the columns, only consider pixels that are above a given relative
+threshold. Symbolizing the value of this option as @mymath{T}, the Sky for
+a pixel at @mymath{(i,j)} with @mymath{\mu_{ij}} and its Standard deviation
+with @mymath{\sigma_{ij}}, that pixel will only be used if its value
+(@mymath{B_{ij}}) satisfies this condition:
 @mymath{B_{ij}>\mu_{ij}+{T}\sigma_{ij}}. The only calculations that will
 not be affected are is the average river values (@option{--riverave}),
 since they are used as a reference. A commented row will be added in the
@@ -12705,41 +12616,39 @@ made here is only for printing them.
 
 @table @option
 
-@item --nsigmag
-(@option{=FLT}) The magnitude of the value to this option multiplied
-by the maximum standard deviation over the objects or clumps is
-reported in the output catalog. This value is a per-pixel value, not
-per object and is not found over an area or aperture, like the common
-@mymath{5\sigma} values that are commonly reported as a measure of
-depth. They are based on a certain area and are relics from the time
-of analog data collection and processing. Modern tools use digital
-imaging detectors and the area is that of a pixel.
+@item --nsigmag=FLT
+The magnitude of the value to this option multiplied by the maximum
+standard deviation over the objects or clumps is reported in the output
+catalog. This value is a per-pixel value, not per object and is not found
+over an area or aperture, like the common @mymath{5\sigma} values that are
+commonly reported as a measure of depth. They are based on a certain area
+and are relics from the time of analog data collection and
+processing. Modern tools use digital imaging detectors and the area is that
+of a pixel.
 
-@item --intwidth
-(@option{=INT}) The width of printing the integer values. In
-MakeCatalog, all IDs, numbers (counters) and areas are considered to
-be an integer.
+@item --intwidth=INT
+The width of printing the integer values. In MakeCatalog, all IDs, numbers
+(counters) and areas are considered to be an integer.
 
-@item --floatwidth
-(@option{=INT}) The width of a normal precision floating point
-column. Any column that is not designated in @option{--intwidth} or
-@option{--accuwidth} is considered to be a normal precision floating
-point.
+@item --floatwidth=INT
+The width of a normal precision floating point column. Any column that is
+not designated in @option{--intwidth} or @option{--accuwidth} is considered
+to be a normal precision floating point.
 
-@item --accuwidth
-(@option{=INT}) The width columns to be printed with extra
-accuracy. In MakeCatalog the following columns are printed with extra
-accuracy: right ascension, declination, brightness, river pixel
-averages (see Akhlaghi and Ichikawa 2015 for the definition of river
-pixels), the sky and the sky standard deviation.
+@item --accuwidth=INT
+The width columns to be printed with extra accuracy. In MakeCatalog the
+following columns are printed with extra accuracy: right ascension,
+declination, brightness, river pixel averages (see Akhlaghi and Ichikawa
+2015 for the definition of river pixels), the sky and the sky standard
+deviation.
 
-@item --floatprecision
-(@option{=INT}) The number of digits to the right of the decimal point
-in normal floating point display.
+@item --floatprecision=INT
+The number of digits to the right of the decimal point in normal floating
+point display.
 
-@item --accuprecision
-(@option{=INT}) The number of digits to the right of the decimal point
-in more accurate floating point display.
+@item --accuprecision=INT
+The number of digits to the right of the decimal point in more accurate
+floating point display.
 
 @end table
 
@@ -12771,15 +12680,15 @@ contexts).
 
 @table @option
 
-@item --upmask
-(@option{=STR}) File name of mask image to use for upper-limit
-calculation. In some cases (especially when doing matched photometry), the
-object labels specified in the main input and mask image might not be
-adequate. In other words they do not necessarily have to cover @emph{all}
-detected objects: the user might have selected only a few of the objects in
-their labeled image. All the non-zero pixels of the image specified by this
-option (in the @option{--upmaskhdu} extension) will be set as blank for the
-upper limit magnitude calculation.
+@item --upmask=STR
+File name of mask image to use for upper-limit calculation. In some cases
+(especially when doing matched photometry), the object labels specified in
+the main input and mask image might not be adequate. In other words they do
+not necessarily have to cover @emph{all} detected objects: the user might
+have selected only a few of the objects in their labeled image. All the
+non-zero pixels of the image specified by this option (in the
+@option{--upmaskhdu} extension) will be set as blank for the upper limit
+magnitude calculation.
 
 For example, when you are using labels from another image, you can give
 NoiseChisel's objects image output for this image as the value to this
@@ -12787,42 +12696,42 @@ option. In this way, you can be sure that regions with data do not harm
 your distribution. See @ref{Quantifying data limits} for more on the upper
 limit magnitude.
 
-@item --upmaskhdu
-(@option{=STR}) The extension in the file specified by @option{--upmask}.
+@item --upmaskhdu=STR
+The extension in the file specified by @option{--upmask}.
 
-@item --upnum
-(@option{=INT}) The number of random samples to take for all the objects. A
-larger value to this option will give a more accurate result
-(assymptotically), but it will also slow down the process. When a randomly
-positioned sample overlaps with a detected/masked pixel it is not counted
-and another random position is found until the object completely lies over
-an undetected region. So you can be sure that for each object, this many
-samples over undetected objects are made. See the upper limit magnitude
-discussion in @ref{Quantifying data limits} for more.
+@item --upnum=INT
+The number of random samples to take for all the objects. A larger value to
+this option will give a more accurate result (assymptotically), but it will
+also slow down the process. When a randomly positioned sample overlaps with
+a detected/masked pixel it is not counted and another random position is
+found until the object completely lies over an undetected region. So you
+can be sure that for each object, this many samples over undetected objects
+are made. See the upper limit magnitude discussion in @ref{Quantifying data
+limits} for more.
 
 @item --envseed
 Read the random number generator type and seed value from the environment
 (see @ref{Generating random numbers}). Random numbers are used in
 calculating the random positions of different samples of each object.
 
-@item --upsclipmultip
-(@option{=FLT}) The multiple of @mymath{\sigma} to use in
-@mymath{\sigma}-clipping the final distribution (see @ref{Sigma
-clipping}). The images might have some artifacts or some regions with
-signal in the image might not have been removed correctly. If a random
-sampling falls over such regions, they can significantly bias the final
-standard deviation. To avoid the effect of such outliers, after the
-distribution is found, it is @mymath{\sigma}-clipped (by convergence).
+@item --upsclipmultip=FLT
+The multiple of @mymath{\sigma} to use in @mymath{\sigma}-clipping the
+final distribution (see @ref{Sigma clipping}). The images might have some
+artifacts or some regions with signal in the image might not have been
+removed correctly. If a random sampling falls over such regions, they can
+significantly bias the final standard deviation. To avoid the effect of
+such outliers, after the distribution is found, it is
+@mymath{\sigma}-clipped (by convergence).
 
-@item --upsclipaccu
-(@option{=FLT}) Relative difference between two successive @mymath{\sigma}
-measurements to halt the @mymath{\sigma}-clipping process by convergence,
-see the explanations for @option{--upsclipmultip} for more.
+@item --upsclipaccu=FLT
+Relative difference between two successive @mymath{\sigma} measurements to
+halt the @mymath{\sigma}-clipping process by convergence, see the
+explanations for @option{--upsclipmultip} for more.
 
-@item --upnsigma
-(@option{=FLT}) The multiple of the standard deviation (or @mymath{\sigma})
-used to measure the magnitude. Note that this is the final @mymath{\sigma}
-produced after the @mymath{\sigma}-clipping.
+@item --upnsigma=FLT
+The multiple of the standard deviation (or @mymath{\sigma}) used to measure
+the magnitude. Note that this is the final @mymath{\sigma} produced after
+the @mymath{\sigma}-clipping.
 
 @end table
 
@@ -13911,31 +13820,29 @@ Output:
 
 @table @option
 
-@item -x
-@itemx --naxis1
-(@option{=INT}) The number of pixels in the output image along the
-first FITS axis (horizontal when viewed in SAO ds9). This is before
-over-sampling. For example if you call MakeProfiles with
-@option{--naxis1=100 --oversample=5} (assuming no shift due for later
-convolution), then the final image size along the first axis will be
-500. If a background image is specified, any possible value to this
-option is ignored.
+@item -x INT
+@itemx --naxis1=INT
+The number of pixels in the output image along the first FITS axis
+(horizontal when viewed in SAO ds9). This is before over-sampling. For
+example if you call MakeProfiles with @option{--naxis1=100 --oversample=5}
+(assuming no shift due for later convolution), then the final image size
+along the first axis will be 500. If a background image is specified, any
+possible value to this option is ignored.
 
-@item -y
-@itemx --naxis2
-(@option{=INT}) The number of pixels in the output image along the
-second FITS axis (vertical when viewed in SAO ds9), see the
-explanation for @option{--naxis1}.
+@item -y INT
+@itemx --naxis2=INT
+The number of pixels in the output image along the second FITS axis
+(vertical when viewed in SAO ds9), see the explanation for
+@option{--naxis1}.
 
-@item -T
-@itemx --type
-(@option{=STR}) Type of the output image pixels (specified by @code{BITPIX}
-in the FITS standard). It can have any one of the following values:
-@option{byte}, @option{short}, @option{long}, @option{longlong},
-@option{float}, @option{double}. Internally, the images are made in the
-float type, but upon writing of the single output (not individual
-profiles), the image will be converted to the type specified by this
-option.
+@item -T STR
+@itemx --type=STR
+Type of the output image pixels (specified by @code{BITPIX} in the FITS
+standard). It can have any one of the following values: @option{byte},
+@option{short}, @option{long}, @option{longlong}, @option{float},
+@option{double}. Internally, the images are made in the float type, but
+upon writing of the single output (not individual profiles), the image will
+be converted to the type specified by this option.
 
 When a background image is given without the @option{--inputascanvas}
 option, it is assumed that you want the output in the same format as the
@@ -13961,13 +13868,13 @@ labeled regions to feed into MakeCatalog along with NoiseChisel's outputs
 for aperture photometry. See the discussion and examples under the
 `@option{--mforflatpix}' for more.
 
-@item -s
-@itemx --oversample
-(@option{=INT}) The scale to over-sample the profiles and final
-image. If not an odd number, will be added by one, see
-@ref{Oversampling}. Note that this @option{--oversample} will remain
-active even if an input image is specified. If your input catalog is
-based on the background image, be sure to set @option{--oversample=1}.
+@item -s INT
+@itemx --oversample=INT
+The scale to over-sample the profiles and final image. If not an odd
+number, will be added by one, see @ref{Oversampling}. Note that this
+@option{--oversample} will remain active even if an input image is
+specified. If your input catalog is based on the background image, be sure
+to set @option{--oversample=1}.
 
 @item --psfinimg
 Build the possibly existing PSF profiles (Moffat or Gaussian) in the
@@ -14033,10 +13940,10 @@ generate the random Monte Carlo sampling distribution, see
 @ref{Sampling from a function} and @ref{Generating random
 numbers}.
 
-@item -t
-@itemx --tolerance
-(@option{=FLT}) The tolerance to switch from Monte Carlo integration
-to the central pixel value, see @ref{Sampling from a function}.
+@item -t FLT
+@itemx --tolerance=FLT
+The tolerance to switch from Monte Carlo integration to the central pixel
+value, see @ref{Sampling from a function}.
 
 @item -p
 @itemx --tunitinp
@@ -14045,18 +13952,18 @@ default, the truncation column is considered to be in units of the
 radial parameters of the profile (@option{--rcol}). Read it as
 `t-unit-in-p' for `truncation unit in pixels'.
 
-@item -X
-@itemx --xshift
-(@option{=INT}) Shift all the profiles and enlarge the image along the
-first FITS axis, see @mymath{n} in @ref{If convolving
-afterwards}. This is useful when you want to convolve the image
-afterwards. If you are using an external PSF, be sure to oversample it
-to the same scale used for creating the mock images. If a background
-image is specified, any possible value to this option is ignored.
+@item -X INT
+@itemx --xshift=INT
+Shift all the profiles and enlarge the image along the first FITS axis, see
+@mymath{n} in @ref{If convolving afterwards}. This is useful when you want
+to convolve the image afterwards. If you are using an external PSF, be sure
+to oversample it to the same scale used for creating the mock images. If a
+background image is specified, any possible value to this option is
+ignored.
 
-@item -Y
-@itemx --yshift
-(@option{=INT}) Similar to @option{--xshift} for the second FITS axis.
+@item -Y INT
+@itemx --yshift=INT
+Similar to @option{--xshift} for the second FITS axis.
 
 @item -c
 @itemx --prepforconv
@@ -14123,15 +14030,15 @@ profile. However, when using flat profiles with the
 `@option{--mforflatpix}' option, you should be careful not to give a
 @code{0.0} value as the flat profile's pixel value.
 
-@item -w
-@itemx --circumwidth
-(@option{=FLT}) The width of the circumference if the profile is to be
-an elliptical circumference or annulus. See the explanations for this
-type of profile in @option{--fcol}.
+@item -w FLT
+@itemx --circumwidth=FLT
+The width of the circumference if the profile is to be an elliptical
+circumference or annulus. See the explanations for this type of profile in
+@option{--fcol}.
 
-@item -z
-@itemx --zeropoint
-(@option{=FLT}) The zero-point magnitude of the image.
+@item -z FLT
+@itemx --zeropoint=FLT
+The zero-point magnitude of the image.
 
 @end table
 
@@ -14141,11 +14048,10 @@ column number, where counting starts from zero.
 
 @table @option
 
-@item --fcol
-(@option{=INT}) The functional form of the profile with one of the
-values below. Note that this value will be converted to an integer
-before analysis using the internal type conversion of C. So for
-example 2.80 will be converted to 2.
+@item --fcol=INT
+The functional form of the profile with one of the values below. Note that
+this value will be converted to an integer before analysis using the
+internal type conversion of C. So for example 2.80 will be converted to 2.
 
 @itemize
 @item
@@ -14165,56 +14071,50 @@ to the @option{--circumwidth}. Currently this is only intended to be
 used for making an elliptical annulus (with a width of 1 or 2 pixels).
 @end itemize
 
-@item --xcol
-(@option{=INT}) The center of the profiles along the first FITS axis
-(horizontal when viewed in SAO ds9). See the explanations for
-@option{--racol} for precedence when both image and WCS coordinate columns
-are given.
+@item --xcol=INT
+The center of the profiles along the first FITS axis (horizontal when
+viewed in SAO ds9). See the explanations for @option{--racol} for
+precedence when both image and WCS coordinate columns are given.
 
-@item --ycol
-(@option{=INT}) The center of the profiles along the second FITS axis
-(vertical when viewed in SAO ds9). Similar to @option{--xcol}.
+@item --ycol=INT
+The center of the profiles along the second FITS axis (vertical when viewed
+in SAO ds9). Similar to @option{--xcol}.
 
-@item --racol
-(@option{=INT}) The profile center's right ascension. Along with
-@option{--deccol}, these WCS coordinate columns are not mandatory. If they
-are not given, the @option{--xcol} and @option{--ycol} options will be used
-to specify the profile's central position and vice-versa. However, if image
-coordinate columns (@option{--xcol} and @option{--ycol}) and WCS coordinate
-columns (@option{--racol} and @option{--deccol}) are given, the WCS
-coordinate columns take precedence and image coordinate columns will be
-ignored.
+@item --racol=INT
+The profile center's right ascension. Along with @option{--deccol}, these
+WCS coordinate columns are not mandatory. If they are not given, the
+@option{--xcol} and @option{--ycol} options will be used to specify the
+profile's central position and vice-versa. However, if image coordinate
+columns (@option{--xcol} and @option{--ycol}) and WCS coordinate columns
+(@option{--racol} and @option{--deccol}) are given, the WCS coordinate
+columns take precedence and image coordinate columns will be ignored.
 
-@item --deccol
-(@option{=INT}) The profile center's declination. Similar to
-@option{--racol}.
+@item --deccol=INT
+The profile center's declination. Similar to @option{--racol}.
 
-@item --rcol
-(@option{=INT}) The radius parameter of the profiles. Effective radius
-(@mymath{r_e}) if S@'ersic, FWHM if Moffat or Gaussian.
+@item --rcol=INT
+The radius parameter of the profiles. Effective radius (@mymath{r_e}) if
+S@'ersic, FWHM if Moffat or Gaussian.
 
-@item --ncol
-(@option{=INT}) The S@'ersic index (@mymath{n}) or Moffat
-@mymath{\beta}.
+@item --ncol=INT
+The S@'ersic index (@mymath{n}) or Moffat @mymath{\beta}.
 
-@item --pcol
-(@option{=INT}) The position angle (in degrees) of the profiles
-relative to the first FITS axis (horizontal when viewed in SAO ds9).
+@item --pcol=INT
+The position angle (in degrees) of the profiles relative to the first FITS
+axis (horizontal when viewed in SAO ds9).
 
-@item --qcol
-(@option{=INT}) The axis ratio of the profiles (minor axis divided by
-the major axis).
+@item --qcol=INT
+The axis ratio of the profiles (minor axis divided by the major axis).
 
-@item --mcol
-(@option{=INT}) The total pixelated magnitude of the profile within the
-truncation radius, see @ref{Profile magnitude}.
+@item --mcol=INT
+The total pixelated magnitude of the profile within the truncation radius,
+see @ref{Profile magnitude}.
 
-@item --tcol
-(@option{=INT}) The truncation radius of this profile. By default it
-is in units of the radial parameter of the profile (the value in the
-@option{--rcol} of the catalog). If @option{--tunitinp} is given, this
-value is interpreted in units of pixels (prior to oversampling)
-irrespective of the profile.
+@item --tcol=INT
+The truncation radius of this profile. By default it is in units of the
+radial parameter of the profile (the value in the @option{--rcol} of the
+catalog). If @option{--tunitinp} is given, this value is interpreted in
+units of pixels (prior to oversampling) irrespective of the profile.
 
 @item -F
 @itemx --mforflatpix
@@ -14260,23 +14160,22 @@ WCS:
 
 @table @option
 
-@item --crpix1
-(@option{=FLT}) The pixel coordinates of the WCS reference point on
-the first (horizontal) FITS axis (counting from 1).
+@item --crpix1=FLT
+The pixel coordinates of the WCS reference point on the first (horizontal)
+FITS axis (counting from 1).
 
-@item --crpix2
-(@option{=FLT}) The pixel coordinates of the WCS reference point on
-the second (vertical) FITS axis (counting from 1).
+@item --crpix2=FLT
+The pixel coordinates of the WCS reference point on the second (vertical)
+FITS axis (counting from 1).
 
-@item --crval1
-(@option{=FLT}) The Right Ascension (RA) of the reference point.
+@item --crval1=FLT
+The Right Ascension (RA) of the reference point.
 
-@item --crval2
-(@option{=FLT}) The Declination of the reference point.
+@item --crval2=FLT
+The Declination of the reference point.
 
-@item --resolution
-(@option{=FLT}) The resolution of the non-oversampled image in units
-of arcseconds/pixel.
+@item --resolution=FLT
+The resolution of the non-oversampled image in units of arcseconds/pixel.
 
 @end table
 
@@ -14646,22 +14545,20 @@ making it. This is done for future reproducibility.
 
 @table @option
 
-@item -b
-@itemx --background
-(@option{=FLT}) The background pixel value for the image in units of
-magnitudes, see @ref{Photon counting noise} and @ref{Flux Brightness
-and magnitude}.
+@item -b FLT
+@itemx --background=FLT
+The background pixel value for the image in units of magnitudes, see
+@ref{Photon counting noise} and @ref{Flux Brightness and magnitude}.
 
-@item -z
-@itemx --zeropoint
-(@option{=FLT}) The zeropoint magnitude used to convert the value of
-@option{--background} (in units of magnitude) to flux, see
-@ref{Flux Brightness and magnitude}.
+@item -z FLT
+@itemx --zeropoint=FLT
+The zeropoint magnitude used to convert the value of @option{--background}
+(in units of magnitude) to flux, see @ref{Flux Brightness and magnitude}.
 
-@item -s
-@itemx --stdadd
-(@option{=FLT}) The instrumental noise which is in units of flux, see
-@ref{Instrumental noise}.
+@item -s FLT
+@itemx --stdadd=FLT
+The instrumental noise which is in units of flux, see @ref{Instrumental
+noise}.
 
 @item -e
 @itemx --envseed
@@ -14677,26 +14574,6 @@ used internally. This option will be most useful if the input images
 were of integer types.
 
 @end table
-
-
-
-
-
-
-
-
-@c @node Table manipulation, High-level calculations, Modeling and fittings, Top
-@c @chapter Table manipulation
-@c
-@c @cindex Table manipulation
-@c @cindex Manipulating tables
-@c The FITS standard also specifies tables as a form of data that can be
-@c stored in the extensions of a FITS file. These tables can be ASCII
-@c tables or binary tables. The programs in this section provide the
-@c tools to directly read and write to FITS tables.
-@c
-@c The software for this section have to be added ....
-
 
 
 
@@ -15076,30 +14953,28 @@ $ astcosmiccal --redshift=0.832 | grep volume
 The full list of options is shown and described below:
 @table @option
 
-@item -z
-@itemx --redshift
-(@option{=FLT}) The redshift of interest.
+@item -z FLT
+@itemx --redshift=FLT
+The redshift of interest.
 
-@item -H
-@itemx --H0
-(@option{=FLT}) Current expansion rate (in km sec@mymath{^{-1}}
-Mpc@mymath{^{-1}}).
+@item -H FLT
+@itemx --H0=FLT
+Current expansion rate (in km sec@mymath{^{-1}} Mpc@mymath{^{-1}}).
 
-@item -l
-@itemx --olambda
-(@option{=FLT}) Cosmological constant density divided by the critical
-density in the current Universe (@mymath{\Omega_{\Lambda,0}}).
+@item -l FLT
+@itemx --olambda=FLT
+Cosmological constant density divided by the critical density in the
+current Universe (@mymath{\Omega_{\Lambda,0}}).
 
-@item -m
-@itemx --omatter
-(@option{=FLT}) Matter (including massive neutrinos) density divided
-by the critical density in the current Universe
-(@mymath{\Omega_{m,0}}).
+@item -m FLT
+@itemx --omatter=FLT
+Matter (including massive neutrinos) density divided by the critical
+density in the current Universe (@mymath{\Omega_{m,0}}).
 
-@item -r
-@itemx --oradiation
-(@option{=FLT}) Radiation density divided by the critical density in
-the current Universe (@mymath{\Omega_{r,0}}).
+@item -r FLT
+@itemx --oradiation=FLT
+Radiation density divided by the critical density in the current Universe
+(@mymath{\Omega_{r,0}}).
 
 @item -v
 @itemx --onlyvolume
@@ -18884,7 +18759,8 @@ with an @code{int} in the examples above.
 @cindex Citation information
 This header file keeps the global variable for the program authors and its
 BibTeX record for citation. They are used in the outputs of the common
-options @option{--version} and @option{--cite}, see @ref{Operating modes}.
+options @option{--version} and @option{--cite}, see @ref{Operating mode
+options}.
 
 @end vtable
 

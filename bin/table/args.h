@@ -169,6 +169,9 @@ parse_opt(int key, char *arg, struct argp_state *state)
 {
   struct tableparams *p = state->input;
 
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
   /* In case the user incorrectly uses the equal sign (for example
      with a short format or with space in the long format, then `arg`
      start with (if the short version was called) or be (if the long
@@ -196,7 +199,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* This is an option, set its value. */
     default:
-      return gal_options_set_from_key(key, arg, options);
+      return gal_options_set_from_key(key, arg, options, &p->cp);
     }
 
   return 0;

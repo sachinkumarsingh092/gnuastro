@@ -290,31 +290,22 @@ ui_preparations(struct tableparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 
-/* These global variables are necessary because the `options.c' library
-   also needs to use these values in various stages, so its cleaner/easier
-   to define them as global variables here (they are declared as `extern'
-   variables in `options.h'). The macros are defined in `main.h'.*/
-char program_name[]=PROGRAM_NAME;
-char program_exec[]=PROGRAM_EXEC;
-
-
-
-
-
-/* Top level function. */
 void
 setparams(int argc, char *argv[], struct tableparams *p)
 {
-  struct uiparams *up=&p->up;
-  struct gal_options_common_params *cp=&p->cp;
-
   /* Set the non-zero initial values, the structure was initialized to
      have a zero value for all elements. */
-  cp->numthreads = num_processors(NPROC_CURRENT);
+  p->cp.poptions        = options;
+  p->cp.program_name    = PROGRAM_NAME;
+  p->cp.program_exec    = PROGRAM_EXEC;
+  p->cp.program_bibtex  = PROGRAM_BIBTEX;
+  p->cp.program_authors = PROGRAM_AUTHORS;
+  p->cp.coptions        = gal_commonopts_options;
+  p->cp.numthreads      = num_processors(NPROC_CURRENT);
 
   /* Initialize this utility's pointers to NULL. */
   p->columns=NULL;
-  up->filename=NULL;
+  p->up.filename=NULL;
 
   /* Read the command-line arguments. */
   errno=0;
@@ -322,7 +313,7 @@ setparams(int argc, char *argv[], struct tableparams *p)
     error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Read the configuration files. */
-  gal_options_config_files(options, &p->cp);
+  gal_options_read_config_files(&p->cp);
 
   /* Read the options into the program's structure, and check them and
      their relations prior to printing. */
@@ -331,7 +322,7 @@ setparams(int argc, char *argv[], struct tableparams *p)
   /* Print the option values if asked. Note that this needs to be done
      after the sanity check so un-sane values are not printed in the output
      state. */
-  gal_options_print_state(options);
+  gal_options_print_state(&p->cp);
 
   /* Check that the options and arguments fit well with each other. Note
      that arguments don't go in a configuration file. So this test should

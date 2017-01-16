@@ -41,12 +41,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define GAL_OPTIONS_NO_ARG_TYPE GAL_DATA_TYPE_UCHAR
 
 
-/* External global variables that must be specified by the program using
-   this header. */
-extern char program_name[];     /* Defined in program's `main.h' */
-extern char program_exec[];     /* Defined in program's `main.h' */
-extern char program_bibtex[];   /* Defined in program's `cite.h' */
-extern struct argp_option gal_commonopts_options[];
 
 
 /* Key values for the common options, the free alphabetical keys are listed
@@ -85,16 +79,24 @@ enum options_option_keys
 struct gal_options_common_params
 {
   /* Input/Output: */
-  char          *hdu;     /* Image extension.                            */
-  char       *output;     /* Directory containg output.                  */
-  int     dontdelete;     /* ==1: Don't delete existing file.            */
-  int   keepinputdir;     /* Keep input directory for automatic output.  */
+  char          *hdu;          /* Image extension.                       */
+  char       *output;          /* Directory containg output.             */
+  int     dontdelete;          /* ==1: Don't delete existing file.       */
+  int   keepinputdir;          /* Keep input directory for auto output.  */
 
   /* Operating modes: */
-  int          quiet;     /* ==1: don't print anything but errors.       */
-  size_t  numthreads;     /* Number of threads to use.                   */
-  size_t  minmapsize;     /* The minimum bytes necessary to use mmap.    */
-  int            log;     /* Make a log file.                            */
+  int          quiet;          /* Only print errors.                     */
+  size_t  numthreads;          /* Number of threads to use.              */
+  size_t  minmapsize;          /* Minimum bytes necessary to use mmap.   */
+  int            log;          /* Make a log file.                       */
+
+  /* For internal purposes. */
+  char *program_name;           /* Official name to be used in text.     */
+  char *program_exec;           /* Program's executable name.            */
+  char *program_bibtex;         /* BibTeX record for this program.       */
+  char *program_authors;        /* List of the program authors.          */
+  struct argp_option *coptions; /* Common options to all programs.       */
+  struct argp_option *poptions; /* Program specific options.             */
 };
 
 
@@ -121,7 +123,8 @@ gal_options_free(struct argp_option *options);
 /************            Command-line options           ***************/
 /**********************************************************************/
 error_t
-gal_options_set_from_key(int key, char *arg, struct argp_option *options);
+gal_options_set_from_key(int key, char *arg, struct argp_option *options,
+                         struct gal_options_common_params *cp);
 
 error_t
 gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
@@ -134,11 +137,10 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 /************            Configuration files            ***************/
 /**********************************************************************/
 void
-gal_options_config_files(struct argp_option *poptions,
-                         struct gal_options_common_params *cp);
+gal_options_read_config_files(struct gal_options_common_params *cp);
 
 void
-gal_options_print_state(struct argp_option *poptions);
+gal_options_print_state(struct gal_options_common_params *cp);
 
 
 #endif
