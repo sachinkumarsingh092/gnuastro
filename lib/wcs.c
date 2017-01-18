@@ -95,37 +95,42 @@ gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
 {
   double *ps;
   size_t i, j;
-  int sumcond=0;
 
   /* The correction is only needed when the matrix is internally stored
      as PCi_j. */
   if(wcs->altlin |= 1)
     {
-      /* Check if the `PCi_j' and `CDELTi's have already been
-         decomposed. If all the `CDELTi's are 1.0, then most probably they
-         haven't. */
+      /* Get the pixel scale. */
+      ps=gal_wcs_pixel_scale_deg(wcs);
+
+      /* The PC matrix and the CDELT elements might both contain scale
+         elements (during processing the scalings might be added only to PC
+         elements for example). So to be safe, we first multiply them into
+         one matrix. */
+      for(i=0;i<wcs->naxis;++i)
+        for(j=0;j<wcs->naxis;++j)
+          wcs->pc[i*wcs->naxis+j] *= wcs->cdelt[i];
+
+      /* Set the CDELTs. */
       for(i=0; i<wcs->naxis; ++i)
-        sumcond += wcs->cdelt[i]==1.0f;
+        wcs->cdelt[i] = ps[i];
 
-      /* If all `CDELTi's were 1, then `sumcond' is equal to the number of
-         WCS axises. */
-      if(sumcond==wcs->naxis)
-        {
-          /* Get the pixel scale. */
-          ps=gal_wcs_pixel_scale_deg(wcs);
+      /* Correct the PCi_js */
+      for(i=0;i<wcs->naxis;++i)
+        for(j=0;j<wcs->naxis;++j)
+          wcs->pc[i*wcs->naxis+j] /= ps[i];
 
-          /* Correct the CDELTs. */
-          for(i=0; i<wcs->naxis; ++i)
-            wcs->cdelt[i] *= ps[i];
+      /* Clean up. */
+      free(ps);
 
-          /* Correct the PCi_js */
-          for(i=0;i<wcs->naxis;++i)
-            for(j=0;j<wcs->naxis;++j)
-              wcs->pc[i*wcs->naxis+j] /= ps[i];
-
-          /* Clean up. */
-          free(ps);
-        }
+      /* According to the `wcslib/wcs.h' header: "In particular, wcsset()
+         resets wcsprm::cdelt to unity if CDi_ja is present (and no
+         PCi_ja).". So apparently, when the input is a `CDi_j', it might
+         expect the `CDELTi' elements to be 1.0. But we have changed that
+         here, so we will correct the `altlin' element of the WCS structure
+         to make sure that WCSLIB only looks into the `PCi_j' and `CDELTi'
+         and makes no assumptioins about `CDELTi'. */
+      wcs->altlin=1;
     }
 }
 
