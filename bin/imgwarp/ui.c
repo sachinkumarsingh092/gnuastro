@@ -838,21 +838,69 @@ prepare_modular_matrix(struct imgwarpparams *p)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+/* When only one transformation is required, set the suffix for automatic
+   output to more meaningful string. */
+char *
+ui_set_suffix(struct optionwarpsll *owll)
+{
+  /* We only want the more meaningful suffix when the list is defined AND
+     when its only has one node (the `next' element is NULL). */
+  if(owll && owll->next==NULL)
+    switch(owll->type)
+      {
+      case ALIGN_WARP:
+        return "_aligned.fits";
+
+      case ROTATE_WARP:
+        return "_rotated.fits";
+
+      case SCALE_WARP:
+        return "_scaled.fits";
+
+      case FLIP_WARP:
+        return "_flipped.fits";
+
+      case SHEAR_WARP:
+        return "_sheared.fits";
+
+      case TRANSLATE_WARP:
+        return "_translated.fits";
+
+      case PROJECT_WARP:
+        return "_projected.fits";
+
+      default:
+        return "_warped.fits";
+      }
+  else
+    return "_warped.fits";
+}
+
+
+
+
+
 void
 sanitycheck(struct imgwarpparams *p)
 {
+  char *suffix;
   double *d, *df, *m=p->matrix;
 
   /* Make sure the input file exists. */
   gal_checkset_check_file(p->up.inputname);
 
-  /* Set the output name: */
+  /* Set the output name. This needs to be done before
+     `prepare_modular_matrix' because that function will free the linked
+     list of modular warpings (`p->up.owll'). */
   if(p->cp.output)
     gal_checkset_check_remove_file(p->cp.output, p->cp.dontdelete);
   else
-    gal_checkset_automatic_output(p->up.inputname, "_warped.fits",
-                                  p->cp.removedirinfo, p->cp.dontdelete,
-                                  &p->cp.output);
+    {
+      suffix=ui_set_suffix(p->up.owll);
+      gal_checkset_automatic_output(p->up.inputname, suffix,
+                                    p->cp.removedirinfo, p->cp.dontdelete,
+                                    &p->cp.output);
+    }
 
   /* If an actual matrix is given, then it will be used and all modular
      warpings will be ignored. */
@@ -922,8 +970,8 @@ preparearrays(struct imgwarpparams *p)
 
   /* Read in the input image: */
   numnul=gal_fits_hdu_to_array(p->up.inputname, p->cp.hdu,
-                                     &p->inputbitpix, &array, &p->is0,
-                                     &p->is1);
+                               &p->inputbitpix, &array, &p->is0,
+                               &p->is1);
   if(p->inputbitpix==DOUBLE_IMG)
     p->input=array;
   else

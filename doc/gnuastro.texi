@@ -9206,9 +9206,9 @@ One line examples:
 
 @example
 $ astimgwarp matrix.txt image.fits
-$ astimgwarp --align rawimage.fits
-$ astimgwarp --scale 1.82 --translate 2.1 image.fits
 $ astimgwarp --rotate=37.92 --scale=0.8 image.fits
+$ astimgwarp --scale 1.82 --translate 2.1 image.fits
+$ astimgwarp --align rawimage.fits --output=aligned.fits
 $ astimgwarp --matrix=0.2,0,0.4,0,0.2,0.4,0,0,1 image.fits
 $ astimgwarp --matrix="0.7071,-0.7071  0.7071,0.7071" image.fits
 @end example
@@ -9217,8 +9217,11 @@ ImageWarp can accept two arguments, one (an image) is mandatory if any
 processing is to be done. An optional argument is a plain text file, which
 must contain the warp/transform matrix, see @ref{Warping basics}. When this
 text file is specified, then all options related to the matrix will be
-ignored (see below for the options). The general options to all Gnuastro
-programs (including ImageWarp) can be seen in @ref{Common options}.
+ignored (see below for the options). As in all Gnuastro programs, when an
+output is not explicitly set with the @option{--output} option, the output
+filename will be set automatically based on the operation, see
+@ref{Automatic output}. For the full list of general options to all
+Gnuastro programs (including ImageWarp), please see @ref{Common options}.
 
 To be the most accurate the input image will be converted to double
 precision floating points and all the processing will be done in this
