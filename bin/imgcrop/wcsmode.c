@@ -50,7 +50,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 void
 wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
 {
-  double twidth;
+  double twidth, *pixscale;
   struct wcsprm *wcs=img->wcs;
   int i, status[4]={0,0,0,0}, ncoord=4, nelem=2;
   double imgcrd[8], phi[4], theta[4], pixcrd[8];
@@ -88,7 +88,9 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
   if(p->res==0.0f)
     {
       /* Set the resolution of the image. */
-      p->res=wcs->pc[3];
+      pixscale=gal_wcs_pixel_scale_deg(wcs);
+      p->res=pixscale[0];
+      free(pixscale);
 
       /* Set the widths such that iwidth and wwidth are exactly the same
          (within their different units ofcourse). Also make sure that the
@@ -109,12 +111,16 @@ wcscheckprepare(struct imgcropparams *p, struct inputimgs *img)
       p->iwidth[1]=p->iwidth[0];
     }
   else
-    if(p->res!=wcs->pc[3])
-      error(EXIT_FAILURE, 0, "%s: HDU %s: The resolution of "
-            "this image is %f arcseconds/pixel while the "
-            "previously checked input image(s) had a resolution "
-            "of %f", img->name, p->cp.hdu, 3600*wcs->pc[3],
-            3600*p->res);
+    {
+      pixscale=gal_wcs_pixel_scale_deg(wcs);
+      if(p->res!=pixscale[0])
+        error(EXIT_FAILURE, 0, "%s: HDU %s: The resolution of "
+              "this image is %f arcseconds/pixel while the "
+              "previously checked input image(s) had a resolution "
+              "of %f", img->name, p->cp.hdu, 3600*wcs->pc[3],
+              3600*p->res);
+      free(pixscale);
+    }
 
 
   /* Get the coordinates of the first pixel in the image. */

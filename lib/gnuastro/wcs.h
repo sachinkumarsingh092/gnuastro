@@ -51,6 +51,9 @@ double *
 gal_wcs_array_from_wcsprm(struct wcsprm *wcs);
 
 void
+gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs);
+
+void
 gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
                           size_t number, size_t width);
 

@@ -78,6 +78,61 @@ gal_wcs_array_from_wcsprm(struct wcsprm *wcs)
 
 
 
+/* According to the FITS standard, in the `PCi_j' WCS formalism, the matrix
+   elements m_{ij} are encoded in the `PCi_j' keywords and the scale
+   factors are encoded in the `CDELTi' keywords. There is also another
+   formalism (the `CDi_j' formalism) which merges the two into one
+   matrix.
+
+   However, WCSLIB's internal operations are apparently done in the `PCi_j'
+   formalism. So its outputs are also all in that format by default. When
+   the input is a `CDi_j', WCSLIB will still read the image into the
+   `PCi_j' formalism and the `CDELTi's are set to 1. This function will
+   decompose the two matrices to give a reasonable `CDELTi' and `PCi_j' in
+   such cases. */
+void
+gal_wcs_decompose_pc_cdelt(struct wcsprm *wcs)
+{
+  double *ps;
+  size_t i, j;
+  int sumcond=0;
+
+  /* The correction is only needed when the matrix is internally stored
+     as PCi_j. */
+  if(wcs->altlin |= 1)
+    {
+      /* Check if the `PCi_j' and `CDELTi's have already been
+         decomposed. If all the `CDELTi's are 1.0, then most probably they
+         haven't. */
+      for(i=0; i<wcs->naxis; ++i)
+        sumcond += wcs->cdelt[i]==1.0f;
+
+      /* If all `CDELTi's were 1, then `sumcond' is equal to the number of
+         WCS axises. */
+      if(sumcond==wcs->naxis)
+        {
+          /* Get the pixel scale. */
+          ps=gal_wcs_pixel_scale_deg(wcs);
+
+          /* Correct the CDELTs. */
+          for(i=0; i<wcs->naxis; ++i)
+            wcs->cdelt[i] *= ps[i];
+
+          /* Correct the PCi_js */
+          for(i=0;i<wcs->naxis;++i)
+            for(j=0;j<wcs->naxis;++j)
+              wcs->pc[i*wcs->naxis+j] /= ps[i];
+
+          /* Clean up. */
+          free(ps);
+        }
+    }
+}
+
+
+
+
+
 
 
 
