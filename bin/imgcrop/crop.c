@@ -151,7 +151,7 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
       */
     }
 
-  if(fpixel[0]>=lpixel[0] || fpixel[1]>=lpixel[1])
+  if(fpixel[0]>lpixel[0] || fpixel[1]>lpixel[1])
     error(EXIT_FAILURE, 0, "the bottom left corner coordinates "
           "cannot be larger or equal to the top right's! Your section "
           "string (%s) has been read as: bottom left coordinate "
@@ -834,14 +834,18 @@ iscenterfilled(struct cropparams *crp)
     gal_fits_io_error(status, NULL);
 
   /* Get the size and range of the central region to check. The +1 is
-     because in FITS, counting begins from 1, not zero. */
-  fpixel[0]=(naxes[0]/2+1)-checkcenter/2;
-  fpixel[1]=(naxes[1]/2+1)-checkcenter/2;
-  lpixel[0]=(naxes[0]/2+1)+checkcenter/2;
-  lpixel[1]=(naxes[1]/2+1)+checkcenter/2;
+     because in FITS, counting begins from 1, not zero. It might happen
+     that the image is actually smaller than the width to check the center
+     (for example 1 or 2 pixels wide). In that case, we'll just use the
+     full image to check. */
+  size = ( (naxes[0]>checkcenter ? checkcenter : naxes[0])
+           * (naxes[1]>checkcenter ? checkcenter : naxes[1]) );
+  fpixel[0] = naxes[0]>checkcenter ? (naxes[0]/2+1)-checkcenter/2 : 1;
+  fpixel[1] = naxes[1]>checkcenter ? (naxes[1]/2+1)-checkcenter/2 : 1;
+  lpixel[0] = naxes[0]>checkcenter ? (naxes[0]/2+1)+checkcenter/2 : naxes[0];
+  lpixel[1] = naxes[1]>checkcenter ? (naxes[1]/2+1)+checkcenter/2 : naxes[1];
 
   /* Allocate the array and read in the pixels. */
-  size=checkcenter*checkcenter;
   array=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_datatype(bitpix) );
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
                        p->bitnul, array, &anynul, &status) )
