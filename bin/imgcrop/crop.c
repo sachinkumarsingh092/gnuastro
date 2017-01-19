@@ -127,7 +127,7 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
       */
 
       /* Make sure if a number was read at all? */
-      if(tailptr==pt)                /* No number was read!             */
+      if(tailptr==pt)           /* No number was read!                 */
         {
           if(add) read=0;       /* We have a * followed by `:' or `,'. */
           else    continue;
@@ -141,7 +141,7 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
       if(forl=='f')
         fpixel[dim] = add ? naxes[dim]+read : read;
       else
-        lpixel[dim] = add ? naxes[dim]+read-1 : read-1;
+        lpixel[dim] = add ? naxes[dim]+read : read;
       pt=tailptr;
 
       /* For a check:
@@ -768,8 +768,8 @@ onecrop(struct cropparams *crp)
       sprintf(basename, "ICF%zu", ++p->log[crp->outindex].numimg);
       gal_fits_file_name_in_keywords(basename, img->name, &headers);
       sprintf(regionkey, "%sPIX", basename);
-      sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0]+1,
-              fpixel_i[1], lpixel_i[1]+1);
+      sprintf(region, "%ld:%ld,%ld:%ld", fpixel_i[0], lpixel_i[0],
+              fpixel_i[1], lpixel_i[1]);
       gal_fits_add_to_key_ll_end(&headers, TSTRING, regionkey, 0, region, 0,
                                  "Range of pixels used for this output.", 0,
                                  NULL);

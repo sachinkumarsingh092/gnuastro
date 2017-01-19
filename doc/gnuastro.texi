@@ -354,8 +354,8 @@ ImageCrop
 
 Invoking ImageCrop
 
-* astimgcrop options::          A list of all the options with explanation.
-* astimgcrop output::           The outputs of ImageCrop.
+* ImageCrop options::          A list of all the options with explanation.
+* ImageCrop output::           The outputs of ImageCrop.
 
 Arithmetic
 
@@ -6549,19 +6549,19 @@ to be empty, ImageCrop can fill them for you based on the input image
 sizes.
 
 @cindex Define section to crop
-To define a box, you need the coordinates of two points: the first pixel in
-the box at (@code{X1}, @code{Y1}) and the pixel which is immediately
-outside of the box (@code{X2, @code{Y2}}), four coordinates in total. The
-four coordinates can be specified with one string in this format:
-@command{X1:X2,Y1:Y2}. It is given to the @option{--section}
+To define a box, you need the coordinates of two points: the first
+(@code{X1}, @code{Y1}) and the last pixel (@code{X2}, @code{Y2}) pixel
+positions in the image, or four integer numbers in total. The four
+coordinates can be specified with one string in this format:
+`@command{X1:X2,Y1:Y2}'. This string is given to the @option{--section}
 option. Therefore, the pixels along the first axis that are
-@math{\geq}@command{X1} and <@command{X2} will be included in the cropped
-image. The same goes for the second axis. Note that each different term
-will be read as an integer, not a float (ImageCrop does not crop below the
-pixel resolution, you can use ImageWarp to shift/warp the image by any
-sub-pixel amount, then crop the warped image, see @ref{ImageWarp}). Also,
-following the FITS standard, pixel indexes along each axis start from
-unity(1) not zero(0).
+@mymath{\geq}@command{X1} and @mymath{\leq}@command{X2} will be included in
+the cropped image. The same goes for the second axis. Note that each
+different term will be read as an integer, not a float. This is a low-level
+option, for a higher-level way to specify region (any polygon, not just a
+box), please see the @option{--polygon} option in @ref{ImageCrop
+options}. Also note that in the FITS standard, pixel indexes along each
+axis start from unity(1) not zero(0).
 
 @cindex Crop section format
 You can omit any of the values and they will be filled automatically.
@@ -6585,13 +6585,14 @@ replace it with the maximum length of the image in that dimension. So
 the input image with 3/4 of the image being covered by blank pixels,
 see @ref{Blank pixels}.
 
-If you feel more comfortable with space characters between the values,
-you can use as many space characters as you wish, just be careful to
-put your value in double quotes, for example
-@command{--section="5:200, 123:854"}. If you forget, anything after
-the first space will not be seen by @option{--section}, because the
-unquoted space character is one of the characters that separates
-options on the command-line.
+If you feel more comfortable with space characters between the values, you
+can use as many space characters as you wish, just be careful to put your
+value in double quotes, for example @command{--section="5:200,
+123:854"}. If you forget the quotes, anything after the first space will
+not be seen by @option{--section} and you will most probably get an error
+because the rest of your string will be read as a filename (which most
+probably doesn't exist). See @ref{Command-line} for a description of how
+the command-line works.
 
 
 @node Blank pixels, Invoking astimgcrop, Crop section syntax, ImageCrop
@@ -6656,11 +6657,29 @@ $ astimgcrop --xc=568.342 --yc=2091.719 --iwidth=200 image.fits
 
 @noindent
 ImageCrop has one mandatory argument which is the input image name(s),
-shown above with @file{ASTRdata ...}. You can use shell expansions,
-for example @command{*} for this if you have lots of images in WCS
-mode. If the crop box centers are in a catalog, you also have to
-provide the catalog name as an argument. Alternatively, you have to
-provide the crop box parameters with command-line options.
+shown above with @file{ASTRdata ...}. You can use shell expansions, for
+example @command{*} for this if you have lots of images in WCS mode. If the
+crop box centers are in a catalog, you also have to provide the catalog
+name as an argument. Alternatively, you have to provide the crop box
+parameters with command-line options. As in all Gnuastro programs, when an
+output is not explicitly set with the @option{--output} option, the output
+filename will be set automatically, see @ref{Automatic output}. For the
+full list of general options to all Gnuastro programs (including
+ImageCrop), please see @ref{Common options}.
+
+Floating point numbers can be used to specify the crop region (except the
+@option{--section} option, see @ref{Crop section syntax}). In such cases,
+the floating point values will be used to find the desired integer pixel
+indices based on the FITS standard. Hence, ImageCrop ultimately doesn't do
+any sub-pixel cropping (in other words, it doesn't change pixel values). If
+you need such crops, you can use @ref{ImageWarp} to first warp the image to
+the a new pixel grid where your initial floating points can be seen as
+integers, then crop from that with ImageCrop. For example, let's say you
+want a crop from pixels 12.982 to 80.982 along the first dimension. You
+should first translate the image by @mymath{-0.482} (note that the edge of
+a pixel is at integer multiples of @mymath{0.5}). So you should run
+ImageWarp with @option{--translate=-0.482,0} and then crop the warped image
+with @option{--section=13:81}.
 
 @cindex Asynchronous thread allocation
 When in catalog mode, ImageCrop will run in parallel unless you set
@@ -6672,11 +6691,11 @@ and classifies his catalog} for a tutorial on effectively using this
 feature.
 
 @menu
-* astimgcrop options::          A list of all the options with explanation.
-* astimgcrop output::           The outputs of ImageCrop.
+* ImageCrop options::          A list of all the options with explanation.
+* ImageCrop output::           The outputs of ImageCrop.
 @end menu
 
-@node astimgcrop options, astimgcrop output, Invoking astimgcrop, Invoking astimgcrop
+@node ImageCrop options, ImageCrop output, Invoking astimgcrop, Invoking astimgcrop
 @subsubsection ImageCrop options
 
 The options can be classified into the following contexts: Input,
@@ -6916,7 +6935,7 @@ Operate in WCS mode. See explanations for @option{--imgmode}.
 
 
 
-@node astimgcrop output,  , astimgcrop options, Invoking astimgcrop
+@node ImageCrop output,  , ImageCrop options, Invoking astimgcrop
 @subsubsection ImageCrop output
 When a catalog is given, the value of @option{--output} (see
 @ref{Common options}) will be seen as the directory to store the
@@ -17656,13 +17675,12 @@ features/capabilities) that are to be added to Gnuastro.
 @noindent
 All the trackers can be browsed by a (possibly anonymous) visitor, but to
 edit and comment on the Bugs and Tasks trackers, you have to be a
-registered Gnuastro developer. When posting an issue to a tracker, it is
-very important to choose the `Category' and `Item Group' options
-accurately. The first contains a list of all Gnuastro's programs along
-with `Installation', `New program' and `Webpage'. The ``Item Group''
-contains the nature of the issue, for example if it is a `Crash' in the
-software (a bug), or a problem in the documentation (also a bug) or a
-feature request or an enhancement.
+registered on Savannah. When posting an issue to a tracker, it is very
+important to choose the `Category' and `Item Group' options accurately. The
+first contains a list of all Gnuastro's programs along with `Installation',
+`New program' and `Webpage'. The ``Item Group'' contains the nature of the
+issue, for example if it is a `Crash' in the software (a bug), or a problem
+in the documentation (also a bug) or a feature request or an enhancement.
 
 The set of horizontal links on the top of the page (Starting with
 `Main' and `Homepage' and finishing with `News') are the easiest way
