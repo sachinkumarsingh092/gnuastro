@@ -27,37 +27,36 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Include the common options to all Gnuastro programs. If the program has
-   its own HDU parsing procedure, then define the `NOT_COMMON_HDU_PARSER'
-   macro before including the `commonopts.h' header. */
+/* Include necessary headers. */
 #include <commonopts.h>
-
-
-
-
-/* Definition parameters for the argp: */
-const char *argp_program_version =
-  PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION "\n"
-  GAL_STRINGS_COPYRIGHT
-  "\n\nWritten/developed by Mohammad Akhlaghi";
-const char *argp_program_bug_address=PACKAGE_BUGREPORT;
-static char args_doc[] = "ASTRdata";
+#include <authors-cite.h>
+#include <fixedstringmacros.h>
 
 
 
 
 
-const char doc[] =
-  /* Before the list of options: */
-  GAL_STRINGS_TOP_HELP_INFO
-  PROGRAM_NAME" can be used to view the information, select columns, or "
-  "convert tables. The inputs and outputs can be plain text (with "
-  "whitespace or comma as delimiters), FITS ascii, or FITS binary tables. "
-  "The output columns can either be selected by number (counting from 1), "
-  "name or using regular expressions. For regular expressions, enclose the "
-  "value to the `--column' (`-c') option in slashes (`\\', as in "
-  "`-c\\^mag\\'). To print the selected columns on the command-line, don't "
-  "specify an output file.\n"
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" can be used to view the "
+  "information, select columns, or convert tables. The inputs and outputs "
+  "can be plain text (with whitespace or comma as delimiters), FITS ascii, "
+  "or FITS binary tables. The output columns can either be selected by "
+  "number (counting from 1), name or using regular expressions. For regular "
+  "expressions, enclose the value to the `--column' (`-c') option in "
+  "slashes (`\\', as in `-c\\^mag\\'). To print the selected columns on the "
+  "command-line, don't specify an output file.\n"
   GAL_STRINGS_MORE_HELP_INFO
   /* After the list of options: */
   "\v"
@@ -80,7 +79,8 @@ enum option_keys_enum
   ARGS_OPTION_TABLETYPE_KEY   = 't',
   ARGS_OPTION_INFORMATION_KEY = 'i',
 
-  /* Only with long version. */
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
 };
 
 /* Array of acceptable options. */
@@ -208,16 +208,20 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
 
 /* Define the child argp structure. */
-static struct argp gal_options_common_child = {gal_commonopts_options,
-                                               gal_options_common_argp_parse,
-                                               NULL, NULL, NULL, NULL, NULL};
+static struct argp
+gal_options_common_child = {gal_commonopts_options,
+                            gal_options_common_argp_parse,
+                            NULL, NULL, NULL, NULL, NULL};
 
-static struct argp_child children[]=
-  {
-    {&gal_options_common_child, 0, NULL, 0},
-    {0, 0, 0, 0}
-  };
+/* Use the child argp structure in list of children (only one for now). */
+static struct argp_child
+children[]=
+{
+  {&gal_options_common_child, 0, NULL, 0},
+  {0, 0, 0, 0}
+};
 
-static struct argp thisargp = {options, parse_opt, args_doc,
-                               doc, children, NULL, NULL};
+/* Set all the necessary argp parameters. */
+static struct argp
+thisargp = {options, parse_opt, args_doc, doc, children, NULL, NULL};
 #endif

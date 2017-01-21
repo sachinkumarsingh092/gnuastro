@@ -79,22 +79,22 @@ enum options_option_keys
 struct gal_options_common_params
 {
   /* Input/Output: */
-  char          *hdu;          /* Image extension.                       */
-  char       *output;          /* Directory containg output.             */
-  int     dontdelete;          /* ==1: Don't delete existing file.       */
-  int   keepinputdir;          /* Keep input directory for auto output.  */
+  char                    *hdu; /* Image extension.                      */
+  char                 *output; /* Directory containg output.            */
+  int               dontdelete; /* ==1: Don't delete existing file.      */
+  int             keepinputdir; /* Keep input directory for auto output. */
 
   /* Operating modes: */
-  int          quiet;          /* Only print errors.                     */
-  size_t  numthreads;          /* Number of threads to use.              */
-  size_t  minmapsize;          /* Minimum bytes necessary to use mmap.   */
-  int            log;          /* Make a log file.                       */
+  int                    quiet; /* Only print errors.                    */
+  size_t            numthreads; /* Number of threads to use.             */
+  size_t            minmapsize; /* Minimum bytes necessary to use mmap.  */
+  int                      log; /* Make a log file.                      */
 
   /* For internal purposes. */
-  char *program_name;           /* Official name to be used in text.     */
-  char *program_exec;           /* Program's executable name.            */
-  char *program_bibtex;         /* BibTeX record for this program.       */
-  char *program_authors;        /* List of the program authors.          */
+  char           *program_name; /* Official name to be used in text.     */
+  char           *program_exec; /* Program's executable name.            */
+  char         *program_bibtex; /* BibTeX record for this program.       */
+  char        *program_authors; /* List of the program authors.          */
   struct argp_option *coptions; /* Common options to all programs.       */
   struct argp_option *poptions; /* Program specific options.             */
 };

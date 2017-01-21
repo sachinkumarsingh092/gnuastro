@@ -26,24 +26,21 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/fits.h>
 #include <gnuastro/linkedlist.h>
 
-#include <commonparams.h>
+#include <options.h>
+
 
 /* Progarm name macros: */
-#define SPACK           "astarithmetic"   /* Subpackage executable name. */
-#define SPACK_NAME      "Arithmetic"      /* Subpackage full name.       */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+#define PROGRAM_NAME "Arithmetic"      /* Program full name.       */
+#define PROGRAM_EXEC "astarithmetic"   /* Program executable name. */
+#define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
-
-/* Do not use the main commonargs.h option reader for the --hdu
-   option. */
-#define NOTCOMMONHDU   1
 
 
 
 
 
 /* Constants: */
-#define NEGDASHREPLACE 11  /* A vertical tab (ASCII=11) for negative dash */
+#define NEG_DASH_REPLACE 11 /* Vertical tab (ASCII=11) for negative dash */
 
 
 
@@ -64,37 +61,18 @@ struct operand
 
 
 
-struct uiparams
-{
-  char        *maskname;   /* Name of mask image.                   */
-  char            *mhdu;   /* Mask image HDU.                       */
-
-  int           typeset;
-  int       masknameset;
-  int masknameallocated;
-  int           mhduset;
-};
-
-
-
-
 
 struct imgarithparams
 {
   /* Other structures: */
-  struct uiparams         up;  /* User interface parameters.            */
-  struct gal_commonparams cp;  /* Common parameters.                    */
+  struct gal_options_common_params cp;  /* Common parameters.           */
 
   /* Input: */
-  struct gal_linkedlist_stll *hdus; /* List of all given HDU strings.   */
+  struct gal_linkedlist_stll   *hdus; /* List of all given HDU strings. */
   struct gal_linkedlist_stll *tokens; /* List of all arithmetic tokens. */
-  size_t           numfits;  /* Total number of input FITS images.      */
   size_t        addcounter;  /* The number of FITS images added.        */
   size_t        popcounter;  /* The number of FITS images popped.       */
   gal_data_t       refdata;  /* Container for information of the data.  */
-
-  /* Output: */
-  int              outtype;  /* User's desired output bixpix value.     */
 
   /* Operating mode: */
 

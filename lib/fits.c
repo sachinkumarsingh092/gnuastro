@@ -1242,17 +1242,16 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
    function. The value that is placed for those pixels is defined by
    the macros in fitsarrayvv.h and depends on the type of the data.*/
 gal_data_t *
-gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
-                      char *mhdu, size_t minmapsize)
+gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
 {
   void *blank;
   int anyblank;
   size_t i, ndim;
   fitsfile *fptr;
   int status=0, type;
+  gal_data_t *img, *keysll=NULL;
   long *fpixel, *dsize, dsize_key=1;
   char **str, *name=NULL, *unit=NULL;
-  gal_data_t *img, *mask, *keysll=NULL;
 
 
   /* Check HDU for realistic conditions: */
@@ -1317,20 +1316,6 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
   gal_fits_io_error(status, NULL);
 
 
-  /* If a mask was specified, read it into the mask data structure, then
-     set all the corresponding pixels of the input image to NaN. */
-  if(maskname)
-    {
-      /* Read the mask HDU. */
-      mask=gal_fits_read_img_hdu(maskname, mhdu, NULL, NULL, minmapsize);
-
-      /* Apply the mask on the input. */
-      gal_data_apply_mask(img, mask);
-
-      /* Free the mask space. */
-      gal_data_free(mask, 0);
-    }
-
   /* Return the filled data structure */
   return img;
 }
@@ -1339,21 +1324,17 @@ gal_fits_read_img_hdu(char *filename, char *hdu, char *maskname,
 
 
 
-/* The user has specified an input file and a mask file. In the
-   processing, all masked pixels will be converted to NaN pixels in
-   the input image so we only have to deal with one array. Also since
-   all processing is done on floating point arrays, the input is
-   converted to floating point, irrespective of its input type. The
-   original input bitpix will be stored so if you want to, you can
-   return it back to the input type if you please. */
+/* The user has specified an input file + extension, and your program needs
+   this input to be a special type. For such cases, this function can be
+   used to convert the input file to the desired type. */
 gal_data_t *
-gal_fits_read_to_type(char *inputname, char *inhdu, char *maskname,
-                      char *mhdu, int type, size_t minmapsize)
+gal_fits_read_to_type(char *inputname, char *hdu, int type,
+                      size_t minmapsize)
 {
   gal_data_t *in, *converted;
 
   /* Read the specified input image HDU. */
-  in=gal_fits_read_img_hdu(inputname, inhdu, maskname, mhdu, minmapsize);
+  in=gal_fits_read_img_hdu(inputname, hdu, minmapsize);
 
   /* If the input had another type, convert it to float. */
   if(in->type!=type)
@@ -1372,8 +1353,7 @@ gal_fits_read_to_type(char *inputname, char *inhdu, char *maskname,
 
 
 gal_data_t *
-gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,
-                           size_t *ins0, size_t *ins1)
+gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize)
 {
   size_t i;
   int check=0;
@@ -1382,8 +1362,8 @@ gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,
   float *f, *fp, tmp;
 
   /* Read the image as a float */
-  kernel=gal_fits_read_to_type(inputname, inhdu, NULL, NULL,
-                               GAL_DATA_TYPE_FLOAT, -1);
+  kernel=gal_fits_read_to_type(filename, hdu, GAL_DATA_TYPE_FLOAT,
+                               minmapsize);
 
   /* Check if the size along each dimension of the kernel is an odd
      number. If they are all an odd number, then the for each dimension,
@@ -1394,10 +1374,10 @@ gal_fits_read_float_kernel(char *inputname, char *inhdu, float **outkernel,
     error(EXIT_FAILURE, 0, "the kernel image has to have an odd number "
           "of pixels in all dimensions (there has to be one element/pixel "
           "in the center). At least one of the dimensions of %s (hdu: %s) "
-          "doesn't have an odd number of pixels", inputname, inhdu);
+          "doesn't have an odd number of pixels", filename, hdu);
 
-  /* If there are any NaN pixels, set them to zero and normalize it. There
-     are no blank pixels any more.*/
+  /* If there are any NaN pixels, set them to zero and normalize it. A
+     blank pixel in a kernel is going to make a completely blank output.*/
   fp=(f=kernel->array)+kernel->size;
   do
     {

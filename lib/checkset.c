@@ -805,9 +805,9 @@ gal_checkset_dir_0_file_1(char *name, int dontdelete)
 /* Allocate space and write the output name (outname) based on a given
    input name (inname). The suffix of the input name (if present) will
    be removed and the given suffix will be put in the end. */
-void
-gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
-                              int dontdelete, char **outname)
+char *
+gal_checkset_automatic_output(struct gal_options_common_params *cp,
+                              char *inname, char *suffix)
 {
   char *out;
   size_t i, l, offset=0;
@@ -858,11 +858,9 @@ gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
         }
     }
 
-  /* If it is desired to remove the directory information from the
-     name, do it here. Some unused space will remain after removing
-     the directory information, but that can be ignored, since it
-     can't be too much. */
-  if(removedirinfo)
+  /* If we don't want the input directory information, remove them
+     here. */
+  if(!cp->keepinputdir)
     {
       l=strlen(out);
       for(i=l;i!=0;--i)         /* Find the last forward slash.      */
@@ -874,11 +872,10 @@ gal_checkset_automatic_output(char *inname, char *suffix, int removedirinfo,
     }
 
   /* Remove the created filename if it already exits. */
-  gal_checkset_check_remove_file(out, dontdelete);
+  gal_checkset_check_remove_file(out, cp->dontdelete);
 
-  /* Free the outname if it was already allocated before. */
-  free(*outname);
-  *outname=out;
+  /* Return the resulting filename. */
+  return out;
 }
 
 

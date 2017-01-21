@@ -345,13 +345,7 @@ reversepolish(struct imgarithparams *p)
 
 
   /* Set the output type. */
-  if(p->up.typeset && p->outtype!=p->operands->data->type)
-    {
-      d1=gal_data_copy_to_new_type(p->operands->data, p->outtype);
-      gal_data_free(p->operands->data, 0);
-    }
-  else
-    d1=p->operands->data;
+  d1=p->operands->data;
 
 
   /* If the final data structure has more than one element, write it as a
@@ -370,7 +364,8 @@ reversepolish(struct imgarithparams *p)
       /* Put a copy of the WCS structure from the reference image, it
          will be freed while freeing d1. */
       d1->wcs=p->refdata.wcs;
-      gal_fits_write_img(d1, p->cp.output, "Arithmetic", NULL, SPACK_STRING);
+      gal_fits_write_img(d1, p->cp.output, "Arithmetic", NULL,
+                         PROGRAM_STRING);
     }
 
 

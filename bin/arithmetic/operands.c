@@ -100,9 +100,8 @@ pop_operand(struct imgarithparams *p, char *operator)
 {
   size_t i;
   gal_data_t *data;
-  struct uiparams *up=&p->up;
+  char *filename, *hdu;
   struct operand *operands=p->operands;
-  char *maskname, *mhdu, *filename, *hdu;
 
   /* If the operand linked list has finished, then give an error and
      exit. */
@@ -118,19 +117,14 @@ pop_operand(struct imgarithparams *p, char *operator)
       hdu=operands->hdu;
       filename=operands->filename;
 
-      /* In case this is the first image that is read, then read the
-         WCS information and set the mask name so masked pixels can be
-         set to NaN. For the other images, the mask can be completely
-         ignored. */
-      mhdu     = p->popcounter ? NULL : up->mhdu;
-      maskname = p->popcounter ? NULL : up->maskname;
+      /* In case this is the first image that is read, then read the WCS
+         information.*/
       if(p->popcounter==0)
         gal_fits_read_wcs(filename, hdu, 0, 0, &p->refdata.nwcs,
                           &p->refdata.wcs);
 
       /* Read the input image as a double type array. */
-      data=gal_fits_read_img_hdu(filename, hdu, maskname, mhdu,
-                                 p->cp.minmapsize);
+      data=gal_fits_read_img_hdu(filename, hdu, p->cp.minmapsize);
 
       /* When the reference data structure's dimensionality is non-zero, it
          means that this is not the first image read. So, write its basic
@@ -168,7 +162,7 @@ pop_operand(struct imgarithparams *p, char *operator)
       ++p->popcounter;
 
       /* Report the read image if desired: */
-      if(p->cp.verb) printf("%s is read.\n", filename);
+      if(!p->cp.quiet) printf("%s is read.\n", filename);
     }
   else
     data=operands->data;

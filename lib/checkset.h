@@ -27,7 +27,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    must be included before the C++ preparations below */
 #include <math.h>
 #include <fitsio.h>
-
+#include <options.h>
 
 /* C++ Preparations */
 #undef __BEGIN_C_DECLS
@@ -219,10 +219,9 @@ gal_checkset_check_remove_file(char *filename, int dontdelete);
 int
 gal_checkset_dir_0_file_1(char *name, int dontdelete);
 
-void
-gal_checkset_automatic_output(char *inname, char *suffix,
-                              int removedirinfo, int dontdelete,
-                              char **outname);
+char *
+gal_checkset_automatic_output(struct gal_options_common_params *cp,
+                              char *inname, char *suffix);
 
 char *
 gal_checkset_dir_part(char *input);

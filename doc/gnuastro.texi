@@ -408,7 +408,6 @@ SubtractSky
 
 * Sky value::                   Definition of the sky value.
 * Tiling an image::             Defining a mesh grid on the image.
-* Mask image::                  How to mask pixels for no analysis.
 * Invoking astsubtractsky::     Options and arguments to SubtractSky.
 
 Sky value
@@ -7887,10 +7886,11 @@ floating point number in Gnuastro isn't case-sensitive.
 @subsection Invoking Arithmetic
 
 Arithmetic will do pixel to pixel arithmetic operations on the individual
-pixels of input data and/or numbers. Any operand that only has a single
-element (number, or single pixel FITS image file) will be read as a number,
-the rest of the inputs must have the same dimensions. The general template
-is:
+pixels of input data and/or numbers. For the full list of operators with
+explanations, please see @ref{Arithmetic operators}. Any operand that only
+has a single element (number, or single pixel FITS image) will be read as a
+number, the rest of the inputs must have the same dimensions. The general
+template is:
 
 @example
 $ astarithmetic [OPTION...] ASTRdata1 [ASTRdata2] OPERATOR ...
@@ -7914,13 +7914,45 @@ $ astarithmetic img1.fits img2.fits img3.fits median                \
 If the output is an image, and the @option{--output} option is not given,
 automatic output will use the name of the first FITS image encountered to
 generate an output file name, see @ref{Automatic output}. Also, output WCS
-information will be taken from the first input image encountered. If the
+information will be taken from the first input image encountered. When the
 output is a single number, that number will be printed in the standard
-output. See @ref{Reverse polish notation} for the notation used to mix
-operands and operators on the command-line. To ignore certain pixels (see
-@ref{Blank pixels}), you can specify a mask image, see @ref{Mask image}. In
-that case, when reading the first FITS image, all the masked pixels will be
-set to a blank value depending on the type of the image.
+output and no output file will be created. Arithmetic's notation for giving
+operands to operators is described in @ref{Reverse polish notation}. To
+ignore certain pixels, set them as blank, see @ref{Blank pixels}, for
+example with the @command{where} operator (see @ref{Arithmetic
+operators}). See @ref{Common options} for a review of the options in all
+Gnuastro programs. Arithmetic just redefines the @option{--hdu} option as
+explained below:
+
+@table @option
+
+@item -h INT/STR
+@itemx --hdu INT/STR
+The header data unit of the input FITS images, see @ref{Input
+output}. Unlike most options in Gnuastro (which will ultimately only have
+one value for this option), Arithmetic allows @option{--hdu} to be called
+multiple times and the value of each invocation will be stored separately
+(for the unlimited number of input images you would like to use). Recall
+that for other programs this (common) option only takes a single value. So
+in other programs, if you specify it multiple times on the command-line,
+only the last value will be used and in the configuration files, it will be
+ignored if it already has a value.
+
+The order of the values to @option{--hdu} has to be in the same order as
+input FITS images. Options are first read from the command-line (from left
+to right), then top-down in each configuration file, see @ref{Configuration
+file precedence}.
+
+If the number of HDUs is less than the number of input images,
+Arithmetic will abort and notify you. However, if there are more HDUs
+than FITS images, there is no problem: they will be used in the given
+order (every time a FITS image comes up on the stack) and the extra
+HDUs will be ignored in the end. So there is no problem with having
+extra HDUs in the configuration files and by default several HDUs with
+a value of @option{0} are kept in the system-wide configuration file
+when you install Gnuastro.
+
+@end table
 
 Arithmetic accepts two kinds of input: images and numbers. Images are
 considered to be any of the inputs that is a file name of a recognized type
@@ -8015,36 +8047,7 @@ $ echo "" | awk '@{print (10.32-3.84)^2.7@}'
 @end example
 
 
-See @ref{Common options} for a review of the options in all Gnuastro
-programs, the two options related to a mask image are also specified
-in @ref{Mask image}. Arithmetic just redefines the @option{--hdu}
-option as explained below:
 
-@table @option
-
-@item -h INT/STR
-@itemx --hdu INT/STR
-Unlike most options in Gnuastro (which will ultimately only have one value
-for this option), Arithmetic allows @option{--hdu} to be called multiple
-times and the value of each invocation will be stored separately (for the
-unlimited number of input images you would like to use).
-
-The order of the values to @option{--hdu} is very important (if they
-don't have the same value!). The order is determined by the order that
-this option is read: first on the command-line (from left to right),
-then top-down in each configuration file, see @ref{Configuration file
-precedence}.
-
-If the number of HDUs is less than the number of input images,
-Arithmetic will abort and notify you. However, if there are more HDUs
-than FITS images, there is no problem: they will be used in the given
-order (every time a FITS image comes up on the stack) and the extra
-HDUs will be ignored in the end. So there is no problem with having
-extra HDUs in the configuration files and by default several HDUs with
-a value of @option{0} are kept in the system-wide configuration file
-when you install Gnuastro.
-
-@end table
 
 
 
@@ -8212,20 +8215,18 @@ edge of the image, the brightness (sum of its pixel fluxes within the
 image, see @ref{Flux Brightness and magnitude}) will not be equal,
 some of the flux is going to be `eaten' by the edges.
 
-If you ran @command{$ make check} on the source files of Gnuastro, you
-can see the this effect by comparing the
-@file{convolve_frequency.fits} with @file{convolve_spatial.fits} in
-the @file{./tests/} directory. In the spatial domain, by default, no
-assumption will be made about pixels outside of the image or any blank
-pixels in the image, see @ref{Blank pixels}. The problem explained
-above will also occur on the sides of blank regions (which might be
-masked for example). The solution to this edge effect problem is only
-possible in the spatial domain. We have to discard the assumption that
-the sum of the kernel pixels is unity during the convolution
-process@footnote{ofcourse the sum of the kernel pixels still have to
-be unity.}. So taking @mymath{W} as the sum of the kernel pixels that
-used non-blank and in-image pixels, the equation in @ref{Convolution
-process} will become:
+If you ran @command{$ make check} on the source files of Gnuastro, you can
+see the this effect by comparing the @file{convolve_frequency.fits} with
+@file{convolve_spatial.fits} in the @file{./tests/} directory. In the
+spatial domain, by default, no assumption will be made about pixels outside
+of the image or any blank pixels in the image. The problem explained above
+will also occur on the sides of blank regions (see @ref{Blank pixels}). The
+solution to this edge effect problem is only possible in the spatial
+domain. We have to discard the assumption that the sum of the kernel pixels
+is unity during the convolution process@footnote{ofcourse the sum of the
+kernel pixels still have to be unity.}. So taking @mymath{W} as the sum of
+the kernel pixels that used non-blank and in-image pixels, the equation in
+@ref{Convolution process} will become:
 
 @dispmath{C_{x,y}= { \sum_{s=-a}^{a}\sum_{t=-b}^{b}K_{s,t}\times{}I_{x+s,y+t} \over W}.}
 
@@ -9320,11 +9321,9 @@ is defined, only channels and the mesh size are
 important. @ref{Convolution kernel} lists the the convolution kernel
 options.
 
-It is also possible to specify a mask image for the input. In that
-case, see @ref{Mask image}. Here we will only explain the options
-particular to Convolve. Run Convolve with @option{--help} in order to
-see the full list of options Convolve accepts, irrespective of where
-they are explained in this book.
+Here we will only explain the options particular to Convolve. Run Convolve
+with @option{--help} in order to see the full list of options Convolve
+accepts, irrespective of where they are explained in this book.
 
 @table @option
 
@@ -10094,7 +10093,6 @@ larger grid size.
 @menu
 * Sky value::                   Definition of the sky value.
 * Tiling an image::             Defining a mesh grid on the image.
-* Mask image::                  How to mask pixels for no analysis.
 * Invoking astsubtractsky::     Options and arguments to SubtractSky.
 @end menu
 
@@ -10283,7 +10281,7 @@ are ultimately poor approximations.
 
 
 
-@node Tiling an image, Mask image, Sky value, SubtractSky
+@node Tiling an image, Invoking astsubtractsky, Sky value, SubtractSky
 @subsection Tiling an image
 
 @cindex Grid
@@ -10704,74 +10702,8 @@ coordinate system.
 @end table
 
 
-@node Mask image, Invoking astsubtractsky, Tiling an image, SubtractSky
-@subsection Mask image
 
-@cindex Mask image
-All of the programs in Gnuastro that do processing on the input data
-can also account for masked pixels. Particularly in raw data
-processing, there are usually a set of pixels in the image that should
-not be included in any analysis. For example saturated pixels on the
-centers of bright objects, or the edges of the image which received no
-data and were only used for bias calculation. The detectors or the
-very early processing that is done on raw images clearly identifies
-such cases and usually assigns an integer (or flag or mask value) to
-those pixels. Pixels that are good for processing usually have a zero
-value in the mask image. It goes without saying that the two images
-have to have the same size. Note that if the mask image has blank
-pixels, then they act like pixels with non-zero values and will be
-masked (see @ref{Blank pixels}).
-
-@cindex Binary mask image values
-The integer values in the mask images are usually sums of powers of
-two. Each power of two has a specific meaning and since the sum of two
-different sets of powers of two are never equal, each mask value
-identifies a set of different properties for each masked pixels. For
-some analysis, some masked properties might not be a
-problem. Therefore a pixel that only has that property should be
-included. In such cases, you can use bit flags to keep some of the
-powers of two and remove the rest. The individual Gnuastro programs do
-not consider these issues. Therefore, if some masked pixels should be
-included in the analysis, it is best to use another tool to set the
-appropriate mask pixel values to zero prior to running the analysis
-program. We are working on such a program as part of Gnuastro. If the
-data type (@code{BITPIX}) of the input mask image is not an integer
-type, the programs will print a warning, but continue on with the
-analysis. This usually happens because of a mistake in specifying the
-file or the HDU.
-
-@cindex NaN
-The programs that accept a mask image, all share the options
-below. Any masked pixels will receive a NaN value (or a blank pixel,
-see @ref{Blank pixels}) in the final output of those programs.
-In fact, another way to notify any of the Gnuastro programs to not use
-a certain set of pixels in a data set is to set those pixels equal to
-appropriate blank pixel value for the type of the image, @ref{Blank
-pixels}.
-
-@table @option
-
-@item -M STR
-@itemx --mask=STR
-Mask image file name. If this option is not given and the @option{--mhdu}
-option has a different value from @option{--hdu}, then the input image name
-will be used. If a name is specified on the command-line or in any of the
-configuration files, it will be used. If the program doesn't get any mask
-file name, it will use all the non-blank (see @ref{Blank pixels}) pixels in
-the image. Therefore, specifying a mask file name in any of the
-configuration files is not mandatory.
-
-@item -H STR
-@itemx --mhdu=STR
-The mask image header name or number. Similar to the @option{--hdu} option,
-see @ref{Common options}. Like @option{--mask}, this option does not have
-to be included in the configuration file or the command-line. However, if
-it is present on either of them, it will be used.
-
-@end table
-
-
-@node Invoking astsubtractsky,  , Mask image, SubtractSky
+@node Invoking astsubtractsky,  , Tiling an image, SubtractSky
 @subsection Invoking SubtractSky
 
 SubtractSky will find the sky value on a grid in an image and subtract
@@ -10789,32 +10721,29 @@ One line examples:
 $ astsubtractsky image.fits
 $ astsubtractsky --hdu=0 --mhdu=1 image.fits
 $ astsubtractsky --nch1=2 --nch2=2 image.fits
-$ astsubtractsky --mask=maskforimage.fits image.fits
 @end example
 
 @cindex Blank pixel
 The only required input to SubtractSky is the input data file that
-currently has to be only a 2D image. But in the future it might be
-useful to use it for 1D or 3D data too. Any pixels in the image with a
-blank value will be ignored in the analysis, see @ref{Blank
-pixels}. Alternatively a mask can be specified which indicates pixels
-to not be used (see @option{--mask} and @option{--mhdu}). The common
-options to all Gnuastro programs can be seen in @ref{Common options}
-and input data formats are explained in @ref{Arguments}.
+currently has to be only a 2D image. But in the future it might be useful
+to use it for 1D or 3D data too. Any pixels in the image with a blank value
+will be ignored in the analysis, see @ref{Blank pixels}. The common options
+to all Gnuastro programs can be seen in @ref{Common options} and input data
+formats are explained in @ref{Arguments}.
 
-SubtractSky uses a mesh grid to tile the image. This enables it to
-deal with possible gradients, see @ref{Tiling an image}. The mesh grid
-options are common to all the programs using it, and are listed in
-@ref{Mesh grid options}. In order to ignore some pixels during the
-analysis, you can specify a mask image, see @ref{Mask image} for an
-explanation and the relevant options. For a more accurate result, a
-kernel file name can be specified so the image is first convolved, see
-@ref{Quantifying signal in a mesh}, see @ref{Convolution kernel} for
-the kernel related options. The @option{--kernel} option is not
+SubtractSky uses a mesh grid to tile the image. This enables it to deal
+with possible gradients, see @ref{Tiling an image}. The mesh grid options
+are common to all the programs using it, and are listed in @ref{Mesh grid
+options}. In order to ignore some pixels during the analysis, you can use
+Gnuastro's @ref{Arithmetic} program to give those pixels a blank value
+before feeding them into SubtractSky (see @ref{Blank pixels}). For a more
+accurate result, a kernel file name can be specified so the image is first
+convolved, see @ref{Quantifying signal in a mesh}, see @ref{Convolution
+kernel} for the kernel related options. The @option{--kernel} option is not
 mandatory and if not specified anywhere prior to running, the original
-image will be used. Please run SubtractSky with the @option{--help}
-option to list all the recognized options, irrespective of which part
-of the book they are fully explained in.
+image will be used. Please run SubtractSky with the @option{--help} option
+to list all the recognized options, irrespective of which part of the book
+they are fully explained in.
 
 @table @option
 
@@ -11139,7 +11068,6 @@ One line examples:
 @example
 $ astimgstat input.fits
 $ astimgstat animage.fits --ignoremin --nohist
-$ astimgstat anotherimage.fits --mask=detectionlabels.fits --mhdu=1
 @end example
 
 @noindent
@@ -11162,8 +11090,7 @@ frequency plots. If no value is given for these options when
 ImageStatistics is about to start processing the data, then the full
 data range will be used. Such that the minimum image value will be set
 for the minimums and the maximum image value will be used for the
-maximum. The Mask name and HDU are also not mandatory in the
-configuration file.
+maximum.
 
 @cindex ASCII plot
 By default, in verbose mode @footnote{If the @option{-q} option is not
@@ -11220,21 +11147,11 @@ ImageStatistics finished in:  0.006964 (seconds)
 
 @table @option
 
-@item -M STR
-@itemx --mask=STR
-The file name of a mask image. If this option is not given on the
-command-line or in the configuration files and @option{--mhdu} is not given
-or is identical to @option{--hdu}, then no mask image will be used.
-
-@item -H STR
-@itemx --mhdu=STR
-The header name of the mask extension.
-
 @item -r
 @itemx --ignoremin
-Ignore all data elements that have a value equal to the minimum value
-in the image. In practice this is like masking those pixels, their
-values will not be used.
+Ignore all data elements that have a value equal to the minimum value in
+the image. In practice this is like setting them as @ref{Blank pixels},
+their values will not be used.
 
 @item -l
 @itemx --lowerbin
@@ -11483,18 +11400,16 @@ One line examples:
 @example
 $ astnoisechisel input.fits
 $ astnoisechisel --nch1=4 --lmesh=256 input.fits
-$ astnoisechisel field.fits --mask=badpixels.fits --mhdu=1
 @end example
 
 @cindex Gaussian
 @noindent
-If NoiseChisel is to do processing, an input image should be provided
-with the recognized extensions as input data, see @ref{Arguments}.
-The options that are shared by all Gnuastro programs can be seen in
-@ref{Common options}. In order to ignore some pixels during the
-analysis, you can specify a mask image, see @ref{Mask image} for an
-explanation and the relevant options. A masked pixel is completely
-ignored.
+If NoiseChisel is to do processing, an input image should be provided with
+the recognized extensions as input data, see @ref{Arguments}.  The options
+that are shared by all Gnuastro programs can be seen in @ref{Common
+options}. In order to ignore some pixels during the analysis, you can use
+Gnuastro's @ref{Arithmetic} program to set them as blank (see @ref{Blank
+pixels}). Any blank pixel is ignored by all the steps of NoiseChisel.
 
 A convolution kernel can also be optionally given. If a value (file
 name) is given to @option{--kernel} on the command-line or in a
@@ -11999,11 +11914,6 @@ All the inputs to MakeCatalog (see @ref{MakeCatalog}) are included in
 this one file which makes the running of MakeCatalog after NoiseChisel
 very easy.
 
-@item
-All masked pixels given to NoiseChisel will have a value of NaN in
-this image. So if you decide to run MakeCatalog after NoiseChisel,
-there is no more need to feed the mask image to MakeCatalog too.
-
 @end itemize
 
 @item
@@ -12465,14 +12375,11 @@ $ astmkcatalog --objlabs=K_labeled.fits --objhdu=1 \
 
 @cindex Gaussian
 @noindent
-If MakeCatalog is to do processing, an input image should be provided
-with the recognized extensions as input data, see
-@ref{Arguments}. Optionally a mask file can be specified to ignore
-some of the pixels in the image, see @ref{Mask image}. Note that if
-you generated the labeled image using NoiseChisel with a mask image as
-input, there is no more need to inform MakeCatalog of the mask image,
-see @ref{NoiseChisel output}. The options common to all Gnuastro
-programs are explained in @ref{Common options}.
+If MakeCatalog is to do processing, an input image should be provided with
+the recognized extensions as input data, see @ref{Arguments}. Optionally a
+mask file can be specified to ignore some of the pixels in the image. The
+options common to all Gnuastro programs are explained in @ref{Common
+options}.
 
 MakeCatalog needs 4 (or 5) images as input. These images can be separate
 extensions in one file (NoiseChisel's default output), or each can have its
@@ -12511,13 +12418,11 @@ MakeCatalog will use the input name, see @ref{Automatic output}. When only
 building an object catalog, any suffix in the value to output will just be
 replaced with @file{.txt}.
 
-The first set of options specify the properties of the inputs. Other
-necessary input images are treated very much like a mask image, see
-@ref{Mask image}. If no name is specified for them, their HDU is
-checked and if that differs from the input HDU, then there is no need
-to specify a file name for them. The object and column label images or
-segmentation maps should not be of a floating point type
-(@code{BITPIX}).
+The first set of options specify the properties of the inputs. If no name
+is specified for the other necessary input images, their HDU is checked and
+if that differs from the input HDU, then there is no need to specify a file
+name for them. The object and column label images or segmentation maps
+should not be of a floating point type (@code{BITPIX}).
 
 @table @option
 

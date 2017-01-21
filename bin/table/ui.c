@@ -23,29 +23,22 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 
 #include <argp.h>
-#include <math.h>
-#include <stdio.h>
 #include <errno.h>
 #include <error.h>
-#include <regex.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fitsio.h>
+#include <stdio.h>
 
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
-#include <nproc.h>               /* From Gnulib.                   */
-#include <timing.h>              /* Includes time.h and sys/time.h */
-#include <checkset.h>
-#include <fixedstringmacros.h>
+#include <nproc.h> /* from Gnulib, in Gnuastro's source */
+#include <timing.h>
+#include <options.h>
 
 #include "main.h"
 
 #include "ui.h"
 #include "args.h"
-#include "authors-cite.h"
 
 
 
@@ -118,8 +111,8 @@ ui_read_check_only_options(struct tableparams *p)
               /* If the output name was set and is a FITS file, make sure
                  that the type of the table is not a `txt'. */
               if( p->cp.output && gal_fits_name_is_fits(p->cp.output)
-                  && ( p->tabletype !=GAL_TABLE_TYPE_AFITS
-                       && p->tabletype !=GAL_TABLE_TYPE_BFITS ) )
+                 && ( p->tabletype != GAL_TABLE_TYPE_AFITS
+                       && p->tabletype != GAL_TABLE_TYPE_BFITS ) )
                 error(EXIT_FAILURE, 0, "desired output file `%s' is a FITS "
                       "file, but `tabletype' is not a FITS table type. "
                       "Please set it to `fits-ascii', or `fits-binary'",
@@ -130,8 +123,7 @@ ui_read_check_only_options(struct tableparams *p)
              FITS file, A text table output only has one possible type. */
           else if( gal_fits_name_is_fits(p->cp.output) )
             gal_options_add_to_not_given(&options[i], &namell, &docll);
-          break;
-
+         break;
 
 
         /* Operating mode */
@@ -139,6 +131,7 @@ ui_read_check_only_options(struct tableparams *p)
           if(options[i].value)
             p->information = *(unsigned char *)options[i].value;
           break;
+
 
 
         default:
@@ -300,36 +293,34 @@ ui_preparations(struct tableparams *p)
 void
 setparams(int argc, char *argv[], struct tableparams *p)
 {
+  struct gal_options_common_params *cp=&p->cp;
+
   /* Set the non-zero initial values, the structure was initialized to
-     have a zero value for all elements. */
-  p->cp.poptions        = options;
-  p->cp.program_name    = PROGRAM_NAME;
-  p->cp.program_exec    = PROGRAM_EXEC;
-  p->cp.program_bibtex  = PROGRAM_BIBTEX;
-  p->cp.program_authors = PROGRAM_AUTHORS;
-  p->cp.coptions        = gal_commonopts_options;
-  p->cp.numthreads      = num_processors(NPROC_CURRENT);
+     have a zero/NULL value for all elements. */
+  cp->poptions        = options;
+  cp->program_name    = PROGRAM_NAME;
+  cp->program_exec    = PROGRAM_EXEC;
+  cp->program_bibtex  = PROGRAM_BIBTEX;
+  cp->program_authors = PROGRAM_AUTHORS;
+  cp->coptions        = gal_commonopts_options;
+  cp->numthreads      = num_processors(NPROC_CURRENT);
 
-  /* Initialize this utility's pointers to NULL. */
-  p->columns=NULL;
-  p->up.filename=NULL;
-
-  /* Read the command-line arguments. */
+  /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
   /* Read the configuration files. */
-  gal_options_read_config_files(&p->cp);
+  gal_options_read_config_files(cp);
 
   /* Read the options into the program's structure, and check them and
      their relations prior to printing. */
   ui_read_check_only_options(p);
 
   /* Print the option values if asked. Note that this needs to be done
-     after the sanity check so un-sane values are not printed in the output
-     state. */
-  gal_options_print_state(&p->cp);
+     after the option checks so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(cp);
 
   /* Check that the options and arguments fit well with each other. Note
      that arguments don't go in a configuration file. So this test should

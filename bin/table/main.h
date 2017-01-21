@@ -31,7 +31,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Progarm names.  */
 #define PROGRAM_NAME "Table"         /* Program full name.       */
 #define PROGRAM_EXEC "asttable"      /* Program executable name. */
-
+#define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
 
