@@ -29,6 +29,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <fitsio.h>
 
+#include <gnuastro/wcs.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/txtarray.h>
 
@@ -362,23 +363,17 @@ sanitycheck(struct imgcropparams *p)
   struct gal_commonparams *cp=&p->cp;
 
 
-
-  /* checkcenter is odd: */
-  if(p->checkcenter%2==0)
-    p->checkcenter+=1;
-
-
-
   /* Width and checkcenter are odd */
   if(p->iwidth[0]<3)
     error(EXIT_FAILURE, 0, "--iwidth has to be 3 or more pixels");
   else if(p->iwidth[0]%2==0)
-      p->iwidth[0]+=1;
+    error(EXIT_FAILURE, 0, "the given value to `iwidth' (%ld) has to "
+          "be an odd number (the pixel corresponding to the desired "
+          "coordinate to be in the center)", p->iwidth[0]);
   p->iwidth[1]=p->iwidth[0];
-  if(p->checkcenter<3)
-    error(EXIT_FAILURE, 0, "--checkcenter has to be 3 or more pixels");
-  else if(p->checkcenter%2==0)
-    p->checkcenter+=1;
+  if(p->checkcenter && p->checkcenter%2==0)
+    error(EXIT_FAILURE, 0, "`checkcenter' has to be an odd number. The "
+          "current value is %zu", p->checkcenter);
 
 
 
@@ -614,6 +609,7 @@ preparearrays(struct imgcropparams *p)
                                      p->hstartwcs, p->hendwcs);
       if(img->wcs)
         {
+          gal_wcs_decompose_pc_cdelt(img->wcs);
           status=wcshdo(0, img->wcs, &img->nwcskeys, &img->wcstxt);
           if(status)
             error(EXIT_FAILURE, 0, "wcshdo ERROR %d: %s", status,
@@ -665,7 +661,8 @@ preparearrays(struct imgcropparams *p)
   /* Report timing: */
   if(p->cp.verb)
     {
-      sprintf(msg, "Read metadata of %zu images.", p->numimg);
+      sprintf(msg, "Read metadata of %zu image%s.", p->numimg,
+              p->numimg>1 ? "s" : "");
       gal_timing_report(&t1, msg, 1);
     }
 }

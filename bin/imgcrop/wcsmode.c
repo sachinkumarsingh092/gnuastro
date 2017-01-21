@@ -465,12 +465,13 @@ radecoverlap(struct cropparams *crp)
 {
   double *d, *fd;
   double *i, *s, *c;                /* for clear viewing. */
+  struct imgcropparams *p=crp->p;
 
   /* First check if the four sides of the crop box are in the image.*/
   fd=(d=crp->corners)+8;
-  s=crp->p->imgs[crp->imgindex].sized;
-  i=crp->p->imgs[crp->imgindex].corners;
-  c=crp->p->imgs[crp->imgindex].equatorcorr;
+  s=p->imgs[crp->imgindex].sized;
+  i=p->imgs[crp->imgindex].corners;
+  c=p->imgs[crp->imgindex].equatorcorr;
   do
     {
       if( radecinimg(d, i, s, c) ) return 1;
@@ -483,7 +484,7 @@ radecoverlap(struct cropparams *crp)
   s=crp->sized;
   i=crp->corners;
   c=crp->equatorcorr;
-  fd=(d=crp->p->imgs[crp->imgindex].corners)+8;
+  fd=(d=p->imgs[crp->imgindex].corners)+8;
   do
     {
       if( radecinimg(d, i, s, c) ) return 1;

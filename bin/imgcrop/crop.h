@@ -59,7 +59,8 @@ void
 polygonparser(struct imgcropparams *p);
 
 void
-sectionparser(char *section, long *naxes, long *fpixel, long *lpixel);
+sectionparser(struct imgcropparams *p, long *naxes,
+              long *fpixel, long *lpixel);
 
 void
 cropname(struct cropparams *crp);

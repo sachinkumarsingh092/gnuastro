@@ -71,19 +71,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /* Read the section string and set the starting and ending pixels
    based on that. */
 void
-sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
+sectionparser(struct imgcropparams *p, long *naxes,
+              long *fpixel, long *lpixel)
 {
   int add;
   long read;
   size_t dim=0;
   char *tailptr;
-  char forl='f', *pt=section;
+  char forl='f', *pt=p->section;
+
+  /* If control reached here, then the cropped region is not defined by its
+     center. So it makes no sense to check if the center is blank. */
+  p->checkcenter=0;
 
   /* Initialize the fpixel and lpixel arrays: */
   lpixel[0]=naxes[0];
   lpixel[1]=naxes[1];
   fpixel[0]=fpixel[1]=1;
-
 
   /* Parse the string. */
   while(*pt!='\0')
@@ -94,7 +98,7 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
         case ',':
           ++dim;
           if(dim==2)
-            error(EXIT_FAILURE, 0, "Extra `,` in `%s`", section);
+            error(EXIT_FAILURE, 0, "Extra `,` in `%s`", p->section);
           forl='f';
           ++pt;
           break;
@@ -105,8 +109,7 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
         case '.':
           error(EXIT_FAILURE, 0, "the numbers in the argument to "
                 "`--section` (`-s') have to be integers. You input "
-                "includes a float number: %s",
-                section);
+                "includes a float number: %s", p->section);
           break;
         case ' ': case '\t':
           ++pt;
@@ -151,12 +154,13 @@ sectionparser(char *section, long *naxes, long *fpixel, long *lpixel)
       */
     }
 
+  /* Make sure the first pixel is located before/below the last pixel. */
   if(fpixel[0]>lpixel[0] || fpixel[1]>lpixel[1])
     error(EXIT_FAILURE, 0, "the bottom left corner coordinates "
           "cannot be larger or equal to the top right's! Your section "
           "string (%s) has been read as: bottom left coordinate "
           "(%ld, %ld) to top right coordinate (%ld, %ld)",
-          section, fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
+          p->section, fpixel[0], fpixel[1], lpixel[0], lpixel[1]);
 
   /*
   printf("\n%s\nfpixel=(%ld, %ld), lpixel=(%ld, %ld)\n\n", section,
@@ -178,6 +182,10 @@ polygonparser(struct imgcropparams *p)
   double read[2], *array;
   struct gal_linkedlist_tdll *gal_linkedlist_tdll=NULL;
   char *pt=p->up.polygon;
+
+  /* If control reached here, then the cropped region is not defined by its
+     center. So it makes no sense to check if the center is blank. */
+  p->checkcenter=0;
 
   /* Parse the string. */
   while(*pt!='\0')
@@ -527,7 +535,7 @@ cropflpixel(struct cropparams *crp)
       else if(p->up.xcset)
         gal_box_border_from_center(p->xc, p->yc, p->iwidth, fpixel, lpixel);
       else if(p->up.sectionset)
-        sectionparser(p->section, naxes, fpixel, lpixel);
+        sectionparser(p, naxes, fpixel, lpixel);
       else if(p->up.polygonset)
         {
           if(p->outpolygon==0)
@@ -814,24 +822,18 @@ iscenterfilled(struct cropparams *crp)
 {
   struct imgcropparams *p=crp->p;
 
+  size_t size;
   void *array;
-  int bitpix=p->bitpix;
-  size_t size, nulcount;
   fitsfile *ofp=crp->outfits;
-  int status=0, maxdim=10, anynul;
   long checkcenter=p->checkcenter;
+  int status=0, anynul=0, tmp_bitpix;
   long naxes[2], fpixel[2], lpixel[2], inc[2]={1,1};
 
-  uint8_t *b, *fb, *nb;
-  int16_t *s, *fs, *ns;
-  int32_t *l, *fl, *nl;
-  int64_t *L, *fL, *nL;
-  float   *f, *ff; /* isnan will check. */
-  double  *d, *fd; /* isnan will check */
+  /* If checkcenter is zero, then don't check. */
+  if(checkcenter==0) return CENTER_NOT_CHECKED;
 
   /* Get the final size of the output image. */
-  if( fits_get_img_size(ofp, maxdim, naxes, &status) )
-    gal_fits_io_error(status, NULL);
+  gal_fits_img_bitpix_size(ofp, &tmp_bitpix, naxes);
 
   /* Get the size and range of the central region to check. The +1 is
      because in FITS, counting begins from 1, not zero. It might happen
@@ -845,61 +847,23 @@ iscenterfilled(struct cropparams *crp)
   lpixel[0] = naxes[0]>checkcenter ? (naxes[0]/2+1)+checkcenter/2 : naxes[0];
   lpixel[1] = naxes[1]>checkcenter ? (naxes[1]/2+1)+checkcenter/2 : naxes[1];
 
+  /* For a check:
+  printf("naxes: %ld, %ld\nfpixel: (%ld, %ld)\nlpixel: (%ld, %ld)\n"
+         "size: %zu\n", naxes[0], naxes[1], fpixel[0], fpixel[1],
+         lpixel[0], lpixel[1], size);
+  */
+
   /* Allocate the array and read in the pixels. */
-  array=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_datatype(bitpix) );
+  array=gal_fits_datatype_alloc(size, gal_fits_bitpix_to_datatype(p->bitpix));
   if( fits_read_subset(ofp, p->datatype, fpixel, lpixel, inc,
                        p->bitnul, array, &anynul, &status) )
     gal_fits_io_error(status, NULL);
-
-  /* Depending on bitpix, check the central pixels of the image. */
-  nulcount=0;
-  switch(bitpix)
-    {
-    case BYTE_IMG:
-      nb=p->bitnul;
-      fb=(b=array)+size;
-      do if(*b==*nb) ++nulcount; while(++b<fb);
-      break;
-
-    case SHORT_IMG:
-      ns=p->bitnul;
-      fs=(s=array)+size;
-      do if(*s==*ns) ++nulcount; while(++s<fs);
-      break;
-
-    case LONG_IMG:
-      nl=p->bitnul;
-      fl=(l=array)+size;
-      do if(*l==*nl) ++nulcount; while(++l<fl);
-      break;
-
-    case LONGLONG_IMG:
-      nL=p->bitnul;
-      fL=(L=array)+size;
-      do if(*L==*nL) ++nulcount; while(++L<fL);
-      break;
-
-    case FLOAT_IMG:
-      ff=(f=array)+size;
-      do if(isnan(*f)) ++nulcount; while(++f<ff);
-      break;
-
-    case DOUBLE_IMG:
-      fd=(d=array)+size;
-      do if(isnan(*d)) ++nulcount; while(++d<fd);
-      break;
-
-    default:
-      error(EXIT_FAILURE, 0, "in iscenterfilled, the bitbix is not "
-            "recognized! This is not possible by the user, so it is a "
-            "a bug. Please contact us so we can correct it");
-    }
   free(array);
 
-  if(nulcount==size)
-    return 0;
-  else
-    return 1;
+  /* CFITSIO already checks if there are any blank pixels. If there are,
+     then `anynul' will be 1, if there aren't it will be 0. So the output
+     of this function is just the inverse of that number. */
+  return !anynul;
 }
 
 
@@ -928,8 +892,8 @@ printlog(struct imgcropparams *p)
 {
   size_t i;
   FILE *logfile;
-  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
   struct imgcroplog *log=p->log;
+  char msg[GAL_TIMING_VERB_MSG_LENGTH_V];
   size_t numfiles=0, numcentfilled=0, numstitched=0;
 
   /* Only for a catalog are these statistics worth it! */
@@ -937,7 +901,7 @@ printlog(struct imgcropparams *p)
     for(i=0;log[i].name;++i)
       if(log[i].numimg)
         {
-          if(log[i].centerfilled || p->keepblankcenter)
+          if(log[i].centerfilled)
             {
               ++numfiles;
               if(log[i].numimg>1)
@@ -963,16 +927,19 @@ printlog(struct imgcropparams *p)
               "# "SPACK_STRING" log file.\n"
               "# "SPACK_NAME" was run on %s#\n",
               ctime(&p->rawtime));
-      if(p->keepblankcenter==0)
-        fprintf(logfile, "# NOTE: by default images with a blank "
-                "center are deleted.\n# To keep such images, run again "
-                "with `--keepblankcenter`.\n#\n");
+      if(p->checkcenter)
+        fprintf(logfile,
+                "# The central %zu pixels were checked for blank values.\n"
+                "# NOTE: by default when the crops are defined by "
+                "their center,\n"
+                "# crops with a blank center are deleted.\n"
+                "# To keep such images, run again with `--checkcenter=0`.\n"
+                "#\n", p->checkcenter);
       fprintf(logfile,
-              "# Column numbers below start from zero.\n"
-              "# 0: Output file name.\n"
-              "# 1: Number of images used in this cropped image.\n"
-              "# 2: Are the central %zu pixels filled? (1: yes, 0: no)\n",
-              p->checkcenter);
+              "# Column 1: Output file name.\n"
+              "# Column 2: Number of images used in this cropped image.\n"
+              "# Column 3: Are the central pixels filled? (1: yes, 0: no, "
+              "%d: not checked)\n", CENTER_NOT_CHECKED);
 
       /* Then print each output's information. */
       for(i=0;log[i].name;++i)
