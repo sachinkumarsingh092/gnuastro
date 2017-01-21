@@ -125,7 +125,7 @@ ui_check_options_and_arguments(struct imgarithparams *p)
           ++numfits;
 
           /* If the output filename isn't set yet, then set it. */
-          if(output_checked)
+          if(output_checked==0)
             {
               if(p->cp.output)
                 gal_checkset_check_remove_file(p->cp.output,

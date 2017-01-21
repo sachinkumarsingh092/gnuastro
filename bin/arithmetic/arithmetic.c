@@ -366,6 +366,8 @@ reversepolish(struct imgarithparams *p)
       d1->wcs=p->refdata.wcs;
       gal_fits_write_img(d1, p->cp.output, "Arithmetic", NULL,
                          PROGRAM_STRING);
+      if(!p->cp.quiet)
+        printf(" - Output written to %s\n", p->cp.output);
     }
 
 

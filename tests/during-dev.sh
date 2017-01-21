@@ -142,7 +142,7 @@ if make -C "$builddir"; then
     # of the last line).
     cp "$srcdir/bin/$utilname/ast$utilname.conf" .gnuastro/
     echo ""               >> .gnuastro/ast$utilname.conf
-    echo " onlydirconf 1" >> .gnuastro/ast$utilname.conf
+    echo " lastconfig 1"  >> .gnuastro/ast$utilname.conf
 
     # Run the built utility with the given arguments and options.
     "$utility" $arguments $options

@@ -162,7 +162,7 @@ pop_operand(struct imgarithparams *p, char *operator)
       ++p->popcounter;
 
       /* Report the read image if desired: */
-      if(!p->cp.quiet) printf("%s is read.\n", filename);
+      if(!p->cp.quiet) printf(" - %s is read.\n", filename);
     }
   else
     data=operands->data;
