@@ -6437,23 +6437,33 @@ image processing, see @ref{Crop section syntax}.
 
 @node ImageCrop modes, Crop section syntax, ImageCrop, ImageCrop
 @subsection ImageCrop modes
-In order to be as comprehensive as possible, ImageCrop has two major modes
-of operation, using pixel coordinates, or the world coordinate system (WCS)
-coordinates. In each mode, there are multiple ways to define the crop(s):
-by center, or from vertices. Here, the options that define each specific
-mode are also mentioned as part of each class. For the full list of
-options, please see @ref{Invoking astimgcrop}.
+In order to be comprehensive, intuitive, and easy to use, ImageCrop has two
+ways to define crop region: 1) From its center and (square) side length,
+for example to generate postage stamps of a given catalog. 2) The vertices
+of the crop region, this can be useful for larger crops over many targets,
+for example to crop out a uniformly deep, or contiguous, region of a large
+survey. Irrespective of how the crop region is defined, both Image/pixel,
+and World coordinate system (WCS) coordinates are acceptable and all
+coordinates are read as floating point numbers (not integers, except for
+the @option{--section} option, see below). The coordinate standards used
+are the main modes of ImageCrop. Here, the different ways to specify the
+crop region are discussed within each standard. For the full list options,
+please see @ref{Invoking astimgcrop}.
 
-In all cases except the @option{--section} option, the values/coordinates
-are read as floating point numbers (not integers). When the crop is defined
-by its center, the respective (integer) central pixel position will be
-found internally according to the FITS standard (where the center of a
-pixel is defined to be an integer). To have this pixel positioned in the
-center of the cropped region, the final cropped region must have (in Image
-mode), or will have (in WCS mode) an add number of pixels.
+When the crop is defined by its center, the respective (integer) central
+pixel position will be found internally according to the FITS standard. To
+have this pixel positioned in the center of the cropped region, the final
+cropped region must have (in Image mode), or will have (in WCS mode) an add
+number of pixels. Furthermore, when the crop is defined as by its center,
+ImageCrop allows you to only keep crops what don't have any blank pixels in
+the vicinity of their center (your primary target). This can be very
+convenient when your input catalog/coordinates originated from another
+survey/filter which is not fully covered by your input image, to learn more
+about this feature, please see the description of the
+@option{--checkcenter} option in @ref{Invoking astimgcrop}.
 
 @table @asis
-@item Image
+@item Image coordinates
 In image mode, ImageCrop uses the pixel coordinates/positions (instead of
 world coordinates). In image mode, only one image may be input. The crop(s)
 can be defined in multiple ways as listed below.
@@ -6465,7 +6475,10 @@ catalog can also contain WCS coordinates, so @option{--imgmode} has to be
 called/activated. The @option{--xcol} and @option{--ycol} columns in the
 catalog are interpreted as the center of a square crop with a width of
 @option{--iwidth} pixels (an odd number). The columns can contain any
-floating point value.
+floating point value. The value to @option{--output} option is seen as a
+directory which will host (the possibly multiple) separate crop files, see
+@ref{ImageCrop output} for more. For a tutorial using this feature, please
+see @ref{Hubble visually checks and classifies his catalog}.
 
 @item Center of a single crop (on the command-line)
 The center of the crop is given on the command-line with the @option{--xc}
@@ -6488,14 +6501,13 @@ hence, to read the vertices as pixel coordinates, @option{--imgmode} has to
 be called/activated.
 @end table
 
-@item WCS
+@item WCS coordinates
 Use the World Coordinate System (WCS) information to define the crop, not
 pixel coordinates. In this mode, the width (@option{--wwidth}) is read in
 units of arc-seconds and multiple images (tiles in a survey) can be
-input. When the cropped region (defined by center or vertices) lies
-overlaps with multiple of the input images/tiles, the overlapping regions
-will be taken from the respective input (they will be stitched in the
-crop).
+input. When the cropped region (defined by center or vertices) overlaps
+with multiple of the input images/tiles, the overlapping regions will be
+taken from the respective input (they will be stitched in the crop).
 
 In this mode, the input images do not necessarily have to be the same size,
 they just need to have the same orientation and pixel resolution. Currently
@@ -6505,19 +6517,20 @@ to align the image before cropping it (see @ref{ImageWarp}).
 
 Each individual input image/tile can even be smaller than the final
 crop. In any case, any part of any of the input images which overlaps with
-the desired region will be used in the crop. Note that if there is an over
-lap in the input images/tiles, the pixels from the last input image read
-are going to be used for the overlap (ImageCrop will not change pixel
-values, so it assumes your tiles have the same depth for example). There
-are multiple ways to define your cropped region as listed below.
+the desired region will be used in the crop. Note that if there is an
+overlap in the input images/tiles, the pixels from the last input image
+read are going to be used for the overlap. ImageCrop will not change pixel
+values, so it assumes your overlapping tiles were cutout from the same
+original image. There are multiple ways to define your cropped region as
+listed below.
 
 @table @asis
 
 @item Center of multiple crops (in a catalog)
-Similar to catalog mode in image mode, but @option{--wcsmode} has to be
-activated. The central RA and Dec value for each crop will be read from the
-@option{--racol} and @option{--deccol} columns of the input catalog. The
-square cropped box will have an odd number of pixels.
+Similar to catalog inputs in Image mode (above), but @option{--wcsmode} has
+to be activated. The central RA and Dec value for each crop will be read
+from the @option{--racol} and @option{--deccol} columns of the input
+catalog. The square cropped box will have an odd number of pixels.
 
 @item Center of a single crop (on the command-line)
 You can specify the center of only one crop box with the @option{--ra} and
