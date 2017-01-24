@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/txt.h>
 #include <gnuastro/data.h>
+#include <gnuastro/arithmetic.h>
 #include <gnuastro/linkedlist.h>
 
 #include <options.h>
@@ -895,7 +896,189 @@ gal_options_read_config_files(struct gal_options_common_params *cp)
 
 
 /**********************************************************************/
-/************            After sanity check            ***************/
+/************                Sanity check               ***************/
+/**********************************************************************/
+/* All the command-line and configuration file options have been read. But
+   for the higher level steps of your program, you can't go over the
+   options array every time to find the recorded value (as a `void *'
+   pointer). Also, if the option was given, you want to make sure its value
+   is in the correct/acceptable range you expect for this option.
+
+   This function takes the argp_option structure you are checking
+   (`option') and a pointer to the (already allocated) space you want to
+   put its value in (`out'), along with the `condition' that the value to
+   this option must satisfy.
+
+   Outputs:
+
+    - If the option has a value and the condition is met, the value is put
+      into the `out' pointer and this function will return 1.
+
+    - If the option has a value and the condition isn't met, an error
+      message will be printed and the program will abort.
+
+    - If the option wasn't given a value, this function will return 0, and
+      put a blank value (depending on the type) in the value pointed by
+      `out'.  */
+int
+gal_options_check_set(struct argp_option *option, void *out, int condition)
+{
+  size_t dsize=1;
+  int operator1, operator2;
+  gal_data_t *value, *ref1, *ref2, *check1, *check2;
+  int arithflags = ( GAL_ARITHMETIC_INPLACE
+                     | GAL_ARITHMETIC_FREE
+                     | GAL_ARITHMETIC_NUMOK );
+
+
+  /* This function should only be used for numerical types. */
+  if(option->type==GAL_DATA_TYPE_STRING || option->type==GAL_DATA_TYPE_STRLL)
+    error(EXIT_FAILURE, 0, "A bug! `gal_options_check_set' should only be "
+          "used for numerical types. However it has been used for the "
+          "`%s' option, which has a type of `%s'", option->name,
+          gal_data_type_as_string(option->type, 1) );
+
+
+  /* If the option is given a value, then check it and return 1 if it is in
+     range. If its not in range, abort with an error.  */
+  if(option->value)
+    {
+      /* Put the option value into a data structure. */
+      value=gal_data_alloc(option->value, option->type, 1, &dsize, NULL,
+                           0, -1, NULL, NULL, NULL);
+
+      /* Set the operator(s): */
+      switch(condition)
+        {
+
+        case GAL_OPTIONS_RANGE_GT_0:
+          ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                              0, -1, NULL, NULL, NULL);
+          *(unsigned char *)(ref1->array)=0;
+          operator1=GAL_ARITHMETIC_OP_GT;
+          ref2=NULL;
+          break;
+
+
+        case GAL_OPTIONS_RANGE_GE_0:
+          ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                              0, -1, NULL, NULL, NULL);
+          *(unsigned char *)(ref1->array)=0;
+          operator1=GAL_ARITHMETIC_OP_GE;
+          ref2=NULL;
+          break;
+
+
+        case GAL_OPTIONS_RANGE_GE_0_LE_1:
+          ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                              0, -1, NULL, NULL, NULL);
+          ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                              0, -1, NULL, NULL, NULL);
+          *(unsigned char *)(ref1->array)=0;
+          *(unsigned char *)(ref2->array)=1;
+          operator1=GAL_ARITHMETIC_OP_GE;
+          operator1=GAL_ARITHMETIC_OP_LE;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "condition code %d not recognized in "
+                "`gal_options_check_set'", condition);
+        }
+
+      /* Use the arithmetic library to check for the condition. */
+      check1=gal_arithmetic(operator1, arithflags, value, ref1);
+
+      /* Clean up and return. Note that we used the actual value pointer in
+         the data structure, so first we need to set it to NULL, so
+         `gal_data_free' doesn't free it, we need it for later (for example
+         to print the option values). */
+      value->array=NULL;
+      gal_data_free(value);
+      return 1;
+    }
+
+  /* The option didn't have a value, set the output value as blank and
+     return 0. */
+  else
+    {
+      /* Set the output value. */
+      switch(option->type)
+        {
+        case GAL_DATA_TYPE_UCHAR:
+          *(unsigned char *)out = GAL_DATA_BLANK_UCHAR;
+          break;
+
+        case GAL_DATA_TYPE_CHAR:
+          *(char *)out = GAL_DATA_BLANK_CHAR;
+          break;
+
+        case GAL_DATA_TYPE_USHORT:
+          *(unsigned short *)out = GAL_DATA_BLANK_USHORT;
+          break;
+
+        case GAL_DATA_TYPE_SHORT:
+          *(short *)out = GAL_DATA_BLANK_SHORT;
+          break;
+
+        case GAL_DATA_TYPE_UINT:
+          *(unsigned int *)out = GAL_DATA_BLANK_UINT;
+          break;
+
+        case GAL_DATA_TYPE_INT:
+          *(int *)out = GAL_DATA_BLANK_INT;
+          break;
+
+        case GAL_DATA_TYPE_ULONG:
+          *(unsigned long *)out = GAL_DATA_BLANK_ULONG;
+          break;
+
+        case GAL_DATA_TYPE_LONG:
+          *(long *)out = GAL_DATA_BLANK_LONG;
+          break;
+
+        case GAL_DATA_TYPE_LONGLONG:
+          *(LONGLONG *)out = GAL_DATA_BLANK_LONGLONG;
+          break;
+
+        case GAL_DATA_TYPE_FLOAT:
+          *(float *)out = GAL_DATA_BLANK_FLOAT;
+          break;
+
+        case GAL_DATA_TYPE_DOUBLE:
+          *(double *)out = GAL_DATA_BLANK_DOUBLE;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "type code %d not recognized in "
+                "`gal_options_check_set'", option->type);
+        }
+
+      /* Return: */
+      return 0;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************/
+/************              Printing/Writing             ***************/
 /**********************************************************************/
 /* We don't want to print the values of configuration specific options and
    the output option. The output value is assumed to be specific to each

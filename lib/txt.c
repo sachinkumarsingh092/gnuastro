@@ -356,7 +356,7 @@ txt_info_from_first_row(char *line, gal_data_t **colsll)
                     pointer. Otherwise we will break up the chain.*/
               if(prev) prev->next=col->next; else *colsll=col->next;
               tmp=col->next;
-              gal_data_free(col, 0);
+              gal_data_free(col);
               col=tmp;
             }
           else                /* Column has data.                          */
@@ -727,7 +727,7 @@ gal_txt_table_read(char *filename, size_t numrows, gal_data_t *colinfo,
 {
   FILE *fp;
   char *line;
-  long dsize;
+  size_t dsize;
   char **tokens;
   gal_data_t *out=NULL;
   struct gal_linkedlist_sll *ind;

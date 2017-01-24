@@ -250,7 +250,7 @@ makepixbypix(struct mkonthread *mkp)
   p=x*mkp->width[0]+y;
 
   /* If this is a point source, just fill that one pixel and go. */
-  if(mkp->func==POINTCODE)
+  if(mkp->func==PROFILE_POINT)
     { img[p]=1; return; }
 
   /* Allocate the byt array to not repeat completed pixels. */
@@ -259,15 +259,15 @@ makepixbypix(struct mkonthread *mkp)
   if(byt==NULL)
     error(EXIT_FAILURE, 0, "%zu bytes for map of object in row %zu of "
           "data in %s", is0*is1*sizeof *byt, ibq->id,
-          mkp->p->up.catname);
+          mkp->p->catname);
 
   /* Start the queue: */
   byt[p]=1;
   gal_linkedlist_add_to_tosll_end( &lQ, &sQ, p, r_circle(p, mkp) );
 
   /* If random points are necessary, then do it: */
-  if(mkp->func==SERSICCODE || mkp->func==MOFFATCODE
-     || mkp->func==GAUSSIANCODE)
+  if(mkp->func==PROFILE_SERSIC || mkp->func==PROFILE_MOFFAT
+     || mkp->func==PROFILE_GAUSSIAN)
     {
       while(sQ)
         {
@@ -353,7 +353,7 @@ makepixbypix(struct mkonthread *mkp)
           /* For the circumference, if the profile is too elongated
              and circumwidth is too small, then some parts of the
              circumference will not be shown without this condition. */
-          if(mkp->func==CIRCUMFERENCECODE) img[p]=profile(mkp);
+          if(mkp->func==PROFILE_CIRCUMFERENCE) img[p]=profile(mkp);
           continue;
         }
 
@@ -407,7 +407,7 @@ int
 ispsf(double fcolvalue)
 {
   int f=fcolvalue;
-  if(f==MOFFATCODE || f==GAUSSIANCODE)
+  if(f==PROFILE_MOFFAT || f==PROFILE_GAUSSIAN)
     return 1;
   else return 0;
 }
@@ -441,7 +441,7 @@ setprofparams(struct mkonthread *mkp)
   /* Fill the profile dependent parameters. */
   switch (mkp->func)
     {
-    case SERSICCODE:
+    case PROFILE_SERSIC:
       mkp->correction       = 1;
       mkp->profile          = &Sersic;
       mkp->sersic_re        = cat[rcol];
@@ -452,7 +452,7 @@ setprofparams(struct mkonthread *mkp)
 
 
 
-    case MOFFATCODE:
+    case PROFILE_MOFFAT:
       mkp->correction       = 1;
       mkp->profile          = &Moffat;
       mkp->moffat_nb        = -1.0f*cat[p->ncol];
@@ -469,7 +469,7 @@ setprofparams(struct mkonthread *mkp)
 
 
 
-    case GAUSSIANCODE:
+    case PROFILE_GAUSSIAN:
       mkp->correction       = 1;
       mkp->profile          = &Gaussian;
       sigma                 = cat[rcol]/2.35482f;
@@ -485,7 +485,7 @@ setprofparams(struct mkonthread *mkp)
 
 
 
-    case POINTCODE:
+    case PROFILE_POINT:
       mkp->correction       = 1;
       mkp->fixedvalue       = 1.0f;
       mkp->profile          = &Flat;
@@ -493,7 +493,7 @@ setprofparams(struct mkonthread *mkp)
 
 
 
-    case FLATCODE:
+    case PROFILE_FLAT:
       mkp->profile          = &Flat;
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
       if(p->mforflatpix)
@@ -510,7 +510,7 @@ setprofparams(struct mkonthread *mkp)
 
 
 
-    case CIRCUMFERENCECODE:
+    case PROFILE_CIRCUMFERENCE:
       mkp->profile          = &Circumference;
       mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
       mkp->intruncr         = mkp->truncr - p->circumwidth;
@@ -599,7 +599,7 @@ makeoneprofile(struct mkonthread *mkp)
   mkp->ibq->img=calloc(size, sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
     error(EXIT_FAILURE, 0, "%zu bytes for object in row %zu of data in %s",
-          size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->up.catname);
+          size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->catname);
 
 
   /* Build the profile in the image. */

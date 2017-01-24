@@ -604,7 +604,7 @@ gal_data_mmap(gal_data_t *data, int clear)
 */
 void
 gal_data_initialize(gal_data_t *data, void *array, int type,
-                    size_t ndim, long *dsize, struct wcsprm *wcs,
+                    size_t ndim, size_t *dsize, struct wcsprm *wcs,
                     int clear, size_t minmapsize, char *name,
                     char *unit, char *comment)
 {
@@ -694,7 +694,7 @@ gal_data_initialize(gal_data_t *data, void *array, int type,
    force the array into the hdd/ssd (mmap it), then set minmapsize=-1
    (largest possible size_t value), in this way, no file will be larger. */
 gal_data_t *
-gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
+gal_data_alloc(void *array, int type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
                char *name, char *unit, char *comment)
 {
@@ -813,20 +813,18 @@ gal_data_string_fixed_alloc_size(gal_data_t *data)
 
 
 
-/* Free the allocated contents of a data structure and possibly also the
-   data structure its self. When `only_contents' is zero, the actual data
-   structure will also be freed, see bellow.
-
-   The reason for the `only_contents' argument is that the data structure
-   might be allocated as an array (statically like `gal_data_t da[20]', or
-   dynamically like `gal_data_t *da; da=malloc(20*sizeof *da);'). In both
-   cases, a loop will be necessary to delete the allocated contents of each
-   element of the data structure array, but not the structure its
-   self. After that loop, if the array of data structures was statically
-   allocated, you don't have to do anything. If it was dynamically
-   allocated, we just have to run `free(da)'.*/
+/* Free the allocated contents of a data structure, not the structure
+   itsself. The reason for this function begin separate from
+   `gal_data_free) is that the data structure might be allocated as an
+   array (statically like `gal_data_t da[20]', or dynamically like
+   `gal_data_t *da; da=malloc(20*sizeof *da);'). In both cases, a loop will
+   be necessary to delete the allocated contents of each element of the
+   data structure array, but not the structure its self. After that loop,
+   if the array of data structures was statically allocated, you don't have
+   to do anything. If it was dynamically allocated, we just have to run
+   `free(da)'.*/
 void
-gal_data_free(gal_data_t *data, int only_contents)
+gal_data_free_contents(gal_data_t *data)
 {
   /* Free all the possible allocations. */
   if(data->name)    free(data->name);
@@ -856,10 +854,19 @@ gal_data_free(gal_data_t *data, int only_contents)
     }
   else
     if(data->array) free(data->array);
+}
 
-  /* Finally, free the actual data structure. */
-  if(only_contents==0)
-    free(data);
+
+
+
+
+/* Free the contents of the data structure and the data structure
+   itsself. */
+void
+gal_data_free(gal_data_t *data)
+{
+  gal_data_free_contents(data);
+  free(data);
 }
 
 
@@ -917,7 +924,7 @@ gal_data_add_existing_to_ll(gal_data_t **list, gal_data_t *newnode)
 
 void
 gal_data_add_to_ll(gal_data_t **list, void *array, int type, size_t ndim,
-                   long *dsize, struct wcsprm *wcs, int clear,
+                   size_t *dsize, struct wcsprm *wcs, int clear,
                    size_t minmapsize, char *name, char *unit, char *comment)
 {
   gal_data_t *newnode;
@@ -998,7 +1005,7 @@ gal_data_free_ll(gal_data_t *list)
   while(list!=NULL)
     {
       tmp=list->next;
-      gal_data_free(list, 0);
+      gal_data_free(list);
       list=tmp;
     }
 }
@@ -1991,7 +1998,7 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
     {
       *of=gal_data_copy_to_new_type(f, type);
       if(freeinputs)
-        gal_data_free(f, 0);
+        gal_data_free(f);
     }
   else
     *of=f;
@@ -2001,7 +2008,7 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
     {
       *os=gal_data_copy_to_new_type(s, type);
       if(freeinputs)
-        gal_data_free(s, 0);
+        gal_data_free(s);
     }
   else
     *os=s;
@@ -2034,7 +2041,7 @@ gal_data_to_same_type(gal_data_t *f,   gal_data_t *s,
 gal_data_t *
 gal_data_string_to_number(char *string)
 {
-  long dsize[1]={1};
+  size_t dsize[1]={1};
   int fnz=-1, lnz=0;     /* `F'irst (or `L'ast) `N'on-`Z'ero. */
   void *ptr, *numarr;
   char *tailptr, *cp;

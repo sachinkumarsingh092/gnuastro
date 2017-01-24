@@ -74,6 +74,16 @@ enum options_option_keys
 };
 
 
+/* Conditions to check */
+enum gal_options_check_values
+{
+  GAL_OPTIONS_RANGE_ANY,
+  GAL_OPTIONS_RANGE_GT_0,
+  GAL_OPTIONS_RANGE_GE_0,
+  GAL_OPTIONS_RANGE_GE_0_LE_1,
+};
+
+
 /* The structure keeping all the values of the common options in Gnuastro's
    programs. */
 struct gal_options_common_params
@@ -104,7 +114,7 @@ struct gal_options_common_params
 
 
 /**********************************************************************/
-/************         Main user functions/macros        ***************/
+/************              Option utilities             ***************/
 /**********************************************************************/
 
 int
@@ -139,6 +149,13 @@ error_t
 gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 
 
+
+/**********************************************************************/
+/************              Printing/Writing             ***************/
+/**********************************************************************/
+
+int
+gal_options_check_set(struct argp_option *option, void *out, int condition);
 
 
 

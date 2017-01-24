@@ -462,9 +462,9 @@ gal_fits_datatype_to_type(int datatype)
 
 
 
-/*************************************************************
- **************        Get information         ***************
- *************************************************************/
+/**************************************************************/
+/**********                  HDU                   ************/
+/**************************************************************/
 void
 gal_fits_num_hdus(char *filename, int *numhdu)
 {
@@ -488,75 +488,17 @@ gal_fits_num_hdus(char *filename, int *numhdu)
 
 
 
-/* Note that the FITS standard defines any array as an `image',
-   irrespective of how many dimensions it has. */
-void
-gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, long **dsize)
-{
-  size_t i;
-  int bitpix, status=0, naxis;
-  long naxes[GAL_DATA_MAXDIM];
-
-  /* Get the BITPIX, number of dimensions and size of each dimension. */
-  if( fits_get_img_param(fptr, GAL_DATA_MAXDIM, &bitpix, &naxis,
-                         naxes, &status) )
-    gal_fits_io_error(status, NULL);
-  *ndim=naxis;
-
-  /* Convert bitpix to Gnuastro's known types. */
-  *type=gal_fits_bitpix_to_type(bitpix);
-
-  /* Allocate space for the size along each dimension. */
-  errno=0;
-  *dsize=malloc( *ndim * sizeof **dsize );
-  if(*dsize==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for dsize in gal_fits_img_info",
-          *ndim * sizeof **dsize);
-
-  /* Put the size of each dimention into the output array. */
-  for(i=0;i<*ndim;++i)
-    (*dsize)[i]=naxes[i];
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/**********                  HDU                   ************/
-/**************************************************************/
 /* Check the desired HDU in a FITS image and also if it has the
    desired type. */
 fitsfile *
 gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1)
 {
-  size_t len;
   char *ffname;
   fitsfile *fptr;
   int status=0, hdutype;
 
   /* Add hdu to filename: */
-  errno=0;
-  len=strlen(filename)+strlen(hdu)+4;
-  ffname=malloc(len*sizeof *ffname);
-  if(ffname==NULL)
-    error(EXIT_FAILURE, errno, "%zu characters", len);
-  sprintf(ffname, "%s[%s#]", filename, hdu);
+  asprintf(&ffname, "%s[%s#]", filename, hdu);
 
   /* Open the FITS file: */
   if( fits_open_file(&fptr, ffname, READONLY, &status) )
@@ -585,6 +527,42 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1)
   /* Clean up and return. */
   free(ffname);
   return fptr;
+}
+
+
+
+
+
+/* Given the filename and HDU, this function will return the CFITSIO code
+   for the type of data it contains (table, or image). The CFITSIO codes
+   are:
+
+       IMAGE_HDU:    An image HDU.
+       ASCII_TBL:    An ASCII table HDU.
+       BINARY_TBL:   BINARY TABLE HDU.       */
+int
+gal_fits_hdu_type(char *filename, char *hdu)
+{
+  char *ffname;
+  fitsfile *fptr;
+  int hdutype, status=0;
+
+  /* Add hdu to filename: */
+  asprintf(&ffname, "%s[%s#]", filename, hdu);
+
+  /* Open the FITS file: */
+  if( fits_open_file(&fptr, ffname, READONLY, &status) )
+    gal_fits_io_error(status, "reading this FITS file");
+
+  /* Check the type of the given HDU: */
+  if (fits_get_hdu_type(fptr, &hdutype, &status) )
+    gal_fits_io_error(status, NULL);
+
+  /* Clean up and return.. */
+  free(ffname);
+  if( fits_close_file(fptr, &status) )
+    gal_fits_io_error(status, NULL);
+  return hdutype;
 }
 
 
@@ -1235,6 +1213,35 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
  ***********            Array functions            ***********
  *************************************************************/
 
+/* Note that the FITS standard defines any array as an `image',
+   irrespective of how many dimensions it has. */
+void
+gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize)
+{
+  size_t i;
+  int bitpix, status=0, naxis;
+  long naxes[GAL_DATA_MAXDIM];
+
+  /* Get the BITPIX, number of dimensions and size of each dimension. */
+  if( fits_get_img_param(fptr, GAL_DATA_MAXDIM, &bitpix, &naxis,
+                         naxes, &status) )
+    gal_fits_io_error(status, NULL);
+  *ndim=naxis;
+
+  /* Convert bitpix to Gnuastro's known types. */
+  *type=gal_fits_bitpix_to_type(bitpix);
+
+  /* Allocate the array to keep the dimension size and fill it in, note
+     that its order is the opposite of naxes. */
+  *dsize=gal_data_malloc_array(GAL_DATA_TYPE_LONG, *ndim);
+  for(i=0; i<*ndim; ++i)
+    (*dsize)[i]=naxes[*ndim-1-i];
+}
+
+
+
+
+
 /* Read a FITS image into an array corresponding to fitstype and also
    save the size of the array.
 
@@ -1246,12 +1253,12 @@ gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
 {
   void *blank;
   int anyblank;
-  size_t i, ndim;
+  long *fpixel;
   fitsfile *fptr;
   int status=0, type;
   gal_data_t *img, *keysll=NULL;
-  long *fpixel, *dsize, dsize_key=1;
   char **str, *name=NULL, *unit=NULL;
+  size_t i, ndim, *dsize, dsize_key=1;
 
 
   /* Check HDU for realistic conditions: */
@@ -1273,11 +1280,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
 
 
   /* Set the fpixel array (first pixel in all dimensions): */
-  errno=0;
-  fpixel=malloc(ndim*sizeof *fpixel);
-  if(fpixel==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for fpixel in "
-          "`gal_fits_read_img_hdu'", ndim*sizeof *fpixel);
+  fpixel=gal_data_malloc_array(GAL_DATA_TYPE_LONG, ndim);
   for(i=0;i<ndim;++i) fpixel[i]=1;
 
 
@@ -1296,7 +1299,7 @@ gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize)
 
 
   /* Allocate the space for the array and for the blank values. */
-  img=gal_data_alloc(NULL, type, (long)ndim, dsize, NULL, 0, minmapsize,
+  img=gal_data_alloc(NULL, type, ndim, dsize, NULL, 0, minmapsize,
                      name, unit, NULL);
   blank=gal_data_alloc_blank(type);
   gal_data_free_ll(keysll);
@@ -1340,7 +1343,7 @@ gal_fits_read_to_type(char *inputname, char *hdu, int type,
   if(in->type!=type)
     {
       converted=gal_data_copy_to_new_type(in, type);
-      gal_data_free(in, 0);
+      gal_data_free(in);
       in=converted;
     }
 
@@ -1409,13 +1412,19 @@ gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize)
    WCS information) into a FITS file, but will not close it. Instead it
    will pass along the FITS pointer for further modification. */
 fitsfile *
-gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname)
+gal_fits_write_img_fitsptr(gal_data_t *data, char *filename)
 {
+  size_t i;
   void *blank;
-  long fpixel=1;
   fitsfile *fptr;
   char *wcsheader;
+  long fpixel=1, *naxes;
   int nkeyrec, status=0, datatype=gal_fits_type_to_datatype(data->type);
+
+  /* Fill the `naxes' array (in opposite order, and `long' type): */
+  naxes=gal_data_malloc_array(GAL_DATA_TYPE_LONG, data->ndim);
+  for(i=0;i<data->ndim;++i)
+    naxes[data->ndim-1-i]=data->dsize[i];
 
   /* Check if the file already exists. If it does, we want to add the array
      as a new extension. */
@@ -1426,7 +1435,7 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname)
 
   /* Create the FITS file and put the image into it. */
   fits_create_img(fptr, gal_fits_type_to_bitpix(data->type),
-                  data->ndim, data->dsize, &status);
+                  data->ndim, naxes, &status);
   fits_write_img(fptr, datatype, fpixel, data->size, data->array, &status);
 
   /* If we have blank pixels, we need to define a BLANK keyword when we are
@@ -1449,8 +1458,16 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname)
       }
 
   /* Write the extension name to the header. */
-  fits_write_key(fptr, TSTRING, "EXTNAME", extname, "", &status);
-  gal_fits_io_error(status, NULL);
+  if(data->name)
+    fits_write_key(fptr, TSTRING, "EXTNAME", data->name, "", &status);
+
+  /* Write the units to the header. */
+  if(data->unit)
+    fits_write_key(fptr, TSTRING, "BUNIT", data->unit, "", &status);
+
+  /* Write comments if they exist. */
+  if(data->comment)
+    fits_write_comment(fptr, data->comment, &status);
 
   /* If a WCS structure is present, write it in */
   if(data->wcs)
@@ -1464,6 +1481,7 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname)
     }
 
   /* Report any errors if we had any */
+  free(naxes);
   gal_fits_io_error(status, NULL);
   return fptr;
 }
@@ -1473,17 +1491,17 @@ gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname)
 
 
 void
-gal_fits_write_img(gal_data_t *data, char *filename, char *extname,
-                   struct gal_fits_key_ll *headers, char *spack_string)
+gal_fits_write_img(gal_data_t *data, char *filename,
+                   struct gal_fits_key_ll *headers, char *program_string)
 {
   int status=0;
   fitsfile *fptr;
 
   /* Write the data array into a FITS file and keep it open: */
-  fptr=gal_fits_write_img_fitsptr(data, filename, extname);
+  fptr=gal_fits_write_img_fitsptr(data, filename);
 
   /* Write all the headers and the version information. */
-  gal_fits_write_keys_version(fptr, headers, spack_string);
+  gal_fits_write_keys_version(fptr, headers, program_string);
 
   /* Close the FITS file. */
   fits_close_file(fptr, &status);
@@ -1494,17 +1512,37 @@ gal_fits_write_img(gal_data_t *data, char *filename, char *extname,
 
 
 
+/* This function is mainly useful when you want to make FITS files in
+   parallel (from one main WCS structure, with just differing CRPIX) for
+   two reasons:
+
+      - When a large number of FITS images (with WCS) need to be created in
+        parallel, it can be much more efficient to write the header's WCS
+        keywords once at first, write them in the FITS file, then just
+        correct the CRPIX values.
+
+      - WCSLIB's header writing function is not thread safe. So when
+        writing FITS images in parallel, we can't write the header keywords
+        in each thread.   */
 void
-gal_fits_write_img_update_crpix(gal_data_t *data, char *filename,
-                                char *extname,
-                                struct gal_fits_key_ll *headers,
-                                double *crpix, char *spack_string)
+gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
+                              char *wcsheader, int nkeyrec, double *crpix,
+                              struct gal_fits_key_ll *headers,
+                              char *program_string)
 {
   int status=0;
   fitsfile *fptr;
 
-  /* Write the data array into a FITS file and keep it open: */
-  fptr=gal_fits_write_img_fitsptr(data, filename, extname);
+  /* The data should not have any WCS structure for this function. */
+  if(data->wcs)
+    error(EXIT_FAILURE, 0, "`gal_fits_write_img_wcs_string' can only "
+          "accept inputs with no WCS.");
+
+  /* Write the data array into a FITS file and keep it open. */
+  fptr=gal_fits_write_img_fitsptr(data, filename);
+
+  /* Write the WCS headers into the FITS file. */
+  gal_fits_add_wcs_to_header(fptr, wcsheader, nkeyrec);
 
   /* Update the CRPIX keywords. Note that we don't want to change the
      values in the WCS information of gal_data_t. Because, it often happens
@@ -1520,7 +1558,7 @@ gal_fits_write_img_update_crpix(gal_data_t *data, char *filename,
     }
 
   /* Write all the headers and the version information. */
-  gal_fits_write_keys_version(fptr, NULL, spack_string);
+  gal_fits_write_keys_version(fptr, headers, program_string);
 
   /* Close the file and return. */
   fits_close_file(fptr, &status);
@@ -1985,8 +2023,8 @@ gal_fits_table_read(char *filename, char *hdu, size_t numrows,
                     int minmapsize)
 {
   size_t i=0;
-  long dsize;
   void *blank;
+  size_t dsize;
   char **strarr;
   fitsfile *fptr;
   int status=0, anynul;
@@ -2002,8 +2040,8 @@ gal_fits_table_read(char *filename, char *hdu, size_t numrows,
       /* Allocate the necessary data structure (including the array) for
          this column. */
       dsize=numrows;
-      gal_data_add_to_ll(&out, NULL, allcols[ind->v].type, 1, &dsize, NULL, 0,
-                         minmapsize, allcols[ind->v].name,
+      gal_data_add_to_ll(&out, NULL, allcols[ind->v].type, 1, &dsize,
+                         NULL, 0, minmapsize, allcols[ind->v].name,
                          allcols[ind->v].unit, allcols[ind->v].comment);
 
       /* For a string column, we need an allocated array for each element,

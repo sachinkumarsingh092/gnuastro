@@ -357,15 +357,14 @@ reversepolish(struct imgarithparams *p)
          printed as an integer.  */
       d2=gal_data_copy_to_new_type(d1, GAL_DATA_TYPE_DOUBLE);
       printf("%g\n", *(double *)d2->array);
-      gal_data_free(d2, 0);
+      gal_data_free(d2);
     }
   else
     {
       /* Put a copy of the WCS structure from the reference image, it
          will be freed while freeing d1. */
       d1->wcs=p->refdata.wcs;
-      gal_fits_write_img(d1, p->cp.output, "Arithmetic", NULL,
-                         PROGRAM_STRING);
+      gal_fits_write_img(d1, p->cp.output, NULL, PROGRAM_STRING);
       if(!p->cp.quiet)
         printf(" - Output written to %s\n", p->cp.output);
     }
@@ -373,7 +372,7 @@ reversepolish(struct imgarithparams *p)
 
   /* Clean up, note that above, we copied the pointer to `refdata->wcs'
      into `d1', so it is freed when freeing d1. */
-  gal_data_free(d1, 0);
+  gal_data_free(d1);
   free(p->refdata.dsize);
 
   /* Clean up. Note that the tokens were taken from the command-line

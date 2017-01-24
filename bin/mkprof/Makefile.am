@@ -29,7 +29,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 bin_PROGRAMS = astmkprof
 
 astmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h	\
-oneprofile.c oneprofile.h profiles.c profiles.h cite.h
+oneprofile.c oneprofile.h profiles.c profiles.h authors-cite.h
 
 astmkprof_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la            \
 -lgnuastro

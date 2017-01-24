@@ -82,7 +82,7 @@ ui_read_check_only_options(struct imgarithparams *p)
 
         default:
           error(EXIT_FAILURE, 0, "option key %d not recognized in "
-                "`fill_params_from_options'", options[i].key);
+                "`ui_read_check_only_options'", options[i].key);
         }
 
   /* If any of the mandatory options were not given, then print an error

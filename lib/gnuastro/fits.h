@@ -134,27 +134,18 @@ gal_fits_datatype_to_type(int type);
 
 
 
-
-/*************************************************************
- **************        Get information         ***************
- *************************************************************/
-void
-gal_fits_num_hdus(char *filename, int *numhdu);
-
-void
-gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, long **dsize);
-
-
-
-
-
 /**************************************************************/
 /**********                  HDU                   ************/
 /**************************************************************/
 
+void
+gal_fits_num_hdus(char *filename, int *numhdu);
+
 fitsfile *
 gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1);
 
+int
+gal_fits_hdu_type(char *filename, char *hdu);
 
 
 
@@ -192,7 +183,7 @@ gal_fits_update_keys(fitsfile *fptr, struct gal_fits_key_ll **keylist);
 
 void
 gal_fits_write_keys_version(fitsfile *fptr, struct gal_fits_key_ll *headers,
-                            char *spack_string);
+                            char *program_string);
 
 
 
@@ -216,6 +207,9 @@ gal_fits_read_wcs(char *filename, char *hdu, size_t hstartwcs,
 /*************************************************************
  ******************     Array functions      *****************
  *************************************************************/
+void
+gal_fits_img_info(fitsfile *fptr, int *type, size_t *ndim, size_t **dsize);
+
 gal_data_t *
 gal_fits_read_img_hdu(char *filename, char *hdu, size_t minmapsize);
 
@@ -227,17 +221,17 @@ gal_data_t *
 gal_fits_read_float_kernel(char *filename, char *hdu, size_t minmapsize);
 
 fitsfile *
-gal_fits_write_img_fitsptr(gal_data_t *data, char *filename, char *extname);
+gal_fits_write_img_fitsptr(gal_data_t *data, char *filename);
 
 void
-gal_fits_write_img(gal_data_t *data, char *filename, char *extname,
-                   struct gal_fits_key_ll *headers, char *spack_string);
+gal_fits_write_img(gal_data_t *data, char *filename,
+                   struct gal_fits_key_ll *headers, char *program_string);
 
 void
-gal_fits_write_img_update_crpix(gal_data_t *data, char *filename,
-                                char *extname,
-                                struct gal_fits_key_ll *headers,
-                                double *crpix, char *spack_string);
+gal_fits_write_img_wcs_string(gal_data_t *data, char *filename,
+                              char *wcsheader, int nkeyrec, double *crpix,
+                              struct gal_fits_key_ll *headers,
+                              char *program_string);
 
 
 

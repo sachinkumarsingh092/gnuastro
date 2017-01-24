@@ -28,7 +28,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 ## Utility and its sources
 bin_PROGRAMS = asttable
 
-asttable_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
+asttable_SOURCES = main.c main.h authors-cite.h ui.c ui.h args.h	\
 table.c table.h
 
 asttable_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la             \

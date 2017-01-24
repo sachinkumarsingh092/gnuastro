@@ -45,7 +45,7 @@ struct mkonthread
   double (*profile)(struct mkonthread *); /* Function to use.         */
   double           truncr;   /* Truncation radius in pixels.          */
   double         intruncr;   /* Inner truncation radius in pixels.    */
-  long           width[2];   /* The width of the enclosing box.       */
+  long           width[2];   /* Enclosing box in FITS axes, not C.    */
   float          peakflux;   /* Flux at profile peak.                 */
   float        brightness;   /* The brightness of the profile.        */
   int                func;   /* Radial function of the profile.       */

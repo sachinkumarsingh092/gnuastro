@@ -17871,10 +17871,10 @@ knowledge and authority'' can be broken, see @ref{Science and its
 tools}. The following software architecture can be one of the most basic
 and easy to understand for any interested inquirer.
 
-In this chapter, first some general design choices are tackled in @code{Why
-C} and @code{Program design philosophy}. The project management webpage and
+In this chapter, first some general design choices are tackled in @ref{Why
+C} and @ref{Program design philosophy}. The project management webpage and
 mailing lists are explained in @ref{Gnuastro project webpage} and
-@code{Developing mailing lists}. In @ref{Coding conventions}, Gnuastro's
+@ref{Developing mailing lists}. In @ref{Coding conventions}, Gnuastro's
 adopted coding conventions are discussed and is followed by @ref{Program
 source} which describes how to easily navigate the source files in each
 program and also contains a template program to easily add new

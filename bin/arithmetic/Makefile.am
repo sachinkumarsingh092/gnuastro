@@ -28,7 +28,7 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 ## Utility and its sources
 bin_PROGRAMS = astarithmetic
 
-astarithmetic_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
+astarithmetic_SOURCES = main.c main.h authors-cite.h ui.c ui.h args.h	\
 arithmetic.c arithmetic.h operands.c operands.h
 
 astarithmetic_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\

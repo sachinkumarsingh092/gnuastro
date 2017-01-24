@@ -71,7 +71,7 @@ arithmetic_change_type(gal_data_t *data, int operator, unsigned char flags)
 
   /* Delete the input structure if the user asked for it. */
   if(flags & GAL_ARITHMETIC_FREE)
-    gal_data_free(data, 0);
+    gal_data_free(data);
 
   /* Return */
   return out;
@@ -145,7 +145,7 @@ arithmetic_not(gal_data_t *data, unsigned char flags)
 
   /* Delete the input structure if the user asked for it. */
   if(flags & GAL_ARITHMETIC_FREE)
-    gal_data_free(data, 0);
+    gal_data_free(data);
 
   /* Return */
   return out;
@@ -229,7 +229,7 @@ arithmetic_abs(unsigned char flags, gal_data_t *in)
 
   /* Clean up and return */
   if( (flags & GAL_ARITHMETIC_FREE) && out!=in)
-    gal_data_free(in, 0);
+    gal_data_free(in);
   return out;
 }
 
@@ -448,8 +448,8 @@ arithmetic_check_float_input(gal_data_t *in, int operator, char *numstr)
 static gal_data_t *
 arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
 {
-  long dsize=1;
   gal_data_t *o;
+  size_t dsize=1;
 
   /* If we want inplace output, set the output pointer to the input
      pointer, for every pixel, the operation will be independent. */
@@ -512,7 +512,7 @@ arithmetic_unary_function(int operator, unsigned char flags, gal_data_t *in)
      the pointers: if they are different from the original pointers, they
      were allocated. */
   if( (flags & GAL_ARITHMETIC_FREE) && o!=in)
-    gal_data_free(in, 0);
+    gal_data_free(in);
 
   /* Return */
   return o;
@@ -681,9 +681,9 @@ arithmetic_binary_function_flt(int operator, unsigned char flags,
      were allocated. */
   if(flags & GAL_ARITHMETIC_FREE)
     {
-      if     (o==l)       gal_data_free(r, 0);
-      else if(o==r)       gal_data_free(l, 0);
-      else              { gal_data_free(l, 0); gal_data_free(r, 0); }
+      if     (o==l)       gal_data_free(r);
+      else if(o==r)       gal_data_free(l);
+      else              { gal_data_free(l); gal_data_free(r); }
     }
 
   /* Return */
@@ -832,8 +832,8 @@ arithmetic_where(unsigned char flags, gal_data_t *out, gal_data_t *cond,
   /* Clean up if necessary. */
   if(flags & GAL_ARITHMETIC_FREE)
     {
-      gal_data_free(cond, 0);
-      gal_data_free(iftrue, 0);
+      gal_data_free(cond);
+      gal_data_free(iftrue);
     }
 }
 
@@ -1153,7 +1153,7 @@ arithmetic_multioperand(int operator, unsigned char flags, gal_data_t *list)
       while(tmp!=NULL)
         {
           ttmp=tmp->next;
-          if(tmp!=out) gal_data_free(tmp, 0);
+          if(tmp!=out) gal_data_free(tmp);
           tmp=ttmp;
         }
     }
@@ -1450,7 +1450,7 @@ gal_arithmetic_convert_to_compiled_type(gal_data_t *in, unsigned char flags)
         {
           out=gal_data_copy_to_new_type(in, ntype);
           if(flags & GAL_ARITHMETIC_FREE)
-            { gal_data_free(in, 0); in=NULL; }
+            { gal_data_free(in); in=NULL; }
         }
       else
         {
@@ -1522,7 +1522,7 @@ gal_arithmetic(int operator, unsigned char flags, ...)
     case GAL_ARITHMETIC_OP_ISBLANK:
       d1 = va_arg(va, gal_data_t *);
       out = gal_data_flag_blank(d1);
-      if(flags & GAL_ARITHMETIC_FREE) gal_data_free(d1, 0);
+      if(flags & GAL_ARITHMETIC_FREE) gal_data_free(d1);
       break;
 
     case GAL_ARITHMETIC_OP_WHERE:

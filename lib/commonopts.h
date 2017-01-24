@@ -24,6 +24,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_COMMONOPTS_H__
 #define __GAL_COMMONOPTS_H__
 
+#include <gnuastro/data.h>
+
 /* Common options for all programs.
 
    IMPORTANT NOTE:

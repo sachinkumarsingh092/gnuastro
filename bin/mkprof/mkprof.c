@@ -119,53 +119,48 @@ saveindividual(struct mkonthread *mkp)
 {
   struct mkprofparams *p=mkp->p;
 
-  size_t len;
   double crpix[2];
+  gal_data_t *data;
   long os=p->oversample;
   struct builtqueue *ibq=mkp->ibq;
-  char *outname, *jobname, *outdir=p->outdir;
+  char *filename, *jobname, *outdir=p->outdir;
 
-  /* Allocate the space for the name of this file. */
-  errno=0;
-  len=strlen(outdir)+NUMBERNAMESTRLEN+strlen(p->mergedimgname);
-  outname=malloc(len*sizeof *outname);
-  if(outname==NULL)
-    error(EXIT_FAILURE, errno, "%zu bytes for name of object in "
-          "row %zu of %s", len*sizeof *outname, ibq->id,
-          p->up.catname);
-
-  /* Save the correct CRPIX values: */
-  crpix[0] = p->crpix[0] - os*(mkp->fpixel_i[0]-1);
-  crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
+  /* Note that `width' is in FITS format, not C. */
+  size_t dsize[2]={mkp->width[1], mkp->width[0]};
 
   /* Write the name and remove a similarly named file. */
-  sprintf(outname, "%s%zu_%s", outdir, ibq->id, p->basename);
-  gal_checkset_check_remove_file(outname, p->cp.dontdelete);
+  asprintf(&filename, "%s%zu_%s", outdir, ibq->id, p->basename);
+  gal_checkset_check_remove_file(filename, p->cp.dontdelete);
 
-  /* Write the array to file (A separately built PSF doesn't need WCS
-     coordinates): */
+  /* Put the array into a data structure */
+  data=gal_data_alloc(ibq->img, GAL_DATA_TYPE_FLOAT, 2, dsize, NULL, 0,
+                      p->cp.minmapsize, "MockImage", "Brightness", NULL);
+
+  /* Write the array to file (a separately built PSF doesn't need WCS
+     coordinates). */
   if(ibq->ispsf && p->psfinimg==0)
-    gal_fits_array_to_file(outname, "MockImg", FLOAT_IMG, ibq->img,
-                           mkp->width[1], mkp->width[0], 0, NULL, NULL,
-                           SPACK_STRING);
+    gal_fits_write_img(data, filename, NULL, PROGRAM_STRING);
   else
-    gal_fits_atof_correct_wcs(outname, "MockImg", FLOAT_IMG, ibq->img,
-                              mkp->width[1], mkp->width[0], p->wcsheader,
-                              p->wcsnkeyrec, crpix, SPACK_STRING);
+    {
+      /* Save the correct CRPIX values: */
+      crpix[0] = p->crpix[0] - os*(mkp->fpixel_i[0]-1);
+      crpix[1] = p->crpix[1] - os*(mkp->fpixel_i[1]-1);
+
+      /* Write the image. */
+      gal_fits_write_img_wcs_string(data, filename, p->wcsheader,
+                                    p->wcsnkeyrec, crpix, NULL,
+                                    PROGRAM_STRING);
+    }
   ibq->indivcreated=1;
 
   /* Report if in verbose mode. */
-  if(p->cp.verb)
+  if(!p->cp.quiet)
     {
-      errno=0;
-      jobname=malloc((len+100)*sizeof *jobname);
-      if(jobname==NULL)
-        error(EXIT_FAILURE, errno, "jobname in mkprof.c");
-      sprintf(jobname, "%s created.", outname);
+      asprintf(&jobname, "%s created.", filename);
       gal_timing_report(NULL, jobname, 2);
       free(jobname);
     }
-  free(outname);
+  free(filename);
 }
 
 
@@ -252,7 +247,7 @@ build(void *inparam)
 
 
       /* Find the bounding box size (NOT oversampled). */
-      if((int)cat[p->fcol]==POINTCODE)
+      if((int)cat[p->fcol]==PROFILE_POINT)
         mkp->width[0]=mkp->width[1]=1;
       else
         gal_box_ellipse_in_box(mkp->truncr, mkp->q*mkp->truncr,
@@ -378,14 +373,12 @@ build(void *inparam)
 void
 writelog(struct mkprofparams *p)
 {
-  int space[]={6, 10, 15}, prec[]={3, 6};
-  int int_cols[]={0, 2, 4, -1}, accu_cols[]={-1};
   char comments[1000], gitdescribe[100], *gd=gal_git_describe();
 
   if(gd) sprintf(gitdescribe, " from %s,", gd);
   else   gitdescribe[0]='\0';
 
-  sprintf(comments, "# Log file for "SPACK_STRING".\n"
+  sprintf(comments, "# Log file for "PROGRAM_STRING".\n"
           "# Created%s on %s"
           "# Column 0: Row number in catalog (starting from zero).\n"
           "# Column 1: Overlap magnitude with final image "
@@ -396,9 +389,10 @@ writelog(struct mkprofparams *p)
           "# Column 4: An individual image was created.\n",
           ctime(&p->rawtime), gitdescribe, p->zeropoint);
 
-
+  /*
   gal_txtarray_array_to_txt(p->log, p->cs0, LOGNUMCOLS, comments, int_cols,
                             accu_cols, space, prec, 'f', LOGFILENAME);
+  */
 }
 
 
@@ -408,30 +402,31 @@ writelog(struct mkprofparams *p)
 void
 write(struct mkprofparams *p)
 {
-  void *array;
   char *jobname;
   double sum, *log;
   struct timeval t1;
   long os=p->oversample;
   int replace=p->replace;
+  gal_data_t *out, *towrite;
   size_t complete=0, cs0=p->cs0;
   struct builtqueue *ibq=NULL, *tbq;
-  int verb=p->cp.verb, bitpix=p->bitpix;
-  float *out, *to, *from, *colend, *rowend;
+  float *to, *from, *colend, *rowend;
   size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
 
+  /* Note that `naxes' is in the FITS standard, not C. */
+  size_t dsize[2]={p->naxes[1], p->naxes[0]};
 
-  /* Allocate the output array if necessary. */
+  /* The `out' data structure is the canvas on which all the profiles will
+     be built. When there is no background image specified, this should be
+     a cleared (all zeros) image. But the user might want to build the
+     profiles on a canvas (of real data or other mock images). If so, the
+     `p->out' was read-in/allocated in `ui.c'. */
   if(p->out)
     out=p->out;
   else
-    {
-      errno=0;
-      out=calloc(p->naxes[0]*p->naxes[1], sizeof *out);
-      if(out==NULL)
-        error(EXIT_FAILURE, 0, "%zu bytes for output image",
-              p->naxes[0]*p->naxes[1]*sizeof *out);
-    }
+    out=p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT, 2, dsize, p->wcs, 1,
+                   p->cp.minmapsize, "Combined mock image", "Brightness",
+                   NULL);
 
 
   /* Write each image into the output array. */
@@ -484,7 +479,7 @@ write(struct mkprofparams *p)
              know the images overlap, iw and jw are both smaller than
              the two image number of columns and number of rows, so
              w-jw and ow-jw will always be positive. */
-          to=out+i*w+j;
+          to=out->array+i*w+j;
           from=ibq->img+ii*ow+jj;
           rowend=to+iw*w;
           do
@@ -521,7 +516,7 @@ write(struct mkprofparams *p)
 
       /* Report if in verbose mode. */
       ++complete;
-      if(verb && p->nomerged==0)
+      if(!p->cp.quiet && p->nomerged==0)
         {
           errno=0;
           jobname=malloc(100*sizeof *jobname);
@@ -547,40 +542,32 @@ write(struct mkprofparams *p)
   if(p->nomerged==0)
     {
       /* Get the current time for verbose output. */
-      if(verb) gettimeofday(&t1, NULL);
+      if(!p->cp.quiet) gettimeofday(&t1, NULL);
 
       /* Make a temporary array of the desired type for writing the
          output. */
-      if(bitpix==FLOAT_IMG)
-        array=out;
+      if(out->type==GAL_DATA_TYPE_FLOAT)
+        towrite=out;
       else
-        gal_fits_change_type(out, FLOAT_IMG, p->naxes[1]*p->naxes[0],
-                             p->anyblank, &array, bitpix);
+        {
+          towrite=gal_data_copy_to_new_type(out, p->outtype);
+          free(out);
+        }
 
-      /* Write the array to the output FITS file. */
-      gal_fits_array_to_file(p->mergedimgname, "Mock image",
-                             bitpix, array, p->naxes[1],
-                             p->naxes[0], p->anyblank, p->wcs,
-                             NULL, SPACK_STRING);
+      /* Write the final image into a FITS file. */
+      gal_fits_write_img(towrite, p->mergedimgname, NULL, PROGRAM_STRING);
 
-      /* Free `array' if it was allocated separately.*/
-      if(bitpix!=FLOAT_IMG)
-        free(array);
+      /* Clean up */
+      gal_data_free(towrite);
 
       /* In verbose mode, print the information. */
-      if(verb)
+      if(!p->cp.quiet)
         {
-          errno=0;
-          jobname=malloc((strlen(p->mergedimgname)+100)*sizeof *jobname);
-          if(jobname==NULL)
-            error(EXIT_FAILURE, errno, "final report in mkprof.c");
-          sprintf(jobname, "%s created.", p->mergedimgname);
+          asprintf(&jobname, "%s created.", p->mergedimgname);
           gal_timing_report(&t1, jobname, 1);
           free(jobname);
         }
     }
-
-  free(out);
 }
 
 
@@ -678,7 +665,7 @@ mkprof(struct mkprofparams *p)
 
   /* Write the created arrays into the image. */
   write(p);
-  if(p->cp.nolog==0)
+  if(p->cp.log)
     writelog(p);
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy

@@ -741,7 +741,7 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 
   /* Clean up. */
   for(i=0;i<numcols;++i)
-    gal_data_free(&allcols[i], 1);
+    gal_data_free_contents(&allcols[i]);
   free(allcols);
   gal_linkedlist_free_sll(indexll);
 

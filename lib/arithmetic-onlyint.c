@@ -413,7 +413,7 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
   if( o->type != final_otype )
     {
       tmp_o=gal_data_copy_to_new_type(o, final_otype);
-      gal_data_free(o, 0);
+      gal_data_free(o);
       o=tmp_o;
     }
 
@@ -427,14 +427,14 @@ arithmetic_onlyint_binary(int operator, unsigned char flags,
      they are different from the original pointers, they were allocated. */
   if(flags & GAL_ARITHMETIC_FREE)
     {
-      if     (o==l)       gal_data_free(r, 0);
-      else if(o==r)       gal_data_free(l, 0);
-      else              { gal_data_free(l, 0); gal_data_free(r, 0); }
+      if     (o==l)       gal_data_free(r);
+      else if(o==r)       gal_data_free(l);
+      else              { gal_data_free(l); gal_data_free(r); }
     }
   else
     {
-      if(l!=lo)           gal_data_free(l, 0);
-      if(r!=ro)           gal_data_free(r, 0);
+      if(l!=lo)           gal_data_free(l);
+      if(r!=ro)           gal_data_free(r);
     }
 
   /* Return */
@@ -512,7 +512,7 @@ arithmetic_onlyint_bitwise_not(unsigned char flags, gal_data_t *in)
      the pointers: if they are different from the original pointers, they
      were allocated. */
   if( (flags & GAL_ARITHMETIC_FREE) && o!=in)
-    gal_data_free(in, 0);
+    gal_data_free(in);
 
   /* Return */
   return o;

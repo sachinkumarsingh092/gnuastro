@@ -136,7 +136,7 @@ ui_read_check_only_options(struct tableparams *p)
 
         default:
           error(EXIT_FAILURE, 0, "option key %d not recognized in "
-                "`fill_params_from_options'", options[i].key);
+                "`ui_read_check_only_options'", options[i].key);
         }
 
   /* If any of the mandatory options were not given, then print an error
@@ -228,7 +228,7 @@ ui_preparations(struct tableparams *p)
 
       /* Free the information from all the columns. */
       for(i=0;i<numcols;++i)
-        gal_data_free(&allcols[i], 1);
+        gal_data_free_contents(&allcols[i]);
       free(allcols);
 
 

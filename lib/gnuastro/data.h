@@ -127,17 +127,14 @@ enum gal_data_types
 
       - `minmapsize' ==  0:  array is definitely mmap'd.
 
-      - `minmapsize' == -1: array is definitely in RAM.
-
-    - The `dsize' array is in the `long' type because CFITSIO uses the long
-      type and this will make it easier to call CFITSIO functions.*/
+      - `minmapsize' == -1: array is definitely in RAM.   */
 typedef struct gal_data_t
 {
   /* Basic information on array of data. */
   void             *array;  /* Array keeping data elements.                */
   int                type;  /* Type of data (from `gal_data_alltypes').    */
   size_t             ndim;  /* Number of dimensions in the array.          */
-  long             *dsize;  /* Size of array along each dimension.         */
+  size_t           *dsize;  /* Size of array along each dimension.         */
   size_t             size;  /* Total number of data-elements.              */
   char          *mmapname;  /* File name of the mmap.                      */
   size_t       minmapsize;  /* Minimum number of bytes to mmap the array.  */
@@ -207,12 +204,12 @@ gal_data_alloc_number(int type, void *number);
 
 void
 gal_data_initialize(gal_data_t *data, void *array, int type,
-                    size_t ndim, long *dsize, struct wcsprm *wcs,
+                    size_t ndim, size_t *dsize, struct wcsprm *wcs,
                     int clear, size_t minmapsize, char *name,
                     char *unit, char *comment);
 
 gal_data_t *
-gal_data_alloc(void *array, int type, size_t ndim, long *dsize,
+gal_data_alloc(void *array, int type, size_t ndim, size_t *dsize,
                struct wcsprm *wcs, int clear, size_t minmapsize,
                char *name, char *unit, char *comment);
 
@@ -223,8 +220,10 @@ size_t
 gal_data_string_fixed_alloc_size(gal_data_t *data);
 
 void
-gal_data_free(gal_data_t *data, int only_contents);
+gal_data_free_contents(gal_data_t *data);
 
+void
+gal_data_free(gal_data_t *data);
 
 
 
@@ -236,7 +235,7 @@ gal_data_add_existing_to_ll(gal_data_t **list, gal_data_t *newnode);
 
 void
 gal_data_add_to_ll(gal_data_t **list, void *array, int type, size_t ndim,
-                   long *dsize, struct wcsprm *wcs, int clear,
+                   size_t *dsize, struct wcsprm *wcs, int clear,
                    size_t minmapsize, char *name, char *unit, char *comment);
 
 gal_data_t *
