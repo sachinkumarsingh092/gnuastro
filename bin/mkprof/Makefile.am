@@ -25,14 +25,15 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-# Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astmkprof
 
-astmkprof_SOURCES = main.c main.h ui.c ui.h mkprof.c mkprof.h args.h	\
-oneprofile.c oneprofile.h profiles.c profiles.h authors-cite.h
+astmkprof_LDADD = -lgnuastro
 
-astmkprof_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la            \
--lgnuastro
+astmkprof_SOURCES = main.c ui.c mkprof.c oneprofile.c profiles.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h mkprof.h oneprofile.h    \
+  profiles.h
 
 
 ## The configuration file (distribute and install).

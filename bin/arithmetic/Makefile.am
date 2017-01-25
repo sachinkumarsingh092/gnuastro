@@ -25,14 +25,14 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astarithmetic
 
-astarithmetic_SOURCES = main.c main.h authors-cite.h ui.c ui.h args.h	\
-arithmetic.c arithmetic.h operands.c operands.h
+astarithmetic_LDADD = -lgnuastro
 
-astarithmetic_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
--lgnuastro
+astarithmetic_SOURCES = main.c ui.c arithmetic.c operands.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h arithmetic.h operands.h
 
 
 ## The configuration file (distribute and install).

@@ -51,7 +51,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
    a b c d e f g i j k l m n p r s t u v w x y z
    A B C E F G H I J L M O Q R T U W X Y Z
 */
-enum options_option_keys
+enum options_common_keys
 {
   /* With short-option version */
   GAL_OPTIONS_HDU_KEY          = 'h',
@@ -78,9 +78,13 @@ enum options_option_keys
 enum gal_options_check_values
 {
   GAL_OPTIONS_RANGE_ANY,
+
   GAL_OPTIONS_RANGE_GT_0,
   GAL_OPTIONS_RANGE_GE_0,
+  GAL_OPTIONS_RANGE_0_OR_1,
   GAL_OPTIONS_RANGE_GE_0_LE_1,
+
+  GAL_OPTIONS_RANGE_GT_0_ODD,
 };
 
 
@@ -107,6 +111,9 @@ struct gal_options_common_params
   char        *program_authors; /* List of the program authors.          */
   struct argp_option *coptions; /* Common options to all programs.       */
   struct argp_option *poptions; /* Program specific options.             */
+  struct gal_linkedlist_ill   *mand_common; /* Common mandatory options. */
+  struct gal_linkedlist_stll  *novalue_doc; /* Mandatory opts, no value  */
+  struct gal_linkedlist_stll *novalue_name; /* Mandatory opts, no value  */
 };
 
 
@@ -116,6 +123,8 @@ struct gal_options_common_params
 /**********************************************************************/
 /************              Option utilities             ***************/
 /**********************************************************************/
+void
+gal_options_initialize_numthreads(struct gal_options_common_params *cp);
 
 int
 gal_options_is_last(struct argp_option *option);
@@ -124,13 +133,11 @@ int
 gal_options_is_category_title(struct argp_option *option);
 
 void
-gal_options_add_to_not_given(struct argp_option *option,
-                             struct gal_linkedlist_stll **namell,
-                             struct gal_linkedlist_stll **docll);
+gal_options_add_to_not_given(struct gal_options_common_params *cp,
+                             struct argp_option *option);
 
 void
-gal_options_mandatory_error(struct gal_linkedlist_stll *namell,
-                            struct gal_linkedlist_stll *docll);
+gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp);
 
 void
 gal_options_free(struct argp_option *options);
@@ -151,19 +158,11 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 
 
 /**********************************************************************/
-/************              Printing/Writing             ***************/
-/**********************************************************************/
-
-int
-gal_options_check_set(struct argp_option *option, void *out, int condition);
-
-
-
-/**********************************************************************/
 /************            Configuration files            ***************/
 /**********************************************************************/
 void
-gal_options_read_config_files(struct gal_options_common_params *cp);
+gal_options_read_config_set_common(struct gal_options_common_params *cp);
+
 
 void
 gal_options_print_state(struct gal_options_common_params *cp);

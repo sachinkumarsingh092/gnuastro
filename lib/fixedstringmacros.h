@@ -26,7 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define GAL_STRINGS_SHORT_COPYRIGHT                                     \
-  "Copyright (C) 2015-2016, Free Software Foundation, Inc."
+  "Copyright (C) 2015-2017, Free Software Foundation, Inc."
 
 
 #define GAL_STRINGS_SHORT_LICENSE                                       \

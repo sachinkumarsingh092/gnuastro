@@ -43,7 +43,7 @@ main (int argc, char *argv[])
   gettimeofday(&t1, NULL);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run MakeProfiles */
   mkprof(&p);

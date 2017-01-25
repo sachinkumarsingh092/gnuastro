@@ -98,7 +98,9 @@ struct argp_option options[] =
       0,
       "Column number (counting from 1) or search string.",
       1,
-      NULL, GAL_DATA_TYPE_STRLL
+      NULL,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "searchin",
@@ -107,7 +109,9 @@ struct argp_option options[] =
       0,
       "Search in column `name', `units', or `comments'.",
       1,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "ignorecase",
@@ -116,7 +120,9 @@ struct argp_option options[] =
       0,
       "Ignore case when matching column information.",
       1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
 
 
@@ -134,7 +140,9 @@ struct argp_option options[] =
       0,
       "Output table type: `fits-ascii', `fits-binary'.",
       2,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
 
 
@@ -152,7 +160,9 @@ struct argp_option options[] =
       0,
       "Only print table and column information.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
 
 

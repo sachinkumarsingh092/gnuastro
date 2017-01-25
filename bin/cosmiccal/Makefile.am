@@ -25,14 +25,14 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astcosmiccal
 
-astcosmiccal_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-cosmiccal.c cosmiccal.h
+astcosmiccal_LDADD = -lgnuastro
 
-astcosmiccal_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgnuastro
+astcosmiccal_SOURCES = main.c ui.c cosmiccal.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h cosmiccal.h
 
 
 ## The configuration file (distribute and install).

@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #ifndef AUTHORS_CITE_H
-#define AUTHORS_CITS_H
+#define AUTHORS_CITE_H
 
 /* When any specific citation is necessary, please add its BibTeX (from ADS
    hopefully) to this variable along with a title decribing what this

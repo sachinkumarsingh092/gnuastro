@@ -49,23 +49,57 @@ gal_table_string_to_type(char *string)
 {
   if(string)
     {
-      if( !strcmp(string, "txt") )
+      if( !strcmp(string, GAL_TABLE_STRING_TYPE_TXT) )
         return GAL_TABLE_TYPE_TXT;
 
-      else if( !strcmp(string, "fits-ascii") )
+      else if( !strcmp(string, GAL_TABLE_STRING_TYPE_AFITS) )
         return GAL_TABLE_TYPE_AFITS;
 
-      else if( !strcmp(string, "fits-binary") )
+      else if( !strcmp(string, GAL_TABLE_STRING_TYPE_BFITS) )
         return GAL_TABLE_TYPE_BFITS;
 
       else
         error(EXIT_FAILURE, 0, "`%s' couldn't be interpretted as a valid "
-              "table type. The known types are `txt', `fits-ascii', and "
-              "`fits-binary'", string);
+              "table type. The known types are `%s', `%s', and `%s'", string,
+              GAL_TABLE_STRING_TYPE_TXT, GAL_TABLE_STRING_TYPE_AFITS,
+              GAL_TABLE_STRING_TYPE_BFITS);
     }
 
   /* If string was not NULL, this function won't reach here. */
   return -1;
+}
+
+
+
+
+
+/* For programs that output tables, the `--tabletype' option will be used
+   to specify what format the output table should be in. When the output
+   file is a FITS file, there are multiple types, so to simplify the coding
+   in each program, this function will do a sanity check on the value given
+   to the `--tabletype' parameter. */
+void
+gal_table_check_fits_type(char *filename, int tabletype)
+{
+  if( filename && gal_fits_name_is_fits(filename) )
+    {
+      /* When `--tabletype' was not given. */
+      if(tabletype==GAL_TABLE_TYPE_INVALID)
+        error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but the "
+              "desired type of the FITS table has not been specified with "
+              "the `--tabletype' option. For FITS tables, this option can "
+              "take two values: `%s', or `%s'", filename,
+              GAL_TABLE_STRING_TYPE_AFITS, GAL_TABLE_STRING_TYPE_BFITS);
+
+      /* When `--tabletype' didn't have the correct value. */
+      if( tabletype != GAL_TABLE_TYPE_AFITS
+          && tabletype != GAL_TABLE_TYPE_BFITS )
+        error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but "
+              "is not a recognized FITS table type. For FITS tables, "
+              "`--tabletype' can take two values: `%s', or `%s'",
+              filename, GAL_TABLE_STRING_TYPE_AFITS,
+              GAL_TABLE_STRING_TYPE_BFITS);
+    }
 }
 
 
@@ -79,24 +113,25 @@ gal_table_string_to_type(char *string)
 int
 gal_table_string_to_searchin(char *string)
 {
-  if(strcmp(string, "name")==0)
+  if(strcmp(string, GAL_TABLE_STRING_SEARCH_NAME)==0)
     return GAL_TABLE_SEARCH_NAME;
 
-  else if(strcmp(string, "unit")==0)
+  else if(strcmp(string, GAL_TABLE_STRING_SEARCH_UNIT)==0)
     return GAL_TABLE_SEARCH_UNIT;
 
-  else if(strcmp(string, "comment")==0)
+  else if(strcmp(string, GAL_TABLE_STRING_SEARCH_COMMENT)==0)
     return GAL_TABLE_SEARCH_COMMENT;
 
   else
     error(EXIT_FAILURE, 0, "`--searchin' only recognizes the values "
-          "`name', `unit', and `comment', you have asked for `%s'",
-          string);
+          "`%s', `%s', and `%s', you have asked for `%s'",
+          GAL_TABLE_STRING_SEARCH_NAME, GAL_TABLE_STRING_SEARCH_UNIT,
+          GAL_TABLE_STRING_SEARCH_COMMENT, string);
 
   /* Report an error control reaches here. */
   error(EXIT_FAILURE, 0, "A bug! please contact us at %s so we can address "
         "the problem. For some reason control has reached the end of "
-        "`gal_table_searchin_from_str'", PACKAGE_BUGREPORT);
+        "`gal_table_string_to_searchin'", PACKAGE_BUGREPORT);
   return -1;
 }
 

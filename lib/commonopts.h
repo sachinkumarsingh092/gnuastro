@@ -46,7 +46,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Extension name or number of input data.",
       1,                        /* Input. */
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
 #endif
     {
@@ -56,7 +58,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Output file or directory name.",
       2,                        /* Output. */
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "dontdelete",
@@ -65,7 +69,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Don't delete output if it exists.",
       2,                        /* Output. */
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "keepinputdir",
@@ -74,7 +80,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Keep input directory for automatic output.",
       2,                        /* Output. */
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
 
 
@@ -87,7 +95,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Only report errors, remain quiet about steps.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "numthreads",
@@ -96,7 +106,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Number of CPU threads to use.",
       -1,
-      NULL, GAL_DATA_TYPE_ULONG
+      NULL,
+      GAL_DATA_TYPE_ULONG,
+      GAL_OPTIONS_RANGE_GT_0
     },
     {
       "minmapsize",
@@ -105,7 +117,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Minimum no. bytes to map arrays to hdd/ssd.",
       -1,
-      NULL, GAL_DATA_TYPE_ULONG
+      NULL,
+      GAL_DATA_TYPE_ULONG,
+      GAL_OPTIONS_RANGE_GE_0
     },
     {
       "log",
@@ -114,7 +128,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "No log file for programs which make one.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
 
 
@@ -127,7 +143,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "BibTeX citation for this program.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "printparams",
@@ -136,7 +154,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Print parameter values to be used and abort.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "config",
@@ -145,7 +165,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Read file STR before continuing.",
       -1,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "setdirconf",
@@ -154,7 +176,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Set default values for this directory and abort.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "setusrconf",
@@ -163,7 +187,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Set default values for this user and abort.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "lastconfig",
@@ -172,7 +198,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Do not parse any more configuration files.",
       -1,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "onlyversion",
@@ -181,7 +209,9 @@ struct argp_option gal_commonopts_options[] =
       0,
       "Only run if the program version is STR.",
       -1,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
 
 

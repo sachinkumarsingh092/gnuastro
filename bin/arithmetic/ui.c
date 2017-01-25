@@ -31,7 +31,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
-#include <nproc.h>  /* from Gnulib, in Gnuastro's source */
 #include <timing.h>
 #include <options.h>
 #include <checkset.h>
@@ -52,13 +51,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-/* Sanity check ONLY on options. When arguments are involved, do the check
-   in `ui_check_options_and_arguments'. */
+/* Read the options into the main program structure. When an option wasn't
+   given, it will not be given a value here, so it will have the
+   initialized value of 0 (or NULL for pointers) after this function. If
+   the value of `0' is meaningful in the context of the option, then it
+   must be given the blank value for the type of the variable IN THIS
+   FUNCTION.
+
+   When the option is necessary for the program to run (independent of any
+   arguments) but it wasn't given, call the `gal_options_add_to_not_given'
+   function. The role of the final `gal_options_abort_if_mandatory_missing'
+   function at the end of this function is to print the full list of
+   mandatory options that were gathered by that function and abort with one
+   error message to help the user. */
 static void
-ui_read_check_only_options(struct imgarithparams *p)
+ui_read_options(struct imgarithparams *p)
 {
   size_t i;
-  struct gal_linkedlist_stll *namell=NULL, *docll=NULL;
 
   /* Put the program's option values into the structure. */
   for(i=0; !gal_options_is_last(&options[i]); ++i)
@@ -87,8 +96,23 @@ ui_read_check_only_options(struct imgarithparams *p)
 
   /* If any of the mandatory options were not given, then print an error
      listing them and abort. */
-  if(namell)
-    gal_options_mandatory_error(namell, docll);
+  gal_options_abort_if_mandatory_missing(&p->cp);
+}
+
+
+
+
+
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct imgarithparams *p)
+{
+
+  /* Read all the options from the `argp_option' array into the main
+     program structure to facilitate checks and running the program. */
+  ui_read_options(p);
+
 }
 
 
@@ -177,10 +201,11 @@ ui_check_options_and_arguments(struct imgarithparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 void
-setparams(int argc, char *argv[], struct imgarithparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
 {
   size_t i;
   struct gal_options_common_params *cp=&p->cp;
+
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero/NULL value for all elements. */
@@ -190,7 +215,7 @@ setparams(int argc, char *argv[], struct imgarithparams *p)
   cp->program_bibtex  = PROGRAM_BIBTEX;
   cp->program_authors = PROGRAM_AUTHORS;
   cp->coptions        = gal_commonopts_options;
-  cp->numthreads      = num_processors(NPROC_CURRENT);
+
 
   /* The dash of a negative number will cause problems with the option
      readin. To work properly we will go over all the options/arguments and
@@ -200,31 +225,38 @@ setparams(int argc, char *argv[], struct imgarithparams *p)
     if(argv[i][0]=='-' && isdigit(argv[i][1]))
       argv[i][0]=NEG_DASH_REPLACE;
 
+
   /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
+
   /* Read the configuration files. */
-  gal_options_read_config_files(cp);
+  gal_options_read_config_set_common(cp);
+
 
   /* Read the options into the program's structure, and check them and
      their relations prior to printing. */
   ui_read_check_only_options(p);
+
 
   /* Print the option values if asked. Note that this needs to be done
      after the sanity check so un-sane values are not printed in the output
      state. */
   gal_options_print_state(cp);
 
+
   /* Check that the options and arguments fit well with each other. Note
      that arguments don't go in a configuration file. So this test should
      be done after (possibly) printing the option values. */
   ui_check_options_and_arguments(p);
 
+
   /* Free all the allocated spaces in the option structures. */
   gal_options_free(options);
   gal_options_free(gal_commonopts_options);
+  gal_linkedlist_free_ill(cp->mand_common);
 }
 
 

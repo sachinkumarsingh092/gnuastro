@@ -25,14 +25,14 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astconvertt
 
-astconvertt_SOURCES = main.c main.h args.h cite.h ui.c ui.h eps.c	\
-eps.h jpeg.c jpeg.h convertt.c convertt.h
+astconvertt_LDADD = -lgnuastro
 
-astconvertt_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgnuastro
+astconvertt_SOURCES = main.c ui.c convertt.c eps.c jpeg.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h convertt.h eps.h jpeg.h
 
 
 ## The configuration file (distribute and install).

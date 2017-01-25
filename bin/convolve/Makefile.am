@@ -25,14 +25,14 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astconvolve
 
-astconvolve_SOURCES = main.c main.h args.h ui.c ui.h convolve.c	\
-convolve.h cite.h
+astconvolve_LDADD = -lgnuastro
 
-astconvolve_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		   \
--lgnuastro
+astconvolve_SOURCES = main.c ui.c convolve.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h convolve.h
 
 
 ## The configuration file (distribute and install).

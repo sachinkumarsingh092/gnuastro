@@ -25,14 +25,14 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astimgwarp
 
-astimgwarp_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-imgwarp.c imgwarp.h
+astimgwarp_LDADD = -lgnuastro
 
-astimgwarp_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgnuastro
+astimgwarp_SOURCES = main.c ui.c imgwarp.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h imgwarp.h
 
 
 ## The configuration file (distribute and install).

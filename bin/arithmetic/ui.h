@@ -24,7 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define IMCROPUI_H
 
 void
-setparams(int argc, char *argv[], struct imgarithparams *p);
+ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p);
 
 void
 freeandreport(struct imgarithparams *p, struct timeval *t1);

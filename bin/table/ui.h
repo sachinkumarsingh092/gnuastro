@@ -24,14 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #define UI_H
 
 void
-checksetfge(char *optarg, int *fge, char *filename, size_t lineno);
-
-void
-checksetfitstabletype(char *optarg, int *fitstabletype, char *filename,
-                   size_t lineno);
-
-void
-setparams(int argc, char *argv[], struct tableparams *p);
+ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p);
 
 void
 freeandreport(struct tableparams *p);

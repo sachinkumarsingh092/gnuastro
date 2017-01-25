@@ -43,7 +43,7 @@ main (int argc, char *argv[])
   time(&p.rawtime);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run MakeProfiles */
   table(&p);

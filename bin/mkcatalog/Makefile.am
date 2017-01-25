@@ -25,14 +25,15 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astmkcatalog
 
-astmkcatalog_SOURCES = main.c main.h cite.h ui.c ui.h args.h          \
-mkcatalog.c mkcatalog.h columns.c columns.h upperlimit.c upperlimit.h
+astmkcatalog_LDADD = -lgnuastro
 
-astmkcatalog_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la       \
--lgnuastro
+astmkcatalog_SOURCES = main.c ui.c mkcatalog.c columns.c upperlimit.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h mkcatalog.h columns.h    \
+  upperlimit.h
 
 
 ## The configuration file (distribute and install).

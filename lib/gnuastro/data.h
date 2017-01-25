@@ -256,6 +256,9 @@ gal_data_free_ll(gal_data_t *list);
 /*************************************************************
  **************          Blank data            ***************
  *************************************************************/
+void
+gal_data_set_blank(void *pointer, int type);
+
 void *
 gal_data_alloc_blank(int type);
 

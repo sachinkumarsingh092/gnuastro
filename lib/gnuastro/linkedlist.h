@@ -200,6 +200,8 @@ gal_linkedlist_reverse_ill(struct gal_linkedlist_ill **list);
 void
 gal_linkedlist_print_ill(struct gal_linkedlist_ill *list);
 
+void
+gal_linkedlist_free_ill(struct gal_linkedlist_ill *list);
 
 
 /******************* Ordered size_t: */

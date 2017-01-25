@@ -655,6 +655,23 @@ gal_linkedlist_print_ill(struct gal_linkedlist_ill *list)
 
 
 
+void
+gal_linkedlist_free_ill(struct gal_linkedlist_ill *list)
+{
+  struct gal_linkedlist_ill *tmp, *ttmp;
+  tmp=list;
+  while(tmp!=NULL)
+    {
+      ttmp=tmp->next;
+      free(tmp);
+      tmp=ttmp;
+    }
+}
+
+
+
+
+
 
 
 

@@ -25,16 +25,16 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astnoisechisel
 
-astnoisechisel_SOURCES = main.c main.h cite.h ui.c ui.h args.h		\
-noisechisel.c noisechisel.h thresh.c thresh.h binary.c binary.h		\
-label.c label.h detection.c detection.h sky.c sky.h segmentation.c	\
-segmentation.h clumps.c clumps.h
+astnoisechisel_LDADD = -lgnuastro
 
-astnoisechisel_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la	\
--lgnuastro
+astnoisechisel_SOURCES = main.c ui.c noisechisel.c thresh.c binary.c    \
+  label.c detection.c sky.c segmentation.c clumps.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h noisechisel.h thresh.h   \
+  binary.h label.h detection.h sky.h segmentation.h clumps.h
 
 
 ## The configuration file (distribute and install).

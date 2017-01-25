@@ -34,10 +34,14 @@ AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib      \
 
 
 
-# Define the main compiled library file and its Libtool version.
+# Define the main compiled library file, its Libtool version and also link
+# with Gnulib's compiled library for this system. We are doing this so the
+# Gnuastro library functions can also benefit from Gnulib's many great
+# features. This also avoids the need for the programs to link separately
+# with Gnulib, they only need to link with the Gnuastro library.
 lib_LTLIBRARIES = libgnuastro.la
 libgnuastro_la_LDFLAGS = -version-info $(GAL_LT_VERSION)
-
+libgnuastro_la_LIBADD = $(top_builddir)/bootstrapped/lib/libgnu.la
 
 
 

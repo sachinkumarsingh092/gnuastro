@@ -142,7 +142,9 @@ static struct argp_option options[] =
       0,
       "HDU of background image.",
       1,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
 
 
@@ -159,7 +161,9 @@ static struct argp_option options[] =
       0,
       "Number of pixels along first FITS axis.",
       2,
-      NULL, GAL_DATA_TYPE_ULONG
+      NULL,
+      GAL_DATA_TYPE_ULONG,
+      GAL_OPTIONS_RANGE_GT_0
     },
     {
       "naxis2",
@@ -168,7 +172,9 @@ static struct argp_option options[] =
       0,
       "Number of pixels along second FITS axis.",
       2,
-      NULL, GAL_DATA_TYPE_ULONG
+      NULL,
+      GAL_DATA_TYPE_ULONG,
+      GAL_OPTIONS_RANGE_GT_0
     },
     {
       "inputascanvas",
@@ -177,16 +183,20 @@ static struct argp_option options[] =
       0,
       "Use input image for output size and WCS.",
       2,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "oversample",
       ARGS_OPTION_OVERSAMPLE_KEY,
       "INT",
       0,
-      "Scale of oversampling.",
+      "Scale of oversampling (>0 and odd).",
       2,
-      NULL, GAL_DATA_TYPE_ULONG
+      NULL,
+      GAL_DATA_TYPE_UCHAR,
+      GAL_OPTIONS_RANGE_GT_0_ODD,
     },
     {
       "psfinimg",
@@ -195,7 +205,9 @@ static struct argp_option options[] =
       0,
       "PSF profiles made with all in output image.",
       2,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "individual",
@@ -204,7 +216,9 @@ static struct argp_option options[] =
       0,
       "Build all profiles separately.",
       2,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "nomerged",
@@ -213,7 +227,9 @@ static struct argp_option options[] =
       0,
       "Do not create a merged image of all profiles.",
       2,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "type",
@@ -222,7 +238,9 @@ static struct argp_option options[] =
       0,
       "uchar, short, long, longlong, float, double.",
       2,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
 
 
@@ -241,7 +259,9 @@ static struct argp_option options[] =
       0,
       "No. of random points in Monte Carlo integration.",
       3,
-      NULL, GAL_DATA_TYPE_ULONG
+      NULL,
+      GAL_DATA_TYPE_ULONG,
+      GAL_OPTIONS_RANGE_GT_0
     },
     {
       "tolerance",
@@ -250,7 +270,9 @@ static struct argp_option options[] =
       0,
       "Tolerance to switch to less accurate method.",
       3,
-      NULL, GAL_DATA_TYPE_FLOAT
+      NULL,
+      GAL_DATA_TYPE_FLOAT,
+      GAL_OPTIONS_RANGE_GE_0_LE_1
     },
     {
       "tunitinp",
@@ -259,7 +281,9 @@ static struct argp_option options[] =
       0,
       "Truncation is in units of pixels, not radius.",
       3,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "xshift",
@@ -268,7 +292,9 @@ static struct argp_option options[] =
       0,
       "Shift profile centers and enlarge image, X axis.",
       3,
-      NULL, GAL_DATA_TYPE_FLOAT
+      NULL,
+      GAL_DATA_TYPE_FLOAT,
+      GAL_OPTIONS_RANGE_GE_0
     },
     {
       "yshift",
@@ -277,7 +303,9 @@ static struct argp_option options[] =
       0,
       "Shift profile centers and enlarge image, Y axis.",
       3,
-      NULL, GAL_DATA_TYPE_FLOAT
+      NULL,
+      GAL_DATA_TYPE_FLOAT,
+      GAL_OPTIONS_RANGE_GE_0
     },
     {
       "prepforconv",
@@ -286,7 +314,9 @@ static struct argp_option options[] =
       0,
       "Shift and expand based on first catalog PSF.",
       3,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "zeropoint",
@@ -295,7 +325,9 @@ static struct argp_option options[] =
       0,
       "Magnitude zero point.",
       3,
-      NULL, GAL_DATA_TYPE_FLOAT
+      NULL,
+      GAL_DATA_TYPE_FLOAT,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "circumwidth",
@@ -304,7 +336,9 @@ static struct argp_option options[] =
       0,
       "Width of circumference (inward) profiles",
       3,
-      NULL, GAL_DATA_TYPE_FLOAT
+      NULL,
+      GAL_DATA_TYPE_FLOAT,
+      GAL_OPTIONS_RANGE_GT_0
     },
     {
       "replace",
@@ -313,7 +347,9 @@ static struct argp_option options[] =
       0,
       "Replace overlapping profile pixels, don't add.",
       3,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "magatpeak",
@@ -322,7 +358,9 @@ static struct argp_option options[] =
       0,
       "Magnitude is for peak pixel, not full profile.",
       3,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
     {
       "envseed",
@@ -331,7 +369,9 @@ static struct argp_option options[] =
       0,
       "Use GSL_RNG_SEED environment variable for seed.",
       3,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
 
 
@@ -350,7 +390,9 @@ static struct argp_option options[] =
       0,
       "Center along first FITS axis (horizontal).",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "ycol",
@@ -359,7 +401,9 @@ static struct argp_option options[] =
       0,
       "Center along second FITS axis (vertical).",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "racol",
@@ -368,7 +412,9 @@ static struct argp_option options[] =
       0,
       "Center right ascension.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "deccol",
@@ -377,7 +423,9 @@ static struct argp_option options[] =
       0,
       "Center declination.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "fcol",
@@ -387,7 +435,9 @@ static struct argp_option options[] =
       "Sersic (0), Moffat (1), Gaussian (2), Point (3),\n"
       "Flat (4), Circumference (5).",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "rcol",
@@ -396,7 +446,9 @@ static struct argp_option options[] =
       0,
       "Effective radius or FWHM in pixels.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "ncol",
@@ -405,7 +457,9 @@ static struct argp_option options[] =
       0,
       "Sersic index or Moffat beta.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "pcol",
@@ -414,7 +468,9 @@ static struct argp_option options[] =
       0,
       "Position angle.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "qcol",
@@ -423,7 +479,9 @@ static struct argp_option options[] =
       0,
       "Axis ratio.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "mcol",
@@ -432,7 +490,9 @@ static struct argp_option options[] =
       0,
       "Magnitude.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "tcol",
@@ -441,7 +501,9 @@ static struct argp_option options[] =
       0,
       "Truncation in units of --rcol, unless --tunitinp.",
       4,
-      NULL, GAL_DATA_TYPE_STRING
+      NULL,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "mforflatpix",
@@ -450,7 +512,9 @@ static struct argp_option options[] =
       0,
       "mcol is flat pixel value (when fcol is 4 or 5)",
       4,
-      NULL, GAL_OPTIONS_NO_ARG_TYPE
+      NULL,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1
     },
 
 
@@ -469,7 +533,9 @@ static struct argp_option options[] =
       0,
       "Pixel coordinate of reference point (axis 1).",
       5,
-      NULL, GAL_DATA_TYPE_DOUBLE
+      NULL,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "crpix2",
@@ -478,7 +544,9 @@ static struct argp_option options[] =
       0,
       "Pixel coordinate of reference point (axis 2).",
       5,
-      NULL, GAL_DATA_TYPE_DOUBLE
+      NULL,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "crval1",
@@ -487,7 +555,9 @@ static struct argp_option options[] =
       0,
       "Right ascension at reference point (degrees).",
       5,
-      NULL, GAL_DATA_TYPE_DOUBLE
+      NULL,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "crval2",
@@ -496,7 +566,9 @@ static struct argp_option options[] =
       0,
       "Declination at reference point (degrees).",
       5,
-      NULL, GAL_DATA_TYPE_DOUBLE
+      NULL,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_ANY
     },
     {
       "resolution",
@@ -505,7 +577,9 @@ static struct argp_option options[] =
       0,
       "Resolution of image (arcseconds/pixel).",
       5,
-      NULL, GAL_DATA_TYPE_DOUBLE
+      NULL,
+      GAL_DATA_TYPE_DOUBLE,
+      GAL_OPTIONS_RANGE_GT_0
     },
 
 

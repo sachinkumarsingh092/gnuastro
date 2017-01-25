@@ -25,14 +25,15 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astimgstat
 
-astimgstat_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-imgstat.c imgstat.h
+astimgstat_LDADD = -lgnuastro
 
-astimgstat_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgnuastro
+astimgstat_SOURCES = main.c ui.c imgstat.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h imgstat.h
+
 
 
 ## The configuration file (distribute and install).

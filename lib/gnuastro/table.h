@@ -68,12 +68,17 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Types of table storage for input or output. */
+/* Types of table storage for input or output, as strings and integers. */
+#define GAL_TABLE_STRING_TYPE_TXT "txt"
+#define GAL_TABLE_STRING_TYPE_AFITS "fits-ascii"
+#define GAL_TABLE_STRING_TYPE_BFITS "fits-binary"
 enum gal_table_types
 {
   GAL_TABLE_TYPE_TXT,                     /* Plain text table.  */
   GAL_TABLE_TYPE_AFITS,                   /* FITS ASCII table.  */
   GAL_TABLE_TYPE_BFITS,                   /* FITS binary table. */
+
+  GAL_TABLE_TYPE_INVALID,                 /* For sanity checks. */
 };
 
 
@@ -83,11 +88,16 @@ enum gal_table_types
 /* When the desired column is not a number, should the string match or
    regular expression search be in the name, units or comments of the
    columns? */
+#define GAL_TABLE_STRING_SEARCH_NAME    "name"
+#define GAL_TABLE_STRING_SEARCH_UNIT    "unit"
+#define GAL_TABLE_STRING_SEARCH_COMMENT "comment"
 enum gal_table_where_to_search
 {
   GAL_TABLE_SEARCH_NAME,                   /* Match/search in names.    */
   GAL_TABLE_SEARCH_UNIT,                   /* Match/search in units.    */
   GAL_TABLE_SEARCH_COMMENT,                /* Match/search in comments. */
+
+  GAL_TABLE_SEARCH_INVALID,                /* For sanity checks.        */
 };
 
 
@@ -108,6 +118,8 @@ enum gal_table_diplay_formats
   GAL_TABLE_DISPLAY_FMT_FLOAT,          /* Floats: with decimal point. */
   GAL_TABLE_DISPLAY_FMT_EXP,            /* Floats: as exponential.     */
   GAL_TABLE_DISPLAY_FMT_GENERAL,        /* Floats: general (%g in C).  */
+
+  GAL_TABLE_DISPLAY_FMT_INVALID,        /* Floats: general (%g in C).  */
 };
 
 
@@ -117,6 +129,9 @@ enum gal_table_diplay_formats
 /* Functions */
 int
 gal_table_string_to_type(char *string);
+
+void
+gal_table_check_fits_type(char *filename, int tabletype);
 
 int
 gal_table_string_to_searchin(char *string);

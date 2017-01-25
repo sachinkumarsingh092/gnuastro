@@ -51,13 +51,13 @@ const char
 doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do arithmetic "
   "operations on one or multiple images and numbers. Simply put, the name "
   "of the image along with the arithmetic operators and possible numbers "
-  "are given as arguments. The extensions of each input image are expected "
-  "as options (starting with `hdu') listed below. Please note that currently "
-  PROGRAM_NAME" only supports postfix or reverse polish notation. For "
-  "example to get the result of `5+6', you should write `5 6 +', or to get "
-  "the average of two images, you should write `a.fits b.fits + 2 /' (or "
-  "more simply a.fits b.fits average). Please see the manual for more "
-  "information. "
+  "are given as arguments. The extensions of each input are specified with "
+  "(possibly multiple) calls to the `--hdu' option."
+  "\n\nCurrently "PROGRAM_NAME" only supports postfix or reverse polish "
+  "notation. For example to get the result of `5+6', you should write "
+  "`5 6 +', or to get the average of two images, you should write `a.fits "
+  "b.fits + 2 /' (or more simply use the `average' operator with "
+  "`a.fits b.fits average'). Please see the manual for more information. "
   "\n\nThe operators/functions recognized by "PROGRAM_NAME" are: +, -, *, "
   "/, abs, pow, sqrt, log, log10, minvalue, maxvalue, min, max, average, "
   "median, lt, le, gt, ge, eq, ne, and, or, not, isblank, and the full set "
@@ -101,7 +101,9 @@ static struct argp_option options[] =
       0,
       "Nth call of this option, used for Nth input FITS.",
       1,
-      NULL, GAL_DATA_TYPE_STRLL
+      NULL,
+      GAL_DATA_TYPE_STRLL,
+      GAL_OPTIONS_RANGE_ANY
     },
 
 

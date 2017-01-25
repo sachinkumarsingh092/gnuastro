@@ -33,6 +33,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/linkedlist.h>
 
+#include <nproc.h>         /* from Gnulib, in Gnuastro's source */
 #include <options.h>
 #include <checkset.h>
 
@@ -47,6 +48,16 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**********************************************************************/
 /************             Option utilities              ***************/
 /**********************************************************************/
+void
+gal_options_initialize_numthreads(struct gal_options_common_params *cp)
+{
+  cp->numthreads=num_processors(NPROC_CURRENT);
+}
+
+
+
+
+
 int
 gal_options_is_last(struct argp_option *option)
 {
@@ -68,12 +79,11 @@ gal_options_is_category_title(struct argp_option *option)
 
 
 void
-gal_options_add_to_not_given(struct argp_option *option,
-                             struct gal_linkedlist_stll **namell,
-                             struct gal_linkedlist_stll **docll)
+gal_options_add_to_not_given(struct gal_options_common_params *cp,
+                             struct argp_option *option)
 {
-  gal_linkedlist_add_to_stll(docll, (char *)option->doc, 0);
-  gal_linkedlist_add_to_stll(namell, (char *)option->name, 0);
+  gal_linkedlist_add_to_stll(&cp->novalue_doc, (char *)option->doc, 0);
+  gal_linkedlist_add_to_stll(&cp->novalue_name, (char *)option->name, 0);
 }
 
 
@@ -81,15 +91,18 @@ gal_options_add_to_not_given(struct argp_option *option,
 
 
 void
-gal_options_mandatory_error(struct gal_linkedlist_stll *namell,
-                            struct gal_linkedlist_stll *docll)
+gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp)
 {
   int namewidth=0;
-  char info[2000], *name, *doc;
+  char info[5000], *name, *doc;
   struct gal_linkedlist_stll *tmp;
 
+  /* If there is no mandatory options, then just return. */
+  if(cp->novalue_name==NULL)
+    return;
+
   /* Get the maximum width of the given names: */
-  for(tmp=namell; tmp!=NULL; tmp=tmp->next)
+  for(tmp=cp->novalue_name; tmp!=NULL; tmp=tmp->next)
     if( strlen(tmp->v) > namewidth ) namewidth=strlen(tmp->v);
 
   /* Print the introductory information. */
@@ -98,10 +111,10 @@ gal_options_mandatory_error(struct gal_linkedlist_stll *namell,
           "description)\n\n");
 
   /* Print the list of options along with their description. */
-  while(namell!=NULL)
+  while(cp->novalue_name!=NULL)
     {
-      gal_linkedlist_pop_from_stll(&namell, &name);
-      gal_linkedlist_pop_from_stll(&docll, &doc);
+      gal_linkedlist_pop_from_stll(&cp->novalue_doc, &doc);
+      gal_linkedlist_pop_from_stll(&cp->novalue_name, &name);
       sprintf(info+strlen(info), "  %-*s (%s\b)\n", namewidth+4, name, doc);
     }
   sprintf(info+strlen(info), "\n");
@@ -306,6 +319,191 @@ options_immediate(int key, char *arg, struct gal_options_common_params *cp)
 
 
 
+/* The option value has been read and put into the `value' field of the
+   `argp_option' structure. This function will use the `range' field to and
+   abort with an error if the value is not in the given range. It also
+   takes the `value_in_str' so it can be used for good error message
+   (showing the value that could not be read). Note that for strings, this
+   option will not do any checks. */
+static void
+options_sanity_check(struct argp_option *option, char *arg,
+                     char *filename, size_t lineno)
+{
+  char *message;
+  size_t dsize=1;
+  int multicheckop;
+  int operator1, operator2;
+  gal_data_t *value, *ref1, *ref2, *check1, *check2;
+  int mcflag = ( GAL_ARITHMETIC_NUMOK
+                 | GAL_ARITHMETIC_FREE
+                 | GAL_ARITHMETIC_INPLACE );
+
+  /* Currently, this function is only for numeric types, so if the value is
+     string type, or its `range' field is `GAL_OPTIONS_RANGE_ANY', then
+     just return without any checks. */
+  if( option->type==GAL_DATA_TYPE_STRING
+      || option->type==GAL_DATA_TYPE_STRLL
+      || option->range==GAL_OPTIONS_RANGE_ANY )
+    return;
+
+  /* Put the option value into a data structure. */
+  value=gal_data_alloc(option->value, option->type, 1, &dsize, NULL,
+                       0, -1, NULL, NULL, NULL);
+
+  /* Set the operator(s) and operands: */
+  switch(option->range)
+    {
+
+    case GAL_OPTIONS_RANGE_GT_0:
+      message="greater than zero";
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      operator1=GAL_ARITHMETIC_OP_GT;
+      ref2=NULL;
+      break;
+
+
+    case GAL_OPTIONS_RANGE_GE_0:
+      message="greater or equal to zero";
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      operator1=GAL_ARITHMETIC_OP_GE;
+      ref2=NULL;
+      break;
+
+
+    case GAL_OPTIONS_RANGE_0_OR_1:
+      message="either 0 or 1";
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      *(unsigned char *)(ref2->array)=1;
+
+      operator1=GAL_ARITHMETIC_OP_EQ;
+      operator2=GAL_ARITHMETIC_OP_EQ;
+      multicheckop=GAL_ARITHMETIC_OP_OR;
+      break;
+
+
+    case GAL_OPTIONS_RANGE_GE_0_LE_1:
+      message="between zero and one";
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      *(unsigned char *)(ref2->array)=1;
+
+      operator1=GAL_ARITHMETIC_OP_GE;
+      operator2=GAL_ARITHMETIC_OP_LE;
+      multicheckop=GAL_ARITHMETIC_OP_AND;
+      break;
+
+
+    case GAL_OPTIONS_RANGE_GT_0_ODD:
+      message="greater than zero and odd";
+      ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
+                          0, -1, NULL, NULL, NULL);
+      *(unsigned char *)(ref1->array)=0;
+      *(unsigned char *)(ref2->array)=2;
+
+      operator1=GAL_ARITHMETIC_OP_GT;
+      operator2=GAL_ARITHMETIC_OP_MODULO;
+      multicheckop=GAL_ARITHMETIC_OP_AND;
+      break;
+
+    default:
+      error(EXIT_FAILURE, 0, "range code %d not recognized in "
+            "`gal_options_check_set'", option->range);
+    }
+
+
+  /* Use the arithmetic library to check for the condition. We don't want
+     to free the value or change its value, so when dealing with the value
+     directly, we won't use the `GAL_ARITHMETIC_FREE', or
+     `GAL_ARITHMETIC_INPLACE' flags. But we will do this when there are
+     multiple checks so from the two check data structures, we only have
+     one remaining. */
+  check1=gal_arithmetic(operator1, GAL_ARITHMETIC_NUMOK, value, ref1);
+  if(ref2)
+    {
+      check2=gal_arithmetic(operator2, GAL_ARITHMETIC_NUMOK, value, ref2);
+      check1=gal_arithmetic(multicheckop, mcflag, check1, check2);
+    }
+
+
+  /* If the final check is not successful, then print an error. */
+  if( *(unsigned char *)(check1->array)==0 )
+    error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                  "value to option `%s' must be %s, but the given value "
+                  "is `%s'. Recall that `%s' is \"%s\"", option->name,
+                  message, arg, option->name, option->doc);
+
+
+  /* Clean up and finish. Note that we used the actual value pointer in the
+     data structure, so first we need to set it to NULL, so `gal_data_free'
+     doesn't free it, we need it for later (for example to print the option
+     values). */
+  value->array=NULL;
+  gal_data_free(value);
+  gal_data_free(check1);
+}
+
+
+
+
+
+static void
+gal_options_read_check(struct argp_option *option, char *arg, char *filename,
+                       size_t lineno)
+{
+  char **strarr=NULL;
+
+  /* For strings, `gal_data_string_to_type' is going to return an allocated
+     pointer to an allocated string (`char **'). In this context, we are
+     just dealing with one string, and arrays of strings are never used (a
+     linked list is defined when multiple strings must be read). So only
+     keep the actual string and free the one that kept it. */
+  if(option->type==GAL_DATA_TYPE_STRING)
+    {
+      gal_data_string_to_type((void **)(&strarr), arg,
+                              option->type);
+      option->value=strarr[0];
+      free(strarr);
+    }
+  else
+    {
+      /* Read in the value. */
+      if( gal_data_string_to_type(&option->value, arg,
+                                  option->type) )
+
+        /* Fortunately `error_at_line' will behave like `error' when the
+           filename is NULL (the option was read from a command-line). */
+        error_at_line(EXIT_FAILURE, 0, filename, lineno,
+                      "`%s' (value to option `%s') couldn't be read into "
+                      "the proper numerical type. Common causes for this "
+                      "error are:\n"
+                      "  - It contains non-numerical characters\n"
+                      "  - It is negative, but the expected value is "
+                      "positive\n"
+                      "  - It is floating point, but the expected value "
+                      "is an integer\n", arg, option->name);
+
+      /* Do a sanity check. */
+      options_sanity_check(option, arg, filename, lineno);
+    }
+}
+
+
+
+
+
 
 
 
@@ -330,7 +528,6 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
                          struct gal_options_common_params *cp)
 {
   size_t i;
-  char **strarr=NULL;
 
   /* Go through all the options and find the one that should keep this
      value, then put its value into the appropriate key. Note that the
@@ -344,12 +541,13 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
           /* For options that need immediate attention. */
           options_immediate(key, arg, cp);
 
-          /* When options are read from keys, they are read from the
-             command-line. On the commandline, the last invokation of the
-             option is important. Especially in contexts like scripts, this
-             is important because you can change a given command-line
-             option (that is not a linked list) by calling it a second
-             time, instead of going back and changing the first value.
+          /* When options are read from keys (by this function), they are
+             read from the command-line. On the commandline, the last
+             invokation of the option is important. Especially in contexts
+             like scripts, this is important because you can change a given
+             command-line option (that is not a linked list) by calling it
+             a second time, instead of going back and changing the first
+             value.
 
              As a result, only when searching for options on the
              command-line, a second value to the same option will replace
@@ -361,37 +559,11 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
             }
 
           /* We have two types of options: those which need an argument and
-             those that don't. When they need an argument the `value'
-             pointer will be NULL. In such cases, the option must be in
-             integer type, so just set it to 1. When an argument is given,
-             convert the given value to the appropriate type and put it in
-             the `value' element of options[i]. */
+             those that don't. For those that don't `arg' will be
+             NULL. When it accepts an argument then read itinto the option
+             structure and do a sanity check.*/
           if(arg)
-            {
-              /* For strings, `gal_data_string_to_type' is going to return
-                 an allocated pointer to an allocated string (`char
-                 **'). In this context, we are just dealing with one
-                 string, and arrays of strings are never used (a linked
-                 list is defined when multiple strings must be read). So
-                 only keep the actual string and free the one that kept
-                 it. */
-              if(options[i].type==GAL_DATA_TYPE_STRING)
-                {
-                  gal_data_string_to_type((void **)(&strarr), arg,
-                                                 options[i].type);
-                  options[i].value=strarr[0];
-                  free(strarr);
-                }
-              else
-                {
-                  if( gal_data_string_to_type(&options[i].value, arg,
-                                              options[i].type) )
-                    error(EXIT_FAILURE, 0, "`%s' (value to option `%s') "
-                          "couldn't be read as a number", arg,
-                          options[i].name);
-
-                }
-            }
+            gal_options_read_check(&options[i], arg, NULL, 0);
           else
             {
               /* Make sure the option has the type set for options with no
@@ -560,7 +732,6 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
                       size_t lineno)
 {
   size_t i;
-  char **strarr=NULL;
 
   /* Go through all the options and find the one that should keep this
      value, then put its value into the appropriate key. Note that the
@@ -579,38 +750,8 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
           /* For options that need immediate attention. */
           options_immediate(options[i].key, arg, cp);
 
-          /* For strings, `gal_data_string_to_type' is going to return an
-             allocated pointer to an allocated string (`char **'). In this
-             context, we are just dealing with one string, and arrays of
-             strings are never used (a linked list is defined when multiple
-             strings must be read). So only keep the actual string and free
-             the one that kept it. */
-          if(options[i].type==GAL_DATA_TYPE_STRING)
-            {
-              gal_data_string_to_type((void **)(&strarr), arg,
-                                      options[i].type);
-              options[i].value=strarr[0];
-              free(strarr);
-            }
-          else
-            {
-              if( gal_data_string_to_type(&options[i].value, arg,
-                                          options[i].type) )
-                error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                              "`%s' (value to option `%s') couldn't be "
-                              "read as a number", arg, options[i].name);
-            }
-
-
-          /* If this is an on/off option (with no argument), then check if
-             the given value is 0 or 1. */
-          if( options[i].type==GAL_OPTIONS_NO_ARG_TYPE
-              && *(unsigned char *)(options[i].value) > 1 )
-            error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                          "`%s' is an on/off option, so its value can only "
-                          "be 1 (for `on'), or 0 (for `off'), it was given "
-                          "a value of `%s'", options[i].name, arg);
-
+          /* Read the value into the option and do a sanity check. */
+          gal_options_read_check(&options[i], arg, filename, lineno);
 
           /* We have found and set the value given to this option, so just
              return success (an error_t of 0 means success). */
@@ -816,9 +957,30 @@ options_reverse_lists(struct argp_option *options)
 
 
 
+/* The full list of common options is not necessarily for all the programs,
+   before calling `gal_options_read_config_files', the programs can add the
+   keys of any common options they need to the `mand_common' field of the
+   `gal_options_common_params' structure, then those common options that
+   might be necessary will call this function to check. */
+static void
+options_check_if_mandatory(struct gal_options_common_params *cp,
+                           struct argp_option *option)
+{
+  struct gal_linkedlist_ill *tmp;
 
+  if(option->value==NULL)       /* Only necessary when there is no value. */
+    for(tmp=cp->mand_common; tmp!=NULL; tmp=tmp->next)
+      if(option->key==tmp->v)
+        gal_options_add_to_not_given(cp, option);
+}
+
+
+
+
+
+/* Read all configuration files and set common options */
 void
-gal_options_read_config_files(struct gal_options_common_params *cp)
+gal_options_read_config_set_common(struct gal_options_common_params *cp)
 {
   size_t i;
 
@@ -867,6 +1029,8 @@ gal_options_read_config_files(struct gal_options_common_params *cp)
         case GAL_OPTIONS_MINMAPSIZE_KEY:
           if(cp->coptions[i].value)
             cp->minmapsize = *(unsigned long *)(cp->coptions[i].value);
+          else
+            options_check_if_mandatory(cp, &cp->coptions[i]);
           break;
 
         case GAL_OPTIONS_LOG_KEY:
@@ -874,188 +1038,6 @@ gal_options_read_config_files(struct gal_options_common_params *cp)
             cp->log = *(unsigned char *)(cp->coptions[i].value);
           break;
         }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**********************************************************************/
-/************                Sanity check               ***************/
-/**********************************************************************/
-/* All the command-line and configuration file options have been read. But
-   for the higher level steps of your program, you can't go over the
-   options array every time to find the recorded value (as a `void *'
-   pointer). Also, if the option was given, you want to make sure its value
-   is in the correct/acceptable range you expect for this option.
-
-   This function takes the argp_option structure you are checking
-   (`option') and a pointer to the (already allocated) space you want to
-   put its value in (`out'), along with the `condition' that the value to
-   this option must satisfy.
-
-   Outputs:
-
-    - If the option has a value and the condition is met, the value is put
-      into the `out' pointer and this function will return 1.
-
-    - If the option has a value and the condition isn't met, an error
-      message will be printed and the program will abort.
-
-    - If the option wasn't given a value, this function will return 0, and
-      put a blank value (depending on the type) in the value pointed by
-      `out'.  */
-int
-gal_options_check_set(struct argp_option *option, void *out, int condition)
-{
-  size_t dsize=1;
-  int operator1, operator2;
-  gal_data_t *value, *ref1, *ref2, *check1, *check2;
-  int arithflags = ( GAL_ARITHMETIC_INPLACE
-                     | GAL_ARITHMETIC_FREE
-                     | GAL_ARITHMETIC_NUMOK );
-
-
-  /* This function should only be used for numerical types. */
-  if(option->type==GAL_DATA_TYPE_STRING || option->type==GAL_DATA_TYPE_STRLL)
-    error(EXIT_FAILURE, 0, "A bug! `gal_options_check_set' should only be "
-          "used for numerical types. However it has been used for the "
-          "`%s' option, which has a type of `%s'", option->name,
-          gal_data_type_as_string(option->type, 1) );
-
-
-  /* If the option is given a value, then check it and return 1 if it is in
-     range. If its not in range, abort with an error.  */
-  if(option->value)
-    {
-      /* Put the option value into a data structure. */
-      value=gal_data_alloc(option->value, option->type, 1, &dsize, NULL,
-                           0, -1, NULL, NULL, NULL);
-
-      /* Set the operator(s): */
-      switch(condition)
-        {
-
-        case GAL_OPTIONS_RANGE_GT_0:
-          ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
-                              0, -1, NULL, NULL, NULL);
-          *(unsigned char *)(ref1->array)=0;
-          operator1=GAL_ARITHMETIC_OP_GT;
-          ref2=NULL;
-          break;
-
-
-        case GAL_OPTIONS_RANGE_GE_0:
-          ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
-                              0, -1, NULL, NULL, NULL);
-          *(unsigned char *)(ref1->array)=0;
-          operator1=GAL_ARITHMETIC_OP_GE;
-          ref2=NULL;
-          break;
-
-
-        case GAL_OPTIONS_RANGE_GE_0_LE_1:
-          ref1=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
-                              0, -1, NULL, NULL, NULL);
-          ref2=gal_data_alloc(NULL, GAL_DATA_TYPE_UCHAR, 1, &dsize, NULL,
-                              0, -1, NULL, NULL, NULL);
-          *(unsigned char *)(ref1->array)=0;
-          *(unsigned char *)(ref2->array)=1;
-          operator1=GAL_ARITHMETIC_OP_GE;
-          operator1=GAL_ARITHMETIC_OP_LE;
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "condition code %d not recognized in "
-                "`gal_options_check_set'", condition);
-        }
-
-      /* Use the arithmetic library to check for the condition. */
-      check1=gal_arithmetic(operator1, arithflags, value, ref1);
-
-      /* Clean up and return. Note that we used the actual value pointer in
-         the data structure, so first we need to set it to NULL, so
-         `gal_data_free' doesn't free it, we need it for later (for example
-         to print the option values). */
-      value->array=NULL;
-      gal_data_free(value);
-      return 1;
-    }
-
-  /* The option didn't have a value, set the output value as blank and
-     return 0. */
-  else
-    {
-      /* Set the output value. */
-      switch(option->type)
-        {
-        case GAL_DATA_TYPE_UCHAR:
-          *(unsigned char *)out = GAL_DATA_BLANK_UCHAR;
-          break;
-
-        case GAL_DATA_TYPE_CHAR:
-          *(char *)out = GAL_DATA_BLANK_CHAR;
-          break;
-
-        case GAL_DATA_TYPE_USHORT:
-          *(unsigned short *)out = GAL_DATA_BLANK_USHORT;
-          break;
-
-        case GAL_DATA_TYPE_SHORT:
-          *(short *)out = GAL_DATA_BLANK_SHORT;
-          break;
-
-        case GAL_DATA_TYPE_UINT:
-          *(unsigned int *)out = GAL_DATA_BLANK_UINT;
-          break;
-
-        case GAL_DATA_TYPE_INT:
-          *(int *)out = GAL_DATA_BLANK_INT;
-          break;
-
-        case GAL_DATA_TYPE_ULONG:
-          *(unsigned long *)out = GAL_DATA_BLANK_ULONG;
-          break;
-
-        case GAL_DATA_TYPE_LONG:
-          *(long *)out = GAL_DATA_BLANK_LONG;
-          break;
-
-        case GAL_DATA_TYPE_LONGLONG:
-          *(LONGLONG *)out = GAL_DATA_BLANK_LONGLONG;
-          break;
-
-        case GAL_DATA_TYPE_FLOAT:
-          *(float *)out = GAL_DATA_BLANK_FLOAT;
-          break;
-
-        case GAL_DATA_TYPE_DOUBLE:
-          *(double *)out = GAL_DATA_BLANK_DOUBLE;
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "type code %d not recognized in "
-                "`gal_options_check_set'", option->type);
-        }
-
-      /* Return: */
-      return 0;
-    }
 }
 
 

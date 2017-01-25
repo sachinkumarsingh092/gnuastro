@@ -31,7 +31,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
-#include <nproc.h> /* from Gnulib, in Gnuastro's source */
 #include <timing.h>
 #include <options.h>
 
@@ -52,27 +51,23 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
+/* Read the options into the main program structure. When an option wasn't
+   given, it will not be given a value here, so it will have the
+   initialized value of 0 (or NULL for pointers) after this function. If
+   the value of `0' is meaningful in the context of the option, then it
+   must be given the blank value for the type of the variable IN THIS
+   FUNCTION.
 
-/* This function is in charge of reading the option values from the arrays
-   of the `argp_option' structure and put them into each program's own data
-   structure.
-
-   IMPORTANT: DO NOT USE THE SAME POINTERS. When the types are pointers
-   (like stirings or linked lists), do not use the same pointers, allocate
-   and keep a new copy. This is because the printing of options will take
-   place after this sanity check, so users can be sure that the values that
-   are printed and used as configuration files later have no non-sane
-   values. Thus the poitners in `argp_option' will be freed after printing,
-   but the program's pointers must stay to the end.
-
-   After setting all the values, do other forms of sanity checks that
-   involve more than one option.
-*/
+   When the option is necessary for the program to run (independent of any
+   arguments) but it wasn't given, call the `gal_options_add_to_not_given'
+   function. The role of the final `gal_options_abort_if_mandatory_missing'
+   function at the end of this function is to print the full list of
+   mandatory options that were gathered by that function and abort with one
+   error message to help the user. */
 static void
-ui_read_check_only_options(struct tableparams *p)
+ui_read_options(struct tableparams *p)
 {
   size_t i;
-  struct gal_linkedlist_stll *namell=NULL, *docll=NULL;
 
   /* Put the program's option values into the structure. */
   for(i=0; !gal_options_is_last(&options[i]); ++i)
@@ -89,7 +84,7 @@ ui_read_check_only_options(struct tableparams *p)
           if(options[i].value)
             p->searchin=gal_table_string_to_searchin(options[i].value);
           else
-            gal_options_add_to_not_given(&options[i], &namell, &docll);
+            gal_options_add_to_not_given(&p->cp, &options[i]);
           break;
 
 
@@ -101,28 +96,9 @@ ui_read_check_only_options(struct tableparams *p)
 
         /* Output */
         case ARGS_OPTION_TABLETYPE_KEY:
-
-          /* If `tabletype' has a value, put it in. */
-          if(options[i].value)
-            {
-              /* Set the value into the structure. */
-              p->tabletype=gal_table_string_to_type(options[i].value);
-
-              /* If the output name was set and is a FITS file, make sure
-                 that the type of the table is not a `txt'. */
-              if( p->cp.output && gal_fits_name_is_fits(p->cp.output)
-                 && ( p->tabletype != GAL_TABLE_TYPE_AFITS
-                       && p->tabletype != GAL_TABLE_TYPE_BFITS ) )
-                error(EXIT_FAILURE, 0, "desired output file `%s' is a FITS "
-                      "file, but `tabletype' is not a FITS table type. "
-                      "Please set it to `fits-ascii', or `fits-binary'",
-                      p->cp.output);
-            }
-
-          /* In Table, `tabletype' is only mandatory when the output is a
-             FITS file, A text table output only has one possible type. */
-          else if( gal_fits_name_is_fits(p->cp.output) )
-            gal_options_add_to_not_given(&options[i], &namell, &docll);
+          p->tabletype = ( options[i].value
+                           ? gal_table_string_to_type(options[i].value)
+                           : GAL_TABLE_TYPE_INVALID );
          break;
 
 
@@ -141,8 +117,26 @@ ui_read_check_only_options(struct tableparams *p)
 
   /* If any of the mandatory options were not given, then print an error
      listing them and abort. */
-  if(namell)
-    gal_options_mandatory_error(namell, docll);
+  gal_options_abort_if_mandatory_missing(&p->cp);
+}
+
+
+
+
+
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct tableparams *p)
+{
+
+  /* Read all the options from the `argp_option' array into the main
+     program structure to facilitate checks and running the program. */
+  ui_read_options(p);
+
+  /* Check if the type of the output table is valid. */
+  gal_table_check_fits_type(p->cp.output, p->tabletype);
+
 }
 
 
@@ -291,7 +285,7 @@ ui_preparations(struct tableparams *p)
 /**************************************************************/
 
 void
-setparams(int argc, char *argv[], struct tableparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
@@ -303,32 +297,38 @@ setparams(int argc, char *argv[], struct tableparams *p)
   cp->program_bibtex  = PROGRAM_BIBTEX;
   cp->program_authors = PROGRAM_AUTHORS;
   cp->coptions        = gal_commonopts_options;
-  cp->numthreads      = num_processors(NPROC_CURRENT);
+
 
   /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-  /* Read the configuration files. */
-  gal_options_read_config_files(cp);
+
+  /* Read the configuration files and set the common values. */
+  gal_options_read_config_set_common(cp);
+
 
   /* Read the options into the program's structure, and check them and
      their relations prior to printing. */
   ui_read_check_only_options(p);
+
 
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the
      output state. */
   gal_options_print_state(cp);
 
+
   /* Check that the options and arguments fit well with each other. Note
      that arguments don't go in a configuration file. So this test should
      be done after (possibly) printing the option values. */
   ui_check_options_and_arguments(p);
 
+
   /* Read/allocate all the necessary starting arrays. */
   ui_preparations(p);
+
 
   /* Free all the allocated spaces in the option structures. */
   gal_options_free(options);

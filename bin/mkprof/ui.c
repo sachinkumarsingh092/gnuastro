@@ -31,7 +31,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
 
-#include <nproc.h>  /* from Gnulib, in Gnuastro's source */
 #include <timing.h>
 #include <options.h>
 #include <checkset.h>
@@ -52,35 +51,47 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-/* ONLY check options. When arguments are involved, do the check in
-   `ui_check_options_and_arguments'. */
+/* Read the options into the main program structure. When an option wasn't
+   given, it will not be given a value here, so it will have the
+   initialized value of 0 (or NULL for pointers) after this function. If
+   the value of `0' is meaningful in the context of the option, then it
+   must be given the blank value for the type of the variable IN THIS
+   FUNCTION.
+
+   When the option is necessary for the program to run (independent of any
+   arguments) but it wasn't given, call the `gal_options_add_to_not_given'
+   function. The role of the final `gal_options_abort_if_mandatory_missing'
+   function at the end of this function is to print the full list of
+   mandatory options that were gathered by that function and abort with one
+   error message to help the user. */
 static void
-ui_read_check_only_options(struct mkprofparams *p)
+ui_read_options(struct mkprofparams *p)
 {
   size_t i;
-  struct argp_option *o=options;
-  struct gal_linkedlist_stll *namell=NULL, *docll=NULL;
 
   /* Put the program's option values into the structure. */
-  for(i=0; !gal_options_is_last(&o[i]); ++i)
-    if( o[i].key && o[i].name )
-      switch(o[i].key)
+  for(i=0; !gal_options_is_last(&options[i]); ++i)
+    if( options[i].key && options[i].name )
+      switch(options[i].key)
         {
 
           /* Input */
         case ARGS_OPTION_BACKHDU_KEY:
-          gal_checkset_allocate_copy(o[i].value, &p->backhdu);
+          gal_checkset_allocate_copy(options[i].value, &p->backhdu);
           break;
 
 
           /* Output */
+
+          /* naxis1 and naxis2 are only mandatory when a background is not
+             given and `individual' is not called.  */
         case ARGS_OPTION_NAXIS1_KEY:
-          printf("\nJust before checking value to naxis1.\n"); exit(0);
-          gal_options_check_set(&o[i], &p->naxes[0], GAL_OPTIONS_RANGE_GT_0);
+          printf("\n... just before checking `naxis1' ...\n");
+          exit(0);
           break;
 
         case ARGS_OPTION_NAXIS2_KEY:
-          gal_options_check_set(&o[i], &p->naxes[1], GAL_OPTIONS_RANGE_GT_0);
+
           break;
 
 
@@ -91,13 +102,29 @@ ui_read_check_only_options(struct mkprofparams *p)
 
         default:
           error(EXIT_FAILURE, 0, "option key %d not recognized in "
-                "`ui_read_check_only_options'", o[i].key);
+                "`ui_read_check_only_options'", options[i].key);
         }
+
 
   /* If any of the mandatory options were not given, then print an error
      listing them and abort. */
-  if(namell)
-    gal_options_mandatory_error(namell, docll);
+  gal_options_abort_if_mandatory_missing(&p->cp);
+}
+
+
+
+
+
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct mkprofparams *p)
+{
+
+  /* Read all the options from the `argp_option' array into the main
+     program structure to facilitate checks and running the program. */
+  ui_read_options(p);
+
 }
 
 
@@ -135,9 +162,10 @@ ui_check_options_and_arguments(struct mkprofparams *p)
 /************         Set the parameters          *************/
 /**************************************************************/
 void
-setparams(int argc, char *argv[], struct mkprofparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
+
 
   /* Set the non-zero initial values, the structure was initialized to
      have a zero/NULL value for all elements. */
@@ -147,33 +175,52 @@ setparams(int argc, char *argv[], struct mkprofparams *p)
   cp->program_bibtex  = PROGRAM_BIBTEX;
   cp->program_authors = PROGRAM_AUTHORS;
   cp->coptions        = gal_commonopts_options;
-  cp->numthreads      = num_processors(NPROC_CURRENT);
+
+
+  /* Read the number of threads available to the user, this should be done
+     before reading command-line and configuration file options, since they
+     can change it.  */
+  gal_options_initialize_numthreads(cp);
+
+
+  /* If there are mandatory common options, add them to this list. The
+     mandatory options for this program will be checked in
+     `ui_read_check_only_options' and finally they will all be reported
+     together if any of them are not given a value. */
+  gal_linkedlist_add_to_ill(&cp->mand_common, GAL_OPTIONS_MINMAPSIZE_KEY);
+
 
   /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
+
   /* Read the configuration files. */
-  gal_options_read_config_files(cp);
+  gal_options_read_config_set_common(cp);
+
 
   /* Read the options into the program's structure, and check them and
      their relations prior to printing. */
   ui_read_check_only_options(p);
+
 
   /* Print the option values if asked. Note that this needs to be done
      after the sanity check so un-sane values are not printed in the output
      state. */
   gal_options_print_state(cp);
 
+
   /* Check that the options and arguments fit well with each other. Note
      that arguments don't go in a configuration file. So this test should
      be done after (possibly) printing the option values. */
   ui_check_options_and_arguments(p);
 
+
   /* Free all the allocated spaces in the option structures. */
   gal_options_free(options);
   gal_options_free(gal_commonopts_options);
+  gal_linkedlist_free_ill(cp->mand_common);
 }
 
 

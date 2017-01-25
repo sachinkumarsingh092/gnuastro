@@ -1029,87 +1029,87 @@ gal_data_free_ll(gal_data_t *list)
 /*************************************************************
  **************          Blank data            ***************
  *************************************************************/
-void *
-gal_data_alloc_blank(int type)
-{
-  /* Define the pointers. */
-  char            *str;
-  unsigned char     uc = GAL_DATA_BLANK_UCHAR;
-  char               c = GAL_DATA_BLANK_CHAR;
-  unsigned short    us = GAL_DATA_BLANK_USHORT;
-  short              s = GAL_DATA_BLANK_SHORT;
-  unsigned int      ui = GAL_DATA_BLANK_UINT;
-  int                i = GAL_DATA_BLANK_INT;
-  unsigned long     ul = GAL_DATA_BLANK_ULONG;
-  long               l = GAL_DATA_BLANK_LONG;
-  LONGLONG           L = GAL_DATA_BLANK_LONGLONG;
-  float              f = GAL_DATA_BLANK_FLOAT;
-  double             d = GAL_DATA_BLANK_DOUBLE;
-  gsl_complex_float cx;
-  gsl_complex      dcx;
+/* Write the blank value of the type into an already allocate space.
 
-  /* Put the blank value into it. */
+   Note that for strings, pointer should actually be `char **'. */
+void
+gal_data_set_blank(void *pointer, int type)
+{
   switch(type)
     {
     case GAL_DATA_TYPE_STRING:
-      gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, &str);
-      return str;
-
-    case GAL_DATA_TYPE_BIT:
-      error(EXIT_FAILURE, 0, "Currently Gnuastro doesn't support blank "
-            "values for `GAL_DATA_TYPE_BIT', please get in touch with "
-            "us to see how we can implement it.");
+      gal_checkset_allocate_copy(GAL_DATA_BLANK_STRING, pointer);
+      break;
 
     case GAL_DATA_TYPE_UCHAR:
-      return gal_data_alloc_number(type, &uc);
+      *(unsigned char *)pointer  = GAL_DATA_BLANK_UCHAR;
+      break;
 
-      /* CFITSIO says "int for keywords, char for table columns". Here we
-         are only assuming table columns. So in practice this also applies
-         to TSBYTE.*/
-    case GAL_DATA_TYPE_CHAR: case GAL_DATA_TYPE_LOGICAL:
-      return gal_data_alloc_number(type, &c);
+    case GAL_DATA_TYPE_CHAR:
+      *(char *)pointer           = GAL_DATA_BLANK_CHAR;
+      break;
 
     case GAL_DATA_TYPE_USHORT:
-      return gal_data_alloc_number(type, &us);
+      *(unsigned short *)pointer = GAL_DATA_BLANK_USHORT;
+      break;
 
     case GAL_DATA_TYPE_SHORT:
-      return gal_data_alloc_number(type, &s);
+      *(short *)pointer          = GAL_DATA_BLANK_SHORT;
+      break;
 
     case GAL_DATA_TYPE_UINT:
-      return gal_data_alloc_number(type, &ui);
+      *(unsigned int *)pointer   = GAL_DATA_BLANK_UINT;
+      break;
 
     case GAL_DATA_TYPE_INT:
-      return gal_data_alloc_number(type, &i);
+      *(int *)pointer            = GAL_DATA_BLANK_INT;
+      break;
 
     case GAL_DATA_TYPE_ULONG:
-      return gal_data_alloc_number(type, &ul);
+      *(unsigned long *)pointer  = GAL_DATA_BLANK_ULONG;
+      break;
 
     case GAL_DATA_TYPE_LONG:
-      return gal_data_alloc_number(type, &l);
+      *(long *)pointer           = GAL_DATA_BLANK_LONG;
+      break;
 
     case GAL_DATA_TYPE_LONGLONG:
-      return gal_data_alloc_number(type, &L);
+      *(LONGLONG *)pointer       = GAL_DATA_BLANK_LONGLONG;
+      break;
 
     case GAL_DATA_TYPE_FLOAT:
-      return gal_data_alloc_number(type, &f);
+      *(float *)pointer          = GAL_DATA_BLANK_FLOAT;
+      break;
 
     case GAL_DATA_TYPE_DOUBLE:
-      return gal_data_alloc_number(type, &d);
-
-    case GAL_DATA_TYPE_COMPLEX:
-      GSL_SET_COMPLEX(&cx, GAL_DATA_BLANK_FLOAT, GAL_DATA_BLANK_FLOAT);
-      return gal_data_alloc_number(type, &cx);
-
-    case GAL_DATA_TYPE_DCOMPLEX:
-      GSL_SET_COMPLEX(&dcx, GAL_DATA_BLANK_DOUBLE, GAL_DATA_BLANK_DOUBLE);
-      return gal_data_alloc_number(type, &dcx);
+      *(double *)pointer         = GAL_DATA_BLANK_DOUBLE;
+      break;
 
     default:
-      error(EXIT_FAILURE, 0, "type value of %d not recognized in "
-            "`gal_data_alloc_blank'", type);
+      error(EXIT_FAILURE, 0, "type code %d not recognized in "
+            "`gal_data_set_blank'", type);
     }
+}
 
-  return NULL;
+
+
+
+
+/* Allocate some space for the given type and put the blank value into
+   it. */
+void *
+gal_data_alloc_blank(int type)
+{
+  void *out;
+
+  /* Allocate the space to keep the blank value. */
+  out=gal_data_malloc_array(type, 1);
+
+  /* Put the blank value in the allcated space. */
+  gal_data_set_blank(out, type);
+
+  /* Return the allocated space. */
+  return out;
 }
 
 
@@ -2134,11 +2134,11 @@ gal_data_string_to_number(char *string)
 
 
 
-/* Read a string as a given data type and return the pointer to it. When
-   `*out!=NULL', then it is assumed to be allocated and the value will be
-   simply put there. If `*out==NULL', then space will be allocated for the
-   given type and the string's value (in the given type) will be sored
-   there.
+/* Read a string as a given data type and put a the pointer to it in
+   *out. When the input `*out!=NULL', then it is assumed to be allocated
+   and the value will be simply put there. If `*out==NULL', then space will
+   be allocated for the given type and the string's value (in the given
+   type) will be sored there.
 
    Note that when we are dealing with a string type, `*out' should be
    interpretted as `char **' (one element in an array of pointers to
@@ -2147,7 +2147,11 @@ gal_data_string_to_number(char *string)
    This function can be used to fill in arrays of numbers from strings (in
    an already allocated data structure), or add nodes to a linked list. For
    an array, you have to pass the pointer to the `i'th element where you
-   want the value to be stored, for example &(array[i])*/
+   want the value to be stored, for example &(array[i]).
+
+   If parsing was successful, it will return a 0. If there was a problem,
+   it will return 1.
+ */
 int
 gal_data_string_to_type(void **out, char *string, int type)
 {
@@ -2234,7 +2238,7 @@ gal_data_string_to_type(void **out, char *string, int type)
     }
 
   /* If reading was unsuccessful, then free the space if it was allocated,
-     then return the status. */
+     then return the status, don't touch the pointer. */
   if(status && allocated)
     {
       free(*out);

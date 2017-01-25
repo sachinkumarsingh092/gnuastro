@@ -25,16 +25,16 @@
 AM_CPPFLAGS = -I\$(top_srcdir)/bootstrapped/lib
 
 
-## Utility and its sources
+## Program definition (name, linking, sources and headers)
 bin_PROGRAMS = astTEMPLATE
 
-astTEMPLATE_SOURCES = main.c main.h cite.h ui.c ui.h args.h	\
-TEMPLATE.c TEMPLATE.h
+astTEMPLATE_LDADD = -lgnuastro
 
-astTEMPLATE_LDADD = $(top_builddir)/bootstrapped/lib/libgnu.la		\
--lgnuastro
+astTEMPLATE_SOURCES = main.c ui.c TEMPLATE.c
+
+EXTRA_DIST = main.h authors-cite.h args.h ui.h TEMPLATE.h
 
 
 ## The configuration file (distribute and install).
 ## NOTE: the man page is created in doc/Makefile.am
-dist_sysconf_DATA = asttable.conf
+dist_sysconf_DATA = astTEMPLATE.conf

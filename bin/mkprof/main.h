@@ -32,8 +32,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 /* Progarm name macros: */
-#define PROGRAM_NAME "Arithmetic"      /* Program full name.       */
-#define PROGRAM_EXEC "astarithmetic"   /* Program executable name. */
+#define PROGRAM_NAME "MakeProfiles"      /* Program full name.       */
+#define PROGRAM_EXEC "astmkprof"         /* Program executable name. */
 #define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
