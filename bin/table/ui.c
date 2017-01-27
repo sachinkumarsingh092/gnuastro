@@ -33,11 +33,172 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <timing.h>
 #include <options.h>
+#include <checkset.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
 #include "ui.h"
-#include "args.h"
+#include "authors-cite.h"
+
+
+
+
+
+/**************************************************************/
+/*********      Argp necessary global entities     ************/
+/**************************************************************/
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" can be used to view the "
+  "information, select columns, or convert tables. The inputs and outputs "
+  "can be plain text (with whitespace or comma as delimiters), FITS ascii, "
+  "or FITS binary tables. The output columns can either be selected by "
+  "number (counting from 1), name or using regular expressions. For regular "
+  "expressions, enclose the value to the `--column' (`-c') option in "
+  "slashes (`\\', as in `-c\\^mag\\'). To print the selected columns on the "
+  "command-line, don't specify an output file.\n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+
+/* Available letters for short options:
+
+   a b d e f g j k l m n p r u v w x y z
+   A B C E F G H J L M O Q R T U W X Y Z  */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_COLUMN      = 'c',
+  ARGS_OPTION_KEY_SEARCHIN    = 's',
+  ARGS_OPTION_KEY_IGNORECASE  = 'I',
+  ARGS_OPTION_KEY_TABLETYPE   = 't',
+  ARGS_OPTION_KEY_INFORMATION = 'i',
+
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct tableparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  size_t i;
+  struct gal_options_common_params *cp=&p->cp;
+
+
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->coptions           = gal_commonopts_options;
+
+
+  /* Set the mandatory common options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    switch(cp->coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_MINMAPSIZE:
+        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+      }
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct tableparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
+    {
+
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      if(p->filename)
+        argp_error(state, "only one argument (input file) should be given");
+      else
+        p->filename=arg;
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
+    }
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -51,90 +212,19 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-/* Read the options into the main program structure. When an option wasn't
-   given, it will not be given a value here, so it will have the
-   initialized value of 0 (or NULL for pointers) after this function. If
-   the value of `0' is meaningful in the context of the option, then it
-   must be given the blank value for the type of the variable IN THIS
-   FUNCTION.
-
-   When the option is necessary for the program to run (independent of any
-   arguments) but it wasn't given, call the `gal_options_add_to_not_given'
-   function. The role of the final `gal_options_abort_if_mandatory_missing'
-   function at the end of this function is to print the full list of
-   mandatory options that were gathered by that function and abort with one
-   error message to help the user. */
-static void
-ui_read_options(struct tableparams *p)
-{
-  size_t i;
-
-  /* Put the program's option values into the structure. */
-  for(i=0; !gal_options_is_last(&options[i]); ++i)
-    if( options[i].key && options[i].name )
-      switch(options[i].key)
-        {
-        /* Inputs */
-        case ARGS_OPTION_COLUMN_KEY:
-          gal_linked_list_copy_stll(options[i].value, &p->columns);
-          break;
-
-
-        case ARGS_OPTION_SEARCHIN_KEY:
-          if(options[i].value)
-            p->searchin=gal_table_string_to_searchin(options[i].value);
-          else
-            gal_options_add_to_not_given(&p->cp, &options[i]);
-          break;
-
-
-        case ARGS_OPTION_IGNORECASE_KEY:
-          p->ignorecase = *(unsigned char *)options[i].value;
-          break;
-
-
-
-        /* Output */
-        case ARGS_OPTION_TABLETYPE_KEY:
-          p->tabletype = ( options[i].value
-                           ? gal_table_string_to_type(options[i].value)
-                           : GAL_TABLE_TYPE_INVALID );
-         break;
-
-
-        /* Operating mode */
-        case ARGS_OPTION_INFORMATION_KEY:
-          if(options[i].value)
-            p->information = *(unsigned char *)options[i].value;
-          break;
-
-
-
-        default:
-          error(EXIT_FAILURE, 0, "option key %d not recognized in "
-                "`ui_read_check_only_options'", options[i].key);
-        }
-
-  /* If any of the mandatory options were not given, then print an error
-     listing them and abort. */
-  gal_options_abort_if_mandatory_missing(&p->cp);
-}
-
-
-
-
-
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct tableparams *p)
 {
 
-  /* Read all the options from the `argp_option' array into the main
-     program structure to facilitate checks and running the program. */
-  ui_read_options(p);
+  /* Read the searchin and table type strings as internal codes. */
+  p->searchin=gal_table_string_to_searchin(p->searchinstr);
+  p->tabletype=gal_table_string_to_type(p->tabletypestr);
 
-  /* Check if the type of the output table is valid. */
+
+  /* Check if the type of the output table is valid, given the type of the
+     output. */
   gal_table_check_fits_type(p->cp.output, p->tabletype);
 
 }
@@ -148,9 +238,9 @@ ui_check_options_and_arguments(struct tableparams *p)
 {
   /* Make sure an input file name was given and if it was a FITS file, that
      a HDU is also given. */
-  if(p->up.filename)
+  if(p->filename)
     {
-      if( gal_fits_name_is_fits(p->up.filename) && p->cp.hdu==NULL )
+      if( gal_fits_name_is_fits(p->filename) && p->cp.hdu==NULL )
         error(EXIT_FAILURE, 0, "no HDU specified. When the input is a FITS "
               "file, a HDU must also be specified, you can use the `--hdu' "
               "(`-h') option and give it the HDU number (starting from "
@@ -196,12 +286,12 @@ ui_preparations(struct tableparams *p)
   if(p->columns==NULL)
     {
       /* Read the table information for the number of columns and rows. */
-      allcols=gal_table_info(p->up.filename, p->cp.hdu, &numcols,
+      allcols=gal_table_info(p->filename, p->cp.hdu, &numcols,
                              &numrows, &tabletype);
 
       /* If there was no actual data in the file, then inform the user */
       if(allcols==NULL)
-        error(EXIT_FAILURE, 0, "%s: no usable data rows", p->up.filename);
+        error(EXIT_FAILURE, 0, "%s: no usable data rows", p->filename);
 
 
       /* If the user just wanted information, then print it. */
@@ -209,8 +299,8 @@ ui_preparations(struct tableparams *p)
         {
           /* Print the file information. */
           printf("--------\n");
-          printf("%s", p->up.filename);
-          if(gal_fits_name_is_fits(p->up.filename))
+          printf("%s", p->filename);
+          if(gal_fits_name_is_fits(p->filename))
             printf(" (hdu: %s)\n", p->cp.hdu);
           else
             printf("\n");
@@ -248,14 +338,14 @@ ui_preparations(struct tableparams *p)
      elements were added to the list is the reverse of the order that they
      will be popped). */
   gal_linkedlist_reverse_stll(&p->columns);
-  p->table=gal_table_read(p->up.filename, p->cp.hdu, p->columns,
+  p->table=gal_table_read(p->filename, p->cp.hdu, p->columns,
                           p->searchin, p->ignorecase, p->cp.minmapsize);
 
   /* If there was no actual data in the file, then inform the user and
      abort. */
   if(p->table==NULL)
     error(EXIT_FAILURE, 0, "%s: no usable data rows (non-commented and "
-          "non-blank lines)", p->up.filename);
+          "non-blank lines)", p->filename);
 
   /* Now that the data columns are ready, we can free the string linked
      list. */
@@ -289,14 +379,18 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
 {
   struct gal_options_common_params *cp=&p->cp;
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero/NULL value for all elements. */
-  cp->poptions        = options;
-  cp->program_name    = PROGRAM_NAME;
-  cp->program_exec    = PROGRAM_EXEC;
-  cp->program_bibtex  = PROGRAM_BIBTEX;
-  cp->program_authors = PROGRAM_AUTHORS;
-  cp->coptions        = gal_commonopts_options;
+
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read. */
+#include <commonopts.h>
+#include "args.h"
+
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
 
 
   /* Read the command-line options and arguments. */
@@ -306,7 +400,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
 
 
   /* Read the configuration files and set the common values. */
-  gal_options_read_config_set_common(cp);
+  gal_options_read_config_set(&p->cp);
 
 
   /* Read the options into the program's structure, and check them and
@@ -317,7 +411,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
   /* Print the option values if asked. Note that this needs to be done
      after the option checks so un-sane values are not printed in the
      output state. */
-  gal_options_print_state(cp);
+  gal_options_print_state(&p->cp);
 
 
   /* Check that the options and arguments fit well with each other. Note
@@ -328,11 +422,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
 
   /* Read/allocate all the necessary starting arrays. */
   ui_preparations(p);
-
-
-  /* Free all the allocated spaces in the option structures. */
-  gal_options_free(options);
-  gal_options_free(gal_commonopts_options);
 }
 
 
@@ -363,5 +452,7 @@ freeandreport(struct tableparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
+  free(p->searchinstr);
+  free(p->tabletypestr);
   gal_data_free_ll(p->table);
 }

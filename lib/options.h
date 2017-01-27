@@ -43,6 +43,30 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
+/* Standard groups of options. From the Argp manual (in GNU C Library): "In
+   a long help message, options are sorted alphabetically within each
+   group, and the groups presented in the order 0, 1, 2, ..., N, -M, ...,
+   -2, -1."
+
+   We want the Operating mode group of options to be the last and the input
+   and output groups to the be the first. So first we set the operating
+   mdoe group code to `-1', and benefit from the definition of the
+   Enumerator type in C, so each field afterwards will be one integer
+   larger than the previous. The largest common option group is then used
+   to build the codes of program-specific option groups. */
+enum options_standard_groups
+{
+  GAL_OPTIONS_GROUP_OPERATING_MODE = -1,
+  GAL_OPTIONS_GROUP_INPUT,
+  GAL_OPTIONS_GROUP_OUTPUT,
+
+  GAL_OPTIONS_GROUP_AFTER_COMMON,
+};
+
+
+
+
+
 /* Key values for the common options, the free alphabetical keys are listed
    below. You can use any of the free letters for an option in a
    program. Note that `-V', which is used by GNU and implemented by Argp,
@@ -54,28 +78,31 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum options_common_keys
 {
   /* With short-option version */
-  GAL_OPTIONS_HDU_KEY          = 'h',
-  GAL_OPTIONS_OUTPUT_KEY       = 'o',
-  GAL_OPTIONS_DONTDELETE_KEY   = 'D',
-  GAL_OPTIONS_KEEPINPUTDIR_KEY = 'K',
-  GAL_OPTIONS_QUIET_KEY        = 'q',
-  GAL_OPTIONS_NUMTHREADS_KEY   = 'N',
-  GAL_OPTIONS_PRINTPARAMS_KEY  = 'P',
-  GAL_OPTIONS_SETDIRCONF_KEY   = 'S',
-  GAL_OPTIONS_SETUSRCONF_KEY   = 'U',
+  GAL_OPTIONS_KEY_HDU          = 'h',
+  GAL_OPTIONS_KEY_OUTPUT       = 'o',
+  GAL_OPTIONS_KEY_DONTDELETE   = 'D',
+  GAL_OPTIONS_KEY_KEEPINPUTDIR = 'K',
+  GAL_OPTIONS_KEY_QUIET        = 'q',
+  GAL_OPTIONS_KEY_NUMTHREADS   = 'N',
+  GAL_OPTIONS_KEY_PRINTPARAMS  = 'P',
+  GAL_OPTIONS_KEY_SETDIRCONF   = 'S',
+  GAL_OPTIONS_KEY_SETUSRCONF   = 'U',
 
   /* Only long option (integers for keywords). */
-  GAL_OPTIONS_MINMAPSIZE_KEY   = 500,
-  GAL_OPTIONS_LOG_KEY,
-  GAL_OPTIONS_CITE_KEY,
-  GAL_OPTIONS_CONFIG_KEY,
-  GAL_OPTIONS_LASTCONFIG_KEY,
-  GAL_OPTIONS_ONLYVERSION_KEY,
+  GAL_OPTIONS_KEY_MINMAPSIZE   = 500,
+  GAL_OPTIONS_KEY_LOG,
+  GAL_OPTIONS_KEY_CITE,
+  GAL_OPTIONS_KEY_CONFIG,
+  GAL_OPTIONS_KEY_LASTCONFIG,
+  GAL_OPTIONS_KEY_ONLYVERSION,
 };
 
 
+
+
+
 /* Conditions to check */
-enum gal_options_check_values
+enum gal_options_range_values
 {
   GAL_OPTIONS_RANGE_ANY,
 
@@ -88,21 +115,54 @@ enum gal_options_check_values
 };
 
 
+
+
+
+/* What to do if option isn't given. Note that in each program's `main.c'
+   the main program structure is initialized to zero (or NULL for
+   pointers). */
+enum gal_options_mandatory_values
+{
+  GAL_OPTIONS_NOT_MANDATORY,     /* =0 in C standard. */
+  GAL_OPTIONS_MANDATORY,
+};
+
+
+
+
+
+/* If the option has already been given a value or not. */
+enum gal_options_set_values
+{
+  GAL_OPTIONS_NOT_SET,           /* =0 in C standard. */
+  GAL_OPTIONS_SET,
+};
+
+
+
+
+
 /* The structure keeping all the values of the common options in Gnuastro's
    programs. */
 struct gal_options_common_params
 {
-  /* Input/Output: */
+  /* Input/Output. */
   char                    *hdu; /* Image extension.                      */
   char                 *output; /* Directory containg output.            */
   int               dontdelete; /* ==1: Don't delete existing file.      */
   int             keepinputdir; /* Keep input directory for auto output. */
 
-  /* Operating modes: */
+  /* Operating modes. */
   int                    quiet; /* Only print errors.                    */
   size_t            numthreads; /* Number of threads to use.             */
   size_t            minmapsize; /* Minimum bytes necessary to use mmap.  */
   int                      log; /* Make a log file.                      */
+
+  /* Configuration files. */
+  unsigned char    printparams; /* To print the full list of parameters. */
+  unsigned char     setdirconf; /* To write the directory config file.   */
+  unsigned char     setusrconf; /* To write teh user config config file. */
+  unsigned char     lastconfig; /* This is the last configuration file.  */
 
   /* For internal purposes. */
   char           *program_name; /* Official name to be used in text.     */
@@ -161,7 +221,7 @@ gal_options_common_argp_parse(int key, char *arg, struct argp_state *state);
 /************            Configuration files            ***************/
 /**********************************************************************/
 void
-gal_options_read_config_set_common(struct gal_options_common_params *cp);
+gal_options_read_config_set(struct gal_options_common_params *cp);
 
 
 void

@@ -71,6 +71,8 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 /* Identifiers for each operator. */
 enum gal_arithmetic_operators
 {
+  GAL_ARITHMETIC_OP_INVALID,      /* Invalid (=0 by C standard).  */
+
   GAL_ARITHMETIC_OP_PLUS,         /*   +     */
   GAL_ARITHMETIC_OP_MINUS,        /*   -     */
   GAL_ARITHMETIC_OP_MULTIPLY,     /*   *     */

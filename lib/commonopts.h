@@ -24,7 +24,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GAL_COMMONOPTS_H__
 #define __GAL_COMMONOPTS_H__
 
-#include <gnuastro/data.h>
+
 
 /* Common options for all programs.
 
@@ -41,48 +41,56 @@ struct argp_option gal_commonopts_options[] =
 #ifndef NOT_COMMON_HDU_PARSER
     {                           /* Some utilities need to parse `hdu' them-*/
       "hdu",                    /* selves. In this case, they will define  */
-      GAL_OPTIONS_HDU_KEY,      /* `NOT_COMMON_HDU_PARSER' and set their   */
+      GAL_OPTIONS_KEY_HDU,      /* `NOT_COMMON_HDU_PARSER' and set their   */
       "STR",                    /* own `hdu' option structure. */
       0,
       "Extension name or number of input data.",
-      1,                        /* Input. */
-      NULL,
+      GAL_OPTIONS_GROUP_INPUT,
+      &cp->hdu,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 #endif
     {
       "output",
-      GAL_OPTIONS_OUTPUT_KEY,
+      GAL_OPTIONS_KEY_OUTPUT,
       "STR",
       0,
       "Output file or directory name.",
-      2,                        /* Output. */
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &cp->output,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "dontdelete",
-      GAL_OPTIONS_DONTDELETE_KEY,
+      GAL_OPTIONS_KEY_DONTDELETE,
       0,
       0,
       "Don't delete output if it exists.",
-      2,                        /* Output. */
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &cp->dontdelete,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "keepinputdir",
-      GAL_OPTIONS_KEEPINPUTDIR_KEY,
+      GAL_OPTIONS_KEY_KEEPINPUTDIR,
       0,
       0,
       "Keep input directory for automatic output.",
-      2,                        /* Output. */
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &cp->keepinputdir,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -90,47 +98,55 @@ struct argp_option gal_commonopts_options[] =
     /* Operating mode. */
     {
       "quiet",
-      GAL_OPTIONS_QUIET_KEY,
+      GAL_OPTIONS_KEY_QUIET,
       0,
       0,
       "Only report errors, remain quiet about steps.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->quiet,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "numthreads",
-      GAL_OPTIONS_NUMTHREADS_KEY,
+      GAL_OPTIONS_KEY_NUMTHREADS,
       "INT",
       0,
       "Number of CPU threads to use.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->numthreads,
       GAL_DATA_TYPE_ULONG,
-      GAL_OPTIONS_RANGE_GT_0
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "minmapsize",
-      GAL_OPTIONS_MINMAPSIZE_KEY,
+      GAL_OPTIONS_KEY_MINMAPSIZE,
       "INT",
       0,
       "Minimum no. bytes to map arrays to hdd/ssd.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->minmapsize,
       GAL_DATA_TYPE_ULONG,
-      GAL_OPTIONS_RANGE_GE_0
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "log",
-      GAL_OPTIONS_LOG_KEY,
+      GAL_OPTIONS_KEY_LOG,
       0,
       0,
       "No log file for programs which make one.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->log,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -138,80 +154,94 @@ struct argp_option gal_commonopts_options[] =
     /* Internal (before control goes back to the program). */
     {
       "cite",
-      GAL_OPTIONS_CITE_KEY,
+      GAL_OPTIONS_KEY_CITE,
       0,
       0,
       "BibTeX citation for this program.",
-      -1,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
       NULL,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "printparams",
-      GAL_OPTIONS_PRINTPARAMS_KEY,
+      GAL_OPTIONS_KEY_PRINTPARAMS,
       0,
       0,
       "Print parameter values to be used and abort.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->printparams,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "config",
-      GAL_OPTIONS_CONFIG_KEY,
+      GAL_OPTIONS_KEY_CONFIG,
       "STR",
       0,
       "Read file STR before continuing.",
-      -1,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
       NULL,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "setdirconf",
-      GAL_OPTIONS_SETDIRCONF_KEY,
+      GAL_OPTIONS_KEY_SETDIRCONF,
       0,
       0,
       "Set default values for this directory and abort.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->setdirconf,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "setusrconf",
-      GAL_OPTIONS_SETUSRCONF_KEY,
+      GAL_OPTIONS_KEY_SETUSRCONF,
       0,
       0,
       "Set default values for this user and abort.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->setusrconf,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "lastconfig",
-      GAL_OPTIONS_LASTCONFIG_KEY,
+      GAL_OPTIONS_KEY_LASTCONFIG,
       0,
       0,
       "Do not parse any more configuration files.",
-      -1,
-      NULL,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
+      &cp->lastconfig,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "onlyversion",
-      GAL_OPTIONS_ONLYVERSION_KEY,
+      GAL_OPTIONS_KEY_ONLYVERSION,
       "STR",
       0,
       "Only run if the program version is STR.",
-      -1,
+      GAL_OPTIONS_GROUP_OPERATING_MODE,
       NULL,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 

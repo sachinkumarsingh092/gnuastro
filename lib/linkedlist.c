@@ -373,7 +373,7 @@ gal_linkedlist_reverse_stll(struct gal_linkedlist_stll **list)
       while(*list!=NULL)
         {
           gal_linkedlist_pop_from_stll(list, &thisstring);
-          gal_linkedlist_add_to_stll(&correctorder, thisstring, 1);
+          gal_linkedlist_add_to_stll(&correctorder, thisstring, 0);
         }
       *list=correctorder;
     }

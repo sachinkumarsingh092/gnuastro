@@ -26,15 +26,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 /* Macros for various types of standard transformation.*/
 enum standard_warps
-  {
-    ALIGN_WARP,
-    ROTATE_WARP,
-    SCALE_WARP,
-    FLIP_WARP,
-    SHEAR_WARP,
-    TRANSLATE_WARP,
-    PROJECT_WARP,
-  };
+{
+  UI_WARP_INVALID,
+
+  UI_WARP_ALIGN,
+  UI_WARP_ROTATE,
+  UI_WARP_SCALE,
+  UI_WARP_FLIP,
+  UI_WARP_SHEAR,
+  UI_WARP_TRANSLATE,
+  UI_WARP_PROJECT,
+};
 
 
 /* Functions */

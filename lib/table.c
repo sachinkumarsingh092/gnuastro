@@ -226,7 +226,7 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
 {
   size_t j;
   char **strarr;
-  int maxstrlen, width, precision;
+  int maxstrlen, width=0, precision=0;
 
 
   /* First do a sanity check, so we can safly stop checking in the steps

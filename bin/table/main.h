@@ -36,38 +36,26 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* User interface structure. */
-struct uiparams
-{
-  char              *filename;
-  gal_data_t      *allcolinfo;
-};
-
-
 
 
 
 /* Main program parameters structure */
 struct tableparams
 {
-  /* Other structures: */
-  struct uiparams          up;  /* User interface parameters.           */
+  /* From command-line */
   struct gal_options_common_params cp; /* Common parameters.            */
-
-  /* Input */
+  char              *filename;  /* Input filename.                      */
   struct gal_linkedlist_stll *columns; /* List of given columns.        */
+  char           *searchinstr;  /* Value to the `searchin' option.      */
+  unsigned char    ignorecase;  /* Ignore case matching column names.   */
+  char          *tabletypestr;  /* The type of the table as a string.   */
+  unsigned char   information;  /* ==1, only print FITS information.    */
 
   /* Output: */
+  unsigned char      searchin;  /* Where to search in column info.      */
   int               tabletype;  /* Type of output table (FITS, txt).    */
   gal_data_t           *table;  /* Linked list of output table columns. */
-
-  /* Operating modes */
-  int             information;  /* ==1, only print FITS information.    */
-  int              ignorecase;  /* Ignore case matching column names.   */
-  int                searchin;  /* Where to search in column info.      */
-
-  /* Internal: */
-  int                onlyview;
+  gal_data_t      *allcolinfo;  /* Information of all the columns.      */
   time_t              rawtime;  /* Starting time of the program.        */
 };
 

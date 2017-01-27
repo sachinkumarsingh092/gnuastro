@@ -74,11 +74,11 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 #define GAL_TABLE_STRING_TYPE_BFITS "fits-binary"
 enum gal_table_types
 {
-  GAL_TABLE_TYPE_TXT,                     /* Plain text table.  */
-  GAL_TABLE_TYPE_AFITS,                   /* FITS ASCII table.  */
-  GAL_TABLE_TYPE_BFITS,                   /* FITS binary table. */
+  GAL_TABLE_TYPE_INVALID,       /* Invalid (=0 by C standard).       */
 
-  GAL_TABLE_TYPE_INVALID,                 /* For sanity checks. */
+  GAL_TABLE_TYPE_TXT,           /* Plain text table.                 */
+  GAL_TABLE_TYPE_AFITS,         /* FITS ASCII table.                 */
+  GAL_TABLE_TYPE_BFITS,         /* FITS binary table.                */
 };
 
 
@@ -93,11 +93,11 @@ enum gal_table_types
 #define GAL_TABLE_STRING_SEARCH_COMMENT "comment"
 enum gal_table_where_to_search
 {
-  GAL_TABLE_SEARCH_NAME,                   /* Match/search in names.    */
-  GAL_TABLE_SEARCH_UNIT,                   /* Match/search in units.    */
-  GAL_TABLE_SEARCH_COMMENT,                /* Match/search in comments. */
+  GAL_TABLE_SEARCH_INVALID,       /* Invalid (=0 by C standard).     */
 
-  GAL_TABLE_SEARCH_INVALID,                /* For sanity checks.        */
+  GAL_TABLE_SEARCH_NAME,          /* Match/search in names.          */
+  GAL_TABLE_SEARCH_UNIT,          /* Match/search in units.          */
+  GAL_TABLE_SEARCH_COMMENT,       /* Match/search in comments.       */
 };
 
 
@@ -110,6 +110,8 @@ enum gal_table_where_to_search
    data.*/
 enum gal_table_diplay_formats
 {
+  GAL_TABLE_DISPLAY_FMT_INVALID,        /* Invalid (=0 by C standard). */
+
   GAL_TABLE_DISPLAY_FMT_STRING,         /* String/Character.           */
   GAL_TABLE_DISPLAY_FMT_DECIMAL,        /* Integers: signed decimal.   */
   GAL_TABLE_DISPLAY_FMT_UDECIMAL,       /* Integers: unsigned decimal. */
@@ -118,8 +120,6 @@ enum gal_table_diplay_formats
   GAL_TABLE_DISPLAY_FMT_FLOAT,          /* Floats: with decimal point. */
   GAL_TABLE_DISPLAY_FMT_EXP,            /* Floats: as exponential.     */
   GAL_TABLE_DISPLAY_FMT_GENERAL,        /* Floats: general (%g in C).  */
-
-  GAL_TABLE_DISPLAY_FMT_INVALID,        /* Floats: general (%g in C).  */
 };
 
 

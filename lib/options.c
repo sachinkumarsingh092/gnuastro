@@ -106,9 +106,9 @@ gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp)
     if( strlen(tmp->v) > namewidth ) namewidth=strlen(tmp->v);
 
   /* Print the introductory information. */
-  sprintf(info, "to continue, the following options need a value:\n");
+  sprintf(info, "to continue, the following options need a value ");
   sprintf(info+strlen(info), "(parenthesis after option name contain its "
-          "description)\n\n");
+          "description):\n\n");
 
   /* Print the list of options along with their description. */
   while(cp->novalue_name!=NULL)
@@ -131,29 +131,6 @@ gal_options_abort_if_mandatory_missing(struct gal_options_common_params *cp)
           "  info gnuastro \"Configuration files\"\n");
 
   error(EXIT_FAILURE, 0, "%s", info);
-}
-
-
-
-
-/* The modified `argp_option' structure contains a void pointer, depending
-   on the type of value inside it, you need to the pointer differently. */
-void
-gal_options_free(struct argp_option *options)
-{
-  size_t i;
-
-  /* Go over all the options and free those that are allocated. After
-     freeing, set them to NULL, so they are not mistakenly used later. */
-  for(i=0; !gal_options_is_last(&options[i]); ++i)
-    if(options[i].value)
-      {
-        if(options[i].type==GAL_DATA_TYPE_STRLL)
-          gal_linkedlist_free_stll(options[i].value, 1);
-        else
-          free(options[i].value);
-        options[i].value=NULL;
-      }
 }
 
 
@@ -298,18 +275,18 @@ options_immediate(int key, char *arg, struct gal_options_common_params *cp)
     {
     /* We don't want later options that were set for the given version to
        cause errors if this option was given. */
-    case GAL_OPTIONS_ONLYVERSION_KEY:
+    case GAL_OPTIONS_KEY_ONLYVERSION:
       options_check_version(arg);
       break;
 
     /* This option is completely independent of anything and doesn't need
        out attention later. */
-    case GAL_OPTIONS_CITE_KEY:
+    case GAL_OPTIONS_KEY_CITE:
       options_print_citation_exit(cp);
       break;
 
     /* Read the given configuration file. */
-    case GAL_OPTIONS_CONFIG_KEY:
+    case GAL_OPTIONS_KEY_CONFIG:
       options_parse_file(arg, cp, 1);
       break;
     }
@@ -320,20 +297,20 @@ options_immediate(int key, char *arg, struct gal_options_common_params *cp)
 
 
 /* The option value has been read and put into the `value' field of the
-   `argp_option' structure. This function will use the `range' field to and
-   abort with an error if the value is not in the given range. It also
-   takes the `value_in_str' so it can be used for good error message
-   (showing the value that could not be read). Note that for strings, this
-   option will not do any checks. */
+   `argp_option' structure. This function will use the `range' field to
+   define a check and abort with an error if the value is not in the given
+   range. It also takes the `arg' so it can be used for good error message
+   (showing the value that could not be read). */
 static void
 options_sanity_check(struct argp_option *option, char *arg,
                      char *filename, size_t lineno)
 {
-  char *message;
   size_t dsize=1;
-  int multicheckop;
-  int operator1, operator2;
-  gal_data_t *value, *ref1, *ref2, *check1, *check2;
+  char *message=NULL;
+  int operator1=GAL_ARITHMETIC_OP_INVALID;
+  int operator2=GAL_ARITHMETIC_OP_INVALID;
+  int multicheckop=GAL_ARITHMETIC_OP_INVALID;
+  gal_data_t *value, *ref1=NULL, *ref2=NULL, *check1, *check2;
   int mcflag = ( GAL_ARITHMETIC_NUMOK
                  | GAL_ARITHMETIC_FREE
                  | GAL_ARITHMETIC_INPLACE );
@@ -451,6 +428,8 @@ options_sanity_check(struct argp_option *option, char *arg,
      doesn't free it, we need it for later (for example to print the option
      values). */
   value->array=NULL;
+  gal_data_free(ref1);
+  gal_data_free(ref2);
   gal_data_free(value);
   gal_data_free(check1);
 }
@@ -463,25 +442,12 @@ static void
 gal_options_read_check(struct argp_option *option, char *arg, char *filename,
                        size_t lineno)
 {
-  char **strarr=NULL;
-
-  /* For strings, `gal_data_string_to_type' is going to return an allocated
-     pointer to an allocated string (`char **'). In this context, we are
-     just dealing with one string, and arrays of strings are never used (a
-     linked list is defined when multiple strings must be read). So only
-     keep the actual string and free the one that kept it. */
-  if(option->type==GAL_DATA_TYPE_STRING)
-    {
-      gal_data_string_to_type((void **)(&strarr), arg,
-                              option->type);
-      option->value=strarr[0];
-      free(strarr);
-    }
+  if(option->type==GAL_DATA_TYPE_STRLL)
+    gal_linkedlist_add_to_stll(option->value, arg, 1);
   else
     {
-      /* Read in the value. */
-      if( gal_data_string_to_type(&option->value, arg,
-                                  option->type) )
+      /* Read the string argument into the value. */
+      if( gal_data_string_to_type(&option->value, arg, option->type) )
 
         /* Fortunately `error_at_line' will behave like `error' when the
            filename is NULL (the option was read from a command-line). */
@@ -494,10 +460,14 @@ gal_options_read_check(struct argp_option *option, char *arg, char *filename,
                       "positive\n"
                       "  - It is floating point, but the expected value "
                       "is an integer\n", arg, option->name);
-
-      /* Do a sanity check. */
-      options_sanity_check(option, arg, filename, lineno);
     }
+
+  /* Do a sanity check. */
+  options_sanity_check(option, arg, filename, lineno);
+
+
+  /* Flip the `set' flag to `GAL_OPTIONS_SET'. */
+  option->set=GAL_OPTIONS_SET;
 }
 
 
@@ -552,11 +522,8 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
              As a result, only when searching for options on the
              command-line, a second value to the same option will replace
              the first one. This will not happen in configuration files. */
-          if(options[i].value && gal_data_is_linked_list(options[i].type)==0)
-            {
-              free(options[i].value);
-              options[i].value=NULL;
-            }
+          if(options[i].set && gal_data_is_linked_list(options[i].type)==0)
+            options[i].set=GAL_OPTIONS_NOT_SET;
 
           /* We have two types of options: those which need an argument and
              those that don't. For those that don't `arg' will be
@@ -569,8 +536,10 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
               /* Make sure the option has the type set for options with no
                  argument. So, give it a value of 1. */
               if(options[i].type==GAL_OPTIONS_NO_ARG_TYPE)
-                gal_data_string_to_type(&(options[i].value), "1",
-                                        options[i].type);
+                {
+                  *(unsigned char *)(options[i].value)=1;
+                  options[i].set=GAL_OPTIONS_SET;
+                }
               else
                 error(EXIT_FAILURE, 0, "A bug! Please contact us at %s to "
                       "correct it. Options with no arguments, must have "
@@ -744,7 +713,7 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
         {
           /* If the option already has a value and it isn't a linked
              list, then ignore it. */
-          if(options[i].value && !gal_data_is_linked_list(options[i].type))
+          if(options[i].set && !gal_data_is_linked_list(options[i].type))
             return 0;
 
           /* For options that need immediate attention. */
@@ -778,8 +747,8 @@ options_lastconfig_has_been_called(struct argp_option *coptions)
 {
   size_t i;
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
-    if( coptions[i].key == GAL_OPTIONS_LASTCONFIG_KEY
-        && coptions[i].value
+    if( coptions[i].key == GAL_OPTIONS_KEY_LASTCONFIG
+        && coptions[i].set
         && *((unsigned char *)(coptions[i].value)) )
       return 1;
   return 0;
@@ -934,44 +903,27 @@ gal_options_parse_config_files(struct gal_options_common_params *cp)
 
 
 static void
-options_reverse_lists(struct argp_option *options)
+options_reverse_lists_check_mandatory(struct gal_options_common_params *cp,
+                                      struct argp_option *options)
 {
   size_t i;
 
   for(i=0; !gal_options_is_last(&options[i]); ++i)
-    if(options[i].value && gal_data_is_linked_list(options[i].type) )
-      switch(options[i].type)
+    {
+      if(options[i].set)
         {
-        case GAL_DATA_TYPE_STRLL:
-          gal_linkedlist_reverse_stll(
-                 (struct gal_linkedlist_stll **)(&options[i].value) );
-          break;
-
-        default:
-          error(EXIT_FAILURE, 0, "type code %d isn't recognized as a "
-                "linked list in `options_reverse_lists'", options[i].type);
+          if( gal_data_is_linked_list(options[i].type) )
+            switch(options[i].type)
+              {
+              case GAL_DATA_TYPE_STRLL:
+                gal_linkedlist_reverse_stll(
+                    (struct gal_linkedlist_stll **)(options[i].value) );
+                break;
+              }
         }
-}
-
-
-
-
-
-/* The full list of common options is not necessarily for all the programs,
-   before calling `gal_options_read_config_files', the programs can add the
-   keys of any common options they need to the `mand_common' field of the
-   `gal_options_common_params' structure, then those common options that
-   might be necessary will call this function to check. */
-static void
-options_check_if_mandatory(struct gal_options_common_params *cp,
-                           struct argp_option *option)
-{
-  struct gal_linkedlist_ill *tmp;
-
-  if(option->value==NULL)       /* Only necessary when there is no value. */
-    for(tmp=cp->mand_common; tmp!=NULL; tmp=tmp->next)
-      if(option->key==tmp->v)
-        gal_options_add_to_not_given(cp, option);
+      else if(options[i].mandatory==GAL_OPTIONS_MANDATORY)
+        gal_options_add_to_not_given(cp, &options[i]);
+    }
 }
 
 
@@ -980,64 +932,19 @@ options_check_if_mandatory(struct gal_options_common_params *cp,
 
 /* Read all configuration files and set common options */
 void
-gal_options_read_config_set_common(struct gal_options_common_params *cp)
+gal_options_read_config_set(struct gal_options_common_params *cp)
 {
-  size_t i;
-
   /* Parse all the configuration files. */
   gal_options_parse_config_files(cp);
 
   /* Reverse the order of all linked list type options so the popping order
      is the same as the user's input order. We need to do this here because
      when printing those options, their order matters.*/
-  options_reverse_lists(cp->poptions);
-  options_reverse_lists(cp->coptions);
+  options_reverse_lists_check_mandatory(cp, cp->poptions);
+  options_reverse_lists_check_mandatory(cp, cp->coptions);
 
-  /* Put the common option values into the structure. */
-  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    if( cp->coptions[i].key && cp->coptions[i].name )
-      switch(cp->coptions[i].key)
-        {
-        case GAL_OPTIONS_HDU_KEY:
-          gal_checkset_allocate_copy(cp->coptions[i].value, &cp->hdu);
-          break;
-
-        case GAL_OPTIONS_OUTPUT_KEY:
-          gal_checkset_allocate_copy(cp->coptions[i].value, &cp->output);
-          break;
-
-        case GAL_OPTIONS_DONTDELETE_KEY:
-          if(cp->coptions[i].value)
-            cp->dontdelete = *(unsigned char *)(cp->coptions[i].value);
-          break;
-
-        case GAL_OPTIONS_KEEPINPUTDIR_KEY:
-          if(cp->coptions[i].value)
-            cp->keepinputdir = *(unsigned char *)(cp->coptions[i].value);
-          break;
-
-        case GAL_OPTIONS_QUIET_KEY:
-          if(cp->coptions[i].value)
-            cp->quiet = *(unsigned char *)(cp->coptions[i].value);
-          break;
-
-        case GAL_OPTIONS_NUMTHREADS_KEY:
-          if(cp->coptions[i].value)
-            cp->numthreads = *(unsigned long *)(cp->coptions[i].value);
-          break;
-
-        case GAL_OPTIONS_MINMAPSIZE_KEY:
-          if(cp->coptions[i].value)
-            cp->minmapsize = *(unsigned long *)(cp->coptions[i].value);
-          else
-            options_check_if_mandatory(cp, &cp->coptions[i]);
-          break;
-
-        case GAL_OPTIONS_LOG_KEY:
-          if(cp->coptions[i].value)
-            cp->log = *(unsigned char *)(cp->coptions[i].value);
-          break;
-        }
+  /* Abort if any of the mandatory options are not set. */
+  gal_options_abort_if_mandatory_missing(cp);
 }
 
 
@@ -1071,13 +978,13 @@ option_is_printable(struct argp_option *option)
 {
   switch(option->key)
     {
-    case GAL_OPTIONS_OUTPUT_KEY:
-    case GAL_OPTIONS_CITE_KEY:
-    case GAL_OPTIONS_PRINTPARAMS_KEY:
-    case GAL_OPTIONS_CONFIG_KEY:
-    case GAL_OPTIONS_SETDIRCONF_KEY:
-    case GAL_OPTIONS_SETUSRCONF_KEY:
-    case GAL_OPTIONS_LASTCONFIG_KEY:
+    case GAL_OPTIONS_KEY_OUTPUT:
+    case GAL_OPTIONS_KEY_CITE:
+    case GAL_OPTIONS_KEY_PRINTPARAMS:
+    case GAL_OPTIONS_KEY_CONFIG:
+    case GAL_OPTIONS_KEY_SETDIRCONF:
+    case GAL_OPTIONS_KEY_SETUSRCONF:
+    case GAL_OPTIONS_KEY_LASTCONFIG:
       return 0;
     }
   return 1;
@@ -1099,9 +1006,9 @@ options_print_any_type(void *ptr, int type, int width, FILE *fp)
     /* For a string we need to make sure it has no white space characters,
        if it does, it should be printed it within quotation signs. */
     case GAL_DATA_TYPE_STRING:
-      c=ptr; while(*c!='\0') if(isspace(*c++)) break;
-      if(*c=='\0') asprintf(&str, "%s",      (char *)ptr);
-      else         asprintf(&str, "\"%s\" ", (char *)ptr);
+      c=*(char **)ptr; while(*c!='\0') if(isspace(*c++)) break;
+      if(*c=='\0') asprintf(&str, "%s",      *(char **)ptr);
+      else         asprintf(&str, "\"%s\" ", *(char **)ptr);
       break;
 
     case GAL_DATA_TYPE_UCHAR:
@@ -1145,7 +1052,7 @@ options_print_any_type(void *ptr, int type, int width, FILE *fp)
       break;
 
     case GAL_DATA_TYPE_DOUBLE:
-      asprintf(&str, "%.14f", *(double *)ptr);
+      asprintf(&str, "%.10f", *(double *)ptr);
       break;
 
     default:
@@ -1180,12 +1087,13 @@ options_set_lengths(struct argp_option *poptions,
 
   /* For program specific options. */
   for(i=0; !gal_options_is_last(&poptions[i]); ++i)
-    if(poptions[i].name && poptions[i].value)
+    if(poptions[i].name && poptions[i].set)
       {
         /* Get the length of the value and save its length length if its
            larger than the widest value. */
         if(gal_data_is_linked_list(poptions[i].type))
-          for(tmp=poptions[i].value; tmp!=NULL; tmp=tmp->next)
+          for(tmp=*(struct gal_linkedlist_stll **)(poptions[i].value);
+              tmp!=NULL; tmp=tmp->next)
             {
               /* A small sanity check. */
               if(poptions[i].type!=GAL_DATA_TYPE_STRLL)
@@ -1193,7 +1101,7 @@ options_set_lengths(struct argp_option *poptions,
                       "are acceptable for printing");
 
               /* Get the maximum lengths of each node: */
-              tvlen=options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING,
+              tvlen=options_print_any_type(&tmp->v, GAL_DATA_TYPE_STRING,
                                            0, NULL);
               if( tvlen>vlen )
                 vlen=tvlen;
@@ -1216,7 +1124,7 @@ options_set_lengths(struct argp_option *poptions,
      in this category, so we also need to check them. The detailed steps
      are the same as before. */
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
-    if( coptions[i].name && coptions[i].value
+    if( coptions[i].name && coptions[i].set
         && option_is_printable(&coptions[i]) )
       {
         tvlen=options_print_any_type(coptions[i].value, coptions[i].type,
@@ -1248,15 +1156,16 @@ options_print_all_in_group(struct argp_option *options, int groupint,
   /* Go over all the options. */
   for(i=0; !gal_options_is_last(&options[i]); ++i)
     if( options[i].group == groupint          /* Is in this group.        */
-        && options[i].value                   /* Has been given a value.  */
+        && options[i].set                     /* Has been given a value.  */
         && option_is_printable(&options[i]) ) /* Is relevant for printing.*/
       {
         /* Linked lists */
         if(gal_data_is_linked_list(options[i].type))
-          for(tmp=options[i].value; tmp!=NULL; tmp=tmp->next)
+          for(tmp=*(struct gal_linkedlist_stll **)(options[i].value);
+              tmp!=NULL; tmp=tmp->next)
             {
               fprintf(fp, " %-*s ", namewidth, options[i].name);
-              options_print_any_type(tmp->v, GAL_DATA_TYPE_STRING,
+              options_print_any_type(&tmp->v, GAL_DATA_TYPE_STRING,
                                      valuewidth, fp);
               fprintf(fp, "(%s\b)\n", options[i].doc);
             }
@@ -1395,12 +1304,12 @@ gal_options_print_state(struct gal_options_common_params *cp)
   /* A sanity check is necessary first. We want to make sure that the user
      hasn't called more than one of these options. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    if(cp->coptions[i].value)
+    if(cp->coptions[i].set)
       switch(cp->coptions[i].key)
         {
-        case GAL_OPTIONS_PRINTPARAMS_KEY:
-        case GAL_OPTIONS_SETDIRCONF_KEY:
-        case GAL_OPTIONS_SETUSRCONF_KEY:
+        case GAL_OPTIONS_KEY_PRINTPARAMS:
+        case GAL_OPTIONS_KEY_SETDIRCONF:
+        case GAL_OPTIONS_KEY_SETUSRCONF:
           sum += OPTIONS_UCHARVAL;
         }
   if(sum>1)
@@ -1412,20 +1321,20 @@ gal_options_print_state(struct gal_options_common_params *cp)
      non-NULL value is not enough. They can have a value of 1 or 0, and the
      respective file should only be created if we have a value of 1. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
-    if(cp->coptions[i].value && OPTIONS_UCHARVAL)
+    if(cp->coptions[i].set && OPTIONS_UCHARVAL)
       switch(cp->coptions[i].key)
         {
-        case GAL_OPTIONS_PRINTPARAMS_KEY:
+        case GAL_OPTIONS_KEY_PRINTPARAMS:
           options_print_all(cp, NULL, NULL);
           break;
 
-        case GAL_OPTIONS_SETDIRCONF_KEY:
+        case GAL_OPTIONS_KEY_SETDIRCONF:
           asprintf(&dirname, ".%s", PACKAGE);
           options_print_all(cp, dirname, cp->coptions[i].name);
           free(dirname);
           break;
 
-        case GAL_OPTIONS_SETUSRCONF_KEY:
+        case GAL_OPTIONS_KEY_SETUSRCONF:
           home=options_get_home();
           asprintf(&dirname, "%s/%s", home, USERCONFIG_DIR);
           options_print_all(cp, dirname, cp->coptions[i].name);

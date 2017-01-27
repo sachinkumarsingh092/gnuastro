@@ -34,11 +34,163 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <timing.h>
 #include <options.h>
 #include <checkset.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
 #include "ui.h"
-#include "args.h"
+#include "authors-cite.h"
+
+
+
+
+
+/**************************************************************/
+/*********      Argp necessary global entities     ************/
+/**************************************************************/
+/* Definition parameters for the argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "ASTRdata or number [ASTRdata] OPERATOR ...";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do arithmetic "
+  "operations on one or multiple images and numbers. Simply put, the name "
+  "of the image along with the arithmetic operators and possible numbers "
+  "are given as arguments. The extensions of each input are specified with "
+  "(possibly multiple) calls to the `--hdu' option."
+  "\n\nCurrently "PROGRAM_NAME" only supports postfix or reverse polish "
+  "notation. For example to get the result of `5+6', you should write "
+  "`5 6 +', or to get the average of two images, you should write `a.fits "
+  "b.fits + 2 /' (or more simply use the `average' operator with "
+  "`a.fits b.fits average'). Please see the manual for more information. "
+  "\n\nThe operators/functions recognized by "PROGRAM_NAME" are: +, -, *, "
+  "/, abs, pow, sqrt, log, log10, minvalue, maxvalue, min, max, average, "
+  "median, lt, le, gt, ge, eq, ne, and, or, not, isblank, and the full set "
+  "of bitwise operators. Please run `info gnuastro \"Arithmetic "
+  "operators\"' for detailed information on each operator. Note that "
+  "multiplication should be quoted (like \"*\", or '*') to avoid shell "
+  "expansion.\n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+
+/* Available letters for short options:
+
+   a b c d e f g i j k l m n p r s t u v w x y z
+   A B C E F G H I J L M O Q R T U W X Y Z                */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_HDU        = 'h',
+
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct imgarithparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  struct gal_options_common_params *cp=&p->cp;
+
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->coptions           = gal_commonopts_options;
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct imgarithparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
+    {
+
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      gal_linkedlist_add_to_stll(&p->tokens, arg, 0);
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
+    }
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -51,67 +203,11 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-/* Read the options into the main program structure. When an option wasn't
-   given, it will not be given a value here, so it will have the
-   initialized value of 0 (or NULL for pointers) after this function. If
-   the value of `0' is meaningful in the context of the option, then it
-   must be given the blank value for the type of the variable IN THIS
-   FUNCTION.
-
-   When the option is necessary for the program to run (independent of any
-   arguments) but it wasn't given, call the `gal_options_add_to_not_given'
-   function. The role of the final `gal_options_abort_if_mandatory_missing'
-   function at the end of this function is to print the full list of
-   mandatory options that were gathered by that function and abort with one
-   error message to help the user. */
-static void
-ui_read_options(struct imgarithparams *p)
-{
-  size_t i;
-
-  /* Put the program's option values into the structure. */
-  for(i=0; !gal_options_is_last(&options[i]); ++i)
-    if( options[i].key && options[i].name )
-      switch(options[i].key)
-        {
-        /* Inputs */
-        case ARGS_OPTION_HDU_KEY:
-          gal_linked_list_copy_stll(options[i].value, &p->hdus);
-          break;
-
-
-
-        /* Output */
-
-
-
-        /* Operating mode */
-
-
-
-        default:
-          error(EXIT_FAILURE, 0, "option key %d not recognized in "
-                "`ui_read_check_only_options'", options[i].key);
-        }
-
-  /* If any of the mandatory options were not given, then print an error
-     listing them and abort. */
-  gal_options_abort_if_mandatory_missing(&p->cp);
-}
-
-
-
-
-
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct imgarithparams *p)
 {
-
-  /* Read all the options from the `argp_option' array into the main
-     program structure to facilitate checks and running the program. */
-  ui_read_options(p);
 
 }
 
@@ -128,10 +224,10 @@ ui_check_options_and_arguments(struct imgarithparams *p)
   size_t numfits=0, numhdus=0;
   struct gal_linkedlist_stll *token, *hdu;
 
-  /* The inputs are put in a lastin-firstout (simple) linked list, so
+  /* The input tokens are put in a lastin-firstout (simple) linked list, so
      change them to the correct order so the order we pop a token is the
-     same order that the user input a value. */
-  gal_linkedlist_reverse_stll(&p->hdus);
+     same order that the user input a value. Note that for the options this
+     was done in `gal_options_read_config_set'. */
   gal_linkedlist_reverse_stll(&p->tokens);
 
   /* Set the output file name (if any is needed). Note that since the
@@ -207,14 +303,18 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero/NULL value for all elements. */
-  cp->poptions        = options;
-  cp->program_name    = PROGRAM_NAME;
-  cp->program_exec    = PROGRAM_EXEC;
-  cp->program_bibtex  = PROGRAM_BIBTEX;
-  cp->program_authors = PROGRAM_AUTHORS;
-  cp->coptions        = gal_commonopts_options;
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read. */
+#define NOT_COMMON_HDU_PARSER 1
+#include <commonopts.h>
+#include "args.h"
+
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
 
 
   /* The dash of a negative number will cause problems with the option
@@ -233,7 +333,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
 
 
   /* Read the configuration files. */
-  gal_options_read_config_set_common(cp);
+  gal_options_read_config_set(cp);
 
 
   /* Read the options into the program's structure, and check them and
@@ -251,12 +351,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
      that arguments don't go in a configuration file. So this test should
      be done after (possibly) printing the option values. */
   ui_check_options_and_arguments(p);
-
-
-  /* Free all the allocated spaces in the option structures. */
-  gal_options_free(options);
-  gal_options_free(gal_commonopts_options);
-  gal_linkedlist_free_ill(cp->mand_common);
 }
 
 

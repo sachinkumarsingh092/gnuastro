@@ -420,6 +420,10 @@ ispsf(double fcolvalue)
 void
 setprofparams(struct mkonthread *mkp)
 {
+  printf("\n ... setprofparams needs to be corrected ...\n");
+  exit(0);
+
+#if 0
   struct mkprofparams *p=mkp->p;
 
   double *cat, sigma;
@@ -536,7 +540,7 @@ setprofparams(struct mkonthread *mkp)
             "seen and reported prior to this step. Please contact us so "
             "we can correct this");
     }
-
+#endif
 }
 
 
@@ -564,6 +568,10 @@ setprofparams(struct mkonthread *mkp)
 void
 makeoneprofile(struct mkonthread *mkp)
 {
+  printf("\n ... makeoneprofile needs to be corrected ...\n");
+  exit(0);
+
+#if 0
   struct mkprofparams *p=mkp->p;
 
   float sum;
@@ -627,4 +635,5 @@ makeoneprofile(struct mkonthread *mkp)
         gal_array_fmultip_const(mkp->ibq->img, size,
                                 mkp->brightness/sum);
     }
+#endif
 }

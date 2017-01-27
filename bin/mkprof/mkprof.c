@@ -215,6 +215,10 @@ saveindividual(struct mkonthread *mkp)
 void *
 build(void *inparam)
 {
+  printf("\n... build needs to be corrected ... \n");
+  exit(0);
+#if 0
+
   struct mkonthread *mkp=(struct mkonthread *)inparam;
   struct mkprofparams *p=mkp->p;
 
@@ -346,6 +350,7 @@ build(void *inparam)
     pthread_barrier_wait(mkp->b);
 
   return NULL;
+#endif
 }
 
 
@@ -544,13 +549,12 @@ write(struct mkprofparams *p)
       /* Get the current time for verbose output. */
       if(!p->cp.quiet) gettimeofday(&t1, NULL);
 
-      /* Make a temporary array of the desired type for writing the
-         output. */
-      if(out->type==GAL_DATA_TYPE_FLOAT)
+      /* Prepare type of output. */
+      if(out->type==p->type)
         towrite=out;
       else
         {
-          towrite=gal_data_copy_to_new_type(out, p->outtype);
+          towrite=gal_data_copy_to_new_type(out, p->type);
           free(out);
         }
 

@@ -34,11 +34,223 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <timing.h>
 #include <options.h>
 #include <checkset.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
 #include "ui.h"
-#include "args.h"
+#include "authors-cite.h"
+
+
+
+
+
+/**************************************************************/
+/*********      Argp necessary global entities     ************/
+/**************************************************************/
+/* Definition parameters for the argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "[BackgroundImage] Catalog";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create a FITS image "
+  "containing any number of mock astronomical profiles based on an input "
+  "catalog. All the profiles will be built from the center outwards. First "
+  "by Monte Carlo integration, then using the central pixel position. The "
+  "tolerance level specifies when to switch to a latter.\n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+/* Option groups particular to this program. */
+enum program_args_groups
+{
+  ARGS_GROUP_PROFILES = GAL_OPTIONS_GROUP_AFTER_COMMON,
+  ARGS_GROUP_CATALOG,
+  ARGS_GROUP_WCS,
+};
+
+
+
+
+
+/* Keys for each option.
+
+   Available letters (-V which is used by GNU is also removed):
+
+   a d f g j k l u v
+   A E G H I J L M O Q U W Z     */
+enum option_keys_enum
+{
+  /* With short-option version. */
+  ARGS_OPTION_KEY_BACKHDU         = 'B',
+  ARGS_OPTION_KEY_NAXIS1          = 'x',
+  ARGS_OPTION_KEY_NAXIS2          = 'y',
+  ARGS_OPTION_KEY_INPUTASCANVAS   = 'C',
+  ARGS_OPTION_KEY_OVERSAMPLE      = 's',
+  ARGS_OPTION_KEY_INDIVIDUAL      = 'i',
+  ARGS_OPTION_KEY_NOMERGED        = 'm',
+  ARGS_OPTION_KEY_TYPE            = 'T',
+  ARGS_OPTION_KEY_NUMRANDOM       = 'r',
+  ARGS_OPTION_KEY_TOLERANCE       = 't',
+  ARGS_OPTION_KEY_TUNITINP        = 'p',
+  ARGS_OPTION_KEY_XSHIFT          = 'X',
+  ARGS_OPTION_KEY_YSHIFT          = 'Y',
+  ARGS_OPTION_KEY_PREPFORCONV     = 'c',
+  ARGS_OPTION_KEY_ZEROPOINT       = 'z',
+  ARGS_OPTION_KEY_CIRCUMWIDTH     = 'w',
+  ARGS_OPTION_KEY_REPLACE         = 'R',
+  ARGS_OPTION_KEY_ENVSEED         = 'e',
+  ARGS_OPTION_KEY_MFORFLATPIX     = 'F',
+
+  /* Only with long version. */
+  ARGS_OPTION_KEY_PSFINIMG        = 1000,
+  ARGS_OPTION_KEY_MAGATPEAK,
+  ARGS_OPTION_KEY_XCOL,
+  ARGS_OPTION_KEY_YCOL,
+  ARGS_OPTION_KEY_RACOL,
+  ARGS_OPTION_KEY_DECCOL,
+  ARGS_OPTION_KEY_FCOL,
+  ARGS_OPTION_KEY_RCOL,
+  ARGS_OPTION_KEY_NCOL,
+  ARGS_OPTION_KEY_PCOL,
+  ARGS_OPTION_KEY_QCOL,
+  ARGS_OPTION_KEY_MCOL,
+  ARGS_OPTION_KEY_TCOL,
+  ARGS_OPTION_KEY_CRPIX1,
+  ARGS_OPTION_KEY_CRPIX2,
+  ARGS_OPTION_KEY_CRVAL1,
+  ARGS_OPTION_KEY_CRVAL2,
+  ARGS_OPTION_KEY_RESOLUTION,
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/*********    Initialize & Parse command-line    **************/
+/**************************************************************/
+static void
+ui_initialize_options(struct mkprofparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
+{
+  size_t i;
+  struct gal_options_common_params *cp=&p->cp;
+
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->coptions           = gal_commonopts_options;
+
+
+  /* Set the mandatory common options. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    switch(cp->coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_MINMAPSIZE:
+        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+      }
+
+
+  /* Read the number of threads available to the user, this should be done
+     before reading command-line and configuration file options, since they
+     can change it.  */
+  gal_options_initialize_numthreads(cp);
+
+
+  /* Set the non-zero initial values, the structure was initialized to have
+     a zero/NULL value for all elements. So, this is necessary only when
+     `0' is meaningful in the context of the variable. */
+  p->type=GAL_DATA_TYPE_INVALID;
+  p->crpix[0]=p->crpix[1]=p->crval[0]=p->crval[1]=NAN;
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct mkprofparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
+    {
+
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      gal_linkedlist_add_to_stll(&p->allargs, arg, 0);
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
+    }
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -51,80 +263,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-/* Read the options into the main program structure. When an option wasn't
-   given, it will not be given a value here, so it will have the
-   initialized value of 0 (or NULL for pointers) after this function. If
-   the value of `0' is meaningful in the context of the option, then it
-   must be given the blank value for the type of the variable IN THIS
-   FUNCTION.
-
-   When the option is necessary for the program to run (independent of any
-   arguments) but it wasn't given, call the `gal_options_add_to_not_given'
-   function. The role of the final `gal_options_abort_if_mandatory_missing'
-   function at the end of this function is to print the full list of
-   mandatory options that were gathered by that function and abort with one
-   error message to help the user. */
-static void
-ui_read_options(struct mkprofparams *p)
-{
-  size_t i;
-
-  /* Put the program's option values into the structure. */
-  for(i=0; !gal_options_is_last(&options[i]); ++i)
-    if( options[i].key && options[i].name )
-      switch(options[i].key)
-        {
-
-          /* Input */
-        case ARGS_OPTION_BACKHDU_KEY:
-          gal_checkset_allocate_copy(options[i].value, &p->backhdu);
-          break;
-
-
-          /* Output */
-
-          /* naxis1 and naxis2 are only mandatory when a background is not
-             given and `individual' is not called.  */
-        case ARGS_OPTION_NAXIS1_KEY:
-          printf("\n... just before checking `naxis1' ...\n");
-          exit(0);
-          break;
-
-        case ARGS_OPTION_NAXIS2_KEY:
-
-          break;
-
-
-
-          /* Operating mode */
-
-
-
-        default:
-          error(EXIT_FAILURE, 0, "option key %d not recognized in "
-                "`ui_read_check_only_options'", options[i].key);
-        }
-
-
-  /* If any of the mandatory options were not given, then print an error
-     listing them and abort. */
-  gal_options_abort_if_mandatory_missing(&p->cp);
-}
-
-
-
-
-
 /* Read and check ONLY the options. When arguments are involved, do the
    check in `ui_check_options_and_arguments'. */
 static void
 ui_read_check_only_options(struct mkprofparams *p)
 {
-
-  /* Read all the options from the `argp_option' array into the main
-     program structure to facilitate checks and running the program. */
-  ui_read_options(p);
-
+  /* When a no-merged image is to be created, type is necessary. */
+  if( p->type==GAL_DATA_TYPE_INVALID && p->nomerged==0)
+    error(EXIT_FAILURE, 0, "an output type `--type' is necessary when a "
+          "merged image is to be built.");
 }
 
 
@@ -159,6 +306,34 @@ ui_check_options_and_arguments(struct mkprofparams *p)
 
 
 /**************************************************************/
+/***************       Preparations         *******************/
+/**************************************************************/
+static void
+ui_preparations(struct mkprofparams *p)
+{
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
 void
@@ -167,27 +342,17 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
   struct gal_options_common_params *cp=&p->cp;
 
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero/NULL value for all elements. */
-  cp->poptions        = options;
-  cp->program_name    = PROGRAM_NAME;
-  cp->program_exec    = PROGRAM_EXEC;
-  cp->program_bibtex  = PROGRAM_BIBTEX;
-  cp->program_authors = PROGRAM_AUTHORS;
-  cp->coptions        = gal_commonopts_options;
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read. */
+#include <commonopts.h>
+#include "args.h"
 
 
-  /* Read the number of threads available to the user, this should be done
-     before reading command-line and configuration file options, since they
-     can change it.  */
-  gal_options_initialize_numthreads(cp);
-
-
-  /* If there are mandatory common options, add them to this list. The
-     mandatory options for this program will be checked in
-     `ui_read_check_only_options' and finally they will all be reported
-     together if any of them are not given a value. */
-  gal_linkedlist_add_to_ill(&cp->mand_common, GAL_OPTIONS_MINMAPSIZE_KEY);
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
 
 
   /* Read the command-line options and arguments. */
@@ -197,7 +362,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
 
 
   /* Read the configuration files. */
-  gal_options_read_config_set_common(cp);
+  gal_options_read_config_set(&p->cp);
 
 
   /* Read the options into the program's structure, and check them and
@@ -208,7 +373,7 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
   /* Print the option values if asked. Note that this needs to be done
      after the sanity check so un-sane values are not printed in the output
      state. */
-  gal_options_print_state(cp);
+  gal_options_print_state(&p->cp);
 
 
   /* Check that the options and arguments fit well with each other. Note
@@ -217,10 +382,11 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
   ui_check_options_and_arguments(p);
 
 
-  /* Free all the allocated spaces in the option structures. */
-  gal_options_free(options);
-  gal_options_free(gal_commonopts_options);
-  gal_linkedlist_free_ill(cp->mand_common);
+  /* Read/allocate all the necessary starting arrays. */
+  ui_preparations(p);
+
+  printf("\n... End of ui.c ...\n");
+  exit(0);
 }
 
 

@@ -826,6 +826,10 @@ gal_data_string_fixed_alloc_size(gal_data_t *data)
 void
 gal_data_free_contents(gal_data_t *data)
 {
+  if(data==NULL)
+    error(EXIT_FAILURE, 0, "the input data structure to "
+          "`gal_data_free_contents' was a NULL pointer");
+
   /* Free all the possible allocations. */
   if(data->name)    free(data->name);
   if(data->unit)    free(data->unit);
@@ -865,8 +869,11 @@ gal_data_free_contents(gal_data_t *data)
 void
 gal_data_free(gal_data_t *data)
 {
-  gal_data_free_contents(data);
-  free(data);
+  if(data)
+    {
+      gal_data_free_contents(data);
+      free(data);
+    }
 }
 
 
@@ -2138,11 +2145,11 @@ gal_data_string_to_number(char *string)
    *out. When the input `*out!=NULL', then it is assumed to be allocated
    and the value will be simply put there. If `*out==NULL', then space will
    be allocated for the given type and the string's value (in the given
-   type) will be sored there.
+   type) will be stored there.
 
    Note that when we are dealing with a string type, `*out' should be
    interpretted as `char **' (one element in an array of pointers to
-   different strings).
+   different strings). In other words, `out' should be `char ***'.
 
    This function can be used to fill in arrays of numbers from strings (in
    an already allocated data structure), or add nodes to a linked list. For
@@ -2150,8 +2157,7 @@ gal_data_string_to_number(char *string)
    want the value to be stored, for example &(array[i]).
 
    If parsing was successful, it will return a 0. If there was a problem,
-   it will return 1.
- */
+   it will return 1.  */
 int
 gal_data_string_to_type(void **out, char *string, int type)
 {

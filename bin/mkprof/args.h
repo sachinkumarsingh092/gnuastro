@@ -27,98 +27,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 
 
-/* Include necessary headers. */
-#include <commonopts.h>
-#include <authors-cite.h>
-#include <fixedstringmacros.h>
-
-
-
-
-
-/* Definition parameters for the argp: */
-const char *
-argp_program_version = PROGRAM_STRING "\n"
-                       GAL_STRINGS_COPYRIGHT
-                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
-
-const char *
-argp_program_bug_address = PACKAGE_BUGREPORT;
-
-static char
-args_doc[] = "[BackgroundImage] Catalog";
-
-const char
-doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will create a FITS image "
-  "containing any number of mock astronomical profiles based on an input "
-  "catalog. All the profiles will be built from the center outwards. First "
-  "by Monte Carlo integration, then using the central pixel position. The "
-  "tolerance level specifies when to switch to a latter.\n"
-  GAL_STRINGS_MORE_HELP_INFO
-  /* After the list of options: */
-  "\v"
-  PACKAGE_NAME" home page: "PACKAGE_URL;
-
-
-
-
-
-/* Keys for each option.
-
-   Available letters (-V which is used by GNU is also removed):
-
-   a d f g j k l u v
-   A E G H I J L M O Q U W Z     */
-enum option_keys_enum
-{
-  /* With short-option version. */
-  ARGS_OPTION_BACKHDU_KEY         = 'B',
-  ARGS_OPTION_NAXIS1_KEY          = 'x',
-  ARGS_OPTION_NAXIS2_KEY          = 'y',
-  ARGS_OPTION_INPUTASCANVAS_KEY   = 'C',
-  ARGS_OPTION_OVERSAMPLE_KEY      = 's',
-  ARGS_OPTION_INDIVIDUAL_KEY      = 'i',
-  ARGS_OPTION_NOMERGED_KEY        = 'm',
-  ARGS_OPTION_TYPE_KEY            = 'T',
-  ARGS_OPTION_NUMRANDOM_KEY       = 'r',
-  ARGS_OPTION_TOLERANCE_KEY       = 't',
-  ARGS_OPTION_TUNITINP_KEY        = 'p',
-  ARGS_OPTION_XSHIFT_KEY          = 'X',
-  ARGS_OPTION_YSHIFT_KEY          = 'Y',
-  ARGS_OPTION_PREPFORCONV_KEY     = 'c',
-  ARGS_OPTION_ZEROPOINT_KEY       = 'z',
-  ARGS_OPTION_CIRCUMWIDTH_KEY     = 'w',
-  ARGS_OPTION_REPLACE_KEY         = 'R',
-  ARGS_OPTION_ENVSEED_KEY         = 'e',
-  ARGS_OPTION_MFORFLATPIX_KEY     = 'F',
-
-  /* Only with long version. */
-  ARGS_OPTION_PSFINIMG_KEY        = 1000,
-  ARGS_OPTION_MAGATPEAK_KEY,
-  ARGS_OPTION_XCOL_KEY,
-  ARGS_OPTION_YCOL_KEY,
-  ARGS_OPTION_RACOL_KEY,
-  ARGS_OPTION_DECCOL_KEY,
-  ARGS_OPTION_FCOL_KEY,
-  ARGS_OPTION_RCOL_KEY,
-  ARGS_OPTION_NCOL_KEY,
-  ARGS_OPTION_PCOL_KEY,
-  ARGS_OPTION_QCOL_KEY,
-  ARGS_OPTION_MCOL_KEY,
-  ARGS_OPTION_TCOL_KEY,
-  ARGS_OPTION_CRPIX1_KEY,
-  ARGS_OPTION_CRPIX2_KEY,
-  ARGS_OPTION_CRVAL1_KEY,
-  ARGS_OPTION_CRVAL2_KEY,
-  ARGS_OPTION_RESOLUTION_KEY,
-};
-
-
-
-
-
 /* Option definition array. */
-static struct argp_option options[] =
+struct argp_option program_options[] =
   {
     {
       0, 0, 0, 0,
@@ -133,18 +43,20 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Input:",
-      1
+      GAL_OPTIONS_GROUP_INPUT
     },
     {
       "backhdu",
-      ARGS_OPTION_BACKHDU_KEY,
+      ARGS_OPTION_KEY_BACKHDU,
       "INT/STR",
       0,
       "HDU of background image.",
-      1,
-      NULL,
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->backhdu,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -152,95 +64,111 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Output:",
-      2
+      GAL_OPTIONS_GROUP_OUTPUT
     },
     {
       "naxis1",
-      ARGS_OPTION_NAXIS1_KEY,
+      ARGS_OPTION_KEY_NAXIS1,
       "INT",
       0,
       "Number of pixels along first FITS axis.",
-      2,
-      NULL,
-      GAL_DATA_TYPE_ULONG,
-      GAL_OPTIONS_RANGE_GT_0
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->naxes[0],
+      GAL_DATA_TYPE_LONG,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "naxis2",
-      ARGS_OPTION_NAXIS2_KEY,
+      ARGS_OPTION_KEY_NAXIS2,
       "INT",
       0,
       "Number of pixels along second FITS axis.",
-      2,
-      NULL,
-      GAL_DATA_TYPE_ULONG,
-      GAL_OPTIONS_RANGE_GT_0
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->naxes[1],
+      GAL_DATA_TYPE_LONG,
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "inputascanvas",
-      ARGS_OPTION_INPUTASCANVAS_KEY,
+      ARGS_OPTION_KEY_INPUTASCANVAS,
       0,
       0,
       "Use input image for output size and WCS.",
-      2,
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->inputascanvas,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "oversample",
-      ARGS_OPTION_OVERSAMPLE_KEY,
+      ARGS_OPTION_KEY_OVERSAMPLE,
       "INT",
       0,
       "Scale of oversampling (>0 and odd).",
-      2,
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->oversample,
       GAL_DATA_TYPE_UCHAR,
       GAL_OPTIONS_RANGE_GT_0_ODD,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "psfinimg",
-      ARGS_OPTION_PSFINIMG_KEY,
+      ARGS_OPTION_KEY_PSFINIMG,
       0,
       0,
       "PSF profiles made with all in output image.",
-      2,
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->psfinimg,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "individual",
-      ARGS_OPTION_INDIVIDUAL_KEY,
+      ARGS_OPTION_KEY_INDIVIDUAL,
       0,
       0,
       "Build all profiles separately.",
-      2,
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->individual,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "nomerged",
-      ARGS_OPTION_NOMERGED_KEY,
+      ARGS_OPTION_KEY_NOMERGED,
       0,
       0,
       "Do not create a merged image of all profiles.",
-      2,
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->nomerged,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "type",
-      ARGS_OPTION_TYPE_KEY,
+      ARGS_OPTION_KEY_TYPE,
       "STR",
       0,
       "uchar, short, long, longlong, float, double.",
-      2,
-      NULL,
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &p->typestr,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -250,128 +178,150 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "Profiles:",
-      3
+      ARGS_GROUP_PROFILES
     },
     {
       "numrandom",
-      ARGS_OPTION_NUMRANDOM_KEY,
+      ARGS_OPTION_KEY_NUMRANDOM,
       "INT",
       0,
       "No. of random points in Monte Carlo integration.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->numrandom,
       GAL_DATA_TYPE_ULONG,
-      GAL_OPTIONS_RANGE_GT_0
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "tolerance",
-      ARGS_OPTION_TOLERANCE_KEY,
+      ARGS_OPTION_KEY_TOLERANCE,
       "FLT",
       0,
       "Tolerance to switch to less accurate method.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->tolerance,
       GAL_DATA_TYPE_FLOAT,
-      GAL_OPTIONS_RANGE_GE_0_LE_1
+      GAL_OPTIONS_RANGE_GE_0_LE_1,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "tunitinp",
-      ARGS_OPTION_TUNITINP_KEY,
+      ARGS_OPTION_KEY_TUNITINP,
       0,
       0,
       "Truncation is in units of pixels, not radius.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->tunitinp,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "xshift",
-      ARGS_OPTION_XSHIFT_KEY,
+      ARGS_OPTION_KEY_XSHIFT,
       "FLT",
       0,
       "Shift profile centers and enlarge image, X axis.",
-      3,
-      NULL,
-      GAL_DATA_TYPE_FLOAT,
-      GAL_OPTIONS_RANGE_GE_0
+      ARGS_GROUP_PROFILES,
+      &p->shift[0],
+      GAL_DATA_TYPE_LONG,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "yshift",
-      ARGS_OPTION_YSHIFT_KEY,
+      ARGS_OPTION_KEY_YSHIFT,
       "FLT",
       0,
       "Shift profile centers and enlarge image, Y axis.",
-      3,
-      NULL,
-      GAL_DATA_TYPE_FLOAT,
-      GAL_OPTIONS_RANGE_GE_0
+      ARGS_GROUP_PROFILES,
+      &p->shift[1],
+      GAL_DATA_TYPE_LONG,
+      GAL_OPTIONS_RANGE_GE_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "prepforconv",
-      ARGS_OPTION_PREPFORCONV_KEY,
+      ARGS_OPTION_KEY_PREPFORCONV,
       0,
       0,
       "Shift and expand based on first catalog PSF.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->prepforconv,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "zeropoint",
-      ARGS_OPTION_ZEROPOINT_KEY,
+      ARGS_OPTION_KEY_ZEROPOINT,
       "FLT",
       0,
       "Magnitude zero point.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->zeropoint,
       GAL_DATA_TYPE_FLOAT,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "circumwidth",
-      ARGS_OPTION_CIRCUMWIDTH_KEY,
+      ARGS_OPTION_KEY_CIRCUMWIDTH,
       "FLT",
       0,
       "Width of circumference (inward) profiles",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->circumwidth,
       GAL_DATA_TYPE_FLOAT,
-      GAL_OPTIONS_RANGE_GT_0
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "replace",
-      ARGS_OPTION_REPLACE_KEY,
+      ARGS_OPTION_KEY_REPLACE,
       0,
       0,
       "Replace overlapping profile pixels, don't add.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->replace,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "magatpeak",
-      ARGS_OPTION_MAGATPEAK_KEY,
+      ARGS_OPTION_KEY_MAGATPEAK,
       0,
       0,
       "Magnitude is for peak pixel, not full profile.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->magatpeak,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "envseed",
-      ARGS_OPTION_ENVSEED_KEY,
+      ARGS_OPTION_KEY_ENVSEED,
       0,
       0,
       "Use GSL_RNG_SEED environment variable for seed.",
-      3,
-      NULL,
+      ARGS_GROUP_PROFILES,
+      &p->envseed,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -380,141 +330,165 @@ static struct argp_option options[] =
 
     {
       0, 0, 0, 0,
-      "Catalog (column number, starting from zero):",
-      4
+      "Catalog (column name or number, starting from 1):",
+      ARGS_GROUP_CATALOG
     },
     {
       "xcol",
-      ARGS_OPTION_XCOL_KEY,
+      ARGS_OPTION_KEY_XCOL,
       "INT/STR",
       0,
       "Center along first FITS axis (horizontal).",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->xcol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "ycol",
-      ARGS_OPTION_YCOL_KEY,
+      ARGS_OPTION_KEY_YCOL,
       "INT/STR",
       0,
       "Center along second FITS axis (vertical).",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->ycol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "racol",
-      ARGS_OPTION_RACOL_KEY,
+      ARGS_OPTION_KEY_RACOL,
       "INT/STR",
       0,
       "Center right ascension.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->racol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "deccol",
-      ARGS_OPTION_DECCOL_KEY,
+      ARGS_OPTION_KEY_DECCOL,
       "INT/STR",
       0,
       "Center declination.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->deccol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "fcol",
-      ARGS_OPTION_FCOL_KEY,
+      ARGS_OPTION_KEY_FCOL,
       "INT/STR",
       0,
       "Sersic (0), Moffat (1), Gaussian (2), Point (3),\n"
       "Flat (4), Circumference (5).",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->fcol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "rcol",
-      ARGS_OPTION_RCOL_KEY,
+      ARGS_OPTION_KEY_RCOL,
       "INT/STR",
       0,
       "Effective radius or FWHM in pixels.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->rcol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "ncol",
-      ARGS_OPTION_NCOL_KEY,
+      ARGS_OPTION_KEY_NCOL,
       "INT/STR",
       0,
       "Sersic index or Moffat beta.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->ncol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "pcol",
-      ARGS_OPTION_PCOL_KEY,
+      ARGS_OPTION_KEY_PCOL,
       "INT/STR",
       0,
       "Position angle.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->pcol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "qcol",
-      ARGS_OPTION_QCOL_KEY,
+      ARGS_OPTION_KEY_QCOL,
       "INT/STR",
       0,
       "Axis ratio.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->qcol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "mcol",
-      ARGS_OPTION_MCOL_KEY,
+      ARGS_OPTION_KEY_MCOL,
       "INT/STR",
       0,
       "Magnitude.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->mcol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "tcol",
-      ARGS_OPTION_TCOL_KEY,
+      ARGS_OPTION_KEY_TCOL,
       "INT/STR",
       0,
       "Truncation in units of --rcol, unless --tunitinp.",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->tcol,
       GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "mforflatpix",
-      ARGS_OPTION_MFORFLATPIX_KEY,
+      ARGS_OPTION_KEY_MFORFLATPIX,
       0,
       0,
       "mcol is flat pixel value (when fcol is 4 or 5)",
-      4,
-      NULL,
+      ARGS_GROUP_CATALOG,
+      &p->mforflatpix,
       GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -524,62 +498,72 @@ static struct argp_option options[] =
     {
       0, 0, 0, 0,
       "WCS parameters:",
-      5
+      ARGS_GROUP_WCS
     },
     {
       "crpix1",
-      ARGS_OPTION_CRPIX1_KEY,
+      ARGS_OPTION_KEY_CRPIX1,
       "FLT",
       0,
       "Pixel coordinate of reference point (axis 1).",
-      5,
-      NULL,
+      ARGS_GROUP_WCS,
+      &p->crpix[0],
       GAL_DATA_TYPE_DOUBLE,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "crpix2",
-      ARGS_OPTION_CRPIX2_KEY,
+      ARGS_OPTION_KEY_CRPIX2,
       "FLT",
       0,
       "Pixel coordinate of reference point (axis 2).",
-      5,
-      NULL,
+      ARGS_GROUP_WCS,
+      &p->crpix[1],
       GAL_DATA_TYPE_DOUBLE,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "crval1",
-      ARGS_OPTION_CRVAL1_KEY,
+      ARGS_OPTION_KEY_CRVAL1,
       "FLT",
       0,
       "Right ascension at reference point (degrees).",
-      5,
-      NULL,
+      ARGS_GROUP_WCS,
+      &p->crval[0],
       GAL_DATA_TYPE_DOUBLE,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "crval2",
-      ARGS_OPTION_CRVAL2_KEY,
+      ARGS_OPTION_KEY_CRVAL2,
       "FLT",
       0,
       "Declination at reference point (degrees).",
-      5,
-      NULL,
+      ARGS_GROUP_WCS,
+      &p->crval[1],
       GAL_DATA_TYPE_DOUBLE,
-      GAL_OPTIONS_RANGE_ANY
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "resolution",
-      ARGS_OPTION_RESOLUTION_KEY,
+      ARGS_OPTION_KEY_RESOLUTION,
       "FLT",
       0,
       "Resolution of image (arcseconds/pixel).",
-      5,
-      NULL,
+      ARGS_GROUP_WCS,
+      &p->resolution,
       GAL_DATA_TYPE_DOUBLE,
-      GAL_OPTIONS_RANGE_GT_0
+      GAL_OPTIONS_RANGE_GT_0,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
 
 
@@ -590,57 +574,14 @@ static struct argp_option options[] =
 
 
 
-/* Parse a single option: */
-error_t
-parse_opt(int key, char *arg, struct argp_state *state)
-{
-  struct mkprofparams *p = state->input;
-
-  /* Pass `gal_options_common_params' into the child parser.  */
-  state->child_inputs[0] = &p->cp;
-
-  /* In case the user incorrectly uses the equal sign (for example
-     with a short format or with space in the long format, then `arg`
-     start with (if the short version was called) or be (if the long
-     version was called with a space) the equal sign. So, here we
-     check if the first character of arg is the equal sign, then the
-     user is warned and the program is stopped: */
-  if(arg && arg[0]=='=')
-    argp_error(state, "incorrect use of the equal sign (`=`). For short "
-               "options, `=` should not be used and for long options, "
-               "there should be no space between the option, equal sign "
-               "and value");
-
-  /* Set the key to this option. */
-  switch(key)
-    {
-
-    /* Read the non-option tokens (arguments): */
-    case ARGP_KEY_ARG:
-      gal_linkedlist_add_to_stll(&p->allargs, arg, 0);
-      break;
-
-
-    /* This is an option, set its value. */
-    default:
-      return gal_options_set_from_key(key, arg, options, &p->cp);
-    }
-
-  return 0;
-}
-
-
-
-
-
 /* Define the child argp structure. */
-static struct argp
+struct argp
 gal_options_common_child = {gal_commonopts_options,
                             gal_options_common_argp_parse,
                             NULL, NULL, NULL, NULL, NULL};
 
 /* Use the child argp structure in list of children (only one for now). */
-static struct argp_child
+struct argp_child
 children[]=
 {
   {&gal_options_common_child, 0, NULL, 0},
@@ -648,6 +589,8 @@ children[]=
 };
 
 /* Set all the necessary argp parameters. */
-static struct argp
-thisargp = {options, parse_opt, args_doc, doc, children, NULL, NULL};
+struct argp
+thisargp = {program_options, parse_opt, args_doc, doc, children, NULL, NULL};
+
+
 #endif
