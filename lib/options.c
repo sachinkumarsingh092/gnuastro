@@ -1177,6 +1177,50 @@ options_set_lengths(struct argp_option *poptions,
 
 
 
+/* The `#' before the `doc' string are not required by the configuration
+   file parser when the documentation string fits in a line. However, when
+   the `doc' string is longer than 80 characters, it will be cut between
+   multiple lines and without the `#', the start of the line will be read
+   as an option. */
+static void
+options_print_doc(FILE *fp, char *doc, int nvwidth)
+{
+  size_t len=strlen(doc);
+
+  /* The `+3' is because of the three extra spaces in this line: one before
+     the variable name, one after it and one after the value. */
+  int i, prewidth=nvwidth+3, width=78-prewidth, cwidth;
+
+  /* We only want the formatting when writing to stdout. */
+  if(len<width)
+    fprintf(fp, "# %s\n", doc);
+  else
+    {
+      /* If the break is in the middle of a word, then pull set it before
+         the word starts.*/
+      cwidth=width; while( doc[cwidth]!=' ' ) --cwidth;
+      fprintf(fp, "# %.*s\n", cwidth, doc);
+      i=cwidth;
+
+      /* Go over the rest of the line */
+      while(i<len)
+        {
+          /* Remove any possible space before the first word. */
+          while( doc[i]==' ' ) ++i;
+
+          /* Check if the line break won't fall in the middle of a word. */
+          cwidth=width;
+          if( i+cwidth<len) while( doc[i+cwidth]!=' ' ) --cwidth;
+          fprintf(fp, "%*s# %.*s\n", prewidth, "", cwidth, &doc[i]);
+          i+=cwidth;
+        }
+    }
+}
+
+
+
+
+
 static void
 options_print_all_in_group(struct argp_option *options, int groupint,
                            int namelen, int valuelen, FILE *fp)
@@ -1199,7 +1243,7 @@ options_print_all_in_group(struct argp_option *options, int groupint,
               fprintf(fp, " %-*s ", namewidth, options[i].name);
               options_print_any_type(&tmp->v, GAL_DATA_TYPE_STRING,
                                      valuewidth, fp);
-              fprintf(fp, "(%s\b)\n", options[i].doc);
+              options_print_doc(fp, options[i].doc, namewidth+valuewidth);
             }
 
         /* Normal types. */
@@ -1208,7 +1252,7 @@ options_print_all_in_group(struct argp_option *options, int groupint,
             fprintf(fp, " %-*s ", namewidth, options[i].name);
             options_print_any_type(options[i].value, options[i].type,
                                    valuewidth, fp);
-            fprintf(fp, "(%s\b)\n", options[i].doc);
+            options_print_doc(fp, options[i].doc, namewidth+valuewidth);
           }
       }
 }
@@ -1252,7 +1296,8 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
 
       /* Print the basic information as comments in the file first. */
       time(&rawtime);
-      fprintf(fp, "# Configuration file produced by for %s (%s) %s.\n"
+      fprintf(fp,
+              "# %s (%s) %s.\n"
               "# Written at %s#\n"
               "#  - Empty lines are ignored.\n"
               "#  - Lines starting with `#` are ignored.\n"
@@ -1306,6 +1351,9 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
 
       /* First print the topic, */
       fprintf(fp, "\n# %s\n", topicstr);
+      fprintf(fp, "# ");
+      i=0; while(i++<strlen(topicstr)) fprintf(fp, "%c", '-');
+      fprintf(fp, "\n");
 
       /* Then, print all the options that are in this group. */
       options_print_all_in_group(coptions, groupint, namelen, valuelen, fp);
@@ -1315,7 +1363,7 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
   /* Let the user know. */
   if(dirname)
     {
-      printf("\n%s: new/updated configuration file.\n\n"
+      printf("\nNew/updated configuration file:\n\n  %s\n\n"
              "You may inspect it with `cat %s'.\n"
              "You may use your favorite text editor to modify it later.\n"
              "Or, run %s again with new values for the options and `--%s'.\n",

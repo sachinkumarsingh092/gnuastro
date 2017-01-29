@@ -13811,18 +13811,39 @@ Output:
 @table @option
 
 @item -k STR
-@item --background=STR
-A background image FITS file to build the profiles on, the extension that
+@itemx --background=STR
+A background image FITS file to build the profiles on. The extension that
 contains the image should be specified with the @option{--backhdu} option,
-see below. If this option is called, the profiles will be created on the
-background image specified and the @option{--naxis1} and @option{--naxis2}
-options will be ignored. If the image has WCS information, that information
-will also be used and the WCS related options (@option{--crpix1},
-@option{--crpix2}, @option{--crval1}, @option{--crval2}, and
-@option{--resolution}) will also be ignored.
+see below. When a background image is specified, it will be used to derive
+all the information about the output image. Hence, the following options
+will be ignored: @option{--naxis1}, @option{--naxis2}, @option{--crpix1},
+@option{--crpix2}, @option{--crval1}, @option{--crval2},
+@option{--resolution}, @option{--oversample}, and @option{--type}.
+
+The profiles will be built on the image (profile pixel values will be
+summed with the background image pixel values). If you want to use all the
+image information above, except for the pixel values (you want to have a
+blank canvas to build the profiles on, based on an input image), you can
+use @ref{Arithmetic} as below and feed the output into MakeProfiles with
+this option.
+
+@example
+$ astarithmetic img.fits 0 "*" --output=bz.fits
+@end example
+
+The command above will also preserve all the (possible) blank pixels in the
+image (see @ref{Blank pixels}). In case the input image has blank pixels
+and you want them to be zero too, you can do so with the following command
+(both Arithmetic operations can also be merged into one command, see
+@ref{Reverse polish notation}, recall that @option{-o} is the short version
+of @option{--output}, see @ref{Options}):
+
+@example
+$ astarithmetic bz.fits bz.fits isblank 0 where -oz.fits
+@end example
 
 @item -B STR/INT
-@item --backhdu=STR/INT
+@itemx --backhdu=STR/INT
 The header data unit (HDU) of the file given to
 
 @item -x INT
@@ -13842,36 +13863,17 @@ The number of pixels in the output image along the second FITS axis
 
 @item -T STR
 @itemx --type=STR
-Type of the output image pixels (specified by @code{BITPIX} in the FITS
-standard). It can have any one of the following values: @option{byte},
-@option{short}, @option{long}, @option{longlong}, @option{float},
-@option{double}. Internally, the images are made in the float type, but
-upon writing of the single output (not individual profiles), the image will
-be converted to the type specified by this option.
+Data type of the output image pixels (specified by @code{BITPIX} in the
+FITS standard, see @ref{Data types}). It can have any one of the following
+values: @option{byte}, @option{short}, @option{long}, @option{longlong},
+@option{float}, @option{double}. Internally, the images are made in the
+float type, but upon writing of the single output (not individual
+profiles), the image will be converted to the type specified by this
+option.
 
-When a background image is given without the @option{--inputascanvas}
-option, it is assumed that you want the output in the same format as the
-background, therefore the value to this option is ignored.
-
-@item -C
-@itemx --inputascanvas
-When an image is given as an argument, use the input image as the canvas to
-make all the mock profiles. In practice, this option only changes the
-non-blank pixels (see @ref{Blank pixels}) of the input image (in memory
-after reading, not the actual input file) to zero before making the
-profiles. The profiles are then built on those cleared pixels. With this
-option (like when building on a background image) the values to
-@option{--naxis1}, @option{--naxis2}, @option{--crpix1}, @option{--crpix2},
-@option{--crval1}, @option{--crval2}, and @option{--resolution} are
-ignored. However, if @option{--type} is given, its value will take
-precedence over the background image type.
-
-This option can be very useful when the mock image is to be made over a
-real sky region and compared to a real image (that might have blank
-pixels. One example can be when you want to make circular or elliptical
-labeled regions to feed into MakeCatalog along with NoiseChisel's outputs
-for aperture photometry. See the discussion and examples under the
-`@option{--mforflatpix}' for more.
+When a background image is given without the @option{--backascanvas}
+option, it is assumed that you want the output with the same data type as
+the background, therefore the value to this option is ignored.
 
 @item -s INT
 @itemx --oversample=INT
@@ -14053,7 +14055,7 @@ column number, where counting starts from zero.
 
 @table @option
 
-@item --fcol=INT
+@item --fcol=INT/STR
 The functional form of the profile with one of the values below. Note that
 this value will be converted to an integer before analysis using the
 internal type conversion of C. So for example 2.80 will be converted to 2.
@@ -14076,16 +14078,16 @@ to the @option{--circumwidth}. Currently this is only intended to be
 used for making an elliptical annulus (with a width of 1 or 2 pixels).
 @end itemize
 
-@item --xcol=INT
+@item --xcol=STR/INT
 The center of the profiles along the first FITS axis (horizontal when
 viewed in SAO ds9). See the explanations for @option{--racol} for
 precedence when both image and WCS coordinate columns are given.
 
-@item --ycol=INT
+@item --ycol=STR/INT
 The center of the profiles along the second FITS axis (vertical when viewed
 in SAO ds9). Similar to @option{--xcol}.
 
-@item --racol=INT
+@item --racol=STR/INT
 The profile center's right ascension. Along with @option{--deccol}, these
 WCS coordinate columns are not mandatory. If they are not given, the
 @option{--xcol} and @option{--ycol} options will be used to specify the
@@ -14094,28 +14096,28 @@ columns (@option{--xcol} and @option{--ycol}) and WCS coordinate columns
 (@option{--racol} and @option{--deccol}) are given, the WCS coordinate
 columns take precedence and image coordinate columns will be ignored.
 
-@item --deccol=INT
+@item --deccol=STR/INT
 The profile center's declination. Similar to @option{--racol}.
 
-@item --rcol=INT
+@item --rcol=STR/INT
 The radius parameter of the profiles. Effective radius (@mymath{r_e}) if
 S@'ersic, FWHM if Moffat or Gaussian.
 
-@item --ncol=INT
+@item --ncol=STR/INT
 The S@'ersic index (@mymath{n}) or Moffat @mymath{\beta}.
 
-@item --pcol=INT
+@item --pcol=STR/INT
 The position angle (in degrees) of the profiles relative to the first FITS
 axis (horizontal when viewed in SAO ds9).
 
-@item --qcol=INT
+@item --qcol=STR/INT
 The axis ratio of the profiles (minor axis divided by the major axis).
 
-@item --mcol=INT
+@item --mcol=STR/INT
 The total pixelated magnitude of the profile within the truncation radius,
 see @ref{Profile magnitude}.
 
-@item --tcol=INT
+@item --tcol=STR/INT
 The truncation radius of this profile. By default it is in units of the
 radial parameter of the profile (the value in the @option{--rcol} of the
 catalog). If @option{--tunitinp} is given, this value is interpreted in

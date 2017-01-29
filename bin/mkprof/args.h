@@ -88,19 +88,6 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_SET
     },
     {
-      "inputascanvas",
-      ARGS_OPTION_KEY_INPUTASCANVAS,
-      0,
-      0,
-      "Use input image for output size and WCS.",
-      GAL_OPTIONS_GROUP_OUTPUT,
-      &p->inputascanvas,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
       "oversample",
       ARGS_OPTION_KEY_OVERSAMPLE,
       "INT",
@@ -325,13 +312,13 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Columns by info (see `--searchin') or number (starting from 1):",
+      "Columns, by info (see `--searchin'), or number (starting from 1):",
       ARGS_GROUP_CATALOG
     },
     {
       "xcol",
       ARGS_OPTION_KEY_XCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Center along first FITS axis (horizontal).",
       ARGS_GROUP_CATALOG,
@@ -344,7 +331,7 @@ struct argp_option program_options[] =
     {
       "ycol",
       ARGS_OPTION_KEY_YCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Center along second FITS axis (vertical).",
       ARGS_GROUP_CATALOG,
@@ -357,7 +344,7 @@ struct argp_option program_options[] =
     {
       "racol",
       ARGS_OPTION_KEY_RACOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Center right ascension.",
       ARGS_GROUP_CATALOG,
@@ -370,7 +357,7 @@ struct argp_option program_options[] =
     {
       "deccol",
       ARGS_OPTION_KEY_DECCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Center declination.",
       ARGS_GROUP_CATALOG,
@@ -383,9 +370,9 @@ struct argp_option program_options[] =
     {
       "fcol",
       ARGS_OPTION_KEY_FCOL,
-      "INT/STR",
+      "STR/INT",
       0,
-      "Sersic (0), Moffat (1), Gaussian (2), Point (3),\n"
+      "Sersic (0), Moffat (1), Gaussian (2), Point (3), "
       "Flat (4), Circumference (5).",
       ARGS_GROUP_CATALOG,
       &p->fcol,
@@ -397,7 +384,7 @@ struct argp_option program_options[] =
     {
       "rcol",
       ARGS_OPTION_KEY_RCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Effective radius or FWHM in pixels.",
       ARGS_GROUP_CATALOG,
@@ -410,7 +397,7 @@ struct argp_option program_options[] =
     {
       "ncol",
       ARGS_OPTION_KEY_NCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Sersic index or Moffat beta.",
       ARGS_GROUP_CATALOG,
@@ -423,7 +410,7 @@ struct argp_option program_options[] =
     {
       "pcol",
       ARGS_OPTION_KEY_PCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Position angle.",
       ARGS_GROUP_CATALOG,
@@ -436,7 +423,7 @@ struct argp_option program_options[] =
     {
       "qcol",
       ARGS_OPTION_KEY_QCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Axis ratio.",
       ARGS_GROUP_CATALOG,
@@ -449,7 +436,7 @@ struct argp_option program_options[] =
     {
       "mcol",
       ARGS_OPTION_KEY_MCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Magnitude.",
       ARGS_GROUP_CATALOG,
@@ -462,7 +449,7 @@ struct argp_option program_options[] =
     {
       "tcol",
       ARGS_OPTION_KEY_TCOL,
-      "INT/STR",
+      "STR/INT",
       0,
       "Truncation in units of --rcol, unless --tunitinp.",
       ARGS_GROUP_CATALOG,
