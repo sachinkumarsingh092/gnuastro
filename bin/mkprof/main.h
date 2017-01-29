@@ -164,7 +164,6 @@ struct mkprofparams
   char           *wcsheader;  /* The WCS header information for main img. */
   int            wcsnkeyrec;  /* The number of keywords in the WCS header.*/
   char       *mergedimgname;  /* Name of merged image.                    */
-  struct gal_linkedlist_stll *allargs; /* Keep all input arguments.       */
 };
 
 #endif

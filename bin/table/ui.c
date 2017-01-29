@@ -80,15 +80,12 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" can be used to view the "
 
 /* Available letters for short options:
 
-   a b d e f g j k l m n p r u v w x y z
+   a b d e f g j k l m n p r s t u v w x y z
    A B C E F G H J L M O Q R T U W X Y Z  */
 enum option_keys_enum
 {
   /* With short-option version. */
   ARGS_OPTION_KEY_COLUMN      = 'c',
-  ARGS_OPTION_KEY_SEARCHIN    = 's',
-  ARGS_OPTION_KEY_IGNORECASE  = 'I',
-  ARGS_OPTION_KEY_TABLETYPE   = 't',
   ARGS_OPTION_KEY_INFORMATION = 'i',
 
   /* Only with long version (start with a value 1000, the rest will be set
@@ -138,7 +135,9 @@ ui_initialize_options(struct tableparams *p,
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     switch(cp->coptions[i].key)
       {
+      case GAL_OPTIONS_KEY_SEARCHIN:
       case GAL_OPTIONS_KEY_MINMAPSIZE:
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
         cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
         break;
       }
@@ -218,14 +217,9 @@ static void
 ui_read_check_only_options(struct tableparams *p)
 {
 
-  /* Read the searchin and table type strings as internal codes. */
-  p->searchin=gal_table_string_to_searchin(p->searchinstr);
-  p->tabletype=gal_table_string_to_type(p->tabletypestr);
-
-
-  /* Check if the type of the output table is valid, given the type of the
-     output. */
-  gal_table_check_fits_type(p->cp.output, p->tabletype);
+  /* Check if the format of the output table is valid, given the type of
+     the output. */
+  gal_table_check_fits_format(p->cp.output, p->cp.tableformat);
 
 }
 
@@ -277,17 +271,18 @@ void
 ui_preparations(struct tableparams *p)
 {
   char *numstr;
-  int tabletype;
+  int tableformat;
   gal_data_t *allcols;
   size_t i, numcols, numrows;
+  struct gal_options_common_params *cp=&p->cp;
 
   /* If there were no columns specified, we want the full set of
      columns. */
   if(p->columns==NULL)
     {
       /* Read the table information for the number of columns and rows. */
-      allcols=gal_table_info(p->filename, p->cp.hdu, &numcols,
-                             &numrows, &tabletype);
+      allcols=gal_table_info(p->filename, cp->hdu, &numcols,
+                             &numrows, &tableformat);
 
       /* If there was no actual data in the file, then inform the user */
       if(allcols==NULL)
@@ -301,7 +296,7 @@ ui_preparations(struct tableparams *p)
           printf("--------\n");
           printf("%s", p->filename);
           if(gal_fits_name_is_fits(p->filename))
-            printf(" (hdu: %s)\n", p->cp.hdu);
+            printf(" (hdu: %s)\n", cp->hdu);
           else
             printf("\n");
 
@@ -338,8 +333,8 @@ ui_preparations(struct tableparams *p)
      elements were added to the list is the reverse of the order that they
      will be popped). */
   gal_linkedlist_reverse_stll(&p->columns);
-  p->table=gal_table_read(p->filename, p->cp.hdu, p->columns,
-                          p->searchin, p->ignorecase, p->cp.minmapsize);
+  p->table=gal_table_read(p->filename, cp->hdu, p->columns, cp->searchin,
+                          cp->ignorecase, cp->minmapsize);
 
   /* If there was no actual data in the file, then inform the user and
      abort. */
@@ -384,7 +379,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct tableparams *p)
      and for the common options to all Gnuastro (`commonopts.h'). We want
      to directly put the pointers to the fields in `p' and `cp', so we are
      simply including the header here to not have to use long macros in
-     those headers which make them hard to read. */
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
 #include <commonopts.h>
 #include "args.h"
 
@@ -452,7 +449,7 @@ freeandreport(struct tableparams *p)
   /* Free the allocated arrays: */
   free(p->cp.hdu);
   free(p->cp.output);
-  free(p->searchinstr);
-  free(p->tabletypestr);
+  free(p->cp.searchinstr);
+  free(p->cp.tableformatstr);
   gal_data_free_ll(p->table);
 }

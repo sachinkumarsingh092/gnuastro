@@ -281,7 +281,7 @@ Common program behavior
 * Configuration files::         Values for unspecified variables.
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Automatic output::            About automatic output names.
-* Table formats::               Recognized table formats.
+* Tables in Gnuastro::          Recognized table formats.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
 
@@ -312,7 +312,13 @@ Threads in Gnuastro
 * A note on threads::           Caution and suggestion on using threads.
 * How to run simultaneous operations::  How to run things simultaneously.
 
-Table formats
+Tables in Gnuastro
+
+* Recognized table formats::    Table formats that are recognized in Gnuastro.
+* Gnuastro text table format::  Gnuastro's convention plain text tables.
+* Selecting table columns::     Identify/select certain columns from a table
+
+Recognized table formats
 
 * Gnuastro text table format::  Reading plain text tables
 
@@ -3969,7 +3975,7 @@ command-line.
 * Configuration files::         Values for unspecified variables.
 * Threads in Gnuastro::         How threads are managed in Gnuastro.
 * Automatic output::            About automatic output names.
-* Table formats::               Recognized table formats.
+* Tables in Gnuastro::          Recognized table formats.
 * Getting help::                Getting more information on the go.
 * Output headers::              Common headers to all FITS outputs.
 @end menu
@@ -4093,7 +4099,7 @@ format, that filename extension is used to separate the kinds of
 arguments. The list below shows the data formats that are recognized in
 Gnuastro's programs based on their file name endings. Any argument that
 doesn't end with the specified extensions below is considered to be a text
-file (usually catalogs, see @ref{Table formats}). In some cases, a program
+file (usually catalogs, see @ref{Tables in Gnuastro}). In some cases, a program
 can accept specific formats, for example @ref{ConvertType} also accepts
 @file{.jpg} images.
 
@@ -4328,6 +4334,20 @@ and the result is put in square brackets and appended to the FITS file name
 before calling CFITSIO to read the contents of the HDU for all the programs
 in Gnuastro.
 
+@item -s STR
+@itemx --searchin=STR
+Where to match/search for columns when the column identifier wasn't a
+number, see @ref{Selecting table columns}. The acceptable values are
+@command{name}, @command{unit}, or @command{comment}. This option is only
+relevant for programs that take table columns as input.
+
+@item -I
+@itemx --ignorecase
+Ignore case while matching/searching column meta-data (in the field
+specified by the @option{--searchin}). The FITS standard suggests to treat
+the column names as case insensitive, which is strongly recommended here
+also but is not enforced. This option is only relevant for programs that
+take table columns as input.
 
 @item -o STR
 @itemx --output=STR
@@ -4352,6 +4372,29 @@ of the input will be kept and the automatically generated output name will
 be in the same directory as the input (usually with a suffix added). Note
 that his is only relevant if you are running the program in a different
 directory than the input data.
+
+@item -t STR
+@itemx --tableformat=STR
+The output table's type. This option is only relevant when the output is a
+table and its format cannot be deduced from its filename. For example, if a
+name ending in @file{.fits} was given to @option{--output}, then the
+program knows you want a FITS table. But there are two types of FITS
+tables: FITS ASCII, and FITS binary. Thus, with this option, the program is
+able to identify which type you want. The currently recognized values to
+this option are:
+
+@table @command
+@item txt
+A plain text table with white-space characters between the columns (see
+@ref{Gnuastro text table format}). Setting @option{--tabletype} to this
+value is acceptable, but in many cases irrelevant, because the plain text
+table format is identified by filename, and currently there is only format
+to write plane text tables.
+@item fits-ascii
+A FITS ASCII table (see @ref{Recognized table formats}).
+@item fits-binary
+A FITS binary table (see @ref{Recognized table formats}).
+@end table
 
 @end vtable
 
@@ -5015,7 +5058,7 @@ your exciting science.} are very important.
 
 
 
-@node Automatic output, Table formats, Threads in Gnuastro, Common program behavior
+@node Automatic output, Tables in Gnuastro, Threads in Gnuastro, Common program behavior
 @section Automatic output
 
 @cindex Automatic output file names
@@ -5070,8 +5113,8 @@ ABC01.jpg ABC02.jpg DEF01_labeled.fits
 
 
 
-@node Table formats, Getting help, Automatic output, Common program behavior
-@section Table formats
+@node Tables in Gnuastro, Getting help, Automatic output, Common program behavior
+@section Tables in Gnuastro
 
 ``A table is a collection of related data held in a structured format
 within a database. It consists of columns, and rows.'' (from
@@ -5101,9 +5144,39 @@ other cases, you can feed a table into @ref{ImageCrop} and it will crop out
 regions centered on the positions within the table, see @ref{Hubble
 visually checks and classifies his catalog}. So to end this relatively long
 introduction, tables play a very important role in astronomy, or generally
-all branches of data analysis. Here, we will give a short review of the
-table formats that Gnuastro's programs and libraries can accept as input
-and output.
+all branches of data analysis.
+
+In @ref{Recognized table formats} the currently recognized table formats in
+Gnuastro are discussed. You can use any of these tables as input or ask for
+them to be built as output. The most common type of table format is a
+simple plain text file with each row on one line and columns separated by
+white space characters, this format is easy to read/write by eye/hand. To
+give it the full functionality of more specific table types like the FITS
+tables, Gnuastro has a special convention which you can use to give each
+column a name, type, unit, and comments, while still being readable by
+other plain text table readers. This convention is described in
+@ref{Gnuastro text table format}.
+
+When tables are input to a program, the program reading it needs to know
+which column(s) it should use for its desired purposes. Gnuastro's programs
+all follow a similar convention, on the way you can select columns in a
+table. They are thoroughly discussed in @ref{Selecting table columns}.
+
+
+@menu
+* Recognized table formats::    Table formats that are recognized in Gnuastro.
+* Gnuastro text table format::  Gnuastro's convention plain text tables.
+* Selecting table columns::     Identify/select certain columns from a table
+@end menu
+
+@node Recognized table formats, Gnuastro text table format, Tables in Gnuastro, Tables in Gnuastro
+@subsection Recognized table formats
+
+The list of table formats that Gnuastro can currently read from and write
+to are decribed below. Each has their own advantage and disadvantages, so a
+short review of the format is also provided to help you make the best
+choice based on how you want to define your input tables or later use your
+output tables.
 
 @table @asis
 
@@ -5192,7 +5265,7 @@ also contain non-numerical columns.
 * Gnuastro text table format::  Reading plain text tables
 @end menu
 
-@node Gnuastro text table format,  , Table formats, Table formats
+@node Gnuastro text table format, Selecting table columns, Recognized table formats, Tables in Gnuastro
 @subsection Gnuastro text table format
 
 Plain text files are most generic, portable, and easiest way to (manually)
@@ -5363,7 +5436,7 @@ of the `@key{|}'s.
 # Column 1: ID [label, uc]
 # Column 2: Notes [no unit, str50]
 1    leading and trailing white space is ignored here    2.3442e10
-2   |         but they will be preserved here        |   2.3442e10
+2   |         but they will be preserved here        |   8.2964e11
 @end example
 
 @end itemize
@@ -5380,9 +5453,73 @@ reading/converting into a file, or with the @file{gnuastro/table.h} library
 functions when reading into memory).
 
 
+@node Selecting table columns,  , Gnuastro text table format, Tables in Gnuastro
+@subsection Selecting table columns
+
+At the lowest level, the only defining aspect of a column in a table is its
+number, or position. But selecting columns purely by number is not very
+convenient and, especially when the tables are large it can be very
+frustrating and prone to errors. Hence, table file formats (for example see
+@ref{Recognized table formats}) have ways to store additional information
+about the columns (meta-data). Some of the most common pieces of
+information about each column are its name, the units of data in the it,
+and a comment for longer/informal description of the column's data.
+
+To facilitate research with Gnuastro, besides the low-level column number,
+you can also select columns by matching, or searching, in these three
+fields. To view this meta-data for all the columns in the table, you can
+use @ref{Table} with the command below (replace @file{table-file} with the
+filename of your table, if its FITS, you might also need to specify the
+HDU/extension which contains the table):
+
+@example
+$ asttable --information table-file
+@end example
+
+Gnuastro's programs need the columns for different purposes, for example in
+ImageCrop, you specify the column containing the Right Ascension of the
+crop centers with the @option{--racol} option and the column containing the
+Declination with @option{--deccol}. Thus, there is no unified common option
+name to select columns for all programs. However, when the program expects
+the column for a specific context (like the RA and Dec example above), the
+option names end in the @option{col} suffix (for example @option{--racol}
+and @option{--deccol}). These options accept both integer and string
+arguments.
+
+If the value can be parsed as a positive integer, it will be seen as the
+low-level column number. Note that column counting starts from 1, so if you
+ask for column 0, the respective program will abort with an error. When the
+value can't be interpretted as an a integer number, it will be seen as a
+string of characters which will be used to match/search in the table's
+meta-data. The field which the value will be compared with can be selected
+through the @option{--searchin} option, see @ref{Input output}. The
+matching will be done following this convention:
+
+@itemize
+@item
+If the value is enclosed in two slashes (for example @command{-r/RA_/}, or
+@option{--racol=/RA_/}), then it is assumed to be a regular expression with
+the same convention as GNU AWK. GNU AWK has a
+@url{https://wwww.gnu.org/s/gawk/manual/html_node/Regexp.html,complete
+chapter} describing regular expressions, so we we will not continue
+discussing it here. Regular expressions are a very powerful tool in
+matching text and useful in many contexts.
+
+@item
+When the string isn't inclosed between `@key{/}'s, any column that exactly
+matches the given value in the given field will be selected.
+@end itemize
+
+Note that in both cases, you can ignore the case of alphabetic characters
+with the @option{--ignorecase} option, see @ref{Input output}. Also, in
+both cases, multiple columns may be selected with one call to this
+function. In this case, the order of the selected columns (with one call)
+will be the same order as they appear in the table.
 
 
-@node Getting help, Output headers, Table formats, Common program behavior
+
+
+@node Getting help, Output headers, Tables in Gnuastro, Common program behavior
 @section Getting help
 
 @cindex Help
@@ -6586,7 +6723,7 @@ are stored in the human readable ASCII format, but within the FITS file
 structure. These are mainly useful for keeping ASCII data along with images
 and possibly binary data as multiple (conceptually related) extensions
 within a FITS file. The acceptable table formats are fully described in
-@ref{Table formats}.
+@ref{Tables in Gnuastro}.
 
 @cindex AWK
 @cindex GNU AWK
@@ -6623,7 +6760,7 @@ some simple examples.
 
 Table will read/write, select, convert, or show the information of the
 columns in FITS ASCII table, FITS binary table and plain text table files,
-see @ref{Table formats}. Output columns can also be determined by number or
+see @ref{Tables in Gnuastro}. Output columns can also be determined by number or
 regular expression matching of column names, units, or comments. The
 executable name is @file{asttable} with the following general template
 
@@ -6691,78 +6828,15 @@ that if columns have been requested with the @option{--column} option
 @cindex GNU AWK
 @item -c STR/INT
 @itemx --column=STR/INT
-Specify the columns to output for this table. If the value to this option
-is an integer number, the column number will be used (counting from 1,
-Table will abort with an error if zero or negative values are given). When
-the value can't be interpretted as an a integer number, the value's string
-of characters will be used to match one of the pieces of information for
-the columns. See the @option{--searchin} option description for more on
-where the matching/searching will take place. The matching will be done
-following this convention (similar to AWK):
-
-@itemize
-@item
-If the value is enclosed in two slashes (for example @command{-c/MAG_/}, or
-@option{--column=/MAG_/}), then it is assumed to be a regular expression
-with the same convention as GNU AWK. GNU AWK has a
-@url{https://wwww.gnu.org/s/gawk/manual/html_node/Regexp.html,complete
-chapter} describing regular expressions, so we we will not continue
-discussing it here. Regular expressions are a very powerful tool in
-matching text and since FITS binary tables usually have a large number of
-columns, this feature can greatly simply the selection of the output
-columns.
-
-@item
-Only columns that exactly match the given string (the case can be ignored
-with the @option{--ignorecase} option) in the given piece of column in
-formation will be selected.
-@end itemize
-
-Note that in both cases, it is possible to select multiple columns with one
-call to this function. The order of the selected columns (with one call to
-this option) will be the same order as they appear in the table.
-
-To select several output columns, this option can also be called any number
+Specify the columns to output, see @ref{Selecting table columns} for a
+thorough explanation on how the value to this option is interpretted. To
+select several output columns, this option can also be called any number
 times in one call to Table. The order of the output columns will be the
-same call order on the command-line. This option is not mandatory, if no
-specific columns are requested, all the input table columns are
-output. When this option is called multiple times, it is possible to output
-one column more than once.
+same call order on the command-line.
 
-@item -s
-@itemx --searchin
-Where to match/search for columns (if the value to @option{--column} wasn't
-a number). The acceptable values are @command{name}, @command{units}, or
-@command{comments}.
-
-@item -I
-@itemx --ignorescase
-Ignore case while matching the column names with the value(s) of the
-@option{--column} option. The FITS standard suggests to treat the column
-names as case insensitive, which is recommended but not enforced here.
-
-@item -t STR
-@itemx --tabletype=STR
-The output file's table type when a filename is given to the
-@option{--output} option (see @ref{Common options}). This is ofcourse only
-relevant when the type of the table cannot be deduced from its
-filename. For example, if a name ending in @file{.fits} was given to
-@option{--output}, then Gnuastro knows you want a FITS table. But there are
-two types of FITS tables: FITS ASCII, and FITS binary. Thus, with this
-option, the program is able to identify which type you want. The currently
-recognized values to this option are:
-
-@table @command
-@item txt
-A plain text table with space characters between the columns. Setting
-@option{--tabletype} to this value is acceptable, but irrelevant. Because a
-plain text table only currently has one format and is the default when the
-output filename wasn't recognized (see @ref{Gnuastro text table format}).
-@item fits-ascii
-A FITS ASCII table (see @ref{Table formats}).
-@item fits-binary
-A FITS binary table (see @ref{Table formats}).
-@end table
+This option is not mandatory, if no specific columns are requested, all the
+input table columns are output. When this option is called multiple times,
+it is possible to output one column more than once.
 
 
 @end table
@@ -13651,18 +13725,25 @@ $ astmkprof [OPTION ...] [BackgroundImage] Catalog
 One line examples:
 
 @example
-$ astmkprof background.fits catalog.txt
-$ astmkprof --xcol=0 --ycol=1 catalog.txt
+$ astmkprof --xcol=1 --ycol=2 catalog.txt
+$ astmkprof --background=img.fits catalog.txt
+$ astmkprof --racol=ra_center --ycol=dec_center catalog.txt
 $ astmkprof --individual --oversample 3 -x500 -y500 catalog.txt
 @end example
 
 @noindent
-If mock images are to be made, the catalog (which stores the parameters for
-each mock profile) is the mandatory argument. The input catalog has to be a
-text file formatted in a table with columns separated by space, tab or
-comma (@key{,}) characters. See @ref{Common program behavior} for a
-complete explanation of some common behaviour and options in all Gnuastro
-programs including MakeProfiles.
+If mock images are to be made, a catalog (which stores the parameters for
+each mock profile) is mandatory. The catalog can be in the FITS ASCII, FITS
+binary format, or plain text formats (see @ref{Tables in Gnuastro}). The
+columns related to each paramter can be determined both by number, or by
+match/search criteria using the column names, units, or comments. with the
+options ending in @option{col}, see below. Without any file given to the
+@option{--background} option, Makeprofiles will make the fully zero-valued
+image and build the profiles on that (its size can be set with the
+@option{--naxis1} and @option{--naxis2} options, and its main WCS paramters
+can also be defined). Besides the main image containing all the profiles it
+is also possible to build on individual images (only enclosing one full
+profile to its trucation radius) with the @option{--individual}.
 
 If a data image file (see @ref{Arguments}) is given, the pixels of
 that image are used as the background value for every pixel. The flux
@@ -13728,6 +13809,21 @@ Profiles, Catalog and WCS. Below each one is reviewed.
 Output:
 
 @table @option
+
+@item -k STR
+@item --background=STR
+A background image FITS file to build the profiles on, the extension that
+contains the image should be specified with the @option{--backhdu} option,
+see below. If this option is called, the profiles will be created on the
+background image specified and the @option{--naxis1} and @option{--naxis2}
+options will be ignored. If the image has WCS information, that information
+will also be used and the WCS related options (@option{--crpix1},
+@option{--crpix2}, @option{--crval1}, @option{--crval2}, and
+@option{--resolution}) will also be ignored.
+
+@item -B STR/INT
+@item --backhdu=STR/INT
+The header data unit (HDU) of the file given to
 
 @item -x INT
 @itemx --naxis1=INT

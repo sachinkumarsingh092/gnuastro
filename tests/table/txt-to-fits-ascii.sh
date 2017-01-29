@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $table --output=ascii-table.fits --tabletype=fits-ascii
+$execname $table --output=ascii-table.fits --tableformat=fits-ascii

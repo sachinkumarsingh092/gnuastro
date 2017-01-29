@@ -32,11 +32,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct argp_option program_options[] =
   {
     {
-      0, 0, 0, 0,
-      "Input:",
-      GAL_OPTIONS_GROUP_INPUT
-    },
-    {
       "column",
       ARGS_OPTION_KEY_COLUMN,
       "STR",
@@ -49,63 +44,11 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-    {
-      "searchin",
-      ARGS_OPTION_KEY_SEARCHIN,
-      "STR",
-      0,
-      "Search in column `name', `units', or `comments'.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->searchinstr,
-      GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
-    {
-      "ignorecase",
-      ARGS_OPTION_KEY_IGNORECASE,
-      0,
-      0,
-      "Ignore case when matching column information.",
-      GAL_OPTIONS_GROUP_INPUT,
-      &p->ignorecase,
-      GAL_OPTIONS_NO_ARG_TYPE,
-      GAL_OPTIONS_RANGE_0_OR_1,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
 
 
 
 
-    {
-      0, 0, 0, 0,
-      "Output:",
-      2
-    },
-    {
-      "tabletype",
-      ARGS_OPTION_KEY_TABLETYPE,
-      "STR",
-      0,
-      "Output table type: `fits-ascii', `fits-binary'.",
-      GAL_OPTIONS_GROUP_OUTPUT,
-      &p->tabletypestr,
-      GAL_DATA_TYPE_STRING,
-      GAL_OPTIONS_RANGE_ANY,
-      GAL_OPTIONS_NOT_MANDATORY,
-      GAL_OPTIONS_NOT_SET
-    },
 
-
-
-
-    {
-      0, 0, 0, 0,
-      "Operating modes:",
-      GAL_OPTIONS_GROUP_OPERATING_MODE
-    },
     {
       "information",
       ARGS_OPTION_KEY_INFORMATION,

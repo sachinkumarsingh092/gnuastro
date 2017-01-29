@@ -45,24 +45,25 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /************************************************************************/
 /* Return the type of desired table based on a standard string. */
 int
-gal_table_string_to_type(char *string)
+gal_table_string_to_format(char *string)
 {
   if(string)
     {
-      if( !strcmp(string, GAL_TABLE_STRING_TYPE_TXT) )
-        return GAL_TABLE_TYPE_TXT;
+      if( !strcmp(string, GAL_TABLE_STRING_FORMAT_TXT) )
+        return GAL_TABLE_FORMAT_TXT;
 
-      else if( !strcmp(string, GAL_TABLE_STRING_TYPE_AFITS) )
-        return GAL_TABLE_TYPE_AFITS;
+      else if( !strcmp(string, GAL_TABLE_STRING_FORMAT_AFITS) )
+        return GAL_TABLE_FORMAT_AFITS;
 
-      else if( !strcmp(string, GAL_TABLE_STRING_TYPE_BFITS) )
-        return GAL_TABLE_TYPE_BFITS;
+      else if( !strcmp(string, GAL_TABLE_STRING_FORMAT_BFITS) )
+        return GAL_TABLE_FORMAT_BFITS;
 
       else
         error(EXIT_FAILURE, 0, "`%s' couldn't be interpretted as a valid "
-              "table type. The known types are `%s', `%s', and `%s'", string,
-              GAL_TABLE_STRING_TYPE_TXT, GAL_TABLE_STRING_TYPE_AFITS,
-              GAL_TABLE_STRING_TYPE_BFITS);
+              "table format. The known formats are `%s', `%s', and `%s'",
+              string, GAL_TABLE_STRING_FORMAT_TXT,
+              GAL_TABLE_STRING_FORMAT_AFITS,
+              GAL_TABLE_STRING_FORMAT_BFITS);
     }
 
   /* If string was not NULL, this function won't reach here. */
@@ -73,32 +74,32 @@ gal_table_string_to_type(char *string)
 
 
 
-/* For programs that output tables, the `--tabletype' option will be used
+/* For programs that output tables, the `--tableformat' option will be used
    to specify what format the output table should be in. When the output
-   file is a FITS file, there are multiple types, so to simplify the coding
-   in each program, this function will do a sanity check on the value given
-   to the `--tabletype' parameter. */
+   file is a FITS file, there are multiple formats, so to simplify the
+   coding in each program, this function will do a sanity check on the
+   value given to the `--tableformat' parameter. */
 void
-gal_table_check_fits_type(char *filename, int tabletype)
+gal_table_check_fits_format(char *filename, int tableformat)
 {
   if( filename && gal_fits_name_is_fits(filename) )
     {
-      /* When `--tabletype' was not given. */
-      if(tabletype==GAL_TABLE_TYPE_INVALID)
+      /* When `--tableformat' was not given. */
+      if(tableformat==GAL_TABLE_FORMAT_INVALID)
         error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but the "
-              "desired type of the FITS table has not been specified with "
-              "the `--tabletype' option. For FITS tables, this option can "
+              "desired format of the FITS table has not been specified with "
+              "the `--tableformat' option. For FITS tables, this option can "
               "take two values: `%s', or `%s'", filename,
-              GAL_TABLE_STRING_TYPE_AFITS, GAL_TABLE_STRING_TYPE_BFITS);
+              GAL_TABLE_STRING_FORMAT_AFITS, GAL_TABLE_STRING_FORMAT_BFITS);
 
-      /* When `--tabletype' didn't have the correct value. */
-      if( tabletype != GAL_TABLE_TYPE_AFITS
-          && tabletype != GAL_TABLE_TYPE_BFITS )
+      /* When `--tableformat' didn't have the correct value. */
+      if( tableformat != GAL_TABLE_FORMAT_AFITS
+          && tableformat != GAL_TABLE_FORMAT_BFITS )
         error(EXIT_FAILURE, 0, "`%s' (output file) is a FITS file but "
-              "is not a recognized FITS table type. For FITS tables, "
-              "`--tabletype' can take two values: `%s', or `%s'",
-              filename, GAL_TABLE_STRING_TYPE_AFITS,
-              GAL_TABLE_STRING_TYPE_BFITS);
+              "is not a recognized FITS table format. For FITS tables, "
+              "`--tableformat' can take two values: `%s', or `%s'",
+              filename, GAL_TABLE_STRING_FORMAT_AFITS,
+              GAL_TABLE_STRING_FORMAT_BFITS);
     }
 }
 
@@ -106,7 +107,7 @@ gal_table_check_fits_type(char *filename, int tabletype)
 
 
 
-/* In programs, the `searchin' variable is much more easier to type in as a
+/* In programs, the `searchin' variable is much more easier to format in as a
    description than an integer (which is what `gal_table_read_cols'
    needs). This function will check the string value and give the
    corresponding integer value.*/
@@ -222,7 +223,8 @@ gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows)
    elements.
 */
 void
-gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
+gal_table_col_print_info(gal_data_t *col, int tableformat, char *fmt,
+                         char *lng)
 {
   size_t j;
   char **strarr;
@@ -231,14 +233,14 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
 
   /* First do a sanity check, so we can safly stop checking in the steps
      below. */
-  switch(tabletype)
+  switch(tableformat)
     {
-    case GAL_TABLE_TYPE_TXT:
-    case GAL_TABLE_TYPE_AFITS:
+    case GAL_TABLE_FORMAT_TXT:
+    case GAL_TABLE_FORMAT_AFITS:
       break;
     default:
-      error(EXIT_FAILURE, 0, "tabletype code %d not recognized in "
-            "`gal_table_col_print_info'", tabletype);
+      error(EXIT_FAILURE, 0, "tableformat code %d not recognized in "
+            "`gal_table_col_print_info'", tableformat);
     }
 
 
@@ -260,7 +262,7 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
     case GAL_DATA_TYPE_STRING:
 
       /* Set the basic information. */
-      fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 's' : 'A';
+      fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 's' : 'A';
 
       /* Go through all the strings in the column and find the maximum
          length to use as printing. If the user asked for a larger width
@@ -284,7 +286,7 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
 
       /* For the FITS ASCII table, there is only one format for all
          integers.  */
-      if(tabletype==GAL_TABLE_TYPE_AFITS)
+      if(tableformat==GAL_TABLE_FORMAT_AFITS)
         fmt[0]='I';
       else
         switch(col->disp_fmt)
@@ -315,7 +317,7 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
     case GAL_DATA_TYPE_LOGICAL:
     case GAL_DATA_TYPE_SHORT:
     case GAL_DATA_TYPE_INT:
-      fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'd' : 'I';
+      fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
       width = ( col->disp_width<=0 ? GAL_TABLE_DEF_INT_WIDTH
                 : col->disp_width );
       precision = ( col->disp_precision<=0 ? GAL_TABLE_DEF_INT_PRECISION
@@ -328,7 +330,7 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
     case GAL_DATA_TYPE_LONG:
     case GAL_DATA_TYPE_LONGLONG:
       lng[0] = 'l';
-      fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'd' : 'I';
+      fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'd' : 'I';
       lng[1] = col->type==GAL_DATA_TYPE_LONGLONG ? 'l' : '\0';
       width=( col->disp_width<=0 ? GAL_TABLE_DEF_LINT_WIDTH
               : col->disp_width );
@@ -344,13 +346,13 @@ gal_table_col_print_info(gal_data_t *col, int tabletype, char *fmt, char *lng)
       switch(col->disp_fmt)
         {
         case GAL_TABLE_DISPLAY_FMT_FLOAT:
-          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'f' : 'F'; break;
+          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'f' : 'F'; break;
         case GAL_TABLE_DISPLAY_FMT_EXP:
-          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'e' : 'E'; break;
+          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'e' : 'E'; break;
         case GAL_TABLE_DISPLAY_FMT_GENERAL:
-          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'g' : 'E'; break;
+          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'g' : 'E'; break;
         default:
-          fmt[0] = tabletype==GAL_TABLE_TYPE_TXT ? 'f' : 'F'; break;
+          fmt[0] = tableformat==GAL_TABLE_FORMAT_TXT ? 'f' : 'F'; break;
         }
       width = ( col->disp_width<=0
                 ? ( col->type==GAL_DATA_TYPE_FLOAT
@@ -436,21 +438,21 @@ gal_table_read_blank(gal_data_t *col, char *blank)
    structures (one data structure for each column). The number of rows is
    stored as the `size' element of each data structure. The type of the
    table (e.g., ascii text file, or FITS binary or ASCII table) will be put
-   in `tabletype' (macros defined in `gnuastro/table.h'.
+   in `tableformat' (macros defined in `gnuastro/table.h'.
 
    Note that other than the character strings (column name, units and
    comments), nothing in the data structure(s) will be allocated by this
    function for the actual data (e.g., the `array' or `dsize' elements). */
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols, size_t *numrows,
-               int *tabletype)
+               int *tableformat)
 {
-  /* Get the table type and size (number of columns and rows). */
+  /* Get the table format and size (number of columns and rows). */
   if(gal_fits_name_is_fits(filename))
-    return gal_fits_table_info(filename, hdu, numcols, numrows, tabletype);
+    return gal_fits_table_info(filename, hdu, numcols, numrows, tableformat);
   else
     {
-      *tabletype=GAL_TABLE_TYPE_TXT;
+      *tableformat=GAL_TABLE_FORMAT_TXT;
       return gal_txt_table_info(filename, numcols, numrows);
     }
 
@@ -625,9 +627,9 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
             {
               /* Make sure the number is larger than zero! */
               if(tlong<=0)
-                error(EXIT_FAILURE, 0, "the column numbers given to the "
-                      "must not be zero, or negative. You have asked for "
-                      "column %ld", tlong);
+                error(EXIT_FAILURE, 0, "column numbers must be positive "
+                      "(not zero or negative). You have asked for column "
+                      "number %ld", tlong);
 
               /* Check if the given value is not larger than the number of
                  columns in the input catalog (note that the user is
@@ -728,7 +730,7 @@ gal_data_t *
 gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
                int searchin, int ignorecase, int minmapsize)
 {
-  int tabletype;
+  int tableformat;
   size_t i, numcols, numrows;
   gal_data_t *allcols, *out=NULL;
   struct gal_linkedlist_sll *indexll;
@@ -737,7 +739,7 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
   if(cols==NULL) return NULL;
 
   /* First get the information of all the columns. */
-  allcols=gal_table_info(filename, hdu, &numcols, &numrows, &tabletype);
+  allcols=gal_table_info(filename, hdu, &numcols, &numrows, &tableformat);
 
   /* If there was no actual data in the file, then return NULL. */
   if(allcols==NULL) return NULL;
@@ -746,7 +748,7 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
   indexll=make_list_of_indexs(cols, allcols, numcols, searchin,
                               ignorecase, filename, hdu);
 
-  /* Depending on the table type, read the columns into the output
+  /* Depending on the table format, read the columns into the output
      structure. Note that the functions here pop each index, read/store the
      desired column and pop the next, so after these functions, the output
      linked list will have the opposite order of its input `indexll'
@@ -756,22 +758,22 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
      functions, the `indexll' will be all freed (each popped element is
      actually freed).*/
   gal_linkedlist_reverse_sll(&indexll);
-  switch(tabletype)
+  switch(tableformat)
     {
-    case GAL_TABLE_TYPE_TXT:
+    case GAL_TABLE_FORMAT_TXT:
       out=gal_txt_table_read(filename, numrows, allcols, indexll,
                              minmapsize);
       break;
 
-    case GAL_TABLE_TYPE_AFITS:
-    case GAL_TABLE_TYPE_BFITS:
+    case GAL_TABLE_FORMAT_AFITS:
+    case GAL_TABLE_FORMAT_BFITS:
       out=gal_fits_table_read(filename, hdu, numrows, allcols, indexll,
                               minmapsize);
       break;
 
     default:
-      error(EXIT_FAILURE, 0, "table type code %d not recognized for "
-            "`tabletype' in `gal_table_read_cols'", tabletype);
+      error(EXIT_FAILURE, 0, "table format code %d not recognized for "
+            "`tableformat' in `gal_table_read_cols'", tableformat);
     }
 
   /* Clean up. */
@@ -807,16 +809,17 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 /***************              Write a table               ***************/
 /************************************************************************/
 void
-gal_table_write(gal_data_t *cols, char *comments, int tabletype,
+gal_table_write(gal_data_t *cols, char *comments, int tableformat,
                 char *filename, int dontdelete)
 {
-  /* If a filename was given, then the tabletype is relevant and must be
+  /* If a filename was given, then the tableformat is relevant and must be
      used. When the filename is empty, a text table must be printed on the
      standard output (on the command-line). */
   if(filename)
     {
       if(gal_fits_name_is_fits(filename))
-        gal_fits_table_write(cols, comments, tabletype, filename, dontdelete);
+        gal_fits_table_write(cols, comments, tableformat, filename,
+                             dontdelete);
       else
         gal_txt_table_write(cols, comments, filename, dontdelete);
     }

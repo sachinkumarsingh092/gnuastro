@@ -1620,9 +1620,9 @@ gal_fits_table_type(fitsfile *fptr)
   if(status==0)
     {
       if(!strcmp(value, "TABLE"))
-        return GAL_TABLE_TYPE_AFITS;
+        return GAL_TABLE_FORMAT_AFITS;
       else if(!strcmp(value, "BINTABLE"))
-        return GAL_TABLE_TYPE_BFITS;
+        return GAL_TABLE_FORMAT_BFITS;
       else
         error(EXIT_FAILURE, 0, "The `XTENSION' keyword of this FITS file "
               "doesn't have a standard value (`%s')", value);
@@ -1882,7 +1882,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
             {
               /* The FITS standard's value to this option for FITS ASCII
                  and binary files differ. */
-              if(*tabletype==GAL_TABLE_TYPE_AFITS)
+              if(*tabletype==GAL_TABLE_FORMAT_AFITS)
                 fits_ascii_tform(val, &datatype, NULL, NULL, &status);
               else
                 fits_binary_tform(val, &datatype, &repeat, NULL, &status);
@@ -1894,7 +1894,7 @@ gal_fits_table_info(char *filename, char *hdu, size_t *numcols,
                  number of bytes in both cases for printing later. */
               if( allcols[index].type==GAL_DATA_TYPE_STRING )
                 {
-                  if(*tabletype==GAL_TABLE_TYPE_AFITS)
+                  if(*tabletype==GAL_TABLE_FORMAT_AFITS)
                     {
                       repeat=strtol(val+1, &tailptr, 0);
                       if(*tailptr!='\0')
@@ -2121,10 +2121,10 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
       switch(tabletype)
         {
         /* FITS ASCII table. */
-        case GAL_TABLE_TYPE_AFITS:
+        case GAL_TABLE_FORMAT_AFITS:
 
             /* Fill the printing format. */
-            gal_table_col_print_info(col, GAL_TABLE_TYPE_AFITS, fmt, lng);
+            gal_table_col_print_info(col, GAL_TABLE_FORMAT_AFITS, fmt, lng);
 
             /* We need to check if the blank value needs is larger than the
                expected width or not. Its initial width is set the output
@@ -2172,7 +2172,7 @@ fits_table_prepare_arrays(gal_data_t *cols, size_t numcols, int tabletype,
 
 
         /* FITS binary table. */
-        case GAL_TABLE_TYPE_BFITS:
+        case GAL_TABLE_FORMAT_BFITS:
 
           /* If this is a string column, set all the strings to same size,
              then write the value of tform depending on the type. */
@@ -2214,7 +2214,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
   /* Write the NULL value */
   switch(tabletype)
     {
-    case GAL_TABLE_TYPE_AFITS:
+    case GAL_TABLE_FORMAT_AFITS:
       asprintf(&keyname, "TNULL%zu", colnum);
       blank=gal_data_blank_as_string(col->type, col->disp_width);
       fits_write_key(fptr, TSTRING, keyname, blank,
@@ -2223,7 +2223,7 @@ fits_write_tnull_tcomm(fitsfile *fptr, gal_data_t *col, int tabletype,
       free(blank);
       break;
 
-    case GAL_TABLE_TYPE_BFITS:
+    case GAL_TABLE_FORMAT_BFITS:
       /* FITS binary tables don't accept NULL values for floating point or
          string columns. For floating point is must be NaN and for strings
          it is a blank string. */
@@ -2306,7 +2306,7 @@ gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
 
   /* Make the FITS file pointer. Note that tabletype was checked in
      `fits_table_prepare_arrays'. */
-  tbltype = tabletype==GAL_TABLE_TYPE_AFITS ? ASCII_TBL : BINARY_TBL;
+  tbltype = tabletype==GAL_TABLE_FORMAT_AFITS ? ASCII_TBL : BINARY_TBL;
   fits_create_tbl(fptr, tbltype, numrows, numcols, ttype, tform, tunit,
                   "table", &status);
   gal_fits_io_error(status, NULL);
@@ -2325,7 +2325,7 @@ gal_fits_table_write(gal_data_t *cols, char *comments, int tabletype,
          need a blank pointer in a FITS ASCII table.*/
       blank = ( gal_data_has_blank(col)
                 ? gal_data_alloc_blank(col->type) : NULL );
-      if(tabletype==GAL_TABLE_TYPE_AFITS && col->type==GAL_DATA_TYPE_STRING)
+      if(tabletype==GAL_TABLE_FORMAT_AFITS && col->type==GAL_DATA_TYPE_STRING)
         blank=NULL;
 
       /* Write the full column into the table. */

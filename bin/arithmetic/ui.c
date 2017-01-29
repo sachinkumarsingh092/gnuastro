@@ -87,23 +87,6 @@ doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do arithmetic "
 
 
 
-/* Available letters for short options:
-
-   a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z                */
-enum option_keys_enum
-{
-  /* With short-option version. */
-  ARGS_OPTION_KEY_HDU        = 'h',
-
-  /* Only with long version (start with a value 1000, the rest will be set
-     automatically). */
-};
-
-
-
-
-
 
 
 
@@ -127,6 +110,7 @@ ui_initialize_options(struct imgarithparams *p,
                       struct argp_option *program_options,
                       struct argp_option *gal_commonopts_options)
 {
+  size_t i;
   struct gal_options_common_params *cp=&p->cp;
 
   /* Set the necessary common parameters structure. */
@@ -136,6 +120,27 @@ ui_initialize_options(struct imgarithparams *p,
   cp->program_bibtex     = PROGRAM_BIBTEX;
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
+
+  /* Modify the common options for this program. */
+  for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
+    switch(cp->coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_HDU:
+        cp->coptions[i].value=&p->hdus;
+        cp->coptions[i].type=GAL_DATA_TYPE_STRLL;
+        cp->coptions[i].doc="Nth call, used for HDU of Nth input FITS.";
+        break;
+
+      case GAL_OPTIONS_KEY_SEARCHIN:
+      case GAL_OPTIONS_KEY_IGNORECASE:
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+        cp->coptions[i].flags=OPTION_HIDDEN;
+        break;
+
+      case GAL_OPTIONS_KEY_MINMAPSIZE:
+        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+      }
 }
 
 
@@ -203,17 +208,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
 /**************************************************************/
 /***************       Sanity Check         *******************/
 /**************************************************************/
-/* Read and check ONLY the options. When arguments are involved, do the
-   check in `ui_check_options_and_arguments'. */
-static void
-ui_read_check_only_options(struct imgarithparams *p)
-{
-
-}
-
-
-
-
 
 /* Sanity check on options AND arguments. If only option values are to be
    checked, use `ui_read_check_only_options'. */
@@ -307,8 +301,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
      and for the common options to all Gnuastro (`commonopts.h'). We want
      to directly put the pointers to the fields in `p' and `cp', so we are
      simply including the header here to not have to use long macros in
-     those headers which make them hard to read. */
-#define NOT_COMMON_HDU_PARSER 1
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
 #include <commonopts.h>
 #include "args.h"
 
@@ -334,11 +329,6 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct imgarithparams *p)
 
   /* Read the configuration files. */
   gal_options_read_config_set(cp);
-
-
-  /* Read the options into the program's structure, and check them and
-     their relations prior to printing. */
-  ui_read_check_only_options(p);
 
 
   /* Print the option values if asked. Note that this needs to be done

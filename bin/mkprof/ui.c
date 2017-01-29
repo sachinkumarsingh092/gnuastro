@@ -90,11 +90,12 @@ enum program_args_groups
 
    Available letters (-V which is used by GNU is also removed):
 
-   a d f g j k l u v
+   a d f g j l u v
    A E G H I J L M O Q U W Z     */
 enum option_keys_enum
 {
   /* With short-option version. */
+  ARGS_OPTION_KEY_BACKGROUND      = 'k',
   ARGS_OPTION_KEY_BACKHDU         = 'B',
   ARGS_OPTION_KEY_NAXIS1          = 'x',
   ARGS_OPTION_KEY_NAXIS2          = 'y',
@@ -175,10 +176,22 @@ ui_initialize_options(struct mkprofparams *p,
   cp->coptions           = gal_commonopts_options;
 
 
-  /* Set the mandatory common options. */
+  /* Modify the common options for this program. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
     switch(cp->coptions[i].key)
       {
+      case GAL_OPTIONS_KEY_HDU:
+        cp->coptions[i].doc="Input catalog HDU name or number (if FITS).";
+        break;
+
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+        cp->coptions[i].flags=OPTION_HIDDEN;
+        break;
+
+      case GAL_OPTIONS_KEY_SEARCHIN:
+        cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
+        break;
+
       case GAL_OPTIONS_KEY_MINMAPSIZE:
         cp->coptions[i].mandatory=GAL_OPTIONS_MANDATORY;
         break;
@@ -229,7 +242,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 
     /* Read the non-option tokens (arguments): */
     case ARGP_KEY_ARG:
-      gal_linkedlist_add_to_stll(&p->allargs, arg, 0);
+      p->catname=arg;
       break;
 
 
@@ -272,6 +285,24 @@ ui_read_check_only_options(struct mkprofparams *p)
   if( p->type==GAL_DATA_TYPE_INVALID && p->nomerged==0)
     error(EXIT_FAILURE, 0, "an output type `--type' is necessary when a "
           "merged image is to be built.");
+
+  /* Check if one of the coordinate columns has been given, the other is
+     also given. To simplify the job, we use the fact that conditions in C
+     return either a 0 (when failed) and 1 (when successful). Note that if
+     neighter coordinates are specified there is no problem, the user might
+     have input the other coordinate standard. We'll also check for that
+     after this.*/
+  if( ((p->xcol==NULL) + (p->ycol==NULL)) == 1 )
+    error(EXIT_FAILURE, 0, "only `%s' has been given, please also specify "
+          "a column for the position along the %s axis with the `%s' option",
+          p->xcol?"xcol":"ycol", p->xcol?"Y":"X", p->xcol?"ycol":"xcol");
+
+  if( ((p->racol==NULL) + (p->deccol==NULL)) == 1 )
+    error(EXIT_FAILURE, 0, "only `%s' has been given, please also specify "
+          "a column for the position along the %s axis with the `%s' option",
+          p->racol?"racol":"deccol", p->racol?"Dec":"RA",
+          p->xcol?"deccol":"racol");
+
 }
 
 
@@ -283,7 +314,20 @@ ui_read_check_only_options(struct mkprofparams *p)
 static void
 ui_check_options_and_arguments(struct mkprofparams *p)
 {
-
+  /* Make sure an input table is given, and if it is FITS, that the HDU is
+     also provided. */
+  if(p->catname)
+    {
+      if( gal_fits_name_is_fits(p->catname) && p->cp.hdu==NULL)
+        error(EXIT_FAILURE, 0, "no `hdu' specified for the input FITS table "
+              "'%s', to ", p->catname);
+    }
+  else
+    {
+      error(EXIT_FAILURE, 0, "no input catalog provided. To build profiles, "
+            "you need to give a catalog/table containing the information of "
+            "the profiles");
+    }
 }
 
 
@@ -311,7 +355,20 @@ ui_check_options_and_arguments(struct mkprofparams *p)
 static void
 ui_preparations(struct mkprofparams *p)
 {
+  struct gal_linkedlist_stll *cols=NULL;
+  char *ax1col=p->racol?p->racol:p->xcol;
+  char *ax2col=p->deccol?p->deccol:p->ycol;
 
+  /* Correct/set based on the given oversampling. */
+  p->naxes[0] *= p->oversample;
+  p->naxes[1] *= p->oversample;
+  p->halfpixel = 0.5f/p->oversample;
+
+  /* Read the columns.
+  gal_linkedlist_add_to_stll(cols, ax1col, 0);
+  gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
+                 int searchin, int ignorecase, int minmapsize);
+  */
 }
 
 
@@ -346,7 +403,9 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
      and for the common options to all Gnuastro (`commonopts.h'). We want
      to directly put the pointers to the fields in `p' and `cp', so we are
      simply including the header here to not have to use long macros in
-     those headers which make them hard to read. */
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
 #include <commonopts.h>
 #include "args.h"
 

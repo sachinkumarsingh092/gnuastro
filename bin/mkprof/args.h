@@ -31,19 +31,17 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 struct argp_option program_options[] =
   {
     {
-      0, 0, 0, 0,
-      "Operating modes:",
-      -1
-    },
-
-
-
-
-
-    {
-      0, 0, 0, 0,
-      "Input:",
-      GAL_OPTIONS_GROUP_INPUT
+      "background",
+      ARGS_OPTION_KEY_BACKGROUND,
+      "STR",
+      0,
+      "A background image to make the profiles on.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &p->backname,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
     },
     {
       "backhdu",
@@ -61,11 +59,8 @@ struct argp_option program_options[] =
 
 
 
-    {
-      0, 0, 0, 0,
-      "Output:",
-      GAL_OPTIONS_GROUP_OUTPUT
-    },
+
+
     {
       "naxis1",
       ARGS_OPTION_KEY_NAXIS1,
@@ -330,7 +325,7 @@ struct argp_option program_options[] =
 
     {
       0, 0, 0, 0,
-      "Catalog (column name or number, starting from 1):",
+      "Columns by info (see `--searchin') or number (starting from 1):",
       ARGS_GROUP_CATALOG
     },
     {
@@ -565,6 +560,8 @@ struct argp_option program_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
+
+
 
 
     {0}

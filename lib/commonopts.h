@@ -37,12 +37,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
      programs. */
 struct argp_option gal_commonopts_options[] =
   {
-    /* Input/output. */
-#ifndef NOT_COMMON_HDU_PARSER
-    {                           /* Some utilities need to parse `hdu' them-*/
-      "hdu",                    /* selves. In this case, they will define  */
-      GAL_OPTIONS_KEY_HDU,      /* `NOT_COMMON_HDU_PARSER' and set their   */
-      "STR",                    /* own `hdu' option structure. */
+    {
+      0, 0, 0, 0,
+      "Input:",
+      GAL_OPTIONS_GROUP_INPUT
+    },
+    {
+      "hdu",
+      GAL_OPTIONS_KEY_HDU,
+      "STR/INT",
       0,
       "Extension name or number of input data.",
       GAL_OPTIONS_GROUP_INPUT,
@@ -52,7 +55,42 @@ struct argp_option gal_commonopts_options[] =
       GAL_OPTIONS_NOT_MANDATORY,
       GAL_OPTIONS_NOT_SET
     },
-#endif
+    {
+      "searchin",
+      GAL_OPTIONS_KEY_SEARCHIN,
+      "STR",
+      0,
+      "Col. selection field: `name', `unit', `comment'.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &cp->searchinstr,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "ignorecase",
+      GAL_OPTIONS_KEY_IGNORECASE,
+      0,
+      0,
+      "Ignore case when matching/searching col. info.",
+      GAL_OPTIONS_GROUP_INPUT,
+      &cp->ignorecase,
+      GAL_OPTIONS_NO_ARG_TYPE,
+      GAL_OPTIONS_RANGE_0_OR_1,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+
+
+
+
+
+    {
+      0, 0, 0, 0,
+      "Output:",
+      GAL_OPTIONS_GROUP_OUTPUT
+    },
     {
       "output",
       GAL_OPTIONS_KEY_OUTPUT,
@@ -61,6 +99,19 @@ struct argp_option gal_commonopts_options[] =
       "Output file or directory name.",
       GAL_OPTIONS_GROUP_OUTPUT,
       &cp->output,
+      GAL_DATA_TYPE_STRING,
+      GAL_OPTIONS_RANGE_ANY,
+      GAL_OPTIONS_NOT_MANDATORY,
+      GAL_OPTIONS_NOT_SET
+    },
+    {
+      "tableformat",
+      GAL_OPTIONS_KEY_TABLEFORMAT,
+      "STR",
+      0,
+      "Output table format: `fits-ascii', `fits-binary'.",
+      GAL_OPTIONS_GROUP_OUTPUT,
+      &cp->tableformatstr,
       GAL_DATA_TYPE_STRING,
       GAL_OPTIONS_RANGE_ANY,
       GAL_OPTIONS_NOT_MANDATORY,
@@ -95,7 +146,13 @@ struct argp_option gal_commonopts_options[] =
 
 
 
-    /* Operating mode. */
+
+
+    {
+      0, 0, 0, 0,
+      "Operating modes:",
+      GAL_OPTIONS_GROUP_OPERATING_MODE
+    },
     {
       "quiet",
       GAL_OPTIONS_KEY_QUIET,

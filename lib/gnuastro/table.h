@@ -68,17 +68,18 @@ __BEGIN_C_DECLS  /* From C++ preparations */
 
 
 
-/* Types of table storage for input or output, as strings and integers. */
-#define GAL_TABLE_STRING_TYPE_TXT "txt"
-#define GAL_TABLE_STRING_TYPE_AFITS "fits-ascii"
-#define GAL_TABLE_STRING_TYPE_BFITS "fits-binary"
+/* Formats of table storage for input or output, as strings and
+   integers. */
+#define GAL_TABLE_STRING_FORMAT_TXT   "txt"
+#define GAL_TABLE_STRING_FORMAT_AFITS "fits-ascii"
+#define GAL_TABLE_STRING_FORMAT_BFITS "fits-binary"
 enum gal_table_types
 {
-  GAL_TABLE_TYPE_INVALID,       /* Invalid (=0 by C standard).       */
+  GAL_TABLE_FORMAT_INVALID,       /* Invalid (=0 by C standard).       */
 
-  GAL_TABLE_TYPE_TXT,           /* Plain text table.                 */
-  GAL_TABLE_TYPE_AFITS,         /* FITS ASCII table.                 */
-  GAL_TABLE_TYPE_BFITS,         /* FITS binary table.                */
+  GAL_TABLE_FORMAT_TXT,           /* Plain text table.                 */
+  GAL_TABLE_FORMAT_AFITS,         /* FITS ASCII table.                 */
+  GAL_TABLE_FORMAT_BFITS,         /* FITS binary table.                */
 };
 
 
@@ -128,10 +129,10 @@ enum gal_table_diplay_formats
 
 /* Functions */
 int
-gal_table_string_to_type(char *string);
+gal_table_string_to_format(char *string);
 
 void
-gal_table_check_fits_type(char *filename, int tabletype);
+gal_table_check_fits_format(char *filename, int tableformat);
 
 int
 gal_table_string_to_searchin(char *string);
@@ -140,7 +141,7 @@ void
 gal_table_print_info(gal_data_t *allcols, size_t numcols, size_t numrows);
 
 void
-gal_table_col_print_info(gal_data_t *col, int tabletype,
+gal_table_col_print_info(gal_data_t *col, int tableformat,
                          char *fmt, char *lng);
 
 void
@@ -148,14 +149,14 @@ gal_table_read_blank(gal_data_t *col, char *blank);
 
 gal_data_t *
 gal_table_info(char *filename, char *hdu, size_t *numcols,
-               size_t *numrows, int *tabletype);
+               size_t *numrows, int *tableformat);
 
 gal_data_t *
 gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
                int searchin, int ignorecase, int minmapsize);
 
 void
-gal_table_write(gal_data_t *cols, char *comments, int tabletype,
+gal_table_write(gal_data_t *cols, char *comments, int tableformat,
                 char *filename, int dontdelete);
 
 

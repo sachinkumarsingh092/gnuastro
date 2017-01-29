@@ -48,4 +48,4 @@ if [ ! -f $execname ] || [ ! -f $img ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $table --output=binary-table.fits --tabletype=fits-binary
+$execname $table --output=binary-table.fits --tableformat=fits-binary

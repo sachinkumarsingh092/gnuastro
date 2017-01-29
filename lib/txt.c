@@ -875,7 +875,7 @@ make_fmts_for_printf(gal_data_t *cols, size_t numcols, int leftadjust,
 
 
       /* Fill in the printing paramters. */
-      gal_table_col_print_info(col, GAL_TABLE_TYPE_TXT, fmt, lng);
+      gal_table_col_print_info(col, GAL_TABLE_FORMAT_TXT, fmt, lng);
 
 
       /* Adjust the width if a blank string was defined. */

@@ -46,14 +46,9 @@ struct tableparams
   struct gal_options_common_params cp; /* Common parameters.            */
   char              *filename;  /* Input filename.                      */
   struct gal_linkedlist_stll *columns; /* List of given columns.        */
-  char           *searchinstr;  /* Value to the `searchin' option.      */
-  unsigned char    ignorecase;  /* Ignore case matching column names.   */
-  char          *tabletypestr;  /* The type of the table as a string.   */
   unsigned char   information;  /* ==1, only print FITS information.    */
 
   /* Output: */
-  unsigned char      searchin;  /* Where to search in column info.      */
-  int               tabletype;  /* Type of output table (FITS, txt).    */
   gal_data_t           *table;  /* Linked list of output table columns. */
   gal_data_t      *allcolinfo;  /* Information of all the columns.      */
   time_t              rawtime;  /* Starting time of the program.        */

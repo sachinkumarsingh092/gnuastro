@@ -57,7 +57,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 enum options_standard_groups
 {
   GAL_OPTIONS_GROUP_OPERATING_MODE = -1,
-  GAL_OPTIONS_GROUP_INPUT,
+  GAL_OPTIONS_GROUP_INPUT=1,
   GAL_OPTIONS_GROUP_OUTPUT,
 
   GAL_OPTIONS_GROUP_AFTER_COMMON,
@@ -73,7 +73,7 @@ enum options_standard_groups
    is also removed.
 
    a b c d e f g i j k l m n p r s t u v w x y z
-   A B C E F G H I J L M O Q R T U W X Y Z
+   A B C E F G H J L M O Q R T W X Y Z
 */
 enum options_common_keys
 {
@@ -87,13 +87,16 @@ enum options_common_keys
   GAL_OPTIONS_KEY_PRINTPARAMS  = 'P',
   GAL_OPTIONS_KEY_SETDIRCONF   = 'S',
   GAL_OPTIONS_KEY_SETUSRCONF   = 'U',
+  GAL_OPTIONS_KEY_IGNORECASE   = 'I',
 
   /* Only long option (integers for keywords). */
   GAL_OPTIONS_KEY_MINMAPSIZE   = 500,
   GAL_OPTIONS_KEY_LOG,
   GAL_OPTIONS_KEY_CITE,
   GAL_OPTIONS_KEY_CONFIG,
+  GAL_OPTIONS_KEY_SEARCHIN,
   GAL_OPTIONS_KEY_LASTCONFIG,
+  GAL_OPTIONS_KEY_TABLEFORMAT,
   GAL_OPTIONS_KEY_ONLYVERSION,
 };
 
@@ -146,17 +149,22 @@ enum gal_options_set_values
    programs. */
 struct gal_options_common_params
 {
-  /* Input/Output. */
+  /* Input. */
   char                    *hdu; /* Image extension.                      */
+  unsigned char     ignorecase; /* Ignore case when matching col info.   */
+  char            *searchinstr; /* Column info to search (as a string).  */
+
+  /* Output. */
   char                 *output; /* Directory containg output.            */
-  int               dontdelete; /* ==1: Don't delete existing file.      */
-  int             keepinputdir; /* Keep input directory for auto output. */
+  unsigned char     dontdelete; /* ==1: Don't delete existing file.      */
+  unsigned char   keepinputdir; /* Keep input directory for auto output. */
+  char         *tableformatstr; /* Format of output table (as a string). */
 
   /* Operating modes. */
-  int                    quiet; /* Only print errors.                    */
+  unsigned char          quiet; /* Only print errors.                    */
   size_t            numthreads; /* Number of threads to use.             */
   size_t            minmapsize; /* Minimum bytes necessary to use mmap.  */
-  int                      log; /* Make a log file.                      */
+  unsigned char            log; /* Make a log file.                      */
 
   /* Configuration files. */
   unsigned char    printparams; /* To print the full list of parameters. */
@@ -165,6 +173,8 @@ struct gal_options_common_params
   unsigned char     lastconfig; /* This is the last configuration file.  */
 
   /* For internal purposes. */
+  int                 searchin; /* Internal code for user's input.       */
+  int              tableformat; /* Internal code for output table format.*/
   char           *program_name; /* Official name to be used in text.     */
   char           *program_exec; /* Program's executable name.            */
   char         *program_bibtex; /* BibTeX record for this program.       */

@@ -30,6 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/txt.h>
 #include <gnuastro/data.h>
+#include <gnuastro/table.h>
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/linkedlist.h>
 
@@ -506,7 +507,7 @@ gal_options_set_from_key(int key, char *arg, struct argp_option *options,
   for(i=0;1;++i)
     {
       /* Check if the key corresponds to this option. */
-      if(options[i].key==key)
+      if( options[i].key==key )
         {
           /* For options that need immediate attention. */
           options_immediate(key, arg, cp);
@@ -709,11 +710,11 @@ options_set_from_name(char *name, char *arg,  struct argp_option *options,
   for(i=0;1;++i)
     {
       /* Check if the key corresponds to this option. */
-      if(options[i].name && !strcmp(options[i].name, name))
+      if( options[i].name && !strcmp(options[i].name, name) )
         {
-          /* If the option already has a value and it isn't a linked
-             list, then ignore it. */
-          if(options[i].set && !gal_data_is_linked_list(options[i].type))
+          /* If the option already has a value and it isn't a linked list,
+             or it is not relevant to this program, then ignore it. */
+          if( options[i].set && !gal_data_is_linked_list(options[i].type ) )
             return 0;
 
           /* For options that need immediate attention. */
@@ -746,6 +747,7 @@ static int
 options_lastconfig_has_been_called(struct argp_option *coptions)
 {
   size_t i;
+
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
     if( coptions[i].key == GAL_OPTIONS_KEY_LASTCONFIG
         && coptions[i].set
@@ -827,7 +829,6 @@ options_parse_file(char *filename,  struct gal_options_common_params *cp,
   if(fclose(fp))
     error(EXIT_FAILURE, errno, "%s: couldn't close after reading as "
           "a configuration file", filename);
-
 
   /* Clean up and return. */
   free(line);
@@ -934,6 +935,9 @@ options_reverse_lists_check_mandatory(struct gal_options_common_params *cp,
 void
 gal_options_read_config_set(struct gal_options_common_params *cp)
 {
+  size_t i;
+  struct argp_option *coptions=cp->coptions;
+
   /* Parse all the configuration files. */
   gal_options_parse_config_files(cp);
 
@@ -942,6 +946,21 @@ gal_options_read_config_set(struct gal_options_common_params *cp)
      when printing those options, their order matters.*/
   options_reverse_lists_check_mandatory(cp, cp->poptions);
   options_reverse_lists_check_mandatory(cp, cp->coptions);
+
+  /* Some of the values that the user gives as strings should be stored
+     internally as integers. For the program-specific options, this is done
+     in the program's `ui.c', here, we do it for the common options. */
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    if(coptions[i].set)
+      switch(coptions[i].key)
+      {
+      case GAL_OPTIONS_KEY_SEARCHIN:
+        cp->searchin=gal_table_string_to_searchin(cp->searchinstr);
+        break;
+      case GAL_OPTIONS_KEY_TABLEFORMAT:
+        cp->tableformat=gal_table_string_to_format(cp->tableformatstr);
+        break;
+      }
 
   /* Abort if any of the mandatory options are not set. */
   gal_options_abort_if_mandatory_missing(cp);
@@ -976,6 +995,11 @@ gal_options_read_config_set(struct gal_options_common_params *cp)
 static int
 option_is_printable(struct argp_option *option)
 {
+  /* First check if option is hidden (not relevant to this program). */
+  if(option->flags & OPTION_HIDDEN)
+    return 0;
+
+  /* Then check if it is a pre-program option. */
   switch(option->key)
     {
     case GAL_OPTIONS_KEY_OUTPUT:
@@ -1076,49 +1100,65 @@ options_print_any_type(void *ptr, int type, int width, FILE *fp)
 
 
 
+/* An option structure is given, return its name and value print
+   lengths. */
+static void
+options_correct_max_lengths(struct argp_option *option, int *max_nlen,
+                            int *max_vlen)
+{
+  int vlen;
+  struct gal_linkedlist_stll *tmp;
+
+  /* Get the length of the value and save its length length if its
+     larger than the widest value. */
+  if(gal_data_is_linked_list(option->type))
+    {
+      /* A small sanity check. */
+      if(option->type!=GAL_DATA_TYPE_STRLL)
+        error(EXIT_FAILURE, 0, "currently only string linked lists "
+              "are acceptable for printing");
+
+      /* Check each node, one by one. */
+      for(tmp=*(struct gal_linkedlist_stll **)(option->value);
+          tmp!=NULL; tmp=tmp->next)
+        {
+          /* Get the length of this node: */
+          vlen=options_print_any_type(&tmp->v, GAL_DATA_TYPE_STRING, 0, NULL);
+
+          /* If its larger than the maximum length, then put it in. */
+          if( vlen > *max_vlen )
+            *max_vlen=vlen;
+        }
+    }
+  else
+    {
+      vlen=options_print_any_type(option->value, option->type, 0, NULL);
+      if( vlen > *max_vlen )
+        *max_vlen=vlen;
+    }
+
+  /* If the name of this option is larger than all existing, set its
+     length as the largest name length. */
+  if( strlen(option->name) > *max_nlen )
+    *max_nlen = strlen(option->name);
+}
+
+
+
+
+
 /* To print the options nicely, we need the maximum lengths of the options
    and their values. */
 static void
 options_set_lengths(struct argp_option *poptions,
                     struct argp_option *coptions, int *namelen, int *valuelen)
 {
-  int i, nlen=0, vlen=0, tvlen;
-  struct gal_linkedlist_stll *tmp;
+  int i, max_nlen=0, max_vlen=0;
 
   /* For program specific options. */
   for(i=0; !gal_options_is_last(&poptions[i]); ++i)
     if(poptions[i].name && poptions[i].set)
-      {
-        /* Get the length of the value and save its length length if its
-           larger than the widest value. */
-        if(gal_data_is_linked_list(poptions[i].type))
-          for(tmp=*(struct gal_linkedlist_stll **)(poptions[i].value);
-              tmp!=NULL; tmp=tmp->next)
-            {
-              /* A small sanity check. */
-              if(poptions[i].type!=GAL_DATA_TYPE_STRLL)
-                error(EXIT_FAILURE, 0, "currently only string linked lists "
-                      "are acceptable for printing");
-
-              /* Get the maximum lengths of each node: */
-              tvlen=options_print_any_type(&tmp->v, GAL_DATA_TYPE_STRING,
-                                           0, NULL);
-              if( tvlen>vlen )
-                vlen=tvlen;
-            }
-        else
-          {
-            tvlen=options_print_any_type(poptions[i].value, poptions[i].type,
-                                         0, NULL);
-            if( tvlen>vlen )
-              vlen=tvlen;
-          }
-
-        /* If the name of this option is larger than all existing, set its
-           length as the largest name length. */
-        if( strlen(poptions[i].name)>nlen )
-          nlen=strlen(poptions[i].name);
-      }
+      options_correct_max_lengths(&poptions[i], &max_nlen, &max_vlen);
 
   /* For common options. Note that the options that will not be printed are
      in this category, so we also need to check them. The detailed steps
@@ -1126,19 +1166,11 @@ options_set_lengths(struct argp_option *poptions,
   for(i=0; !gal_options_is_last(&coptions[i]); ++i)
     if( coptions[i].name && coptions[i].set
         && option_is_printable(&coptions[i]) )
-      {
-        tvlen=options_print_any_type(coptions[i].value, coptions[i].type,
-                                     0, NULL);
-        if( tvlen>vlen )
-          vlen=tvlen;
-
-        if(strlen(coptions[i].name)>nlen)
-          nlen=strlen(coptions[i].name);
-      }
+      options_correct_max_lengths(&coptions[i], &max_nlen, &max_vlen);
 
   /* Save the final values in the output pointers. */
-  *namelen=nlen;
-  *valuelen=vlen;
+  *namelen=max_nlen;
+  *valuelen=max_vlen;
 }
 
 
@@ -1237,16 +1269,23 @@ options_print_all(struct gal_options_common_params *cp, char *dirname,
     }
   else fp=stdout;
 
-  /* Parse all the options with a title, note that the title options
-     must only be in the `poptions'. We will only be dealing with the
-     `topics' linked list in this function and the strings in `poption' are
-     statically allocated, so its fine to not waste CPU cycles allocating
-     and freeing.*/
-  for(i=0; !gal_options_is_last(&cp->poptions[i]); ++i)
-    if(poptions[i].name==NULL && poptions[i].key==0 && poptions[i].doc)
+  /* Parse all the options with a title, note that the `Input', `Output'
+     and `Operating mode' options are defined in the common options, while
+     the (possible) other groups are in the program specific options. We
+     will only be dealing with the `topics' linked list in this function
+     and the strings in `poption' are statically allocated, so its fine to
+     not waste CPU cycles allocating and freeing.*/
+  for(i=0; !gal_options_is_last(&coptions[i]); ++i)
+    if(coptions[i].name==NULL && coptions[i].key==0 && coptions[i].doc)
       {
         /* The `(char *)' is because `.doc' is a constant and this helps
            remove the compiler warning. */
+        gal_linkedlist_add_to_ill(&group, coptions[i].group);
+        gal_linkedlist_add_to_stll(&topic, (char *)coptions[i].doc, 0);
+      }
+  for(i=0; !gal_options_is_last(&poptions[i]); ++i)
+    if(poptions[i].name==NULL && poptions[i].key==0 && poptions[i].doc)
+      {
         gal_linkedlist_add_to_ill(&group, poptions[i].group);
         gal_linkedlist_add_to_stll(&topic, (char *)poptions[i].doc, 0);
       }
