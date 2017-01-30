@@ -14056,26 +14056,29 @@ column number, where counting starts from zero.
 @table @option
 
 @item --fcol=INT/STR
-The functional form of the profile with one of the values below. Note that
-this value will be converted to an integer before analysis using the
-internal type conversion of C. So for example 2.80 will be converted to 2.
+The functional form of the profile with one of the values below. The column
+can contain both string characters (for example `@code{sersic}') and the
+numeric codes (`@code{1}'). The string format can be easier when the
+catalog is to be read, or written by hand. For ways to benefit from string
+columns in a plain text table/catalog, see @ref{Gnuastro text table
+format}.
 
 @itemize
 @item
-0: S@'ersic.
+S@'ersic profile with `@code{sersic}' or `@code{1}'.
 @item
-1: Moffat.
+Moffat profile with `@code{moffat}' or `@code{2}'.
 @item
-2: Gaussian.
+Gaussian profile with `@code{gaussian}' or `@code{3}'.
 @item
-3: Point source (a star).
+Point source with `@code{point}' or `@code{4}'.
 @item
-4: Flat profile: all pixels have same value.
+Flat profile with `@code{flat}' or `@code{5}'.
 @item
-5: Circumference: same value for all pixels between the truncation
-radius (@mymath{r_t}) and @mymath{r_t-w} where @mymath{w} is the value
-to the @option{--circumwidth}. Currently this is only intended to be
-used for making an elliptical annulus (with a width of 1 or 2 pixels).
+Circumference profile with `@code{circumference}' or `@code{6}'. A fixed
+value will be used for all pixels between the truncation radius
+(@mymath{r_t}) and @mymath{r_t-w} (@mymath{w} is the value to the
+@option{--circumwidth}).
 @end itemize
 
 @item --xcol=STR/INT

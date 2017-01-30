@@ -289,6 +289,9 @@ gal_data_t *
 gal_data_copy_to_new_type(gal_data_t *in, int newtype);
 
 gal_data_t *
+gal_data_copy_to_new_type_free(gal_data_t *in, int type);
+
+gal_data_t *
 gal_data_copy(gal_data_t *in);
 
 int

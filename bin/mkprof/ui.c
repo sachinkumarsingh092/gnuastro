@@ -26,6 +26,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
@@ -314,8 +315,8 @@ ui_read_check_only_options(struct mkprofparams *p)
 static void
 ui_check_options_and_arguments(struct mkprofparams *p)
 {
-  /* Make sure an input table is given, and if it is FITS, that the HDU is
-     also provided. */
+  /* Make sure an input catalog is given, and if it is FITS, that the HDU
+     is also provided. */
   if(p->catname)
     {
       if( gal_fits_name_is_fits(p->catname) && p->cp.hdu==NULL)
@@ -353,22 +354,171 @@ ui_check_options_and_arguments(struct mkprofparams *p)
 /***************       Preparations         *******************/
 /**************************************************************/
 static void
-ui_preparations(struct mkprofparams *p)
+ui_read_profile_function(struct mkprofparams *p, char **strarr)
 {
-  struct gal_linkedlist_stll *cols=NULL;
+  size_t i;
+
+  p->f=gal_data_malloc_array(GAL_DATA_TYPE_INT, p->num);
+  for(i=0;i<p->num;++i)
+    {
+      if( !strcmp("sersic", strarr[i]) )
+        p->f[i]=PROFILE_SERSIC;
+      else if ( !strcmp("moffat", strarr[i]) )
+        p->f[i]=PROFILE_MOFFAT;
+      else if ( !strcmp("gaussian", strarr[i]) )
+        p->f[i]=PROFILE_GAUSSIAN;
+      else if ( !strcmp("point", strarr[i]) )
+        p->f[i]=PROFILE_POINT;
+      else if ( !strcmp("flat", strarr[i]) )
+        p->f[i]=PROFILE_FLAT;
+      else if ( !strcmp("circumference", strarr[i]) )
+        p->f[i]=PROFILE_CIRCUMFERENCE;
+      else
+        error(EXIT_FAILURE, 0, "`%s' not recognized as a profile function "
+              "name in row %zu", strarr[i], i);
+    }
+}
+
+
+
+
+
+static void
+ui_read_cols(struct mkprofparams *p)
+{
+  size_t counter=0;
+  gal_data_t *cols, *tmp, *corrtype;
   char *ax1col=p->racol?p->racol:p->xcol;
   char *ax2col=p->deccol?p->deccol:p->ycol;
+  struct gal_linkedlist_stll *colstrs=NULL;
+
+  /* Specify the order of columns. */
+  gal_linkedlist_add_to_stll(&colstrs, ax1col, 0);
+  gal_linkedlist_add_to_stll(&colstrs, ax2col, 0);
+  gal_linkedlist_add_to_stll(&colstrs, p->fcol, 0);
+  gal_linkedlist_add_to_stll(&colstrs, p->rcol, 0);
+  gal_linkedlist_add_to_stll(&colstrs, p->ncol, 0);
+  gal_linkedlist_add_to_stll(&colstrs, p->pcol, 0);
+  gal_linkedlist_add_to_stll(&colstrs, p->qcol, 0);
+  gal_linkedlist_add_to_stll(&colstrs, p->mcol, 0);
+  gal_linkedlist_add_to_stll(&colstrs, p->tcol, 0);
+
+  /* Read the desired columns from the file. */
+  cols=gal_table_read(p->catname, p->cp.hdu, colstrs, p->cp.searchin,
+                      p->cp.ignorecase, p->cp.minmapsize);
+
+  /* Set the number of objects. */
+  p->num=cols->size;
+
+  /* For a sanity check, make sure that the total number of columns read is
+     the same as those that were wanted (it might be more). */
+  while(cols!=NULL)
+    {
+      /* Increment the column counter. */
+      ++counter;
+
+      /* Pop out the top node. */
+      tmp=gal_data_pop_from_ll(&cols);
+
+      /* Note that the input was a linked list, so the output order is the
+         inverse of the input order. For the position, we will store the
+         values into the `x' and `y' arrays even if they are RA/Dec. */
+      switch(counter)
+        {
+        case 9:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
+          p->x=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        case 8:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
+          p->y=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        case 7:
+          if(tmp->type==GAL_DATA_TYPE_STRING)
+            ui_read_profile_function(p, tmp->array);
+          else
+            {
+              corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_INT);
+              p->f=corrtype->array;
+              corrtype->array=NULL;
+            }
+          break;
+
+        case 6:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          p->r=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        case 5:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          p->n=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        case 4:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          p->p=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        case 3:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          p->q=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        case 2:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          p->m=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        case 1:
+          corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
+          p->t=corrtype->array;
+          corrtype->array=NULL;
+          break;
+
+        /* If the index isn't recognized, then it is larger, showing that
+           there was more than one match for the given criteria */
+        default:
+          error(EXIT_FAILURE, 0, "there was more than one match for at "
+                "least one of the input columns from `%s'. You can check "
+                "the column information with the following command, and "
+                "correct the options ending with `col' appropriately.\n\n"
+                "   $ asttable --information %s\n\n"
+                "The current values to all options can be checked by calling "
+                "the `--printparams' (or `-P') option. To learn more about "
+                "how the columns are selected, please try the following "
+                "command:\n\n"
+                "   $ info gnuastro \"Selecting table columns\" ",
+                p->catname, p->catname);
+        }
+
+    }
+}
+
+
+
+
+
+static void
+ui_preparations(struct mkprofparams *p)
+{
 
   /* Correct/set based on the given oversampling. */
   p->naxes[0] *= p->oversample;
   p->naxes[1] *= p->oversample;
   p->halfpixel = 0.5f/p->oversample;
 
-  /* Read the columns.
-  gal_linkedlist_add_to_stll(cols, ax1col, 0);
-  gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
-                 int searchin, int ignorecase, int minmapsize);
-  */
+  /* Read in all the columns. */
+  ui_read_cols(p);
+
 }
 
 

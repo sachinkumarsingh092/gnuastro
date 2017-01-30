@@ -1881,6 +1881,14 @@ gal_data_flag_blank(gal_data_t *data)
       COPY_OTYPE_ITYPE_SET(otype, short);                               \
       break;                                                            \
                                                                         \
+    case GAL_DATA_TYPE_UINT:                                            \
+      COPY_OTYPE_ITYPE_SET(otype, unsigned int);                        \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_INT:                                             \
+      COPY_OTYPE_ITYPE_SET(otype, int);                                 \
+      break;                                                            \
+                                                                        \
     case GAL_DATA_TYPE_ULONG:                                           \
       COPY_OTYPE_ITYPE_SET(otype, unsigned long);                       \
       break;                                                            \
@@ -1902,8 +1910,8 @@ gal_data_flag_blank(gal_data_t *data)
       break;                                                            \
                                                                         \
     default:                                                            \
-      error(EXIT_FAILURE, 0, "type %d not recognized for "              \
-            "for newtype in COPY_OTYPE_SET", in->type);                 \
+      error(EXIT_FAILURE, 0, "type code %d not recognized for "         \
+            "`in->type' in COPY_OTYPE_SET", in->type);                  \
     }
 
 
@@ -1919,6 +1927,12 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
   /* Allocate space for the output type */
   out=gal_data_alloc(NULL, newtype, in->ndim, in->dsize, in->wcs,
                      0, in->minmapsize, in->name, in->unit, in->comment);
+
+  /* For debugging.
+  printf("in: %d (%s)\nout: %d (%s)\n\n", in->type,
+         gal_data_type_as_string(in->type, 1), out->type,
+         gal_data_type_as_string(out->type, 1));
+  */
 
   /* Fill in the output array: */
   switch(newtype)
@@ -1937,6 +1951,14 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
 
     case GAL_DATA_TYPE_SHORT:
       COPY_OTYPE_SET(short);
+      break;
+
+    case GAL_DATA_TYPE_UINT:
+      COPY_OTYPE_SET(unsigned int);
+      break;
+
+    case GAL_DATA_TYPE_INT:
+      COPY_OTYPE_SET(int);
       break;
 
     case GAL_DATA_TYPE_ULONG:
@@ -1965,6 +1987,19 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
     }
 
   /* Return the created array */
+  return out;
+}
+
+
+
+
+
+gal_data_t *
+gal_data_copy_to_new_type_free(gal_data_t *in, int type)
+{
+  gal_data_t *out;
+  out=gal_data_copy_to_new_type(in, type);
+  gal_data_free(in);
   return out;
 }
 

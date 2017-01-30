@@ -716,7 +716,7 @@ make_list_of_indexs(struct gal_linkedlist_stll *cols, gal_data_t *allcols,
    columns should be specified by the `cols' linked list as string values
    in each node of the list, the strings in each node can be a number, an
    exact match to a column name, or a regular expression (in GNU AWK
-   format) enclosed in `/ /'. The `tosearch' value comes from the
+   format) enclosed in `/ /'. The `searchin' value comes from the
    `gal_table_where_to_search' enumerator and has to be one of its given
    types. If `cols' is NULL, then this function will read the full table.
 

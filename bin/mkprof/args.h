@@ -372,8 +372,8 @@ struct argp_option program_options[] =
       ARGS_OPTION_KEY_FCOL,
       "STR/INT",
       0,
-      "Sersic (0), Moffat (1), Gaussian (2), Point (3), "
-      "Flat (4), Circumference (5).",
+      "Sersic (1), Moffat (2), Gaussian (3), Point (4), "
+      "Flat (5), Circumference (6).",
       ARGS_GROUP_CATALOG,
       &p->fcol,
       GAL_DATA_TYPE_STRING,

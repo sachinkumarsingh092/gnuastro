@@ -150,12 +150,20 @@ struct mkprofparams
 
 
   /* Processing parameters: */
+  size_t                num;  /* The number of profiles.                  */
+  double                 *x;  /* X axis position of profile center.       */
+  double                 *y;  /* Y axis position of profile center.       */
+  int                    *f;  /* Profile function code.                   */
+  float                  *r;  /* Radius of profile.                       */
+  float                  *n;  /* Index of profile.                        */
+  float                  *p;  /* Position angle of profile                */
+  float                  *q;  /* Axis ratio of profile.                   */
+  float                  *m;  /* Magnitude of profile.                    */
+  float                  *t;  /* Truncation distance.                     */
   gsl_rng              *rng;  /* Main instance of random number generator.*/
   time_t            rawtime;  /* Starting time of the program.            */
   gal_data_t           *out;  /* Output image.                            */
   double               *cat;  /* Input catalog.                           */
-  size_t                cs0;  /* Number of rows in input catalog.         */
-  size_t                cs1;  /* Number of columns in input catalog.      */
   double               *log;  /* Log data to be printed.                  */
   struct builtqueue     *bq;  /* Top (last) elem of build queue.          */
   pthread_cond_t     qready;  /* bq is ready to be written.               */

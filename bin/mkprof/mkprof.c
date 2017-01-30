@@ -413,7 +413,7 @@ write(struct mkprofparams *p)
   long os=p->oversample;
   int replace=p->replace;
   gal_data_t *out, *towrite;
-  size_t complete=0, cs0=p->cs0;
+  size_t complete=0, num=p->num;
   struct builtqueue *ibq=NULL, *tbq;
   float *to, *from, *colend, *rowend;
   size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
@@ -435,7 +435,7 @@ write(struct mkprofparams *p)
 
 
   /* Write each image into the output array. */
-  while(complete<p->cs0)
+  while(complete<p->num)
     {
       /* Set ibq. */
       if(ibq==NULL)
@@ -528,7 +528,7 @@ write(struct mkprofparams *p)
           if(jobname==NULL)
             error(EXIT_FAILURE, errno, "jobname in mkprof.c");
           sprintf(jobname, "row %zu complete, %zu left to go",
-                  ibq->id, cs0-complete);
+                  ibq->id, num-complete);
           gal_timing_report(NULL, jobname, 2);
           free(jobname);
         }
@@ -621,7 +621,7 @@ mkprof(struct mkprofparams *p)
   /* Distribute the different profiles for different threads. Note
      that one thread is left out for writing, while nt-1 are left
      for building. */
-  gal_threads_dist_in_threads(p->cs0, nt, &indexs, &thrdcols);
+  gal_threads_dist_in_threads(p->num, nt, &indexs, &thrdcols);
 
   /* onaxes are sides of the image without over-sampling. */
   onaxes[0] = (p->naxes[0]-2*p->shift[0])/os + 2*p->shift[0]/os;
@@ -641,7 +641,7 @@ mkprof(struct mkprofparams *p)
       /* Initialize the attributes. Note that this main thread will
          also have to be kept behind the barrier, so we need nt+1
          barrier stops. */
-      if(p->cs0<nt) nb=p->cs0+1;
+      if(p->num<nt) nb=p->num+1;
       else nb=nt+1;
       gal_threads_attr_barrier_init(&attr, &b, nb);
 

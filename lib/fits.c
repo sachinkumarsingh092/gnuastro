@@ -497,6 +497,10 @@ gal_fits_read_hdu(char *filename, char *hdu, unsigned char img0_tab1)
   fitsfile *fptr;
   int status=0, hdutype;
 
+  /* A small sanity check. */
+  if(hdu==NULL)
+    error(EXIT_FAILURE, 0, "no HDU specified for %s", filename);
+
   /* Add hdu to filename: */
   asprintf(&ffname, "%s[%s#]", filename, hdu);
 

@@ -1183,7 +1183,7 @@ options_set_lengths(struct argp_option *poptions,
    multiple lines and without the `#', the start of the line will be read
    as an option. */
 static void
-options_print_doc(FILE *fp, char *doc, int nvwidth)
+options_print_doc(FILE *fp, const char *doc, int nvwidth)
 {
   size_t len=strlen(doc);
 
