@@ -222,7 +222,7 @@ integ2d(struct mkonthread *mkp)
 /************       Pixel by pixel building       *************/
 /*********        Positions are in C not FITS         *********/
 /**************************************************************/
-void
+static void
 makepixbypix(struct mkonthread *mkp)
 {
   float circ_r;
@@ -236,7 +236,7 @@ makepixbypix(struct mkonthread *mkp)
   double tolerance=mkp->p->tolerance, pixfrac, junk;
   double (*profile)(struct mkonthread *)=mkp->profile;
   double xc=mkp->xc, yc=mkp->yc, os=mkp->p->oversample;
-  double truncr=mkp->truncr, approx, hp=mkp->p->halfpixel;
+  double truncr=mkp->truncr, approx, hp=0.5f/mkp->p->oversample;
 
   /* lQ: Largest. sQ: Smallest in queue */
   struct gal_linkedlist_tosll *lQ=NULL, *sQ;
@@ -404,12 +404,9 @@ makepixbypix(struct mkonthread *mkp)
 /************        Set profile parameters       *************/
 /**************************************************************/
 int
-ispsf(double fcolvalue)
+oneprofile_ispsf(int fcode)
 {
-  int f=fcolvalue;
-  if(f==PROFILE_MOFFAT || f==PROFILE_GAUSSIAN)
-    return 1;
-  else return 0;
+  return fcode==PROFILE_MOFFAT || fcode==PROFILE_GAUSSIAN;
 }
 
 
@@ -418,28 +415,23 @@ ispsf(double fcolvalue)
 
 /* About the shifts on the X column and y column:*/
 void
-setprofparams(struct mkonthread *mkp)
+oneprof_set_prof_params(struct mkonthread *mkp)
 {
-  printf("\n ... setprofparams needs to be corrected ...\n");
-  exit(0);
-
-#if 0
   struct mkprofparams *p=mkp->p;
 
-  double *cat, sigma;
+  double sigma;
   int tp=p->tunitinp;
-  size_t rcol=p->rcol, tcol=p->tcol;
+  size_t id=mkp->ibq->id;
 
   /* Fill in the profile independant parameters. */
-  cat=&p->cat[mkp->ibq->id*p->cs1];
-  cat[p->xcol]   += p->shift[0]/p->oversample;
-  cat[p->ycol]   += p->shift[1]/p->oversample;
-  mkp->c          = cos((90-cat[p->pcol])*DEGREESTORADIANS);
-  mkp->s          = sin((90-cat[p->pcol])*DEGREESTORADIANS);
-  mkp->q          = cat[p->qcol];
-  mkp->brightness = pow( 10, (p->zeropoint - cat[p->mcol]) / 2.5f );
-  mkp->ibq->ispsf = ispsf(cat[p->fcol]);
-  mkp->func       = mkp->ibq->func=cat[p->fcol];
+  p->x[id]       += p->shift[0]/p->oversample; /* Shifts were multiplied by */
+  p->y[id]       += p->shift[1]/p->oversample; /* `p->oversample' before.   */
+  mkp->c          = cos( (90-p->p[id]) * DEGREESTORADIANS );
+  mkp->s          = sin( (90-p->p[id]) * DEGREESTORADIANS );
+  mkp->q          = p->q[id];
+  mkp->brightness = pow( 10, (p->zeropoint - p->m[id]) / 2.5f );
+  mkp->ibq->ispsf = oneprofile_ispsf(p->f[id]);
+  mkp->func       = mkp->ibq->func = p->f[id];
 
 
   /* Fill the profile dependent parameters. */
@@ -448,10 +440,10 @@ setprofparams(struct mkonthread *mkp)
     case PROFILE_SERSIC:
       mkp->correction       = 1;
       mkp->profile          = &Sersic;
-      mkp->sersic_re        = cat[rcol];
-      mkp->sersic_inv_n     = 1.0f/cat[p->ncol];
-      mkp->sersic_nb        = -1.0f*sersic_b(cat[p->ncol]);
-      mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
+      mkp->sersic_re        = p->r[id];
+      mkp->sersic_inv_n     = 1.0f/p->n[id];
+      mkp->sersic_nb        = -1.0f*sersic_b(p->n[id]);
+      mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
       break;
 
 
@@ -459,15 +451,15 @@ setprofparams(struct mkonthread *mkp)
     case PROFILE_MOFFAT:
       mkp->correction       = 1;
       mkp->profile          = &Moffat;
-      mkp->moffat_nb        = -1.0f*cat[p->ncol];
-      mkp->moffat_alphasq   = moffat_alpha(cat[rcol], cat[p->ncol]);
+      mkp->moffat_nb        = -1.0f*p->n[id];
+      mkp->moffat_alphasq   = moffat_alpha(p->r[id], p->n[id]);
       mkp->moffat_alphasq  *= mkp->moffat_alphasq;
-      mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
+      mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id]/2;
       if(p->psfinimg==0 && p->individual==0)
         {
           mkp->brightness   = 1.0f; /* When the PSF is a separate image, */
-          cat[p->xcol]      = 0.0f; /* it should be centered and have a  */
-          cat[p->ycol]      = 0.0f; /* total brightness of 1.0f. */
+          p->x[id]          = 0.0f; /* it should be centered and have a  */
+          p->y[id]          = 0.0f; /* total brightness of 1.0f. */
         }
       break;
 
@@ -476,14 +468,14 @@ setprofparams(struct mkonthread *mkp)
     case PROFILE_GAUSSIAN:
       mkp->correction       = 1;
       mkp->profile          = &Gaussian;
-      sigma                 = cat[rcol]/2.35482f;
+      sigma                 = p->r[id]/2.35482f;
       mkp->gaussian_c       = -1.0f/(2.0f*sigma*sigma);
-      mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol]/2;
+      mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id]/2;
       if(p->psfinimg==0 && p->individual==0)
         {
           mkp->brightness   = 1.0f; /* Same as the explanations for    */
-          cat[p->xcol]      = 0.0f; /* The Moffat profile. */
-          cat[p->ycol]      = 0.0f;
+          p->x[id]          = 0.0f; /* The Moffat profile. */
+          p->y[id]          = 0.0f;
         }
       break;
 
@@ -499,11 +491,11 @@ setprofparams(struct mkonthread *mkp)
 
     case PROFILE_FLAT:
       mkp->profile          = &Flat;
-      mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
+      mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
       if(p->mforflatpix)
         {
           mkp->correction   = 0;
-          mkp->fixedvalue   = cat[p->mcol];
+          mkp->fixedvalue   = p->m[id];
         }
       else
         {
@@ -516,12 +508,12 @@ setprofparams(struct mkonthread *mkp)
 
     case PROFILE_CIRCUMFERENCE:
       mkp->profile          = &Circumference;
-      mkp->truncr           = tp ? cat[tcol] : cat[tcol]*cat[rcol];
+      mkp->truncr           = tp ? p->t[id] : p->t[id]*p->r[id];
       mkp->intruncr         = mkp->truncr - p->circumwidth;
       if(p->mforflatpix)
         {
           mkp->correction   = 0;
-          mkp->fixedvalue   = cat[p->mcol];
+          mkp->fixedvalue   = p->m[id];
         }
       else
         {
@@ -540,7 +532,6 @@ setprofparams(struct mkonthread *mkp)
             "seen and reported prior to this step. Please contact us so "
             "we can correct this");
     }
-#endif
 }
 
 
@@ -566,29 +557,24 @@ setprofparams(struct mkonthread *mkp)
 /************          Outside functions          *************/
 /**************************************************************/
 void
-makeoneprofile(struct mkonthread *mkp)
+oneprofile_make(struct mkonthread *mkp)
 {
-  printf("\n ... makeoneprofile needs to be corrected ...\n");
-  exit(0);
-
-#if 0
   struct mkprofparams *p=mkp->p;
 
   float sum;
-  size_t size;
   long os=p->oversample;
   double pixfrac, intpart;
-  double *cat=&p->cat[ mkp->ibq->id*p->cs1 ];
+  size_t size, id=mkp->ibq->id;
 
 
-  /* Find the profile center (see comments above). mkp->width
-     is in the non-oversampled scale.*/
-  pixfrac = modf(fabs(cat[p->xcol]), &intpart);
+  /* Find the profile center (see comments above
+     `mkprof_build'). mkp->width is in the non-oversampled scale.*/
+  pixfrac = modf(fabs(p->x[id]), &intpart);
   mkp->yc = ( os * (mkp->width[0]/2 + pixfrac)
               + (pixfrac<0.50f ? os/2 : -1*os/2-1) );
   mkp->yc = round(mkp->yc*100)/100;
 
-  pixfrac = modf(fabs(cat[p->ycol]), &intpart);
+  pixfrac = modf(fabs(p->y[id]), &intpart);
   mkp->xc = ( os*(mkp->width[1]/2 + pixfrac)
               + (pixfrac<0.5f ? os/2 : -1*os/2-1) );
   mkp->xc = round(mkp->xc*100)/100;
@@ -607,7 +593,7 @@ makeoneprofile(struct mkonthread *mkp)
   mkp->ibq->img=calloc(size, sizeof *mkp->ibq->img);
   if(mkp->ibq->img==NULL)
     error(EXIT_FAILURE, 0, "%zu bytes for object in row %zu of data in %s",
-          size*sizeof *mkp->ibq->img, mkp->ibq->id, mkp->p->catname);
+          size*sizeof *mkp->ibq->img, mkp->ibq->id, p->catname);
 
 
   /* Build the profile in the image. */
@@ -635,5 +621,4 @@ makeoneprofile(struct mkonthread *mkp)
         gal_array_fmultip_const(mkp->ibq->img, size,
                                 mkp->brightness/sum);
     }
-#endif
 }

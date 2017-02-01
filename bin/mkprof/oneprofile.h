@@ -23,13 +23,15 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef ONEPROFILE_H
 #define ONEPROFILE_H
 
+#include "mkprof.h"
+
 int
-ispsf(double fcolvalue);
+oneprofile_ispsf(int fcolvalue);
 
 void
-setprofparams(struct mkonthread *mkp);
+oneprof_set_prof_params(struct mkonthread *mkp);
 
 void
-makeoneprofile(struct mkonthread *mkp);
+oneprofile_make(struct mkonthread *mkp);
 
 #endif

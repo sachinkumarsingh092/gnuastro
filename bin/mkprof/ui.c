@@ -28,6 +28,8 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 
+#include <gnuastro/wcs.h>
+#include <gnuastro/box.h>
 #include <gnuastro/fits.h>
 #include <gnuastro/table.h>
 #include <gnuastro/linkedlist.h>
@@ -40,6 +42,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include "main.h"
 
 #include "ui.h"
+#include "oneprofile.h"
 #include "authors-cite.h"
 
 
@@ -176,6 +179,9 @@ ui_initialize_options(struct mkprofparams *p,
   cp->program_authors    = PROGRAM_AUTHORS;
   cp->coptions           = gal_commonopts_options;
 
+  /* Default program parameters. */
+  p->type=GAL_DATA_TYPE_FLOAT;
+
 
   /* Modify the common options for this program. */
   for(i=0; !gal_options_is_last(&cp->coptions[i]); ++i)
@@ -202,14 +208,7 @@ ui_initialize_options(struct mkprofparams *p,
   /* Read the number of threads available to the user, this should be done
      before reading command-line and configuration file options, since they
      can change it.  */
-  gal_options_initialize_numthreads(cp);
-
-
-  /* Set the non-zero initial values, the structure was initialized to have
-     a zero/NULL value for all elements. So, this is necessary only when
-     `0' is meaningful in the context of the variable. */
-  p->type=GAL_DATA_TYPE_INVALID;
-  p->crpix[0]=p->crpix[1]=p->crval[0]=p->crval[1]=NAN;
+  cp->numthreads=gal_threads_number();
 }
 
 
@@ -304,6 +303,10 @@ ui_read_check_only_options(struct mkprofparams *p)
           p->racol?"racol":"deccol", p->racol?"Dec":"RA",
           p->xcol?"deccol":"racol");
 
+  /* If a log file is to be created, make sure that one doesn't already
+     exist. */
+  if(p->cp.log)
+    gal_checkset_check_remove_file(LOGFILENAME, p->cp.dontdelete);
 }
 
 
@@ -315,6 +318,9 @@ ui_read_check_only_options(struct mkprofparams *p)
 static void
 ui_check_options_and_arguments(struct mkprofparams *p)
 {
+  int d0f1;
+  char *tmpname;
+
   /* Make sure an input catalog is given, and if it is FITS, that the HDU
      is also provided. */
   if(p->catname)
@@ -329,6 +335,31 @@ ui_check_options_and_arguments(struct mkprofparams *p)
             "you need to give a catalog/table containing the information of "
             "the profiles");
     }
+
+
+  /* If cp->output was not specified on the command line or in any of
+     the configuration files, then automatic output should be used, in
+     which case, cp->output should be the current directory. */
+  if(p->cp.output==NULL)
+      gal_checkset_allocate_copy("./", &p->cp.output);
+
+
+  /* Set the necessary output names. */
+  d0f1=gal_checkset_dir_0_file_1(p->cp.output, p->cp.dontdelete);
+  if(d0f1)                        /* --output is a file name. */
+    {
+      p->mergedimgname=p->cp.output;
+      p->outdir=gal_checkset_dir_part(p->mergedimgname);
+    }
+  else                            /* --output is a directory name. */
+    {
+      gal_checkset_allocate_copy(p->cp.output, &p->outdir);
+      gal_checkset_check_dir_write_add_slash(&p->outdir);
+      tmpname=gal_checkset_automatic_output(&p->cp, p->catname, ".fits");
+      p->mergedimgname=gal_checkset_malloc_cat(p->outdir, tmpname);
+      free(tmpname);
+    }
+  p->basename=gal_checkset_not_dir_part(p->mergedimgname);
 }
 
 
@@ -363,16 +394,25 @@ ui_read_profile_function(struct mkprofparams *p, char **strarr)
     {
       if( !strcmp("sersic", strarr[i]) )
         p->f[i]=PROFILE_SERSIC;
+
       else if ( !strcmp("moffat", strarr[i]) )
         p->f[i]=PROFILE_MOFFAT;
+
       else if ( !strcmp("gaussian", strarr[i]) )
         p->f[i]=PROFILE_GAUSSIAN;
+
       else if ( !strcmp("point", strarr[i]) )
         p->f[i]=PROFILE_POINT;
+
       else if ( !strcmp("flat", strarr[i]) )
         p->f[i]=PROFILE_FLAT;
+
       else if ( !strcmp("circumference", strarr[i]) )
         p->f[i]=PROFILE_CIRCUMFERENCE;
+
+      else if ( !strcmp(GAL_DATA_BLANK_STRING, strarr[i]) )
+        error(EXIT_FAILURE, 0, "profile function column has blank values. "
+              "Input columns cannot contain blank values");
       else
         error(EXIT_FAILURE, 0, "`%s' not recognized as a profile function "
               "name in row %zu", strarr[i], i);
@@ -386,7 +426,8 @@ ui_read_profile_function(struct mkprofparams *p, char **strarr)
 static void
 ui_read_cols(struct mkprofparams *p)
 {
-  size_t counter=0;
+  char *colname;
+  size_t counter=0, i;
   gal_data_t *cols, *tmp, *corrtype;
   char *ax1col=p->racol?p->racol:p->xcol;
   char *ax2col=p->deccol?p->deccol:p->ycol;
@@ -420,68 +461,88 @@ ui_read_cols(struct mkprofparams *p)
       /* Pop out the top node. */
       tmp=gal_data_pop_from_ll(&cols);
 
+
       /* Note that the input was a linked list, so the output order is the
          inverse of the input order. For the position, we will store the
          values into the `x' and `y' arrays even if they are RA/Dec. */
       switch(counter)
         {
         case 9:
+          colname="first axis position";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
           p->x=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         case 8:
+          colname="second axis position";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_DOUBLE);
           p->y=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         case 7:
           if(tmp->type==GAL_DATA_TYPE_STRING)
-            ui_read_profile_function(p, tmp->array);
+            {
+              ui_read_profile_function(p, tmp->array);
+              gal_data_free(tmp);
+              corrtype=NULL;
+            }
           else
             {
+              /* Read the user's profile codes. */
+              colname="profile function code (`fcol')";
               corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_INT);
               p->f=corrtype->array;
-              corrtype->array=NULL;
+
+              /* Check if they are in the correct range. */
+              for(i=0;i<p->num;++i)
+                if(p->f[i]<=PROFILE_INVALID || p->f[i]>=PROFILE_MAXIMUM_CODE)
+                  error(EXIT_FAILURE, 0, "%s: table row %zu, the function "
+                        "code is %d. It should be >%d and <%d. Please run "
+                        "again with `--help' and check the acceptable "
+                        "codes.\n\nAlternatively, you can use alphabetic "
+                        "strings to specify the profile functions, see the "
+                        "explanations under `fcol' from the command "
+                        "below (press the `SPACE' key to go down, and the "
+                        "`q' to return back to the command-line):\n\n"
+                        "    $ info %s\n", p->catname, i+1, p->f[i],
+                        PROFILE_INVALID, PROFILE_MAXIMUM_CODE, PROGRAM_EXEC);
             }
           break;
 
         case 6:
+          colname="radius (`rcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
           p->r=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         case 5:
+          colname="index (`ncol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
           p->n=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         case 4:
+          colname="position angle (`pcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
           p->p=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         case 3:
+          colname="axis ratio (`qcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
           p->q=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         case 2:
+          colname="magnitude (`mcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
           p->m=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         case 1:
+          colname="truncation (`tcol')";
           corrtype=gal_data_copy_to_new_type_free(tmp, GAL_DATA_TYPE_FLOAT);
           p->t=corrtype->array;
-          corrtype->array=NULL;
           break;
 
         /* If the index isn't recognized, then it is larger, showing that
@@ -500,7 +561,331 @@ ui_read_cols(struct mkprofparams *p)
                 p->catname, p->catname);
         }
 
+      /* Sanity check and clean up.  Note that it might happen that the
+         input structure is already freed. In that case, `corrtype' will be
+         NULL. */
+      if(corrtype)
+        {
+          /* Make sure there are no blank values in this column. */
+          if( gal_data_has_blank(corrtype) )
+            error(EXIT_FAILURE, 0, "%s column has blank values. "
+                  "Input columns cannot contain blank values", colname);
+
+          /* Free the unnecessary sturcture information. The correct-type
+             (`corrtype') data structure's array is necessary for later
+             steps, so its pointer has been copied in the main program's
+             structure. Hence, we should set the structure's pointer to
+             NULL so the important data isn't freed.*/
+          corrtype->array=NULL;
+          free(corrtype);
+        }
     }
+}
+
+
+
+
+
+static void
+ui_prepare_wcs(struct mkprofparams *p)
+{
+  int status;
+  struct wcsprm *wcs;
+  long os=p->oversample;
+
+  /* If the WCS structure is already set, then return. */
+  if(p->out->wcs) return;
+
+  /* Allocate the memory necessary for the wcsprm structure. */
+  errno=0;
+  wcs=p->out->wcs=malloc(sizeof *wcs);
+  if(wcs==NULL)
+    error(EXIT_FAILURE, errno, "%zu for wcs in preparewcs", sizeof *wcs);
+
+  /* Initialize the structure (allocate all its internal arrays). */
+  wcs->flag=-1;
+  if( (status=wcsini(1, 2, wcs)) )
+    error(EXIT_FAILURE, 0, "wcsinit error %d: %s",
+          status, wcs_errmsg[status]);
+
+  /* Correct the CRPIX values based on oversampling and shifting. */
+  p->crpix[0] = p->crpix[0]*os + p->shift[0] - os/2;
+  p->crpix[1] = p->crpix[1]*os + p->shift[1] - os/2;
+
+  /* Fill in all the important WCS structure parameters. */
+  wcs->equinox=2000.0f;
+  wcs->crpix[0]=p->crpix[0];
+  wcs->crpix[1]=p->crpix[1];
+  wcs->crval[0]=p->crval[0];
+  wcs->crval[1]=p->crval[1];
+  wcs->pc[0]=-1.0f;
+  wcs->pc[3]=1.0f;
+  wcs->pc[1]=wcs->pc[2]=0.0f;
+  wcs->cdelt[0]=wcs->cdelt[1]=p->resolution/3600;
+  strcpy(wcs->cunit[0], "deg");
+  strcpy(wcs->cunit[1], "deg");
+  strcpy(wcs->ctype[0], "RA---TAN");
+  strcpy(wcs->ctype[1], "DEC--TAN");
+
+  /* Set up the wcs structure with the constants defined above. */
+  status=wcsset(wcs);
+  if(status)
+    error(EXIT_FAILURE, 0, "wcsset error %d: %s", status,
+          wcs_errmsg[status]);
+}
+
+
+
+
+
+static void
+ui_prepare_canvas(struct mkprofparams *p)
+{
+  int status=0;
+  double truncr;
+  long width[2]={1,1};
+  size_t i, ndim, dsize[2];
+
+  /* If a background image is specified, then use that as the output
+     image to build the profiles over. */
+  if(p->backname)
+    {
+      /* Small sanity check. */
+      if(p->backhdu==NULL)
+        error(EXIT_FAILURE, 0, "no hdu specified for the background image "
+              "%s. Please run again `--backhdu' option", p->backname);
+
+      /* Read in the background image and its coordinates, note that when
+         no merged image is desired, we just need the WCS information of
+         the background image. */
+      if(p->nomerged)
+        p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT, 0, dsize, NULL, 1,
+                              p->cp.minmapsize, NULL, NULL, NULL);
+      else
+        {
+          p->out=gal_fits_read_to_type(p->backname, p->backhdu,
+                                       GAL_DATA_TYPE_FLOAT, p->cp.minmapsize);
+          p->naxes[0]=p->out->dsize[1];
+          p->naxes[1]=p->out->dsize[0];
+        }
+
+      /* When a background image is specified, oversample must be 1 and
+         there is no shifts. */
+      p->oversample=1;
+      p->shift[0]=p->shift[1]=0;
+
+      /* Read the WCS structure of the background image. */
+      gal_fits_read_wcs(p->backname, p->backhdu, 0, 0, &p->out->nwcs,
+                        &p->out->wcs);
+
+    }
+  else
+    {
+
+      /* If any of xshift or yshift is non-zero, the other should be too!
+         Note that conditional operators return 1 if true and 0 if false,
+         so if one is non-zero while the other is zero, then sum will be
+         1. Otherwise the sum will either be 0 or 2.*/
+      switch ( (p->shift[0]!=0) + (p->shift[1]!=0) )
+        {
+        case 0:
+          /* `prepforconv' is only valid when xshift and yshift are both
+             zero. Also, a PSF profile should exist in the image. */
+          if(p->prepforconv)
+            {
+              /* Check if there is at least one Moffat or Gaussian profile. */
+              for(i=0;i<p->num;++i)
+                if( oneprofile_ispsf(p->f[i]) )
+                  {
+                    /* Calculate the size of the box holding the PSF. Note:
+
+                       - For the Moffat and Gaussian profiles, the radius
+                       columns is actually the FWHM which is actually the
+                       diameter, not radius. So we have to divide it by
+                       half.
+
+                       - encloseellipse outputs the total width, we only want
+                       half of it for the shift. */
+                    truncr = p->tunitinp ? p->t[i] : p->t[i] * p->r[i]/2;
+                    gal_box_ellipse_in_box(truncr, p->q[i]*truncr,
+                                           p->p[i]*DEGREESTORADIANS, width);
+                    p->shift[0]  = (width[0]/2)*p->oversample;
+                    p->shift[1]  = (width[1]/2)*p->oversample;
+                  }
+            }
+          break;
+
+        case 1:
+          error(EXIT_FAILURE, 0, "at least one of `--xshift` (`-X`) or "
+                "`--yshift` (`-Y`) are zero, they must either both be zero "
+                "or both given a positive value");
+          break;
+
+        case 2:
+          p->shift[0] *= p->oversample;
+          p->shift[1] *= p->oversample;
+          break;
+
+        default:
+          error(EXIT_FAILURE, 0, "a bug in ui_prepare_canvas! In checks "
+                "for shifts. Please contact us at %s so we can fix it",
+                PACKAGE_BUGREPORT);
+        }
+
+      /* Prepare the sizes of the final merged image (if it is to be
+         made). */
+      if(p->nomerged)
+        ndim=0;
+      else
+        {
+          /* Sanity check */
+          if(p->naxes[0]==0 || p->naxes[1]==0)
+            error(EXIT_FAILURE, 0, "No final merged image size is specified, "
+                  "please use the `--naxis1', and `--naxis2' options to "
+                  "specify the respective sizes");
+
+          /* Set the final merged image size. Note that even if we don't
+             want a merged image, we still need its WCS structure.*/
+          p->naxes[0] = (p->naxes[0] * p->oversample) + (2 * p->shift[0]);
+          p->naxes[1] = (p->naxes[1] * p->oversample) + (2 * p->shift[1]);
+          dsize[0]    = p->naxes[1];
+          dsize[1]    = p->naxes[0];
+          ndim        = 2;
+        }
+
+      /* Make the output structure. */
+      p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT, ndim, dsize, NULL, 1,
+                            p->cp.minmapsize, NULL, NULL, NULL);
+    }
+
+
+  /* Make the WCS structure of the output data structure if it has not
+     been set yet. */
+  ui_prepare_wcs(p);
+
+
+  /* Set the name, comments and units of the output structure/file. Note
+     that when no merged image is to be created, the array in `p->out' will
+     be NULL.*/
+  if(p->out->array)
+    {
+      if(p->out->name) free(p->out->name);
+      gal_checkset_allocate_copy("Mock profiles", &p->out->name);
+      if(p->out->unit==NULL)
+        gal_checkset_allocate_copy("Brightness", &p->out->unit);
+    }
+
+
+
+  /* When individual mode is requested, write the WCS structure to a header
+     string to speed up the process: if we don't do it here, this process
+     will be necessary on every individual profile's output. So it is much
+     more efficient done once here. */
+  if(p->individual && p->out->wcs)
+    {
+      status=wcshdo(WCSHDO_safe, p->out->wcs, &p->wcsnkeyrec, &p->wcsheader);
+      if(status)
+        error(EXIT_FAILURE, 0, "wcshdo error %d: %s", status,
+              wcs_errmsg[status]);
+    }
+}
+
+
+
+
+
+static void
+ui_finalize_coordinates(struct mkprofparams *p)
+{
+  size_t i;
+  double *x=NULL, *y=NULL;
+
+  /* When the user specified RA and Dec columns, the respective values
+     where stored in the `p->x' and `p->y' arrays. So before proceeding, we
+     need to change them into actual image coordinates. */
+  if(p->racol)
+    {
+      /* Note that we read the RA and Dec columns into the `p->x' and `p->y'
+         arrays temporarily before. Here, we will convert them, free the old
+         ones and replace them with the proper X and Y values. */
+      gal_wcs_world_to_img(p->out->wcs, p->x, p->y, &x, &y, p->num);
+
+      /* If any conversions created a WCSLIB error, both the outputs will be
+         set to NaN. */
+      for(i=0;i<p->num;++i)
+        if( isnan(x[i]) )
+          error(EXIT_FAILURE, 0, "catalog row %zu: WCSLIB could not convert "
+                "(%f, %f) coordinates into image coordinates", i, p->x[i],
+                p->y[i]);
+
+      /* Free the RA and Dec arrays and put in the new image values. */
+      free(p->x);
+      free(p->y);
+      p->x=x;
+      p->y=y;
+    }
+
+
+  /* Correct the WCS scale. Note that when the WCS is read from a
+     background image, oversample is set to 1. This is done here because
+     the conversion of WCS to pixel coordinates needs to be done with the
+     non-over-sampled image. */
+  p->out->wcs->cdelt[0] /= p->oversample;
+  p->out->wcs->cdelt[1] /= p->oversample;
+
+
+
+  /* For a sanity check:
+  printf("\nui_finalize_coordinates sanity check:\n");
+  for(i=0;i<p->num;++i)
+    printf("%f, %f\n", p->x[i], p->y[i]);
+  */
+}
+
+
+
+
+/* Add all the columns of the log file. Just note that since this is a
+   linked list, we have to add them in the opposite order. */
+static void
+ui_make_log(struct mkprofparams *p)
+{
+  char *comment;
+
+  /* Return if no long file is to be created. */
+  if(p->cp.log==0) return;
+
+  /* Individual created. */
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_UCHAR, 1, &p->num, NULL,
+                     1, p->cp.minmapsize, "INDIV_CREATED", "bool",
+                     "If an individual image was made (1) or not (0).");
+
+  /* Fraction of monte-carlo. */
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_FLOAT, 1, &p->num, NULL,
+                     1, p->cp.minmapsize, "FRAC_MONTECARLO", "frac",
+                     "Fraction of brightness in Monte-carlo integrated "
+                     "pixels.");
+
+  /* Number of monte-carlo. */
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_ULONG, 1, &p->num, NULL,
+                     1, p->cp.minmapsize, "NUM_MONTECARLO", "count",
+                     "Number of Monte Carlo integrated pixels.");
+
+  /* Magnitude of profile overlap. */
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_FLOAT, 1, &p->num, NULL,
+                     1, p->cp.minmapsize, "MAG_OVERLAP", "mag",
+                     "Magnitude of profile's overlap with merged image.");
+
+  /* Row number in input catalog. */
+  if(gal_fits_name_is_fits(p->catname))
+    asprintf(&comment, "Row number of profile in %s (hdu: %s).",
+             p->catname, p->cp.hdu);
+  else
+    asprintf(&comment, "Row number of profile in %s.", p->catname);
+  gal_data_add_to_ll(&p->log, NULL, GAL_DATA_TYPE_ULONG, 1, &p->num, NULL,
+                     1, p->cp.minmapsize, "INPUT_ROW_NO", "count",
+                     "Row number of profile in ");
+  free(comment);
 }
 
 
@@ -511,14 +896,21 @@ static void
 ui_preparations(struct mkprofparams *p)
 {
 
-  /* Correct/set based on the given oversampling. */
-  p->naxes[0] *= p->oversample;
-  p->naxes[1] *= p->oversample;
-  p->halfpixel = 0.5f/p->oversample;
-
   /* Read in all the columns. */
   ui_read_cols(p);
 
+  /* Prepare the output canvas. */
+  ui_prepare_canvas(p);
+
+  /* Read the (possible) RA/Dec inputs into X and Y for the builder.*/
+  ui_finalize_coordinates(p);
+
+  /* Allocate the random number generator: */
+  gsl_rng_env_setup();
+  p->rng=gsl_rng_alloc(gsl_rng_default);
+
+  /* Make the log linked list. */
+  ui_make_log(p);
 }
 
 
@@ -543,6 +935,52 @@ ui_preparations(struct mkprofparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
+static void
+ui_print_intro(struct mkprofparams *p)
+{
+  char *jobname;
+
+  if(p->cp.quiet) return;
+
+  printf(PROGRAM_NAME" started on %s", ctime(&p->rawtime));
+
+  asprintf(&jobname, "%zu profile%sread from %s", p->num,
+           p->num>1?"s ":" ", p->catname);
+  gal_timing_report(NULL, jobname, 1);
+  free(jobname);
+
+  if(p->backname)
+    {
+      if(p->nomerged)
+        asprintf(&jobname, "WCS information read from %s", p->backname);
+      else
+        asprintf(&jobname, "%s is read and will be used as canvas",
+                 p->backname);
+      gal_timing_report(NULL, jobname, 1);
+      free(jobname);
+    }
+
+  asprintf(&jobname, "Random number generator (RNG) type: %s",
+           gsl_rng_name(p->rng));
+  gal_timing_report(NULL, jobname, 1);
+  free(jobname);
+  if(p->envseed)
+    {
+      asprintf(&jobname, "RNG seed for all profiles: %zu",
+               gsl_rng_default_seed);
+      gal_timing_report(NULL, jobname, 1);
+      free(jobname);
+    }
+
+  asprintf(&jobname, "Using %zu threads.", p->cp.numthreads);
+  gal_timing_report(NULL, jobname, 1);
+  free(jobname);
+}
+
+
+
+
+
 void
 ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
 {
@@ -594,8 +1032,8 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
   /* Read/allocate all the necessary starting arrays. */
   ui_preparations(p);
 
-  printf("\n... End of ui.c ...\n");
-  exit(0);
+  /* Print introductory information. */
+  ui_print_intro(p);
 }
 
 
@@ -621,16 +1059,13 @@ ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p)
 /************      Free allocated, report         *************/
 /**************************************************************/
 void
-freeandreport(struct mkprofparams *p, struct timeval *t1)
+ui_free_report(struct mkprofparams *p, struct timeval *t1)
 {
-  int status;
-
   /* Free all the allocated arrays. */
   free(p->cat);
   free(p->cp.hdu);
   free(p->outdir);
   free(p->basename);
-  if(p->individual==0) free(p->log);
 
   /* p->cp.output might be equal to p->mergedimgname. In this case, if
      we simply free them after each other, there will be a double free
@@ -647,11 +1082,6 @@ freeandreport(struct mkprofparams *p, struct timeval *t1)
   /* Free the WCS headers string that was defined for individual mode. */
   if(p->individual)
     free(p->wcsheader);
-
-  /* Free the WCS structure. */
-  if( (status=wcsvfree(&p->nwcs, &p->wcs)) )
-    error(EXIT_FAILURE, 0, "wcsfree error %d: %s", status,
-          wcs_errmsg[status]);
 
   /* Free the random number generator: */
   gsl_rng_free(p->rng);

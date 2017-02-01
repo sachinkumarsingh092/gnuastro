@@ -561,7 +561,7 @@ gal_data_mmap(gal_data_t *data, int clear)
 
 
   /* Write to the newly set file position so the space is allocated. */
-  if( write(filedes, &uc, 1) == -1)
+  if( write(filedes, &uc, bsize) == -1)
     error(EXIT_FAILURE, errno, "%s: unable to write one byte at the "
           "%zu-th position", filename, bsize);
 
@@ -1849,11 +1849,64 @@ gal_data_flag_blank(gal_data_t *data)
  **************       Types and copying        ***************
  *************************************************************/
 
-/* gal_data_copy_to_new_type: Macro for all tyeps. */
-#define COPY_OTYPE_ITYPE_SET(otype, itype) {                            \
-    itype *ia=in->array;                                                \
-    otype *oa=out->array, *of=oa+out->size;                             \
-    do *oa=*ia++; while(++oa<of);                                       \
+/* Copy to a new type for integers. */
+#define COPY_OTYPE_ITYPE_SET_INT(otype, itype) {                        \
+    itype *ia=in->array, iblank;                                        \
+    otype *oa=out->array, *of=oa+out->size, oblank;                     \
+                                                                        \
+    /* Check if there are blank values in the input array and that */   \
+    /* the types of the two structures are different. */                \
+    if( in->type!=newtype && gal_data_has_blank(in) )                   \
+      {                                                                 \
+        /* Set the blank values */                                      \
+        gal_data_set_blank(&iblank, in->type);                          \
+        gal_data_set_blank(&oblank, newtype);                           \
+                                                                        \
+        /* Copy the input to the output. */                             \
+        do { *oa = *ia==iblank ? oblank : *ia; ia++; } while(++oa<of);  \
+      }                                                                 \
+                                                                        \
+    /* There were no blank elements in the input, or the input and */   \
+    /* output have the same type. */                                    \
+    else                                                                \
+      do *oa=*ia++; while(++oa<of);                                     \
+  }
+
+
+
+
+
+/* Copy to a new type for floating point values. */
+#define COPY_OTYPE_ITYPE_SET_FLT(otype, itype) {                        \
+    itype *ia=in->array, iblank;                                        \
+    otype *oa=out->array, *of=oa+out->size, oblank;                     \
+                                                                        \
+    /* Check if there are blank values in the input array and that */   \
+    /* the types of the two structures are different. */                \
+    if( in->type!=newtype && gal_data_has_blank(in) )                   \
+      {                                                                 \
+        /* Set the blank values */                                      \
+        gal_data_set_blank(&iblank, in->type);                          \
+        gal_data_set_blank(&oblank, newtype);                           \
+                                                                        \
+        /* When the blank value isn't NaN, then we should use the */    \
+        /* equal operator to check for blank values. */                 \
+        if( isnan(iblank) )                                             \
+          {                                                             \
+            do { *oa = isnan(*ia) ? oblank : *ia; ia++; }               \
+            while(++oa<of);                                             \
+          }                                                             \
+        else                                                            \
+          {                                                             \
+            do { *oa = *ia==iblank ? oblank : *ia; ia++; }              \
+            while(++oa<of);                                             \
+          }                                                             \
+      }                                                                 \
+                                                                        \
+    /* There were no blank elements in the input, or the input and */   \
+    /* output have the same type. */                                    \
+    else                                                                \
+      do *oa=*ia++; while(++oa<of);                                     \
   }
 
 
@@ -1866,47 +1919,56 @@ gal_data_flag_blank(gal_data_t *data)
   switch(in->type)                                                      \
     {                                                                   \
     case GAL_DATA_TYPE_UCHAR:                                           \
-      COPY_OTYPE_ITYPE_SET(otype, unsigned char);                       \
+      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned char);                   \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_CHAR:                                            \
-      COPY_OTYPE_ITYPE_SET(otype, char);                                \
+      COPY_OTYPE_ITYPE_SET_INT(otype, char);                            \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_USHORT:                                          \
-      COPY_OTYPE_ITYPE_SET(otype, unsigned short);                      \
+      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned short);                  \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_SHORT:                                           \
-      COPY_OTYPE_ITYPE_SET(otype, short);                               \
+      COPY_OTYPE_ITYPE_SET_INT(otype, short);                           \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_UINT:                                            \
-      COPY_OTYPE_ITYPE_SET(otype, unsigned int);                        \
+      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned int);                    \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_INT:                                             \
-      COPY_OTYPE_ITYPE_SET(otype, int);                                 \
+      COPY_OTYPE_ITYPE_SET_INT(otype, int);                             \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_ULONG:                                           \
-      COPY_OTYPE_ITYPE_SET(otype, unsigned long);                       \
+      COPY_OTYPE_ITYPE_SET_INT(otype, unsigned long);                   \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_LONG:                                            \
-      COPY_OTYPE_ITYPE_SET(otype, long);                                \
+      COPY_OTYPE_ITYPE_SET_INT(otype, long);                            \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_LONGLONG:                                        \
-      COPY_OTYPE_ITYPE_SET(otype, LONGLONG);                            \
+      COPY_OTYPE_ITYPE_SET_INT(otype, LONGLONG);                        \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_FLOAT:                                           \
-      COPY_OTYPE_ITYPE_SET(otype, float);                               \
+      COPY_OTYPE_ITYPE_SET_FLT(otype, float);                           \
       break;                                                            \
                                                                         \
     case GAL_DATA_TYPE_DOUBLE:                                          \
-      COPY_OTYPE_ITYPE_SET(otype, double);                              \
+      COPY_OTYPE_ITYPE_SET_FLT(otype, double);                          \
+      break;                                                            \
+                                                                        \
+    case GAL_DATA_TYPE_BIT:                                             \
+    case GAL_DATA_TYPE_STRLL:                                           \
+    case GAL_DATA_TYPE_COMPLEX:                                         \
+    case GAL_DATA_TYPE_DCOMPLEX:                                        \
+      error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently "   \
+            "doesn't support copying from %s type",                     \
+            gal_data_type_as_string(in->type, 1));                      \
       break;                                                            \
                                                                         \
     default:                                                            \
@@ -1979,6 +2041,20 @@ gal_data_copy_to_new_type(gal_data_t *in, int newtype)
 
     case GAL_DATA_TYPE_DOUBLE:
       COPY_OTYPE_SET(double);
+      break;
+
+    case GAL_DATA_TYPE_BIT:
+    case GAL_DATA_TYPE_STRLL:
+    case GAL_DATA_TYPE_COMPLEX:
+    case GAL_DATA_TYPE_DCOMPLEX:
+      error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' currently doesn't "
+            "support copying to %s type",
+            gal_data_type_as_string(newtype, 1));
+      break;
+
+    case GAL_DATA_TYPE_STRING:
+      error(EXIT_FAILURE, 0, "`gal_data_copy_to_new_type' is only for "
+            "numeric data types, the desired new type is a string");
       break;
 
     default:

@@ -5287,42 +5287,49 @@ each element interpretted as a @code{double} type (see @ref{Data types}).
 2 , 4.454        792     72.98348e7
 @end example
 
-However, the example above has no other information about the columns. For
-example, Gnuastro's programs/libraries, you aren't limited to using the
-column's number. If the columns have names, units, or comments you can also
-select your columns based on searches/matches in these fields, for example
-see @ref{Table}. It is also bad for sending to a colleague, because they
-will find it hard to remember/use the columns properly. Also, in this
-manner, you can't guide the program reading the table on how to read the
-numbers. As an example, the first and third columns above can be read as
-integer types: the first column might be an ID and the third can be the
-number of pixels it occupies. So there is no need to read it as a
-@code{double} type (which takes more memory, and is slower).
+However, the example above has no other information about the columns (its
+raw data, with no meta-data). To use this table, you have to remember what
+each column was. Also, when you want to select columns, you have to count
+their position within the table. This can become frustrating and prone to
+bad errors (getting the columns wrong) especially as the number of columns
+increase. It is also bad for sending to a colleague, because they will find
+it hard to remember/use the columns properly.
 
-In this bare-minimum example, you also can't use strings of characters, for
-example the names of filters, or some other identifier that includes
-non-numerical characters. In the absence of any information, only numbers
-can be read robustly. Assuming we read columns with non-numerical
+To solve these problems in Gnuastro's programs/libraries you aren't limited
+to using the column's number, see @ref{Selecting table columns}. If the
+columns have names, units, or comments you can also select your columns
+based on searches/matches in these fields, for example see @ref{Table}.
+Also, in this manner, you can't guide the program reading the table on how
+to read the numbers. As an example, the first and third columns above can
+be read as integer types: the first column might be an ID and the third can
+be the number of pixels an object occupies in an image. So there is no need
+to read these to columns as a @code{double} type (which takes more memory,
+and is slower).
+
+In the bare-minimum example above, you also can't use strings of
+characters, for example the names of filters, or some other identifier that
+includes non-numerical characters. In the absence of any information, only
+numbers can be read robustly. Assuming we read columns with non-numerical
 characters as string, there would still be the problem that the strings
 might contain space (or any delimiter) character for some rows. So, each
 `word' in the string will be interpretted as a column and the program will
 abort with an error that the rows don't have the same number of columns.
 
 To correct for these limitations, Gnuastro defines the following convention
-for storing the table meta-data along with the plain text file to guide a
-human, or program, on how to read/interpret it. When the first non-white
-character in a line is @key{#}, or there are no non-white characters in it,
-then the line will be ignored (this is a pretty standard convention in many
+for storing the table meta-data along with the raw data in one plain text
+file. The format is primarily designed for ease of reading/writing by
+eye/fingers, but is also structured enough to be read by a program.
+
+When the first non-white character in a line is @key{#}, or there are no
+non-white characters in it, then the line will not be considered as a row
+of data in the table (this is a pretty standard convention in many
 programs, and higher level languages). In the former case, the line is
 interpretted as a @emph{comment}. If the comment line starts with `@code{#
 Column N:}', then it is assumed to contain information about column
 @code{N} (a number, counting from 1). Comment lines that don't start with
 this pattern are ignored and you can use them to include any further
-information you want to store with the table in the text file.
-
-The format is primarily defined for ease of reading/writing by eye/fingers,
-but is also structured enough to be read by a program. A column information
-comment is assumed to have the following format:
+information you want to store with the table in the text file. A column
+information comment is assumed to have the following format:
 
 @example
 # Column N: NAME [UNIT, TYPE, BLANK] COMMENT
@@ -5381,7 +5388,8 @@ with nothing but the column number is redundant):
 # Column 3: mag_f160w [AB mag, f] Magnitude from the F160W filter
 @end example
 
-The following type codes are recognized in Gnuastro's plain text tables:
+The data type of the column (see @ref{Data types}) should be specified with
+one of the following values:
 
 @itemize
 @item
@@ -5411,26 +5419,27 @@ The following type codes are recognized in Gnuastro's plain text tables:
 string (how many characters it has). The start of the string on each row is
 the first non-delimiter character of the column that has the string
 type. The next @code{N} characters will be interpretted as a string and all
-leading and trailing white space will be removed. If there is a new-line
-character (the string character is the last column, or we have reached the
-end of the line), then reading of the string will stop, even if the
-@code{N} characters are not complete yet. See @file{tests/table/table.txt}
-for one example.
+leading and trailing white space will be removed.
 
-So the only time you have to pay attention to the positioning of the string
-column is not the last column. If the next column's characters, are closer
-than @code{N} characters to the start of the string column in that
-line/row, they will be considered part of the string column.
+If the next column's characters, are closer than @code{N} characters to the
+start of the string column in that line/row, they will be considered part
+of the string column. If there is a new-line character before the ending of
+the space given to the string column (in other words, the string column is
+the last column), then reading of the string will stop, even if the
+@code{N} characters are not complete yet. See @file{tests/table/table.txt}
+for one example. Therefore, the only time you have to pay attention to the
+positioning and spaces given to the string column is when it is not the
+last column in the table.
 
 The only limitation in this format is that trailing and leading white space
-characters will be removed from the columns that are read. So if trailing
-and leading white-spaces are critically important to your analysis, define
-your own starting and ending characters and remove them after the table has
-been read. For example in the sample table below, the two `@key{|}'
-characters (which are arbitrary) will remain in the value of the second
-column and you can remove them manually later. If only one of the leading
-or trailing white spaces is important for your work, you can only use one
-of the `@key{|}'s.
+characters will be removed from the columns that are read. In most cases,
+this is the desired behavior, but if trailing and leading white-spaces are
+critically important to your analysis, define your own starting and ending
+characters and remove them after the table has been read. For example in
+the sample table below, the two `@key{|}' characters (which are arbitrary)
+will remain in the value of the second column and you can remove them
+manually later. If only one of the leading or trailing white spaces is
+important for your work, you can only use one of the `@key{|}'s.
 
 @example
 # Column 1: ID [label, uc]
@@ -13485,16 +13494,16 @@ Carlo integration). This is also, generally speaking, what happens in
 practice with the photons on the pixel. The number of random points
 can be set with @option{--numrandom}.
 
-Unfortunately, repeating this Monte Carlo process would be extremely
-time and CPU consuming if it is to be applied to every pixel. In order
-to not loose too much accuracy, in MakeProfiles, the profile is built
-using both methods explained above. The building of the profile begins
-from its central pixel and continues outwards. Monte Carlo integration
-is first applied (which yields @mymath{F_r}), then the central pixel
-value (@mymath{F_c}) on the same pixel. If the fractional difference
-(@mymath{|F_r-F_c|/F_r}) is lower than a given tolerance level we will
-stop using Monte Carlo integration and only use the central pixel
-value.
+Unfortunately, repeating this Monte Carlo process would be extremely time
+and CPU consuming if it is to be applied to every pixel. In order to not
+loose too much accuracy, in MakeProfiles, the profile is built using both
+methods explained below. The building of the profile begins from its
+central pixel and continues (radially) outwards. Monte Carlo integration is
+first applied (which yields @mymath{F_r}), then the central pixel value
+(@mymath{F_c}) is calculated on the same pixel. If the fractional
+difference (@mymath{|F_r-F_c|/F_r}) is lower than a given tolerance level
+(specified with @option{--tolerance}) MakeProfiles will stop using Monte
+Carlo integration and only use the central pixel value.
 
 @cindex Inside-out construction
 The ordering of the pixels in this inside-out construction is based on
@@ -13754,6 +13763,10 @@ the output size and WCS will be ignored if specified (for example
 the command-line or in the configuration files. Note that
 @option{--oversample} will remain active even if a background image is
 specified.
+
+Please see @ref{Sufi simulates a detection} for a very complete tutorial
+explaining how one could use MakeProfiles in conjunction with other
+Gnuastro's programs to make a complete simulated image of a mock galaxy.
 
 @menu
 * MakeProfiles catalog::        Required catalog properties.
@@ -14056,11 +14069,17 @@ column number, where counting starts from zero.
 @table @option
 
 @item --fcol=INT/STR
-The functional form of the profile with one of the values below. The column
-can contain both string characters (for example `@code{sersic}') and the
-numeric codes (`@code{1}'). The string format can be easier when the
-catalog is to be read, or written by hand. For ways to benefit from string
-columns in a plain text table/catalog, see @ref{Gnuastro text table
+The functional form of the profile with one of the values below depending
+on the desired profile. The column can contain either the numeric codes
+(for example `@code{1}') or string characters (for example
+`@code{sersic}'). The numeric codes are easier to use in scripts which
+generate catalogs with hundreds or thousands of profiles.
+
+The string format can be easier when the catalog is to be written/checked
+by hand/eye before running MakeProfiles. It is much more readable and
+provides a level of documentation. All Gnuastro's recognized table formats
+(see @ref{Recognized table formats}) accept string type columns. To have
+string columns in a plain text table/catalog, see @ref{Gnuastro text table
 format}.
 
 @itemize

@@ -34,7 +34,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #include <gnuastro/arithmetic.h>
 #include <gnuastro/linkedlist.h>
 
-#include <nproc.h>         /* from Gnulib, in Gnuastro's source */
+
 #include <options.h>
 #include <checkset.h>
 
@@ -49,16 +49,6 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 /**********************************************************************/
 /************             Option utilities              ***************/
 /**********************************************************************/
-void
-gal_options_initialize_numthreads(struct gal_options_common_params *cp)
-{
-  cp->numthreads=num_processors(NPROC_CURRENT);
-}
-
-
-
-
-
 int
 gal_options_is_last(struct argp_option *option)
 {

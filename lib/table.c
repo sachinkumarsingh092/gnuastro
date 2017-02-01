@@ -808,6 +808,10 @@ gal_table_read(char *filename, char *hdu, struct gal_linkedlist_stll *cols,
 /************************************************************************/
 /***************              Write a table               ***************/
 /************************************************************************/
+/* The input is a linked list of data structures and some comments. The
+   table will then be written into `filename' with a format that is
+   specified by `tableformat'. If it already exists, and `dontdelete' has a
+   value of 1, then it won't be deleted and an error will be printed. */
 void
 gal_table_write(gal_data_t *cols, char *comments, int tableformat,
                 char *filename, int dontdelete)

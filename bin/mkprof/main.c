@@ -49,7 +49,7 @@ main (int argc, char *argv[])
   mkprof(&p);
 
   /* Free all non-freed allocations. */
-  freeandreport(&p, &t1);
+  ui_free_report(&p, &t1);
 
   /* Return successfully.*/
   return EXIT_SUCCESS;

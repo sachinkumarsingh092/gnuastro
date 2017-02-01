@@ -53,8 +53,8 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
                           size_t number, size_t width);
 
 void
-gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
-                          size_t number, size_t width);
+gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
+                     double **x, double **y, size_t size);
 
 double
 gal_wcs_angular_distance_deg(double r1, double d1, double r2, double d2);

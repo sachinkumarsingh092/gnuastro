@@ -46,4 +46,4 @@ if [ ! -f $execname ]; then exit 77; fi
 
 # Actual test script
 # ==================
-$execname $cat --racol=1 --deccol=2 --naxis1=100 --naxis2=100
+$execname $cat --racol=RA --deccol=Dec --naxis1=100 --naxis2=100

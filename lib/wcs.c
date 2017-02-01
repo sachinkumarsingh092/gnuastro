@@ -83,35 +83,63 @@ gal_wcs_xy_array_to_radec(struct wcsprm *wcs, double *xy, double *radec,
 
 
 
-/* Similar to the gal_wcs_xyarray_to_radec, but the reverse: to convert an
-   array of RA-Dec to X-Y. */
+/* Convert an array of world coordinates to image coordinates. Note that in
+   Gnuastro, each column is treated independently, so the inputs are
+   separate. If `*x==NULL', or `*y==NULL', then space will be allocated for
+   them, otherwise, it is assumed that space has already been
+   allocated. Note that they must be a 1 dimensional array (recall that in
+   Gnuastro columns are treated independently).*/
 void
-gal_wcs_radec_array_to_xy(struct wcsprm *wcs, double *radec, double *xy,
-                          size_t number, size_t stride)
+gal_wcs_world_to_img(struct wcsprm *wcs, double *ra, double *dec,
+                     double **x, double **y, size_t size)
 {
   size_t i;
-  double imgcrd[2], phi, theta;
-  int stat, status=0, ncoord=1, nelem=2;
+  int status, *stat, ncoord=size, nelem=2;
+  double *phi, *theta, *world, *pixcrd, *imgcrd;
 
-  for(i=0;i<number;++i)
+  /* Allocate all the necessary arrays. */
+  stat=gal_data_calloc_array(GAL_DATA_TYPE_INT, size);
+  phi=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
+  theta=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, size);
+  world=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
+  imgcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
+  pixcrd=gal_data_malloc_array(GAL_DATA_TYPE_DOUBLE, 2*size);
+
+  /* Put in the values. */
+  for(i=0;i<size;++i) { world[i*2]=ra[i]; world[i*2+1]=dec[i]; }
+
+  /* Use WCSLIB's `wcss2p'. */
+  status=wcss2p(wcs, ncoord, nelem, world, phi, theta, imgcrd, pixcrd, stat);
+  if(status)
+    error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
+          wcs_errmsg[status]);
+
+  /* For a sanity check:
+  printf("\n\ngal_wcs_world_to_img sanity check:\n");
+  for(i=0;i<size;++i)
+    printf("world (%f, %f) --> pix (%f, %f), [stat: %d]\n",
+           world[i*2], world[i*2+1], pixcrd[i*2], pixcrd[i*2+1], stat[i]);
+  */
+
+  /* Allocate the output arrays if they were not already allocated. */
+  if(*x==NULL) *x=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
+  if(*y==NULL) *y=gal_data_calloc_array(GAL_DATA_TYPE_DOUBLE, size);
+
+  /* Put the values into the output arrays. */
+  for(i=0;i<size;++i)
     {
-      if(isnan(radec[i*stride]) || isnan(radec[i*stride+1]))
-        radec[i*stride]=radec[i*stride+1]=NAN;
-      else
-        {
-          status=wcss2p(wcs, ncoord, nelem, radec+i*stride, &phi, &theta,
-                        imgcrd, xy+i*stride, &stat);
-          if(status)
-            error(EXIT_FAILURE, 0, "wcss2p ERROR %d: %s", status,
-                  wcs_errmsg[status]);
-
-          /* For a check:
-          printf("(%f, %f) --> (%f, %f)\n", radec[i*stride], radec[i*stride+1],
-                 xy[i*stride], xy[i*stride+1]);
-          */
-        }
+      (*x)[i] = stat[i] ? NAN : pixcrd[i*2];
+      (*y)[i] = stat[i] ? NAN : pixcrd[i*2+1];
     }
+
+  /* Clean up. */
+  free(phi);
+  free(stat);
+  free(theta);
+  free(world);
+  free(pixcrd);
 }
+
 
 
 

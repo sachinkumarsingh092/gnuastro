@@ -56,7 +56,7 @@ enum profile_types
   PROFILE_FLAT,                 /* Flat profile.               */
   PROFILE_CIRCUMFERENCE,        /* Circumference profile.      */
 
-  MAXIMUM_PROFILE_CODE,         /* Just for a sanity check.    */
+  PROFILE_MAXIMUM_CODE,         /* Just for a sanity check.    */
 };
 #define MINCIRCUMWIDTH       0.5f
 
@@ -137,16 +137,14 @@ struct mkprofparams
   unsigned char mforflatpix;  /* mcol is flat pixel value (f is 4 or 5).  */
   double           crpix[2];  /* CRPIX FITS header keywords.              */
   double           crval[2];  /* CRVAL FITS header keywords.              */
-  float          resolution;  /* PC1_1 and PC2_2 FITS header keywords.    */
+  double         resolution;  /* For CDELTi FITS header keywords.         */
 
 
   /* Output */
+  gal_data_t           *out;  /* Output image.                            */
   int                  type;  /* User's desired output type.              */
-  char            *basename;  /* Merged image name with no directory.     */
   char              *outdir;  /* Output directory.                        */
-  int              anyblank;  /* ==1: there are blanks in back.           */
-  int                  nwcs;  /* Number of WCS.                           */
-  struct wcsprm        *wcs;  /* WCSparam structure.                      */
+  char            *basename;  /* Merged image name with no directory.     */
 
 
   /* Processing parameters: */
@@ -162,9 +160,8 @@ struct mkprofparams
   float                  *t;  /* Truncation distance.                     */
   gsl_rng              *rng;  /* Main instance of random number generator.*/
   time_t            rawtime;  /* Starting time of the program.            */
-  gal_data_t           *out;  /* Output image.                            */
   double               *cat;  /* Input catalog.                           */
-  double               *log;  /* Log data to be printed.                  */
+  gal_data_t           *log;  /* Log data to be printed.                  */
   struct builtqueue     *bq;  /* Top (last) elem of build queue.          */
   pthread_cond_t     qready;  /* bq is ready to be written.               */
   pthread_mutex_t     qlock;  /* Mutex lock to change builtq.             */

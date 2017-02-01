@@ -213,17 +213,12 @@ saveindividual(struct mkonthread *mkp)
    central pixel by one and completely ignore the fractional part.
 */
 void *
-build(void *inparam)
+mkprof_build(void *inparam)
 {
-  printf("\n... build needs to be corrected ... \n");
-  exit(0);
-#if 0
-
   struct mkonthread *mkp=(struct mkonthread *)inparam;
   struct mkprofparams *p=mkp->p;
 
-  size_t i;
-  double *cat;
+  size_t i, id;
   int lockresult;
   long lpixel_o[2];
   pthread_mutex_t *qlock=&p->qlock;
@@ -241,26 +236,25 @@ build(void *inparam)
          fbq->next=p->bq and then set p->bq to ibq.*/
       builtqueue_addempty(&mkp->ibq);
       ibq=mkp->ibq;
-      ibq->id=mkp->indexs[i];
+      id=ibq->id=mkp->indexs[i];
       if(fbq==NULL) fbq=ibq;
-      cat=&p->cat[ibq->id*p->cs1];
 
 
       /* Write the necessary parameters for this profile into mkp.*/
-      setprofparams(mkp);
+      oneprof_set_prof_params(mkp);
 
 
       /* Find the bounding box size (NOT oversampled). */
-      if((int)cat[p->fcol]==PROFILE_POINT)
+      if( p->f[id] == PROFILE_POINT )
         mkp->width[0]=mkp->width[1]=1;
       else
         gal_box_ellipse_in_box(mkp->truncr, mkp->q*mkp->truncr,
-                               cat[p->pcol]*DEGREESTORADIANS, mkp->width);
+                               p->p[id]*DEGREESTORADIANS, mkp->width);
 
 
       /* Get the overlapping pixels using the starting points (NOT
          oversampled). */
-      gal_box_border_from_center(cat[p->xcol], cat[p->ycol], mkp->width,
+      gal_box_border_from_center(p->x[id], p->y[id], mkp->width,
                                  ibq->fpixel_i, ibq->lpixel_i);
       mkp->fpixel_i[0]=ibq->fpixel_i[0];
       mkp->fpixel_i[1]=ibq->fpixel_i[1];
@@ -283,7 +277,7 @@ build(void *inparam)
             gsl_rng_set(mkp->rng, gal_timing_time_based_rng_seed());
 
           /* Make the profile */
-          makeoneprofile(mkp);
+          oneprofile_make(mkp);
           if( p->individual || (ibq->ispsf && p->psfinimg==0))
             {
               saveindividual(mkp);
@@ -309,13 +303,12 @@ build(void *inparam)
               p->bq=ibq;
 
               /* If the list was empty when you locked the mutex, then
-                 either `write` is waiting behind a condition variable
-                 for you to fill it up or not (either it hasn't got to
-                 setting the condition variable yet (this function
-                 locked the mutex before `write`) or it just got the
+                 either `mkprof_write` is waiting behind a condition
+                 variable for you to fill it up or not (either it hasn't
+                 got to setting the condition variable yet (this function
+                 locked the mutex before `mkprof_write`) or it just got the
                  list to be made and is busy writing the arrays in the
-                 output). In either case, pthread_cond_signal will
-                 work. */
+                 output). In either case, pthread_cond_signal will work. */
               if(fbq->next==NULL)
                 pthread_cond_signal(qready);
               pthread_mutex_unlock(qlock);
@@ -350,7 +343,6 @@ build(void *inparam)
     pthread_barrier_wait(mkp->b);
 
   return NULL;
-#endif
 }
 
 
@@ -375,29 +367,38 @@ build(void *inparam)
 /**************************************************************/
 /************              The writer             *************/
 /**************************************************************/
-void
-writelog(struct mkprofparams *p)
+static void
+mkprof_write_log(struct mkprofparams *p)
 {
-  char comments[1000], gitdescribe[100], *gd=gal_git_describe();
+  char *comments, gitdescribe[100], *gd;
 
+  /* This function is only relevant if a log file was desired. */
+  if(!p->cp.log) return;
+
+  /* Get the Git description in the running folder. */
+  gd=gal_git_describe();
   if(gd) sprintf(gitdescribe, " from %s,", gd);
   else   gitdescribe[0]='\0';
 
-  sprintf(comments, "# Log file for "PROGRAM_STRING".\n"
-          "# Created%s on %s"
-          "# Column 0: Row number in catalog (starting from zero).\n"
-          "# Column 1: Overlap magnitude with final image "
-          "(zeropoint: %.3f).\n"
-          "# Column 2: Number of Monte Carlo integration pixels.\n"
-          "# Column 3: Fraction of brightness in Monte Carlo "
-          "integrated pixels.\n"
-          "# Column 4: An individual image was created.\n",
-          ctime(&p->rawtime), gitdescribe, p->zeropoint);
+  /* Make the comments. */
+  asprintf(&comments, "# %s\n# Created%s on %s# Zeropoint: %.4f",
+           PROGRAM_STRING, gitdescribe, ctime(&p->rawtime), p->zeropoint);
 
-  /*
-  gal_txtarray_array_to_txt(p->log, p->cs0, LOGNUMCOLS, comments, int_cols,
-                            accu_cols, space, prec, 'f', LOGFILENAME);
-  */
+  /* Write the log file to disk */
+  gal_table_write(p->log, comments, GAL_TABLE_FORMAT_TXT, LOGFILENAME,
+                  p->cp.dontdelete);
+  free(comments);
+
+  /* In verbose mode, print the information. */
+  if(!p->cp.quiet)
+    {
+      asprintf(&comments, "%s created.", LOGFILENAME);
+      gal_timing_report(NULL, comments, 1);
+      free(comments);
+    }
+
+  /* Clean up. */
+  gal_data_free_ll(p->log);
 }
 
 
@@ -405,33 +406,18 @@ writelog(struct mkprofparams *p)
 
 
 void
-write(struct mkprofparams *p)
+mkprof_write(struct mkprofparams *p)
 {
+  double sum;
   char *jobname;
-  double sum, *log;
   struct timeval t1;
   long os=p->oversample;
   int replace=p->replace;
-  gal_data_t *out, *towrite;
-  size_t complete=0, num=p->num;
   struct builtqueue *ibq=NULL, *tbq;
   float *to, *from, *colend, *rowend;
+  size_t complete=0, num=p->num, clog;
+  gal_data_t *out=p->out, *log, *towrite;
   size_t i, j, iw, jw, ii, jj, w=p->naxes[0], ow;
-
-  /* Note that `naxes' is in the FITS standard, not C. */
-  size_t dsize[2]={p->naxes[1], p->naxes[0]};
-
-  /* The `out' data structure is the canvas on which all the profiles will
-     be built. When there is no background image specified, this should be
-     a cleared (all zeros) image. But the user might want to build the
-     profiles on a canvas (of real data or other mock images). If so, the
-     `p->out' was read-in/allocated in `ui.c'. */
-  if(p->out)
-    out=p->out;
-  else
-    out=p->out=gal_data_alloc(NULL, GAL_DATA_TYPE_FLOAT, 2, dsize, p->wcs, 1,
-                   p->cp.minmapsize, "Combined mock image", "Brightness",
-                   NULL);
 
 
   /* Write each image into the output array. */
@@ -458,8 +444,9 @@ write(struct mkprofparams *p)
          that the FITS and C arrays have opposite axis orders and FITS
          counting starts from 1, not zero. Also fpixel is the first
          (inclusive) pixel and so is lpixel (it is inclusive). */
-      if(ibq->overlaps && p->nomerged==0)
+      if(ibq->overlaps && out->array)
         {
+
           /* Set the starting and ending points in the complete image. */
           i  = os * (ibq->fpixel_i[1]-1);
           j  = os * (ibq->fpixel_i[0]-1);
@@ -484,7 +471,7 @@ write(struct mkprofparams *p)
              know the images overlap, iw and jw are both smaller than
              the two image number of columns and number of rows, so
              w-jw and ow-jw will always be positive. */
-          to=out->array+i*w+j;
+          to = (float *)(out->array) + i*w+j;
           from=ibq->img+ii*ow+jj;
           rowend=to+iw*w;
           do
@@ -512,39 +499,53 @@ write(struct mkprofparams *p)
         }
 
       /* Fill the log array. */
-      log=&p->log[ibq->id*LOGNUMCOLS];
-      log[0] = ibq->id;
-      log[1] = sum>0.0f ? -2.5f*log10(sum)+p->zeropoint : NAN;
-      log[2] = ibq->numaccu;
-      log[3] = ibq->accufrac;
-      log[4] = ibq->indivcreated;
+      if(p->cp.log)
+        {
+          clog=0;
+          for(log=p->log; log!=NULL; log=log->next)
+            switch(++clog)
+              {
+              case 5:
+                ((unsigned char *)(log->array))[ibq->id] = ibq->indivcreated;
+                break;
+              case 4:
+                ((float *)(log->array))[ibq->id] = ibq->accufrac;
+                break;
+              case 3:
+                ((unsigned long *)(log->array))[ibq->id]=ibq->numaccu;
+                break;
+              case 2:
+                ((float *)(log->array))[ibq->id] =
+                  sum>0.0f ? -2.5f*log10(sum)+p->zeropoint : NAN;
+                break;
+              case 1:
+                ((unsigned long *)(log->array))[ibq->id]=ibq->id+1;
+                break;
+              }
+        }
 
       /* Report if in verbose mode. */
       ++complete;
-      if(!p->cp.quiet && p->nomerged==0)
+      if(!p->cp.quiet)
         {
-          errno=0;
-          jobname=malloc(100*sizeof *jobname);
-          if(jobname==NULL)
-            error(EXIT_FAILURE, errno, "jobname in mkprof.c");
-          sprintf(jobname, "row %zu complete, %zu left to go",
+          asprintf(&jobname, "row %zu complete, %zu left to go",
                   ibq->id, num-complete);
           gal_timing_report(NULL, jobname, 2);
           free(jobname);
         }
 
-      /* Free the array and the queue element and change it to the
-         next one and increment complete. Note that there is no
-         problem to free a NULL pointer (when the built array didn't
-         overlap). */
+      /* Free the array and the queue element and change it to the next one
+         and increment complete. Note that there is no problem to free a
+         NULL pointer (when the built array didn't overlap). */
       free(ibq->img);
       tbq=ibq->next;
       free(ibq);
       ibq=tbq;
     }
 
-  /* Write the final array to the output FITS image. */
-  if(p->nomerged==0)
+  /* Write the final array to the output FITS image if a merged image is to
+     be created. */
+  if(out->array)
     {
       /* Get the current time for verbose output. */
       if(!p->cp.quiet) gettimeofday(&t1, NULL);
@@ -572,6 +573,11 @@ write(struct mkprofparams *p)
           free(jobname);
         }
     }
+
+  /* Even with no merged image, there might still be pointers in `out' that
+     need to be freed. */
+  else
+    gal_data_free(p->out);
 }
 
 
@@ -634,7 +640,7 @@ mkprof(struct mkprofparams *p)
       mkp[0].onaxes=onaxes;
       mkp[0].indexs=indexs;
       mkp[0].rng=gsl_rng_clone(p->rng);
-      build(&mkp[0]);
+      mkprof_build(&mkp[0]);
     }
   else
     {
@@ -661,16 +667,17 @@ mkprof(struct mkprofparams *p)
             mkp[i].onaxes=onaxes;
             mkp[i].rng=gsl_rng_clone(p->rng);
             mkp[i].indexs=&indexs[i*thrdcols];
-            err=pthread_create(&t, &attr, build, &mkp[i]);
+            err=pthread_create(&t, &attr, mkprof_build, &mkp[i]);
             if(err)
               error(EXIT_FAILURE, 0, "can't create thread %zu", i);
           }
     }
 
   /* Write the created arrays into the image. */
-  write(p);
-  if(p->cp.log)
-    writelog(p);
+  mkprof_write(p);
+
+  /* Write the log file. */
+  mkprof_write_log(p);
 
   /* If numthreads>1, then wait for all the jobs to finish and destroy
      the attribute and barrier. */

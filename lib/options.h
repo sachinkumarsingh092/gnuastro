@@ -193,9 +193,6 @@ struct gal_options_common_params
 /**********************************************************************/
 /************              Option utilities             ***************/
 /**********************************************************************/
-void
-gal_options_initialize_numthreads(struct gal_options_common_params *cp);
-
 int
 gal_options_is_last(struct argp_option *option);
 

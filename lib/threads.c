@@ -30,7 +30,7 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 
 #include <gnuastro/threads.h>
 
-
+#include <nproc.h>         /* from Gnulib, in Gnuastro's source */
 
 
 
@@ -166,8 +166,18 @@ pthread_barrier_destroy(pthread_barrier_t *b)
 
 
 /*******************************************************************/
-/************     Distribute job indexs in threads    **************/
+/************              Thread utilities           **************/
 /*******************************************************************/
+size_t
+gal_threads_number()
+{
+  return num_processors(NPROC_CURRENT);
+}
+
+
+
+
+
 /* We have `numactions` jobs and we want their indexs to be divided
    between `numthreads` CPU threads. This function will give each index to
    a thread such that the maximum difference between the number of

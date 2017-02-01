@@ -96,9 +96,14 @@ pthread_barrier_destroy(pthread_barrier_t *b);
 
 
 
-/*****************************************************************/
-/****************      gnuastro functions       ******************/
-/*****************************************************************/
+
+
+/*******************************************************************/
+/************              Thread utilities           **************/
+/*******************************************************************/
+size_t
+gal_threads_number();
+
 void
 gal_threads_dist_in_threads(size_t numactions, size_t numthreads,
                             size_t **outthrds, size_t *outthrdcols);

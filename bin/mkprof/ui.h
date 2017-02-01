@@ -27,6 +27,6 @@ void
 ui_read_check_inputs_setup(int argc, char *argv[], struct mkprofparams *p);
 
 void
-freeandreport(struct mkprofparams *p, struct timeval *t1);
+ui_free_report(struct mkprofparams *p, struct timeval *t1);
 
 #endif

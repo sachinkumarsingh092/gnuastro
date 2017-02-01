@@ -130,8 +130,8 @@ cd $build_dir
 #
 # ####################################
 if [ ! -f Makefile ]; then
-    $srcdir/configure --srcdir=$srcdir --disable-shared CFLAGS="-g -O0"\
-                      --enable-arithmetic --enable-table --enable-mkprof
+    $srcdir/configure --srcdir=$srcdir --disable-shared CFLAGS="-g -O0"  \
+                      --enable-arithmetic --enable-mkprof --enable-table
 fi
 
 
