@@ -270,7 +270,7 @@ cosmiccal(struct cosmiccalparams *p)
   absmagconv=distmod-2.5*log10(1+p->redshift);
 
   /* Print out results: */
-  printf("%s\n", SPACK_STRING);
+  printf("%s\n", PROGRAM_STRING);
   printf("\n Input parameters\n");
   printf(  " ----------------\n");
   printf(FLTFORMAT, "Desired redshift for calculations (z):", p->redshift);

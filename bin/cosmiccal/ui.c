@@ -22,222 +22,77 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #include <config.h>
 
-#include <math.h>
-#include <stdio.h>
+#include <argp.h>
 #include <errno.h>
 #include <error.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fitsio.h>
+#include <stdio.h>
 
-#include <nproc.h>               /* From Gnulib.                   */
 #include <gsl/gsl_const_mksa.h>
 
 #include <gnuastro/fits.h>
-#include <gnuastro/txtarray.h>
+#include <gnuastro/table.h>
+#include <gnuastro/linkedlist.h>
 
-#include <timing.h>     /* Includes time.h and sys/time.h */
+#include <timing.h>
+#include <options.h>
 #include <checkset.h>
-#include <commonargs.h>
-#include <configfiles.h>
+#include <fixedstringmacros.h>
 
 #include "main.h"
 
-#include "ui.h"                  /* Needs main.h                   */
-#include "args.h"                /* Needs main.h, includes argp.h. */
-
-
-/* Set the file names of the places where the default parameters are
-   put. */
-#define CONFIG_FILE SPACK CONF_POSTFIX
-#define SYSCONFIG_FILE SYSCONFIG_DIR "/" CONFIG_FILE
-#define USERCONFIG_FILEEND USERCONFIG_DIR CONFIG_FILE
-#define CURDIRCONFIG_FILE CURDIRCONFIG_DIR CONFIG_FILE
-
-
-
-
-
+#include "ui.h"
+#include "authors-cite.h"
 
 
 
 
 
 /**************************************************************/
-/**************       Options and parameters    ***************/
+/*********      Argp necessary global entities     ************/
 /**************************************************************/
-void
-readconfig(char *filename, struct cosmiccalparams *p)
+/* Definition parameters for the Argp: */
+const char *
+argp_program_version = PROGRAM_STRING "\n"
+                       GAL_STRINGS_COPYRIGHT
+                       "\n\nWritten/developed by "PROGRAM_AUTHORS;
+
+const char *
+argp_program_bug_address = PACKAGE_BUGREPORT;
+
+static char
+args_doc[] = "";
+
+const char
+doc[] = GAL_STRINGS_TOP_HELP_INFO PROGRAM_NAME" will do cosmological "
+  "calculations.\n"
+  GAL_STRINGS_MORE_HELP_INFO
+  /* After the list of options: */
+  "\v"
+  PACKAGE_NAME" home page: "PACKAGE_URL;
+
+
+
+
+
+/* Available letters for short options:
+
+   a b d e f g j k l m n p r s t u v w x y z
+   A B C E F G H J L M O Q R T U W X Y Z  */
+enum option_keys_enum
 {
-  FILE *fp;
-  size_t lineno=0, len=200;
-  char *line, *name, *value;
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-  char key='a';        /* Not used, just a place holder. */
-
-  /* When the file doesn't exist or can't be opened, it is ignored. It
-     might be intentional, so there is no error. If a parameter is
-     missing, it will be reported after all defaults are read. */
-  fp=fopen(filename, "r");
-  if (fp==NULL) return;
+  /* With short-option version. */
+  ARGS_OPTION_KEY_REDSHIFT       = 'z',
+  ARGS_OPTION_KEY_H0             = 'H',
+  ARGS_OPTION_KEY_OLAMBDA        = 'l',
+  ARGS_OPTION_KEY_OMATTER        = 'm',
+  ARGS_OPTION_KEY_ORADIATION     = 'r',
+  ARGS_OPTION_KEY_ONLYVOLUME     = 'v',
+  ARGS_OPTION_KEY_ONLYABSMAGCONV = 'a',
 
 
-  /* Allocate some space for `line` with `len` elements so it can
-     easily be freed later on. The value of `len` is arbitarary at
-     this point, during the run, getline will change it along with the
-     pointer to line. */
-  errno=0;
-  line=malloc(len*sizeof *line);
-  if(line==NULL)
-    error(EXIT_FAILURE, errno, "ui.c: %zu bytes in readdefaults",
-          len * sizeof *line);
-
-  /* Read the tokens in the file:  */
-  while(getline(&line, &len, fp) != -1)
-    {
-      /* Prepare the "name" and "value" strings, also set lineno. */
-      GAL_CONFIGFILES_START_READING_LINE;
-
-
-
-
-      /* Inputs: */
-      if(strcmp(name, "redshift")==0)
-        {
-          if(up->redshiftset) continue;
-          gal_checkset_double_el_0(value, &p->redshift, name, key,
-                                      SPACK, filename, lineno);
-          up->redshiftset=1;
-        }
-      else if(strcmp(name, "H0")==0)
-        {
-          if(up->H0set) continue;
-          gal_checkset_double_el_0(value, &p->H0, name, key, SPACK,
-                                      filename, lineno);
-          up->H0set=1;
-        }
-      else if(strcmp(name, "olambda")==0)
-        {
-          if(up->olambdaset) continue;
-          gal_checkset_double_el_0(value, &p->olambda, name, key,
-                                      SPACK, filename, lineno);
-          up->olambdaset=1;
-        }
-      else if(strcmp(name, "omatter")==0)
-        {
-          if(up->omatterset) continue;
-          gal_checkset_double_el_0(value, &p->omatter, name, key,
-                                      SPACK, filename, lineno);
-          up->omatterset=1;
-        }
-      else if(strcmp(name, "oradiation")==0)
-        {
-          if(up->oradiationset) continue;
-          gal_checkset_double_el_0(value, &p->oradiation, name, key,
-                                   SPACK, filename, lineno);
-          up->oradiationset=1;
-        }
-
-
-
-      /* Outputs */
-      else if(strcmp(name, "onlyvolume")==0)
-        {
-          if(up->onlyvolumeset) continue;
-          gal_checkset_int_zero_or_one(value, &p->onlyvolume, name, key,
-                                       SPACK, filename, lineno);
-          up->onlyvolumeset=1;
-        }
-      else if(strcmp(name, "onlyabsmagconv")==0)
-        {
-          if(up->onlyabsmagconvset) continue;
-          gal_checkset_int_zero_or_one(value, &p->onlyabsmagconv, name,
-                                       key, SPACK, filename, lineno);
-          up->onlyabsmagconvset=1;
-        }
-
-
-
-      /* Operating modes: */
-      /* Read options common to all programs */
-      GAL_CONFIGFILES_READ_COMMONOPTIONS_FROM_CONF
-
-
-      else
-        error_at_line(EXIT_FAILURE, 0, filename, lineno,
-                      "`%s` not recognized.\n", name);
-    }
-
-  free(line);
-  fclose(fp);
-}
-
-
-
-
-
-void
-printvalues(FILE *fp, struct cosmiccalparams *p)
-{
-  struct uiparams *up=&p->up;
-  struct gal_commonparams *cp=&p->cp;
-
-
-  /* Print all the options that are set. Separate each group with a
-     commented line explaining the options in that group. */
-  fprintf(fp, "\n# Input:\n");
-  if(up->redshiftset)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "redshift", p->redshift);
-  if(up->H0set)
-    fprintf(fp, CONF_SHOWFMT"%.3f\n", "H0", p->H0);
-
-
-  fprintf(fp, "\n# Current densities per current critical density:\n");
-  if(up->olambdaset)
-    fprintf(fp, CONF_SHOWFMT"%.5f\n", "olambda", p->olambda);
-  if(up->omatterset)
-    fprintf(fp, CONF_SHOWFMT"%.5f\n", "omatter", p->omatter);
-  if(up->oradiationset)
-    fprintf(fp, CONF_SHOWFMT"%.5f\n", "oradiation", p->oradiation);
-
-
-  /* For the operating mode, first put the macro to print the common
-     options, then the (possible options particular to this
-     program). */
-  fprintf(fp, "\n# Operating mode:\n");
-  GAL_CONFIGFILES_PRINT_COMMONOPTIONS;
-}
-
-
-
-
-
-
-/* Note that numthreads will be used automatically based on the
-   configure time. */
-void
-checkifset(struct cosmiccalparams *p)
-{
-  struct uiparams *up=&p->up;
-  /*struct gal_commonparams *cp=&p->cp;*/
-
-  int intro=0;
-  if(up->redshiftset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("redshift");
-  if(up->H0set==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("H0");
-  if(up->olambdaset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("olambda");
-  if(up->omatterset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("omatter");
-  if(up->oradiationset==0)
-    GAL_CONFIGFILES_REPORT_NOTSET("oradiation");
-
-
-  GAL_CONFIGFILES_END_OF_NOTSET_REPORT;
-}
-
+  /* Only with long version (start with a value 1000, the rest will be set
+     automatically). */
+};
 
 
 
@@ -258,49 +113,107 @@ checkifset(struct cosmiccalparams *p)
 
 
 /**************************************************************/
-/************            Sanity check             *************/
+/*********    Initialize & Parse command-line    **************/
 /**************************************************************/
-void
-sanitycheck(struct cosmiccalparams *p)
+static void
+ui_initialize_options(struct cosmiccalparams *p,
+                      struct argp_option *program_options,
+                      struct argp_option *gal_commonopts_options)
 {
-  int check=p->onlyvolume+p->onlyabsmagconv;
-
-  /* If only one of the single output options are called, then check
-     should be 1, if none are called, then it should be zero. However,
-     if more than one is called, check will be larger than one. So in
-     this case, report an error. */
-  if(check>1)
-    error(EXIT_FAILURE, 0, "only a single option starting with `--only' "
-          "can be called");
-}
+  size_t i;
+  struct gal_options_common_params *cp=&p->cp;
 
 
+  /* Set the necessary common parameters structure. */
+  cp->poptions           = program_options;
+  cp->program_name       = PROGRAM_NAME;
+  cp->program_exec       = PROGRAM_EXEC;
+  cp->program_bibtex     = PROGRAM_BIBTEX;
+  cp->program_authors    = PROGRAM_AUTHORS;
+  cp->coptions           = gal_commonopts_options;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**************************************************************/
-/************             Preparations            *************/
-/**************************************************************/
-void
-preparations(struct cosmiccalparams *p)
-{
   /* Speed of light: */
   p->c=GSL_CONST_MKSA_SPEED_OF_LIGHT;
+}
+
+
+
+
+
+/* Parse a single option: */
+error_t
+parse_opt(int key, char *arg, struct argp_state *state)
+{
+  struct cosmiccalparams *p = state->input;
+
+  /* Pass `gal_options_common_params' into the child parser.  */
+  state->child_inputs[0] = &p->cp;
+
+  /* In case the user incorrectly uses the equal sign (for example
+     with a short format or with space in the long format, then `arg`
+     start with (if the short version was called) or be (if the long
+     version was called with a space) the equal sign. So, here we
+     check if the first character of arg is the equal sign, then the
+     user is warned and the program is stopped: */
+  if(arg && arg[0]=='=')
+    argp_error(state, "incorrect use of the equal sign (`=`). For short "
+               "options, `=` should not be used and for long options, "
+               "there should be no space between the option, equal sign "
+               "and value");
+
+  /* Set the key to this option. */
+  switch(key)
+    {
+
+    /* Read the non-option tokens (arguments): */
+    case ARGP_KEY_ARG:
+      argp_error(state, "currently %s doesn't take any arguments",
+                 PROGRAM_NAME);
+      break;
+
+
+    /* This is an option, set its value. */
+    default:
+      return gal_options_set_from_key(key, arg, p->cp.poptions, &p->cp);
+    }
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**************************************************************/
+/***************       Sanity Check         *******************/
+/**************************************************************/
+/* Read and check ONLY the options. When arguments are involved, do the
+   check in `ui_check_options_and_arguments'. */
+static void
+ui_read_check_only_options(struct cosmiccalparams *p)
+{
+  /* Check if the density fractions add up to 1. */
+  if( (p->olambda + p->omatter + p->oradiation) != 1.0f )
+    error(EXIT_FAILURE, 0, "sum of fractional densities is not 1, but %f. "
+          "The cosmological constant (`olambda'), matter (`omatter') "
+          "and radiation (`oradiation') densities are given as %f, %f, %f",
+          p->olambda + p->omatter + p->oradiation, p->olambda, p->omatter,
+          p->oradiation);
 
   /* The curvature fractional density: */
   p->ocurv=1-(p->olambda+p->omatter+p->oradiation);
@@ -331,36 +244,45 @@ preparations(struct cosmiccalparams *p)
 /**************************************************************/
 /************         Set the parameters          *************/
 /**************************************************************/
+
 void
-setparams(int argc, char *argv[], struct cosmiccalparams *p)
+ui_read_check_inputs_setup(int argc, char *argv[], struct cosmiccalparams *p)
 {
-  struct gal_commonparams *cp=&p->cp;
+  struct gal_options_common_params *cp=&p->cp;
 
-  /* Set the non-zero initial values, the structure was initialized to
-     have a zero value for all elements. */
-  cp->spack         = SPACK;
-  cp->verb          = 1;
-  cp->numthreads    = num_processors(NPROC_CURRENT);
-  cp->removedirinfo = 1;
 
-  /* Read the arguments. */
+  /* Include the parameters necessary for argp from this program (`args.h')
+     and for the common options to all Gnuastro (`commonopts.h'). We want
+     to directly put the pointers to the fields in `p' and `cp', so we are
+     simply including the header here to not have to use long macros in
+     those headers which make them hard to read and modify. This also helps
+     in having a clean environment: everything in those headers is only
+     available within the scope of this function. */
+#include <commonopts.h>
+#include "args.h"
+
+
+  /* Initialize the options and necessary information.  */
+  ui_initialize_options(p, program_options, gal_commonopts_options);
+
+
+  /* Read the command-line options and arguments. */
   errno=0;
   if(argp_parse(&thisargp, argc, argv, 0, 0, p))
     error(EXIT_FAILURE, errno, "parsing arguments");
 
-  /* Add the user default values and save them if asked. */
-  GAL_CONFIGFILES_CHECK_SET_CONFIG;
 
-  /* Check if all the required parameters are set. */
-  checkifset(p);
+  /* Read the configuration files and set the common values. */
+  gal_options_read_config_set(&p->cp);
 
-  /* Do a sanity check */
-  sanitycheck(p);
 
-  /* Make the preparations */
-  preparations(p);
+  /* Read the options into the program's structure, and check them and
+     their relations prior to printing. */
+  ui_read_check_only_options(p);
 
-  /* Print the values for each parameter. */
-  if(cp->printparams)
-    GAL_CONFIGFILES_REPORT_PARAMETERS_SET;
+
+  /* Print the option values if asked. Note that this needs to be done
+     after the option checks so un-sane values are not printed in the
+     output state. */
+  gal_options_print_state(&p->cp);
 }

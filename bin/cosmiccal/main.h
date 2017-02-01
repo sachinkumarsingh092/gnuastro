@@ -23,40 +23,27 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <commonparams.h>
+/* Include necessary headers */
+#include <gnuastro/data.h>
 
-/* Progarm name macros: */
-#define SPACK           "astcosmiccal" /* Subpackage executable name. */
-#define SPACK_NAME      "CosmicCalculator"  /* Subpackage full name.  */
-#define SPACK_STRING    SPACK_NAME" ("PACKAGE_NAME") "PACKAGE_VERSION
+#include <options.h>
 
-
-
-
-
-
-struct uiparams
-{
-  int             redshiftset;
-  int            curvatureset;
-  int                   H0set;
-  int              olambdaset;
-  int              omatterset;
-  int           oradiationset;
-
-  int           onlyvolumeset;
-  int       onlyabsmagconvset;
-};
+/* Progarm names.  */
+#define PROGRAM_NAME "CosmicCalculator" /* Program full name.       */
+#define PROGRAM_EXEC "astcosmiccal"     /* Program executable name. */
+#define PROGRAM_STRING PROGRAM_NAME" (" PACKAGE_NAME ") " PACKAGE_VERSION
 
 
 
 
 
+
+
+/* Main program parameters structure */
 struct cosmiccalparams
 {
   /* Other structures: */
-  struct uiparams          up;  /* User interface parameters.           */
-  struct gal_commonparams  cp;  /* Common parameters.                   */
+  struct gal_options_common_params cp;  /* Common parameters.           */
 
   /* Input: */
   double             redshift;  /* Redshift of interest.                */
@@ -69,8 +56,6 @@ struct cosmiccalparams
   /* Output: */
   int              onlyvolume;  /* Only print the volume in Mpc^3.      */
   int          onlyabsmagconv;  /* Only print conversion to abs. mag.   */
-
-  /* Operating mode: */
 
   /* Internal: */
   double                    K;  /* Curvature constant.                  */

@@ -35,13 +35,13 @@ along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 int
 main (int argc, char *argv[])
 {
-  struct cosmiccalparams p={{0}, {0}, 0};
+  struct cosmiccalparams p={{0}, 0};
 
   /* Get the starting time. */
   time(&p.rawtime);
 
   /* Read the input parameters. */
-  setparams(argc, argv, &p);
+  ui_read_check_inputs_setup(argc, argv, &p);
 
   /* Run MakeProfiles */
   cosmiccal(&p);

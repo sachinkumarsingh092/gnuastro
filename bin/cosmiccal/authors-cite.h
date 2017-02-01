@@ -5,7 +5,7 @@ CosmicCalculator is part of GNU Astronomy Utilities (Gnuastro) package.
 Original author:
      Mohammad Akhlaghi <akhlaghi@gnu.org>
 Contributing author(s):
-Copyright (C) 2016, Free Software Foundation, Inc.
+Copyright (C) 2017, Free Software Foundation, Inc.
 
 Gnuastro is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -20,19 +20,19 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Gnuastro. If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#ifndef CITE_H
-#define CITE_H
+#ifndef AUTHORS_CITE_H
+#define AUTHORS_CITE_H
 
-#define COSMICCALBIBTEX ""
+/* When any specific citation is necessary, please add its BibTeX (from ADS
+   hopefully) to this variable along with a title decribing what this
+   paper/book does for the progarm in a short line. In the following line
+   put a row of `-' with the same length and then put the BibTeX.
 
-#define PRINTCITEABORT {                                                \
-    printf("\nWe hope %s has been useful for your research.\n"          \
-           "Citations are vital for the continued work on %s.\n"        \
-           "Thank you for citing it in your research paper.\n"          \
-           "\nPlease cite as \"%s\":\n\n%s\n\n%s",                      \
-           SPACK_NAME, SPACK_NAME, SPACK_STRING,                        \
-           GAL_STRINGS_MAIN_BIBTEX, COSMICCALBIBTEX);                   \
-    exit(EXIT_SUCCESS);                                                 \
-}
+   See the `gnuastro_bibtex' variable in `lib/options' (from the top
+   Gnuastro source code directory) as an example.*/
+
+#define PROGRAM_BIBTEX "";
+
+#define PROGRAM_AUTHORS "Mohammad Akhlaghi";
 
 #endif
